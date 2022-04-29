@@ -79,7 +79,7 @@
         android:backgroundTint="#EFEFEF"
         android:paddingStart="24dp"
         android:paddingEnd="24dp"
-        android:text="@string/SKIP"
+        android:text="@string/Skip"
         android:textColor="@color/black_50"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"

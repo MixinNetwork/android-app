@@ -137,7 +137,7 @@ interface TransactionInterface {
                     contentBinding.thatVa.displayedChild = POS_TEXT
                     contentBinding.thatTv.apply {
                         text = if (ticker.priceUsd == "0") {
-                            fragment.getString(R.string.wallet_transaction_that_time_no_value)
+                            fragment.getString(R.string.value_then, fragment.getString(R.string.NA))
                         } else {
                             val amount =
                                 (BigDecimal(snapshot.amount).abs() * ticker.priceFiat()).numberFormat2()
@@ -288,13 +288,13 @@ interface TransactionInterface {
             dateTv.text = snapshot.createdAt.fullDate()
             when (snapshot.type) {
                 SnapshotType.deposit.name -> {
-                    senderTitle.text = fragment.getString(R.string.Sender)
+                    senderTitle.text = fragment.getString(R.string.From)
                     senderTv.text = snapshot.sender
                     receiverTitle.text = fragment.getString(R.string.transaction_Hash)
                     receiverTv.text = snapshot.transactionHash
                 }
                 SnapshotType.pending.name -> {
-                    senderTitle.text = fragment.getString(R.string.Sender)
+                    senderTitle.text = fragment.getString(R.string.From)
                     senderTv.text = snapshot.sender
                     receiverTitle.text = fragment.getString(R.string.transaction_Hash)
                     receiverTv.text = snapshot.transactionHash
@@ -321,7 +321,7 @@ interface TransactionInterface {
                     if (!asset.tag.isNullOrEmpty()) {
                         receiverTitle.text = fragment.getString(R.string.Address)
                     } else {
-                        receiverTitle.text = fragment.getString(R.string.Receiver)
+                        receiverTitle.text = fragment.getString(R.string.To)
                     }
                     senderTitle.text = fragment.getString(R.string.transaction_Hash)
                     senderTv.text = snapshot.transactionHash

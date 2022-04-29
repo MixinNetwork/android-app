@@ -14,7 +14,7 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
         android:layout_marginTop="8dp"
-        android:text="@string/group_info_not_in"
+        android:text="@string/You_have_left_the_group"
         android:textColor="?attr/text_primary"
         android:visibility="gone" />
 

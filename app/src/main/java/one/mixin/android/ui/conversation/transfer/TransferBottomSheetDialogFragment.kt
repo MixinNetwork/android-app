@@ -81,7 +81,7 @@ class TransferBottomSheetDialogFragment : ValuableBiometricBottomSheetDialogFrag
                         title.text = getString(R.string.withdrawal_to, it.label)
                         subTitle.text = it.displayAddress()
                     }
-                    biometricLayout.payTv.setText(R.string.withdrawal_with_pwd)
+                    biometricLayout.payTv.setText(R.string.withdrawal_with_PIN)
                     biometricLayout.biometricTv.setText(R.string.withdrawal_with_biometric)
                 }
             }

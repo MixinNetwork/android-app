@@ -69,7 +69,7 @@ class QrBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             binding.tipTv.text = getString(R.string.scan_code_add_me)
         } else if (type == TYPE_RECEIVE_QR) {
             binding.title.titleTv.text = getString(R.string.Receive_Money)
-            binding.tipTv.text = getString(R.string.contact_receive_tip)
+            binding.tipTv.text = getString(R.string.transfer_qrcode_prompt)
         }
         binding.shareBtn.setOnClickListener {
             lifecycleScope.launch(Dispatchers.IO) {

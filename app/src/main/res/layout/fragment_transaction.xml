@@ -177,7 +177,7 @@
                         style="@style/TransactionTitleTextStyle"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="@string/Sender" />
+                        android:text="@string/From" />
 
                     <TextView
                         android:id="@+id/sender_tv"
@@ -198,7 +198,7 @@
                         style="@style/TransactionTitleTextStyle"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="@string/Receiver" />
+                        android:text="@string/To" />
 
                     <TextView
                         android:id="@+id/receiver_tv"

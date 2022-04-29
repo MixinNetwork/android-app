@@ -96,7 +96,7 @@ class MobileContactFragment : BaseFragment(R.layout.fragment_setting_mobile_cont
     private fun setUpdate() {
         if (viewDestroyed()) return
         binding.apply {
-            opTv.setText(R.string.Upload_Phone_Contacts)
+            opTv.setText(R.string.Upload_Mobile_Contacts)
             opTv.textColorResource = R.color.colorDarkBlue
             opRl.setOnClickListener {
                 RxPermissions(requireActivity())

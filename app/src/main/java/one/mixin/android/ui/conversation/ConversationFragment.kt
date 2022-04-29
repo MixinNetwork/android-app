@@ -924,7 +924,7 @@ class ConversationFragment() :
                         CallActivity.show(requireContext())
                     } else {
                         alertDialogBuilder()
-                            .setMessage(getString(R.string.chat_call_warning_call))
+                            .setMessage(getString(R.string.call_on_another_call_hint))
                             .setNegativeButton(getString(android.R.string.ok)) { dialog, _ ->
                                 dialog.dismiss()
                             }
@@ -1620,7 +1620,7 @@ class ConversationFragment() :
             val isBusy = callState.isBusy()
             if (isBusy) {
                 alertDialogBuilder()
-                    .setMessage(getString(R.string.chat_call_warning_call))
+                    .setMessage(getString(R.string.call_on_another_call_hint))
                     .setNegativeButton(getString(android.R.string.ok)) { dialog, _ ->
                         dialog.dismiss()
                     }
@@ -1670,7 +1670,7 @@ class ConversationFragment() :
                             )
                         } else {
                             requireContext().getString(
-                                R.string.send_file,
+                                R.string.send_file_group,
                                 attachment.filename,
                                 recipient?.fullName
                             )
@@ -1789,7 +1789,7 @@ class ConversationFragment() :
             permissionAlert = AlertDialog.Builder(requireContext())
                 .setTitle(R.string.app_name)
                 .setMessage(R.string.web_floating_permission)
-                .setPositiveButton(R.string.Setting) { dialog, _ ->
+                .setPositiveButton(R.string.Settings) { dialog, _ ->
                     try {
                         startActivity(
                             Intent(
@@ -2486,7 +2486,7 @@ class ConversationFragment() :
                                 CallActivity.show(requireContext())
                             } else {
                                 alertDialogBuilder()
-                                    .setMessage(getString(R.string.chat_call_warning_call))
+                                    .setMessage(getString(R.string.call_on_another_call_hint))
                                     .setNegativeButton(getString(android.R.string.ok)) { dialog, _ ->
                                         dialog.dismiss()
                                     }
@@ -2711,7 +2711,7 @@ class ConversationFragment() :
                             )
                         } else {
                             requireContext().getString(
-                                R.string.send_file,
+                                R.string.send_file_group,
                                 attachment.filename,
                                 recipient?.fullName
                             )

@@ -519,7 +519,7 @@ class LocationActivity : BaseActivity(), OnMapReadyCallback {
         if (!gpsEnable) {
             locationAlert = AlertDialog.Builder(this)
                 .setMessage(R.string.location_enable_title)
-                .setPositiveButton(R.string.Setting) { dialog, _ ->
+                .setPositiveButton(R.string.Settings) { dialog, _ ->
                     try {
                         startActivity(Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS))
                     } catch (e: Exception) {

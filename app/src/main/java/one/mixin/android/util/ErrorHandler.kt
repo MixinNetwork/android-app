@@ -114,8 +114,10 @@ open class ErrorHandler {
         const val TOO_SMALL = 20120
         const val USED_PHONE = 20122
         const val INSUFFICIENT_TRANSACTION_FEE = 20124
+        const val TRANSFER_IS_ALREADY_PAID = 20125
         const val TOO_MANY_STICKERS = 20126
         const val WITHDRAWAL_AMOUNT_SMALL = 20127
+        const val TOO_MANY_FRIENDS = 20128
         const val INVALID_CODE_TOO_FREQUENT = 20129
         const val INVALID_EMERGENCY_CONTACT = 20130
         const val WITHDRAWAL_MEMO_FORMAT_INCORRECT = 20131
@@ -188,13 +190,16 @@ fun Context.getMixinErrorStringByCode(code: Int, message: String): String {
             getString(R.string.error_pin_incorrect, ErrorHandler.PIN_INCORRECT)
         }
         ErrorHandler.TOO_SMALL -> {
-            getString(R.string.error_too_small, ErrorHandler.TOO_SMALL)
+            getString(R.string.error_too_small_transfer_amount, ErrorHandler.TOO_SMALL)
         }
         ErrorHandler.TOO_MANY_REQUEST -> {
             getString(R.string.error_too_many_request, ErrorHandler.TOO_MANY_REQUEST)
         }
         ErrorHandler.USED_PHONE -> {
             getString(R.string.error_used_phone, ErrorHandler.USED_PHONE)
+        }
+        ErrorHandler.TRANSFER_IS_ALREADY_PAID -> {
+            getString(R.string.error_transfer_is_already_paid, ErrorHandler.TRANSFER_IS_ALREADY_PAID)
         }
         ErrorHandler.TOO_MANY_STICKERS -> {
             getString(R.string.error_too_many_stickers, ErrorHandler.TOO_MANY_STICKERS)
@@ -209,6 +214,12 @@ fun Context.getMixinErrorStringByCode(code: Int, message: String): String {
             getString(
                 R.string.error_too_small_withdraw_amount,
                 ErrorHandler.WITHDRAWAL_AMOUNT_SMALL
+            )
+        }
+        ErrorHandler.TOO_MANY_FRIENDS -> {
+            getString(
+                R.string.error_too_many_friends,
+                ErrorHandler.TOO_MANY_FRIENDS
             )
         }
         ErrorHandler.INVALID_CODE_TOO_FREQUENT -> {

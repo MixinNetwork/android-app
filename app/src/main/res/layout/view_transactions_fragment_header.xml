@@ -126,7 +126,7 @@
             android:background="@drawable/mixin_ripple_small"
             android:padding="8dp"
             android:src="@drawable/ic_sort"
-            android:contentDescription="@string/SORT_BY" />
+            android:contentDescription="@string/Sort_by" />
 
         <TextView
             android:id="@+id/group_info_member_title"

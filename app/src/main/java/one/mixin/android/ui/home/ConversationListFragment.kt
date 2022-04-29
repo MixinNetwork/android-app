@@ -375,7 +375,7 @@ class ConversationListFragment : LinkFragment() {
                     binding.emptyView.infoTv.setText(R.string.empty_info)
                     binding.emptyView.startBn.setText(R.string.Start_Messaging)
                 } else {
-                    binding.emptyView.infoTv.setText(R.string.circle_empty_info)
+                    binding.emptyView.infoTv.setText(R.string.circle_no_conversation_hint)
                     binding.emptyView.startBn.setText(R.string.Add_conversations)
                 }
                 binding.emptyView.root.isVisible = true
@@ -842,7 +842,7 @@ class ConversationListFragment : LinkFragment() {
                                         conversationItem.senderFullName
                                     },
                                     if (id == conversationItem.participantUserId) {
-                                        getText(R.string.you)
+                                        getText(R.string.You)
                                     } else {
                                         conversationItem.participantFullName
                                     }
@@ -858,7 +858,7 @@ class ConversationListFragment : LinkFragment() {
                                         conversationItem.senderFullName
                                     },
                                     if (id == conversationItem.participantUserId) {
-                                        getText(R.string.you)
+                                        getText(R.string.You)
                                     } else {
                                         conversationItem.participantFullName
                                     }

@@ -23,7 +23,7 @@ class MenuAdapter(
             Menu(MenuType.Transfer, R.string.Transfer, R.drawable.ic_menu_transfer, null)
         val voiceMenu = Menu(
             MenuType.Voice,
-            if (isGroup) R.string.Group_Call else R.string.Voice,
+            if (isGroup) R.string.Group_Call else R.string.Voice_call,
             R.drawable.ic_menu_call,
             null
         )

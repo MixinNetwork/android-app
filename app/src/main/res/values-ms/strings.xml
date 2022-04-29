@@ -34,8 +34,8 @@
     <string name="Got_it">Faham</string>
     <string name="got_it_count_down">Faham (%1$d)</string>
     <string name="Exit">Keluar</string>
-    <string name="Receiver">Penerima</string>
-    <string name="Sender">Penghantar</string>
+    <string name="To">Penerima</string>
+    <string name="From">Penghantar</string>
     <string name="transaction_Hash">Urus niaga Cincangan</string>
     <string name="Copy">Salinan</string>
     <string name="Open">Buka</string>
@@ -83,7 +83,6 @@
     <string name="Language">Bahasa</string>
     <string name="Try_Again">Cuba lagi</string>
     <string name="OK">okey</string>
-    <string name="Verify_with_PIN">Sahkan dengan PIN</string>
     <string name="Verify_by_Biometric">Sahkan dengan Biometrik</string>
     <string name="transfer_without_pin">Anda mesti sediakan PIN untuk pemindahan</string>
     <string name="Voice_call">Panggilan suara</string>
@@ -136,7 +135,7 @@
     <plurals name="error_pin_incorrect_with_times" tools:ignore="UnusedQuantity">
         <item quantity="other">RALAT %1$d: PIN tidak betul. Anda masih mempunyai %2$d peluang. Sila tunggu selama 24 jam untuk cuba lagi kemudian.</item>
     </plurals>
-    <string name="error_too_small">RALAT %1$d: Jumlahnya terlalu kecil</string>
+    <string name="error_too_small_transfer_amount">RALAT %1$d: Jumlahnya terlalu kecil</string>
     <string name="User_not_found">Pengguna tidak ditemui</string>
     <string name="App_not_found">Aplikasi tidak dijumpai</string>
     <string name="error_unable_to_open_media">Tidak dapat mencari aplikasi yang dapat buka media ini.</string>
@@ -185,7 +184,7 @@
     <string name="CHATS">SEMBANG</string>
     <string name="CONTACTS">KENALAN</string>
     <string name="SEARCH_MESSAGES">CARI MESEJ</string>
-    <string name="search_tip">Cari ID Mixin atau Nombor Telefon: %1$s</string>
+    <string name="search_placeholder_number">Cari ID Mixin atau Nombor Telefon </string>
     <!--landing-->
     <string name="Enter_your_phone_number">Masukkan nombor telefon bimbit anda</string>
     <string name="Enter_new_phone_number">Masukkan nombor telefon bimbit baharu anda</string>
@@ -194,7 +193,7 @@
     <string name="Resend_code">Hantar semula kod</string>
     <string name="Resend_code_in">Hantar semula kod dalam %1$d s</string>
     <string name="landing_validation_title">Masukkan kod 4 digit yang dihantar kepada anda di %1$s</string>
-    <string name="landing_validation_error">Kod yang anda masukkan tidak betul.</string>
+    <string name="The_code_is_incorrect">Kod yang anda masukkan tidak betul.</string>
     <string name="Whats_your_name">Siapa nama awak?</string>
     <string name="landing_invitation_dialog_content">Kami akan menghantar kod 4 digit ke nombor telefon anda %1$s, sila masukkan kod di skrin seterusnya.</string>
     <string name="landing_introduction">Ketuk \"Setuju &amp; Teruskan\" untuk terima %1$s dan %2$s</string>
@@ -212,7 +211,6 @@
     <string name="New_Group_Chat">Kumpulan Sembang Baharu</string>
     <string name="contact_new_group_chat_desc">Buat kumpulan sembang dengan sehingga rakan</string>
     <string name="Add_people_hint">Tambahkan orang menggunakan ID Mixin atau nombor telefon</string>
-    <string name="scan_contact_qr_code">Imbas kod QR Mixin rakan anda</string>
     <string name="Invite_people">Jemput Orang</string>
     <string name="contact_mobile">Mudah alih: %1$s</string>
     <string name="Phone_Contact">Kenalan Telefon</string>
@@ -223,7 +221,7 @@
     <string name="scan_code_add_me">Imbas kod QR untuk menambahkan saya di Mixin</string>
     <string name="My_shared_apps">Aplikasi kongsi saya</string>
     <string name="Receive_Money">Terima Wang</string>
-    <string name="contact_receive_tip">Imbas Kod QR untuk membayar saya</string>
+    <string name="transfer_qrcode_prompt">Imbas Kod QR untuk membayar saya</string>
     <string name="Add_Contact">Tambah Kenalan</string>
     <string name="Add_bot">Tambah Bot</string>
     <string name="contact_share_apps_title">Aplikasi Dikongsi %1$s</string>
@@ -274,7 +272,7 @@
     <string name="Line_busy">Talian sibuk</string>
     <string name="Line_busy_remote">Talian sibuk</string>
     <string name="Call_failed">Panggilan gagal</string>
-    <string name="chat_call_warning_call">Anda tidak boleh membuat panggilan Mixin jika anda sedang melakukan panggilan lain.</string>
+    <string name="call_on_another_call_hint">Anda tidak boleh membuat panggilan Mixin jika anda sedang melakukan panggilan lain.</string>
     <string name="chat_call_warning_voice">Tidak dapat merakam mesej suara semasa panggilan Mixin.</string>
     <string name="chat_audio_warning">Anda tidak dapat memainkan audio jika sedang memainkan audio lain.</string>
     <string name="chat_audio_discard_warning_title">Buang mesej Suara</string>
@@ -304,7 +302,7 @@
     <string name="Message_not_found">Mesej tidak dijumpai</string>
     <!--contact-->
     <string name="Send_Message">Menghantar mesej</string>
-    <string name="Share_Contact_Card">Kongsi Kad Kenalan</string>
+    <string name="Share_Contact">Kongsi Kad Kenalan</string>
     <string name="Search_Conversation">Cari Perbualan</string>
     <string name="Shared_Media">Media Berkongsi</string>
     <string name="Block">Sekat</string>
@@ -341,7 +339,6 @@
     <string name="Large_Amount_Confirmation">Pengesahan Jumlah Besar</string>
     <string name="value_now">nilai sekarang %1$s</string>
     <string name="value_then">nilai maka %1$s</string>
-    <string name="wallet_transaction_that_time_no_value">nilai maka N/A</string>
     <string name="wallet_transaction_that_time_value_tip">nilai sejarah pada masa urus niaga</string>
     <string name="Duplicate_Transfer_Confirmation">Pengesahan Pemindahan Pendua</string>
     <string name="Duplicate_Withdraw_Confirmation">Pengesahan Pengunduran Pendua</string>
@@ -412,7 +409,6 @@
     <string name="Add_emergency_contact">Tambahkan kenalan kecemasan</string>
     <string name="Delete_emergency_contact">Padamkan kenalan kecemasan</string>
     <string name="View_emergency_contact">Lihat kenalan kecemasan</string>
-    <string name="Update_PIN">Kemas kini PIN</string>
     <string name="Revoke_multisig_transaction">Batalkan Urus Niaga Multisig</string>
     <string name="Sign_with_phone_number">Log masuk dengan nombor telefon</string>
     <string name="Sign_with_emergency_contact">Log masuk dengan kenalan kecemasan</string>
@@ -424,7 +420,7 @@
     <string name="new_group_name">nama kumpulan baharu</string>
     <string name="Group_Notice">Makluman Kumpulan</string>
     <string name="Group_Info">Maklumat Kumpulan</string>
-    <string name="group_info_not_in">Anda bukan lagi peserta dalam kumpulan ini</string>
+    <string name="You_have_left_the_group">Anda bukan lagi peserta dalam kumpulan ini</string>
     <string name="Clear_chat">Kosongkan Sembang</string>
     <string name="Remove_Participants">Keluarkan Peserta</string>
     <string name="Exit_Group">Keluar Kumpulan</string>
@@ -479,7 +475,6 @@
     <string name="setting_emergency_content">Kenalan kecemasan direka untuk membantu anda log masuk ke akaun anda sekiranya anda tersesat dan tidak dapat semula nombor telefon bimbit anda.</string>
     <string name="setting_emergency_warning">Perhatian: Kontak Kecemasan tidak dapat membantu anda memulih semula PIN</string>
     <string name="setting_emergency_desc">Apabila anda kehilangan nombor telefon bimbit, sila hubungi kenalan kecemasan anda melalui telefon atau cara lain untuk mendapatkan ID Mixin dan kod pengesahan. Baca Kenalan Kecemasan kami untuk mengetahui lebih lanjut.</string>
-    <string name="setting_emergency_bottom_current">Lihat kenalan kecemasan semasa</string>
     <string name="Change_emergency_contact">Tukar kenalan kecemasan</string>
     <string name="Remove_emergency_contact">Alih keluar kenalan kecemasan</string>
     <string name="Remove_emergency_contact_confirmation">Alih keluar kenalan kecemasan?</string>
@@ -516,7 +511,7 @@
     <string name="log_out_from_desktop">Log keluar dari desktop</string>
     <string name="Scan_QR_Code">Imbas Kod QR</string>
     <string name="Logout">Log keluar…</string>
-    <string name="setting_desktop_signed">Anda telah masuk ke desktop anda</string>
+    <string name="desktop_on_hint">Anda telah masuk ke desktop anda</string>
     <string name="Link_desktop_failed">Pautan desktop berjaya</string>
     <string name="Link_desktop_success">Pautan desktop gagal</string>
     <string name="setting_desktop_logout_failed">Log keluar desktop gagal.</string>
@@ -528,7 +523,7 @@
     <string name="syncs_contact_hint">Mixin selaraskan buku alamat anda ke pelayan Mixin untuk membantu anda berhubung dengan pengguna Mixin yang lain.</string>
     <string name="setting_mobile_contact_warning">Ini akan mengalih keluar kenalan anda dari pelayan Mixin.</string>
     <string name="Delete_Synced_Contact">Padam Kenalan yang selaraskan</string>
-    <string name="Upload_Phone_Contacts">Muat naik Kenalan Telefon</string>
+    <string name="Upload_Mobile_Contacts">Muat naik Kenalan Telefon</string>
     <string name="Empty_address_book">Kosongkan buku alamat</string>
     <string name="Transfer_Notifications">Pindahkan Pemberitahuan</string>
     <string name="System_options">Pilihan sistem</string>
@@ -566,7 +561,6 @@
     <string name="you">anda</string>
     <string name="Checking_link">Memeriksa pautan</string>
     <string name="Expired">Tamat tempoh</string>
-    <string name="This_link_is_invalid">Pautan ini tidak sah</string>
     <string name="Checking_payment_info">Memeriksa maklumat pembayaran</string>
     <string name="Invalid_payment_link">Pembayaran tidak sah</string>
     <string name="check_trace_failed">Periksa maklumat jejak gagal, sila cuba lagi</string>
@@ -607,7 +601,7 @@
     <string name="sent_you_a_post">hantar kiriman</string>
     <string name="sent_you_a_location">hantar lokasi</string>
     <string name="invite_you_to_a_voice_call">tanya anda panggilan audio</string>
-    <string name="stranger_from">Pengirim tidak ada dalam kenalan anda</string>
+    <string name="stranger_hint">Pengirim tidak ada dalam kenalan anda</string>
     <string name="chat_app_reception_title">Klik butang untuk berinteraksi dengan bot</string>
     <string name="Open_Home_page">Buka laman Utama</string>
     <string name="Say_Hi">Ucap hai</string>
@@ -677,14 +671,12 @@
     <string name="No_tag">Tiada Tag</string>
     <string name="Add_Tag">Tambah Tag</string>
     <string name="withdrawal_memo">Memo</string>
-    <string name="withdrawal_with_pwd">Pengeluaran dengan PIN</string>
+    <string name="withdrawal_with_PIN">Pengeluaran dengan PIN</string>
     <string name="withdrawal_with_biometric">Pengeluaran dengan Biometrik</string>
     <string name="withdrawal_to">Pengeluaran ke %1$s</string>
     <string name="Add_group_description">Tambahkan keterangan kumpulan</string>
     <string name="Edit_Group_Description">Edit keterangan kumpulan</string>
-    <string name="show_more">tunjuk lebih banyak</string>
     <string name="Send">Hantar</string>
-    <string name="send_file">Hantar \"%1$s\" ke %2$s?</string>
     <string name="send_file_group">Hantar \"%1$s\" ke \"%2$s\"?</string>
     <string name="default_time">00:00</string>
     <string name="Open_in_browser">Buka dalam pelayar</string>
@@ -728,7 +720,7 @@
     <string name="Deposit">Deposit</string>
     <string name="Raw">Mentah</string>
     <string name="FILTER_BY">DITAPIS DENGAN</string>
-    <string name="SORT_BY">DISUSUN MENGIKUT</string>
+    <string name="Sort_by">DISUSUN MENGIKUT</string>
     <!--Pending-->
     <plurals name="pending_confirmation" tools:ignore="UnusedQuantity">
         <item quantity="other">%1$d/%2$d pengesahan</item>
@@ -740,7 +732,6 @@
     <string name="CANCEL">BATAL</string>
     <string name="ANSWER">JAWAPAN</string>
     <string name="in_connecting">Menyambung…</string>
-    <string name="Speaker">Penceramah</string>
     <string name="Hang_up">Letak gagang</string>
     <string name="Decline">Tolak</string>
     <string name="Accept">Terima</string>
@@ -749,7 +740,6 @@
     <!-- restore&backup -->
     <string name="restore_info">Pulihkan mesej anda dari storan luaran.\nSekiranya anda tidak memulihkan yang baharu, anda tidak akan dapat memulihkannya kemudian.</string>
     <string name="Backup_found">Backup found</string>
-    <string name="SKIP">LANGKAU</string>
     <string name="Retry">CUBA SEMULA</string>
     <string name="authorization">keizinan</string>
     <string name="restore_message">Sandarkan mesej dan media anda ke storan luaran. Anda boleh memulihkannya semasa memasang semula Mixin. Mesej dan media anda juga akan disandarkan ke storan dalaman telefon anda. Media dan mesej sandaran anda tidak dilindungi oleh penyulitan hujung-ke-hujung Mixin semasa berada di storan luaran.</string>
@@ -775,8 +765,6 @@
     <!-- shortcut -->
     <string name="Scan">Imbas</string>
     <string name="divide">, </string>
-    <!-- live -->
-    <string name="Setting">Tetapan</string>
     <!-- multisigs -->
     <string name="Multisig_by_PIN">Multisig dengan PIN</string>
     <string name="Use_Biometric_Multisig">Gunakan Biometric Multisig</string>
@@ -810,7 +798,7 @@
     <string name="circle_title">Lingkaran %1$s</string>
     <string name="circle_info">Sekiranya anda ingin menapis perbualan, sila&#13;\ntetapkan lingkaran untuk perbualan terlebih dahulu.</string>
     <string name="circle_delete_tip">Padamkan \"%1$s\"?</string>
-    <string name="circle_empty_info">Anda boleh menambahkan kenalan atau kumpulan ke lingkaran semasa.</string>
+    <string name="circle_no_conversation_hint">Anda boleh menambahkan kenalan atau kumpulan ke lingkaran semasa.</string>
     <string name="Add_conversations">Tambah Perbualan</string>
     <string name="circle_limit">Jumlahnya sudah mencapai had</string>
     <!--  bot  -->

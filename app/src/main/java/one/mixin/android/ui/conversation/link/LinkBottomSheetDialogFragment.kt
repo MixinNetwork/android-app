@@ -781,10 +781,10 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
     }
 
     @SuppressLint("SetTextI18n")
-    private fun showError(@StringRes errorRes: Int = R.string.This_link_is_invalid) {
+    private fun showError(@StringRes errorRes: Int = R.string.Invalid_Link) {
         binding.apply {
-            if (errorRes == R.string.This_link_is_invalid) {
-                linkErrorInfo.text = "${getString(R.string.This_link_is_invalid)}\n\n$url"
+            if (errorRes == R.string.Invalid_Link) {
+                linkErrorInfo.text = "${getString(R.string.Invalid_Link)}\n\n$url"
             } else {
                 linkErrorInfo.setText(errorRes)
             }

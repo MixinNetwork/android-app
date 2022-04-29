@@ -54,7 +54,7 @@ class VerifyBottomSheetDialogFragment : BiometricBottomSheetDialogFragment() {
         getString(R.string.Verify_by_Biometric),
         "",
         "",
-        getString(R.string.Verify_with_PIN)
+        getString(R.string.Verify_PIN)
     )
 
     fun setContinueCallback(callback: (DialogFragment) -> Unit): VerifyBottomSheetDialogFragment {

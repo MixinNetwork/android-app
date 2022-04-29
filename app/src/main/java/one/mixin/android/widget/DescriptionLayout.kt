@@ -62,13 +62,13 @@ class DescriptionLayout : ViewGroup {
             lineWidth + secondView.measuredWidth <= w - paddingWidth -> {
                 val height = lineHeight * 3
                 setMeasuredDimension(w + paddingWidth, height + paddingHeight)
-                secondView.text = " ${context.getString(R.string.show_more)}"
+                secondView.text = " ${context.getString(R.string.More)}"
                 TAIL
             }
             else -> {
                 val height = lineHeight * 3
                 setMeasuredDimension(w + paddingWidth, height + paddingHeight)
-                secondView.setText(R.string.show_more)
+                secondView.setText(R.string.More)
                 BOTTOM
             }
         }

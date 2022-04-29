@@ -139,7 +139,7 @@ class PinLogsFragment : BaseFragment(R.layout.fragment_pin_logs) {
                 "UPDATE_PHONE" ->
                     return Pair(context.getString(R.string.PIN_incorrect), context.getString(R.string.Change_Phone_Number))
                 "UPDATE_PIN" ->
-                    return Pair(context.getString(R.string.PIN_incorrect), context.getString(R.string.Update_PIN))
+                    return Pair(context.getString(R.string.PIN_incorrect), context.getString(R.string.PIN_change))
                 "MULTISIG_SIGN" ->
                     return Pair(context.getString(R.string.PIN_incorrect), context.getString(R.string.Multisig_Transaction))
                 "MULTISIG_UNLOCK" ->

@@ -81,7 +81,7 @@
             android:layout_height="wrap_content"
             android:layout_centerVertical="true"
             android:layout_marginStart="@dimen/activity_horizontal_margin"
-            android:text="@string/setting_emergency_bottom_current"
+            android:text="@string/View_emergency_contact"
             tools:ignore="RelativeOverlap" />
 
         <ProgressBar

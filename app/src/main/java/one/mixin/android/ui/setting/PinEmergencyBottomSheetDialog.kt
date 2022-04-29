@@ -44,7 +44,7 @@ class PinEmergencyBottomSheetDialog : BiometricBottomSheetDialogFragment() {
     }
 
     override fun getBiometricInfo() =
-        BiometricInfo(getString(R.string.Verify_by_Biometric), "", "", getString(R.string.Verify_with_PIN))
+        BiometricInfo(getString(R.string.Verify_by_Biometric), "", "", getString(R.string.Verify_PIN))
 
     var pinEmergencyCallback: PinEmergencyCallback? = null
 

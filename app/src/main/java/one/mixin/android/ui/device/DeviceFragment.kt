@@ -179,7 +179,7 @@ class DeviceFragment() : MixinBottomSheetDialogFragment() {
         this.loggedIn = loggedIn
         if (loggedIn) {
             binding.authTv.text = getString(R.string.log_out_from_desktop)
-            binding.descTv.text = getString(R.string.setting_desktop_signed)
+            binding.descTv.text = getString(R.string.desktop_on_hint)
             binding.authTv.textColor = requireContext().colorFromAttribute(R.attr.text_blue)
         } else {
             binding.authTv.text = getString(R.string.Scan_QR_Code)

@@ -317,9 +317,9 @@ object NotificationGenerator : Injector() {
                     notificationBuilder.setContentTitle(conversation.getConversationName())
                     contentText = context.getString(R.string.alert_key_group_transcript_message, user.fullName)
                 } else {
-                    notificationBuilder.setTicker(context.getString(R.string.alert_key_contact_transcript_message))
+                    notificationBuilder.setTicker(context.getString(R.string.sent_you_an_transcript))
                     notificationBuilder.setContentTitle(user.fullName)
-                    contentText = context.getString(R.string.alert_key_contact_transcript_message)
+                    contentText = context.getString(R.string.sent_you_an_transcript)
                 }
             }
             message.type == MessageCategory.SYSTEM_ACCOUNT_SNAPSHOT.name -> {

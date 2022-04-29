@@ -13,7 +13,7 @@
             android:gravity="center"
             android:visibility="gone"
             android:textColor="?attr/text_primary"
-            android:text="@string/This_link_is_invalid"/>
+            android:text="@string/Invalid_Link"/>
 
     <RelativeLayout
             android:id="@+id/link_loading"

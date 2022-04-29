@@ -63,7 +63,7 @@ class RestoreActivity : BaseActivity() {
         )
         alertDialogBuilder()
             .setMessage(R.string.restore_message)
-            .setNegativeButton(R.string.SKIP) { dialog, _ ->
+            .setNegativeButton(R.string.Skip) { dialog, _ ->
                 defaultSharedPreferences.putBoolean(Constants.Account.PREF_RESTORE, false)
                 InitializeActivity.showLoading(this)
                 dialog.dismiss()
@@ -170,7 +170,7 @@ class RestoreActivity : BaseActivity() {
                 }
                 dialog.dismiss()
             }
-            .setPositiveButton(R.string.SKIP) { dialog, _ ->
+            .setPositiveButton(R.string.Skip) { dialog, _ ->
                 dialog.dismiss()
                 defaultSharedPreferences.putBoolean(Constants.Account.PREF_RESTORE, false)
                 InitializeActivity.showLoading(this)

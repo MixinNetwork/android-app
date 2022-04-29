@@ -13,7 +13,7 @@ class StrangerHolder constructor(val binding: ItemChatStrangerBinding) : BaseVie
             binding.strangerBlockBn.setText(R.string.Open_Home_page)
             binding.strangerAddBn.setText(R.string.Say_Hi)
         } else {
-            binding.strangerInfo.setText(R.string.stranger_from)
+            binding.strangerInfo.setText(R.string.stranger_hint)
             binding.strangerBlockBn.setText(R.string.Block)
             binding.strangerAddBn.setText(R.string.Add_Contact)
         }

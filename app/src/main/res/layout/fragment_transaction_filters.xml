@@ -23,7 +23,7 @@
             android:layout_marginStart="@dimen/margin20"
             android:paddingTop="12dp"
             android:paddingBottom="12dp"
-            android:text="@string/SORT_BY"
+            android:text="@string/Sort_by"
             android:textColor="@color/selector_sort_tv" />
 
         <one.mixin.android.widget.CheckedFlowLayout

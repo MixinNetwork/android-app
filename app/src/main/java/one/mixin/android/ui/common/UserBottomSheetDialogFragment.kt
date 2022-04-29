@@ -368,7 +368,7 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
         val list = menuList {
             menuGroup {
                 menu {
-                    title = getString(R.string.Share_Contact_Card)
+                    title = getString(R.string.Share_Contact)
                     action = {
                         ForwardActivity.show(
                             requireContext(),
@@ -670,7 +670,7 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
                 CallActivity.show(requireContext())
             } else {
                 alertDialogBuilder()
-                    .setMessage(getString(R.string.chat_call_warning_call))
+                    .setMessage(getString(R.string.call_on_another_call_hint))
                     .setNegativeButton(getString(android.R.string.ok)) { dialog, _ ->
                         dialog.dismiss()
                     }
