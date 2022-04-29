@@ -237,7 +237,6 @@ open class MixinApplication :
     }
 
     override fun onActivityStarted(activity: Activity) {
-        contextWrapper.baseContext = activity
         if (activity !is AppAuthActivity) {
             activityReferences += 1
         } else {
@@ -265,6 +264,7 @@ open class MixinApplication :
     }
 
     override fun onActivityResumed(activity: Activity) {
+        contextWrapper.baseContext = activity
         activityInForeground = true
         if (activity is MediaPagerActivity || activity is CallActivity || activity is MusicActivity || activity is WebActivity || activity is AppAuthActivity) {
             FloatingWebClip.getInstance(activity.isNightMode()).hide()
