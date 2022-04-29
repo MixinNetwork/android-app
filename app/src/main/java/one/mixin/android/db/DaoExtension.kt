@@ -177,17 +177,14 @@ fun MixinDatabase.deleteMessageById(messageId: String) {
 }
 
 fun MessageDao.makeMessageStatus(status: String, messageId: String) {
-    findMessageStatusById(messageId)?.let { currentStatus ->
-        if (currentStatus.status == MessageStatus.SENDING.name) {
-            updateMessageStatus(status, messageId)
-        } else if (currentStatus.status == MessageStatus.SENT.name && (status == MessageStatus.DELIVERED.name || status == MessageStatus.READ.name)) {
-            updateMessageStatus(status, messageId)
-        } else if (currentStatus.status == MessageStatus.DELIVERED.name && status == MessageStatus.READ.name) {
-            updateMessageStatus(status, messageId)
-        } else {
-            return@let // No need to notify flow
+    val messageStatus = MessageStatus.values().firstOrNull { it.name == status } ?: return
+    if (messageStatus == MessageStatus.SENT || messageStatus == MessageStatus.DELIVERED || messageStatus == MessageStatus.READ) {
+        findMessageStatusById(messageId)?.let { currentStatus ->
+            if (messageStatus.ordinal > currentStatus.status.ordinal) {
+                updateMessageStatus(status, messageId)
+                InvalidateFlow.emit(currentStatus.conversationId) // Update and notify  flow
+            }
         }
-        InvalidateFlow.emit(currentStatus.conversationId)
     }
 }
 
