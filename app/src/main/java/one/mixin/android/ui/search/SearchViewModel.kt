@@ -21,6 +21,7 @@ import one.mixin.android.api.request.ConversationRequest
 import one.mixin.android.api.request.ParticipantRequest
 import one.mixin.android.api.response.ConversationResponse
 import one.mixin.android.extension.escapeSql
+import one.mixin.android.extension.pmap
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.TranscriptDeleteJob
 import one.mixin.android.repository.AccountRepository
@@ -174,4 +175,8 @@ internal constructor(
             userRepository.updateMuteUntil(id, muteUntil)
         }
     }
+
+    suspend fun queryAssets(assetIds: List<String>): List<AssetItem> = assetIds.pmap {
+        assetRepository.syncAsset(it)
+    }.filterNotNull()
 }
