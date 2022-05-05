@@ -193,6 +193,7 @@ import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.ErrorHandler.Companion.FORBIDDEN
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.MusicPlayer
+import one.mixin.android.util.chat.InvalidateFlow
 import one.mixin.android.util.debug.FileLogTree
 import one.mixin.android.util.debug.debugLongClick
 import one.mixin.android.util.import.ImportChatUtil
@@ -1260,7 +1261,6 @@ class ConversationFragment() :
     }
 
     override fun onDestroyView() {
-        chatViewModel.keyLivePagedListBuilder = null
         audioFile?.deleteOnExit()
         audioFile = null
         if (isAdded) {
@@ -1399,7 +1399,6 @@ class ConversationFragment() :
             object : RecyclerView.OnScrollListener() {
 
                 override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
-                    setVisibleKey(recyclerView)
                     firstPosition = (binding.chatRv.layoutManager as LinearLayoutManager).findFirstVisibleItemPosition()
                     if (firstPosition > 0) {
                         if (isBottom) {
@@ -1412,10 +1411,6 @@ class ConversationFragment() :
                         unreadTipCount = 0
                         binding.flagLayout.bottomCountFlag = false
                     }
-                }
-
-                override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
-                    setVisibleKey(recyclerView)
                 }
             }
         )
@@ -1833,8 +1828,19 @@ class ConversationFragment() :
     private fun liveDataMessage(unreadCount: Int, unreadMessageId: String?) {
         var oldCount: Int = -1
         var firstReturn = true
-        chatViewModel.getMessages(lifecycleScope, conversationId, unreadCount)
-            .observe(
+        chatViewModel.getMessages(conversationId, unreadCount)
+            .run {
+                val computableLiveData = this
+                lifecycleScope.launch {
+                    InvalidateFlow.collect(
+                        { isAdded && this@ConversationFragment.conversationId == conversationId },
+                        {
+                            computableLiveData.invalidate()
+                        }
+                    )
+                }
+                this.liveData
+            }.observe(
                 viewLifecycleOwner
             ) { list ->
                 if (Session.getAccount() == null) return@observe
@@ -3079,13 +3085,6 @@ class ConversationFragment() :
             binding.chatControl.cancelExternal()
         }
         binding.chatControl.chatEt.showKeyboard()
-    }
-
-    private fun setVisibleKey(rv: RecyclerView, unreadCount: Int = 0) {
-        val lm = rv.layoutManager as LinearLayoutManager
-        val firstVisiblePosition: Int = lm.findFirstVisibleItemPosition()
-        val firstKeyToLoad: Int = if (unreadCount <= 0) firstVisiblePosition else unreadCount
-        chatViewModel.keyLivePagedListBuilder?.setFirstKeyToLoad(firstKeyToLoad)
     }
 
     private var transcriptDialog: AlertDialog? = null

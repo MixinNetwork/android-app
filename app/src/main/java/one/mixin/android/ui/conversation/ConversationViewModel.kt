@@ -16,10 +16,8 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.plus
 import kotlinx.coroutines.withContext
 import one.mixin.android.Constants
 import one.mixin.android.Constants.FIXED_LOAD_SIZE
@@ -57,7 +55,8 @@ import one.mixin.android.util.Attachment
 import one.mixin.android.util.ControlledRunner
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.SINGLE_DB_THREAD
-import one.mixin.android.util.chat.KeyLivePagedListBuilder
+import one.mixin.android.util.chat.FastComputableLiveData
+import one.mixin.android.util.chat.FastLivePagedListBuilder
 import one.mixin.android.vo.AppCap
 import one.mixin.android.vo.AppItem
 import one.mixin.android.vo.AssetItem
@@ -122,18 +121,16 @@ internal constructor(
     private val messenger: SendMessageHelper
 ) : ViewModel() {
 
-    var keyLivePagedListBuilder: KeyLivePagedListBuilder<Int, MessageItem>? = null
-
-    fun getMessages(coroutineScope: CoroutineScope, conversationId: String, firstKeyToLoad: Int = 0): LiveData<PagedList<MessageItem>> {
+    fun getMessages(conversationId: String, firstKeyToLoad: Int = 0): FastComputableLiveData<PagedList<MessageItem>> {
         val pagedListConfig = PagedList.Config.Builder()
             .setPrefetchDistance(PAGE_SIZE * 2)
             .setPageSize(PAGE_SIZE)
             .setEnablePlaceholders(true)
             .build()
 
-        return KeyLivePagedListBuilder(
+        return FastLivePagedListBuilder(
             conversationRepository.getMessages(
-                coroutineScope, conversationId,
+                conversationId,
                 if (firstKeyToLoad > PAGE_SIZE) {
                     firstKeyToLoad + FIXED_LOAD_SIZE / 2
                 } else {

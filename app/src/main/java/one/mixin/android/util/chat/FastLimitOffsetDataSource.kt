@@ -8,21 +8,17 @@ import androidx.annotation.RestrictTo
 import androidx.paging.PositionalDataSource
 import androidx.room.RoomDatabase
 import androidx.room.RoomSQLiteQuery
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.cancel
-import kotlinx.coroutines.launch
 import one.mixin.android.util.reportException
 import timber.log.Timber
 
 @SuppressLint("RestrictedApi")
 @RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
 abstract class FastLimitOffsetDataSource<T> protected constructor(
-    coroutineScope: CoroutineScope,
     private val db: RoomDatabase,
     private val countQuery: RoomSQLiteQuery,
-    private val itemStatement: RoomSQLiteQuery,
-    private val conversationId: String,
-    private val fastCountCallback: () -> Int?
+    private val offsetStatement: RoomSQLiteQuery,
+    private val fastCountCallback: () -> Int?,
+    private val querySqlGenerator: (String) -> RoomSQLiteQuery
 ) : PositionalDataSource<T>() {
 
     /**
@@ -96,8 +92,7 @@ abstract class FastLimitOffsetDataSource<T> protected constructor(
     }
 
     private fun itemIds(startPosition: Int, loadCount: Int): String {
-        val offsetQuery = RoomSQLiteQuery.copyFrom(itemStatement)
-        offsetQuery.bindString(1, conversationId)
+        val offsetQuery = RoomSQLiteQuery.copyFrom(offsetStatement)
         offsetQuery.bindLong(2, loadCount.toLong())
         offsetQuery.bindLong(3, startPosition.toLong())
         val cursor = db.query(offsetQuery)
@@ -114,34 +109,18 @@ abstract class FastLimitOffsetDataSource<T> protected constructor(
         }
     }
 
-    abstract fun querySql(ids: String): RoomSQLiteQuery
-
     /**
      * Return the rows from startPos to startPos + loadCount
      */
     private fun loadRange(startPosition: Int, loadCount: Int): List<T> {
         val ids = itemIds(startPosition, loadCount)
-        val sqLiteQuery = querySql(ids)
+        val sqLiteQuery = querySqlGenerator(ids)
         val cursor = db.query(sqLiteQuery)
         try {
             return convertRows(cursor)
         } finally {
             cursor.close()
             sqLiteQuery.release()
-        }
-    }
-
-    init {
-        coroutineScope.launch {
-            InvalidateFlow.collect(
-                { conversationId ->
-                    this@FastLimitOffsetDataSource.conversationId == conversationId
-                },
-                {
-                    invalidate()
-                    coroutineScope.cancel() // The current datasource is invalid
-                }
-            )
         }
     }
 }
