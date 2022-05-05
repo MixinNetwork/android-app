@@ -200,7 +200,7 @@ class ChatHistoryActivity : BaseActivity() {
             binding.unpinTv.setOnClickListener {
                 alert(getString(R.string.unpin_all_messages_confirmation))
                     .setNegativeButton(android.R.string.cancel) { dialog, _ -> dialog.dismiss() }
-                    .setPositiveButton(R.string.capital_ok) { dialog, _ ->
+                    .setPositiveButton(R.string.OK) { dialog, _ ->
                         lifecycleScope.launch {
                             withContext(Dispatchers.IO) {
                                 conversationRepository.getPinMessageMinimals(conversationId)
