@@ -4,6 +4,7 @@ import android.graphics.Color
 import android.view.Gravity
 import android.view.View
 import android.widget.FrameLayout
+import androidx.core.view.isVisible
 import one.mixin.android.Constants.Colors.SELECT_COLOR
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
@@ -107,5 +108,6 @@ class UnknownHolder constructor(val binding: ItemChatUnknownBinding) : BaseViewH
             binding.chatName.visibility = View.GONE
         }
         chatLayout(isMe, isLast)
+        binding.chatTime.chatStatus.isVisible = false
     }
 }
