@@ -27,7 +27,6 @@ data class BlazeMessageParam(
     var recipient_ids: List<String>? = null,
     val offset: String? = null,
     val silent: Boolean? = null,
-    // Todo delete: Save messages expire interval
     val expire_in: Long? = null
 ) : Serializable {
     companion object {

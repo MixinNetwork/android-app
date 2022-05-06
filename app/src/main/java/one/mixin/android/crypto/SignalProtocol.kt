@@ -35,7 +35,6 @@ import org.whispersystems.libsignal.protocol.SenderKeyDistributionMessage
 import org.whispersystems.libsignal.protocol.SignalMessage
 import org.whispersystems.libsignal.state.PreKeyBundle
 import timber.log.Timber
-import java.lang.Exception
 
 class SignalProtocol(ctx: Context) {
 
@@ -194,7 +193,8 @@ class SignalProtocol(ctx: Context) {
         recipientId: String,
         resendMessageId: String? = null,
         sessionId: String? = null,
-        mentionData: List<String>? = null
+        mentionData: List<String>? = null,
+        expireIn: Long? = null
     ): BlazeMessage {
         val cipher = encryptSession(message.content!!.toByteArray(), recipientId, sessionId.getDeviceId())
         val data = encodeMessageData(ComposeMessageData(cipher.type, cipher.serialize(), resendMessageId))
@@ -206,7 +206,8 @@ class SignalProtocol(ctx: Context) {
             data,
             quote_message_id = message.quoteMessageId,
             session_id = sessionId,
-            mentions = mentionData
+            mentions = mentionData,
+            expire_in = expireIn
         )
         return createParamBlazeMessage(blazeParam)
     }

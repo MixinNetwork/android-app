@@ -308,13 +308,13 @@ open class SendMessageJob(
             message.content = message.content?.base64Encode()
         }
         return if (resendData != null) {
-            // Todo
             signalProtocol.encryptSessionMessage(
                 message,
                 resendData.userId,
                 resendData.messageId,
                 resendData.sessionId,
-                getMentionData(message.id)
+                getMentionData(message.id),
+                expireIn
             )
         } else {
             signalProtocol.encryptGroupMessage(message, getMentionData(message.id), isSilent, expireIn)

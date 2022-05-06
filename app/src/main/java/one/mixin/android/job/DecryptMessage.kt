@@ -335,7 +335,6 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                     if (message != null) {
                         pinMessageDao.insert(PinMessage(messageId, message.conversationId, data.createdAt))
                         val mid = UUID.randomUUID().toString()
-                        // Todo insert expire message?
                         messageDao.insert(
                             createPinMessage(
                                 mid,
@@ -369,7 +368,6 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                             }
                         }
                     } else {
-                        // Todo insert expire message?
                         messageDao.insert(
                             createPinMessage(
                                 UUID.randomUUID().toString(),
@@ -1218,7 +1216,6 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
 
     private fun insertInvalidMessage(data: BlazeMessageData) {
         val message = createMessage(data.messageId, data.conversationId, data.userId, data.category, data.data, data.createdAt, MessageStatus.UNKNOWN.name)
-        // Todo insert expire message?
         messageDao.insert(message)
         InvalidateFlow.emit(data.conversationId)
     }

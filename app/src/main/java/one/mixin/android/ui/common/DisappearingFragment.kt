@@ -161,7 +161,6 @@ class DisappearingFragment : BaseFragment(R.layout.fragment_disappearing) {
                 invokeNetwork = { viewModel.disappear(conversationId, interval) },
                 successBlock = { response ->
                     if (response.isSuccess) {
-                        // Todo save conversation
                         timeInterval = response.data?.expireIn
                         updateOptionCheck(index)
                         viewModel.updateConversationExpireIn(conversationId, timeInterval)
