@@ -14,6 +14,7 @@ import one.mixin.android.R
 import one.mixin.android.databinding.ViewSearchBinding
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.hideKeyboard
+import one.mixin.android.extension.showKeyboard
 
 class SearchView : FrameLayout {
     private var binding: ViewSearchBinding =
@@ -97,6 +98,8 @@ class SearchView : FrameLayout {
     fun setHint(hintText: String) {
         binding.searchEt.hint = hintText
     }
+
+    fun showKeyboard() = et.showKeyboard()
 
     var listener: OnSearchViewListener? = null
 
