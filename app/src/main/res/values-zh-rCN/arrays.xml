@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
     <string-array name="backup_dialog_list">
         <item>不自动备份</item>
         <item>每天</item>
@@ -18,11 +18,21 @@
         <item>跟随系统</item>
     </string-array>
 
-    <string-array name="time_interval_units">
-        <item>秒</item>
-        <item>分</item>
-        <item>小时</item>
-        <item>天</item>
-        <item>周</item>
-    </string-array>
+    <plurals name="time_interval_unit_second" tools:ignore="UnusedQuantity">
+        <item quantity="other">秒</item>
+    </plurals>
+    <plurals name="time_interval_unit_minute" tools:ignore="UnusedQuantity">
+        <item quantity="other">分</item>
+    </plurals>
+
+    <plurals name="time_interval_unit_hour" tools:ignore="UnusedQuantity">
+        <item quantity="other">小时</item>
+    </plurals>
+    <plurals name="time_interval_unit_day" tools:ignore="UnusedQuantity">
+        <item quantity="other">天</item>
+    </plurals>
+    <plurals name="time_interval_unit_week" tools:ignore="UnusedQuantity">
+        <item quantity="other">周</item>
+    </plurals>
+
 </resources>

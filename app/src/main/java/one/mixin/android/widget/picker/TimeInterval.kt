@@ -3,9 +3,21 @@ package one.mixin.android.widget.picker
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 
-val timeIntervalUnits: Array<String> by lazy {
-    MixinApplication.get().resources.getStringArray(R.array.time_interval_units)
+val timeIntervalUnits by lazy {
+    listOf(
+        R.plurals.time_interval_unit_second,
+        R.plurals.time_interval_unit_minute,
+        R.plurals.time_interval_unit_hour,
+        R.plurals.time_interval_unit_day,
+        R.plurals.time_interval_unit_week
+    )
 }
+
+private fun timeString(isPlurals: Boolean, index: Int) =
+    MixinApplication.get().resources.getQuantityString(
+        timeIntervalUnits[index],
+        if (isPlurals) 2 else 1
+    )
 
 val numberList by lazy {
     listOf(
@@ -18,11 +30,11 @@ val numberList by lazy {
 }
 
 fun toTimeInterval(interval: Long): String = when {
-    interval < 60L -> "${interval / 1L} ${timeIntervalUnits[0]}"
-    interval < 3600L -> "${interval / 60L} ${timeIntervalUnits[1]}"
-    interval < 86400L -> "${interval / 3600L} ${timeIntervalUnits[2]}"
-    interval < 604800L -> "${interval / 86400L} ${timeIntervalUnits[3]}"
-    else -> "${interval / 604800L} ${timeIntervalUnits[4]}"
+    interval < 60L -> "${interval / 1L} ${timeString(interval != 1L, 0)}"
+    interval < 3600L -> "${interval / 60L} ${timeString(interval != 60L, 1)}"
+    interval < 86400L -> "${interval / 3600L} ${timeString(interval != 3600L, 2)}"
+    interval < 604800L -> "${interval / 86400L} ${timeString(interval != 86400L, 3)}"
+    else -> "${interval / 604800L} ${timeString(interval != 604800L, 4)}"
 }
 
 fun toTimeIntervalIndex(interval: Long): Pair<Int, Int> = when {
