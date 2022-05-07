@@ -224,7 +224,7 @@
     <string name="contact_my_share_apps">Aplikasi bersama saya</string>
     <string name="contact_receive_money">Terima uang</string>
     <string name="contact_receive_tip">Pindai Kode QR untuk membayar saya</string>
-    <string name="add_contact">+ Tambahkan Kontak</string>
+    <string name="add_contact">Tambahkan Kontak</string>
     <string name="add_bot">+ Tambahkan Bot</string>
     <string name="contact_search_hint">Nama, ID Mixin</string>
     <string name="contact_share_apps_title">Aplikasi Bersama %1$s</string>

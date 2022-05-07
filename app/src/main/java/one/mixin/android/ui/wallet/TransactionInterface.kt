@@ -172,7 +172,7 @@ interface TransactionInterface {
                                     setBackgroundColorResource(R.color.colorLightBlue)
                                     setLifecycleOwner(fragment.viewLifecycleOwner)
                                 }
-                                balloon.show(this)
+                                balloon.showAlignTop(this)
                             }
                         }
                     }

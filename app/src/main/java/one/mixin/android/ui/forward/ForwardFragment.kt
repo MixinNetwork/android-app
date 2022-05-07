@@ -540,7 +540,7 @@ class ForwardFragment : BaseFragment(R.layout.fragment_forward) {
                 fallbackAction.invoke()
                 return@withContext
             }
-            val newMessage = buildAttachmentMessage(conversationId, sender, category, attachmentExtra.attachmentId, message)
+            val newMessage = buildAttachmentMessage(conversationId, sender, category, attachmentExtra, message)
             if (newMessage == null) {
                 fallbackAction.invoke()
                 return@withContext
@@ -607,12 +607,12 @@ class ForwardFragment : BaseFragment(R.layout.fragment_forward) {
         }
     }
 
-    private fun buildAttachmentMessage(conversationId: String, sender: User, category: String, attachmentId: String, message: Message): Message? {
+    private fun buildAttachmentMessage(conversationId: String, sender: User, category: String, attachmentExtra: AttachmentExtra, message: Message): Message? {
         try {
             val messageId = UUID.randomUUID().toString()
             val attachmentMessagePayload = AttachmentMessagePayload(
-                message.mediaKey, message.mediaDigest, attachmentId, message.mediaMimeType!!, message.mediaSize ?: 0, message.name, message.mediaWidth,
-                message.mediaHeight, message.thumbImage, message.mediaDuration?.toLongOrNull(), message.mediaWaveform,
+                message.mediaKey, message.mediaDigest, attachmentExtra.attachmentId, message.mediaMimeType!!, message.mediaSize ?: 0, message.name, message.mediaWidth,
+                message.mediaHeight, message.thumbImage, message.mediaDuration?.toLongOrNull(), message.mediaWaveform, createdAt = attachmentExtra.createdAt,
             )
             val file = Uri.parse(message.absolutePath()).toFile()
             val outfile = File(file.parentFile?.parentFile, "$conversationId${File.separator}$messageId${file.name.getExtensionName().notNullWithElse({ ".$it" }, "")}")

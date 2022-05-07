@@ -8,22 +8,18 @@ import androidx.annotation.RestrictTo
 import androidx.paging.PositionalDataSource
 import androidx.room.RoomDatabase
 import androidx.room.RoomSQLiteQuery
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.launch
 import one.mixin.android.util.reportException
 import timber.log.Timber
 
 @SuppressLint("RestrictedApi")
 @RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
 abstract class FastLimitOffsetDataSource<T> protected constructor(
-    coroutineScope: CoroutineScope,
     private val db: RoomDatabase,
-    private val sourceQuery: RoomSQLiteQuery,
     private val countQuery: RoomSQLiteQuery,
-    private val conversationId: String,
-    private val fastCountCallback: () -> Int?
+    private val offsetStatement: RoomSQLiteQuery,
+    private val fastCountCallback: () -> Int?,
+    private val querySqlGenerator: (String) -> RoomSQLiteQuery
 ) : PositionalDataSource<T>() {
-    private val limitOffsetQuery: String = sourceQuery.sql + " LIMIT ? OFFSET ?"
 
     /**
      * Count number of rows query can return
@@ -95,35 +91,36 @@ abstract class FastLimitOffsetDataSource<T> protected constructor(
         callback.onResult(list)
     }
 
+    private fun itemIds(startPosition: Int, loadCount: Int): String {
+        val offsetQuery = RoomSQLiteQuery.copyFrom(offsetStatement)
+        offsetQuery.bindLong(2, loadCount.toLong())
+        offsetQuery.bindLong(3, startPosition.toLong())
+        val cursor = db.query(offsetQuery)
+        val ids = mutableListOf<String>()
+        try {
+            while (cursor.moveToNext()) {
+                val rowid = cursor.getLong(0)
+                ids.add("'$rowid'")
+            }
+            return ids.joinToString()
+        } finally {
+            cursor.close()
+            offsetQuery.release()
+        }
+    }
+
     /**
      * Return the rows from startPos to startPos + loadCount
      */
     private fun loadRange(startPosition: Int, loadCount: Int): List<T> {
-        val sqLiteQuery = RoomSQLiteQuery.acquire(
-            limitOffsetQuery,
-            sourceQuery.argCount + 2
-        )
-        sqLiteQuery.copyArgumentsFrom(sourceQuery)
-        sqLiteQuery.bindLong(sqLiteQuery.argCount - 1, loadCount.toLong())
-        sqLiteQuery.bindLong(sqLiteQuery.argCount, startPosition.toLong())
-
+        val ids = itemIds(startPosition, loadCount)
+        val sqLiteQuery = querySqlGenerator(ids)
         val cursor = db.query(sqLiteQuery)
         try {
             return convertRows(cursor)
         } finally {
             cursor.close()
             sqLiteQuery.release()
-        }
-    }
-
-    init {
-        coroutineScope.launch {
-            InvalidateFlow.collect(
-                { this@FastLimitOffsetDataSource.conversationId == conversationId },
-                {
-                    invalidate()
-                }
-            )
         }
     }
 }

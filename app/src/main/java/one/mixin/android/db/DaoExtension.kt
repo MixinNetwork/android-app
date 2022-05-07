@@ -7,6 +7,7 @@ import one.mixin.android.vo.Circle
 import one.mixin.android.vo.CircleConversation
 import one.mixin.android.vo.Job
 import one.mixin.android.vo.Message
+import one.mixin.android.vo.MessageStatus
 import one.mixin.android.vo.Sticker
 import one.mixin.android.vo.StickerAlbum
 import one.mixin.android.vo.User
@@ -172,6 +173,18 @@ fun MixinDatabase.deleteMessageById(messageId: String) {
         mentionMessageDao().deleteMessage(messageId)
         messageDao().deleteMessageById(messageId)
         messageFts4Dao().deleteByMessageId(messageId)
+    }
+}
+
+fun MessageDao.makeMessageStatus(status: String, messageId: String) {
+    val messageStatus = MessageStatus.values().firstOrNull { it.name == status } ?: return
+    if (messageStatus == MessageStatus.SENT || messageStatus == MessageStatus.DELIVERED || messageStatus == MessageStatus.READ) {
+        findMessageStatusById(messageId)?.let { currentStatus ->
+            if (messageStatus.ordinal > currentStatus.status.ordinal) {
+                updateMessageStatus(status, messageId)
+                InvalidateFlow.emit(currentStatus.conversationId) // Update and notify  flow
+            }
+        }
     }
 }
 

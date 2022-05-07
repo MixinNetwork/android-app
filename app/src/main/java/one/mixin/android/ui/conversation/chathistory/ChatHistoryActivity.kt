@@ -198,20 +198,25 @@ class ChatHistoryActivity : BaseActivity() {
                 }
             }
             binding.unpinTv.setOnClickListener {
-                lifecycleScope.launch {
-                    withContext(Dispatchers.IO) {
-                        conversationRepository.getPinMessageMinimals(conversationId)
-                            .chunked(128) { list ->
-                                conversationRepository.deletePinMessageByIds(list.map { it.messageId })
-                                Timber.e((list.map { it.messageId }.toString()))
-                                messenger.sendPinMessage(
-                                    conversationId, requireNotNull(Session.getAccount()).toUser(),
-                                    PinAction.UNPIN, list
-                                )
+                alert(getString(R.string.unpin_all_messages_confirmation))
+                    .setNegativeButton(android.R.string.cancel) { dialog, _ -> dialog.dismiss() }
+                    .setPositiveButton(R.string.capital_ok) { dialog, _ ->
+                        lifecycleScope.launch {
+                            withContext(Dispatchers.IO) {
+                                conversationRepository.getPinMessageMinimals(conversationId)
+                                    .chunked(128) { list ->
+                                        conversationRepository.deletePinMessageByIds(list.map { it.messageId })
+                                        Timber.e((list.map { it.messageId }.toString()))
+                                        messenger.sendPinMessage(
+                                            conversationId, requireNotNull(Session.getAccount()).toUser(),
+                                            PinAction.UNPIN, list
+                                        )
+                                    }
                             }
-                    }
-                    finish()
-                }
+                            finish()
+                        }
+                        dialog.dismiss()
+                    }.show()
             }
             binding.titleView.rightAnimator.isVisible = false
             conversationRepository.getPinMessages(conversationId)

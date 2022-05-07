@@ -135,6 +135,7 @@
     <string name="size">大小</string>
     <string name="exit_without_save">不保存就退出？</string>
     <string name="share_qr_code">分享二维码</string>
+    <string name="data_loading">数据加载中，请稍后&#8230;</string>
     <!--error-->
     <string name="error_no_connection">无网络连接</string>
     <string name="error_connection_timeout">网络连接超时</string>
@@ -259,7 +260,7 @@
     <string name="contact_my_qr_tip">用 Mixin 扫描二维码加我为联系人</string>
     <string name="contact_receive_money">我的收款码</string>
     <string name="contact_receive_tip">用 Mixin 扫描二维码给我转账</string>
-    <string name="add_contact">+ 添加联系人</string>
+    <string name="add_contact">添加联系人</string>
     <string name="add_bot">+ 添加机器人</string>
     <string name="contact_search_hint">昵称, Mixin ID</string>
     <string name="contact_share_apps_title">%1$s 分享的应用</string>
@@ -1032,6 +1033,7 @@
 
     <!--  Pin message  -->
     <string name="unpin_all">取消置顶所有消息</string>
+    <string name="unpin_all_messages_confirmation">确定取消置顶所有消息么？</string>
     <string name="pinned_message">置顶消息</string>
     <plurals name="pinned_message_title" tools:ignore="UnusedQuantity">
         <item quantity="other">%1$d条置顶消息</item>

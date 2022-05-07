@@ -34,6 +34,7 @@
                 android:layout_marginStart="@dimen/margin12"
                 android:layout_marginEnd="42dp"
                 android:layout_toEndOf="@+id/avatar"
+                android:textIsSelectable="true"
                 android:textSize="14sp"
                 tools:ignore="RelativeOverlap" />
 

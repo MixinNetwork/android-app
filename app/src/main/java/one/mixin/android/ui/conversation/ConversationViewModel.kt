@@ -55,7 +55,8 @@ import one.mixin.android.util.Attachment
 import one.mixin.android.util.ControlledRunner
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.SINGLE_DB_THREAD
-import one.mixin.android.util.chat.KeyLivePagedListBuilder
+import one.mixin.android.util.chat.FastComputableLiveData
+import one.mixin.android.util.chat.FastLivePagedListBuilder
 import one.mixin.android.vo.AppCap
 import one.mixin.android.vo.AppItem
 import one.mixin.android.vo.AssetItem
@@ -120,18 +121,16 @@ internal constructor(
     private val messenger: SendMessageHelper
 ) : ViewModel() {
 
-    var keyLivePagedListBuilder: KeyLivePagedListBuilder<Int, MessageItem>? = null
-
-    fun getMessages(conversationId: String, firstKeyToLoad: Int = 0): LiveData<PagedList<MessageItem>> {
+    fun getMessages(conversationId: String, firstKeyToLoad: Int = 0): FastComputableLiveData<PagedList<MessageItem>> {
         val pagedListConfig = PagedList.Config.Builder()
             .setPrefetchDistance(PAGE_SIZE * 2)
             .setPageSize(PAGE_SIZE)
             .setEnablePlaceholders(true)
             .build()
 
-        return KeyLivePagedListBuilder(
+        return FastLivePagedListBuilder(
             conversationRepository.getMessages(
-                viewModelScope, conversationId,
+                conversationId,
                 if (firstKeyToLoad > PAGE_SIZE) {
                     firstKeyToLoad + FIXED_LOAD_SIZE / 2
                 } else {
@@ -148,9 +147,7 @@ internal constructor(
     suspend fun findFirstUnreadMessageId(conversationId: String, offset: Int): String? =
         conversationRepository.findFirstUnreadMessageId(conversationId, offset)
 
-    fun searchConversationById(id: String) =
-        conversationRepository.searchConversationById(id)
-            .observeOn(AndroidSchedulers.mainThread()).subscribeOn(Schedulers.io())
+    suspend fun getConversationDraftById(id: String) = conversationRepository.getConversationDraftById(id)
 
     fun getConversationById(id: String) = conversationRepository.getConversationById(id)
 

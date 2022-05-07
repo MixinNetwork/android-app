@@ -23,7 +23,7 @@
         app:layout_constraintBottom_toBottomOf="@id/chat_layout"
         tools:ignore="ContentDescription" />
 
-     <ImageView
+    <ImageView
         android:id="@+id/chat_jump"
         android:padding="4dp"
         android:layout_width="wrap_content"
@@ -40,13 +40,17 @@
 
     <TextView
         android:id="@+id/chat_name"
-        android:minWidth="30dp"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="12dp"
+        android:layout_marginStart="17dp"
+        android:maxWidth="280dp"
+        android:minWidth="30dp"
         android:ellipsize="end"
+        android:gravity="start|center_vertical"
         android:lines="1"
+        android:textColor="#19BEF1"
         android:textSize="14sp"
+        android:layout_marginBottom="1.5dp"
         app:layout_constraintBottom_toTopOf="@id/chat_layout"
         app:layout_constraintStart_toStartOf="@id/chat_layout" />
 
@@ -54,60 +58,51 @@
         android:id="@+id/chat_layout"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginBottom="1dp"
         android:orientation="vertical"
-        android:layout_gravity="end"
-        android:layout_marginEnd="4dp"
-        android:layout_marginStart="4dp"
+        android:paddingTop="0.5dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/chat_name"
         app:layout_constraintVertical_bias="0"
-        app:layout_goneMarginBottom="0dp"
-        tools:ignore="UselessParent">
+        app:layout_goneMarginBottom="0dp">
 
         <RelativeLayout
             android:id="@+id/chat_content_layout"
-            android:layout_marginTop="1.5dp"
-            android:layout_width="240dp"
-            android:layout_height="68dp"
-            android:background="@drawable/chat_bubble_other">
-
-            <Space
-                android:id="@+id/center"
-                android:layout_width="1dp"
-                android:layout_height="1dp"
-                android:layout_centerVertical="true" />
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/chat_bubble_other"
+            android:layout_marginEnd="4dp"
+            android:layout_marginStart="4dp"
+            android:layout_marginTop="1.5dp">
 
             <one.mixin.android.widget.AvatarView
                 android:id="@+id/avatar_iv"
                 android:layout_width="40dp"
                 android:layout_height="40dp"
-                android:layout_marginBottom="4dp"
                 android:layout_marginStart="4dp"
                 android:layout_marginTop="4dp"
-                android:layout_centerVertical="true"
-                android:src="@drawable/default_avatar" />
+                android:layout_marginBottom="4dp"
+                android:contentDescription="@null" />
 
             <TextView
                 android:id="@+id/name_tv"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="8dp"
-                android:layout_marginBottom="2dp"
-                android:maxWidth="140dp"
-                android:minWidth="30dp"
-                android:ellipsize="end"
-                android:singleLine="true"
-                android:textColor="?attr/text_primary"
-                android:textSize="16sp"
                 android:layout_toEndOf="@id/avatar_iv"
-                android:layout_above="@id/center" />
+                android:textSize="16sp"
+                android:layout_marginStart="10dp"
+                android:maxWidth="220dp"
+                android:ellipsize="end"
+                android:textColor="?attr/text_primary"
+                android:layout_alignTop="@id/avatar_iv"
+                android:layout_width="wrap_content"
+                android:singleLine="true"
+                android:layout_height="wrap_content" />
 
             <ImageView
                 android:id="@+id/verified_iv"
                 android:layout_width="12dp"
                 android:layout_height="12dp"
-                android:layout_marginStart="8dp"
+                android:layout_marginStart="3dp"
                 android:src="@drawable/ic_user_verified"
                 android:layout_toEndOf="@id/name_tv"
                 android:layout_alignTop="@id/name_tv"
@@ -119,7 +114,7 @@
                 android:id="@+id/bot_iv"
                 android:layout_width="12dp"
                 android:layout_height="12dp"
-                android:layout_marginStart="8dp"
+                android:layout_marginStart="3dp"
                 android:src="@drawable/ic_bot"
                 android:layout_toEndOf="@id/verified_iv"
                 android:layout_alignTop="@id/name_tv"
@@ -129,18 +124,18 @@
 
             <TextView
                 android:id="@+id/id_tv"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginEnd="8dp"
-                android:layout_marginStart="8dp"
-                android:layout_marginTop="2dp"
-                android:fontFamily="@font/roboto_light"
                 android:layout_toEndOf="@id/avatar_iv"
-                android:layout_below="@id/center"
-                android:ellipsize="end"
+                android:layout_marginStart="10dp"
+                android:layout_marginEnd="10dp"
+                android:layout_marginTop="2dp"
+                android:textSize="12sp"
+                android:fontFamily="@font/roboto_light"
+                android:maxWidth="220dp"
                 android:singleLine="true"
                 android:textColor="@color/gray_50"
-                android:textSize="12sp" />
+                android:layout_alignBottom="@id/avatar_iv"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
 
         </RelativeLayout>
 

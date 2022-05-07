@@ -671,7 +671,7 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 } catch (e: IllegalStateException) {
                     Timber.w(e)
                 } finally {
-                    requireActivity().finish()
+                    activity?.finish()
                 }
             }
         } else {
@@ -680,7 +680,7 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
             } catch (e: IllegalStateException) {
                 Timber.w(e)
             } finally {
-                requireActivity().finish()
+                activity?.finish()
             }
         }
     }

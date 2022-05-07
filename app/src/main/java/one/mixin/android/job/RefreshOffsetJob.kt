@@ -1,7 +1,7 @@
 package one.mixin.android.job
 
 import com.birbit.android.jobqueue.Params
-import one.mixin.android.MixinApplication.Companion.conversationId
+import one.mixin.android.db.makeMessageStatus
 import one.mixin.android.extension.getEpochNano
 import one.mixin.android.vo.Offset
 import one.mixin.android.vo.STATUS_OFFSET
@@ -36,7 +36,7 @@ class RefreshOffsetJob : MixinJob(
                     break
                 }
                 for (m in blazeMessages) {
-                    makeMessageStatus(m.status, m.messageId, m.conversationId)
+                    messageDao.makeMessageStatus(m.status, m.messageId)
                     offsetDao.insert(Offset(STATUS_OFFSET, m.updatedAt))
                 }
                 if (blazeMessages.count() > 0 && blazeMessages.last().updatedAt.getEpochNano() == status) {
