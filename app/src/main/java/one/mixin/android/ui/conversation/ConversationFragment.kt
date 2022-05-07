@@ -1861,9 +1861,9 @@ class ConversationFragment() :
                 chatViewModel.viewModelScope.launch {
                     conversationAdapter.hasBottomView =
                         recipient?.relationship == UserRelationship.STRANGER.name && chatViewModel.isSilence(
-                            conversationId,
-                            sender.userId
-                        )
+                        conversationId,
+                        sender.userId
+                    )
                 }
                 if (isFirstLoad && messageId == null && unreadCount > 0) {
                     conversationAdapter.unreadMsgId = unreadMessageId

@@ -47,9 +47,11 @@ import one.mixin.android.RxBus
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.databinding.FragmentConversationListBinding
 import one.mixin.android.databinding.ItemListConversationBinding
+import one.mixin.android.databinding.LayoutHomeHeaderBinding
 import one.mixin.android.databinding.ViewConversationBottomBinding
 import one.mixin.android.event.BotEvent
 import one.mixin.android.event.CircleDeleteEvent
+import one.mixin.android.event.SessionEvent
 import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.animateHeight
 import one.mixin.android.extension.clickVibrate
@@ -57,7 +59,6 @@ import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.dpToPx
-import one.mixin.android.extension.margin
 import one.mixin.android.extension.networkConnected
 import one.mixin.android.extension.notEmptyWithElse
 import one.mixin.android.extension.notNullWithElse
@@ -74,6 +75,7 @@ import one.mixin.android.ui.common.NavigationController
 import one.mixin.android.ui.common.recyclerview.NormalHolder
 import one.mixin.android.ui.common.recyclerview.PagedHeaderAdapter
 import one.mixin.android.ui.conversation.ConversationActivity
+import one.mixin.android.ui.device.DeviceFragment
 import one.mixin.android.ui.home.bot.BotManagerBottomSheetDialogFragment
 import one.mixin.android.ui.home.bot.DefaultTopBots
 import one.mixin.android.ui.home.bot.INTERNAL_CAMERA_ID
@@ -135,16 +137,18 @@ class ConversationListFragment : LinkFragment() {
 
     private var _binding: FragmentConversationListBinding? = null
     private val binding get() = requireNotNull(_binding)
+    private var _headerBinding: LayoutHomeHeaderBinding? = null
+    private val headerBinding get() = requireNotNull(_headerBinding)
 
     private val messagesViewModel by viewModels<ConversationListViewModel>()
+
+    private var isDesktopLogin = false
 
     private val messageAdapter by lazy {
         MessageAdapter().apply {
             registerAdapterDataObserver(messageAdapterDataObserver)
         }
     }
-
-    private lateinit var bulletinView: BulletinView
 
     private val bulletinBoard = BulletinBoard()
 
@@ -172,6 +176,8 @@ class ConversationListFragment : LinkFragment() {
     private var vibrated = false
     private var expanded = false
 
+    private var firstLoad = true
+
     private var enterJob: Job? = null
 
     companion object {
@@ -196,12 +202,16 @@ class ConversationListFragment : LinkFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         navigationController = NavigationController(activity as MainActivity)
-        bulletinView = BulletinView(requireContext()).apply {
-            layoutParams = RecyclerView.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply {
-                margin = 16.dp
-            }
+        _headerBinding = LayoutHomeHeaderBinding.inflate(layoutInflater)
+        headerBinding.desktopFl.setOnClickListener {
+            DeviceFragment.newInstance().showNow(parentFragmentManager, DeviceFragment.TAG)
         }
-        messageAdapter.headerView = bulletinView
+        isDesktopLogin = Session.getExtensionSessionId() != null
+        headerBinding.desktopFl.isVisible = isDesktopLogin
+
+        messageAdapter.headerView = headerBinding.root.apply {
+            layoutParams = RecyclerView.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
+        }
         binding.messageRv.adapter = messageAdapter
         binding.messageRv.itemAnimator = null
         binding.messageRv.setHasFixedSize(true)
@@ -357,6 +367,14 @@ class ConversationListFragment : LinkFragment() {
             .subscribe {
                 refreshBot()
             }
+        RxBus.listen(SessionEvent::class.java)
+            .observeOn(AndroidSchedulers.mainThread())
+            .autoDispose(destroyScope)
+            .subscribe {
+                isDesktopLogin = Session.getExtensionSessionId() != null
+                headerBinding.desktopFl.isVisible = isDesktopLogin
+                checkShowHeader(bulletinBoard.post())
+            }
     }
 
     override fun onDestroyView() {
@@ -365,6 +383,7 @@ class ConversationListFragment : LinkFragment() {
         }
         super.onDestroyView()
         _binding = null
+        _headerBinding = null
     }
 
     private val observer by lazy {
@@ -391,6 +410,15 @@ class ConversationListFragment : LinkFragment() {
                     }.forEach {
                         jobManager.addJobInBackground(GenerateAvatarJob(it.conversationId))
                     }
+
+                if (firstLoad) {
+                    firstLoad = false
+                    if (isDesktopLogin && !bulletinBoard.post()) {
+                        binding.messageRv.post {
+                            binding.messageRv.smoothScrollBy(0, 60.dp)
+                        }
+                    }
+                }
             }
         }
     }
@@ -499,12 +527,13 @@ class ConversationListFragment : LinkFragment() {
         lifecycleScope.launch {
             val totalUsd = messagesViewModel.findTotalUSDBalance()
 
+            val bulletinView = headerBinding.bulletView
             val shown = bulletinBoard
                 .addBulletin(NewWalletBulletin(bulletinView, requireActivity() as MainActivity, ::onClose))
                 .addBulletin(NotificationBulletin(bulletinView, ::onClose))
                 .addBulletin(EmergencyContactBulletin(bulletinView, totalUsd >= 100, ::onClose))
                 .post()
-            messageAdapter.setShowHeader(shown, binding.messageRv)
+            checkShowHeader(shown)
         }
     }
 
@@ -512,7 +541,12 @@ class ConversationListFragment : LinkFragment() {
         val shown = if (type.ordinal < BulletinView.Type.values().size - 1) {
             bulletinBoard.post()
         } else false
-        messageAdapter.setShowHeader(shown, binding.messageRv)
+        checkShowHeader(shown)
+    }
+
+    private fun checkShowHeader(showBullet: Boolean) {
+        headerBinding.bulletView.isVisible = showBullet
+        messageAdapter.setShowHeader(isDesktopLogin || showBullet, binding.messageRv)
     }
 
     private fun refreshBot() {

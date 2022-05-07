@@ -25,6 +25,7 @@ import one.mixin.android.event.CircleDeleteEvent
 import one.mixin.android.event.PinMessageEvent
 import one.mixin.android.event.RecallEvent
 import one.mixin.android.event.SenderKeyChange
+import one.mixin.android.event.SessionEvent
 import one.mixin.android.extension.autoDownload
 import one.mixin.android.extension.autoDownloadDocument
 import one.mixin.android.extension.autoDownloadPhoto
@@ -910,6 +911,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
             if (ps.isNotEmpty()) {
                 participantSessionDao.insertList(ps)
             }
+            RxBus.publish(SessionEvent(SystemSessionMessageAction.PROVISION))
         } else if (systemSession.action == SystemSessionMessageAction.DESTROY.name) {
             if (Session.getExtensionSessionId() != systemSession.sessionId) {
                 return
@@ -917,6 +919,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
             Session.deleteExtensionSessionId()
             signalProtocol.deleteSession(systemSession.userId)
             participantSessionDao.deleteByUserIdAndSessionId(systemSession.userId, systemSession.sessionId)
+            RxBus.publish(SessionEvent(SystemSessionMessageAction.DESTROY))
         }
     }
 
