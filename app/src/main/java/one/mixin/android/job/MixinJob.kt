@@ -19,8 +19,10 @@ import one.mixin.android.extension.fromJson
 import one.mixin.android.extension.getDeviceId
 import one.mixin.android.extension.networkConnected
 import one.mixin.android.session.Session
+import one.mixin.android.util.ErrorHandler.Companion.BAD_DATA
 import one.mixin.android.util.ErrorHandler.Companion.CONVERSATION_CHECKSUM_INVALID_ERROR
 import one.mixin.android.util.ErrorHandler.Companion.FORBIDDEN
+import one.mixin.android.util.reportException
 import one.mixin.android.vo.Conversation
 import one.mixin.android.vo.ConversationStatus
 import one.mixin.android.vo.LinkState
@@ -231,6 +233,9 @@ abstract class MixinJob(
                 }
                 throw ChecksumException()
             } else if (bm.error.code == FORBIDDEN) {
+                return true
+            } else if (bm.error.code == BAD_DATA) {
+                reportException(IllegalArgumentException("$blazeMessage, $bm"))
                 return true
             } else {
                 SystemClock.sleep(SLEEP_MILLIS)
