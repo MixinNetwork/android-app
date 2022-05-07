@@ -82,6 +82,10 @@ class ContactsFragment : BaseFragment(R.layout.fragment_contacts) {
             contactAdapter.setContactListener(mContactListener)
             titleView.leftIb.setOnClickListener { activity?.onBackPressed() }
             titleView.rightAnimator.setOnClickListener { SettingActivity.show(requireContext()) }
+            titleView.rightAnimator.setOnLongClickListener {
+                SettingActivity.show(requireContext(), compose = false)
+                true
+            }
         }
 
         if (hasContactPermission() &&

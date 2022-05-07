@@ -6,6 +6,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.activity.compose.LocalOnBackPressedDispatcherOwner
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
@@ -22,9 +23,11 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import one.mixin.android.extension.isNightMode
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.setting.ui.page.AboutPage
 import one.mixin.android.ui.setting.ui.page.AccountPage
+import one.mixin.android.ui.setting.ui.page.AppearancePage
 import one.mixin.android.ui.setting.ui.page.SettingPage
 import one.mixin.android.ui.setting.ui.theme.MixinAppTheme
 import timber.log.Timber
@@ -103,7 +106,9 @@ class SettingComposeFragment : BaseFragment() {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         return ComposeView(inflater.context).apply {
             setContent {
-                MixinAppTheme {
+                MixinAppTheme(
+                    darkTheme = context.isNightMode() || isSystemInDarkTheme(),
+                ) {
                     LocalOnBackPressedDispatcherOwner
                     Surface(
                         modifier = Modifier.fillMaxSize(),
@@ -141,6 +146,9 @@ class SettingComposeFragment : BaseFragment() {
                                 }
                                 composable(SettingDestination.Account.name) {
                                     AccountPage()
+                                }
+                                composable(SettingDestination.Appearance.name) {
+                                    AppearancePage()
                                 }
                             }
                         }

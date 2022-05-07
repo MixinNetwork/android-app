@@ -27,9 +27,9 @@ class SettingActivity : BlazeBaseActivity() {
         const val EXTRA_AUTH = "extra_auth"
         const val ARGS_SUCCESS = "args_success"
 
-        fun show(context: Context) {
+        fun show(context: Context, compose: Boolean = true) {
             context.startActivity(Intent(context, SettingActivity::class.java).apply {
-                putExtra(EXTRA_SHOW_COMPOSE, true)
+                putExtra(EXTRA_SHOW_COMPOSE, compose)
             })
         }
 
