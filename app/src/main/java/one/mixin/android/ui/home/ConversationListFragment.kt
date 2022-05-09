@@ -415,7 +415,7 @@ class ConversationListFragment : LinkFragment() {
                     firstLoad = false
                     if (isDesktopLogin && !bulletinBoard.post()) {
                         binding.messageRv.post {
-                            binding.messageRv.smoothScrollBy(0, 60.dp)
+                            binding.messageRv.smoothScrollBy(0, 48.dp)
                         }
                     }
                 }
