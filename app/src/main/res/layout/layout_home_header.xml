@@ -13,18 +13,19 @@
     <FrameLayout
         android:id="@+id/desktop_fl"
         android:layout_width="match_parent"
-        android:layout_height="@dimen/item_contact_height"
+        android:layout_height="48dp"
         android:layout_below="@id/bullet_view"
-        android:background="?attr/bg_gray"
+        android:background="?attr/bg_gray_light"
         android:foreground="?android:attr/selectableItemBackground">
 
         <TextView
             android:id="@+id/desktop_tv"
-            style="@style/NormalTextStyle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:gravity="center_vertical"
             android:layout_gravity="center"
+            android:textSize="12sp"
+            android:textColor="?text_primary"
             android:text="@string/setting_desktop_signed"
             android:drawablePadding="@dimen/margin12"
             app:drawableStartCompat="@drawable/ic_setting_desktop" />
