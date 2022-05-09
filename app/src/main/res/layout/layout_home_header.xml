@@ -13,7 +13,7 @@
     <FrameLayout
         android:id="@+id/desktop_fl"
         android:layout_width="match_parent"
-        android:layout_height="48dp"
+        android:layout_height="32dp"
         android:layout_below="@id/bullet_view"
         android:background="?attr/bg_gray_light"
         android:foreground="?android:attr/selectableItemBackground">
