@@ -158,7 +158,10 @@ internal constructor(
     private val playbackStateObserver = Observer<PlaybackStateCompat> {
         val metadata = musicServiceConnection.nowPlaying.value ?: NOTHING_PLAYING
         if (metadata.getString(MediaMetadataCompat.METADATA_KEY_MEDIA_ID) != null) {
-            _mediaItems.postValue(mediaItems.value ?: emptyList())
+            val v = mediaItems.value ?: return@Observer
+            if (!v.isNullOrEmpty()) {
+                _mediaItems.postValue(v)
+            }
         }
     }
 
