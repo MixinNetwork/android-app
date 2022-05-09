@@ -176,6 +176,8 @@ class ConversationListFragment : LinkFragment() {
     private var vibrated = false
     private var expanded = false
 
+    private var firstLoad = true
+
     private var enterJob: Job? = null
 
     companion object {
@@ -408,6 +410,15 @@ class ConversationListFragment : LinkFragment() {
                     }.forEach {
                         jobManager.addJobInBackground(GenerateAvatarJob(it.conversationId))
                     }
+
+                if (firstLoad) {
+                    firstLoad = false
+                    if (isDesktopLogin && !bulletinBoard.post()) {
+                        binding.messageRv.post {
+                            binding.messageRv.smoothScrollBy(0, 60.dp)
+                        }
+                    }
+                }
             }
         }
     }
