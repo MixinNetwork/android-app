@@ -25,10 +25,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.ui.common.BaseFragment
-import one.mixin.android.ui.setting.ui.page.AboutPage
-import one.mixin.android.ui.setting.ui.page.AccountPage
-import one.mixin.android.ui.setting.ui.page.AppearancePage
-import one.mixin.android.ui.setting.ui.page.SettingPage
+import one.mixin.android.ui.setting.ui.page.*
 import one.mixin.android.ui.setting.ui.theme.MixinAppTheme
 import timber.log.Timber
 
@@ -149,6 +146,9 @@ class SettingComposeFragment : BaseFragment() {
                                 }
                                 composable(SettingDestination.Appearance.name) {
                                     AppearancePage()
+                                }
+                                composable(SettingDestination.NotificationAndConfirm.name) {
+                                    NotificationsPage()
                                 }
                             }
                         }
