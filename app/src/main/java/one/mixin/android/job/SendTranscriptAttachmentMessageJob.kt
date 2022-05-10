@@ -4,6 +4,7 @@ import android.net.Uri
 import com.birbit.android.jobqueue.Params
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import one.mixin.android.MixinApplication
@@ -52,8 +53,12 @@ class SendTranscriptAttachmentMessageJob(
         private const val serialVersionUID = 1L
     }
 
+    @Transient
+    private var sendJob: Job? = null
+
     override fun cancel() {
         isCancelled = true
+        sendJob?.cancel()
         removeJob()
         transcriptMessageDao.updateMediaStatus(transcriptMessage.transcriptId, transcriptMessage.messageId, MediaStatus.CANCELED.name)
     }
@@ -68,61 +73,62 @@ class SendTranscriptAttachmentMessageJob(
                 updateLocalMessage()
             }
         }
-    ){
-        if (transcriptMessage.isPlain() == encryptCategory.isPlain()) {
-            if (transcriptMessage.mediaCreatedAt?.within24Hours() == true && transcriptMessage.isValidAttachment()) {
-                transcriptMessageDao.updateMediaStatus(transcriptMessage.transcriptId, transcriptMessage.messageId, MediaStatus.DONE.name)
-                sendMessage()
-                return@runBlocking
-            }
-            val attachmentExtra = try {
-                GsonHelper.customGson.fromJson(transcriptMessage.content, AttachmentExtra::class.java)
-            } catch (e: Exception) {
-                null
-            } ?: try {
-                val payload = GsonHelper.customGson.fromJson(String(Base64.decode(transcriptMessage.content)), AttachmentMessagePayload::class.java)
-                AttachmentExtra(payload.attachmentId, transcriptMessage.messageId, payload.createdAt)
-            } catch (e: Exception) {
-                null
-            }
-            if (attachmentExtra != null && attachmentExtra.createdAt?.within24Hours() == true) {
-                val m = messageDao.findMessageById(transcriptMessage.messageId)
-                if (m != null && transcriptMessage.type == m.category && m.isValidAttachment()) {
-                    transcriptMessageDao.updateTranscript(
-                        transcriptMessage.transcriptId,
-                        transcriptMessage.messageId,
-                        attachmentExtra.attachmentId,
-                        m.mediaKey,
-                        m.mediaDigest,
-                        MediaStatus.DONE.name,
-                        attachmentExtra.createdAt!!
-                    )
+    ) {
+        sendJob = launch {
+            if (transcriptMessage.isPlain() == encryptCategory.isPlain()) {
+                if (transcriptMessage.mediaCreatedAt?.within24Hours() == true && transcriptMessage.isValidAttachment()) {
+                    transcriptMessageDao.updateMediaStatus(transcriptMessage.transcriptId, transcriptMessage.messageId, MediaStatus.DONE.name)
                     sendMessage()
-                    return@runBlocking
+                    return@launch
+                }
+                val attachmentExtra = try {
+                    GsonHelper.customGson.fromJson(transcriptMessage.content, AttachmentExtra::class.java)
+                } catch (e: Exception) {
+                    null
+                } ?: try {
+                    val payload = GsonHelper.customGson.fromJson(String(Base64.decode(transcriptMessage.content)), AttachmentMessagePayload::class.java)
+                    AttachmentExtra(payload.attachmentId, transcriptMessage.messageId, payload.createdAt)
+                } catch (e: Exception) {
+                    null
+                }
+                if (attachmentExtra != null && attachmentExtra.createdAt?.within24Hours() == true) {
+                    val m = messageDao.findMessageById(transcriptMessage.messageId)
+                    if (m != null && transcriptMessage.type == m.category && m.isValidAttachment()) {
+                        transcriptMessageDao.updateTranscript(
+                            transcriptMessage.transcriptId,
+                            transcriptMessage.messageId,
+                            attachmentExtra.attachmentId,
+                            m.mediaKey,
+                            m.mediaDigest,
+                            MediaStatus.DONE.name,
+                            attachmentExtra.createdAt!!
+                        )
+                        sendMessage()
+                        return@launch
+                    }
                 }
             }
-        }
-        transcriptMessageDao.updateMediaStatus(transcriptMessage.transcriptId, transcriptMessage.messageId, MediaStatus.PENDING.name)
-        val response = conversationApi.requestAttachment()
-        if (response.isSuccess) {
-            val attachmentResponse = response.data
-            if (attachmentResponse != null) {
-                val file = File(requireNotNull(Uri.parse(transcriptMessage.absolutePath()).path))
-                val result =    processAttachment(transcriptMessage, file, attachmentResponse)
-                if (result){
-                    sendMessage()
-                    return@runBlocking
+            transcriptMessageDao.updateMediaStatus(transcriptMessage.transcriptId, transcriptMessage.messageId, MediaStatus.PENDING.name)
+            val response = conversationApi.requestAttachment()
+            if (response.isSuccess) {
+                val attachmentResponse = response.data
+                if (attachmentResponse != null) {
+                    val file = File(requireNotNull(Uri.parse(transcriptMessage.absolutePath()).path))
+                    val result = processAttachment(transcriptMessage, file, attachmentResponse)
+                    if (result) {
+                        sendMessage()
+                        return@launch
+                    }
                 }
             }
+            updateLocalMessage()
         }
-        updateLocalMessage()
     }
 
     private fun updateLocalMessage() {
         removeJob()
         transcriptMessageDao.updateMediaStatus(transcriptMessage.transcriptId, transcriptMessage.messageId, MediaStatus.CANCELED.name)
     }
-
 
     private fun processAttachment(transcriptMessage: TranscriptMessage, file: File, attachResponse: AttachmentResponse): Boolean {
         val key = if (transcriptMessage.isPlain()) {

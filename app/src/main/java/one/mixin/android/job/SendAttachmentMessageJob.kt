@@ -4,6 +4,7 @@ import android.net.Uri
 import com.birbit.android.jobqueue.Params
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import one.mixin.android.MixinApplication
@@ -42,11 +43,15 @@ class SendAttachmentMessageJob(
         private const val serialVersionUID = 1L
     }
 
+    @Transient
+    private var sendJob: Job? = null
+
     override fun cancel() {
         isCancelled = true
         messageDao.updateMediaStatus(MediaStatus.CANCELED.name, message.messageId)
         InvalidateFlow.emit(message.conversationId)
         attachmentProcess.remove(message.messageId)
+        sendJob?.cancel()
         removeJob()
     }
 
@@ -91,35 +96,38 @@ class SendAttachmentMessageJob(
         removeJob()
     }
 
-    override fun onRun() = runBlocking(CoroutineExceptionHandler { _, error ->
-        if (error.worthRetrying()) {
-            throw error
-        } else {
-            updateLocalMessage(MediaStatus.CANCELED)
-        }
-    }) {
-        if (isCancelled) {
-            removeJob()
-            return@runBlocking
-        }
-        if (message.mediaUrl == null) {
-            removeJob()
-            return@runBlocking
-        }
-        jobManager.saveJob(this)
-        jobManager.saveJob(this@SendAttachmentMessageJob)
-        val response = conversationApi.requestAttachment()
-        if (response.isSuccess) {
-            val attachmentResponse = response.data
-            if (attachmentResponse != null) {
-                val result = processAttachment(attachmentResponse)
-                if (result) {
-                    updateLocalMessage(MediaStatus.DONE)
-                    return@runBlocking
-                }
+    override fun onRun() = runBlocking(
+        CoroutineExceptionHandler { _, error ->
+            if (error.worthRetrying()) {
+                throw error
+            } else {
+                updateLocalMessage(MediaStatus.CANCELED)
             }
         }
-        updateLocalMessage(MediaStatus.CANCELED)
+    ) {
+        sendJob = launch {
+            if (isCancelled) {
+                removeJob()
+                return@launch
+            }
+            if (message.mediaUrl == null) {
+                removeJob()
+                return@launch
+            }
+            jobManager.saveJob(this@SendAttachmentMessageJob)
+            val response = conversationApi.requestAttachment()
+            if (response.isSuccess) {
+                val attachmentResponse = response.data
+                if (attachmentResponse != null) {
+                    val result = processAttachment(attachmentResponse)
+                    if (result) {
+                        updateLocalMessage(MediaStatus.DONE)
+                        return@launch
+                    }
+                }
+            }
+            updateLocalMessage(MediaStatus.CANCELED)
+        }
     }
 
     private fun updateLocalMessage(status: MediaStatus) {

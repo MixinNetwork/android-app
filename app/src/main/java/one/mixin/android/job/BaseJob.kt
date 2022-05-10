@@ -8,12 +8,6 @@ import dagger.hilt.EntryPoint
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import kotlinx.coroutines.CoroutineScope
-import one.mixin.android.api.ClientErrorException
-import one.mixin.android.api.ExpiredTokenException
-import one.mixin.android.api.LocalJobException
-import one.mixin.android.api.NetworkException
-import one.mixin.android.api.ServerErrorException
-import one.mixin.android.api.WebSocketException
 import one.mixin.android.api.service.AccountService
 import one.mixin.android.api.service.AddressService
 import one.mixin.android.api.service.AssetService
@@ -23,6 +17,7 @@ import one.mixin.android.api.service.ConversationService
 import one.mixin.android.api.service.MessageService
 import one.mixin.android.api.service.SignalKeyService
 import one.mixin.android.api.service.UserService
+import one.mixin.android.api.worthRetrying
 import one.mixin.android.crypto.EncryptedProtocol
 import one.mixin.android.crypto.JobSenderKey
 import one.mixin.android.crypto.SignalProtocol
@@ -62,8 +57,6 @@ import one.mixin.android.tip.Tip
 import one.mixin.android.util.reportException
 import one.mixin.android.vo.LinkState
 import one.mixin.android.websocket.ChatWebSocket
-import java.io.IOException
-import java.net.SocketTimeoutException
 import javax.inject.Inject
 
 abstract class BaseJob(params: Params) : Job(params) {
@@ -275,29 +268,7 @@ abstract class BaseJob(params: Params) : Job(params) {
     @Inject
     lateinit var jobSenderKey: JobSenderKey
 
-    open fun shouldRetry(throwable: Throwable): Boolean {
-        if (throwable is SocketTimeoutException) {
-            return true
-        }
-        if (throwable is IOException) {
-            return true
-        }
-        if (throwable is InterruptedException) {
-            return true
-        }
-        return (throwable as? ServerErrorException)?.shouldRetry()
-            ?: (throwable as? ExpiredTokenException)?.shouldRetry()
-            ?: (
-                (throwable as? ClientErrorException)?.shouldRetry()
-                    ?: (
-                        (throwable as? NetworkException)?.shouldRetry()
-                            ?: (
-                                (throwable as? WebSocketException)?.shouldRetry()
-                                    ?: ((throwable as? LocalJobException)?.shouldRetry() ?: false)
-                                )
-                        )
-                )
-    }
+    open fun shouldRetry(throwable: Throwable) = throwable.worthRetrying()
 
     public override fun shouldReRunOnThrowable(throwable: Throwable, runCount: Int, maxRunCount: Int): RetryConstraint {
         if (runCount >= 10) {
