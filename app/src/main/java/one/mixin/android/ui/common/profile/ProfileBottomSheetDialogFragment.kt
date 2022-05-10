@@ -35,7 +35,7 @@ import one.mixin.android.extension.getOtherPath
 import one.mixin.android.extension.inTransaction
 import one.mixin.android.extension.openAsUrlOrWeb
 import one.mixin.android.extension.openCamera
-import one.mixin.android.extension.openGallery
+import one.mixin.android.extension.openImageGallery
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.toBytes
 import one.mixin.android.extension.toast
@@ -278,7 +278,7 @@ class ProfileBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragmen
                     if (byCamera) {
                         openCamera(imageUri)
                     } else {
-                        openGallery(true)
+                        openImageGallery(true)
                     }
                 } else {
                     context?.openPermissionSetting()

@@ -629,6 +629,14 @@ fun getVideoModel(uri: Uri): VideoEditedInfo? {
     return null
 }
 
+fun Fragment.openImageGallery(preview: Boolean = false) {
+    Gallery.from(this)
+        .choose(MimeType.ofImage())
+        .imageEngine(GlideEngine())
+        .preview(preview)
+        .forResult(REQUEST_GALLERY)
+}
+
 fun Fragment.openGallery(preview: Boolean = false) {
     Gallery.from(this)
         .choose(MimeType.ofMedia())
