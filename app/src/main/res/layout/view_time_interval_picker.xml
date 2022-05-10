@@ -10,7 +10,7 @@
     <one.mixin.android.widget.picker.WheelPicker
         android:id="@+id/number_picker"
         android:layout_weight="1"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         app:wheel_atmospheric="true"
         app:wheel_curved="true"
@@ -22,7 +22,7 @@
 
     <one.mixin.android.widget.picker.WheelPicker
         android:id="@+id/unit_picker"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_weight="1"
         app:wheel_curved="true"
