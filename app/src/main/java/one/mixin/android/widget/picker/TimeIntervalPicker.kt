@@ -56,5 +56,9 @@ class TimeIntervalPicker : LinearLayout {
         }
     }
 
-    private val unitList by lazy { timeIntervalUnits.toList() }
+    private val unitList by lazy {
+        timeIntervalUnits.map {
+            resources.getQuantityString(it, 1)
+        }
+    }
 }
