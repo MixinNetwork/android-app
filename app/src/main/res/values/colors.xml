@@ -29,6 +29,7 @@
     <color name="badgerText">#FFFFFF</color>
     <color name="badgerTextMute">#FFFFFF</color>
 
+    <color name="bg_splash">#FFFFFF</color>
     <color name="bgInput">#F5F5F5</color>
     <color name="bgWhite">#FFFFFF</color>
     <color name="bgWindow">#F6F7FA</color>
