@@ -76,7 +76,7 @@ fun SettingPage() {
                     icon = R.drawable.ic_setting_backup,
                     title = stringResource(id = R.string.setting_backup)
                 ) {
-                    settingNavController.navigation(SettingDestination.Backup)
+                    settingNavController.navigation(SettingDestination.BackUp)
                 }
                 SettingTile(
                     icon = R.drawable.ic_setting_data,

@@ -25,6 +25,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.ui.common.BaseFragment
+import one.mixin.android.ui.setting.ui.compose.MixinSettingFragment
 import one.mixin.android.ui.setting.ui.page.*
 import one.mixin.android.ui.setting.ui.theme.MixinAppTheme
 import timber.log.Timber
@@ -34,7 +35,7 @@ enum class SettingDestination {
     Setting,
     Account,
     NotificationAndConfirm,
-    Backup,
+    BackUp,
     Storage,
     Appearance,
     Desktop,
@@ -149,6 +150,11 @@ class SettingComposeFragment : BaseFragment() {
                                 }
                                 composable(SettingDestination.NotificationAndConfirm.name) {
                                     NotificationsPage()
+                                }
+                                composable(SettingDestination.BackUp.name) {
+                                    MixinSettingFragment(BackUpFragment.TAG) {
+                                        BackUpFragment.newInstance()
+                                    }
                                 }
                             }
                         }
