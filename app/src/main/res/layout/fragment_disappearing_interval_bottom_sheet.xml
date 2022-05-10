@@ -60,7 +60,7 @@
         app:layout_constraintTop_toBottomOf="@id/title_view"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"/>
+        app:layout_constraintEnd_toEndOf="parent" />
 
     <one.mixin.android.widget.picker.TimeIntervalPicker
         android:id="@+id/interval_picker"
@@ -68,6 +68,8 @@
         android:layout_marginEnd="16dp"
         android:layout_height="wrap_content"
         android:layout_width="0dp"
+        android:paddingBottom="16dp"
+        android:paddingTop="16dp"
         android:layout_marginTop="16dp"
         android:layout_marginBottom="48dp"
         app:layout_constraintTop_toBottomOf="@id/title_view"
@@ -80,7 +82,7 @@
         android:background="@drawable/shadow_disappearing"
         android:layout_marginStart="4dp"
         android:layout_marginEnd="4dp"
-        android:layout_height="28sp"
+        android:layout_height="32sp"
         app:layout_constraintTop_toTopOf="@id/interval_picker"
         app:layout_constraintBottom_toBottomOf="@id/interval_picker"
         app:layout_constraintStart_toStartOf="@id/interval_picker"

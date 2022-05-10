@@ -15,7 +15,7 @@
         app:wheel_atmospheric="true"
         app:wheel_curved="true"
         app:wheel_cyclic="true"
-        app:wheel_item_space="4dp"
+        app:wheel_item_space="8dp"
         app:wheel_item_text_color="?attr/text_minor"
         app:wheel_item_text_size="20sp"
         app:wheel_selected_item_text_color="?attr/text_primary" />
@@ -27,7 +27,7 @@
         android:layout_weight="1"
         app:wheel_curved="true"
         app:wheel_cyclic="true"
-        app:wheel_item_space="4dp"
+        app:wheel_item_space="8dp"
         app:wheel_item_text_color="?attr/text_minor"
         app:wheel_item_text_size="20sp"
         app:wheel_selected_item_text_color="?attr/text_primary" />
