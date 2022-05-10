@@ -2,13 +2,15 @@ package one.mixin.android.job
 
 import android.net.Uri
 import com.birbit.android.jobqueue.Params
-import io.reactivex.disposables.Disposable
+import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.RxBus
 import one.mixin.android.api.response.AttachmentResponse
+import one.mixin.android.api.worthRetrying
 import one.mixin.android.crypto.Util
 import one.mixin.android.crypto.attachment.AttachmentCipherOutputStream
 import one.mixin.android.crypto.attachment.AttachmentCipherOutputStreamFactory
@@ -16,7 +18,6 @@ import one.mixin.android.crypto.attachment.PushAttachmentData
 import one.mixin.android.db.insertMessage
 import one.mixin.android.event.ProgressEvent.Companion.loadingEvent
 import one.mixin.android.extension.base64Encode
-import one.mixin.android.extension.getStackTraceString
 import one.mixin.android.extension.toast
 import one.mixin.android.job.MixinJobManager.Companion.attachmentProcess
 import one.mixin.android.util.GsonHelper
@@ -41,19 +42,11 @@ class SendAttachmentMessageJob(
         private const val serialVersionUID = 1L
     }
 
-    @Transient
-    private var disposable: Disposable? = null
-
     override fun cancel() {
         isCancelled = true
         messageDao.updateMediaStatus(MediaStatus.CANCELED.name, message.messageId)
         InvalidateFlow.emit(message.conversationId)
         attachmentProcess.remove(message.messageId)
-        disposable?.let {
-            if (!it.isDisposed) {
-                it.dispose()
-            }
-        }
         removeJob()
     }
 
@@ -98,47 +91,42 @@ class SendAttachmentMessageJob(
         removeJob()
     }
 
-    override fun onRun() {
+    override fun onRun() = runBlocking(CoroutineExceptionHandler { _, error ->
+        if (error.worthRetrying()) {
+            throw error
+        } else {
+            updateLocalMessage(MediaStatus.CANCELED)
+        }
+    }) {
         if (isCancelled) {
             removeJob()
-            return
+            return@runBlocking
         }
         if (message.mediaUrl == null) {
             removeJob()
-            return
+            return@runBlocking
         }
         jobManager.saveJob(this)
-
-        disposable = conversationApi.requestAttachment().map {
-            if (it.isSuccess && !isCancelled) {
-                val result = it.data!!
-                processAttachment(result)
-            } else {
-                false
-            }
-        }.subscribe(
-            {
-                if (it) {
-                    messageDao.updateMediaStatus(MediaStatus.DONE.name, message.messageId)
-                    InvalidateFlow.emit(message.conversationId)
-                    attachmentProcess.remove(message.messageId)
-                    removeJob()
-                } else {
-                    messageDao.updateMediaStatus(MediaStatus.CANCELED.name, message.messageId)
-                    InvalidateFlow.emit(message.conversationId)
-                    attachmentProcess.remove(message.messageId)
-                    removeJob()
+        jobManager.saveJob(this@SendAttachmentMessageJob)
+        val response = conversationApi.requestAttachment()
+        if (response.isSuccess) {
+            val attachmentResponse = response.data
+            if (attachmentResponse != null) {
+                val result = processAttachment(attachmentResponse)
+                if (result) {
+                    updateLocalMessage(MediaStatus.DONE)
+                    return@runBlocking
                 }
-            },
-            {
-                Timber.e("upload attachment error, ${it.getStackTraceString()}")
-                reportException(it)
-                messageDao.updateMediaStatus(MediaStatus.CANCELED.name, message.messageId)
-                InvalidateFlow.emit(message.conversationId)
-                attachmentProcess.remove(message.messageId)
-                removeJob()
             }
-        )
+        }
+        updateLocalMessage(MediaStatus.CANCELED)
+    }
+
+    private fun updateLocalMessage(status: MediaStatus) {
+        messageDao.updateMediaStatus(status.name, message.messageId)
+        InvalidateFlow.emit(message.conversationId)
+        attachmentProcess.remove(message.messageId)
+        removeJob()
     }
 
     private fun processAttachment(attachResponse: AttachmentResponse): Boolean {
@@ -176,7 +164,11 @@ class SendAttachmentMessageJob(
             }
         val digest = try {
             if (message.isPlain()) {
-                uploadPlainAttachment(attachResponse.upload_url!!, message.mediaSize, attachmentData)
+                uploadPlainAttachment(
+                    attachResponse.upload_url!!,
+                    message.mediaSize,
+                    attachmentData
+                )
                 null
             } else {
                 uploadAttachment(attachResponse.upload_url!!, attachmentData) // SHA256
@@ -221,11 +213,23 @@ class SendAttachmentMessageJob(
     }
 
     private fun uploadPlainAttachment(url: String, size: Long, attachment: PushAttachmentData) {
-        Util.uploadAttachment(url, attachment.data, size, attachment.outputStreamFactory, attachment.listener, { isCancelled })
+        Util.uploadAttachment(
+            url,
+            attachment.data,
+            size,
+            attachment.outputStreamFactory,
+            attachment.listener
+        ) { isCancelled }
     }
 
     private fun uploadAttachment(url: String, attachment: PushAttachmentData): ByteArray {
         val dataSize = AttachmentCipherOutputStream.getCiphertextLength(attachment.dataSize)
-        return Util.uploadAttachment(url, attachment.data, dataSize, attachment.outputStreamFactory, attachment.listener, { isCancelled })
+        return Util.uploadAttachment(
+            url,
+            attachment.data,
+            dataSize,
+            attachment.outputStreamFactory,
+            attachment.listener
+        ) { isCancelled }
     }
 }
