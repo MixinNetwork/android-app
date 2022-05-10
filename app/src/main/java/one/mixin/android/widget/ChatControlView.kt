@@ -336,7 +336,7 @@ class ChatControlView : LinearLayout, ActionMode.Callback {
     fun toggleKeyboard(shown: Boolean) {
         if (shown) {
             controlState = STATUS.EXPANDED_KEYBOARD
-        } else if (controlState == STATUS.EXPANDED_KEYBOARD) {
+        } else if (controlState == STATUS.EXPANDED_KEYBOARD || controlState == STATUS.COLLAPSED) {
             controlState = STATUS.COLLAPSED
             inputLayout.closeInputArea(binding.chatEt)
         }
