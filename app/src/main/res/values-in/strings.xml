@@ -489,8 +489,8 @@
     <string name="Scan_QR_Code">Pindai Kode QR</string>
     <string name="Logout">Keluar…</string>
     <string name="desktop_on_hint">Anda telah masuk ke desktop</string>
-    <string name="Link_desktop_failed">Berhasil menautkan desktop</string>
-    <string name="Link_desktop_success">Gagal menautkan desktsktopop</string>
+    <string name="Link_desktop_success">Berhasil menautkan desktop</string>
+    <string name="Link_desktop_failed">Gagal menautkan desktsktopop</string>
     <string name="setting_desktop_logout_failed">Gagal keluar dari desktop.</string>
     <string name="setting_desktop_confirm">Konfirmasikan masuk ke Mixin Messenger Desktop</string>
     <string name="Account">Akun</string>

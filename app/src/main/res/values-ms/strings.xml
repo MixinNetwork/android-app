@@ -512,8 +512,8 @@
     <string name="Scan_QR_Code">Imbas Kod QR</string>
     <string name="Logout">Log keluar…</string>
     <string name="desktop_on_hint">Anda telah masuk ke desktop anda</string>
-    <string name="Link_desktop_failed">Pautan desktop berjaya</string>
-    <string name="Link_desktop_success">Pautan desktop gagal</string>
+    <string name="Link_desktop_success">Pautan desktop berjaya</string>
+    <string name="Link_desktop_failed">Pautan desktop gagal</string>
     <string name="setting_desktop_logout_failed">Log keluar desktop gagal.</string>
     <string name="setting_desktop_confirm"> Sahkan log masuk ke&#13;\nDesktop Mixin Messenger</string>
     <string name="Account">Akaun</string>

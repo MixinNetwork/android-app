@@ -88,7 +88,7 @@ class ConfirmBottomFragment : BiometricBottomSheetDialogFragment() {
                 provisioningService.provisionCodeAsync().await()
             }
         } catch (t: Throwable) {
-            toast(R.string.Link_desktop_success)
+            toast(R.string.Link_desktop_failed)
             ErrorHandler.handleError(t)
             return@launch
         }
@@ -98,22 +98,22 @@ class ConfirmBottomFragment : BiometricBottomSheetDialogFragment() {
                     encryptKey(requireContext(), ephemeralId, pubKey, response.data!!.code)
                 }
             } catch (t: Throwable) {
-                toast(R.string.Link_desktop_success)
+                toast(R.string.Link_desktop_failed)
                 ErrorHandler.handleError(t)
                 return@launch
             }
             confirmCallback?.invoke()
             if (success) {
-                toast(R.string.Link_desktop_failed)
-            } else {
                 toast(R.string.Link_desktop_success)
+            } else {
+                toast(R.string.Link_desktop_failed)
             }
             dismiss()
         } else {
             ErrorHandler.handleMixinError(
                 response.errorCode,
                 response.errorDescription,
-                getString(R.string.Link_desktop_success)
+                getString(R.string.Link_desktop_failed)
             )
             dismiss()
         }
@@ -143,7 +143,7 @@ class ConfirmBottomFragment : BiometricBottomSheetDialogFragment() {
             val uri = Uri.parse(url)
             val ephemeralId = uri.getQueryParameter("id")
             if (ephemeralId == null) {
-                toast(R.string.Link_desktop_success)
+                toast(R.string.Link_desktop_failed)
                 dismiss()
                 return@let
             }

@@ -568,8 +568,8 @@
     <string name="Scan_QR_Code">扫描二维码</string>
     <string name="Logout">退出中…</string>
     <string name="desktop_on_hint">已登录桌面端</string>
-    <string name="Link_desktop_failed">登录桌面端成功</string>
-    <string name="Link_desktop_success">登录桌面端失败</string>
+    <string name="Link_desktop_success">登录桌面端成功</string>
+    <string name="Link_desktop_failed">登录桌面端失败</string>
     <string name="setting_desktop_logout_failed">退出桌面端失败</string>
     <string name="setting_desktop_confirm">确认登录 Mixin Messenger 桌面端</string>
     <string name="Account">账号</string>

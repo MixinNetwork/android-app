@@ -596,8 +596,8 @@
     <string name="Scan_QR_Code">Scan QR Code</string>
     <string name="Logout">Logout…</string>
     <string name="desktop_on_hint">You have your desktop logged in</string>
-    <string name="Link_desktop_failed">Link desktop success</string>
-    <string name="Link_desktop_success">Link desktop failed</string>
+    <string name="Link_desktop_success">Link desktop success</string>
+    <string name="Link_desktop_failed">Link desktop failed</string>
     <string name="setting_desktop_logout_failed">Logout of desktop failed.</string>
     <string name="setting_desktop_confirm"> Confirm login to Mixin Messenger Desktop</string>
     <string name="Account">Account</string>
