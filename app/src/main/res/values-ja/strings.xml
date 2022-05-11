@@ -20,8 +20,6 @@
     <string name="Not_logged_in">ログインしていません</string>
     <string name="Got_it">確認</string>
     <string name="got_it_count_down">確認 (%1$d)</string>
-    <string name="receiver">受信者</string>
-    <string name="sender">送信者</string>
     <string name="transaction_Hash">トランザクションハッシュ</string>
     <string name="Changing">変更中…</string>
 
@@ -53,8 +51,6 @@
     <string name="update_downloaded">アップデータをダウンロード中</string>
     <string name="Language">言語</string>
     <string name="Try_Again">もう一度試す</string>
-    <string name="verify_by_PIN">PINで認証</string>
-    <string name="login_by_PIN">PINコードでログイン</string>
     <string name="Verify_by_Biometric">生体認証で認証</string>
     <string name="transfer_without_pin">送金するにはPINの設定が必要です</string>
     <string name="Voice_call">音声通話</string>
@@ -159,7 +155,6 @@
     <!--landing-->
     <string name="Enter_your_phone_number">電話番号を入力して下さい</string>
     <string name="Enter_new_phone_number">新しい電話番号を入力してください</string>
-    <string name="landing_enter_mobile_hint">電話番号</string>
     <string name="Name">名前</string>
     <string name="landing_enter_mobile_tip">認証コードが届きます\n通信料金が発生する場合があります\n\nMixin社</string>
     <string name="Resend_code">コードを再送する</string>
@@ -183,10 +178,7 @@
     <string name="contact_new_group_chat_desc">256人までのグループチャットを作成</string>
     <string name="Add_Contact">友だちを追加</string>
     <string name="Add_people_hint">Mixin IDまたは電話番号で追加する</string>
-    <string name="contact_qr_mixin">Mixin QRコード</string>
-    <string name="contact_qr_desc">友達のMixin QRコードをスキャンする</string>
     <string name="Invite_people">招待する</string>
-    <string name="contact_invite_desc">あなたの招待コード %1$s</string>
     <string name="contact_mobile">モバイル: %1$s</string>
     <string name="Phone_Contact">連絡帳と同期</string>
     <string name="contact_empty_tip">スマホの連絡帳と同期して友だちを自動追加</string>
@@ -198,7 +190,6 @@
     <string name="Receive_Money">仮想通貨を受け取る</string>
     <string name="transfer_qrcode_prompt">私に送金するためにQRコードをスキャンして下さい。</string>
     <string name="Add_bot">+ Myロボに追加</string>
-    <string name="contact_search_hint">名前, Mixin ID</string>
     <string name="contact_share_apps_title">%1$s\のシェアしたロボ</string>
     <string name="NO_APPS">ロボがありません</string>
     <string name="profile_share_app_hint">ロボをシェアしたい場合は、先に連絡先に追加してください。</string>
@@ -231,9 +222,7 @@
     <string name="Save_failure">保存失敗</string>
     <string name="hold_to_record_audio">長押しして録音、離して送信</string>
     <string name="chat_call_duration">通話時間: %1$s</string>
-    <string name="chat_call_canceled">応答なし</string>
     <string name="Canceled_by_caller">不在着信</string>
-    <string name="chat_call_declined">応答なし</string>
     <string name="Call_declined">応答なし</string>
     <string name="Line_busy">不在着信</string>
     <string name="Line_busy_remote">不在着信</string>
@@ -657,7 +646,6 @@
     <string name="No_tag">タグなし</string>
     <string name="Add_Tag">タグを追加する</string>
     <string name="withdrawal_memo">メモ</string>
-    <string name="Tag">タグ</string>
     <string name="withdrawal_with_PIN">PINを使用して出金</string>
     <string name="withdrawal_with_biometric">生体認証を使用して出金</string>
     <string name="withdrawal_to">%1$sへ出金</string>
@@ -671,7 +659,6 @@
     <string name="Reload">リロード</string>
     <string name="Slide_to_cancel">スライドしてキャンセル</string>
     <string name="withdrawal_label">ラベル (例. 取引所, ウォレットなど)</string>
-    <string name="Address">アドレス</string>
     <string name="No_Memo">メモなし</string>
 
     <string name="deposit_account_attention">注意: 最初は必ず少額で入金テストをしてください。 Mixinメッセンジャーに%1$sが正しく入金されるためにはメモとアドレスが必要です。 </string>
@@ -702,8 +689,6 @@
     <string name="Filter">フィルター</string>
     <string name="Apply">適用</string>
     <string name="All">すべて</string>
-    <string name="Deposit">入金</string>
-    <string name="Fee">手数料</string>
     <string name="Raw">その他</string>
     <!-- webrtc -->
     <string name="Calling">&#8230;に発信中</string>
@@ -749,7 +734,6 @@
     <string name="Multisig_by_PIN">PINでマルチシグを使用する</string>
     <string name="Use_Biometric_Multisig">生体認証でマルチシグを使用する</string>
     <string name="Multisig_Transaction">マルチシグトランザクション</string>
-    <string name="Revoke_multisig_transaction">マルチシグトランザクションを取り消す</string>
     <string name="Senders">送信者</string>
     <string name="multisig_receivers_threshold">受信者 (%1$s)</string>
     <string name="multisig_state_signed">このマルチシグリンクはすでにあなたが署名しているため、重複した操作を行うことはできません。</string>
@@ -882,7 +866,6 @@
     <string name="Encrypted">暗号化</string>
     <string name="Confirm">許可する</string>
     <string name="Change">変更</string>
-    <string name="Continue">進む</string>
     <string name="Cancel">キャンセル</string>
     <string name="Search">検索</string>
     <string name="Next">次へ</string>
@@ -934,7 +917,6 @@
     <string name="CONTACTS">連絡先</string>
     <string name="SEARCH_MESSAGES">メッセージ</string>
     <string name="Transfer">送金</string>
-    <string name="Learn_More">もっとみる</string>
     <string name="recent_chats">チャット</string>
     <string name="copied_to_clipboard">クリップボードにコピー</string>
     <string name="DISCARD">破棄</string>
@@ -956,13 +938,10 @@
     <string name="Backup_delete">バックアップを消去</string>
     <string name="Add_circle">新しいリストを作成</string>
     <string name="Sort">ソート</string>
-    <string name="circles">リスト</string>
     <string name="Bots">Myロボ一覧</string>
     <string name="Remove_all">全部クリア</string>
-    <string name="web_action_close">戻る</string>
     <string name="Playlist">プレイリスト</string>
     <string name="Stop_Playing">再生を止める</string>
-    <string name="sticker_store_action_add">追加</string>
     <string name="NO_STICKERS">ステッカーはありません</string>
     <string name="Enable_web_debug">Enable web debug</string>
     <string name="Disable_web_debug">Disable web debug</string>
