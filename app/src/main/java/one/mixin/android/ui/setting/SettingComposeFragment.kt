@@ -43,6 +43,11 @@ enum class SettingDestination {
     DatabaseDebug,
     AccountPrivacy,
     AccountSecurity,
+    Blocked,
+    Conversation,
+    PhoneNumber,
+    MobileContact,
+    AppAuthSetting,
 }
 
 open class SettingNavigationController {
