@@ -1,18 +1,24 @@
 package one.mixin.android.ui.setting.ui.page
 
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.AlertDialog
+import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
 import androidx.compose.material.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import one.mixin.android.R
 import one.mixin.android.extension.findFragmentActivityOrNull
 import one.mixin.android.extension.inTransaction
@@ -21,24 +27,41 @@ import one.mixin.android.ui.common.VerifyFragment
 import one.mixin.android.ui.setting.LocalSettingNav
 import one.mixin.android.ui.setting.SettingDestination
 import one.mixin.android.ui.setting.WalletPasswordFragment
-import one.mixin.android.ui.setting.ui.compose.SettingPageScaffold
-import one.mixin.android.ui.setting.ui.compose.SettingTile
+import one.mixin.android.ui.setting.ui.compose.MixinBackButton
+import one.mixin.android.ui.setting.ui.compose.MixinTopAppBar
 import one.mixin.android.ui.setting.ui.theme.MixinAppTheme
 
 @Composable
 fun AccountPage() {
-    SettingPageScaffold(title = stringResource(R.string.setting_account)) {
-        val navController = LocalSettingNav.current
-        SettingTile(title = stringResource(R.string.setting_privacy)) {
-            navController.navigation(SettingDestination.AccountPrivacy)
-        }
-        SettingTile(title = stringResource(R.string.setting_security)) {
-            navController.navigation(SettingDestination.AccountSecurity)
-        }
-        ChangeNumberButton()
-        Box(modifier = Modifier.height(16.dp))
-        SettingTile(title = stringResource(R.string.setting_delete_account)) {
-
+    Scaffold(
+        backgroundColor = MixinAppTheme.colors.backgroundWindow,
+        topBar = {
+            MixinTopAppBar(
+                title = {
+                    Text(stringResource(R.string.setting_account))
+                },
+                navigationIcon = {
+                    MixinBackButton()
+                }
+            )
+        },
+    ) {
+        Column(
+            Modifier
+                .padding(it)
+                .verticalScroll(rememberScrollState())
+        ) {
+            val navController = LocalSettingNav.current
+            AccountTile(stringResource(R.string.setting_privacy)) {
+                navController.navigation(SettingDestination.AccountPrivacy)
+            }
+            AccountTile(stringResource(R.string.setting_security)) {
+                navController.navigation(SettingDestination.AccountSecurity)
+            }
+            ChangeNumberButton()
+            Box(modifier = Modifier.height(16.dp))
+            AccountTile(stringResource(R.string.setting_delete_account)) {
+            }
         }
     }
 }
@@ -90,8 +113,6 @@ private fun ChangeNumberButton() {
                                 .addToBackStack(null)
                         }
                     }
-
-
                 }) {
                     Text(stringResource(R.string.profile_phone))
                 }
@@ -106,8 +127,30 @@ private fun ChangeNumberButton() {
             },
         )
     }
-    SettingTile(title = stringResource(R.string.profile_phone)) {
+    AccountTile(stringResource(R.string.profile_phone)) {
         openDialog.value = true
+    }
+}
+
+@Composable
+private fun AccountTile(
+    title: String,
+    onClick: () -> Unit,
+) {
+    Row(
+        modifier = Modifier
+            .height(60.dp)
+            .background(MixinAppTheme.colors.background)
+            .clickable { onClick() }
+            .padding(start = 16.dp, end = 16.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(
+            text = title,
+            modifier = Modifier.fillMaxWidth(),
+            fontSize = 14.sp,
+            color = MixinAppTheme.colors.textPrimary
+        )
     }
 }
 

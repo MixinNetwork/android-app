@@ -2,6 +2,8 @@ package one.mixin.android.ui.setting.ui.page
 
 import android.os.Build
 import androidx.appcompat.app.AppCompatDelegate
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.material.*
@@ -14,7 +16,10 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.extension.defaultSharedPreferences
@@ -25,30 +30,42 @@ import one.mixin.android.session.Session
 import one.mixin.android.ui.setting.AppearanceFragment
 import one.mixin.android.ui.setting.Currency
 import one.mixin.android.ui.setting.CurrencyBottomSheetDialogFragment
-import one.mixin.android.ui.setting.ui.compose.SettingPageScaffold
-import one.mixin.android.ui.setting.ui.compose.SettingTile
+import one.mixin.android.ui.setting.ui.compose.MixinBackButton
+import one.mixin.android.ui.setting.ui.compose.MixinTopAppBar
 import one.mixin.android.ui.setting.ui.theme.MixinAppTheme
 import one.mixin.android.util.TimeCache
 import one.mixin.android.util.language.Lingver
 import one.mixin.android.vo.Fiats
 import java.util.*
 
-
 @Composable
 fun AppearancePage() {
-    SettingPageScaffold(title = stringResource(R.string.setting_appearance)) {
-        ThemeItem()
+    Scaffold(
+        backgroundColor = MixinAppTheme.colors.backgroundWindow,
+        topBar = {
+            MixinTopAppBar(
+                title = {
+                    Text(stringResource(R.string.setting_appearance))
+                },
+                navigationIcon = {
+                    MixinBackButton()
+                }
+            )
+        }
+    ) {
+        Column(Modifier.padding(it)) {
 
-        Box(modifier = Modifier.height(20.dp))
+            ThemeItem()
 
-        LanguageItem()
+            Box(modifier = Modifier.height(20.dp))
 
-        Box(modifier = Modifier.height(20.dp))
+            LanguageItem()
 
-        CurrencyItem()
+            Box(modifier = Modifier.height(20.dp))
 
+            CurrencyItem()
+        }
     }
-
 }
 
 @Composable
@@ -68,11 +85,9 @@ private fun ThemeItem() {
         mutableStateOf(id)
     }
 
-    SettingTile(
-        trailing = {
-            Text(text = stringResource(id = R.string.setting_theme))
-        },
-        title = context.resources.getStringArray(R.array.setting_night_array_oreo)[currentThemeId.value],
+    AppearanceItem(
+        label = stringResource(id = R.string.setting_theme),
+        value = context.resources.getStringArray(R.array.setting_night_array_oreo)[currentThemeId.value],
     ) {
         context.singleChoice(
             context.getString(R.string.setting_theme),
@@ -102,7 +117,6 @@ private fun ThemeItem() {
             }
         }
     }
-
 }
 
 @Composable
@@ -136,11 +150,9 @@ private fun LanguageItem() {
         mutableStateOf(index)
     }
 
-    SettingTile(
-        trailing = {
-            Text(text = stringResource(R.string.language))
-        },
-        title = languageNames[currentLanguage.value],
+    AppearanceItem(
+        label = stringResource(R.string.language),
+        value = languageNames[currentLanguage.value],
     ) {
         showLanguageDialog.value = true
     }
@@ -168,7 +180,8 @@ private fun LanguageItem() {
                             selected = dialogSelected.value == index,
                             onOptionSelected = {
                                 dialogSelected.value = index
-                            })
+                            }
+                        )
                     }
                 }
             },
@@ -215,19 +228,14 @@ private fun LanguageItem() {
                             onBackPressed()
                             recreate()
                         }
-
                     }
-
                 }) {
                     Text(stringResource(R.string.capital_ok))
                 }
-
             },
         )
     }
-
 }
-
 
 @Composable
 private fun LanguageRadioItem(
@@ -259,6 +267,42 @@ private fun LanguageRadioItem(
     }
 }
 
+@Composable
+private fun AppearanceItem(
+    label: String,
+    value: String,
+    onClick: () -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(MixinAppTheme.colors.background)
+            .height(60.dp)
+            .clickable {
+                onClick()
+            }
+            .padding(horizontal = 16.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+
+        Text(
+            text = label,
+            style = TextStyle(
+                color = MixinAppTheme.colors.textPrimary,
+                fontSize = 14.sp
+            )
+        )
+
+        Spacer(Modifier.weight(1f))
+
+        Text(
+            text = value,
+            style = TextStyle(
+                color = MixinAppTheme.colors.textSubtitle,
+            )
+        )
+    }
+}
 
 @Composable
 private fun CurrencyItem() {
@@ -269,16 +313,14 @@ private fun CurrencyItem() {
 
     val context = LocalContext.current
 
-    SettingTile(
-        trailing = {
-            Text(text = stringResource(id = R.string.currency))
-        },
-        title = stringResource(
+    AppearanceItem(
+        label = stringResource(id = R.string.currency),
+        value = stringResource(
             R.string.wallet_setting_currency_desc,
             currentCurrency.value, Fiats.getSymbol(currentCurrency.value)
         ),
     ) {
-        val activity = context.findFragmentActivityOrNull() ?: return@SettingTile
+        val activity = context.findFragmentActivityOrNull() ?: return@AppearanceItem
         val currencyBottom = CurrencyBottomSheetDialogFragment.newInstance()
         currencyBottom.callback = object : CurrencyBottomSheetDialogFragment.Callback {
             override fun onCurrencyClick(currency: Currency) {
@@ -287,5 +329,12 @@ private fun CurrencyItem() {
         }
         currencyBottom.showNow(activity.supportFragmentManager, CurrencyBottomSheetDialogFragment.TAG)
     }
+}
 
+@Composable
+@Preview
+fun AppearanceItemPreview() {
+    MixinAppTheme {
+        AppearanceItem("Label", "Value") {}
+    }
 }

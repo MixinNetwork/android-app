@@ -79,7 +79,6 @@ fun MixinBottomSheetDialog(
     SideEffect {
         dialog.updateParameters(onDismissRequest = onDismissRequest)
     }
-
 }
 
 private class MixinBottomSheetDialogWrapper(
@@ -107,7 +106,6 @@ private class MixinBottomSheetDialogWrapper(
         setParentCompositionContext(parent)
         setContent(content)
         createComposition()
-
     }
 
     init {
@@ -132,5 +130,4 @@ private class MixinBottomSheetDialogWrapper(
     fun updateParameters(onDismissRequest: () -> Unit) {
         this.onDismissRequest = onDismissRequest
     }
-
 }

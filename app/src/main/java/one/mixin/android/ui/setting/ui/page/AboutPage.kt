@@ -3,7 +3,11 @@ package one.mixin.android.ui.setting.ui.page
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Scaffold
@@ -23,7 +27,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import one.mixin.android.Constants
 import one.mixin.android.R
-import one.mixin.android.extension.*
+import one.mixin.android.extension.defaultSharedPreferences
+import one.mixin.android.extension.openMarket
+import one.mixin.android.extension.openUrl
+import one.mixin.android.extension.putBoolean
+import one.mixin.android.extension.toast
 import one.mixin.android.ui.setting.LocalSettingNav
 import one.mixin.android.ui.setting.SettingDestination
 import one.mixin.android.ui.setting.diagnosis.DiagnosisActivity
@@ -31,7 +39,6 @@ import one.mixin.android.ui.setting.ui.compose.MixinBackButton
 import one.mixin.android.ui.setting.ui.compose.MixinTopAppBar
 import one.mixin.android.ui.setting.ui.theme.MixinAppTheme
 import one.mixin.android.widget.DebugClickHandler
-
 
 private fun Modifier.debugClickable(
     onClick: (() -> Unit)? = null,
@@ -72,6 +79,7 @@ fun AboutPage() {
     }
 
     Scaffold(
+        backgroundColor = MixinAppTheme.colors.background,
         topBar = {
             val context = LocalContext.current
             MixinTopAppBar(
@@ -169,7 +177,6 @@ fun AboutPage() {
         }
     }
 }
-
 
 @Composable
 private fun AboutTile(

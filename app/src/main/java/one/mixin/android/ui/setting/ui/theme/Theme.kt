@@ -11,7 +11,6 @@ import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.ui.graphics.Color
 import one.mixin.android.R
 
-
 class AppColors(
     val primary: Color,
     val accent: Color,

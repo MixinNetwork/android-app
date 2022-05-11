@@ -88,13 +88,10 @@ fun MixinTopAppBar(
                         content = actions
                     )
                 }
-
             }
         }
     }
-
 }
-
 
 @Preview
 @Composable

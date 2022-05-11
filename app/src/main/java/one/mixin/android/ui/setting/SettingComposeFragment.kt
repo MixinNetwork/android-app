@@ -30,7 +30,6 @@ import one.mixin.android.ui.setting.ui.theme.MixinAppTheme
 import one.mixin.android.vo.User
 import timber.log.Timber
 
-
 enum class SettingDestination {
     Setting,
     Account,
@@ -124,7 +123,6 @@ class SettingComposeFragment : BaseFragment() {
         fun newInstance(): SettingComposeFragment {
             return SettingComposeFragment()
         }
-
     }
 
     private val parentBackStackEntryCount = MutableLiveData(0)
@@ -276,5 +274,4 @@ class SettingComposeFragment : BaseFragment() {
             }
         }
     }
-
 }

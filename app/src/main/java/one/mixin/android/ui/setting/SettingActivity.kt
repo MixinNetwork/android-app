@@ -28,9 +28,11 @@ class SettingActivity : BlazeBaseActivity() {
         const val ARGS_SUCCESS = "args_success"
 
         fun show(context: Context, compose: Boolean = true) {
-            context.startActivity(Intent(context, SettingActivity::class.java).apply {
-                putExtra(EXTRA_SHOW_COMPOSE, compose)
-            })
+            context.startActivity(
+                Intent(context, SettingActivity::class.java).apply {
+                    putExtra(EXTRA_SHOW_COMPOSE, compose)
+                }
+            )
         }
 
         fun showPinSetting(context: Context) {

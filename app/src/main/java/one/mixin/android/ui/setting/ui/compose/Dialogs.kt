@@ -34,5 +34,4 @@ fun IndeterminateProgressDialog(
             progressDialog?.dismiss()
         }
     }
-
 }

@@ -46,7 +46,6 @@ abstract class DebugClickHandler {
             }
         }
     }
-
 }
 
 abstract class DebugClickListener : DebugClickHandler(), View.OnClickListener {
@@ -54,5 +53,4 @@ abstract class DebugClickListener : DebugClickHandler(), View.OnClickListener {
     override fun onClick(v: View) {
         onClick()
     }
-
 }
