@@ -5,13 +5,8 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.activity.compose.LocalOnBackPressedDispatcherOwner
 import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Surface
 import androidx.compose.runtime.*
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.ComposeView
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.MutableLiveData
@@ -143,94 +138,88 @@ class SettingComposeFragment : BaseFragment() {
                 MixinAppTheme(
                     darkTheme = context.isNightMode() || isSystemInDarkTheme(),
                 ) {
-                    LocalOnBackPressedDispatcherOwner
-                    Surface(
-                        modifier = Modifier.fillMaxSize(),
-                        color = MaterialTheme.colors.background
+                    val navController = rememberNavController()
+                    val navigationController = remember {
+                        SettingNavControllerImpl(navController, closeActivity = {
+                            activity?.onBackPressed()
+                        })
+                    }
+
+                    DisposableEffect(navController) {
+                        val observer = Observer<Int> { value ->
+                            navController.enableOnBackPressed(value == 0)
+                        }
+                        parentBackStackEntryCount.observeForever(observer)
+                        onDispose {
+                            parentBackStackEntryCount.removeObserver(observer)
+                        }
+                    }
+
+                    CompositionLocalProvider(
+                        LocalSettingNav provides navigationController
                     ) {
-                        val navController = rememberNavController()
-                        val navigationController = remember {
-                            SettingNavControllerImpl(navController, closeActivity = {
-                                activity?.onBackPressed()
-                            })
-                        }
-
-                        DisposableEffect(navController) {
-                            val observer = Observer<Int> { value ->
-                                navController.enableOnBackPressed(value == 0)
-                            }
-                            parentBackStackEntryCount.observeForever(observer)
-                            onDispose {
-                                parentBackStackEntryCount.removeObserver(observer)
-                            }
-                        }
-
-                        CompositionLocalProvider(
-                            LocalSettingNav provides navigationController
+                        NavHost(
+                            navController = navController,
+                            startDestination = SettingDestination.Setting.name,
                         ) {
-                            NavHost(
-                                navController = navController,
-                                startDestination = SettingDestination.Setting.name,
-                            ) {
-                                composable(SettingDestination.Setting.name) {
-                                    SettingPage()
+                            composable(SettingDestination.Setting.name) {
+                                SettingPage()
+                            }
+                            composable(SettingDestination.About.name) {
+                                AboutPage()
+                            }
+                            composable(SettingDestination.Account.name) {
+                                AccountPage()
+                            }
+                            composable(SettingDestination.Appearance.name) {
+                                AppearancePage()
+                            }
+                            composable(SettingDestination.NotificationAndConfirm.name) {
+                                NotificationsPage()
+                            }
+                            composable(SettingDestination.BackUp.name) {
+                                MixinSettingFragment(BackUpFragment.TAG) {
+                                    BackUpFragment.newInstance()
                                 }
-                                composable(SettingDestination.About.name) {
-                                    AboutPage()
-                                }
-                                composable(SettingDestination.Account.name) {
-                                    AccountPage()
-                                }
-                                composable(SettingDestination.Appearance.name) {
-                                    AppearancePage()
-                                }
-                                composable(SettingDestination.NotificationAndConfirm.name) {
-                                    NotificationsPage()
-                                }
-                                composable(SettingDestination.BackUp.name) {
-                                    MixinSettingFragment(BackUpFragment.TAG) {
-                                        BackUpFragment.newInstance()
-                                    }
-                                }
-                                composable(SettingDestination.AccountPrivacy.name) {
-                                    AccountPrivacyPage()
-                                }
-                                composable(SettingDestination.Blocked.name) {
-                                    BlockedPage()
-                                }
+                            }
+                            composable(SettingDestination.AccountPrivacy.name) {
+                                AccountPrivacyPage()
+                            }
+                            composable(SettingDestination.Blocked.name) {
+                                BlockedPage()
+                            }
 
-                                composable(SettingDestination.Conversation.name) {
-                                    ConversationSettingPage()
-                                }
+                            composable(SettingDestination.Conversation.name) {
+                                ConversationSettingPage()
+                            }
 
-                                composable(SettingDestination.PhoneNumber.name) {
-                                    PhoneNumberSettingPage()
-                                }
+                            composable(SettingDestination.PhoneNumber.name) {
+                                PhoneNumberSettingPage()
+                            }
 
-                                composable(SettingDestination.MobileContact.name) {
-                                    MobileContactPage()
-                                }
+                            composable(SettingDestination.MobileContact.name) {
+                                MobileContactPage()
+                            }
 
-                                // TODO(BIN) remove this. didn't work now.
-                                composable(SettingDestination.UserBottomSheet.name) {
-                                    val user = it.arguments?.getParcelable<User>(USER_KEY)
-                                    val conversationId = it.arguments?.getString(CONVERSATION_ID_KEY)
+                            // TODO(BIN) remove this. didn't work now.
+                            composable(SettingDestination.UserBottomSheet.name) {
+                                val user = it.arguments?.getParcelable<User>(USER_KEY)
+                                val conversationId = it.arguments?.getString(CONVERSATION_ID_KEY)
 
-                                    val fragment = remember {
-                                        if (user == null) {
-                                            null
-                                        } else {
-                                            UserBottomSheetDialogFragment.newInstance(user, conversationId)
-                                        }
-                                    }
-                                    if (fragment != null) {
-                                        MixinSettingFragment(UserBottomSheetDialogFragment.TAG) {
-                                            fragment
-                                        }
+                                val fragment = remember {
+                                    if (user == null) {
+                                        null
                                     } else {
-                                        LaunchedEffect(Unit) {
-                                            navigationController.pop()
-                                        }
+                                        UserBottomSheetDialogFragment.newInstance(user, conversationId)
+                                    }
+                                }
+                                if (fragment != null) {
+                                    MixinSettingFragment(UserBottomSheetDialogFragment.TAG) {
+                                        fragment
+                                    }
+                                } else {
+                                    LaunchedEffect(Unit) {
+                                        navigationController.pop()
                                     }
                                 }
                             }
