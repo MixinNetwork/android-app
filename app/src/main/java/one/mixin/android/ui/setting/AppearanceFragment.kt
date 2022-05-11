@@ -28,8 +28,9 @@ class AppearanceFragment : BaseFragment(R.layout.fragment_appearance) {
         const val POS_FOLLOW_SYSTEM = 0
         const val POS_ENGLISH = 1
         const val POS_SIMPLIFY_CHINESE = 2
-        const val POS_INDONESIA = 3
-        const val POS_Malay = 4
+        const val POS_SIMPLIFY_JAPANESE = 3
+        const val POS_INDONESIA = 4
+        const val POS_Malay = 5
 
         fun newInstance() = AppearanceFragment()
     }
@@ -87,6 +88,9 @@ class AppearanceFragment : BaseFragment(R.layout.fragment_appearance) {
                     Locale.SIMPLIFIED_CHINESE.language -> {
                         languageNames[POS_SIMPLIFY_CHINESE]
                     }
+                    Locale.JAPANESE.language -> {
+                        languageNames[POS_SIMPLIFY_JAPANESE]
+                    }
                     Constants.Locale.Indonesian.Language -> {
                         languageNames[POS_INDONESIA]
                     }
@@ -122,6 +126,9 @@ class AppearanceFragment : BaseFragment(R.layout.fragment_appearance) {
                 Locale.SIMPLIFIED_CHINESE.language -> {
                     POS_SIMPLIFY_CHINESE
                 }
+                Locale.JAPANESE.language -> {
+                    POS_SIMPLIFY_JAPANESE
+                }
                 Constants.Locale.Indonesian.Language -> {
                     POS_INDONESIA
                 }
@@ -146,12 +153,14 @@ class AppearanceFragment : BaseFragment(R.layout.fragment_appearance) {
                     } else {
                         val selectedLang = when (newSelectItem) {
                             POS_SIMPLIFY_CHINESE -> Locale.SIMPLIFIED_CHINESE.language
+                            POS_SIMPLIFY_JAPANESE -> Locale.JAPANESE.language
                             POS_INDONESIA -> Constants.Locale.Indonesian.Language
                             POS_Malay -> Constants.Locale.Malay.Language
                             else -> Locale.US.language
                         }
                         val selectedCountry = when (newSelectItem) {
                             POS_SIMPLIFY_CHINESE -> Locale.SIMPLIFIED_CHINESE.country
+                            POS_SIMPLIFY_JAPANESE -> Locale.JAPANESE.country
                             POS_INDONESIA -> Constants.Locale.Indonesian.Country
                             POS_Malay -> Constants.Locale.Malay.Country
                             else -> Locale.US.country
