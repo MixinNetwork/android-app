@@ -207,6 +207,10 @@ class SettingComposeFragment : BaseFragment() {
                                     PhoneNumberSettingPage()
                                 }
 
+                                composable(SettingDestination.MobileContact.name) {
+                                    MobileContactPage()
+                                }
+
                                 // TODO(BIN) remove this. didn't work now.
                                 composable(SettingDestination.UserBottomSheet.name) {
                                     val user = it.arguments?.getParcelable<User>(USER_KEY)

@@ -11,6 +11,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.tooling.preview.Preview
@@ -54,6 +55,7 @@ fun SettingTile(
     @DrawableRes icon: Int? = null,
     trailing: @Composable () -> Unit = {},
     title: String,
+    titleColor: Color? = null,
     description: String? = null,
     onClick: () -> Unit,
 ) {
@@ -81,7 +83,7 @@ fun SettingTile(
             }
             Text(
                 text = title,
-                color = MixinAppTheme.colors.textPrimary,
+                color = titleColor ?: MixinAppTheme.colors.textPrimary,
                 fontSize = 14.sp
             )
             Spacer(Modifier.weight(1f))

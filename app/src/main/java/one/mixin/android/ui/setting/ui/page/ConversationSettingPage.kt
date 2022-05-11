@@ -152,7 +152,8 @@ fun MessageSettingItem(
                 } else {
                     CircularProgressIndicator(
                         modifier = Modifier
-                            .size(20.dp),
+                            .size(24.dp)
+                            .padding(4.dp),
                         color = MixinAppTheme.colors.accent,
                         strokeWidth = 2.dp,
                     )

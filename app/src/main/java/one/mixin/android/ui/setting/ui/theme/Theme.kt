@@ -20,6 +20,7 @@ class AppColors(
 
     val backgroundWindow: Color,
     val background: Color,
+    val red: Color = Color(0xFFE55541),
 )
 
 object MixinAppTheme {
