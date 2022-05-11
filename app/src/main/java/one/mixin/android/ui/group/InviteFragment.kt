@@ -90,13 +90,13 @@ class InviteFragment : BaseFragment() {
                         startActivity(
                             Intent.createChooser(
                                 sendIntent,
-                                resources.getText(R.string.invite_title)
+                                resources.getText(R.string.Invite_to_Group_via_Link)
                             )
                         )
                     }
                 },
                 {
-                    toast(R.string.invite_invalid)
+                    toast(R.string.Invalid_Link)
                 }
             )
         }

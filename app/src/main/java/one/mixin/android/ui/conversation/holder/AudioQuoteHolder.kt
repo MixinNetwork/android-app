@@ -89,7 +89,7 @@ class AudioQuoteHolder constructor(val binding: ItemChatAudioQuoteBinding) : Med
         }
 
         if (messageItem.mediaStatus == MediaStatus.EXPIRED.name) {
-            binding.audioDuration.setText(R.string.chat_expired)
+            binding.audioDuration.setText(R.string.Expired)
         } else {
             binding.audioDuration.text = messageItem.mediaDuration?.toLongOrNull()?.formatMillis() ?: ""
         }

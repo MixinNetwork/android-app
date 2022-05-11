@@ -39,7 +39,7 @@
             android:layout_centerVertical="true"
             android:padding="8dp"
             android:layout_marginEnd="8dp"
-            android:text="@string/action_next"
+            android:text="@string/Next"
             android:textColor="@color/colorAccent"
             android:textSize="16sp"
             tools:ignore="RelativeOverlap" />
@@ -93,7 +93,7 @@
                     android:layout_marginBottom="4dp"
                     android:layout_gravity="center_horizontal"
                     android:textColor="?attr/text_primary"
-                    android:text="@string/action_crop"/>
+                    android:text="@string/Crop"/>
             </androidx.appcompat.widget.LinearLayoutCompat>
 
             <androidx.appcompat.widget.LinearLayoutCompat
@@ -111,7 +111,7 @@
                     android:layout_marginTop="4dp"
                     android:layout_gravity="center_horizontal"
                     android:src="@drawable/ic_text"
-                    android:contentDescription="@string/action_text" />
+                    android:contentDescription="@string/Text" />
 
                 <TextView
                     android:layout_width="wrap_content"
@@ -120,7 +120,7 @@
                     android:layout_marginBottom="4dp"
                     android:layout_gravity="center_horizontal"
                     android:textColor="?attr/text_primary"
-                    android:text="@string/action_text"/>
+                    android:text="@string/Text"/>
             </androidx.appcompat.widget.LinearLayoutCompat>
 
             <androidx.appcompat.widget.LinearLayoutCompat
@@ -138,7 +138,7 @@
                     android:layout_marginTop="4dp"
                     android:layout_gravity="center_horizontal"
                     android:src="@drawable/ic_baseline_brush_24"
-                    android:contentDescription="@string/action_draw" />
+                    android:contentDescription="@string/Draw" />
 
                 <TextView
                     android:layout_width="wrap_content"
@@ -147,7 +147,7 @@
                     android:layout_marginBottom="4dp"
                     android:layout_gravity="center_horizontal"
                     android:textColor="?attr/text_primary"
-                    android:text="@string/action_draw"/>
+                    android:text="@string/Draw"/>
             </androidx.appcompat.widget.LinearLayoutCompat>
         </androidx.appcompat.widget.LinearLayoutCompat>
 
@@ -175,7 +175,7 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_vertical"
                 android:layout_marginEnd="8dp"
-                android:text="@string/size"
+                android:text="@string/Size"
                 android:textColor="?attr/text_minor"
                 android:textSize="14sp" />
 
@@ -222,7 +222,7 @@
                     android:layout_centerInParent="true"
                     android:padding="8dp"
                     android:layout_marginEnd="8dp"
-                    android:text="@string/action_crop"
+                    android:text="@string/Crop"
                     android:textColor="?attr/text_primary"
                     android:textSize="16sp"
                     tools:ignore="RelativeOverlap" />

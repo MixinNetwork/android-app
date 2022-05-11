@@ -8,7 +8,7 @@
 
     <TextView
         android:id="@+id/delete_me"
-        android:text="@string/chat_delete_for_me"
+        android:text="@string/Delete_for_me"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textColor="@color/selector_tv_blue"
@@ -29,7 +29,7 @@
 
     <TextView
         android:id="@+id/delete_everyone"
-        android:text="@string/chat_delete_for_everyone"
+        android:text="@string/Delete_for_everyone"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textColor="@color/selector_tv_blue"

@@ -106,7 +106,7 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
                                 val anchorView = coinsRv
 
                                 snackbar = Snackbar.make(anchorView, getString(R.string.wallet_already_hidden, asset.symbol), Snackbar.LENGTH_LONG)
-                                    .setAction(R.string.capital_undo) {
+                                    .setAction(R.string.UNDO) {
                                         assetsAdapter.restoreItem(deleteItem, hiddenPos)
                                         lifecycleScope.launch(Dispatchers.IO) {
                                             walletViewModel.updateAssetHidden(asset.assetId, false)
@@ -257,7 +257,7 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
                 }
                 list[1].percent < 0.01f && list[1].percent > 0f -> {
                     addItem(list[0], 0)
-                    addItem(PercentView.PercentItem(getString(R.string.capital_other), 0.01f), 1)
+                    addItem(PercentView.PercentItem(getString(R.string.OTHER), 0.01f), 1)
                 }
                 list.size == 3 -> {
                     addItem(list[0], 0)
@@ -276,7 +276,7 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
                     }
                     val other = (100 - pre) / 100f
                     val item = PercentItemView(requireContext())
-                    item.setPercentItem(PercentView.PercentItem(getString(R.string.capital_other), other), 2)
+                    item.setPercentItem(PercentView.PercentItem(getString(R.string.OTHER), other), 2)
                     _headBinding?.pieItemContainer?.addView(item)
                 }
             }

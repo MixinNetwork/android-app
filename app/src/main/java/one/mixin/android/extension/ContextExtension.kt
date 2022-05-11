@@ -418,7 +418,7 @@ fun Fragment.openCamera(output: Uri) {
     if (intent.resolveActivity(requireContext().packageManager) != null) {
         startActivityForResult(intent, REQUEST_CAMERA)
     } else {
-        toast(R.string.error_no_camera)
+        toast(R.string.No_camera)
     }
 }
 
@@ -449,12 +449,12 @@ fun Context.openMedia(messageItem: MessageItem) {
                     messageItem.absolutePath()
                 }
                 if (path == null) {
-                    toast(R.string.error_file_exists)
+                    toast(R.string.File_does_not_exist)
                     return@let
                 }
                 val file = File(path)
                 if (!file.exists()) {
-                    toast(R.string.error_file_exists)
+                    toast(R.string.File_does_not_exist)
                 } else {
                     intent.setDataAndType(getUriForFile(file), messageItem.mediaMimeType)
                     startActivity(intent)
@@ -464,7 +464,7 @@ fun Context.openMedia(messageItem: MessageItem) {
     } catch (e: ActivityNotFoundException) {
         toast(R.string.error_unable_to_open_media)
     } catch (e: SecurityException) {
-        toast(R.string.error_file_exists)
+        toast(R.string.File_does_not_exist)
     }
 }
 
@@ -486,12 +486,12 @@ fun Context.openMedia(messageItem: ChatHistoryMessageItem) {
                     messageItem.absolutePath()
                 }
                 if (path == null) {
-                    toast(R.string.error_file_exists)
+                    toast(R.string.File_does_not_exist)
                     return@let
                 }
                 val file = File(path)
                 if (!file.exists()) {
-                    toast(R.string.error_file_exists)
+                    toast(R.string.File_does_not_exist)
                 } else {
                     intent.setDataAndType(getUriForFile(file), messageItem.mediaMimeType)
                     startActivity(intent)
@@ -501,7 +501,7 @@ fun Context.openMedia(messageItem: ChatHistoryMessageItem) {
     } catch (e: ActivityNotFoundException) {
         toast(R.string.error_unable_to_open_media)
     } catch (e: SecurityException) {
-        toast(R.string.error_file_exists)
+        toast(R.string.File_does_not_exist)
     }
 }
 
@@ -584,7 +584,7 @@ fun Context.getAttachment(local: Uri, mimeType: String? = null): Attachment? {
             return Attachment(resultUri, fileName, mimeType ?: contentResolver.getType(uri) ?: "", fileSize)
         }
     } catch (e: SecurityException) {
-        toast(R.string.error_file_exists)
+        toast(R.string.File_does_not_exist)
     } finally {
         cursor?.close()
     }
@@ -667,7 +667,7 @@ fun Context.openUrl(url: String) {
             .setShowTitle(true)
             .setActionButton(
                 BitmapFactory.decodeResource(this.resources, R.drawable.ic_share),
-                this.getString(R.string.action_share),
+                this.getString(R.string.Share),
                 pendingIntent
             )
             .build()
@@ -839,9 +839,9 @@ fun Context.showConfirmDialog(
 ) {
     alertDialogBuilder()
         .setMessage(message)
-        .setNegativeButton(R.string.action_cancel) { dialog, _ ->
+        .setNegativeButton(R.string.Cancel) { dialog, _ ->
             dialog.dismiss()
-        }.setPositiveButton(R.string.capital_ok) { dialog, _ ->
+        }.setPositiveButton(R.string.OK) { dialog, _ ->
             action.invoke()
             dialog.dismiss()
         }.create().apply {
@@ -972,7 +972,7 @@ fun Activity.showPipPermissionNotification(targetActivity: Class<*>, title: Stri
     supportsOreo {
         val channel = NotificationChannel(
             CallActivity.CHANNEL_PIP_PERMISSION,
-            getString(R.string.capital_other),
+            getString(R.string.OTHER),
             NotificationManager.IMPORTANCE_HIGH
         )
         notificationManager.createNotificationChannel(channel)
@@ -1086,7 +1086,7 @@ fun Context.shareFile(file: File, type: String) {
             grantUriPermission(packageName, uri, Intent.FLAG_GRANT_READ_URI_PERMISSION)
         }
         try {
-            startActivity(Intent.createChooser(this, getString(R.string.document)))
+            startActivity(Intent.createChooser(this, getString(R.string.File)))
         } catch (ignored: ActivityNotFoundException) {
             Timber.e(ignored)
         }
@@ -1101,7 +1101,7 @@ fun Context.shareMedia(isVideo: Boolean, url: String) {
         if (ContentResolver.SCHEME_FILE == uri.scheme) {
             val path = uri.getFilePath(this@shareMedia)
             if (path == null) {
-                toast(R.string.error_file_exists)
+                toast(R.string.File_does_not_exist)
                 return
             }
             uri = getUriForFile(File(path))
@@ -1111,7 +1111,7 @@ fun Context.shareMedia(isVideo: Boolean, url: String) {
         }
         type = if (isVideo) "video/*" else "image/*"
     }
-    val name = getString(if (isVideo) R.string.video else R.string.photo)
+    val name = getString(if (isVideo) R.string.Video else R.string.Photo)
     val chooser = Intent.createChooser(sendIntent, getString(R.string.share_to, name))
     val resInfoList = packageManager.queryIntentActivities(chooser, PackageManager.MATCH_DEFAULT_ONLY)
     resInfoList.forEach {

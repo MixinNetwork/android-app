@@ -53,7 +53,7 @@ class DepositPublicKeyFragment : DepositFragment() {
                 leftIb.setOnClickListener { activity?.onBackPressed() }
                 rightAnimator.setOnClickListener { context?.openUrl(Constants.HelpLink.DEPOSIT) }
             }
-            title.setSubTitle(getString(R.string.filters_deposit), asset.symbol)
+            title.setSubTitle(getString(R.string.Deposit), asset.symbol)
             qrAvatar.apply {
                 bg.loadImage(asset.iconUrl, R.drawable.ic_avatar_place_holder)
                 badge.loadImage(asset.chainIconUrl, R.drawable.ic_avatar_place_holder)

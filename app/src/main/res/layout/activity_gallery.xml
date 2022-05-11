@@ -52,7 +52,7 @@
             android:layout_gravity="center"
             android:drawablePadding="8dp"
             android:gravity="center"
-            android:text="@string/gallery_no_media_yet"
+            android:text="@string/No_media_yet"
             android:textColor="?attr/text_minor"
             android:textSize="16sp"
             app:drawableTopCompat="@drawable/ic_hidden_assets" />

@@ -198,7 +198,7 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 setAdapter()
                 refreshUsers()
             } else {
-                binding.title.text = getString(R.string.chat_call_title)
+                binding.title.text = getString(R.string.Call)
                 binding.avatarLl.isVisible = true
                 binding.usersRv.isVisible = false
                 val callee = callState.user
@@ -463,7 +463,7 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
         binding.closeIb.isVisible = true
         binding.minimizeIb.isVisible = false
         binding.declineTv.isVisible = true
-        updateTitle(getString(R.string.call_notification_incoming_voice))
+        updateTitle(getString(R.string.Incoming_voice_call))
     }
 
     private fun handleJoin() {
@@ -484,7 +484,7 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
         binding.closeIb.isVisible = false
         binding.minimizeIb.isVisible = true
         binding.declineTv.isVisible = false
-        updateTitle(getString(R.string.call_notification_outgoing))
+        updateTitle(getString(R.string.Calling))
     }
 
     private fun handleAnswering() {
@@ -495,7 +495,7 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
         binding.closeIb.isVisible = false
         binding.minimizeIb.isVisible = true
         binding.declineTv.isVisible = false
-        updateTitle(getString(R.string.call_connecting))
+        updateTitle(getString(R.string.in_connecting))
     }
 
     private fun handleConnected(disconnected: Boolean) {
@@ -511,7 +511,7 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
         }
         if (disconnected) {
             stopTimer()
-            updateTitle(getString(R.string.chat_call_bad_network_you))
+            updateTitle(getString(R.string.Connection_unstable))
         } else {
             startTimer()
         }
@@ -525,7 +525,7 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
             "$groupName"
         } else {
             getString(
-                R.string.chat_call_title
+                R.string.Call
             )
         }
         binding.callStatus.text = content
@@ -592,16 +592,17 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
 
     private fun showE2EETip() {
         alertDialogBuilder()
-            .setMessage(R.string.end_to_end_encryption_tip)
-            .setNeutralButton(R.string.action_learn_more) { dialog, _ ->
+            .setTitle(R.string.call_encryption_title)
+            .setMessage(R.string.call_encryption_description)
+            .setNeutralButton(R.string.Learn_More) { dialog, _ ->
                 WebActivity.show(
                     requireContext(),
-                    getString(R.string.chat_waiting_url),
+                    getString(R.string.secret_url),
                     callState.conversationId
                 )
                 dialog.dismiss()
             }
-            .setPositiveButton(R.string.capital_ok) { dialog, _ ->
+            .setPositiveButton(R.string.OK) { dialog, _ ->
                 dialog.dismiss()
             }
             .show()
@@ -703,7 +704,7 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
             permissionAlert = AlertDialog.Builder(requireContext())
                 .setTitle(R.string.app_name)
                 .setMessage(R.string.call_pip_permission)
-                .setPositiveButton(R.string.live_setting) { dialog, _ ->
+                .setPositiveButton(R.string.Settings) { dialog, _ ->
                     try {
                         startActivity(
                             Intent(

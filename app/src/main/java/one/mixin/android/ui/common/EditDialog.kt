@@ -56,9 +56,9 @@ class EditDialog : MixinBottomSheetDialogFragment() {
     var allowEmpty: Boolean = false
     var defaultEditEnable: Boolean = true
 
-    @StringRes var leftText: Int = R.string.action_cancel
+    @StringRes var leftText: Int = R.string.Cancel
     var leftAction: (() -> Unit)? = null
-    @StringRes var rightText: Int = R.string.action_save
+    @StringRes var rightText: Int = R.string.Save
     var rightAction: ((editContent: String) -> Unit)? = null
 
     private val binding by viewBinding(FragmentBottomEditBinding::inflate)

@@ -16,7 +16,7 @@
         app:layout_constraintTop_toTopOf="parent"
         app:leftIcon="@drawable/ic_arrow_back"
         app:need_divider="false"
-        app:titleText="@string/wallet_hidden_assets"/>
+        app:titleText="@string/Hidden_Assets"/>
 
     <ViewAnimator
         android:id="@+id/assets_va"
@@ -49,7 +49,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_centerInParent="true"
-                android:text="@string/no_hidden_asset"
+                android:text="@string/No_hidden_asset"
                 android:textColor="?attr/text_minor"
                 android:textSize="16sp"/>
         </RelativeLayout>

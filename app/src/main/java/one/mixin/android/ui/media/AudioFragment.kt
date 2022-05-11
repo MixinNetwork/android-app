@@ -43,7 +43,7 @@ class AudioFragment : BaseFragment(R.layout.layout_recycler_view) {
                 messageItem.mediaStatus == MediaStatus.CANCELED.name -> {
                     if (Session.getAccountId() == messageItem.userId) {
                         viewModel.retryUpload(messageItem.messageId) {
-                            toast(R.string.error_retry_upload)
+                            toast(R.string.Retry_upload_failed)
                         }
                     } else {
                         viewModel.retryDownload(messageItem.messageId)
@@ -68,7 +68,7 @@ class AudioFragment : BaseFragment(R.layout.layout_recycler_view) {
         binding.recyclerView.addItemDecoration(StickyRecyclerHeadersDecoration(adapter))
         binding.recyclerView.adapter = adapter
         binding.emptyIv.setImageResource(R.drawable.ic_empty_audio)
-        binding.emptyTv.setText(R.string.capital_no_audio)
+        binding.emptyTv.setText(R.string.NO_AUDIO)
         viewModel.getAudioMessages(conversationId).observe(
             viewLifecycleOwner
         ) {

@@ -3,13 +3,13 @@
     <item
         android:id="@+id/forward"
         android:icon="@drawable/ic_menu_forward"
-        android:title="@string/action_forward" />
+        android:title="@string/Forward" />
     <item
         android:id="@+id/copy"
         android:icon="@drawable/ic_menu_copy"
-        android:title="@string/action_copy" />
+        android:title="@string/Copy" />
     <item
         android:id="@+id/unpin"
         android:icon="@drawable/ic_menu_unpin"
-        android:title="@string/action_unpin" />
+        android:title="@string/Unpin" />
 </menu>

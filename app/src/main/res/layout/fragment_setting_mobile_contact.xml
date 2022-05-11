@@ -11,7 +11,7 @@
         android:id="@+id/title_view"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:titleText="@string/setting_mobile_contact" />
+        app:titleText="@string/Phone_Contacts" />
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -36,7 +36,7 @@
             android:layout_marginEnd="@dimen/margin20"
             android:layout_marginBottom="32dp"
             android:gravity="center"
-            android:text="@string/setting_mobile_contact_desc"
+            android:text="@string/syncs_contact_hint"
             android:textColor="?attr/text_minor" />
     </LinearLayout>
 

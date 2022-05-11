@@ -211,12 +211,12 @@ class WebFragment : BaseFragment() {
         webView.hitTestResult.let {
             when (it.type) {
                 WebView.HitTestResult.IMAGE_TYPE, WebView.HitTestResult.SRC_IMAGE_ANCHOR_TYPE -> {
-                    menu.add(0, CONTEXT_MENU_ID_SCAN_IMAGE, 0, R.string.contact_sq_scan_title)
+                    menu.add(0, CONTEXT_MENU_ID_SCAN_IMAGE, 0, R.string.Extract_QR_Code)
                     menu.getItem(0).setOnMenuItemClickListener { menu ->
                         onContextItemSelected(menu)
                         return@setOnMenuItemClickListener true
                     }
-                    menu.add(0, CONTEXT_MENU_ID_SAVE_IMAGE, 1, R.string.contact_save_image)
+                    menu.add(0, CONTEXT_MENU_ID_SAVE_IMAGE, 1, R.string.Save_image)
                     menu.getItem(1).setOnMenuItemClickListener { menu ->
                         onContextItemSelected(menu)
                         return@setOnMenuItemClickListener true
@@ -670,7 +670,7 @@ class WebFragment : BaseFragment() {
                     startActivityForResult(intent, FILE_CHOOSER)
                 } catch (e: ActivityNotFoundException) {
                     uploadMessage = null
-                    toast(R.string.error_file_chooser)
+                    toast(R.string.File_chooser_error)
                     return false
                 }
                 return true
@@ -895,7 +895,7 @@ class WebFragment : BaseFragment() {
         val bottomSheet = builder.create()
         viewBinding.closeIv.setOnClickListener { bottomSheet.dismiss() }
         val shareMenu = menu {
-            title = getString(if (isBot()) R.string.about else R.string.action_share)
+            title = getString(if (isBot()) R.string.About else R.string.Share)
             icon = if (isBot()) R.drawable.ic_setting_about else R.drawable.ic_web_share
             action = {
                 if (isBot()) {
@@ -915,11 +915,11 @@ class WebFragment : BaseFragment() {
             }
         }
         val forwardMenu = menu {
-            title = getString(R.string.action_forward)
+            title = getString(R.string.Forward)
             icon = R.drawable.ic_web_forward
             action = {
                 if (appCard?.shareable == false || !shareable) {
-                    toast(R.string.link_shareable_false)
+                    toast(R.string.app_card_shareable_false)
                 } else {
                     val currentUrl = webView.url ?: url
                     if (isBot()) {
@@ -963,7 +963,7 @@ class WebFragment : BaseFragment() {
             }
         }
         val refreshMenu = menu {
-            title = getString(R.string.action_refresh)
+            title = getString(R.string.Refresh)
             icon = R.drawable.ic_web_refresh
             action = {
                 refresh()
@@ -971,7 +971,7 @@ class WebFragment : BaseFragment() {
             }
         }
         val openMenu = menu {
-            title = getString(R.string.open_in_browser)
+            title = getString(R.string.Open_in_browser)
             icon = R.drawable.ic_web_browser
             action = {
                 (webView.url ?: currentUrl)?.let {
@@ -981,7 +981,7 @@ class WebFragment : BaseFragment() {
             }
         }
         val copyMenu = menu {
-            title = getString(R.string.copy_link)
+            title = getString(R.string.Copy_link)
             icon = R.drawable.ic_content_copy
             action = {
                 requireContext().getClipboardManager()
@@ -993,9 +993,9 @@ class WebFragment : BaseFragment() {
         val isHold = isHold()
         val floatingMenu = menu {
             title = if (isHold) {
-                getString(R.string.action_cancel_floating)
+                getString(R.string.Cancel_Floating)
             } else {
-                getString(R.string.action_floating)
+                getString(R.string.Floating)
             }
             icon = if (isHold) {
                 R.drawable.ic_web_floating_cancel
@@ -1021,13 +1021,13 @@ class WebFragment : BaseFragment() {
             }
         }
         val viewAuthMenu = menu {
-            title = getString(R.string.action_view_authorization)
+            title = getString(R.string.View_Authorization)
             icon = R.drawable.ic_web_floating
             action = {
                 val app = requireNotNull(app)
                 lifecycleScope.launch {
                     bottomSheet.dismiss()
-                    val pb = indeterminateProgressDialog(message = R.string.pb_dialog_message).apply {
+                    val pb = indeterminateProgressDialog(message = R.string.Please_wait_a_bit).apply {
                         setCancelable(false)
                     }
                     val auth = bottomViewModel.getAuthorizationByAppId(app.appId)
@@ -1091,7 +1091,7 @@ class WebFragment : BaseFragment() {
             permissionAlert = AlertDialog.Builder(requireContext())
                 .setTitle(R.string.app_name)
                 .setMessage(R.string.web_floating_permission)
-                .setPositiveButton(R.string.live_setting) { dialog, _ ->
+                .setPositiveButton(R.string.Settings) { dialog, _ ->
                     try {
                         startActivity(
                             Intent(
@@ -1173,13 +1173,13 @@ class WebFragment : BaseFragment() {
                             withContext(Dispatchers.Main) {
                                 if (isAdded) toast(
                                     getString(
-                                        R.string.save_to,
+                                        R.string.Save_to,
                                         outFile.absolutePath
                                     )
                                 )
                             }
                         } catch (e: Exception) {
-                            withContext(Dispatchers.Main) { if (isAdded) toast(R.string.save_failure) }
+                            withContext(Dispatchers.Main) { if (isAdded) toast(R.string.Save_failure) }
                         }
                     }
                 } else {

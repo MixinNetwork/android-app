@@ -123,11 +123,11 @@ class MusicBottomSheetDialogFragment : BottomSheetDialogFragment() {
             titleView.leftIv.setOnClickListener { dismiss() }
             titleView.rightIv.setOnClickListener {
                 alertDialogBuilder()
-                    .setMessage(getString(R.string.player_delete_all_desc))
-                    .setNegativeButton(R.string.action_cancel) { dialog, _ ->
+                    .setMessage(getString(R.string.Stop_playing_this_list))
+                    .setNegativeButton(R.string.Cancel) { dialog, _ ->
                         dialog.dismiss()
                     }
-                    .setPositiveButton(R.string.player_action_stop_playing) { _, _ ->
+                    .setPositiveButton(R.string.Stop_Playing) { _, _ ->
                         (requireActivity() as MusicActivity).serviceStopped = true
                         viewModel.stopMusicService()
                         dismiss()

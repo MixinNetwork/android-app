@@ -120,7 +120,7 @@ class ProfileBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragmen
                 url.openAsUrlOrWeb(requireContext(), null, parentFragmentManager, lifecycleScope)
                 dismiss()
             }
-            createdTv.text = getString(R.string.profile_join_in, account.createdAt.dayTime())
+            createdTv.text = getString(R.string.Joined_in, account.createdAt.dayTime())
             avatar.setOnClickListener {
                 if (!isAdded) return@setOnClickListener
 
@@ -158,7 +158,7 @@ class ProfileBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragmen
         val list = menuList {
             menuGroup {
                 menu {
-                    title = getString(R.string.contact_my_share_apps)
+                    title = getString(R.string.My_shared_apps)
                     action = {
                         activity?.addFragment(
                             this@ProfileBottomSheetDialogFragment,
@@ -172,7 +172,7 @@ class ProfileBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragmen
             }
             menuGroup {
                 menu {
-                    title = getString(R.string.contact_my_qr_title)
+                    title = getString(R.string.My_QR_Code)
                     action = {
                         QrBottomSheetDialogFragment.newInstance(
                             account.userId,
@@ -181,7 +181,7 @@ class ProfileBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragmen
                     }
                 }
                 menu {
-                    title = getString(R.string.contact_receive_money)
+                    title = getString(R.string.Receive_Money)
                     action = {
                         QrBottomSheetDialogFragment.newInstance(
                             account.userId,
@@ -192,27 +192,27 @@ class ProfileBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragmen
             }
             menuGroup {
                 menu {
-                    title = getString(R.string.edit_name)
+                    title = getString(R.string.Edit_Name)
                     action = { editName() }
                 }
                 menu {
-                    title = getString(R.string.edit_biography)
+                    title = getString(R.string.Edit_Biography)
                     action = { editBiography() }
                 }
             }
             menuGroup {
                 menu {
-                    title = getString(R.string.change_profile_photo_with_camera)
+                    title = getString(R.string.Change_Profile_Photo_with_Camera)
                     action = { changePhoto(true) }
                 }
                 menu {
-                    title = getString(R.string.change_profile_photo_with_Library)
+                    title = getString(R.string.Change_Profile_Photo_with_Library)
                     action = { changePhoto(false) }
                 }
             }
             menuGroup {
                 menu {
-                    title = getString(R.string.profile_phone)
+                    title = getString(R.string.Change_Phone_Number)
                     subtitle = account.phone
                     action = { changeNumber() }
                 }
@@ -289,7 +289,7 @@ class ProfileBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragmen
     private fun changeNumber() {
         alert(getString(R.string.profile_modify_number))
             .setNegativeButton(android.R.string.no) { dialog, _ -> dialog.dismiss() }
-            .setPositiveButton(R.string.profile_phone) { dialog, _ ->
+            .setPositiveButton(R.string.Change_Phone_Number) { dialog, _ ->
                 dialog.dismiss()
                 if (Session.getAccount()?.hasPin == true) {
                     activity?.supportFragmentManager?.inTransaction {
@@ -331,7 +331,7 @@ class ProfileBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragmen
             return
         }
         editDialog {
-            titleText = this@ProfileBottomSheetDialogFragment.getString(R.string.edit_name)
+            titleText = this@ProfileBottomSheetDialogFragment.getString(R.string.Edit_Name)
             editText = Session.getAccount()?.fullName
             maxTextCount = 40
             allowEmpty = false
@@ -347,7 +347,7 @@ class ProfileBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragmen
             return
         }
         editDialog {
-            titleText = this@ProfileBottomSheetDialogFragment.getString(R.string.edit_biography)
+            titleText = this@ProfileBottomSheetDialogFragment.getString(R.string.Edit_Biography)
             editText = Session.getAccount()?.biography
             maxTextCount = 140
             allowEmpty = true

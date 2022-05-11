@@ -11,7 +11,7 @@
         android:id="@+id/title_view"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:titleText="@string/backup"/>
+        app:titleText="@string/Chat_Backup"/>
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
@@ -29,7 +29,7 @@
 
         <TextView
             android:id="@+id/backup_title"
-            android:text="@string/backup_title"
+            android:text="@string/Last_Backup"
             android:layout_marginStart="@dimen/margin16"
             android:textSize="16sp"
             android:textColor="@color/colorDarkBlue"
@@ -48,7 +48,7 @@
             android:textColor="?attr/text_primary"
             app:layout_constraintStart_toStartOf="@id/backup_title"
             app:layout_constraintTop_toBottomOf="@id/backup_title"
-            tools:text="@string/never"/>
+            tools:text="@string/Never"/>
 
         <ProgressBar
             android:id="@+id/backup_progress"
@@ -79,7 +79,7 @@
 
         <Button
             android:id="@+id/backup_choose"
-            android:text="@string/backup_choose_folder"
+            android:text="@string/Choose_folder"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:backgroundTint="@color/colorDarkBlue"
@@ -136,7 +136,7 @@
 
         <Button
             android:id="@+id/backup_bn"
-            android:text="@string/backup"
+            android:text="@string/Backup"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:backgroundTint="@color/colorDarkBlue"
@@ -149,7 +149,7 @@
 
         <Button
             android:id="@+id/delete_bn"
-            android:text="@string/backup_action_delete"
+            android:text="@string/Backup_delete"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:backgroundTint="@color/colorDarkBlue"

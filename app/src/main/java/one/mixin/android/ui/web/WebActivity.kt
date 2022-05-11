@@ -110,11 +110,11 @@ class WebActivity : BaseActivity() {
 
         binding.clear.setOnClickListener {
             alertDialogBuilder()
-                .setMessage(getString(R.string.web_delete_tip))
-                .setNegativeButton(R.string.action_cancel) { dialog, _ ->
+                .setMessage(getString(R.string.Remove_all_floats))
+                .setNegativeButton(R.string.Cancel) { dialog, _ ->
                     dialog.dismiss()
                 }
-                .setPositiveButton(R.string.action_confirm) { _, _ ->
+                .setPositiveButton(R.string.Confirm) { _, _ ->
                     releaseAll()
                     onBackPressed()
                 }

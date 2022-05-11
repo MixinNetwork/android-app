@@ -104,10 +104,10 @@ class GroupInfoFragment : BaseFragment(R.layout.fragment_group_info) {
                     if (role == ParticipantRole.OWNER.name) {
                         if (userRole == ParticipantRole.ADMIN.name) {
                             choices.add(getString(R.string.group_pop_menu_remove, participant.fullName))
-                            choices.add(getString(R.string.group_pop_menu_dismiss_admin))
+                            choices.add(getString(R.string.Dismiss_as_Admin))
                         } else {
                             choices.add(getString(R.string.group_pop_menu_remove, participant.fullName))
-                            choices.add(getString(R.string.group_pop_menu_make_admin))
+                            choices.add(getString(R.string.Make_group_admin))
                         }
                     } else if (role == ParticipantRole.ADMIN.name) {
                         if (userRole != ParticipantRole.OWNER.name && userRole != ParticipantRole.ADMIN.name) {
@@ -304,8 +304,8 @@ class GroupInfoFragment : BaseFragment(R.layout.fragment_group_info) {
     private fun showConfirmDialog(message: String, @Suppress("SameParameterValue") type: Int, user: User? = null) {
         alertDialogBuilder()
             .setMessage(message)
-            .setNegativeButton(R.string.action_cancel) { dialog, _ -> dialog.dismiss() }
-            .setPositiveButton(R.string.action_confirm) { dialog, _ ->
+            .setNegativeButton(R.string.Cancel) { dialog, _ -> dialog.dismiss() }
+            .setPositiveButton(R.string.Confirm) { dialog, _ ->
                 showPb()
                 when (type) {
                     TYPE_REMOVE -> {
@@ -327,7 +327,7 @@ class GroupInfoFragment : BaseFragment(R.layout.fragment_group_info) {
 
     private fun showPb() {
         if (dialog == null) {
-            dialog = indeterminateProgressDialog(message = getString(R.string.pb_dialog_message)).apply {
+            dialog = indeterminateProgressDialog(message = getString(R.string.Please_wait_a_bit)).apply {
                 setCancelable(false)
             }
         }

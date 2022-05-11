@@ -190,7 +190,7 @@ class AddressAddFragmentTest {
                         withHint(
                             ctx.getString(
                                 if (asset.chainId == Constants.ChainId.RIPPLE_CHAIN_ID) {
-                                    R.string.withdrawal_addr_tag_hint
+                                    R.string.wallet_transfer_tag
                                 } else {
                                     R.string.withdrawal_addr_memo_hint
                                 }

@@ -322,7 +322,7 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
                         }
                     },
                     {
-                        toast(R.string.save_failure)
+                        toast(R.string.Save_failure)
                     }
                 )
             bottomSheet.dismiss()
@@ -360,13 +360,13 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
                             lifecycleScope.launch(Dispatchers.IO) {
                                 val path = item.absolutePath()
                                 if (path == null) {
-                                    toast(R.string.save_failure)
+                                    toast(R.string.Save_failure)
                                     return@launch
                                 }
                                 val file = Uri.parse(item.absolutePath()).toFile()
                                 if (!file.exists()) {
                                     withContext(Dispatchers.Main) {
-                                        toast(R.string.error_file_exists)
+                                        toast(R.string.File_does_not_exist)
                                     }
                                     return@launch
                                 }
@@ -387,14 +387,14 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
                                 }
                                 outFile.copyFromInputStream(FileInputStream(file))
                                 MediaScannerConnection.scanFile(this@MediaPagerActivity, arrayOf(outFile.toString()), null, null)
-                                withContext(Dispatchers.Main) { toast(getString(R.string.save_to, outFile.absolutePath)) }
+                                withContext(Dispatchers.Main) { toast(getString(R.string.Save_to, outFile.absolutePath)) }
                             }
                         } else {
                             openPermissionSetting()
                         }
                     },
                     {
-                        toast(R.string.save_failure)
+                        toast(R.string.Save_failure)
                     }
                 )
             bottomSheet.dismiss()
@@ -567,7 +567,7 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
             permissionAlert = AlertDialog.Builder(this)
                 .setTitle(R.string.app_name)
                 .setMessage(R.string.call_pip_permission)
-                .setPositiveButton(R.string.live_setting) { dialog, _ ->
+                .setPositiveButton(R.string.Settings) { dialog, _ ->
                     try {
                         startActivity(
                             Intent(
@@ -658,10 +658,10 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
     private val onLockClickListener = View.OnClickListener {
         isLocked = !isLocked
         if (isLocked) {
-            binding.lockTv.text = getString(R.string.click_unlock)
+            binding.lockTv.text = getString(R.string.Click_to_unlock)
             binding.lockTv.textColor = getColor(R.color.colorAccent)
         } else {
-            binding.lockTv.text = getString(R.string.click_lock)
+            binding.lockTv.text = getString(R.string.Click_to_lock)
             binding.lockTv.textColor = getColor(R.color.white)
         }
         binding.lockTv.removeCallbacks(hideLockRunnable)
@@ -768,7 +768,7 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
                 MediaStatus.CANCELED.name -> {
                     if (Session.getAccountId() == messageItem.userId) {
                         viewModel.retryUpload(messageItem.messageId) {
-                            toast(R.string.error_retry_upload)
+                            toast(R.string.Retry_upload_failed)
                         }
                     } else {
                         viewModel.retryDownload(messageItem.messageId)

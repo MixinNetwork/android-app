@@ -168,7 +168,7 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
 
         val builder = NotificationCompat.Builder(this, CHANNEL_NODE)
             .setContentTitle(getString(R.string.app_name))
-            .setContentText(getString(R.string.background_connection_enabled))
+            .setContentText(getString(R.string.Messaging_node_running))
             .setPriority(NotificationCompat.PRIORITY_MIN)
             .setWhen(0)
             .setDefaults(0)
@@ -177,7 +177,7 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
             .setOnlyAlertOnce(true)
             .setColor(ContextCompat.getColor(this, R.color.colorLightBlue))
             .setSmallIcon(R.drawable.ic_msg_default)
-            .addAction(R.drawable.ic_close_black, getString(R.string.action_exit), exitPendingIntent)
+            .addAction(R.drawable.ic_close_black, getString(R.string.Exit), exitPendingIntent)
         val pendingIntent = PendingIntent.getActivity(
             this, 0, MainActivity.getWakeUpIntent(this),
             PendingIntent.FLAG_IMMUTABLE

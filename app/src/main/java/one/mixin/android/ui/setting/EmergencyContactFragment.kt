@@ -66,11 +66,11 @@ class EmergencyContactFragment : BaseFragment(R.layout.fragment_emergency_contac
             }
             deleteRl.setOnClickListener {
                 alertDialogBuilder()
-                    .setMessage(getString(R.string.setting_emergency_remove_tip))
-                    .setNegativeButton(R.string.action_cancel) { dialog, _ ->
+                    .setMessage(getString(R.string.Remove_emergency_contact_confirmation))
+                    .setNegativeButton(R.string.Cancel) { dialog, _ ->
                         dialog.dismiss()
                     }
-                    .setPositiveButton(R.string.action_confirm) { dialog, _ ->
+                    .setPositiveButton(R.string.Confirm) { dialog, _ ->
                         showEmergency = false
                         val pinBottom = PinEmergencyBottomSheetDialog.newInstance()
                         pinBottom.pinEmergencyCallback = bottomSheetCallback

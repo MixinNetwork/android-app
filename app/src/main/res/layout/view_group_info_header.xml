@@ -14,7 +14,7 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
         android:layout_marginTop="8dp"
-        android:text="@string/group_info_not_in"
+        android:text="@string/You_have_left_the_group"
         android:textColor="?attr/text_primary"
         android:visibility="gone" />
 
@@ -33,7 +33,7 @@
             android:layout_marginStart="@dimen/activity_horizontal_margin"
             android:drawablePadding="@dimen/activity_horizontal_margin"
             android:gravity="center_vertical"
-            android:text="@string/group_add_participants"
+            android:text="@string/Add_participants"
             android:textColor="@color/colorBlue"
             app:drawableStartCompat="@drawable/ic_add" />
     </RelativeLayout>
@@ -62,7 +62,7 @@
             android:layout_centerVertical="true"
             android:layout_marginStart="@dimen/activity_horizontal_margin"
             android:layout_toEndOf="@id/invite_iv"
-            android:text="@string/group_invite"
+            android:text="@string/Invite_to_Group_via_Link"
             android:textColor="@color/colorBlue" />
     </RelativeLayout>
 </LinearLayout>

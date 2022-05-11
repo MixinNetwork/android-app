@@ -44,10 +44,10 @@ class AboutFragment : BaseFragment(R.layout.fragment_about) {
                 override fun onDebugClick() {
                     if (defaultSharedPreferences.getBoolean(Constants.Debug.WEB_DEBUG, false)) {
                         defaultSharedPreferences.putBoolean(Constants.Debug.WEB_DEBUG, false)
-                        toast(R.string.web_debug_action_disable)
+                        toast(R.string.Disable_web_debug)
                     } else {
                         defaultSharedPreferences.putBoolean(Constants.Debug.WEB_DEBUG, true)
-                        toast(R.string.web_debug_action_enable)
+                        toast(R.string.Enable_web_debug)
                     }
                 }
 
@@ -60,11 +60,11 @@ class AboutFragment : BaseFragment(R.layout.fragment_about) {
                         defaultSharedPreferences.putBoolean(Constants.Debug.DB_DEBUG, false)
                         defaultSharedPreferences.putBoolean(Constants.Debug.DB_DEBUG_WARNING, true)
                         database.isVisible = false
-                        toast(R.string.db_debug_action_disable)
+                        toast(R.string.Disable_db_debug)
                     } else {
                         defaultSharedPreferences.putBoolean(Constants.Debug.DB_DEBUG, true)
                         database.isVisible = true
-                        toast(R.string.db_debug_action_enable)
+                        toast(R.string.Enable_db_debug)
                     }
                 }
 

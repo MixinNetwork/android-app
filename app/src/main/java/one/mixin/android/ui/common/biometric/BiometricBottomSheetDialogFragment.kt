@@ -155,7 +155,7 @@ abstract class BiometricBottomSheetDialogFragment : MixinBottomSheetDialogFragme
                 if (autoDismiss) {
                     dismiss()
                 }
-                callback?.onSuccess() ?: toast(R.string.successful)
+                callback?.onSuccess() ?: toast(R.string.Successful)
             }
         } else {
             val errorString = doWithMixinErrorCode(response.errorCode, pin)

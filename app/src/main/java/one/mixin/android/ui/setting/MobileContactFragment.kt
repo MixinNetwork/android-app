@@ -78,16 +78,16 @@ class MobileContactFragment : BaseFragment(R.layout.fragment_setting_mobile_cont
     private fun setDelete() {
         if (viewDestroyed()) return
         binding.apply {
-            opTv.setText(R.string.setting_mobile_contact_delete)
+            opTv.setText(R.string.Delete_Synced_Contact)
             opTv.textColorResource = R.color.colorRed
             opRl.setOnClickListener {
                 alertDialogBuilder()
                     .setMessage(R.string.setting_mobile_contact_warning)
-                    .setPositiveButton(R.string.conversation_delete) { dialog, _ ->
+                    .setPositiveButton(R.string.Delete) { dialog, _ ->
                         deleteContacts()
                         dialog.dismiss()
                     }
-                    .setNegativeButton(R.string.action_cancel) { dialog, _ -> dialog.dismiss() }
+                    .setNegativeButton(R.string.Cancel) { dialog, _ -> dialog.dismiss() }
                     .show()
             }
         }
@@ -96,7 +96,7 @@ class MobileContactFragment : BaseFragment(R.layout.fragment_setting_mobile_cont
     private fun setUpdate() {
         if (viewDestroyed()) return
         binding.apply {
-            opTv.setText(R.string.setting_mobile_contact_upload)
+            opTv.setText(R.string.Upload_Mobile_Contacts)
             opTv.textColorResource = R.color.colorDarkBlue
             opRl.setOnClickListener {
                 RxPermissions(requireActivity())
@@ -156,7 +156,7 @@ class MobileContactFragment : BaseFragment(R.layout.fragment_setting_mobile_cont
         val mutableList = createContactsRequests(contacts)
         if (mutableList.isEmpty()) {
             binding.opPb.isVisible = false
-            toast(R.string.setting_mobile_contact_empty)
+            toast(R.string.Empty_address_book)
             return@launch
         }
         handleMixinResponse(

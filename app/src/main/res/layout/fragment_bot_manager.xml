@@ -20,7 +20,7 @@
             android:layout_alignParentStart="true"
             android:layout_centerVertical="true"
             android:layout_marginStart="16dp"
-            android:text="@string/bots_capital"
+            android:text="@string/Bots"
             android:textColor="?attr/text_primary"
             android:textSize="16sp"
             android:textStyle="bold"
@@ -36,7 +36,7 @@
             android:foreground="@drawable/mixin_ripple"
             android:padding="8dp"
             android:src="@drawable/ic_circle_close"
-            android:contentDescription="@string/action_close" />
+            android:contentDescription="@string/Close" />
 
     </RelativeLayout>
 

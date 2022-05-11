@@ -56,7 +56,7 @@ class DepositAccountFragment : DepositFragment() {
                 leftIb.setOnClickListener { activity?.onBackPressed() }
                 rightAnimator.setOnClickListener { context?.openUrl(Constants.HelpLink.DEPOSIT) }
             }
-            title.setSubTitle(getString(R.string.filters_deposit), asset.symbol)
+            title.setSubTitle(getString(R.string.Deposit), asset.symbol)
             accountNameQrAvatar.apply {
                 bg.loadImage(asset.iconUrl, R.drawable.ic_avatar_place_holder)
                 badge.loadImage(asset.chainIconUrl, R.drawable.ic_avatar_place_holder)
@@ -97,10 +97,10 @@ class DepositAccountFragment : DepositFragment() {
             }
         }
         alertDialogBuilder()
-            .setTitle(R.string.action_notice)
+            .setTitle(R.string.Notice)
             .setCancelable(false)
             .setMessage(getString(R.string.deposit_notice, asset.symbol))
-            .setPositiveButton(R.string.capital_ok) { dialog, _ ->
+            .setPositiveButton(R.string.OK) { dialog, _ ->
                 dialog.dismiss()
             }.show()
     }

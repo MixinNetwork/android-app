@@ -87,7 +87,7 @@
                         android:layout_height="wrap_content"
                         android:layout_gravity="center"
                         android:background="@drawable/mixin_ripple"
-                        android:contentDescription="@string/action_share"
+                        android:contentDescription="@string/Share"
                         android:src="@drawable/ic_group_member" />
                 </FrameLayout>
 
@@ -102,7 +102,7 @@
                         android:layout_height="wrap_content"
                         android:layout_gravity="center"
                         android:background="@drawable/mixin_ripple"
-                        android:contentDescription="@string/contact_other_send"
+                        android:contentDescription="@string/Send_Message"
                         android:src="@drawable/ic_user_send" />
                 </FrameLayout>
 
@@ -118,7 +118,7 @@
                         android:layout_height="wrap_content"
                         android:layout_gravity="center"
                         android:background="@drawable/mixin_ripple"
-                        android:contentDescription="@string/action_more"
+                        android:contentDescription="@string/More"
                         android:src="@drawable/ic_arrow_down_info" />
                 </FrameLayout>
             </LinearLayout>

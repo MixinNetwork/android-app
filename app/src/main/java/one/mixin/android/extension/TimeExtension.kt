@@ -69,13 +69,13 @@ fun String.timeAgo(context: Context): String {
             (todayMilli <= date.toInstant().toEpochMilli()) -> date.format(DateTimeFormatter.ofPattern("HH:mm").withZone(LocaleZone))
             (offset < 7 * DAY_DURATION) -> {
                 when (date.dayOfWeek) {
-                    DayOfWeek.MONDAY -> context.getString(R.string.week_monday)
-                    DayOfWeek.TUESDAY -> context.getString(R.string.week_tuesday)
-                    DayOfWeek.WEDNESDAY -> context.getString(R.string.week_wednesday)
-                    DayOfWeek.THURSDAY -> context.getString(R.string.week_thursday)
-                    DayOfWeek.FRIDAY -> context.getString(R.string.week_friday)
-                    DayOfWeek.SATURDAY -> context.getString(R.string.week_saturday)
-                    else -> context.getString(R.string.week_sunday)
+                    DayOfWeek.MONDAY -> context.getString(R.string.Monday)
+                    DayOfWeek.TUESDAY -> context.getString(R.string.Tuesday)
+                    DayOfWeek.WEDNESDAY -> context.getString(R.string.Wednesday)
+                    DayOfWeek.THURSDAY -> context.getString(R.string.Thursday)
+                    DayOfWeek.FRIDAY -> context.getString(R.string.Friday)
+                    DayOfWeek.SATURDAY -> context.getString(R.string.Saturday)
+                    else -> context.getString(R.string.Sunday)
                 }
             }
             else -> {
@@ -98,7 +98,7 @@ fun String.timeAgoDate(context: Context): String {
     if (timeAgoDate == null) {
         val date = ZonedDateTime.parse(this).withZoneSameInstant(LocaleZone)
         timeAgoDate = when {
-            (todayMilli <= date.toInstant().toEpochMilli()) -> context.getString(R.string.today)
+            (todayMilli <= date.toInstant().toEpochMilli()) -> context.getString(R.string.Today)
             (today.year == date.year) -> {
                 date.format(
                     DateTimeFormatter.ofPattern(

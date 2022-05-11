@@ -37,7 +37,7 @@
                 android:gravity="center_vertical"
                 android:paddingStart="@dimen/activity_horizontal_margin"
                 android:paddingEnd="@dimen/activity_horizontal_margin"
-                android:text="@string/follow_twitter"
+                android:text="@string/Follow_us_on_twitter"
                 android:textColor="@color/colorBlue"
                 android:textSize="16sp" />
 
@@ -48,7 +48,7 @@
                 android:gravity="center_vertical"
                 android:paddingStart="@dimen/activity_horizontal_margin"
                 android:paddingEnd="@dimen/activity_horizontal_margin"
-                android:text="@string/follow_facebook"
+                android:text="@string/Follow_us_on_facebook"
                 android:textColor="@color/colorBlue"
                 android:textSize="16sp" />
 
@@ -59,7 +59,7 @@
                 android:gravity="center_vertical"
                 android:paddingStart="@dimen/activity_horizontal_margin"
                 android:paddingEnd="@dimen/activity_horizontal_margin"
-                android:text="@string/help_center"
+                android:text="@string/Help_center"
                 android:textColor="@color/colorBlue"
                 android:textSize="16sp" />
 
@@ -70,7 +70,7 @@
                 android:gravity="center_vertical"
                 android:paddingStart="@dimen/activity_horizontal_margin"
                 android:paddingEnd="@dimen/activity_horizontal_margin"
-                android:text="@string/landing_terms_service"
+                android:text="@string/Terms_of_Service"
                 android:textColor="@color/colorBlue"
                 android:textSize="16sp" />
 
@@ -81,7 +81,7 @@
                 android:gravity="center_vertical"
                 android:paddingStart="@dimen/activity_horizontal_margin"
                 android:paddingEnd="@dimen/activity_horizontal_margin"
-                android:text="@string/landing_privacy_policy"
+                android:text="@string/Privacy_Policy"
                 android:textColor="@color/colorBlue"
                 android:textSize="16sp" />
 
@@ -92,7 +92,7 @@
                 android:gravity="center_vertical"
                 android:paddingStart="@dimen/activity_horizontal_margin"
                 android:paddingEnd="@dimen/activity_horizontal_margin"
-                android:text="@string/landing_check_updates"
+                android:text="@string/Version_Update"
                 android:textColor="@color/colorBlue"
                 android:textSize="16sp" />
 
@@ -103,7 +103,7 @@
                 android:gravity="center_vertical"
                 android:paddingStart="@dimen/activity_horizontal_margin"
                 android:paddingEnd="@dimen/activity_horizontal_margin"
-                android:text="@string/database_debug"
+                android:text="@string/Debug_database"
                 android:textColor="@color/colorBlue"
                 android:textSize="16sp" />
         </LinearLayout>

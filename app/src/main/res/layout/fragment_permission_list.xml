@@ -10,7 +10,7 @@
         android:id="@+id/title_view"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:titleText="@string/setting_permissions" />
+        app:titleText="@string/Permissions" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/permission_rv"

@@ -135,7 +135,7 @@ class ShareMessageBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 if (appCardData.title.length in 1..36 && appCardData.description.length in 1..128) {
                     sendMessage()
                 } else {
-                    toast(R.string.error_data)
+                    toast(R.string.Data_error)
                 }
             } else {
                 sendMessage()
@@ -149,26 +149,26 @@ class ShareMessageBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 getString(R.string.message)
             }
             ShareCategory.Image -> {
-                getString(R.string.photo)
+                getString(R.string.Photo)
             }
             ShareCategory.Contact -> {
-                getString(R.string.contact)
+                getString(R.string.Contact)
             }
             ShareCategory.Post -> {
-                getString(R.string.post)
+                getString(R.string.Post)
             }
             ShareCategory.AppCard -> {
-                getString(R.string.card)
+                getString(R.string.Card)
             }
             ShareCategory.Live -> {
-                getString(R.string.live)
+                getString(R.string.Live)
             }
             else -> throw IllegalArgumentException()
         }
     }
 
     private fun sendMessage() {
-        ForwardActivity.show(requireContext(), arrayListOf(shareMessage), ForwardAction.App.Resultful(conversationId, getString(R.string.action_send)))
+        ForwardActivity.show(requireContext(), arrayListOf(shareMessage), ForwardAction.App.Resultful(conversationId, getString(R.string.Send)))
         dismiss()
     }
 

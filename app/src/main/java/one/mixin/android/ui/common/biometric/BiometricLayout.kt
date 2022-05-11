@@ -155,15 +155,15 @@ class BiometricLayout(context: Context, attributeSet: AttributeSet) : ViewAnimat
         binding.apply {
             when (errorAction) {
                 ErrorAction.RetryPin -> {
-                    errorBtn.text = getString(R.string.try_again)
+                    errorBtn.text = getString(R.string.Try_Again)
                     errorBtn.setOnClickListener { showPin(true) }
                 }
                 ErrorAction.Close -> {
-                    errorBtn.text = getString(R.string.capital_ok)
+                    errorBtn.text = getString(R.string.OK)
                     errorBtn.setOnClickListener { callback?.onDismiss() }
                 }
                 ErrorAction.Continue -> {
-                    errorBtn.text = getString(R.string.action_continue)
+                    errorBtn.text = getString(R.string.Continue)
                     errorBtn.setOnClickListener { showPin(true) }
                 }
             }
@@ -200,11 +200,11 @@ class BiometricLayout(context: Context, attributeSet: AttributeSet) : ViewAnimat
 
                 override fun onTick(l: Long) {
                     errorBtn.text =
-                        context.getString(R.string.wallet_transaction_continue_count, l / 1000)
+                        context.getString(R.string.wallet_transaction_continue_count_down, l / 1000)
                 }
 
                 override fun onFinish() {
-                    errorBtn.text = getString(R.string.wallet_transaction_continue)
+                    errorBtn.text = getString(R.string.Continue)
                     errorBtn.isEnabled = true
                     errorBtn.textColor = context.getColor(R.color.white)
                 }

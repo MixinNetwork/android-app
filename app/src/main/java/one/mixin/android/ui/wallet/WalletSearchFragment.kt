@@ -86,7 +86,7 @@ class WalletSearchFragment : BaseFragment() {
                 searchEt.hideKeyboard()
                 activity?.onBackPressed()
             }
-            searchEt.setHint(getString(R.string.wallet_search_hint))
+            searchEt.setHint(getString(R.string.search_placeholder_asset))
             searchEt.post { searchEt.showKeyboard() }
             @SuppressLint("AutoDispose")
             disposable = searchEt.et.textChanges().debounce(500L, TimeUnit.MILLISECONDS)
@@ -267,7 +267,7 @@ class WalletSearchFragment : BaseFragment() {
             } else {
                 lifecycleScope.launch {
                     val dialog = indeterminateProgressDialog(
-                        message = R.string.pb_dialog_message,
+                        message = R.string.Please_wait_a_bit,
                     ).apply {
                         setCancelable(false)
                     }

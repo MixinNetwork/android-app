@@ -9,7 +9,7 @@
         android:id="@+id/title_view"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:titleText="@string/playlist"
+        app:titleText="@string/Playlist"
         app:left_icon="@drawable/ic_arrow_down_info"
         app:right_icon="@drawable/ic_player_stop" />
 

@@ -90,14 +90,14 @@ fun ChatHistoryMessageItem.saveToLocal(context: Context) {
     val filePath = absolutePath()
     if (filePath == null) {
         reportException(IllegalStateException("Save messageItem failure, category: $type, mediaUrl: $mediaUrl, absolutePath: $filePath"))
-        toast(R.string.save_failure)
+        toast(R.string.Save_failure)
         return
     }
 
     val file = filePath.toUri().toFile()
     if (!file.exists()) {
         reportException(IllegalStateException("Save messageItem failure, category: $type, mediaUrl: $mediaUrl, absolutePath: $filePath"))
-        toast(R.string.error_file_exists)
+        toast(R.string.File_does_not_exist)
         return
     }
     val outFile = if (MimeTypes.isVideo(mediaMimeType) || mediaMimeType?.isImageSupport() == true) {
@@ -113,7 +113,7 @@ fun ChatHistoryMessageItem.saveToLocal(context: Context) {
     }
     outFile.copyFromInputStream(FileInputStream(file))
     MediaScannerConnection.scanFile(context, arrayOf(outFile.toString()), null, null)
-    toast(MixinApplication.appContext.getString(R.string.save_to, outFile.absolutePath))
+    toast(MixinApplication.appContext.getString(R.string.Save_to, outFile.absolutePath))
 }
 
 fun ChatHistoryMessageItem.loadVideoOrLive(actionAfterLoad: (() -> Unit)? = null) {

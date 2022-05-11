@@ -93,7 +93,7 @@ class LocationSearchAdapter(val callback: (LocationPayload) -> Unit) : RecyclerV
         val venue = getItem(position)
         val binding = ItemLocationBinding.bind(holder.itemView)
         if (getItemViewType(position) == 1) {
-            binding.title.setText(R.string.location_send_current_location)
+            binding.title.setText(R.string.Send_your_Current_Location)
             binding.subTitle.text = venue?.name
             binding.locationIcon.setBackgroundResource(R.drawable.ic_current_location)
             binding.locationIcon.setImageDrawable(null)

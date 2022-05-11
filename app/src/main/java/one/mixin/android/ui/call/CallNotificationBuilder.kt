@@ -56,7 +56,7 @@ class CallNotificationBuilder {
             }
             when (callState.state) {
                 CallService.CallState.STATE_DIALING -> {
-                    builder.setContentText(context.getString(R.string.call_notification_outgoing))
+                    builder.setContentText(context.getString(R.string.Calling))
                     val action = if (isGroupCall) {
                         ACTION_KRAKEN_CANCEL
                     } else ACTION_CALL_CANCEL
@@ -67,12 +67,12 @@ class CallNotificationBuilder {
                             action,
                             R.drawable.ic_close_black,
                             R.string
-                                .call_notification_action_cancel
+                                .Cancel
                         )
                     )
                 }
                 CallService.CallState.STATE_RINGING -> {
-                    builder.setContentText(context.getString(R.string.call_notification_incoming_voice))
+                    builder.setContentText(context.getString(R.string.Incoming_voice_call))
                     val answerAction = if (isGroupCall) {
                         ACTION_KRAKEN_ACCEPT_INVITE
                     } else ACTION_CALL_ANSWER
@@ -86,7 +86,7 @@ class CallNotificationBuilder {
                             answerAction,
                             R.drawable.ic_close_black,
                             R.string
-                                .call_notification_action_answer
+                                .ANSWER
                         )
                     )
                     builder.addAction(
@@ -96,12 +96,12 @@ class CallNotificationBuilder {
                             declineAction,
                             R.drawable.ic_close_black,
                             R.string
-                                .call_notification_action_decline
+                                .Decline
                         )
                     )
                 }
                 CallService.CallState.STATE_CONNECTED -> {
-                    builder.setContentText(context.getString(R.string.call_notification_connected))
+                    builder.setContentText(context.getString(R.string.Ongoing_voice_call))
                     val action = if (isGroupCall) {
                         ACTION_KRAKEN_END
                     } else ACTION_CALL_LOCAL_END
@@ -112,12 +112,12 @@ class CallNotificationBuilder {
                             action,
                             R.drawable.ic_close_black,
                             R.string
-                                .call_notification_action_hang_up
+                                .Hang_up
                         )
                     )
                 }
                 else -> {
-                    builder.setContentText(context.getString(R.string.call_connecting))
+                    builder.setContentText(context.getString(R.string.in_connecting))
                     val action = if (isGroupCall) {
                         ACTION_KRAKEN_CANCEL
                     } else {
@@ -130,7 +130,7 @@ class CallNotificationBuilder {
                             action,
                             R.drawable.ic_close_black,
                             R.string
-                                .call_notification_action_hang_up
+                                .Hang_up
                         )
                     )
                 }

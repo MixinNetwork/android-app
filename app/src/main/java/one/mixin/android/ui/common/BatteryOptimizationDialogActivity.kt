@@ -29,11 +29,11 @@ class BatteryOptimizationDialogActivity : BaseActivity() {
         alertDialogBuilder()
             .setMessage(getString(R.string.setting_battery_optimize_title))
             .setCancelable(false)
-            .setNegativeButton(R.string.action_cancel) { dialog, _ ->
+            .setNegativeButton(R.string.Cancel) { dialog, _ ->
                 dialog.dismiss()
                 finish()
             }
-            .setPositiveButton(R.string.go_set) { dialog, _ ->
+            .setPositiveButton(R.string.Go_settings) { dialog, _ ->
                 handleIgnoreBatteryOptimization(newTask)
                 dialog.dismiss()
                 finish()

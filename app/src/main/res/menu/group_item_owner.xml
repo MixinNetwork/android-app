@@ -11,5 +11,5 @@
         android:title="@string/group_pop_menu_remove" />
     <item
         android:id="@+id/admin"
-        android:title="@string/group_pop_menu_make_admin" />
+        android:title="@string/Make_group_admin" />
 </menu>

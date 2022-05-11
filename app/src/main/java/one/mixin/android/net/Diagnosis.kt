@@ -28,25 +28,25 @@ import java.util.Enumeration
 fun diagnosis(context: Context, diagnosisCallback: (String) -> Unit) {
     val result = StringBuilder()
 
-    result.append("${context.getString(R.string.app_version)}: ${BuildConfig.VERSION_NAME}(${BuildConfig.VERSION_CODE})").appendLine()
-        .append("${context.getString(R.string.manufacturer)}: ${Build.MANUFACTURER}").appendLine()
-        .append("${context.getString(R.string.model)}: ${Build.MODEL}").appendLine()
-        .append("${context.getString(R.string.system_version)}: ${Build.VERSION.RELEASE}").appendLine()
-        .append("${context.getString(R.string.time)}: ${Instant.now().toString().timeFormat()}").appendLine()
+    result.append("${context.getString(R.string.App_version)}: ${BuildConfig.VERSION_NAME}(${BuildConfig.VERSION_CODE})").appendLine()
+        .append("${context.getString(R.string.Manufacturer)}: ${Build.MANUFACTURER}").appendLine()
+        .append("${context.getString(R.string.Model)}: ${Build.MODEL}").appendLine()
+        .append("${context.getString(R.string.System_version)}: ${Build.VERSION.RELEASE}").appendLine()
+        .append("${context.getString(R.string.Time)}: ${Instant.now().toString().timeFormat()}").appendLine()
         .appendLine()
     diagnosisCallback(result.toString())
     result.clear()
 
     result.append("${context.getString(R.string.is_network_available)}: ${context.networkConnected()}").appendLine()
-    result.append("${context.getString(R.string.network_type)}: ${context.networkType()}").appendLine()
+    result.append("${context.getString(R.string.Network_Type)}: ${context.networkType()}").appendLine()
         .appendLine()
     diagnosisCallback(result.toString())
     result.clear()
 
     getExportIp(result, context)
     val ipAddress = getIpAddress()
-    result.append("${context.getString(R.string.local_ip)}: $ipAddress").appendLine()
-        .append("${context.getString(R.string.network_operator)}: ${context.getNetworkOperatorName()}").appendLine()
+    result.append("${context.getString(R.string.Local_IP)}: $ipAddress").appendLine()
+        .append("${context.getString(R.string.Network_Operator)}: ${context.getNetworkOperatorName()}").appendLine()
         .appendLine()
     diagnosisCallback(result.toString())
     result.clear()
@@ -84,7 +84,7 @@ fun diagnosis(context: Context, diagnosisCallback: (String) -> Unit) {
         diagnosisCallback(result.appendLine().toString())
         result.clear()
     }
-    diagnosisCallback(context.getString(R.string.diagnosis_complete))
+    diagnosisCallback(context.getString(R.string.Diagnosis_Complete))
 }
 
 fun ping(domain: String, count: Int = 1, timeout: Int = 10): String? {
@@ -126,7 +126,7 @@ private fun getExportIp(result: StringBuilder, context: Context) {
         val dataAddress = dataIp.substring(0, dataIp.indexOf("<br>"))
         val ips = dataAddress.split(" ").toTypedArray()
         result.append("${context.getString(R.string.export_ip)}: ${ips[0]}").appendLine()
-            .append("${context.getString(R.string.operator)}: ${ips[1]}").appendLine()
+            .append("${context.getString(R.string.Operator)}: ${ips[1]}").appendLine()
     } catch (e: Exception) {
         Timber.i("Get export ip from $EXPORT_IP_PRIMARY meet ${e.localizedMessage}")
         try {

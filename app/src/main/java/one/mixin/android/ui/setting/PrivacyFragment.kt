@@ -59,7 +59,7 @@ class PrivacyFragment : BaseFragment(R.layout.fragment_privacy) {
                 {
                     incognito.isVisible = true
                     incognitoFollower.isVisible = true
-                    incognito.setContent(R.string.setting_incognito)
+                    incognito.setContent(R.string.Incognito_Keyboard)
                     incognito.isChecked =
                         defaultSharedPreferences.getBoolean(Constants.Account.PREF_INCOGNITO_KEYBOARD, false)
                     incognito.setOnCheckedChangeListener { _, isChecked ->
@@ -82,10 +82,10 @@ class PrivacyFragment : BaseFragment(R.layout.fragment_privacy) {
     fun setLockDesc() {
         binding.lockDescTv.text = getString(
             when (defaultSharedPreferences.getInt(Constants.Account.PREF_APP_AUTH, -1)) {
-                0 -> R.string.enable_immediately
-                1 -> R.string.enable_after_1_minute
-                2 -> R.string.enable_after_30_minutes
-                else -> R.string.disabled
+                0 -> R.string.Enable_immediately
+                1 -> R.string.Enable_after_1_minute
+                2 -> R.string.Enable_after_30_minutes
+                else -> R.string.Disabled
             }
         )
     }

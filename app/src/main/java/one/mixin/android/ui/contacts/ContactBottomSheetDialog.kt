@@ -49,7 +49,7 @@ class ContactBottomSheetDialog : MixinBottomSheetDialogFragment() {
         }
         val smsUri = Uri.parse("smsto:$mobile")
         val smsIntent = Intent(Intent.ACTION_SENDTO, smsUri)
-        smsIntent.putExtra("sms_body", getString(R.string.contact_less_invite_content))
+        smsIntent.putExtra("sms_body", getString(R.string.contact_invite_content))
         startActivity(smsIntent)
     }
 }

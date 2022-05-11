@@ -31,5 +31,5 @@
         android:padding="8dp"
         android:scaleType="center"
         android:src="@drawable/ic_send_white"
-        android:contentDescription="@string/action_send" />
+        android:contentDescription="@string/Send" />
 </FrameLayout>

@@ -96,7 +96,7 @@ class PreviewDialogFragment : DialogFragment(), VideoTimelineView.VideoTimelineV
             if (isVideo) {
                 val mimeType = getMimeType(uri!!)
                 if (mimeType == null || !mimeType.startsWith("video", true)) {
-                    toast(R.string.error_format)
+                    toast(R.string.Format_not_supported)
                     dismiss()
                 }
                 mixinPlayer = MixinPlayer().apply {

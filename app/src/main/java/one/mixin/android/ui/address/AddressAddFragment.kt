@@ -139,9 +139,9 @@ class AddressAddFragment() : BaseFragment(R.layout.fragment_address_add) {
         }
 
         if (asset.assetId == RIPPLE_CHAIN_ID) {
-            binding.tagEt.setHint(R.string.withdrawal_addr_tag_hint)
+            binding.tagEt.setHint(R.string.Tag)
         } else {
-            binding.tagEt.setHint(R.string.withdrawal_addr_memo_hint)
+            binding.tagEt.setHint(R.string.withdrawal_memo)
         }
         if (asset.chainId == EOS_CHAIN_ID) {
             binding.tipTv.isVisible = true
@@ -150,7 +150,7 @@ class AddressAddFragment() : BaseFragment(R.layout.fragment_address_add) {
                 bold {
                     append(" ")
                     color(requireContext().colorFromAttribute(R.attr.text_primary)) {
-                        append(getString(R.string.eos_contract_address))
+                        append(getString(R.string.EOS_contract_address))
                     }
                 }
             }
@@ -186,15 +186,15 @@ class AddressAddFragment() : BaseFragment(R.layout.fragment_address_add) {
             )
             binding.info.highLight(
                 if (asset.assetId == RIPPLE_CHAIN_ID) {
-                    getString(R.string.withdrawal_addr_tag_link)
+                    getString(R.string.No_tag)
                 } else {
-                    getString(R.string.withdrawal_addr_memo_link)
+                    getString(R.string.withdrawal_no_memo)
                 }
             )
         } else {
             binding.tagEt.isEnabled = memoEnabled
             binding.tagRl.isVisible = memoEnabled
-            binding.tagEt.setText(R.string.withdrawal_no_tag)
+            binding.tagEt.setText(R.string.No_Memo)
             binding.tagIv.isVisible = memoEnabled
             binding.info.setOnClickListener {
                 memoEnabled = true
@@ -211,9 +211,9 @@ class AddressAddFragment() : BaseFragment(R.layout.fragment_address_add) {
             )
             binding.info.highLight(
                 if (asset.assetId == RIPPLE_CHAIN_ID) {
-                    getString(R.string.withdrawal_addr_no_tag_link)
+                    getString(R.string.Add_Tag)
                 } else {
-                    getString(R.string.withdrawal_addr_no_memo_link)
+                    getString(R.string.Add_memo)
                 }
             )
         }

@@ -8,7 +8,7 @@
 
     <TextView
         android:id="@+id/forward"
-        android:text="@string/action_forward"
+        android:text="@string/Forward"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textColor="@color/selector_tv_blue"
@@ -18,7 +18,7 @@
 
     <TextView
         android:id="@+id/combine_forward"
-        android:text="@string/combine_forward"
+        android:text="@string/Combine_and_forward"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textColor="@color/selector_tv_blue"
