@@ -102,7 +102,7 @@ class AppAuthActivity : BaseActivity() {
     }
 
     private val resetSwirlRunnable = Runnable {
-        binding.info.text = getString(R.string.fingerprint_confirm)
+        binding.info.text = getString(R.string.Confirm_fingerprint)
         binding.info.setTextColor(colorFromAttribute(R.attr.text_minor))
         binding.swirl.setState(SwirlView.State.ON)
     }
@@ -132,7 +132,7 @@ class AppAuthActivity : BaseActivity() {
         }
 
         override fun onAuthenticationFailed() {
-            refreshSwirl(getString(R.string.not_recognized), false)
+            refreshSwirl(getString(R.string.Not_recognized), false)
         }
 
         override fun onAuthenticationSucceeded(result: FingerprintManagerCompat.AuthenticationResult?) {

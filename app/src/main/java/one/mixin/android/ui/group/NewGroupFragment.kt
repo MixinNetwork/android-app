@@ -86,18 +86,6 @@ class NewGroupFragment : BaseFragment() {
             createGroup()
         }
         enableCreate(false)
-        binding.photoRl.setOnClickListener {
-            RxPermissions(requireActivity())
-                .request(Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                .autoDispose(stopScope)
-                .subscribe { granted ->
-                    if (granted) {
-                        openImage(imageUri)
-                    } else {
-                        context?.openPermissionSetting()
-                    }
-                }
-        }
         adapter.users = users
         binding.userRv.adapter = adapter
         binding.nameDescEt.addTextChangedListener(mWatcher)
@@ -113,8 +101,8 @@ class NewGroupFragment : BaseFragment() {
     private fun createGroup() = lifecycleScope.launch {
         if (dialog == null) {
             dialog = indeterminateProgressDialog(
-                message = R.string.pb_dialog_message,
-                title = R.string.group_creating
+                message = R.string.Please_wait_a_bit,
+                title = R.string.Creating
             ).apply {
                 setCancelable(false)
             }

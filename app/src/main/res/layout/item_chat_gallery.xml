@@ -24,7 +24,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:visibility="gone"
-                android:text="@string/gif"
+                android:text="@string/GIF"
                 android:textSize="12sp"
                 android:textColor="@color/white"/>
 
@@ -60,6 +60,6 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center"
         android:visibility="gone"
-        android:text="@string/action_send"
+        android:text="@string/Send"
         android:textColor="@color/white"/>
 </FrameLayout>

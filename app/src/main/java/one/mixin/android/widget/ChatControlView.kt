@@ -310,7 +310,7 @@ class ChatControlView : LinearLayout, ActionMode.Callback {
     fun hideBot() {
         botHide = true
         binding.chatBotIv.visibility = View.GONE
-        binding.chatEt.hint = context.getString(R.string.end_to_end_encryption)
+        binding.chatEt.hint = context.getString(R.string.End_to_End_Encryption)
         initTransitions()
     }
 
@@ -324,11 +324,11 @@ class ChatControlView : LinearLayout, ActionMode.Callback {
     fun hintEncrypt(category: EncryptCategory) {
         binding.chatEt.hint = context.getString(
             if (category.isEncrypt()) {
-                R.string.end_to_end_encryption_short
+                R.string.Encrypted
             } else if (category.isSignal()) {
-                R.string.end_to_end_encryption
+                R.string.End_to_End_Encryption
             } else {
-                R.string.type_message
+                R.string.Type_message
             }
         )
     }

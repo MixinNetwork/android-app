@@ -37,7 +37,7 @@
                 android:foreground="?android:attr/selectableItemBackground"
                 android:gravity="center"
                 android:textColor="@color/colorBlue"
-                android:text="@string/action_copy"/>
+                android:text="@string/Copy"/>
 
         <View
                 android:layout_width="match_parent"
@@ -58,7 +58,7 @@
                 android:foreground="?android:attr/selectableItemBackground"
                 android:gravity="center"
                 android:textColor="@color/colorBlue"
-                android:text="@string/action_open"/>
+                android:text="@string/Open"/>
 
         <View
                 android:layout_width="match_parent"

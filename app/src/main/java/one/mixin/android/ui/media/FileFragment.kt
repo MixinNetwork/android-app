@@ -37,7 +37,7 @@ class FileFragment : BaseFragment(R.layout.layout_recycler_view) {
             messageItem.mediaStatus == MediaStatus.CANCELED.name -> {
                 if (Session.getAccountId() == messageItem.userId) {
                     viewModel.retryUpload(messageItem.messageId) {
-                        toast(R.string.error_retry_upload)
+                        toast(R.string.Retry_upload_failed)
                     }
                 } else {
                     viewModel.retryDownload(messageItem.messageId)
@@ -57,7 +57,7 @@ class FileFragment : BaseFragment(R.layout.layout_recycler_view) {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         binding.emptyIv.setImageResource(R.drawable.ic_empty_file)
-        binding.emptyTv.setText(R.string.capital_no_file)
+        binding.emptyTv.setText(R.string.NO_FILE)
         binding.recyclerView.layoutManager = LinearLayoutManager(requireContext())
         binding.recyclerView.addItemDecoration(StickyRecyclerHeadersDecoration(adapter))
         binding.recyclerView.adapter = adapter

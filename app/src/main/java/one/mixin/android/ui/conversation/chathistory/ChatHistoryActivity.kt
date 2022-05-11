@@ -146,9 +146,9 @@ class ChatHistoryActivity : BaseActivity() {
         binding.titleView.setSubTitle(
             getString(
                 if (isTranscript) {
-                    R.string.transcript
+                    R.string.Transcript
                 } else {
-                    R.string.pinned_message
+                    R.string.Pinned_Messages
                 }
             ),
             ""
@@ -200,7 +200,7 @@ class ChatHistoryActivity : BaseActivity() {
             binding.unpinTv.setOnClickListener {
                 alert(getString(R.string.unpin_all_messages_confirmation))
                     .setNegativeButton(android.R.string.cancel) { dialog, _ -> dialog.dismiss() }
-                    .setPositiveButton(R.string.capital_ok) { dialog, _ ->
+                    .setPositiveButton(R.string.OK) { dialog, _ ->
                         lifecycleScope.launch {
                             withContext(Dispatchers.IO) {
                                 conversationRepository.getPinMessageMinimals(conversationId)
@@ -434,7 +434,7 @@ class ChatHistoryActivity : BaseActivity() {
                                 { granted ->
                                     if (granted) {
                                         retryUpload(messageId) {
-                                            toast(R.string.error_retry_upload)
+                                            toast(R.string.Retry_upload_failed)
                                         }
                                     } else {
                                         this@ChatHistoryActivity.openPermissionSetting()
@@ -581,7 +581,7 @@ class ChatHistoryActivity : BaseActivity() {
                                     messenger.sendUnPinMessage(conversationId, Session.getAccount()!!.toUser(), list)
                                     conversationRepository.deletePinMessageByIds(list)
                                     withContext(Dispatchers.Main) {
-                                        toast(R.string.unpin_success)
+                                        toast(R.string.Message_unpinned)
                                     }
                                 }
                             }
@@ -650,7 +650,7 @@ class ChatHistoryActivity : BaseActivity() {
         if (MimeTypes.isAudio(messageItem.mediaMimeType)) {
             items.add(
                 BottomSheetItem(
-                    getString(R.string.action_save_to_music),
+                    getString(R.string.Save_to_Music),
                     {
                         checkWritePermissionAndSave(messageItem)
                         bottomSheet?.dismiss()
@@ -662,7 +662,7 @@ class ChatHistoryActivity : BaseActivity() {
         ) {
             items.add(
                 BottomSheetItem(
-                    getString(R.string.action_save_to_gallery),
+                    getString(R.string.Save_to_Gallery),
                     {
                         checkWritePermissionAndSave(messageItem)
                         bottomSheet?.dismiss()
@@ -672,7 +672,7 @@ class ChatHistoryActivity : BaseActivity() {
         } else {
             items.add(
                 BottomSheetItem(
-                    getString(R.string.action_save_to_downloads),
+                    getString(R.string.Save_to_Downloads),
                     {
                         checkWritePermissionAndSave(messageItem)
                         bottomSheet?.dismiss()
@@ -682,7 +682,7 @@ class ChatHistoryActivity : BaseActivity() {
         }
         items.add(
             BottomSheetItem(
-                getString(R.string.action_open),
+                getString(R.string.Open),
                 {
                     openMedia(messageItem)
                     bottomSheet?.dismiss()
@@ -729,7 +729,7 @@ class ChatHistoryActivity : BaseActivity() {
             lifecycleScope.launch {
                 if (conversationRepository.hasUploadedAttachmentSuspend(transcriptId) > 0) {
                     alert(getString(R.string.error_transcript_forward))
-                        .setPositiveButton(R.string.capital_ok) { dialog, _ ->
+                        .setPositiveButton(R.string.OK) { dialog, _ ->
                             dialog.dismiss()
                         }.show()
                     bottomSheet.dismiss()

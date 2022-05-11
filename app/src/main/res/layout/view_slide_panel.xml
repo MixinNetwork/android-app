@@ -24,7 +24,7 @@
                 android:layout_gravity="center"
                 android:textColor="@color/colorDarkBlue"
                 android:textSize="18sp"
-                android:text="@string/action_cancel"/>
+                android:text="@string/Cancel"/>
 
         <LinearLayout
                 android:id="@+id/slide_ll"
@@ -46,7 +46,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:textColor="@color/color_gray"
-                    android:text="@string/slide_to_cancel"
+                    android:text="@string/Slide_to_cancel"
                     tools:ignore="RelativeOverlap"/>
         </LinearLayout>
     </FrameLayout>

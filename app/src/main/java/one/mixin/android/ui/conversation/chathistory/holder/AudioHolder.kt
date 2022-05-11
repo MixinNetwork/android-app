@@ -55,7 +55,7 @@ class AudioHolder constructor(val binding: ItemChatAudioBinding) : BaseViewHolde
         }
 
         if (messageItem.mediaStatus == MediaStatus.EXPIRED.name) {
-            binding.audioDuration.textResource = R.string.chat_expired
+            binding.audioDuration.textResource = R.string.Expired
         } else {
             binding.audioDuration.text = messageItem.mediaDuration?.toLongOrNull()?.formatMillis() ?: "00:00"
         }

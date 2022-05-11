@@ -444,9 +444,9 @@ class TransferFragment() : MixinBottomSheetDialogFragment() {
         }
 
         if (!isInnerTransfer() && asset.assetId == RIPPLE_CHAIN_ID) {
-            binding.transferMemo.setHint(R.string.wallet_transfer_tag)
+            binding.transferMemo.setHint(R.string.Tag)
         } else {
-            binding.transferMemo.setHint(R.string.wallet_transfer_memo)
+            binding.transferMemo.setHint(R.string.transfer_memo)
         }
         binding.assetName.text = asset.name
         binding.assetDesc.text = asset.balance.numberFormat()
@@ -559,7 +559,7 @@ class TransferFragment() : MixinBottomSheetDialogFragment() {
 
         val memo = binding.transferMemo.text.toString()
         if (memo.toByteArray().size > 140) {
-            toast("${binding.transferMemo.hint} ${getString(R.string.group_edit_too_long)}")
+            toast("${binding.transferMemo.hint} ${getString(R.string.Content_too_long)}")
             return@launch
         }
         binding.continueVa.displayedChild = POST_PB

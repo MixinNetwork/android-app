@@ -82,7 +82,7 @@ class LocationActivity : BaseActivity(), OnMapReadyCallback {
                     calculationByDistance(LatLng(value.latitude, value.longitude), LatLng(location.latitude, location.longitude)).distanceFormat()
                 }?.let {
                     if (binding.locationSubTitle.text == null)
-                        binding.locationSubTitle.text = getString(R.string.location_distance, it.first, getString(it.second))
+                        binding.locationSubTitle.text = getString(R.string.location_distance_away, it.first, getString(it.second))
                 }
             }
             field = value
@@ -213,7 +213,7 @@ class LocationActivity : BaseActivity(), OnMapReadyCallback {
 
         location.notNullWithElse(
             { location ->
-                binding.locationTitle.text = location.name ?: getString(R.string.location_unnamed)
+                binding.locationTitle.text = location.name ?: getString(R.string.Unnamed_location)
                 location.address?.let { address ->
                     binding.locationSubTitle.text = address
                 }
@@ -519,7 +519,7 @@ class LocationActivity : BaseActivity(), OnMapReadyCallback {
         if (!gpsEnable) {
             locationAlert = AlertDialog.Builder(this)
                 .setMessage(R.string.location_enable_title)
-                .setPositiveButton(R.string.live_setting) { dialog, _ ->
+                .setPositiveButton(R.string.Settings) { dialog, _ ->
                     try {
                         startActivity(Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS))
                     } catch (e: Exception) {

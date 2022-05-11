@@ -12,7 +12,7 @@
         android:layout_height="wrap_content"
         app:need_divider="false"
         app:rightIcon="@drawable/ic_help_outline"
-        app:titleText="@string/setting_delete_account" />
+        app:titleText="@string/Delete_my_account" />
 
     <LinearLayout
         android:id="@+id/top_ll"
@@ -54,7 +54,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="3dp"
                 android:lineSpacingExtra="2dp"
-                android:text="@string/setting_delete_account_content_1"
+                android:text="@string/delete_account_hint"
                 android:textColor="?attr/text_primary"
                 android:textSize="14sp" />
         </one.mixin.android.widget.DotTextLayout>
@@ -105,7 +105,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="3dp"
                 android:lineSpacingExtra="2dp"
-                android:text="@string/setting_delete_account_content_3"
+                android:text="@string/Transactions_CANNOT_be_deleted"
                 android:textColor="?attr/text_primary"
                 android:textSize="14sp" />
         </one.mixin.android.widget.DotTextLayout>
@@ -128,7 +128,7 @@
             android:layout_height="wrap_content"
             android:layout_centerVertical="true"
             android:layout_marginStart="@dimen/activity_horizontal_margin"
-            android:text="@string/setting_delete_account"
+            android:text="@string/Delete_my_account"
             android:textColor="@color/colorRed"
             tools:ignore="RelativeOverlap" />
     </RelativeLayout>
@@ -149,7 +149,7 @@
             android:layout_height="wrap_content"
             android:layout_centerVertical="true"
             android:layout_marginStart="@dimen/activity_horizontal_margin"
-            android:text="@string/setting_delete_account_change"
+            android:text="@string/Change_Number_Instead"
             tools:ignore="RelativeOverlap" />
     </RelativeLayout>
 

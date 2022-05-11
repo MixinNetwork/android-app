@@ -2,11 +2,11 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <item
         android:id="@+id/pin"
-        android:title="@string/conversation_pin" />
+        android:title="@string/Pin" />
     <item
         android:id="@+id/mute"
-        android:title="@string/action_mute" />
+        android:title="@string/Mute" />
     <item
         android:id="@+id/delete"
-        android:title="@string/conversation_delete" />
+        android:title="@string/Delete" />
 </menu>

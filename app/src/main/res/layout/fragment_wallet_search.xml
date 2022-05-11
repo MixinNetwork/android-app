@@ -38,7 +38,7 @@
             android:background="@null"
             android:drawablePadding="6dp"
             android:gravity="center_vertical"
-            android:hint="@string/wallet_search_hint"
+            android:hint="@string/search_placeholder_asset"
             android:imeOptions="actionSearch|flagNoExtractUi"
             android:inputType="text"
             android:maxLines="1"
@@ -98,7 +98,7 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_horizontal"
                 android:layout_marginTop="@dimen/margin16"
-                android:text="@string/capital_no_result"
+                android:text="@string/No_result"
                 android:textColor="?attr/text_minor" />
         </LinearLayout>
     </ViewAnimator>

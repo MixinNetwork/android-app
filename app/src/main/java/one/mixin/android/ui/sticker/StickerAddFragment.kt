@@ -100,8 +100,8 @@ class StickerAddFragment : BaseFragment() {
         binding.titleView.rightAnimator.setOnClickListener {
             if (dialog == null) {
                 dialog = indeterminateProgressDialog(
-                    message = R.string.pb_dialog_message,
-                    title = R.string.group_adding
+                    message = R.string.Please_wait_a_bit,
+                    title = R.string.Adding
                 ).apply {
                     setCancelable(false)
                 }
@@ -151,12 +151,12 @@ class StickerAddFragment : BaseFragment() {
             val uri = url.toUri()
             val mimeType = getMimeType(uri, true)
             if (mimeType?.isStickerSupport() != true) {
-                handleBack(R.string.sticker_add_invalid_format)
+                handleBack(R.string.Invalid_sticker_format)
                 return@launch
             }
             getStickerAddRequest(mimeType, uri)
         } catch (e: Exception) {
-            handleBack(R.string.sticker_add_failed)
+            handleBack(R.string.Add_sticker_failed)
             null
         } ?: return@launch
 
@@ -170,7 +170,7 @@ class StickerAddFragment : BaseFragment() {
         if (r.isSuccess) {
             doAfterStickerAdded(r)
         } else {
-            ErrorHandler.handleMixinError(r.errorCode, r.errorDescription, getString(R.string.error_image))
+            ErrorHandler.handleMixinError(r.errorCode, r.errorDescription, getString(R.string.File_error))
             handleBack()
         }
     }
@@ -190,7 +190,7 @@ class StickerAddFragment : BaseFragment() {
                     target: Target<Drawable>?,
                     isFirstResource: Boolean
                 ): Boolean {
-                    handleBack(R.string.add_success)
+                    handleBack(R.string.Add_success)
                     return true
                 }
 
@@ -201,7 +201,7 @@ class StickerAddFragment : BaseFragment() {
                     dataSource: DataSource?,
                     isFirstResource: Boolean
                 ): Boolean {
-                    handleBack(R.string.add_success)
+                    handleBack(R.string.Add_success)
                     return true
                 }
             }
@@ -216,7 +216,7 @@ class StickerAddFragment : BaseFragment() {
             val path = uri.getFilePath(requireContext())
             if (path == null) {
                 withContext(Dispatchers.Main) {
-                    handleBack(R.string.sticker_add_failed)
+                    handleBack(R.string.Add_sticker_failed)
                 }
                 return@withContext null
             }

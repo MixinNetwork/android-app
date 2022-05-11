@@ -12,7 +12,7 @@
         android:layout_height="wrap_content"
         app:rightIcon="@drawable/ic_content_copy"
         android:layout_marginBottom="24dp"
-        app:titleText="@string/setting_diagnosis" />
+        app:titleText="@string/Net_Diagnosis" />
 
     <ScrollView
         android:layout_width="match_parent"

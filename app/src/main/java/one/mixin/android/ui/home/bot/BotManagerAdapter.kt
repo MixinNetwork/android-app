@@ -42,9 +42,9 @@ class BotManagerAdapter(private val botCallBack: (BotInterface) -> Unit) : Recyc
             } else if (app is Bot) {
                 binding.name.text =
                     when (app.id) {
-                        INTERNAL_WALLET_ID -> holder.itemView.context.getString(R.string.wallet)
-                        INTERNAL_CAMERA_ID -> holder.itemView.context.getString(R.string.camera)
-                        INTERNAL_SCAN_ID -> holder.itemView.context.getString(R.string.bot_internal_scan)
+                        INTERNAL_WALLET_ID -> holder.itemView.context.getString(R.string.Wallet)
+                        INTERNAL_CAMERA_ID -> holder.itemView.context.getString(R.string.Camera)
+                        INTERNAL_SCAN_ID -> holder.itemView.context.getString(R.string.Scan_QR)
                         else -> app.name
                     }
             }

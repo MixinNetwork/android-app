@@ -215,7 +215,7 @@ class CaptureFragment() : BaseCameraxFragment() {
     private val imageSavedListener = object : ImageCapture.OnImageSavedCallback {
         override fun onImageSaved(outputFileResults: ImageCapture.OutputFileResults) {
             imageCaptureFile?.let { uri ->
-                getEditResult.launch(Pair(uri.toUri(), getString(R.string.action_send)))
+                getEditResult.launch(Pair(uri.toUri(), getString(R.string.Send)))
             }
         }
 
@@ -344,7 +344,7 @@ class CaptureFragment() : BaseCameraxFragment() {
             startImageAnalysis()
         } else {
             if (binding.op.time < CaptureActivity.MIN_DURATION) {
-                toast(R.string.error_duration_short)
+                toast(R.string.Duration_is_too_short)
                 event.outputResults.outputUri.path?.apply {
                     File(this).delete()
                 }
@@ -367,7 +367,7 @@ class CaptureFragment() : BaseCameraxFragment() {
                         GsonHelper.customGson.toJson(ShareImageData(uri.toString())),
                     )
                 ),
-                ForwardAction.System(name = getString(R.string.action_send), needEdit = false)
+                ForwardAction.System(name = getString(R.string.Send), needEdit = false)
             )
         }
     }

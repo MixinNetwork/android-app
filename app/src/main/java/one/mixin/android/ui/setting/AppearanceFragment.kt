@@ -42,7 +42,7 @@ class AppearanceFragment : BaseFragment(R.layout.fragment_appearance) {
             titleView.leftIb.setOnClickListener {
                 activity?.onBackPressed()
             }
-            nightModeTv.setText(R.string.setting_theme)
+            nightModeTv.setText(R.string.Theme)
             val currentId = defaultSharedPreferences.getInt(
                 Constants.Theme.THEME_CURRENT_ID,
                 if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
@@ -54,7 +54,7 @@ class AppearanceFragment : BaseFragment(R.layout.fragment_appearance) {
             nightModeDescTv.text = resources.getStringArray(R.array.setting_night_array_oreo)[currentId]
             nightModeRl.setOnClickListener {
                 singleChoice(
-                    resources.getString(R.string.setting_theme),
+                    resources.getString(R.string.Theme),
                     if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
                         R.array.setting_night_array
                     } else {
@@ -81,7 +81,7 @@ class AppearanceFragment : BaseFragment(R.layout.fragment_appearance) {
             val language = Lingver.getInstance().getLanguage()
             val languageNames = resources.getStringArray(R.array.language_names)
             languageDescTv.text = if (Lingver.getInstance().isFollowingSystemLocale()) {
-                getString(R.string.follow_system)
+                getString(R.string.Follow_system)
             } else {
                 when (language) {
                     Locale.SIMPLIFIED_CHINESE.language -> {
@@ -114,7 +114,7 @@ class AppearanceFragment : BaseFragment(R.layout.fragment_appearance) {
 
     private fun showLanguageAlert() {
         val choice = resources.getStringArray(R.array.language_names)
-        choice[0] = getString(R.string.follow_system)
+        choice[0] = getString(R.string.Follow_system)
         val selectItem = if (Lingver.getInstance().isFollowingSystemLocale()) {
             POS_FOLLOW_SYSTEM
         } else {
@@ -135,11 +135,11 @@ class AppearanceFragment : BaseFragment(R.layout.fragment_appearance) {
         }
         var newSelectItem = selectItem
         alertDialogBuilder()
-            .setTitle(R.string.language)
+            .setTitle(R.string.Language)
             .setSingleChoiceItems(choice, selectItem) { _, which ->
                 newSelectItem = which
             }
-            .setPositiveButton(R.string.capital_ok) { dialog, _ ->
+            .setPositiveButton(R.string.OK) { dialog, _ ->
                 if (newSelectItem != selectItem) {
                     if (newSelectItem == POS_FOLLOW_SYSTEM) {
                         Lingver.getInstance().setFollowSystemLocale(requireContext())
@@ -165,7 +165,7 @@ class AppearanceFragment : BaseFragment(R.layout.fragment_appearance) {
                 }
                 dialog.dismiss()
             }
-            .setNegativeButton(R.string.action_cancel) { dialog, _ ->
+            .setNegativeButton(R.string.Cancel) { dialog, _ ->
                 dialog.dismiss()
             }
             .show()

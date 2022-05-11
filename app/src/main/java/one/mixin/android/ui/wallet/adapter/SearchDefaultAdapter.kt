@@ -85,7 +85,7 @@ class SearchDefaultAdapter : RecyclerView.Adapter<ItemViewHolder>(), StickyRecyc
     class HeaderViewHolder(val binding: ItemContactHeaderBinding) : RecyclerView.ViewHolder(binding.root) {
         fun bind(isRecent: Boolean) {
             binding.header.text = itemView.context.getString(
-                if (isRecent) R.string.wallet_recent_search else R.string.wallet_trending
+                if (isRecent) R.string.Recent_searches else R.string.Trending
             )
         }
     }
@@ -108,7 +108,7 @@ abstract class ItemViewHolder(val binding: ItemWalletSearchBinding) : RecyclerVi
         binding.nameTv.text = name
         binding.symbolTv.text = symbol
         if (priceUsd == "0") {
-            binding.priceTv.setText(R.string.no_applicable)
+            binding.priceTv.setText(R.string.NA)
             binding.changeTv.visibility = View.GONE
         } else {
             binding.changeTv.visibility = View.VISIBLE

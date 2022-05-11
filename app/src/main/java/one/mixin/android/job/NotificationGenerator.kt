@@ -127,7 +127,7 @@ object NotificationGenerator : Injector() {
         ).setCategory(CATEGORY_MESSAGE)
         supportsNougat {
             val remoteInput = RemoteInput.Builder(KEY_REPLY)
-                .setLabel(context.getString(R.string.notification_reply))
+                .setLabel(context.getString(R.string.Reply))
                 .build()
             val sendIntent = Intent(context, SendService::class.java)
             sendIntent.putExtra(CONVERSATION_ID, message.conversationId)
@@ -158,7 +158,7 @@ object NotificationGenerator : Injector() {
             )
             val action = NotificationCompat.Action.Builder(
                 R.mipmap.ic_launcher,
-                context.getString(R.string.notification_reply),
+                context.getString(R.string.Reply),
                 pendingIntent
             )
                 .addRemoteInput(remoteInput)
@@ -169,7 +169,7 @@ object NotificationGenerator : Injector() {
             notificationBuilder.addAction(action)
             val readAction = NotificationCompat.Action.Builder(
                 R.mipmap.ic_launcher,
-                context.getString(R.string.notification_mark),
+                context.getString(R.string.Mark_as_read),
                 pendingIntent
             ).setSemanticAction(SEMANTIC_ACTION_MARK_AS_READ)
                 .setShowsUserInterface(false)
@@ -188,7 +188,7 @@ object NotificationGenerator : Injector() {
                     contentText = "${user.fullName} : ${rendMentionContent(message.content, userMap)}"
                 } else {
                     notificationBuilder.setContentTitle(user.fullName)
-                    notificationBuilder.setTicker(context.getString(R.string.alert_key_contact_text_message))
+                    notificationBuilder.setTicker(context.getString(R.string.sent_you_a_text))
                     contentText = rendMentionContent(message.content, userMap)
                 }
             }
@@ -200,9 +200,9 @@ object NotificationGenerator : Injector() {
                     notificationBuilder.setContentTitle(conversation.getConversationName())
                     contentText = context.getString(R.string.alert_key_group_image_message, user.fullName)
                 } else {
-                    notificationBuilder.setTicker(context.getString(R.string.alert_key_contact_image_message))
+                    notificationBuilder.setTicker(context.getString(R.string.sent_you_a_photo))
                     notificationBuilder.setContentTitle(user.fullName)
-                    contentText = context.getString(R.string.alert_key_contact_image_message)
+                    contentText = context.getString(R.string.sent_you_a_photo)
                 }
             }
             message.isVideo() -> {
@@ -213,9 +213,9 @@ object NotificationGenerator : Injector() {
                     notificationBuilder.setContentTitle(conversation.getConversationName())
                     contentText = context.getString(R.string.alert_key_group_video_message, user.fullName)
                 } else {
-                    notificationBuilder.setTicker(context.getString(R.string.alert_key_contact_video_message))
+                    notificationBuilder.setTicker(context.getString(R.string.sent_you_a_video))
                     notificationBuilder.setContentTitle(user.fullName)
-                    contentText = context.getString(R.string.alert_key_contact_video_message)
+                    contentText = context.getString(R.string.sent_you_a_video)
                 }
             }
             message.isLive() -> {
@@ -226,9 +226,9 @@ object NotificationGenerator : Injector() {
                     notificationBuilder.setContentTitle(conversation.getConversationName())
                     contentText = context.getString(R.string.alert_key_group_live_message, user.fullName)
                 } else {
-                    notificationBuilder.setTicker(context.getString(R.string.alert_key_contact_live_message))
+                    notificationBuilder.setTicker(context.getString(R.string.sent_you_a_live))
                     notificationBuilder.setContentTitle(user.fullName)
-                    contentText = context.getString(R.string.alert_key_contact_live_message)
+                    contentText = context.getString(R.string.sent_you_a_live)
                 }
             }
             message.isData() -> {
@@ -239,9 +239,9 @@ object NotificationGenerator : Injector() {
                     notificationBuilder.setContentTitle(conversation.getConversationName())
                     contentText = context.getString(R.string.alert_key_group_data_message, user.fullName)
                 } else {
-                    notificationBuilder.setTicker(context.getString(R.string.alert_key_contact_data_message))
+                    notificationBuilder.setTicker(context.getString(R.string.sent_you_a_file))
                     notificationBuilder.setContentTitle(user.fullName)
-                    contentText = context.getString(R.string.alert_key_contact_data_message)
+                    contentText = context.getString(R.string.sent_you_a_file)
                 }
             }
             message.isAudio() -> {
@@ -252,9 +252,9 @@ object NotificationGenerator : Injector() {
                     notificationBuilder.setContentTitle(conversation.getConversationName())
                     contentText = context.getString(R.string.alert_key_group_audio_message, user.fullName)
                 } else {
-                    notificationBuilder.setTicker(context.getString(R.string.alert_key_contact_audio_message))
+                    notificationBuilder.setTicker(context.getString(R.string.sent_you_an_audio))
                     notificationBuilder.setContentTitle(user.fullName)
-                    contentText = context.getString(R.string.alert_key_contact_audio_message)
+                    contentText = context.getString(R.string.sent_you_an_audio)
                 }
             }
             message.isSticker() -> {
@@ -265,9 +265,9 @@ object NotificationGenerator : Injector() {
                     notificationBuilder.setContentTitle(conversation.getConversationName())
                     contentText = context.getString(R.string.alert_key_group_sticker_message, user.fullName)
                 } else {
-                    notificationBuilder.setTicker(context.getString(R.string.alert_key_contact_sticker_message))
+                    notificationBuilder.setTicker(context.getString(R.string.sent_you_a_sticker))
                     notificationBuilder.setContentTitle(user.fullName)
-                    contentText = context.getString(R.string.alert_key_contact_sticker_message)
+                    contentText = context.getString(R.string.sent_you_a_sticker)
                 }
             }
             message.isContact() -> {
@@ -278,9 +278,9 @@ object NotificationGenerator : Injector() {
                     notificationBuilder.setContentTitle(conversation.getConversationName())
                     contentText = context.getString(R.string.alert_key_group_contact_message, user.fullName)
                 } else {
-                    notificationBuilder.setTicker(context.getString(R.string.alert_key_contact_contact_message))
+                    notificationBuilder.setTicker(context.getString(R.string.sent_you_a_contact))
                     notificationBuilder.setContentTitle(user.fullName)
-                    contentText = context.getString(R.string.alert_key_contact_contact_message)
+                    contentText = context.getString(R.string.sent_you_a_contact)
                 }
             }
             message.isLocation() -> {
@@ -291,9 +291,9 @@ object NotificationGenerator : Injector() {
                     notificationBuilder.setContentTitle(conversation.getConversationName())
                     contentText = context.getString(R.string.alert_key_group_location_message, user.fullName)
                 } else {
-                    notificationBuilder.setTicker(context.getString(R.string.alert_key_contact_location_message))
+                    notificationBuilder.setTicker(context.getString(R.string.sent_you_a_location))
                     notificationBuilder.setContentTitle(user.fullName)
-                    contentText = context.getString(R.string.alert_key_contact_location_message)
+                    contentText = context.getString(R.string.sent_you_a_location)
                 }
             }
             message.isPost() -> {
@@ -304,7 +304,7 @@ object NotificationGenerator : Injector() {
                     notificationBuilder.setContentTitle(conversation.getConversationName())
                     contentText = "${user.fullName}: ${rendMentionContent(message.content, userMap)}"
                 } else {
-                    notificationBuilder.setTicker(context.getString(R.string.alert_key_contact_post_message))
+                    notificationBuilder.setTicker(context.getString(R.string.sent_you_a_post))
                     notificationBuilder.setContentTitle(user.fullName)
                     contentText = "${user.fullName}: ${rendMentionContent(message.content, userMap)}"
                 }
@@ -317,16 +317,16 @@ object NotificationGenerator : Injector() {
                     notificationBuilder.setContentTitle(conversation.getConversationName())
                     contentText = context.getString(R.string.alert_key_group_transcript_message, user.fullName)
                 } else {
-                    notificationBuilder.setTicker(context.getString(R.string.alert_key_contact_transcript_message))
+                    notificationBuilder.setTicker(context.getString(R.string.sent_you_an_transcript))
                     notificationBuilder.setContentTitle(user.fullName)
-                    contentText = context.getString(R.string.alert_key_contact_transcript_message)
+                    contentText = context.getString(R.string.sent_you_an_transcript)
                 }
             }
             message.type == MessageCategory.SYSTEM_ACCOUNT_SNAPSHOT.name -> {
                 if (message.action == SnapshotType.transfer.name) {
-                    notificationBuilder.setTicker(context.getString(R.string.alert_key_contact_transfer_message))
+                    notificationBuilder.setTicker(context.getString(R.string.sent_you_a_transfer))
                     notificationBuilder.setContentTitle(user.fullName)
-                    contentText = context.getString(R.string.alert_key_contact_transfer_message)
+                    contentText = context.getString(R.string.sent_you_a_transfer)
                 }
             }
             message.type == MessageCategory.APP_BUTTON_GROUP.name ||
@@ -336,11 +336,11 @@ object NotificationGenerator : Injector() {
                     notificationBuilder.setTicker(
                         context.getString(R.string.alert_key_group_text_message, user.fullName)
                     )
-                    contentText = context.getString(R.string.alert_key_contact_text_message)
+                    contentText = context.getString(R.string.sent_you_a_text)
                 } else {
                     notificationBuilder.setContentTitle(user.fullName)
-                    notificationBuilder.setTicker(context.getString(R.string.alert_key_contact_text_message))
-                    contentText = context.getString(R.string.alert_key_contact_text_message)
+                    notificationBuilder.setTicker(context.getString(R.string.sent_you_a_text))
+                    contentText = context.getString(R.string.sent_you_a_text)
                 }
             }
             message.type == MessageCategory.SYSTEM_CONVERSATION.name -> {
@@ -348,7 +348,7 @@ object NotificationGenerator : Injector() {
             }
             message.type == MessageCategory.WEBRTC_AUDIO_OFFER.name -> {
                 notificationBuilder.setContentTitle(user.fullName)
-                contentText = context.getString(R.string.alert_key_contact_audio_call_message)
+                contentText = context.getString(R.string.invite_you_to_a_voice_call)
             }
             else -> {
                 // No support

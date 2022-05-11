@@ -19,9 +19,9 @@ const val TOP_BOT = "top_bot"
 
 val DefaultTopBots: String = GsonHelper.customGson.toJson(arrayOf(INTERNAL_WALLET_ID, INTERNAL_SCAN_ID))
 
-val InternalWallet = Bot(INTERNAL_WALLET_ID, MixinApplication.appContext.getString(R.string.wallet), R.drawable.ic_bot_wallet)
-val InternalCamera = Bot(INTERNAL_CAMERA_ID, MixinApplication.appContext.getString(R.string.camera), R.drawable.ic_bot_camera)
-val InternalScan = Bot(INTERNAL_SCAN_ID, MixinApplication.appContext.getString(R.string.bot_internal_scan), R.drawable.ic_bot_scan)
+val InternalWallet = Bot(INTERNAL_WALLET_ID, MixinApplication.appContext.getString(R.string.Wallet), R.drawable.ic_bot_wallet)
+val InternalCamera = Bot(INTERNAL_CAMERA_ID, MixinApplication.appContext.getString(R.string.Camera), R.drawable.ic_bot_camera)
+val InternalScan = Bot(INTERNAL_SCAN_ID, MixinApplication.appContext.getString(R.string.Scan_QR), R.drawable.ic_bot_scan)
 
 enum class BotCategory(@DrawableRes val icon: Int) {
     TRADING(R.drawable.ic_bot_category_trading),

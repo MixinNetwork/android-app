@@ -18,7 +18,7 @@
         android:layout_height="60dp"
         android:background="?attr/bg_white"
         android:drawablePadding="8dp"
-        android:hint="@string/contact_search_hint"
+        android:hint="@string/setting_auth_search_hint"
         android:maxLines="1"
         android:imeOptions="actionSearch"
         android:inputType="text"

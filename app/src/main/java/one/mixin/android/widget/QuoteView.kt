@@ -10,6 +10,7 @@ import androidx.appcompat.content.res.AppCompatResources
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.net.toUri
 import androidx.core.widget.TextViewCompat
+import com.google.gson.Gson
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.databinding.ViewQuoteBinding
@@ -26,7 +27,10 @@ import one.mixin.android.extension.renderMessage
 import one.mixin.android.extension.round
 import one.mixin.android.session.Session
 import one.mixin.android.ui.conversation.holder.base.BaseViewHolder
+import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.mention.MentionRenderCache
+import one.mixin.android.vo.AppButtonData
+import one.mixin.android.vo.AppCardData
 import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.QuoteMessageItem
 import java.io.File
@@ -48,7 +52,7 @@ class QuoteView constructor(context: Context, attrs: AttributeSet) :
             binding.replyNameTv.visibility = View.GONE
             binding.replyIv.visibility = View.GONE
             binding.replyAvatar.visibility = View.GONE
-            binding.replyContentTv.setText(R.string.chat_not_found)
+            binding.replyContentTv.setText(R.string.Message_not_found)
             binding.replyContentTv.setTypeface(null, Typeface.ITALIC)
             setIcon(R.drawable.ic_type_recall)
             return
@@ -81,9 +85,9 @@ class QuoteView constructor(context: Context, attrs: AttributeSet) :
             quoteMessageItem.type == MessageCategory.MESSAGE_RECALL.name -> {
                 binding.replyContentTv.setText(
                     if (quoteMessageItem.userId == Session.getAccountId()) {
-                        R.string.chat_recall_me
+                        R.string.You_deleted_this_message
                     } else {
-                        R.string.chat_recall_delete
+                        R.string.This_message_was_deleted
                     }
                 )
                 binding.replyIv.visibility = View.GONE
@@ -99,7 +103,7 @@ class QuoteView constructor(context: Context, attrs: AttributeSet) :
                     absolutePath(quoteMessageItem.mediaUrl, quoteMessageItem.type, quoteMessageItem.conversationId),
                     R.drawable.image_holder
                 )
-                binding.replyContentTv.setText(R.string.photo)
+                binding.replyContentTv.setText(R.string.Photo)
                 setIcon(R.drawable.ic_type_pic)
                 binding.replyIv.visibility = View.VISIBLE
                 binding.replyAvatar.visibility = View.GONE
@@ -113,7 +117,7 @@ class QuoteView constructor(context: Context, attrs: AttributeSet) :
                     absolutePath(quoteMessageItem.mediaUrl, quoteMessageItem.type, quoteMessageItem.conversationId),
                     R.drawable.image_holder
                 )
-                binding.replyContentTv.setText(R.string.video)
+                binding.replyContentTv.setText(R.string.Video)
                 setIcon(R.drawable.ic_type_video)
                 binding.replyIv.visibility = View.VISIBLE
                 binding.replyAvatar.visibility = View.GONE
@@ -127,7 +131,7 @@ class QuoteView constructor(context: Context, attrs: AttributeSet) :
                     quoteMessageItem.thumbUrl,
                     R.drawable.image_holder
                 )
-                binding.replyContentTv.setText(R.string.live)
+                binding.replyContentTv.setText(R.string.Live)
                 setIcon(R.drawable.ic_type_live)
                 binding.replyIv.visibility = View.VISIBLE
                 binding.replyAvatar.visibility = View.GONE
@@ -142,7 +146,7 @@ class QuoteView constructor(context: Context, attrs: AttributeSet) :
                         binding.replyContentTv.text = it
                     },
                     {
-                        binding.replyContentTv.setText(R.string.document)
+                        binding.replyContentTv.setText(R.string.File)
                     }
                 )
                 setIcon(R.drawable.ic_type_file)
@@ -154,7 +158,7 @@ class QuoteView constructor(context: Context, attrs: AttributeSet) :
                     8.dp
             }
             quoteMessageItem.type.endsWith("_POST") -> {
-                binding.replyContentTv.setText(R.string.post)
+                binding.replyContentTv.setText(R.string.Post)
                 setIcon(R.drawable.ic_type_file)
                 binding.replyIv.visibility = View.GONE
                 binding.replyAvatar.visibility = View.GONE
@@ -164,7 +168,7 @@ class QuoteView constructor(context: Context, attrs: AttributeSet) :
                     8.dp
             }
             quoteMessageItem.type.endsWith("_TRANSCRIPT") -> {
-                binding.replyContentTv.setText(R.string.transcript)
+                binding.replyContentTv.setText(R.string.Transcript)
                 setIcon(R.drawable.ic_type_transcript)
                 binding.replyIv.visibility = View.GONE
                 binding.replyAvatar.visibility = View.GONE
@@ -174,7 +178,7 @@ class QuoteView constructor(context: Context, attrs: AttributeSet) :
                     8.dp
             }
             quoteMessageItem.type.endsWith("_LOCATION") -> {
-                binding.replyContentTv.setText(R.string.location)
+                binding.replyContentTv.setText(R.string.Location)
                 setIcon(R.drawable.ic_type_location)
                 binding.replyIv.visibility = View.GONE
                 binding.replyAvatar.visibility = View.GONE
@@ -189,7 +193,7 @@ class QuoteView constructor(context: Context, attrs: AttributeSet) :
                         binding.replyContentTv.text = it.toLong().formatMillis()
                     },
                     {
-                        binding.replyContentTv.setText(R.string.audio)
+                        binding.replyContentTv.setText(R.string.Audio)
                     }
                 )
                 setIcon(R.drawable.ic_type_audio)
@@ -201,7 +205,7 @@ class QuoteView constructor(context: Context, attrs: AttributeSet) :
                     8.dp
             }
             quoteMessageItem.type.endsWith("_STICKER") -> {
-                binding.replyContentTv.setText(R.string.sticker)
+                binding.replyContentTv.setText(R.string.Sticker)
                 setIcon(R.drawable.ic_type_stiker)
                 binding.replyIv.loadImageCenterCrop(
                     quoteMessageItem.assetUrl,
@@ -231,7 +235,15 @@ class QuoteView constructor(context: Context, attrs: AttributeSet) :
                     16.dp
             }
             quoteMessageItem.type == MessageCategory.APP_BUTTON_GROUP.name || quoteMessageItem.type == MessageCategory.APP_CARD.name -> {
-                binding.replyContentTv.setText(R.string.extensions)
+                if (quoteMessageItem.type == MessageCategory.APP_CARD.name) {
+                    val appCard = GsonHelper.customGson.fromJson(quoteMessageItem.content, AppCardData::class.java)
+                    binding.replyContentTv.text = appCard.title
+                } else if (quoteMessageItem.type == MessageCategory.APP_BUTTON_GROUP.name) {
+                    val buttons = Gson().fromJson(quoteMessageItem.content, Array<AppButtonData>::class.java)
+                    var content = ""
+                    buttons.map { content += "[" + it.label + "]" }
+                    binding.replyContentTv.text = content
+                }
                 setIcon(R.drawable.ic_type_touch_app)
                 binding.replyIv.visibility = View.GONE
                 binding.replyAvatar.visibility = View.GONE

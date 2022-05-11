@@ -25,7 +25,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             app:leftIcon="@drawable/ic_close_black"
-            app:titleText="@string/setting_desktop"/>
+            app:titleText="@string/Mixin_Messenger_Desktop"/>
 
         <ImageView
             android:id="@+id/logo_iv"
@@ -48,7 +48,7 @@
             android:paddingStart="@dimen/activity_horizontal_margin"
             android:paddingEnd="@dimen/activity_horizontal_margin"
             android:textColor="?attr/text_primary"
-            android:text="@string/setting_scan_qr_code"
+            android:text="@string/Scan_QR_Code"
             tools:ignore="RelativeOverlap"/>
 
         <TextView

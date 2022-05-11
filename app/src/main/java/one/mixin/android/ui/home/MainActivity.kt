@@ -376,7 +376,7 @@ class MainActivity : BlazeBaseActivity() {
         delay(2000)
         MaterialAlertDialogBuilder(this@MainActivity, R.style.MixinAlertDialogTheme)
             .setTitle(getString(R.string.setting_emergency_change_mobile))
-            .setPositiveButton(R.string.action_change) { dialog, _ ->
+            .setPositiveButton(R.string.Change) { dialog, _ ->
                 supportFragmentManager.inTransaction {
                     setCustomAnimations(
                         R.anim.slide_in_bottom,
@@ -389,7 +389,7 @@ class MainActivity : BlazeBaseActivity() {
                     dialog.dismiss()
                 }
             }
-            .setNegativeButton(R.string.action_later) { dialog, _ ->
+            .setNegativeButton(R.string.Later) { dialog, _ ->
                 dialog.dismiss()
             }
             .show()
@@ -485,7 +485,7 @@ class MainActivity : BlazeBaseActivity() {
                         .setTitle(R.string.storage_low_title)
                         .setMessage(R.string.storage_low_message)
                         .setCancelable(false)
-                        .setNegativeButton(getString(R.string.know)) { dialog, _ ->
+                        .setNegativeButton(getString(R.string.I_know)) { dialog, _ ->
                             dialog.dismiss()
                         }
                         .show()
@@ -502,7 +502,7 @@ class MainActivity : BlazeBaseActivity() {
             getString(R.string.update_downloaded),
             Snackbar.LENGTH_INDEFINITE
         ).apply {
-            setAction(getString(R.string.action_restart)) { appUpdateManager.completeUpdate() }
+            setAction(getString(R.string.RESTART)) { appUpdateManager.completeUpdate() }
             setActionTextColor(getColor(R.color.colorAccent))
             show()
         }
@@ -558,7 +558,7 @@ class MainActivity : BlazeBaseActivity() {
             clearCodeAfterConsume(intent, TRANSFER)
         } else if (intent.extras != null && intent.extras!!.getString("conversation_id", null) != null) {
             alertDialog?.dismiss()
-            alertDialog = alert(getString(R.string.group_wait)).show()
+            alertDialog = alert(getString(R.string.Please_wait_a_bit)).show()
             val conversationId = intent.extras!!.getString("conversation_id")!!
             clearCodeAfterConsume(intent, "conversation_id")
             Maybe.just(conversationId).map {
@@ -812,7 +812,7 @@ class MainActivity : BlazeBaseActivity() {
 
     private fun addCircle() {
         editDialog {
-            titleText = this@MainActivity.getString(R.string.circle_action_add)
+            titleText = this@MainActivity.getString(R.string.Add_circle)
             maxTextCount = 64
             defaultEditEnable = false
             editMaxLines = EditDialog.MAX_LINE.toInt()
@@ -826,7 +826,7 @@ class MainActivity : BlazeBaseActivity() {
 
     private fun createCircle(name: String) {
         lifecycleScope.launch(errorHandler) {
-            val dialog = indeterminateProgressDialog(message = R.string.pb_dialog_message).apply {
+            val dialog = indeterminateProgressDialog(message = R.string.Please_wait_a_bit).apply {
                 setCancelable(false)
             }
             handleMixinResponse(

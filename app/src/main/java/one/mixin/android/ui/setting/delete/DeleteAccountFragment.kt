@@ -118,11 +118,11 @@ class DeleteAccountFragment : BaseFragment(R.layout.fragment_delete_account) {
                     phone
                 )
             )
-            .setNegativeButton(R.string.action_cancel) { dialog, _ ->
+            .setNegativeButton(R.string.Cancel) { dialog, _ ->
                 dialog.dismiss()
                 callback.invoke()
             }
-            .setPositiveButton(R.string.action_continue) { dialog, _ ->
+            .setPositiveButton(R.string.Continue) { dialog, _ ->
                 lifecycleScope.launch {
                     verify(phone)
                     dialog.dismiss()
@@ -210,7 +210,7 @@ class DeleteAccountFragment : BaseFragment(R.layout.fragment_delete_account) {
     private fun changeNumber() {
         alert(getString(R.string.profile_modify_number))
             .setNegativeButton(android.R.string.cancel) { dialog, _ -> dialog.dismiss() }
-            .setPositiveButton(R.string.profile_phone) { dialog, _ ->
+            .setPositiveButton(R.string.Change_Phone_Number) { dialog, _ ->
                 dialog.dismiss()
                 if (Session.getAccount()?.hasPin == true) {
                     activity?.supportFragmentManager?.inTransaction {

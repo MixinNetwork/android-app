@@ -18,7 +18,7 @@ import java.util.concurrent.TimeUnit
 import java.util.concurrent.TimeoutException
 
 abstract class MusicLoader {
-    val unknownString = MixinApplication.appContext.getString(R.string.unknown)
+    val unknownString = MixinApplication.appContext.getString(R.string.Unknown)
 
     val ignoreSet = mutableSetOf<String>()
 

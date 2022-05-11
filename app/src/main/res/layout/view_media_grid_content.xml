@@ -15,7 +15,7 @@
         android:layout_marginEnd="3dp"
         android:src="@drawable/ic_gif"
         android:visibility="gone"
-        android:contentDescription="@string/gif" />
+        android:contentDescription="@string/GIF" />
 
     <TextView
         android:id="@+id/video_duration"

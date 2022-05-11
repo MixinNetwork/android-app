@@ -38,9 +38,9 @@ class BiometricTimeFragment : BaseFragment(R.layout.fragment_biometric_time) {
         val strings = arrayListOf<String>()
         VALUES.forEach { v ->
             if (v < 1) {
-                strings.add(requireContext().resources.getQuantityString(R.plurals.wallet_pin_pay_interval_minutes, (v * 60).toInt(), (v * 60).toInt()))
+                strings.add(requireContext().resources.getQuantityString(R.plurals.Minute, (v * 60).toInt(), (v * 60).toInt()))
             } else {
-                strings.add(requireContext().resources.getQuantityString(R.plurals.wallet_pin_pay_interval_hours, v.toInt(), v.toInt()))
+                strings.add(requireContext().resources.getQuantityString(R.plurals.Hour, v.toInt(), v.toInt()))
             }
         }
         strings

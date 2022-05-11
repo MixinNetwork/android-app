@@ -54,7 +54,7 @@ class ScanFragment : BaseCameraxFragment() {
     @SuppressLint("RestrictedApi")
     override fun onFlashClick() {
         if (camera?.cameraInfo?.hasFlashUnit() == false) {
-            toast(R.string.no_flash_unit)
+            toast(R.string.Flash_unit_not_available)
             return
         }
         val torchState = camera?.cameraInfo?.torchState?.value ?: TorchState.OFF

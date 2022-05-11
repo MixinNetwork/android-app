@@ -90,7 +90,7 @@ class FileQuoteHolder constructor(val binding: ItemChatFileQuoteBinding) : Media
 
         binding.fileNameTv.text = messageItem.mediaName
         if (messageItem.mediaStatus == MediaStatus.EXPIRED.name) {
-            binding.bottomLayout.fileSizeTv.textResource = R.string.chat_expired
+            binding.bottomLayout.fileSizeTv.textResource = R.string.Expired
         } else {
             binding.bottomLayout.fileSizeTv.text = "${messageItem.mediaSize?.fileSize()}"
         }

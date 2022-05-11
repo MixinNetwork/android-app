@@ -70,6 +70,6 @@
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            android:contentDescription="@string/action_cancel" />
+            android:contentDescription="@string/Cancel" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 </one.mixin.android.widget.BottomSheetLinearLayout>

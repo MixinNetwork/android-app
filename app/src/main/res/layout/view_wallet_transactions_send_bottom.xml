@@ -14,7 +14,7 @@
         android:paddingEnd="16dp"
         android:paddingStart="16dp"
         android:textColor="?attr/text_primary"
-        android:text="@string/contact"/>
+        android:text="@string/Contact"/>
 
     <TextView
         android:id="@+id/address"
@@ -26,7 +26,7 @@
         android:paddingEnd="16dp"
         android:paddingStart="16dp"
         android:textColor="?attr/text_primary"
-        android:text="@string/address"/>
+        android:text="@string/Address"/>
 
     <TextView
         android:id="@+id/send_cancel"
@@ -38,5 +38,5 @@
         android:paddingEnd="16dp"
         android:paddingStart="16dp"
         android:textColor="?attr/text_primary"
-        android:text="@string/action_cancel"/>
+        android:text="@string/Cancel"/>
 </LinearLayout>

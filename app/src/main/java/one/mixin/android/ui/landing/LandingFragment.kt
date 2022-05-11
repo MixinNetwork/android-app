@@ -25,8 +25,8 @@ class LandingFragment : Fragment(R.layout.fragment_landing) {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val policy: String = getString(R.string.landing_privacy_policy)
-        val termsService: String = getString(R.string.landing_terms_service)
+        val policy: String = getString(R.string.Privacy_Policy)
+        val termsService: String = getString(R.string.Terms_of_Service)
         val policyWrapper = getString(R.string.landing_introduction, policy, termsService)
         val policyUrl = getString(R.string.landing_privacy_policy_url)
         val termsUrl = getString(R.string.landing_terms_url)

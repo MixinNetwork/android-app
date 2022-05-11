@@ -276,10 +276,10 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
         if (!isAdded) return
 
         val clearMenu = menu {
-            title = getString(R.string.group_info_clear_chat)
+            title = getString(R.string.Clear_chat)
             style = MenuStyle.Danger
             action = {
-                requireContext().showConfirmDialog(getString(R.string.group_info_clear_chat)) {
+                requireContext().showConfirmDialog(getString(R.string.Clear_chat)) {
                     bottomViewModel.deleteMessageByConversationId(
                         generateConversationId(
                             Session.getAccountId()!!,
@@ -298,18 +298,18 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
             )
         ) {
             menu {
-                title = getString(R.string.action_un_mute)
-                subtitle = getString(R.string.mute_until, u.muteUntil?.localTime())
+                title = getString(R.string.Unmute)
+                subtitle = getString(R.string.Mute_until, u.muteUntil?.localTime())
                 action = { unMute() }
             }
         } else {
             menu {
-                title = getString(R.string.action_mute)
+                title = getString(R.string.Mute)
                 action = { mute() }
             }
         }
         val transactionMenu = menu {
-            title = getString(R.string.contact_other_transactions)
+            title = getString(R.string.Transactions)
             action = {
                 if (showUserTransactionAction != null) {
                     showUserTransactionAction?.invoke()
@@ -325,11 +325,11 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
             }
         }
         val editNameMenu = menu {
-            title = getString(R.string.edit_name)
+            title = getString(R.string.Edit_Name)
             action = { showDialog(u.fullName) }
         }
         val voiceCallMenu = menu {
-            title = getString(R.string.voice_call)
+            title = getString(R.string.Voice_call)
             action = {
                 startVoiceCall()
             }
@@ -338,7 +338,7 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
         val telephoneCallMenu = if (!phoneNum.isNullOrEmpty()) {
             val phoneUri = Uri.parse("tel:$phoneNum")
             menu {
-                title = getString(R.string.phone_call)
+                title = getString(R.string.Phone_call)
                 subtitle = phoneNum
                 action = {
                     requireContext().showConfirmDialog(getString(R.string.call_who, phoneNum)) {
@@ -351,7 +351,7 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
             }
         } else null
         val developerMenu = menu {
-            title = getString(R.string.developer)
+            title = getString(R.string.Developer)
             action = {
                 creator?.let {
                     if (it.userId == Session.getAccountId()) {
@@ -368,7 +368,7 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
         val list = menuList {
             menuGroup {
                 menu {
-                    title = getString(R.string.contact_other_share)
+                    title = getString(R.string.Share_Contact)
                     action = {
                         ForwardActivity.show(
                             requireContext(),
@@ -387,7 +387,7 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
             }
             menuGroup {
                 menu {
-                    title = getString(R.string.contact_other_shared_media)
+                    title = getString(R.string.Shared_Media)
                     action = {
                         SharedMediaActivity.show(
                             requireContext(),
@@ -401,7 +401,7 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
                     }
                 }
                 menu {
-                    title = getString(R.string.contact_other_search_conversation)
+                    title = getString(R.string.Search_Conversation)
                     action = {
                         startSearchConversation()
                         RxBus.publish(BotCloseEvent())
@@ -461,7 +461,7 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
         list.groups.add(
             menuGroup {
                 menu {
-                    title = getString(R.string.groups_in_common)
+                    title = getString(R.string.Groups_In_Common)
                     action = {
                         openGroupsInCommon()
                         RxBus.publish(BotCloseEvent())
@@ -474,7 +474,7 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
         list.groups.add(
             menuGroup {
                 menu {
-                    title = getString(R.string.circles)
+                    title = getString(R.string.Circles)
                     action = {
                         startCircleManager()
                         RxBus.publish(BotCloseEvent())
@@ -488,7 +488,7 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
         list.groups.add(
             menuGroup {
                 menu {
-                    title = getString(R.string.add_shortcut)
+                    title = getString(R.string.Add_to_Home_screen)
                     action = {
                         addShortcut()
                         dismiss()
@@ -502,7 +502,7 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
                 list.groups.add(
                     menuGroup {
                         menu {
-                            title = getString(R.string.contact_other_unblock)
+                            title = getString(R.string.Unblock)
                             style = MenuStyle.Danger
                             action = {
                                 bottomViewModel.updateRelationship(
@@ -523,9 +523,9 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
                         menu {
                             title = getString(
                                 if (user.isBot()) {
-                                    R.string.contact_other_remove_bot
+                                    R.string.Remove_Bot
                                 } else {
-                                    R.string.contact_other_remove
+                                    R.string.Remove_Contact
                                 }
                             )
 
@@ -534,9 +534,9 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
                                 requireContext().showConfirmDialog(
                                     getString(
                                         if (user.isBot()) {
-                                            R.string.contact_other_remove_bot
+                                            R.string.Remove_Bot
                                         } else {
-                                            R.string.contact_other_remove
+                                            R.string.Remove_Contact
                                         }
                                     )
                                 ) {
@@ -555,10 +555,10 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
                 list.groups.add(
                     menuGroup {
                         menu {
-                            title = getString(R.string.contact_other_block)
+                            title = getString(R.string.Block)
                             style = MenuStyle.Danger
                             action = {
-                                requireContext().showConfirmDialog(getString(R.string.contact_other_block)) {
+                                requireContext().showConfirmDialog(getString(R.string.Block)) {
                                     bottomViewModel.updateRelationship(
                                         RelationshipRequest(
                                             u.userId,
@@ -579,7 +579,7 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
         list.groups.add(
             menuGroup {
                 menu {
-                    title = getString(R.string.contact_other_report)
+                    title = getString(R.string.Report)
                     style = MenuStyle.Danger
                     action = {
                         reportUser(u.userId)
@@ -670,7 +670,7 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
                 CallActivity.show(requireContext())
             } else {
                 alertDialogBuilder()
-                    .setMessage(getString(R.string.chat_call_warning_call))
+                    .setMessage(getString(R.string.call_on_another_call_hint))
                     .setNegativeButton(getString(android.R.string.ok)) { dialog, _ ->
                         dialog.dismiss()
                     }
@@ -707,17 +707,17 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
             RxBus.publish(BotCloseEvent())
             dismiss()
         } else {
-            toast(R.string.error_no_connection)
+            toast(R.string.No_network_connection)
         }
     }
 
     private fun reportUser(userId: String) {
         alertDialogBuilder()
-            .setMessage(getString(R.string.contact_other_report_warning))
+            .setMessage(getString(R.string.Report_and_block))
             .setNeutralButton(getString(android.R.string.cancel)) { dialog, _ ->
                 dialog.dismiss()
             }
-            .setNegativeButton(getString(R.string.contact_other_report)) { dialog, _ ->
+            .setNegativeButton(getString(R.string.Report)) { dialog, _ ->
                 bottomViewModel.updateRelationship(
                     RelationshipRequest(
                         userId,
@@ -799,7 +799,7 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
         when (relationship) {
             UserRelationship.BLOCKING.name -> {
                 binding.addTv.visibility = VISIBLE
-                binding.addTv.text = getString(R.string.contact_other_unblock)
+                binding.addTv.text = getString(R.string.Unblock)
                 binding.addTv.setCompoundDrawables(blockDrawable, null, null, null)
                 binding.addTv.setOnClickListener {
                     bottomViewModel.updateRelationship(
@@ -821,9 +821,9 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
                 binding.addTv.setCompoundDrawables(null, null, null, null)
                 "+ ${getString(
                     if (user.isBot()) {
-                        R.string.add_bot
+                        R.string.Add_bot
                     } else {
-                        R.string.add_contact
+                        R.string.Add_Contact
                     }
                 )}".also { binding.addTv.text = it }
                 binding.addTv.setOnClickListener {
@@ -843,7 +843,7 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
         }
 
         editDialog {
-            titleText = this@UserBottomSheetDialogFragment.getString(R.string.edit_name)
+            titleText = this@UserBottomSheetDialogFragment.getString(R.string.Edit_Name)
             editText = name
             maxTextCount = 40
             allowEmpty = false
@@ -861,19 +861,19 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
 
     private fun showMuteDialog() {
         val choices = arrayOf(
-            getString(R.string.contact_mute_1hour),
-            getString(R.string.contact_mute_8hours),
-            getString(R.string.contact_mute_1week),
-            getString(R.string.contact_mute_1year)
+            getString(R.string.one_hour),
+            resources.getQuantityString(R.plurals.Hour, 8, 8),
+            getString(R.string.one_week),
+            getString(R.string.one_year)
         )
         var duration = MUTE_1_HOUR
         var whichItem = 0
         alertDialogBuilder()
             .setTitle(getString(R.string.contact_mute_title))
-            .setNegativeButton(R.string.action_cancel) { dialog, _ ->
+            .setNegativeButton(R.string.Cancel) { dialog, _ ->
                 dialog.dismiss()
             }
-            .setPositiveButton(R.string.action_confirm) { dialog, _ ->
+            .setPositiveButton(R.string.Confirm) { dialog, _ ->
                 val account = Session.getAccount()
                 account?.let {
                     lifecycleScope.launch {
@@ -920,7 +920,7 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
                     },
                     successBlock = { response ->
                         bottomViewModel.updateMuteUntil(user.userId, response.data!!.muteUntil)
-                        toast(getString(R.string.action_un_mute) + " ${user.fullName}")
+                        toast(getString(R.string.Unmute) + " ${user.fullName}")
                     }
                 )
             }

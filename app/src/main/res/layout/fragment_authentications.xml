@@ -11,7 +11,7 @@
         android:id="@+id/title_view"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:titleText="@string/setting_authentications" />
+        app:titleText="@string/Authorizations" />
 
     <EditText
         android:id="@+id/search_et"
@@ -75,7 +75,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_centerInParent="true"
-                android:text="@string/setting_no_auth_app"
+                android:text="@string/NO_AUTHORIZATIONS"
                 android:textColor="?attr/text_minor"
                 android:textSize="16sp" />
         </RelativeLayout>

@@ -11,7 +11,7 @@
         android:id="@+id/title_view"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:titleText="@string/setting_appearance" />
+        app:titleText="@string/Appearance" />
 
     <RelativeLayout
         android:id="@+id/night_mode_rl"
@@ -27,7 +27,7 @@
             android:layout_height="wrap_content"
             android:layout_centerVertical="true"
             android:layout_marginStart="@dimen/activity_horizontal_margin"
-            android:text="@string/setting_theme"
+            android:text="@string/Theme"
             tools:ignore="RelativeOverlap" />
 
         <TextView
@@ -56,7 +56,7 @@
             android:layout_height="wrap_content"
             android:layout_centerVertical="true"
             android:layout_marginStart="@dimen/activity_horizontal_margin"
-            android:text="@string/language"
+            android:text="@string/Language"
             tools:ignore="RelativeOverlap" />
 
         <TextView
@@ -85,7 +85,7 @@
             android:layout_height="wrap_content"
             android:layout_centerVertical="true"
             android:layout_marginStart="@dimen/activity_horizontal_margin"
-            android:text="@string/currency"
+            android:text="@string/Currency"
             tools:ignore="RelativeOverlap" />
 
         <TextView

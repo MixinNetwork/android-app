@@ -22,7 +22,7 @@ class SingleFriendSelectFragment : BaseFriendsFragment<FriendsNoBotViewHolder>()
         }
     }
 
-    override fun getTitleResId() = R.string.transfer_to
+    override fun getTitleResId() = R.string.Transfer_to_user_or_bot
 
     override suspend fun getFriends() = viewModel.findFriendsNotBot()
 

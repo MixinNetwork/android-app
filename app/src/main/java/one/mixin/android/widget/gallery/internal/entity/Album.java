@@ -90,7 +90,7 @@ public class Album implements Parcelable {
 
     public String getDisplayName(Context context) {
         if (isAll()) {
-            return context.getString(R.string.gallery_all_media);
+            return context.getString(R.string.All_Media);
         }
         return mDisplayName;
     }

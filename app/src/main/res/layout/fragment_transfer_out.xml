@@ -18,7 +18,7 @@
         android:layout_below="@id/ph"
         app:leftIcon="@drawable/ic_back"
         app:need_divider="false"
-        app:titleText="@string/wallet_all_transactions" />
+        app:titleText="@string/All_Transactions" />
 
     <FrameLayout
         android:layout_width="match_parent"
