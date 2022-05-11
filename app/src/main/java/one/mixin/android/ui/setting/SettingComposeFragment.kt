@@ -156,6 +156,9 @@ class SettingComposeFragment : BaseFragment() {
                                         BackUpFragment.newInstance()
                                     }
                                 }
+                                composable(SettingDestination.AccountPrivacy.name) {
+                                    AccountPrivacyPage()
+                                }
                             }
                         }
                     }
