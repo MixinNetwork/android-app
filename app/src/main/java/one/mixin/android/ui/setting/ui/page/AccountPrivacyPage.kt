@@ -34,7 +34,7 @@ fun AccountPrivacyPage() {
         val blockedUsers by viewModel.countBlockingUsers().observeAsState()
 
         SettingTile(
-            title = stringResource(R.string.setting_block),
+            title = stringResource(R.string.setting_blocked),
             trailing = {
                 if (blockedUsers.isNullOrEmpty()) {
                     Text(text = stringResource(id = R.string.none))

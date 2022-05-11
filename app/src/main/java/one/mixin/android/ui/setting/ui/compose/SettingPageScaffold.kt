@@ -22,7 +22,7 @@ import one.mixin.android.ui.setting.ui.theme.MixinAppTheme
 @Composable
 fun SettingPageScaffold(
     title: String,
-    body: @Composable ColumnScope.() -> Unit
+    body: @Composable ColumnScope.() -> Unit,
 ) {
     Scaffold(
         backgroundColor = MixinAppTheme.colors.backgroundWindow,

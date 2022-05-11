@@ -10,24 +10,26 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
-import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.compositionLocalOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.ComposeView
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
 import androidx.navigation.NavController
+import androidx.navigation.NavDeepLinkRequest
+import androidx.navigation.NavDestination
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import one.mixin.android.extension.isNightMode
+import one.mixin.android.extension.toUri
 import one.mixin.android.ui.common.BaseFragment
+import one.mixin.android.ui.common.UserBottomSheetDialogFragment
 import one.mixin.android.ui.setting.ui.compose.MixinSettingFragment
 import one.mixin.android.ui.setting.ui.page.*
 import one.mixin.android.ui.setting.ui.theme.MixinAppTheme
+import one.mixin.android.vo.User
 import timber.log.Timber
 
 
@@ -48,6 +50,7 @@ enum class SettingDestination {
     PhoneNumber,
     MobileContact,
     AppAuthSetting,
+    UserBottomSheet,
 }
 
 open class SettingNavigationController {
@@ -55,17 +58,45 @@ open class SettingNavigationController {
         Timber.e("setting navigation: ${destination.name}")
     }
 
+    open fun userBottomSheet(user: User, conversationId: String? = null) {
+        Timber.e("userBottomSheet: ${user.userId}")
+    }
+
     open fun pop() {
         Timber.e("setting pop")
     }
 }
+
+private const val USER_KEY = "user_key"
+private const val CONVERSATION_ID_KEY = "conversation_id_key"
 
 private class SettingNavControllerImpl(
     private val navController: NavController,
     private val closeActivity: () -> Unit
 ) : SettingNavigationController() {
     override fun navigation(destination: SettingDestination) {
-        navController.navigate(destination.name)
+        navigateTo(destination)
+    }
+
+    private fun navigateTo(dest: SettingDestination, args: Bundle? = null) {
+        val routeLink = NavDeepLinkRequest
+            .Builder
+            .fromUri(NavDestination.createRoute(dest.name).toUri())
+            .build()
+        val deepLinkMatch = navController.graph.matchDeepLink(routeLink)
+        if (deepLinkMatch == null) {
+            Timber.e("navigateTo: no match for $dest")
+            return
+        }
+        val id = deepLinkMatch.destination.id
+        navController.navigate(id, args)
+    }
+
+    override fun userBottomSheet(user: User, conversationId: String?) {
+        navigateTo(SettingDestination.UserBottomSheet, Bundle().apply {
+            putParcelable(USER_KEY, user)
+            putString(CONVERSATION_ID_KEY, conversationId)
+        })
     }
 
     override fun pop() {
@@ -163,6 +194,32 @@ class SettingComposeFragment : BaseFragment() {
                                 }
                                 composable(SettingDestination.AccountPrivacy.name) {
                                     AccountPrivacyPage()
+                                }
+                                composable(SettingDestination.Blocked.name) {
+                                    BlockedPage()
+                                }
+
+                                // TODO(BIN) remove this. didn't work now.
+                                composable(SettingDestination.UserBottomSheet.name) {
+                                    val user = it.arguments?.getParcelable<User>(USER_KEY)
+                                    val conversationId = it.arguments?.getString(CONVERSATION_ID_KEY)
+
+                                    val fragment = remember {
+                                        if (user == null) {
+                                            null
+                                        } else {
+                                            UserBottomSheetDialogFragment.newInstance(user, conversationId)
+                                        }
+                                    }
+                                    if (fragment != null) {
+                                        MixinSettingFragment(UserBottomSheetDialogFragment.TAG) {
+                                            fragment
+                                        }
+                                    } else {
+                                        LaunchedEffect(Unit) {
+                                            navigationController.pop()
+                                        }
+                                    }
                                 }
                             }
                         }
