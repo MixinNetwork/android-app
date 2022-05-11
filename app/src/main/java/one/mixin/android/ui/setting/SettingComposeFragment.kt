@@ -199,6 +199,10 @@ class SettingComposeFragment : BaseFragment() {
                                     BlockedPage()
                                 }
 
+                                composable(SettingDestination.Conversation.name) {
+                                    ConversationSettingPage()
+                                }
+
                                 // TODO(BIN) remove this. didn't work now.
                                 composable(SettingDestination.UserBottomSheet.name) {
                                     val user = it.arguments?.getParcelable<User>(USER_KEY)
