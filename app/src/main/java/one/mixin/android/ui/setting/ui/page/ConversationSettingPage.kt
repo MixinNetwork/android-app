@@ -33,11 +33,10 @@ fun ConversationSettingPage() {
 
     val viewModel = hiltViewModel<SettingConversationViewModel>()
 
-
     SettingPageScaffold(title = stringResource(id = R.string.setting_conversation)) {
         val context = LocalContext.current
 
-        Tips(stringResource(id = R.string.setting_conversation_tip))
+        MessageSettingTips(stringResource(id = R.string.setting_conversation_tip))
         SettingGroup(
             initMessageSourcePreferences = { viewModel.initPreferences(context) },
             doUpdate = {
@@ -45,7 +44,7 @@ fun ConversationSettingPage() {
             })
 
 
-        Tips(stringResource(id = R.string.setting_conversation_group_tip))
+        MessageSettingTips(stringResource(id = R.string.setting_conversation_group_tip))
         SettingGroup(
             initMessageSourcePreferences = { viewModel.initGroupPreferences(context) },
             doUpdate = {
@@ -116,14 +115,14 @@ private fun SettingGroup(
 
     }
 
-    SettingItem(
+    MessageSettingItem(
         title = stringResource(R.string.setting_conversation_everybody),
         selected = currentSelected == MessageSource.EVERYBODY.ordinal,
         processing = processing,
     ) {
         requestRemoteChange(MessageSource.EVERYBODY)
     }
-    SettingItem(
+    MessageSettingItem(
         title = stringResource(R.string.setting_my_contacts),
         selected = currentSelected == MessageSource.CONTACTS.ordinal,
         processing = processing,
@@ -134,7 +133,7 @@ private fun SettingGroup(
 }
 
 @Composable
-private fun SettingItem(
+fun MessageSettingItem(
     title: String,
     selected: Boolean,
     processing: Boolean,
@@ -169,7 +168,7 @@ private fun SettingItem(
 }
 
 @Composable
-private fun Tips(title: String) {
+fun MessageSettingTips(title: String) {
     Text(
         text = title,
         fontSize = 12.sp,
@@ -186,22 +185,22 @@ private fun Tips(title: String) {
 fun PreviewConversationSettingPage() {
     MixinAppTheme {
         SettingPageScaffold(title = stringResource(id = R.string.setting_conversation)) {
-            Tips(stringResource(id = R.string.setting_conversation_tip))
-            SettingItem(
+            MessageSettingTips(stringResource(id = R.string.setting_conversation_tip))
+            MessageSettingItem(
                 title = stringResource(R.string.setting_conversation_everybody),
                 selected = false,
                 processing = false,
             ) {
 
             }
-            SettingItem(
+            MessageSettingItem(
                 title = stringResource(R.string.setting_conversation_everybody),
                 selected = true,
                 processing = true,
             ) {
 
             }
-            SettingItem(
+            MessageSettingItem(
                 title = stringResource(R.string.setting_conversation_everybody),
                 selected = true,
                 processing = false,
