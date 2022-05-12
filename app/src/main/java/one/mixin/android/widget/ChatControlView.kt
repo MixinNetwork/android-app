@@ -54,6 +54,7 @@ import one.mixin.android.extension.formatMillis
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.media.AudioEndStatus
 import one.mixin.android.util.AudioPlayer
+import one.mixin.android.util.language.Lingver
 import one.mixin.android.util.reportException
 import one.mixin.android.vo.EncryptCategory
 import one.mixin.android.vo.isEncrypt
@@ -64,6 +65,7 @@ import one.mixin.android.widget.DraggableRecyclerView.Companion.FLING_UP
 import one.mixin.android.widget.audio.SlidePanelView
 import one.mixin.android.widget.keyboard.KeyboardLayout
 import java.io.File
+import java.util.Locale
 import java.util.concurrent.TimeUnit
 import kotlin.math.abs
 
@@ -310,7 +312,7 @@ class ChatControlView : LinearLayout, ActionMode.Callback {
     fun hideBot() {
         botHide = true
         binding.chatBotIv.visibility = View.GONE
-        binding.chatEt.hint = context.getString(R.string.End_to_End_Encryption)
+        binding.chatEt.hint = getSignalHint()
         initTransitions()
     }
 
@@ -322,15 +324,31 @@ class ChatControlView : LinearLayout, ActionMode.Callback {
     }
 
     fun hintEncrypt(category: EncryptCategory) {
-        binding.chatEt.hint = context.getString(
-            if (category.isEncrypt()) {
-                R.string.Encrypted
-            } else if (category.isSignal()) {
-                R.string.End_to_End_Encryption
-            } else {
-                R.string.Type_message
-            }
-        )
+        binding.chatEt.hint = if (category.isEncrypt()) {
+            getEncryptedHint()
+        } else if (category.isSignal()) {
+            getSignalHint()
+        } else {
+            getHint()
+        }
+    }
+
+    private fun getEncryptedHint(): String = if (Lingver.getInstance().getLanguage() == Locale.JAPANESE.language) {
+        "Encrypted"
+    } else {
+        context.getString(R.string.Encrypted)
+    }
+
+    private fun getSignalHint(): String = if (Lingver.getInstance().getLanguage() == Locale.JAPANESE.language) {
+        "End-to-end Encrypted"
+    } else {
+        context.getString(R.string.End_to_End_Encryption)
+    }
+
+    private fun getHint(): String = if (Lingver.getInstance().getLanguage() == Locale.JAPANESE.language) {
+        "Type message"
+    } else {
+        context.getString(R.string.Type_message)
     }
 
     fun toggleKeyboard(shown: Boolean) {
