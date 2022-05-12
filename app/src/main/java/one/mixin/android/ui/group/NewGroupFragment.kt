@@ -1,6 +1,5 @@
 package one.mixin.android.ui.group
 
-import android.Manifest
 import android.app.Dialog
 import android.net.Uri
 import android.os.Bundle
@@ -14,8 +13,6 @@ import android.view.ViewGroup
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.RecyclerView
-import com.tbruyelle.rxpermissions2.RxPermissions
-import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import one.mixin.android.R
@@ -25,8 +22,6 @@ import one.mixin.android.extension.createImageTemp
 import one.mixin.android.extension.getOtherPath
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.indeterminateProgressDialog
-import one.mixin.android.extension.openImage
-import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.showKeyboard
 import one.mixin.android.extension.textColor
 import one.mixin.android.extension.toBytes
