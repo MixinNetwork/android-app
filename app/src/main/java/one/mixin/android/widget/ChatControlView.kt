@@ -325,18 +325,30 @@ class ChatControlView : LinearLayout, ActionMode.Callback {
 
     fun hintEncrypt(category: EncryptCategory) {
         binding.chatEt.hint = if (category.isEncrypt()) {
-            context.getString(R.string.Encrypted)
+            getEncryptedHint()
         } else if (category.isSignal()) {
             getSignalHint()
         } else {
-            context.getString(R.string.Type_message)
+            getHint()
         }
+    }
+
+    private fun getEncryptedHint(): String = if (Lingver.getInstance().getLanguage() == Locale.JAPANESE.language) {
+        "Encrypted"
+    } else {
+        context.getString(R.string.Encrypted)
     }
 
     private fun getSignalHint(): String = if (Lingver.getInstance().getLanguage() == Locale.JAPANESE.language) {
         "End-to-end Encrypted"
     } else {
         context.getString(R.string.End_to_End_Encryption)
+    }
+
+    private fun getHint(): String = if (Lingver.getInstance().getLanguage() == Locale.JAPANESE.language) {
+        "Type message"
+    } else {
+        context.getString(R.string.Type_message)
     }
 
     fun toggleKeyboard(shown: Boolean) {
