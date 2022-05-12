@@ -4,6 +4,7 @@ import android.content.SharedPreferences
 import androidx.compose.runtime.*
 import one.mixin.android.extension.putBoolean
 import one.mixin.android.extension.putInt
+import one.mixin.android.extension.putLong
 import one.mixin.android.extension.putString
 
 
@@ -26,6 +27,13 @@ fun SharedPreferences.intValueAsState(key: String, defaultValue: Int) =
     value(
         getValue = { getInt(key, defaultValue) },
         setValue = { putInt(key, it) }
+    )
+
+@Composable
+fun SharedPreferences.longValueAsState(key: String, defaultValue: Long) =
+    value(
+        getValue = { getLong(key, defaultValue) },
+        setValue = { putLong(key, it) }
     )
 
 

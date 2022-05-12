@@ -54,6 +54,7 @@ enum class SettingDestination {
     Emergency,
     Authentications,
     Logs,
+    BiometricTime,
 }
 
 open class SettingNavigationController {
@@ -241,6 +242,10 @@ class SettingComposeFragment : BaseFragment() {
 
                             composable(SettingDestination.AccountSecurity.name) {
                                 SecurityPage()
+                            }
+
+                            composable(SettingDestination.PinSetting.name) {
+                                PinSettingPage()
                             }
 
                             // TODO(BIN) remove this. didn't work now.

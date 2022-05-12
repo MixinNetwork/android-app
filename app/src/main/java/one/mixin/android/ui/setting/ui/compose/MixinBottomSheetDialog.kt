@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.semantics.dialog
 import androidx.compose.ui.semantics.semantics
@@ -14,7 +15,34 @@ import androidx.lifecycle.ViewTreeViewModelStoreOwner
 import androidx.savedstate.findViewTreeSavedStateRegistryOwner
 import androidx.savedstate.setViewTreeSavedStateRegistryOwner
 import one.mixin.android.R
+import one.mixin.android.extension.findFragmentActivityOrNull
+import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
 import one.mixin.android.widget.BottomSheet
+
+
+@Composable
+fun MixinBottomSheetDialog(
+    createDialog: () -> MixinBottomSheetDialogFragment,
+    tag: String? = null,
+) {
+    val dialog = remember {
+        createDialog().apply {
+
+        }
+    }
+
+    val context = LocalContext.current
+
+    DisposableEffect(dialog) {
+        context.findFragmentActivityOrNull()?.let {
+            dialog.showNow(it.supportFragmentManager, tag)
+        }
+        onDispose {
+            dialog.dismiss()
+        }
+    }
+
+}
 
 @Composable
 fun MixinBottomSheetDialog(

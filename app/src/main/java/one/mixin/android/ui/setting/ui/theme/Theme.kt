@@ -1,5 +1,6 @@
 package one.mixin.android.ui.setting.ui.theme
 
+import androidx.annotation.DrawableRes
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.darkColors
@@ -8,6 +9,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.ui.graphics.Color
+import one.mixin.android.R
 
 
 class AppColors(
@@ -24,10 +26,20 @@ class AppColors(
     val red: Color = Color(0xFFE55541),
 )
 
+class AppDrawables(
+    @DrawableRes
+    val emergencyAvatar: Int,
+)
+
 object MixinAppTheme {
     val colors: AppColors
         @Composable
         get() = LocalColors.current
+
+    val drawables: AppDrawables
+        @Composable
+        get() = LocalDrawables.current
+
 }
 
 private val LightColorPalette = AppColors(
@@ -52,8 +64,15 @@ private val DarkColorPalette = AppColors(
     background = Color(0xFF2c3136),
 )
 
+private val LightDrawablePalette = AppDrawables(
+    emergencyAvatar = R.drawable.ic_emergency_avatar,
+)
+private val DarkDrawablePalette = AppDrawables(
+    emergencyAvatar = R.drawable.ic_emergency_avatar_night,
+)
 
 private val LocalColors = compositionLocalOf { LightColorPalette }
+private val LocalDrawables = compositionLocalOf { LightDrawablePalette }
 
 @Composable
 fun MixinAppTheme(darkTheme: Boolean = isSystemInDarkTheme(), content: @Composable () -> Unit) {
@@ -62,9 +81,15 @@ fun MixinAppTheme(darkTheme: Boolean = isSystemInDarkTheme(), content: @Composab
     } else {
         LightColorPalette
     }
+    val drawables = if (darkTheme) {
+        DarkDrawablePalette
+    } else {
+        LightDrawablePalette
+    }
     MaterialTheme(if (darkTheme) darkColors() else lightColors()) {
         CompositionLocalProvider(
             LocalColors provides colors,
+            LocalDrawables provides drawables,
             content = content
         )
     }
