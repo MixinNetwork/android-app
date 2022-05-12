@@ -348,6 +348,9 @@ dependencies {
     implementation 'androidx.activity:activity-compose:1.3.1'
     androidTestImplementation "androidx.compose.ui:ui-test-junit4:${composeVersion}"
 
+    // accompanist
+    implementation "com.google.accompanist:accompanist-navigation-animation:${accompanistVersion}"
+
     ktlint "com.pinterest:ktlint:${ktlintVersion}"
 
     testImplementation 'org.jetbrains.kotlin:kotlin-test'

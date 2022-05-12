@@ -2,11 +2,12 @@ package one.mixin.android.ui.setting.ui.theme
 
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material.MaterialTheme
+import androidx.compose.material.darkColors
+import androidx.compose.material.lightColors
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.ui.graphics.Color
-import timber.log.Timber
 
 
 class AppColors(
@@ -61,7 +62,7 @@ fun MixinAppTheme(darkTheme: Boolean = isSystemInDarkTheme(), content: @Composab
     } else {
         LightColorPalette
     }
-    MaterialTheme {
+    MaterialTheme(if (darkTheme) darkColors() else lightColors()) {
         CompositionLocalProvider(
             LocalColors provides colors,
             content = content

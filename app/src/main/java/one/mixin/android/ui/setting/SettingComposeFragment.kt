@@ -5,6 +5,9 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.compose.animation.AnimatedContentScope
+import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.*
 import androidx.compose.ui.platform.ComposeView
@@ -14,9 +17,9 @@ import androidx.lifecycle.Observer
 import androidx.navigation.NavController
 import androidx.navigation.NavDeepLinkRequest
 import androidx.navigation.NavDestination
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
-import androidx.navigation.compose.rememberNavController
+import com.google.accompanist.navigation.animation.AnimatedNavHost
+import com.google.accompanist.navigation.animation.composable
+import com.google.accompanist.navigation.animation.rememberAnimatedNavController
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.toUri
 import one.mixin.android.ui.common.BaseFragment
@@ -104,6 +107,8 @@ private class SettingNavControllerImpl(
 val LocalSettingNav =
     compositionLocalOf { SettingNavigationController() }
 
+@Suppress("OPT_IN_IS_NOT_ENABLED")
+@OptIn(ExperimentalAnimationApi::class)
 class SettingComposeFragment : BaseFragment() {
 
     companion object {
@@ -138,7 +143,7 @@ class SettingComposeFragment : BaseFragment() {
                 MixinAppTheme(
                     darkTheme = context.isNightMode() || isSystemInDarkTheme(),
                 ) {
-                    val navController = rememberNavController()
+                    val navController = rememberAnimatedNavController()
                     val navigationController = remember {
                         SettingNavControllerImpl(navController, closeActivity = {
                             activity?.onBackPressed()
@@ -158,9 +163,33 @@ class SettingComposeFragment : BaseFragment() {
                     CompositionLocalProvider(
                         LocalSettingNav provides navigationController
                     ) {
-                        NavHost(
+                        AnimatedNavHost(
                             navController = navController,
                             startDestination = SettingDestination.Setting.name,
+                            enterTransition = {
+                                slideIntoContainer(
+                                    AnimatedContentScope.SlideDirection.Left,
+                                    animationSpec = tween(300)
+                                )
+                            },
+                            popEnterTransition = {
+                                slideIntoContainer(
+                                    AnimatedContentScope.SlideDirection.Right,
+                                    animationSpec = tween(300)
+                                )
+                            },
+                            exitTransition = {
+                                slideOutOfContainer(
+                                    AnimatedContentScope.SlideDirection.Left,
+                                    animationSpec = tween(300)
+                                )
+                            },
+                            popExitTransition = {
+                                slideOutOfContainer(
+                                    AnimatedContentScope.SlideDirection.Right,
+                                    animationSpec = tween(300)
+                                )
+                            }
                         ) {
                             composable(SettingDestination.Setting.name) {
                                 SettingPage()
