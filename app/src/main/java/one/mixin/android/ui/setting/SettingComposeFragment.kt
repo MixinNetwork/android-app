@@ -49,6 +49,11 @@ enum class SettingDestination {
     MobileContact,
     AppAuthSetting,
     UserBottomSheet,
+    PinSetting,
+    WalletPassword,
+    Emergency,
+    Authentications,
+    Logs,
 }
 
 open class SettingNavigationController {
@@ -232,6 +237,10 @@ class SettingComposeFragment : BaseFragment() {
 
                             composable(SettingDestination.AppAuthSetting.name) {
                                 AppAuthSettingPage()
+                            }
+
+                            composable(SettingDestination.AccountSecurity.name) {
+                                SecurityPage()
                             }
 
                             // TODO(BIN) remove this. didn't work now.
