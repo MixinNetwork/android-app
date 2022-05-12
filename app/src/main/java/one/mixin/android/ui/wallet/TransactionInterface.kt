@@ -23,6 +23,7 @@ import one.mixin.android.extension.numberFormat
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.priceFormat2
 import one.mixin.android.extension.toast
+import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.session.Session
 import one.mixin.android.vo.AssetItem
 import one.mixin.android.vo.Fiats
@@ -125,13 +126,14 @@ interface TransactionInterface {
         assetId: String,
         snapshot: SnapshotItem,
     ) = lifecycleScope.launch {
-        if (!fragment.isAdded) return@launch
+        if (fragment.viewDestroyed()) return@launch
 
         contentBinding.thatVa.displayedChild = POS_PB
         handleMixinResponse(
             invokeNetwork = { walletViewModel.ticker(assetId, snapshot.createdAt) },
             switchContext = Dispatchers.IO,
             successBlock = {
+                if (fragment.viewDestroyed()) return@handleMixinResponse 
                 val ticker = it.data
                 if (ticker != null) {
                     contentBinding.thatVa.displayedChild = POS_TEXT
@@ -156,7 +158,7 @@ interface TransactionInterface {
                         fragment.context?.let { c ->
                             setTextColor(c.colorFromAttribute(R.attr.text_minor))
                             setOnClickListener {
-                                if (!fragment.isAdded) return@setOnClickListener
+                                if (fragment.viewDestroyed()) return@setOnClickListener
 
                                 val balloon = createBalloon(c) {
                                     setArrowSize(10)
@@ -220,6 +222,7 @@ interface TransactionInterface {
         assetId: String,
         snapshot: SnapshotItem,
     ) {
+        if (fragment.viewDestroyed()) return
         contentBinding.apply {
             thatVa.displayedChild = POS_TEXT
             thatTv.apply {
@@ -246,7 +249,7 @@ interface TransactionInterface {
         asset: AssetItem,
         snapshot: SnapshotItem
     ) {
-        if (!fragment.isAdded) return
+        if (fragment.viewDestroyed()) return
 
         contentBinding.apply {
             val amountVal = snapshot.amount.toFloatOrNull()
