@@ -230,6 +230,10 @@ class SettingComposeFragment : BaseFragment() {
                                 MobileContactPage()
                             }
 
+                            composable(SettingDestination.AppAuthSetting.name) {
+                                AppAuthSettingPage()
+                            }
+
                             // TODO(BIN) remove this. didn't work now.
                             composable(SettingDestination.UserBottomSheet.name) {
                                 val user = it.arguments?.getParcelable<User>(USER_KEY)
