@@ -823,7 +823,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
             is IOException -> showError(R.string.No_network_connection)
             else -> {
                 ErrorHandler.handleError(error)
-                showError()
+                showError(R.string.Network_error)
             }
         }
     }
