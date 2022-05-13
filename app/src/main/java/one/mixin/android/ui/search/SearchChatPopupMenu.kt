@@ -36,7 +36,7 @@ class SearchChatPopupMenu(
         if (hasPin) {
             pinItem.setTitle(R.string.Unpin)
         } else {
-            pinItem.setTitle(R.string.Pin)
+            pinItem.setTitle(R.string.pin_title)
         }
         popupMenu.setOnMenuItemClickListener { menuItem ->
             when (menuItem.itemId) {

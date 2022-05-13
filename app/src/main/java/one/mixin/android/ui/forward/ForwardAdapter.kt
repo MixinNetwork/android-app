@@ -126,7 +126,7 @@ class ForwardAdapter(private val disableCheck: Boolean = false) :
             } else if (friends != null && friends!!.isNotEmpty() && position < conversations!!.size + friends!!.size) {
                 R.string.CONTACTS
             } else {
-                R.string.Bots
+                R.string.bots_title
             }
         )
     }

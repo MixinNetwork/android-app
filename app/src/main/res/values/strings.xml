@@ -463,7 +463,7 @@
 	<string name="Blocked">Blocked</string>
 	<string name="Blocked_Users">Blocked Users</string>
 	<string name="bot_empty_tip">Please add your favorite bot first.</string>
-	<string name="Bots">Bots</string>
+	<string name="bots_title">Bots</string>
 	<string name="BOTS">BOTS</string>
 	<string name="Call">Call</string>
 	<string name="Call_declined">Call declined</string>
@@ -779,7 +779,7 @@
 	<string name="phone_number_privacy">Who can find me by my number</string>
 	<string name="Photo">Photo</string>
 	<string name="Photos">Photos</string>
-	<string name="Pin">Pin</string>
+	<string name="pin_title">Pin</string>
 	<string name="PIN">PIN</string>
 	<string name="PIN_change">PIN change</string>
 	<string name="pin_check_tip">You\'ll be asked for it periodically to help you remember it.</string>

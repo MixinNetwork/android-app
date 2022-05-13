@@ -354,7 +354,7 @@
     <string name="block_tip">Pengguna yang disekat tidak dapat mengirim anda pesan atau menambahkan anda ke kumpulan.</string>
     <string name="Blocked">Disekat</string>
     <string name="bot_empty_tip">Sila masukkan bot kegemaran anda terlebih dahulu.</string>
-    <string name="Bots">Bot</string>
+    <string name="bots_title">Bot</string>
     <string name="BOTS">BOT</string>
     <string name="Call_declined">Panggilan ditolak</string>
     <string name="Call_failed">Panggilan gagal</string>
