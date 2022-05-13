@@ -29,13 +29,11 @@
     <string name="backup_choose_a_folder">フォルダを選択してください。バックアップは選択した場所に保存されます。</string>
     <string name="Backup_delete">バックアップを消去</string>
     <string name="backup_des">メッセージを外部ストレージにバックアップします。Mixinを再インストールすると、バックアップを元に復元することができます。</string>
-    <string name="backup_dialog_title">自動バックアップ</string>
-    <string name="backup_external_storage">自動バックアップ</string>
-    <string name="backup_failure_tip">外部ストレージ: %1$s</string>
-    <string name="Backup_found">バックアップに失敗しました。もう一度お試しください。</string>
-    <string name="backup_ing">バックアップが見つかりました</string>
-    <string name="backup_media">外部ストレージにバックアップ…</string>
-    <string name="backup_media_title">メディアファイルが含まれています</string>
+    <string name="backup_external_storage">外部ストレージ: %1$s</string>
+    <string name="backup_failure_tip">バックアップに失敗しました。もう一度お試しください。</string>
+    <string name="Backup_found">バックアップが見つかりました</string>
+    <string name="backup_ing">外部ストレージにバックアップ…</string>
+    <string name="backup_media">メディアファイルが含まれています</string>
     <string name="backup_no_available_memory">バックアップに使用できるメモリがありません。</string>
     <string name="backup_notification_content">バックアップの準備中…</string>
     <string name="backup_notification_title">バックアップが進行中</string>
@@ -45,9 +43,7 @@
     <string name="bot_dock_empty">ロボを長押しして上部にドラッグします</string>
     <string name="bot_not_auth_yet">このロボへのアクセス許可がありません</string>
     <string name="bottom_transfer_stranger_tip">電話</string>
-    <string name="call_pip_permission">%1$sに電話をかける</string>
-    <string name="call_who">…に発信中</string>
-    <string name="can_not_recognize_qr_code">キャンセル</string>
+    <string name="call_who">%1$sに電話をかける</string>
     <string name="cant_talk_self">自分自身に電話をかけることができません</string>
     <string name="cant_transfer_self">自分自身に送金することはできません</string>
     <string name="Card">カード</string>
@@ -355,6 +351,7 @@
     <string name="Account">アカウント</string>
     <string name="Add">追加</string>
     <string name="Add_address">アドレスを追加</string>
+    <string name="Add_bot">Myロボに追加</string>
     <string name="Add_circle">新しいリストを作成</string>
     <string name="Add_Contact">友だちを追加</string>
     <string name="Add_conversations">会話を追加する</string>
@@ -380,6 +377,7 @@
     <string name="alert_key_contact_transcript_message">メッセージ履歴が共有されました</string>
     <string name="alert_key_contact_transfer_message">送金が届きました</string>
     <string name="alert_key_contact_video_message">動画が届きました</string>
+    <string name="alert_key_group_audio_call_message">%1$s秒後にコードを再送する</string>
     <string name="alert_key_group_audio_message">%1$sが音声を送信しました</string>
     <string name="alert_key_group_contact_message">%1$sが連絡先を送信しました</string>
     <string name="alert_key_group_data_message">%1$sがファイルを送信しました</string>
@@ -409,8 +407,10 @@
     <string name="auth_profile_content">%1$s, %2$s, プロフィール画像</string>
     <string name="authorization">認証</string>
     <string name="Authorizations">許可</string>
+    <string name="auto_download_hint">音声品質を維持するため、ボイスメッセージは常に自動ダウンロードされます</string>
     <string name="Auto_Lock">自動ロック</string>
     <string name="Back_To_Chat">チャットに戻る</string>
+    <string name="Backing_Up">バックアップしています...</string>
     <string name="Block">ブロック</string>
     <string name="block_tip">ブロックされたユーザーはあなたを追加したりチャットに招待することができません</string>
     <string name="Blocked">ブロック中のユーザー</string>
@@ -438,7 +438,7 @@
     <string name="Change_PIN_successfully">PINの変更が完了しました。</string>
     <string name="Change_Profile_Photo_with_Camera">プロフィール画像を撮影</string>
     <string name="Change_Profile_Photo_with_Library">プロフィール画像を選択</string>
-    <string name="chat_call_duration">通話時間: %1$s</string>
+    <string name="chat_call_duration">通話時間 %1$s</string>
     <string name="chat_call_warning_voice">通話中にボイスメッセージを録音することはできません。</string>
     <string name="chat_decryption_failed">メッセージの解読に失敗しました。Mixinを最新バージョンにアップデートしてください。</string>
     <string name="chat_group_add">%1$sが%2$sを追加しました</string>
@@ -468,6 +468,7 @@
     <string name="Contact">連絡先</string>
     <string name="Contact_Developer">デベロッパーへ連絡</string>
     <string name="contact_invite_content">Mixinを使いませんか？ ここからダウンロード: https://mixin.one/messenger</string>
+    <string name="contact_mixin_id">Mixin ID: %1$s</string>
     <string name="contact_mobile">モバイル: %1$s</string>
     <string name="contact_share_apps_title">%1$s\のシェアしたロボ</string>
     <string name="CONTACTS">連絡先</string>
@@ -507,8 +508,7 @@
     <string name="Delete_Synced_Contact">同期済みの連絡先を削除する</string>
     <string name="Delete_withdraw_Address">%1$sアドレスを削除</string>
     <string name="Deposit">入金</string>
-    <string name="deposit_attention">注意: 最初は必ず少額で入金テストをしてください。 Mixinメッセンジャーに%1$sが正しく入金されるためにはメモとアドレスが必要です。</string>
-    <string name="deposit_reserve">最初の入金は%1$s %2$s 以上に指定してください。</string>
+    <string name="deposit_attention">注意: 最初は必ず少額で入金テストをしてください。</string>
     <string name="deposit_tip_btc">このアドレスはビットコインのみサポートしています。</string>
     <string name="deposit_tip_common">このアドレスは%1$sのみサポートしています。</string>
     <string name="deposit_tip_eos">このアドレスはEOSトークンをすべてサポートしています(EOS, IQ, BLACK, OCT, KARMA…)</string>
@@ -755,7 +755,7 @@
     <string name="setting_emergency_content">緊急連絡先は、紛失等の理由でデバイスへのアクセスが出来なくなった場合、ログインする方法となります。</string>
     <string name="setting_emergency_desc">登録した電話番号が使用できなくなった場合は、緊急連絡先として登録した友だちに連絡し、Mixin IDと認証コードを取得してください。詳しくは緊急連絡先についてを確認してください。</string>
     <string name="setting_emergency_pin_tip">あなたの緊急連絡先はPINにより保護されています。</string>
-    <string name="setting_emergency_send_code">相手のMixinに送信された4桁のコードを入力してください</string>
+    <string name="setting_emergency_send_code">相手のMixinに送信された4桁のコードを入力してください：%1$s</string>
     <string name="setting_emergency_set_message">（Mixin ID %1$s）を緊急連絡先としてて設定しますか？緊急連絡先登録の設定は相互の友だち登録が必要です。</string>
     <string name="setting_emergency_warning">注意：PINコードは復元できません 如何なる場合においてもご自身で管理してください</string>
     <string name="setting_mobile_contact_warning">これにより、Mixinサーバーから連絡先が削除されます。</string>
@@ -767,8 +767,6 @@
     <string name="Share">共有</string>
     <string name="Share_Contact">連絡先を共有</string>
     <string name="Share_Link">リンクをシェアする</string>
-    <string name="share_message_description">以下のような表示で届きます</string>
-    <string name="share_message_description_empty">以下のような表示で届きます</string>
     <string name="Share_This_App">このアプリをシェアする</string>
     <string name="Shared_Media">写真や動画</string>
     <string name="Show">表示</string>
