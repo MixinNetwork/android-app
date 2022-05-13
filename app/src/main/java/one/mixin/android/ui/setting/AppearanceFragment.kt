@@ -75,6 +75,7 @@ class AppearanceFragment : BaseFragment(R.layout.fragment_appearance) {
                     )
                     dialog.dismiss()
                     if (changed) {
+                        requireActivity().onBackPressed()
                         requireActivity().recreate()
                     }
                 }
