@@ -62,7 +62,7 @@ class AppearanceFragment : BaseFragment(R.layout.fragment_appearance) {
                         R.array.setting_night_array_oreo
                     },
                     currentId
-                ) { _, index ->
+                ) { dialog, index ->
                     val changed = index != currentId
                     defaultSharedPreferences.putInt(Constants.Theme.THEME_CURRENT_ID, index)
                     AppCompatDelegate.setDefaultNightMode(
@@ -73,8 +73,8 @@ class AppearanceFragment : BaseFragment(R.layout.fragment_appearance) {
                             else -> AppCompatDelegate.MODE_NIGHT_NO
                         }
                     )
+                    dialog.dismiss()
                     if (changed) {
-                        requireActivity().onBackPressed()
                         requireActivity().recreate()
                     }
                 }
