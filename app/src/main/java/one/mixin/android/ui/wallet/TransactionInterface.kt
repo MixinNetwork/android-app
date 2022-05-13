@@ -135,7 +135,7 @@ interface TransactionInterface {
             switchContext = Dispatchers.IO,
             successBlock = {
                 if (checkDestroyed(fragment)) return@handleMixinResponse
-                
+
                 val ticker = it.data
                 if (ticker != null) {
                     contentBinding.thatVa.displayedChild = POS_TEXT

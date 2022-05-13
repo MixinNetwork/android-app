@@ -1021,6 +1021,7 @@
     <string name="withdrawal_with_PIN">用 PIN 提现</string>
     <string name="Write_Circles">管理圈子</string>
     <string name="You">你</string>
+    <string name="you">你</string>
     <string name="You_deleted_this_message">你撤回了一条消息</string>
     <string name="You_have_left_the_group">你不在此群组</string>
     <string name="your_pin_has_been_created">PIN 已创建</string>

@@ -66,7 +66,7 @@ class SystemHolder constructor(val binding: ItemChatSystemBinding) : BaseViewHol
                             messageItem.userFullName
                         },
                         if (id == messageItem.participantUserId) {
-                            getText(R.string.You)
+                            getText(R.string.you)
                         } else {
                             messageItem.participantFullName
                         }
@@ -82,7 +82,7 @@ class SystemHolder constructor(val binding: ItemChatSystemBinding) : BaseViewHol
                             messageItem.userFullName
                         },
                         if (id == messageItem.participantUserId) {
-                            getText(R.string.You)
+                            getText(R.string.you)
                         } else {
                             messageItem.participantFullName
                         }
@@ -116,7 +116,7 @@ class SystemHolder constructor(val binding: ItemChatSystemBinding) : BaseViewHol
             SystemConversationAction.EXPIRE.name -> {
                 val timeInterval = messageItem.content?.toLongOrNull()
                 val name = if (id == messageItem.userId) {
-                    getText(R.string.chat_you_start)
+                    getText(R.string.You)
                 } else {
                     messageItem.userFullName
                 }

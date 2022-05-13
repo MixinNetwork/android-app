@@ -50,11 +50,8 @@ import one.mixin.android.ui.common.BatteryOptimizationDialogActivity
 import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.util.ChannelManager.Companion.createNodeChannel
 import one.mixin.android.util.GsonHelper
-<<<<<<< HEAD
 import one.mixin.android.util.RomUtil
-=======
 import one.mixin.android.util.chat.InvalidateFlow
->>>>>>> 996ef96af... Expired messages
 import one.mixin.android.util.reportException
 import one.mixin.android.vo.CallStateLiveData
 import one.mixin.android.vo.MessageStatus

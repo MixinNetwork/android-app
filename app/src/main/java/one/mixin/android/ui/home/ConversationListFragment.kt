@@ -846,7 +846,7 @@ class ConversationListFragment : LinkFragment() {
                                         conversationItem.senderFullName
                                     },
                                     if (id == conversationItem.participantUserId) {
-                                        getText(R.string.You)
+                                        getText(R.string.you)
                                     } else {
                                         conversationItem.participantFullName
                                     }
@@ -862,7 +862,7 @@ class ConversationListFragment : LinkFragment() {
                                         conversationItem.senderFullName
                                     },
                                     if (id == conversationItem.participantUserId) {
-                                        getText(R.string.You)
+                                        getText(R.string.you)
                                     } else {
                                         conversationItem.participantFullName
                                     }
@@ -896,7 +896,7 @@ class ConversationListFragment : LinkFragment() {
                         SystemConversationAction.EXPIRE.name -> {
                             val timeInterval = conversationItem.content?.toLongOrNull()
                             val name = if (id == conversationItem.senderId) {
-                                getText(R.string.chat_you_start)
+                                getText(R.string.You)
                             } else {
                                 conversationItem.senderFullName
                             }

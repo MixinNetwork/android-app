@@ -790,5 +790,6 @@
     <string name="withdrawal_with_PIN">Pengeluaran dengan PIN</string>
     <string name="Write_Circles">Tulis Lingkaran</string>
     <string name="You">Anda</string>
+    <string name="you">anda</string>
     <string name="You_deleted_this_message">Anda memadamkan mesej ini</string>
 </resources>

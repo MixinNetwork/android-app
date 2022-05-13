@@ -725,5 +725,6 @@
     <string name="withdrawal_with_biometric">Penarikan dengan Biometrik</string>
     <string name="withdrawal_with_PIN">Penarikan dengan PIN</string>
     <string name="You">Anda</string>
+    <string name="you">anda</string>
     <string name="You_deleted_this_message">Anda menghapus pesan ini</string>
 </resources>
