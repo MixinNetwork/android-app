@@ -19,6 +19,7 @@ import one.mixin.android.vo.HyperlinkItem
 import one.mixin.android.vo.MediaMessageMinimal
 import one.mixin.android.vo.Message
 import one.mixin.android.vo.MessageItem
+import one.mixin.android.vo.MessageMedia
 import one.mixin.android.vo.MessageMinimal
 import one.mixin.android.vo.QuoteMessageItem
 import one.mixin.android.vo.SearchMessageItem
@@ -430,6 +431,9 @@ interface MessageDao : BaseDao<Message> {
 
     @Query("SELECT id FROM messages LIMIT 1")
     suspend fun hasMessage(): String?
+
+    @Query("SELECT * FROM messages WHERE id = :messageId")
+    fun findMessageMediaById(messageId: String): MessageMedia?
 
     // Update SQL
     @Query("UPDATE messages SET quote_content = :content WHERE conversation_id = :conversationId AND quote_message_id = :messageId")

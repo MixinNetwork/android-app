@@ -36,6 +36,7 @@ import one.mixin.android.db.MessageDao
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.ParticipantDao
 import one.mixin.android.db.RemoteMessageStatusDao
+import one.mixin.android.db.TranscriptMessageDao
 import one.mixin.android.db.deleteMessageById
 import one.mixin.android.event.ExpiredEvent
 import one.mixin.android.extension.base64Encode
@@ -55,7 +56,9 @@ import one.mixin.android.util.chat.InvalidateFlow
 import one.mixin.android.util.reportException
 import one.mixin.android.vo.CallStateLiveData
 import one.mixin.android.vo.MessageStatus
+import one.mixin.android.vo.absolutePath
 import one.mixin.android.vo.createAckJob
+import one.mixin.android.vo.isTranscript
 import one.mixin.android.websocket.ACKNOWLEDGE_MESSAGE_RECEIPTS
 import one.mixin.android.websocket.BlazeAckMessage
 import one.mixin.android.websocket.BlazeMessageData
@@ -107,6 +110,9 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
 
     @Inject
     lateinit var messageDao: MessageDao
+
+    @Inject
+    lateinit var transcriptMessageDao: TranscriptMessageDao
 
     @Inject
     lateinit var floodMessageDao: FloodMessageDao
@@ -303,7 +309,14 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
             }
         }
         try {
-            messageService.acknowledgements(ackMessages.map { gson.fromJson(it.blazeMessage, BlazeAckMessage::class.java) })
+            messageService.acknowledgements(
+                ackMessages.map {
+                    gson.fromJson(
+                        it.blazeMessage,
+                        BlazeAckMessage::class.java
+                    )
+                }
+            )
             jobDao.deleteList(ackMessages)
         } catch (e: Exception) {
             Timber.e(e, "Send ack exception")
@@ -483,13 +496,16 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
     private tailrec suspend fun processExpiredMessage() {
         val messages =
             expiredMessageDao.getExpiredMessages(currentTimeSeconds(), DB_EXPIRED_LIMIT)
-        if (messages.isNullOrEmpty()) {
+        if (messages.isEmpty()) {
             val firstExpiredMessage = expiredMessageDao.getFirstExpiredMessage()
             if (firstExpiredMessage == null) {
                 nextExpirationTime = null
             } else {
                 nextExpirationTime = firstExpiredMessage.expireAt
-                val delayTime = max(requireNotNull(firstExpiredMessage.expireAt) * 1000 - System.currentTimeMillis(), 0)
+                val delayTime = max(
+                    requireNotNull(firstExpiredMessage.expireAt) * 1000 - System.currentTimeMillis(),
+                    0
+                )
                 Timber.e("Expired job: delay $delayTime")
                 delay(delayTime)
                 processExpiredMessage()
@@ -497,8 +513,19 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
         } else {
             val ids = messages.map { it.messageId }
             val cIds = messageDao.findConversationsByMessages(ids)
-            Timber.e("Expired job: delete messages $ids")
             ids.forEach { messageId ->
+                val messageMedia = messageDao.findMessageMediaById(messageId)
+                Timber.e("Expired job: delete messages ${messageMedia?.type} - ${messageMedia?.messageId}")
+                messageMedia?.absolutePath(
+                    this@BlazeMessageService,
+                    messageMedia.conversationId,
+                    messageMedia.mediaUrl
+                )?.let {
+                    jobManager.addJobInBackground(AttachmentDeleteJob(it))
+                }
+                if (messageMedia?.isTranscript() == true) {
+                    jobManager.addJobInBackground(TranscriptDeleteJob(listOf(messageId)))
+                }
                 database.deleteMessageById(messageId)
             }
             cIds.forEach { id ->

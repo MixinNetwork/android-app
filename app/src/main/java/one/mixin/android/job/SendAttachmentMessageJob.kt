@@ -21,6 +21,7 @@ import one.mixin.android.job.MixinJobManager.Companion.attachmentProcess
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.chat.InvalidateFlow
 import one.mixin.android.util.reportException
+import one.mixin.android.vo.ExpiredMessage
 import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.Message
 import one.mixin.android.vo.absolutePath
@@ -71,6 +72,18 @@ class SendAttachmentMessageJob(
             if (mId == null) {
                 messageDao.insert(message)
                 InvalidateFlow.emit(message.conversationId)
+            }
+        }
+        val conversation = conversationDao.findConversationById(message.conversationId)
+        conversation?.expireIn?.let { e ->
+            if (e > 0) {
+                expiredMessageDao.insert(
+                    ExpiredMessage(
+                        message.id,
+                        e,
+                        null
+                    )
+                )
             }
         }
     }
