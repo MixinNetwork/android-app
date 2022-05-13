@@ -443,7 +443,7 @@
     <string name="Blocked">已屏蔽</string>
     <string name="Blocked_Users">屏蔽名单</string>
     <string name="bot_empty_tip">可以添加你喜欢的机器人</string>
-    <string name="Bots">机器人</string>
+    <string name="bots_title">机器人</string>
     <string name="BOTS">机器人</string>
     <string name="Call">语音</string>
     <string name="Call_declined">对方已拒绝</string>
@@ -759,7 +759,7 @@
     <string name="phone_number_privacy">谁可以通过手机号找到你</string>
     <string name="Photo">照片</string>
     <string name="Photos">照片</string>
-    <string name="Pin">置顶</string>
+    <string name="pin_title">置顶</string>
     <string name="PIN">置顶</string>
     <string name="PIN_change">修改密码</string>
     <string name="pin_check_tip">定期输入密码有助于记住该密码</string>
@@ -909,7 +909,7 @@
         <item quantity="one">%1$d 成员</item>
         <item quantity="other">%1$d 成员</item>
     </plurals>
-    <string name="To">转账给 %1$s</string>
+    <string name="To">至</string>
     <string name="Today">今天</string>
     <string name="Transaction">交易详情</string>
     <string name="transaction_Hash">交易哈希</string>

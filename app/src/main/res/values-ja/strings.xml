@@ -415,7 +415,7 @@
     <string name="block_tip">ブロックされたユーザーはあなたを追加したりチャットに招待することができません</string>
     <string name="Blocked">ブロック中のユーザー</string>
     <string name="bot_empty_tip">最初にお気に入りのロボを追加してください。</string>
-    <string name="Bots">Myロボ一覧</string>
+    <string name="bots_title">Myロボ一覧</string>
     <string name="BOTS">Mixin ID %1$s はあなたの友だちリストにいません。本当に正しい送金先か確認してください。</string>
     <string name="Call">応答なし</string>
     <string name="call_encryption_description">この通話はE2E暗号化されています。</string>

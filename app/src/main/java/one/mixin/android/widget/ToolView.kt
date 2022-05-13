@@ -62,7 +62,7 @@ class ToolView constructor(context: Context, attrs: AttributeSet) : RelativeLayo
             showTip(
                 it,
                 if (it.tag == PinAction.PIN) {
-                    R.string.Pin
+                    R.string.pin_title
                 } else {
                     R.string.Unpin
                 }

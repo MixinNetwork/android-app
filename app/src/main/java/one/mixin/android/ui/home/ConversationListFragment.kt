@@ -479,7 +479,7 @@ class ConversationListFragment : LinkFragment() {
                 bottomSheet.dismiss()
             }
         } else {
-            viewBinding.pinTv.setText(R.string.Pin)
+            viewBinding.pinTv.setText(R.string.pin_title)
             viewBinding.pinTv.setOnClickListener {
                 messagesViewModel.updateConversationPinTimeById(
                     conversationId,

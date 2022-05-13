@@ -314,7 +314,7 @@
     <string name="block_tip">Pengguna yang diblokir tidak dapat mengirimi Anda pesan atau menambahkan Anda ke grup.</string>
     <string name="Blocked">Diblokir</string>
     <string name="bot_empty_tip">Harap tambahkan bot favorit Anda terlebih dahulu.</string>
-    <string name="Bots">Bot</string>
+    <string name="bots_title">Bot</string>
     <string name="BOTS">BOT</string>
     <string name="Call_declined">Panggilan ditolak</string>
     <string name="Call_failed">Panggilan gagal</string>

@@ -2,7 +2,7 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <item
         android:id="@+id/pin"
-        android:title="@string/Pin" />
+        android:title="@string/pin_title" />
     <item
         android:id="@+id/mute"
         android:title="@string/Mute" />

@@ -133,7 +133,8 @@ interface TransactionInterface {
             invokeNetwork = { walletViewModel.ticker(assetId, snapshot.createdAt) },
             switchContext = Dispatchers.IO,
             successBlock = {
-                if (fragment.viewDestroyed()) return@handleMixinResponse 
+                if (fragment.viewDestroyed()) return@handleMixinResponse
+                
                 val ticker = it.data
                 if (ticker != null) {
                     contentBinding.thatVa.displayedChild = POS_TEXT
