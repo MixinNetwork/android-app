@@ -411,6 +411,9 @@ class SendMessageHelper @Inject internal constructor(private val jobManager: Mix
         action: PinAction,
         list: Collection<PinMessageMinimal>
     ) {
+        if (list.isEmpty() || list.size > 128) {
+            return
+        }
         val transferPinData = PinMessagePayload(action.name, list.map { it.messageId })
         val encoded = GsonHelper.customGson.toJson(transferPinData).base64Encode()
         val message = createMessage(

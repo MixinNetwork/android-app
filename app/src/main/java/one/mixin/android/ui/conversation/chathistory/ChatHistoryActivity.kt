@@ -205,6 +205,7 @@ class ChatHistoryActivity : BaseActivity() {
                             withContext(Dispatchers.IO) {
                                 conversationRepository.getPinMessageMinimals(conversationId)
                                     .chunked(128) { list ->
+                                        if (list.isEmpty()) return@chunked
                                         conversationRepository.deletePinMessageByIds(list.map { it.messageId })
                                         Timber.e((list.map { it.messageId }.toString()))
                                         messenger.sendPinMessage(

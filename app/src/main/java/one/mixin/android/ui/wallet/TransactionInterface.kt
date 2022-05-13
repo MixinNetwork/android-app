@@ -3,6 +3,7 @@ package one.mixin.android.ui.wallet
 import android.annotation.SuppressLint
 import android.view.View
 import androidx.core.view.isVisible
+import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.Fragment
 import com.skydoves.balloon.BalloonAnimation
 import com.skydoves.balloon.createBalloon
@@ -126,15 +127,15 @@ interface TransactionInterface {
         assetId: String,
         snapshot: SnapshotItem,
     ) = lifecycleScope.launch {
-        if (fragment.viewDestroyed()) return@launch
+        if (checkDestroyed(fragment)) return@launch
 
         contentBinding.thatVa.displayedChild = POS_PB
         handleMixinResponse(
             invokeNetwork = { walletViewModel.ticker(assetId, snapshot.createdAt) },
             switchContext = Dispatchers.IO,
             successBlock = {
-                if (fragment.viewDestroyed()) return@handleMixinResponse
-                
+                if (checkDestroyed(fragment)) return@handleMixinResponse
+
                 val ticker = it.data
                 if (ticker != null) {
                     contentBinding.thatVa.displayedChild = POS_TEXT
@@ -159,7 +160,7 @@ interface TransactionInterface {
                         fragment.context?.let { c ->
                             setTextColor(c.colorFromAttribute(R.attr.text_minor))
                             setOnClickListener {
-                                if (fragment.viewDestroyed()) return@setOnClickListener
+                                if (checkDestroyed(fragment)) return@setOnClickListener
 
                                 val balloon = createBalloon(c) {
                                     setArrowSize(10)
@@ -223,7 +224,8 @@ interface TransactionInterface {
         assetId: String,
         snapshot: SnapshotItem,
     ) {
-        if (fragment.viewDestroyed()) return
+        if (checkDestroyed(fragment)) return
+
         contentBinding.apply {
             thatVa.displayedChild = POS_TEXT
             thatTv.apply {
@@ -250,7 +252,7 @@ interface TransactionInterface {
         asset: AssetItem,
         snapshot: SnapshotItem
     ) {
-        if (fragment.viewDestroyed()) return
+        if (checkDestroyed(fragment)) return
 
         contentBinding.apply {
             val amountVal = snapshot.amount.toFloatOrNull()
@@ -363,6 +365,12 @@ interface TransactionInterface {
             else -> R.string.NA
         }
         return fragment.requireContext().getString(s)
+    }
+
+    private fun checkDestroyed(fragment: Fragment) = if (fragment is DialogFragment) {
+        !fragment.isAdded
+    } else {
+        fragment.viewDestroyed()
     }
 
     companion object {
