@@ -401,7 +401,7 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
         list.groups.add(
             menuGroup {
                 menu {
-                    title = getString(R.string.disappearing_messages)
+                    title = getString(R.string.disappearing_message)
                     subtitle = conversation.notNullWithElse({ it.expireIn.getTimeInterval() }, "")
                     action = {
                         showDisappearing()

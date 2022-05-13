@@ -1049,17 +1049,4 @@
 	<string name="You_have_left_the_group">You have left the group</string>
 	<string name="your_pin_has_been_created">Your PIN has been created</string>
 
-    <!--  disappearing message -->
-    <string name="disappearing_messages">Disappearing Messages</string>
-    <string name="disappearing_content">When enabled, new messages sent and received \nin this chat will disappear after they have been \nseen, read the document to learn more.</string>
-    <string name="disappearing_content_learn">learn more</string>
-	<string name="disappearing_messages_url" translatable="false">https://mixinmessenger.zendesk.com/hc/articles/5127869180564</string>
-    <string name="disappearing_off">Off</string>
-    <string name="disappearing_option_6">Custom Time</string>
-    <string name="disappearing_messages_custom">Custom Time</string>
-    <string name="disappearing_set">Set</string>
-    <string name="chat_expired_set">%1$s set disappearing message time to %2$s.</string>
-    <string name="chat_expired_disabled">%1$s disabled disappearing message.</string>
-    <string name="chat_expired_changed">%1$s changed disappearing message settings.</string>
-    <string name="group_ok">OK</string>
 </resources>

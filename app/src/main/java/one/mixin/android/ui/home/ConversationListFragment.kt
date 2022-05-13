@@ -904,17 +904,17 @@ class ConversationListFragment : LinkFragment() {
                                 when {
                                     timeInterval == null -> {
                                         String.format(
-                                            getText(R.string.chat_expired_changed), name
+                                            getText(R.string.changed_disappearing_message_settings), name
                                         )
                                     }
                                     timeInterval <= 0 -> {
                                         String.format(
-                                            getText(R.string.chat_expired_disabled), name
+                                            getText(R.string.disable_disappearing_message), name
                                         )
                                     }
                                     else -> {
                                         String.format(
-                                            getText(R.string.chat_expired_set),
+                                            getText(R.string.set_disappearing_message_time_to),
                                             name,
                                             toTimeInterval(timeInterval)
                                         )

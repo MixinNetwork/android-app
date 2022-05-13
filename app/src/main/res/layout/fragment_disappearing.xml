@@ -12,7 +12,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         app:need_divider="false"
-        app:titleText="@string/disappearing_messages" />
+        app:titleText="@string/disappearing_message" />
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -38,7 +38,7 @@
             android:layout_marginBottom="24dp"
             android:gravity="center"
             android:lineSpacingExtra="2dp"
-            android:text="@string/disappearing_content"
+            android:text="@string/disappearing_message_hint"
             android:textColor="?attr/text_minor"
             android:textSize="12sp" />
     </LinearLayout>
@@ -70,7 +70,7 @@
                     android:layout_height="wrap_content"
                     android:layout_centerVertical="true"
                     android:layout_marginStart="@dimen/activity_horizontal_margin"
-                    android:text="@string/disappearing_off"
+                    android:text="@string/Off"
                     android:textSize="16sp"
                     tools:ignore="RelativeOverlap" />
 
@@ -324,7 +324,7 @@
                     android:layout_height="wrap_content"
                     android:layout_centerVertical="true"
                     android:layout_marginStart="@dimen/activity_horizontal_margin"
-                    android:text="@string/disappearing_option_6"
+                    android:text="@string/Custom_Time"
                     android:textSize="16sp"
                     tools:ignore="RelativeOverlap" />
 
