@@ -854,6 +854,8 @@
 	<string name="Select">Select</string>
 	<string name="Select_Emergency_Contact">Select Emergency Contact</string>
 	<string name="Send">Send</string>
+	<string name="Send_transfer">Send</string>
+	<string name="Receive">Receive</string>
 	<string name="Send_Message">Send Message</string>
 	<string name="Send_This_Location">Send This Location</string>
 	<string name="send_to">Send to %1$s</string>
