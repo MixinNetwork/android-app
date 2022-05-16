@@ -22,7 +22,7 @@ suspend fun entityInitialize() {
 suspend fun firstUrl(input: String): String? = withContext(Dispatchers.IO) {
     return@withContext if (Tasks.await(mlExtractor.isModelDownloaded)) {
         val annotations = Tasks.await(mlExtractor.annotate(input))
-        annotations.first { annotation -> annotation.entities.any { entity -> entity.type == Entity.TYPE_URL } }.annotatedText
+        annotations.firstOrNull { annotation -> annotation.entities.any { entity -> entity.type == Entity.TYPE_URL } }?.annotatedText
     } else {
         Tasks.await(mlExtractor.downloadModelIfNeeded())
         null

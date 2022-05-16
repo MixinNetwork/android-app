@@ -11,18 +11,30 @@ import one.mixin.android.ui.search.SearchFragment
 class TipHolder(val binding: ItemSearchTipBinding) : RecyclerView.ViewHolder(binding.root) {
 
     @SuppressLint("SetTextI18n")
-    fun bind(target: String, searching: Boolean, onItemClickListener: SearchFragment.OnSearchClickListener?) {
-        binding.searchTipTv.text = "${itemView.context.getString(R.string.search_placeholder_number).trim()} $target"
-        binding.searchTipTv.highLight(target)
-        if (searching) {
-            binding.pb.isVisible = true
-            binding.searchTipTv.isEnabled = false
-        } else {
+    fun bind(target: String, searching: Boolean, url:String?, onItemClickListener: SearchFragment.OnSearchClickListener?) {
+        if (url != null) {
+            binding.searchTipTv.text =
+                "${itemView.context.getString(R.string.Open_Link)}$url"
+            binding.searchTipTv.highLight(url)
             binding.pb.isVisible = false
             binding.searchTipTv.isEnabled = true
-        }
-        binding.searchTipTv.setOnClickListener {
-            onItemClickListener?.onTipClick()
+            binding.searchTipTv.setOnClickListener {
+                onItemClickListener?.onUrlClick(url)
+            }
+        } else {
+            binding.searchTipTv.text =
+                "${itemView.context.getString(R.string.search_placeholder_number)}$target"
+            binding.searchTipTv.highLight(target)
+            if (searching) {
+                binding.pb.isVisible = true
+                binding.searchTipTv.isEnabled = false
+            } else {
+                binding.pb.isVisible = false
+                binding.searchTipTv.isEnabled = true
+            }
+            binding.searchTipTv.setOnClickListener {
+                onItemClickListener?.onTipClick()
+            }
         }
     }
 }

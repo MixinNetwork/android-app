@@ -42,6 +42,7 @@ import one.mixin.android.ui.common.showUserBottom
 import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.ui.wallet.WalletActivity
+import one.mixin.android.ui.web.WebActivity
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.AssetItem
@@ -180,6 +181,10 @@ class SearchFragment : BaseFragment(R.layout.fragment_search) {
                 )
             }
 
+            override fun onUrlClick(url: String) {
+                WebActivity.show(requireContext(), url, null, null)
+            }
+
             override fun onAsset(assetItem: AssetItem) {
                 activity?.let { WalletActivity.show(it, assetItem) }
             }
@@ -299,10 +304,9 @@ class SearchFragment : BaseFragment(R.layout.fragment_search) {
         val cancellationSignal = CancellationSignal()
         this@SearchFragment.cancellationSignal = cancellationSignal
 
-        launch {
-            searchViewModel.fuzzySearchUrl(keyword)?.let { url ->
-                Timber.e("url:$url")
-            }
+        searchViewModel.fuzzySearchUrl(keyword).let { url ->
+            searchAdapter.setUrlData(url)
+            Timber.e("url:$url")
         }
 
         messageSearchJob = launch {
@@ -373,6 +377,7 @@ class SearchFragment : BaseFragment(R.layout.fragment_search) {
         fun onMessageClick(message: SearchMessageItem)
         fun onAsset(assetItem: AssetItem)
         fun onTipClick()
+        fun onUrlClick(url:String)
         fun onChatLongClick(chatMinimal: ChatMinimal, anchor: View): Boolean
     }
 }
