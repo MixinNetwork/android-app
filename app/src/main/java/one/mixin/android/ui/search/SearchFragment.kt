@@ -49,6 +49,7 @@ import one.mixin.android.vo.ChatMinimal
 import one.mixin.android.vo.RecentUsedApp
 import one.mixin.android.vo.SearchMessageItem
 import one.mixin.android.vo.User
+import timber.log.Timber
 
 @AndroidEntryPoint
 class SearchFragment : BaseFragment(R.layout.fragment_search) {
@@ -297,6 +298,13 @@ class SearchFragment : BaseFragment(R.layout.fragment_search) {
 
         val cancellationSignal = CancellationSignal()
         this@SearchFragment.cancellationSignal = cancellationSignal
+
+        launch {
+            searchViewModel.fuzzySearchUrl(keyword)?.let { url ->
+                Timber.e("url:$url")
+            }
+        }
+
         messageSearchJob = launch {
             (searchViewModel.fuzzySearch<SearchMessageItem>(cancellationSignal, keyword, 10) as? List<SearchMessageItem>)?.let { searchMessageItems ->
                 searchAdapter.setMessageData(searchMessageItems)
