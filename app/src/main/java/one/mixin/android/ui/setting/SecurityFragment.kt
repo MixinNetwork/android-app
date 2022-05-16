@@ -45,7 +45,11 @@ class SecurityFragment : BaseFragment(R.layout.fragment_security) {
             }
 
             logs.setOnClickListener {
-                navTo(PinLogsFragment.newInstance(), PinLogsFragment.TAG)
+                if (Session.getAccount()?.hasPin == true) {
+                    navTo(PinLogsFragment.newInstance(), PinLogsFragment.TAG)
+                } else {
+                    navTo(WalletPasswordFragment.newInstance(false), WalletPasswordFragment.TAG)
+                }
             }
         }
     }
