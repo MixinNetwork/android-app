@@ -364,7 +364,7 @@
     <string name="wallet_pin_open_biometrics">请输入 PIN 来启用生物识别支付</string>
     <string name="wallet_setting_currency_desc">%1$s （%2$s）</string>
     <string name="wallet_transaction_that_time_value_tip">交易时的价值</string>
-    <string name="web_floating_permission">谁可以给你发消息。</string>
+    <string name="web_floating_permission">你的手机没有授权 Mixin 获得浮窗权限，浮窗不能正常使用</string>
     <string name="web_full">浮窗已满，清理后可继续新增</string>
     <string name="Wednesday">星期三</string>
     <string name="When_roaming">当漫游时</string>
