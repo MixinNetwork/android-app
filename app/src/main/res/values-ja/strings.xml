@@ -341,6 +341,7 @@
     <string name="withdrawal_addr_pin_modify">宛先タグまたはID番号またはメモを入力して下さい。それ以外の場合「タグなし」に設定できます。</string>
     <string name="withdrawal_with_biometric">PINを使用して出金</string>
     <string name="withdrawal_with_PIN">リストの変更</string>
+    <string name="Off">オフ</string>
     <string name="About">Mixinについて</string>
     <string name="Access_denied">アクセスが拒否されました</string>
     <string name="access_your_apps_list">アプリリストへのアクセス</string>
@@ -416,7 +417,7 @@
     <string name="Blocked">ブロック中のユーザー</string>
     <string name="bot_empty_tip">最初にお気に入りのロボを追加してください。</string>
     <string name="bots_title">Myロボ一覧</string>
-    <string name="BOTS">Mixin ID %1$s はあなたの友だちリストにいません。本当に正しい送金先か確認してください。</string>
+    <string name="BOTS">ロボ</string>
     <string name="Call">応答なし</string>
     <string name="call_encryption_description">この通話はE2E暗号化されています。</string>
     <string name="call_encryption_title">通話に失敗しました</string>
@@ -493,7 +494,7 @@
     <string name="Copy_invite">リンクをコピーする</string>
     <string name="Copy_link">リンクをコピー</string>
     <string name="Create">作成</string>
-    <string name="created_this_group">%1$sがグループ\"%2$s\"を作成しました</string>
+    <string name="created_this_group">%1$sがグループを作成しました</string>
     <string name="Currency">通貨</string>
     <string name="database_upgrade_tips">データベースをアップグレードしています。アプリを閉じないでください。</string>
     <string name="Date">日付</string>
@@ -675,7 +676,8 @@
     <string name="phone_number_privacy">あなたを電話番号検索で追加できるユーザー</string>
     <string name="Photo">写真</string>
     <string name="Photos">画像</string>
-    <string name="PIN">ピン留め</string>
+    <string name="pin_title">ピン留め</string>
+    <string name="PIN">PIN</string>
     <string name="PIN_change">PIN変更</string>
     <string name="pin_check_tip">安全のため、定期的にPINコードを確認します。</string>
     <string name="pin_confirm_again_hint">3度目となりますが、もう一度PINを確認してください</string>

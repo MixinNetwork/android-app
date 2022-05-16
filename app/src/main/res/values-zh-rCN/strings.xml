@@ -709,7 +709,7 @@
     <string name="Multisig_by_PIN">通过 PIN 签名</string>
     <string name="multisig_state_signed">您已经对这笔交易进行了签名，您无法再次签名。</string>
     <string name="multisig_state_unlocked">这笔交易已经被其他人撤销了，您无法再次撤销。</string>
-    <string name="Multisig_Transaction">签名多重签名交易</string>
+    <string name="Multisig_Transaction">多重签名交易</string>
     <string name="Mute">静音通知</string>
     <string name="Mute_until">直到 %1$s</string>
     <string name="My_Contacts">我的联系人</string>
