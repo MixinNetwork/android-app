@@ -54,6 +54,7 @@
 	<string name="cant_talk_self">You can\'t talk to yourself</string>
 	<string name="cant_transfer_self">You can\'t transfer to yourself</string>
 	<string name="Card">Card</string>
+	<string name="changed_disappearing_message_settings">%1$s changed disappearing message settings.</string>
 	<string name="change_phone_number_successfully">Change phone number successfully!</string>
 	<string name="Changing">Changing...</string>
 	<string name="chat_audio_discard_warning">Are you sure you want to stop recording and discard your voice message ?</string>
@@ -105,6 +106,11 @@
 	<string name="deposit_notice">Both Memo and Address are required to deposit your %1$s to you account.</string>
 	<string name="desktop">desktop</string>
 	<string name="desktop_login_no_pin">For your account security, please set up the PIN before logging into the desktop app.</string>
+	<string name="disappearing_option_1">30 seconds</string>
+	<string name="disappearing_option_2">10 minutes</string>
+	<string name="disappearing_option_3">2 hours</string>
+	<string name="disappearing_option_4">1 day</string>
+	<string name="disappearing_option_5">1 week</string>
 	<string name="Device_unsupported">Device unsupported</string>
 	<string name="Diagnosis_Complete">Diagnosis Complete</string>
 	<string name="Disable_db_debug">Disable db debug</string>
@@ -131,7 +137,7 @@
 	<string name="error_favorite_limit">ERROR %1$d: The number has reached the limit.</string>
 	<string name="error_invalid_address">ERROR %1$d: Invalid address format. Please enter the correct %2$s %3$s address!</string>
 	<string name="error_invalid_code_too_frequent">ERROR %1$d: Send verification code too frequent, please try again later.</string>
-	<string name="error_invalid_pin_format">ERROR %1$d: Invalid PIN format</string>
+	<string name="error_invalid_pin_format">ERROR %1$d: Invalid PIN format. </string>
 	<string name="error_not_supported_audio_format">Not supported audio format, please open by other app.</string>
 	<string name="error_old_version">ERROR %1$d: Please update Mixin(%2$s) to continue use the service.</string>
 	<string name="error_open_location">Can\'t find an map app</string>
@@ -270,6 +276,7 @@
 	<string name="qr_code_camera_code">Use the built-in Camera to scan any QR Code. When a code is detected, tap the notification to view more information.</string>
 	<string name="quote">quote</string>
 	<string name="Recaptcha_timeout">Recaptcha timeout</string>
+	<string name="Receive">Receive</string>
 	<string name="Refuse">Refuse</string>
 	<string name="Remove_Participants">Remove Participants</string>
 	<string name="Removing">Removing…</string>
@@ -298,6 +305,7 @@
 	<string name="SEARCH_MESSAGES">SEARCH MESSAGES</string>
 	<string name="Searching">Searching</string>
 	<string name="secret_url">https://mixin.one/pages/1000007</string>
+	<string name="Send_transfer">Send</string>
 	<string name="Send_as_file">Send as file</string>
 	<string name="send_file_group">Send \"%1$s\" to \"%2$s\"?</string>
 	<string name="Set_PIN">Set PIN</string>
@@ -388,6 +396,8 @@
 	<string name="withdrawal_addr_pin_modify">Enter PIN to modify address</string>
 	<string name="withdrawal_with_biometric">Withdrawal with Biometric</string>
 	<string name="withdrawal_with_PIN">Withdrawal with PIN</string>
+	<string name="disable_disappearing_message">%1$s disabled disappearing message</string>
+	<string name="Off">Off</string>
 	<string name="About">About</string>
 	<string name="Access_denied">Access denied</string>
 	<string name="access_your_apps_list">access your apps list</string>
@@ -591,6 +601,7 @@
 	<string name="Developer">Developer</string>
 	<string name="disappearing_message">Disappearing Messages</string>
 	<string name="disappearing_message_hint">When enabled, new messages sent and received in this chat will disappear after they have been seen, read the document to learn more.</string>
+	<string name="disappearing_message_url">https://mixinmessenger.zendesk.com/hc/articles/5127869180564</string>
 	<string name="Dismiss_as_Admin">Dismiss as Admin</string>
 	<string name="Done">Done</string>
 	<string name="Duplicate_Transfer_Confirmation">Duplicate Transfer Confirmation</string>
@@ -599,7 +610,7 @@
 	<string name="Edit_Biography">Edit Biography</string>
 	<string name="Edit_Circle_Name">Edit Circle Name</string>
 	<string name="Edit_Conversations">Edit Conversations</string>
-	<string name="Edit_Group_Description">Edit group description</string>
+	<string name="Edit_Group_Description">Edit Group Description</string>
 	<string name="Edit_group_name">Edit Group Name</string>
 	<string name="Edit_Name">Edit Name</string>
 	<string name="Emergency_Contact">Emergency Contact</string>
@@ -854,8 +865,6 @@
 	<string name="Select">Select</string>
 	<string name="Select_Emergency_Contact">Select Emergency Contact</string>
 	<string name="Send">Send</string>
-	<string name="Send_transfer">Send</string>
-	<string name="Receive">Receive</string>
 	<string name="Send_Message">Send Message</string>
 	<string name="Send_This_Location">Send This Location</string>
 	<string name="send_to">Send to %1$s</string>
@@ -1003,8 +1012,8 @@
 	<string name="withdrawal_label">Label (e.g. exchanges, wallets, etc.)</string>
 	<string name="withdrawal_memo">Memo</string>
 	<string name="withdrawal_minimum_amount">Minimum withdraw amount is %1$s %2$s</string>
-	<string name="withdrawal_minimum_reserve">Minimum reserve:</string>
-	<string name="withdrawal_minimum_withdrawal">Minimum withdrawal:</string>
+	<string name="withdrawal_minimum_reserve">Minimum reserve: </string>
+	<string name="withdrawal_minimum_withdrawal">Minimum withdrawal: </string>
 	<string name="withdrawal_network_fee">Network fee: </string>
 	<string name="withdrawal_no_memo">No Memo</string>
 	<string name="withdrawal_to">Withdraw to %1$s</string>
