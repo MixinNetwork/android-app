@@ -14,7 +14,9 @@ class GestureMessageLayout(context: Context, attrs: AttributeSet?) : MessageLayo
     }
 
     override fun dispatchTouchEvent(ev: MotionEvent): Boolean {
-        gestureDetector.onTouchEvent(ev)
+        listener?.let {
+            gestureDetector.onTouchEvent(ev)
+        }
         return super.dispatchTouchEvent(ev)
     }
 }

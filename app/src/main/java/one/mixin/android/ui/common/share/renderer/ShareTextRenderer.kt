@@ -3,6 +3,7 @@ package one.mixin.android.ui.common.share.renderer
 import android.content.Context
 import android.view.LayoutInflater
 import androidx.core.view.isVisible
+import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemChatTextBinding
 import one.mixin.android.extension.nowInUtc
@@ -16,6 +17,7 @@ open class ShareTextRenderer(val context: Context) {
 
     init {
         binding.chatTv.addAutoLinkMode(AutoLinkMode.MODE_URL)
+        binding.chatTv.setUrlModeColor(Constants.Colors.LINK_COLOR)
     }
 
     fun render(content: String, isNightMode: Boolean) {
