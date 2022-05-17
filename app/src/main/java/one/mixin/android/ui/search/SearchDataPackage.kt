@@ -1,6 +1,7 @@
 package one.mixin.android.ui.search
 
 import one.mixin.android.ui.search.holder.TipItem
+import one.mixin.android.ui.search.holder.TipType
 import one.mixin.android.vo.AssetItem
 import one.mixin.android.vo.ChatMinimal
 import one.mixin.android.vo.SearchMessageItem
@@ -18,7 +19,7 @@ class SearchDataPackage(
         const val LIMIT_COUNT = 3
     }
 
-    var showTip = false
+    var tipType: TipType? = null
     var assetLimit = true
     var userLimit = true
     var chatLimit = true
@@ -99,9 +100,11 @@ class SearchDataPackage(
         return messageList!![position.decTip() - assetCount() - userCount() - chatCount()]
     }
 
+    fun showTip() = tipType != null
+
     fun getItem(position: Int): Any {
         return when {
-            showTip && position < 1 -> TipItem()
+            showTip() && position < 1 -> TipItem()
             position < assetCount().incTip() -> assetItem(position)
             position < assetCount().incTip() + userCount() -> userItem(position)
             position < assetCount().incTip() + userCount() + chatCount() -> chatItem(position)
@@ -109,6 +112,6 @@ class SearchDataPackage(
         }
     }
 
-    private fun Int.incTip() = this + if (showTip) 1 else 0
-    private fun Int.decTip() = this - if (showTip) 1 else 0
+    private fun Int.incTip() = this + if (showTip()) 1 else 0
+    private fun Int.decTip() = this - if (showTip()) 1 else 0
 }

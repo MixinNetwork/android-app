@@ -1000,4 +1000,5 @@
     <string name="You">你</string>
     <string name="You_deleted_this_message">你撤回了一条消息</string>
     <string name="You_have_left_the_group">你不在此群组</string>
+    <string name="Open_Link">打开链接：%1$s</string>
 </resources>

@@ -1021,4 +1021,5 @@
 	<string name="You">You</string>
 	<string name="You_deleted_this_message">You deleted this message</string>
 	<string name="You_have_left_the_group">You have left the group</string>
+	<string name="Open_Link">Open Link: %1$s</string>
 </resources>

@@ -19,10 +19,12 @@ import one.mixin.android.ui.search.holder.HeaderHolder
 import one.mixin.android.ui.search.holder.MessageHolder
 import one.mixin.android.ui.search.holder.TipHolder
 import one.mixin.android.ui.search.holder.TipItem
+import one.mixin.android.ui.search.holder.TipType
 import one.mixin.android.vo.AssetItem
 import one.mixin.android.vo.ChatMinimal
 import one.mixin.android.vo.SearchMessageItem
 import one.mixin.android.vo.User
+import one.mixin.android.widget.linktext.Utils
 import java.lang.Exception
 import java.util.Locale
 
@@ -32,18 +34,18 @@ class SearchAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>(), StickyRec
     var query: String = ""
         set(value) {
             field = value
-            data.showTip = shouldTips(value)
+            data.tipType = getTipType(value)
         }
 
     var searchingId = false
         set(value) {
             field = value
-            if (data.showTip) {
+            if (data.showTip()) {
                 notifyItemChanged(0)
             }
         }
 
-    override fun getHeaderId(position: Int): Long = if (position == 0 && data.showTip) {
+    override fun getHeaderId(position: Int): Long = if (position == 0 && data.showTip()) {
         -1
     } else {
         getItemViewType(position).toLong() + data.getHeaderFactor(position)
@@ -52,10 +54,10 @@ class SearchAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>(), StickyRec
     override fun onBindHeaderViewHolder(holder: HeaderHolder, position: Int) {
         val context = holder.itemView.context
         when (getItemViewType(position)) {
-            TypeAsset.index -> holder.bind(context.getText(R.string.ASSETS).toString(), data.assetShowMore())
-            TypeUser.index -> holder.bind(context.getText(R.string.CONTACTS).toString(), data.userShowMore())
-            TypeChat.index -> holder.bind(context.getText(R.string.CHATS).toString(), data.chatShowMore())
-            TypeMessage.index -> holder.bind(context.getText(R.string.SEARCH_MESSAGES).toString(), data.messageShowMore())
+            SearchType.Asset.index -> holder.bind(context.getText(R.string.ASSETS).toString(), data.assetShowMore())
+            SearchType.User.index -> holder.bind(context.getText(R.string.CONTACTS).toString(), data.userShowMore())
+            SearchType.Chat.index -> holder.bind(context.getText(R.string.CHATS).toString(), data.chatShowMore())
+            SearchType.Message.index -> holder.bind(context.getText(R.string.SEARCH_MESSAGES).toString(), data.messageShowMore())
         }
     }
 
@@ -67,9 +69,9 @@ class SearchAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>(), StickyRec
 
     fun getTypeData(position: Int) =
         when (getItemViewType(position)) {
-            TypeAsset.index -> if (data.assetShowMore()) data.assetList else null
-            TypeUser.index -> if (data.userShowMore()) data.userList else null
-            TypeChat.index -> if (data.chatShowMore()) data.chatList else null
+            SearchType.Asset.index -> if (data.assetShowMore()) data.assetList else null
+            SearchType.User.index -> if (data.userShowMore()) data.userList else null
+            SearchType.Chat.index -> if (data.chatShowMore()) data.chatList else null
             else -> if (data.messageShowMore()) data.messageList else null
         }
 
@@ -77,7 +79,7 @@ class SearchAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>(), StickyRec
     fun clear() {
         data.assetList = null
         data.userList = null
-        data.showTip = shouldTips(query)
+        data.tipType = getTipType(query)
         data.chatList = null
         data.messageList = null
         notifyDataSetChanged()
@@ -87,7 +89,7 @@ class SearchAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>(), StickyRec
     fun setData(assetItems: List<AssetItem>?, users: List<User>?, chatMinimals: List<ChatMinimal>?) {
         data.assetList = assetItems
         data.userList = users
-        data.showTip = shouldTips(query)
+        data.tipType = getTipType(query)
         data.chatList = chatMinimals
         notifyDataSetChanged()
     }
@@ -121,7 +123,13 @@ class SearchAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>(), StickyRec
         notifyItemRangeChanged(data.getCount() - messageCount, messageCount)
     }
 
-    private fun shouldTips(keyword: String): Boolean {
+    private fun getTipType(keyword: String): TipType? {
+        if (tipPhone(keyword)) return TipType.Phone
+        if (tipUrl(keyword)) return TipType.Url
+        return null
+    }
+
+    private fun tipPhone(keyword: String): Boolean {
         if (keyword.length < 4) return false
         if (!keyword.all { it.isDigit() or (it == '+') }) return false
         return if (keyword.startsWith('+')) {
@@ -136,27 +144,33 @@ class SearchAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>(), StickyRec
         } && data.userList.isNullOrEmpty()
     }
 
+    private fun tipUrl(keyword: String): Boolean {
+        val urlPattern = Utils.getUrlPattern()
+        val matcher = urlPattern.matcher(keyword)
+        return matcher.find()
+    }
+
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         when (getItemViewType(position)) {
             0 -> {
-                (holder as TipHolder).bind(query, searchingId, onItemClickListener)
+                (holder as TipHolder).bind(query, requireNotNull(data.tipType), searchingId, onItemClickListener)
             }
-            TypeAsset.index -> {
+            SearchType.Asset.index -> {
                 data.getItem(position).let {
                     (holder as AssetHolder).bind(it as AssetItem, query, onItemClickListener)
                 }
             }
-            TypeUser.index -> {
+            SearchType.User.index -> {
                 data.getItem(position).let {
                     (holder as ContactHolder).bind(it as User, query, onItemClickListener)
                 }
             }
-            TypeChat.index -> {
+            SearchType.Chat.index -> {
                 data.getItem(position).let {
                     (holder as ChatHolder).bind(it as ChatMinimal, query, onItemClickListener)
                 }
             }
-            TypeMessage.index -> {
+            SearchType.Message.index -> {
                 data.getItem(position).let {
                     (holder as MessageHolder).bind(it as SearchMessageItem, onItemClickListener)
                 }
@@ -171,16 +185,16 @@ class SearchAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>(), StickyRec
             0 -> {
                 TipHolder(ItemSearchTipBinding.inflate(LayoutInflater.from(parent.context), parent, false))
             }
-            TypeAsset.index -> {
+            SearchType.Asset.index -> {
                 AssetHolder(ItemSearchAssetBinding.inflate(LayoutInflater.from(parent.context), parent, false))
             }
-            TypeUser.index -> {
+            SearchType.User.index -> {
                 ContactHolder(ItemSearchContactBinding.inflate(LayoutInflater.from(parent.context), parent, false))
             }
-            TypeChat.index -> {
+            SearchType.Chat.index -> {
                 ChatHolder(ItemSearchContactBinding.inflate(LayoutInflater.from(parent.context), parent, false))
             }
-            TypeMessage.index -> {
+            SearchType.Message.index -> {
                 MessageHolder(ItemSearchMessageBinding.inflate(LayoutInflater.from(parent.context), parent, false))
             }
             else -> {
@@ -191,9 +205,9 @@ class SearchAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>(), StickyRec
     override fun getItemViewType(position: Int) =
         when (data.getItem(position)) {
             is TipItem -> 0
-            is AssetItem -> TypeAsset.index
-            is User -> TypeUser.index
-            is ChatMinimal -> TypeChat.index
-            else -> TypeMessage.index
+            is AssetItem -> SearchType.Asset.index
+            is User -> SearchType.User.index
+            is ChatMinimal -> SearchType.Chat.index
+            else -> SearchType.Message.index
         }
 }

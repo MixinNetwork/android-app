@@ -6,7 +6,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Pattern;
 
-class Utils {
+public class Utils {
 
     private static boolean isValidRegex(String regex) {
         return regex != null && !regex.isEmpty() && regex.length() > 2;
@@ -21,6 +21,10 @@ class Utils {
             petterns.put(anAutoLinkMode.name(), p);
         }
         return p;
+    }
+
+    public static Pattern getUrlPattern() {
+        return getPatternByAutoLinkMode(AutoLinkMode.MODE_URL, null);
     }
 
     private static String getRegexByAutoLinkMode(AutoLinkMode anAutoLinkMode, String customRegex) {

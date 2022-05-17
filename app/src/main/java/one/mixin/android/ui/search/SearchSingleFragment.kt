@@ -27,6 +27,7 @@ import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.search.SearchFragment.Companion.SEARCH_DEBOUNCE
+import one.mixin.android.ui.search.holder.TipType
 import one.mixin.android.ui.wallet.WalletActivity
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.AssetItem
@@ -63,10 +64,10 @@ class SearchSingleFragment : BaseFragment(R.layout.fragment_search_single) {
 
     private val type by lazy {
         when (data!![0]) {
-            is AssetItem -> TypeAsset
-            is ChatMinimal -> TypeChat
-            is User -> TypeUser
-            else -> TypeMessage
+            is AssetItem -> SearchType.Asset
+            is ChatMinimal -> SearchType.Chat
+            is User -> SearchType.User
+            else -> SearchType.Message
         }
     }
 
@@ -93,17 +94,17 @@ class SearchSingleFragment : BaseFragment(R.layout.fragment_search_single) {
         val header = LayoutInflater.from(requireContext()).inflate(R.layout.view_head_search_single, binding.searchRv, false)
         val headerBinding = ViewHeadSearchSingleBinding.bind(header)
         val text = when (type) {
-            TypeAsset -> requireContext().getString(R.string.ASSETS)
-            TypeUser -> requireContext().getText(R.string.CONTACTS)
-            TypeChat -> requireContext().getText(R.string.CHATS)
-            TypeMessage -> requireContext().getText(R.string.SEARCH_MESSAGES)
+            SearchType.Asset -> requireContext().getString(R.string.ASSETS)
+            SearchType.User -> requireContext().getText(R.string.CONTACTS)
+            SearchType.Chat -> requireContext().getText(R.string.CHATS)
+            SearchType.Message -> requireContext().getText(R.string.SEARCH_MESSAGES)
         }
         headerBinding.titleTv.text = text
         adapter.headerView = header
         binding.searchRv.adapter = adapter
         adapter.data = data
         adapter.onItemClickListener = object : SearchFragment.OnSearchClickListener {
-            override fun onTipClick() {
+            override fun onTipClick(tipType: TipType, text: String?) {
             }
 
             override fun onAsset(assetItem: AssetItem) {
@@ -169,10 +170,10 @@ class SearchSingleFragment : BaseFragment(R.layout.fragment_search_single) {
         val cancellationSignal = CancellationSignal()
         this@SearchSingleFragment.cancellationSignal = cancellationSignal
         val list: List<Parcelable>? = when (type) {
-            TypeAsset -> searchViewModel.fuzzySearch<AssetItem>(cancellationSignal, s)
-            TypeUser -> searchViewModel.fuzzySearch<User>(cancellationSignal, s)
-            TypeChat -> searchViewModel.fuzzySearch<ChatMinimal>(cancellationSignal, s)
-            TypeMessage -> searchViewModel.fuzzySearch<SearchMessageItem>(cancellationSignal, s, -1)
+            SearchType.Asset -> searchViewModel.fuzzySearch<AssetItem>(cancellationSignal, s)
+            SearchType.User -> searchViewModel.fuzzySearch<User>(cancellationSignal, s)
+            SearchType.Chat -> searchViewModel.fuzzySearch<ChatMinimal>(cancellationSignal, s)
+            SearchType.Message -> searchViewModel.fuzzySearch<SearchMessageItem>(cancellationSignal, s, -1)
         }
 
         binding.pb.isInvisible = true

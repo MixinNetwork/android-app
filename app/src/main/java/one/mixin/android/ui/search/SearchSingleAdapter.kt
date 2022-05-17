@@ -25,10 +25,10 @@ class SearchSingleAdapter(private val type: SearchType) : HeaderAdapter<Parcelab
 
     override fun getNormalViewHolder(context: Context, parent: ViewGroup): NormalHolder {
         return when (type) {
-            TypeAsset -> AssetHolder(ItemSearchAssetBinding.inflate(LayoutInflater.from(parent.context), parent, false))
-            TypeChat -> ChatHolder(ItemSearchContactBinding.inflate(LayoutInflater.from(parent.context), parent, false))
-            TypeUser -> ContactHolder(ItemSearchContactBinding.inflate(LayoutInflater.from(parent.context), parent, false))
-            TypeMessage -> MessageHolder(ItemSearchMessageBinding.inflate(LayoutInflater.from(parent.context), parent, false))
+            SearchType.Asset -> AssetHolder(ItemSearchAssetBinding.inflate(LayoutInflater.from(parent.context), parent, false))
+            SearchType.Chat -> ChatHolder(ItemSearchContactBinding.inflate(LayoutInflater.from(parent.context), parent, false))
+            SearchType.User -> ContactHolder(ItemSearchContactBinding.inflate(LayoutInflater.from(parent.context), parent, false))
+            SearchType.Message -> MessageHolder(ItemSearchMessageBinding.inflate(LayoutInflater.from(parent.context), parent, false))
         }
     }
 
@@ -36,10 +36,10 @@ class SearchSingleAdapter(private val type: SearchType) : HeaderAdapter<Parcelab
         if (holder is NormalHolder) {
             data?.get(getPos(position)).let {
                 when (type) {
-                    TypeAsset -> (holder as AssetHolder).bind(it as AssetItem, query, onItemClickListener)
-                    TypeChat -> (holder as ChatHolder).bind(it as ChatMinimal, query, onItemClickListener)
-                    TypeUser -> (holder as ContactHolder).bind(it as User, query, onItemClickListener)
-                    TypeMessage -> (holder as MessageHolder).bind(it as SearchMessageItem, onItemClickListener)
+                    SearchType.Asset -> (holder as AssetHolder).bind(it as AssetItem, query, onItemClickListener)
+                    SearchType.Chat -> (holder as ChatHolder).bind(it as ChatMinimal, query, onItemClickListener)
+                    SearchType.User -> (holder as ContactHolder).bind(it as User, query, onItemClickListener)
+                    SearchType.Message -> (holder as MessageHolder).bind(it as SearchMessageItem, onItemClickListener)
                 }
             }
         }
