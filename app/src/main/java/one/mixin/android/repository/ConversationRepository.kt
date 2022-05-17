@@ -30,7 +30,6 @@ import one.mixin.android.db.ConversationDao
 import one.mixin.android.db.JobDao
 import one.mixin.android.db.MessageDao
 import one.mixin.android.db.MessageMentionDao
-import one.mixin.android.db.DataProvider
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.ParticipantDao
 import one.mixin.android.db.ParticipantSessionDao
@@ -40,6 +39,7 @@ import one.mixin.android.db.TranscriptMessageDao
 import one.mixin.android.db.deleteMessageByConversationId
 import one.mixin.android.db.deleteMessageById
 import one.mixin.android.db.insertNoReplace
+import one.mixin.android.db.provider.DataProvider
 import one.mixin.android.db.runInTransaction
 import one.mixin.android.event.GroupEvent
 import one.mixin.android.extension.joinStar
