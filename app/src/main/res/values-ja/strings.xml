@@ -207,7 +207,6 @@
     <string name="No_media_yet">メディアがありません</string>
     <string name="No_raws">その他はありません</string>
     <string name="No_rebates">払い戻しはありません</string>
-    <string name="No_transactions">トランザクションはありません</string>
     <string name="No_withdrawals">出金はありません</string>
     <string name="Not_logged_in">ログインしていません</string>
     <string name="Not_recognized">認識できません</string>
@@ -341,6 +340,7 @@
     <string name="withdrawal_addr_pin_modify">宛先タグまたはID番号またはメモを入力して下さい。それ以外の場合「タグなし」に設定できます。</string>
     <string name="withdrawal_with_biometric">PINを使用して出金</string>
     <string name="withdrawal_with_PIN">リストの変更</string>
+    <string name="No_transactions">トランザクションはありません</string>
     <string name="Off">オフ</string>
     <string name="About">Mixinについて</string>
     <string name="Access_denied">アクセスが拒否されました</string>
@@ -512,9 +512,6 @@
     <string name="deposit_attention">注意: 最初は必ず少額で入金テストをしてください。</string>
     <string name="deposit_tip_btc">このアドレスはビットコインのみサポートしています。</string>
     <string name="deposit_tip_common">このアドレスは%1$sのみサポートしています。</string>
-    <string name="deposit_tip_eos">このアドレスはEOSトークンをすべてサポートしています(EOS, IQ, BLACK, OCT, KARMA…)</string>
-    <string name="deposit_tip_eth">このアドレスはERC20トークンをすべてサポートしています(ETH, XIN, TUSD, HT, LOOM, LEO…)</string>
-    <string name="deposit_tip_trx">このアドレスはTRC10, 20トークンをすべてサポートしています(TRX, BTT, USDT-TRON…)</string>
     <string name="desktop_upgrade">デスクトップ版Mixinを最新バージョンにアップデートしてください。</string>
     <string name="detect_qr_tip">Mixin QRコードを検出しました、タップしてアクセスします</string>
     <string name="Developer">開発者情報</string>
