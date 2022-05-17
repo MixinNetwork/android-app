@@ -132,7 +132,7 @@ class SearchAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>(), StickyRec
     }
 
     private fun shouldTips(keyword: String): Boolean {
-        if (data.url!= null) { return true }
+        if (data.url != null) { return true }
         if (keyword.length < 4) return false
         if (!keyword.all { it.isDigit() or (it == '+') }) return false
         return if (keyword.startsWith('+')) {
