@@ -30,7 +30,7 @@ import one.mixin.android.db.ConversationDao
 import one.mixin.android.db.JobDao
 import one.mixin.android.db.MessageDao
 import one.mixin.android.db.MessageMentionDao
-import one.mixin.android.db.MessageProvider
+import one.mixin.android.db.DataProvider
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.ParticipantDao
 import one.mixin.android.db.ParticipantSessionDao
@@ -107,14 +107,14 @@ internal constructor(
 ) {
 
     @SuppressLint("RestrictedApi")
-    fun getMessages(conversationId: String, count: Int?) = MessageProvider.getMessages(appDatabase, conversationId, count)
+    fun getMessages(conversationId: String, count: Int?) = DataProvider.getMessages(appDatabase, conversationId, count)
 
     suspend fun getChatMessages(conversationId: String, offset: Int, limit: Int): List<MessageItem> = messageDao.getChatMessages(conversationId, offset, limit)
 
     fun conversations(circleId: String?): DataSource.Factory<Int, ConversationItem> = if (circleId == null) {
-        MessageProvider.getConversations(appDatabase)
+        DataProvider.getConversations(appDatabase)
     } else {
-        MessageProvider.observeConversationsByCircleId(circleId, appDatabase)
+        DataProvider.observeConversationsByCircleId(circleId, appDatabase)
     }
 
     suspend fun successConversationList(): List<ConversationMinimal> = conversationDao.successConversationList()
@@ -156,13 +156,13 @@ internal constructor(
         conversationDao.saveDraft(conversationId, draft)
 
     suspend fun fuzzySearchMessage(query: String, limit: Int, cancellationSignal: CancellationSignal): List<SearchMessageItem> =
-        MessageProvider.fuzzySearchMessage(query.joinStar().replaceQuotationMark(), limit, appDatabase, cancellationSignal)
+        DataProvider.fuzzySearchMessage(query.joinStar().replaceQuotationMark(), limit, appDatabase, cancellationSignal)
 
     fun fuzzySearchMessageDetail(query: String, conversationId: String, cancellationSignal: CancellationSignal) =
-        MessageProvider.fuzzySearchMessageDetail(query.joinStar().replaceQuotationMark(), conversationId, appDatabase, cancellationSignal)
+        DataProvider.fuzzySearchMessageDetail(query.joinStar().replaceQuotationMark(), conversationId, appDatabase, cancellationSignal)
 
     suspend fun fuzzySearchChat(query: String, cancellationSignal: CancellationSignal): List<ChatMinimal> =
-        MessageProvider.fuzzySearchChat(query, appDatabase, cancellationSignal)
+        DataProvider.fuzzySearchChat(query, appDatabase, cancellationSignal)
 
     suspend fun indexUnread(conversationId: String) =
         conversationDao.indexUnread(conversationId)

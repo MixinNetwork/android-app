@@ -22,7 +22,7 @@ import java.util.concurrent.Callable
 import java.util.concurrent.atomic.AtomicBoolean
 
 @SuppressLint("RestrictedApi")
-class MessageProvider {
+class DataProvider {
     companion object {
 
         fun getMessages(database: MixinDatabase, conversationId: String, count: Int?) =
