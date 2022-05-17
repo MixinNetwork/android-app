@@ -1,7 +1,7 @@
 def versionMajor = 0
 def versionMinor = 35
-def versionPatch = 9
-def versionBuild = 2
+def versionPatch = 10
+def versionBuild = 4
 
 apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
@@ -26,8 +26,9 @@ android {
         javaCompileOptions {
             annotationProcessorOptions {
                 arguments += [
-                        "room.schemaLocation": "$projectDir/schemas".toString()
-                ]
+                        "room.schemaLocation":"$projectDir/schemas".toString(),
+                        "room.incremental":"true",
+                        "room.expandProjection":"true"]
             }
         }
 
