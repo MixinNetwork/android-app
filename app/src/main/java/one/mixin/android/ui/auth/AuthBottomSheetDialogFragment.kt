@@ -4,8 +4,8 @@ import android.annotation.SuppressLint
 import android.app.Dialog
 import android.content.DialogInterface
 import android.content.Intent
-import android.content.pm.PackageManager
 import android.net.Uri
+import android.os.Build
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.collection.ArraySet
@@ -27,6 +27,7 @@ import one.mixin.android.vo.Scope
 import one.mixin.android.vo.Scope.Companion.SCOPES
 import one.mixin.android.vo.convertName
 import one.mixin.android.widget.BottomSheet
+import timber.log.Timber
 
 @AndroidEntryPoint
 class AuthBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
@@ -138,10 +139,16 @@ class AuthBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             } else {
                 builder.appendQueryParameter("code", code).build()
             }
-            val intent = Intent.parseUri(redirect.toString(), Intent.URI_INTENT_SCHEME)
-            val info = context?.packageManager?.resolveActivity(intent, PackageManager.MATCH_DEFAULT_ONLY)
-            if (info != null) {
+            try {
+                val intent = Intent(Intent.ACTION_VIEW, Uri.parse(redirect.toString())).apply {
+                    addCategory(Intent.CATEGORY_BROWSABLE)
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                        flags = Intent.FLAG_ACTIVITY_REQUIRE_NON_BROWSER
+                    }
+                }
                 context?.startActivity(intent)
+            } catch (e: Exception) {
+                Timber.e(e)
             }
         }
     }

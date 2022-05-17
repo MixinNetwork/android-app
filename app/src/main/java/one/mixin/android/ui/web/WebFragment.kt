@@ -7,8 +7,10 @@ import android.content.ActivityNotFoundException
 import android.content.ClipData
 import android.content.Context
 import android.content.Intent
+import android.content.Intent.ACTION_VIEW
+import android.content.Intent.CATEGORY_BROWSABLE
+import android.content.Intent.FLAG_ACTIVITY_REQUIRE_NON_BROWSER
 import android.content.pm.ActivityInfo
-import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Color
@@ -132,7 +134,6 @@ import one.mixin.android.widget.WebControlView
 import timber.log.Timber
 import java.io.ByteArrayInputStream
 import java.io.FileInputStream
-import java.net.URISyntaxException
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
@@ -1280,32 +1281,18 @@ class WebFragment : BaseFragment() {
             } else {
                 try {
                     val context = view.context
-                    val intent = Intent.parseUri(url, Intent.URI_INTENT_SCHEME)
+                    // https://developer.android.com/training/package-visibility/use-cases#let-non-browser-apps-handle-urls
+                    val intent = Intent(ACTION_VIEW, Uri.parse(url)).apply {
+                        addCategory(CATEGORY_BROWSABLE)
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                            flags = FLAG_ACTIVITY_REQUIRE_NON_BROWSER
+                        }
+                    }
                     if (context !is Activity) {
                         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                     }
-
-                    if (intent != null) {
-                        val packageManager = context.packageManager
-                        val info = packageManager.resolveActivity(
-                            intent,
-                            PackageManager.MATCH_DEFAULT_ONLY
-                        )
-                        if (info != null) {
-                            view.stopLoading()
-                            context.startActivity(intent)
-                        } else {
-                            context.startActivity(
-                                Intent(
-                                    Intent.ACTION_VIEW,
-                                    Uri.parse(url)
-                                )
-                            )
-                        }
-                    }
-                } catch (e: URISyntaxException) {
-                    view.loadUrl(url, extraHeaders)
-                } catch (e: ActivityNotFoundException) {
+                    context.startActivity(intent)
+                } catch (e: Exception) {
                     view.loadUrl(url, extraHeaders)
                 }
             }
