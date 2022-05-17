@@ -1294,6 +1294,13 @@ class WebFragment : BaseFragment() {
                         if (info != null) {
                             view.stopLoading()
                             context.startActivity(intent)
+                        } else {
+                            context.startActivity(
+                                Intent(
+                                    Intent.ACTION_VIEW,
+                                    Uri.parse(url)
+                                )
+                            )
                         }
                     }
                 } catch (e: URISyntaxException) {
