@@ -247,7 +247,6 @@
 	<string name="No_media_yet">No media yet</string>
 	<string name="No_raws">No raws</string>
 	<string name="No_rebates">No rebates</string>
-	<string name="No_transactions">No transactions</string>
 	<string name="No_withdrawals">No withdrawals</string>
 	<string name="Nodes">Nodes</string>
 	<string name="Not_logged_in">Not logged in</string>
@@ -396,6 +395,8 @@
 	<string name="withdrawal_addr_pin_modify">Enter PIN to modify address</string>
 	<string name="withdrawal_with_biometric">Withdrawal with Biometric</string>
 	<string name="withdrawal_with_PIN">Withdrawal with PIN</string>
+	<string name="disappearing_message_url">https://mixinmessenger.zendesk.com/hc/articles/5127869180564</string>
+	<string name="No_transactions">No transactions</string>
 	<string name="disable_disappearing_message">%1$s disabled disappearing message</string>
 	<string name="Off">Off</string>
 	<string name="About">About</string>
@@ -592,16 +593,15 @@
 	<string name="deposit_reserve">Deposit at least %1$s for the first time.</string>
 	<string name="deposit_tip_btc">This address only supports BTC.</string>
 	<string name="deposit_tip_common">This address only supports %1$s.</string>
-	<string name="deposit_tip_eos">This address supports all base on EOS tokens, such as EOS, IQ, BLACK, OCT, KARMA, etc. </string>
-	<string name="deposit_tip_eth">This address supports all ERC 20 tokens, such as ETH, XIN, TUSD, HT, LOOM, LEO, etc. </string>
-	<string name="deposit_tip_trx">This address supports all TRC 10 and TRC 20 tokens, such as TRX, BTT, USDT-TRON, etc.</string>
+	<string name="deposit_tip_eos">This address supports all base on EOS tokens.</string>
+	<string name="deposit_tip_eth">This address supports all ERC-20 tokens, such as ETH, XIN, etc.</string>
+	<string name="deposit_tip_trx">This address supports all TRC-10 and TRC-20 tokens.</string>
 	<string name="desktop_on_hint">You have your desktop logged in</string>
 	<string name="desktop_upgrade">Please upgrade Mixin Messenger Desktop to the latest version.</string>
 	<string name="detect_qr_tip">Detected a Mixin QR code, tap to recognize</string>
 	<string name="Developer">Developer</string>
 	<string name="disappearing_message">Disappearing Messages</string>
 	<string name="disappearing_message_hint">When enabled, new messages sent and received in this chat will disappear after they have been seen, read the document to learn more.</string>
-	<string name="disappearing_message_url">https://mixinmessenger.zendesk.com/hc/articles/5127869180564</string>
 	<string name="Dismiss_as_Admin">Dismiss as Admin</string>
 	<string name="Done">Done</string>
 	<string name="Duplicate_Transfer_Confirmation">Duplicate Transfer Confirmation</string>
@@ -772,6 +772,7 @@
 	<string name="Open">Open</string>
 	<string name="Open_Home_page">Open Home page</string>
 	<string name="Open_in_browser">Open in browser</string>
+	<string name="Open_Link">Open Link: %1$s</string>
 	<string name="Owner">Owner</string>
 	<string name="Participants">Participants</string>
 	<string name="pay_paid">This payment link has already been paid by someone, you can not make a duplicate payment.</string>
