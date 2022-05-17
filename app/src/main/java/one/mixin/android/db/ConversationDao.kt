@@ -26,7 +26,7 @@ interface ConversationDao : BaseDao<Conversation> {
             ou.identity_number AS ownerIdentityNumber, ou.mute_until AS ownerMuteUntil, ou.app_id AS appId,
             m.content AS content, m.category AS contentType, m.created_at AS createdAt, m.media_url AS mediaUrl,
             m.user_id AS senderId, m.action AS actionName, m.status AS messageStatus,
-            mu.full_name AS senderFullName, s.type AS SnapshotType,
+            mu.full_name AS senderFullName,
             pu.full_name AS participantFullName, pu.user_id AS participantUserId,
             (SELECT count(1) FROM message_mentions me WHERE me.conversation_id = c.conversation_id AND me.has_read = 0) as mentionCount,  
             mm.mentions AS mentions, em.expire_at AS expireAt 
@@ -35,7 +35,6 @@ interface ConversationDao : BaseDao<Conversation> {
             LEFT JOIN messages m ON c.last_message_id = m.id
             LEFT JOIN message_mentions mm ON mm.message_id = m.id
             LEFT JOIN users mu ON mu.user_id = m.user_id
-            LEFT JOIN snapshots s ON s.snapshot_id = m.snapshot_id
             LEFT JOIN users pu ON pu.user_id = m.participant_id 
             LEFT JOIN expired_messages em ON c.last_message_id = em.message_id
             """

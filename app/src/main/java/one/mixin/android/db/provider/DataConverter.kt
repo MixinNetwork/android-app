@@ -34,14 +34,11 @@ fun convertToConversationItems(cursor: Cursor?): List<ConversationItem> {
     val cursorIndexOfAvatarUrl = CursorUtil.getColumnIndexOrThrow(cursor, "avatarUrl")
     val cursorIndexOfName = CursorUtil.getColumnIndexOrThrow(cursor, "name")
     val cursorIndexOfOwnerVerified = CursorUtil.getColumnIndexOrThrow(cursor, "ownerVerified")
-    val cursorIndexOfOwnerIdentityNumber =
-        CursorUtil.getColumnIndexOrThrow(cursor, "ownerIdentityNumber")
     val cursorIndexOfOwnerMuteUntil = CursorUtil.getColumnIndexOrThrow(cursor, "ownerMuteUntil")
     val cursorIndexOfAppId = CursorUtil.getColumnIndexOrThrow(cursor, "appId")
     val cursorIndexOfContent = CursorUtil.getColumnIndexOrThrow(cursor, "content")
     val cursorIndexOfContentType = CursorUtil.getColumnIndexOrThrow(cursor, "contentType")
     val cursorIndexOfCreatedAt = CursorUtil.getColumnIndexOrThrow(cursor, "createdAt")
-    val cursorIndexOfMediaUrl = CursorUtil.getColumnIndexOrThrow(cursor, "mediaUrl")
     val cursorIndexOfSenderId = CursorUtil.getColumnIndexOrThrow(cursor, "senderId")
     val cursorIndexOfActionName = CursorUtil.getColumnIndexOrThrow(cursor, "actionName")
     val cursorIndexOfMessageStatus = CursorUtil.getColumnIndexOrThrow(cursor, "messageStatus")
@@ -52,7 +49,6 @@ fun convertToConversationItems(cursor: Cursor?): List<ConversationItem> {
         CursorUtil.getColumnIndexOrThrow(cursor, "participantUserId")
     val cursorIndexOfMentionCount = CursorUtil.getColumnIndexOrThrow(cursor, "mentionCount")
     val cursorIndexOfMentions = CursorUtil.getColumnIndexOrThrow(cursor, "mentions")
-    val cursorIndexOfExpireAt = CursorUtil.getColumnIndexOrThrow(cursor, "expireAt")
     val res = ArrayList<ConversationItem>(cursor.count)
     while (cursor.moveToNext()) {
         val item: ConversationItem
@@ -79,13 +75,11 @@ fun convertToConversationItems(cursor: Cursor?): List<ConversationItem> {
             cursor.getInt(cursorIndexOfOwnerVerified)
         }
         tmpOwnerVerified = if (tmp == null) null else tmp != 0
-        val tmpOwnerIdentityNumber = cursor.getString(cursorIndexOfOwnerIdentityNumber)
         val tmpOwnerMuteUntil = cursor.getString(cursorIndexOfOwnerMuteUntil)
         val tmpAppId = cursor.getString(cursorIndexOfAppId)
         val tmpContent = cursor.getString(cursorIndexOfContent)
         val tmpContentType = cursor.getString(cursorIndexOfContentType)
         val tmpCreatedAt = cursor.getString(cursorIndexOfCreatedAt)
-        val tmpMediaUrl = cursor.getString(cursorIndexOfMediaUrl)
         val tmpSenderId = cursor.getString(cursorIndexOfSenderId)
         val tmpActionName = cursor.getString(cursorIndexOfActionName)
         val tmpMessageStatus = cursor.getString(cursorIndexOfMessageStatus)
@@ -98,12 +92,7 @@ fun convertToConversationItems(cursor: Cursor?): List<ConversationItem> {
             cursor.getInt(cursorIndexOfMentionCount)
         }
         val tmpMentions = cursor.getString(cursorIndexOfMentions)
-        val tempExpireAt: Long? = if (cursor.isNull(cursorIndexOfExpireAt)) {
-            null
-        } else {
-            cursor.getLong(cursorIndexOfExpireAt)
-        }
-        item = ConversationItem(tmpConversationId, tmpAvatarUrl, tmpGroupIconUrl, tmpCategory, tmpGroupName, tmpName, tmpOwnerId, tmpOwnerIdentityNumber, tmpStatus, tmpLastReadMessageId, tmpUnseenMessageCount, tmpContent, tmpContentType, tmpMediaUrl, tmpCreatedAt, tmpPinTime, tmpSenderId, tmpSenderFullName, tmpMessageStatus, tmpActionName, tmpParticipantFullName, tmpParticipantUserId, tmpOwnerMuteUntil, tmpOwnerVerified, tmpMuteUntil, null, tmpAppId, tmpMentions, tmpMentionCount, tempExpireAt)
+        item = ConversationItem(tmpConversationId, tmpAvatarUrl, tmpGroupIconUrl, tmpCategory, tmpGroupName, tmpName, tmpOwnerId, tmpStatus, tmpLastReadMessageId, tmpUnseenMessageCount, tmpContent, tmpContentType, tmpCreatedAt, tmpPinTime, tmpSenderId, tmpSenderFullName, tmpMessageStatus, tmpActionName, tmpParticipantFullName, tmpParticipantUserId, tmpOwnerMuteUntil, tmpOwnerVerified, tmpMuteUntil, tmpAppId, tmpMentions, tmpMentionCount)
         res.add(item)
     }
     return res

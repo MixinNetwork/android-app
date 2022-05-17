@@ -88,28 +88,26 @@ class DataProvider {
                     c.name AS groupName, c.status AS status, c.last_read_message_id AS lastReadMessageId,
                     c.unseen_message_count AS unseenMessageCount, c.owner_id AS ownerId, c.pin_time AS pinTime, c.mute_until AS muteUntil,
                     ou.avatar_url AS avatarUrl, ou.full_name AS name, ou.is_verified AS ownerVerified,
-                    ou.identity_number AS ownerIdentityNumber, ou.mute_until AS ownerMuteUntil, ou.app_id AS appId,
-                    m.content AS content, m.category AS contentType, m.created_at AS createdAt, m.media_url AS mediaUrl,
+                    ou.mute_until AS ownerMuteUntil, ou.app_id AS appId,
+                    m.content AS content, m.category AS contentType, m.created_at AS createdAt,
                     m.user_id AS senderId, m.action AS actionName, m.status AS messageStatus,
-                    mu.full_name AS senderFullName, s.type AS SnapshotType,
+                    mu.full_name AS senderFullName,
                     pu.full_name AS participantFullName, pu.user_id AS participantUserId,
                     (SELECT count(1) FROM message_mentions me WHERE me.conversation_id = c.conversation_id AND me.has_read = 0) as mentionCount,  
-                    mm.mentions AS mentions, em.expire_at AS expireAt 
+                    mm.mentions AS mentions 
                     FROM conversations c
                     INNER JOIN users ou ON ou.user_id = c.owner_id
                     LEFT JOIN messages m ON c.last_message_id = m.id
                     LEFT JOIN message_mentions mm ON mm.message_id = m.id
                     LEFT JOIN users mu ON mu.user_id = m.user_id
-                    LEFT JOIN snapshots s ON s.snapshot_id = m.snapshot_id
                     LEFT JOIN users pu ON pu.user_id = m.participant_id 
-                    LEFT JOIN expired_messages em ON c.last_message_id = em.message_id
-                    WHERE c.category IN ('CONTACT', 'GROUP')
+                    WHERE c.category IS NOT NULL
                     ORDER BY c.pin_time DESC, c.last_message_created_at DESC
                         """
                     val statement = RoomSQLiteQuery.acquire(sql, 0)
-                    val countSql = "SELECT COUNT(1) FROM conversations c INNER JOIN users ou ON ou.user_id = c.owner_id WHERE category IN ('CONTACT', 'GROUP')"
+                    val countSql = "SELECT COUNT(1) FROM conversations c INNER JOIN users ou ON ou.user_id = c.owner_id WHERE c.category IS NOT NULL"
                     val countStatement = RoomSQLiteQuery.acquire(countSql, 0)
-                    return object : MixinLimitOffsetDataSource<ConversationItem>(database, statement, countStatement, false, "message_mentions", "conversations", "users", "messages", "snapshots") {
+                    return object : MixinLimitOffsetDataSource<ConversationItem>(database, statement, countStatement, false, "message_mentions", "conversations", "users", "messages") {
                         override fun convertRows(cursor: Cursor): List<ConversationItem> {
                             return convertToConversationItems(cursor)
                         }
@@ -126,13 +124,13 @@ class DataProvider {
                         c.name AS groupName, c.status AS status, c.last_read_message_id AS lastReadMessageId,
                         c.unseen_message_count AS unseenMessageCount, c.owner_id AS ownerId, cc.pin_time AS pinTime, c.mute_until AS muteUntil,
                         ou.avatar_url AS avatarUrl, ou.full_name AS name, ou.is_verified AS ownerVerified,
-                        ou.identity_number AS ownerIdentityNumber, ou.mute_until AS ownerMuteUntil, ou.app_id AS appId,
-                        m.content AS content, m.category AS contentType, m.created_at AS createdAt, m.media_url AS mediaUrl,
+                        ou.mute_until AS ownerMuteUntil, ou.app_id AS appId,
+                        m.content AS content, m.category AS contentType, m.created_at AS createdAt,
                         m.user_id AS senderId, m.`action` AS actionName, m.status AS messageStatus,
-                        mu.full_name AS senderFullName, s.type AS SnapshotType,
+                        mu.full_name AS senderFullName,
                         pu.full_name AS participantFullName, pu.user_id AS participantUserId,
                         (SELECT count(1) FROM message_mentions me WHERE me.conversation_id = c.conversation_id AND me.has_read = 0) AS mentionCount,  
-                        mm.mentions AS mentions, mm.mentions AS mentions, em.expire_in AS expireIn 
+                        mm.mentions AS mentions  
                         FROM circle_conversations cc
                         INNER JOIN conversations c ON cc.conversation_id = c.conversation_id
                         INNER JOIN circles ci ON ci.circle_id = cc.circle_id
@@ -140,9 +138,7 @@ class DataProvider {
                         LEFT JOIN messages m ON c.last_message_id = m.id
                         LEFT JOIN message_mentions mm ON mm.message_id = m.id
                         LEFT JOIN users mu ON mu.user_id = m.user_id
-                        LEFT JOIN snapshots s ON s.snapshot_id = m.snapshot_id
                         LEFT JOIN users pu ON pu.user_id = m.participant_id 
-                        LEFT JOIN expired_messages em ON m.id = em.message_id
                         WHERE c.category IS NOT NULL AND cc.circle_id = :circleId
                         ORDER BY cc.pin_time DESC, 
                         CASE 
@@ -162,7 +158,7 @@ class DataProvider {
                     WHERE c.category IS NOT NULL AND cc.circle_id = '$circleId'
                         """
                     val countStatement = RoomSQLiteQuery.acquire(countSql, 0)
-                    return object : MixinLimitOffsetDataSource<ConversationItem>(database, statement, countStatement, false, "message_mentions", "circle_conversations", "conversations", "circles", "users", "messages", "snapshots") {
+                    return object : MixinLimitOffsetDataSource<ConversationItem>(database, statement, countStatement, false, "message_mentions", "circle_conversations", "conversations", "circles", "users", "messages") {
                         override fun convertRows(cursor: Cursor): List<ConversationItem> {
                             return convertToConversationItems(cursor)
                         }
