@@ -8,13 +8,20 @@ import androidx.core.view.GestureDetectorCompat
 
 class GestureMessageLayout(context: Context, attrs: AttributeSet?) : MessageLayout(context, attrs) {
     var listener: GestureDetector.SimpleOnGestureListener? = null
+        set(value) {
+            if (field != null) {
+                field = value
 
-    private val gestureDetector by lazy {
-        GestureDetectorCompat(context, requireNotNull(listener))
-    }
+                if (value != null) {
+                    GestureDetectorCompat(context, value)
+                }
+            }
+        }
+
+    private var gestureDetector: GestureDetectorCompat? = null
 
     override fun dispatchTouchEvent(ev: MotionEvent): Boolean {
-        gestureDetector.onTouchEvent(ev)
+        gestureDetector?.onTouchEvent(ev)
         return super.dispatchTouchEvent(ev)
     }
 }
