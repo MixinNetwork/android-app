@@ -7,6 +7,7 @@ import android.view.Gravity
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
 import android.widget.FrameLayout
+import androidx.core.view.doOnPreDraw
 import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
@@ -96,7 +97,9 @@ class ShareMessageBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             dismiss()
         }
         try {
-            loadData()
+            contentView.doOnPreDraw {
+                loadData()
+            }
         } catch (e: Exception) {
             Timber.e("Load \"${shareMessage.content}\" ERROR!!!")
             toast(getString(R.string.error_unknown_with_message, "${e.javaClass.name} ${shareMessage.content}"))
@@ -193,11 +196,14 @@ class ShareMessageBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             ShareCategory.Live -> {
                 loadLive(content)
             }
+            else -> {
+                throw IllegalArgumentException()
+            }
         }
     }
 
     private fun loadText(content: String) {
-        val renderer = ShareTextRenderer(requireContext())
+        val renderer = ShareTextRenderer(requireContext(), binding.contentLayout.width)
         binding.contentLayout.addView(renderer.contentView, generateLayoutParams())
         renderer.render(content, requireContext().isNightMode())
     }
