@@ -276,7 +276,7 @@ class MessageProvider {
                             val cursorIndexOfParticipantUserId = CursorUtil.getColumnIndexOrThrow(cursor, "participantUserId")
                             val cursorIndexOfMentionCount = CursorUtil.getColumnIndexOrThrow(cursor, "mentionCount")
                             val cursorIndexOfMentions = CursorUtil.getColumnIndexOrThrow(cursor, "mentions")
-                            val cursorIndexOfExpireAt = CursorUtil.getColumnIndexOrThrow(cursor, "expireAt")
+                            val cursorIndexOfExpireIn = CursorUtil.getColumnIndexOrThrow(cursor, "expireIn")
                             val res = ArrayList<ConversationItem>(cursor.count)
                             while (cursor.moveToNext()) {
                                 val item: ConversationItem
@@ -322,12 +322,12 @@ class MessageProvider {
                                     cursor.getInt(cursorIndexOfMentionCount)
                                 }
                                 val tmpMentions = cursor.getString(cursorIndexOfMentions)
-                                val tempExpireAt: Long? = if (cursor.isNull(cursorIndexOfExpireAt)) {
+                                val tempExpireIn: Long? = if (cursor.isNull(cursorIndexOfExpireIn)) {
                                     null
                                 } else {
-                                    cursor.getLong(cursorIndexOfExpireAt)
+                                    cursor.getLong(cursorIndexOfExpireIn)
                                 }
-                                item = ConversationItem(tmpConversationId, tmpAvatarUrl, tmpGroupIconUrl, tmpCategory, tmpGroupName, tmpName, tmpOwnerId, tmpOwnerIdentityNumber, tmpStatus, tmpLastReadMessageId, tmpUnseenMessageCount, tmpContent, tmpContentType, tmpMediaUrl, tmpCreatedAt, tmpPinTime, tmpSenderId, tmpSenderFullName, tmpMessageStatus, tmpActionName, tmpParticipantFullName, tmpParticipantUserId, tmpOwnerMuteUntil, tmpOwnerVerified, tmpMuteUntil, null, tmpAppId, tmpMentions, tmpMentionCount, tempExpireAt)
+                                item = ConversationItem(tmpConversationId, tmpAvatarUrl, tmpGroupIconUrl, tmpCategory, tmpGroupName, tmpName, tmpOwnerId, tmpOwnerIdentityNumber, tmpStatus, tmpLastReadMessageId, tmpUnseenMessageCount, tmpContent, tmpContentType, tmpMediaUrl, tmpCreatedAt, tmpPinTime, tmpSenderId, tmpSenderFullName, tmpMessageStatus, tmpActionName, tmpParticipantFullName, tmpParticipantUserId, tmpOwnerMuteUntil, tmpOwnerVerified, tmpMuteUntil, null, tmpAppId, tmpMentions, tmpMentionCount, tempExpireIn)
                                 res.add(item)
                             }
                             return res
