@@ -111,8 +111,8 @@ internal constructor(
 
     suspend fun getChatMessages(conversationId: String, offset: Int, limit: Int): List<MessageItem> = messageDao.getChatMessages(conversationId, offset, limit)
 
-    fun conversations(circleId: String?): DataSource.Factory<Int, ConversationItem> = if (circleId == null) {
-        DataProvider.getConversations(appDatabase)
+    fun observeConversations(circleId: String?): DataSource.Factory<Int, ConversationItem> = if (circleId == null) {
+        DataProvider.observeConversations(appDatabase)
     } else {
         DataProvider.observeConversationsByCircleId(circleId, appDatabase)
     }
@@ -151,9 +151,6 @@ internal constructor(
 
     fun getConversation(conversationId: String) =
         conversationDao.findConversationById(conversationId)
-
-    suspend fun saveDraft(conversationId: String, draft: String) =
-        conversationDao.saveDraft(conversationId, draft)
 
     suspend fun fuzzySearchMessage(query: String, limit: Int, cancellationSignal: CancellationSignal): List<SearchMessageItem> =
         DataProvider.fuzzySearchMessage(query.joinStar().replaceQuotationMark(), limit, appDatabase, cancellationSignal)

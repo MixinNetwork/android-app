@@ -50,7 +50,7 @@ internal constructor(
 
     fun observeConversations(circleId: String?): LiveData<PagedList<ConversationItem>> {
         return LivePagedListBuilder(
-            messageRepository.conversations(circleId),
+            messageRepository.observeConversations(circleId),
             PagedList.Config.Builder()
                 .setPrefetchDistance(CONVERSATION_PAGE_SIZE * 2)
                 .setPageSize(CONVERSATION_PAGE_SIZE)

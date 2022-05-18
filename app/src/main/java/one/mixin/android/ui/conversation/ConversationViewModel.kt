@@ -157,10 +157,6 @@ internal constructor(
         conversationRepository.getConversation(id)
     }
 
-    fun saveDraft(conversationId: String, text: String) = MixinApplication.appScope.launch {
-        conversationRepository.saveDraft(conversationId, text)
-    }
-
     fun findUserById(conversationId: String): LiveData<User> =
         userRepository.findUserById(conversationId)
 
