@@ -1282,7 +1282,8 @@ class WebFragment : BaseFragment() {
                 try {
                     val context = view.context
                     // https://developer.android.com/training/package-visibility/use-cases#let-non-browser-apps-handle-urls
-                    val intent = Intent(ACTION_VIEW, Uri.parse(url)).apply {
+                    val intent = Intent.parseUri(url, Intent.URI_INTENT_SCHEME).apply {
+                        action = ACTION_VIEW
                         addCategory(CATEGORY_BROWSABLE)
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
                             flags = FLAG_ACTIVITY_REQUIRE_NON_BROWSER
