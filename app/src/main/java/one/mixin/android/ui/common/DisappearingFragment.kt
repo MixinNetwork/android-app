@@ -141,10 +141,15 @@ class DisappearingFragment : BaseFragment(R.layout.fragment_disappearing) {
     }
 
     private var timeInterval: Long? = null
+    private var updating = false
 
     private fun updateUI(index: Int, interval: Long) {
+        if (timeInterval == interval || updating) {
+            return
+        }
         lifecycleScope.launch(ErrorHandler.errorHandler) {
             pbGroup[index].isVisible = true
+            updating = true
             val conversation = viewModel.getConversation(conversationId)
             if (conversation == null) {
                 if (userId != null) {
@@ -164,17 +169,21 @@ class DisappearingFragment : BaseFragment(R.layout.fragment_disappearing) {
                         updateOptionCheck(index)
                         viewModel.updateConversationExpireIn(conversationId, timeInterval)
                     }
+                    updating = false
                 },
                 doAfterNetworkSuccess = {
                     pbGroup[index].isVisible = false
+                    updating = false
                 },
                 defaultErrorHandle = {
                     ErrorHandler.handleMixinError(it.errorCode, it.errorDescription)
                     pbGroup[index].isVisible = false
+                    updating = false
                 },
                 defaultExceptionHandle = {
                     ErrorHandler.handleError(it)
                     pbGroup[index].isVisible = false
+                    updating = false
                 }
             )
         }
