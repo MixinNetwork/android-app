@@ -164,10 +164,18 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
         if (disposable == null) {
             disposable = RxBus.listen(ExpiredEvent::class.java).observeOn(Schedulers.io())
                 .subscribe { event ->
-                    val currentTime = currentTimeSeconds()
-                    if (database.expiredMessageDao().markRead(event.messageId, currentTime) > 0) {
+                    val expiredIn = event.expireIn
+                    if (expiredIn != null) {
+                        val currentTime = currentTimeSeconds()
+                        if (database.expiredMessageDao().markRead(event.messageId, currentTime) > 0) {
+                            lifecycleScope.launch(Dispatchers.IO) {
+                                startExpiredJob(currentTime + expiredIn)
+                            }
+                        }
+                    } else {
+                        val expiredAt = requireNotNull(event.expireAt)
                         lifecycleScope.launch(Dispatchers.IO) {
-                            startExpiredJob(event.expireIn?.run { this + currentTime } ?: requireNotNull(event.expireAt))
+                            startExpiredJob(expiredAt)
                         }
                     }
                 }

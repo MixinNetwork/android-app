@@ -235,11 +235,6 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
         for (item in appButton) {
             ColorUtil.parseColor(item.color.trim())
         }
-        data.expireIn?.let { expireIn ->
-            if (expireIn > 0) {
-                expiredMessageDao.insert(ExpiredMessage(data.messageId, expireIn, null))
-            }
-        }
         insertMessage(message, data)
         updateRemoteMessageStatus(data.messageId, MessageStatus.DELIVERED)
         generateNotification(message, data)
@@ -280,11 +275,6 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                         jobManager.addJobInBackground(RefreshUserJob(listOf(id)))
                     }
                 }
-            }
-        }
-        data.expireIn?.let { expireIn ->
-            if (expireIn > 0) {
-                expiredMessageDao.insert(ExpiredMessage(data.messageId, expireIn, null))
             }
         }
         insertMessage(message, data)
@@ -461,10 +451,17 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                         val updateMessageIds = updateExpiredMessageList.map { it.first }
                         remoteMessageStatusDao.deleteByMessageIds(updateMessageIds)
                         updateExpiredMessageList.forEach { expiredMessage ->
+                            val messageId = expiredMessage.first
                             val expireAt = expiredMessage.second
-                            if (expireAt != null && expireAt != 0L) {
-                                expiredMessageDao.updateExpiredMessage(expiredMessage.first, expireAt)
-                                RxBus.publish(ExpiredEvent(expiredMessage.first, null, expireAt))
+                            if (expireAt != null && expireAt > 0) {
+                                expiredMessageDao.updateExpiredMessage(messageId, expireAt)
+                                RxBus.publish(ExpiredEvent(messageId, null, expireAt))
+                            } else {
+                                val localExpiredMessage = expiredMessageDao.getExpiredMessageById(messageId)
+                                if (localExpiredMessage != null) { // The old version mark read
+                                    expiredMessageDao.markRead(messageId, currentTimeSeconds())
+                                    RxBus.publish(ExpiredEvent(messageId, null,currentTimeSeconds() + localExpiredMessage.expireIn))
+                                }
                             }
                         }
                         val updateConversationList = messageDao.findConversationsByMessages(updateMessageIds)
@@ -589,11 +586,6 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                 val (mentions, mentionMe) = parseMentionData(plain, data.messageId, data.conversationId, userDao, messageMentionDao, data.userId)
                 insertMessage(message, data)
                 MessageFts4Helper.insertOrReplaceMessageFts4(message)
-                data.expireIn?.let { expireIn ->
-                    if (expireIn > 0) {
-                        expiredMessageDao.insert(ExpiredMessage(data.messageId, expireIn, null))
-                    }
-                }
                 val userMap = mentions?.associate { it.identityNumber to it.fullName }
                 generateNotification(message, data, userMap, quoteMe || mentionMe)
             }
@@ -609,11 +601,6 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                     data.createdAt,
                     data.status
                 )
-                data.expireIn?.let { expireIn ->
-                    if (expireIn > 0) {
-                        expiredMessageDao.insert(ExpiredMessage(data.messageId, expireIn, null))
-                    }
-                }
                 insertMessage(message, data)
                 MessageFts4Helper.insertOrReplaceMessageFts4(message)
                 generateNotification(message, data)
@@ -622,11 +609,6 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                 val plain = tryDecodePlain(data.category == MessageCategory.PLAIN_LOCATION.name, plainText)
                 if (checkLocationData(plain)) {
                     val message = createLocationMessage(data.messageId, data.conversationId, data.userId, data.category, plain, data.status, data.createdAt)
-                    data.expireIn?.let { expireIn ->
-                        if (expireIn > 0) {
-                            expiredMessageDao.insert(ExpiredMessage(data.messageId, expireIn, null))
-                        }
-                    }
                     insertMessage(message, data)
                     generateNotification(message, data)
                 }
@@ -647,11 +629,6 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                         mediaData.width, mediaData.height, mediaData.thumbnail, mediaData.key, mediaData.digest, data.createdAt, MediaStatus.CANCELED,
                         data.status, quoteMessageItem?.messageId, quoteMessageItem.toJson()
                     )
-                }
-                data.expireIn?.let { expireIn ->
-                    if (expireIn > 0) {
-                        expiredMessageDao.insert(ExpiredMessage(data.messageId, expireIn, null))
-                    }
                 }
                 insertMessage(message, data)
                 lifecycleScope.launch {
@@ -681,11 +658,6 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                         quoteMessageItem?.messageId, quoteMessageItem.toJson()
                     )
                 }
-                data.expireIn?.let { expireIn ->
-                    if (expireIn > 0) {
-                        expiredMessageDao.insert(ExpiredMessage(data.messageId, expireIn, null))
-                    }
-                }
                 insertMessage(message, data)
                 lifecycleScope.launch {
                     MixinApplication.appContext.autoDownload(autoDownloadVideo) {
@@ -708,11 +680,6 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                         quoteMessageItem?.messageId, quoteMessageItem.toJson()
                     )
                 }
-                data.expireIn?.let { expireIn ->
-                    if (expireIn > 0) {
-                        expiredMessageDao.insert(ExpiredMessage(data.messageId, expireIn, null))
-                    }
-                }
                 insertMessage(message, data)
                 MessageFts4Helper.insertOrReplaceMessageFts4(message)
                 lifecycleScope.launch {
@@ -734,11 +701,6 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                         mediaData.key, mediaData.digest, MediaStatus.PENDING, data.status,
                         quoteMessageItem?.messageId, quoteMessageItem.toJson()
                     )
-                }
-                data.expireIn?.let { expireIn ->
-                    if (expireIn > 0) {
-                        expiredMessageDao.insert(ExpiredMessage(data.messageId, expireIn, null))
-                    }
                 }
                 insertMessage(message, data)
                 jobManager.addJobInBackground(AttachmentDownloadJob(message))
@@ -771,11 +733,6 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                         mediaData.albumId, mediaData.stickerId, mediaData.name, data.status, data.createdAt
                     )
                 }
-                data.expireIn?.let { expireIn ->
-                    if (expireIn > 0) {
-                        expiredMessageDao.insert(ExpiredMessage(data.messageId, expireIn, null))
-                    }
-                }
                 insertMessage(message, data)
                 generateNotification(message, data)
             }
@@ -793,11 +750,6 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                         plainText, contactData.userId, data.status, data.createdAt, user?.fullName,
                         quoteMessageItem?.messageId, quoteMessageItem.toJson()
                     )
-                }
-                data.expireIn?.let { expireIn ->
-                    if (expireIn > 0) {
-                        expiredMessageDao.insert(ExpiredMessage(data.messageId, expireIn, null))
-                    }
                 }
                 insertMessage(message, data)
                 val fullName = user?.fullName
@@ -821,11 +773,6 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                     data.messageId, data.conversationId, data.userId, data.category, plain,
                     liveData.width, liveData.height, liveData.url, liveData.thumbUrl, data.status, data.createdAt
                 )
-                data.expireIn?.let { expireIn ->
-                    if (expireIn > 0) {
-                        expiredMessageDao.insert(ExpiredMessage(data.messageId, expireIn, null))
-                    }
-                }
                 insertMessage(message, data)
                 generateNotification(message, data)
             }
@@ -834,11 +781,6 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                     Base64.decode(plainText)
                 ) else plainText
                 val message = processTranscriptMessage(data, plain) ?: return
-                data.expireIn?.let { expireIn ->
-                    if (expireIn > 0) {
-                        expiredMessageDao.insert(ExpiredMessage(data.messageId, expireIn, null))
-                    }
-                }
                 insertMessage(message, data)
                 generateNotification(message, data)
             }
@@ -1423,6 +1365,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                     return
                 } else {
                     expiredMessageDao.insert(ExpiredMessage(data.messageId, expireIn, expiredAt))
+                    RxBus.publish(ExpiredEvent(data.messageId, null, expiredAt))
                 }
             } else {
                 expiredMessageDao.insert(ExpiredMessage(data.messageId, expireIn, null))
