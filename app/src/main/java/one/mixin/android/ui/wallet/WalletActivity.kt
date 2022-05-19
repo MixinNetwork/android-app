@@ -44,9 +44,10 @@ class WalletActivity : BlazeBaseActivity() {
                 },
                 {
                     setStartDestination(R.id.wallet_fragment)
-                })
+                }
+            )
         }
-        if(navController != null && navGraph!=null){
+        if (navController != null && navGraph != null) {
             navController.graph = navGraph
         }
     }

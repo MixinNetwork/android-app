@@ -325,4 +325,10 @@ open class MixinApplication :
                 get() = EmptyCoroutineContext
         }
     }
+
+    fun saveDraft(conversationId: String, draft: String) =
+        appScope.launch {
+            MixinDatabase.getDatabase(this@MixinApplication).conversationDao()
+                .saveDraft(conversationId, draft)
+        }
 }

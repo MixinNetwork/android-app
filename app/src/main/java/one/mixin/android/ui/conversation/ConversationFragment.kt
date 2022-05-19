@@ -1234,7 +1234,7 @@ class ConversationFragment() :
         AudioPlayer.pause()
         val draftText = binding.chatControl.chatEt.text?.toString() ?: ""
         if (draftText != conversationDraft) {
-            chatViewModel.saveDraft(conversationId, draftText)
+            MixinApplication.get().saveDraft(conversationId, draftText)
         }
         if (OpusAudioRecorder.state != STATE_NOT_INIT) {
             OpusAudioRecorder.get(conversationId).stop()
