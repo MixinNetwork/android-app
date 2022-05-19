@@ -12,6 +12,7 @@ open class BaseFragment : Fragment {
     constructor(@LayoutRes contentLayoutId: Int) : super(contentLayoutId)
 
     protected val stopScope = scope(Lifecycle.Event.ON_STOP)
+    protected val pauseScope = scope(Lifecycle.Event.ON_PAUSE)
     protected val destroyScope = scope(Lifecycle.Event.ON_DESTROY)
 
     open fun onBackPressed() = false

@@ -1138,7 +1138,7 @@ class ConversationFragment() :
         if (isGroup) {
             RxBus.listen(GroupEvent::class.java)
                 .observeOn(AndroidSchedulers.mainThread())
-                .autoDispose(stopScope)
+                .autoDispose(pauseScope)
                 .subscribe {
                     if (it.conversationId == conversationId) {
                         lifecycleScope.launch {
@@ -1164,7 +1164,7 @@ class ConversationFragment() :
         }
         RxBus.listen(RecallEvent::class.java)
             .observeOn(AndroidSchedulers.mainThread())
-            .autoDispose(stopScope)
+            .autoDispose(pauseScope)
             .subscribe { event ->
                 if (conversationAdapter.selectSet.any { it.messageId == event.messageId }) {
                     closeTool()
