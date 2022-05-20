@@ -61,7 +61,7 @@ class UpdateRelationshipJob(
                 successBlock = { r ->
                     r.data?.let { u ->
                         updateUser(u)
-                        val selfId = Session.getAccountId()?:return@let
+                        val selfId = Session.getAccountId() ?: return@let
                         val currentConversationId = MixinApplication.conversationId ?: return@let
                         val conversationId = generateConversationId(selfId, u.userId)
                         if (conversationId == currentConversationId) {

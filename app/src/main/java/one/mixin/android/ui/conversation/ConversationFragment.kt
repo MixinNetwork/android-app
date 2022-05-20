@@ -1538,7 +1538,7 @@ class ConversationFragment() :
 
         binding.toolView.pinIv.setOnClickListener {
             val pinMessages = conversationAdapter.selectSet.map {
-                PinMessageData(it.messageId,it.conversationId, requireNotNull(it.type),it.content, nowInUtc())
+                PinMessageData(it.messageId, it.conversationId, requireNotNull(it.type), it.content, nowInUtc())
             }
             val action = (binding.toolView.pinIv.tag as PinAction?) ?: PinAction.PIN
             if (pinMessages.isEmpty()) {

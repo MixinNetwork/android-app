@@ -1,6 +1,5 @@
 package one.mixin.android.vo
 
-
 data class PinMessageData(
     val messageId: String,
     val conversationId: String,
