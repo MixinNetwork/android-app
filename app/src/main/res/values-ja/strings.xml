@@ -444,7 +444,7 @@
     <string name="chat_decryption_failed">メッセージの解読に失敗しました。Mixinを最新バージョンにアップデートしてください。</string>
     <string name="chat_group_add">%1$sが%2$sを追加しました</string>
     <string name="chat_group_call_cancel">%1$sグループ通話をキャンセルしました</string>
-    <string name="chat_group_call_decline">グループ通話が終了しました</string>
+    <string name="chat_group_call_decline">%1$sグループ通話が終了しました</string>
     <string name="chat_group_call_invite">%1$sからグループ通話の招待がきています</string>
     <string name="chat_group_exit">%1$sが退出しました</string>
     <string name="chat_group_join">%1$sが招待リンクから参加しました</string>
