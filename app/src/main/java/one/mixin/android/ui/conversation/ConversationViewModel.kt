@@ -72,6 +72,7 @@ import one.mixin.android.vo.MessageMinimal
 import one.mixin.android.vo.MessageStatus
 import one.mixin.android.vo.Participant
 import one.mixin.android.vo.PinMessage
+import one.mixin.android.vo.PinMessageData
 import one.mixin.android.vo.PinMessageMinimal
 import one.mixin.android.vo.QuoteMessageItem
 import one.mixin.android.vo.Sticker
@@ -269,7 +270,7 @@ internal constructor(
         conversationId: String,
         sender: User,
         action: PinAction,
-        list: Collection<MessageItem>
+        list: Collection<PinMessageData>
     ) {
         if (list.isEmpty()) return
         withContext(Dispatchers.IO) {
@@ -288,7 +289,7 @@ internal constructor(
             messenger.sendPinMessage(
                 conversationId, sender, action,
                 list.map {
-                    PinMessageMinimal(it.messageId, requireNotNull(it.type), it.content)
+                    PinMessageMinimal(it.messageId, it.type, it.content)
                 }
             )
         }
