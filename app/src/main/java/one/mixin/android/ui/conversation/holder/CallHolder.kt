@@ -4,14 +4,19 @@ import android.graphics.Color
 import androidx.constraintlayout.widget.ConstraintLayout
 import one.mixin.android.Constants.Colors.SELECT_COLOR
 import one.mixin.android.R
+import one.mixin.android.RxBus
 import one.mixin.android.databinding.ItemChatCallBinding
+import one.mixin.android.event.ExpiredEvent
 import one.mixin.android.extension.formatMillis
 import one.mixin.android.ui.conversation.adapter.ConversationAdapter
 import one.mixin.android.ui.conversation.holder.base.BaseViewHolder
+import one.mixin.android.ui.conversation.holder.base.Terminable
 import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.MessageItem
 
-class CallHolder constructor(val binding: ItemChatCallBinding) : BaseViewHolder(binding.root) {
+class CallHolder constructor(val binding: ItemChatCallBinding) :
+    BaseViewHolder(binding.root),
+    Terminable {
 
     fun bind(
         messageItem: MessageItem,
@@ -129,6 +134,12 @@ class CallHolder constructor(val binding: ItemChatCallBinding) : BaseViewHolder(
                     R.drawable.chat_bubble_other_night
                 )
             }
+        }
+    }
+
+    override fun onRead(messageItem: MessageItem) {
+        if (messageItem.expireIn != null) {
+            RxBus.publish(ExpiredEvent(messageItem.messageId, messageItem.expireIn))
         }
     }
 }

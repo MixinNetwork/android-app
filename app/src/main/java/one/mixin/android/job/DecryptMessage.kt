@@ -460,7 +460,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                                 val localExpiredMessage = expiredMessageDao.getExpiredMessageById(messageId)
                                 if (localExpiredMessage != null) { // The old version mark read
                                     expiredMessageDao.markRead(messageId, currentTimeSeconds())
-                                    RxBus.publish(ExpiredEvent(messageId, null,currentTimeSeconds() + localExpiredMessage.expireIn))
+                                    RxBus.publish(ExpiredEvent(messageId, null, currentTimeSeconds() + localExpiredMessage.expireIn))
                                 }
                             }
                         }
