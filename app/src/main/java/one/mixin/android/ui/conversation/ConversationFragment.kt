@@ -1012,7 +1012,7 @@ class ConversationFragment() :
     }
 
     private val powerManager: PowerManager by lazy {
-        requireContext().getSystemService()!!
+        MixinApplication.appContext.getSystemService()!!
     }
 
     private val wakeLock by lazy {
@@ -1138,7 +1138,7 @@ class ConversationFragment() :
         if (isGroup) {
             RxBus.listen(GroupEvent::class.java)
                 .observeOn(AndroidSchedulers.mainThread())
-                .autoDispose(stopScope)
+                .autoDispose(pauseScope)
                 .subscribe {
                     if (it.conversationId == conversationId) {
                         lifecycleScope.launch {
@@ -1164,7 +1164,7 @@ class ConversationFragment() :
         }
         RxBus.listen(RecallEvent::class.java)
             .observeOn(AndroidSchedulers.mainThread())
-            .autoDispose(stopScope)
+            .autoDispose(pauseScope)
             .subscribe { event ->
                 if (conversationAdapter.selectSet.any { it.messageId == event.messageId }) {
                     closeTool()
@@ -1234,7 +1234,7 @@ class ConversationFragment() :
         AudioPlayer.pause()
         val draftText = binding.chatControl.chatEt.text?.toString() ?: ""
         if (draftText != conversationDraft) {
-            chatViewModel.saveDraft(conversationId, draftText)
+            MixinApplication.get().saveDraft(conversationId, draftText)
         }
         if (OpusAudioRecorder.state != STATE_NOT_INIT) {
             OpusAudioRecorder.get(conversationId).stop()

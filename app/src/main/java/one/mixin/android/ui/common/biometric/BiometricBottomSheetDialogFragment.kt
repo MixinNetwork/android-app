@@ -50,6 +50,7 @@ abstract class BiometricBottomSheetDialogFragment : MixinBottomSheetDialogFragme
             contentView.removeCallbacks(dismissRunnable)
             callback?.onSuccess()
         }
+        biometricDialog?.callback = null
     }
 
     override fun onDismiss(dialog: DialogInterface) {

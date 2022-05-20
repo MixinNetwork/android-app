@@ -34,6 +34,8 @@ abstract class MixinScrollableBottomSheetDialogFragment : BottomSheetDialogFragm
 
     protected val stopScope = scope(Lifecycle.Event.ON_STOP)
 
+    protected val pauseScope = scope(Lifecycle.Event.ON_PAUSE)
+
     protected val bottomViewModel by viewModels<BottomSheetViewModel>()
 
     override fun getTheme() = R.style.MixinBottomSheet
