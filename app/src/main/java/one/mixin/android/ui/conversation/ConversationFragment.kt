@@ -118,6 +118,7 @@ import one.mixin.android.extension.isImageSupport
 import one.mixin.android.extension.lateOneHours
 import one.mixin.android.extension.mainThreadDelayed
 import one.mixin.android.extension.networkConnected
+import one.mixin.android.extension.nowInUtc
 import one.mixin.android.extension.openAsUrlOrWeb
 import one.mixin.android.extension.openCamera
 import one.mixin.android.extension.openEmail
@@ -212,6 +213,7 @@ import one.mixin.android.vo.LinkState
 import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.MessageStatus
 import one.mixin.android.vo.ParticipantRole
+import one.mixin.android.vo.PinMessageData
 import one.mixin.android.vo.Sticker
 import one.mixin.android.vo.TranscriptData
 import one.mixin.android.vo.TranscriptMessage
@@ -1535,16 +1537,19 @@ class ConversationFragment() :
         }
 
         binding.toolView.pinIv.setOnClickListener {
-            if (conversationAdapter.selectSet.isEmpty()) {
+            val pinMessages = conversationAdapter.selectSet.map {
+                PinMessageData(it.messageId, it.conversationId, requireNotNull(it.type), it.content, nowInUtc())
+            }
+            val action = (binding.toolView.pinIv.tag as PinAction?) ?: PinAction.PIN
+            if (pinMessages.isEmpty()) {
                 return@setOnClickListener
             }
             lifecycleScope.launch {
-                val action = (binding.toolView.pinIv.tag as PinAction?) ?: PinAction.PIN
                 chatViewModel.sendPinMessage(
                     conversationId,
                     sender,
                     (binding.toolView.pinIv.tag as PinAction?) ?: PinAction.PIN,
-                    conversationAdapter.selectSet
+                    pinMessages
                 )
                 toast(
                     if (action == PinAction.PIN) {
