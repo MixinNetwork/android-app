@@ -48,8 +48,8 @@ import one.mixin.android.vo.Fiats
 import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.PercentItemView
 import one.mixin.android.widget.PercentView
+import one.mixin.android.widget.calcPercent
 import java.math.BigDecimal
-import java.math.RoundingMode
 import javax.inject.Inject
 import kotlin.math.abs
 
@@ -234,8 +234,10 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
     }
 
     private fun setPieView(r: List<AssetItem>, totalUSD: BigDecimal) {
-        val list = r.asSequence().filter { BigDecimal(it.balance).compareTo(BigDecimal.ZERO) != 0 }.map {
-            val p = (it.fiat() / totalUSD).setScale(2, RoundingMode.DOWN).toFloat()
+        val list = r.asSequence().filter {
+            BigDecimal(it.balance).compareTo(BigDecimal.ZERO) != 0
+        }.map {
+            val p = it.fiat().calcPercent(totalUSD)
             PercentView.PercentItem(it.symbol, p)
         }.toMutableList()
         if (list.isNotEmpty()) {

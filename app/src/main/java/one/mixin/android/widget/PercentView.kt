@@ -18,6 +18,8 @@ import android.view.View
 import one.mixin.android.R
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.forEachWithIndex
+import java.math.BigDecimal
+import java.math.RoundingMode
 
 class PercentView : View {
 
@@ -190,3 +192,6 @@ class PercentView : View {
 
     data class PercentItem(val name: String, val percent: Float)
 }
+
+fun BigDecimal.calcPercent(totalUSD: BigDecimal): Float =
+    (this.divide(totalUSD, 16, RoundingMode.HALF_UP)).setScale(2, RoundingMode.DOWN).toFloat()
