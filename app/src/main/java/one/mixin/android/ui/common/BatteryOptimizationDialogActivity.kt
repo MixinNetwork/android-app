@@ -39,10 +39,10 @@ class BatteryOptimizationDialogActivity : BaseActivity() {
                     getString(
                         if (RomUtil.isOneUi) {
                             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                        R.string.setting_battery_optimize_title_one_ui_above_s
-                        } else {
-                        R.string.setting_battery_optimize_title_one_ui_below_s
-                        }
+                                R.string.setting_battery_optimize_title_one_ui_above_s
+                            } else {
+                                R.string.setting_battery_optimize_title_one_ui_below_s
+                            }
                         } else {
                             R.string.setting_battery_optimize_title
                         }
@@ -68,25 +68,25 @@ class BatteryOptimizationDialogActivity : BaseActivity() {
             var end: Int
             val stringBuilder = StringBuilder(str)
             val bolds: ArrayList<Int> = ArrayList()
-                while (stringBuilder.indexOf("<b>").also { start = it } != -1) {
-                    stringBuilder.replace(start, start + 3, "")
-                    end = stringBuilder.indexOf("</b>")
-                    if (end == -1) {
-                        end = stringBuilder.indexOf("<b>")
-                    }
-                    stringBuilder.replace(end, end + 4, "")
+            while (stringBuilder.indexOf("<b>").also { start = it } != -1) {
+                stringBuilder.replace(start, start + 3, "")
+                end = stringBuilder.indexOf("</b>")
+                if (end == -1) {
+                    end = stringBuilder.indexOf("<b>")
+                }
+                stringBuilder.replace(end, end + 4, "")
+                bolds.add(start)
+                bolds.add(end)
+            }
+            while (stringBuilder.indexOf("**").also { start = it } != -1) {
+                stringBuilder.replace(start, start + 2, "")
+                end = stringBuilder.indexOf("**")
+                if (end >= 0) {
+                    stringBuilder.replace(end, end + 2, "")
                     bolds.add(start)
                     bolds.add(end)
                 }
-                while (stringBuilder.indexOf("**").also { start = it } != -1) {
-                    stringBuilder.replace(start, start + 2, "")
-                    end = stringBuilder.indexOf("**")
-                    if (end >= 0) {
-                        stringBuilder.replace(end, end + 2, "")
-                        bolds.add(start)
-                        bolds.add(end)
-                    }
-                }
+            }
 
             val spannableStringBuilder = SpannableStringBuilder(stringBuilder)
             for (a in 0 until bolds.count() / 2) {

@@ -10,7 +10,6 @@ import android.content.Intent
 import android.content.IntentSender
 import android.os.Build
 import android.os.Bundle
-import android.os.PowerManager
 import android.view.KeyEvent
 import androidx.core.content.getSystemService
 import androidx.core.view.isVisible
@@ -81,7 +80,6 @@ import one.mixin.android.extension.putInt
 import one.mixin.android.extension.putLong
 import one.mixin.android.extension.putString
 import one.mixin.android.extension.remove
-import one.mixin.android.extension.supportsOreo
 import one.mixin.android.extension.supportsPie
 import one.mixin.android.extension.toast
 import one.mixin.android.job.AttachmentMigrationJob

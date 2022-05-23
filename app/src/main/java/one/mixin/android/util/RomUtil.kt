@@ -36,7 +36,7 @@ object RomUtil {
         get() = check(ROM_OPPO)
     val isFlyme: Boolean
         get() = check(ROM_FLYME)
-    val isOneUi :Boolean
+    val isOneUi: Boolean
         get() = isOneUI()
     fun is360(): Boolean {
         return check(ROM_QIKU) || check("360")

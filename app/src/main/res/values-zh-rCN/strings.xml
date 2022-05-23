@@ -294,6 +294,8 @@
     <string name="send_file_group">将 \"%1$s\" 发送给 \"%2$s\"?</string>
     <string name="Set_PIN">设置 PIN</string>
     <string name="setting_battery_optimize_title">这将提高 Mixin 通知和呼叫的可靠性。</string>
+    <string name="setting_battery_optimize_title_one_ui_below_s">这将提高 Mixin 通知和呼叫的可靠性。请在设置 -> 电池中选择**允许后台活动**。</string>
+    <string name="setting_battery_optimize_title_one_ui_above_s">这将提高 Mixin 通知和呼叫的可靠性。请在设置>电池中选择**优化**或**不受限制**。</string>
     <string name="setting_biometric_error_hardware_unavailable">当前设备硬件不可用，请稍后再试</string>
     <string name="setting_biometric_error_none_enrolled">未录入指纹或其他设备解锁凭证</string>
     <string name="setting_biometric_error_not_secure">当前设备不安全</string>
