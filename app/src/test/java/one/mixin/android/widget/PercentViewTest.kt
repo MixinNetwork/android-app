@@ -33,5 +33,10 @@ class PercentViewTest {
             BigDecimal(it).calcPercent(totalUSD5)
         }
         assertEquals(list5, listOf(0.69f, 0.3f, 0f, 0f))
+
+        val l6 = listOf(1.0, 0.82, 0.01, 0.01)
+        val totalUSD6 = BigDecimal(l6.sum())
+        val list6 = l6.map { BigDecimal(it).calcPercent(totalUSD6) }
+        assertEquals(list6, listOf(0.54f, 0.44f, 0.0f, 0.0f))
     }
 }
