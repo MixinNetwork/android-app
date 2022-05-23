@@ -2,6 +2,7 @@ package one.mixin.android.ui.home
 
 import android.annotation.SuppressLint
 import android.app.Activity
+import android.app.ActivityManager
 import android.app.Dialog
 import android.app.NotificationManager
 import android.content.Context
@@ -80,6 +81,8 @@ import one.mixin.android.extension.putInt
 import one.mixin.android.extension.putLong
 import one.mixin.android.extension.putString
 import one.mixin.android.extension.remove
+import one.mixin.android.extension.supportsOreo
+import one.mixin.android.extension.supportsPie
 import one.mixin.android.extension.toast
 import one.mixin.android.job.AttachmentMigrationJob
 import one.mixin.android.job.BackupJob
@@ -360,15 +363,17 @@ class MainActivity : BlazeBaseActivity() {
 
     @SuppressLint("BatteryLife")
     private fun checkBatteryOptimization() {
-        val batteryOptimize = defaultSharedPreferences.getLong(PREF_BATTERY_OPTIMIZE, 0)
-        val cur = System.currentTimeMillis()
-        if (cur - batteryOptimize > Constants.INTERVAL_48_HOURS * 30) {
-            getSystemService<PowerManager>()?.let { pm ->
-                if (!pm.isIgnoringBatteryOptimizations(packageName)) {
-                    BatteryOptimizationDialogActivity.show(this)
+        supportsPie {
+            val batteryOptimize = defaultSharedPreferences.getLong(PREF_BATTERY_OPTIMIZE, 0)
+            val cur = System.currentTimeMillis()
+            if (cur - batteryOptimize > INTERVAL_24_HOURS) {
+                getSystemService<ActivityManager>()?.let { am ->
+                    if (am.isBackgroundRestricted) {
+                        BatteryOptimizationDialogActivity.show(this)
+                    }
                 }
+                defaultSharedPreferences.putLong(PREF_BATTERY_OPTIMIZE, cur)
             }
-            defaultSharedPreferences.putLong(PREF_BATTERY_OPTIMIZE, cur)
         }
     }
 

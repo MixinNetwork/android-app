@@ -1,11 +1,13 @@
 package one.mixin.android.util
 
 import android.os.Build
+import android.os.Build.VERSION
 import android.text.TextUtils
 import timber.log.Timber
 import java.io.BufferedReader
 import java.io.IOException
 import java.io.InputStreamReader
+import java.lang.reflect.Field
 import java.util.Locale
 
 object RomUtil {
@@ -34,7 +36,8 @@ object RomUtil {
         get() = check(ROM_OPPO)
     val isFlyme: Boolean
         get() = check(ROM_FLYME)
-
+    val isOneUi :Boolean
+        get() = isOneUI()
     fun is360(): Boolean {
         return check(ROM_QIKU) || check("360")
     }
@@ -108,5 +111,20 @@ object RomUtil {
             }
         }
         return line
+    }
+
+    private fun isOneUI(): Boolean {
+        try {
+            val f: Field = VERSION::class.java.getDeclaredField("SEM_PLATFORM_INT")
+            f.isAccessible = true
+            val semPlatformInt = f.get(null) as Int
+            if (semPlatformInt < 100000) {
+                // Samsung Experience then
+                return false
+            }
+            return true
+        } catch (e: Exception) {
+            return false
+        }
     }
 }

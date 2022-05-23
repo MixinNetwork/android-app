@@ -308,7 +308,9 @@
 	<string name="Send_as_file">Send as file</string>
 	<string name="send_file_group">Send \"%1$s\" to \"%2$s\"?</string>
 	<string name="Set_PIN">Set PIN</string>
-	<string name="setting_battery_optimize_title">To ensure that Mixin receives messages properly, please set Mixin\'s battery optimization policy to \"Don\'t Optimize\"</string>
+	<string name="setting_battery_optimize_title">This will improve reliability for incoming notifications and Mixin calls</string>
+	<string name="setting_battery_optimize_title_one_ui_below_s">This will improve reliability for incoming notifications and Mixin calls. Tap Settings -> Battery and turn **Allow background activity** on.</string>
+	<string name="setting_battery_optimize_title_one_ui_above_s">This will improve reliability for incoming notifications and Mixin calls. Please select **Optimised** or **Unrestricted** in Settings > Battery.</string>
 	<string name="setting_biometric_error_hardware_unavailable">Hardware unavailable, try again later</string>
 	<string name="setting_biometric_error_none_enrolled">No biometric or device credential is enrolled</string>
 	<string name="setting_biometric_error_not_secure">The key NOT resides inside secure hardware (TEE)</string>
