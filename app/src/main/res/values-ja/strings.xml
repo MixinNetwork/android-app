@@ -260,7 +260,7 @@
     <string name="Send_as_file">ファイルとして送信する</string>
     <string name="send_file_group">\"%1$s\"を\"%2$s\"に送りますか？</string>
     <string name="Set_PIN">PINを設定</string>
-    <string name="setting_battery_optimize_title">Mixinが安全にメッセージを受け取るために、Mixin\' のバッテリーを \"Don\'t Optimize\"へ最適化してください。</string>
+    <string name="setting_battery_optimize_title">Mixinの着信通​​知の信頼性が向上します。</string>
     <string name="setting_biometric_error_hardware_unavailable">ハードウェアが無効です</string>
     <string name="setting_biometric_error_none_enrolled">生体認証可能な機種ではありません</string>
     <string name="setting_biometric_error_not_secure">鍵はセキュアハードウェア(TEE)内に存在しません。</string>
