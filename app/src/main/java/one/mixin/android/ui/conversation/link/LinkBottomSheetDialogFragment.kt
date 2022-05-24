@@ -15,12 +15,10 @@ import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.net.toUri
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.viewModels
-import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import com.bumptech.glide.manager.SupportRequestManagerFragment
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
-import com.uber.autodispose.android.lifecycle.AndroidLifecycleScopeProvider
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.launch
@@ -41,6 +39,7 @@ import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.getGroupAvatarPath
 import one.mixin.android.extension.handleSchemeSend
 import one.mixin.android.extension.isDonateUrl
+import one.mixin.android.extension.isExternalScheme
 import one.mixin.android.extension.isUUID
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.withArgs
@@ -96,8 +95,6 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
             putString(CODE, code)
         }
     }
-
-    private val scopeProvider by lazy { AndroidLifecycleScopeProvider.from(this, Lifecycle.Event.ON_STOP) }
 
     private var authOrPay = false
 
@@ -651,7 +648,12 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 dismiss()
             }
         } else {
-            showError()
+            if (url.isExternalScheme(requireContext())) {
+                WebActivity.show(requireContext(), url, null)
+                dismiss()
+            } else {
+                showError()
+            }
         }
     }
 
