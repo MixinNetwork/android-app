@@ -16,6 +16,7 @@ import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.crypto.Base64
 import one.mixin.android.db.MixinDatabase
+import one.mixin.android.job.RefreshExternalSchemeJob.Companion.PREF_EXTERNAL_SCHEMES
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.QrScanBottomSheetDialogFragment
 import one.mixin.android.ui.common.share.ShareMessageBottomSheetDialogFragment
@@ -137,13 +138,18 @@ User-agent: ${WebView(context).settings.userAgentString}
     } else if (isUserScheme() || isAppScheme()) {
         checkUserOrApp(context, supportFragmentManager, scope)
     } else {
-        if (isMixinUrl() || isDonateUrl()) {
+        if (isMixinUrl() || isDonateUrl() || isExternalScheme(context)) {
             LinkBottomSheetDialogFragment.newInstance(this)
                 .showNow(supportFragmentManager, LinkBottomSheetDialogFragment.TAG)
         } else {
             extraAction()
         }
     }
+}
+
+fun String.isExternalScheme(context: Context): Boolean {
+    val externalSchemes = context.defaultSharedPreferences.getStringSet(PREF_EXTERNAL_SCHEMES, emptySet())
+    return !externalSchemes.isNullOrEmpty() && this.matchResourcePattern(externalSchemes)
 }
 
 fun Uri.checkUserOrApp(
