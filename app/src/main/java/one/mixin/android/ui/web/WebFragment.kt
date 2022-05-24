@@ -1294,7 +1294,11 @@ class WebFragment : BaseFragment() {
                     }
                     context.startActivity(intent)
                 } catch (e: Exception) {
-                    view.loadUrl(url, extraHeaders)
+                    if (e is ActivityNotFoundException) {
+                        toast(context.getString(R.string.error_unable_to_open_link, url))
+                    } else {
+                        view.loadUrl(url, extraHeaders)
+                    }
                 }
             }
             return true
