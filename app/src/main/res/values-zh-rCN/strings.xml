@@ -776,6 +776,7 @@
     <string name="pin_title">置顶</string>
     <string name="PIN">PIN</string>
     <string name="PIN_change">修改 PIN</string>
+    <string name="PIN_creation">创建 PIN</string>
     <string name="pin_check_tip">定期输入 PIN 有助于记住该 PIN</string>
     <string name="pin_confirm_again_hint">请再次确认您的 6 位 PIN</string>
     <string name="pin_confirm_hint">确认 6 位数字 PIN 并牢记它</string>

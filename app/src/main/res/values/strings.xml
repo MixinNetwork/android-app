@@ -797,6 +797,7 @@
 	<string name="pin_title">Pin</string>
 	<string name="PIN">PIN</string>
 	<string name="PIN_change">PIN change</string>
+	<string name="PIN_creation">PIN creation</string>
 	<string name="pin_check_tip">You\'ll be asked for it periodically to help you remember it.</string>
 	<string name="pin_confirm_again_hint">Please confirm your 6 digit PIN again</string>
 	<string name="pin_confirm_hint">Please confirm the 6 digit PIN and remember it</string>

@@ -144,6 +144,8 @@ class PinLogsFragment : BaseFragment(R.layout.fragment_pin_logs) {
                     return Pair(context.getString(R.string.PIN_incorrect), context.getString(R.string.Multisig_Transaction))
                 "MULTISIG_UNLOCK" ->
                     return Pair(context.getString(R.string.PIN_incorrect), context.getString(R.string.Revoke_multisig_transaction))
+                "ACTIVITY_PIN_CREATION" ->
+                    return Pair(context.getString(R.string.PIN_creation), context.getString(R.string.PIN_creation))
                 "ACTIVITY_PIN_MODIFICATION" ->
                     return Pair(context.getString(R.string.PIN_change), context.getString(R.string.PIN_change))
                 "ACTIVITY_EMERGENCY_CONTACT_MODIFICATION" ->
