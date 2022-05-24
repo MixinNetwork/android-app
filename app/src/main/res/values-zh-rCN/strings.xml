@@ -138,6 +138,7 @@
     <string name="error_server_5xx_code">服务器出错，请稍后重试: %1$d</string>
     <string name="error_transcript_forward">请在所有附件下载完成之后再转发</string>
     <string name="error_unable_to_open_media">无法找到能打开该媒体的应用</string>
+    <string name="error_unable_to_open_link">未找到能打开该链接的应用\n%1$s</string>
     <string name="error_unknown_with_code">错误：%1$d</string>
     <string name="error_unknown_with_message">错误：%1$s</string>
     <string name="error_user_invalid_format">用户数据不合法</string>
