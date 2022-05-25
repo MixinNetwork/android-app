@@ -6,9 +6,15 @@ import android.app.ActivityManager
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
-import android.content.*
+import android.content.ActivityNotFoundException
+import android.content.ClipboardManager
+import android.content.ComponentName
+import android.content.ContentResolver
+import android.content.Context
 import android.content.Context.ACTIVITY_SERVICE
-import android.content.Context.CLIPBOARD_SERVICE
+import android.content.ContextWrapper
+import android.content.DialogInterface
+import android.content.Intent
 import android.content.Intent.FLAG_ACTIVITY_NEW_TASK
 import android.content.pm.PackageManager
 import android.content.res.Configuration
@@ -46,6 +52,7 @@ import androidx.browser.customtabs.CustomTabsIntent
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
+import androidx.core.content.getSystemService
 import androidx.core.net.toUri
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
@@ -679,7 +686,7 @@ fun Context.openUrl(url: String) {
     }
 }
 
-fun Context.getClipboardManager(): ClipboardManager = this.getSystemService(CLIPBOARD_SERVICE) as ClipboardManager
+fun Context.getClipboardManager(): ClipboardManager = requireNotNull(getSystemService())
 
 fun Window.isNotchScreen(): Boolean {
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
