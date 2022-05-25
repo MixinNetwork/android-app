@@ -95,7 +95,7 @@
     <string name="auto_download_hint">媒体自动下载设定，所有语音消息将自动下载。</string>
     <string name="Auto_Lock">自动锁定</string>
     <string name="Back_To_Chat">返回聊天</string>
-    <string name="Backing_Up">正在备份...</string>
+    <string name="Backing_Up">正在备份…</string>
     <string name="Backup">备份</string>
     <string name="backup_choose_a_folder">请选择用于保存备份的文件夹</string>
     <string name="Backup_delete">删除备份</string>
@@ -722,7 +722,7 @@
     <string name="restore_message">如果您之前曾备份到外部存储并且现在想要还原备份，请给与 Mixin 相应权限以检查您外部存储里的备份。</string>
     <string name="restore_not_found">未找到备份文件，请将备份文件放入 %1$s</string>
     <string name="restore_path">备份路径: %1$s</string>
-    <string name="Restoring">正在恢复...</string>
+    <string name="Restoring">正在恢复…</string>
     <string name="Retry">重试</string>
     <string name="Retry_upload_failed">重新上传失败。</string>
     <string name="Revoke_access">取消授权</string>
@@ -940,7 +940,7 @@
     <string name="Update_Mixin">升级 Mixin</string>
     <string name="update_mixin_description">当前版本(%1$s)不再可用!\n请点击下面的“更新”按钮从应用商店更新到最新版本。</string>
     <string name="Upgrade_Database">数据库升级</string>
-    <string name="Upgrading">升级中...</string>
+    <string name="Upgrading">升级中…</string>
     <string name="Upload_Mobile_Contacts">上传通讯录找好友</string>
     <string name="Upload_timeout">上传超时</string>
     <string name="Use_Biometric_Multisig">使用生物识别签名</string>

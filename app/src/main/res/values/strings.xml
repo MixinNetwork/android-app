@@ -93,11 +93,11 @@
 	<string name="auth_profile_content">%1$s, %2$s, profile photo</string>
 	<string name="authorization">authorization</string>
 	<string name="Authorizations">Authorizations</string>
-	<string name="auto_download_hint">Change auto-download settings for medias. Voice messages are always automatically downloaded</string>
+	<string name="auto_download_hint">Change auto-download settings for medias. Voice messages are always automatically downloaded.</string>
 	<string name="Auto_Lock">Auto-Lock</string>
 	<string name="avatar_transition_name">avatar_transition_name</string>
 	<string name="Back_To_Chat">Back To Chat</string>
-	<string name="Backing_Up">Backing Up...</string>
+	<string name="Backing_Up">Backing Up…</string>
 	<string name="Backup">Backup</string>
 	<string name="backup_choose_a_folder">Choose a folder, backups will be saved to this location</string>
 	<string name="Backup_delete">Backup delete</string>
@@ -156,7 +156,7 @@
 	<string name="Change_Profile_Photo_with_Library">Change Profile Photo with Library</string>
 	<string name="Changed">Changed</string>
 	<string name="changed_disappearing_message_settings">%1$s changed disappearing message settings.</string>
-	<string name="Changing">Changing...</string>
+	<string name="Changing">Changing…</string>
 	<string name="chat_app_reception_title">Tap the button to interact with the bot</string>
 	<string name="chat_audio_discard_warning">Are you sure you want to stop recording and discard your voice message ?</string>
 	<string name="chat_audio_discard_warning_title">Discard Voice message</string>
@@ -267,7 +267,7 @@
 	<string name="Custom_Time">Custom Time</string>
 	<string name="Data_and_Storage_Usage">Data and Storage Usage</string>
 	<string name="Data_error">Data error</string>
-	<string name="Data_loading">Data loading, please wait...</string>
+	<string name="Data_loading">Data loading, please wait…</string>
 	<string name="database_upgrade_tips">The database is being upgraded, it may take several minutes, please do not close this App.</string>
 	<string name="Date">Date</string>
 	<string name="date_format_date">MMM dd, yyyy</string>
@@ -475,7 +475,7 @@
 	<string name="in_connecting">Connecting…</string>
 	<string name="Incognito_Keyboard">Incognito Keyboard</string>
 	<string name="Incoming_voice_call">Incoming voice call</string>
-	<string name="Initializing">Initializing</string>
+	<string name="Initializing">Initializing…</string>
 	<string name="Invalid_Link">Invalid Link</string>
 	<string name="Invalid_payment_link">Invalid payment link</string>
 	<string name="Invalid_QR_Code">Invalid QR-Code</string>
@@ -599,7 +599,7 @@
 	<string name="No_deposit">No deposit</string>
 	<string name="No_fee">No fee</string>
 	<string name="NO_FILE">NO FILE</string>
-	<string name="No_hidden_asset">No hidden assets</string>
+	<string name="No_hidden_asset">No hidden asset</string>
 	<string name="NO_LINK">NO LINK</string>
 	<string name="No_log">No log</string>
 	<string name="NO_MEDIA">NO MEDIA</string>
@@ -737,7 +737,7 @@
 	<string name="restore_message">Back up your messages and media to external storage. You can restore them when you reinstall Mixin. Your messages and media will also back up to your phone\'s internal storage. Media and messages your back up are not protected by Mixin end-to-end encryption while in external storage.</string>
 	<string name="restore_not_found">Not found, please copy the backup file into %1$s</string>
 	<string name="restore_path">Path: %1$s</string>
-	<string name="Restoring">Restoring...</string>
+	<string name="Restoring">Restoring…</string>
 	<string name="Retry">Retry</string>
 	<string name="Retry_upload_failed">Retry upload failed.</string>
 	<string name="Revoke_access">Revoke access</string>
@@ -801,8 +801,8 @@
 	<string name="setting_biometric_error_not_secure">The key NOT resides inside secure hardware (TEE)</string>
 	<string name="setting_biometric_error_pin_not_set">The PIN, pattern or password is NOT set or a SIM card is unlocked</string>
 	<string name="setting_biometric_error_rooted">The device has been rooted</string>
-	<string name="setting_conversation_group_tip">Who can add me to groups.</string>
-	<string name="setting_conversation_tip">Who can send message to me.</string>
+	<string name="setting_conversation_group_tip">Who can add me to groups</string>
+	<string name="setting_conversation_tip">Who can send message to me</string>
 	<string name="setting_data_mobile">When using mobile data</string>
 	<string name="setting_data_title">Media auto-download</string>
 	<string name="setting_data_wifi">When connected on Wi-Fi</string>
@@ -813,7 +813,7 @@
 	<string name="setting_delete_account_url">https://mixinmessenger.zendesk.com/hc/articles/4414170627988</string>
 	<string name="setting_desktop_confirm">Confirm login to Mixin Messenger Desktop</string>
 	<string name="setting_desktop_logout_failed">Logout of desktop failed.</string>
-	<string name="setting_duplicate_transfer_desc">Display confirmation dialog when you transfer the same amount to the same person within 6 hours</string>
+	<string name="setting_duplicate_transfer_desc">Display confirmation dialog when you transfer the same amount to the same person within 6 hours.</string>
 	<string name="setting_emergency_change_mobile">Do you want to change your mobile number now?</string>
 	<string name="setting_emergency_content">The emergency contact is designed to help you log in to your account if you are lost and can not retrieve your mobile number.</string>
 	<string name="setting_emergency_create_success">Create emergency contact successfully</string>
@@ -833,8 +833,8 @@
 		<item quantity="other">Clear %1$d messages (%2$s)?</item>
 	</plurals>
 	<string name="setting_stranger_transfer_desc">Display confirmation dialog when you transfer to stranger</string>
-	<string name="setting_transfer_large_summary">Show confirmation dialog when transfer greater than or equal to %1$s</string>
-	<string name="setting_transfer_large_summary_greater">Show confirmation dialog when transfer greater than %1$s</string>
+	<string name="setting_transfer_large_summary">Show confirmation dialog when transfer greater than or equal to %1$s.</string>
+	<string name="setting_transfer_large_summary_greater">Show confirmation dialog when transfer greater than %1$s.</string>
 	<string name="Settings">Settings</string>
 	<string name="Share">Share</string>
 	<string name="Share_Contact">Share Contact</string>

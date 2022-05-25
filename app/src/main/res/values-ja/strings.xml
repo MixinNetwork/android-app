@@ -94,7 +94,7 @@
     <string name="auto_download_hint">音声品質を維持するため、ボイスメッセージは常に自動ダウンロードされます</string>
     <string name="Auto_Lock">自動ロック</string>
     <string name="Back_To_Chat">チャットに戻る</string>
-    <string name="Backing_Up">バックアップしています...</string>
+    <string name="Backing_Up">バックアップしています…</string>
     <string name="Backup">チャット履歴のバックアップ</string>
     <string name="backup_choose_a_folder">フォルダを選択してください。バックアップは選択した場所に保存されます。</string>
     <string name="Backup_delete">バックアップを消去</string>

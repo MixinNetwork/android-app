@@ -75,7 +75,7 @@
     <string name="Backup_found">Backup found</string>
     <string name="backup_ing">Sandaran storan luaran…</string>
     <string name="backup_no_available_memory">Tidak ada memori yang tersedia untuk sandaran.</string>
-    <string name="backup_notification_content">Menyiapkan sandaran ...</string>
+    <string name="backup_notification_content">Menyiapkan sandaran …</string>
     <string name="backup_notification_title">Sandaran sedang dijalankan</string>
     <string name="Backup_success">Kejayaan sandaran</string>
     <string name="Biometric_Payment">Pembayaran Biometrik</string>
@@ -515,7 +515,7 @@
     <string name="Play">Main</string>
     <string name="Playback_failed">Main balik gagal</string>
     <string name="Playlist">Senarai main</string>
-    <string name="Please_wait_a_bit">Sila tunggu sebentar ...</string>
+    <string name="Please_wait_a_bit">Sila tunggu sebentar …</string>
     <string name="POST">KIRIMAN</string>
     <string name="Post">Kirim</string>
     <string name="Privacy">Privasi</string>
@@ -550,7 +550,7 @@
     <string name="Remove_emergency_contact">Alih keluar kenalan kecemasan</string>
     <string name="Remove_emergency_contact_confirmation">Alih keluar kenalan kecemasan?</string>
     <string name="Remove_Participants">Keluarkan Peserta</string>
-    <string name="Removing">Mengalih keluar ...</string>
+    <string name="Removing">Mengalih keluar …</string>
     <string name="Report">Lapor</string>
     <string name="Represent_Messages">Wakilkan Mesej</string>
     <string name="Requests_access_to_your">Meminta akses ke anda</string>
@@ -577,7 +577,7 @@
     <string name="Save_to_Downloads">Simpan ke Muat turun</string>
     <string name="Save_to_Gallery">Simpan ke Galeri</string>
     <string name="Save_to_Music">Simpan ke Muzik</string>
-    <string name="Saving">Menyimpan ...</string>
+    <string name="Saving">Menyimpan …</string>
     <string name="Say_Hi">Ucap hai</string>
     <string name="scam_warning">Amaran: Ramai pengguna melaporkan akaun ini sebagai penipuan. Sila berhati-hati, terutamanya jika ia meminta wang kepada anda</string>
     <string name="Scan">Imbas</string>

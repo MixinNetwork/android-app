@@ -72,7 +72,7 @@
     <string name="backup_external_storage">Penyimpanan eksternal: %1$s</string>
     <string name="backup_failure_tip">Pencadangan gagal, silakan coba lagi.</string>
     <string name="Backup_found">Cadangan ditemukan</string>
-    <string name="backup_ing">Cadangan penyimpanan eksternal...</string>
+    <string name="backup_ing">Cadangan penyimpanan eksternal…</string>
     <string name="backup_no_available_memory">Memori yang tersedia tidak cukup untuk pencadangan.</string>
     <string name="backup_notification_content">Menyiapkan pencadangan…</string>
     <string name="backup_notification_title">Pencadangan sedang berlangsung</string>
@@ -331,7 +331,7 @@
     <string name="I_know">Saya tahu</string>
     <string name="in_connecting">Menyambungkan…</string>
     <string name="Incoming_voice_call">Panggilan suara masuk</string>
-    <string name="Initializing">Memulai...</string>
+    <string name="Initializing">Memulai…</string>
     <string name="Invalid_Link">Tautan Tidak Valid</string>
     <string name="Invalid_payment_link">Pembayaran tidak valid</string>
     <string name="Invalid_sticker_format">Format stiker tidak valid</string>
@@ -538,7 +538,7 @@
     <string name="Save_to_Downloads">Simpan ke Unduhan</string>
     <string name="Save_to_Gallery">Simpan ke Galeri</string>
     <string name="Save_to_Music">Simpan ke Musik</string>
-    <string name="Saving">Menyimpan...</string>
+    <string name="Saving">Menyimpan…</string>
     <string name="Say_Hi">Katakan Hai</string>
     <string name="scam_warning">Peringatan: Banyak pengguna yang melaporkan akun ini sebagai scam. Harap berhati-hati, terutama jika meminta uang Anda</string>
     <string name="Scan">Pindai</string>
