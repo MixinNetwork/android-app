@@ -12,8 +12,8 @@
         android:id="@+id/title_view"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:titleText="@string/sticker_manager"
-        app:rightText="@string/action_select"/>
+        app:titleText="@string/Manager_Sticker"
+        app:rightText="@string/Select"/>
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/sticker_rv"

@@ -18,7 +18,7 @@
         android:layout_marginTop="@dimen/activity_vertical_margin"
         android:layout_marginBottom="@dimen/activity_vertical_margin"
         android:textColor="?attr/text_primary"
-        android:text="@string/verify_to_continue"
+        android:text="@string/Enter_your_PIN_to_continue"
         android:textSize="16sp" />
 
     <one.mixin.android.ui.common.biometric.BiometricLayout

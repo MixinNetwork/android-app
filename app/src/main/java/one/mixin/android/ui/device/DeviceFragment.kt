@@ -178,19 +178,19 @@ class DeviceFragment() : MixinBottomSheetDialogFragment() {
     private fun updateUI(loggedIn: Boolean) {
         this.loggedIn = loggedIn
         if (loggedIn) {
-            binding.authTv.text = getString(R.string.setting_logout_desktop)
-            binding.descTv.text = getString(R.string.setting_desktop_signed)
+            binding.authTv.text = getString(R.string.log_out_from_desktop)
+            binding.descTv.text = getString(R.string.desktop_on_hint)
             binding.authTv.textColor = requireContext().colorFromAttribute(R.attr.text_blue)
         } else {
-            binding.authTv.text = getString(R.string.setting_scan_qr_code)
-            binding.descTv.text = getString(R.string.setting_scan_qr_code)
+            binding.authTv.text = getString(R.string.Scan_QR_Code)
+            binding.descTv.text = getString(R.string.Scan_QR_Code)
         }
     }
 
     private val loadOuting: Dialog by lazy {
         indeterminateProgressDialog(
-            message = R.string.pb_dialog_message,
-            title = R.string.setting_desktop_logout
+            message = R.string.Please_wait_a_bit,
+            title = R.string.Logout
         ).apply {
             setCancelable(false)
         }

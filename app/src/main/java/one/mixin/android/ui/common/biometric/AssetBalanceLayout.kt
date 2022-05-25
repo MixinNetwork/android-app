@@ -38,13 +38,13 @@ class AssetBalanceLayout(context: Context, attributeSet: AttributeSet) : LinearL
             balance.text = balanceText
             if (t is WithdrawBiometricItem) {
                 val subText = SpannableStringBuilder()
-                    .append(context.getString(R.string.amount))
+                    .append(context.getString(R.string.Amount))
                     .append(" ")
                     .bold { append(balanceText) }
                     .append(" ")
                     .append(getValueText(amount, asset.priceFiat()))
                     .append("\n")
-                    .append(context.getString(R.string.fee))
+                    .append(context.getString(R.string.Fee))
                     .append(" ")
                     .bold { append(t.fee.numberFormat()).append(" ").append(asset.chainSymbol).append(" ") }
                     .append(getValueText(t.fee, asset.chainPriceFiat()))

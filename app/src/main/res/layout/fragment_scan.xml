@@ -47,7 +47,7 @@
             android:layout_centerInParent="true"
             android:textColor="@color/white"
             android:textSize="18sp"
-            android:text="@string/setting_scan_qr_code"/>
+            android:text="@string/Scan_QR_Code"/>
     </RelativeLayout>
 
     <RelativeLayout

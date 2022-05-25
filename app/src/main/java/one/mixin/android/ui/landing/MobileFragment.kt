@@ -88,7 +88,7 @@ class MobileFragment : BaseFragment(R.layout.fragment_mobile) {
         binding.apply {
             pin = requireArguments().getString(ARGS_PIN)
             if (pin != null) {
-                mobileTitleTv.setText(R.string.landing_enter_new_mobile_number)
+                mobileTitleTv.setText(R.string.Enter_new_phone_number)
             }
             backIv.setOnClickListener { activity?.onBackPressed() }
             countryIconIv.setOnClickListener { showCountry() }
@@ -146,8 +146,8 @@ class MobileFragment : BaseFragment(R.layout.fragment_mobile) {
                     mCountry?.dialCode + " " + binding.mobileEt.text.toString()
                 )
             )
-            .setNegativeButton(R.string.action_change) { dialog, _ -> dialog.dismiss() }
-            .setPositiveButton(R.string.action_confirm) { dialog, _ ->
+            .setNegativeButton(R.string.Change) { dialog, _ -> dialog.dismiss() }
+            .setPositiveButton(R.string.Confirm) { dialog, _ ->
                 requestSend()
                 dialog.dismiss()
             }

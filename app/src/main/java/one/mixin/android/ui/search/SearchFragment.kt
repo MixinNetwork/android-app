@@ -169,7 +169,7 @@ class SearchFragment : BaseFragment(R.layout.fragment_search) {
                                     showUserBottom(parentFragmentManager, data)
                                 }
                             }
-                            r.errorCode == ErrorHandler.NOT_FOUND -> toast(R.string.error_user_not_found)
+                            r.errorCode == ErrorHandler.NOT_FOUND -> toast(R.string.User_not_found)
                             else -> ErrorHandler.handleMixinError(r.errorCode, r.errorDescription)
                         }
                     },

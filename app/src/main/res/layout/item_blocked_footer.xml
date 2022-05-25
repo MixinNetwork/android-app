@@ -6,6 +6,6 @@
     android:layout_marginEnd="@dimen/activity_horizontal_margin"
     android:layout_marginStart="@dimen/activity_horizontal_margin"
     android:layout_marginTop="@dimen/activity_vertical_margin"
-    android:text="@string/setting_block_tip"
+    android:text="@string/block_tip"
     android:textColor="?attr/text_minor"
     android:textSize="12sp" />

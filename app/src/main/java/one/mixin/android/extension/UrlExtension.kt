@@ -16,6 +16,7 @@ import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.crypto.Base64
 import one.mixin.android.db.MixinDatabase
+import one.mixin.android.job.RefreshExternalSchemeJob.Companion.PREF_EXTERNAL_SCHEMES
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.QrScanBottomSheetDialogFragment
 import one.mixin.android.ui.common.share.ShareMessageBottomSheetDialogFragment
@@ -137,13 +138,18 @@ User-agent: ${WebView(context).settings.userAgentString}
     } else if (isUserScheme() || isAppScheme()) {
         checkUserOrApp(context, supportFragmentManager, scope)
     } else {
-        if (isMixinUrl() || isDonateUrl()) {
+        if (isMixinUrl() || isDonateUrl() || isExternalScheme(context)) {
             LinkBottomSheetDialogFragment.newInstance(this)
                 .showNow(supportFragmentManager, LinkBottomSheetDialogFragment.TAG)
         } else {
             extraAction()
         }
     }
+}
+
+fun String.isExternalScheme(context: Context): Boolean {
+    val externalSchemes = context.defaultSharedPreferences.getStringSet(PREF_EXTERNAL_SCHEMES, emptySet())
+    return !externalSchemes.isNullOrEmpty() && this.matchResourcePattern(externalSchemes)
 }
 
 fun Uri.checkUserOrApp(
@@ -209,7 +215,7 @@ private fun String.isAppScheme() = startsWith(Constants.Scheme.APPS, true) ||
     startsWith(Constants.Scheme.HTTPS_APPS, true)
 
 private fun getUserOrAppNotFoundTip(isApp: Boolean) =
-    if (isApp) R.string.error_app_not_found else R.string.error_user_not_found
+    if (isApp) R.string.App_not_found else R.string.User_not_found
 
 fun Uri.getRawQueryParameter(key: String): String? {
     val parameters = this.getQueryParameters("data")

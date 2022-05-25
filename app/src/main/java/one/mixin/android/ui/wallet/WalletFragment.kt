@@ -48,8 +48,8 @@ import one.mixin.android.vo.Fiats
 import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.PercentItemView
 import one.mixin.android.widget.PercentView
+import one.mixin.android.widget.calcPercent
 import java.math.BigDecimal
-import java.math.RoundingMode
 import javax.inject.Inject
 import kotlin.math.abs
 
@@ -106,7 +106,7 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
                                 val anchorView = coinsRv
 
                                 snackbar = Snackbar.make(anchorView, getString(R.string.wallet_already_hidden, asset.symbol), Snackbar.LENGTH_LONG)
-                                    .setAction(R.string.capital_undo) {
+                                    .setAction(R.string.UNDO) {
                                         assetsAdapter.restoreItem(deleteItem, hiddenPos)
                                         lifecycleScope.launch(Dispatchers.IO) {
                                             walletViewModel.updateAssetHidden(asset.assetId, false)
@@ -234,8 +234,10 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
     }
 
     private fun setPieView(r: List<AssetItem>, totalUSD: BigDecimal) {
-        val list = r.asSequence().filter { BigDecimal(it.balance).compareTo(BigDecimal.ZERO) != 0 }.map {
-            val p = (it.fiat() / totalUSD).setScale(2, RoundingMode.DOWN).toFloat()
+        val list = r.asSequence().filter {
+            BigDecimal(it.balance).compareTo(BigDecimal.ZERO) != 0
+        }.map {
+            val p = it.fiat().calcPercent(totalUSD)
             PercentView.PercentItem(it.symbol, p)
         }.toMutableList()
         if (list.isNotEmpty()) {
@@ -257,7 +259,7 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
                 }
                 list[1].percent < 0.01f && list[1].percent > 0f -> {
                     addItem(list[0], 0)
-                    addItem(PercentView.PercentItem(getString(R.string.capital_other), 0.01f), 1)
+                    addItem(PercentView.PercentItem(getString(R.string.OTHER), 0.01f), 1)
                 }
                 list.size == 3 -> {
                     addItem(list[0], 0)
@@ -276,7 +278,7 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
                     }
                     val other = (100 - pre) / 100f
                     val item = PercentItemView(requireContext())
-                    item.setPercentItem(PercentView.PercentItem(getString(R.string.capital_other), other), 2)
+                    item.setPercentItem(PercentView.PercentItem(getString(R.string.OTHER), other), 2)
                     _headBinding?.pieItemContainer?.addView(item)
                 }
             }

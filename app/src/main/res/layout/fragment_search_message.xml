@@ -57,7 +57,7 @@
             android:maxLines="1"
             android:paddingEnd="@dimen/margin_start"
             android:paddingStart="@dimen/margin_start"
-            android:hint="@string/capital_search_title_messages"
+            android:hint="@string/SEARCH_MESSAGES"
             android:textColor="?attr/text_primary"
             android:textColorHint="?attr/text_minor"
             android:textSize="14sp"

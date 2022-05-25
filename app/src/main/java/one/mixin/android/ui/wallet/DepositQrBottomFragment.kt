@@ -59,11 +59,11 @@ class DepositQrBottomFragment : MixinBottomSheetDialogFragment() {
             title.rightIv.setOnClickListener { dismiss() }
             when (type) {
                 TYPE_TAG -> {
-                    title.titleTv.text = getString(R.string.memo)
+                    title.titleTv.text = getString(R.string.withdrawal_memo)
                     addrTv.text = asset.tag
                 }
                 else -> {
-                    title.titleTv.text = getString(R.string.address)
+                    title.titleTv.text = getString(R.string.Address)
                     addrTv.text = asset.destination
                 }
             }
@@ -83,13 +83,13 @@ class DepositQrBottomFragment : MixinBottomSheetDialogFragment() {
                                     if (!isAdded) return@launch
                                     contentLl.capture(requireContext())
                                 }
-                                toast(R.string.save_success)
+                                toast(R.string.Save_success)
                             } else {
                                 requireContext().openPermissionSetting()
                             }
                         },
                         {
-                            toast(R.string.save_failure)
+                            toast(R.string.Save_failure)
                         }
                     )
             }

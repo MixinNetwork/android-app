@@ -3,6 +3,7 @@ package one.mixin.android.ui.wallet
 import android.annotation.SuppressLint
 import android.view.View
 import androidx.core.view.isVisible
+import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.Fragment
 import com.skydoves.balloon.BalloonAnimation
 import com.skydoves.balloon.createBalloon
@@ -23,6 +24,7 @@ import one.mixin.android.extension.numberFormat
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.priceFormat2
 import one.mixin.android.extension.toast
+import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.session.Session
 import one.mixin.android.vo.AssetItem
 import one.mixin.android.vo.Fiats
@@ -49,7 +51,7 @@ interface TransactionInterface {
                     val asset = walletViewModel.simpleAssetItem(assetId)
                     val snapshot = walletViewModel.snapshotLocal(assetId, snapshotId)
                     if (asset == null || snapshot == null) {
-                        toast(R.string.error_data)
+                        toast(R.string.Data_error)
                     } else {
                         contentBinding.avatar.setOnClickListener {
                             clickAvatar(fragment, asset)
@@ -74,7 +76,7 @@ interface TransactionInterface {
                     }
                 }
             } else {
-                toast(R.string.error_data)
+                toast(R.string.Data_error)
             }
         } else {
             contentBinding.avatar.setOnClickListener {
@@ -125,19 +127,21 @@ interface TransactionInterface {
         assetId: String,
         snapshot: SnapshotItem,
     ) = lifecycleScope.launch {
-        if (!fragment.isAdded) return@launch
+        if (checkDestroyed(fragment)) return@launch
 
         contentBinding.thatVa.displayedChild = POS_PB
         handleMixinResponse(
             invokeNetwork = { walletViewModel.ticker(assetId, snapshot.createdAt) },
             switchContext = Dispatchers.IO,
             successBlock = {
+                if (checkDestroyed(fragment)) return@handleMixinResponse
+
                 val ticker = it.data
                 if (ticker != null) {
                     contentBinding.thatVa.displayedChild = POS_TEXT
                     contentBinding.thatTv.apply {
                         text = if (ticker.priceUsd == "0") {
-                            fragment.getString(R.string.wallet_transaction_that_time_no_value)
+                            fragment.getString(R.string.value_then, fragment.getString(R.string.NA))
                         } else {
                             val amount =
                                 (BigDecimal(snapshot.amount).abs() * ticker.priceFiat()).numberFormat2()
@@ -149,14 +153,14 @@ interface TransactionInterface {
                                 ""
                             }
                             fragment.getString(
-                                R.string.wallet_transaction_that_time_value,
+                                R.string.value_then,
                                 "${Fiats.getSymbol()}$amount $pricePerUnit"
                             )
                         }
                         fragment.context?.let { c ->
                             setTextColor(c.colorFromAttribute(R.attr.text_minor))
                             setOnClickListener {
-                                if (!fragment.isAdded) return@setOnClickListener
+                                if (checkDestroyed(fragment)) return@setOnClickListener
 
                                 val balloon = createBalloon(c) {
                                     setArrowSize(10)
@@ -220,10 +224,12 @@ interface TransactionInterface {
         assetId: String,
         snapshot: SnapshotItem,
     ) {
+        if (checkDestroyed(fragment)) return
+
         contentBinding.apply {
             thatVa.displayedChild = POS_TEXT
             thatTv.apply {
-                text = fragment.getString(R.string.click_retry)
+                text = fragment.getString(R.string.Click_to_retry)
                 setTextColor(fragment.resources.getColor(R.color.colorDarkBlue, null))
                 setOnClickListener {
                     fetchThatTimePrice(
@@ -246,7 +252,7 @@ interface TransactionInterface {
         asset: AssetItem,
         snapshot: SnapshotItem
     ) {
-        if (!fragment.isAdded) return
+        if (checkDestroyed(fragment)) return
 
         contentBinding.apply {
             val amountVal = snapshot.amount.toFloatOrNull()
@@ -279,7 +285,7 @@ interface TransactionInterface {
                 "(${Fiats.getSymbol()}${asset.priceFiat().priceFormat2()}/${snapshot.assetSymbol})"
 
             valueAsTv.text = fragment.getString(
-                R.string.wallet_transaction_current_value,
+                R.string.value_now,
                 "${Fiats.getSymbol()}$amount $pricePerUnit"
             )
             transactionIdTv.text = snapshot.snapshotId
@@ -288,20 +294,20 @@ interface TransactionInterface {
             dateTv.text = snapshot.createdAt.fullDate()
             when (snapshot.type) {
                 SnapshotType.deposit.name -> {
-                    senderTitle.text = fragment.getString(R.string.sender)
+                    senderTitle.text = fragment.getString(R.string.From)
                     senderTv.text = snapshot.sender
-                    receiverTitle.text = fragment.getString(R.string.transaction_hash)
+                    receiverTitle.text = fragment.getString(R.string.transaction_Hash)
                     receiverTv.text = snapshot.transactionHash
                 }
                 SnapshotType.pending.name -> {
-                    senderTitle.text = fragment.getString(R.string.sender)
+                    senderTitle.text = fragment.getString(R.string.From)
                     senderTv.text = snapshot.sender
-                    receiverTitle.text = fragment.getString(R.string.transaction_hash)
+                    receiverTitle.text = fragment.getString(R.string.transaction_Hash)
                     receiverTv.text = snapshot.transactionHash
                     transactionStatus.isVisible = true
                     transactionStatusTv.text =
                         fragment.requireContext().resources.getQuantityString(
-                            R.plurals.pending_confirmations,
+                            R.plurals.pending_confirmation,
                             snapshot.confirmations ?: 0,
                             snapshot.confirmations ?: 0,
                             snapshot.assetConfirmations
@@ -319,11 +325,11 @@ interface TransactionInterface {
                 }
                 else -> {
                     if (!asset.tag.isNullOrEmpty()) {
-                        receiverTitle.text = fragment.getString(R.string.address)
+                        receiverTitle.text = fragment.getString(R.string.Address)
                     } else {
-                        receiverTitle.text = fragment.getString(R.string.receiver)
+                        receiverTitle.text = fragment.getString(R.string.To)
                     }
-                    senderTitle.text = fragment.getString(R.string.transaction_hash)
+                    senderTitle.text = fragment.getString(R.string.transaction_Hash)
                     senderTv.text = snapshot.transactionHash
                     receiverTv.text = snapshot.receiver
                 }
@@ -350,15 +356,21 @@ interface TransactionInterface {
 
     fun getSnapshotType(fragment: Fragment, type: String): String {
         val s = when (type) {
-            SnapshotType.transfer.name -> R.string.action_transfer
-            SnapshotType.deposit.name, SnapshotType.pending.name -> R.string.wallet_bottom_deposit
-            SnapshotType.withdrawal.name -> R.string.withdrawal
-            SnapshotType.fee.name -> R.string.fee
-            SnapshotType.rebate.name -> R.string.action_rebate
-            SnapshotType.raw.name -> R.string.filters_raw
-            else -> R.string.not_any
+            SnapshotType.transfer.name -> R.string.Transfer
+            SnapshotType.deposit.name, SnapshotType.pending.name -> R.string.Deposit
+            SnapshotType.withdrawal.name -> R.string.Withdrawal
+            SnapshotType.fee.name -> R.string.Fee
+            SnapshotType.rebate.name -> R.string.Rebate
+            SnapshotType.raw.name -> R.string.Raw
+            else -> R.string.NA
         }
         return fragment.requireContext().getString(s)
+    }
+
+    private fun checkDestroyed(fragment: Fragment) = if (fragment is DialogFragment) {
+        !fragment.isAdded
+    } else {
+        fragment.viewDestroyed()
     }
 
     companion object {

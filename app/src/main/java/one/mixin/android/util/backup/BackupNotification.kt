@@ -28,8 +28,8 @@ class BackupNotification {
                 .setSmallIcon(R.drawable.ic_msg_default)
                 .setContentIntent(pendingCallIntent)
                 .setOngoing(true)
-                .setContentTitle(context.getString(if (backup) R.string.backup_notification_title else R.string.restore_notification_title))
-                .setContentText(context.getString(if (backup) R.string.backup_notification_content else R.string.restore_notification_content))
+                .setContentTitle(context.getString(if (backup) R.string.backup_notification_title else R.string.restore_in_progress))
+                .setContentText(context.getString(if (backup) R.string.backup_notification_content else R.string.Restoring))
 
             return builder.build()
         }

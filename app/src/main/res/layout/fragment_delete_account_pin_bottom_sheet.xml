@@ -18,7 +18,7 @@
         android:layout_marginTop="@dimen/activity_vertical_margin"
         android:layout_marginBottom="@dimen/activity_vertical_margin"
         android:textColor="@color/text_color_error_tip"
-        android:text="@string/setting_delete_account_pin_title"
+        android:text="@string/Enter_PIN_to_delete_account"
         android:textSize="16sp" />
 
     <one.mixin.android.ui.common.biometric.BiometricLayout

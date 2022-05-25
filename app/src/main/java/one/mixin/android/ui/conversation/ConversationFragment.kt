@@ -118,6 +118,7 @@ import one.mixin.android.extension.isImageSupport
 import one.mixin.android.extension.lateOneHours
 import one.mixin.android.extension.mainThreadDelayed
 import one.mixin.android.extension.networkConnected
+import one.mixin.android.extension.nowInUtc
 import one.mixin.android.extension.openAsUrlOrWeb
 import one.mixin.android.extension.openCamera
 import one.mixin.android.extension.openEmail
@@ -212,6 +213,7 @@ import one.mixin.android.vo.LinkState
 import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.MessageStatus
 import one.mixin.android.vo.ParticipantRole
+import one.mixin.android.vo.PinMessageData
 import one.mixin.android.vo.Sticker
 import one.mixin.android.vo.TranscriptData
 import one.mixin.android.vo.TranscriptMessage
@@ -466,7 +468,7 @@ class ConversationFragment() :
                 }
             }
         } else {
-            toast(R.string.error_no_connection)
+            toast(R.string.No_network_connection)
         }
     }
 
@@ -625,7 +627,7 @@ class ConversationFragment() :
                         { granted ->
                             if (granted) {
                                 chatViewModel.retryUpload(messageId) {
-                                    toast(R.string.error_retry_upload)
+                                    toast(R.string.Retry_upload_failed)
                                 }
                             } else {
                                 context?.openPermissionSetting()
@@ -668,7 +670,7 @@ class ConversationFragment() :
                 }
                 val path = messageItem.absolutePath()?.toUri()?.getFilePath()
                 if (path == null) {
-                    toast(R.string.error_file_exists)
+                    toast(R.string.File_does_not_exist)
                     return
                 }
                 val file = File(path)
@@ -683,7 +685,7 @@ class ConversationFragment() :
                         MediaPagerActivity.getOptions(requireActivity(), view)
                     )
                 } else {
-                    toast(R.string.error_file_exists)
+                    toast(R.string.File_does_not_exist)
                 }
             }
 
@@ -925,7 +927,7 @@ class ConversationFragment() :
                         CallActivity.show(requireContext())
                     } else {
                         alertDialogBuilder()
-                            .setMessage(getString(R.string.chat_call_warning_call))
+                            .setMessage(getString(R.string.call_on_another_call_hint))
                             .setNegativeButton(getString(android.R.string.ok)) { dialog, _ ->
                                 dialog.dismiss()
                             }
@@ -1012,7 +1014,7 @@ class ConversationFragment() :
     }
 
     private val powerManager: PowerManager by lazy {
-        requireContext().getSystemService()!!
+        MixinApplication.appContext.getSystemService()!!
     }
 
     private val wakeLock by lazy {
@@ -1102,7 +1104,7 @@ class ConversationFragment() :
                 if (event.conversationId == conversationId) {
                     if (event.errorCode == ERROR_ROOM_FULL) {
                         alertDialogBuilder()
-                            .setMessage(getString(R.string.call_group_full, GROUP_VOICE_MAX_COUNT))
+                            .setMessage(getString(R.string.Group_call_participants_limit_hint, GROUP_VOICE_MAX_COUNT))
                             .setNegativeButton(getString(android.R.string.ok)) { dialog, _ ->
                                 dialog.dismiss()
                             }
@@ -1138,7 +1140,7 @@ class ConversationFragment() :
         if (isGroup) {
             RxBus.listen(GroupEvent::class.java)
                 .observeOn(AndroidSchedulers.mainThread())
-                .autoDispose(stopScope)
+                .autoDispose(pauseScope)
                 .subscribe {
                     if (it.conversationId == conversationId) {
                         lifecycleScope.launch {
@@ -1164,7 +1166,7 @@ class ConversationFragment() :
         }
         RxBus.listen(RecallEvent::class.java)
             .observeOn(AndroidSchedulers.mainThread())
-            .autoDispose(stopScope)
+            .autoDispose(pauseScope)
             .subscribe { event ->
                 if (conversationAdapter.selectSet.any { it.messageId == event.messageId }) {
                     closeTool()
@@ -1234,7 +1236,7 @@ class ConversationFragment() :
         AudioPlayer.pause()
         val draftText = binding.chatControl.chatEt.text?.toString() ?: ""
         if (draftText != conversationDraft) {
-            chatViewModel.saveDraft(conversationId, draftText)
+            MixinApplication.get().saveDraft(conversationId, draftText)
         }
         if (OpusAudioRecorder.state != STATE_NOT_INIT) {
             OpusAudioRecorder.get(conversationId).stop()
@@ -1297,10 +1299,10 @@ class ConversationFragment() :
                 alertDialogBuilder()
                     .setTitle(getString(R.string.chat_audio_discard_warning_title))
                     .setMessage(getString(R.string.chat_audio_discard_warning))
-                    .setNeutralButton(getString(R.string.chat_capital_audio_discard_cancel)) { dialog, _ ->
+                    .setNeutralButton(getString(R.string.Continue)) { dialog, _ ->
                         dialog.dismiss()
                     }
-                    .setNegativeButton(getString(R.string.chat_capital_audio_discard_ok)) { dialog, _ ->
+                    .setNegativeButton(getString(R.string.DISCARD)) { dialog, _ ->
                         activity?.finish()
                         dialog.dismiss()
                     }
@@ -1516,7 +1518,7 @@ class ConversationFragment() :
                             StickerActivity.show(requireContext(), url = it, showAdd = true)
                             closeTool()
                         } else {
-                            toast(R.string.sticker_add_invalid_format)
+                            toast(R.string.Invalid_sticker_format)
                         }
                     }
                 }
@@ -1535,22 +1537,25 @@ class ConversationFragment() :
         }
 
         binding.toolView.pinIv.setOnClickListener {
-            if (conversationAdapter.selectSet.isEmpty()) {
+            val pinMessages = conversationAdapter.selectSet.map {
+                PinMessageData(it.messageId, it.conversationId, requireNotNull(it.type), it.content, nowInUtc())
+            }
+            val action = (binding.toolView.pinIv.tag as PinAction?) ?: PinAction.PIN
+            if (pinMessages.isEmpty()) {
                 return@setOnClickListener
             }
             lifecycleScope.launch {
-                val action = (binding.toolView.pinIv.tag as PinAction?) ?: PinAction.PIN
                 chatViewModel.sendPinMessage(
                     conversationId,
                     sender,
                     (binding.toolView.pinIv.tag as PinAction?) ?: PinAction.PIN,
-                    conversationAdapter.selectSet
+                    pinMessages
                 )
                 toast(
                     if (action == PinAction.PIN) {
-                        R.string.pin_success
+                        R.string.Message_pinned
                     } else {
-                        R.string.unpin_success
+                        R.string.Message_unpinned
                     }
                 )
                 closeTool()
@@ -1609,13 +1614,13 @@ class ConversationFragment() :
         }
         binding.tapJoinView.root.setOnClickListener {
             if (!requireContext().networkConnected()) {
-                toast(R.string.error_network)
+                toast(R.string.Network_error)
                 return@setOnClickListener
             }
             val isBusy = callState.isBusy()
             if (isBusy) {
                 alertDialogBuilder()
-                    .setMessage(getString(R.string.chat_call_warning_call))
+                    .setMessage(getString(R.string.call_on_another_call_hint))
                     .setNegativeButton(getString(android.R.string.ok)) { dialog, _ ->
                         dialog.dismiss()
                     }
@@ -1651,7 +1656,7 @@ class ConversationFragment() :
 
                 val logFile = FileLogTree.getLogFile()
                 if (logFile == null || logFile.length() <= 0) {
-                    toast(R.string.error_file_exists)
+                    toast(R.string.File_does_not_exist)
                     return@debugLongClick
                 }
                 val attachment = Attachment(logFile.toUri(), logFile.name, "text/plain", logFile.length())
@@ -1665,14 +1670,14 @@ class ConversationFragment() :
                             )
                         } else {
                             requireContext().getString(
-                                R.string.send_file,
+                                R.string.send_file_group,
                                 attachment.filename,
                                 recipient?.fullName
                             )
                         }
                     )
-                    .setNegativeButton(R.string.action_cancel) { dialog, _ -> dialog.dismiss() }
-                    .setPositiveButton(R.string.action_send) { dialog, _ ->
+                    .setNegativeButton(R.string.Cancel) { dialog, _ -> dialog.dismiss() }
+                    .setPositiveButton(R.string.Send) { dialog, _ ->
                         sendAttachmentMessage(attachment)
                         dialog.dismiss()
                     }.show()
@@ -1732,13 +1737,13 @@ class ConversationFragment() :
             }
             withContext(Dispatchers.Main) {
                 closeTool()
-                toast(R.string.add_success)
+                toast(R.string.Add_success)
             }
         } else {
             ErrorHandler.handleMixinError(
                 r.errorCode,
                 r.errorDescription,
-                getString(R.string.sticker_add_failed)
+                getString(R.string.Add_sticker_failed)
             )
         }
     }
@@ -1784,7 +1789,7 @@ class ConversationFragment() :
             permissionAlert = AlertDialog.Builder(requireContext())
                 .setTitle(R.string.app_name)
                 .setMessage(R.string.web_floating_permission)
-                .setPositiveButton(R.string.live_setting) { dialog, _ ->
+                .setPositiveButton(R.string.Settings) { dialog, _ ->
                     try {
                         startActivity(
                             Intent(
@@ -1817,7 +1822,7 @@ class ConversationFragment() :
                 chatViewModel.sendRecallMessage(conversationId, sender, messages)
                 dialog.dismiss()
             }
-            .setNeutralButton(R.string.chat_recall_delete_more) { dialog, _ ->
+            .setNeutralButton(R.string.Learn_More) { dialog, _ ->
                 context?.openUrl(getString(R.string.chat_delete_url))
                 dialog.dismiss()
             }
@@ -1861,9 +1866,9 @@ class ConversationFragment() :
                 chatViewModel.viewModelScope.launch {
                     conversationAdapter.hasBottomView =
                         recipient?.relationship == UserRelationship.STRANGER.name && chatViewModel.isSilence(
-                            conversationId,
-                            sender.userId
-                        )
+                        conversationId,
+                        sender.userId
+                    )
                 }
                 if (isFirstLoad && messageId == null && unreadCount > 0) {
                     conversationAdapter.unreadMsgId = unreadMessageId
@@ -1996,8 +2001,8 @@ class ConversationFragment() :
                         scrollToDown()
                         markRead()
                     }
-                    -1 -> toast(R.string.error_image)
-                    -2 -> toast(R.string.error_format)
+                    -1 -> toast(R.string.File_error)
+                    -2 -> toast(R.string.Format_not_supported)
                 }
             }
         }
@@ -2359,19 +2364,19 @@ class ConversationFragment() :
                     if (send) {
                         sendVideoMessage(uri)
                     } else {
-                        showPreview(uri, getString(R.string.action_send), true) { sendVideoMessage(uri) }
+                        showPreview(uri, getString(R.string.Send), true) { sendVideoMessage(uri) }
                     }
                 } else if (item.isGif || item.isWebp) {
                     if (send) {
                         sendImageMessage(uri)
                     } else {
-                        showPreview(uri, getString(R.string.action_send), false) { sendImageMessage(uri) }
+                        showPreview(uri, getString(R.string.Send), false) { sendImageMessage(uri) }
                     }
                 } else {
                     if (send) {
                         sendImageMessage(uri)
                     } else {
-                        getEditorResult.launch(Pair(uri, getString(R.string.action_send)))
+                        getEditorResult.launch(Pair(uri, getString(R.string.Send)))
                     }
                 }
                 releaseChatControl(FLING_DOWN)
@@ -2487,7 +2492,7 @@ class ConversationFragment() :
                                 CallActivity.show(requireContext())
                             } else {
                                 alertDialogBuilder()
-                                    .setMessage(getString(R.string.chat_call_warning_call))
+                                    .setMessage(getString(R.string.call_on_another_call_hint))
                                     .setNegativeButton(getString(android.R.string.ok)) { dialog, _ ->
                                         dialog.dismiss()
                                     }
@@ -2624,7 +2629,7 @@ class ConversationFragment() :
 
         val index = chatViewModel.findMessageIndex(conversationId, messageId)
         if (index < 0 || index >= conversationAdapter.itemCount) {
-            toast(R.string.data_loading)
+            toast(R.string.Data_loading)
             return@launch
         }
         findMessageAction?.invoke(index)
@@ -2691,12 +2696,12 @@ class ConversationFragment() :
                 if (data.hasExtra(IS_VIDEO)) {
                     sendVideoMessage(it)
                 } else {
-                    getEditorResult.launch(Pair(it, getString(R.string.action_send)))
+                    getEditorResult.launch(Pair(it, getString(R.string.Send)))
                 }
             }
         } else if (requestCode == REQUEST_CAMERA && resultCode == Activity.RESULT_OK) {
             imageUri?.let { imageUri ->
-                getEditorResult.launch(Pair(imageUri, getString(R.string.action_send)))
+                getEditorResult.launch(Pair(imageUri, getString(R.string.Send)))
             }
         } else if (requestCode == REQUEST_FILE && resultCode == Activity.RESULT_OK) {
             val uri = data?.data ?: return
@@ -2712,19 +2717,19 @@ class ConversationFragment() :
                             )
                         } else {
                             requireContext().getString(
-                                R.string.send_file,
+                                R.string.send_file_group,
                                 attachment.filename,
                                 recipient?.fullName
                             )
                         }
                     )
-                    .setNegativeButton(R.string.action_cancel) { dialog, _ -> dialog.dismiss() }
-                    .setPositiveButton(R.string.action_send) { dialog, _ ->
+                    .setNegativeButton(R.string.Cancel) { dialog, _ -> dialog.dismiss() }
+                    .setPositiveButton(R.string.Send) { dialog, _ ->
                         sendAttachmentMessage(attachment)
                         dialog.dismiss()
                     }.show()
             } else {
-                toast(R.string.error_file_exists)
+                toast(R.string.File_does_not_exist)
             }
         } else if (requestCode == REQUEST_LOCATION && resultCode == Activity.RESULT_OK) {
             val intent = data ?: return
@@ -2789,7 +2794,7 @@ class ConversationFragment() :
         if (MimeTypes.isAudio(messageItem.mediaMimeType)) {
             items.add(
                 BottomSheetItem(
-                    getString(R.string.action_save_to_music),
+                    getString(R.string.Save_to_Music),
                     {
                         checkWritePermissionAndSave(messageItem)
                         bottomSheet?.dismiss()
@@ -2801,7 +2806,7 @@ class ConversationFragment() :
         ) {
             items.add(
                 BottomSheetItem(
-                    getString(R.string.action_save_to_gallery),
+                    getString(R.string.Save_to_Gallery),
                     {
                         checkWritePermissionAndSave(messageItem)
                         bottomSheet?.dismiss()
@@ -2811,7 +2816,7 @@ class ConversationFragment() :
         } else {
             items.add(
                 BottomSheetItem(
-                    getString(R.string.action_save_to_downloads),
+                    getString(R.string.Save_to_Downloads),
                     {
                         checkWritePermissionAndSave(messageItem)
                         bottomSheet?.dismiss()
@@ -2821,7 +2826,7 @@ class ConversationFragment() :
         }
         items.add(
             BottomSheetItem(
-                getString(R.string.action_open),
+                getString(R.string.Open),
                 {
                     requireContext().openMedia(messageItem)
                     bottomSheet?.dismiss()
@@ -3046,8 +3051,8 @@ class ConversationFragment() :
 
         val selectItem = selectItems[0]
         this.selectItem = selectItem
-        snackbar = Snackbar.make(binding.barLayout, getString(R.string.forward_success), Snackbar.LENGTH_LONG)
-            .setAction(R.string.chat_go_check) {
+        snackbar = Snackbar.make(binding.barLayout, getString(R.string.Forward_success), Snackbar.LENGTH_LONG)
+            .setAction(R.string.View) {
                 ConversationActivity.show(requireContext(), selectItem.conversationId, selectItem.userId)
             }.setActionTextColor(ContextCompat.getColor(requireContext(), R.color.wallet_blue)).apply {
                 (view.findViewById<TextView>(R.id.snackbar_text)).setTextColor(ContextCompat.getColor(requireContext(), R.color.white))
@@ -3136,7 +3141,7 @@ class ConversationFragment() :
     private fun sendFileAlert(transcriptData: TranscriptData) {
         alert(getString(R.string.chat_import_fail_content))
             .setNegativeButton(android.R.string.cancel) { dialog, _ -> dialog.dismiss() }
-            .setPositiveButton(R.string.chat_send_file) { dialog, _ ->
+            .setPositiveButton(R.string.Send_as_file) { dialog, _ ->
                 sendFile(transcriptData)
                 dialog.dismiss()
             }
@@ -3174,7 +3179,7 @@ class ConversationFragment() :
         } else {
             val forwardDialogLayoutBinding = generateForwardDialogLayout()
             forwardDialog = alertDialogBuilder()
-                .setMessage(getString(R.string.chat_forward_title))
+                .setMessage(getString(R.string.Forward_message))
                 .setView(forwardDialogLayoutBinding.root)
                 .create()
             forwardDialogLayoutBinding.forward.setOnClickListener {
@@ -3212,7 +3217,7 @@ class ConversationFragment() :
                     }
             }
             if (nonExistent) {
-                toast(R.string.error_file_exists)
+                toast(R.string.File_does_not_exist)
             } else if (messages.isNotEmpty()) {
                 getCombineForwardResult.launch(ArrayList(messages))
             }

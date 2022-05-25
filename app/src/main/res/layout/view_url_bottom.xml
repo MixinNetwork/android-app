@@ -29,7 +29,7 @@
         android:paddingEnd="16dp"
         android:paddingStart="16dp"
         android:textColor="?attr/text_primary"
-        android:text="@string/action_open" />
+        android:text="@string/Open" />
 
     <TextView
         android:id="@+id/copy_tv"
@@ -42,7 +42,7 @@
         android:paddingEnd="16dp"
         android:textColor="?attr/text_primary"
         android:paddingStart="16dp"
-        android:text="@string/copy_link" />
+        android:text="@string/Copy_link" />
 
 
 </LinearLayout>

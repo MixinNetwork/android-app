@@ -202,7 +202,7 @@ class MarkwonUtil {
 
         fun parseContent(content: String?): String {
             content
-                ?: return MixinApplication.appContext.getString(R.string.conversation_status_post)
+                ?: return MixinApplication.appContext.getString(R.string.content_post)
             return markwon.toMarkdown(content.postOptimize()).toString()
         }
 

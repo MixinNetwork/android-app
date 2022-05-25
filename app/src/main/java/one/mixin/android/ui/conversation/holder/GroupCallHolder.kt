@@ -42,7 +42,7 @@ class GroupCallHolder constructor(val binding: ItemChatSystemBinding) : BaseView
         }
         val isMe = meId == messageItem.userId
         val name = if (isMe) {
-            context.getString(R.string.you)
+            context.getString(R.string.You)
         } else {
             messageItem.userFullName
         }
@@ -62,7 +62,7 @@ class GroupCallHolder constructor(val binding: ItemChatSystemBinding) : BaseView
                 } catch (e: Exception) {
                     ""
                 }
-                binding.chatInfo.text = context.getString(R.string.chat_group_call_end_with_duration, duration)
+                binding.chatInfo.text = context.getString(R.string.group_call_end_with_duration, duration)
             }
         }
     }

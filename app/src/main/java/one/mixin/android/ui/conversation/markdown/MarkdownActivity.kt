@@ -140,7 +140,7 @@ class MarkdownActivity : BaseActivity() {
                         }
                     },
                     {
-                        toast(R.string.export_failure)
+                        toast(R.string.Export_failed)
                     }
                 )
         }
@@ -161,7 +161,7 @@ class MarkdownActivity : BaseActivity() {
                         }
                     },
                     {
-                        toast(R.string.export_failure)
+                        toast(R.string.Export_failed)
                     }
                 )
         }
@@ -183,7 +183,7 @@ class MarkdownActivity : BaseActivity() {
                     }
                 }
             } catch (e: Exception) {
-                toast(R.string.export_failure)
+                toast(R.string.Export_failed)
             }
             dismissAction()
         }
@@ -193,7 +193,7 @@ class MarkdownActivity : BaseActivity() {
     private fun savePdf(dismissAction: () -> Unit) = lifecycleScope.launch {
         val src = intent.getStringExtra(CONTENT) ?: return@launch
 
-        val dialog = indeterminateProgressDialog(message = R.string.pb_dialog_message).apply {
+        val dialog = indeterminateProgressDialog(message = R.string.Please_wait_a_bit).apply {
             setCancelable(false)
         }
         dialog.show()
@@ -231,7 +231,7 @@ class MarkdownActivity : BaseActivity() {
 
                 override fun onFailure(error: CharSequence?) {
                     dialog.dismiss()
-                    toast(R.string.export_failure)
+                    toast(R.string.Export_failed)
                 }
             }
         )

@@ -14,7 +14,7 @@
         android:paddingEnd="16dp"
         android:paddingStart="16dp"
         android:textColor="?attr/text_primary"
-        android:text="@string/action_save" />
+        android:text="@string/Save" />
 
     <TextView
         android:id="@+id/cancel"
@@ -26,5 +26,5 @@
         android:paddingEnd="16dp"
         android:paddingStart="16dp"
         android:textColor="?attr/text_primary"
-        android:text="@string/action_cancel" />
+        android:text="@string/Cancel" />
 </LinearLayout>

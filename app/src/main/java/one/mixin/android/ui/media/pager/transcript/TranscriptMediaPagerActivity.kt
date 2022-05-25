@@ -264,7 +264,7 @@ class TranscriptMediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismis
                         }
                     },
                     {
-                        toast(R.string.save_failure)
+                        toast(R.string.Save_failure)
                     }
                 )
             bottomSheet.dismiss()
@@ -300,12 +300,12 @@ class TranscriptMediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismis
                             async {
                                 val path = item.absolutePath()
                                 if (path == null) {
-                                    toast(R.string.save_failure)
+                                    toast(R.string.Save_failure)
                                     return@async
                                 }
                                 val file = Uri.parse(path).toFile()
                                 if (!file.exists()) {
-                                    toast(R.string.error_file_exists)
+                                    toast(R.string.File_does_not_exist)
                                     return@async
                                 }
                                 val outFile = when {
@@ -325,14 +325,14 @@ class TranscriptMediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismis
                                 }
                                 outFile.copyFromInputStream(FileInputStream(file))
                                 MediaScannerConnection.scanFile(this@TranscriptMediaPagerActivity, arrayOf(outFile.toString()), null, null)
-                                runOnUiThread { toast(getString(R.string.save_to, outFile.absolutePath)) }
+                                runOnUiThread { toast(getString(R.string.Save_to, outFile.absolutePath)) }
                             }
                         } else {
                             openPermissionSetting()
                         }
                     },
                     {
-                        toast(R.string.save_failure)
+                        toast(R.string.Save_failure)
                     }
                 )
             bottomSheet.dismiss()
@@ -397,7 +397,7 @@ class TranscriptMediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismis
             if (ContentResolver.SCHEME_FILE == uri.scheme) {
                 val path = uri.getFilePath(this@TranscriptMediaPagerActivity)
                 if (path == null) {
-                    toast(R.string.error_file_exists)
+                    toast(R.string.File_does_not_exist)
                     return
                 }
                 uri = getUriForFile(File(path))
@@ -407,7 +407,7 @@ class TranscriptMediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismis
             }
             type = if (isVideo) "video/*" else "image/*"
         }
-        val name = getString(if (isVideo) R.string.video else R.string.photo)
+        val name = getString(if (isVideo) R.string.Video else R.string.Photo)
         val chooser = Intent.createChooser(sendIntent, getString(R.string.share_to, name))
         val resInfoList = packageManager.queryIntentActivities(chooser, PackageManager.MATCH_DEFAULT_ONLY)
         resInfoList.forEach {
@@ -520,7 +520,7 @@ class TranscriptMediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismis
             permissionAlert = AlertDialog.Builder(this)
                 .setTitle(R.string.app_name)
                 .setMessage(R.string.call_pip_permission)
-                .setPositiveButton(R.string.live_setting) { dialog, _ ->
+                .setPositiveButton(R.string.Settings) { dialog, _ ->
                     try {
                         startActivity(
                             Intent(
@@ -611,10 +611,10 @@ class TranscriptMediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismis
     private val onLockClickListener = View.OnClickListener {
         isLocked = !isLocked
         if (isLocked) {
-            binding.lockTv.text = getString(R.string.click_unlock)
+            binding.lockTv.text = getString(R.string.Click_to_unlock)
             binding.lockTv.textColor = getColor(R.color.colorAccent)
         } else {
-            binding.lockTv.text = getString(R.string.click_lock)
+            binding.lockTv.text = getString(R.string.Click_to_lock)
             binding.lockTv.textColor = getColor(R.color.white)
         }
         binding.lockTv.removeCallbacks(hideLockRunnable)

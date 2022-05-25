@@ -2,14 +2,14 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <item
         android:id="@+id/rename"
-        android:title="@string/circle_menu_edit_name" />
+        android:title="@string/Edit_Circle_Name" />
     <item
         android:id="@+id/edit"
-        android:title="@string/circle_menu_edit_conversation" />
+        android:title="@string/Edit_Conversations" />
     <item
         android:id="@+id/delete"
-        android:title="@string/circle_action_menu_delete" />
+        android:title="@string/Delete" />
     <item
         android:id="@+id/sort"
-        android:title="@string/circle_action_menu_sort" />
+        android:title="@string/Sort" />
 </menu>

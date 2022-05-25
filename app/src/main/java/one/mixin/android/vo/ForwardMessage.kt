@@ -76,8 +76,8 @@ sealed class ShareCategory : ForwardCategory() {
         override fun toString() = "Image"
         fun getErrorStringOrNull(code: Int) =
             when (code) {
-                -1 -> R.string.error_image
-                -2 -> R.string.error_format
+                -1 -> R.string.File_error
+                -2 -> R.string.Format_not_supported
                 else -> null
             }
     }

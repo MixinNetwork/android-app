@@ -1,5 +1,6 @@
 package one.mixin.android.ui.setting
 
+import android.annotation.SuppressLint
 import android.os.Bundle
 import android.view.View
 import android.view.WindowManager
@@ -78,12 +79,12 @@ class WalletPasswordFragment : BaseFragment(R.layout.fragment_wallet_password), 
         activity?.window?.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
         binding.apply {
             if (change) {
-                titleView.setSubTitle(getString(R.string.wallet_password_set_new_pin), "2/5")
+                titleView.setSubTitle(getString(R.string.Set_new_PIN), "2/5")
                 tipTv.text = getString(R.string.wallet_password_set_new_pin_desc)
             } else {
-                titleView.setSubTitle(getString(R.string.wallet_password_set_pin), "1/4")
+                titleView.setSubTitle(getString(R.string.Set_PIN), "1/4")
                 val url = Constants.HelpLink.TIP
-                val target = getString(R.string.wallet_password_set_pin_target)
+                val target = getString(R.string.Learn_More)
                 val desc = getString(R.string.wallet_password_set_pin_desc)
                 tipTv.highlightLinkText(desc, arrayOf(target), arrayOf(url))
             }
@@ -149,19 +150,20 @@ class WalletPasswordFragment : BaseFragment(R.layout.fragment_wallet_password), 
         lastPassword = null
         binding.pin.clear()
         binding.titleView.setSubTitle(
-            getString(if (change) R.string.wallet_password_set_new_pin else R.string.wallet_password_set_pin),
+            getString(if (change) R.string.Set_new_PIN else R.string.Set_PIN),
             getSubTitle()
         )
         if (change) {
             binding.tipTv.text = getString(R.string.wallet_password_set_new_pin_desc)
         } else {
             val url = Constants.HelpLink.TIP
-            val target = getString(R.string.wallet_password_set_pin_target)
+            val target = getString(R.string.Learn_More)
             val desc = getString(R.string.wallet_password_set_pin_desc)
             binding.tipTv.highlightLinkText(desc, arrayOf(target), arrayOf(url))
         }
     }
 
+    @SuppressLint("SetTextI18n")
     private fun toStep2(check: Boolean = false) {
         if (check && !validatePin()) {
             binding.pin.clear()
@@ -172,19 +174,20 @@ class WalletPasswordFragment : BaseFragment(R.layout.fragment_wallet_password), 
         lastPassword = binding.pin.code()
         binding.apply {
             pin.clear()
-            titleView.setSubTitle(getString(R.string.wallet_password_confirm_pin), getSubTitle())
-            tipTv.text = getString(R.string.wallet_password_confirm_1)
+            titleView.setSubTitle(getString(R.string.Confirm_PIN), getSubTitle())
+            tipTv.text = "${getString(R.string.pin_confirm_hint)}\n${getString(R.string.pin_lost_hint)}"
         }
     }
 
+    @SuppressLint("SetTextI18n")
     private fun toStep3(check: Boolean = false) {
         if (check && checkEqual()) return
 
         step = STEP3
         binding.apply {
             pin.clear()
-            titleView.setSubTitle(getString(R.string.wallet_password_confirm_pin), getSubTitle())
-            tipTv.text = getString(R.string.wallet_password_confirm_2)
+            titleView.setSubTitle(getString(R.string.Confirm_PIN), getSubTitle())
+            tipTv.text = "${getString(R.string.pin_confirm_again_hint)}\n${getString(R.string.third_pin_confirm_hint)}"
         }
     }
 
@@ -194,8 +197,8 @@ class WalletPasswordFragment : BaseFragment(R.layout.fragment_wallet_password), 
         step = STEP4
         binding.apply {
             pin.clear()
-            titleView.setSubTitle(getString(R.string.wallet_password_confirm_pin), getSubTitle())
-            tipTv.text = getString(R.string.wallet_password_confirm_3)
+            titleView.setSubTitle(getString(R.string.Confirm_PIN), getSubTitle())
+            tipTv.text = getString(R.string.fourth_pin_confirm_hint)
         }
     }
 
@@ -239,8 +242,8 @@ class WalletPasswordFragment : BaseFragment(R.layout.fragment_wallet_password), 
                 if (checkEqual()) return
 
                 val dialog = indeterminateProgressDialog(
-                    message = getString(R.string.pb_dialog_message),
-                    title = if (change) getString(R.string.changing) else getString(R.string.group_creating)
+                    message = getString(R.string.Please_wait_a_bit),
+                    title = if (change) getString(R.string.Changing) else getString(R.string.Creating)
                 )
                 dialog.setCancelable(false)
                 dialog.show()
@@ -268,17 +271,17 @@ class WalletPasswordFragment : BaseFragment(R.layout.fragment_wallet_password), 
                                         if (activity is ConversationActivity ||
                                             activity is ContactsActivity
                                         ) {
-                                            toast(R.string.wallet_set_password_success)
+                                            toast(R.string.Set_PIN_successfully)
                                             parentFragmentManager.popBackStackImmediate()
                                         } else if (activity is MainActivity) {
-                                            toast(R.string.wallet_set_password_success)
+                                            toast(R.string.Set_PIN_successfully)
                                             parentFragmentManager.popBackStackImmediate()
                                             WalletActivity.show(activity)
                                         } else {
                                             if (change) {
-                                                toast(R.string.wallet_change_password_success)
+                                                toast(R.string.Change_PIN_successfully)
                                             } else {
-                                                toast(R.string.wallet_set_password_success)
+                                                toast(R.string.Set_PIN_successfully)
                                             }
                                             parentFragmentManager.popBackStackImmediate()
                                         }

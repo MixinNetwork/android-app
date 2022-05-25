@@ -13,8 +13,8 @@
         android:id="@+id/title_view"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:rightText="@string/action_done"
-        app:titleText="@string/sticker_add" />
+        app:rightText="@string/Done"
+        app:titleText="@string/Add_Sticker" />
 
     <one.mixin.android.widget.SquareLayout
         android:layout_width="match_parent"

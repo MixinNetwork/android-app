@@ -101,7 +101,7 @@ class GroupUsersBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 override fun onSearch() {
                 }
             }
-            binding.searchEt.setHint(getString(R.string.contact_search_hint))
+            binding.searchEt.setHint(getString(R.string.setting_auth_search_hint))
 
             binding.selectRv.layoutManager = LinearLayoutManager(
                 requireContext(),
@@ -153,8 +153,8 @@ class GroupUsersBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             }
 
             override fun onFull() {
-                alert(getString(R.string.call_group_full, GROUP_VOICE_MAX_COUNT))
-                    .setPositiveButton(R.string.capital_ok) { dialog, _ ->
+                alert(getString(R.string.Group_call_participants_limit_hint, GROUP_VOICE_MAX_COUNT))
+                    .setPositiveButton(R.string.OK) { dialog, _ ->
                         dialog.dismiss()
                     }.show()
             }

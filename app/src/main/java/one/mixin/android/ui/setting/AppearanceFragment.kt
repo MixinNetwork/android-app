@@ -28,8 +28,9 @@ class AppearanceFragment : BaseFragment(R.layout.fragment_appearance) {
         const val POS_FOLLOW_SYSTEM = 0
         const val POS_ENGLISH = 1
         const val POS_SIMPLIFY_CHINESE = 2
-        const val POS_INDONESIA = 3
-        const val POS_Malay = 4
+        const val POS_SIMPLIFY_JAPANESE = 3
+        const val POS_INDONESIA = 4
+        const val POS_Malay = 5
 
         fun newInstance() = AppearanceFragment()
     }
@@ -42,7 +43,7 @@ class AppearanceFragment : BaseFragment(R.layout.fragment_appearance) {
             titleView.leftIb.setOnClickListener {
                 activity?.onBackPressed()
             }
-            nightModeTv.setText(R.string.setting_theme)
+            nightModeTv.setText(R.string.Theme)
             val currentId = defaultSharedPreferences.getInt(
                 Constants.Theme.THEME_CURRENT_ID,
                 if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
@@ -54,14 +55,14 @@ class AppearanceFragment : BaseFragment(R.layout.fragment_appearance) {
             nightModeDescTv.text = resources.getStringArray(R.array.setting_night_array_oreo)[currentId]
             nightModeRl.setOnClickListener {
                 singleChoice(
-                    resources.getString(R.string.setting_theme),
+                    resources.getString(R.string.Theme),
                     if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
                         R.array.setting_night_array
                     } else {
                         R.array.setting_night_array_oreo
                     },
                     currentId
-                ) { _, index ->
+                ) { dialog, index ->
                     val changed = index != currentId
                     defaultSharedPreferences.putInt(Constants.Theme.THEME_CURRENT_ID, index)
                     AppCompatDelegate.setDefaultNightMode(
@@ -72,6 +73,7 @@ class AppearanceFragment : BaseFragment(R.layout.fragment_appearance) {
                             else -> AppCompatDelegate.MODE_NIGHT_NO
                         }
                     )
+                    dialog.dismiss()
                     if (changed) {
                         requireActivity().onBackPressed()
                         requireActivity().recreate()
@@ -81,11 +83,14 @@ class AppearanceFragment : BaseFragment(R.layout.fragment_appearance) {
             val language = Lingver.getInstance().getLanguage()
             val languageNames = resources.getStringArray(R.array.language_names)
             languageDescTv.text = if (Lingver.getInstance().isFollowingSystemLocale()) {
-                getString(R.string.follow_system)
+                getString(R.string.Follow_system)
             } else {
                 when (language) {
                     Locale.SIMPLIFIED_CHINESE.language -> {
                         languageNames[POS_SIMPLIFY_CHINESE]
+                    }
+                    Locale.JAPANESE.language -> {
+                        languageNames[POS_SIMPLIFY_JAPANESE]
                     }
                     Constants.Locale.Indonesian.Language -> {
                         languageNames[POS_INDONESIA]
@@ -114,13 +119,16 @@ class AppearanceFragment : BaseFragment(R.layout.fragment_appearance) {
 
     private fun showLanguageAlert() {
         val choice = resources.getStringArray(R.array.language_names)
-        choice[0] = getString(R.string.follow_system)
+        choice[0] = getString(R.string.Follow_system)
         val selectItem = if (Lingver.getInstance().isFollowingSystemLocale()) {
             POS_FOLLOW_SYSTEM
         } else {
             when (Lingver.getInstance().getLanguage()) {
                 Locale.SIMPLIFIED_CHINESE.language -> {
                     POS_SIMPLIFY_CHINESE
+                }
+                Locale.JAPANESE.language -> {
+                    POS_SIMPLIFY_JAPANESE
                 }
                 Constants.Locale.Indonesian.Language -> {
                     POS_INDONESIA
@@ -135,23 +143,25 @@ class AppearanceFragment : BaseFragment(R.layout.fragment_appearance) {
         }
         var newSelectItem = selectItem
         alertDialogBuilder()
-            .setTitle(R.string.language)
+            .setTitle(R.string.Language)
             .setSingleChoiceItems(choice, selectItem) { _, which ->
                 newSelectItem = which
             }
-            .setPositiveButton(R.string.capital_ok) { dialog, _ ->
+            .setPositiveButton(R.string.OK) { dialog, _ ->
                 if (newSelectItem != selectItem) {
                     if (newSelectItem == POS_FOLLOW_SYSTEM) {
                         Lingver.getInstance().setFollowSystemLocale(requireContext())
                     } else {
                         val selectedLang = when (newSelectItem) {
                             POS_SIMPLIFY_CHINESE -> Locale.SIMPLIFIED_CHINESE.language
+                            POS_SIMPLIFY_JAPANESE -> Locale.JAPANESE.language
                             POS_INDONESIA -> Constants.Locale.Indonesian.Language
                             POS_Malay -> Constants.Locale.Malay.Language
                             else -> Locale.US.language
                         }
                         val selectedCountry = when (newSelectItem) {
                             POS_SIMPLIFY_CHINESE -> Locale.SIMPLIFIED_CHINESE.country
+                            POS_SIMPLIFY_JAPANESE -> Locale.JAPANESE.country
                             POS_INDONESIA -> Constants.Locale.Indonesian.Country
                             POS_Malay -> Constants.Locale.Malay.Country
                             else -> Locale.US.country
@@ -165,7 +175,7 @@ class AppearanceFragment : BaseFragment(R.layout.fragment_appearance) {
                 }
                 dialog.dismiss()
             }
-            .setNegativeButton(R.string.action_cancel) { dialog, _ ->
+            .setNegativeButton(R.string.Cancel) { dialog, _ ->
                 dialog.dismiss()
             }
             .show()

@@ -5,7 +5,6 @@ import android.content.Intent
 import android.os.Bundle
 import androidx.annotation.VisibleForTesting
 import androidx.navigation.NavArgument
-import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
 import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.R
@@ -19,8 +18,6 @@ import javax.inject.Inject
 
 @AndroidEntryPoint
 class WalletActivity : BlazeBaseActivity() {
-
-    lateinit var navController: NavController
 
     @VisibleForTesting(otherwise = VisibleForTesting.NONE)
     @Inject
@@ -37,18 +34,22 @@ class WalletActivity : BlazeBaseActivity() {
 
         val navHostFragment = supportFragmentManager
             .findFragmentById(R.id.container) as NavHostFragment?
-        navController = navHostFragment!!.navController
-        val navGraph = navController.navInflater.inflate(R.navigation.nav_wallet)
-        asset.notNullWithElse(
-            {
-                navGraph.setStartDestination(R.id.transactions_fragment)
-                navGraph.addArgument(ARGS_ASSET, NavArgument.Builder().setDefaultValue(it).build())
-            },
-            {
-                navGraph.setStartDestination(R.id.wallet_fragment)
-            }
-        )
-        navController.graph = navGraph
+        val navController = navHostFragment?.navController
+        val navGraph = navController?.navInflater?.inflate(R.navigation.nav_wallet)
+        navGraph?.apply {
+            asset.notNullWithElse(
+                {
+                    setStartDestination(R.id.transactions_fragment)
+                    addArgument(ARGS_ASSET, NavArgument.Builder().setDefaultValue(it).build())
+                },
+                {
+                    setStartDestination(R.id.wallet_fragment)
+                }
+            )
+        }
+        if (navController != null && navGraph != null) {
+            navController.graph = navGraph
+        }
     }
 
     private val asset: AssetItem? by lazy {

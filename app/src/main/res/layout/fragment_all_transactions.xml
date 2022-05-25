@@ -11,7 +11,7 @@
         android:layout_height="wrap_content"
         app:need_divider="false"
         app:rightIcon="@drawable/ic_wallet_filter"
-        app:titleText="@string/wallet_all_transactions"/>
+        app:titleText="@string/All_Transactions"/>
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/transactions_rv"

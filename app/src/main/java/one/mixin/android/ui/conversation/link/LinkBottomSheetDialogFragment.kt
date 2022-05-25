@@ -15,12 +15,10 @@ import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.net.toUri
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.viewModels
-import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import com.bumptech.glide.manager.SupportRequestManagerFragment
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
-import com.uber.autodispose.android.lifecycle.AndroidLifecycleScopeProvider
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.launch
@@ -41,6 +39,7 @@ import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.getGroupAvatarPath
 import one.mixin.android.extension.handleSchemeSend
 import one.mixin.android.extension.isDonateUrl
+import one.mixin.android.extension.isExternalScheme
 import one.mixin.android.extension.isUUID
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.withArgs
@@ -97,8 +96,6 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
         }
     }
 
-    private val scopeProvider by lazy { AndroidLifecycleScopeProvider.from(this, Lifecycle.Event.ON_STOP) }
-
     private var authOrPay = false
 
     override fun getTheme() = R.style.AppTheme_Dialog
@@ -125,7 +122,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
         }
     }
 
-    private fun getUserOrAppNotFoundTip(isApp: Boolean) = if (isApp) R.string.error_app_not_found else R.string.error_user_not_found
+    private fun getUserOrAppNotFoundTip(isApp: Boolean) = if (isApp) R.string.App_not_found else R.string.User_not_found
 
     @SuppressLint("RestrictedApi")
     override fun setupDialog(dialog: Dialog, style: Int) {
@@ -202,7 +199,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 segments[0]
             }
             if (!userId.isUUID()) {
-                toast(R.string.error_user_not_found)
+                toast(R.string.User_not_found)
                 dismiss()
             } else if (userId == Session.getAccountId()) {
                 toast(R.string.cant_transfer_self)
@@ -211,7 +208,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 lifecycleScope.launch(errorHandler) {
                     val user = linkViewModel.refreshUser(userId)
                     if (user == null) {
-                        toast(R.string.error_user_not_found)
+                        toast(R.string.User_not_found)
                         dismiss()
                         return@launch
                     }
@@ -227,7 +224,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
 
             lifecycleScope.launch(errorHandler) {
                 if (!showTransfer(url)) {
-                    showError(R.string.bottom_sheet_invalid_payment)
+                    showError(R.string.Invalid_payment_link)
                 } else {
                     dismiss()
                 }
@@ -571,18 +568,18 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                                         showWithdrawalBottom(address, amount, asset, traceId, response.status, memo)
                                     },
                                     failureBlock = {
-                                        showError(R.string.bottom_sheet_invalid_payment)
+                                        showError(R.string.Invalid_payment_link)
                                         return@handleMixinResponse false
                                     },
                                     exceptionBlock = {
-                                        showError(R.string.bottom_sheet_check_payment_info)
+                                        showError(R.string.Checking_payment_info)
                                         return@handleMixinResponse false
                                     }
                                 )
                             }
                         }
                     } else {
-                        showError(R.string.error_asset_exists)
+                        showError(R.string.Asset_not_found)
                     }
                 }
             }
@@ -613,7 +610,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                     val user = linkViewModel.refreshUser(userId)
                     when {
                         user == null -> {
-                            showError(R.string.error_user_not_found)
+                            showError(R.string.User_not_found)
                         }
                         conversationId != generateConversationId(requireNotNull(Session.getAccountId()), userId) -> {
                             showError()
@@ -629,7 +626,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                         ConversationActivity.show(requireContext(), conversation.conversationId)
                         dismiss()
                     } else {
-                        showError(R.string.error_conversation_not_found)
+                        showError(R.string.Conversation_not_found)
                     }
                 }
             }
@@ -651,7 +648,12 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 dismiss()
             }
         } else {
-            showError()
+            if (url.isExternalScheme(requireContext())) {
+                WebActivity.show(requireContext(), url, null)
+                dismiss()
+            } else {
+                showError()
+            }
         }
     }
 
@@ -733,7 +735,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
     private suspend fun showTransferBottom(user: User, amount: String, asset: AssetItem, traceId: String, status: String, memo: String?) {
         val pair = linkViewModel.findLatestTrace(user.userId, null, null, amount, asset.assetId)
         if (pair.second) {
-            showError(getString(R.string.bottom_sheet_check_trace_failed))
+            showError(getString(R.string.check_trace_failed))
             return
         }
         val biometricItem = TransferBiometricItem(user, asset, amount, null, traceId, memo, status, pair.first)
@@ -743,7 +745,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
     private suspend fun showWithdrawalBottom(address: Address, amount: String, asset: AssetItem, traceId: String, status: String, memo: String?) {
         val pair = linkViewModel.findLatestTrace(null, address.destination, address.tag, amount, asset.assetId)
         if (pair.second) {
-            showError(getString(R.string.bottom_sheet_check_trace_failed))
+            showError(getString(R.string.check_trace_failed))
             return
         }
         val biometricItem = WithdrawBiometricItem(
@@ -781,10 +783,10 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
     }
 
     @SuppressLint("SetTextI18n")
-    private fun showError(@StringRes errorRes: Int = R.string.link_error) {
+    private fun showError(@StringRes errorRes: Int = R.string.Invalid_Link) {
         binding.apply {
-            if (errorRes == R.string.link_error) {
-                linkErrorInfo.text = "${getString(R.string.link_error)}\n\n$url"
+            if (errorRes == R.string.Invalid_Link) {
+                linkErrorInfo.text = "${getString(R.string.Invalid_Link)}\n\n$url"
             } else {
                 linkErrorInfo.setText(errorRes)
             }
@@ -819,11 +821,11 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
     private val errorHandler = CoroutineExceptionHandler { _, error ->
         when (error) {
             is SocketTimeoutException -> showError(R.string.error_connection_timeout)
-            is UnknownHostException -> showError(R.string.error_no_connection)
-            is IOException -> showError(R.string.error_network)
+            is UnknownHostException -> showError(R.string.No_network_connection)
+            is IOException -> showError(R.string.No_network_connection)
             else -> {
                 ErrorHandler.handleError(error)
-                showError()
+                showError(R.string.Network_error)
             }
         }
     }

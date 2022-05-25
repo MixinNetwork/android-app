@@ -50,6 +50,7 @@ abstract class BiometricBottomSheetDialogFragment : MixinBottomSheetDialogFragme
             contentView.removeCallbacks(dismissRunnable)
             callback?.onSuccess()
         }
+        biometricDialog?.callback = null
     }
 
     override fun onDismiss(dialog: DialogInterface) {
@@ -155,7 +156,7 @@ abstract class BiometricBottomSheetDialogFragment : MixinBottomSheetDialogFragme
                 if (autoDismiss) {
                     dismiss()
                 }
-                callback?.onSuccess() ?: toast(R.string.successful)
+                callback?.onSuccess() ?: toast(R.string.Successful)
             }
         } else {
             val errorString = doWithMixinErrorCode(response.errorCode, pin)

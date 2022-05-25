@@ -69,7 +69,7 @@ abstract class BaseTransactionsFragmentTest {
 
             // filter by transfer
             showFilterBottom(navController, R.id.filters_radio_transfer)
-            checkTransitionName(activityScenario, ctx.getString(R.string.filters_transfer))
+            checkTransitionName(activityScenario, ctx.getString(R.string.action_transfer))
 
             // filter by deposit
             showFilterBottom(navController, R.id.filters_radio_deposit)
@@ -77,15 +77,15 @@ abstract class BaseTransactionsFragmentTest {
 
             // filter by withdrawal
             showFilterBottom(navController, R.id.filters_radio_withdrawal)
-            checkTransitionName(activityScenario, ctx.getString(R.string.filters_withdrawal))
+            checkTransitionName(activityScenario, ctx.getString(R.string.withdrawal))
 
             // filter by fee
             showFilterBottom(navController, R.id.filters_radio_fee)
-            checkTransitionName(activityScenario, ctx.getString(R.string.filters_fee))
+            checkTransitionName(activityScenario, ctx.getString(R.string.fee))
 
             // filter by rebate
             showFilterBottom(navController, R.id.filters_radio_rebate)
-            checkTransitionName(activityScenario, ctx.getString(R.string.filters_rebate))
+            checkTransitionName(activityScenario, ctx.getString(R.string.action_rebate))
 
             // filter by raw
             showFilterBottom(navController, R.id.filters_radio_raw)

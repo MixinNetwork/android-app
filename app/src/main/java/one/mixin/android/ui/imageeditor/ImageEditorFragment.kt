@@ -145,10 +145,10 @@ class ImageEditorFragment : BaseFragment(), TextEntryDialogFragment.Controller {
         if (undoAvailable) {
             alertDialogBuilder()
                 .setMessage(R.string.exit_without_save)
-                .setNegativeButton(R.string.action_cancel) { dialog, _ ->
+                .setNegativeButton(R.string.Cancel) { dialog, _ ->
                     dialog.dismiss()
                 }
-                .setPositiveButton(R.string.action_exit) { dialog, _ ->
+                .setPositiveButton(R.string.Exit) { dialog, _ ->
                     dialog.dismiss()
                     activity?.finish()
                 }.show()
@@ -257,7 +257,7 @@ class ImageEditorFragment : BaseFragment(), TextEntryDialogFragment.Controller {
             title.isVisible = false
             typeTv.isVisible = true
             undoRedoView.isVisible = false
-            typeTv.text = getString(R.string.action_text)
+            typeTv.text = getString(R.string.Text)
             colorRv.isVisible = showTools
             seekbarLl.isVisible = false
         }
@@ -270,7 +270,7 @@ class ImageEditorFragment : BaseFragment(), TextEntryDialogFragment.Controller {
             title.isVisible = false
             typeTv.isVisible = true
             undoRedoView.isVisible = false
-            typeTv.text = getString(R.string.action_crop)
+            typeTv.text = getString(R.string.Crop)
             colorRv.isVisible = false
             seekbarLl.isVisible = false
         }
@@ -325,7 +325,7 @@ class ImageEditorFragment : BaseFragment(), TextEntryDialogFragment.Controller {
     private fun renderAndSave() = lifecycleScope.launch {
         if (viewDestroyed()) return@launch
 
-        val dialog = indeterminateProgressDialog(message = R.string.pb_dialog_message).apply {
+        val dialog = indeterminateProgressDialog(message = R.string.Please_wait_a_bit).apply {
             setCancelable(false)
         }
         val file = requireContext().getImageCachePath().createImageTemp()
@@ -339,7 +339,7 @@ class ImageEditorFragment : BaseFragment(), TextEntryDialogFragment.Controller {
 
         if (saveResult.isFailure) {
             file.delete()
-            toast(R.string.save_failure)
+            toast(R.string.Save_failure)
             return@launch
         }
 

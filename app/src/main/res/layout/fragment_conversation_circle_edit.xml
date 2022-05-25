@@ -11,7 +11,7 @@
             android:id="@+id/title_view"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            app:rightText="@string/action_save" />
+            app:rightText="@string/Save" />
 
     <one.mixin.android.widget.SearchView
         android:id="@+id/search_et"
@@ -22,7 +22,7 @@
         android:paddingStart="@dimen/margin_start"
         android:paddingEnd="@dimen/margin_start"
         android:drawablePadding="8dp"
-        android:hint="@string/action_search"
+        android:hint="@string/Search"
         android:imeOptions="actionDone"
         android:inputType="text"
         android:maxLines="1"

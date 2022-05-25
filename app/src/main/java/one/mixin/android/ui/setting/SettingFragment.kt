@@ -61,13 +61,13 @@ class SettingFragment : BaseFragment(R.layout.fragment_setting) {
                 sendIntent.action = Intent.ACTION_SEND
                 sendIntent.putExtra(
                     Intent.EXTRA_TEXT,
-                    getString(R.string.setting_share_text, Session.getAccount()?.identityNumber)
+                    getString(R.string.chat_on_mixin_content, Session.getAccount()?.identityNumber)
                 )
                 sendIntent.type = "text/plain"
                 startActivity(
                     Intent.createChooser(
                         sendIntent,
-                        resources.getText(R.string.setting_share)
+                        resources.getText(R.string.Share_This_App)
                     )
                 )
             }
@@ -75,7 +75,7 @@ class SettingFragment : BaseFragment(R.layout.fragment_setting) {
                 lifecycleScope.launch {
                     val userTeamMixin = viewModel.refreshUser(TEAM_MIXIN_USER_ID)
                     if (userTeamMixin == null) {
-                        toast(R.string.error_data)
+                        toast(R.string.Data_error)
                     } else {
                         ConversationActivity.show(requireContext(), recipientId = TEAM_MIXIN_USER_ID)
                     }

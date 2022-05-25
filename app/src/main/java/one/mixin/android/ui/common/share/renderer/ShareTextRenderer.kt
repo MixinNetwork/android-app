@@ -3,19 +3,23 @@ package one.mixin.android.ui.common.share.renderer
 import android.content.Context
 import android.view.LayoutInflater
 import androidx.core.view.isVisible
+import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemChatTextBinding
+import one.mixin.android.extension.dp
 import one.mixin.android.extension.nowInUtc
 import one.mixin.android.vo.MessageStatus
 import one.mixin.android.widget.linktext.AutoLinkMode
 
-open class ShareTextRenderer(val context: Context) {
+open class ShareTextRenderer(val context: Context, maxWidth: Int) {
 
     val binding = ItemChatTextBinding.inflate(LayoutInflater.from(context), null, false)
     val contentView get() = binding.root
 
     init {
         binding.chatTv.addAutoLinkMode(AutoLinkMode.MODE_URL)
+        binding.chatTv.setUrlModeColor(Constants.Colors.LINK_COLOR)
+        binding.chatLayout.setMaxWidth(maxWidth - 16.dp)
     }
 
     fun render(content: String, isNightMode: Boolean) {

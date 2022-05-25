@@ -93,7 +93,7 @@ class BackupJob(private val force: Boolean = false, private val delete: Boolean 
                                     System.currentTimeMillis().toString()
                                 )
                             }
-                            toast(R.string.backup_success_tip)
+                            toast(R.string.Backup_success)
                         } else {
                             backupLiveData.setResult(false, null)
                             BackupNotification.cancel()
@@ -111,7 +111,7 @@ class BackupJob(private val force: Boolean = false, private val delete: Boolean 
                                     System.currentTimeMillis().toString()
                                 )
                             }
-                            toast(R.string.backup_success_tip)
+                            toast(R.string.Backup_success)
                         } else {
                             backupLiveData.setResult(false, null)
                             BackupNotification.cancel()

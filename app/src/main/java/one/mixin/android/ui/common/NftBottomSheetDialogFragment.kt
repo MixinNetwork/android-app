@@ -59,10 +59,10 @@ class NftBottomSheetDialogFragment : BiometricBottomSheetDialogFragment() {
         checkState(t)
 
         binding.apply {
-            title.text = getString(R.string.action_transfer)
+            title.text = getString(R.string.Transfer)
             arrowIv.setImageResource(R.drawable.ic_multisigs_arrow_right)
-            biometricLayout.payTv.setText(R.string.multisig_pay_pin)
-            biometricLayout.biometricTv.setText(R.string.multisig_pay_biometric)
+            biometricLayout.payTv.setText(R.string.Multisig_by_PIN)
+            biometricLayout.biometricTv.setText(R.string.Use_Biometric_Multisig)
             nftIv.round(4.dp)
         }
 
@@ -121,9 +121,9 @@ class NftBottomSheetDialogFragment : BiometricBottomSheetDialogFragment() {
 
     private fun showUserList(userList: ArrayList<User>, isSender: Boolean) {
         val title = if (isSender) {
-            "${getString(R.string.multisig_senders)} ${t.sendersThreshold}/${t.senders.size}"
+            "${getString(R.string.Senders)} ${t.sendersThreshold}/${t.senders.size}"
         } else {
-            getString(R.string.multisig_receivers, "${t.receiversThreshold}/${t.receivers.size}")
+            getString(R.string.multisig_receivers_threshold, "${t.receiversThreshold}/${t.receivers.size}")
         }
         UserListBottomSheetDialogFragment.newInstance(userList, title)
             .showNow(parentFragmentManager, UserListBottomSheetDialogFragment.TAG)
@@ -135,14 +135,14 @@ class NftBottomSheetDialogFragment : BiometricBottomSheetDialogFragment() {
             requireContext().getString(
                 // Todo replace string
                 if (t.action == SignatureAction.cancel.name) {
-                    R.string.multisig_revoke_transaction
+                    R.string.Revoke_multisig_transaction
                 } else {
-                    R.string.multisig_transaction
+                    R.string.Multisig_Transaction
                 }
             ),
             t.memo ?: "",
             "",
-            getString(R.string.wallet_pay_with_pin)
+            getString(R.string.Pay_with_PIN)
         )
     }
 

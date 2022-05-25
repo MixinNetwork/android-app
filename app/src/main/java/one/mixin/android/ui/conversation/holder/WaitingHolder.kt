@@ -61,18 +61,18 @@ class WaitingHolder constructor(
     ) {
         val isMe = meId == messageItem.userId
         if (messageItem.isSignal()) {
-            val learn: String = MixinApplication.get().getString(R.string.action_learn_more)
+            val learn: String = MixinApplication.get().getString(R.string.Learn_More)
             val info =
                 MixinApplication.get().getString(
                     R.string.chat_waiting,
                     if (isMe) {
-                        MixinApplication.get().getString(R.string.chat_waiting_desktop)
+                        MixinApplication.get().getString(R.string.desktop)
                     } else {
                         messageItem.userFullName
                     },
                     learn
                 )
-            val learnUrl = MixinApplication.get().getString(R.string.chat_waiting_url)
+            val learnUrl = MixinApplication.get().getString(R.string.secret_url)
             binding.chatTv.highlightLinkText(
                 info,
                 arrayOf(learn),

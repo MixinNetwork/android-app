@@ -41,7 +41,7 @@ class LocationAdapter(val currentCallback: () -> Unit, val callback: (LocationPa
     override fun onBindViewHolder(holder: VenueHolder, position: Int) {
         val binding = ItemLocationBinding.bind(holder.itemView)
         if (position == 0) {
-            binding.title.setText(R.string.location_send_current_location)
+            binding.title.setText(R.string.Send_your_Current_Location)
             binding.subTitle.text = accurate
             binding.locationIcon.setBackgroundResource(R.drawable.ic_current_location)
             binding.locationIcon.setImageDrawable(null)

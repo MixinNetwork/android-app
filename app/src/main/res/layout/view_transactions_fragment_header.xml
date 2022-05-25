@@ -72,7 +72,7 @@
                 android:layout_height="match_parent"
                 android:layout_weight="1"
                 android:gravity="center"
-                android:text="@string/action_transfer_send"
+                android:text="@string/Send_transfer"
                 android:textColor="@color/wallet_blue_secondary" />
 
             <View
@@ -91,7 +91,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:gravity="center"
-                    android:text="@string/action_receive"
+                    android:text="@string/Receive"
                     android:textColor="@color/wallet_blue_secondary" />
 
                 <ProgressBar
@@ -127,7 +127,7 @@
             android:background="@drawable/mixin_ripple_small"
             android:padding="8dp"
             android:src="@drawable/ic_sort"
-            android:contentDescription="@string/capital_sort_by" />
+            android:contentDescription="@string/Sort_by" />
 
         <TextView
             android:id="@+id/group_info_member_title"
@@ -138,7 +138,7 @@
             android:gravity="bottom"
             android:paddingStart="@dimen/margin20"
             android:paddingEnd="@dimen/margin20"
-            android:text="@string/wallet_transactions_title"
+            android:text="@string/Transactions"
             android:textColor="?attr/text_primary" />
     </RelativeLayout>
 
@@ -171,7 +171,7 @@
             android:layout_below="@id/bottom_iv"
             android:layout_centerHorizontal="true"
             android:layout_marginTop="@dimen/margin16"
-            android:text="@string/wallet_transactions_empty"
+            android:text="@string/No_transactions"
             android:textColor="?attr/text_minor" />
     </RelativeLayout>
 </RelativeLayout>

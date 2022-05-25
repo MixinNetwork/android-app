@@ -125,7 +125,7 @@ class StickerAlbumBottomSheetFragment : BottomSheetDialogFragment() {
     private fun updateAction(album: StickerAlbum) {
         binding.actionTv.apply {
             if (album.added) {
-                text = getString(R.string.sticker_store_remove_stickers)
+                text = getString(R.string.Remove_Stickers)
                 setBackgroundResource(R.drawable.bg_round_red_btn)
                 setOnClickListener {
                     lifecycleScope.launch {
@@ -133,7 +133,7 @@ class StickerAlbumBottomSheetFragment : BottomSheetDialogFragment() {
                     }
                 }
             } else {
-                text = getString(R.string.sticker_store_add_stickers)
+                text = getString(R.string.Add_stickers)
                 setBackgroundResource(R.drawable.bg_round_blue_btn)
                 setOnClickListener {
                     lifecycleScope.launch {

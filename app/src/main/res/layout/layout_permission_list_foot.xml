@@ -29,7 +29,7 @@
             android:layout_height="wrap_content"
             android:layout_centerVertical="true"
             android:layout_marginStart="@dimen/activity_horizontal_margin"
-            android:text="@string/setting_revoke"
+            android:text="@string/Revoke_access"
             android:textColor="@color/colorRed"
             tools:ignore="RelativeOverlap" />
     </RelativeLayout>

@@ -63,7 +63,7 @@ abstract class PinCodeFragment(@LayoutRes contentLayoutId: Int) : FabLoadingFrag
     protected fun handleFailure(r: MixinResponse<*>) {
         pinVerificationView.error()
         pinVerificationTipTv.visibility = View.VISIBLE
-        pinVerificationTipTv.text = getString(R.string.landing_validation_error)
+        pinVerificationTipTv.text = getString(R.string.The_code_is_incorrect)
         if (r.errorCode == ErrorHandler.PHONE_VERIFICATION_CODE_INVALID ||
             r.errorCode == ErrorHandler.PHONE_VERIFICATION_CODE_EXPIRED
         ) {

@@ -389,7 +389,7 @@
             android:name="com.google.firebase.messaging.default_notification_color"
             android:resource="@color/gray_light" />
         <meta-data
-            android:name="com.google.firebase.ml.vision.DEPENDENCIES"
+            android:name="com.google.mlkit.vision.DEPENDENCIES"
             android:value="barcode" />
         <meta-data
             android:name="android.max_aspect"

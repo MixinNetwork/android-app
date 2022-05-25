@@ -63,7 +63,7 @@ class SearchMessageHolder(val binding: ItemSearchMessageBinding) : RecyclerView.
             binding.searchMsgTv.text = message.mediaName
         } else if (message.isTranscript()) {
             TextViewCompat.setCompoundDrawablesRelative(binding.searchMsgTv, fileIcon, null, null, null)
-            binding.searchMsgTv.text = binding.searchMsgTv.context.getString(R.string.transcript)
+            binding.searchMsgTv.text = binding.searchMsgTv.context.getString(R.string.Transcript)
         } else {
             TextViewCompat.setCompoundDrawablesRelative(binding.searchMsgTv, null, null, null, null)
             binding.searchMsgTv.text = message.content

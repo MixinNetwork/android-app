@@ -162,7 +162,7 @@ class EditFragment : VisionFragment() {
                             GsonHelper.customGson.toJson(VideoMessagePayload(File(path).toUri().toString()))
                         )
                     ),
-                    ForwardAction.System(name = getString(R.string.action_send), needEdit = false)
+                    ForwardAction.System(name = getString(R.string.Send), needEdit = false)
                 )
             } else {
                 ForwardActivity.show(
@@ -173,7 +173,7 @@ class EditFragment : VisionFragment() {
                             GsonHelper.customGson.toJson(ShareImageData(File(path).toUri().toString())),
                         )
                     ),
-                    ForwardAction.System(name = getString(R.string.action_send), needEdit = false)
+                    ForwardAction.System(name = getString(R.string.Send), needEdit = false)
                 )
             }
         }
@@ -260,7 +260,7 @@ class EditFragment : VisionFragment() {
 
     private fun showNoResultDialog() {
         alertDialogBuilder()
-            .setMessage(getString(R.string.qr_not_found))
+            .setMessage(getString(R.string.QR_Code_not_found))
             .setNegativeButton(getString(android.R.string.ok)) { dialog, _ ->
                 dialog.dismiss()
             }
@@ -286,7 +286,7 @@ class EditFragment : VisionFragment() {
             File(path).copy(outFile)
         }
         MediaScannerConnection.scanFile(context, arrayOf(outFile.toString()), null, null)
-        toast(getString(R.string.save_to, outFile.absolutePath))
+        toast(getString(R.string.Save_to, outFile.absolutePath))
     }
 
     private val videoListener = object : MixinPlayer.VideoPlayerListenerWrapper() {

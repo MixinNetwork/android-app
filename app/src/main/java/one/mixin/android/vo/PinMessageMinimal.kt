@@ -14,19 +14,19 @@ class PinMessageMinimal(
 
 fun PinMessageMinimal?.explain(context: Context): CharSequence {
     return when {
-        this == null -> context.getText(R.string.chat_pin_empty_message)
-        isImage() -> context.getText(R.string.chat_pin_image_message)
-        isVideo() -> context.getText(R.string.chat_pin_video_message)
-        isLive() -> context.getText(R.string.chat_pin_live_message)
-        isData() -> context.getText(R.string.chat_pin_data_message)
-        isAudio() -> context.getText(R.string.chat_pin_audio_message)
-        isSticker() -> context.getText(R.string.chat_pin_sticker_message)
-        isContact() -> context.getText(R.string.chat_pin_contact_message)
-        isPost() -> context.getText(R.string.chat_pin_post_message)
-        isLocation() -> context.getText(R.string.chat_pin_location_message)
-        isTranscript() -> context.getText(R.string.chat_pin_transcript_message)
-        isAppCard() -> context.getText(R.string.chat_pin_card_message)
-        isAppButtonGroup() -> context.getText(R.string.chat_pin_empty_message)
+        this == null -> context.getText(R.string.a_message)
+        isImage() -> context.getText(R.string.a_photo)
+        isVideo() -> context.getText(R.string.a_video)
+        isLive() -> context.getText(R.string.a_live)
+        isData() -> context.getText(R.string.a_file)
+        isAudio() -> context.getText(R.string.an_audio)
+        isSticker() -> context.getText(R.string.a_sticker)
+        isContact() -> context.getText(R.string.a_contact)
+        isPost() -> context.getText(R.string.a_post)
+        isLocation() -> context.getText(R.string.a_location)
+        isTranscript() -> context.getText(R.string.a_transcript)
+        isAppCard() -> context.getText(R.string.a_card)
+        isAppButtonGroup() -> context.getText(R.string.a_message)
         else -> " \"${content}\""
     }
 }

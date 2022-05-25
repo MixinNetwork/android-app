@@ -46,9 +46,9 @@ class RecallHolder constructor(val binding: ItemChatRecallBinding) : BaseViewHol
         chatLayout(isMe, isLast)
         binding.chatTime.load(messageItem.createdAt)
         binding.recallTv.text = if (isMe) {
-            ctx.getString(R.string.chat_recall_me) + " "
+            ctx.getString(R.string.You_deleted_this_message) + " "
         } else {
-            ctx.getString(R.string.chat_recall_delete) + " "
+            ctx.getString(R.string.This_message_was_deleted) + " "
         }
 
         itemView.setOnLongClickListener {

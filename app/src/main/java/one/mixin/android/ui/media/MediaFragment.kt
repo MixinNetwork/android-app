@@ -73,7 +73,7 @@ class MediaFragment : BaseFragment(R.layout.layout_recycler_view) {
         binding.recyclerView.addItemDecoration(StickyRecyclerHeadersDecorationForGrid(adapter, COLUMN))
         binding.recyclerView.adapter = adapter
         binding.emptyIv.setImageResource(R.drawable.ic_empty_media)
-        binding.emptyTv.setText(R.string.capital_no_media)
+        binding.emptyTv.setText(R.string.NO_MEDIA)
         viewModel.getMediaMessagesExcludeLive(conversationId).observe(
             viewLifecycleOwner
         ) {

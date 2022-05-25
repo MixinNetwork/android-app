@@ -60,7 +60,7 @@ fun AuthorizationResponse.getScopes(
                 scopes.add(
                     Scope(
                         s,
-                        ctx.getString(R.string.auth_permission_contacts_read_description)
+                        ctx.getString(R.string.access_your_contacts_list)
                     )
                 )
             SCOPES[4] -> {
@@ -88,42 +88,42 @@ fun AuthorizationResponse.getScopes(
                 scopes.add(
                     Scope(
                         s,
-                        ctx.getString(R.string.auth_snapshot_read_description)
+                        ctx.getString(R.string.access_your_snapshots)
                     )
                 )
             SCOPES[6] ->
                 scopes.add(
                     Scope(
                         s,
-                        ctx.getString(R.string.auth_apps_read_description)
+                        ctx.getString(R.string.access_your_apps_list)
                     )
                 )
             SCOPES[7] ->
                 scopes.add(
                     Scope(
                         s,
-                        ctx.getString(R.string.auth_apps_write_description)
+                        ctx.getString(R.string.manage_all_your_apps)
                     )
                 )
             SCOPES[8] ->
                 scopes.add(
                     Scope(
                         s,
-                        ctx.getString(R.string.auth_circles_read_description)
+                        ctx.getString(R.string.access_your_circle_list)
                     )
                 )
             SCOPES[9] ->
                 scopes.add(
                     Scope(
                         s,
-                        ctx.getString(R.string.auth_circles_write_description)
+                        ctx.getString(R.string.manage_all_your_circles)
                     )
                 )
             SCOPES[10] ->
                 scopes.add(
                     Scope(
                         s,
-                        ctx.getString(R.string.auth_collectibles_read_description)
+                        ctx.getString(R.string.access_your_collectibles)
                     )
                 )
         }

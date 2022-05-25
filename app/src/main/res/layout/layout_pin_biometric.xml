@@ -33,7 +33,7 @@
             android:layout_height="wrap_content"
             android:layout_marginBottom="32dp"
             android:drawablePadding="@dimen/padding8"
-            android:text="@string/multisig_pay_biometric"
+            android:text="@string/Use_Biometric_Multisig"
             android:textColor="@color/wallet_blue_secondary"
             android:textSize="16sp"
             android:visibility="gone"
@@ -85,7 +85,7 @@
             android:paddingStart="@dimen/margin20"
             android:paddingEnd="@dimen/margin20"
             android:enabled="true"
-            android:text="@string/action_continue"
+            android:text="@string/Continue"
             android:textSize="14sp" />
     </LinearLayout>
 
@@ -110,7 +110,7 @@
             android:layout_gravity="center_horizontal"
             android:layout_marginBottom="20dp"
             android:textColor="@color/textRemarks"
-            android:text="@string/action_done" />
+            android:text="@string/Done" />
 
         <TextView
             android:id="@+id/enable_biometric_tv"

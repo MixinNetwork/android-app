@@ -17,7 +17,7 @@
             app:rightIcon="@drawable/ic_more"
             app:leftIcon="@drawable/ic_close_black"
             app:need_divider="false"
-            app:titleText="@string/wallet" />
+            app:titleText="@string/Wallet" />
 
         <ImageButton
             android:id="@+id/search_ib"

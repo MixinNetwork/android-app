@@ -1,9 +1,11 @@
 package one.mixin.android.job
 
 import android.annotation.SuppressLint
+import android.app.ActivityManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import android.os.Build
 import android.os.IBinder
 import android.os.PowerManager
 import androidx.core.app.NotificationCompat
@@ -95,6 +97,7 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
     private val gson = GsonHelper.customGson
 
     private val powerManager by lazy { getSystemService<PowerManager>() }
+    private val activityManager by lazy { getSystemService<ActivityManager>() }
     private var isIgnoringBatteryOptimizations = false
 
     override fun onBind(intent: Intent): IBinder? {
@@ -153,7 +156,11 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
     }
 
     private fun updateIgnoringBatteryOptimizations() {
-        isIgnoringBatteryOptimizations = powerManager?.isIgnoringBatteryOptimizations(packageName) ?: false
+        isIgnoringBatteryOptimizations = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            activityManager?.isBackgroundRestricted?.not()
+        } else {
+            powerManager?.isIgnoringBatteryOptimizations(packageName)
+        } ?: false
     }
 
     @SuppressLint("NewApi")
@@ -168,7 +175,7 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
 
         val builder = NotificationCompat.Builder(this, CHANNEL_NODE)
             .setContentTitle(getString(R.string.app_name))
-            .setContentText(getString(R.string.background_connection_enabled))
+            .setContentText(getString(R.string.Messaging_node_running))
             .setPriority(NotificationCompat.PRIORITY_MIN)
             .setWhen(0)
             .setDefaults(0)
@@ -177,7 +184,7 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
             .setOnlyAlertOnce(true)
             .setColor(ContextCompat.getColor(this, R.color.colorLightBlue))
             .setSmallIcon(R.drawable.ic_msg_default)
-            .addAction(R.drawable.ic_close_black, getString(R.string.action_exit), exitPendingIntent)
+            .addAction(R.drawable.ic_close_black, getString(R.string.Exit), exitPendingIntent)
         val pendingIntent = PendingIntent.getActivity(
             this, 0, MainActivity.getWakeUpIntent(this),
             PendingIntent.FLAG_IMMUTABLE

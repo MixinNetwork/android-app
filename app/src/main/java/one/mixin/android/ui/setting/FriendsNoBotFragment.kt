@@ -42,7 +42,7 @@ class FriendsNoBotFragment : BaseFriendsFragment<FriendsNoBotViewHolder>(), Frie
 
     private val viewModel by viewModels<EmergencyViewModel>()
 
-    override fun getTitleResId() = R.string.setting_emergency_select_contact
+    override fun getTitleResId() = R.string.Select_Emergency_Contact
 
     override suspend fun getFriends() = viewModel.findFriendsNotBot()
 
@@ -50,10 +50,10 @@ class FriendsNoBotFragment : BaseFriendsFragment<FriendsNoBotViewHolder>(), Frie
         alertDialogBuilder()
             .setTitle(getString(R.string.setting_emergency_set))
             .setMessage(getString(R.string.setting_emergency_set_message, user.identityNumber))
-            .setNegativeButton(R.string.action_change) { dialog, _ ->
+            .setNegativeButton(R.string.Change) { dialog, _ ->
                 dialog.dismiss()
             }
-            .setPositiveButton(R.string.action_confirm) { dialog, _ ->
+            .setPositiveButton(R.string.Confirm) { dialog, _ ->
                 binding.searchEt.hideKeyboard()
                 requestCreateEmergency(user)
                 dialog.dismiss()
@@ -63,8 +63,8 @@ class FriendsNoBotFragment : BaseFriendsFragment<FriendsNoBotViewHolder>(), Frie
 
     private fun requestCreateEmergency(user: User) = lifecycleScope.launch {
         val dialog = indeterminateProgressDialog(
-            message = getString(R.string.pb_dialog_message),
-            title = getString(if (Session.hasEmergencyContact()) R.string.changing else R.string.group_creating)
+            message = getString(R.string.Please_wait_a_bit),
+            title = getString(if (Session.hasEmergencyContact()) R.string.Changing else R.string.Creating)
         )
         dialog.setCancelable(false)
         dialog.show()

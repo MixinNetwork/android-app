@@ -94,7 +94,7 @@ class WalletAssetAdapter(private val slideShow: Boolean) : HeaderAdapter<AssetIt
             binding.symbolTv.text = asset.symbol
             binding.balanceAs.text = "≈ ${Fiats.getSymbol()}${asset.fiat().numberFormat2()}"
             if (asset.priceUsd == "0") {
-                binding.priceTv.setText(R.string.no_applicable)
+                binding.priceTv.setText(R.string.NA)
                 binding.changeTv.visibility = GONE
             } else {
                 binding.changeTv.visibility = VISIBLE
@@ -106,8 +106,8 @@ class WalletAssetAdapter(private val slideShow: Boolean) : HeaderAdapter<AssetIt
                     binding.changeTv.textColorResource = if (isPositive) R.color.wallet_green else R.color.wallet_pink
                 }
             }
-            binding.backLeftTv.setText(if (slideShow) R.string.shown else R.string.hidden)
-            binding.backRightTv.setText(if (slideShow) R.string.shown else R.string.hidden)
+            binding.backLeftTv.setText(if (slideShow) R.string.Shown else R.string.Hidden)
+            binding.backRightTv.setText(if (slideShow) R.string.Shown else R.string.Hidden)
             binding.avatar.bg.loadImage(asset.iconUrl, R.drawable.ic_avatar_place_holder)
             binding.avatar.badge.loadImage(asset.chainIconUrl, R.drawable.ic_avatar_place_holder)
             holder.itemView.setOnClickListener { onItemListener?.onNormalItemClick(asset) }

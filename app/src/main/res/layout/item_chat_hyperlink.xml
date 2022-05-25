@@ -107,6 +107,7 @@
 
         <one.mixin.android.widget.bubble.TimeBubble
             android:id="@+id/chat_time"
+            android:layout_gravity="end"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content" />
 

@@ -109,7 +109,7 @@ class ForwardActivity : BlazeBaseActivity() {
             replaceFragment(f, R.id.container, ForwardFragment.TAG)
         } else {
             if (Session.getAccount() == null) {
-                toast(R.string.not_logged_in)
+                toast(R.string.Not_logged_in)
                 finish()
                 return
             }
@@ -121,12 +121,12 @@ class ForwardActivity : BlazeBaseActivity() {
                 replaceFragment(
                     ForwardFragment.newInstance(
                         forwardMessageList,
-                        ForwardAction.System(conversationId, getString(R.string.action_share))
+                        ForwardAction.System(conversationId, getString(R.string.Share))
                     ),
                     R.id.container, ForwardFragment.TAG
                 )
             } else {
-                toast(R.string.error_share)
+                toast(R.string.Share_error)
                 finish()
             }
         }

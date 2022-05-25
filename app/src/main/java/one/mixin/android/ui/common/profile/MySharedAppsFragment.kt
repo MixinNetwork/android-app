@@ -72,7 +72,7 @@ class MySharedAppsFragment : BaseFragment() {
 
     private val onAddSharedApp: (app: App) -> Unit = { app ->
         lifecycleScope.launch {
-            val dialog = indeterminateProgressDialog(message = R.string.pb_dialog_message).apply {
+            val dialog = indeterminateProgressDialog(message = R.string.Please_wait_a_bit).apply {
                 setCancelable(false)
             }
             try {
@@ -87,7 +87,7 @@ class MySharedAppsFragment : BaseFragment() {
     }
     private val onRemoveSharedApp: (app: App) -> Unit = { app ->
         lifecycleScope.launch {
-            val dialog = indeterminateProgressDialog(message = R.string.pb_dialog_message).apply {
+            val dialog = indeterminateProgressDialog(message = R.string.Please_wait_a_bit).apply {
                 setCancelable(false)
             }
             try {

@@ -37,7 +37,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_centerVertical="true"
-                    android:text="@string/location"
+                    android:text="@string/Location"
                     android:textColor="?attr/text_primary"
                     android:textSize="18sp"
                     tools:ignore="RelativeOverlap" />
@@ -80,7 +80,7 @@
                     android:layout_centerVertical="true"
                     android:layout_toStartOf="@id/ic_close"
                     android:background="@null"
-                    android:hint="@string/action_search"
+                    android:hint="@string/Search"
                     android:imeOptions="actionSearch"
                     android:inputType="text"
                     android:paddingTop="8dp"
@@ -133,7 +133,7 @@
                 android:background="@drawable/bg_menu"
                 android:padding="4dp"
                 app:tint="?attr/icon_default"
-                android:contentDescription="@string/location" />
+                android:contentDescription="@string/Location" />
 
             <ImageView
                 android:id="@+id/location_go_iv"
