@@ -12,7 +12,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.sp
 import one.mixin.android.ui.setting.ui.theme.MixinAppTheme
 
-
 private const val TAG_URL = "URL"
 
 @Composable
@@ -58,9 +57,7 @@ fun HighlightLinkText(
         },
         style = textStyle,
     )
-
 }
-
 
 @Composable
 @Preview

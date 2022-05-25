@@ -1,6 +1,5 @@
 package one.mixin.android.ui.setting.ui.page
 
-import android.os.PerformanceHintManager
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.height
 import androidx.compose.runtime.Composable
@@ -21,9 +20,9 @@ fun SecurityPage() {
 
     val navController = LocalSettingNav.current
 
-    SettingPageScaffold(title = stringResource(id = R.string.setting_account)) {
+    SettingPageScaffold(title = stringResource(id = R.string.Account)) {
 
-        SettingTile(title = stringResource(R.string.pin)) {
+        SettingTile(title = stringResource(R.string.PIN)) {
             if (Session.getAccount()?.hasPin == true) {
                 navController.navigation(SettingDestination.PinSetting)
             } else {
@@ -32,21 +31,20 @@ fun SecurityPage() {
         }
 
         Box(modifier = Modifier.height(16.dp))
-        SettingTile(title = stringResource(R.string.setting_emergency)) {
+        SettingTile(title = stringResource(R.string.Emergency_Contact)) {
             navController.navigation(SettingDestination.Emergency)
         }
 
         Box(modifier = Modifier.height(16.dp))
-        SettingTile(title = stringResource(R.string.setting_authentications)) {
+        SettingTile(title = stringResource(R.string.Authorizations)) {
             navController.navigation(SettingDestination.Authentications)
         }
 
         Box(modifier = Modifier.height(16.dp))
-        SettingTile(title = stringResource(R.string.logs)) {
+        SettingTile(title = stringResource(R.string.Logs)) {
             navController.navigation(SettingDestination.Logs)
         }
     }
-
 }
 
 @Composable

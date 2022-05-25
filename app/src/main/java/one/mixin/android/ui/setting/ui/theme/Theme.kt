@@ -38,7 +38,6 @@ object MixinAppTheme {
     val drawables: AppDrawables
         @Composable
         get() = LocalDrawables.current
-
 }
 
 private val LightColorPalette = AppColors(

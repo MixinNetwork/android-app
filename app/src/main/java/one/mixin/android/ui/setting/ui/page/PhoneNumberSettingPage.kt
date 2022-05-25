@@ -1,7 +1,12 @@
 package one.mixin.android.ui.setting.ui.page
 
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -16,10 +21,10 @@ import one.mixin.android.vo.SearchSource
 
 @Composable
 fun PhoneNumberSettingPage() {
-    SettingPageScaffold(title = stringResource(id = R.string.setting_phone_number)) {
+    SettingPageScaffold(title = stringResource(id = R.string.Phone_Number)) {
         val context = LocalContext.current
 
-        MessageSettingTips(stringResource(id = R.string.setting_phone_number_privacy))
+        MessageSettingTips(stringResource(id = R.string.phone_number_privacy))
 
         val scope = rememberCoroutineScope()
 
@@ -78,14 +83,14 @@ fun PhoneNumberSettingPage() {
         }
 
         MessageSettingItem(
-            title = stringResource(R.string.setting_conversation_everybody),
+            title = stringResource(R.string.Everybody),
             selected = currentSelected == SearchSource.EVERYBODY.name,
             processing = processing,
         ) {
             requestRemoteChange(SearchSource.EVERYBODY)
         }
         MessageSettingItem(
-            title = stringResource(R.string.setting_my_contacts),
+            title = stringResource(R.string.My_Contacts),
             selected = currentSelected == SearchSource.CONTACTS.name,
             processing = processing,
         ) {
@@ -93,12 +98,11 @@ fun PhoneNumberSettingPage() {
         }
 
         MessageSettingItem(
-            title = stringResource(R.string.nobody),
+            title = stringResource(R.string.Nobody),
             selected = currentSelected == SearchSource.NOBODY.name,
             processing = processing,
         ) {
             requestRemoteChange(SearchSource.NOBODY)
         }
-
     }
 }

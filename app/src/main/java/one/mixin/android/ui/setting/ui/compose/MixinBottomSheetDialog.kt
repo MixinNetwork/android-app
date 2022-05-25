@@ -19,7 +19,6 @@ import one.mixin.android.extension.findFragmentActivityOrNull
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
 import one.mixin.android.widget.BottomSheet
 
-
 @Composable
 fun MixinBottomSheetDialog(
     createDialog: () -> MixinBottomSheetDialogFragment,
@@ -27,7 +26,6 @@ fun MixinBottomSheetDialog(
 ) {
     val dialog = remember {
         createDialog().apply {
-
         }
     }
 
@@ -41,7 +39,6 @@ fun MixinBottomSheetDialog(
             dialog.dismiss()
         }
     }
-
 }
 
 @Composable

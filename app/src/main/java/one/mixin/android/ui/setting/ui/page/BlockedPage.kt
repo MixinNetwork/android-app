@@ -4,7 +4,15 @@ import GlideImage
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
@@ -46,7 +54,7 @@ fun BlockedPage() {
         topBar = {
             MixinTopAppBar(
                 title = {
-                    Text(stringResource(id = R.string.setting_blocked))
+                    Text(stringResource(id = R.string.Blocked))
                 },
                 navigationIcon = {
                     MixinBackButton()
@@ -68,7 +76,6 @@ fun BlockedPage() {
             }
         }
     }
-
 }
 
 @Composable
@@ -80,14 +87,13 @@ private fun BlockedList(users: List<User>) {
         item {
             Text(
                 modifier = Modifier.padding(16.dp),
-                text = stringResource(id = R.string.setting_block_tip),
+                text = stringResource(id = R.string.block_tip),
                 fontSize = 12.sp,
                 color = MixinAppTheme.colors.textSubtitle,
             )
         }
     }
 }
-
 
 @Composable
 private fun EmptyBlockedView() {
@@ -107,14 +113,13 @@ private fun EmptyBlockedView() {
             )
             Box(modifier = Modifier.height(8.dp))
             Text(
-                text = stringResource(id = R.string.setting_no_blocked),
+                text = stringResource(id = R.string.No_blocked_users),
                 fontSize = 16.sp,
                 color = MixinAppTheme.colors.textSubtitle
             )
         }
     }
 }
-
 
 @Composable
 private fun BlockedUserItem(user: User) {
@@ -140,8 +145,6 @@ private fun BlockedUserItem(user: User) {
             color = MixinAppTheme.colors.textPrimary,
         )
     }
-
-
 }
 
 @Composable
@@ -173,7 +176,6 @@ private fun UserAvatarImage(user: User, size: Dp) {
     }
 }
 
-
 @Composable
 @Preview
 fun EmptyBlockedPagePreview() {
@@ -181,4 +183,3 @@ fun EmptyBlockedPagePreview() {
         EmptyBlockedView()
     }
 }
-

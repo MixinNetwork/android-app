@@ -2,12 +2,23 @@ package one.mixin.android.ui.setting.ui.page
 
 import android.Manifest
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.material.AlertDialog
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Text
 import androidx.compose.material.TextButton
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -25,7 +36,11 @@ import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.createContactsRequests
-import one.mixin.android.extension.*
+import one.mixin.android.extension.defaultSharedPreferences
+import one.mixin.android.extension.findFragmentActivityOrNull
+import one.mixin.android.extension.openPermissionSetting
+import one.mixin.android.extension.putBoolean
+import one.mixin.android.extension.toast
 import one.mixin.android.ui.setting.SettingViewModel
 import one.mixin.android.ui.setting.ui.compose.SettingPageScaffold
 import one.mixin.android.ui.setting.ui.compose.SettingTile
@@ -35,7 +50,7 @@ import timber.log.Timber
 
 @Composable
 fun MobileContactPage() {
-    SettingPageScaffold(title = stringResource(R.string.setting_mobile_contact)) {
+    SettingPageScaffold(title = stringResource(R.string.Phone_Contact)) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier.fillMaxWidth()
@@ -48,7 +63,7 @@ fun MobileContactPage() {
             Box(modifier = Modifier.height(32.dp))
             Text(
                 modifier = Modifier.padding(horizontal = 20.dp),
-                text = stringResource(R.string.setting_mobile_contact_desc),
+                text = stringResource(R.string.syncs_contact_hint),
                 color = MixinAppTheme.colors.textSubtitle,
                 fontSize = 14.sp
             )
@@ -90,7 +105,6 @@ fun MobileContactPage() {
                     strokeWidth = 2.dp
                 )
             }) {
-
             }
         } else if (showUploadButton) {
             UploadButton(viewModel) {
@@ -101,11 +115,8 @@ fun MobileContactPage() {
                 showUploadButton = true
             }
         }
-
     }
-
 }
-
 
 @Composable
 private fun UploadButton(
@@ -122,14 +133,13 @@ private fun UploadButton(
         mutableStateOf(false)
     }
 
-
     fun uploadContacts(contacts: List<Contact>) = coroutineScope.launch {
 
         val mutableList = createContactsRequests(contacts)
 
         if (mutableList.isEmpty()) {
             processing = false
-            toast(R.string.setting_mobile_contact_empty)
+            toast(R.string.Empty_address_book)
             return@launch
         }
 
@@ -144,7 +154,7 @@ private fun UploadButton(
     }
 
     SettingTile(
-        title = stringResource(R.string.setting_mobile_contact_upload),
+        title = stringResource(R.string.Upload_Mobile_Contacts),
         titleColor = MixinAppTheme.colors.accent,
         trailing = {
             if (processing) {
@@ -179,12 +189,11 @@ private fun UploadButton(
                         { contacts ->
                             uploadContacts(contacts)
                         }, {
-                            processing = false
-                        }
+                        processing = false
+                    }
                     )
             }
     }
-
 }
 
 @Composable
@@ -204,7 +213,7 @@ private fun DeleteButton(
     }
 
     SettingTile(
-        title = stringResource(R.string.setting_mobile_contact_delete),
+        title = stringResource(R.string.Delete_Synced_Contact),
         titleColor = MixinAppTheme.colors.red,
         trailing = {
             if (deleting) {
@@ -241,7 +250,6 @@ private fun DeleteButton(
         deleting = false
     }
 
-
     if (showAlert) {
         AlertDialog(
             onDismissRequest = { showAlert = false },
@@ -253,14 +261,14 @@ private fun DeleteButton(
                     showAlert = false
                     deleteContacts()
                 }) {
-                    Text(text = stringResource(id = R.string.conversation_delete))
+                    Text(text = stringResource(id = R.string.Delete))
                 }
             },
             dismissButton = {
                 TextButton(onClick = {
                     showAlert = false
                 }) {
-                    Text(text = stringResource(id = R.string.action_cancel))
+                    Text(text = stringResource(id = R.string.Cancel))
                 }
             }
         )

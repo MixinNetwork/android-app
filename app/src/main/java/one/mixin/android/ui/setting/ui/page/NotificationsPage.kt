@@ -51,7 +51,7 @@ fun NotificationsPage() {
         topBar = {
             MixinTopAppBar(
                 title = {
-                    Text(text = stringResource(R.string.setting_notification_confirmation))
+                    Text(text = stringResource(R.string.Notification_and_Confirmation))
                 }, navigationIcon = {
                     MixinBackButton()
                 }
@@ -101,7 +101,7 @@ fun NotificationsPage() {
                         )
                     }
                 },
-                title = stringResource(id = R.string.transfer_duplicate_title),
+                title = stringResource(id = R.string.Duplicate_Transfer_Confirmation),
                 description = stringResource(id = R.string.setting_duplicate_transfer_desc)
             )
 
@@ -121,7 +121,7 @@ fun NotificationsPage() {
                         )
                     }
                 },
-                title = stringResource(id = R.string.transfer_stranger_title),
+                title = stringResource(id = R.string.Stranger_Transfer_Confirmation),
                 description = stringResource(id = R.string.setting_stranger_transfer_desc)
             )
 
@@ -131,7 +131,7 @@ fun NotificationsPage() {
                 onClick = {
                     context.openNotificationSetting()
                 },
-                title = stringResource(id = R.string.setting_notification_system),
+                title = stringResource(id = R.string.System_options),
             )
         }
     }
@@ -211,15 +211,15 @@ private fun TransferNotificationItem() {
         onClick = {
             showEditDialog = true
         },
-        title = stringResource(R.string.setting_notification_transfer),
-        description = stringResource(R.string.setting_notification_transfer_desc, "$accountSymbol${threshold.value}")
+        title = stringResource(R.string.Large_Amount_Confirmation),
+        description = stringResource(R.string.setting_transfer_large_summary, "$accountSymbol${threshold.value}")
     )
 
     if (showEditDialog) {
         MixinBottomSheetDialog({ showEditDialog = false }) {
             EditDialog(
-                title = stringResource(R.string.setting_notification_transfer_amount, accountSymbol),
-                hint = stringResource(R.string.wallet_transfer_amount),
+                title = stringResource(R.string.Transfer_Amount_count_down, accountSymbol),
+                hint = stringResource(R.string.Transfer_Amount),
                 onClose = {
                     showEditDialog = false
                 },
@@ -228,7 +228,7 @@ private fun TransferNotificationItem() {
                     Timber.d("onConfirm $it")
                     val result = it.toDoubleOrNull()
                     if (result == null) {
-                        toast(R.string.error_data)
+                        toast(R.string.Data_error)
                     } else {
                         showProgressDialog = true
                         scope.launch {
@@ -264,8 +264,8 @@ private fun TransferNotificationItem() {
 
     if (showProgressDialog) {
         IndeterminateProgressDialog(
-            title = stringResource(R.string.setting_notification_transfer),
-            message = stringResource(R.string.pb_dialog_message),
+            title = stringResource(R.string.Large_Amount_Confirmation),
+            message = stringResource(R.string.Please_wait_a_bit),
         )
     }
 }
@@ -297,7 +297,7 @@ private fun TransferLargeAmountItem() {
         onClick = {
             showEditDialog = true
         },
-        title = stringResource(R.string.setting_notification_transfer),
+        title = stringResource(R.string.Transfer_Notifications),
         description = if (threshold.value <= 0.0)
             stringResource(R.string.setting_transfer_large_summary_greater)
         else stringResource(
@@ -309,8 +309,8 @@ private fun TransferLargeAmountItem() {
     if (showEditDialog) {
         MixinBottomSheetDialog({ showEditDialog = false }) {
             EditDialog(
-                title = stringResource(R.string.wallet_transaction_tip_title_with_symbol, accountSymbol),
-                hint = stringResource(R.string.wallet_transaction_tip_title),
+                title = stringResource(R.string.Transfer_Amount_count_down, accountSymbol),
+                hint = stringResource(R.string.Transfer_Amount),
                 onClose = {
                     showEditDialog = false
                 },
@@ -319,7 +319,7 @@ private fun TransferLargeAmountItem() {
                     Timber.d("onConfirm $it")
                     val result = it.toDoubleOrNull()
                     if (result == null) {
-                        toast(R.string.error_data)
+                        toast(R.string.Data_error)
                     } else {
                         showProgressDialog = true
                         scope.launch {
@@ -355,8 +355,8 @@ private fun TransferLargeAmountItem() {
 
     if (showProgressDialog) {
         IndeterminateProgressDialog(
-            title = stringResource(R.string.wallet_transaction_tip_title),
-            message = stringResource(R.string.pb_dialog_message),
+            title = stringResource(R.string.Transfer_Notifications),
+            message = stringResource(R.string.Please_wait_a_bit),
         )
     }
 }
@@ -444,13 +444,13 @@ private fun EditDialog(
             TextButton(onClick = {
                 onClose()
             }) {
-                Text(text = stringResource(R.string.action_cancel))
+                Text(text = stringResource(R.string.Cancel))
             }
             TextButton(onClick = {
                 onClose()
                 onConfirm(inputText.value)
             }) {
-                Text(text = stringResource(R.string.action_save))
+                Text(text = stringResource(R.string.Save))
             }
         }
     }

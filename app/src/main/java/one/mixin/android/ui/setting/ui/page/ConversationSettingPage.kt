@@ -5,8 +5,13 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Icon
 import androidx.compose.material.Text
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -33,7 +38,7 @@ fun ConversationSettingPage() {
 
     val viewModel = hiltViewModel<SettingConversationViewModel>()
 
-    SettingPageScaffold(title = stringResource(id = R.string.setting_conversation)) {
+    SettingPageScaffold(title = stringResource(id = R.string.Conversation)) {
         val context = LocalContext.current
 
         MessageSettingTips(stringResource(id = R.string.setting_conversation_tip))
@@ -41,18 +46,17 @@ fun ConversationSettingPage() {
             initMessageSourcePreferences = { viewModel.initPreferences(context) },
             doUpdate = {
                 viewModel.savePreferences(AccountUpdateRequest(receiveMessageSource = it.name))
-            })
-
+            }
+        )
 
         MessageSettingTips(stringResource(id = R.string.setting_conversation_group_tip))
         SettingGroup(
             initMessageSourcePreferences = { viewModel.initGroupPreferences(context) },
             doUpdate = {
                 viewModel.savePreferences(AccountUpdateRequest(acceptConversationSource = it.name))
-            })
-
+            }
+        )
     }
-
 }
 
 @Composable
@@ -112,24 +116,22 @@ private fun SettingGroup(
                 },
             )
         }
-
     }
 
     MessageSettingItem(
-        title = stringResource(R.string.setting_conversation_everybody),
+        title = stringResource(R.string.Everybody),
         selected = currentSelected == MessageSource.EVERYBODY.ordinal,
         processing = processing,
     ) {
         requestRemoteChange(MessageSource.EVERYBODY)
     }
     MessageSettingItem(
-        title = stringResource(R.string.setting_my_contacts),
+        title = stringResource(R.string.My_Contacts),
         selected = currentSelected == MessageSource.CONTACTS.ordinal,
         processing = processing,
     ) {
         requestRemoteChange(MessageSource.CONTACTS)
     }
-
 }
 
 @Composable
@@ -185,28 +187,25 @@ fun MessageSettingTips(title: String) {
 @Preview
 fun PreviewConversationSettingPage() {
     MixinAppTheme {
-        SettingPageScaffold(title = stringResource(id = R.string.setting_conversation)) {
+        SettingPageScaffold(title = stringResource(id = R.string.Conversation)) {
             MessageSettingTips(stringResource(id = R.string.setting_conversation_tip))
             MessageSettingItem(
-                title = stringResource(R.string.setting_conversation_everybody),
+                title = stringResource(R.string.Everybody),
                 selected = false,
                 processing = false,
             ) {
-
             }
             MessageSettingItem(
-                title = stringResource(R.string.setting_conversation_everybody),
+                title = stringResource(R.string.Everybody),
                 selected = true,
                 processing = true,
             ) {
-
             }
             MessageSettingItem(
-                title = stringResource(R.string.setting_conversation_everybody),
+                title = stringResource(R.string.Everybody),
                 selected = true,
                 processing = false,
             ) {
-
             }
         }
     }

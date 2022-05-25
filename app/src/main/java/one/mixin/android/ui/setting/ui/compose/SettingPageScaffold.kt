@@ -46,9 +46,7 @@ fun SettingPageScaffold(
             body()
         }
     }
-
 }
-
 
 @Composable
 fun SettingTile(
@@ -110,7 +108,6 @@ fun SettingTile(
     }
 }
 
-
 @Composable
 @Preview
 fun SettingScaffoldPreview() {
@@ -151,8 +148,6 @@ fun SettingScaffoldPreview() {
                 title = "Title With Icon",
                 icon = R.drawable.ic_setting_about,
             )
-
         }
-
     }
 }

@@ -3,9 +3,22 @@ package one.mixin.android.ui.setting.ui.page
 import androidx.biometric.BiometricManager
 import androidx.biometric.BiometricPrompt
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
-import androidx.compose.material.*
-import androidx.compose.runtime.*
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
+import androidx.compose.material.RadioButton
+import androidx.compose.material.RadioButtonDefaults
+import androidx.compose.material.Surface
+import androidx.compose.material.Switch
+import androidx.compose.material.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -89,8 +102,8 @@ fun AppAuthSettingPage() {
             } else {
                 val activity = context.findFragmentActivityOrNull() ?: return@SettingTile
                 showAppAuthPrompt(
-                    activity, context.getString(R.string.fingerprint_confirm),
-                    context.getString(R.string.action_cancel),
+                    activity, context.getString(R.string.Confirm_fingerprint),
+                    context.getString(R.string.Cancel),
                     authCallback
                 )
             }
@@ -106,7 +119,7 @@ fun AppAuthSettingPage() {
 
         if (fingerPrintEnabled != FINGERPRINT_DISABLED) {
             Text(
-                text = stringResource(id = R.string.automatically_lock),
+                text = stringResource(id = R.string.Auto_Lock),
                 fontSize = 16.sp,
                 color = MixinAppTheme.colors.accent,
                 modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 8.dp)
@@ -118,38 +131,33 @@ fun AppAuthSettingPage() {
                 }
             )
         }
-
     }
-
 }
-
 
 @Composable
 private fun FingerprintRadioGroup(index: Int, onCheckedChange: (Int) -> Unit) {
 
     FingerprintRadioButton(
         checked = index == FINGERPRINT_ENABLED_IMMEDIATELY,
-        title = stringResource(id = R.string.immediately),
+        title = stringResource(id = R.string.Immediately),
     ) {
         onCheckedChange(FINGERPRINT_ENABLED_IMMEDIATELY)
     }
 
     FingerprintRadioButton(
         checked = index == FINGERPRINT_ENABLED_AFTER_1_MINUTES,
-        title = stringResource(id = R.string.auto_after_1_minute),
+        title = stringResource(id = R.string.After_1_minute),
     ) {
         onCheckedChange(FINGERPRINT_ENABLED_AFTER_1_MINUTES)
     }
 
     FingerprintRadioButton(
         checked = index == FINGERPRINT_ENABLED_AFTER_30_MINUTES,
-        title = stringResource(id = R.string.auto_after_30_minutes),
+        title = stringResource(id = R.string.After_30_minutes),
     ) {
         onCheckedChange(FINGERPRINT_ENABLED_AFTER_30_MINUTES)
     }
-
 }
-
 
 @Composable
 private fun FingerprintRadioButton(
@@ -193,7 +201,6 @@ fun FingerprintRadioButtonPreview() {
                 checked = true,
                 title = "Fingerprint",
             ) {
-
             }
         }
     }

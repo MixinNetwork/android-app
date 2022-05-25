@@ -87,9 +87,9 @@ fun AboutPage() {
                     onDebugClick = {
                         showDatabase.value = !showDatabase.value
                         if (showDatabase.value) {
-                            toast(R.string.db_debug_action_enable)
+                            toast(R.string.Enable_db_debug)
                         } else {
-                            toast(R.string.db_debug_action_disable)
+                            toast(R.string.Disable_db_debug)
                         }
                     },
                     onClick = {
@@ -104,7 +104,7 @@ fun AboutPage() {
                         modifier = Modifier.fillMaxWidth(),
                         horizontalAlignment = Alignment.CenterHorizontally,
                     ) {
-                        Text(text = stringResource(id = R.string.about))
+                        Text(text = stringResource(id = R.string.About))
                         VersionName()
                     }
                 },
@@ -122,53 +122,53 @@ fun AboutPage() {
                 modifier = Modifier.debugClickable {
                     if (preferences.getBoolean(Constants.Debug.WEB_DEBUG, false)) {
                         preferences.putBoolean(Constants.Debug.WEB_DEBUG, false)
-                        toast(R.string.web_debug_action_disable)
+                        toast(R.string.Disable_web_debug)
                     } else {
                         preferences.putBoolean(Constants.Debug.WEB_DEBUG, true)
-                        toast(R.string.web_debug_action_enable)
+                        toast(R.string.Enable_web_debug)
                     }
                 },
                 painter = painterResource(id = R.drawable.ic_logo), contentDescription = null
             )
             AboutTile(
-                text = stringResource(id = R.string.follow_twitter),
+                text = stringResource(id = R.string.Follow_us_on_twitter),
                 onClick = {
                     context.openUrl("https://twitter.com/MixinMessenger")
                 },
             )
             AboutTile(
-                text = stringResource(id = R.string.follow_facebook),
+                text = stringResource(id = R.string.Follow_us_on_facebook),
                 onClick = {
                     context.openUrl("https://fb.com/MixinMessenger")
                 },
             )
             AboutTile(
-                text = stringResource(id = R.string.help_center),
+                text = stringResource(id = R.string.Help_center),
                 onClick = {
                     context.openUrl(Constants.HelpLink.CENTER)
                 },
             )
             AboutTile(
-                text = stringResource(id = R.string.landing_terms_service),
+                text = stringResource(id = R.string.Terms_of_Service),
                 onClick = {
                     context.openUrl(context.getString(R.string.landing_terms_url))
                 },
             )
             AboutTile(
-                text = stringResource(id = R.string.landing_privacy_policy),
+                text = stringResource(id = R.string.Privacy_Policy),
                 onClick = {
                     context.openUrl(context.getString(R.string.landing_privacy_policy_url))
                 },
             )
             AboutTile(
-                text = stringResource(id = R.string.landing_check_updates),
+                text = stringResource(id = R.string.Version_Update),
                 onClick = {
                     context.openMarket()
                 },
             )
             if (showDatabase.value) {
                 AboutTile(
-                    text = stringResource(id = R.string.database_debug),
+                    text = stringResource(id = R.string.Debug_database),
                     onClick = {
                         navController.navigation(SettingDestination.DatabaseDebug)
                     },

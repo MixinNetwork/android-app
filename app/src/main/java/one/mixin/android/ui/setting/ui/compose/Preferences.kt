@@ -7,7 +7,6 @@ import one.mixin.android.extension.putInt
 import one.mixin.android.extension.putLong
 import one.mixin.android.extension.putString
 
-
 @Composable
 fun SharedPreferences.stringValueAsState(key: String, defaultValue: String) =
     value(
@@ -35,7 +34,6 @@ fun SharedPreferences.longValueAsState(key: String, defaultValue: Long) =
         getValue = { getLong(key, defaultValue) },
         setValue = { putLong(key, it) }
     )
-
 
 @Composable
 private fun <T> value(

@@ -4,9 +4,21 @@ import android.os.Build
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.selection.selectable
-import androidx.compose.material.*
+import androidx.compose.material.AlertDialog
+import androidx.compose.material.ButtonDefaults
+import androidx.compose.material.MaterialTheme
+import androidx.compose.material.RadioButton
+import androidx.compose.material.Scaffold
+import androidx.compose.material.Text
+import androidx.compose.material.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -36,7 +48,7 @@ import one.mixin.android.ui.setting.ui.theme.MixinAppTheme
 import one.mixin.android.util.TimeCache
 import one.mixin.android.util.language.Lingver
 import one.mixin.android.vo.Fiats
-import java.util.*
+import java.util.Locale
 
 @Composable
 fun AppearancePage() {
@@ -45,7 +57,7 @@ fun AppearancePage() {
         topBar = {
             MixinTopAppBar(
                 title = {
-                    Text(stringResource(R.string.setting_appearance))
+                    Text(stringResource(R.string.Appearance))
                 },
                 navigationIcon = {
                     MixinBackButton()
@@ -86,11 +98,11 @@ private fun ThemeItem() {
     }
 
     AppearanceItem(
-        label = stringResource(id = R.string.setting_theme),
+        label = stringResource(id = R.string.Theme),
         value = context.resources.getStringArray(R.array.setting_night_array_oreo)[currentThemeId.value],
     ) {
         context.singleChoice(
-            context.getString(R.string.setting_theme),
+            context.getString(R.string.Theme),
             if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
                 R.array.setting_night_array
             } else {
@@ -123,7 +135,7 @@ private fun ThemeItem() {
 private fun LanguageItem() {
 
     val languageNames = stringArrayResource(R.array.language_names).apply {
-        this[0] = stringResource(R.string.follow_system)
+        this[0] = stringResource(R.string.Follow_system)
     }
 
     val showLanguageDialog = remember { mutableStateOf(false) }
@@ -151,7 +163,7 @@ private fun LanguageItem() {
     }
 
     AppearanceItem(
-        label = stringResource(R.string.language),
+        label = stringResource(R.string.Language),
         value = languageNames[currentLanguage.value],
     ) {
         showLanguageDialog.value = true
@@ -161,7 +173,7 @@ private fun LanguageItem() {
         val dialogSelected = remember { mutableStateOf(currentLanguage.value) }
         AlertDialog(
             title = {
-                Text(stringResource(R.string.language))
+                Text(stringResource(R.string.Language))
             },
             onDismissRequest = {
                 showLanguageDialog.value = false
@@ -192,7 +204,7 @@ private fun LanguageItem() {
                         contentColor = MixinAppTheme.colors.textSubtitle,
                     ),
                 ) {
-                    Text(stringResource(R.string.action_cancel))
+                    Text(stringResource(R.string.Cancel))
                 }
             },
             confirmButton = {
@@ -230,7 +242,7 @@ private fun LanguageItem() {
                         }
                     }
                 }) {
-                    Text(stringResource(R.string.capital_ok))
+                    Text(stringResource(R.string.OK))
                 }
             },
         )
@@ -314,7 +326,7 @@ private fun CurrencyItem() {
     val context = LocalContext.current
 
     AppearanceItem(
-        label = stringResource(id = R.string.currency),
+        label = stringResource(id = R.string.Currency),
         value = stringResource(
             R.string.wallet_setting_currency_desc,
             currentCurrency.value, Fiats.getSymbol(currentCurrency.value)

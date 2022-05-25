@@ -27,17 +27,17 @@ import one.mixin.android.ui.setting.ui.compose.intValueAsState
 
 @Composable
 fun AccountPrivacyPage() {
-    SettingPageScaffold(title = stringResource(R.string.setting_account)) {
+    SettingPageScaffold(title = stringResource(R.string.Account)) {
         val viewModel = hiltViewModel<SettingViewModel>()
         val navController = LocalSettingNav.current
 
         val blockedUsers by viewModel.countBlockingUsers().observeAsState()
 
         SettingTile(
-            title = stringResource(R.string.setting_blocked),
+            title = stringResource(R.string.Blocked),
             trailing = {
                 if (blockedUsers.isNullOrEmpty()) {
-                    Text(text = stringResource(id = R.string.none))
+                    Text(text = stringResource(id = R.string.None))
                 } else {
                     Text(text = "${blockedUsers!!.size}")
                 }
@@ -47,7 +47,7 @@ fun AccountPrivacyPage() {
         }
 
         SettingTile(
-            title = stringResource(R.string.setting_conversation),
+            title = stringResource(R.string.Conversation),
             description = stringResource(R.string.setting_privacy_tip),
         ) {
             navController.navigation(SettingDestination.Conversation)
@@ -55,15 +55,14 @@ fun AccountPrivacyPage() {
 
         Box(modifier = Modifier.height(16.dp))
 
-
         SettingTile(
-            title = stringResource(R.string.setting_phone_number),
+            title = stringResource(R.string.Phone_Number),
         ) {
             navController.navigation(SettingDestination.PhoneNumber)
         }
 
         SettingTile(
-            title = stringResource(R.string.setting_mobile_contact),
+            title = stringResource(R.string.Phone_Contact),
         ) {
             navController.navigation(SettingDestination.MobileContact)
         }
@@ -75,7 +74,7 @@ fun AccountPrivacyPage() {
                     defaultValue = false
                 )
             SettingTile(
-                title = stringResource(R.string.setting_incognito),
+                title = stringResource(R.string.Incognito_Keyboard),
                 description = stringResource(R.string.setting_incognito_prompt),
                 trailing = {
                     Switch(checked = incognitoEnable, onCheckedChange = null)
@@ -98,10 +97,10 @@ fun AccountPrivacyPage() {
                 Text(
                     text = stringResource(
                         id = when (fingerprintLock) {
-                            0 -> R.string.enable_immediately
-                            1 -> R.string.enable_after_1_minute
-                            2 -> R.string.enable_after_30_minutes
-                            else -> R.string.disabled
+                            0 -> R.string.Enable_immediately
+                            1 -> R.string.Enable_after_1_minute
+                            2 -> R.string.Enable_after_30_minutes
+                            else -> R.string.Disabled
                         }
                     )
                 )
@@ -109,6 +108,5 @@ fun AccountPrivacyPage() {
         ) {
             navController.navigation(SettingDestination.AppAuthSetting)
         }
-
     }
 }

@@ -9,14 +9,11 @@ import androidx.compose.animation.AnimatedContentScope
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material.Surface
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.remember
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.ComposeView
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.MutableLiveData
@@ -35,10 +32,15 @@ import one.mixin.android.ui.setting.ui.compose.MixinSettingFragment
 import one.mixin.android.ui.setting.ui.page.AboutPage
 import one.mixin.android.ui.setting.ui.page.AccountPage
 import one.mixin.android.ui.setting.ui.page.AccountPrivacyPage
+import one.mixin.android.ui.setting.ui.page.AppAuthSettingPage
 import one.mixin.android.ui.setting.ui.page.AppearancePage
 import one.mixin.android.ui.setting.ui.page.BlockedPage
 import one.mixin.android.ui.setting.ui.page.ConversationSettingPage
+import one.mixin.android.ui.setting.ui.page.MobileContactPage
 import one.mixin.android.ui.setting.ui.page.NotificationsPage
+import one.mixin.android.ui.setting.ui.page.PhoneNumberSettingPage
+import one.mixin.android.ui.setting.ui.page.PinSettingPage
+import one.mixin.android.ui.setting.ui.page.SecurityPage
 import one.mixin.android.ui.setting.ui.page.SettingPage
 import one.mixin.android.ui.setting.ui.theme.MixinAppTheme
 import one.mixin.android.vo.User
@@ -110,10 +112,13 @@ private class SettingNavControllerImpl(
     }
 
     override fun userBottomSheet(user: User, conversationId: String?) {
-        navigateTo(SettingDestination.UserBottomSheet, Bundle().apply {
-            putParcelable(USER_KEY, user)
-            putString(CONVERSATION_ID_KEY, conversationId)
-        })
+        navigateTo(
+            SettingDestination.UserBottomSheet,
+            Bundle().apply {
+                putParcelable(USER_KEY, user)
+                putString(CONVERSATION_ID_KEY, conversationId)
+            }
+        )
     }
 
     override fun pop() {

@@ -3,10 +3,19 @@ package one.mixin.android.ui.setting.ui.page
 import androidx.biometric.BiometricManager
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.material.Switch
 import androidx.compose.material.Text
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -25,14 +34,19 @@ import one.mixin.android.ui.common.biometric.BiometricBottomSheetDialogFragment
 import one.mixin.android.ui.setting.BiometricTimeFragment
 import one.mixin.android.ui.setting.LocalSettingNav
 import one.mixin.android.ui.setting.SettingDestination
-import one.mixin.android.ui.setting.ui.compose.*
+import one.mixin.android.ui.setting.ui.compose.HighlightLinkText
+import one.mixin.android.ui.setting.ui.compose.MixinBottomSheetDialog
+import one.mixin.android.ui.setting.ui.compose.SettingPageScaffold
+import one.mixin.android.ui.setting.ui.compose.SettingTile
+import one.mixin.android.ui.setting.ui.compose.booleanValueAsState
+import one.mixin.android.ui.setting.ui.compose.longValueAsState
 import one.mixin.android.ui.setting.ui.theme.MixinAppTheme
 import one.mixin.android.ui.wallet.PinBiometricsBottomSheetDialogFragment
 import one.mixin.android.util.BiometricUtil
 
 @Composable
 fun PinSettingPage() {
-    SettingPageScaffold(title = stringResource(id = R.string.pin)) {
+    SettingPageScaffold(title = stringResource(id = R.string.PIN)) {
         Column(
             Modifier
                 .fillMaxWidth()
@@ -49,12 +63,11 @@ fun PinSettingPage() {
             )
             Box(modifier = Modifier.height(20.dp))
 
-
             val context = LocalContext.current
 
             HighlightLinkText(
                 source = stringResource(R.string.wallet_pin_tops_desc),
-                texts = arrayOf(stringResource(R.string.wallet_pin_tops)),
+                texts = arrayOf(stringResource(R.string.Learn_More)),
                 links = arrayOf(Constants.HelpLink.TIP),
                 textStyle = TextStyle(
                     fontSize = 12.sp,
@@ -92,7 +105,7 @@ fun PinSettingPage() {
         var showBiometricsDialog by remember { mutableStateOf(false) }
 
         SettingTile(
-            title = stringResource(R.string.wallet_pay_with_biometrics),
+            title = stringResource(R.string.Pay_with_Biometrics),
             trailing = {
                 Switch(checked = enableBiometrics, onCheckedChange = null)
             },
@@ -137,13 +150,13 @@ fun PinSettingPage() {
         if (enableBiometrics) {
             val navController = LocalSettingNav.current
             SettingTile(
-                title = stringResource(R.string.wallet_pin_pay_interval),
+                title = stringResource(R.string.Pay_with_PIN_interval),
                 trailing = {
                     val hour = biometricInterval / BiometricTimeFragment.X_HOUR.toFloat()
                     if (hour < 1) {
                         Text(
                             text = context.resources.getQuantityString(
-                                R.plurals.wallet_pin_pay_interval_minutes,
+                                R.plurals.Minute,
                                 (hour * 60).toInt(),
                                 (hour * 60).toInt(),
                             )
@@ -151,7 +164,7 @@ fun PinSettingPage() {
                     } else {
                         Text(
                             text = context.resources.getQuantityString(
-                                R.plurals.wallet_pin_pay_interval_hours,
+                                R.plurals.Hour,
                                 hour.toInt(),
                                 hour.toInt()
                             )
@@ -162,7 +175,6 @@ fun PinSettingPage() {
                 navController.navigation(SettingDestination.BiometricTime)
             }
         }
-
 
         Box(modifier = Modifier.height(8.dp))
 
@@ -177,9 +189,7 @@ fun PinSettingPage() {
 
         Box(modifier = Modifier.height(16.dp))
 
-        SettingTile(title = stringResource(R.string.wallet_password_change)) {
-
+        SettingTile(title = stringResource(R.string.Change_PIN)) {
         }
-
     }
 }

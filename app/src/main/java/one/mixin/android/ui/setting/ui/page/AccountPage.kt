@@ -2,7 +2,12 @@ package one.mixin.android.ui.setting.ui.page
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.AlertDialog
@@ -38,7 +43,7 @@ fun AccountPage() {
         topBar = {
             MixinTopAppBar(
                 title = {
-                    Text(stringResource(R.string.setting_account))
+                    Text(stringResource(R.string.Account))
                 },
                 navigationIcon = {
                     MixinBackButton()
@@ -52,15 +57,15 @@ fun AccountPage() {
                 .verticalScroll(rememberScrollState())
         ) {
             val navController = LocalSettingNav.current
-            AccountTile(stringResource(R.string.setting_privacy)) {
+            AccountTile(stringResource(R.string.Privacy)) {
                 navController.navigation(SettingDestination.AccountPrivacy)
             }
-            AccountTile(stringResource(R.string.setting_security)) {
+            AccountTile(stringResource(R.string.Security)) {
                 navController.navigation(SettingDestination.AccountSecurity)
             }
             ChangeNumberButton()
             Box(modifier = Modifier.height(16.dp))
-            AccountTile(stringResource(R.string.setting_delete_account)) {
+            AccountTile(stringResource(R.string.Delete_my_account)) {
             }
         }
     }
@@ -114,7 +119,7 @@ private fun ChangeNumberButton() {
                         }
                     }
                 }) {
-                    Text(stringResource(R.string.profile_phone))
+                    Text(stringResource(R.string.Change_Phone_Number))
                 }
             },
             dismissButton = {
@@ -127,7 +132,7 @@ private fun ChangeNumberButton() {
             },
         )
     }
-    AccountTile(stringResource(R.string.profile_phone)) {
+    AccountTile(stringResource(R.string.Change_Phone_Number)) {
         openDialog.value = true
     }
 }

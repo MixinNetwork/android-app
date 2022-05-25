@@ -58,7 +58,7 @@ fun SettingPage() {
                         MixinBackButton()
                     },
                     title = {
-                        Text(text = stringResource(id = R.string.setting_title))
+                        Text(text = stringResource(id = R.string.Settings))
                     },
                 )
             }
@@ -72,39 +72,39 @@ fun SettingPage() {
                 val context = LocalContext.current
                 SettingTile(
                     icon = R.drawable.ic_setting_privacy,
-                    title = stringResource(id = R.string.setting_account)
+                    title = stringResource(id = R.string.Account)
                 ) {
                     settingNavController.navigation(SettingDestination.Account)
                 }
                 SettingTile(
                     icon = R.drawable.ic_setting_notification,
-                    title = stringResource(id = R.string.setting_notification_confirmation)
+                    title = stringResource(id = R.string.Notification_and_Confirmation)
                 ) {
                     settingNavController.navigation(SettingDestination.NotificationAndConfirm)
                 }
                 SettingTile(
                     icon = R.drawable.ic_setting_backup,
-                    title = stringResource(id = R.string.setting_backup)
+                    title = stringResource(id = R.string.Backup)
                 ) {
                     settingNavController.navigation(SettingDestination.BackUp)
                 }
                 SettingTile(
                     icon = R.drawable.ic_setting_data,
-                    title = stringResource(id = R.string.setting_data_storage)
+                    title = stringResource(id = R.string.Data_and_Storage_Usage)
                 ) {
                     settingNavController.navigation(SettingDestination.Storage)
                 }
                 Box(modifier = Modifier.height(16.dp))
                 SettingTile(
                     icon = R.drawable.ic_setting_appearance,
-                    title = stringResource(id = R.string.setting_appearance)
+                    title = stringResource(id = R.string.Appearance)
                 ) {
                     settingNavController.navigation(SettingDestination.Appearance)
                 }
                 Box(modifier = Modifier.height(16.dp))
                 SettingTile(
                     icon = R.drawable.ic_setting_desktop,
-                    title = stringResource(id = R.string.setting_desktop)
+                    title = stringResource(id = R.string.Mixin_Messenger_Desktop)
                 ) {
                     context.findFragmentActivityOrNull()?.supportFragmentManager?.let { fragmentManager ->
                         DeviceFragment.newInstance().showNow(fragmentManager, DeviceFragment.TAG)
@@ -117,12 +117,12 @@ fun SettingPage() {
 
                 SettingTile(
                     icon = R.drawable.ic_setting_feedback,
-                    title = stringResource(id = R.string.setting_feedback)
+                    title = stringResource(id = R.string.Feedback)
                 ) {
                     scope.launch {
                         val userTeamMixin = viewModel.refreshUser(Constants.TEAM_MIXIN_USER_ID)
                         if (userTeamMixin == null) {
-                            toast(R.string.error_data)
+                            toast(R.string.Data_error)
                         } else {
                             ConversationActivity.show(context, recipientId = Constants.TEAM_MIXIN_USER_ID)
                         }
@@ -130,26 +130,26 @@ fun SettingPage() {
                 }
                 SettingTile(
                     icon = R.drawable.ic_setting_share,
-                    title = stringResource(id = R.string.setting_share)
+                    title = stringResource(id = R.string.Share_This_App)
                 ) {
                     val sendIntent = Intent()
                     sendIntent.action = Intent.ACTION_SEND
                     sendIntent.putExtra(
                         Intent.EXTRA_TEXT,
-                        context.getString(R.string.setting_share_text, Session.getAccount()?.identityNumber)
+                        context.getString(R.string.chat_on_mixin_content, Session.getAccount()?.identityNumber)
                     )
                     sendIntent.type = "text/plain"
                     context.startActivity(
                         Intent.createChooser(
                             sendIntent,
-                            context.resources.getText(R.string.setting_share)
+                            context.resources.getText(R.string.Share)
                         )
                     )
                 }
                 Box(modifier = Modifier.height(16.dp))
                 SettingTile(
                     icon = R.drawable.ic_setting_about,
-                    title = stringResource(id = R.string.about)
+                    title = stringResource(id = R.string.About)
                 ) {
                     settingNavController.navigation(SettingDestination.About)
                 }
@@ -193,7 +193,7 @@ fun DefaultPreview() {
     MixinAppTheme {
         SettingTile(
             icon = R.drawable.ic_setting_about,
-            title = stringResource(id = R.string.about)
+            title = stringResource(id = R.string.About)
         ) {
         }
     }

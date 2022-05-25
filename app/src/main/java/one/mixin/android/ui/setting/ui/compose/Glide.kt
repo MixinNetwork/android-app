@@ -82,18 +82,16 @@ fun GlideImage(
                 constraints.maxWidth,
                 constraints.maxHeight
             ) {
-                override fun onResourceReady(resource: Drawable, transition: Transition<in Drawable>?) {
-                    state.value = resource.toBitmap().asImageBitmap()
-                }
+                    override fun onResourceReady(resource: Drawable, transition: Transition<in Drawable>?) {
+                        state.value = resource.toBitmap().asImageBitmap()
+                    }
 
-                override fun onLoadStarted(placeholder: Drawable?) {
+                    override fun onLoadStarted(placeholder: Drawable?) {
+                    }
 
-                }
-
-                override fun onLoadCleared(placeholder: Drawable?) {
-
-                }
-            }).request!!
+                    override fun onLoadCleared(placeholder: Drawable?) {
+                    }
+                }).request!!
             onDispose {
                 request.clear()
             }
