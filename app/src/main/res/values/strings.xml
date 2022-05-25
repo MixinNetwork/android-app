@@ -633,6 +633,7 @@
 	<string name="error_invalid_address_plain">ERROR %1$d: Invalid address format.</string>
 	<string name="error_invalid_emergency_contact">ERROR %1$d: Invalid emergency contact</string>
 	<string name="error_not_found">ERROR %1$d: Not found</string>
+	<string name="error_memo_too_long">Memo has too many characters, maximum is 200</string>
 	<string name="error_phone_invalid_format">ERROR %1$d: Invalid phone number</string>
 	<string name="error_phone_sms_delivery">ERROR %1$d: Failed to deliver SMS</string>
 	<string name="error_phone_verification_code_expired">ERROR %1$d: Expired phone verification code</string>
