@@ -64,6 +64,6 @@
             android:visibility="gone"
             android:textColor="?attr/text_primary"
             android:textSize="16sp"
-            android:text="@string/No_Available_Assets"/>
+            android:text="@string/No_Available_Asset"/>
     </FrameLayout>
 </one.mixin.android.widget.BottomSheetLinearLayout>

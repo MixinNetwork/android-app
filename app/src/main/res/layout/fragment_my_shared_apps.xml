@@ -48,7 +48,7 @@
                 android:layout_height="wrap_content"
                 android:layout_above="@id/empty_tv"
                 android:layout_centerHorizontal="true"
-                android:text="@string/NO_APPS"
+                android:text="@string/NO_APP"
                 android:textSize="20sp"
                 android:layout_marginBottom="8dp"
                 android:textColor="?attr/text_minor" />

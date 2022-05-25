@@ -339,7 +339,7 @@ class TransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>>()
                 R.id.filters_radio_all -> {
                     bindLiveData(walletViewModel.snapshotsFromDb(asset.assetId, initialLoadKey = initialLoadKey, orderByAmount = orderByAmount))
                     groupInfoMemberTitle.setText(R.string.Transactions)
-                    walletTransactionsEmpty.setText(R.string.No_transactions)
+                    walletTransactionsEmpty.setText(R.string.No_transaction)
                 }
                 R.id.filters_radio_transfer -> {
                     bindLiveData(
@@ -352,7 +352,7 @@ class TransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>>()
                         )
                     )
                     groupInfoMemberTitle.setText(R.string.Transfer)
-                    walletTransactionsEmpty.setText(R.string.No_transactions)
+                    walletTransactionsEmpty.setText(R.string.No_transaction)
                 }
                 R.id.filters_radio_deposit -> {
                     bindLiveData(
@@ -364,7 +364,7 @@ class TransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>>()
                         )
                     )
                     groupInfoMemberTitle.setText(R.string.Deposit)
-                    walletTransactionsEmpty.setText(R.string.No_deposits)
+                    walletTransactionsEmpty.setText(R.string.No_deposit)
                 }
                 R.id.filters_radio_withdrawal -> {
                     bindLiveData(
@@ -376,28 +376,28 @@ class TransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>>()
                         )
                     )
                     groupInfoMemberTitle.setText(R.string.Withdrawal)
-                    walletTransactionsEmpty.setText(R.string.No_withdrawals)
+                    walletTransactionsEmpty.setText(R.string.No_withdrawal)
                 }
                 R.id.filters_radio_fee -> {
                     bindLiveData(
                         walletViewModel.snapshotsFromDb(asset.assetId, SnapshotType.fee.name, initialLoadKey = initialLoadKey, orderByAmount = orderByAmount)
                     )
                     groupInfoMemberTitle.setText(R.string.Fee)
-                    walletTransactionsEmpty.setText(R.string.No_fees)
+                    walletTransactionsEmpty.setText(R.string.No_fee)
                 }
                 R.id.filters_radio_rebate -> {
                     bindLiveData(
                         walletViewModel.snapshotsFromDb(asset.assetId, SnapshotType.rebate.name, initialLoadKey = initialLoadKey, orderByAmount = orderByAmount)
                     )
                     groupInfoMemberTitle.setText(R.string.Rebate)
-                    walletTransactionsEmpty.setText(R.string.No_rebates)
+                    walletTransactionsEmpty.setText(R.string.No_rebate)
                 }
                 R.id.filters_radio_raw -> {
                     bindLiveData(
                         walletViewModel.snapshotsFromDb(asset.assetId, SnapshotType.raw.name, initialLoadKey = initialLoadKey, orderByAmount = orderByAmount)
                     )
                     groupInfoMemberTitle.setText(R.string.Raw)
-                    walletTransactionsEmpty.setText(R.string.No_raws)
+                    walletTransactionsEmpty.setText(R.string.No_raw)
                 }
             }
         }
