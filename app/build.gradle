@@ -9,6 +9,7 @@ apply plugin: 'org.jetbrains.kotlin.android'
 apply plugin: 'kotlin-kapt'
 apply plugin: 'dagger.hilt.android.plugin'
 apply plugin: 'kotlin-parcelize'
+apply plugin: 'com.google.firebase.firebase-perf'
 
 android {
     compileSdkVersion 31
@@ -262,6 +263,13 @@ dependencies {
     implementation 'com.google.firebase:firebase-analytics-ktx'
     implementation 'com.google.firebase:firebase-crashlytics-ktx'
     implementation 'com.google.firebase:firebase-dynamic-links-ktx'
+    implementation 'com.google.firebase:firebase-perf-ktx'
+
+    implementation("com.google.protobuf:protobuf-javalite") {
+        version {
+            strictly '3.11.0'
+        }
+    }
 
     implementation "com.google.mlkit:barcode-scanning:${mlkitBarcodeVersion}"
     implementation "com.google.android.play:core:${playVersion}"
