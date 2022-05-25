@@ -45,6 +45,7 @@ import one.mixin.android.extension.putBoolean
 import one.mixin.android.extension.replaceQuotationMark
 import one.mixin.android.extension.sharedPreferences
 import one.mixin.android.job.AttachmentDeleteJob
+import one.mixin.android.job.FtsDeleteJob
 import one.mixin.android.job.GenerateAvatarJob
 import one.mixin.android.job.MessageDeleteJob
 import one.mixin.android.job.MessageFtsDeleteJob
@@ -458,6 +459,7 @@ internal constructor(
             jobManager.addJobInBackground(AttachmentDeleteJob(mediaUrl))
         }
         appDatabase.deleteMessageById(id)
+        jobManager.addJobInBackground(FtsDeleteJob(id))
         InvalidateFlow.emit(conversationId)
     }
 
