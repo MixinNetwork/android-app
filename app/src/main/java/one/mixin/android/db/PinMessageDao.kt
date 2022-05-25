@@ -26,7 +26,7 @@ interface PinMessageDao : BaseDao<PinMessage> {
     @Query(
         """
         SELECT m.id AS messageId, m.category AS type, m.content AS content FROM pin_messages pm
-        LEFT JOIN messages m ON m.id = pm.message_id
+        INNER JOIN messages m ON m.id = pm.message_id
         WHERE pm.conversation_id = :conversationId
         """
     )
@@ -69,7 +69,7 @@ interface PinMessageDao : BaseDao<PinMessage> {
         """
         SELECT u.user_id, m.content, mm.mentions, u.full_name FROM pin_messages pm
         INNER JOIN users u ON m.user_id = u.user_id      
-        LEFT JOIN messages m ON m.quote_message_id = pm.message_id
+        INNER JOIN messages m ON m.quote_message_id = pm.message_id
         LEFT JOIN message_mentions mm ON m.id = mm.message_id
         WHERE m.conversation_id = :conversationId AND m.category = 'MESSAGE_PIN'
         ORDER BY m.created_at DESC
