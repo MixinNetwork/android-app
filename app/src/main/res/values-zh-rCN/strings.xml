@@ -127,7 +127,7 @@
     <string name="error_address_not_sync">地址刷新失败，请重试</string>
     <string name="error_authentication">错误 %1$d：请重新登录</string>
     <string name="error_bad_data">错误 %1$d：请求数据不合法</string>
-    <string name="error_favorite_limit">错误 %1$d: 已达到上限</string>
+    <string name="error_number_reached_limit">错误 %1$d: 已达到上限</string>
     <string name="error_invalid_address">错误 %1$d：地址格式错误。请输入正确的 %2$s %3$s 的地址！</string>
     <string name="error_invalid_code_too_frequent">错误 %1$d：发送验证码太频繁，请稍后再试</string>
     <string name="error_invalid_pin_format">错误 %1$d：无效密码格式</string>
@@ -501,7 +501,7 @@
     <string name="CHATS">会话</string>
     <string name="circle_bottom">为不同对话创建 圈子然后在它们之间快速切换</string>
     <string name="circle_info">新建一个圈子可以过滤会话</string>
-    <string name="circle_limit">已达到上限</string>
+    <string name="number_reached_limit">已达到上限</string>
     <string name="circle_no_conversation_hint">您可以添加联系人或者群组到当前圈子</string>
     <plurals name="circle_subtitle">
         <item quantity="one">%1$d 会话</item>
@@ -543,7 +543,7 @@
     <string name="Continue_Open_URL">继续访问</string>
     <string name="Conversation">会话</string>
     <string name="Conversation_not_found">找不到该会话</string>
-    <string name="conversation_not_support">不支持此类型消息。请升级 Mixin 查看。</string>
+    <string name="message_not_support">不支持此类型消息。请升级 Mixin 查看。</string>
     <string name="Copy">复制</string>
     <string name="Copy_invite">复制邀请链接</string>
     <string name="Copy_link">复制链接</string>
@@ -596,7 +596,7 @@
     <string name="Edit_group_name">编辑名称</string>
     <string name="Edit_Name">修改昵称</string>
     <string name="Emergency_Contact">紧急联系人</string>
-    <string name="empty_info">你可以与你的 Mixin 好友一起聊天。</string>
+    <string name="chat_list_empty_info">你可以与你的 Mixin 好友一起聊天。</string>
     <string name="Enable_Emergency_Contact">启用紧急联系人</string>
     <string name="End_to_End_Encryption">端到端加密</string>
     <string name="Enter_PIN_to_delete_account">输入你的 PIN 以注销你的账户</string>

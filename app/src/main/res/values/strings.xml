@@ -134,7 +134,7 @@
 	<string name="error_address_not_sync">Address refresh failed, please try again</string>
 	<string name="error_authentication">ERROR %1$d: Sign in to continue</string>
 	<string name="error_bad_data">ERROR %1$d: The request data has invalid field</string>
-	<string name="error_favorite_limit">ERROR %1$d: The number has reached the limit.</string>
+	<string name="error_number_reached_limit">ERROR %1$d: The number has reached the limit.</string>
 	<string name="error_invalid_address">ERROR %1$d: Invalid address format. Please enter the correct %2$s %3$s address!</string>
 	<string name="error_invalid_code_too_frequent">ERROR %1$d: Send verification code too frequent, please try again later.</string>
 	<string name="error_invalid_pin_format">ERROR %1$d: Invalid PIN format. </string>
@@ -522,7 +522,7 @@
 	<string name="CHATS">CHATS</string>
 	<string name="circle_bottom">Create circle for different  groups of chats and quickly switch between them</string>
 	<string name="circle_info">Create circles for different groups of chats and quickly switch between them</string>
-	<string name="circle_limit">The number has reached the limit</string>
+	<string name="number_reached_limit">The number has reached the limit</string>
 	<string name="circle_no_conversation_hint">You can add contacts or groups to the current circle</string>
 	<plurals name="circle_subtitle">
 		<item quantity="one">%1$d Conversation</item>
@@ -564,7 +564,7 @@
 	<string name="Continue_Open_URL">Continue Open URL</string>
 	<string name="Conversation">Conversation</string>
 	<string name="Conversation_not_found">Conversation not found.</string>
-	<string name="conversation_not_support">This type of message is not supported, please upgrade Mixin to the latest version.</string>
+	<string name="message_not_support">This type of message is not supported, please upgrade Mixin to the latest version.</string>
 	<string name="Copy">Copy</string>
 	<string name="Copy_invite">Copy Invite Link</string>
 	<string name="Copy_link">Copy Link</string>
@@ -617,7 +617,7 @@
 	<string name="Edit_group_name">Edit Group Name</string>
 	<string name="Edit_Name">Edit Name</string>
 	<string name="Emergency_Contact">Emergency Contact</string>
-	<string name="empty_info">You can chat with contacts who have Mixin installed on their phone.</string>
+	<string name="chat_list_empty_info">You can chat with contacts who have Mixin installed on their phone.</string>
 	<string name="Enable_Emergency_Contact">Enable Emergency Contact</string>
 	<string name="End_to_End_Encryption">End-to-end Encrypted</string>
 	<string name="Enter_PIN_to_delete_account">Enter your PIN to delete your account</string>

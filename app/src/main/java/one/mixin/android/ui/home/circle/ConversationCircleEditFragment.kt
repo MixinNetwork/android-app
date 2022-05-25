@@ -108,7 +108,7 @@ class ConversationCircleEditFragment : BaseFragment() {
                                 )
                             )
                             if (count >= CIRCLE_CONVERSATION_LIMIT) {
-                                toast(R.string.circle_limit)
+                                toast(R.string.number_reached_limit)
                                 return@launch
                             }
                             adapter.selectItem.add(user)
@@ -130,7 +130,7 @@ class ConversationCircleEditFragment : BaseFragment() {
                         } else {
                             val count = chatViewModel.getCircleConversationCount(item.conversationId)
                             if (count >= CIRCLE_CONVERSATION_LIMIT) {
-                                toast(R.string.circle_limit)
+                                toast(R.string.number_reached_limit)
                                 return@launch
                             }
                             adapter.selectItem.add(item)

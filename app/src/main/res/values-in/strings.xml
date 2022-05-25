@@ -69,7 +69,7 @@
     <string name="Enter_new_phone_number">Masukkan nomor ponsel baru Anda</string>
     <string name="error_authentication">KESALAHAN %1$d: Masuk untuk melanjutkan</string>
     <string name="error_bad_data">KESALAHAN %1$d: Data permintaan memiliki bidang yang tidak valid</string>
-    <string name="error_favorite_limit">KESALAHAN %1$d: Jumlahnya telah mencapai batas.</string>
+    <string name="error_number_reached_limit">KESALAHAN %1$d: Jumlahnya telah mencapai batas.</string>
     <string name="error_invalid_code_too_frequent">KESALAHAN %1$d: Terlalu sering mengirim kode verifikasi, coba lagi nanti.</string>
     <string name="error_invalid_pin_format">KESALAHAN %1$d: Format PIN tidak valid</string>
     <string name="error_not_supported_audio_format">Tidak mendukung format audio, harap buka dengan aplikasi lain.</string>
@@ -348,7 +348,7 @@
     <string name="CHATS">OBROLAN</string>
     <string name="circle_bottom">Buat lingkaran untuk grup obrolan yang berbeda dan beralih dengan cepat di antaranya</string>
     <string name="circle_info">Jika Anda ingin memfilter percakapan, harap setel lingkaran untuk percakapan tersebut terlebih dahulu.</string>
-    <string name="circle_limit">Jumlahnya sudah mencapai batas</string>
+    <string name="number_reached_limit">Jumlahnya sudah mencapai batas</string>
     <plurals name="circle_subtitle" tools:ignore="UnusedQuantity">
         <item quantity="other">%1$d Percakapan</item>
     </plurals>
@@ -381,7 +381,7 @@
     <string name="Continue">Lanjutkan</string>
     <string name="Continue_Open_URL">Lanjutkan Buka URL</string>
     <string name="Conversation">Percakapan</string>
-    <string name="conversation_not_support">Jenis pesan ini tidak didukung, harap tingkatkan Mixin ke versi terbaru.</string>
+    <string name="message_not_support">Jenis pesan ini tidak didukung, harap tingkatkan Mixin ke versi terbaru.</string>
     <string name="Copy">Salin</string>
     <string name="Copy_invite">Salin Tautan</string>
     <string name="Create">Buat</string>
@@ -423,7 +423,7 @@
     <string name="Edit_group_name">Edit Nama</string>
     <string name="Edit_Name">Edit Nama</string>
     <string name="Emergency_Contact">Kontak darurat</string>
-    <string name="empty_info">Anda dapat mengobrol dengan kontak yang memasang Mixin di telepon mereka</string>
+    <string name="chat_list_empty_info">Anda dapat mengobrol dengan kontak yang memasang Mixin di telepon mereka</string>
     <string name="Enable_Emergency_Contact">Aktifkan Kontak Darurat</string>
     <string name="End_to_End_Encryption">Terenkripsi end-to-end</string>
     <string name="Enter_your_emergency_contact_Mixin_ID">Masukkan ID Mixin kontak darurat Anda</string>

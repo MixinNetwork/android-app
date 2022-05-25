@@ -81,7 +81,7 @@
     <string name="EOS_contract_address">alamat kontrak EOS</string>
     <string name="error_authentication">RALAT %1$d: Log masuk untuk meneruskan</string>
     <string name="error_bad_data">RALAT %1$d: Data permintaan mempunyai medan yang tidak sah</string>
-    <string name="error_favorite_limit">RALAT %1$d: Angka telah mencapai had.</string>
+    <string name="error_number_reached_limit">RALAT %1$d: Angka telah mencapai had.</string>
     <string name="error_invalid_code_too_frequent">RALAT %1$d: Hantar kod pengesahan terlalu kerap, sila cuba sebentar lagi.</string>
     <string name="error_invalid_pin_format">RALAT %1$d: Format PIN tidak sah</string>
     <string name="error_not_supported_audio_format">Tidak disokong format audio, sila buka oleh aplikasi lain.</string>
@@ -392,7 +392,7 @@
 \ndan beralih antara mereka dengan segera</string>
     <string name="circle_info">Sekiranya anda ingin menapis perbualan, sila
 \ntetapkan lingkaran untuk perbualan terlebih dahulu.</string>
-    <string name="circle_limit">Jumlahnya sudah mencapai had</string>
+    <string name="number_reached_limit">Jumlahnya sudah mencapai had</string>
     <plurals name="circle_subtitle" tools:ignore="UnusedQuantity">
         <item quantity="other">%1$d Perbualan</item>
     </plurals>
@@ -426,7 +426,7 @@
     <string name="Continue">Teruskan</string>
     <string name="Continue_Open_URL">Terus Buka URL</string>
     <string name="Conversation">Perbualan</string>
-    <string name="conversation_not_support">Mesej jenis ini tidak disokong, sila tingkatkan Mixin ke versi terkini.</string>
+    <string name="message_not_support">Mesej jenis ini tidak disokong, sila tingkatkan Mixin ke versi terkini.</string>
     <string name="Copy">Salinan</string>
     <string name="Copy_invite">Salin pautan</string>
     <string name="Copy_link">Salin pautan</string>
@@ -469,7 +469,7 @@
     <string name="Edit_group_name">Edit Nama</string>
     <string name="Edit_Name">Edit Nama</string>
     <string name="Emergency_Contact">Kenalan kecemasan</string>
-    <string name="empty_info">Anda boleh bersembang dengan kenalan yang memasang Mixin di telefon mereka</string>
+    <string name="chat_list_empty_info">Anda boleh bersembang dengan kenalan yang memasang Mixin di telefon mereka</string>
     <string name="Enable_Emergency_Contact">Bolehkan Kenalan Kecemasan</string>
     <string name="End_to_End_Encryption">Disulitkan</string>
     <string name="Enter_your_emergency_contact_Mixin_ID">Masukkan ID Mixin kenalan kecemasan anda</string>

@@ -111,7 +111,7 @@
     <string name="error_address_not_sync">アドレスの更新に失敗しました。もう一度やり直してください。</string>
     <string name="error_authentication">エラー %1$d: サインインをして続ける</string>
     <string name="error_bad_data">エラー %1$d: リクエストデータが無効です</string>
-    <string name="error_favorite_limit">エラー %1$d: 数が上限に達しています。</string>
+    <string name="error_number_reached_limit">エラー %1$d: 数が上限に達しています。</string>
     <string name="error_invalid_address">エラー%1$d：無効なアドレス形式です。正しい%2$s %3$s アドレスを入力してください。</string>
     <string name="error_invalid_code_too_frequent">エラー %1$d: 認証コードを送信する頻度が多すぎます。しばらくしてからもう一度お試しください。</string>
     <string name="error_invalid_pin_format">エラー %1$d: 無効なPINフォーマットです</string>
@@ -457,7 +457,7 @@
     <string name="CHATS">チャット</string>
     <string name="circle_bottom">チャットやロボ（高機能アカウント）を追加して\nリストを作成しましょう</string>
     <string name="circle_info">最初のリストを作成して、\n自分の好きなユーザーやロボを追加しましょう</string>
-    <string name="circle_limit">数が上限に達しました</string>
+    <string name="number_reached_limit">数が上限に達しました</string>
     <string name="circle_no_conversation_hint">連絡先またはグループを\n現在のリストに追加できます。</string>
     <string name="Clear">クリア</string>
     <string name="Clear_chat">チャットをクリア</string>
@@ -489,7 +489,7 @@
     <string name="Continue_Open_URL">URLを開く</string>
     <string name="Conversation">受信制限</string>
     <string name="Conversation_not_found">会話が見つかりません</string>
-    <string name="conversation_not_support">このメッセージは未対応であるため、Mixinを最新版にアップデートしてください。</string>
+    <string name="message_not_support">このメッセージは未対応であるため、Mixinを最新版にアップデートしてください。</string>
     <string name="Copy">コピー</string>
     <string name="Copy_invite">リンクをコピーする</string>
     <string name="Copy_link">リンクをコピー</string>
@@ -527,7 +527,7 @@
     <string name="Edit_group_name">グループ名を変更</string>
     <string name="Edit_Name">名前を変更</string>
     <string name="Emergency_Contact">緊急連絡先</string>
-    <string name="empty_info">Mixinをダウンロードしている人と\nいつでもチャットが可能です。</string>
+    <string name="chat_list_empty_info">Mixinをダウンロードしている人と\nいつでもチャットが可能です。</string>
     <string name="Enable_Emergency_Contact">緊急連絡先を有効にする</string>
     <string name="End_to_End_Encryption">エンドツーエンド暗号化</string>
     <string name="Enter_PIN_to_delete_account">PINコードを入力してください</string>
