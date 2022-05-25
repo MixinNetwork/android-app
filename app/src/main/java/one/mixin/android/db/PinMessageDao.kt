@@ -26,7 +26,7 @@ interface PinMessageDao : BaseDao<PinMessage> {
     @Query(
         """
         SELECT m.id AS messageId, m.category AS type, m.content AS content FROM pin_messages pm
-        LEFT JOIN messages m ON m.id = pm.message_id
+        INNER JOIN messages m ON m.id = pm.message_id
         WHERE pm.conversation_id = :conversationId
         """
     )
