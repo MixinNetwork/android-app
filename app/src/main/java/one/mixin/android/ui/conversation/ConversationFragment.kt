@@ -690,8 +690,10 @@ class ConversationFragment() :
             }
 
             override fun onStickerClick(messageItem: MessageItem) {
-                StickerPreviewBottomSheetFragment.newInstance(requireNotNull(messageItem.stickerId))
-                    .showNow(parentFragmentManager, StickerPreviewBottomSheetFragment.TAG)
+                messageItem.stickerId?.let { stickerId ->
+                    StickerPreviewBottomSheetFragment.newInstance(stickerId)
+                        .showNow(parentFragmentManager, StickerPreviewBottomSheetFragment.TAG)
+                }
             }
 
             @TargetApi(Build.VERSION_CODES.O)
