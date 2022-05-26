@@ -57,7 +57,7 @@
     <string name="alert_key_contact_transcript_message">メッセージ履歴が共有されました</string>
     <string name="alert_key_contact_transfer_message">送金が届きました</string>
     <string name="alert_key_contact_video_message">動画が届きました</string>
-    <string name="alert_key_group_audio_call_message">%1$s秒後にコードを再送する</string>
+    <string name="alert_key_group_audio_invite_message">%1$s秒後にコードを再送する</string>
     <string name="alert_key_group_audio_message">%1$sが音声を送信しました</string>
     <string name="alert_key_group_contact_message">%1$sが連絡先を送信しました</string>
     <string name="alert_key_group_data_message">%1$sがファイルを送信しました</string>

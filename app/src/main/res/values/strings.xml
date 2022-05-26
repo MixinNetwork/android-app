@@ -58,7 +58,7 @@
 	<string name="alert_key_contact_transcript_message">sent you an transcript</string>
 	<string name="alert_key_contact_transfer_message">sent you a transfer</string>
 	<string name="alert_key_contact_video_message">sent you a video</string>
-	<string name="alert_key_group_audio_call_message">%1$s invites you to a voice call</string>
+	<string name="alert_key_group_audio_invite_message">%1$s invites you to a voice call</string>
 	<string name="alert_key_group_audio_message">%1$s sent an audio</string>
 	<string name="alert_key_group_contact_message">%1$s sent a contact</string>
 	<string name="alert_key_group_data_message">%1$s sent a file</string>
@@ -196,7 +196,7 @@
 	<string name="Checking_payment_info">Checking payment info</string>
 	<string name="CHOOSE">CHOOSE</string>
 	<string name="Choose_folder">Choose folder</string>
-	<string name="circle_bottom">Create circle for different  groups of chats and quickly switch between them</string>
+	<string name="circle_bottom">Create circle for different groups of chats and quickly switch between them</string>
 	<string name="circle_delete_tip">Delete \"%1$s\" ?</string>
 	<string name="circle_info">Create circles for different groups of chats and quickly switch between them</string>
 	<string name="number_reached_limit">The number has reached the limit</string>
@@ -1002,7 +1002,7 @@
 	<string name="wallet_setting_currency_desc">%1$s (%2$s)</string>
 	<string name="wallet_transaction_continue_count_down">Continue (%1$d)</string>
 	<string name="wallet_transaction_that_time_value_tip">historical value at the time of transaction</string>
-	<string name="wallet_transaction_tip">Are you sure you want to transfer %3$s worth %2$s to %1$s ？</string>
+	<string name="wallet_transaction_tip">Are you sure you want to transfer %3$s worth %2$s to %1$s?</string>
 	<string name="wallet_transactions_asset_key_warning">Asset key is NOT a deposit address!</string>
 	<string name="wallet_transfer_recent_tip">You have already transferred %3$s to %2$s %1$s ago. Do you want to transfer it again?</string>
 	<string name="wallet_withdrawal_changed">The withdrawal fee has been changed from %1$s to %2$s, would you like to proceed  with the request?</string>
