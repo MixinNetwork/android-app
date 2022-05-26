@@ -14,7 +14,7 @@
     <string name="about_version">版本 %1$s</string>
     <string name="Accept">接听</string>
     <string name="Access_denied">禁止访问</string>
-    <string name="access_your_bots_list">访问你的应用列表</string>
+    <string name="access_your_bots_list">访问你的机器人列表</string>
     <string name="access_your_circle_list">访问你的圈子列表</string>
     <string name="access_your_collectibles">访问你的 NFT 列表</string>
     <string name="access_your_contacts_list">访问你的联系人列表</string>
@@ -227,7 +227,7 @@
     <string name="contact_mobile">手机： %1$s</string>
     <string name="contact_mute_title">静音通知</string>
     <string name="contact_new_group_chat_desc">创建一个最多支持 256 人的群</string>
-    <string name="contact_share_bots_title">%1$s 分享的应用</string>
+    <string name="contact_share_bots_title">%1$s 分享的机器人</string>
     <string name="CONTACTS">联系人</string>
     <string name="content_audio">[语音]</string>
     <string name="content_contact">[联系人]</string>
@@ -519,9 +519,9 @@
     <string name="Logs">日志</string>
     <string name="Lost_your_mobile_number">手机丢失？</string>
     <string name="Make_group_admin">设定为群组管理员</string>
-    <string name="manage_all_your_bots">管理你所有的应用</string>
+    <string name="manage_all_your_bots">管理你所有的机器人</string>
     <string name="manage_all_your_circles">管理你所有的圈子</string>
-    <string name="Manage_Bots">管理应用</string>
+    <string name="Manage_Bots">管理机器人</string>
     <string name="Manager_Sticker">管理贴纸</string>
     <string name="Manufacturer">生产商</string>
     <string name="Mark_as_read">标记为已读</string>
@@ -557,7 +557,7 @@
     <string name="My_Contacts">我的联系人</string>
     <string name="my_mixin_id">我的 Mixin ID：%1$s</string>
     <string name="My_QR_Code">我的二维码</string>
-    <string name="My_shared_bots">我分享的应用</string>
+    <string name="My_shared_bots">我分享的机器人</string>
     <string name="My_Stickers">我的表情</string>
     <string name="NA">暂无价格</string>
     <string name="Name">名称</string>
@@ -672,7 +672,7 @@
     <string name="Privacy_Policy">隐私政策</string>
     <string name="profile_modify_number">你想要修改手机号码么？</string>
     <string name="Profile_photo">个人头像</string>
-    <string name="profile_share_bot_hint">如果您希望分享应用，请先添加联系人。</string>
+    <string name="profile_share_bot_hint">如果您希望分享机器人，请先添加联系人。</string>
     <string name="Public_profile">个人资料（必须）</string>
     <string name="QR_Code">二维码</string>
     <string name="qr_code_camera_code">打开相机会默认开启二维码识别，当二维码被检测到时会显示一个通知，点击通知识别二维码。</string>
@@ -824,7 +824,7 @@
     <string name="share_message_description">你确定要发送来自%1$s的%2$s？</string>
     <string name="share_message_description_empty">你确定要发送该%1$s？</string>
     <string name="Share_QR_Code">分享二维码</string>
-    <string name="Share_This_Bot">分享应用</string>
+    <string name="Share_This_Bot">分享机器人</string>
     <string name="share_to">分享%1$s到…</string>
     <string name="Shared_Media">媒体内容</string>
     <string name="Show">显示</string>
@@ -944,6 +944,8 @@
     <string name="Upload_Mobile_Contacts">上传通讯录找好友</string>
     <string name="Upload_timeout">上传超时</string>
     <string name="Use_Biometric_Multisig">使用生物识别签名</string>
+    <string name="pin_creation">创建 PIN</string>
+    <string name="your_pin_has_been_created">PIN 已创建</string>
     <string name="User_not_found">找不到这个用户</string>
     <string name="value_now">价值 %1$s</string>
     <string name="value_then">当时价值 %1$s</string>
