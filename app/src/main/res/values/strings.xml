@@ -79,7 +79,7 @@
 	<string name="ANSWER">ANSWER</string>
 	<string name="app_card_shareable_false">The card has been set to not allow sharing</string>
 	<string name="app_name">Mixin</string>
-	<string name="App_not_found">App not found</string>
+	<string name="Bot_not_found">Bot not found</string>
 	<string name="App_version">App version</string>
 	<string name="Appearance">Appearance</string>
 	<string name="Apply">Apply</string>
@@ -590,7 +590,7 @@
 	<string name="new_group_name">new group name</string>
 	<string name="new_wallet_hint">Create your first digital wallet, all your digital assets in one wallet, easy send and receive cryptocurrency.</string>
 	<string name="Next">Next</string>
-	<string name="NO_APP">NO APP</string>
+	<string name="NO_BOT">NO BOT</string>
 	<string name="NO_AUDIO">NO AUDIO</string>
 	<string name="NO_AUTHORIZATION">NO_AUTHORIZATION</string>
 	<string name="No_Available_Asset">No Available Asset</string>
@@ -694,7 +694,7 @@
 	<string name="QR_Code_not_found">QR Code not found</string>
 	<string name="quote">quote</string>
 	<string name="Raw">Raw</string>
-	<string name="Read_Apps">Read Apps</string>
+	<string name="Read_Bots">Read Bots</string>
 	<string name="Read_Assets">Read Assets</string>
 	<string name="Read_Circles">Read Circles</string>
 	<string name="Read_Collectibles">Read Collectibles</string>

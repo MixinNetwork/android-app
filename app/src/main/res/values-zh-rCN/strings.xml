@@ -78,7 +78,7 @@
     <string name="an_audio">一条语音</string>
     <string name="ANSWER">接听</string>
     <string name="app_card_shareable_false">包含不允许转发的卡片</string>
-    <string name="App_not_found">找不到这个机器人</string>
+    <string name="Bot_not_found">找不到这个机器人</string>
     <string name="App_version">应用版本</string>
     <string name="Appearance">外观</string>
     <string name="Apply">应用</string>
@@ -575,7 +575,7 @@
     <string name="new_group_name">新群组名称</string>
     <string name="new_wallet_hint">创建你的第一个数字钱包，所有资产都在一个钱包，收发加密资产简单易用。</string>
     <string name="Next">下一步</string>
-    <string name="NO_APP">没有应用</string>
+    <string name="NO_BOT">没有应用</string>
     <string name="NO_AUDIO">没有音频</string>
     <string name="NO_AUTHORIZATION">没有授权任何机器人</string>
     <string name="No_Available_Asset">没有可用资产</string>
@@ -679,7 +679,7 @@
     <string name="QR_Code_not_found">未发现二维码</string>
     <string name="quote">引用</string>
     <string name="Raw">其他</string>
-    <string name="Read_Apps">查看应用</string>
+    <string name="Read_Bots">查看应用</string>
     <string name="Read_Assets">查看资产</string>
     <string name="Read_Circles">查看圈子</string>
     <string name="Read_Collectibles">查看 NFT</string>

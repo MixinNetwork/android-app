@@ -54,7 +54,7 @@
     <string name="All_Transactions">Semua Urus Niaga</string>
     <string name="Amount">Jumlah</string>
     <string name="ANSWER">JAWAPAN</string>
-    <string name="App_not_found">Aplikasi tidak dijumpai</string>
+    <string name="Bot_not_found">Aplikasi tidak dijumpai</string>
     <string name="Appearance">Penampilan</string>
     <string name="Apply">Guna</string>
     <string name="Asset_Key">Kunci Aset</string>
@@ -444,7 +444,7 @@
     <string name="New_Group_Chat">Kumpulan Sembang Baharu</string>
     <string name="new_group_name">nama kumpulan baharu</string>
     <string name="Next">Seterusnya</string>
-    <string name="NO_APP">TIADA APLIKASI</string>
+    <string name="NO_BOT">TIADA APLIKASI</string>
     <string name="NO_AUDIO">TIADA AUDIO</string>
     <string name="NO_AUTHORIZATION">Tiada aplikasi autentik</string>
     <string name="No_Available_Asset">Tiada Aset Yang Tersedia</string>
@@ -528,7 +528,7 @@
     <string name="QR_Code_not_found">Kod Qr tidak dijumpai</string>
     <string name="quote">petikan</string>
     <string name="Raw">Mentah</string>
-    <string name="Read_Apps">Aplikasi baca</string>
+    <string name="Read_Bots">Aplikasi baca</string>
     <string name="Read_Assets">Baca Aset</string>
     <string name="Read_Circles">Lingkaran Baca</string>
     <string name="Read_Contacts">Baca Kenalan</string>

@@ -77,7 +77,7 @@
     <string name="an_audio">音声ファイル</string>
     <string name="ANSWER">電話をとる</string>
     <string name="app_card_shareable_false">このカードを共有することはできません</string>
-    <string name="App_not_found">アプリが見つかりません</string>
+    <string name="Bot_not_found">アプリが見つかりません</string>
     <string name="App_version">App version</string>
     <string name="Appearance">言語とテーマ</string>
     <string name="Apply">適用</string>
@@ -493,7 +493,7 @@
     <string name="new_group_name">新規グループ名</string>
     <string name="new_wallet_hint">簡単に仮想通貨をやり取りできるウォレットを作成しよう！</string>
     <string name="Next">次へ</string>
-    <string name="NO_APP">ロボがありません</string>
+    <string name="NO_BOT">ロボがありません</string>
     <string name="NO_AUDIO">音声がありません</string>
     <string name="No_Available_Asset">有効な資産がありません</string>
     <string name="No_blocked_user">ブロック済みのユーザーはいません</string>
@@ -577,7 +577,7 @@
     <string name="QR_Code_not_found">QRコードが見つかりません</string>
     <string name="quote">引用</string>
     <string name="Raw">その他</string>
-    <string name="Read_Apps">アプリを読み取る</string>
+    <string name="Read_Bots">アプリを読み取る</string>
     <string name="Read_Assets">ウォレット機能連携</string>
     <string name="Read_Circles">リストの識別</string>
     <string name="Read_Collectibles">コレクションを読む</string>

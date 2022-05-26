@@ -53,7 +53,7 @@
     <string name="All_Transactions">Semua Transaksi</string>
     <string name="Amount">Jumlah</string>
     <string name="ANSWER">JAWAB</string>
-    <string name="App_not_found">Aplikasi tidak ditemukan</string>
+    <string name="Bot_not_found">Aplikasi tidak ditemukan</string>
     <string name="Appearance">Tampilan</string>
     <string name="Apply">Terapkan</string>
     <string name="Asset_Key">Kode Aset</string>
@@ -420,7 +420,7 @@
     <string name="New_Group_Chat">Obrolan Grup Baru</string>
     <string name="new_group_name">nama grup baru</string>
     <string name="Next">Berikutnya</string>
-    <string name="NO_APP">TIDAK ADA APLIKASI</string>
+    <string name="NO_BOT">TIDAK ADA APLIKASI</string>
     <string name="NO_AUDIO">TIDAK ADA SUARA</string>
     <string name="NO_AUTHORIZATION">Tidak ada aplikasi yang diizinkan</string>
     <string name="No_blocked_user">Tidak ada pengguna yang diblokir</string>
@@ -495,7 +495,7 @@
     <string name="qr_code_camera_code">Gunakan Kamera internal untuk memindai Kode QR apa pun. Saat kode terdeteksi, ketuk notifikasi untuk melihat informasi selengkapnya.</string>
     <string name="QR_Code_not_found">Kode Qr tidak ditemukan</string>
     <string name="Raw">Raw</string>
-    <string name="Read_Apps">Membaca Aplikasi</string>
+    <string name="Read_Bots">Membaca Aplikasi</string>
     <string name="Read_Assets">Membaca Aset</string>
     <string name="Read_Contacts">Membaca Kontak</string>
     <string name="Read_Snapshots">Membaca Snapshot</string>
