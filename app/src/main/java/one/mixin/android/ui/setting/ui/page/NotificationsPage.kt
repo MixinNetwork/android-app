@@ -18,6 +18,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.ProvideTextStyle
 import androidx.compose.material.Scaffold
 import androidx.compose.material.Switch
+import androidx.compose.material.SwitchDefaults
 import androidx.compose.material.Text
 import androidx.compose.material.TextButton
 import androidx.compose.runtime.Composable
@@ -106,6 +107,12 @@ fun NotificationsPage() {
                 trailing = {
                     Switch(
                         checked = duplicateTransferSelected,
+                        colors = SwitchDefaults.colors(
+                            checkedThumbColor = MixinAppTheme.colors.accent,
+                            uncheckedThumbColor = MixinAppTheme.colors.accent,
+                            checkedTrackColor = MixinAppTheme.colors.accent,
+                            uncheckedTrackColor = MixinAppTheme.colors.accent,
+                        ),
                         onCheckedChange = null
                     )
                 },
@@ -126,6 +133,12 @@ fun NotificationsPage() {
                 trailing = {
                     Switch(
                         checked = strangerTransferChecked,
+                        colors = SwitchDefaults.colors(
+                            checkedThumbColor = MixinAppTheme.colors.accent,
+                            uncheckedThumbColor = MixinAppTheme.colors.accent,
+                            checkedTrackColor = MixinAppTheme.colors.accent,
+                            uncheckedTrackColor = MixinAppTheme.colors.accent,
+                        ),
                         onCheckedChange = null
                     )
                 },

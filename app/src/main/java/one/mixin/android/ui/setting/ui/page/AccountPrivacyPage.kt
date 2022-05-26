@@ -3,6 +3,7 @@ package one.mixin.android.ui.setting.ui.page
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.height
 import androidx.compose.material.Switch
+import androidx.compose.material.SwitchDefaults
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -24,6 +25,7 @@ import one.mixin.android.ui.setting.ui.compose.SettingPageScaffold
 import one.mixin.android.ui.setting.ui.compose.SettingTile
 import one.mixin.android.ui.setting.ui.compose.booleanValueAsState
 import one.mixin.android.ui.setting.ui.compose.intValueAsState
+import one.mixin.android.ui.setting.ui.theme.MixinAppTheme
 
 @Composable
 fun AccountPrivacyPage() {
@@ -77,7 +79,16 @@ fun AccountPrivacyPage() {
                 title = stringResource(R.string.Incognito_Keyboard),
                 description = stringResource(R.string.setting_incognito_prompt),
                 trailing = {
-                    Switch(checked = incognitoEnable, onCheckedChange = null)
+                    Switch(
+                        checked = incognitoEnable,
+                        colors = SwitchDefaults.colors(
+                            checkedThumbColor = MixinAppTheme.colors.accent,
+                            uncheckedThumbColor = MixinAppTheme.colors.accent,
+                            checkedTrackColor = MixinAppTheme.colors.accent,
+                            uncheckedTrackColor = MixinAppTheme.colors.accent,
+                        ),
+                        onCheckedChange = null
+                    )
                 }
             ) {
                 incognitoEnable = !incognitoEnable

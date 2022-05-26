@@ -13,6 +13,7 @@ import androidx.compose.material.RadioButton
 import androidx.compose.material.RadioButtonDefaults
 import androidx.compose.material.Surface
 import androidx.compose.material.Switch
+import androidx.compose.material.SwitchDefaults
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -87,7 +88,16 @@ fun AppAuthSettingPage() {
             title = stringResource(id = R.string.fingerprint_lock),
             description = stringResource(id = R.string.unlock_with_fingerprint_desc),
             trailing = {
-                Switch(checked = fingerPrintEnabled != FINGERPRINT_DISABLED, onCheckedChange = null)
+                Switch(
+                    checked = fingerPrintEnabled != FINGERPRINT_DISABLED,
+                    colors = SwitchDefaults.colors(
+                        checkedThumbColor = MixinAppTheme.colors.accent,
+                        uncheckedThumbColor = MixinAppTheme.colors.accent,
+                        checkedTrackColor = MixinAppTheme.colors.accent,
+                        uncheckedTrackColor = MixinAppTheme.colors.accent,
+                    ),
+                    onCheckedChange = null
+                )
             }
         ) {
             isSupportWithErrorInfo =

@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.Switch
+import androidx.compose.material.SwitchDefaults
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -107,7 +108,16 @@ fun PinSettingPage() {
         SettingTile(
             title = stringResource(R.string.Pay_with_Biometrics),
             trailing = {
-                Switch(checked = enableBiometrics, onCheckedChange = null)
+                Switch(
+                    checked = enableBiometrics,
+                    colors = SwitchDefaults.colors(
+                        checkedThumbColor = MixinAppTheme.colors.accent,
+                        uncheckedThumbColor = MixinAppTheme.colors.accent,
+                        checkedTrackColor = MixinAppTheme.colors.accent,
+                        uncheckedTrackColor = MixinAppTheme.colors.accent,
+                    ),
+                    onCheckedChange = null
+                )
             },
         ) {
             isSupportWithErrorInfo =
