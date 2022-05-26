@@ -154,10 +154,12 @@ class ConversationListFragment : LinkFragment() {
                 super.onItemRangeChanged(positionStart, itemCount)
                 if (scrollTop) {
                     scrollTop = false
-                    (binding.messageRv.layoutManager as LinearLayoutManager).scrollToPositionWithOffset(
-                        0,
-                        0
-                    )
+                    if (isAdded) {
+                        (binding.messageRv.layoutManager as LinearLayoutManager).scrollToPositionWithOffset(
+                            0,
+                            0
+                        )
+                    }
                 }
             }
         }
