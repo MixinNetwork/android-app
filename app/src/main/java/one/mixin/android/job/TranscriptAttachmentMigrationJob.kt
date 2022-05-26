@@ -15,6 +15,7 @@ import java.nio.file.Files
 
 class TranscriptAttachmentMigrationJob : BaseJob(Params(PRIORITY_LOWER).groupBy(GROUP_ID).persist()) {
     companion object {
+        private var serialVersionUID: Long = 1L
         private const val GROUP_ID = "transcript_attachment_migration"
     }
 
