@@ -14,7 +14,7 @@
 	<string name="about_version">Version %1$s</string>
 	<string name="Accept">Accept</string>
 	<string name="Access_denied">Access denied</string>
-	<string name="access_your_apps_list">access your apps list</string>
+	<string name="access_your_bots_list">access your apps list</string>
 	<string name="access_your_circle_list">access your circle list</string>
 	<string name="access_your_collectibles">access your collectibles</string>
 	<string name="access_your_contacts_list">access your contacts list</string>
@@ -157,7 +157,7 @@
 	<string name="Changed">Changed</string>
 	<string name="changed_disappearing_message_settings">%1$s changed disappearing message settings.</string>
 	<string name="Changing">Changing…</string>
-	<string name="chat_app_reception_title">Tap the button to interact with the bot</string>
+	<string name="chat_bot_reception_title">Tap the button to interact with the bot</string>
 	<string name="chat_audio_discard_warning">Are you sure you want to stop recording and discard your voice message ?</string>
 	<string name="chat_audio_discard_warning_title">Discard Voice message</string>
 	<string name="chat_audio_warning">You cannot play audio if your\'re already on play another audio.</string>
@@ -232,7 +232,7 @@
 	<string name="contact_mobile">Mobile: %1$s</string>
 	<string name="contact_mute_title">Mute notifications for…</string>
 	<string name="contact_new_group_chat_desc">Create a group chat with up to  friends</string>
-	<string name="contact_share_apps_title">%1$s\'s Shared Apps</string>
+	<string name="contact_share_bots_title">%1$s\'s Shared Apps</string>
 	<string name="CONTACTS">CONTACTS</string>
 	<string name="content_audio">[Audio]</string>
 	<string name="content_contact">[Contact]</string>
@@ -533,9 +533,9 @@
 	<string name="Logs">Logs</string>
 	<string name="Lost_your_mobile_number">Lost your mobile number?</string>
 	<string name="Make_group_admin">Make group admin</string>
-	<string name="manage_all_your_apps">mange all your apps</string>
+	<string name="manage_all_your_bots">mange all your apps</string>
 	<string name="manage_all_your_circles">manage all your circles</string>
-	<string name="Manage_Apps">Manage Apps</string>
+	<string name="Manage_Bots">Manage Apps</string>
 	<string name="Manager_Sticker">Manager Sticker</string>
 	<string name="Manufacturer">Manufacturer</string>
 	<string name="Mark_as_read">Mark as read</string>
@@ -572,7 +572,7 @@
 	<string name="My_Contacts">My Contacts</string>
 	<string name="my_mixin_id">My Mixin ID: %1$s</string>
 	<string name="My_QR_Code">My QR Code</string>
-	<string name="My_shared_apps">My shared apps</string>
+	<string name="My_shared_bots">My shared apps</string>
 	<string name="My_Stickers">My Stickers</string>
 	<string name="NA">N/A</string>
 	<string name="Name">Name</string>
@@ -687,7 +687,7 @@
 	<string name="Privacy_Policy">Privacy Policy</string>
 	<string name="profile_modify_number">Do you want to change your phone number?</string>
 	<string name="Profile_photo">Profile Photo</string>
-	<string name="profile_share_app_hint">If you want to share an app, add it to your contacts first</string>
+	<string name="profile_share_bot_hint">If you want to share an app, add it to your contacts first</string>
 	<string name="Public_profile">Public profile (required)</string>
 	<string name="QR_Code">QR Code</string>
 	<string name="qr_code_camera_code">Use the built-in Camera to scan any QR Code. When a code is detected, tap the notification to view more information.</string>
@@ -843,7 +843,7 @@
 	<string name="share_message_description">Are you sure you want to send a %2$s from %1$s ?</string>
 	<string name="share_message_description_empty">Are you sure you want to send the %1$s ?</string>
 	<string name="Share_QR_Code">Share QR Code</string>
-	<string name="Share_This_App">Share This App</string>
+	<string name="Share_This_Bot">Share This App</string>
 	<string name="share_to">Share %1$s to…</string>
 	<string name="Shared_Media">Shared Media</string>
 	<string name="Show">Show</string>
@@ -958,7 +958,7 @@
 	<string name="Update">Update</string>
 	<string name="update_downloaded">An update has just been downloaded.</string>
 	<string name="Update_Mixin">Update Mixin</string>
-	<string name="update_mixin_description">The current version (%1$s) is no longer avaliable!\nPlease click \"Update\" below to update to the latest version from the Google Play.</string>
+	<string name="update_mixin_description">The current version (%1$s) is no longer available!\nPlease click \"Update\" below to update to the latest version from the Google Play.</string>
 	<string name="Upgrade_Database">Upgrade Database</string>
 	<string name="Upgrading">Upgrading</string>
 	<string name="Upload_Mobile_Contacts">Upload Mobile Contacts</string>

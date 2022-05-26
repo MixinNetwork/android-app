@@ -11,7 +11,7 @@
         android:id="@+id/title_view"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:titleText="@string/My_shared_apps" />
+        app:titleText="@string/My_shared_bots" />
 
     <FrameLayout
         android:layout_width="match_parent"
@@ -59,7 +59,7 @@
                 android:layout_height="wrap_content"
                 android:layout_centerInParent="true"
                 android:gravity="center_horizontal"
-                android:text="@string/profile_share_app_hint"
+                android:text="@string/profile_share_bot_hint"
                 android:textColor="?attr/text_minor" />
         </RelativeLayout>
     </FrameLayout>

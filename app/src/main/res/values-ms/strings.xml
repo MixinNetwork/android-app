@@ -3,7 +3,7 @@
     <string name="about_version">Versi %1$s</string>
     <string name="Accept">Terima</string>
     <string name="Access_denied">Akses dinafikan</string>
-    <string name="access_your_apps_list">akses senarai aplikasi anda</string>
+    <string name="access_your_bots_list">akses senarai aplikasi anda</string>
     <string name="access_your_circle_list">akses senarai lingkaran anda</string>
     <string name="access_your_contacts_list">akses senarai kenalan anda</string>
     <string name="access_your_snapshots">akses gambar anda</string>
@@ -170,7 +170,7 @@
     <string name="contact_mobile">Mudah alih: %1$s</string>
     <string name="contact_mute_title">Senyapkan pemberitahuan untuk…</string>
     <string name="contact_new_group_chat_desc">Buat kumpulan sembang dengan sehingga rakan</string>
-    <string name="contact_share_apps_title">Aplikasi Dikongsi %1$s</string>
+    <string name="contact_share_bots_title">Aplikasi Dikongsi %1$s</string>
     <string name="CONTACTS">KENALAN</string>
     <string name="content_audio">[Audio]</string>
     <string name="content_contact">[Hubungi]</string>
@@ -400,9 +400,9 @@
     <string name="Logs">Log</string>
     <string name="Lost_your_mobile_number">Kehilangan nombor telefon bimbit anda?</string>
     <string name="Make_group_admin">Buat pentadbir kumpulan</string>
-    <string name="manage_all_your_apps">urus semua aplikasi anda</string>
+    <string name="manage_all_your_bots">urus semua aplikasi anda</string>
     <string name="manage_all_your_circles">urus semua lingkaran anda</string>
-    <string name="Manage_Apps">Urus Aplikasi</string>
+    <string name="Manage_Bots">Urus Aplikasi</string>
     <string name="Manager_Sticker">Pengurus Pelekat</string>
     <string name="Mark_as_read">tanda sebagai telah dibaca</string>
     <string name="Media">Media</string>
@@ -432,7 +432,7 @@
     <string name="My_Contacts">Kenalan Saya</string>
     <string name="my_mixin_id">ID Mixin Saya: %1$s</string>
     <string name="My_QR_Code">Kod QR saya</string>
-    <string name="My_shared_apps">Aplikasi kongsi saya</string>
+    <string name="My_shared_bots">Aplikasi kongsi saya</string>
     <string name="NA">N/A</string>
     <string name="Name">Nama</string>
     <string name="need_background_permission">Memerlukan kebenaran mula di latar untuk meneruskan</string>
@@ -647,7 +647,7 @@
     <string name="Share_Link">Kongsi pautan</string>
     <string name="share_message_description">Adakah anda pasti mahu menghantar %2$s dari %1$s?</string>
     <string name="share_message_description_empty">Adakah anda pasti mahu menghantar %1$s?</string>
-    <string name="Share_This_App">Kongsi Aplikasi Ini</string>
+    <string name="Share_This_Bot">Kongsi Aplikasi Ini</string>
     <string name="share_to">Kongsi %1$s ke…</string>
     <string name="Shared_Media">Media Berkongsi</string>
     <string name="Show">Tunjuk</string>

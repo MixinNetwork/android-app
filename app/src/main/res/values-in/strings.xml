@@ -3,7 +3,7 @@
     <string name="about_version">Versi %1$s</string>
     <string name="Accept">Terima</string>
     <string name="Access_denied">Akses ditolak</string>
-    <string name="access_your_apps_list">mengakses daftar aplikasi Anda</string>
+    <string name="access_your_bots_list">mengakses daftar aplikasi Anda</string>
     <string name="access_your_contacts_list">mengakses daftar kontak Anda</string>
     <string name="access_your_snapshots">mengakses snapshot Anda</string>
     <string name="Account">Akun</string>
@@ -160,7 +160,7 @@
     <string name="contact_mobile">Seluler: %1$s</string>
     <string name="contact_mute_title">Matikan notifikasi selama…</string>
     <string name="contact_new_group_chat_desc">Buat obrolan grup dengan maksimal teman</string>
-    <string name="contact_share_apps_title">Aplikasi Bersama %1$s</string>
+    <string name="contact_share_bots_title">Aplikasi Bersama %1$s</string>
     <string name="CONTACTS">KONTAK</string>
     <string name="content_audio">[Audio]</string>
     <string name="content_contact">[Kontak]</string>
@@ -377,8 +377,8 @@
     <string name="Logs">Log</string>
     <string name="Lost_your_mobile_number">Kehilangan nomor ponsel Anda?</string>
     <string name="Make_group_admin">Jadikan admin grup</string>
-    <string name="manage_all_your_apps">mengelola semua aplikasi Anda</string>
-    <string name="Manage_Apps">Mengelola Aplikasi</string>
+    <string name="manage_all_your_bots">mengelola semua aplikasi Anda</string>
+    <string name="Manage_Bots">Mengelola Aplikasi</string>
     <string name="Manager_Sticker">Stiker Manajer</string>
     <string name="Mark_as_read">Tandai sudah dibaca</string>
     <string name="Media">Media</string>
@@ -408,7 +408,7 @@
     <string name="My_Contacts">Kontak Saya</string>
     <string name="my_mixin_id">ID Mixin saya: %1$s</string>
     <string name="My_QR_Code">Kode QR saya</string>
-    <string name="My_shared_apps">Aplikasi bersama saya</string>
+    <string name="My_shared_bots">Aplikasi bersama saya</string>
     <string name="NA">N/A</string>
     <string name="Name">Nama</string>
     <string name="need_background_permission">Memerlukan izin mulai di latar belakang untuk melanjutkan</string>

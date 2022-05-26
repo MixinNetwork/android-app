@@ -13,7 +13,7 @@
     <string name="About">Mixinについて</string>
     <string name="about_version">版本 %1$s</string>
     <string name="Access_denied">アクセスが拒否されました</string>
-    <string name="access_your_apps_list">アプリリストへのアクセス</string>
+    <string name="access_your_bots_list">アプリリストへのアクセス</string>
     <string name="access_your_circle_list">リストへのアクセス</string>
     <string name="access_your_collectibles">コレクションへのアクセス</string>
     <string name="access_your_contacts_list">連絡先情報へのアクセス</string>
@@ -201,7 +201,7 @@
     <string name="contact_mobile">モバイル: %1$s</string>
     <string name="contact_mute_title">通知をミュート:</string>
     <string name="contact_new_group_chat_desc">256人までのグループチャットを作成</string>
-    <string name="contact_share_apps_title">%1$s\のシェアしたロボ</string>
+    <string name="contact_share_bots_title">%1$s\のシェアしたロボ</string>
     <string name="CONTACTS">連絡先</string>
     <string name="content_audio">[音声]</string>
     <string name="content_contact">[連絡先]</string>
@@ -445,9 +445,9 @@
     <string name="Logs">ログ</string>
     <string name="Lost_your_mobile_number">電話番号をお忘れですか？</string>
     <string name="Make_group_admin">サブリーダー権限を付与</string>
-    <string name="manage_all_your_apps">全アプリの管理</string>
+    <string name="manage_all_your_bots">全アプリの管理</string>
     <string name="manage_all_your_circles">リストの編集</string>
-    <string name="Manage_Apps">アプリの管理</string>
+    <string name="Manage_Bots">アプリの管理</string>
     <string name="Manager_Sticker">スタンプ管理</string>
     <string name="Manufacturer">Manufacturer</string>
     <string name="Mark_as_read">既読</string>
@@ -475,7 +475,7 @@
     <string name="Mute_until">%1$sまで</string>
     <string name="My_Contacts">友だち限定</string>
     <string name="My_QR_Code">マイQRコード</string>
-    <string name="My_shared_apps">おすすめロボをプロフィールに追加</string>
+    <string name="My_shared_bots">おすすめロボをプロフィールに追加</string>
     <string name="My_Stickers">マイステッカー</string>
     <string name="NA">なし</string>
     <string name="Name">名前</string>
@@ -572,7 +572,7 @@
     <string name="Privacy">プライバシー</string>
     <string name="Privacy_Policy">プライバシーポリシー</string>
     <string name="profile_modify_number">電話番号を変更しますか?</string>
-    <string name="profile_share_app_hint">ロボをシェアしたい場合は、先に連絡先に追加してください。</string>
+    <string name="profile_share_bot_hint">ロボをシェアしたい場合は、先に連絡先に追加してください。</string>
     <string name="Public_profile">プロフィール</string>
     <string name="QR_Code_not_found">QRコードが見つかりません</string>
     <string name="quote">引用</string>
@@ -704,7 +704,7 @@
     <string name="Share_error">エラーを共有</string>
     <string name="Share_Link">リンクをシェアする</string>
     <string name="Share_QR_Code">QRコードを共有</string>
-    <string name="Share_This_App">このアプリをシェアする</string>
+    <string name="Share_This_Bot">このアプリをシェアする</string>
     <string name="share_to">%1$sをシェアする</string>
     <string name="Shared_Media">写真や動画</string>
     <string name="Show">表示</string>

@@ -95,14 +95,14 @@ fun AuthorizationResponse.getScopes(
                 scopes.add(
                     Scope(
                         s,
-                        ctx.getString(R.string.access_your_apps_list)
+                        ctx.getString(R.string.access_your_bots_list)
                     )
                 )
             SCOPES[7] ->
                 scopes.add(
                     Scope(
                         s,
-                        ctx.getString(R.string.manage_all_your_apps)
+                        ctx.getString(R.string.manage_all_your_bots)
                     )
                 )
             SCOPES[8] ->

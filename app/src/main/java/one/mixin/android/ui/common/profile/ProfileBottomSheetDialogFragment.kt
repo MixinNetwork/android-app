@@ -158,7 +158,7 @@ class ProfileBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragmen
         val list = menuList {
             menuGroup {
                 menu {
-                    title = getString(R.string.My_shared_apps)
+                    title = getString(R.string.My_shared_bots)
                     action = {
                         activity?.addFragment(
                             this@ProfileBottomSheetDialogFragment,
