@@ -139,6 +139,7 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
         stopAckJob()
         stopFloodJob()
         webSocket.disconnect()
+        webSocket.setWebSocketObserver(null)
         networkUtil.unregisterListener()
     }
 
