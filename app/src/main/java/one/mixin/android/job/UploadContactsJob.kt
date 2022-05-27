@@ -35,4 +35,8 @@ class UploadContactsJob : BaseJob(Params(PRIORITY_BACKGROUND).requireNetwork()) 
                 { }
             )
     }
+
+    companion object {
+        private var serialVersionUID: Long = 1L
+    }
 }

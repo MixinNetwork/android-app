@@ -13,6 +13,7 @@ class RefreshCircleJob(
 ) {
 
     companion object {
+        private var serialVersionUID: Long = 1L
         const val REFRESH_CIRCLE_CONVERSATION_LIMIT = 500
     }
 
