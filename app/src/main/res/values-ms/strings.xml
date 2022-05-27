@@ -54,7 +54,6 @@
     <string name="All_Transactions">Semua Urus Niaga</string>
     <string name="Amount">Jumlah</string>
     <string name="ANSWER">JAWAPAN</string>
-    <string name="Bot_not_found">Aplikasi tidak dijumpai</string>
     <string name="Appearance">Penampilan</string>
     <string name="Apply">Guna</string>
     <string name="Asset_Key">Kunci Aset</string>
@@ -85,6 +84,7 @@
     <string name="bold">tebal</string>
     <string name="bot_dock_empty">Tekan lama dan seret bot ke bahagian atas</string>
     <string name="bot_empty_tip">Sila masukkan bot kegemaran anda terlebih dahulu.</string>
+    <string name="Bot_not_found">Aplikasi tidak dijumpai</string>
     <string name="BOTS">BOT</string>
     <string name="bots_title">Bot</string>
     <string name="bottom_transfer_stranger_tip">ID Mixin %1$s tidak ada dalam senarai kenalan anda. Pastikan penerima yang anda pilih betul. Sekiranya anda pindah ke orang yang salah, aset anda akan hilang!</string>
@@ -130,6 +130,7 @@
     <string name="chat_group_exit">Tinggal %1$s</string>
     <string name="chat_group_join">%1$s menyertai kumpulan melalui pautan jemputan</string>
     <string name="chat_group_remove">%1$s mengalih keluar %2$s</string>
+    <string name="chat_list_empty_info">Anda boleh bersembang dengan kenalan yang memasang Mixin di telefon mereka</string>
     <string name="chat_not_support">Mesej jenis ini tidak disokong, sila tingkatkan Mixin ke versi terkini. %1$s.</string>
     <string name="chat_not_support_url">https://mixinmessenger.zendesk.com/hc/articles/360043776071</string>
     <string name="chat_on_mixin_content">Mari sembang di Mixin Messenger! Ringkas, selamat, dan senang digunakan. Ia juga menyokong Bitcoin, Ethereum, dan cryptocurrency lain, muat turun https://mixin.one/messenger dan cari %1$s untuk menambahkan saya sebagai rakan.</string>
@@ -144,7 +145,6 @@
     <string name="circle_delete_tip">Padamkan \"%1$s\"?</string>
     <string name="circle_info">Sekiranya anda ingin menapis perbualan, sila
 \ntetapkan lingkaran untuk perbualan terlebih dahulu.</string>
-    <string name="number_reached_limit">Jumlahnya sudah mencapai had</string>
     <plurals name="circle_subtitle" tools:ignore="UnusedQuantity">
         <item quantity="other">%1$d Perbualan</item>
     </plurals>
@@ -189,7 +189,6 @@
     <string name="Continue_Open_URL">Terus Buka URL</string>
     <string name="Conversation">Perbualan</string>
     <string name="conversation_delete_tip">Setelah dipadamkan, semua mesej sembang ini akan dihapus</string>
-    <string name="message_not_support">Mesej jenis ini tidak disokong, sila tingkatkan Mixin ke versi terkini.</string>
     <string name="copied_to_clipboard">Salin ke papan keratan</string>
     <string name="Copy">Salinan</string>
     <string name="Copy_invite">Salin pautan</string>
@@ -249,7 +248,6 @@
     <string name="Edit_Name">Edit Nama</string>
     <string name="Emergency_Contact">Kenalan kecemasan</string>
     <string name="Empty_address_book">Kosongkan buku alamat</string>
-    <string name="chat_list_empty_info">Anda boleh bersembang dengan kenalan yang memasang Mixin di telefon mereka</string>
     <string name="Enable_db_debug">Bolehkan nyahpepijat db</string>
     <string name="Enable_Emergency_Contact">Bolehkan Kenalan Kecemasan</string>
     <string name="Enable_web_debug">Bolehkan laman web nyahpepijat</string>
@@ -263,7 +261,6 @@
     <string name="error_bad_data">RALAT %1$d: Data permintaan mempunyai medan yang tidak sah</string>
     <string name="error_blockchain">RALAT %1$d: Rantai blok tidak diselaraskan, sila cuba sebentar lagi.</string>
     <string name="error_connection_timeout">Tamat masa sambungan rangkaian</string>
-    <string name="error_number_reached_limit">RALAT %1$d: Angka telah mencapai had.</string>
     <string name="error_full_group">RALAT %1$d: Kumpulan sembang penuh.</string>
     <string name="error_insufficient_balance">RALAT %1$d: Baki tidak mencukupi</string>
     <string name="error_invalid_address_plain">RALAT %1$d: Format alamat tidak sah.</string>
@@ -272,6 +269,7 @@
     <string name="error_invalid_pin_format">RALAT %1$d: Format PIN tidak sah</string>
     <string name="error_not_found">RALAT %1$d: Tidak ditemui</string>
     <string name="error_not_supported_audio_format">Tidak disokong format audio, sila buka oleh aplikasi lain.</string>
+    <string name="error_number_reached_limit">RALAT %1$d: Angka telah mencapai had.</string>
     <string name="error_old_version">RALAT %1$d: Sila kemas kini Mixin(%2$s) untuk terus menggunakan perkhidmatan ini.</string>
     <string name="error_open_location">Tidak dapat mencari aplikasi peta</string>
     <string name="error_permission">Sila buka kebenaran yang diperlukan</string>
@@ -410,6 +408,7 @@
     <string name="message">mesej</string>
     <string name="message_e2ee">Mesej ke perbualan ini disulitkan dari hujung ke hujung, ketuk untuk maklumat lebih lanjut.</string>
     <string name="Message_not_found">Mesej tidak dijumpai</string>
+    <string name="message_not_support">Mesej jenis ini tidak disokong, sila tingkatkan Mixin ke versi terkini.</string>
     <string name="Message_Notification">Pemberitahuan Mesej</string>
     <string name="Message_sent">Pesanan dihantar</string>
     <string name="Messaging_Node">Nod Pemesejan</string>
@@ -444,11 +443,11 @@
     <string name="New_Group_Chat">Kumpulan Sembang Baharu</string>
     <string name="new_group_name">nama kumpulan baharu</string>
     <string name="Next">Seterusnya</string>
-    <string name="NO_BOT">TIADA APLIKASI</string>
     <string name="NO_AUDIO">TIADA AUDIO</string>
     <string name="NO_AUTHORIZATION">Tiada aplikasi autentik</string>
     <string name="No_Available_Asset">Tiada Aset Yang Tersedia</string>
     <string name="No_blocked_user">Tiada pengguna yang disekat</string>
+    <string name="NO_BOT">TIADA APLIKASI</string>
     <string name="No_camera">Tiada kamera</string>
     <string name="No_deposit">Tiada deposit</string>
     <string name="No_fee">Tanpa bayaran</string>
@@ -477,6 +476,7 @@
     <string name="notification_content">Jangan terlepas mesej daripada rakan anda.</string>
     <string name="Notifications">Pemberitahuan</string>
     <string name="Now_Playing">Main sekarang</string>
+    <string name="number_reached_limit">Jumlahnya sudah mencapai had</string>
     <string name="OK">okey</string>
     <string name="Old_PIN">PIN lama</string>
     <string name="one_hour">1 jam</string>
@@ -528,8 +528,8 @@
     <string name="QR_Code_not_found">Kod Qr tidak dijumpai</string>
     <string name="quote">petikan</string>
     <string name="Raw">Mentah</string>
-    <string name="Read_Bots">Aplikasi baca</string>
     <string name="Read_Assets">Baca Aset</string>
+    <string name="Read_Bots">Aplikasi baca</string>
     <string name="Read_Circles">Lingkaran Baca</string>
     <string name="Read_Contacts">Baca Kenalan</string>
     <string name="Read_Snapshots">Baca Syot kilat</string>
@@ -566,7 +566,6 @@
     <string name="Retry">CUBA SEMULA</string>
     <string name="Retry_upload_failed">Gagal memuat naik semula.</string>
     <string name="Revoke_access">Batal akses</string>
-    <string name="Revoke_access_with">Batalkan akses %1$s?</string>
     <string name="Revoke_multisig_transaction">Batalkan Urus Niaga Multisig</string>
     <string name="Saturday">Sabtu</string>
     <string name="Save">Jimat</string>
@@ -636,6 +635,7 @@
     <string name="setting_incognito_prompt">Lumpuhkan pembelajaran peribadi papan kekunci</string>
     <string name="setting_mobile_contact_warning">Ini akan mengalih keluar kenalan anda dari pelayan Mixin.</string>
     <string name="setting_privacy_tip">Tukar siapa yang boleh menambahkan anda ke perbualan dan kumpulan.</string>
+    <string name="setting_revoke_confirmation">Batalkan akses %1$s?</string>
     <plurals name="setting_storage_clear" tools:ignore="UnusedQuantity">
         <item quantity="other">Kosongkan %1$d mesej (%2$s)?</item>
     </plurals>

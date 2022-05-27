@@ -1,4 +1,4 @@
-<resources xmlns:tools="http://schemas.android.com/tools">
+<resources>
 	<string name="a_card">a card</string>
 	<string name="a_contact">a contact</string>
 	<string name="a_file">a file</string>
@@ -79,7 +79,6 @@
 	<string name="ANSWER">ANSWER</string>
 	<string name="app_card_shareable_false">The card has been set to not allow sharing</string>
 	<string name="app_name">Mixin</string>
-	<string name="Bot_not_found">Bot not found</string>
 	<string name="App_version">App version</string>
 	<string name="Appearance">Appearance</string>
 	<string name="Apply">Apply</string>
@@ -122,6 +121,7 @@
 	<string name="bot_dock_empty">Long press and drag the bot to the top</string>
 	<string name="bot_empty_tip">Please add your favorite bot first.</string>
 	<string name="bot_not_auth_yet">No permission has been granted to this bot</string>
+	<string name="Bot_not_found">Bot not found</string>
 	<string name="BOTS">BOTS</string>
 	<string name="bots_title">Bots</string>
 	<string name="bottom_transfer_stranger_tip">Mixin ID %1$s is not on your contact list. Make sure the recipient you chosen is correct. If you transfer to the wrong person, your assets will be lost!</string>
@@ -157,11 +157,11 @@
 	<string name="Changed">Changed</string>
 	<string name="changed_disappearing_message_settings">%1$s changed disappearing message settings.</string>
 	<string name="Changing">Changing…</string>
-	<string name="chat_bot_reception_title">Tap the button to interact with the bot</string>
 	<string name="chat_audio_discard_warning">Are you sure you want to stop recording and discard your voice message ?</string>
 	<string name="chat_audio_discard_warning_title">Discard Voice message</string>
 	<string name="chat_audio_warning">You cannot play audio if your\'re already on play another audio.</string>
 	<string name="Chat_Backup">Chat Backup</string>
+	<string name="chat_bot_reception_title">Tap the button to interact with the bot</string>
 	<string name="chat_call_duration">Duration %1$s</string>
 	<string name="chat_call_warning_voice">Can\'t record voice messages during a Mixin call.</string>
 	<string name="chat_decryption_failed">This message decryption failed, please upgrade Mixin to the latest version.</string>
@@ -182,6 +182,7 @@
 	<string name="chat_group_remove">%1$s removed %2$s</string>
 	<string name="chat_import_content">Do you want import messages to %1$s ?</string>
 	<string name="chat_import_fail_content">Message import failed! Do you want to send it as a file?</string>
+	<string name="chat_list_empty_info">You can chat with contacts who have Mixin installed on their phone.</string>
 	<string name="chat_not_support">This type of message is not supported, please upgrade Mixin to the latest version. %1$s.</string>
 	<string name="chat_not_support_url">https://mixinmessenger.zendesk.com/hc/articles/360043776071</string>
 	<string name="chat_on_mixin_content">Let\'s chat on Mixin Messenger! Simple, safe, and easy to use. It also supports Bitcoin, Ethereum, and other cryptocurrencies, download https://mixin.one/messenger and search %1$s to add me as a friend.</string>
@@ -199,7 +200,6 @@
 	<string name="circle_bottom">Create circle for different groups of chats and quickly switch between them</string>
 	<string name="circle_delete_tip">Delete \"%1$s\" ?</string>
 	<string name="circle_info">Create circles for different groups of chats and quickly switch between them</string>
-	<string name="number_reached_limit">The number has reached the limit</string>
 	<string name="circle_no_conversation_hint">You can add contacts or groups to the current circle</string>
 	<plurals name="circle_subtitle">
 		<item quantity="one">%1$d Conversation</item>
@@ -227,7 +227,7 @@
 	</plurals>
 	<string name="Contact_Developer">Contact Developer</string>
 	<string name="contact_empty_tip">Mixin needs access your contacts to help you connect with other people on Mixin.</string>
-	<string name="contact_invite_content">Hey, I\'m using Mixin Messenger to chat. Download it here: https://mixin.one/messenger .</string>
+	<string name="contact_invite_content">Hey, I\'m using Mixin Messenger to chat. Download it here: https://mixin.one/messenger</string>
 	<string name="contact_mixin_id">Mixin ID: %1$s</string>
 	<string name="contact_mobile">Mobile: %1$s</string>
 	<string name="contact_mute_title">Mute notifications for…</string>
@@ -254,7 +254,6 @@
 	<string name="conversation_delete_tip">Once deleted, all this chat messages will be cleared</string>
 	<string name="conversation_delete_title">Delete chat: %1$s</string>
 	<string name="Conversation_not_found">Conversation not found.</string>
-	<string name="message_not_support">This type of message is not supported, please upgrade Mixin to the latest version.</string>
 	<string name="copied_to_clipboard">Copied to Clipboard</string>
 	<string name="Copy">Copy</string>
 	<string name="Copy_invite">Copy Invite Link</string>
@@ -339,7 +338,6 @@
 	<string name="Edit_Name">Edit Name</string>
 	<string name="Emergency_Contact">Emergency Contact</string>
 	<string name="Empty_address_book">Empty address book</string>
-	<string name="chat_list_empty_info">You can chat with contacts who have Mixin installed on their phone.</string>
 	<string name="Enable_after_1_minute">Enabled after 1 minute</string>
 	<string name="Enable_after_30_minutes">Enabled after 30 minutes</string>
 	<string name="Enable_db_debug">Enable db debug</string>
@@ -361,7 +359,6 @@
 	<string name="error_bad_data">ERROR %1$d: The request data has invalid field</string>
 	<string name="error_blockchain">ERROR %1$d: Blockchain not in sync, please try again later.</string>
 	<string name="error_connection_timeout">Network connection timeout, please try again</string>
-	<string name="error_number_reached_limit">ERROR %1$d: The number has reached the limit.</string>
 	<string name="error_full_group">ERROR %1$d: The group chat is full.</string>
 	<string name="error_insufficient_balance">ERROR %1$d: Insufficient balance</string>
 	<string name="error_insufficient_transaction_fee_with_amount">ERROR %1$d: Insufficient transaction fee. Please make sure your wallet has %2$s as fee</string>
@@ -373,6 +370,7 @@
 	<string name="error_memo_too_long">Memo has too many characters, maximum is 200</string>
 	<string name="error_not_found">ERROR %1$d: Not found</string>
 	<string name="error_not_supported_audio_format">Not supported audio format, please open by other app.</string>
+	<string name="error_number_reached_limit">ERROR %1$d: The number has reached the limit.</string>
 	<string name="error_old_version">ERROR %1$d: Please update Mixin(%2$s) to continue use the service.</string>
 	<string name="error_open_location">Can\'t find an map app</string>
 	<string name="error_permission">Please open the necessary permissions</string>
@@ -544,6 +542,7 @@
 	<string name="message">message</string>
 	<string name="message_e2ee">Messages to this conversation are encrypted end-to-end, tap for more info.</string>
 	<string name="Message_not_found">Message not found</string>
+	<string name="message_not_support">This type of message is not supported, please upgrade Mixin to the latest version.</string>
 	<string name="Message_Notification">Message Notification</string>
 	<string name="Message_pinned">Message pinned</string>
 	<string name="Message_sent">Message sent</string>
@@ -590,11 +589,11 @@
 	<string name="new_group_name">new group name</string>
 	<string name="new_wallet_hint">Create your first digital wallet, all your digital assets in one wallet, easy send and receive cryptocurrency.</string>
 	<string name="Next">Next</string>
-	<string name="NO_BOT">NO BOT</string>
 	<string name="NO_AUDIO">NO AUDIO</string>
-	<string name="NO_AUTHORIZATION">NO_AUTHORIZATION</string>
+	<string name="NO_AUTHORIZATION">NO AUTHORIZATION</string>
 	<string name="No_Available_Asset">No Available Asset</string>
 	<string name="No_blocked_user">No blocked user</string>
+	<string name="NO_BOT">NO BOT</string>
 	<string name="No_camera">No camera</string>
 	<string name="No_deposit">No deposit</string>
 	<string name="No_fee">No fee</string>
@@ -627,6 +626,7 @@
 	<string name="notification_content">Don\'t miss messages from your friends.</string>
 	<string name="Notifications">Notifications</string>
 	<string name="Now_Playing">Now Playing</string>
+	<string name="number_reached_limit">The number has reached the limit</string>
 	<string name="Off">Off</string>
 	<string name="OK">OK</string>
 	<string name="Old_PIN">Old PIN</string>
@@ -669,6 +669,7 @@
 	<string name="pin_check_tip">You\'ll be asked for it periodically to help you remember it.</string>
 	<string name="pin_confirm_again_hint">Please confirm your 6 digit PIN again</string>
 	<string name="pin_confirm_hint">Please confirm the 6 digit PIN and remember it</string>
+	<string name="pin_creation">PIN creation</string>
 	<string name="PIN_incorrect">PIN incorrect</string>
 	<string name="pin_lost_hint">If lost, there is no way to recover your wallet.</string>
 	<string name="pin_title">Pin</string>
@@ -694,8 +695,8 @@
 	<string name="QR_Code_not_found">QR Code not found</string>
 	<string name="quote">quote</string>
 	<string name="Raw">Raw</string>
-	<string name="Read_Bots">Read Bots</string>
 	<string name="Read_Assets">Read Assets</string>
+	<string name="Read_Bots">Read Bots</string>
 	<string name="Read_Circles">Read Circles</string>
 	<string name="Read_Collectibles">Read Collectibles</string>
 	<string name="Read_Contacts">Read Contacts</string>
@@ -741,7 +742,6 @@
 	<string name="Retry">Retry</string>
 	<string name="Retry_upload_failed">Retry upload failed.</string>
 	<string name="Revoke_access">Revoke access</string>
-	<string name="Revoke_access_with">Revoke access %1$s?</string>
 	<string name="Revoke_multisig_transaction">Revoke Multisig Transaction</string>
 	<string name="Saturday">Saturday</string>
 	<string name="Save">Save</string>
@@ -794,8 +794,8 @@
 	<string name="setting_auth_access">Approved: %1$s, Last Accessed: %2$s</string>
 	<string name="setting_auth_search_hint">Mixin ID, Name</string>
 	<string name="setting_battery_optimize_title">This will improve reliability for incoming notifications and Mixin calls</string>
-	<string name="setting_battery_optimize_title_one_ui_below_s">This will improve reliability for incoming notifications and Telegram calls. Tap Settings -> Battery and turn <b>Allow background activity</b> on.</string>
 	<string name="setting_battery_optimize_title_one_ui_above_s">This will improve reliability for incoming notifications and Telegram calls. Please select <b>Optimised</b> or <b>Unrestricted</b> in Settings > Battery.</string>
+	<string name="setting_battery_optimize_title_one_ui_below_s">This will improve reliability for incoming notifications and Telegram calls. Tap Settings -> Battery and turn <b>Allow background activity</b> on.</string>
 	<string name="setting_biometric_error_hardware_unavailable">Hardware unavailable, try again later</string>
 	<string name="setting_biometric_error_none_enrolled">No biometric or device credential is enrolled</string>
 	<string name="setting_biometric_error_not_secure">The key NOT resides inside secure hardware (TEE)</string>
@@ -809,7 +809,7 @@
 	<string name="setting_delete_account_content_2">Local messages and Backups will not be Deleted automatically</string>
 	<string name="setting_delete_account_pin_content">If you continue, your profile and account details will be delete on %1$s. read our document to Learn more.</string>
 	<string name="setting_delete_account_send">We will send a 4-digit code to %1$s</string>
-	<string name="setting_delete_account_tip">Your Mixin wallet still has some assets that can be withdrawn to other wallets or exchanges. Once the account is cancelled, these assets will be \n abandoned along with the wallet and cannot be recovered.</string>
+	<string name="setting_delete_account_tip">Your Mixin wallet still has some assets that can be withdrawn to other wallets or exchanges. Once the account is cancelled, these assets will be abandoned along with the wallet and cannot be recovered.</string>
 	<string name="setting_delete_account_url">https://mixinmessenger.zendesk.com/hc/articles/4414170627988</string>
 	<string name="setting_desktop_confirm">Confirm login to Mixin Messenger Desktop</string>
 	<string name="setting_desktop_logout_failed">Logout of desktop failed.</string>
@@ -828,6 +828,7 @@
 	<string name="setting_mobile_contact_warning">This will remove your contacts from the Mixin servers.</string>
 	<string name="setting_notification_transfer_summary">Display notifications when receiving a transfer greater than or equal to %1$s.</string>
 	<string name="setting_privacy_tip">Change who can add you to conversation and groups.</string>
+	<string name="setting_revoke_confirmation">Revoke access %1$s?</string>
 	<plurals name="setting_storage_clear">
 		<item quantity="one">Clear %1$d message (%2$s)?</item>
 		<item quantity="other">Clear %1$d messages (%2$s)?</item>
@@ -840,8 +841,8 @@
 	<string name="Share_Contact">Share Contact</string>
 	<string name="Share_error">Share error.</string>
 	<string name="Share_Link">Share Link</string>
-	<string name="share_message_description">Are you sure you want to send a %2$s from %1$s ?</string>
-	<string name="share_message_description_empty">Are you sure you want to send the %1$s ?</string>
+	<string name="share_message_description">Are you sure you want to send a %2$s from %1$s?</string>
+	<string name="share_message_description_empty">Are you sure you want to send the %1$s?</string>
 	<string name="Share_QR_Code">Share QR Code</string>
 	<string name="Share_This_Bot">Share This Bot</string>
 	<string name="share_to">Share %1$s to…</string>
@@ -964,8 +965,6 @@
 	<string name="Upload_Mobile_Contacts">Upload Mobile Contacts</string>
 	<string name="Upload_timeout">Upload timeout</string>
 	<string name="Use_Biometric_Multisig">Use Biometric Multisig</string>
-	<string name="pin_creation">PIN creation</string>
-	<string name="your_pin_has_been_created">Your PIN has been created</string>
 	<string name="User_not_found">User not found</string>
 	<string name="value_now">value now %1$s</string>
 	<string name="value_then">value then %1$s</string>
@@ -1047,4 +1046,5 @@
 	<string name="You">You</string>
 	<string name="You_deleted_this_message">You deleted this message</string>
 	<string name="You_have_left_the_group">You have left the group</string>
+	<string name="your_pin_has_been_created">Your PIN has been created</string>
 </resources>

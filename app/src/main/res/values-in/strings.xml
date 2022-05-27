@@ -53,7 +53,6 @@
     <string name="All_Transactions">Semua Transaksi</string>
     <string name="Amount">Jumlah</string>
     <string name="ANSWER">JAWAB</string>
-    <string name="Bot_not_found">Aplikasi tidak ditemukan</string>
     <string name="Appearance">Tampilan</string>
     <string name="Apply">Terapkan</string>
     <string name="Asset_Key">Kode Aset</string>
@@ -83,6 +82,7 @@
     <string name="Blocked">Diblokir</string>
     <string name="bot_dock_empty">Tekan lama dan seret bot ke atas</string>
     <string name="bot_empty_tip">Harap tambahkan bot favorit Anda terlebih dahulu.</string>
+    <string name="Bot_not_found">Aplikasi tidak ditemukan</string>
     <string name="BOTS">BOT</string>
     <string name="bots_title">Bot</string>
     <string name="Call_declined">Panggilan ditolak</string>
@@ -125,6 +125,7 @@
     <string name="chat_group_exit">%1$s keluar</string>
     <string name="chat_group_join">%1$s bergabung dengan grup melalui tautan undangan</string>
     <string name="chat_group_remove">%1$s menghapus %2$s</string>
+    <string name="chat_list_empty_info">Anda dapat mengobrol dengan kontak yang memasang Mixin di telepon mereka</string>
     <string name="chat_not_support">Jenis pesan ini tidak didukung, harap tingkatkan Mixin ke versi terbaru. %1$s.</string>
     <string name="chat_not_support_url">https://mixinmessenger.zendesk.com/hc/articles/360043776071</string>
     <string name="chat_recall_delete_alert">Pesan yang Anda pilih akan dihapus untuk semua orang pada versi Mixin terbaru dalam obrolan ini.</string>
@@ -136,7 +137,6 @@
     <string name="circle_bottom">Buat lingkaran untuk grup obrolan yang berbeda dan beralih dengan cepat di antaranya</string>
     <string name="circle_delete_tip">Hapus \"%1$s\"?</string>
     <string name="circle_info">Jika Anda ingin memfilter percakapan, harap setel lingkaran untuk percakapan tersebut terlebih dahulu.</string>
-    <string name="number_reached_limit">Jumlahnya sudah mencapai batas</string>
     <plurals name="circle_subtitle" tools:ignore="UnusedQuantity">
         <item quantity="other">%1$d Percakapan</item>
     </plurals>
@@ -179,7 +179,6 @@
     <string name="Continue_Open_URL">Lanjutkan Buka URL</string>
     <string name="Conversation">Percakapan</string>
     <string name="conversation_delete_tip">Setelah dihapus, semua pesan obrolan ini akan dibersihkan</string>
-    <string name="message_not_support">Jenis pesan ini tidak didukung, harap tingkatkan Mixin ke versi terbaru.</string>
     <string name="copied_to_clipboard">Salin ke clipboard</string>
     <string name="Copy">Salin</string>
     <string name="Copy_invite">Salin Tautan</string>
@@ -233,7 +232,6 @@
     <string name="Edit_Name">Edit Nama</string>
     <string name="Emergency_Contact">Kontak darurat</string>
     <string name="Empty_address_book">Buku alamat kosong</string>
-    <string name="chat_list_empty_info">Anda dapat mengobrol dengan kontak yang memasang Mixin di telepon mereka</string>
     <string name="Enable_Emergency_Contact">Aktifkan Kontak Darurat</string>
     <string name="End_to_End_Encryption">Terenkripsi end-to-end</string>
     <string name="Enter_new_phone_number">Masukkan nomor ponsel baru Anda</string>
@@ -244,7 +242,6 @@
     <string name="error_bad_data">KESALAHAN %1$d: Data permintaan memiliki bidang yang tidak valid</string>
     <string name="error_blockchain">KESALAHAN %1$d: Blockchain tidak sinkron, coba lagi nanti.</string>
     <string name="error_connection_timeout">Batas waktu sambungan jaringan</string>
-    <string name="error_number_reached_limit">KESALAHAN %1$d: Jumlahnya telah mencapai batas.</string>
     <string name="error_full_group">KESALAHAN %1$d: Obrolan grup sudah penuh.</string>
     <string name="error_insufficient_balance">KESALAHAN %1$d: Saldo tidak cukup</string>
     <string name="error_invalid_address_plain">KESALAHAN %1$d: Format alamat tidak valid.</string>
@@ -253,6 +250,7 @@
     <string name="error_invalid_pin_format">KESALAHAN %1$d: Format PIN tidak valid</string>
     <string name="error_not_found">KESALAHAN %1$d: Tidak ditemukan</string>
     <string name="error_not_supported_audio_format">Tidak mendukung format audio, harap buka dengan aplikasi lain.</string>
+    <string name="error_number_reached_limit">KESALAHAN %1$d: Jumlahnya telah mencapai batas.</string>
     <string name="error_old_version">KESALAHAN %1$d: Harap perbarui Mixin(%2$s) untuk terus menggunakan layanan.</string>
     <string name="error_open_location">Tidak dapat menemukan aplikasi peta</string>
     <string name="error_permission">Harap buka izin yang diperlukan</string>
@@ -386,6 +384,7 @@
     <string name="message">pesan</string>
     <string name="message_e2ee">Pesan ke percakapan ini dienkripsi end-to-end, ketuk untuk info selengkapnya.</string>
     <string name="Message_not_found">Pesan tidak ditemukan</string>
+    <string name="message_not_support">Jenis pesan ini tidak didukung, harap tingkatkan Mixin ke versi terbaru.</string>
     <string name="Message_Notification">Notifikasi Pesan</string>
     <string name="Message_sent">Berhasil dikirim</string>
     <string name="Messaging_Node">Node Pesan</string>
@@ -420,10 +419,10 @@
     <string name="New_Group_Chat">Obrolan Grup Baru</string>
     <string name="new_group_name">nama grup baru</string>
     <string name="Next">Berikutnya</string>
-    <string name="NO_BOT">TIDAK ADA APLIKASI</string>
     <string name="NO_AUDIO">TIDAK ADA SUARA</string>
     <string name="NO_AUTHORIZATION">Tidak ada aplikasi yang diizinkan</string>
     <string name="No_blocked_user">Tidak ada pengguna yang diblokir</string>
+    <string name="NO_BOT">TIDAK ADA APLIKASI</string>
     <string name="No_camera">Tidak ada kamera</string>
     <string name="No_deposit">Tidak ada deposit</string>
     <string name="No_fee">Tidak ada biaya</string>
@@ -450,6 +449,7 @@
     <string name="Notification_and_Confirmation">Notifikasi dan Konfirmasi</string>
     <string name="notification_content">Jangan lewatkan pesan dari teman Anda.</string>
     <string name="Notifications">Notifikasi</string>
+    <string name="number_reached_limit">Jumlahnya sudah mencapai batas</string>
     <string name="OK">OK</string>
     <string name="Old_PIN">PIN Lama</string>
     <string name="one_hour">1 Jam</string>
@@ -495,8 +495,8 @@
     <string name="qr_code_camera_code">Gunakan Kamera internal untuk memindai Kode QR apa pun. Saat kode terdeteksi, ketuk notifikasi untuk melihat informasi selengkapnya.</string>
     <string name="QR_Code_not_found">Kode Qr tidak ditemukan</string>
     <string name="Raw">Raw</string>
-    <string name="Read_Bots">Membaca Aplikasi</string>
     <string name="Read_Assets">Membaca Aset</string>
+    <string name="Read_Bots">Membaca Aplikasi</string>
     <string name="Read_Contacts">Membaca Kontak</string>
     <string name="Read_Snapshots">Membaca Snapshot</string>
     <string name="Rebate">Potongan harga</string>
@@ -527,7 +527,6 @@
     <string name="Retry">COBA LAGI</string>
     <string name="Retry_upload_failed">Unggahan ulang gagal.</string>
     <string name="Revoke_access">Cabut akses</string>
-    <string name="Revoke_access_with">Cabut akses %1$s?</string>
     <string name="Revoke_multisig_transaction">Cabut Transaksi Multisig</string>
     <string name="Saturday">Sabtu</string>
     <string name="Save">Simpan</string>
@@ -589,6 +588,7 @@
     <string name="setting_emergency_warning">Perhatian: Kontak Darurat tidak dapat membantu Anda memulihkan PIN</string>
     <string name="setting_mobile_contact_warning">Ini akan menghapus kontak Anda dari server Mixin.</string>
     <string name="setting_privacy_tip">Ubah siapa yang dapat menambahkan Anda ke percakapan dan grup.</string>
+    <string name="setting_revoke_confirmation">Cabut akses %1$s?</string>
     <plurals name="setting_storage_clear" tools:ignore="UnusedQuantity">
         <item quantity="other">Hapus %1$d pesan (%2$s)?</item>
     </plurals>
