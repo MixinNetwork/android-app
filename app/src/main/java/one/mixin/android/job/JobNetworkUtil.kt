@@ -12,8 +12,6 @@ import android.net.Network
 import android.net.NetworkCapabilities
 import android.net.NetworkInfo
 import android.net.NetworkRequest
-import android.os.Build
-import android.os.Build.VERSION
 import android.os.PowerManager
 import androidx.core.net.ConnectivityManagerCompat
 import com.birbit.android.jobqueue.network.NetworkEventProvider
@@ -24,9 +22,7 @@ class JobNetworkUtil(val context: Context, private val linkState: LinkState) : N
     private var listener: NetworkEventProvider.Listener? = null
 
     init {
-        if (VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            listenForIdle(context)
-        }
+        listenForIdle(context)
         listenNetworkViaConnectivityManager(context)
 
         linkState.observeForever { dispatchNetworkChange(context) }
@@ -107,17 +103,17 @@ class JobNetworkUtil(val context: Context, private val linkState: LinkState) : N
      */
     @TargetApi(23)
     private fun isDozing(context: Context): Boolean {
-        if (VERSION.SDK_INT >= 23) {
-            val powerManager = context.getSystemService(Context.POWER_SERVICE) as PowerManager
-            return powerManager.isDeviceIdleMode && !powerManager.isIgnoringBatteryOptimizations(
-                context.packageName
-            )
-        } else {
-            return false
-        }
+        val powerManager = context.getSystemService(Context.POWER_SERVICE) as PowerManager
+        return powerManager.isDeviceIdleMode && !powerManager.isIgnoringBatteryOptimizations(
+            context.packageName
+        )
     }
 
     override fun setListener(listener: NetworkEventProvider.Listener) {
         this.listener = listener
+    }
+
+    fun unregisterListener() {
+        this.listener = null
     }
 }
