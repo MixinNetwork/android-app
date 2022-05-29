@@ -1,12 +1,13 @@
 package one.mixin.android.widget
 
 import android.content.Context
+import android.util.AttributeSet
 import android.view.LayoutInflater
 import androidx.constraintlayout.widget.ConstraintLayout
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemListConversationHeaderBinding
 
-class BulletinView(context: Context) : ConstraintLayout(context) {
+class BulletinView : ConstraintLayout {
     private val binding: ItemListConversationHeaderBinding =
         ItemListConversationHeaderBinding.inflate(LayoutInflater.from(context), this)
 
@@ -22,6 +23,9 @@ class BulletinView(context: Context) : ConstraintLayout(context) {
     private var type: Type = Type.NewWallet
 
     private var callback: Callback? = null
+
+    constructor(context: Context) : this(context, null)
+    constructor(context: Context, attributeSet: AttributeSet?) : super(context, attributeSet)
 
     init {
         setBackgroundResource(R.drawable.bg_list_conversation_header)
