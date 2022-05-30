@@ -921,6 +921,11 @@ class ConversationFragment() :
                 openBotHome()
             }
 
+            override fun onExitAndReport(inviterId: String) {
+                chatViewModel.exitGroupAndReport(conversationId, inviterId)
+                requireActivity().finish()
+            }
+
             override fun onLocationClick(messageItem: MessageItem) {
                 val location = GsonHelper.customGson.fromJson(messageItem.content, LocationPayload::class.java)
                 LocationActivity.show(requireContext(), location)
@@ -2038,20 +2043,32 @@ class ConversationFragment() :
                         }
                     }
                     MessageEventAction.RELATIIONSHIP -> {
-                        messageAdapter.hasBottomView = recipient?.relationship == UserRelationship.STRANGER.name &&
-                            chatViewModel.isSilence(
-                                conversationId,
-                                sender.userId,
-                            )
+                        if (isGroup) {
+                            messageAdapter.inviterId = chatViewModel.findInviterId(conversationId, sender.userId)
+                            messageAdapter.hasBottomView =
+                                chatViewModel.invitationFromStranger(conversationId, sender.userId, messageAdapter.inviterId)
+                        } else {
+                            messageAdapter.hasBottomView = recipient?.relationship == UserRelationship.STRANGER.name &&
+                                chatViewModel.isSilence(
+                                    conversationId,
+                                    sender.userId,
+                                )
+                        }
                     }
                 }
             })
-            messageAdapter.hasBottomView =
-                recipient?.relationship == UserRelationship.STRANGER.name &&
-                chatViewModel.isSilence(
-                    conversationId,
-                    sender.userId,
-                )
+            if (isGroup) {
+                messageAdapter.inviterId = chatViewModel.findInviterId(conversationId, sender.userId)
+                messageAdapter.hasBottomView =
+                    chatViewModel.invitationFromStranger(conversationId, sender.userId, messageAdapter.inviterId)
+            } else {
+                messageAdapter.hasBottomView =
+                    recipient?.relationship == UserRelationship.STRANGER.name &&
+                    chatViewModel.isSilence(
+                        conversationId,
+                        sender.userId,
+                    )
+            }
         }
     }
 

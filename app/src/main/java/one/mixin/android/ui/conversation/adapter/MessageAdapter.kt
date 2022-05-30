@@ -482,7 +482,7 @@ class MessageAdapter(
                 }
 
                 STRANGER_TYPE -> {
-                    (holder as StrangerHolder).bind(onItemListener, isBot)
+                    (holder as StrangerHolder).bind(onItemListener, inviterId, isBot)
                 }
 
                 UNKNOWN_TYPE -> {
@@ -931,6 +931,7 @@ class MessageAdapter(
         }
     }
 
+    var inviterId: String? = null
     var hasBottomView = false
         @SuppressLint("NotifyDataSetChanged")
         set(value) {
@@ -1130,6 +1131,8 @@ class MessageAdapter(
         open fun onOpenHomePage() {}
 
         open fun onSayHi() {}
+
+        open fun onExitAndReport(inviterId: String) {}
 
         open fun onLocationClick(messageItem: MessageItem) {}
 
