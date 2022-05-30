@@ -11,7 +11,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:gravity="center"
-        android:text="@string/empty_info"
+        android:text="@string/chat_list_empty_info"
         android:textColor="?attr/text_minor"
         app:layout_constraintBottom_toTopOf="@+id/start_bn"
         app:layout_constraintEnd_toEndOf="parent"

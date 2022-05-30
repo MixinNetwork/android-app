@@ -374,7 +374,7 @@ class ConversationListFragment : LinkFragment() {
             messageAdapter.submitList(pagedList)
             if (pagedList == null || pagedList.isEmpty()) {
                 if (circleId == null) {
-                    binding.emptyView.infoTv.setText(R.string.empty_info)
+                    binding.emptyView.infoTv.setText(R.string.chat_list_empty_info)
                     binding.emptyView.startBn.setText(R.string.Start_Messaging)
                 } else {
                     binding.emptyView.infoTv.setText(R.string.circle_no_conversation_hint)
@@ -671,7 +671,7 @@ class ConversationListFragment : LinkFragment() {
                     conversationItem.content?.let {
                         conversationItem.content.let {
                             setConversationName(conversationItem)
-                            binding.msgTv.setText(R.string.conversation_not_support)
+                            binding.msgTv.setText(R.string.message_not_support)
                         }
                     }
                     null

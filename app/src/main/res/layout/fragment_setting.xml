@@ -200,7 +200,7 @@
                     android:gravity="center_vertical"
                     android:layout_centerVertical="true"
                     android:layout_marginStart="@dimen/activity_horizontal_margin"
-                    android:text="@string/Share_This_App"
+                    android:text="@string/Share_This_Bot"
                     tools:ignore="RelativeOverlap"
                     android:drawablePadding="@dimen/margin12"
                     app:drawableStartCompat="@drawable/ic_setting_share" />

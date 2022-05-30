@@ -242,7 +242,7 @@ fun Context.getMixinErrorStringByCode(code: Int, message: String): String {
         }
         ErrorHandler.FAVORITE_LIMIT, ErrorHandler.CIRCLE_LIMIT -> {
             getString(
-                R.string.error_favorite_limit,
+                R.string.error_number_reached_limit,
                 ErrorHandler.FAVORITE_LIMIT
             )
         }

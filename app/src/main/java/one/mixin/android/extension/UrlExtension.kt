@@ -215,7 +215,7 @@ private fun String.isAppScheme() = startsWith(Constants.Scheme.APPS, true) ||
     startsWith(Constants.Scheme.HTTPS_APPS, true)
 
 private fun getUserOrAppNotFoundTip(isApp: Boolean) =
-    if (isApp) R.string.App_not_found else R.string.User_not_found
+    if (isApp) R.string.Bot_not_found else R.string.User_not_found
 
 fun Uri.getRawQueryParameter(key: String): String? {
     val parameters = this.getQueryParameters("data")

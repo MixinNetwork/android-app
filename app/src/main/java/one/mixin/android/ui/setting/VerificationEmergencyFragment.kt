@@ -113,7 +113,7 @@ class VerificationEmergencyFragment : PinCodeFragment(R.layout.fragment_verifica
                     .setMessage(
                         getString(
                             if (Session.hasEmergencyContact())
-                                R.string.setting_emergency_change_success
+                                R.string.Changed
                             else R.string.setting_emergency_create_success
                         )
                     )
