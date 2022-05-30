@@ -128,6 +128,7 @@ import one.mixin.android.util.BiometricUtil
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.ErrorHandler.Companion.errorHandler
 import one.mixin.android.util.PropertyHelper
+import one.mixin.android.util.RomUtil
 import one.mixin.android.util.RootUtil
 import one.mixin.android.util.reportException
 import one.mixin.android.vo.Conversation
@@ -364,7 +365,7 @@ class MainActivity : BlazeBaseActivity() {
         val batteryOptimize = defaultSharedPreferences.getLong(PREF_BATTERY_OPTIMIZE, 0)
         val cur = System.currentTimeMillis()
         if (cur - batteryOptimize > INTERVAL_24_HOURS) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P && !RomUtil.isEmui) {
                 getSystemService<ActivityManager>()?.let { am ->
                     if (am.isBackgroundRestricted) {
                         BatteryOptimizationDialogActivity.show(this)
