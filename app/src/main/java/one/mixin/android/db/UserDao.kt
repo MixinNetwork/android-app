@@ -21,6 +21,9 @@ interface UserDao : BaseDao<User> {
     @Query("SELECT * FROM users WHERE relationship = 'FRIEND' AND app_id IS NULL ORDER BY full_name, identity_number ASC")
     fun findContacts(): LiveData<List<User>>
 
+    @Query("SELECT rowid FROM users WHERE user_id = :userId AND relationship != 'FRIEND'")
+    suspend fun notFriend(userId: String): Long?
+
     @Query("SELECT * FROM users WHERE relationship = 'FRIEND' ORDER BY full_name, identity_number ASC")
     suspend fun getFriends(): List<User>
 

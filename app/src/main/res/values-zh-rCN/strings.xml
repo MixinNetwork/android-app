@@ -396,6 +396,7 @@
     <string name="Exit">退出</string>
     <string name="Exit_Group">退出群组</string>
     <string name="exit_without_save">不保存就退出？</string>
+    <string name="Exit_group_and_report_inviter">退出群组并举报邀请人</string>
     <string name="Expired">已过期</string>
     <string name="Export_Chat">导出聊天记录</string>
     <string name="Export_failed">导出失败</string>
@@ -475,6 +476,7 @@
     <string name="Invite_to_Mixin">邀请至 Mixin</string>
     <string name="is_network_available">网络已连接</string>
     <string name="italic">斜体</string>
+    <string name="Invited_by_Stranger">邀请人不是你的联系人</string>
     <string name="Join_group">加入群组</string>
     <string name="Joined_in">%1$s 加入</string>
     <string name="Label">标题</string>

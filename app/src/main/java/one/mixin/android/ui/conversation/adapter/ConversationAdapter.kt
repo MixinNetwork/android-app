@@ -136,6 +136,7 @@ class ConversationAdapter(
     private val miniMarkwon by lazy {
         MarkwonUtil.getMiniMarkwon(context)
     }
+    var inviterId: String? = null
     var hasBottomView = false
         @SuppressLint("NotifyDataSetChanged")
         set(value) {
@@ -371,7 +372,7 @@ class ConversationAdapter(
                     )
                 }
                 STRANGER_TYPE -> {
-                    (holder as StrangerHolder).bind(onItemListener, isBot)
+                    (holder as StrangerHolder).bind(onItemListener, inviterId, isBot)
                 }
                 UNKNOWN_TYPE -> {
                     (holder as UnknownHolder).bind(
@@ -990,6 +991,8 @@ class ConversationAdapter(
         open fun onOpenHomePage() {}
 
         open fun onSayHi() {}
+
+        open fun onExitAndReport(inviterId: String) {}
 
         open fun onLocationClick(messageItem: MessageItem) {}
 

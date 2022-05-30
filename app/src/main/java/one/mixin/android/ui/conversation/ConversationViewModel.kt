@@ -25,6 +25,7 @@ import one.mixin.android.Constants.MARK_LIMIT
 import one.mixin.android.Constants.PAGE_SIZE
 import one.mixin.android.MixinApplication
 import one.mixin.android.api.handleMixinResponse
+import one.mixin.android.api.request.RelationshipAction
 import one.mixin.android.api.request.RelationshipRequest
 import one.mixin.android.api.request.StickerAddRequest
 import one.mixin.android.extension.copyFromInputStream
@@ -35,6 +36,7 @@ import one.mixin.android.extension.isUUID
 import one.mixin.android.extension.nowInUtc
 import one.mixin.android.extension.putString
 import one.mixin.android.job.AttachmentDownloadJob
+import one.mixin.android.job.ConversationJob
 import one.mixin.android.job.ConvertVideoJob
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshStickerAlbumJob
@@ -650,6 +652,12 @@ internal constructor(
     suspend fun isSilence(conversationId: String, userId: String) =
         conversationRepository.isSilence(conversationId, userId) == 0
 
+    suspend fun findInviterId(conversationId: String, userId: String) =
+        conversationRepository.findInviterId(conversationId, userId)
+
+    suspend fun invitationFromStranger(conversationId: String, userId: String, inviterId: String?) =
+        conversationRepository.invitationFromStranger(conversationId, userId, inviterId)
+
     fun refreshUser(userId: String, forceRefresh: Boolean) {
         jobManager.addJobInBackground(RefreshUserJob(listOf(userId), forceRefresh = forceRefresh))
     }
@@ -660,6 +668,24 @@ internal constructor(
 
     suspend fun suspendFindUserById(userId: String) = withContext(Dispatchers.IO) {
         userRepository.suspendFindUserById(userId)
+    }
+
+    fun exitGroupAndReport(conversationId: String, userId: String) {
+        jobManager.addJobInBackground(
+            UpdateRelationshipJob(
+                RelationshipRequest(
+                    userId,
+                    RelationshipAction.BLOCK.name
+                ),
+                true
+            )
+        )
+        jobManager.addJobInBackground(
+            ConversationJob(
+                conversationId = conversationId,
+                type = ConversationJob.TYPE_EXIT
+            )
+        )
     }
 
     suspend fun getSortMessagesByIds(messages: Set<MessageItem>): ArrayList<ForwardMessage> {

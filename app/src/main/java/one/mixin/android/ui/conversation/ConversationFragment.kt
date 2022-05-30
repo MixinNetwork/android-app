@@ -918,6 +918,10 @@ class ConversationFragment() :
                 openBotHome()
             }
 
+            override fun onExitAndReport(inviterId: String) {
+                chatViewModel.exitGroupAndReport(conversationId, inviterId)
+            }
+
             override fun onLocationClick(messageItem: MessageItem) {
                 val location = GsonHelper.customGson.fromJson(messageItem.content, LocationPayload::class.java)
                 LocationActivity.show(requireContext(), location)
@@ -1866,11 +1870,12 @@ class ConversationFragment() :
                     oldCount = list.size
                 }
                 chatViewModel.viewModelScope.launch {
-                    conversationAdapter.hasBottomView =
-                        recipient?.relationship == UserRelationship.STRANGER.name && chatViewModel.isSilence(
-                        conversationId,
-                        sender.userId
-                    )
+                    if (isGroup) {
+                        conversationAdapter.inviterId = chatViewModel.findInviterId(conversationId, sender.userId)
+                        conversationAdapter.hasBottomView = chatViewModel.invitationFromStranger(conversationId, sender.userId, conversationAdapter.inviterId)
+                    } else {
+                        conversationAdapter.hasBottomView = recipient?.relationship == UserRelationship.STRANGER.name && chatViewModel.isSilence(conversationId, sender.userId)
+                    }
                 }
                 if (isFirstLoad && messageId == null && unreadCount > 0) {
                     conversationAdapter.unreadMsgId = unreadMessageId

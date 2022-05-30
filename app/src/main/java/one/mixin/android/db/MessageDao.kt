@@ -335,6 +335,17 @@ interface MessageDao : BaseDao<Message> {
     )
     suspend fun isSilence(conversationId: String, userId: String): Int?
 
+    @Query(
+        """SELECT user_id FROM messages
+            WHERE conversation_id =:conversationId
+            AND category = 'SYSTEM_CONVERSATION'
+            AND `action` = 'ADD'
+            AND participant_id =:userId
+            ORDER BY created_at ASC LIMIT 1
+            """
+    )
+    suspend fun findInviterId(conversationId: String, userId: String): String?
+
     @Query("SELECT * FROM messages WHERE id IN (:messageIds) ORDER BY created_at, rowid")
     suspend fun getSortMessagesByIds(messageIds: List<String>): List<Message>
 
