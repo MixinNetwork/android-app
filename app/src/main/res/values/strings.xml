@@ -185,7 +185,7 @@
 	<string name="chat_list_empty_info">You can chat with contacts who have Mixin installed on their phone.</string>
 	<string name="chat_not_support">This type of message is not supported, please upgrade Mixin to the latest version. %1$s.</string>
 	<string name="chat_not_support_url">https://mixinmessenger.zendesk.com/hc/articles/360043776071</string>
-	<string name="chat_on_mixin_content">Let\'s chat on Mixin Messenger! Simple, safe, and easy to use. It also supports Bitcoin, Ethereum, and other cryptocurrencies, download https://mixin.one/messenger and search %1$s to add me as a friend.</string>
+	<string name="chat_on_mixin_content">Let\'s chat on Mixin Messenger! Simple, safe, and easy to use. It also supports Bitcoin, Ethereum, and other cryptocurrencies, download https://mixin.one/messenger and search @%1$s to add me as a friend.</string>
 	<string name="chat_pin_message">%1$s pinned %2$s</string>
 	<string name="Chat_pinned">Chat pinned</string>
 	<string name="chat_recall_delete_alert">Messages you selected will be deleted for everyone on the latest version of Mixin in this chat.</string>
@@ -844,7 +844,7 @@
 	<string name="share_message_description">Are you sure you want to send a %2$s from %1$s?</string>
 	<string name="share_message_description_empty">Are you sure you want to send the %1$s?</string>
 	<string name="Share_QR_Code">Share QR Code</string>
-	<string name="Share_This_App">Share This App</string>
+	<string name="Invite_a_Friend">Invite a Friend</string>
 	<string name="share_to">Share %1$s to…</string>
 	<string name="Shared_Media">Shared Media</string>
 	<string name="Show">Show</string>

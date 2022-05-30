@@ -133,7 +133,7 @@
     <string name="chat_list_empty_info">Anda boleh bersembang dengan kenalan yang memasang Mixin di telefon mereka</string>
     <string name="chat_not_support">Mesej jenis ini tidak disokong, sila tingkatkan Mixin ke versi terkini. %1$s.</string>
     <string name="chat_not_support_url">https://mixinmessenger.zendesk.com/hc/articles/360043776071</string>
-    <string name="chat_on_mixin_content">Mari sembang di Mixin Messenger! Ringkas, selamat, dan senang digunakan. Ia juga menyokong Bitcoin, Ethereum, dan cryptocurrency lain, muat turun https://mixin.one/messenger dan cari %1$s untuk menambahkan saya sebagai rakan.</string>
+    <string name="chat_on_mixin_content">Mari sembang di Mixin Messenger! Ringkas, selamat, dan senang digunakan. Ia juga menyokong Bitcoin, Ethereum, dan cryptocurrency lain, muat turun https://mixin.one/messenger dan cari @%1$s untuk menambahkan saya sebagai rakan.</string>
     <string name="chat_recall_delete_alert">Mesej yang anda pilih akan dihapus untuk semua orang pada versi terbaharu Mixin dalam sembang ini.</string>
     <string name="chat_waiting">Menunggu %1$s untuk berada dalam talian dan tubuhkan sesi yang disulitkan. %2$s.</string>
     <string name="CHATS">SEMBANG</string>
@@ -647,7 +647,7 @@
     <string name="Share_Link">Kongsi pautan</string>
     <string name="share_message_description">Adakah anda pasti mahu menghantar %2$s dari %1$s?</string>
     <string name="share_message_description_empty">Adakah anda pasti mahu menghantar %1$s?</string>
-    <string name="Share_This_App">Kongsi Aplikasi Ini</string>
+    <string name="Invite_a_Friend">Kongsi Aplikasi Ini</string>
     <string name="share_to">Kongsi %1$s ke…</string>
     <string name="Shared_Media">Media Berkongsi</string>
     <string name="Show">Tunjuk</string>

@@ -166,7 +166,7 @@
     <string name="chat_import_fail_content">メッセージのインポートに失敗しました。ファイルとして送信しますか？</string>
     <string name="chat_list_empty_info">Mixinをダウンロードしている人と\nいつでもチャットが可能です。</string>
     <string name="chat_not_support">チャットが読み込めません Mixinをアップデートしてください %1$s.</string>
-    <string name="chat_on_mixin_content">さあ、Mixinでチャットをしてみましょう！Mixinは安全かつとても簡単に使えます。ビットコインやイーサリアムのような複数の通貨にも対応しています。https://mixin.one/messenger からMixinをダウンロードし、%1$sを検索して私と友達になりましょう。</string>
+    <string name="chat_on_mixin_content">さあ、Mixinでチャットをしてみましょう！Mixinは安全かつとても簡単に使えます。ビットコインやイーサリアムのような複数の通貨にも対応しています。https://mixin.one/messenger からMixinをダウンロードし、@%1$s を検索して私と友達になりましょう。</string>
     <string name="chat_pin_message">%1$sは%2$sをピン留めしました</string>
     <string name="chat_recall_delete_alert">選択したメッセージは、最新版のMixinを使用している全員のチャットから削除されます。</string>
     <string name="chat_waiting">%1$sが参加し暗号化セッションが開始するまで待機しています… %2$s.</string>
@@ -704,7 +704,7 @@
     <string name="Share_error">エラーを共有</string>
     <string name="Share_Link">リンクをシェアする</string>
     <string name="Share_QR_Code">QRコードを共有</string>
-    <string name="Share_This_App">このアプリをシェアする</string>
+    <string name="Invite_a_Friend">このアプリをシェアする</string>
     <string name="share_to">%1$sをシェアする</string>
     <string name="Shared_Media">写真や動画</string>
     <string name="Show">表示</string>
