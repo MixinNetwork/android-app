@@ -67,7 +67,7 @@ class SettingFragment : BaseFragment(R.layout.fragment_setting) {
                 startActivity(
                     Intent.createChooser(
                         sendIntent,
-                        resources.getText(R.string.Share_This_Bot)
+                        resources.getText(R.string.Share_This_App)
                     )
                 )
             }

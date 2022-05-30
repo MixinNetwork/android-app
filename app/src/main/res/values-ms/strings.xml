@@ -647,7 +647,7 @@
     <string name="Share_Link">Kongsi pautan</string>
     <string name="share_message_description">Adakah anda pasti mahu menghantar %2$s dari %1$s?</string>
     <string name="share_message_description_empty">Adakah anda pasti mahu menghantar %1$s?</string>
-    <string name="Share_This_Bot">Kongsi Aplikasi Ini</string>
+    <string name="Share_This_App">Kongsi Aplikasi Ini</string>
     <string name="share_to">Kongsi %1$s ke…</string>
     <string name="Shared_Media">Media Berkongsi</string>
     <string name="Show">Tunjuk</string>

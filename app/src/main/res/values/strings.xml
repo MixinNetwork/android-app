@@ -844,7 +844,7 @@
 	<string name="share_message_description">Are you sure you want to send a %2$s from %1$s?</string>
 	<string name="share_message_description_empty">Are you sure you want to send the %1$s?</string>
 	<string name="Share_QR_Code">Share QR Code</string>
-	<string name="Share_This_Bot">Share This Bot</string>
+	<string name="Share_This_App">Share This App</string>
 	<string name="share_to">Share %1$s to…</string>
 	<string name="Shared_Media">Shared Media</string>
 	<string name="Show">Show</string>

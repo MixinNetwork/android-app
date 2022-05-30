@@ -825,7 +825,7 @@
     <string name="share_message_description">你确定要发送来自%1$s的%2$s？</string>
     <string name="share_message_description_empty">你确定要发送该%1$s？</string>
     <string name="Share_QR_Code">分享二维码</string>
-    <string name="Share_This_Bot">分享机器人</string>
+    <string name="Share_This_App">分享应用</string>
     <string name="share_to">分享%1$s到…</string>
     <string name="Shared_Media">媒体内容</string>
     <string name="Show">显示</string>

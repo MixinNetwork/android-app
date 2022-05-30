@@ -704,7 +704,7 @@
     <string name="Share_error">エラーを共有</string>
     <string name="Share_Link">リンクをシェアする</string>
     <string name="Share_QR_Code">QRコードを共有</string>
-    <string name="Share_This_Bot">このアプリをシェアする</string>
+    <string name="Share_This_App">このアプリをシェアする</string>
     <string name="share_to">%1$sをシェアする</string>
     <string name="Shared_Media">写真や動画</string>
     <string name="Show">表示</string>
