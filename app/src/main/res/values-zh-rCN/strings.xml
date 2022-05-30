@@ -180,7 +180,7 @@
     <string name="chat_import_fail_content">导入聊天记录失败！是否按文件发送？</string>
     <string name="chat_list_empty_info">你可以与你的 Mixin 好友一起聊天。</string>
     <string name="chat_not_support">不支持此类型消息。请升级 Mixin 查看。 %1$s。</string>
-    <string name="chat_on_mixin_content">快来 Mixin 与我聊天！简单、安全好用还支持比特币、以太坊等加密货币，下载 https://mixin.one/messenger 后搜索 %1$s 加我好友。</string>
+    <string name="chat_on_mixin_content">快来 Mixin 与我聊天！简单、安全好用还支持比特币、以太坊等加密货币，下载 https://mixin.one/messenger 后搜索 @%1$s 加我好友。</string>
     <string name="chat_pin_message">%1$s置顶了%2$s</string>
     <string name="Chat_pinned">会话已置顶</string>
     <string name="chat_recall_delete_alert">所有使用最新版本 Mixin Messenger 的设备都将删除被选中的消息</string>
@@ -825,7 +825,7 @@
     <string name="share_message_description">你确定要发送来自%1$s的%2$s？</string>
     <string name="share_message_description_empty">你确定要发送该%1$s？</string>
     <string name="Share_QR_Code">分享二维码</string>
-    <string name="Share_This_Bot">分享机器人</string>
+    <string name="Invite_a_Friend">邀请好友</string>
     <string name="share_to">分享%1$s到…</string>
     <string name="Shared_Media">媒体内容</string>
     <string name="Show">显示</string>
