@@ -46,7 +46,6 @@ import one.mixin.android.job.RemoveStickersJob
 import one.mixin.android.job.SendAttachmentMessageJob
 import one.mixin.android.job.SendGiphyJob
 import one.mixin.android.job.SendMessageJob
-import one.mixin.android.job.TranscriptDeleteJob
 import one.mixin.android.job.UpdateRelationshipJob
 import one.mixin.android.repository.AccountRepository
 import one.mixin.android.repository.AssetRepository
@@ -672,19 +671,6 @@ internal constructor(
     }
 
     fun exitGroupAndReport(conversationId: String, userId: String) {
-        viewModelScope.launch {
-            val transIds = conversationRepository.findTranscriptIdByConversationId(conversationId)
-            if (transIds.isNotEmpty()) {
-                jobManager.addJobInBackground(TranscriptDeleteJob(transIds))
-            }
-            conversationRepository.deleteConversationById(conversationId)
-        }
-        jobManager.addJobInBackground(
-            ConversationJob(
-                conversationId = conversationId,
-                type = ConversationJob.TYPE_EXIT
-            )
-        )
         jobManager.addJobInBackground(
             UpdateRelationshipJob(
                 RelationshipRequest(
@@ -692,6 +678,12 @@ internal constructor(
                     RelationshipAction.BLOCK.name
                 ),
                 true
+            )
+        )
+        jobManager.addJobInBackground(
+            ConversationJob(
+                conversationId = conversationId,
+                type = ConversationJob.TYPE_EXIT
             )
         )
     }
