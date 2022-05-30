@@ -30,7 +30,7 @@
                 android:layout_width="70dp"
                 android:layout_height="70dp"
                 android:src="@drawable/ic_no_sticker"
-                android:contentDescription="@string/NO_STICKER" />
+                android:contentDescription="@string/NO_STICKERS" />
 
             <TextView
                 android:layout_width="wrap_content"
@@ -38,7 +38,7 @@
                 android:layout_marginTop="40dp"
                 android:textSize="14sp"
                 android:textColor="?attr/text_minor"
-                android:text="@string/NO_STICKER" />
+                android:text="@string/NO_STICKERS" />
         </androidx.appcompat.widget.LinearLayoutCompat>
 
         <androidx.recyclerview.widget.RecyclerView
