@@ -404,6 +404,7 @@
 	<string name="Exit">Exit</string>
 	<string name="Exit_Group">Exit Group</string>
 	<string name="exit_without_save">Exit without save?</string>
+	<string name="Exit_group_and_report_inviter">Exit group and report inviter</string>
 	<string name="Expired">Expired</string>
 	<string name="Export_Chat">Export Chat</string>
 	<string name="Export_failed">Export failed</string>
@@ -484,6 +485,7 @@
 	<string name="Invite_to_Mixin">Invite to Mixin</string>
 	<string name="is_network_available">isNetworkAvailable</string>
 	<string name="italic">italic</string>
+	<string name="Invited_by_Stranger">The inviter is not in your contacts</string>
 	<string name="Join_group">Join Group</string>
 	<string name="Joined_in">Joined in %1$s</string>
 	<string name="Label">Label</string>

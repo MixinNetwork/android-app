@@ -25,6 +25,7 @@ import one.mixin.android.Constants.MARK_LIMIT
 import one.mixin.android.Constants.PAGE_SIZE
 import one.mixin.android.MixinApplication
 import one.mixin.android.api.handleMixinResponse
+import one.mixin.android.api.request.RelationshipAction
 import one.mixin.android.api.request.RelationshipRequest
 import one.mixin.android.api.request.StickerAddRequest
 import one.mixin.android.extension.copyFromInputStream
@@ -35,6 +36,7 @@ import one.mixin.android.extension.isUUID
 import one.mixin.android.extension.nowInUtc
 import one.mixin.android.extension.putString
 import one.mixin.android.job.AttachmentDownloadJob
+import one.mixin.android.job.ConversationJob
 import one.mixin.android.job.ConvertVideoJob
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshStickerAlbumJob
@@ -44,6 +46,7 @@ import one.mixin.android.job.RemoveStickersJob
 import one.mixin.android.job.SendAttachmentMessageJob
 import one.mixin.android.job.SendGiphyJob
 import one.mixin.android.job.SendMessageJob
+import one.mixin.android.job.TranscriptDeleteJob
 import one.mixin.android.job.UpdateRelationshipJob
 import one.mixin.android.repository.AccountRepository
 import one.mixin.android.repository.AssetRepository
@@ -650,6 +653,12 @@ internal constructor(
     suspend fun isSilence(conversationId: String, userId: String) =
         conversationRepository.isSilence(conversationId, userId) == 0
 
+    suspend fun findInviterId(conversationId: String, userId: String) =
+        conversationRepository.findInviterId(conversationId, userId)
+
+    suspend fun invitationFromStranger(conversationId: String, userId: String, inviterId: String?) =
+        conversationRepository.invitationFromStranger(conversationId, userId, inviterId)
+
     fun refreshUser(userId: String, forceRefresh: Boolean) {
         jobManager.addJobInBackground(RefreshUserJob(listOf(userId), forceRefresh = forceRefresh))
     }
@@ -660,6 +669,31 @@ internal constructor(
 
     suspend fun suspendFindUserById(userId: String) = withContext(Dispatchers.IO) {
         userRepository.suspendFindUserById(userId)
+    }
+
+    fun exitGroupAndReport(conversationId: String, userId: String) {
+        viewModelScope.launch {
+            val transIds = conversationRepository.findTranscriptIdByConversationId(conversationId)
+            if (transIds.isNotEmpty()) {
+                jobManager.addJobInBackground(TranscriptDeleteJob(transIds))
+            }
+            conversationRepository.deleteConversationById(conversationId)
+        }
+        jobManager.addJobInBackground(
+            ConversationJob(
+                conversationId = conversationId,
+                type = ConversationJob.TYPE_EXIT
+            )
+        )
+        jobManager.addJobInBackground(
+            UpdateRelationshipJob(
+                RelationshipRequest(
+                    userId,
+                    RelationshipAction.BLOCK.name
+                ),
+                true
+            )
+        )
     }
 
     suspend fun getSortMessagesByIds(messages: Set<MessageItem>): ArrayList<ForwardMessage> {
