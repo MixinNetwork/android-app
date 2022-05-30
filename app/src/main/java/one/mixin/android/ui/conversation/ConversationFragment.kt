@@ -923,7 +923,6 @@ class ConversationFragment() :
 
             override fun onExitAndReport(inviterId: String) {
                 chatViewModel.exitGroupAndReport(conversationId, inviterId)
-                requireActivity().finish()
             }
 
             override fun onLocationClick(messageItem: MessageItem) {
