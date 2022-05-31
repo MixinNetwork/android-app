@@ -298,6 +298,9 @@ open class SendMessageJob(
             }
             return
         }
+        if (!signalProtocol.isExistSenderKey(message.conversationId, message.userId)) {
+            checkConversation(message.conversationId)
+        }
         checkSessionSenderKey(message.conversationId)
         deliver(encryptNormalMessage(expireIn))
         callback(expireIn)
