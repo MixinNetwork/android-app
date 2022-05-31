@@ -10,7 +10,7 @@ import one.mixin.android.db.insertUpdate
 class InitializeJob(val botId: String, private val botName: String) :
     BaseJob(Params(PRIORITY_UI_HIGH).groupBy(GROUP_ID).requireWebSocketConnected().persist()) {
     companion object {
-        private var serialVersionUID: Long  = 1L
+        private var serialVersionUID: Long = 1L
         private const val GROUP_ID = "InitializeJob"
     }
 
