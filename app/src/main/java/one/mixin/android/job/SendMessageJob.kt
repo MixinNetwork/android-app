@@ -108,7 +108,8 @@ open class SendMessageJob(
             messageDao.recallPinMessage(msg.id, msg.conversationId)
             pinMessageDao.deleteByMessageId(msg.id)
             messageMentionDao.deleteMessage(msg.id)
-            messageDao.takeUnseen(Session.getAccountId()!!, msg.conversationId)
+            remoteMessageStatusDao.deleteByMessageId(recallMessageId)
+            remoteMessageStatusDao.updateConversationUnseen(msg.conversationId)
             msg.mediaUrl?.getFilePath()?.let {
                 File(it).let { file ->
                     if (file.exists() && file.isFile) {
