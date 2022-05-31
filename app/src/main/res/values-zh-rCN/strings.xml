@@ -771,7 +771,7 @@
     <string name="Send_your_Current_Location">发送您当前的位置</string>
     <string name="Senders">交易发起人</string>
     <string name="Set">设置</string>
-    <string name="set_disappearing_message_time_to">%1$s将限时消息设置为 %2$s</string>
+    <string name="set_disappearing_message_time_to">%1$s 将限时消息设置为 %2$s</string>
     <string name="Set_new_PIN">设置新的 PIN</string>
     <string name="Set_PIN">设置 PIN</string>
     <string name="Set_PIN_successfully">PIN 设置成功</string>
@@ -1021,6 +1021,7 @@
     <string name="withdrawal_with_PIN">用 PIN 提现</string>
     <string name="Write_Circles">管理圈子</string>
     <string name="You">你</string>
+    <string name="you">你</string>
     <string name="You_deleted_this_message">你撤回了一条消息</string>
     <string name="You_have_left_the_group">你不在此群组</string>
     <string name="your_pin_has_been_created">PIN 已创建</string>

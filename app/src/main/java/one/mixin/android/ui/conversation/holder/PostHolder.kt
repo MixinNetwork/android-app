@@ -7,7 +7,9 @@ import androidx.constraintlayout.widget.ConstraintLayout
 import io.noties.markwon.Markwon
 import one.mixin.android.Constants.Colors.SELECT_COLOR
 import one.mixin.android.R
+import one.mixin.android.RxBus
 import one.mixin.android.databinding.ItemChatPostBinding
+import one.mixin.android.event.ExpiredEvent
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.maxItemWidth
 import one.mixin.android.extension.postLengthOptimize
@@ -15,10 +17,12 @@ import one.mixin.android.extension.postOptimize
 import one.mixin.android.extension.round
 import one.mixin.android.ui.conversation.adapter.ConversationAdapter
 import one.mixin.android.ui.conversation.holder.base.BaseViewHolder
+import one.mixin.android.ui.conversation.holder.base.Terminable
 import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.isSecret
 
-class PostHolder constructor(val binding: ItemChatPostBinding) : BaseViewHolder(binding.root) {
+class PostHolder constructor(val binding: ItemChatPostBinding) : BaseViewHolder(binding.root), Terminable {
+
     init {
         binding.chatTv.layoutParams.width = itemView.context.maxItemWidth()
         binding.chatTv.maxHeight = itemView.context.maxItemWidth() * 10 / 16
@@ -175,6 +179,13 @@ class PostHolder constructor(val binding: ItemChatPostBinding) : BaseViewHolder(
             isRepresentative = isRepresentative,
             isSecret = messageItem.isSecret(), isWhite = true
         )
+        chatJumpLayout(binding.chatJump, isMe, messageItem.expireIn, R.id.chat_layout)
         chatLayout(isMe, isLast)
+    }
+
+    override fun onRead(messageItem: MessageItem) {
+        if (messageItem.expireIn != null) {
+            RxBus.publish(ExpiredEvent(messageItem.messageId, messageItem.expireIn))
+        }
     }
 }

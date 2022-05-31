@@ -7,7 +7,9 @@ import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.view.isVisible
 import one.mixin.android.Constants.Colors.SELECT_COLOR
 import one.mixin.android.R
+import one.mixin.android.RxBus
 import one.mixin.android.databinding.ItemChatImageBinding
+import one.mixin.android.event.ExpiredEvent
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.loadGifMark
@@ -17,6 +19,7 @@ import one.mixin.android.extension.round
 import one.mixin.android.job.MixinJobManager.Companion.getAttachmentProcess
 import one.mixin.android.ui.conversation.adapter.ConversationAdapter
 import one.mixin.android.ui.conversation.holder.base.MediaHolder
+import one.mixin.android.ui.conversation.holder.base.Terminable
 import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.absolutePath
@@ -24,7 +27,7 @@ import one.mixin.android.vo.isSecret
 import one.mixin.android.widget.gallery.MimeType
 import kotlin.math.min
 
-class ImageHolder constructor(val binding: ItemChatImageBinding) : MediaHolder(binding.root) {
+class ImageHolder constructor(val binding: ItemChatImageBinding) : MediaHolder(binding.root), Terminable {
 
     init {
         val radius = itemView.context.dpToPx(4f).toFloat()
@@ -190,6 +193,7 @@ class ImageHolder constructor(val binding: ItemChatImageBinding) : MediaHolder(b
         dataThumbImage = messageItem.thumbImage
         dataSize = messageItem.mediaSize
         isGif = messageItem.mediaMimeType.equals(MimeType.GIF.toString(), true)
+        chatJumpLayout(binding.chatJump, isMe, messageItem.expireIn, R.id.chat_layout)
         chatLayout(isMe, isLast)
     }
 
@@ -267,6 +271,12 @@ class ImageHolder constructor(val binding: ItemChatImageBinding) : MediaHolder(b
             binding.chatImage.loadGifMark(dataThumbImage, null, mark, false)
         } else {
             binding.chatImage.loadGifMark(dataUrl, dataThumbImage, mark, true)
+        }
+    }
+
+    override fun onRead(messageItem: MessageItem) {
+        if (messageItem.expireIn != null) {
+            RxBus.publish(ExpiredEvent(messageItem.messageId, messageItem.expireIn))
         }
     }
 }

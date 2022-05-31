@@ -5,7 +5,9 @@ import android.view.View
 import androidx.constraintlayout.widget.ConstraintLayout
 import one.mixin.android.Constants.Colors.SELECT_COLOR
 import one.mixin.android.R
+import one.mixin.android.RxBus
 import one.mixin.android.databinding.ItemChatImageQuoteBinding
+import one.mixin.android.event.ExpiredEvent
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.loadLongImageMark
@@ -13,6 +15,7 @@ import one.mixin.android.extension.round
 import one.mixin.android.job.MixinJobManager.Companion.getAttachmentProcess
 import one.mixin.android.ui.conversation.adapter.ConversationAdapter
 import one.mixin.android.ui.conversation.holder.base.MediaHolder
+import one.mixin.android.ui.conversation.holder.base.Terminable
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.MessageItem
@@ -21,7 +24,8 @@ import one.mixin.android.vo.absolutePath
 import one.mixin.android.vo.isSecret
 import kotlin.math.min
 
-class ImageQuoteHolder constructor(val binding: ItemChatImageQuoteBinding) : MediaHolder(binding.root) {
+class ImageQuoteHolder constructor(val binding: ItemChatImageQuoteBinding) : MediaHolder(binding.root), Terminable {
+
     private val dp16 = itemView.context.dpToPx(16f)
 
     init {
@@ -268,5 +272,11 @@ class ImageQuoteHolder constructor(val binding: ItemChatImageQuoteBinding) : Med
         }
 
         chatLayout(isMe, isLast)
+        chatJumpLayout(binding.chatJump, isMe, messageItem.expireIn, R.id.chat_msg_layout)
+    }
+    override fun onRead(messageItem: MessageItem) {
+        if (messageItem.expireIn != null) {
+            RxBus.publish(ExpiredEvent(messageItem.messageId, messageItem.expireIn))
+        }
     }
 }

@@ -174,6 +174,7 @@ fun MixinDatabase.deleteMessageById(messageId: String) {
         mentionMessageDao().deleteMessage(messageId)
         messageDao().deleteMessageById(messageId)
         remoteMessageStatusDao().deleteByMessageId(messageId)
+        expiredMessageDao().deleteByMessageId(messageId)
     }
 }
 

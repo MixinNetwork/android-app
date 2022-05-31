@@ -28,5 +28,7 @@ open class ConversationResponse(
     @SerializedName("circles")
     val circles: List<CircleConversation>?,
     @SerializedName("mute_until")
-    val muteUntil: String
+    val muteUntil: String,
+    @SerializedName("expire_in")
+    val expireIn: Long?
 )

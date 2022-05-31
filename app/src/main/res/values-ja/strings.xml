@@ -861,6 +861,7 @@
     <string name="withdrawal_with_biometric">PINを使用して出金</string>
     <string name="withdrawal_with_PIN">リストの変更</string>
     <string name="You">自分</string>
+    <string name="you">自分</string>
     <string name="You_deleted_this_message">このメッセージを削除しました。</string>
     <string name="You_have_left_the_group">あなたはもうこのグループの参加者ではありません</string>
 </resources>

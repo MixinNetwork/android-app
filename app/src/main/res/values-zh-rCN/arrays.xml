@@ -1,18 +1,38 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
     <string-array name="backup_dialog_list">
         <item>不自动备份</item>
         <item>每天</item>
         <item>每周</item>
         <item>每月</item>
     </string-array>
+
     <string-array name="setting_night_array">
         <item>浅色</item>
         <item>暗黑</item>
     </string-array>
+
     <string-array name="setting_night_array_oreo">
         <item>浅色</item>
         <item>暗黑</item>
         <item>跟随系统</item>
     </string-array>
+
+    <plurals name="time_interval_unit_second" tools:ignore="UnusedQuantity">
+        <item quantity="other">秒</item>
+    </plurals>
+    <plurals name="time_interval_unit_minute" tools:ignore="UnusedQuantity">
+        <item quantity="other">分</item>
+    </plurals>
+
+    <plurals name="time_interval_unit_hour" tools:ignore="UnusedQuantity">
+        <item quantity="other">小时</item>
+    </plurals>
+    <plurals name="time_interval_unit_day" tools:ignore="UnusedQuantity">
+        <item quantity="other">天</item>
+    </plurals>
+    <plurals name="time_interval_unit_week" tools:ignore="UnusedQuantity">
+        <item quantity="other">周</item>
+    </plurals>
+
 </resources>

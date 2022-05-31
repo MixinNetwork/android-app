@@ -19,6 +19,7 @@ import one.mixin.android.db.AssetDao
 import one.mixin.android.db.CircleConversationDao
 import one.mixin.android.db.CircleDao
 import one.mixin.android.db.ConversationDao
+import one.mixin.android.db.ExpiredMessageDao
 import one.mixin.android.db.HyperlinkDao
 import one.mixin.android.db.JobDao
 import one.mixin.android.db.MessageDao
@@ -111,6 +112,8 @@ open class Injector {
     lateinit var pinMessageDao: PinMessageDao
     @Inject
     lateinit var remoteMessageStatusDao: RemoteMessageStatusDao
+    @Inject
+    lateinit var expiredMessageDao: ExpiredMessageDao
     @Inject
     lateinit var database: MixinDatabase
 
@@ -206,6 +209,7 @@ open class Injector {
                         conversationData.announcement,
                         conversationData.muteUntil,
                         conversationData.createdAt,
+                        conversationData.expireIn,
                         status
                     )
                     val remote = mutableListOf<Participant>()

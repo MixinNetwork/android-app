@@ -7,7 +7,9 @@ import androidx.constraintlayout.widget.ConstraintLayout
 import com.google.gson.Gson
 import one.mixin.android.Constants.Colors.SELECT_COLOR
 import one.mixin.android.R
+import one.mixin.android.RxBus
 import one.mixin.android.databinding.ItemChatTranscriptBinding
+import one.mixin.android.event.ExpiredEvent
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.maxItemWidth
@@ -15,6 +17,7 @@ import one.mixin.android.extension.round
 import one.mixin.android.extension.textColorResource
 import one.mixin.android.ui.conversation.adapter.ConversationAdapter
 import one.mixin.android.ui.conversation.holder.base.BaseViewHolder
+import one.mixin.android.ui.conversation.holder.base.Terminable
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.vo.AppCardData
 import one.mixin.android.vo.MessageCategory
@@ -32,7 +35,10 @@ import one.mixin.android.vo.isSticker
 import one.mixin.android.vo.isTranscript
 import one.mixin.android.vo.isVideo
 
-class TranscriptHolder constructor(val binding: ItemChatTranscriptBinding) : BaseViewHolder(binding.root) {
+class TranscriptHolder constructor(val binding: ItemChatTranscriptBinding) :
+    BaseViewHolder(binding.root),
+    Terminable {
+
     init {
         binding.chatTv.layoutParams.width = itemView.context.maxItemWidth()
         binding.chatTv.round(3.dp)
@@ -245,6 +251,12 @@ class TranscriptHolder constructor(val binding: ItemChatTranscriptBinding) : Bas
             isSecret = messageItem.isSecret(),
             isWhite = true
         )
+        chatJumpLayout(binding.chatJump, isMe, messageItem.expireIn, R.id.chat_layout)
         chatLayout(isMe, isLast)
+    }
+    override fun onRead(messageItem: MessageItem) {
+        if (messageItem.expireIn != null) {
+            RxBus.publish(ExpiredEvent(messageItem.messageId, messageItem.expireIn))
+        }
     }
 }

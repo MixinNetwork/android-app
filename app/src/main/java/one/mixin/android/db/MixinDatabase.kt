@@ -44,6 +44,7 @@ import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_39_40
 import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_40_41
 import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_41_42
 import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_42_43
+import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_43_44
 import one.mixin.android.db.converter.MessageStatusConverter
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.debug.getContent
@@ -55,6 +56,7 @@ import one.mixin.android.vo.AssetsExtra
 import one.mixin.android.vo.Circle
 import one.mixin.android.vo.CircleConversation
 import one.mixin.android.vo.Conversation
+import one.mixin.android.vo.ExpiredMessage
 import one.mixin.android.vo.FavoriteApp
 import one.mixin.android.vo.FloodMessage
 import one.mixin.android.vo.Hyperlink
@@ -114,7 +116,8 @@ import one.mixin.android.vo.User
         (TranscriptMessage::class),
         (PinMessage::class),
         (Property::class),
-        (RemoteMessageStatus::class)
+        (RemoteMessageStatus::class),
+        (ExpiredMessage::class),
     ],
     version = CURRENT_VERSION
 )
@@ -150,6 +153,7 @@ abstract class MixinDatabase : RoomDatabase() {
     abstract fun pinMessageDao(): PinMessageDao
     abstract fun remoteMessageStatusDao(): RemoteMessageStatusDao
     abstract fun propertyDao(): PropertyDao
+    abstract fun expiredMessageDao(): ExpiredMessageDao
 
     companion object {
         private var INSTANCE: MixinDatabase? = null
@@ -178,7 +182,8 @@ abstract class MixinDatabase : RoomDatabase() {
                             MIGRATION_15_16, MIGRATION_16_17, MIGRATION_17_18, MIGRATION_18_19, MIGRATION_19_20, MIGRATION_20_21, MIGRATION_21_22,
                             MIGRATION_22_23, MIGRATION_23_24, MIGRATION_24_25, MIGRATION_25_26, MIGRATION_26_27, MIGRATION_27_28, MIGRATION_28_29,
                             MIGRATION_29_30, MIGRATION_30_31, MIGRATION_31_32, MIGRATION_32_33, MIGRATION_33_34, MIGRATION_34_35, MIGRATION_35_36,
-                            MIGRATION_36_37, MIGRATION_37_38, MIGRATION_38_39, MIGRATION_39_40, MIGRATION_40_41, MIGRATION_41_42, MIGRATION_42_43
+                            MIGRATION_36_37, MIGRATION_37_38, MIGRATION_38_39, MIGRATION_39_40, MIGRATION_40_41, MIGRATION_41_42, MIGRATION_42_43,
+                            MIGRATION_43_44
                         )
                         .enableMultiInstanceInvalidation()
                         .addCallback(CALLBACK)

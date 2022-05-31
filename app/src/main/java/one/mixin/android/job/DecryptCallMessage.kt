@@ -15,6 +15,8 @@ import one.mixin.android.extension.nowInUtc
 import one.mixin.android.session.Session
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.vo.CallStateLiveData
+import one.mixin.android.vo.ExpiredMessage
+import one.mixin.android.vo.Message
 import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.MessageHistory
 import one.mixin.android.vo.MessageStatus
@@ -102,7 +104,7 @@ class DecryptCallMessage(
                         data.createdAt,
                         data.status
                     )
-                    database.insertAndNotifyConversation(message)
+                    insertCallMessage(message)
                 } else if (data.category == MessageCategory.KRAKEN_PUBLISH.name || data.category == MessageCategory.KRAKEN_END.name) {
                     // ignore KRAKEN_PUBLISH, KRAKEN_END from listPending 1 hour away
                     if (!isIgnored(data)) {
@@ -132,7 +134,7 @@ class DecryptCallMessage(
                                     MessageStatus.SENDING.name,
                                     null
                                 )
-                                database.insertAndNotifyConversation(savedMessage)
+                                insertCallMessage(savedMessage)
                                 listPendingCandidateMap.remove(curData.messageId, listPendingCandidateMap[curData.messageId])
                             }
                         }
@@ -208,7 +210,7 @@ class DecryptCallMessage(
                                     curData.status,
                                     m.quoteMessageId
                                 )
-                                database.insertAndNotifyConversation(savedMessage)
+                                insertCallMessage(savedMessage)
                                 listPendingCandidateMap.remove(curData.messageId, listPendingCandidateMap[curData.messageId])
                             }
                         }
@@ -227,7 +229,7 @@ class DecryptCallMessage(
                     data.createdAt,
                     data.status
                 )
-                database.insertAndNotifyConversation(message)
+                insertCallMessage(message)
             }
         } else {
             processCall(data)
@@ -295,7 +297,7 @@ class DecryptCallMessage(
                     data.createdAt,
                     data.status
                 )
-                database.insertAndNotifyConversation(message)
+                insertCallMessage(message)
             }
         } else {
             when (data.category) {
@@ -409,6 +411,16 @@ class DecryptCallMessage(
             messageStatus,
             mediaDuration = duration
         )
+        insertCallMessage(message)
+    }
+
+    private fun insertCallMessage(message: Message) {
         database.insertAndNotifyConversation(message)
+        database.conversationDao().findConversationById(message.conversationId)?.let {
+            val expiredIn = it.expireIn ?: return@let
+            if (it.expireIn > 0) {
+                database.expiredMessageDao().insert(ExpiredMessage(message.id, expiredIn, null))
+            }
+        }
     }
 }

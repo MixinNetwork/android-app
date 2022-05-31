@@ -22,6 +22,7 @@ import one.mixin.android.crypto.privateKeyToCurve25519
 import one.mixin.android.extension.base64Encode
 import one.mixin.android.extension.bodyToString
 import one.mixin.android.extension.clear
+import one.mixin.android.extension.currentTimeSeconds
 import one.mixin.android.extension.cutOut
 import one.mixin.android.extension.decodeBase64
 import one.mixin.android.extension.defaultSharedPreferences
@@ -198,8 +199,8 @@ object Session {
         if (acct == null || key == null) {
             return ""
         }
-        val expire = System.currentTimeMillis() / 1000 + 1800
-        val iat = System.currentTimeMillis() / 1000
+        val expire = currentTimeSeconds() + 1800
+        val iat = currentTimeSeconds()
 
         var content = "${request.method}${request.url.cutOut()}"
         request.body?.apply {
@@ -230,7 +231,7 @@ object Session {
         }
         try {
             val iat = Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(string).body[Claims.ISSUED_AT] as Int
-            return JwtResult(abs(System.currentTimeMillis() / 1000 - iat) > offset, requestTime = iat.toLong())
+            return JwtResult(abs(currentTimeSeconds() - iat) > offset, requestTime = iat.toLong())
         } catch (e: ExpiredJwtException) {
             Timber.w(e)
             reportException(e)
@@ -264,7 +265,7 @@ object Session {
 fun encryptPin(key: String, code: String?): String? {
     val pinCode = code ?: return null
     val iterator = Session.getPinIterator()
-    val pinByte = pinCode.toByteArray() + (System.currentTimeMillis() / 1000).toLeByteArray() + iterator.toLeByteArray()
+    val pinByte = pinCode.toByteArray() + (currentTimeSeconds()).toLeByteArray() + iterator.toLeByteArray()
     val based = aesEncrypt(Base64.decode(key), pinByte).base64Encode()
     Session.storePinIterator(iterator + 1)
     return based

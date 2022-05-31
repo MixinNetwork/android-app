@@ -88,7 +88,7 @@ object Constants {
     object DataBase {
         const val DB_NAME = "mixin.db"
         const val MINI_VERSION = 15
-        const val CURRENT_VERSION = 43
+        const val CURRENT_VERSION = 44
     }
 
     object Storage {
@@ -194,7 +194,7 @@ object Constants {
     val KEYS = arrayOf("1", "2", "3", "4", "5", "6", "7", "8", "9", "", "0", "<<")
 
     const val BATCH_SIZE = 700
-    const val MARK_REMOTE_LIMIT = 1000
+    const val MARK_REMOTE_LIMIT = 500
     const val ACK_LIMIT = 100
     const val MARK_LIMIT = 10000
     const val LOGS_LIMIT = 10000
@@ -219,6 +219,7 @@ object Constants {
 
     const val DB_DELETE_THRESHOLD = 5000
     const val DB_DELETE_LIMIT = 500
+    const val DB_EXPIRED_LIMIT = 20
 
     val DNS: Dns = SequentialDns(CustomDns("8.8.8.8"), CustomDns("1.1.1.1"), CustomDns("2001:4860:4860::8888"), Dns.SYSTEM)
 

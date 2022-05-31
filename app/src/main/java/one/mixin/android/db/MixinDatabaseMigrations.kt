@@ -316,6 +316,13 @@ class MixinDatabaseMigrations private constructor() {
             }
         }
 
+        val MIGRATION_43_44: Migration = object : Migration(43, 44) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                database.execSQL("ALTER TABLE `conversations` ADD COLUMN `expire_in` INTEGER")
+                database.execSQL("CREATE TABLE IF NOT EXISTS `expired_messages` (`message_id` TEXT NOT NULL, `expire_in` INTEGER NOT NULL, `expire_at` INTEGER, PRIMARY KEY(`message_id`))")
+            }
+        }
+
         // If you add a new table, be sure to add a clear method to the DatabaseUtil
     }
 }

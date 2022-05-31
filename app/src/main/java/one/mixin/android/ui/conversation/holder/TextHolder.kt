@@ -10,6 +10,7 @@ import one.mixin.android.Constants.Colors.SELECT_COLOR
 import one.mixin.android.R
 import one.mixin.android.RxBus
 import one.mixin.android.databinding.ItemChatTextBinding
+import one.mixin.android.event.ExpiredEvent
 import one.mixin.android.event.MentionReadEvent
 import one.mixin.android.extension.doubleClickVibrate
 import one.mixin.android.extension.dp
@@ -18,12 +19,13 @@ import one.mixin.android.extension.maxItemWidth
 import one.mixin.android.extension.renderMessage
 import one.mixin.android.ui.conversation.adapter.ConversationAdapter
 import one.mixin.android.ui.conversation.holder.base.BaseMentionHolder
+import one.mixin.android.ui.conversation.holder.base.Terminable
 import one.mixin.android.util.mention.MentionRenderCache
 import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.isSecret
 import one.mixin.android.widget.linktext.AutoLinkMode
 
-class TextHolder constructor(val binding: ItemChatTextBinding) : BaseMentionHolder(binding.root) {
+class TextHolder constructor(val binding: ItemChatTextBinding) : BaseMentionHolder(binding.root), Terminable {
 
     init {
         binding.chatTv.initChatMode(LINK_COLOR)
@@ -195,6 +197,9 @@ class TextHolder constructor(val binding: ItemChatTextBinding) : BaseMentionHold
             isRepresentative,
             messageItem.isSecret()
         )
+
+        chatJumpLayout(binding.chatJump, isMe, messageItem.expireIn, R.id.chat_layout)
+
         chatLayout(isMe, isLast)
 
         attachAction = if (messageItem.mentionRead == false) {
@@ -243,6 +248,12 @@ class TextHolder constructor(val binding: ItemChatTextBinding) : BaseMentionHold
             } else {
                 onItemListener.onSelect(!isSelect, messageItem, absoluteAdapterPosition)
             }
+        }
+    }
+
+    override fun onRead(messageItem: MessageItem) {
+        if (messageItem.expireIn != null) {
+            RxBus.publish(ExpiredEvent(messageItem.messageId, messageItem.expireIn))
         }
     }
 }

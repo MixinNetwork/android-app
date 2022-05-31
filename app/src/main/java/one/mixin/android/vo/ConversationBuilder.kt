@@ -14,6 +14,7 @@ class ConversationBuilder(val conversationId: String, val createdAt: String, val
     private var unseenMessageCount: Int? = null
     private var draft: String? = null
     private var muteUntil: String? = null
+    private var expireIn: Long? = null
 
     fun setOwnerId(ownerId: String): ConversationBuilder {
         this.ownerId = ownerId
@@ -80,11 +81,16 @@ class ConversationBuilder(val conversationId: String, val createdAt: String, val
         return this
     }
 
+    fun setExpireIn(expireIn: Long?): ConversationBuilder {
+        this.expireIn = expireIn
+        return this
+    }
+
     fun build(): Conversation =
         Conversation(
             conversationId, ownerId, category,
             name, iconUrl, announcement, codeUrl, payType,
             createdAt, pinTime, lastMessageId, lastReadMessageId,
-            unseenMessageCount, status, draft, muteUntil
+            unseenMessageCount, status, draft, muteUntil, null, expireIn
         )
 }

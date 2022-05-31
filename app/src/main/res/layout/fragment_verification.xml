@@ -121,5 +121,5 @@
         android:background="@android:color/transparent"
         android:clickable="true"
         android:focusable="true"
-        android:visibility="invisible" />
+        android:visibility="invisible"/>
 </RelativeLayout>

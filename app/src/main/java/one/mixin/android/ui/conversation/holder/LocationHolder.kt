@@ -16,13 +16,16 @@ import one.mixin.android.BuildConfig
 import one.mixin.android.Constants.Colors.SELECT_COLOR
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
+import one.mixin.android.RxBus
 import one.mixin.android.databinding.ItemChatLocationBinding
+import one.mixin.android.event.ExpiredEvent
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.maxItemWidth
 import one.mixin.android.extension.round
 import one.mixin.android.ui.conversation.adapter.ConversationAdapter
 import one.mixin.android.ui.conversation.holder.base.BaseViewHolder
+import one.mixin.android.ui.conversation.holder.base.Terminable
 import one.mixin.android.ui.conversation.location.MixinLatLng
 import one.mixin.android.ui.conversation.location.MixinMapView
 import one.mixin.android.ui.conversation.location.useMapbox
@@ -33,7 +36,9 @@ import one.mixin.android.websocket.toLocationData
 
 class LocationHolder constructor(val binding: ItemChatLocationBinding) :
     BaseViewHolder(binding.root),
-    OnMapReadyCallback {
+    OnMapReadyCallback,
+    Terminable {
+
     private val dp16 = itemView.context.dpToPx(16f)
 
     private var mixinMapView: MixinMapView
@@ -279,7 +284,13 @@ class LocationHolder constructor(val binding: ItemChatLocationBinding) :
         } else {
             binding.chatName.setCompoundDrawables(null, null, null, null)
         }
-
+        chatJumpLayout(binding.chatJump, isMe, messageItem.expireIn, R.id.chat_layout)
         chatLayout(isMe, isLast)
+    }
+
+    override fun onRead(messageItem: MessageItem) {
+        if (messageItem.expireIn != null) {
+            RxBus.publish(ExpiredEvent(messageItem.messageId, messageItem.expireIn))
+        }
     }
 }

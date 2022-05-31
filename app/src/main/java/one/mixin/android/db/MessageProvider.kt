@@ -50,7 +50,7 @@ class MessageProvider {
                         st.name AS assetName, st.asset_type AS assetType, h.site_name AS siteName, h.site_title AS siteTitle, h.site_description AS siteDescription,
                         h.site_image AS siteImage, m.shared_user_id AS sharedUserId, su.full_name AS sharedUserFullName, su.identity_number AS sharedUserIdentityNumber,
                         su.avatar_url AS sharedUserAvatarUrl, su.is_verified AS sharedUserIsVerified, su.app_id AS sharedUserAppId, mm.mentions AS mentions, mm.has_read as mentionRead, 
-                        pm.message_id IS NOT NULL as isPin, c.name AS groupName
+                        pm.message_id IS NOT NULL as isPin, c.name AS groupName, em.expire_in AS expireIn 
                         FROM messages m
                         INNER JOIN users u ON m.user_id = u.user_id
                         LEFT JOIN users u1 ON m.participant_id = u1.user_id
@@ -62,6 +62,7 @@ class MessageProvider {
                         LEFT JOIN conversations c ON m.conversation_id = c.conversation_id
                         LEFT JOIN message_mentions mm ON m.id = mm.message_id
                         LEFT JOIN pin_messages pm ON m.id = pm.message_id
+                        LEFT JOIN expired_messages em ON m.id = em.message_id
                         """
                     val countStatement = RoomSQLiteQuery.acquire("SELECT COUNT(1) FROM messages m INNER JOIN users u ON m.user_id = u.user_id WHERE conversation_id = ?", 1).apply {
                         bindString(1, conversationId)
@@ -95,14 +96,15 @@ class MessageProvider {
                     mu.full_name AS senderFullName, s.type AS SnapshotType,
                     pu.full_name AS participantFullName, pu.user_id AS participantUserId,
                     (SELECT count(1) FROM message_mentions me WHERE me.conversation_id = c.conversation_id AND me.has_read = 0) as mentionCount,  
-                    mm.mentions AS mentions 
+                    mm.mentions AS mentions, em.expire_in AS expireIn 
                     FROM conversations c
                     INNER JOIN users ou ON ou.user_id = c.owner_id
                     LEFT JOIN messages m ON c.last_message_id = m.id
                     LEFT JOIN message_mentions mm ON mm.message_id = m.id
                     LEFT JOIN users mu ON mu.user_id = m.user_id
                     LEFT JOIN snapshots s ON s.snapshot_id = m.snapshot_id
-                    LEFT JOIN users pu ON pu.user_id = m.participant_id 
+                    LEFT JOIN users pu ON pu.user_id = m.participant_id
+                    LEFT JOIN expired_messages em ON m.id = em.message_id
                     WHERE c.category IN ('CONTACT', 'GROUP')
                     ORDER BY c.pin_time DESC, c.last_message_created_at DESC
                         """
@@ -139,6 +141,7 @@ class MessageProvider {
                             val cursorIndexOfParticipantUserId = CursorUtil.getColumnIndexOrThrow(cursor, "participantUserId")
                             val cursorIndexOfMentionCount = CursorUtil.getColumnIndexOrThrow(cursor, "mentionCount")
                             val cursorIndexOfMentions = CursorUtil.getColumnIndexOrThrow(cursor, "mentions")
+                            val cursorIndexOfExpireIn = CursorUtil.getColumnIndexOrThrow(cursor, "expireIn")
                             val res = ArrayList<ConversationItem>(cursor.count)
                             while (cursor.moveToNext()) {
                                 val item: ConversationItem
@@ -183,8 +186,13 @@ class MessageProvider {
                                 } else {
                                     cursor.getInt(cursorIndexOfMentionCount)
                                 }
+                                val tempExpireIn: Long? = if (cursor.isNull(cursorIndexOfExpireIn)) {
+                                    null
+                                } else {
+                                    cursor.getLong(cursorIndexOfExpireIn)
+                                }
                                 val tmpMentions = cursor.getString(cursorIndexOfMentions)
-                                item = ConversationItem(tmpConversationId, tmpAvatarUrl, tmpGroupIconUrl, tmpCategory, tmpGroupName, tmpName, tmpOwnerId, tmpOwnerIdentityNumber, tmpStatus, tmpLastReadMessageId, tmpUnseenMessageCount, tmpContent, tmpContentType, tmpMediaUrl, tmpCreatedAt, tmpPinTime, tmpSenderId, tmpSenderFullName, tmpMessageStatus, tmpActionName, tmpParticipantFullName, tmpParticipantUserId, tmpOwnerMuteUntil, tmpOwnerVerified, tmpMuteUntil, null, tmpAppId, tmpMentions, tmpMentionCount)
+                                item = ConversationItem(tmpConversationId, tmpAvatarUrl, tmpGroupIconUrl, tmpCategory, tmpGroupName, tmpName, tmpOwnerId, tmpOwnerIdentityNumber, tmpStatus, tmpLastReadMessageId, tmpUnseenMessageCount, tmpContent, tmpContentType, tmpMediaUrl, tmpCreatedAt, tmpPinTime, tmpSenderId, tmpSenderFullName, tmpMessageStatus, tmpActionName, tmpParticipantFullName, tmpParticipantUserId, tmpOwnerMuteUntil, tmpOwnerVerified, tmpMuteUntil, null, tmpAppId, tmpMentions, tmpMentionCount, tempExpireIn)
                                 res.add(item)
                             }
                             return res
@@ -208,7 +216,7 @@ class MessageProvider {
                         mu.full_name AS senderFullName, s.type AS SnapshotType,
                         pu.full_name AS participantFullName, pu.user_id AS participantUserId,
                         (SELECT count(1) FROM message_mentions me WHERE me.conversation_id = c.conversation_id AND me.has_read = 0) AS mentionCount,  
-                        mm.mentions AS mentions 
+                        mm.mentions AS mentions, em.expire_in AS expireIn 
                         FROM circle_conversations cc
                         INNER JOIN conversations c ON cc.conversation_id = c.conversation_id
                         INNER JOIN circles ci ON ci.circle_id = cc.circle_id
@@ -218,6 +226,7 @@ class MessageProvider {
                         LEFT JOIN users mu ON mu.user_id = m.user_id
                         LEFT JOIN snapshots s ON s.snapshot_id = m.snapshot_id
                         LEFT JOIN users pu ON pu.user_id = m.participant_id 
+                        LEFT JOIN expired_messages em ON m.id = em.message_id
                         WHERE c.category IS NOT NULL AND cc.circle_id = :circleId
                         ORDER BY cc.pin_time DESC, 
                         CASE 
@@ -267,6 +276,7 @@ class MessageProvider {
                             val cursorIndexOfParticipantUserId = CursorUtil.getColumnIndexOrThrow(cursor, "participantUserId")
                             val cursorIndexOfMentionCount = CursorUtil.getColumnIndexOrThrow(cursor, "mentionCount")
                             val cursorIndexOfMentions = CursorUtil.getColumnIndexOrThrow(cursor, "mentions")
+                            val cursorIndexOfExpireIn = CursorUtil.getColumnIndexOrThrow(cursor, "expireIn")
                             val res = ArrayList<ConversationItem>(cursor.count)
                             while (cursor.moveToNext()) {
                                 val item: ConversationItem
@@ -312,7 +322,12 @@ class MessageProvider {
                                     cursor.getInt(cursorIndexOfMentionCount)
                                 }
                                 val tmpMentions = cursor.getString(cursorIndexOfMentions)
-                                item = ConversationItem(tmpConversationId, tmpAvatarUrl, tmpGroupIconUrl, tmpCategory, tmpGroupName, tmpName, tmpOwnerId, tmpOwnerIdentityNumber, tmpStatus, tmpLastReadMessageId, tmpUnseenMessageCount, tmpContent, tmpContentType, tmpMediaUrl, tmpCreatedAt, tmpPinTime, tmpSenderId, tmpSenderFullName, tmpMessageStatus, tmpActionName, tmpParticipantFullName, tmpParticipantUserId, tmpOwnerMuteUntil, tmpOwnerVerified, tmpMuteUntil, null, tmpAppId, tmpMentions, tmpMentionCount)
+                                val tempExpireIn: Long? = if (cursor.isNull(cursorIndexOfExpireIn)) {
+                                    null
+                                } else {
+                                    cursor.getLong(cursorIndexOfExpireIn)
+                                }
+                                item = ConversationItem(tmpConversationId, tmpAvatarUrl, tmpGroupIconUrl, tmpCategory, tmpGroupName, tmpName, tmpOwnerId, tmpOwnerIdentityNumber, tmpStatus, tmpLastReadMessageId, tmpUnseenMessageCount, tmpContent, tmpContentType, tmpMediaUrl, tmpCreatedAt, tmpPinTime, tmpSenderId, tmpSenderFullName, tmpMessageStatus, tmpActionName, tmpParticipantFullName, tmpParticipantUserId, tmpOwnerMuteUntil, tmpOwnerVerified, tmpMuteUntil, null, tmpAppId, tmpMentions, tmpMentionCount, tempExpireIn)
                                 res.add(item)
                             }
                             return res
@@ -1199,6 +1214,7 @@ private fun convertToMessageItems(cursor: Cursor?): ArrayList<MessageItem> {
     val cursorIndexOfMentions = cursor.getColumnIndexOrThrow("mentions")
     val cursorIndexOfMentionRead = cursor.getColumnIndexOrThrow("mentionRead")
     val cursorIndexOfPinTop = cursor.getColumnIndexOrThrow("isPin")
+    val cursorIndexOfExpireIn = cursor.getColumnIndexOrThrow("expireIn")
     val res = ArrayList<MessageItem>(cursor.count)
     while (cursor.moveToNext()) {
         val item: MessageItem
@@ -1290,6 +1306,11 @@ private fun convertToMessageItems(cursor: Cursor?): ArrayList<MessageItem> {
             cursor.getInt(cursorIndexOfPinTop)
         }
         val tmpPinTop = if (tmp_2 == null) null else tmp_2 != 0
+        val tempExpireIn: Long? = if (cursor.isNull(cursorIndexOfExpireIn)) {
+            null
+        } else {
+            cursor.getLong(cursorIndexOfExpireIn)
+        }
         item = MessageItem(
             tmpMessageId, tmpConversationId, tmpUserId, tmpUserFullName, tmpUserIdentityNumber, tmpType, tmpContent,
             tmpCreatedAt, tmpStatus, tmpMediaStatus, null, tmpMediaName, tmpMediaMimeType, tmpMediaSize, tmpThumbUrl, tmpMediaWidth,
@@ -1297,7 +1318,7 @@ private fun convertToMessageItems(cursor: Cursor?): ArrayList<MessageItem> {
             tmpSnapshotType, tmpSnapshotAmount, tmpAssetId, tmpAssetType, tmpAssetSymbol, tmpAssetIcon, tmpAssetUrl, tmpAssetHeight, tmpAssetWidth,
             null, tmpStickerId, tmpAssetName, tmpAppId, tmpSiteName, tmpSiteTitle, tmpSiteDescription, tmpSiteImage, tmpSharedUserId,
             tmpSharedUserFullName, tmpSharedUserIdentityNumber, tmpSharedUserAvatarUrl, tmpSharedUserIsVerified, tmpSharedUserAppId,
-            tmpMediaWaveform, tmpQuoteId, tmpQuoteContent, tmpGroupName, tmpMentions, tmpMentionRead, tmpPinTop
+            tmpMediaWaveform, tmpQuoteId, tmpQuoteContent, tmpGroupName, tmpMentions, tmpMentionRead, tmpPinTop, tempExpireIn
         )
         res.add(item)
     }

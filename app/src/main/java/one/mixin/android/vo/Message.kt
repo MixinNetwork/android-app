@@ -279,7 +279,8 @@ fun createMessage(
     action: String? = null,
     participantId: String? = null,
     snapshotId: String? = null,
-    quoteMessageId: String? = null
+    quoteMessageId: String? = null,
+    expireIn: Long? = null
 ) = MessageBuilder(messageId, conversationId, userId, category, status, createdAt)
     .setContent(content)
     .setAction(action)

@@ -121,6 +121,7 @@ import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.BulletinView
 import one.mixin.android.widget.DraggableRecyclerView
 import one.mixin.android.widget.DraggableRecyclerView.Companion.FLING_DOWN
+import one.mixin.android.widget.picker.toTimeInterval
 import java.io.File
 import javax.inject.Inject
 import kotlin.math.min
@@ -651,6 +652,7 @@ class ConversationListFragment : LinkFragment() {
                 binding.nameTv.text = it
             }
             binding.groupNameTv.visibility = GONE
+            binding.msgExpire.isVisible = conversationItem.isExpire()
             binding.mentionFlag.isVisible =
                 conversationItem.mentionCount != null && conversationItem.mentionCount > 0
             when {
@@ -844,7 +846,7 @@ class ConversationListFragment : LinkFragment() {
                                         conversationItem.senderFullName
                                     },
                                     if (id == conversationItem.participantUserId) {
-                                        getText(R.string.You)
+                                        getText(R.string.you)
                                     } else {
                                         conversationItem.participantFullName
                                     }
@@ -860,7 +862,7 @@ class ConversationListFragment : LinkFragment() {
                                         conversationItem.senderFullName
                                     },
                                     if (id == conversationItem.participantUserId) {
-                                        getText(R.string.You)
+                                        getText(R.string.you)
                                     } else {
                                         conversationItem.participantFullName
                                     }
@@ -890,6 +892,34 @@ class ConversationListFragment : LinkFragment() {
                         }
                         SystemConversationAction.ROLE.name -> {
                             binding.msgTv.text = getText(R.string.group_role)
+                        }
+                        SystemConversationAction.EXPIRE.name -> {
+                            val timeInterval = conversationItem.content?.toLongOrNull()
+                            val name = if (id == conversationItem.senderId) {
+                                getText(R.string.You)
+                            } else {
+                                conversationItem.senderFullName
+                            }
+                            binding.msgTv.text =
+                                when {
+                                    timeInterval == null -> {
+                                        String.format(
+                                            getText(R.string.changed_disappearing_message_settings), name
+                                        )
+                                    }
+                                    timeInterval <= 0 -> {
+                                        String.format(
+                                            getText(R.string.disable_disappearing_message), name
+                                        )
+                                    }
+                                    else -> {
+                                        String.format(
+                                            getText(R.string.set_disappearing_message_time_to),
+                                            name,
+                                            toTimeInterval(timeInterval)
+                                        )
+                                    }
+                                }
                         }
                         else -> {
                             binding.msgTv.text = ""
