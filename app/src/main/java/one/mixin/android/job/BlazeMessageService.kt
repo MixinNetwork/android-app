@@ -66,7 +66,11 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
             val intent = Intent(ctx, BlazeMessageService::class.java).apply {
                 this.action = action
             }
-            ctx.startService(intent)
+            try {
+                ctx.startService(intent)
+            } catch (e: Exception) {
+                reportException(IllegalStateException("Can't start service, action:$action, ${e.message}"))
+            }
         }
 
         fun stopService(ctx: Context) {
