@@ -9,7 +9,7 @@ class NetworkException : IOException() {
     }
 
     companion object {
-        private var serialVersionUID: Long =1L
+        private var serialVersionUID: Long = 1L
     }
 }
 
@@ -18,7 +18,7 @@ class WebSocketException : IOException() {
         return true
     }
     companion object {
-        private var serialVersionUID: Long =1L
+        private var serialVersionUID: Long = 1L
     }
 }
 class ExpiredTokenException : IOException() {
@@ -26,7 +26,7 @@ class ExpiredTokenException : IOException() {
         return true
     }
     companion object {
-        private var serialVersionUID: Long =1L
+        private var serialVersionUID: Long = 1L
     }
 }
 
@@ -35,6 +35,6 @@ class ChecksumException : IOException() {
         return true
     }
     companion object {
-        private var serialVersionUID: Long =1L
+        private var serialVersionUID: Long = 1L
     }
 }

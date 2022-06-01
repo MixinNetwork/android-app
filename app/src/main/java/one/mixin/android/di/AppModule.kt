@@ -169,7 +169,7 @@ object AppModule {
                         GsonHelper.customGson.fromJson(String(bytes), MixinResponse::class.java)
                     } catch (e: JsonSyntaxException) {
                         HostSelectionInterceptor.get().switch(request)
-                        throw DataErrorException()
+                        throw ServerErrorException(response.code)
                     }
                     if (mixinResponse.errorCode == OLD_VERSION) {
                         MixinApplication.get().gotoOldVersionAlert()

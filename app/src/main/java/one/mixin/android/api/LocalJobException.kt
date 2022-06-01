@@ -5,6 +5,6 @@ class LocalJobException : RuntimeException() {
     fun shouldRetry() = true
 
     companion object {
-        private var serialVersionUID: Long =1L
+        private var serialVersionUID: Long = 1L
     }
 }

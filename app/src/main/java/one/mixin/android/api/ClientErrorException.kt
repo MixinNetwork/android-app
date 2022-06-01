@@ -9,6 +9,6 @@ class ClientErrorException(val code: Int) : IOException() {
     }
 
     companion object {
-        private var serialVersionUID: Long =1L
+        private var serialVersionUID: Long = 1L
     }
 }
