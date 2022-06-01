@@ -632,7 +632,7 @@ internal constructor(
     suspend fun markMessageRead(conversationId: String) = withContext(SINGLE_DB_THREAD) {
         runInTransaction {
             remoteMessageStatusDao.markReadByConversationId(conversationId)
-            remoteMessageStatusDao.updateConversationUnseen(conversationId)
+            remoteMessageStatusDao.zeroConversationUnseen(conversationId)
         }
     }
 
