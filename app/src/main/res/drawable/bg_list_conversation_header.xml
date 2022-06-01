@@ -3,6 +3,6 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:shape="rectangle"
     tools:ignore="MissingDefaultResource">
-    <solid android:color="?attr/bg_gray" />
+    <solid android:color="?attr/bg_gray_light" />
     <corners android:radius="16dp" />
 </shape>

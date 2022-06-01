@@ -5,5 +5,5 @@
     <size
         android:width="50dp"
         android:height="50dp" />
-    <solid android:color="?attr/bg_gray" />
+    <solid android:color="?attr/bg_gray_light" />
 </shape>

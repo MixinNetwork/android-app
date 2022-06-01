@@ -20,6 +20,7 @@ import androidx.core.view.children
 import androidx.core.view.isGone
 import androidx.core.view.isInvisible
 import androidx.core.view.isVisible
+import androidx.core.view.marginBottom
 import androidx.core.view.setPadding
 import androidx.core.view.updateLayoutParams
 import androidx.fragment.app.viewModels
@@ -201,7 +202,9 @@ class ConversationListFragment : LinkFragment() {
         navigationController = NavigationController(activity as MainActivity)
         bulletinView = BulletinView(requireContext()).apply {
             layoutParams = RecyclerView.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply {
-                margin = 16.dp
+                bottomMargin = 8.dp
+                marginStart = 16.dp
+                marginEnd = 16.dp
             }
         }
         messageAdapter.headerView = bulletinView
