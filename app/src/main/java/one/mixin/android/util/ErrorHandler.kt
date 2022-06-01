@@ -6,6 +6,7 @@ import kotlinx.coroutines.CoroutineExceptionHandler
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.api.ClientErrorException
+import one.mixin.android.api.DataErrorException
 import one.mixin.android.api.NetworkException
 import one.mixin.android.api.ServerErrorException
 import one.mixin.android.extension.runOnUiThread
@@ -34,6 +35,7 @@ open class ErrorHandler {
                             handleErrorCode(throwable.code, ctx)
                         }
                         is NetworkException -> toast(R.string.No_network_connection)
+                        is DataErrorException -> toast(R.string.Data_error)
                         else -> toast(getString(R.string.error_unknown_with_message, throwable.message))
                     }
                     is CancellationException -> {

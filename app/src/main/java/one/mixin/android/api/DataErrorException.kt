@@ -2,13 +2,14 @@ package one.mixin.android.api
 
 import java.io.IOException
 
-class ClientErrorException(val code: Int) : IOException() {
+class DataErrorException : IOException() {
 
     fun shouldRetry(): Boolean {
-        return false
+        return true
     }
 
     companion object {
         private var serialVersionUID: Long =1L
     }
 }
+
