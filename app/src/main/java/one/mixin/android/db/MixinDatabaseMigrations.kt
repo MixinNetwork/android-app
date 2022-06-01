@@ -312,15 +312,15 @@ class MixinDatabaseMigrations private constructor() {
                 database.execSQL("CREATE TABLE IF NOT EXISTS `remote_messages_status` (`message_id` TEXT NOT NULL, `conversation_id` TEXT NOT NULL, `status` TEXT NOT NULL, PRIMARY KEY(`message_id`))")
                 database.execSQL("CREATE INDEX IF NOT EXISTS `index_remote_messages_status_conversation_id_status` ON `remote_messages_status` (`conversation_id`, `status`)")
                 Session.getAccountId()?.let { selfId ->
-                    val cursor = database.query("SELECT conversation_id FROM conversations")
-                    val conversationIds = mutableListOf<String>()
-                    while (cursor.moveToNext()) {
-                        val cid = cursor.getString(0)
-                        conversationIds.add("'$cid'")
-                    }
-                    cursor.close()
-                    conversationIds.chunked(99).forEach { ids ->
-                        database.execSQL("INSERT OR REPLACE INTO remote_messages_status(message_id, conversation_id, status) SELECT id, conversation_id, 'DELIVERED' FROM messages WHERE conversation_id IN (${ids.joinToString()}) AND status IN ('DELIVERED','SENT') AND user_id != '$selfId'")
+                    database.query("SELECT conversation_id FROM conversations").use { c ->
+                        val conversationIds = mutableListOf<String>()
+                        while (c.moveToNext()) {
+                            val cid = c.getString(0)
+                            conversationIds.add("'$cid'")
+                        }
+                        conversationIds.chunked(99).forEach { ids ->
+                            database.execSQL("INSERT OR REPLACE INTO remote_messages_status(message_id, conversation_id, status) SELECT id, conversation_id, 'DELIVERED' FROM messages WHERE conversation_id IN (${ids.joinToString()}) AND status IN ('DELIVERED','SENT') AND user_id != '$selfId'")
+                        }
                     }
                 }
             }
