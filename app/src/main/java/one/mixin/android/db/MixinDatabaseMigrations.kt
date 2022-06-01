@@ -336,8 +336,7 @@ class MixinDatabaseMigrations private constructor() {
 
         val MIGRATION_45_44: Migration = object : Migration(45, 44) {
             override fun migrate(database: SupportSQLiteDatabase) {
-                database.execSQL("CREATE INDEX IF NOT EXISTS `index_remote_messages_status_conversation_id_status` ON `remote_messages_status` (`conversation_id`, `status`)")
-                database.execSQL("CREATE INDEX IF NOT EXISTS `index_messages_status_conversation_id_status` ON `messages` (`status`, `user_id`)")
+                database.execSQL("CREATE INDEX IF NOT EXISTS `index_messages_user_id_status` ON `messages` (`user_id`, `status`)")
                 Session.getAccountId()?.let { selfId ->
                     database.execSQL("INSERT OR REPLACE INTO remote_messages_status(message_id, conversation_id, status) SELECT id, conversation_id, 'DELIVERED' FROM messages WHERE (status = 'DELIVERED' OR status = 'SENT') AND user_id != '$selfId'")
                 }
