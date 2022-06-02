@@ -78,16 +78,16 @@ class NonMessengerUserBottomSheetDialogFragment : MixinBottomSheetDialogFragment
                 detailTv.parent.requestDisallowInterceptTouchEvent(false)
                 return@setOnTouchListener false
             }
-
+            bottomViewModel.refreshUser(user.userId, true)
             bottomViewModel.findUserById(user.userId).observe(
                 this@NonMessengerUserBottomSheetDialogFragment,
                 Observer { u ->
                     if (u == null) return@Observer
 
-                    binding.avatar.setInfo(user.fullName, user.avatarUrl, user.userId)
-                    binding.name.text = user.fullName
-                    if (user.biography.isNotEmpty()) {
-                        binding.detailTv.text = user.biography
+                    binding.avatar.setInfo(u.fullName, u.avatarUrl, u.userId)
+                    binding.name.text = u.fullName
+                    if (u.biography.isNotEmpty()) {
+                        binding.detailTv.text = u.biography
                         binding.detailTv.isVisible = true
                     } else {
                         binding.detailTv.isVisible = false
