@@ -10,8 +10,7 @@ import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemChatUnknownBinding
 import one.mixin.android.extension.dp
-import one.mixin.android.extension.getZhOrEnString
-import one.mixin.android.extension.highlightLinkText
+import one.mixin.android.extension.highlightStarTag
 import one.mixin.android.ui.conversation.adapter.ConversationAdapter
 import one.mixin.android.ui.conversation.holder.base.BaseViewHolder
 import one.mixin.android.vo.MessageItem
@@ -84,12 +83,11 @@ class UnknownHolder constructor(val binding: ItemChatUnknownBinding) : BaseViewH
 
         val isMe = meId == messageItem.userId
 
-        val learn: String = MixinApplication.get().getZhOrEnString(R.string.Learn_More)
-        val info = MixinApplication.get().getZhOrEnString(R.string.chat_not_support, learn)
+        val learn: String = MixinApplication.get().getString(R.string.Learn_More)
+        val info = MixinApplication.get().getString(R.string.chat_not_support, "**$learn**")
         val learnUrl = MixinApplication.get().getString(R.string.chat_not_support_url)
-        binding.chatTv.highlightLinkText(
+        binding.chatTv.highlightStarTag(
             info,
-            arrayOf(learn),
             arrayOf(learnUrl),
             onItemListener = onItemListener
         )

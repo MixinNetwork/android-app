@@ -672,7 +672,7 @@
     <string name="setting_data_title">自動ダウンロード設定</string>
     <string name="setting_data_wifi">WiFi利用時</string>
     <string name="setting_delete_account_content_2">ローカルメッセージとiCloudにバックアップされた内容は削除されません</string>
-    <string name="setting_delete_account_pin_content">%1$sと紐付けられたプロフィールとアカウント情報が削除されます。詳細はドキュメントをご覧ください。</string>
+    <string name="setting_delete_account_pin_content">%1$sと紐付けられたプロフィールとアカウント情報が削除されます。**詳細はド**キュメントをご覧ください。</string>
     <string name="setting_delete_account_send">%1$sへ4桁のコードを送信します</string>
     <string name="setting_delete_account_tip">Mixinウォレット内に仮想通貨が残っています。アカウントを削除すると、仮想通貨を引き出すことができませんが、よろしいでしょうか？</string>
     <string name="setting_desktop_confirm">デスクトップ版Mixinへの\nログインを確認</string>
@@ -681,7 +681,7 @@
     <string name="setting_emergency_change_mobile">新しい電話番号の登録をしますか？</string>
     <string name="setting_emergency_content">緊急連絡先は、紛失等の理由でデバイスへのアクセスが出来なくなった場合、ログインする方法となります。</string>
     <string name="setting_emergency_create_success">緊急連絡先を作成しました</string>
-    <string name="setting_emergency_desc">登録した電話番号が使用できなくなった場合は、緊急連絡先として登録した友だちに連絡し、Mixin IDと認証コードを取得してください。詳しくは緊急連絡先についてを確認してください。</string>
+    <string name="setting_emergency_desc">登録した電話番号が使用できなくなった場合は、緊急連絡先として登録した友だちに連絡し、Mixin IDと認証コードを取得してください。**詳しくは**緊急連絡先についてを確認してください。</string>
     <string name="setting_emergency_pin_tip">あなたの緊急連絡先はPINにより保護されています。</string>
     <string name="setting_emergency_send_code">相手のMixinに送信された4桁のコードを入力してください：%1$s</string>
     <string name="setting_emergency_set">緊急連絡先を設定する</string>
@@ -812,12 +812,12 @@
     <string name="wallet_password_change_tip">認証するために6桁のPINを入力してください。</string>
     <string name="wallet_password_not_equal">PINが一致しません、もう一度お試しください。</string>
     <string name="wallet_password_set_new_pin_desc">6桁の新しいPINを作成してください</string>
-    <string name="wallet_password_set_pin_desc">6桁のPINを作成してください、詳しくはこちら</string>
+    <string name="wallet_password_set_pin_desc">6桁のPINを作成してください、**詳しくはこちら**</string>
     <string name="wallet_password_unsafe">PINをより複雑な数字に変更してください</string>
     <string name="wallet_pin_modify_biometrics">変更を確定するには、PINを入力してください。</string>
     <string name="wallet_pin_open_biometrics">PINを入力して、生体認証を開いてください</string>
     <string name="wallet_pin_pay_interval_tips">セキュリティ保護のため、PINコードの定期的な再確認が必要です。</string>
-    <string name="wallet_pin_tops_desc">PINコードを忘れた場合、ウォレットにアクセスすることができなくなるため、必ず覚えておいてください。PINコードは、分散型キー導出プロトコルであるThrottled Identity Protocolから作成されています。詳しくはドキュメントをご覧ください。</string>
+    <string name="wallet_pin_tops_desc">PINコードを忘れた場合、ウォレットにアクセスすることができなくなるため、必ず覚えておいてください。PINコードは、分散型キー導出プロトコルであるThrottled Identity Protocolから作成されています。**詳しくは**ドキュメントをご覧ください。</string>
     <string name="wallet_refresh_address_failed">出金手数料が変更され、更新に失敗しました。もう一度やり直してください。</string>
     <string name="wallet_transaction_continue_count_down">続ける (%1$d)</string>
     <string name="wallet_transaction_that_time_value_tip">やりとりした当時の価格</string>

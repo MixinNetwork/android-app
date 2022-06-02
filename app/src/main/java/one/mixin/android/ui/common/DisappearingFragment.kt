@@ -10,8 +10,7 @@ import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.databinding.FragmentDisappearingBinding
-import one.mixin.android.extension.getZhOrEnString
-import one.mixin.android.extension.highlightLinkText
+import one.mixin.android.extension.highlightStarTag
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.conversation.ConversationViewModel
 import one.mixin.android.util.ErrorHandler
@@ -86,10 +85,9 @@ class DisappearingFragment : BaseFragment(R.layout.fragment_disappearing) {
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        val learn: String = requireContext().getZhOrEnString(R.string.Learn_More)
-        val info = requireContext().getZhOrEnString(R.string.disappearing_message_hint)
+        val info = getString(R.string.disappearing_message_hint)
         val learnUrl = requireContext().getString(R.string.disappearing_message_url)
-        binding.tipTv.highlightLinkText(info, arrayOf(learn), arrayOf(learnUrl))
+        binding.tipTv.highlightStarTag(info, arrayOf(learnUrl))
 
         lifecycleScope.launch {
             val conversation = viewModel.getConversation(conversationId)
