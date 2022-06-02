@@ -1007,13 +1007,14 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
             return
         } else if (systemMessage.action == SystemConversationAction.ROLE.name) {
             participantDao.updateParticipantRole(data.conversationId, systemMessage.participantId!!, systemMessage.role ?: "")
-            if (message.participantId != accountId) {
+            if (message.participantId != accountId || systemMessage.role.isNullOrEmpty()) {
                 return
             }
         } else if (systemMessage.action == SystemConversationAction.EXPIRE.name) {
             jobManager.addJobInBackground(RefreshConversationJob(data.conversationId))
         }
         database.insertAndNotifyConversation(message)
+        generateNotification(message, data)
     }
 
     private fun processSystemUserMessage(systemMessage: SystemUserMessagePayload) {
