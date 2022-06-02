@@ -355,6 +355,7 @@
     <string name="Invalid_Link">Pautan Tidak Sah</string>
     <string name="Invalid_payment_link">Pembayaran tidak sah</string>
     <string name="Invalid_sticker_format">Format pelekat tidak sah</string>
+    <string name="Invite_a_Friend">Kongsi Aplikasi Ini</string>
     <string name="invite_info">Sesiapa sahaja yang mempunyai Mixin boleh mengikuti pautan ini untuk menyertai kumpulan ini. Kongsi sahaja dengan orang yang anda percayai.</string>
     <string name="Invite_people">Jemput Orang</string>
     <string name="Invite_to_Group_via_Link">Jemput ke Kumpulan melalui Pautan</string>
@@ -516,8 +517,8 @@
     <string name="Playback_failed">Main balik gagal</string>
     <string name="Playlist">Senarai main</string>
     <string name="Please_wait_a_bit">Sila tunggu sebentar …</string>
-    <string name="POST">KIRIMAN</string>
     <string name="Post">Kirim</string>
+    <string name="POST">KIRIMAN</string>
     <string name="Privacy">Privasi</string>
     <string name="Privacy_Policy">Dasar Privasi</string>
     <string name="profile_modify_number">Adakah anda mahu menukar nombor telefon anda?</string>
@@ -647,7 +648,6 @@
     <string name="Share_Link">Kongsi pautan</string>
     <string name="share_message_description">Adakah anda pasti mahu menghantar %2$s dari %1$s?</string>
     <string name="share_message_description_empty">Adakah anda pasti mahu menghantar %1$s?</string>
-    <string name="Invite_a_Friend">Kongsi Aplikasi Ini</string>
     <string name="share_to">Kongsi %1$s ke…</string>
     <string name="Shared_Media">Media Berkongsi</string>
     <string name="Show">Tunjuk</string>
@@ -790,6 +790,5 @@
     <string name="withdrawal_with_PIN">Pengeluaran dengan PIN</string>
     <string name="Write_Circles">Tulis Lingkaran</string>
     <string name="You">Anda</string>
-    <string name="you">anda</string>
     <string name="You_deleted_this_message">Anda memadamkan mesej ini</string>
 </resources>

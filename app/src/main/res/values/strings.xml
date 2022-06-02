@@ -478,6 +478,7 @@
 	<string name="Invalid_payment_link">Invalid payment link</string>
 	<string name="Invalid_QR_Code">Invalid QR-Code</string>
 	<string name="Invalid_sticker_format">Invalid sticker format</string>
+	<string name="Invite_a_Friend">Invite a Friend</string>
 	<string name="invite_info">Anyone with Mixin can follow this link to join this group. Only share it with people you trust.</string>
 	<string name="Invite_people">Invite People</string>
 	<string name="Invite_to_Group_via_Link">Invite to Group via Link</string>
@@ -682,8 +683,8 @@
 	<string name="Playback_failed">Playback failed</string>
 	<string name="Playlist">Playlist</string>
 	<string name="Please_wait_a_bit">Please wait a bit…</string>
-	<string name="POST">POST</string>
 	<string name="Post">Post</string>
+	<string name="POST">POST</string>
 	<string name="Privacy">Privacy</string>
 	<string name="Privacy_Policy">Privacy Policy</string>
 	<string name="profile_modify_number">Do you want to change your phone number?</string>
@@ -844,7 +845,6 @@
 	<string name="share_message_description">Are you sure you want to send a %2$s from %1$s?</string>
 	<string name="share_message_description_empty">Are you sure you want to send the %1$s?</string>
 	<string name="Share_QR_Code">Share QR Code</string>
-	<string name="Invite_a_Friend">Invite a Friend</string>
 	<string name="share_to">Share %1$s to…</string>
 	<string name="Shared_Media">Shared Media</string>
 	<string name="Show">Show</string>
@@ -1044,9 +1044,7 @@
 	<string name="withdrawal_with_PIN">Withdrawal with PIN</string>
 	<string name="Write_Circles">Write Circles</string>
 	<string name="You">You</string>
-	<string name="you">you</string>
 	<string name="You_deleted_this_message">You deleted this message</string>
 	<string name="You_have_left_the_group">You have left the group</string>
 	<string name="your_pin_has_been_created">Your PIN has been created</string>
-
 </resources>

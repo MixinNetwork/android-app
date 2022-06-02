@@ -118,7 +118,6 @@
     <string name="Bot_not_found">アプリが見つかりません</string>
     <string name="BOTS">ロボ</string>
     <string name="bots_title">Myロボ一覧</string>
-    <string name="bottom_transfer_stranger_tip">電話</string>
     <string name="Call">応答なし</string>
     <string name="call_encryption_description">この通話はE2E暗号化されています。</string>
     <string name="call_encryption_title">通話に失敗しました</string>
@@ -166,7 +165,7 @@
     <string name="chat_import_fail_content">メッセージのインポートに失敗しました。ファイルとして送信しますか？</string>
     <string name="chat_list_empty_info">Mixinをダウンロードしている人と\nいつでもチャットが可能です。</string>
     <string name="chat_not_support">チャットが読み込めません Mixinをアップデートしてください %1$s.</string>
-    <string name="chat_on_mixin_content">さあ、Mixinでチャットをしてみましょう！Mixinは安全かつとても簡単に使えます。ビットコインやイーサリアムのような複数の通貨にも対応しています。https://mixin.one/messenger からMixinをダウンロードし、@%1$s を検索して私と友達になりましょう。</string>
+    <string name="chat_on_mixin_content">さあ、Mixinでチャットをしてみましょう！Mixinは安全かつとても簡単に使えます。ビットコインやイーサリアムのような複数の通貨にも対応しています。https://mixin.one/messenger からMixinをダウンロードし、@%1$sを検索して私と友達になりましょう。</string>
     <string name="chat_pin_message">%1$sは%2$sをピン留めしました</string>
     <string name="chat_recall_delete_alert">選択したメッセージは、最新版のMixinを使用している全員のチャットから削除されます。</string>
     <string name="chat_waiting">%1$sが参加し暗号化セッションが開始するまで待機しています… %2$s.</string>
@@ -382,8 +381,6 @@
     <string name="Group_Name">グループ名</string>
     <string name="Group_Notice">グループへのお知らせ</string>
     <string name="Group_Notification">グループ通知</string>
-    <string name="group_pop_menu_message">メッセージを送信</string>
-    <string name="group_pop_menu_remove">グループから退会させる</string>
     <string name="group_pop_menu_view">詳細%1$s</string>
     <string name="group_role">サブリーダーに任命されました</string>
     <string name="Groups_In_Common">共通のグループ</string>
@@ -403,6 +400,7 @@
     <string name="Invalid_Link">リンクが無効です</string>
     <string name="Invalid_payment_link">支払いが無効です</string>
     <string name="Invalid_sticker_format">スタンプのフォーマットが無効です。</string>
+    <string name="Invite_a_Friend">このアプリをシェアする</string>
     <string name="invite_info">リンクを知っている人はだれでも参加可能です。信頼できる人だけに共有してください。</string>
     <string name="Invite_people">招待する</string>
     <string name="Invite_to_Group_via_Link">リンクを使って招待する</string>
@@ -704,7 +702,6 @@
     <string name="Share_error">エラーを共有</string>
     <string name="Share_Link">リンクをシェアする</string>
     <string name="Share_QR_Code">QRコードを共有</string>
-    <string name="Invite_a_Friend">このアプリをシェアする</string>
     <string name="share_to">%1$sをシェアする</string>
     <string name="Shared_Media">写真や動画</string>
     <string name="Show">表示</string>
@@ -861,7 +858,6 @@
     <string name="withdrawal_with_biometric">PINを使用して出金</string>
     <string name="withdrawal_with_PIN">リストの変更</string>
     <string name="You">自分</string>
-    <string name="you">自分</string>
     <string name="You_deleted_this_message">このメッセージを削除しました。</string>
     <string name="You_have_left_the_group">あなたはもうこのグループの参加者ではありません</string>
 </resources>
