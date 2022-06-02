@@ -1153,7 +1153,7 @@ fun Context.getStringByLocale(@StringRes stringRes: Int, locale: Locale, vararg 
 
 fun Context.getZhOrEnString(@StringRes stringRes: Int, vararg formatArgs: Any): String =
     if (Lingver.getInstance().isCurrChinese()) {
-        getString(stringRes, formatArgs)
+        getString(stringRes, *formatArgs)
     } else {
-        getStringByLocale(stringRes, Locale.ENGLISH, formatArgs)
+        getStringByLocale(stringRes, Locale.ENGLISH, *formatArgs)
     }
