@@ -469,6 +469,7 @@
     <string name="Invalid_payment_link">无效支付信息</string>
     <string name="Invalid_QR_Code">无效的二维码</string>
     <string name="Invalid_sticker_format">贴纸格式不支持</string>
+    <string name="Invite_a_Friend">邀请好友</string>
     <string name="invite_info">Mixin 使用者可以使用此链接加入这个群组，请只跟您信任的人共享链接。</string>
     <string name="Invite_people">邀请好友</string>
     <string name="Invite_to_Group_via_Link">群邀请链接</string>
@@ -551,7 +552,7 @@
     <string name="multisig_state_signed">您已经对这笔交易进行了签名，您无法再次签名。</string>
     <string name="multisig_state_unlocked">这笔交易已经被其他人撤销了，您无法再次撤销。</string>
     <string name="Multisig_Transaction">多重签名交易</string>
-    <string name="Mute">静音通知</string>
+    <string name="Mute">静音</string>
     <string name="Mute_until">直到 %1$s</string>
     <string name="My_Contacts">我的联系人</string>
     <string name="my_mixin_id">我的 Mixin ID：%1$s</string>
@@ -578,7 +579,7 @@
     <string name="NO_AUTHORIZATIONS">没有授权任何机器人</string>
     <string name="No_Available_Assets">没有可用资产</string>
     <string name="No_blocked_users">没有屏蔽任何人</string>
-    <string name="NO_BOTS">没有应用</string>
+    <string name="NO_BOTS">没有机器人</string>
     <string name="No_camera">没有相机</string>
     <string name="No_deposits">暂无充值记录</string>
     <string name="No_fees">暂无手续费记录</string>
@@ -667,8 +668,8 @@
     <string name="Playback_failed">播放失败</string>
     <string name="Playlist">播放列表</string>
     <string name="Please_wait_a_bit">请稍等…</string>
-    <string name="POST">文章</string>
     <string name="Post">文章</string>
+    <string name="POST">文章</string>
     <string name="Privacy">隐私</string>
     <string name="Privacy_Policy">隐私政策</string>
     <string name="profile_modify_number">你想要修改手机号码么？</string>
@@ -771,7 +772,7 @@
     <string name="Send_your_Current_Location">发送您当前的位置</string>
     <string name="Senders">交易发起人</string>
     <string name="Set">设置</string>
-    <string name="set_disappearing_message_time_to">%1$s 将限时消息设置为 %2$s</string>
+    <string name="set_disappearing_message_time_to">%1$s将限时消息设置为 %2$s</string>
     <string name="Set_new_PIN">设置新的 PIN</string>
     <string name="Set_PIN">设置 PIN</string>
     <string name="Set_PIN_successfully">PIN 设置成功</string>
@@ -825,7 +826,6 @@
     <string name="share_message_description">你确定要发送来自%1$s的%2$s？</string>
     <string name="share_message_description_empty">你确定要发送该%1$s？</string>
     <string name="Share_QR_Code">分享二维码</string>
-    <string name="Invite_a_Friend">邀请好友</string>
     <string name="share_to">分享%1$s到…</string>
     <string name="Shared_Media">媒体内容</string>
     <string name="Show">显示</string>
@@ -1021,7 +1021,6 @@
     <string name="withdrawal_with_PIN">用 PIN 提现</string>
     <string name="Write_Circles">管理圈子</string>
     <string name="You">你</string>
-    <string name="you">你</string>
     <string name="You_deleted_this_message">你撤回了一条消息</string>
     <string name="You_have_left_the_group">你不在此群组</string>
     <string name="your_pin_has_been_created">PIN 已创建</string>

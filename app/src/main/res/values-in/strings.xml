@@ -485,8 +485,8 @@
     <string name="pin_check_tip">Anda akan ditanya secara berkala untuk membantu Anda mengingatnya.</string>
     <string name="PIN_incorrect">PIN salah</string>
     <string name="Please_wait_a_bit">Mohon tunggu sebentar…</string>
-    <string name="POST">POSTINGAN</string>
     <string name="Post">Postingan</string>
+    <string name="POST">POSTINGAN</string>
     <string name="Privacy">Privasi</string>
     <string name="Privacy_Policy">Kebijakan Privasi</string>
     <string name="profile_modify_number">Ingin mengubah nomor telepon Anda?</string>
@@ -725,6 +725,5 @@
     <string name="withdrawal_with_biometric">Penarikan dengan Biometrik</string>
     <string name="withdrawal_with_PIN">Penarikan dengan PIN</string>
     <string name="You">Anda</string>
-    <string name="you">anda</string>
     <string name="You_deleted_this_message">Anda menghapus pesan ini</string>
 </resources>

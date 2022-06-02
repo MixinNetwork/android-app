@@ -66,7 +66,7 @@ class SystemHolder constructor(val binding: ItemChatSystemBinding) : BaseViewHol
                             messageItem.userFullName
                         },
                         if (id == messageItem.participantUserId) {
-                            getText(R.string.you)
+                            getText(R.string.You)
                         } else {
                             messageItem.participantFullName
                         }
@@ -82,7 +82,7 @@ class SystemHolder constructor(val binding: ItemChatSystemBinding) : BaseViewHol
                             messageItem.userFullName
                         },
                         if (id == messageItem.participantUserId) {
-                            getText(R.string.you)
+                            getText(R.string.You)
                         } else {
                             messageItem.participantFullName
                         }
