@@ -6,6 +6,7 @@ import androidx.fragment.app.Fragment
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentLandingBinding
 import one.mixin.android.extension.addFragment
+import one.mixin.android.extension.getZhOrEnString
 import one.mixin.android.extension.highlightLinkText
 import one.mixin.android.extension.navTo
 import one.mixin.android.ui.setting.diagnosis.DiagnosisFragment
@@ -25,9 +26,9 @@ class LandingFragment : Fragment(R.layout.fragment_landing) {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val policy: String = getString(R.string.Privacy_Policy)
-        val termsService: String = getString(R.string.Terms_of_Service)
-        val policyWrapper = getString(R.string.landing_introduction, policy, termsService)
+        val policy: String = requireContext().getZhOrEnString(R.string.Privacy_Policy)
+        val termsService: String = requireContext().getZhOrEnString(R.string.Terms_of_Service)
+        val policyWrapper = requireContext().getZhOrEnString(R.string.landing_introduction, policy, termsService)
         val policyUrl = getString(R.string.landing_privacy_policy_url)
         val termsUrl = getString(R.string.landing_terms_url)
         binding.introductionTv.highlightLinkText(

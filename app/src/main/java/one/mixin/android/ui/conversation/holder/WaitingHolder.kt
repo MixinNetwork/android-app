@@ -7,6 +7,7 @@ import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemChatWaitingBinding
 import one.mixin.android.extension.dp
+import one.mixin.android.extension.getZhOrEnString
 import one.mixin.android.extension.highlightLinkText
 import one.mixin.android.ui.conversation.adapter.ConversationAdapter
 import one.mixin.android.ui.conversation.holder.base.BaseViewHolder
@@ -61,9 +62,9 @@ class WaitingHolder constructor(
     ) {
         val isMe = meId == messageItem.userId
         if (messageItem.isSignal()) {
-            val learn: String = MixinApplication.get().getString(R.string.Learn_More)
+            val learn: String = MixinApplication.get().getZhOrEnString(R.string.Learn_More)
             val info =
-                MixinApplication.get().getString(
+                MixinApplication.get().getZhOrEnString(
                     R.string.chat_waiting,
                     if (isMe) {
                         MixinApplication.get().getString(R.string.desktop)

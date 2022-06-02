@@ -4,7 +4,6 @@ import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 import one.mixin.android.Constants.DataBase.MINI_VERSION
 import one.mixin.android.session.Session
-import timber.log.Timber
 
 class MixinDatabaseMigrations private constructor() {
 

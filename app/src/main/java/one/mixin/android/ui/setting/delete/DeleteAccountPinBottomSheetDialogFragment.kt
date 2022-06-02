@@ -7,6 +7,7 @@ import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.databinding.FragmentDeleteAccountPinBottomSheetBinding
+import one.mixin.android.extension.getZhOrEnString
 import one.mixin.android.extension.highlightLinkText
 import one.mixin.android.extension.localDateString
 import one.mixin.android.extension.withArgs
@@ -42,9 +43,8 @@ class DeleteAccountPinBottomSheetDialogFragment : BiometricBottomSheetDialogFrag
         binding.biometricLayout.biometricTv.setText(R.string.Verify_by_Biometric)
         binding.biometricLayout.measureAllChildren = false
 
-        val learn: String =
-            MixinApplication.get().getString(R.string.Learn_More)
-        val info = MixinApplication.get().getString(R.string.setting_delete_account_pin_content, localDateString(System.currentTimeMillis() + 60 * 60 * 1000 * 24 * 30L))
+        val learn: String = MixinApplication.get().getZhOrEnString(R.string.Learn_More)
+        val info = MixinApplication.get().getZhOrEnString(R.string.setting_delete_account_pin_content, localDateString(System.currentTimeMillis() + 60 * 60 * 1000 * 24 * 30L))
         val learnUrl = MixinApplication.get().getString(R.string.setting_delete_account_url)
         binding.content.highlightLinkText(info, arrayOf(learn), arrayOf(learnUrl))
     }
