@@ -1013,7 +1013,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
         } else if (systemMessage.action == SystemConversationAction.EXPIRE.name) {
             jobManager.addJobInBackground(RefreshConversationJob(data.conversationId))
         }
-        insertMessage(message, data)
+        database.insertAndNotifyConversation(message)
     }
 
     private fun processSystemUserMessage(systemMessage: SystemUserMessagePayload) {
@@ -1355,7 +1355,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
         NotificationGenerator.generate(lifecycleScope, message, userMap, force, data.silent ?: false)
     }
 
-    private fun insertMessage(message: Message, data: BlazeMessageData, userMap: Map<String, String>? = null, force: Boolean = false) {
+    private fun insertMessage(message: Message, data: BlazeMessageData) {
         val expireIn = data.expireIn
         if (expireIn != null && expireIn > 0) {
             if (data.userId == Session.getAccountId()) {
@@ -1372,6 +1372,5 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
             }
         }
         database.insertAndNotifyConversation(message)
-        generateNotification(message, data, userMap, force)
     }
 }
