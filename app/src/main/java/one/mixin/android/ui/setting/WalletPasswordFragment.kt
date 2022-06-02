@@ -15,6 +15,7 @@ import one.mixin.android.crypto.PrivacyPreference.putPrefPinInterval
 import one.mixin.android.databinding.FragmentWalletPasswordBinding
 import one.mixin.android.extension.clickVibrate
 import one.mixin.android.extension.defaultSharedPreferences
+import one.mixin.android.extension.getZhOrEnString
 import one.mixin.android.extension.highlightLinkText
 import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.putLong
@@ -84,8 +85,8 @@ class WalletPasswordFragment : BaseFragment(R.layout.fragment_wallet_password), 
             } else {
                 titleView.setSubTitle(getString(R.string.Set_PIN), "1/4")
                 val url = Constants.HelpLink.TIP
-                val target = getString(R.string.Learn_More)
-                val desc = getString(R.string.wallet_password_set_pin_desc)
+                val target = requireContext().getZhOrEnString(R.string.Learn_More)
+                val desc = requireContext().getZhOrEnString(R.string.wallet_password_set_pin_desc)
                 tipTv.highlightLinkText(desc, arrayOf(target), arrayOf(url))
             }
             titleView.leftIb.setOnClickListener {
@@ -157,8 +158,8 @@ class WalletPasswordFragment : BaseFragment(R.layout.fragment_wallet_password), 
             binding.tipTv.text = getString(R.string.wallet_password_set_new_pin_desc)
         } else {
             val url = Constants.HelpLink.TIP
-            val target = getString(R.string.Learn_More)
-            val desc = getString(R.string.wallet_password_set_pin_desc)
+            val target = requireContext().getZhOrEnString(R.string.Learn_More)
+            val desc = requireContext().getZhOrEnString(R.string.wallet_password_set_pin_desc)
             binding.tipTv.highlightLinkText(desc, arrayOf(target), arrayOf(url))
         }
     }

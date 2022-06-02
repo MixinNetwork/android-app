@@ -7,6 +7,7 @@ import one.mixin.android.Constants
 import one.mixin.android.Constants.ARGS_USER
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentViewEmergencyContactBinding
+import one.mixin.android.extension.getZhOrEnString
 import one.mixin.android.extension.highlightLinkText
 import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.withArgs
@@ -40,8 +41,8 @@ class ViewEmergencyContactFragment : BaseFragment(R.layout.fragment_view_emergen
             idTv.text = getString(R.string.contact_mixin_id, user.identityNumber)
 
             val url = Constants.HelpLink.EMERGENCY
-            val target = getString(R.string.Learn_More)
-            val desc = getString(R.string.setting_emergency_desc)
+            val target = requireContext().getZhOrEnString(R.string.Learn_More)
+            val desc = requireContext().getZhOrEnString(R.string.setting_emergency_desc)
             tipTv.highlightLinkText(desc, arrayOf(target), arrayOf(url))
         }
     }
