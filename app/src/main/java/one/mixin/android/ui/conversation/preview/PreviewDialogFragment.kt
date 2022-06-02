@@ -93,8 +93,10 @@ class PreviewDialogFragment : DialogFragment(), VideoTimelineView.VideoTimelineV
             setWindowAnimations(R.style.BottomSheet_Animation)
         }
         dialog.setOnShowListener {
+            val uri = this.uri ?: return@setOnShowListener
+
             if (isVideo) {
-                val mimeType = getMimeType(uri!!)
+                val mimeType = getMimeType(uri)
                 if (mimeType == null || !mimeType.startsWith("video", true)) {
                     toast(R.string.Format_not_supported)
                     dismiss()
@@ -103,7 +105,7 @@ class PreviewDialogFragment : DialogFragment(), VideoTimelineView.VideoTimelineV
                     setOnVideoPlayerListener(videoListener)
                     loadVideo(uri.toString())
                     setVideoTextureView(videoBinding.dialogVideoTexture)
-                    videoBinding.time.setVideoPath(uri!!.getFilePath(requireContext()))
+                    videoBinding.time.setVideoPath(uri.getFilePath(requireContext()))
                     Observable.interval(0, 100, TimeUnit.MILLISECONDS)
                         .observeOn(AndroidSchedulers.mainThread())
                         .autoDispose(this@PreviewDialogFragment).subscribe {
@@ -113,13 +115,13 @@ class PreviewDialogFragment : DialogFragment(), VideoTimelineView.VideoTimelineV
                         }
                     okText?.let { videoBinding.dialogOk.text = it }
                     videoBinding.dialogOk.setOnClickListener {
-                        action!!(uri!!)
+                        action!!(uri)
                         dismiss()
                     }
                 }
             } else {
                 binding.dialogSendIb.setOnClickListener {
-                    action!!(uri!!)
+                    action?.invoke(uri)
                     dismiss()
                 }
                 binding.dialogIv.loadImage(uri)
