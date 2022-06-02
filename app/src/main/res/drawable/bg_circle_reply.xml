@@ -1,6 +1,4 @@
-<shape xmlns:android="http://schemas.android.com/apk/res/android"
-    android:shape="oval">
+<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="oval">
     <size android:width="18dp" android:height="18dp"/>
-    <solid
-        android:color="?android:attr/colorControlHighlight"/>
+    <solid android:color="?android:attr/colorControlHighlight"/>
 </shape>

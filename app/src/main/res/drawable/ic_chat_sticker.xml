@@ -1,26 +1,5 @@
-<vector xmlns:android="http://schemas.android.com/apk/res/android"
-    android:width="24dp"
-    android:height="24dp"
-    android:viewportWidth="24"
-    android:viewportHeight="24">
-    <path
-        android:pathData="M12,22C17.5228,22 22,17.5228 22,12C22,6.4771 17.5228,2 12,2C6.4771,2 2,6.4771 2,12C2,17.5228 6.4771,22 12,22Z"
-        android:strokeLineJoin="round"
-        android:strokeWidth="2"
-        android:fillColor="#00000000"
-        android:strokeColor="?attr/icon_default"
-        android:strokeLineCap="round" />
-    <path
-        android:pathData="M17.1973,15V15C16.1599,16.7934 14.2209,18 12,18C9.7792,18 7.8402,16.7934 6.8027,15"
-        android:strokeLineJoin="round"
-        android:strokeWidth="2"
-        android:fillColor="#00000000"
-        android:strokeColor="?attr/icon_default"
-        android:strokeLineCap="round" />
-    <path
-        android:pathData="M8.5,12C9.3284,12 10,11.3284 10,10.5C10,9.6716 9.3284,9 8.5,9C7.6716,9 7,9.6716 7,10.5C7,11.3284 7.6716,12 8.5,12Z"
-        android:fillColor="?attr/icon_default" />
-    <path
-        android:pathData="M15.5,12C16.3284,12 17,11.3284 17,10.5C17,9.6716 16.3284,9 15.5,9C14.6716,9 14,9.6716 14,10.5C14,11.3284 14.6716,12 15.5,12Z"
-        android:fillColor="?attr/icon_default" />
+<vector xmlns:android="http://schemas.android.com/apk/res/android" android:width="24dp" android:height="24dp" android:viewportWidth="24" android:viewportHeight="24">
+    <path android:pathData="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z" android:strokeLineJoin="round" android:strokeWidth="2" android:strokeColor="?attr/icon_default" android:strokeLineCap="round"/>
+    <path android:pathData="M17.197 15c-1.037 1.793-2.976 3-5.197 3-2.22 0-4.16-1.207-5.197-3" android:strokeLineJoin="round" android:strokeWidth="2" android:strokeColor="?attr/icon_default" android:strokeLineCap="round"/>
+    <path android:pathData="M8.5 12c0.828 0 1.5-0.672 1.5-1.5S9.328 9 8.5 9 7 9.672 7 10.5 7.672 12 8.5 12zm7 0c0.828 0 1.5-0.672 1.5-1.5S16.328 9 15.5 9 14 9.672 14 10.5s0.672 1.5 1.5 1.5z" android:fillColor="?attr/icon_default"/>
 </vector>

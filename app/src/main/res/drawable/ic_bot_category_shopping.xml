@@ -1,29 +1,5 @@
-<vector xmlns:android="http://schemas.android.com/apk/res/android"
-    android:width="24dp"
-    android:height="25dp"
-    android:viewportWidth="24"
-    android:viewportHeight="25">
-
-  <path
-      android:pathData="M17,18.3225H8C6.3432,18.3225 5,16.9794 5,15.3225V4.3225"
-      android:strokeWidth="2"
-      android:fillColor="#00000000"
-      android:strokeColor="?attr/icon_default"/>
-  <path
-      android:pathData="M1,3.3225L21,7.3225V11.3225C21,12.9794 19.6569,14.3225 18,14.3225H5"
-      android:strokeLineJoin="round"
-      android:strokeWidth="2"
-      android:fillColor="#00000000"
-      android:strokeColor="?attr/icon_default"
-      android:strokeLineCap="round"/>
-  <path
-      android:pathData="M17,22.3225C18.1046,22.3225 19,21.4271 19,20.3225C19,19.2179 18.1046,18.3225 17,18.3225C15.8954,18.3225 15,19.2179 15,20.3225C15,21.4271 15.8954,22.3225 17,22.3225Z"
-      android:strokeWidth="2"
-      android:fillColor="#00000000"
-      android:strokeColor="?attr/icon_default"/>
-  <path
-      android:pathData="M9,22.3225C10.1046,22.3225 11,21.4271 11,20.3225C11,19.2179 10.1046,18.3225 9,18.3225C7.8954,18.3225 7,19.2179 7,20.3225C7,21.4271 7.8954,22.3225 9,22.3225Z"
-      android:strokeWidth="2"
-      android:fillColor="#00000000"
-      android:strokeColor="?attr/icon_default"/>
+<vector xmlns:android="http://schemas.android.com/apk/res/android" android:width="24dp" android:height="25dp" android:viewportWidth="24" android:viewportHeight="25">
+    <path android:pathData="M17 18.323H8c-1.657 0-3-1.344-3-3v-11" android:strokeWidth="2" android:strokeColor="?attr/icon_default"/>
+    <path android:pathData="M1 3.322l20 4v4c0 1.657-1.343 3-3 3H5" android:strokeLineJoin="round" android:strokeWidth="2" android:strokeColor="?attr/icon_default" android:strokeLineCap="round"/>
+    <path android:pathData="M17 22.323c1.105 0 2-0.896 2-2 0-1.105-0.895-2-2-2s-2 0.895-2 2c0 1.104 0.895 2 2 2zm-8 0c1.105 0 2-0.896 2-2 0-1.105-0.895-2-2-2s-2 0.895-2 2c0 1.104 0.895 2 2 2z" android:strokeWidth="2" android:strokeColor="?attr/icon_default"/>
 </vector>

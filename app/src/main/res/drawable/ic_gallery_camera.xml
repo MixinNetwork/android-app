@@ -1,24 +1,4 @@
-<vector xmlns:android="http://schemas.android.com/apk/res/android"
-    android:width="44dp"
-    android:height="38dp"
-    android:viewportWidth="44"
-    android:viewportHeight="38">
-  <path
-      android:pathData="M13,7C13,3.6863 15.6863,1 19,1L25,1C28.3137,1 31,3.6863 31,7L37,7C40.3137,7 43,9.6863 43,13L43,30.4667C43,33.7804 40.3137,36.4667 37,36.4667L7,36.4667C3.6863,36.4667 1,33.7804 1,30.4667L1,13C1,9.6863 3.6863,7 7,7L13,7Z"
-      android:strokeLineJoin="round"
-      android:strokeWidth="2"
-      android:fillColor="#00000000"
-      android:fillType="nonZero"
-      android:strokeColor="#FFFFFF"
-      android:strokeLineCap="round"/>
-  <path
-      android:pathData="M22,20m-6,0a6,6 0,1 1,12 0a6,6 0,1 1,-12 0"
-      android:strokeAlpha="0.5"
-      android:strokeLineJoin="round"
-      android:strokeWidth="2"
-      android:fillColor="#00000000"
-      android:fillType="nonZero"
-      android:strokeColor="#FFFFFF"
-      android:fillAlpha="0.5"
-      android:strokeLineCap="round"/>
+<vector xmlns:android="http://schemas.android.com/apk/res/android" android:width="44dp" android:height="38dp" android:viewportWidth="44" android:viewportHeight="38">
+    <path android:pathData="M13 7c0-3.314 2.686-6 6-6h6c3.314 0 6 2.686 6 6h6c3.314 0 6 2.686 6 6v17.467c0 3.313-2.686 6-6 6H7c-3.314 0-6-2.687-6-6V13c0-3.314 2.686-6 6-6h6z" android:strokeLineJoin="round" android:strokeWidth="2" android:strokeColor="#FFFFFF" android:strokeLineCap="round"/>
+    <path android:pathData="M16 20a6 6 0 1 1 12 0 6 6 0 1 1-12 0" android:strokeAlpha="0.5" android:strokeLineJoin="round" android:strokeWidth="2" android:strokeColor="#FFFFFF" android:fillAlpha="0.5" android:strokeLineCap="round"/>
 </vector>
