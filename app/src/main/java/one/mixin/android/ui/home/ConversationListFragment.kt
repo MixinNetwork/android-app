@@ -849,7 +849,7 @@ class ConversationListFragment : LinkFragment() {
                                         conversationItem.senderFullName
                                     },
                                     if (id == conversationItem.participantUserId) {
-                                        getText(R.string.You)
+                                        getText(R.string.you)
                                     } else {
                                         conversationItem.participantFullName
                                     }
@@ -865,7 +865,7 @@ class ConversationListFragment : LinkFragment() {
                                         conversationItem.senderFullName
                                     },
                                     if (id == conversationItem.participantUserId) {
-                                        getText(R.string.You)
+                                        getText(R.string.you)
                                     } else {
                                         conversationItem.participantFullName
                                     }
