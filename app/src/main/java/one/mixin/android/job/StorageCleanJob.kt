@@ -12,7 +12,7 @@ import one.mixin.android.util.clear.CleanNotification
 import timber.log.Timber
 
 class StorageCleanJob :
-    BaseJob(Params(PRIORITY_UI_HIGH).groupBy(GROUP_ID).requireNetwork().persist()) {
+    BaseJob(Params(PRIORITY_BACKGROUND).groupBy(GROUP_ID).persist()) {
 
     companion object {
         private const val serialVersionUID = 1L
