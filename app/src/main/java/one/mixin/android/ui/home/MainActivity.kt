@@ -40,6 +40,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 import one.mixin.android.BuildConfig
 import one.mixin.android.Constants
 import one.mixin.android.Constants.Account.PREF_BACKUP
@@ -61,6 +62,7 @@ import one.mixin.android.R
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.SessionRequest
 import one.mixin.android.api.service.ConversationService
+import one.mixin.android.api.service.TipService
 import one.mixin.android.api.service.UserService
 import one.mixin.android.crypto.Base64
 import one.mixin.android.crypto.PrivacyPreference.getIsLoaded
@@ -141,6 +143,7 @@ import one.mixin.android.vo.Participant
 import one.mixin.android.vo.ParticipantRole
 import one.mixin.android.vo.isGroupConversation
 import one.mixin.android.widget.MaterialSearchView
+import timber.log.Timber
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -156,6 +159,9 @@ class MainActivity : BlazeBaseActivity() {
 
     @Inject
     lateinit var userService: UserService
+
+    @Inject
+    lateinit var tipService: TipService
 
     @Inject
     lateinit var conversationDao: ConversationDao
@@ -282,6 +288,7 @@ class MainActivity : BlazeBaseActivity() {
     }
 
     private fun checkAsync() = lifecycleScope.launch(Dispatchers.IO) {
+        checkTip() // suspend
         checkRoot()
         checkUpdate()
         checkStorage()
@@ -406,6 +413,23 @@ class MainActivity : BlazeBaseActivity() {
                 dialog.dismiss()
             }
             .show()
+    }
+
+    private suspend fun checkTip() = withContext(Dispatchers.IO) {
+        val account = Session.getAccount() ?: return@withContext // Todo: Need to synchronize online
+        if (account.hasPin) {
+            // check
+            handleMixinResponse(
+                invokeNetwork = {
+                    tipService.tipEphermerals()
+                },
+                successBlock = {
+                    Timber.e(it.data?.toString())
+                },
+            )
+        } else {
+            //
+        }
     }
 
     private fun checkRoot() {

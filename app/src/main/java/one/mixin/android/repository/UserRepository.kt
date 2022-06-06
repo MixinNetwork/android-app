@@ -10,6 +10,7 @@ import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.CircleConversationRequest
 import one.mixin.android.api.service.CircleService
+import one.mixin.android.api.service.TipService
 import one.mixin.android.api.service.UserService
 import one.mixin.android.db.AppDao
 import one.mixin.android.db.CircleConversationDao
@@ -42,13 +43,14 @@ class UserRepository
 @Inject
 constructor(
     private val appDatabase: MixinDatabase,
-    private val userDao: UserDao,
     private val appDao: AppDao,
-    private val circleDao: CircleDao,
-    private val userService: UserService,
-    private val conversationDao: ConversationDao,
-    private val circleService: CircleService,
     private val circleConversationDao: CircleConversationDao,
+    private val circleDao: CircleDao,
+    private val circleService: CircleService,
+    private val conversationDao: ConversationDao,
+    private val tipService: TipService,
+    private val userDao: UserDao,
+    private val userService: UserService
 ) {
 
     fun findFriends(): LiveData<List<User>> = userDao.findFriends()
