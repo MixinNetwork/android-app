@@ -16,13 +16,11 @@ data class ConversationItem(
     val groupName: String?,
     val name: String,
     val ownerId: String,
-    val ownerIdentityNumber: String,
     val status: Int,
     val lastReadMessageId: String?,
     val unseenMessageCount: Int?,
     val content: String?,
     val contentType: String?,
-    val mediaUrl: String?,
     val createdAt: String?,
     val pinTime: String?,
     val senderId: String?,
@@ -34,11 +32,9 @@ data class ConversationItem(
     val ownerMuteUntil: String?,
     val ownerVerified: Boolean?,
     val muteUntil: String?,
-    val snapshotType: String?,
     val appId: String?,
     val mentions: String?,
-    val mentionCount: Int?,
-    val expireIn: Long?
+    val mentionCount: Int?
 ) : ICategory, IConversationCategory {
     companion object {
         val DIFF_CALLBACK = object : DiffUtil.ItemCallback<ConversationItem>() {

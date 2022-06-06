@@ -136,7 +136,7 @@ class ConversationListFragment : LinkFragment() {
     private var _binding: FragmentConversationListBinding? = null
     private val binding get() = requireNotNull(_binding)
 
-    private val messagesViewModel by viewModels<ConversationListViewModel>()
+    private val conversationListViewModel by viewModels<ConversationListViewModel>()
 
     private val messageAdapter by lazy {
         MessageAdapter().apply {
@@ -305,16 +305,16 @@ class ConversationListFragment : LinkFragment() {
                             toast(R.string.Network_error)
                             return
                         }
-                        lifecycleScope.launch(Dispatchers.IO) { messagesViewModel.createGroupConversation(item.conversationId) }
+                        lifecycleScope.launch(Dispatchers.IO) { conversationListViewModel.createGroupConversation(item.conversationId) }
                     } else {
                         enterJob?.cancel()
                         enterJob = lifecycleScope.launch {
                             val user = if (item.isContactConversation()) {
-                                messagesViewModel.suspendFindUserById(item.ownerId)
+                                conversationListViewModel.suspendFindUserById(item.ownerId)
                             } else null
                             val messageId =
                                 if (item.unseenMessageCount != null && item.unseenMessageCount > 0) {
-                                    messagesViewModel.findFirstUnreadMessageId(
+                                    conversationListViewModel.findFirstUnreadMessageId(
                                         item.conversationId,
                                         item.unseenMessageCount - 1
                                     )
@@ -399,7 +399,7 @@ class ConversationListFragment : LinkFragment() {
         }
     }
 
-    private var liveData: LiveData<PagedList<ConversationItem>>? = null
+    private var conversationLiveData: LiveData<PagedList<ConversationItem>>? = null
     var circleId: String? = null
         set(value) {
             if (field != value) {
@@ -410,11 +410,11 @@ class ConversationListFragment : LinkFragment() {
 
     private var scrollTop = false
     private fun selectCircle(circleId: String?) {
-        liveData?.removeObserver(observer)
-        val liveData = messagesViewModel.observeConversations(circleId)
+        conversationLiveData?.removeObserver(observer)
+        val liveData = conversationListViewModel.observeConversations(circleId)
         liveData.observe(viewLifecycleOwner, observer)
         scrollTop = true
-        this.liveData = liveData
+        this.conversationLiveData = liveData
     }
 
     private fun animDownIcon(expand: Boolean) {
@@ -471,7 +471,7 @@ class ConversationListFragment : LinkFragment() {
                     ) {
                         binding.shadowFl.animate().translationY(0f).duration = 200
                     }
-                    messagesViewModel.deleteConversation(conversationId)
+                    conversationListViewModel.deleteConversation(conversationId)
                     bottomSheet.dismiss()
                 }
                 .show()
@@ -479,13 +479,13 @@ class ConversationListFragment : LinkFragment() {
         if (hasPin) {
             viewBinding.pinTv.setText(R.string.Unpin)
             viewBinding.pinTv.setOnClickListener {
-                messagesViewModel.updateConversationPinTimeById(conversationId, circleId, null)
+                conversationListViewModel.updateConversationPinTimeById(conversationId, circleId, null)
                 bottomSheet.dismiss()
             }
         } else {
             viewBinding.pinTv.setText(R.string.pin_title)
             viewBinding.pinTv.setOnClickListener {
-                messagesViewModel.updateConversationPinTimeById(
+                conversationListViewModel.updateConversationPinTimeById(
                     conversationId,
                     circleId,
                     nowInUtc()
@@ -501,7 +501,7 @@ class ConversationListFragment : LinkFragment() {
         super.onResume()
 
         lifecycleScope.launch {
-            val totalUsd = messagesViewModel.findTotalUSDBalance()
+            val totalUsd = conversationListViewModel.findTotalUSDBalance()
 
             val shown = bulletinBoard
                 .addBulletin(NewWalletBulletin(bulletinView, requireActivity() as MainActivity, ::onClose))
@@ -564,7 +564,7 @@ class ConversationListFragment : LinkFragment() {
                             }
                         }
                         else -> {
-                            messagesViewModel.findAppById(id)?.notNullWithElse(
+                            conversationListViewModel.findAppById(id)?.notNullWithElse(
                                 { app ->
                                     view.isVisible = true
                                     view.setImageResource(app.getCategoryIcon())
@@ -1088,13 +1088,13 @@ class ConversationListFragment : LinkFragment() {
                     lifecycleScope.launch {
                         handleMixinResponse(
                             invokeNetwork = {
-                                messagesViewModel.mute(
+                                conversationListViewModel.mute(
                                     duration.toLong(),
                                     conversationId = conversationItem.conversationId
                                 )
                             },
                             successBlock = { response ->
-                                messagesViewModel.updateGroupMuteUntil(
+                                conversationListViewModel.updateGroupMuteUntil(
                                     conversationItem.conversationId,
                                     response.data!!.muteUntil
                                 )
@@ -1108,14 +1108,14 @@ class ConversationListFragment : LinkFragment() {
                         lifecycleScope.launch {
                             handleMixinResponse(
                                 invokeNetwork = {
-                                    messagesViewModel.mute(
+                                    conversationListViewModel.mute(
                                         duration.toLong(),
                                         senderId = it.userId,
                                         recipientId = conversationItem.ownerId
                                     )
                                 },
                                 successBlock = { response ->
-                                    messagesViewModel.updateMuteUntil(
+                                    conversationListViewModel.updateMuteUntil(
                                         conversationItem.ownerId,
                                         response.data!!.muteUntil
                                     )
@@ -1145,10 +1145,10 @@ class ConversationListFragment : LinkFragment() {
             lifecycleScope.launch {
                 handleMixinResponse(
                     invokeNetwork = {
-                        messagesViewModel.mute(0, conversationId = conversationItem.conversationId)
+                        conversationListViewModel.mute(0, conversationId = conversationItem.conversationId)
                     },
                     successBlock = { response ->
-                        messagesViewModel.updateGroupMuteUntil(
+                        conversationListViewModel.updateGroupMuteUntil(
                             conversationItem.conversationId,
                             response.data!!.muteUntil
                         )
@@ -1161,14 +1161,14 @@ class ConversationListFragment : LinkFragment() {
                 lifecycleScope.launch {
                     handleMixinResponse(
                         invokeNetwork = {
-                            messagesViewModel.mute(
+                            conversationListViewModel.mute(
                                 0,
                                 senderId = it.userId,
                                 recipientId = conversationItem.ownerId
                             )
                         },
                         successBlock = { response ->
-                            messagesViewModel.updateMuteUntil(
+                            conversationListViewModel.updateMuteUntil(
                                 conversationItem.ownerId,
                                 response.data!!.muteUntil
                             )

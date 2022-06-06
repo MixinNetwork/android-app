@@ -14,11 +14,11 @@ import one.mixin.android.api.service.AssetService
 import one.mixin.android.db.AddressDao
 import one.mixin.android.db.AssetDao
 import one.mixin.android.db.AssetsExtraDao
-import one.mixin.android.db.MessageProvider
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.SnapshotDao
 import one.mixin.android.db.TopAssetDao
 import one.mixin.android.db.TraceDao
+import one.mixin.android.db.provider.DataProvider
 import one.mixin.android.extension.within6Hours
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.ErrorHandler.Companion.FORBIDDEN
@@ -149,7 +149,7 @@ constructor(
     fun assetItems() = assetDao.assetItemsNotHidden()
 
     suspend fun fuzzySearchAsset(query: String, cancellationSignal: CancellationSignal) =
-        MessageProvider.fuzzySearchAsset(query, query, appDatabase, cancellationSignal)
+        DataProvider.fuzzySearchAsset(query, query, appDatabase, cancellationSignal)
 
     suspend fun fuzzySearchAssetIgnoreAmount(query: String) = assetDao.fuzzySearchAssetIgnoreAmount(query, query)
 

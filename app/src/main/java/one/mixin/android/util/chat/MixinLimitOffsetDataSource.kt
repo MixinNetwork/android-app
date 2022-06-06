@@ -1,5 +1,3 @@
-@file:Suppress("DEPRECATION")
-
 package one.mixin.android.util.chat
 
 import android.annotation.SuppressLint
@@ -14,24 +12,14 @@ import timber.log.Timber
 
 @SuppressLint("RestrictedApi")
 @RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
-abstract class FastLimitOffsetDataSource<T>(
+abstract class MixinLimitOffsetDataSource<T> protected constructor(
     private val db: RoomDatabase,
     private val countQuery: RoomSQLiteQuery,
     private val offsetStatement: RoomSQLiteQuery,
-    private val fastCountCallback: () -> Int?,
     private val querySqlGenerator: (String) -> RoomSQLiteQuery,
-    private vararg val tables: String
+    vararg tables: String?
 ) : PositionalDataSource<T>() {
-
-    init {
-        if (tables.isNotEmpty()) {
-            db.invalidationTracker.addWeakObserver(object : InvalidationTracker.Observer(tables) {
-                override fun onInvalidated(tables: Set<String>) {
-                    invalidate()
-                }
-            })
-        }
-    }
+    private val observer: InvalidationTracker.Observer
 
     /**
      * Count number of rows query can return
@@ -58,37 +46,29 @@ abstract class FastLimitOffsetDataSource<T>(
         params: LoadInitialParams,
         callback: LoadInitialCallback<T>
     ) {
-        val fastCont = fastCountCallback.invoke()
-        val totalCount = fastCont ?: countItems()
+        val totalCount = countItems()
         if (totalCount == 0) {
             callback.onResult(emptyList(), 0, 0)
             return
         }
+
         // bound the size requested, based on known count
         val firstLoadPosition = computeInitialLoadPosition(params, totalCount)
         val firstLoadSize = computeInitialLoadSize(params, firstLoadPosition, totalCount)
         val list = loadRange(firstLoadPosition, firstLoadSize)
         try {
             callback.onResult(list, firstLoadPosition, totalCount)
-            if (fastCont != null) { // If quick return needs to activate the next query
-                invalidate()
-            }
         } catch (e: IllegalArgumentException) {
             // workaround with paging initial load size NOT to be a multiple of page size
             Timber.w(e)
             try {
                 callback.onResult(list, firstLoadPosition, firstLoadPosition + list.size)
-                if (fastCont != null) {
-                    invalidate()
-                }
             } catch (iae: IllegalArgumentException) {
                 // workaround with paging incorrect tiling
-                val message = (
-                    "FastLimitOffsetDataSource " +
-                        "firstLoadPosition: " + firstLoadPosition +
-                        ", list size: " + list.size +
-                        ", count: " + totalCount
-                    )
+                val message = ("MixinLimitOffsetDataSource "
+                    + "firstLoadPosition: " + firstLoadPosition
+                    + ", list size: " + list.size
+                    + ", count: " + totalCount)
                 reportException(message, iae)
                 Timber.w(iae)
             }
@@ -101,6 +81,21 @@ abstract class FastLimitOffsetDataSource<T>(
     ) {
         val list = loadRange(params.startPosition, params.loadSize)
         callback.onResult(list)
+    }
+
+    /**
+     * Return the rows from startPos to startPos + loadCount
+     */
+    private fun loadRange(startPosition: Int, loadCount: Int): List<T> {
+        val ids = itemIds(startPosition, loadCount)
+        val sqLiteQuery = querySqlGenerator(ids)
+        val cursor = db.query(sqLiteQuery)
+        try {
+            return convertRows(cursor)
+        } finally {
+            cursor.close()
+            sqLiteQuery.release()
+        }
     }
 
     private fun itemIds(startPosition: Int, loadCount: Int): String {
@@ -122,18 +117,13 @@ abstract class FastLimitOffsetDataSource<T>(
         }
     }
 
-    /**
-     * Return the rows from startPos to startPos + loadCount
-     */
-    private fun loadRange(startPosition: Int, loadCount: Int): List<T> {
-        val ids = itemIds(startPosition, loadCount)
-        val sqLiteQuery = querySqlGenerator(ids)
-        val cursor = db.query(sqLiteQuery)
-        try {
-            return convertRows(cursor)
-        } finally {
-            cursor.close()
-            sqLiteQuery.release()
+
+    init {
+        observer = object : InvalidationTracker.Observer(tables) {
+            override fun onInvalidated(tables: Set<String>) {
+                invalidate()
+            }
         }
+        db.invalidationTracker.addWeakObserver(observer)
     }
 }

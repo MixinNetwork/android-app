@@ -26,21 +26,20 @@ interface ConversationDao : BaseDao<Conversation> {
             ou.identity_number AS ownerIdentityNumber, ou.mute_until AS ownerMuteUntil, ou.app_id AS appId,
             m.content AS content, m.category AS contentType, m.created_at AS createdAt, m.media_url AS mediaUrl,
             m.user_id AS senderId, m.action AS actionName, m.status AS messageStatus,
-            mu.full_name AS senderFullName, s.type AS SnapshotType,
+            mu.full_name AS senderFullName,
             pu.full_name AS participantFullName, pu.user_id AS participantUserId,
             (SELECT count(1) FROM message_mentions me WHERE me.conversation_id = c.conversation_id AND me.has_read = 0) as mentionCount,  
-            mm.mentions AS mentions, em.expire_at AS expireAt 
+            mm.mentions AS mentions 
             FROM conversations c
             INNER JOIN users ou ON ou.user_id = c.owner_id
             LEFT JOIN messages m ON c.last_message_id = m.id
             LEFT JOIN message_mentions mm ON mm.message_id = m.id
             LEFT JOIN users mu ON mu.user_id = m.user_id
-            LEFT JOIN snapshots s ON s.snapshot_id = m.snapshot_id
             LEFT JOIN users pu ON pu.user_id = m.participant_id 
-            LEFT JOIN expired_messages em ON c.last_message_id = em.message_id
             """
     }
 
+    // Read SQL
     @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
     @Query(
         """$PREFIX_CONVERSATION_ITEM
@@ -116,9 +115,6 @@ interface ConversationDao : BaseDao<Conversation> {
     @Query("SELECT c.draft FROM conversations c WHERE c.conversation_id = :conversationId")
     suspend fun getConversationDraftById(conversationId: String): String?
 
-    @Query("UPDATE conversations SET draft = :text WHERE conversation_id = :conversationId AND (draft ISNULL OR draft != :text)")
-    suspend fun saveDraft(conversationId: String, text: String)
-
     @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
     @Query(
         "SELECT c.conversation_id AS conversationId, c.icon_url AS groupIconUrl, c.category AS category, " +
@@ -132,6 +128,49 @@ interface ConversationDao : BaseDao<Conversation> {
     )
     fun getConversationItem(conversationId: String): ConversationItem?
 
+    @Query("SELECT icon_url FROM conversations WHERE conversation_id = :conversationId")
+    fun getGroupIconUrl(conversationId: String): String?
+
+    @Query(
+        """
+        SELECT c.conversation_id, c.owner_id, c.category, c.icon_url, c.name, u.identity_number,u.full_name, u.avatar_url, u.is_verified 
+        FROM conversations c INNER JOIN users u ON u.user_id = c.owner_id WHERE c.category IS NOT NULL 
+        """
+    )
+    suspend fun getConversationStorageUsage(): List<ConversationStorageUsage>
+
+    @Query(
+        """SELECT c.conversation_id, u.app_id, a.capabilities FROM conversations c
+        INNER JOIN users u ON c.owner_id = u.user_id
+        LEFT JOIN participants p ON p.conversation_id = c.conversation_id
+        LEFT JOIN apps a ON a.app_id = u.app_id
+        WHERE p.user_id = :userId
+        """
+    )
+    fun getConversationsByUserId(userId: String): List<ParticipantSessionMinimal>
+
+    @Query("SELECT announcement FROM conversations WHERE conversation_id = :conversationId ")
+    suspend fun getAnnouncementByConversationId(conversationId: String): String?
+
+    @Query(
+        """
+        SELECT sum(unseen_message_count) FROM conversations
+        """
+    )
+    fun observeAllConversationUnread(): LiveData<Int?>
+
+    @Query(
+        """
+        SELECT unseen_message_count FROM conversations WHERE conversation_id NOT IN (SELECT conversation_id FROM circle_conversations WHERE circle_id = :circleId)
+        AND unseen_message_count > 0 LIMIT 1
+        """
+    )
+    fun hasUnreadMessage(circleId: String): LiveData<Int?>
+
+    @Query("SELECT * FROM conversations WHERE owner_id =:ownerId AND category = 'CONTACT'")
+    fun findContactConversationByOwnerId(ownerId: String): Conversation?
+
+    // Update SQL
     @Query("UPDATE conversations SET code_url = :codeUrl WHERE conversation_id = :conversationId")
     suspend fun updateCodeUrl(conversationId: String, codeUrl: String)
 
@@ -172,49 +211,10 @@ interface ConversationDao : BaseDao<Conversation> {
     @Query("UPDATE conversations SET icon_url = :iconUrl WHERE conversation_id = :conversationId")
     fun updateGroupIconUrl(conversationId: String, iconUrl: String)
 
-    @Query("SELECT icon_url FROM conversations WHERE conversation_id = :conversationId")
-    fun getGroupIconUrl(conversationId: String): String?
+    @Query("UPDATE conversations SET draft = :text WHERE conversation_id = :conversationId AND draft != :text")
+    suspend fun saveDraft(conversationId: String, text: String)
 
-    @Query(
-        """
-        SELECT c.conversation_id, c.owner_id, c.category, c.icon_url, c.name, u.identity_number,u.full_name, u.avatar_url, u.is_verified 
-        FROM conversations c INNER JOIN users u ON u.user_id = c.owner_id WHERE c.category IS NOT NULL 
-        """
-    )
-    suspend fun getConversationStorageUsage(): List<ConversationStorageUsage>
-
-    @Query(
-        """select c.conversation_id, u.app_id, a.capabilities from conversations c
-        inner join users u on c.owner_id = u.user_id
-        left join participants p on p.conversation_id = c.conversation_id
-        left join apps a on a.app_id = u.app_id
-        where p.user_id = :userId
-        """
-    )
-    fun getConversationsByUserId(userId: String): List<ParticipantSessionMinimal>
-
-    @Query("SELECT announcement FROM conversations WHERE conversation_id = :conversationId ")
-    suspend fun getAnnouncementByConversationId(conversationId: String): String?
-
-    @Query(
-        """
-        SELECT sum(unseen_message_count) FROM conversations
-        """
-    )
-    fun observeAllConversationUnread(): LiveData<Int?>
-
-    @Query(
-        """
-        SELECT unseen_message_count FROM conversations WHERE conversation_id NOT IN (SELECT conversation_id FROM circle_conversations WHERE circle_id = :circleId)
-        AND unseen_message_count > 0 LIMIT 1
-        """
-    )
-    fun hasUnreadMessage(circleId: String): LiveData<Int?>
-
-    @Query("SELECT * FROM conversations WHERE owner_id =:ownerId AND category = 'CONTACT'")
-    fun findContactConversationByOwnerId(ownerId: String): Conversation?
-
-    // DELETE
+    // Delete SQL
     @Query("DELETE FROM conversations WHERE conversation_id = :conversationId")
     suspend fun deleteConversationById(conversationId: String)
 
