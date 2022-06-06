@@ -637,4 +637,6 @@ internal constructor(
     }
 
     suspend fun disappear(conversationId: String, disappearRequest: DisappearRequest) = conversationService.disappear(conversationId, disappearRequest)
+
+    suspend fun exists(messageId: String) = messageDao.exists(messageId)
 }
