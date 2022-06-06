@@ -3,6 +3,7 @@ package one.mixin.android.ui.address
 import android.content.Context
 import android.content.Intent
 import androidx.navigation.NavController
+import androidx.navigation.fragment.NavHostFragment
 import androidx.recyclerview.widget.RecyclerView
 import androidx.test.core.app.ActivityScenario
 import androidx.test.core.app.ApplicationProvider
@@ -129,7 +130,6 @@ class AddressAddFragmentTest {
             putExtra(CaptureActivity.ARGS_FOR_SCAN_RESULT, "abc")
         }
         val testRegistry = TestRegistry(expectedResult)
-        var isAddr = false
         launchFragmentInHiltContainer(
             R.style.AppTheme_NoActionBar,
             {
@@ -139,27 +139,21 @@ class AddressAddFragmentTest {
             },
             {
                 this.getScanResult.launch(Pair(CaptureActivity.ARGS_FOR_SCAN_RESULT, true))
-
-                isAddr = this.isAddr
             }
         )
 
-        if (isAddr) {
-            val expect = if (isIcapAddress("abc")) {
-                decodeICAP("abc")
-            } else {
-                "abc"
-            }
-            onView(withId(R.id.addr_et)).check(matches(withText(expect)))
+        val expect = if (isIcapAddress("abc")) {
+            decodeICAP("abc")
         } else {
-            onView(withId(R.id.tag_et)).check(matches(withText("abc")))
+            "abc"
         }
+        onView(withId(R.id.addr_et)).check(matches(withText(expect)))
     }
 
     private fun go2AddressAdd(action: (NavController?, ActivityScenario<WalletActivity>) -> Unit) {
         var navController: NavController? = null
         walletRule.activityScenario = ActivityScenario.launch(WalletActivity::class.java).onActivity {
-            navController = it.navController
+            navController = (it.supportFragmentManager.findFragmentById(R.id.container) as NavHostFragment).navController
         }
         onView(withId(R.id.coins_rv))
             .perform(RecyclerViewActions.actionOnItemAtPosition<RecyclerView.ViewHolder>(1, click()))
@@ -190,9 +184,9 @@ class AddressAddFragmentTest {
                         withHint(
                             ctx.getString(
                                 if (asset.chainId == Constants.ChainId.RIPPLE_CHAIN_ID) {
-                                    R.string.wallet_transfer_tag
+                                    R.string.Tag
                                 } else {
-                                    R.string.withdrawal_addr_memo_hint
+                                    R.string.withdrawal_memo
                                 }
                             )
                         )

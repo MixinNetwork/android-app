@@ -65,7 +65,7 @@ class AddressAddFragment() : BaseFragment(R.layout.fragment_address_add) {
         resultRegistry = testRegistry
     }
 
-    private lateinit var getScanResult: ActivityResultLauncher<Pair<String, Boolean>>
+    lateinit var getScanResult: ActivityResultLauncher<Pair<String, Boolean>>
     private lateinit var getScanMemoResult: ActivityResultLauncher<Pair<String, Boolean>>
     private val binding by viewBinding(FragmentAddressAddBinding::bind)
     override fun onAttach(context: Context) {
