@@ -25,6 +25,7 @@ import one.mixin.android.Constants.ALLOW_INTERVAL
 import one.mixin.android.Constants.API.FOURSQUARE_URL
 import one.mixin.android.Constants.API.GIPHY_URL
 import one.mixin.android.Constants.API.Mixin_URL
+import one.mixin.android.Constants.API.TIP_URL
 import one.mixin.android.Constants.API.URL
 import one.mixin.android.Constants.DNS
 import one.mixin.android.MixinApplication
@@ -46,6 +47,7 @@ import one.mixin.android.api.service.GiphyService
 import one.mixin.android.api.service.MessageService
 import one.mixin.android.api.service.ProvisioningService
 import one.mixin.android.api.service.SignalKeyService
+import one.mixin.android.api.service.TipNodeService
 import one.mixin.android.api.service.TipService
 import one.mixin.android.api.service.UserService
 import one.mixin.android.crypto.EncryptedProtocol
@@ -303,6 +305,11 @@ object AppModule {
 
     @Singleton
     @Provides
+    fun provideTipService(retrofit: Retrofit) =
+        retrofit.create(TipService::class.java) as TipService
+
+    @Singleton
+    @Provides
     fun provideContentResolver(app: Application) = app.contentResolver as ContentResolver
 
     @Provides
@@ -357,11 +364,6 @@ object AppModule {
     ): ChatWebSocket =
         ChatWebSocket(okHttp, accountService, mixinDatabase, jobManager, linkState)
 
-    @Singleton
-    @Provides
-    fun provideTipService(retrofit: Retrofit) =
-        retrofit.create(TipService::class.java) as TipService
-
     @Provides
     @Singleton
     fun provideGiphyService(httpLoggingInterceptor: HttpLoggingInterceptor?): GiphyService {
@@ -378,6 +380,24 @@ object AppModule {
             .build()
         return retrofit.create(GiphyService::class.java)
     }
+
+    @Provides
+    @Singleton
+    fun provideTipNodeService(httpLoggingInterceptor: HttpLoggingInterceptor?): TipNodeService {
+        val client = OkHttpClient.Builder().apply {
+            httpLoggingInterceptor?.let { interceptor ->
+                addNetworkInterceptor(interceptor)
+            }
+        }.build()
+        val retrofit = Retrofit.Builder()
+            .baseUrl(TIP_URL)
+            .addConverterFactory(GsonConverterFactory.create())
+            .addCallAdapterFactory(CoroutineCallAdapterFactory())
+            .client(client)
+            .build()
+        return retrofit.create(TipNodeService::class.java)
+    }
+
 
     @Provides
     @Singleton

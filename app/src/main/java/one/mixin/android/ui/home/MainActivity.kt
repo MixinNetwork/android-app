@@ -62,6 +62,7 @@ import one.mixin.android.R
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.SessionRequest
 import one.mixin.android.api.service.ConversationService
+import one.mixin.android.api.service.TipNodeService
 import one.mixin.android.api.service.TipService
 import one.mixin.android.api.service.UserService
 import one.mixin.android.crypto.Base64
@@ -162,6 +163,9 @@ class MainActivity : BlazeBaseActivity() {
 
     @Inject
     lateinit var tipService: TipService
+
+    @Inject
+    lateinit var tipNodeService: TipNodeService
 
     @Inject
     lateinit var conversationDao: ConversationDao
@@ -421,7 +425,7 @@ class MainActivity : BlazeBaseActivity() {
             // check
             handleMixinResponse(
                 invokeNetwork = {
-                    tipService.tipEphermerals()
+                    tipNodeService.tipConfig()
                 },
                 successBlock = {
                     Timber.e(it.data?.toString())
