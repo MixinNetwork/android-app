@@ -1,5 +1,8 @@
 package one.mixin.android.util
 
+import com.lambdapioneer.argon2kt.Argon2Kt
+import com.lambdapioneer.argon2kt.Argon2KtResult
+import com.lambdapioneer.argon2kt.Argon2Mode
 import net.i2p.crypto.eddsa.EdDSAPublicKey
 import net.i2p.crypto.eddsa.spec.EdDSAPublicKeySpec
 import one.mixin.android.crypto.ed25519
@@ -22,5 +25,31 @@ class CryptoUtilTest {
         assert(curve25519PrivateKey.contentEquals(targetPrivate))
         val curve25519PublicKey = publicKeyToCurve25519(publicKey)
         assert(curve25519PublicKey.contentEquals(targetPublic))
+    }
+
+    @Test
+    fun `test agron2`(){
+        val argon2Kt = Argon2Kt()
+        val password = "223388"
+
+        val hashResult : Argon2KtResult = argon2Kt.hash(
+            mode = Argon2Mode.ARGON2_I,
+            password = password.toByteArray(),
+            salt = "somesalt".toByteArray(),
+            tCostInIterations = 1,
+            mCostInKibibyte = 1024,
+            hashLengthInBytes = 32
+        )
+
+        println("Raw hash: ${hashResult.rawHashAsHexadecimal()}")
+        println("Encoded string: ${hashResult.encodedOutputAsString()}")
+
+        val verificationResult = argon2Kt.verify(
+            mode = Argon2Mode.ARGON2_I,
+            encoded = hashResult.encodedOutputAsString(),
+            password = password.toByteArray()
+        )
+        println(verificationResult)
+        assert(verificationResult)
     }
 }
