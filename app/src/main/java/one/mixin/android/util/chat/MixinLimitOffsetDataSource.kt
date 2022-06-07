@@ -65,10 +65,12 @@ abstract class MixinLimitOffsetDataSource<T> protected constructor(
                 callback.onResult(list, firstLoadPosition, firstLoadPosition + list.size)
             } catch (iae: IllegalArgumentException) {
                 // workaround with paging incorrect tiling
-                val message = ("MixinLimitOffsetDataSource "
-                    + "firstLoadPosition: " + firstLoadPosition
-                    + ", list size: " + list.size
-                    + ", count: " + totalCount)
+                val message = (
+                    "MixinLimitOffsetDataSource " +
+                        "firstLoadPosition: " + firstLoadPosition +
+                        ", list size: " + list.size +
+                        ", count: " + totalCount
+                    )
                 reportException(message, iae)
                 Timber.w(iae)
             }
@@ -116,7 +118,6 @@ abstract class MixinLimitOffsetDataSource<T> protected constructor(
             offsetQuery.release()
         }
     }
-
 
     init {
         observer = object : InvalidationTracker.Observer(tables) {
