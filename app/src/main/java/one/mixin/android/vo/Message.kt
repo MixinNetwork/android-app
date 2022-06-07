@@ -127,11 +127,6 @@ class Message(
     @ColumnInfo(name = "name")
     val name: String? = null,
 
-    @Deprecated(
-        "Deprecated at database version 15",
-        ReplaceWith("@{link sticker_id}", "one.mixin.android.vo.Message.sticker_id"),
-        DeprecationLevel.ERROR
-    )
     @SerializedName("album_id")
     @ColumnInfo(name = "album_id")
     val albumId: String? = null,
