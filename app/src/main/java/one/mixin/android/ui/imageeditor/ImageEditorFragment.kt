@@ -325,6 +325,21 @@ class ImageEditorFragment : BaseFragment(), TextEntryDialogFragment.Controller {
     private fun renderAndSave() = lifecycleScope.launch {
         if (viewDestroyed()) return@launch
 
+        fun finishWithUri(uri: Uri) {
+            val result = Intent().apply {
+                putExtra(ARGS_EDITOR_RESULT, uri)
+            }
+            requireActivity().apply {
+                setResult(Activity.RESULT_OK, result)
+                finish()
+            }
+        }
+
+        if (undoAvailable.not()) {
+            finishWithUri(imageUri)
+            return@launch
+        }
+
         val dialog = indeterminateProgressDialog(message = R.string.Please_wait_a_bit).apply {
             setCancelable(false)
         }
@@ -343,13 +358,7 @@ class ImageEditorFragment : BaseFragment(), TextEntryDialogFragment.Controller {
             return@launch
         }
 
-        val result = Intent().apply {
-            putExtra(ARGS_EDITOR_RESULT, file.toUri())
-        }
-        requireActivity().apply {
-            setResult(Activity.RESULT_OK, result)
-            finish()
-        }
+        finishWithUri(file.toUri())
     }
 
     override fun onTextEntryDialogDismissed(hasText: Boolean) {
