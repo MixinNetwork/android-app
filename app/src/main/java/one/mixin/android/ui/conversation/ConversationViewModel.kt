@@ -134,7 +134,8 @@ internal constructor(
             conversationRepository.getMessages(
                 conversationId,
                 if (firstKeyToLoad > FIXED_LOAD_SIZE) {
-                    firstKeyToLoad
+                    // Multiple Page Size, round up
+                    ((firstKeyToLoad + PAGE_SIZE - 1) / PAGE_SIZE) * PAGE_SIZE
                 } else {
                     FIXED_LOAD_SIZE
                 }
