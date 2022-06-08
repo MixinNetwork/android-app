@@ -28,7 +28,6 @@ class AppAuthActivity : BaseActivity() {
         fun show(activity: Activity) {
             Intent(activity, AppAuthActivity::class.java).apply {
                 data = if (activity is UrlInterpreterActivity) activity.intent.data else null
-                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                 activity.startActivity(this)
             }
         }
