@@ -14,7 +14,9 @@ import com.mattprecious.swirl.SwirlView
 import one.mixin.android.Constants
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
+import one.mixin.android.RxBus
 import one.mixin.android.databinding.ActivityAppAuthBinding
+import one.mixin.android.event.AppAuthEvent
 import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.putInt
@@ -28,6 +30,7 @@ class AppAuthActivity : BaseActivity() {
         fun show(activity: Activity) {
             Intent(activity, AppAuthActivity::class.java).apply {
                 data = if (activity is UrlInterpreterActivity) activity.intent.data else null
+                addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT)
                 activity.startActivity(this)
             }
         }
@@ -104,6 +107,8 @@ class AppAuthActivity : BaseActivity() {
             UrlInterpreterActivity.show(this, data)
         }
         finish()
+
+        RxBus.publish(AppAuthEvent())
     }
 
     private val resetSwirlRunnable = Runnable {
