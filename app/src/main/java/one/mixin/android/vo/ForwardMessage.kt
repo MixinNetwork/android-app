@@ -250,7 +250,8 @@ fun generateForwardMessage(m: Message): ForwardMessage? {
         m.category.endsWith("_STICKER") -> {
             val stickerData = StickerMessagePayload(
                 name = m.name,
-                stickerId = m.stickerId
+                stickerId = m.stickerId,
+                albumId = m.albumId,
             )
             ForwardMessage(ForwardCategory.Sticker, GsonHelper.customGson.toJson(stickerData), m.id)
         }
