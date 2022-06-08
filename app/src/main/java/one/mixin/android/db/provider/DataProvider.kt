@@ -65,16 +65,20 @@ class DataProvider {
                     val countStatement = RoomSQLiteQuery.acquire("SELECT count(1) FROM messages m INNER JOIN users u ON m.user_id = u.user_id WHERE conversation_id = ?", 1).apply {
                         bindString(1, conversationId)
                     }
-                    val offsetStatement = RoomSQLiteQuery.acquire("SELECT m.rowid FROM messages m INNER JOIN users u ON m.user_id = u.user_id WHERE conversation_id = ? ORDER BY m.created_at DESC LIMIT ? OFFSET ?", 3).apply {
+                    val offsetStatement = RoomSQLiteQuery.acquire("SELECT m.id FROM messages m INNER JOIN users u ON m.user_id = u.user_id WHERE conversation_id = ? ORDER BY m.created_at DESC LIMIT ? OFFSET ?", 3).apply {
                         bindString(1, conversationId)
                     }
-                    return MixinMessageItemLimitOffsetDataSource(
-                        database,
-                        countStatement,
-                        offsetStatement,
-                        fastCountCallback
-                    ) { ids ->
-                        RoomSQLiteQuery.acquire("$sql WHERE m.rowid IN ($ids) ORDER BY m.created_at DESC", 0)
+                    val querySqlGenerator = fun(ids: String): RoomSQLiteQuery {
+                        return RoomSQLiteQuery.acquire("$sql WHERE m.id IN ($ids) ORDER BY m.created_at DESC", 0)
+                    }
+                    return object : FastLimitOffsetDataSource<MessageItem, String>(database, countStatement, offsetStatement, fastCountCallback, querySqlGenerator) {
+                        override fun convertRows(cursor: Cursor?): MutableList<MessageItem> {
+                            return convertToMessageItems(cursor)
+                        }
+
+                        override fun getUniqueId(cursor: Cursor): String {
+                            return cursor.getString(0)
+                        }
                     }
                 }
             }
@@ -441,18 +445,6 @@ class DataProvider {
                     return CancellationMessageDetailItemLimitOffsetDataSource(database, statement, countStatement, cancellationSignal)
                 }
             }
-    }
-
-    private class MixinMessageItemLimitOffsetDataSource(
-        database: MixinDatabase,
-        countStatement: RoomSQLiteQuery,
-        offsetStatement: RoomSQLiteQuery,
-        fastCountCallback: () -> Int?,
-        querySqlGenerator: (String) -> RoomSQLiteQuery
-    ) : FastLimitOffsetDataSource<MessageItem>(database, countStatement, offsetStatement, fastCountCallback, querySqlGenerator) {
-        override fun convertRows(cursor: Cursor?): MutableList<MessageItem> {
-            return convertToMessageItems(cursor)
-        }
     }
 
     private class CancellationMessageDetailItemLimitOffsetDataSource(
