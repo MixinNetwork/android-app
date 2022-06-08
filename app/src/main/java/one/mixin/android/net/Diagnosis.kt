@@ -79,6 +79,11 @@ fun diagnosis(context: Context, diagnosisCallback: (String) -> Unit) {
                 val pingResult = ping(ipAddr)
                 Timber.i("Ping $ipAddr result: $pingResult")
                 result.append("$prefix Ping: [$ipAddr] [${if (pingResult.isNullOrEmpty()) "FAILURE" else "SUCCESS"}]").appendLine()
+
+                pingResult?.let { r ->
+                    val statistics = r.substring(r.lastIndexOf("---"))
+                    result.append(statistics).appendLine()
+                }
             }
         }
         diagnosisCallback(result.appendLine().toString())
@@ -87,7 +92,7 @@ fun diagnosis(context: Context, diagnosisCallback: (String) -> Unit) {
     diagnosisCallback(context.getString(R.string.Diagnosis_Complete))
 }
 
-fun ping(domain: String, count: Int = 1, timeout: Int = 10): String? {
+fun ping(domain: String, count: Int = 2, timeout: Int = 5): String? {
     val command = "/system/bin/ping -c $count -w $timeout $domain"
     var process: Process? = null
     try {
