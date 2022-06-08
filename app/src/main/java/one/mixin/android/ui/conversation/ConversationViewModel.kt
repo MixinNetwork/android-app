@@ -133,8 +133,8 @@ internal constructor(
         return FastLivePagedListBuilder(
             conversationRepository.getMessages(
                 conversationId,
-                if (firstKeyToLoad > PAGE_SIZE) {
-                    firstKeyToLoad + FIXED_LOAD_SIZE / 2
+                if (firstKeyToLoad > FIXED_LOAD_SIZE) {
+                    firstKeyToLoad
                 } else {
                     FIXED_LOAD_SIZE
                 }
@@ -591,7 +591,7 @@ internal constructor(
                     botsList = it
                 }
             }
-            if (botsList.isNullOrEmpty()) {
+            if (botsList.isEmpty()) {
                 defaultSharedPreferences.putString(Constants.Account.PREF_RECENT_USED_BOTS, userId)
                 return@launch
             }
