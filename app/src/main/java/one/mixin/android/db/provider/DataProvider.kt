@@ -147,13 +147,12 @@ class DataProvider {
                      INNER JOIN conversations c ON cc.conversation_id = c.conversation_id
                      INNER JOIN users ou ON ou.user_id = c.owner_id
                      WHERE c.category IS NOT NULL AND cc.circle_id = '$circleId'
-
                     """,
                         0
                     )
                     val offsetStatement = RoomSQLiteQuery.acquire(
                         """
-                        SELECT c.rowid FROM circle_conversations cc
+                        SELECT cc.rowid FROM circle_conversations cc
                         INNER JOIN conversations c ON cc.conversation_id = c.conversation_id
                         INNER JOIN circles ci ON ci.circle_id = cc.circle_id
                         INNER JOIN users ou ON ou.user_id = c.owner_id
@@ -172,7 +171,7 @@ class DataProvider {
                     val querySqlGenerator = fun(ids: String): RoomSQLiteQuery {
                         return RoomSQLiteQuery.acquire(
                             """
-                            $sql WHERE c.rowid IN ($ids)
+                            $sql WHERE cc.rowid IN ($ids)
                             ORDER BY cc.pin_time DESC, 
                             CASE 
                                 WHEN m.created_at is NULL THEN c.created_at
