@@ -156,10 +156,11 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
         super.onCreate()
         webSocket.setWebSocketObserver(this)
         webSocket.connect()
-        startFloodJob()
-        startAckJob()
-        startStatusJob()
-        startExpiredJob()
+        startObserveFlood()
+        startObserveAck()
+        startObserveStatus()
+        startObserveExpired()
+        runExpiredJob()
         networkUtil.setListener(this)
         if (disposable == null) {
             disposable = RxBus.listen(ExpiredEvent::class.java).observeOn(Schedulers.io())
@@ -204,10 +205,10 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
 
     override fun onDestroy() {
         super.onDestroy()
-        stopAckJob()
-        stopFloodJob()
-        stopStatusJob()
-        stopExpiredJob()
+        stopObserveAck()
+        stopObserveFlood()
+        stopObserveStatus()
+        stopObserveExpired()
         webSocket.disconnect()
         webSocket.setWebSocketObserver(null)
         networkUtil.unregisterListener()
@@ -271,11 +272,11 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
         startForeground(FOREGROUND_ID, builder.build())
     }
 
-    private fun startAckJob() {
+    private fun startObserveAck() {
         database.invalidationTracker.addObserver(ackObserver)
     }
 
-    private fun stopAckJob() {
+    private fun stopObserveAck() {
         database.invalidationTracker.removeObserver(ackObserver)
     }
 
@@ -354,11 +355,11 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
     private val messageDecrypt by lazy { DecryptMessage(lifecycleScope) }
     private val callMessageDecrypt by lazy { DecryptCallMessage(callState, lifecycleScope) }
 
-    private fun startFloodJob() {
+    private fun startObserveFlood() {
         database.invalidationTracker.addObserver(floodObserver)
     }
 
-    private fun stopFloodJob() {
+    private fun stopObserveFlood() {
         database.invalidationTracker.removeObserver(floodObserver)
     }
 
@@ -402,11 +403,11 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
         }
     }
 
-    private fun startStatusJob() {
+    private fun startObserveStatus() {
         database.invalidationTracker.addObserver(statusObserver)
     }
 
-    private fun stopStatusJob() {
+    private fun stopObserveStatus() {
         database.invalidationTracker.removeObserver(statusObserver)
     }
 
@@ -417,11 +418,11 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
         }
     }
 
-    private fun startExpiredJob() {
+    private fun startObserveExpired() {
         database.invalidationTracker.addObserver(expiredObserver)
     }
 
-    private fun stopExpiredJob() {
+    private fun stopObserveExpired() {
         database.invalidationTracker.removeObserver(expiredObserver)
     }
 
