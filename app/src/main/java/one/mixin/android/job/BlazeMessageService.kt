@@ -158,8 +158,9 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
         webSocket.connect()
         startFloodJob()
         startAckJob()
-        startStatusJob()
-        startExpiredJob()
+        startObsrveStatus()
+        startObserveExpired()
+        runExpiredJob()
         networkUtil.setListener(this)
         if (disposable == null) {
             disposable = RxBus.listen(ExpiredEvent::class.java).observeOn(Schedulers.io())
@@ -206,8 +207,8 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
         super.onDestroy()
         stopAckJob()
         stopFloodJob()
-        stopStatusJob()
-        stopExpiredJob()
+        stopObserveStatus()
+        stopObserveExpired()
         webSocket.disconnect()
         webSocket.setWebSocketObserver(null)
         networkUtil.unregisterListener()
@@ -402,11 +403,11 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
         }
     }
 
-    private fun startStatusJob() {
+    private fun startObsrveStatus() {
         database.invalidationTracker.addObserver(statusObserver)
     }
 
-    private fun stopStatusJob() {
+    private fun stopObserveStatus() {
         database.invalidationTracker.removeObserver(statusObserver)
     }
 
@@ -417,11 +418,11 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
         }
     }
 
-    private fun startExpiredJob() {
+    private fun startObserveExpired() {
         database.invalidationTracker.addObserver(expiredObserver)
     }
 
-    private fun stopExpiredJob() {
+    private fun stopObserveExpired() {
         database.invalidationTracker.removeObserver(expiredObserver)
     }
 
