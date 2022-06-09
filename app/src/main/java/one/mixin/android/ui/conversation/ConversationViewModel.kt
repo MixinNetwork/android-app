@@ -57,6 +57,7 @@ import one.mixin.android.util.Attachment
 import one.mixin.android.util.ControlledRunner
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.SINGLE_DB_THREAD
+import one.mixin.android.util.SINGLE_DRAFT_THREAD
 import one.mixin.android.util.chat.FastComputableLiveData
 import one.mixin.android.util.chat.FastLivePagedListBuilder
 import one.mixin.android.vo.AppCap
@@ -133,8 +134,9 @@ internal constructor(
         return FastLivePagedListBuilder(
             conversationRepository.getMessages(
                 conversationId,
-                if (firstKeyToLoad > PAGE_SIZE) {
-                    firstKeyToLoad + FIXED_LOAD_SIZE / 2
+                if (firstKeyToLoad > FIXED_LOAD_SIZE) {
+                    // Multiple Page Size, round up
+                    ((firstKeyToLoad + PAGE_SIZE - 1) / PAGE_SIZE) * PAGE_SIZE
                 } else {
                     FIXED_LOAD_SIZE
                 }
@@ -149,7 +151,9 @@ internal constructor(
     suspend fun findFirstUnreadMessageId(conversationId: String, offset: Int): String? =
         conversationRepository.findFirstUnreadMessageId(conversationId, offset)
 
-    suspend fun getConversationDraftById(id: String) = conversationRepository.getConversationDraftById(id)
+    suspend fun getConversationDraftById(id: String) = withContext(SINGLE_DRAFT_THREAD) {
+        conversationRepository.getConversationDraftById(id)
+    }
 
     fun getConversationById(id: String) = conversationRepository.getConversationById(id)
 
@@ -591,7 +595,7 @@ internal constructor(
                     botsList = it
                 }
             }
-            if (botsList.isNullOrEmpty()) {
+            if (botsList.isEmpty()) {
                 defaultSharedPreferences.putString(Constants.Account.PREF_RECENT_USED_BOTS, userId)
                 return@launch
             }

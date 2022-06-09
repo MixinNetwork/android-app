@@ -14,7 +14,7 @@ import timber.log.Timber
 
 @SuppressLint("RestrictedApi")
 @RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
-abstract class FastLimitOffsetDataSource<T>(
+abstract class FastLimitOffsetDataSource<T, S>(
     private val db: RoomDatabase,
     private val countQuery: RoomSQLiteQuery,
     private val offsetStatement: RoomSQLiteQuery,
@@ -112,8 +112,8 @@ abstract class FastLimitOffsetDataSource<T>(
         val ids = mutableListOf<String>()
         try {
             while (cursor.moveToNext()) {
-                val rowid = cursor.getLong(0)
-                ids.add("'$rowid'")
+                val id = getUniqueId(cursor)
+                ids.add("'$id'")
             }
             return ids.joinToString()
         } finally {
@@ -121,6 +121,8 @@ abstract class FastLimitOffsetDataSource<T>(
             offsetQuery.release()
         }
     }
+
+    abstract fun getUniqueId(cursor: Cursor): S
 
     /**
      * Return the rows from startPos to startPos + loadCount
