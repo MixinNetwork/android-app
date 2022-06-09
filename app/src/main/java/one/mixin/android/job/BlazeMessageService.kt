@@ -156,9 +156,9 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
         super.onCreate()
         webSocket.setWebSocketObserver(this)
         webSocket.connect()
-        startFloodJob()
-        startAckJob()
-        startObsrveStatus()
+        startObserveFlood()
+        startObserveAck()
+        startObserveStatus()
         startObserveExpired()
         runExpiredJob()
         networkUtil.setListener(this)
@@ -205,8 +205,8 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
 
     override fun onDestroy() {
         super.onDestroy()
-        stopAckJob()
-        stopFloodJob()
+        stopObserveAck()
+        stopObserveFlood()
         stopObserveStatus()
         stopObserveExpired()
         webSocket.disconnect()
@@ -272,11 +272,11 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
         startForeground(FOREGROUND_ID, builder.build())
     }
 
-    private fun startAckJob() {
+    private fun startObserveAck() {
         database.invalidationTracker.addObserver(ackObserver)
     }
 
-    private fun stopAckJob() {
+    private fun stopObserveAck() {
         database.invalidationTracker.removeObserver(ackObserver)
     }
 
@@ -355,11 +355,11 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
     private val messageDecrypt by lazy { DecryptMessage(lifecycleScope) }
     private val callMessageDecrypt by lazy { DecryptCallMessage(callState, lifecycleScope) }
 
-    private fun startFloodJob() {
+    private fun startObserveFlood() {
         database.invalidationTracker.addObserver(floodObserver)
     }
 
-    private fun stopFloodJob() {
+    private fun stopObserveFlood() {
         database.invalidationTracker.removeObserver(floodObserver)
     }
 
@@ -403,7 +403,7 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
         }
     }
 
-    private fun startObsrveStatus() {
+    private fun startObserveStatus() {
         database.invalidationTracker.addObserver(statusObserver)
     }
 
