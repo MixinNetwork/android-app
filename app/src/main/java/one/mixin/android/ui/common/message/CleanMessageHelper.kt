@@ -1,8 +1,7 @@
 package one.mixin.android.ui.common.message
 
 import one.mixin.android.Constants.DB_DELETE_LIMIT
-import one.mixin.android.Constants.DB_DELETE_MEDIA_THRESHOLD
-import one.mixin.android.Constants.DB_DELETE_THRESHOLD
+import one.mixin.android.Constants.DB_DELETE_MEDIA_LIMIT
 import one.mixin.android.MixinApplication
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.deleteMessageById
@@ -30,14 +29,14 @@ class CleanMessageHelper @Inject internal constructor(private val jobManager: Mi
         do {
             messageList = appDatabase.messageDao().getMediaMessageMinimalByConversationId(
                 conversationId,
-                DB_DELETE_MEDIA_THRESHOLD, DB_DELETE_MEDIA_THRESHOLD * repeatTimes++
+                DB_DELETE_MEDIA_LIMIT, DB_DELETE_MEDIA_LIMIT * repeatTimes++
             )
             messageList.mapNotNull {
                 it.absolutePath(MixinApplication.appContext, conversationId, it.mediaUrl)
             }.apply {
                 jobManager.addJobInBackground(AttachmentDeleteJob(*this.toTypedArray()))
             }
-        } while (messageList.size > DB_DELETE_MEDIA_THRESHOLD)
+        } while (messageList.size > DB_DELETE_MEDIA_LIMIT)
         // DELETE transcript message
         var messageIds: List<String>
         repeatTimes = 0
@@ -47,12 +46,12 @@ class CleanMessageHelper @Inject internal constructor(private val jobManager: Mi
                 DB_DELETE_LIMIT, DB_DELETE_LIMIT * repeatTimes++
             )
             jobManager.addJobInBackground(TranscriptDeleteJob(messageIds))
-        } while (messageIds.size > DB_DELETE_MEDIA_THRESHOLD)
+        } while (messageIds.size > DB_DELETE_LIMIT)
 
         // DELETE message
         val deleteCount = appDatabase.messageDao().countDeleteMessageByConversationId(conversationId)
         val lastRowId = appDatabase.messageDao().findLastMessageRowId(conversationId) ?: return
-        if (deleteCount > DB_DELETE_THRESHOLD) {
+        if (deleteCount > DB_DELETE_LIMIT) {
             jobManager.addJobInBackground(MessageDeleteJob(conversationId, lastRowId, deleteConversation = deleteConversation))
         } else {
             val ids = appDatabase.messageDao().getMessageIdsByConversationId(conversationId, lastRowId)

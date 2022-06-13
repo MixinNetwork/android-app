@@ -9,7 +9,7 @@ import one.mixin.android.util.chat.InvalidateFlow
 class MessageDeleteJob(
     private val conversationId: String,
     private val lastRowId: Long,
-    private val deleteConversation:Boolean
+    private val deleteConversation: Boolean
 ) :
     BaseJob(Params(PRIORITY_UI_HIGH).addTags(GROUP).groupBy("message_delete").persist()) {
 

@@ -178,7 +178,7 @@ fun MixinDatabase.deleteMessageById(messageId: String) {
     }
 }
 
-fun MixinDatabase.deleteMessageByIds(messageIds: List<String>){
+fun MixinDatabase.deleteMessageByIds(messageIds: List<String>) {
     runInTransaction {
         pinMessageDao().deleteByIds(messageIds)
         mentionMessageDao().deleteMessage(messageIds)
