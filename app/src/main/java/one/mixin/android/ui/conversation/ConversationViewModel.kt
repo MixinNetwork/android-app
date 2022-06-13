@@ -52,6 +52,7 @@ import one.mixin.android.repository.AssetRepository
 import one.mixin.android.repository.ConversationRepository
 import one.mixin.android.repository.UserRepository
 import one.mixin.android.session.Session
+import one.mixin.android.ui.common.message.CleanMessageHelper
 import one.mixin.android.ui.common.message.SendMessageHelper
 import one.mixin.android.util.Attachment
 import one.mixin.android.util.ControlledRunner
@@ -83,7 +84,6 @@ import one.mixin.android.vo.StickerAlbumAdded
 import one.mixin.android.vo.StickerAlbumOrder
 import one.mixin.android.vo.TranscriptMessage
 import one.mixin.android.vo.User
-import one.mixin.android.vo.absolutePath
 import one.mixin.android.vo.createAckJob
 import one.mixin.android.vo.createConversation
 import one.mixin.android.vo.encryptedCategory
@@ -95,7 +95,6 @@ import one.mixin.android.vo.isEncrypted
 import one.mixin.android.vo.isGroupConversation
 import one.mixin.android.vo.isImage
 import one.mixin.android.vo.isSignal
-import one.mixin.android.vo.isTranscript
 import one.mixin.android.vo.isVideo
 import one.mixin.android.webrtc.SelectItem
 import one.mixin.android.websocket.AudioMessagePayload
@@ -121,7 +120,8 @@ internal constructor(
     private val jobManager: MixinJobManager,
     private val assetRepository: AssetRepository,
     private val accountRepository: AccountRepository,
-    private val messenger: SendMessageHelper
+    private val messenger: SendMessageHelper,
+    private val cleanMessageHelper: CleanMessageHelper
 ) : ViewModel() {
 
     fun getMessages(conversationId: String, firstKeyToLoad: Int = 0): FastComputableLiveData<PagedList<MessageItem>> {
@@ -455,19 +455,7 @@ internal constructor(
 
     fun deleteMessages(list: List<MessageItem>) {
         viewModelScope.launch(SINGLE_DB_THREAD) {
-            list.forEach { item ->
-                conversationRepository.deleteMessage(
-                    item.messageId,
-                    item.conversationId,
-                    item.absolutePath(),
-                    item.mediaStatus == MediaStatus.DONE.name
-                )
-                if (item.isTranscript()) {
-                    conversationRepository.deleteTranscriptByMessageId(item.messageId)
-                }
-                jobManager.cancelJobByMixinJobId(item.messageId)
-                notificationManager.cancel(item.userId.hashCode())
-            }
+            cleanMessageHelper.deleteMessageItems(list)
         }
     }
 

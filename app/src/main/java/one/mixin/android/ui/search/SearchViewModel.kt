@@ -28,6 +28,7 @@ import one.mixin.android.repository.AccountRepository
 import one.mixin.android.repository.AssetRepository
 import one.mixin.android.repository.ConversationRepository
 import one.mixin.android.repository.UserRepository
+import one.mixin.android.ui.common.message.CleanMessageHelper
 import one.mixin.android.util.ControlledRunner
 import one.mixin.android.vo.AssetItem
 import one.mixin.android.vo.ChatMinimal
@@ -48,6 +49,7 @@ internal constructor(
     val assetRepository: AssetRepository,
     val accountRepository: AccountRepository,
     val jobManager: MixinJobManager,
+    val cleanMessageHelper: CleanMessageHelper
 ) : ViewModel() {
 
     val messageControlledRunner = ControlledRunner<List<SearchMessageItem>?>()
@@ -128,7 +130,7 @@ internal constructor(
         if (ids.isNotEmpty()) {
             jobManager.addJobInBackground(TranscriptDeleteJob(ids))
         }
-        conversationRepository.deleteConversationById(conversationId)
+        cleanMessageHelper.deleteMessageByConversationId(conversationId)
         callback.invoke()
     }
 

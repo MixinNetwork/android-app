@@ -40,6 +40,7 @@ import one.mixin.android.repository.ConversationRepository
 import one.mixin.android.repository.UserRepository
 import one.mixin.android.session.Session
 import one.mixin.android.session.encryptPin
+import one.mixin.android.ui.common.message.CleanMessageHelper
 import one.mixin.android.vo.Account
 import one.mixin.android.vo.Address
 import one.mixin.android.vo.App
@@ -64,7 +65,8 @@ class BottomSheetViewModel @Inject internal constructor(
     private val jobManager: MixinJobManager,
     private val userRepository: UserRepository,
     private val assetRepository: AssetRepository,
-    private val conversationRepo: ConversationRepository
+    private val conversationRepo: ConversationRepository,
+    private val cleanMessageHelper: CleanMessageHelper
 ) : ViewModel() {
     suspend fun searchCode(code: String) = withContext(Dispatchers.IO) {
         accountRepository.searchCode(code)
@@ -230,7 +232,7 @@ class BottomSheetViewModel @Inject internal constructor(
     }
 
     fun deleteMessageByConversationId(conversationId: String) = viewModelScope.launch(Dispatchers.IO) {
-        conversationRepo.deleteMessageByConversationId(conversationId)
+        cleanMessageHelper.deleteMessageByConversationId(conversationId)
     }
 
     fun exitGroup(conversationId: String) {
@@ -247,7 +249,7 @@ class BottomSheetViewModel @Inject internal constructor(
         if (transIds.isNotEmpty()) {
             jobManager.addJobInBackground(TranscriptDeleteJob(transIds))
         }
-        conversationRepo.deleteConversationById(conversationId)
+        cleanMessageHelper.deleteMessageByConversationId(conversationId)
     }
 
     fun updateGroup(

@@ -25,6 +25,7 @@ import one.mixin.android.job.TranscriptDeleteJob
 import one.mixin.android.repository.AssetRepository
 import one.mixin.android.repository.ConversationRepository
 import one.mixin.android.repository.UserRepository
+import one.mixin.android.ui.common.message.CleanMessageHelper
 import one.mixin.android.vo.Circle
 import one.mixin.android.vo.CircleConversation
 import one.mixin.android.vo.CircleOrder
@@ -45,7 +46,8 @@ internal constructor(
     private val userRepository: UserRepository,
     private val conversationRepository: ConversationRepository,
     private val assetRepository: AssetRepository,
-    private val jobManager: MixinJobManager
+    private val jobManager: MixinJobManager,
+    private val cleanMessageHelper: CleanMessageHelper
 ) : ViewModel() {
 
     fun observeConversations(circleId: String?): LiveData<PagedList<ConversationItem>> {
@@ -94,7 +96,7 @@ internal constructor(
         if (ids.isNotEmpty()) {
             jobManager.addJobInBackground(TranscriptDeleteJob(ids))
         }
-        messageRepository.deleteConversationById(conversationId)
+        cleanMessageHelper.deleteMessageByConversationId(conversationId)
     }
 
     fun updateConversationPinTimeById(conversationId: String, circleId: String?, pinTime: String?) = viewModelScope.launch {

@@ -29,10 +29,10 @@ import one.mixin.android.extension.getVideoPath
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.TranscriptDeleteJob
 import one.mixin.android.repository.ConversationRepository
+import one.mixin.android.ui.common.message.CleanMessageHelper
 import one.mixin.android.util.SINGLE_DB_THREAD
 import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.StorageUsage
-import one.mixin.android.vo.absolutePath
 import java.io.File
 import javax.inject.Inject
 
@@ -41,6 +41,7 @@ class SettingStorageViewModel
 @Inject
 internal constructor(
     private val conversationRepository: ConversationRepository,
+    private val cleanMessageHelper: CleanMessageHelper,
     private val jobManager: MixinJobManager
 ) : ViewModel() {
 
@@ -149,8 +150,8 @@ internal constructor(
         }
         conversationRepository.getMediaByConversationIdAndCategory(conversationId, signalCategory, plainCategory, encryptedCategory)
             ?.let { list ->
-                list.forEach { item ->
-                    conversationRepository.deleteMessage(item.messageId, conversationId, item.absolutePath(MixinApplication.appContext, conversationId, item.mediaUrl))
+                viewModelScope.launch(SINGLE_DB_THREAD) {
+                    cleanMessageHelper.deleteMessageMinimals(list)
                 }
             }
         categoryPath(MixinApplication.appContext, signalCategory, conversationId)?.deleteRecursively()
