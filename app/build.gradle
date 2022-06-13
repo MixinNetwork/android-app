@@ -222,7 +222,7 @@ dependencies {
     kapt "androidx.room:room-compiler:${roomVersion}"
     implementation "androidx.room:room-rxjava2:${roomVersion}"
     implementation "androidx.room:room-ktx:${roomVersion}"
-    testImplementation "androidx.room:room-testing:${roomVersion}"
+    androidTestImplementation "androidx.room:room-testing:${roomVersion}"
 
     // emoji
     implementation "androidx.emoji2:emoji2:${emojiVerison}"
@@ -340,7 +340,7 @@ dependencies {
 
     testImplementation "junit:junit:${junitVersion}"
     testImplementation "androidx.test:core:${testCoreVersion}"
-    testImplementation "org.mockito:mockito-core:${mockitoVersion}"
+    androidTestImplementation "org.mockito:mockito-core:${mockitoVersion}"
 
     testImplementation("org.robolectric:robolectric:${robolectricVersion}", {
         exclude group: 'org.bouncycastle', module: 'bcprov-jdk15on'
@@ -355,10 +355,11 @@ dependencies {
     })
     androidTestImplementation("androidx.test.espresso:espresso-contrib:${espressoVersion}", {
         exclude group: 'com.android.support', module: 'support-annotations'
+        exclude group: 'org.checkerframework', module: 'checker'
     })
     androidTestImplementation "androidx.test.espresso:espresso-idling-resource:$espressoVersion"
     androidTestImplementation "androidx.test.ext:junit:${androidxJunitVersion}"
-    stagingImplementation "androidx.fragment:fragment-testing:${fragmentVersion}"
+    androidTestImplementation "androidx.fragment:fragment-testing:${fragmentVersion}"
     androidTestImplementation "androidx.navigation:navigation-testing:$navigationVersion"
 
     // Hilt testing

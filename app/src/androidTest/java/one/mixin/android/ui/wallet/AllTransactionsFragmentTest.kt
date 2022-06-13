@@ -1,6 +1,7 @@
 package one.mixin.android.ui.wallet
 
 import androidx.navigation.NavController
+import androidx.navigation.fragment.NavHostFragment
 import androidx.recyclerview.widget.RecyclerView
 import androidx.test.core.app.ActivityScenario
 import androidx.test.espresso.Espresso.onView
@@ -44,7 +45,7 @@ class AllTransactionsFragmentTest : BaseTransactionsFragmentTest() {
     override fun go2Transactions(action: (NavController?, ActivityScenario<WalletActivity>) -> Unit) {
         var navController: NavController? = null
         walletRule.activityScenario = ActivityScenario.launch(WalletActivity::class.java).onActivity {
-            navController = it.navController
+            navController = (it.supportFragmentManager.findFragmentById(R.id.container) as NavHostFragment).navController
         }
 
         onView(withId(R.id.right_animator)).perform(click())

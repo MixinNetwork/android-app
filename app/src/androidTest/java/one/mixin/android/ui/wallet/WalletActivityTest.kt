@@ -2,6 +2,7 @@ package one.mixin.android.ui.wallet
 
 import android.content.Intent
 import androidx.navigation.NavController
+import androidx.navigation.fragment.NavHostFragment
 import androidx.test.core.app.ActivityScenario
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -33,11 +34,11 @@ class WalletActivityTest {
     fun testNavigationStartDestination() {
         var navController: NavController? = null
         val activityScenario = ActivityScenario.launch(WalletActivity::class.java).onActivity {
-            navController = it.navController
+            navController = (it.supportFragmentManager.findFragmentById(R.id.container) as NavHostFragment).navController
         }
 
-        assertTrue(navController?.graph?.startDestination?.equals(R.id.transactions_fragment) == false)
-        assertTrue(navController?.graph?.startDestination?.equals(R.id.wallet_fragment) == true)
+        assertTrue(navController?.graph?.startDestinationId?.equals(R.id.transactions_fragment) == false)
+        assertTrue(navController?.graph?.startDestinationId?.equals(R.id.wallet_fragment) == true)
 
         activityScenario.close()
     }
@@ -51,11 +52,11 @@ class WalletActivityTest {
         }
         var navController: NavController? = null
         val activityScenario = ActivityScenario.launch<WalletActivity>(intent).onActivity {
-            navController = it.navController
+            navController = (it.supportFragmentManager.findFragmentById(R.id.container) as NavHostFragment).navController
         }
 
-        assertTrue(navController?.graph?.startDestination?.equals(R.id.transactions_fragment) == true)
-        assertTrue(navController?.graph?.startDestination?.equals(R.id.wallet_fragment) == false)
+        assertTrue(navController?.graph?.startDestinationId?.equals(R.id.transactions_fragment) == true)
+        assertTrue(navController?.graph?.startDestinationId?.equals(R.id.wallet_fragment) == false)
 
         activityScenario.close()
     }

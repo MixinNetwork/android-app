@@ -2,6 +2,7 @@ package one.mixin.android.ui.wallet
 
 import android.content.Context
 import androidx.navigation.NavController
+import androidx.navigation.fragment.NavHostFragment
 import androidx.recyclerview.widget.RecyclerView
 import androidx.test.core.app.ActivityScenario
 import androidx.test.core.app.ApplicationProvider
@@ -70,7 +71,7 @@ class HiddenAssetsFragmentTest {
             onView(withId(R.id.assets_rv))
                 .perform(actionOnItemAtPosition<RecyclerView.ViewHolder>(0, swipeRight()))
             onView(withId(com.google.android.material.R.id.snackbar_action))
-                .check(matches(withText(ctx.getString(R.string.undo_capital))))
+                .check(matches(withText(ctx.getString(R.string.UNDO))))
 
             waitMillis(1000)
             onView(withId(com.google.android.material.R.id.snackbar_action))
@@ -81,7 +82,7 @@ class HiddenAssetsFragmentTest {
     private fun go2Hidden(action: (NavController?, ActivityScenario<WalletActivity>) -> Unit) {
         var navController: NavController? = null
         val activityScenario = ActivityScenario.launch(WalletActivity::class.java).onActivity {
-            navController = it.navController
+            navController = (it.supportFragmentManager.findFragmentById(R.id.container) as NavHostFragment).navController
         }
 
         onView(withId(R.id.right_animator)).perform(click())

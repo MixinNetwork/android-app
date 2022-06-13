@@ -2,6 +2,7 @@ package one.mixin.android.ui.wallet
 
 import android.content.Context
 import androidx.navigation.NavController
+import androidx.navigation.fragment.NavHostFragment
 import androidx.recyclerview.widget.RecyclerView
 import androidx.test.core.app.ActivityScenario
 import androidx.test.core.app.ApplicationProvider
@@ -59,7 +60,7 @@ class SingleFriendSelectFragmentTest {
                 .check(matches(withText(ctx.getString(R.string.transfer_to))))
 
             onView(withId(R.id.search_et))
-                .check(matches(ViewMatchers.withHint(ctx.getString(R.string.contact_search_hint))))
+                .check(matches(ViewMatchers.withHint(ctx.getString(R.string.setting_auth_search_hint))))
                 .check(matches(withText("")))
         }
     }
@@ -86,7 +87,7 @@ class SingleFriendSelectFragmentTest {
     private fun go2SingleFriendSelect(action: (NavController?, ActivityScenario<WalletActivity>) -> Unit) {
         var navController: NavController? = null
         walletRule.activityScenario = ActivityScenario.launch(WalletActivity::class.java).onActivity {
-            navController = it.navController
+            navController = (it.supportFragmentManager.findFragmentById(R.id.container) as NavHostFragment).navController
         }
         onView(withId(R.id.coins_rv))
             .perform(RecyclerViewActions.actionOnItemAtPosition<RecyclerView.ViewHolder>(1, click()))

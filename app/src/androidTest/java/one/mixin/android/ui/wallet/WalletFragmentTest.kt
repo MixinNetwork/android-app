@@ -2,6 +2,7 @@ package one.mixin.android.ui.wallet
 
 import android.content.Context
 import androidx.navigation.NavController
+import androidx.navigation.fragment.NavHostFragment
 import androidx.recyclerview.widget.RecyclerView
 import androidx.test.core.app.ActivityScenario
 import androidx.test.core.app.ApplicationProvider
@@ -87,7 +88,7 @@ class WalletFragmentTest {
     fun testOpenWalletSearch() {
         var navController: NavController? = null
         walletRule.activityScenario = ActivityScenario.launch(WalletActivity::class.java).onActivity {
-            navController = it.navController
+            navController = (it.supportFragmentManager.findFragmentById(R.id.container) as NavHostFragment).navController
         }
 
         onView(withId(R.id.search_ib)).perform(click())
@@ -98,7 +99,7 @@ class WalletFragmentTest {
     fun testBottomMenuNavigate() {
         var navController: NavController? = null
         walletRule.activityScenario = ActivityScenario.launch(WalletActivity::class.java).onActivity {
-            navController = it.navController
+            navController = (it.supportFragmentManager.findFragmentById(R.id.container) as NavHostFragment).navController
         }
 
         // open HiddenAssetFragment
@@ -126,7 +127,7 @@ class WalletFragmentTest {
         val ctx: Context = ApplicationProvider.getApplicationContext()
         var navController: NavController? = null
         walletRule.activityScenario = ActivityScenario.launch(WalletActivity::class.java).onActivity { activity ->
-            navController = activity.navController
+            navController = (activity.supportFragmentManager.findFragmentById(R.id.container) as NavHostFragment).navController
         }
 
         // open first asset item
@@ -141,7 +142,7 @@ class WalletFragmentTest {
         onView(withId(R.id.coins_rv))
             .perform(actionOnItemAtPosition<RecyclerView.ViewHolder>(1, swipeRight()))
         onView(withId(com.google.android.material.R.id.snackbar_action))
-            .check(matches(withText(ctx.getString(R.string.undo_capital))))
+            .check(matches(withText(ctx.getString(R.string.UNDO))))
 
         waitMillis(1000)
         onView(withId(com.google.android.material.R.id.snackbar_action))
