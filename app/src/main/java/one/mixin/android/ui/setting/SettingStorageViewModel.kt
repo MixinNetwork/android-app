@@ -151,7 +151,7 @@ internal constructor(
         conversationRepository.getMediaByConversationIdAndCategory(conversationId, signalCategory, plainCategory, encryptedCategory)
             ?.let { list ->
                 viewModelScope.launch(SINGLE_DB_THREAD) {
-                    cleanMessageHelper.deleteMessageMinimals(list)
+                    cleanMessageHelper.deleteMessageMinimals(conversationId, list)
                 }
             }
         categoryPath(MixinApplication.appContext, signalCategory, conversationId)?.deleteRecursively()
