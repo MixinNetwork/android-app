@@ -354,6 +354,9 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
                         CallService.CallState.STATE_BUSY -> {
                             contentView.post { handleBusy() }
                         }
+                        else -> {
+                            // Do nothing
+                        }
                     }
                 }
             )
