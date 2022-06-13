@@ -15,19 +15,26 @@ add_library(lib_opusenc STATIC IMPORTED)
 set_target_properties(lib_opusenc PROPERTIES IMPORTED_LOCATION
         ${distribution_OPUS_DIR}/lib/${ANDROID_ABI}/libopusenc.a)
 
+add_library(lib_blst STATIC IMPORTED)
+set_target_properties(lib_blst PROPERTIES IMPORTED_LOCATION
+        ${CMAKE_SOURCE_DIR}/blst/lib/${ANDROID_ABI}/libblst.a)
+
 add_library(mixin SHARED
-        audio.c
+            audio.c
+        ${CMAKE_SOURCE_DIR}/blst_wrap.cpp
         )
 
 target_include_directories(mixin PRIVATE
-        ${distribution_OPUS_DIR}/include)
+                           ${distribution_OPUS_DIR}/include
+        ${CMAKE_SOURCE_DIR}/bls/inc)
 
 target_link_libraries(mixin
-        android
-        lib_opusenc
-        lib_opus
-        lib_ogg
-        log)
+                      android
+                      lib_opusenc
+                      lib_opus
+                      lib_ogg
+                      lib_blst
+                      log)
 
 
 add_library(lib_lz4 STATIC IMPORTED)
