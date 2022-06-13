@@ -48,7 +48,6 @@ import android.view.WindowManager
 import androidx.annotation.AttrRes
 import androidx.annotation.ColorInt
 import androidx.annotation.RequiresApi
-import androidx.annotation.StringRes
 import androidx.browser.customtabs.CustomTabsIntent
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
@@ -72,7 +71,6 @@ import one.mixin.android.util.Attachment
 import one.mixin.android.util.RomUtil
 import one.mixin.android.util.XiaomiUtilities
 import one.mixin.android.util.blurhash.BlurHashEncoder
-import one.mixin.android.util.language.Lingver
 import one.mixin.android.util.video.MediaController
 import one.mixin.android.util.video.VideoEditedInfo
 import one.mixin.android.vo.AssetItem
@@ -1144,16 +1142,3 @@ fun Context.callPhone(phone: String) {
         Timber.e(e)
     }
 }
-
-fun Context.getStringByLocale(@StringRes stringRes: Int, locale: Locale, vararg formatArgs: Any): String {
-    val configuration = Configuration(resources.configuration)
-    configuration.setLocale(locale)
-    return createConfigurationContext(configuration).resources.getString(stringRes, *formatArgs)
-}
-
-fun Context.getZhOrEnString(@StringRes stringRes: Int, vararg formatArgs: Any): String =
-    if (Lingver.getInstance().isCurrChinese()) {
-        getString(stringRes, *formatArgs)
-    } else {
-        getStringByLocale(stringRes, Locale.ENGLISH, *formatArgs)
-    }
