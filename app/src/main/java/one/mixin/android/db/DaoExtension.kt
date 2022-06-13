@@ -178,6 +178,16 @@ fun MixinDatabase.deleteMessageById(messageId: String) {
     }
 }
 
+fun MixinDatabase.deleteMessageByIds(messageIds: List<String>){
+    runInTransaction {
+        pinMessageDao().deleteByIds(messageIds)
+        mentionMessageDao().deleteMessage(messageIds)
+        messageDao().deleteMessageById(messageIds)
+        remoteMessageStatusDao().deleteByMessageIds(messageIds)
+        expiredMessageDao().deleteByMessageId(messageIds)
+    }
+}
+
 fun MessageDao.makeMessageStatus(status: String, messageId: String) {
     val messageStatus = MessageStatus.values().firstOrNull { it.name == status } ?: return
     if (messageStatus == MessageStatus.SENT || messageStatus == MessageStatus.DELIVERED || messageStatus == MessageStatus.READ) {
@@ -188,13 +198,6 @@ fun MessageDao.makeMessageStatus(status: String, messageId: String) {
             }
         }
     }
-}
-
-suspend fun MixinDatabase.deleteMessageByConversationId(conversationId: String, limit: Int) {
-    pinMessageDao().deleteConversationId(conversationId)
-    messageDao().deleteMessageByConversationId(conversationId, limit)
-    mentionMessageDao().deleteMessageByConversationId(conversationId, limit)
-    InvalidateFlow.emit(conversationId)
 }
 
 // Insert message SQL
