@@ -133,29 +133,29 @@ class WalletSearchFragmentTest {
     fun testDefaultRv() {
         // val ctx: Context = ApplicationProvider.getApplicationContext()
         // go2Search { navController, activityScenario ->
-            // TODO check recent search and top assets
-            // var isRecentDisplayed = false
-            // if (onView(withText(ctx.getString(R.string.wallet_recent_search))).isDisplayed()) {
-            //     isRecentDisplayed = true
-            //     onView(withId(R.id.default_rv))
-            //         .perform(actionOnItemAtPosition<RecyclerView.ViewHolder>(0, click()))
-            //     assertTrue(navController?.currentDestination?.id == R.id.transactions_fragment)
-            //
-            //     activityScenario.onActivity {
-            //         navController?.navigateUp()
-            //     }
-            // }
+        // TODO check recent search and top assets
+        // var isRecentDisplayed = false
+        // if (onView(withText(ctx.getString(R.string.wallet_recent_search))).isDisplayed()) {
+        //     isRecentDisplayed = true
+        //     onView(withId(R.id.default_rv))
+        //         .perform(actionOnItemAtPosition<RecyclerView.ViewHolder>(0, click()))
+        //     assertTrue(navController?.currentDestination?.id == R.id.transactions_fragment)
+        //
+        //     activityScenario.onActivity {
+        //         navController?.navigateUp()
+        //     }
+        // }
 
-            // val count = activityScenario.getRVCount(R.id.default_rv)
-            // if (count > 2) {
-            //     onView(withId(R.id.default_rv))
-            //         .perform(actionOnItemAtPosition<RecyclerView.ViewHolder>(2, click()))
+        // val count = activityScenario.getRVCount(R.id.default_rv)
+        // if (count > 2) {
+        //     onView(withId(R.id.default_rv))
+        //         .perform(actionOnItemAtPosition<RecyclerView.ViewHolder>(2, click()))
 
-                // onView(withId(R.id.progress))
-                //     .inRoot(isDialog())
-                //     .check(matches(isDisplayed()))
-                // assertTrue(navController?.currentDestination?.id == R.id.transactions_fragment)
-            // }
+        // onView(withId(R.id.progress))
+        //     .inRoot(isDialog())
+        //     .check(matches(isDisplayed()))
+        // assertTrue(navController?.currentDestination?.id == R.id.transactions_fragment)
+        // }
         // }
     }
 
