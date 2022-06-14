@@ -50,19 +50,33 @@ class CleanMessageHelper @Inject internal constructor(private val jobManager: Mi
 
         // DELETE message
         val deleteCount = appDatabase.messageDao().countDeleteMessageByConversationId(conversationId)
-        val lastRowId = appDatabase.messageDao().findLastMessageRowId(conversationId) ?: return
-        if (deleteCount > DB_DELETE_LIMIT) {
-            jobManager.addJobInBackground(MessageDeleteJob(conversationId, lastRowId, deleteConversation = deleteConversation))
-        } else {
-            val ids = appDatabase.messageDao().getMessageIdsByConversationId(conversationId, lastRowId)
-            jobManager.addJobInBackground(MessageFtsDeleteJob(ids))
-            appDatabase.deleteMessageByIds(ids)
+        if (deleteCount <= 0) {
             if (deleteConversation) {
                 appDatabase.conversationDao().deleteConversationById(conversationId)
-            } else {
-                appDatabase.remoteMessageStatusDao().countUnread(conversationId)
+                InvalidateFlow.emit(conversationId)
             }
-            InvalidateFlow.emit(conversationId)
+        } else {
+            val lastRowId = appDatabase.messageDao().findLastMessageRowId(conversationId) ?: return
+            if (deleteCount > DB_DELETE_LIMIT) {
+                jobManager.addJobInBackground(
+                    MessageDeleteJob(
+                        conversationId,
+                        lastRowId,
+                        deleteConversation = deleteConversation
+                    )
+                )
+            } else {
+                val ids = appDatabase.messageDao()
+                    .getMessageIdsByConversationId(conversationId, lastRowId)
+                jobManager.addJobInBackground(MessageFtsDeleteJob(ids))
+                appDatabase.deleteMessageByIds(ids)
+                if (deleteConversation) {
+                    appDatabase.conversationDao().deleteConversationById(conversationId)
+                } else {
+                    appDatabase.remoteMessageStatusDao().countUnread(conversationId)
+                }
+                InvalidateFlow.emit(conversationId)
+            }
         }
     }
 
