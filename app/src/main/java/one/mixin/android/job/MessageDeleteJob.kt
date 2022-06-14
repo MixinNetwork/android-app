@@ -32,7 +32,8 @@ class MessageDeleteJob(
             jobManager.addJobInBackground(MessageFtsDeleteJob(ids))
             appDatabase.deleteMessageByIds(ids)
         }
-        if (deleteConversation && messageDao.findLastMessageRowId(conversationId) == lastRowId) {
+        val currentRowId = messageDao.findLastMessageRowId(conversationId)
+        if (deleteConversation && currentRowId == null) {
             conversationDao.deleteConversationById(conversationId)
         } else {
             appDatabase.remoteMessageStatusDao().countUnread(conversationId)
