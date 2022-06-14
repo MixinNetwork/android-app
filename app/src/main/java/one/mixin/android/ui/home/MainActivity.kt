@@ -302,6 +302,8 @@ class MainActivity : BlazeBaseActivity() {
         sendSafetyNetRequest()
         checkBatteryOptimization()
 
+        jobManager.addJobInBackground(RefreshAccountJob())
+
         if (!defaultSharedPreferences.getBoolean(PREF_SYNC_CIRCLE, false)) {
             jobManager.addJobInBackground(RefreshCircleJob())
             defaultSharedPreferences.putBoolean(PREF_SYNC_CIRCLE, true)
@@ -311,8 +313,6 @@ class MainActivity : BlazeBaseActivity() {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q && PropertyHelper.findValueByKey(PREF_BACKUP)?.toBooleanStrictOrNull() == true) {
             jobManager.addJobInBackground(BackupJob())
         }
-
-        jobManager.addJobInBackground(RefreshAccountJob())
 
         if (defaultSharedPreferences.getInt(PREF_LOGIN_FROM, FROM_LOGIN) == FROM_EMERGENCY) {
             defaultSharedPreferences.putInt(PREF_LOGIN_FROM, FROM_LOGIN)

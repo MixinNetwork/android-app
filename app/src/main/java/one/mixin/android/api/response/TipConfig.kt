@@ -6,10 +6,10 @@ data class TipConfig(
     @SerializedName("commitments")
     val commitments: ArrayList<String>,
     @SerializedName("signers")
-    val signers: ArrayList<TipSiger>,
+    val signers: ArrayList<TipSigner>,
 )
 
-data class TipSiger(
+data class TipSigner(
     val identity: String,
     val index: Int,
     val api: String,
