@@ -96,7 +96,7 @@ internal constructor(
         if (ids.isNotEmpty()) {
             jobManager.addJobInBackground(TranscriptDeleteJob(ids))
         }
-        cleanMessageHelper.deleteMessageByConversationId(conversationId)
+        cleanMessageHelper.deleteMessageByConversationId(conversationId, true)
     }
 
     fun updateConversationPinTimeById(conversationId: String, circleId: String?, pinTime: String?) = viewModelScope.launch {

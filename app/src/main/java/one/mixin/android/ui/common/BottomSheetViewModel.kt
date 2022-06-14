@@ -32,7 +32,6 @@ import one.mixin.android.job.GenerateAvatarJob
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshConversationJob
 import one.mixin.android.job.RefreshUserJob
-import one.mixin.android.job.TranscriptDeleteJob
 import one.mixin.android.job.UpdateRelationshipJob
 import one.mixin.android.repository.AccountRepository
 import one.mixin.android.repository.AssetRepository
@@ -231,8 +230,12 @@ class BottomSheetViewModel @Inject internal constructor(
         jobManager.addJobInBackground(GenerateAvatarJob(conversationId, list))
     }
 
-    fun deleteMessageByConversationId(conversationId: String) = viewModelScope.launch(Dispatchers.IO) {
+    fun clearChat(conversationId: String) = viewModelScope.launch(Dispatchers.IO) {
         cleanMessageHelper.deleteMessageByConversationId(conversationId)
+    }
+
+    fun deleteConversation(conversationId: String) = viewModelScope.launch(Dispatchers.IO) {
+        cleanMessageHelper.deleteMessageByConversationId(conversationId, true)
     }
 
     fun exitGroup(conversationId: String) {
@@ -242,14 +245,6 @@ class BottomSheetViewModel @Inject internal constructor(
                 type = ConversationJob.TYPE_EXIT
             )
         )
-    }
-
-    fun deleteGroup(conversationId: String) = viewModelScope.launch(Dispatchers.IO) {
-        val transIds = conversationRepo.findTranscriptIdByConversationId(conversationId)
-        if (transIds.isNotEmpty()) {
-            jobManager.addJobInBackground(TranscriptDeleteJob(transIds))
-        }
-        cleanMessageHelper.deleteMessageByConversationId(conversationId)
     }
 
     fun updateGroup(

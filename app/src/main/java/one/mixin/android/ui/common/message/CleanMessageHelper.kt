@@ -59,6 +59,8 @@ class CleanMessageHelper @Inject internal constructor(private val jobManager: Mi
             appDatabase.deleteMessageByIds(ids)
             if (deleteConversation) {
                 appDatabase.conversationDao().deleteConversationById(conversationId)
+            } else {
+                appDatabase.remoteMessageStatusDao().countUnread(conversationId)
             }
             InvalidateFlow.emit(conversationId)
         }

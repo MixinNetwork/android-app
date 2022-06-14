@@ -23,7 +23,6 @@ import one.mixin.android.api.response.ConversationResponse
 import one.mixin.android.extension.escapeSql
 import one.mixin.android.extension.pmap
 import one.mixin.android.job.MixinJobManager
-import one.mixin.android.job.TranscriptDeleteJob
 import one.mixin.android.repository.AccountRepository
 import one.mixin.android.repository.AssetRepository
 import one.mixin.android.repository.ConversationRepository
@@ -126,11 +125,7 @@ internal constructor(
         }
 
     fun deleteConversation(conversationId: String, callback: () -> Unit) = viewModelScope.launch(Dispatchers.IO) {
-        val ids = conversationRepository.findTranscriptIdByConversationId(conversationId)
-        if (ids.isNotEmpty()) {
-            jobManager.addJobInBackground(TranscriptDeleteJob(ids))
-        }
-        cleanMessageHelper.deleteMessageByConversationId(conversationId)
+        cleanMessageHelper.deleteMessageByConversationId(conversationId, true)
         callback.invoke()
     }
 
