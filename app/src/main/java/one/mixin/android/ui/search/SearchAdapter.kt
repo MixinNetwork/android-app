@@ -23,7 +23,6 @@ import one.mixin.android.vo.AssetItem
 import one.mixin.android.vo.ChatMinimal
 import one.mixin.android.vo.SearchMessageItem
 import one.mixin.android.vo.User
-import java.lang.Exception
 import java.util.Locale
 
 class SearchAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>(), StickyRecyclerHeadersAdapter<HeaderHolder> {
@@ -104,16 +103,20 @@ class SearchAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>(), StickyRec
     }
 
     @SuppressLint("NotifyDataSetChanged")
-    fun setChatData(chatMinimals: List<ChatMinimal>?) {
-        data.chatList = chatMinimals
-        val end = data.getCount() - data.messageCount()
-        val start = end - data.chatCount()
-        if (start < end) {
-            notifyItemRangeChanged(start, end)
-        } else {
+    fun setChatData(chatMinimals: List<ChatMinimal>?) =
+        if ((chatMinimals?.size ?: 0) < (data.chatList?.size ?: 0)) {
+            data.chatList = chatMinimals
             notifyDataSetChanged()
+        } else {
+            data.chatList = chatMinimals
+            val end = data.getCount() - data.messageCount()
+            val start = end - data.chatCount()
+            if (start < end) {
+                notifyItemRangeChanged(start, end)
+            } else {
+                notifyDataSetChanged()
+            }
         }
-    }
 
     fun setMessageData(searchMessageItems: List<SearchMessageItem>) {
         data.messageList = searchMessageItems

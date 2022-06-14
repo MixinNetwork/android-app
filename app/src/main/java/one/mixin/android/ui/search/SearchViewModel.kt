@@ -124,8 +124,10 @@ internal constructor(
             callback.invoke()
         }
 
-    fun deleteConversation(conversationId: String, callback: () -> Unit) = viewModelScope.launch(Dispatchers.IO) {
-        cleanMessageHelper.deleteMessageByConversationId(conversationId, true)
+    fun deleteConversation(conversationId: String, callback: () -> Unit) = viewModelScope.launch {
+        withContext(Dispatchers.IO) {
+            cleanMessageHelper.deleteMessageByConversationId(conversationId, true)
+        }
         callback.invoke()
     }
 
