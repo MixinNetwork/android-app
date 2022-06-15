@@ -47,7 +47,7 @@ class QueryHighlighter(
         val normalizedText = queryNormalizer(text)
         val normalizeWordPrefix = queryNormalizer(wordPrefix)
         val index = indexOfQuery(normalizedText, normalizeWordPrefix)
-        return if (index != -1) {
+        return if (index != -1 && normalizeWordPrefix.isNotEmpty()) {
             SpannableString(text).apply {
                 setSpan(highlightStyle, index, index + normalizeWordPrefix.length, 0)
             }
