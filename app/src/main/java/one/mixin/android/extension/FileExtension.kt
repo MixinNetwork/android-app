@@ -618,7 +618,7 @@ fun Uri.copyFileUrlWithAuthority(context: Context, name: String? = null): String
 fun Uri.getOrCreate(context: Context = MixinApplication.appContext, name: String): String? {
     val file = File(context.getDocumentPath(), name)
     if (!file.exists()) {
-        context.contentResolver.openInputStream(this)?.let {
+        context.contentResolver.openInputStream(this)?.use {
             file.copyFromInputStream(it)
         }
     }

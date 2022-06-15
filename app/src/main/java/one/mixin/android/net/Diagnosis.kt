@@ -81,7 +81,7 @@ fun diagnosis(context: Context, diagnosisCallback: (String) -> Unit) {
                 result.append("$prefix Ping: [$ipAddr] [${if (pingResult.isNullOrEmpty()) "FAILURE" else "SUCCESS"}]").appendLine()
 
                 pingResult?.let { r ->
-                    val statistics = r.substring(r.lastIndexOf("---"))
+                    val statistics = r.substringIgnoreError(r.lastIndexOf("---"))
                     result.append(statistics).appendLine()
                 }
             }
@@ -123,12 +123,12 @@ private fun getExportIp(result: StringBuilder, context: Context) {
     try {
         var data = client.newCall(ipRequest).execute().body?.string()
             ?: throw IOException("EXPORT_IP_PRIMARY no data")
-        val url = data.substring(data.indexOf("src=") + 4, data.lastIndexOf("frameborder")).replace("'".toRegex(), "").replace(" ".toRegex(), "")
+        val url = data.substringIgnoreError(data.indexOf("src=") + 4, data.lastIndexOf("frameborder")).replace("'".toRegex(), "").replace(" ".toRegex(), "")
         ipRequest = Request.Builder().url(url).build()
         data = client.newCall(ipRequest).execute().body?.string()
             ?: throw IOException("EXPORT_IP_PRIMARY no data")
-        val dataIp = data.substring(data.indexOf("您的IP地址信息") + 10)
-        val dataAddress = dataIp.substring(0, dataIp.indexOf("<br>"))
+        val dataIp = data.substringIgnoreError(data.indexOf("您的IP地址信息") + 10)
+        val dataAddress = dataIp.substringIgnoreError(0, dataIp.indexOf("<br>"))
         val ips = dataAddress.split(" ").toTypedArray()
         result.append("${context.getString(R.string.export_ip)}: ${ips[0]}").appendLine()
             .append("${context.getString(R.string.Operator)}: ${ips[1]}").appendLine()
@@ -162,4 +162,20 @@ private fun getIpAddress(): String? {
         ex.printStackTrace()
     }
     return null
+}
+
+private fun String.substringIgnoreError(startIndex: Int): String {
+    return try {
+        substring(startIndex)
+    } catch (ignored: IndexOutOfBoundsException) {
+        ""
+    }
+}
+
+private fun String.substringIgnoreError(startIndex: Int, endIndex: Int): String {
+    return try {
+        substring(startIndex, endIndex)
+    } catch (ignored: IndexOutOfBoundsException) {
+        ""
+    }
 }
