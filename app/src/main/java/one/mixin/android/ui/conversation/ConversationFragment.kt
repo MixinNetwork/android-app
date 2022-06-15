@@ -1062,6 +1062,7 @@ class ConversationFragment() :
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        Timber.e("MSG:-----------------------------------------------------")
         Timber.e("MSG:${System.currentTimeMillis()} onCreate $conversationId")
         if (!anyCallServiceRunning(requireContext())) {
             initAudioSwitch()
@@ -1896,6 +1897,7 @@ class ConversationFragment() :
                         isFirstMessage = false
                     }
                 }
+                Timber.e("MSG:${System.currentTimeMillis()} submitList ${list.size}")
                 conversationAdapter.submitList(list)
                 chatViewModel.markMessageRead(conversationId, (activity as? BubbleActivity)?.isBubbled == true)
             }
