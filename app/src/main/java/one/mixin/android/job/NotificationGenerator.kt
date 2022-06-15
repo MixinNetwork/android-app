@@ -137,13 +137,13 @@ object NotificationGenerator : Injector() {
             var app: App? = null
             var isBot = user.isBot()
             if (user.isBot()) {
-                app = appDao.findAppById(requireNotNull(user.appId))
+                app = appDao.findAppById(requireNotNull(user.appId) { "Required userId was null." })
             } else if (message.isRepresentativeMessage(conversation)) {
                 val representativeUser = syncUser(conversation.ownerId)
                 if (representativeUser == null) {
                     isBot = false
                 } else {
-                    app = appDao.findAppById(requireNotNull(representativeUser.appId))
+                    app = appDao.findAppById(requireNotNull(representativeUser.appId) { "Required appId was null." })
                     isBot = representativeUser.isBot()
                 }
             }
@@ -471,7 +471,7 @@ object NotificationGenerator : Injector() {
                 .setImportant(true)
                 .build()
 
-            val messagingStyle = NotificationCompat.MessagingStyle(requireNotNull(person)).also { style ->
+            val messagingStyle = NotificationCompat.MessagingStyle(requireNotNull(person) { "Required person was null." }).also { style ->
                 style.addMessage(NotificationCompat.MessagingStyle.Message(contentText, System.currentTimeMillis(), person))
                 style.isGroupConversation = false
             }
