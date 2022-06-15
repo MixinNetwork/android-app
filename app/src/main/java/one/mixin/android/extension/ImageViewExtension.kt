@@ -348,6 +348,7 @@ fun RLottieImageView.loadSticker(uri: String?, type: String?, cacheKey: String) 
 }
 
 fun RLottieImageView.loadLottie(uri: String, cacheKey: String) {
+    if (!isActivityNotDestroyed()) return
     Glide.with(this)
         .`as`(RLottieDrawable::class.java)
         .load(uri).apply(
