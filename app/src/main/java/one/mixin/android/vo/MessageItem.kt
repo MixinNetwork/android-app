@@ -235,7 +235,9 @@ suspend fun MessageItem.saveToLocal(context: Context) {
     }
 
     val outFile = if (MimeTypes.isVideo(mediaMimeType) || mediaMimeType?.isImageSupport() == true) {
-        File(context.getPublicPicturePath(), mediaName ?: file.name)
+        File(context.getPublicPicturePath(), mediaName ?: file.name).apply {
+            mkdirs()
+        }
     } else {
         val dir = if (MimeTypes.isAudio(mediaMimeType)) {
             context.getExternalFilesDir(DIRECTORY_MUSIC)
