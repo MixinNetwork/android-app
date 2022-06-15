@@ -1063,13 +1063,13 @@ class ConversationFragment() :
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         Timber.e("MSG:-----------------------------------------------------")
-        Timber.e("MSG:${System.currentTimeMillis()} onCreate $conversationId")
         if (!anyCallServiceRunning(requireContext())) {
             initAudioSwitch()
         }
         recipient = requireArguments().getParcelable(RECIPIENT)
         messageId = requireArguments().getString(MESSAGE_ID, null)
         keyword = requireArguments().getString(KEY_WORD, null)
+        Timber.e("MSG:${System.currentTimeMillis()} onCreate $conversationId")
     }
 
     private val binding by viewBinding(FragmentConversationBinding::bind)
