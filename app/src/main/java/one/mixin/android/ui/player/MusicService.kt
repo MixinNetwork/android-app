@@ -46,6 +46,7 @@ import one.mixin.android.ui.player.internal.copy
 import one.mixin.android.ui.player.internal.downloadStatus
 import one.mixin.android.ui.player.internal.flag
 import one.mixin.android.util.MusicPlayer
+import one.mixin.android.util.SINGLE_THREAD
 import one.mixin.android.vo.MediaStatus
 import timber.log.Timber
 import javax.inject.Inject
@@ -316,7 +317,7 @@ class MusicService : MediaBrowserServiceCompat() {
         onLoaded: ((MediaMetadataCompat) -> Unit)? = null,
     ) {
         val playlistLoader = PlaylistLoader(playlist)
-        serviceScope.launch(Dispatchers.IO) {
+        serviceScope.launch(SINGLE_THREAD) {
             playlistLoader.load().let { list ->
                 musicTree.updatePlaylist(list)
                 notifyChildrenChanged(MUSIC_PLAYLIST)
