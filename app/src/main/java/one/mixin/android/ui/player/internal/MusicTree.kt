@@ -2,10 +2,10 @@ package one.mixin.android.ui.player.internal
 
 import android.support.v4.media.MediaBrowserCompat
 import android.support.v4.media.MediaMetadataCompat
+import kotlinx.coroutines.withContext
+import one.mixin.android.util.SINGLE_THREAD
 
 class MusicTree {
-    private val lock = Any()
-
     private val mediaIdToChildren = mutableMapOf<String, MutableList<MediaMetadataCompat>>()
 
     init {
@@ -13,15 +13,18 @@ class MusicTree {
         mediaIdToChildren[MUSIC_BROWSABLE_ROOT] = rootList
     }
 
-    fun setItems(mediaItems: List<MediaMetadataCompat>, clear: Boolean = false) {
-        synchronized(lock) {
-            if (clear) {
-                mediaIdToChildren[mediaItems[0].album]?.clear()
-            }
-            mediaItems.forEach { mediaItem ->
-                setItem(mediaItem)
-            }
+    suspend fun setItems(mediaItems: List<MediaMetadataCompat>, clear: Boolean = false) = withContext(SINGLE_THREAD) {
+        if (clear) {
+            mediaIdToChildren[mediaItems[0].album]?.clear()
         }
+        mediaItems.forEach { mediaItem ->
+            setItem(mediaItem)
+        }
+    }
+
+    suspend fun updatePlaylist(mediaItems: List<MediaMetadataCompat>) = withContext(SINGLE_THREAD) {
+        mediaIdToChildren[MUSIC_PLAYLIST]?.clear()
+        setItems(mediaItems)
     }
 
     private fun setItem(mediaItem: MediaMetadataCompat) {
@@ -33,11 +36,6 @@ class MusicTree {
         } else {
             albumChildren[index] = mediaItem
         }
-    }
-
-    fun updatePlaylist(mediaItems: List<MediaMetadataCompat>) {
-        mediaIdToChildren[MUSIC_PLAYLIST]?.clear()
-        setItems(mediaItems)
     }
 
     operator fun get(mediaId: String) = mediaIdToChildren[mediaId]
