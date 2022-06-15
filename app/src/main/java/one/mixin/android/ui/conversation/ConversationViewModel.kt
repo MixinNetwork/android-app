@@ -107,6 +107,7 @@ import one.mixin.android.websocket.PinAction
 import one.mixin.android.websocket.StickerMessagePayload
 import one.mixin.android.websocket.VideoMessagePayload
 import one.mixin.android.widget.gallery.MimeType
+import timber.log.Timber
 import java.io.File
 import java.util.UUID
 import javax.inject.Inject
@@ -130,7 +131,7 @@ internal constructor(
             .setPageSize(PAGE_SIZE)
             .setEnablePlaceholders(true)
             .build()
-
+        Timber.e("MSG:${System.currentTimeMillis()} $conversationId $firstKeyToLoad")
         return FastLivePagedListBuilder(
             conversationRepository.getMessages(
                 conversationId,

@@ -39,9 +39,13 @@ abstract class FastLimitOffsetDataSource<T, S>(
     fun countItems(): Int {
         val cursor = db.query(countQuery)
         return try {
-            if (cursor.moveToFirst()) {
-                cursor.getInt(0)
-            } else 0
+            (
+                if (cursor.moveToFirst()) {
+                    cursor.getInt(0)
+                } else 0
+                ).also {
+                Timber.e("MSG:${System.currentTimeMillis()} countItems $it")
+            }
         } finally {
             cursor.close()
             countQuery.release()
@@ -67,7 +71,9 @@ abstract class FastLimitOffsetDataSource<T, S>(
         // bound the size requested, based on known count
         val firstLoadPosition = computeInitialLoadPosition(params, totalCount)
         val firstLoadSize = computeInitialLoadSize(params, firstLoadPosition, totalCount)
-        val list = loadRange(firstLoadPosition, firstLoadSize)
+        val list = loadRange(firstLoadPosition, firstLoadSize).also {
+            Timber.e("MSG:${System.currentTimeMillis()} loadRange ${it.size}")
+        }
         try {
             callback.onResult(list, firstLoadPosition, totalCount)
             if (fastCont != null) { // If quick return needs to activate the next query
@@ -115,7 +121,9 @@ abstract class FastLimitOffsetDataSource<T, S>(
                 val id = getUniqueId(cursor)
                 ids.add("'$id'")
             }
-            return ids.joinToString()
+            return ids.joinToString().also {
+                Timber.e("MSG:${System.currentTimeMillis()} itemIds $it")
+            }
         } finally {
             cursor.close()
             offsetQuery.release()

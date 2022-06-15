@@ -17,6 +17,7 @@ import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.SearchMessageDetailItem
 import one.mixin.android.vo.SearchMessageItem
 import one.mixin.android.vo.User
+import timber.log.Timber
 import java.util.concurrent.atomic.AtomicBoolean
 
 @SuppressLint("RestrictedApi")
@@ -31,6 +32,8 @@ class DataProvider {
                         count
                     } else {
                         null
+                    }.also {
+                        Timber.e("MSG:${System.currentTimeMillis()} fastCount $it")
                     }
                 }
                 override fun create(): DataSource<Int, MessageItem> {

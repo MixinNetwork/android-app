@@ -1062,6 +1062,7 @@ class ConversationFragment() :
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        Timber.e("MSG:${System.currentTimeMillis()} onCreate $conversationId")
         if (!anyCallServiceRunning(requireContext())) {
             initAudioSwitch()
         }
@@ -1234,6 +1235,7 @@ class ConversationFragment() :
     }
 
     override fun onStop() {
+        Timber.e("MSG:${System.currentTimeMillis()} onStop $conversationId")
         markRead()
         AudioPlayer.pause()
         val draftText = binding.chatControl.chatEt.text?.toString() ?: ""

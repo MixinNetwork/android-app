@@ -39,6 +39,7 @@ import one.mixin.android.ui.setting.SettingActivity
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.User
 import one.mixin.android.vo.UserRelationship
+import timber.log.Timber
 import java.util.Collections
 import javax.inject.Inject
 
