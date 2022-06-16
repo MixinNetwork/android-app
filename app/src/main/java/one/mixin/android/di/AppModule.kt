@@ -398,7 +398,6 @@ object AppModule {
         return retrofit.create(TipNodeService::class.java)
     }
 
-
     @Provides
     @Singleton
     fun provideFoursquareService(httpLoggingInterceptor: HttpLoggingInterceptor?): FoursquareService {

@@ -2,7 +2,6 @@ package one.mixin.android.crypto.bls
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import dagger.hilt.android.testing.HiltAndroidTest
-import okhttp3.internal.and
 import one.mixin.android.crypto.blst.BLST_ERROR
 import one.mixin.android.crypto.blst.P1
 import one.mixin.android.crypto.blst.P1_Affine
@@ -10,6 +9,11 @@ import one.mixin.android.crypto.blst.P2
 import one.mixin.android.crypto.blst.P2_Affine
 import one.mixin.android.crypto.blst.Pairing
 import one.mixin.android.crypto.blst.SecretKey
+import one.mixin.android.crypto.blst.aggregateVerify
+import one.mixin.android.crypto.blst.blsDST
+import one.mixin.android.crypto.blst.fromHexString
+import one.mixin.android.crypto.blst.sign
+import one.mixin.android.crypto.blst.toHexString
 import org.junit.Test
 import org.junit.runner.RunWith
 
@@ -50,7 +54,6 @@ class BlsTest {
 
     @Test
     fun testVerifyAggregate() {
-        val dst = ""
         val msgCount = 5
         for (size in 1 until 20) {
             println("size $size")
@@ -72,27 +75,12 @@ class BlsTest {
                 val sigsToAgg = arrayListOf<P2_Affine>()
                 val pksToAgg = arrayListOf<P1_Affine>()
                 for (j in 0 until size) {
-                    val sig = P2().hash_to(msgs[i], dst)
-                        .sign_with(sks[j])
-                        .to_affine()
+                    val sig = sign(msgs[i], sks[j]).to_affine()
                     sigsToAgg.add(sig)
                     pksToAgg.add(pks[j])
                 }
 
-                val agSig = P2()
-                for (s in sigsToAgg) {
-                    agSig.aggregate(s)
-                }
-                val afSig = agSig.to_affine()
-
-                val agPk = P1()
-                for (p in pksToAgg) {
-                    agPk.aggregate(p)
-                }
-                val afPk = agPk.to_affine()
-
-                val result = afSig.core_verify(afPk, true, msgs[i], dst)
-                assert(result == BLST_ERROR.BLST_SUCCESS)
+                aggregateVerify(msgs[i], pks, sigsToAgg)
             }
         }
     }
@@ -156,7 +144,6 @@ class BlsTest {
             "99cd8687f20ae2b76ded973724ea1a0f177520197f9c440cc16b379c75f5f2ee1d8cfb372edf114db86bbff4628497b8",
         )
         val msg = "abc".toByteArray()
-        val dst = "BLS_SIG_BLS12381G2_XMD:SHA-256_SSWU_RO_NUL_"
 
         val sigsLen = sigss.size
         for (i in 0 until sigsLen) {
@@ -182,7 +169,7 @@ class BlsTest {
             val afSig = aggSig.to_affine()
             val afPk = aggPk.to_affine()
             val result =
-                afSig.core_verify(afPk, true, msg, dst)
+                afSig.core_verify(afPk, true, msg, blsDST)
             assert(result == BLST_ERROR.BLST_SUCCESS)
         }
     }
@@ -220,38 +207,5 @@ class BlsTest {
         ctx.commit()
         if (!ctx.finalverify()) throw RuntimeException("disaster")
         println("OK")
-    }
-
-    private val hexArray = "0123456789abcdef".toCharArray()
-
-    private fun toHexString(bytes: ByteArray): String {
-        val hexChars = CharArray(bytes.size shl 1)
-        var j = 0
-        var k = 0
-        while (j < bytes.size) {
-            val v: Int = bytes[j] and 0xFF
-            hexChars[k++] = hexArray[v ushr 4]
-            hexChars[k++] = hexArray[v and 0x0F]
-            j++
-        }
-        return String(hexChars)
-    }
-
-    private fun fromHexChar(c: Char): Int {
-        if (c in '0'..'9') return c - '0' else if (c in 'a'..'f') return c - 'a' + 10 else if (c in 'A'..'F') return c - 'A' + 10
-        throw IndexOutOfBoundsException("non-hex character")
-    }
-
-    private fun fromHexString(str: String): ByteArray {
-        val bytes = ByteArray(str.length ushr 1)
-        var j = 0
-        var k = 0
-        while (j < bytes.size) {
-            val hi = fromHexChar(str[k++])
-            val lo = fromHexChar(str[k++])
-            bytes[j] = (hi shl 4 or lo).toByte()
-            j++
-        }
-        return bytes
     }
 }

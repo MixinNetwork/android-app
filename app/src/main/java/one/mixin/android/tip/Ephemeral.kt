@@ -9,7 +9,7 @@ import one.mixin.android.extension.putString
 import javax.inject.Inject
 
 // manage Ephemeral
-class Ephemeral @Inject internal constructor (private val tipService: TipService) {
+class Ephemeral @Inject internal constructor(private val tipService: TipService) {
 
     suspend fun getEphemeralSeed(context: Context, deviceId: String): String {
         val ephemeralSeed = context.defaultSharedPreferences.getString(Constants.Tip.Ephemeral_Seed, null)
