@@ -92,7 +92,6 @@ import one.mixin.android.extension.REQUEST_FILE
 import one.mixin.android.extension.REQUEST_GALLERY
 import one.mixin.android.extension.REQUEST_LOCATION
 import one.mixin.android.extension.addFragment
-import one.mixin.android.extension.alert
 import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.animateHeight
 import one.mixin.android.extension.booleanFromAttribute
@@ -107,7 +106,6 @@ import one.mixin.android.extension.fadeIn
 import one.mixin.android.extension.fadeOut
 import one.mixin.android.extension.getAttachment
 import one.mixin.android.extension.getClipboardManager
-import one.mixin.android.extension.getFilePath
 import one.mixin.android.extension.getMimeType
 import one.mixin.android.extension.getOtherPath
 import one.mixin.android.extension.getUriForFile
@@ -197,7 +195,6 @@ import one.mixin.android.util.MusicPlayer
 import one.mixin.android.util.chat.InvalidateFlow
 import one.mixin.android.util.debug.FileLogTree
 import one.mixin.android.util.debug.debugLongClick
-import one.mixin.android.util.import.ImportChatUtil
 import one.mixin.android.util.mention.mentionDisplay
 import one.mixin.android.util.mention.mentionEnd
 import one.mixin.android.util.mention.mentionReplace
@@ -668,7 +665,7 @@ class ConversationFragment() :
                     )
                     return
                 }
-                val path = messageItem.absolutePath()?.toUri()?.getFilePath()
+                val path = messageItem.absolutePath()
                 if (path == null) {
                     toast(R.string.File_does_not_exist)
                     return
@@ -1024,7 +1021,7 @@ class ConversationFragment() :
     }
     private val aodWakeLock by lazy {
         powerManager.newWakeLock(
-            PowerManager.SCREEN_BRIGHT_WAKE_LOCK or PowerManager.ON_AFTER_RELEASE,
+            PowerManager.PARTIAL_WAKE_LOCK or PowerManager.ON_AFTER_RELEASE,
             "mixin"
         )
     }
@@ -3100,7 +3097,7 @@ class ConversationFragment() :
     }
 
     private fun checkTranscript() {
-        transcriptData?.let { transcriptData ->
+        transcriptData?.let { _ ->
             RxPermissions(requireActivity())
                 .request(Manifest.permission.WRITE_EXTERNAL_STORAGE)
                 .autoDispose(stopScope)
@@ -3113,11 +3110,9 @@ class ConversationFragment() :
                             .setView(transcriptDialogLayoutBinding.root)
                             .create()
                         transcriptDialogLayoutBinding.importChat.setOnClickListener {
-                            sendTranscript(transcriptData)
                             transcriptDialog?.dismiss()
                         }
                         transcriptDialogLayoutBinding.sendChat.setOnClickListener {
-                            sendFile(transcriptData)
                             transcriptDialog?.dismiss()
                         }
                         transcriptDialog?.show()
@@ -3126,31 +3121,6 @@ class ConversationFragment() :
                     }
                 }
         }
-    }
-
-    private fun sendTranscript(transcriptData: TranscriptData) {
-        try {
-            val importChatUtil = ImportChatUtil.get()
-            val content = importChatUtil.generateTranscriptMessage(requireContext(), transcriptData.chatUri, transcriptData.documentUris)
-            // todo
-            // content?.notEmptyWithElse({ sendTranscriptMessage(content) }, { sendFileAlert(transcriptData) })
-        } catch (e: Exception) {
-            Timber.e(e)
-            sendFileAlert(transcriptData)
-        }
-    }
-
-    private fun sendFileAlert(transcriptData: TranscriptData) {
-        alert(getString(R.string.chat_import_fail_content))
-            .setNegativeButton(android.R.string.cancel) { dialog, _ -> dialog.dismiss() }
-            .setPositiveButton(R.string.Send_as_file) { dialog, _ ->
-                sendFile(transcriptData)
-                dialog.dismiss()
-            }
-    }
-
-    private fun sendFile(transcriptData: TranscriptData) {
-        // todo
     }
 
     private var forwardDialog: AlertDialog? = null

@@ -1,5 +1,6 @@
 package one.mixin.android.vo
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.os.Parcelable
 import androidx.core.net.toUri
@@ -13,6 +14,7 @@ import one.mixin.android.extension.getTranscriptDirPath
 import java.io.File
 import java.io.Serializable
 
+@SuppressLint("ParcelCreator")
 @Parcelize
 @Entity(tableName = "transcript_messages", primaryKeys = ["transcript_id", "message_id"])
 class TranscriptMessage(
@@ -95,7 +97,11 @@ class TranscriptMessage(
     @SerializedName("caption")
     @ColumnInfo(name = "caption")
     val caption: String? = null
-) : ICategory, Serializable, Parcelable
+) : ICategory, Serializable, Parcelable {
+    companion object {
+        private var serialVersionUID: Long = 1L
+    }
+}
 
 fun TranscriptMessage.isValidAttachment(): Boolean =
     (isPlain() && mediaKey == null && mediaDigest == null) || ((isSignal() || isEncrypted()) && mediaKey != null && mediaDigest != null)
