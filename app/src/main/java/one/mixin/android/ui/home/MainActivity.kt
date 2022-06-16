@@ -191,6 +191,16 @@ class MainActivity : BlazeBaseActivity() {
         super.onCreate(savedInstanceState)
         navigationController = NavigationController(this)
 
+        val deviceId = defaultSharedPreferences.getString(DEVICE_ID, null)
+        if (deviceId == null) {
+            defaultSharedPreferences.putString(DEVICE_ID, this.getDeviceId())
+        } else if (deviceId != this.getDeviceId()) {
+            defaultSharedPreferences.remove(DEVICE_ID)
+            MixinApplication.get().closeAndClear(true)
+            finish()
+            return
+        }
+
         if (!Session.checkToken()) run {
             startActivity(Intent(this, LandingActivity::class.java))
             finish()
@@ -216,16 +226,6 @@ class MainActivity : BlazeBaseActivity() {
         }
 
         MixinApplication.get().onlining.set(true)
-
-        val deviceId = defaultSharedPreferences.getString(DEVICE_ID, null)
-        if (deviceId == null) {
-            defaultSharedPreferences.putString(DEVICE_ID, this.getDeviceId())
-        } else if (deviceId != this.getDeviceId()) {
-            defaultSharedPreferences.remove(DEVICE_ID)
-            MixinApplication.get().closeAndClear()
-            finish()
-            return
-        }
 
         if (checkNeedGo2MigrationPage()) {
             InitializeActivity.showDBUpgrade(this)
