@@ -11,9 +11,9 @@ import one.mixin.android.crypto.blst.Pairing
 import one.mixin.android.crypto.blst.SecretKey
 import one.mixin.android.crypto.blst.aggregateVerify
 import one.mixin.android.crypto.blst.blsDST
-import one.mixin.android.crypto.blst.fromHexString
 import one.mixin.android.crypto.blst.sign
-import one.mixin.android.crypto.blst.toHexString
+import one.mixin.android.extension.hexStringToByteArray
+import one.mixin.android.extension.toHex
 import org.junit.Test
 import org.junit.runner.RunWith
 
@@ -28,25 +28,25 @@ class BlsTest {
         val sk = SecretKey()
         sk.keygen("*".repeat(32).toByteArray())
         val skBytes = sk.to_bendian()
-        println("skHex ${toHexString(skBytes)}")
+        println("skHex ${skBytes.toHex()}")
 
         val pk = P1(sk)
         val pkBytes = pk.compress()
-        println("pkHex ${toHexString(pkBytes)}")
+        println("pkHex ${pkBytes.toHex()}")
 
         val sig = P2()
         sig.hash_to(m, dst)
             .sign_with(sk)
         val sigBytes = sig.compress()
-        println("sigHex ${toHexString(sigBytes)}")
+        println("sigHex ${sigBytes.toHex()}")
 
         val pkA = P1_Affine(pk)
         val pkABytes = pkA.compress()
-        println("pkAHex ${toHexString(pkABytes)}")
+        println("pkAHex ${pkABytes.toHex()}")
 
         val sigA = P2_Affine(sig)
         val sigABytes = sigA.compress()
-        println("sigAHex ${toHexString(sigABytes)}")
+        println("sigAHex ${sigABytes.toHex()}")
 
         val result = sigA.core_verify(pkA, true, m, dst)
         assert(result == BLST_ERROR.BLST_SUCCESS)
@@ -152,18 +152,18 @@ class BlsTest {
 
             val aggSig = P2()
             for (s in sigs) {
-                val sig = P2(fromHexString(s))
+                val sig = P2(s.hexStringToByteArray())
                 aggSig.aggregate(sig.to_affine())
             }
-            val aggSigHex = toHexString(aggSig.compress())
+            val aggSigHex = aggSig.compress().toHex()
             assert(aggSigHex == aggSigs[i])
 
             val aggPk = P1()
             for (p in pks) {
-                val pk = P1(fromHexString(p))
+                val pk = P1(p.hexStringToByteArray())
                 aggPk.aggregate(pk.to_affine())
             }
-            val aggPkHex = toHexString(aggPk.compress())
+            val aggPkHex = aggPk.compress().toHex()
             assert(aggPkHex == aggPks[i])
 
             val afSig = aggSig.to_affine()
