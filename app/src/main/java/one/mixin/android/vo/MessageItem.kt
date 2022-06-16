@@ -3,6 +3,7 @@ package one.mixin.android.vo
 import android.annotation.SuppressLint
 import android.content.Context
 import android.media.MediaScannerConnection
+import android.net.Uri
 import android.os.Environment.DIRECTORY_DOWNLOADS
 import android.os.Environment.DIRECTORY_MUSIC
 import android.os.Parcelable
@@ -39,6 +40,7 @@ import one.mixin.android.util.blurhash.BlurHashEncoder
 import one.mixin.android.util.reportException
 import one.mixin.android.websocket.LiveMessagePayload
 import one.mixin.android.websocket.toLocationData
+import timber.log.Timber
 import java.io.File
 
 @SuppressLint("ParcelCreator")
@@ -361,4 +363,14 @@ fun MessageItem.toTranscript(transcriptId: String): TranscriptMessage {
 
 fun MessageItem.absolutePath(context: Context = MixinApplication.appContext): String? {
     return absolutePath(context, conversationId, mediaUrl)
+}
+
+fun MessageItem.mediaExists(context: Context = MixinApplication.appContext): Boolean {
+    return try {
+        val path = absolutePath(context) ?: return false
+        return Uri.parse(path).toFile().exists()
+    } catch (e: Exception) {
+        Timber.e(e)
+        false
+    }
 }
