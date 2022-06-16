@@ -17,7 +17,7 @@ class Argon2Test {
         val argon2Kt = Argon2Kt()
         val password = "223388"
 
-        val hashResult : Argon2KtResult = argon2Kt.hash(
+        val hashResult: Argon2KtResult = argon2Kt.hash(
             mode = Argon2Mode.ARGON2_I,
             password = password.toByteArray(),
             salt = "somesalt".toByteArray(),
