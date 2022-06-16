@@ -92,7 +92,7 @@ class MixinBottomSheetDialog(context: Context, theme: Int) : BottomSheetDialog(c
         animatorSet.interpolator = DecelerateInterpolator()
         animatorSet.addListener(
             object : AnimatorListenerAdapter() {
-                override fun onAnimationEnd(animation: Animator?) {
+                override fun onAnimationEnd(animation: Animator) {
                     if (curSheetAnimation != null && curSheetAnimation == animation) {
                         curSheetAnimation = null
                         container.setLayerType(View.LAYER_TYPE_NONE, null)
@@ -100,7 +100,7 @@ class MixinBottomSheetDialog(context: Context, theme: Int) : BottomSheetDialog(c
                     }
                 }
 
-                override fun onAnimationCancel(animation: Animator?) {
+                override fun onAnimationCancel(animation: Animator) {
                     if (curSheetAnimation != null && curSheetAnimation == animation) {
                         curSheetAnimation = null
                     }

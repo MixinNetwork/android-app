@@ -194,7 +194,7 @@ class ChatControlView : LinearLayout, ActionMode.Callback {
                     .rotation(if (value == MENU_STATUS.EXPANDED) 45f else -45f)
             anim.setListener(
                 object : AnimatorListenerAdapter() {
-                    override fun onAnimationEnd(animation: Animator?) {
+                    override fun onAnimationEnd(animation: Animator) {
                         binding.chatMenuIv.rotation = 0f
                         binding.chatMenuIv.setImageResource(if (value == MENU_STATUS.EXPANDED) R.drawable.ic_chat_more_checked else R.drawable.ic_chat_more)
                     }

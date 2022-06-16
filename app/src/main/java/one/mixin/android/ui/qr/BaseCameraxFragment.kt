@@ -593,7 +593,7 @@ abstract class BaseCameraxFragment : VisionFragment() {
     class S : ScaleGestureDetector.SimpleOnScaleGestureListener() {
         lateinit var listener: ScaleGestureDetector.OnScaleGestureListener
 
-        override fun onScale(detector: ScaleGestureDetector?): Boolean {
+        override fun onScale(detector: ScaleGestureDetector): Boolean {
             return listener.onScale(detector)
         }
     }
@@ -606,7 +606,7 @@ abstract class BaseCameraxFragment : VisionFragment() {
             s.listener = this
         }
 
-        override fun onScale(detector: ScaleGestureDetector?): Boolean {
+        override fun onScale(detector: ScaleGestureDetector): Boolean {
             var scale = detector?.scaleFactor ?: return true
 
             scale = if (scale > 1f) {
@@ -621,9 +621,9 @@ abstract class BaseCameraxFragment : VisionFragment() {
             return true
         }
 
-        override fun onScaleBegin(detector: ScaleGestureDetector?) = true
+        override fun onScaleBegin(detector: ScaleGestureDetector) = true
 
-        override fun onScaleEnd(detector: ScaleGestureDetector?) {
+        override fun onScaleEnd(detector: ScaleGestureDetector) {
         }
     }
 }

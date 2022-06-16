@@ -167,7 +167,7 @@ class ConversationListFragment : LinkFragment() {
     private var distance = 0
     private var shadowVisible = true
     private val touchSlop: Int by lazy {
-        ViewConfiguration.get(context).scaledTouchSlop
+        ViewConfiguration.get(requireContext()).scaledTouchSlop
     }
 
     private val vibrateDis by lazy { requireContext().dpToPx(110f) }
