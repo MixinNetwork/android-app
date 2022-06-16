@@ -25,6 +25,14 @@ fun P2.verify(msg: ByteArray, pub: P1): Boolean {
     return result == BLST_ERROR.BLST_SUCCESS
 }
 
+fun aggregateSignatures(sigs: List<String>): P2 {
+    val sigList = mutableListOf<P2>()
+    sigs.mapTo(sigList) {
+        P2(it.hexStringToByteArray())
+    }
+    return aggregateSignatures(*sigList.toTypedArray())
+}
+
 fun aggregateSignatures(vararg sigs: P2): P2 {
     val aggSig = P2()
     for (s in sigs) {

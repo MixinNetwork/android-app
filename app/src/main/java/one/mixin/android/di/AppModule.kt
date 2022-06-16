@@ -68,6 +68,7 @@ import one.mixin.android.session.JwtResult
 import one.mixin.android.session.Session
 import one.mixin.android.tip.Ephemeral
 import one.mixin.android.tip.IdentityManager
+import one.mixin.android.tip.Tip
 import one.mixin.android.util.ErrorHandler.Companion.AUTHENTICATION
 import one.mixin.android.util.ErrorHandler.Companion.OLD_VERSION
 import one.mixin.android.util.GsonHelper
@@ -445,4 +446,8 @@ object AppModule {
     @Provides
     @Singleton
     fun provideEphemeral(tipService: TipService) = Ephemeral(tipService)
+
+    @Provides
+    @Singleton
+    fun provideTip(tipNodeService: TipNodeService) = Tip(tipNodeService)
 }
