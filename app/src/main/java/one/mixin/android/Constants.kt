@@ -26,6 +26,10 @@ object Constants {
         const val TIP = "https://tip.id"
     }
 
+    object Tip {
+        const val Ephemeral_Seed = "ephemeral_seed"
+    }
+
     object Account {
         const val PREF_PIN_CHECK = "pref_pin_check"
         const val PREF_BIOMETRICS = "pref_biometrics"
