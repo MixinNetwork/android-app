@@ -329,7 +329,7 @@ class GroupBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment(
                 style = MenuStyle.Danger
                 action = {
                     requireContext().showConfirmDialog(getString(R.string.Delete_Group)) {
-                        bottomViewModel.deleteGroup(conversationId)
+                        bottomViewModel.deleteConversation(conversationId)
                         callback?.onDelete()
                     }
                 }
@@ -342,7 +342,7 @@ class GroupBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment(
                     style = MenuStyle.Danger
                     action = {
                         requireContext().showConfirmDialog(getString(R.string.Clear_chat)) {
-                            bottomViewModel.deleteMessageByConversationId(conversationId)
+                            bottomViewModel.clearChat(conversationId)
                             dismiss()
                         }
                     }

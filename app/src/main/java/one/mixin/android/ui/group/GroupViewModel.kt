@@ -2,12 +2,10 @@ package one.mixin.android.ui.group
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
 import androidx.paging.LivePagedListBuilder
 import androidx.paging.PagedList
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.Constants
 import one.mixin.android.api.request.ConversationRequest
@@ -106,10 +104,6 @@ internal constructor(
 
     fun getConversationById(conversationId: String) =
         conversationRepository.getConversationById(conversationId)
-
-    fun deleteMessageByConversationId(conversationId: String) = viewModelScope.launch(Dispatchers.IO) {
-        conversationRepository.deleteMessageByConversationId(conversationId)
-    }
 
     fun mute(conversationId: String, duration: Long) {
         jobManager.addJobInBackground(

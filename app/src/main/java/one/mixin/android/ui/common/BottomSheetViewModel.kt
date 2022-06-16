@@ -32,7 +32,6 @@ import one.mixin.android.job.GenerateAvatarJob
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshConversationJob
 import one.mixin.android.job.RefreshUserJob
-import one.mixin.android.job.TranscriptDeleteJob
 import one.mixin.android.job.UpdateRelationshipJob
 import one.mixin.android.repository.AccountRepository
 import one.mixin.android.repository.AssetRepository
@@ -40,6 +39,7 @@ import one.mixin.android.repository.ConversationRepository
 import one.mixin.android.repository.UserRepository
 import one.mixin.android.session.Session
 import one.mixin.android.session.encryptPin
+import one.mixin.android.ui.common.message.CleanMessageHelper
 import one.mixin.android.vo.Account
 import one.mixin.android.vo.Address
 import one.mixin.android.vo.App
@@ -64,7 +64,8 @@ class BottomSheetViewModel @Inject internal constructor(
     private val jobManager: MixinJobManager,
     private val userRepository: UserRepository,
     private val assetRepository: AssetRepository,
-    private val conversationRepo: ConversationRepository
+    private val conversationRepo: ConversationRepository,
+    private val cleanMessageHelper: CleanMessageHelper
 ) : ViewModel() {
     suspend fun searchCode(code: String) = withContext(Dispatchers.IO) {
         accountRepository.searchCode(code)
@@ -229,8 +230,12 @@ class BottomSheetViewModel @Inject internal constructor(
         jobManager.addJobInBackground(GenerateAvatarJob(conversationId, list))
     }
 
-    fun deleteMessageByConversationId(conversationId: String) = viewModelScope.launch(Dispatchers.IO) {
-        conversationRepo.deleteMessageByConversationId(conversationId)
+    fun clearChat(conversationId: String) = viewModelScope.launch(Dispatchers.IO) {
+        cleanMessageHelper.deleteMessageByConversationId(conversationId)
+    }
+
+    fun deleteConversation(conversationId: String) = viewModelScope.launch(Dispatchers.IO) {
+        cleanMessageHelper.deleteMessageByConversationId(conversationId, true)
     }
 
     fun exitGroup(conversationId: String) {
@@ -240,14 +245,6 @@ class BottomSheetViewModel @Inject internal constructor(
                 type = ConversationJob.TYPE_EXIT
             )
         )
-    }
-
-    fun deleteGroup(conversationId: String) = viewModelScope.launch(Dispatchers.IO) {
-        val transIds = conversationRepo.findTranscriptIdByConversationId(conversationId)
-        if (transIds.isNotEmpty()) {
-            jobManager.addJobInBackground(TranscriptDeleteJob(transIds))
-        }
-        conversationRepo.deleteConversationById(conversationId)
     }
 
     fun updateGroup(

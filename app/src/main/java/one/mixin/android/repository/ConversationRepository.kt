@@ -11,7 +11,6 @@ import io.reactivex.Observable
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import one.mixin.android.Constants.DB_DELETE_LIMIT
-import one.mixin.android.Constants.DB_DELETE_THRESHOLD
 import one.mixin.android.MixinApplication
 import one.mixin.android.RxBus
 import one.mixin.android.api.MixinResponse
@@ -36,8 +35,6 @@ import one.mixin.android.db.ParticipantSessionDao
 import one.mixin.android.db.PinMessageDao
 import one.mixin.android.db.RemoteMessageStatusDao
 import one.mixin.android.db.TranscriptMessageDao
-import one.mixin.android.db.deleteMessageByConversationId
-import one.mixin.android.db.deleteMessageById
 import one.mixin.android.db.insertNoReplace
 import one.mixin.android.db.provider.DataProvider
 import one.mixin.android.db.runInTransaction
@@ -46,15 +43,10 @@ import one.mixin.android.extension.joinStar
 import one.mixin.android.extension.putBoolean
 import one.mixin.android.extension.replaceQuotationMark
 import one.mixin.android.extension.sharedPreferences
-import one.mixin.android.job.AttachmentDeleteJob
-import one.mixin.android.job.FtsDeleteJob
 import one.mixin.android.job.GenerateAvatarJob
-import one.mixin.android.job.MessageDeleteJob
-import one.mixin.android.job.MessageFtsDeleteJob
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshConversationJob
 import one.mixin.android.job.RefreshUserJob
-import one.mixin.android.job.TranscriptDeleteJob
 import one.mixin.android.session.Session
 import one.mixin.android.ui.media.pager.MediaPagerActivity
 import one.mixin.android.util.SINGLE_DB_THREAD
@@ -418,63 +410,7 @@ internal constructor(
         InvalidateFlow.emit(conversationId)
     }
 
-    suspend fun deleteMessageByConversationId(conversationId: String, deleteConversation: Boolean = false) {
-        messageDao.findAllMediaPathByConversationId(conversationId).let { list ->
-            if (list.isNotEmpty()) {
-                jobManager.addJobInBackground(AttachmentDeleteJob(* list.toTypedArray()))
-            }
-        }
-        val deleteMentionCount = messageMentionDao.countDeleteMessageByConversationId(conversationId)
-        if (deleteMentionCount > DB_DELETE_THRESHOLD) {
-            jobManager.addJobInBackground(MessageDeleteJob(conversationId, true))
-        } else {
-            val deleteTimes = deleteMentionCount / DB_DELETE_LIMIT + 1
-            repeat(deleteTimes) {
-                messageMentionDao.deleteMessageByConversationId(conversationId, DB_DELETE_LIMIT)
-            }
-        }
-        val deleteCount = messageDao.countDeleteMessageByConversationId(conversationId)
-        if (deleteCount > DB_DELETE_THRESHOLD) {
-            jobManager.addJobInBackground(MessageDeleteJob(conversationId, deleteConversation = deleteConversation))
-        } else {
-            val deleteTimes = deleteCount / DB_DELETE_LIMIT + 1
-            jobManager.addJobInBackground(
-                MessageFtsDeleteJob(
-                    messageDao.getMessageIdsByConversationId(
-                        conversationId
-                    )
-                )
-            )
-            repeat(deleteTimes) {
-                if (!deleteConversation) {
-                    appDatabase.deleteMessageByConversationId(conversationId, DB_DELETE_LIMIT)
-                }
-            }
-            if (deleteConversation) {
-                conversationDao.deleteConversationById(conversationId)
-            }
-            InvalidateFlow.emit(conversationId)
-        }
-    }
-
-    fun deleteMessage(id: String, conversationId: String, mediaUrl: String? = null, forceDelete: Boolean = true) {
-        if (!mediaUrl.isNullOrBlank() && forceDelete) {
-            jobManager.addJobInBackground(AttachmentDeleteJob(mediaUrl))
-        }
-        appDatabase.deleteMessageById(id)
-        jobManager.addJobInBackground(FtsDeleteJob(id))
-        InvalidateFlow.emit(conversationId)
-    }
-
-    fun deleteTranscriptByMessageId(messageId: String) {
-        jobManager.addJobInBackground(TranscriptDeleteJob(listOf(messageId)))
-    }
-
     suspend fun findTranscriptIdByConversationId(conversationId: String) = messageDao.findTranscriptIdByConversationId(conversationId)
-
-    suspend fun deleteConversationById(conversationId: String) {
-        deleteMessageByConversationId(conversationId, true)
-    }
 
     fun create(request: ConversationRequest) = conversationService.create(request)
 

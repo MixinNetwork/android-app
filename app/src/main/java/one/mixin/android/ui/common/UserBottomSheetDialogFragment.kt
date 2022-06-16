@@ -278,7 +278,7 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
             style = MenuStyle.Danger
             action = {
                 requireContext().showConfirmDialog(getString(R.string.Clear_chat)) {
-                    bottomViewModel.deleteMessageByConversationId(conversationId)
+                    bottomViewModel.clearChat(conversationId)
                     dismiss()
                 }
             }

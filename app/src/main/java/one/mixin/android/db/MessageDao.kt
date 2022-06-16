@@ -243,8 +243,11 @@ interface MessageDao : BaseDao<Message> {
     )
     suspend fun fuzzySearchMessage(query: String, limit: Int): List<SearchMessageItem>
 
-    @Query("SELECT m.media_url FROM messages m WHERE m.conversation_id = :conversationId AND m.media_url IS NOT NULL AND m.media_status = 'DONE'")
-    suspend fun findAllMediaPathByConversationId(conversationId: String): List<String>
+    @Query("SELECT m.category as type, m.id as messageId, m.media_url as mediaUrl FROM messages m WHERE m.conversation_id = :conversationId AND m.media_url IS NOT NULL AND m.media_status = 'DONE' LIMIT :limit OFFSET :offset")
+    suspend fun getMediaMessageMinimalByConversationId(conversationId: String, limit: Int, offset: Int): List<MediaMessageMinimal>
+
+    @Query("SELECT m.id FROM messages m WHERE m.conversation_id = :conversationId AND (m.category = 'SIGNAL_TRANSCRIPT' OR m.category = 'PLAIN_TRANSCRIPT') LIMIT :limit OFFSET :offset")
+    suspend fun getTranscriptMessageIdByConversationId(conversationId: String, limit: Int, offset: Int): List<String>
 
     @Query("SELECT rowid, id FROM messages WHERE conversation_id = :conversationId AND status IN ('SENT', 'DELIVERED') AND user_id != :userId ORDER BY rowid ASC LIMIT :limit")
     fun getUnreadMessage(conversationId: String, userId: String, limit: Int): List<MessageMinimal>
@@ -316,6 +319,9 @@ interface MessageDao : BaseDao<Message> {
     @Query("SELECT id FROM messages WHERE conversation_id =:conversationId ORDER BY created_at DESC LIMIT 1")
     fun findLastMessageId(conversationId: String): String?
 
+    @Query("SELECT rowid FROM messages WHERE conversation_id =:conversationId ORDER BY rowid DESC LIMIT 1")
+    fun findLastMessageRowId(conversationId: String): Long?
+
     @Query(
         """
         SELECT id FROM messages WHERE conversation_id =:conversationId AND user_id !=:userId AND messages.rowid > 
@@ -341,8 +347,14 @@ interface MessageDao : BaseDao<Message> {
     @Query("SELECT id FROM messages WHERE conversation_id =:conversationId")
     suspend fun getMessageIdsByConversationId(conversationId: String): List<String>
 
-    @Query("SELECT id FROM messages WHERE conversation_id =:conversationId ORDER BY rowid LIMIT :limit")
-    suspend fun getMessageIdsByConversationId(conversationId: String, limit: Int): List<String>
+    @Query("SELECT id FROM messages WHERE conversation_id =:conversationId LIMIT :limit OFFSET :offset")
+    suspend fun getMessageIdsByConversationId(conversationId: String, limit: Long, offset: Long): List<String>
+
+    @Query("SELECT id FROM messages WHERE conversation_id =:conversationId AND rowid <= :rowid ORDER BY rowid LIMIT :limit")
+    suspend fun getMessageIdsByConversationId(conversationId: String, rowid: Long, limit: Int): List<String>
+
+    @Query("SELECT id FROM messages WHERE conversation_id =:conversationId AND rowid <= :rowid ORDER BY rowid")
+    suspend fun getMessageIdsByConversationId(conversationId: String, rowid: Long): List<String>
 
     @Query(
         """
@@ -530,6 +542,9 @@ interface MessageDao : BaseDao<Message> {
     // Delete SQL
     @Query("DELETE FROM messages WHERE id = :id")
     fun deleteMessageById(id: String)
+
+    @Query("DELETE FROM messages WHERE id IN (:ids)")
+    fun deleteMessageById(ids: List<String>)
 
     @Query(
         """
