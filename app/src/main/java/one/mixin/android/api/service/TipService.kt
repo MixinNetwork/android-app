@@ -2,7 +2,6 @@ package one.mixin.android.api.service
 
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.request.TipRequest
-import one.mixin.android.api.response.TipConfig
 import one.mixin.android.api.response.TipEphemeral
 import one.mixin.android.api.response.TipIdentity
 import retrofit2.http.Body
@@ -14,7 +13,7 @@ interface TipService {
     suspend fun tipIdentity(): MixinResponse<TipIdentity>
 
     @GET("tip/ephermerals")
-    suspend fun tipEphermerals(): MixinResponse<TipEphemeral>
+    suspend fun tipEphemerals(): MixinResponse<List<TipEphemeral>>
 
     @POST("tip/ephemerals")
     suspend fun tipEphemeral(@Body request: TipRequest): MixinResponse<TipEphemeral>
