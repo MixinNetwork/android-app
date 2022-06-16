@@ -5,7 +5,9 @@ import one.mixin.android.db.makeMessageStatus
 import one.mixin.android.extension.getEpochNano
 import one.mixin.android.vo.Offset
 import one.mixin.android.vo.STATUS_OFFSET
-import java.util.UUID
+import java.util.*
+
+var pendingMessageStatusMap = mutableMapOf<String, String>()
 
 class RefreshOffsetJob : MixinJob(
     Params(PRIORITY_UI_HIGH)
@@ -32,14 +34,15 @@ class RefreshOffsetJob : MixinJob(
             val response = messageService.messageStatusOffset(status).execute().body()
             if (response != null && response.isSuccess && response.data != null) {
                 val blazeMessages = response.data!!
-                if (blazeMessages.count() == 0) {
+                if (blazeMessages.isEmpty()) {
                     break
                 }
                 for (m in blazeMessages) {
+                    pendingMessageStatusMap[m.messageId] = m.status
                     messageDao.makeMessageStatus(m.status, m.messageId)
                     offsetDao.insert(Offset(STATUS_OFFSET, m.updatedAt))
                 }
-                if (blazeMessages.count() > 0 && blazeMessages.last().updatedAt.getEpochNano() == status) {
+                if (blazeMessages.isNotEmpty() && blazeMessages.last().updatedAt.getEpochNano() == status) {
                     break
                 }
                 status = blazeMessages.last().updatedAt.getEpochNano()

@@ -1372,6 +1372,8 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                 expiredMessageDao.insert(ExpiredMessage(data.messageId, expireIn, null))
             }
         }
+        val status = pendingMessageStatusMap.remove(message.id)
+        if (status != null) message.status = status
         database.insertAndNotifyConversation(message)
     }
 }

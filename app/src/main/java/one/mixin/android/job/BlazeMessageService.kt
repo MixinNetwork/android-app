@@ -387,7 +387,7 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
 
     private tailrec suspend fun processFloodMessage(): Boolean {
         val messages = floodMessageDao.findFloodMessages()
-        return if (!messages.isNullOrEmpty()) {
+        return if (messages.isNotEmpty()) {
             messages.forEach { message ->
                 val data = gson.fromJson(message.data, BlazeMessageData::class.java)
                 if (data.category.startsWith("WEBRTC_") || data.category.startsWith("KRAKEN_")) {

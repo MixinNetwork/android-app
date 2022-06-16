@@ -101,7 +101,7 @@ class Message(
 
     @SerializedName("status")
     @ColumnInfo(name = "status")
-    val status: String,
+    var status: String,
 
     @SerializedName("created_at")
     @ColumnInfo(name = "created_at")
