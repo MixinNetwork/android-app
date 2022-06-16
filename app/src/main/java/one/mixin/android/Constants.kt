@@ -28,6 +28,7 @@ object Constants {
 
     object Tip {
         const val Ephemeral_Seed = "ephemeral_seed"
+        const val Identity_Priv = "identity_priv"
     }
 
     object Account {

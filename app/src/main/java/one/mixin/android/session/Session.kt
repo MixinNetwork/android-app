@@ -189,6 +189,8 @@ object Session {
         return account?.sessionId
     }
 
+    fun getIdentityPub(): String? = getAccount()?.tipKeyBase64
+
     fun checkToken() = getAccount() != null && !getPinToken().isNullOrBlank()
 
     fun shouldUpdateKey() = getEd25519Seed().isNullOrBlank() &&

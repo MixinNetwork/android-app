@@ -66,6 +66,8 @@ import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.MyJobService
 import one.mixin.android.session.JwtResult
 import one.mixin.android.session.Session
+import one.mixin.android.tip.Ephemeral
+import one.mixin.android.tip.IdentityManager
 import one.mixin.android.util.ErrorHandler.Companion.AUTHENTICATION
 import one.mixin.android.util.ErrorHandler.Companion.OLD_VERSION
 import one.mixin.android.util.GsonHelper
@@ -435,4 +437,12 @@ object AppModule {
                 AudioDevice.Earpiece::class.java
             )
         )
+
+    @Provides
+    @Singleton
+    fun provideIdentityManager(tipService: TipService) = IdentityManager(tipService)
+
+    @Provides
+    @Singleton
+    fun provideEphemeral(tipService: TipService) = Ephemeral(tipService)
 }
