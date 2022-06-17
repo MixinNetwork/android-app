@@ -4,6 +4,8 @@ import android.content.Context
 import one.mixin.android.Constants
 import one.mixin.android.api.request.TipRequest
 import one.mixin.android.api.service.TipService
+import one.mixin.android.crypto.generateEphemeralSeed
+import one.mixin.android.extension.base64RawEncode
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.putString
 import javax.inject.Inject
@@ -21,14 +23,23 @@ class Ephemeral @Inject internal constructor(private val tipService: TipService)
             return ""
         }
         if (response.data.isNullOrEmpty()) {
-            return ""
+            return createEphemeralSeed(context, deviceId)
         }
         val ep = response.data!![0]
-        val resp = tipService.tipEphemeral(TipRequest(deviceId, ep.seedBase64))
+        return updateEphemeralSeed(context, deviceId, ep.seedBase64)
+    }
+
+    private suspend fun createEphemeralSeed(context: Context, deviceId: String): String {
+        val seed = generateEphemeralSeed().base64RawEncode()
+        return updateEphemeralSeed(context, deviceId, seed)
+    }
+
+    private suspend fun updateEphemeralSeed(context: Context, deviceId: String, seed: String): String {
+        val resp = tipService.tipEphemeral(TipRequest(deviceId, seed))
         if (!resp.isSuccess) {
             return ""
         }
-        context.defaultSharedPreferences.putString(Constants.Tip.Ephemeral_Seed, ep.seedBase64)
-        return ep.seedBase64
+        context.defaultSharedPreferences.putString(Constants.Tip.Ephemeral_Seed, seed)
+        return seed
     }
 }

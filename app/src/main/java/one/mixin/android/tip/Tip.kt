@@ -4,7 +4,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
-import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.TipSignData
 import one.mixin.android.api.request.TipSignRequest
 import one.mixin.android.api.response.TipSigner
@@ -27,20 +26,19 @@ class Tip @Inject internal constructor(private val tipNodeService: TipNodeServic
     private val gson = GsonHelper.customGson
 
     suspend fun genPriv(identityPub: String, ephemeral: String): String? {
-        val tipConfig = handleMixinResponse(
-            invokeNetwork = { tipNodeService.tipConfig() },
-            switchContext = Dispatchers.IO,
-            successBlock = {
-                requireNotNull(it.data) { "Required tip config was null." }
-            }
-        ) ?: return null
+        val tipConfig = try {
+            tipNodeService.tipConfig()
+        } catch (e: Exception) {
+            Timber.d(e)
+            null
+        } ?: return null
 
         val identityPubBytes = identityPub.decodeBase64()
         val ephemeralBytes = ephemeral.decodeBase64()
 
         val nodeSeeds = getNodeSeeds(tipConfig.signers, identityPubBytes, ephemeralBytes)
 
-        val nodeSigs = getNodeSigs(tipConfig.signers, identityPubBytes, nodeSeeds, ephemeral)
+        val nodeSigs = getNodeSigs(tipConfig.signers, identityPubBytes, nodeSeeds)
 
         val aggSig = aggregateSignatures(nodeSigs)
         return aggSig.compress().toHex()
@@ -60,7 +58,7 @@ class Tip @Inject internal constructor(private val tipNodeService: TipNodeServic
         return nodeSeeds
     }
 
-    private suspend fun getNodeSigs(tipSigners: List<TipSigner>, identityPub: ByteArray, nodeSeeds: List<ByteArray>, ephemeral: String): List<String> {
+    private suspend fun getNodeSigs(tipSigners: List<TipSigner>, identityPub: ByteArray, nodeSeeds: List<ByteArray>): List<String> {
         require(tipSigners.size == nodeSeeds.size) { "Required tipSigners size equals nodeSeeds size failed." }
         val result = mutableListOf<String>()
         coroutineScope {
@@ -70,7 +68,8 @@ class Tip @Inject internal constructor(private val tipNodeService: TipNodeServic
                     var retryCount = 0
 
                     while (!success) {
-                        val sign = fetchTipNodeSigs(signer, identityPub, ephemeral)
+                        val sign = fetchTipNodeSigs(signer, identityPub, nodeSeeds[i])
+                        Timber.d("$i sign: $sign")
                         success = sign != null
                         if (success) {
                             require(sign != null)
@@ -88,32 +87,28 @@ class Tip @Inject internal constructor(private val tipNodeService: TipNodeServic
         return result
     }
 
-    private suspend fun fetchTipNodeSigs(tipSigner: TipSigner, identityPub: ByteArray, ephemeral: String): String? {
-        val tipSignRequest = genTipSignRequest(tipSigner, identityPub, ephemeral)
-        return handleMixinResponse(
-            invokeNetwork = {
-                tipNodeService.postSign(tipSignRequest, tipSigner.api)
-            },
-            switchContext = Dispatchers.IO,
-            successBlock = {
-                val resp = it.data
-                requireNotNull(resp)
-                resp.signature
-            }
-        )
+    private suspend fun fetchTipNodeSigs(tipSigner: TipSigner, identityPub: ByteArray, nodeSeed: ByteArray): String? {
+        val tipSignRequest = genTipSignRequest(tipSigner, nodeSeed, identityPub)
+        return try {
+            val r = tipNodeService.postSign(tipSignRequest, tipSigner.api)
+            r.signature
+        } catch (e: Exception) {
+            Timber.d(e)
+            null
+        }
     }
 
-    private fun genTipSignRequest(tipSigner: TipSigner, identityPub: ByteArray, ephemeral: String): TipSignRequest {
+    private fun genTipSignRequest(tipSigner: TipSigner, nodeSeed: ByteArray, identityPub: ByteArray): TipSignRequest {
         val nonce = currentTimeSeconds()
         val grace = ephemeralGrace
-        val sig = genRequestSig(tipSigner.identity, identityPub, nonce, grace)
-        val data = TipSignData(tipSigner.identity, null, ephemeral, grace, nonce.toString(), null)
+        val sig = genRequestSig(nodeSeed, identityPub, nonce, grace)
+        val data = TipSignData(tipSigner.identity, null, nodeSeed.toHex(), grace, nonce.toString(), null)
         val dataJson = gson.toJson(data)
         return TipSignRequest(sig, tipSigner.identity, dataJson)
     }
 
-    private fun genRequestSig(signerIdentity: String, identityPub: ByteArray, nonce: Long, grace: String): String {
-        val m = identityPub + signerIdentity.toByteArray() + nonce.toLeByteArray() + grace.toByteArray()
+    private fun genRequestSig(nodeSeed: ByteArray, identityPub: ByteArray, nonce: Long, grace: String): String {
+        val m = identityPub + nodeSeed + nonce.toLeByteArray() + grace.toByteArray()
         val sig = sign(m, identityPub)
         return sig.compress().toHex()
     }

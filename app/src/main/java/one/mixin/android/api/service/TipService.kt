@@ -15,6 +15,6 @@ interface TipService {
     @GET("tip/ephermerals")
     suspend fun tipEphemerals(): MixinResponse<List<TipEphemeral>>
 
-    @POST("tip/ephemerals")
+    @POST("tip/ephermerals")
     suspend fun tipEphemeral(@Body request: TipRequest): MixinResponse<TipEphemeral>
 }

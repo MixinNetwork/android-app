@@ -55,6 +55,12 @@ fun privateKeyToCurve25519(edSeed: ByteArray): ByteArray {
 private val secureRandom: SecureRandom = SecureRandom()
 private val GCM_IV_LENGTH = 12
 
+fun generateEphemeralSeed(): ByteArray {
+    val key = ByteArray(64)
+    secureRandom.nextBytes(key)
+    return key
+}
+
 fun generateAesKey(): ByteArray {
     val key = ByteArray(16)
     secureRandom.nextBytes(key)
