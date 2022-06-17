@@ -144,7 +144,7 @@ interface UserDao : BaseDao<User> {
     @Query("SELECT * FROM users WHERE identity_number = :identityNumber LIMIT 1")
     suspend fun suspendFindUserByIdentityNumber(identityNumber: String): User?
 
-    @Query("SELECT * FROM users WHERE identity_number IN (:numbers)")
+    @Query("SELECT identity_number, full_name FROM users WHERE identity_number IN (:numbers)")
     fun findUserByIdentityNumbers(numbers: Set<String>): List<MentionUser>
 
     @Query("SELECT * FROM users WHERE app_id = :appId")
