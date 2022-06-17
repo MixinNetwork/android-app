@@ -396,6 +396,7 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
                     messageDecrypt.onRun(data)
                 }
                 floodMessageDao.delete(message)
+                pendingMessageStatusMap.remove(data.messageId)
             }
             processFloodMessage()
         } else {
