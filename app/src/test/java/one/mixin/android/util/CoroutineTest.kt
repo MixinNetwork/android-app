@@ -1,58 +1,62 @@
 package one.mixin.android.util
 
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.asCoroutineDispatcher
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.channels.BufferOverflow
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.withContext
 import org.junit.Test
-import java.util.concurrent.Executors
+import kotlin.random.Random
 
 class CoroutineTest {
+    @Test
+    fun testFlow() = runBlocking {
+        val dropFlow by lazy {
+            MutableSharedFlow<Int>(0, 1, BufferOverflow.DROP_OLDEST)
+        }
 
-    private val SINGLE_THREAD by lazy {
-        Executors.newSingleThreadExecutor().asCoroutineDispatcher()
-    }
+        val job = launch {
+            dropFlow.collect {
+                println("collect $it")
+                delay(200)
+                println("collect done")
+            }
+        }
+        repeat(10) {
+            delay(100)
+            dropFlow.emit(it)
+        }
 
-    private val SINGLE_THREAD_1 by lazy {
-        Executors.newSingleThreadExecutor().asCoroutineDispatcher()
+        job.cancel()
+        println("Done")
     }
 
     @Test
-    fun testCoroutine() = runBlocking {
-        val start = System.currentTimeMillis()
-        repeat(10) {
-            withContext(SINGLE_THREAD) {
-                work1()
-                delay(10)
-                withContext(SINGLE_THREAD_1) {
-                    work2()
+    fun testMockBarrier() = runBlocking {
+        coroutineScope {
+            (0..10).map { i ->
+                async(Dispatchers.IO) {
+                    var failed = true
+                    var retryCount = 0
+                    while (failed) {
+                        val r = Random.nextInt(4)
+                        delay(r * 1000L)
+
+                        failed = Random.nextBoolean()
+                        if (!failed) {
+                            println("$i delay $r success")
+                            return@async
+                        }
+                        retryCount++
+                        println("$i delay $r failed, retry $retryCount")
+                    }
                 }
-                println(System.currentTimeMillis() - start)
-            }
+            }.awaitAll()
         }
-    }
 
-    @Test
-    fun testCoroutine1() = runBlocking {
-        val start = System.currentTimeMillis()
-        repeat(10) {
-            withContext(Dispatchers.IO) {
-                work1()
-                delay(10)
-                withContext(SINGLE_THREAD) {
-                    work2()
-                }
-                println(System.currentTimeMillis() - start)
-            }
-        }
-    }
-
-    private suspend fun work1() {
-        delay(10)
-    }
-
-    private suspend fun work2() {
-        delay(50)
+        return@runBlocking
     }
 }
