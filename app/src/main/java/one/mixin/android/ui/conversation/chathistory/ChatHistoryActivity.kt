@@ -15,6 +15,7 @@ import android.view.View
 import androidx.activity.result.ActivityResultLauncher
 import androidx.appcompat.widget.PopupMenu
 import androidx.core.content.ContextCompat
+import androidx.core.view.children
 import androidx.core.view.isVisible
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -57,6 +58,7 @@ import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseActivity
 import one.mixin.android.ui.common.message.SendMessageHelper
 import one.mixin.android.ui.common.showUserBottom
+import one.mixin.android.ui.conversation.chathistory.holder.BaseViewHolder
 import one.mixin.android.ui.conversation.location.LocationActivity
 import one.mixin.android.ui.conversation.markdown.MarkdownActivity
 import one.mixin.android.ui.forward.ForwardActivity
@@ -232,6 +234,14 @@ class ChatHistoryActivity : BaseActivity() {
     }
 
     override fun onStop() {
+        binding.recyclerView.let { rv ->
+            rv.children.forEach {
+                val vh = rv.getChildViewHolder(it)
+                if (vh != null && vh is BaseViewHolder) {
+                    vh.stopListen()
+                }
+            }
+        }
         super.onStop()
         AudioPlayer.pause()
     }
