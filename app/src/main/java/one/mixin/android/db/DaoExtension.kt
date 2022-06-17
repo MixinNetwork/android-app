@@ -204,7 +204,7 @@ fun MessageDao.makeMessageStatus(status: String, messageId: String) {
 fun MixinDatabase.insertAndNotifyConversation(message: Message) {
     runInTransaction {
         messageDao().insert(message)
-        if (!message.isMine()) {
+        if (!message.isMine() && message.status != MessageStatus.READ.name) {
             remoteMessageStatusDao().insert(RemoteMessageStatus(message.id, message.conversationId, MessageStatus.DELIVERED.name))
         }
         remoteMessageStatusDao().updateConversationUnseen(message.conversationId)

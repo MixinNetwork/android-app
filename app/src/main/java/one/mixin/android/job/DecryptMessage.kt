@@ -166,7 +166,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
     private fun processMessage(data: BlazeMessageData) {
         try {
             if (data.category.isIllegalMessageCategory()) {
-                if (data.conversationId != SYSTEM_USER && data.conversationId != Session.getAccountId()) {
+                if (data.conversationId != SYSTEM_USER && data.conversationId != accountId) {
                     val message = createMessage(
                         data.messageId,
                         data.conversationId,
@@ -212,7 +212,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
     }
 
     private fun checkSession(data: BlazeMessageData) {
-        if (data.conversationId == SYSTEM_USER || data.conversationId == Session.getAccountId() || data.userId == SYSTEM_USER) {
+        if (data.conversationId == SYSTEM_USER || data.conversationId == accountId || data.userId == SYSTEM_USER) {
             return
         }
         val p = participantSessionDao.getParticipantSession(data.conversationId, data.userId, data.sessionId)
@@ -508,7 +508,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
             if (resendMessage != null) {
                 continue
             }
-            val accountId = Session.getAccountId() ?: return
+            val accountId = accountId ?: return
             val needResendMessage = messageDao.findMessageById(id, accountId)
             if (needResendMessage == null || needResendMessage.category == MessageCategory.MESSAGE_RECALL.name) {
                 resendMessageDao.insert(ResendSessionMessage(id, data.userId, data.sessionId, 0, nowInUtc()))
@@ -573,7 +573,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                             }
                         }
                     } else {
-                        if (quoteMessageItem.userId == Session.getAccountId() && data.userId != Session.getAccountId()) {
+                        if (quoteMessageItem.userId == accountId && data.userId != accountId) {
                             quoteMe = true
                             messageMentionDao.insert(MessageMention(data.messageId, data.conversationId, "", false))
                         }
@@ -977,7 +977,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
             data.createdAt, data.status, systemMessage.action, systemMessage.participantId
         )
 
-        val accountId = Session.getAccountId() ?: return
+        val accountId = accountId ?: return
         if (systemMessage.action == SystemConversationAction.ADD.name || systemMessage.action == SystemConversationAction.JOIN.name) {
             participantDao.insert(Participant(data.conversationId, systemMessage.participantId!!, "", data.updatedAt))
             if (systemMessage.participantId == accountId) {
@@ -1029,7 +1029,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                 jobManager.addJobInBackground(RefreshCircleJob(systemMessage.circleId))
             }
             SystemCircleMessageAction.ADD.name -> {
-                val accountId = Session.getAccountId() ?: return
+                val accountId = accountId ?: return
                 val conversationId = systemMessage.conversationId ?: generateConversationId(accountId, systemMessage.userId ?: return)
                 if (circleDao.findCircleById(systemMessage.circleId) == null) {
                     jobManager.addJobInBackground(RefreshCircleJob(systemMessage.circleId))
@@ -1041,7 +1041,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                 circleConversationDao.insertUpdate(circleConversation)
             }
             SystemCircleMessageAction.REMOVE.name -> {
-                val accountId = Session.getAccountId() ?: return
+                val accountId = accountId ?: return
                 val conversationId = systemMessage.conversationId ?: generateConversationId(accountId, systemMessage.userId ?: return)
                 circleConversationDao.deleteByIds(conversationId, systemMessage.circleId)
             }
@@ -1097,7 +1097,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                 data.category,
                 data.sessionId
             ) {
-                if (data.category == MessageCategory.SIGNAL_KEY.name && data.userId != Session.getAccountId()) {
+                if (data.category == MessageCategory.SIGNAL_KEY.name && data.userId != accountId) {
                     RxBus.publish(SenderKeyChange(data.conversationId, data.userId, data.sessionId))
                 }
                 if (data.category != MessageCategory.SIGNAL_KEY.name) {
@@ -1350,7 +1350,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
         if (MixinApplication.conversationId == message.conversationId) {
             return
         }
-        if (message.userId == Session.getAccountId()) {
+        if (message.userId == accountId) {
             return
         }
         NotificationGenerator.generate(lifecycleScope, message, userMap, force, data.silent ?: false)
@@ -1359,7 +1359,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
     private fun insertMessage(message: Message, data: BlazeMessageData) {
         val expireIn = data.expireIn
         if (expireIn != null && expireIn > 0) {
-            if (data.userId == Session.getAccountId()) {
+            if (data.userId == accountId) {
                 val expiredAt = data.createdAt.toSeconds() + expireIn
                 if (expiredAt <= currentTimeSeconds()) {
                     // No need to insert message
@@ -1371,6 +1371,9 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
             } else {
                 expiredMessageDao.insert(ExpiredMessage(data.messageId, expireIn, null))
             }
+        }
+        pendingMessageStatusMap.remove(message.id)?.let { status ->
+            message.status = status
         }
         database.insertAndNotifyConversation(message)
     }
