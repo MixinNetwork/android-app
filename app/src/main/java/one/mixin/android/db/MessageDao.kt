@@ -447,6 +447,7 @@ interface MessageDao : BaseDao<Message> {
     @Query("SELECT id FROM messages LIMIT 1")
     suspend fun hasMessage(): String?
 
+    @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
     @Query("SELECT * FROM messages WHERE id = :messageId")
     fun findMessageMediaById(messageId: String): MessageMedia?
 
