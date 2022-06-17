@@ -40,7 +40,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.withContext
 import one.mixin.android.BuildConfig
 import one.mixin.android.Constants
 import one.mixin.android.Constants.Account.PREF_BACKUP
@@ -105,6 +104,9 @@ import one.mixin.android.job.TranscriptAttachmentUpdateJob
 import one.mixin.android.repository.AccountRepository
 import one.mixin.android.repository.UserRepository
 import one.mixin.android.session.Session
+import one.mixin.android.tip.Ephemeral
+import one.mixin.android.tip.IdentityManager
+import one.mixin.android.tip.Tip
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.BatteryOptimizationDialogActivity
 import one.mixin.android.ui.common.BlazeBaseActivity
@@ -182,6 +184,13 @@ class MainActivity : BlazeBaseActivity() {
     @Inject
     lateinit var participantDao: ParticipantDao
 
+    @Inject
+    lateinit var ephemeral: Ephemeral
+    @Inject
+    lateinit var identityManager: IdentityManager
+    @Inject
+    lateinit var tip: Tip
+
     private val appUpdateManager by lazy { AppUpdateManagerFactory.create(this) }
     private val updatedListener = InstallStateUpdatedListener { state ->
         if (state.installStatus() == InstallStatus.DOWNLOADED) {
@@ -203,9 +212,10 @@ class MainActivity : BlazeBaseActivity() {
         super.onCreate(savedInstanceState)
         navigationController = NavigationController(this)
 
-        val deviceId = defaultSharedPreferences.getString(DEVICE_ID, null)
+        var deviceId = defaultSharedPreferences.getString(DEVICE_ID, null)
         if (deviceId == null) {
-            defaultSharedPreferences.putString(DEVICE_ID, this.getDeviceId())
+            deviceId = this.getDeviceId()
+            defaultSharedPreferences.putString(DEVICE_ID, deviceId)
         } else if (deviceId != this.getDeviceId()) {
             defaultSharedPreferences.remove(DEVICE_ID)
             MixinApplication.get().closeAndClear(true)
@@ -275,6 +285,10 @@ class MainActivity : BlazeBaseActivity() {
         initView()
         handlerCode(intent)
 
+        if (Session.getAccount()?.hasPin == true) {
+            checkTip(deviceId)
+        }
+
         checkAsync()
     }
 
@@ -292,7 +306,6 @@ class MainActivity : BlazeBaseActivity() {
     }
 
     private fun checkAsync() = lifecycleScope.launch(Dispatchers.IO) {
-        checkTip() // suspend
         checkRoot()
         checkUpdate()
         checkStorage()
@@ -419,21 +432,25 @@ class MainActivity : BlazeBaseActivity() {
             .show()
     }
 
-    private suspend fun checkTip() = withContext(Dispatchers.IO) {
-        val account = Session.getAccount() ?: return@withContext // Todo: Need to synchronize online
-        if (account.hasPin) {
-            // check
-            handleMixinResponse(
-                invokeNetwork = {
-                    tipNodeService.tipConfig()
-                },
-                successBlock = {
-                    Timber.e(it.data?.toString())
-                },
-            )
-        } else {
-            //
+    private fun checkTip(deviceId: String) = lifecycleScope.launch(Dispatchers.IO) {
+        // check tip pub & priv
+
+        val ephemeralSeed = ephemeral.getEphemeralSeed(this@MainActivity, deviceId)
+        if (ephemeralSeed.isBlank()) {
+            Timber.d("empty ephemeral seed")
+            return@launch
         }
+
+        // check user PIN
+
+        val identityPub = identityManager.getIdentityPriv(this@MainActivity, "654321")
+        if (identityPub == null) {
+            Timber.d("identity pub is null")
+            return@launch
+        }
+
+        val tipPriv = tip.genPriv(identityPub, ephemeralSeed)
+        Timber.d("tipPriv: $tipPriv")
     }
 
     private fun checkRoot() {
