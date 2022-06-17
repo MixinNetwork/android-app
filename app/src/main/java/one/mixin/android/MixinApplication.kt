@@ -188,8 +188,8 @@ open class MixinApplication :
         }
     }
 
-    fun closeAndClear() {
-        if (onlining.compareAndSet(true, false)) {
+    fun closeAndClear(force: Boolean = false) {
+        if (force || onlining.compareAndSet(true, false)) {
             val sessionId = Session.getSessionId()
             BlazeMessageService.stopService(this)
             val callState = getCallState()
