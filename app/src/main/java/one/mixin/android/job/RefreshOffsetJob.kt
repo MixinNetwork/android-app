@@ -1,13 +1,14 @@
 package one.mixin.android.job
 
+import androidx.collection.ArrayMap
 import com.birbit.android.jobqueue.Params
 import one.mixin.android.db.makeMessageStatus
 import one.mixin.android.extension.getEpochNano
 import one.mixin.android.vo.Offset
 import one.mixin.android.vo.STATUS_OFFSET
-import java.util.*
+import java.util.UUID
 
-var pendingMessageStatusMap = mutableMapOf<String, String>()
+var pendingMessageStatusMap = ArrayMap<String, String>()
 
 class RefreshOffsetJob : MixinJob(
     Params(PRIORITY_UI_HIGH)
