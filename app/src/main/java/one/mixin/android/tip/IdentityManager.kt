@@ -10,6 +10,7 @@ import one.mixin.android.Constants
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.service.TipService
 import one.mixin.android.extension.base64Encode
+import one.mixin.android.extension.base64RawEncode
 import one.mixin.android.extension.decodeBase64
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.putString
@@ -51,7 +52,7 @@ class IdentityManager @Inject internal constructor(private val tipService: TipSe
             mCostInKibibyte = 1024,
             hashLengthInBytes = 32
         )
-        val privString = hashResult.rawHashAsByteArray().base64Encode()
+        val privString = hashResult.rawHashAsByteArray().base64RawEncode()
         context.defaultSharedPreferences.putString(Constants.Tip.Identity_Priv, privString)
         return privString
     }

@@ -10,8 +10,9 @@ import one.mixin.android.api.response.TipSigner
 import one.mixin.android.api.service.TipNodeService
 import one.mixin.android.crypto.blst.aggregateSignatures
 import one.mixin.android.crypto.blst.sign
+import one.mixin.android.extension.base64RawEncode
+import one.mixin.android.extension.base64RawUrlDecode
 import one.mixin.android.extension.currentTimeSeconds
-import one.mixin.android.extension.decodeBase64
 import one.mixin.android.extension.toHex
 import one.mixin.android.extension.toLeByteArray
 import one.mixin.android.util.GsonHelper
@@ -33,8 +34,10 @@ class Tip @Inject internal constructor(private val tipNodeService: TipNodeServic
             null
         } ?: return null
 
-        val identityPubBytes = identityPub.decodeBase64()
-        val ephemeralBytes = ephemeral.decodeBase64()
+        Timber.d("identityPub: $identityPub")
+        Timber.d("ephemeral: $ephemeral")
+        val identityPubBytes = identityPub.base64RawUrlDecode()
+        val ephemeralBytes = ephemeral.base64RawUrlDecode()
 
         val nodeSeeds = getNodeSeeds(tipConfig.signers, identityPubBytes, ephemeralBytes)
 
@@ -104,7 +107,7 @@ class Tip @Inject internal constructor(private val tipNodeService: TipNodeServic
         val sig = genRequestSig(nodeSeed, identityPub, nonce, grace)
         val data = TipSignData(tipSigner.identity, null, nodeSeed.toHex(), grace, nonce.toString(), null)
         val dataJson = gson.toJson(data)
-        return TipSignRequest(sig, tipSigner.identity, dataJson)
+        return TipSignRequest(sig, tipSigner.identity, dataJson.toByteArray().base64RawEncode())
     }
 
     private fun genRequestSig(nodeSeed: ByteArray, identityPub: ByteArray, nonce: Long, grace: String): String {
