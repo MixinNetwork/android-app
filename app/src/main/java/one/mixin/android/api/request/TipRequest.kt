@@ -8,3 +8,16 @@ class TipRequest(
     @SerializedName("seed_base64")
     val seedBase64: String?
 )
+
+class TipSecretRequest(
+    @SerializedName("action")
+    val action: String,
+    @SerializedName("signature_base64")
+    val signatureBase64: String,
+    @SerializedName("timestamp")
+    val timestamp: String,
+)
+
+enum class TipSecretAction {
+    READ, UPDATE,
+}

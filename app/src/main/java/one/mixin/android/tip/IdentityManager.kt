@@ -9,7 +9,6 @@ import kotlinx.coroutines.withContext
 import one.mixin.android.Constants
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.service.TipService
-import one.mixin.android.extension.base64Encode
 import one.mixin.android.extension.base64RawEncode
 import one.mixin.android.extension.decodeBase64
 import one.mixin.android.extension.defaultSharedPreferences
