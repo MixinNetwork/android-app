@@ -8,6 +8,8 @@ import net.i2p.crypto.eddsa.spec.EdDSANamedCurveTable
 import net.i2p.crypto.eddsa.spec.EdDSAPublicKeySpec
 import okhttp3.tls.HeldCertificate
 import one.mixin.android.extension.base64Encode
+import org.komputing.khash.keccak.KeccakParameter
+import org.komputing.khash.keccak.extensions.digestKeccak
 import org.whispersystems.curve25519.Curve25519
 import org.whispersystems.curve25519.Curve25519.BEST
 import java.security.KeyFactory
@@ -50,6 +52,10 @@ fun privateKeyToCurve25519(edSeed: ByteArray): ByteArray {
     h[31] = h[31] and 127
     h[31] = h[31] or 64
     return h
+}
+
+fun ByteArray.sha3Sum256(): ByteArray {
+    return digestKeccak(KeccakParameter.SHA3_256)
 }
 
 private val secureRandom: SecureRandom = SecureRandom()

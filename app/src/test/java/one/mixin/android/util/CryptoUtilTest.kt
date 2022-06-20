@@ -5,10 +5,10 @@ import net.i2p.crypto.eddsa.spec.EdDSAPublicKeySpec
 import one.mixin.android.crypto.ed25519
 import one.mixin.android.crypto.privateKeyToCurve25519
 import one.mixin.android.crypto.publicKeyToCurve25519
+import one.mixin.android.crypto.sha3Sum256
 import one.mixin.android.extension.toHex
-import org.komputing.khash.keccak.KeccakParameter
-import org.komputing.khash.keccak.extensions.digestKeccak
 import kotlin.test.Test
+import kotlin.test.assertEquals
 
 class CryptoUtilTest {
 
@@ -34,9 +34,10 @@ class CryptoUtilTest {
         val b = ","
         val c = " world"
         val d = "!"
-        val digest1 = m.digestKeccak(KeccakParameter.SHA3_256)
-        val digest2 = (a.toByteArray() + b.toByteArray() + c.toByteArray() + d.toByteArray()).digestKeccak(KeccakParameter.SHA3_256)
+        val digest1 = m.sha3Sum256()
+        val digest2 = (a.toByteArray() + b.toByteArray() + c.toByteArray() + d.toByteArray()).sha3Sum256()
         println("digest1: ${digest1.toHex()}")
         println("digest2: ${digest2.toHex()}")
+        assertEquals("f345a219da005ebe9c1a1eaad97bbf38a10c8473e41d0af7fb617caa0c6aa722", digest1.toHex())
     }
 }
