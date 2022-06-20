@@ -5,6 +5,9 @@ import net.i2p.crypto.eddsa.spec.EdDSAPublicKeySpec
 import one.mixin.android.crypto.ed25519
 import one.mixin.android.crypto.privateKeyToCurve25519
 import one.mixin.android.crypto.publicKeyToCurve25519
+import one.mixin.android.extension.toHex
+import org.komputing.khash.keccak.KeccakParameter
+import org.komputing.khash.keccak.extensions.digestKeccak
 import kotlin.test.Test
 
 class CryptoUtilTest {
@@ -22,5 +25,18 @@ class CryptoUtilTest {
         assert(curve25519PrivateKey.contentEquals(targetPrivate))
         val curve25519PublicKey = publicKeyToCurve25519(publicKey)
         assert(curve25519PublicKey.contentEquals(targetPublic))
+    }
+
+    @Test
+    fun `test sha3-256`() {
+        val m = "Hello, world!".toByteArray()
+        val a = "Hello"
+        val b = ","
+        val c = " world"
+        val d = "!"
+        val digest1 = m.digestKeccak(KeccakParameter.SHA3_256)
+        val digest2 = (a.toByteArray() + b.toByteArray() + c.toByteArray() + d.toByteArray()).digestKeccak(KeccakParameter.SHA3_256)
+        println("digest1: ${digest1.toHex()}")
+        println("digest2: ${digest2.toHex()}")
     }
 }

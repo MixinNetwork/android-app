@@ -16,8 +16,9 @@ import one.mixin.android.extension.currentTimeSeconds
 import one.mixin.android.extension.toHex
 import one.mixin.android.extension.toLeByteArray
 import one.mixin.android.util.GsonHelper
+import org.komputing.khash.keccak.KeccakParameter
+import org.komputing.khash.keccak.extensions.digestKeccak
 import timber.log.Timber
-import java.security.MessageDigest
 import javax.inject.Inject
 import kotlin.time.Duration.Companion.days
 
@@ -48,15 +49,9 @@ class Tip @Inject internal constructor(private val tipNodeService: TipNodeServic
     }
 
     private fun getNodeSeeds(tipSigners: List<TipSigner>, identityPub: ByteArray, ephemeral: ByteArray): List<ByteArray> {
-        val sha256 = MessageDigest.getInstance("SHA256") // or other hash func
         val nodeSeeds = mutableListOf<ByteArray>()
         for (signer in tipSigners) {
-            sha256.run {
-                update(identityPub)
-                update(ephemeral)
-                update(signer.identity.toByteArray())
-                nodeSeeds.add(digest())
-            }
+            nodeSeeds.add((identityPub + ephemeral + signer.identity.toByteArray()).digestKeccak(KeccakParameter.SHA3_256))
         }
         return nodeSeeds
     }
