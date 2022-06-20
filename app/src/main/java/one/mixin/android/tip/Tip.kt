@@ -113,6 +113,6 @@ class Tip @Inject internal constructor(private val tipNodeService: TipNodeServic
     private fun genRequestSig(nodeSeed: ByteArray, identityPub: ByteArray, nonce: Long, grace: String): String {
         val m = identityPub + nodeSeed + nonce.toLeByteArray() + grace.toByteArray()
         val sig = sign(m, identityPub)
-        return sig.compress().toHex()
+        return sig.compress().base64RawEncode()
     }
 }
