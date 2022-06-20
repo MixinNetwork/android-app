@@ -792,6 +792,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
             }
             linkLoading.visibility = GONE
             linkErrorInfo.visibility = VISIBLE
+            linkErrorInfo.setTextIsSelectable(true)
         }
     }
 
