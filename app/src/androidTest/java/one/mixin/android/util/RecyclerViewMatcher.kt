@@ -59,7 +59,9 @@ fun withRecyclerView(recyclerViewId: Int) = RecyclerViewMatcher(recyclerViewId)
 
 fun swipeRight(): GeneralSwipeAction {
     return GeneralSwipeAction(
-        Swipe.FAST, GeneralLocation.CENTER_LEFT,
-        GeneralLocation.CENTER_RIGHT, Press.FINGER
+        Swipe.FAST,
+        GeneralLocation.CENTER_LEFT,
+        GeneralLocation.CENTER_RIGHT,
+        Press.FINGER
     )
 }

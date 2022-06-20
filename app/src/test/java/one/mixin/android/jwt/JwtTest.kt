@@ -51,6 +51,7 @@ class JwtTest {
         Thread.sleep(2000)
         assertTrue(Session.requestDelay(account, signToken, 1, key).isExpire)
     }
+
     @Test
     fun testJwtEdDSA() {
         val keyPair = generateEd25519KeyPair()

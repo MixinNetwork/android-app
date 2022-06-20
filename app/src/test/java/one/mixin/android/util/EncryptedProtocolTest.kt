@@ -44,7 +44,7 @@ class EncryptedProtocolTest {
         val decryptedContent = aesDecrypt(
             aesGcmKey,
             encodedContent.slice(IntRange(0, 15)).toByteArray(),
-            encodedContent.slice(IntRange(16, encodedContent.size - 1)).toByteArray(),
+            encodedContent.slice(IntRange(16, encodedContent.size - 1)).toByteArray()
         )
         assertEquals("LA", String(decryptedContent))
     }

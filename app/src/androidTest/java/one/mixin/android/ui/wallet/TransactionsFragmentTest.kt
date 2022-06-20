@@ -158,7 +158,7 @@ class TransactionsFragmentTest : BaseTransactionsFragmentTest() {
     private fun openSendBottom(
         navController: NavController?,
         clickId: Int,
-        expectFragmentId: Int,
+        expectFragmentId: Int
     ) {
         onView(withId(R.id.send_tv)).perform(click())
         onView(withId(R.id.send_cancel))
