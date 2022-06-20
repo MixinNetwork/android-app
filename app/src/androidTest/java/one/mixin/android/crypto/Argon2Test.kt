@@ -2,7 +2,6 @@ package one.mixin.android.crypto
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.lambdapioneer.argon2kt.Argon2Kt
-import com.lambdapioneer.argon2kt.Argon2KtResult
 import com.lambdapioneer.argon2kt.Argon2Mode
 import dagger.hilt.android.testing.HiltAndroidTest
 import org.junit.Test
@@ -15,17 +14,9 @@ class Argon2Test {
     @Test
     fun testArgon2() {
         val argon2Kt = Argon2Kt()
-        val password = "223388"
+        val password = "123456"
 
-        val hashResult: Argon2KtResult = argon2Kt.hash(
-            mode = Argon2Mode.ARGON2_I,
-            password = password.toByteArray(),
-            salt = "somesalt".toByteArray(),
-            tCostInIterations = 1,
-            mCostInKibibyte = 1024,
-            hashLengthInBytes = 32
-        )
-
+        val hashResult = argon2IdHash(password, "2e613adae4f0167255933a3ec1d97e0acdd38e46d319c348b7a3d709f23bae8f")
         println("Raw hash: ${hashResult.rawHashAsHexadecimal()}")
         println("Encoded string: ${hashResult.encodedOutputAsString()}")
 

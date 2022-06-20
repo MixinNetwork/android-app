@@ -65,7 +65,7 @@ class Tip @Inject internal constructor(private val tipNodeService: TipNodeServic
                     var retryCount = 0
 
                     while (!success) {
-                        val sign = fetchTipNodeSigs(signer, identityPub, nodeSeeds[i])
+                        val sign = fetchTipNodeSigns(signer, identityPub, nodeSeeds[i])
                         Timber.d("$i sign: $sign")
                         success = sign != null
                         if (success) {
@@ -84,7 +84,7 @@ class Tip @Inject internal constructor(private val tipNodeService: TipNodeServic
         return result
     }
 
-    private suspend fun fetchTipNodeSigs(tipSigner: TipSigner, identityPub: ByteArray, nodeSeed: ByteArray): String? {
+    private suspend fun fetchTipNodeSigns(tipSigner: TipSigner, identityPub: ByteArray, nodeSeed: ByteArray): String? {
         val tipSignRequest = genTipSignRequest(tipSigner, nodeSeed, identityPub)
         return try {
             val r = tipNodeService.postSign(tipSignRequest, tipSigner.api)
