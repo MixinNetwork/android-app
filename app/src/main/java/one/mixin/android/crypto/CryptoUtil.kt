@@ -2,6 +2,9 @@
 package one.mixin.android.crypto
 
 import android.os.Build
+import com.lambdapioneer.argon2kt.Argon2Kt
+import com.lambdapioneer.argon2kt.Argon2KtResult
+import com.lambdapioneer.argon2kt.Argon2Mode
 import net.i2p.crypto.eddsa.EdDSAPublicKey
 import net.i2p.crypto.eddsa.math.FieldElement
 import net.i2p.crypto.eddsa.spec.EdDSANamedCurveTable
@@ -56,6 +59,18 @@ fun privateKeyToCurve25519(edSeed: ByteArray): ByteArray {
 
 fun ByteArray.sha3Sum256(): ByteArray {
     return digestKeccak(KeccakParameter.SHA3_256)
+}
+
+fun argon2IdHash(pin: String, seed: String): Argon2KtResult {
+    val argon2Kt = Argon2Kt()
+    return argon2Kt.hash(
+        mode = Argon2Mode.ARGON2_I,
+        password = pin.toByteArray(),
+        salt = seed.toByteArray(),
+        tCostInIterations = 4,
+        mCostInKibibyte = 1024,
+        hashLengthInBytes = 64
+    )
 }
 
 private val secureRandom: SecureRandom = SecureRandom()

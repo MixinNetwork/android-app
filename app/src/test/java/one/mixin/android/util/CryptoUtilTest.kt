@@ -2,6 +2,7 @@ package one.mixin.android.util
 
 import net.i2p.crypto.eddsa.EdDSAPublicKey
 import net.i2p.crypto.eddsa.spec.EdDSAPublicKeySpec
+import one.mixin.android.crypto.argon2IdHash
 import one.mixin.android.crypto.ed25519
 import one.mixin.android.crypto.privateKeyToCurve25519
 import one.mixin.android.crypto.publicKeyToCurve25519
