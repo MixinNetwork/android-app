@@ -14,15 +14,15 @@ import one.mixin.android.crypto.sha3Sum256
 import one.mixin.android.extension.base64RawEncode
 import one.mixin.android.extension.base64RawUrlDecode
 import one.mixin.android.extension.currentTimeSeconds
+import one.mixin.android.extension.toBeByteArray
 import one.mixin.android.extension.toHex
-import one.mixin.android.extension.toLeByteArray
 import one.mixin.android.util.GsonHelper
 import timber.log.Timber
 import javax.inject.Inject
 import kotlin.time.Duration.Companion.days
 
 class Tip @Inject internal constructor(private val tipNodeService: TipNodeService) {
-    private val ephemeralGrace = 128.days.inWholeMilliseconds.toString()
+    private val ephemeralGrace = 128.days.inWholeNanoseconds
 
     private val gson = GsonHelper.customGson
 
@@ -99,13 +99,13 @@ class Tip @Inject internal constructor(private val tipNodeService: TipNodeServic
         val nonce = currentTimeSeconds()
         val grace = ephemeralGrace
         val sig = genRequestSig(nodeSeed, identityPub, nonce, grace)
-        val data = TipSignData(tipSigner.identity, null, nodeSeed.toHex(), grace, nonce.toString(), null)
+        val data = TipSignData(tipSigner.identity, null, nodeSeed.toHex(), grace, nonce, null)
         val dataJson = gson.toJson(data)
         return TipSignRequest(sig, tipSigner.identity, dataJson.toByteArray().base64RawEncode())
     }
 
-    private fun genRequestSig(nodeSeed: ByteArray, identityPub: ByteArray, nonce: Long, grace: String): String {
-        val m = identityPub + nodeSeed + nonce.toLeByteArray() + grace.toByteArray()
+    private fun genRequestSig(nodeSeed: ByteArray, identityPub: ByteArray, nonce: Long, grace: Long): String {
+        val m = identityPub + nodeSeed + nonce.toBeByteArray() + grace.toBeByteArray()
         val sig = sign(m, identityPub)
         return sig.compress().base64RawEncode()
     }

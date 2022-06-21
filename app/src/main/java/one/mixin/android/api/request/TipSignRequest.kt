@@ -19,9 +19,9 @@ class TipSignData(
     @SerializedName("ephemeral")
     val ephemeral: String,
     @SerializedName("grace")
-    val grace: String,
+    val grace: Long,
     @SerializedName("nonce")
-    val nonce: String,
+    val nonce: Long,
     @SerializedName("rotate")
     val rotate: String? = null,
 )

@@ -252,6 +252,12 @@ fun String.hexStringToByteArray(): ByteArray {
     return result
 }
 
+inline fun Long.toBeByteArray(): ByteArray {
+    val buffer = Buffer()
+    buffer.writeLong(this)
+    return buffer.readByteArray()
+}
+
 inline fun Long.toLeByteArray(): ByteArray {
     var num = this
     val result = ByteArray(8)
