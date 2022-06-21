@@ -4,9 +4,9 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.gson.Gson
 import crypto.Crypto
 import dagger.hilt.android.testing.HiltAndroidTest
-import okio.Buffer
 import one.mixin.android.api.request.TipSignData
 import one.mixin.android.extension.base64RawUrlDecode
+import one.mixin.android.extension.hexStringToByteArray
 import one.mixin.android.extension.toBeByteArray
 import one.mixin.android.extension.toHex
 import org.junit.Test
@@ -25,11 +25,9 @@ class TipTest {
         val user = suite.scalar()
         user.setBytes("p8ogX1BMb-IsRisEBS2kOchXEqjbqxtsXR8J9Bf0AGI".base64RawUrlDecode())
         val ephemeral = suite.scalar()
-        ephemeral.setBytes("-e7M3ZD5k-rW6KQ7GVfV9V9bpmfbUY5y8HiqqBGv8-r46YMRRSlyc-ZKGU3s92gsC9GVuIhgn33I".base64RawUrlDecode())
+        ephemeral.setBytes("55ffbc2955b39a1ddb44aa5675a395ceb3766d59f11b8cf865651f72a281322e".hexStringToByteArray())
         val eBytes = ephemeral.privateKeyBytes()
 
-        val buffer = Buffer()
-        buffer.writeLong(1024L)
         val nonce = 1024L
         val nonceBytes = nonce.toBeByteArray()
         println("nonce: ${nonceBytes.toHex()}")
@@ -38,6 +36,7 @@ class TipTest {
         println("grace: ${graceBytes.toHex()}")
 
         val sPk = signer.publicKey()
+        println("sPK: ${sPk.publicKeyString()}")
         val uPk = user.publicKey()
         val pKeyBytes = uPk.publicKeyBytes()
         val msg = pKeyBytes + eBytes + nonceBytes + graceBytes

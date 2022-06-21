@@ -1,5 +1,7 @@
 package one.mixin.android.tip
 
+import crypto.Crypto
+import crypto.Scalar
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -9,7 +11,6 @@ import one.mixin.android.api.request.TipSignRequest
 import one.mixin.android.api.response.TipSigner
 import one.mixin.android.api.service.TipNodeService
 import one.mixin.android.crypto.blst.aggregateSignatures
-import one.mixin.android.crypto.blst.sign
 import one.mixin.android.crypto.sha3Sum256
 import one.mixin.android.extension.base64RawEncode
 import one.mixin.android.extension.base64RawUrlDecode
@@ -96,17 +97,38 @@ class Tip @Inject internal constructor(private val tipNodeService: TipNodeServic
     }
 
     private fun genTipSignRequest(tipSigner: TipSigner, nodeSeed: ByteArray, identityPub: ByteArray): TipSignRequest {
+        val suite = Crypto.newSuiteBn256()
+        val signer = suite.scalar()
+        signer.setBytes(tipSigner.identity.base64RawUrlDecode())
+        val sPk = signer.publicKey()
+        val sPkStr = sPk.publicKeyString()
+        val user = suite.scalar()
+        user.setBytes(identityPub)
+        val ephemeral = suite.scalar()
+        ephemeral.setBytes(nodeSeed)
+        val eBytes = ephemeral.privateKeyBytes()
         val nonce = currentTimeSeconds()
         val grace = ephemeralGrace
-        val sig = genRequestSig(nodeSeed, identityPub, nonce, grace)
-        val data = TipSignData(tipSigner.identity, null, nodeSeed.toHex(), grace, nonce, null)
-        val dataJson = gson.toJson(data)
-        return TipSignRequest(sig, tipSigner.identity, dataJson.toByteArray().base64RawEncode())
+        val sig = genRequestSig(user, eBytes, nonce, grace)
+        Timber.d("sig: $sig")
+        val data = TipSignData(
+            identity = user.publicKey().publicKeyString(),
+            ephemeral = eBytes.toHex(),
+            nonce = nonce,
+            grace = grace,
+        )
+        val dataJson = gson.toJson(data).toByteArray()
+        Timber.d("dataJson: ${dataJson.toHex()}")
+        val cipher = Crypto.encrypt(sPk, user, dataJson)
+        Timber.d("cipher: ${cipher.toHex()}")
+        return TipSignRequest(sig, sPkStr, cipher.base64RawEncode())
     }
 
-    private fun genRequestSig(nodeSeed: ByteArray, identityPub: ByteArray, nonce: Long, grace: Long): String {
-        val m = identityPub + nodeSeed + nonce.toBeByteArray() + grace.toBeByteArray()
-        val sig = sign(m, identityPub)
-        return sig.compress().base64RawEncode()
+    private fun genRequestSig(user: Scalar, ephemeral: ByteArray, nonce: Long, grace: Long): String {
+        val uPk = user.publicKey().publicKeyBytes()
+        val m = uPk + ephemeral + nonce.toBeByteArray() + grace.toBeByteArray()
+        Timber.d("m: ${m.toHex()}")
+        val sig = user.sign(m)
+        return sig.toHex()
     }
 }
