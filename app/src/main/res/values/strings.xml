@@ -123,6 +123,7 @@
     <string name="backup_no_available_memory">There are no available memory for backup.</string>
     <string name="backup_notification_content">Preparing backup…</string>
     <string name="backup_notification_title">Backup in progress</string>
+    <string name="background_preview">Background Preview</string>
     <string name="Backup_success">Backup success</string>
     <string name="Block">Block</string>
     <string name="block_tip">Blocked users can\'t send you messages or add you to groups.</string>
@@ -167,6 +168,7 @@
     <string name="Change_Profile_Photo_with_Library">Change Profile Photo with Library</string>
     <string name="Changed">Changed</string>
     <string name="changed_disappearing_message_settings">%1$s changed disappearing message settings.</string>
+    <string name="chat_background">Chat Background</string>
     <string name="Changing">Changing…</string>
     <string name="Changing_PIN_terminated_unexpectedly">Changing PIN terminated unexpectedly, click \"Continue\" to complete the change</string>
     <string name="chat_audio_discard_warning">Are you sure you want to stop recording and discard your voice message ?</string>

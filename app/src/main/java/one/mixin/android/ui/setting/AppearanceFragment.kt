@@ -11,6 +11,7 @@ import one.mixin.android.R
 import one.mixin.android.databinding.FragmentAppearanceBinding
 import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.defaultSharedPreferences
+import one.mixin.android.extension.navTo
 import one.mixin.android.extension.putInt
 import one.mixin.android.extension.singleChoice
 import one.mixin.android.session.Session
@@ -101,6 +102,10 @@ class AppearanceFragment : BaseFragment(R.layout.fragment_appearance) {
                     }
                 }
                 currencyBottom.showNow(parentFragmentManager, CurrencyBottomSheetDialogFragment.TAG)
+            }
+
+            backgroundRl.setOnClickListener {
+                navTo(SettingChatFragment.newInstance(), SettingChatFragment.TAG)
             }
         }
     }

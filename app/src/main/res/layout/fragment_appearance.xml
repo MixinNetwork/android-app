@@ -98,4 +98,24 @@
             android:textColor="?attr/text_minor"
             tools:ignore="RelativeOverlap" />
     </RelativeLayout>
+
+    <RelativeLayout
+        android:id="@+id/background_rl"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/item_contact_height"
+        android:layout_marginTop="@dimen/margin20"
+        android:background="?attr/bg_white"
+        android:foreground="?android:attr/selectableItemBackground">
+
+        <TextView
+            android:id="@+id/background_tv"
+            style="@style/NormalTextStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:layout_marginStart="@dimen/activity_horizontal_margin"
+            android:text="@string/chat_background"
+            tools:ignore="RelativeOverlap" />
+
+    </RelativeLayout>
 </LinearLayout>

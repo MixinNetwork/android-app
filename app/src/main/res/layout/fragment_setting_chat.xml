@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<one.mixin.android.widget.BackgroundConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/container"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+        <one.mixin.android.widget.TitleView
+            android:id="@+id/title_view"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:titleText="@string/background_preview" />
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1" />
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:background="?attr/bg_window"
+            android:layout_width="match_parent"
+            android:paddingTop="24dp"
+            android:paddingBottom="60dp"
+            android:layout_height="120dp" />
+    </LinearLayout>
+</one.mixin.android.widget.BackgroundConstraintLayout>

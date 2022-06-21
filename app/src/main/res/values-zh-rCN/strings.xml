@@ -121,6 +121,7 @@
     <string name="backup_no_available_memory">没有足够的空间来备份。</string>
     <string name="backup_notification_content">正在准备备份…</string>
     <string name="backup_notification_title">备份正在进行中</string>
+    <string name="background_preview">背景预览</string>
     <string name="Backup_success">备份成功</string>
     <string name="Block">屏蔽用户</string>
     <string name="block_tip">被屏蔽的用户不能给你发送消息或者邀请你加入群聊</string>
@@ -165,6 +166,7 @@
     <string name="Change_Profile_Photo_with_Library">更换头像（相册）</string>
     <string name="Changed">已修改</string>
     <string name="changed_disappearing_message_settings">%1$s修改了限时消息设置</string>
+    <string name="chat_background">聊天背景</string>
     <string name="Changing">正在修改…</string>
     <string name="Changing_PIN_terminated_unexpectedly">更新 PIN 意外中止，点继续完成 PIN 修改</string>
     <string name="chat_audio_discard_warning">你确定要停止并放弃录制的语音吗？</string>
