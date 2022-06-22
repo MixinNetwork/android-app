@@ -491,6 +491,8 @@
         <item quantity="one">%d 小时</item>
         <item quantity="other">%d 小时</item>
     </plurals>
+    <string name="how_are_you">嗨，你好吗？</string>
+    <string name="i_am_good">我很好。"</string>
     <string name="I_know">我知道了</string>
     <string name="Immediately">立刻</string>
     <string name="Import">导入聊天记录</string>

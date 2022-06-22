@@ -500,6 +500,8 @@
         <item quantity="one">%d Hour</item>
         <item quantity="other">%d Hours</item>
     </plurals>
+    <string name="how_are_you">Hi, how are you?</string>
+    <string name="i_am_good">I’m good.</string>
     <string name="I_know">I know</string>
     <string name="Immediately">Immediately</string>
     <string name="Import">Import</string>
