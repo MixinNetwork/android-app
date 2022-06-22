@@ -39,6 +39,7 @@ import one.mixin.android.util.blurhash.BlurHashEncoder
 import one.mixin.android.util.reportException
 import one.mixin.android.websocket.LiveMessagePayload
 import one.mixin.android.websocket.toLocationData
+import timber.log.Timber
 import java.io.File
 
 @SuppressLint("ParcelCreator")
@@ -235,18 +236,19 @@ suspend fun MessageItem.saveToLocal(context: Context) {
     }
 
     val outFile = if (MimeTypes.isVideo(mediaMimeType) || mediaMimeType?.isImageSupport() == true) {
-        File(context.getPublicPicturePath(), mediaName ?: file.name).apply {
-            mkdirs()
-        }
+        val dir = context.getPublicPicturePath()
+        dir.mkdirs()
+        File(dir, mediaName ?: file.name)
     } else {
         val dir = if (MimeTypes.isAudio(mediaMimeType)) {
             context.getExternalFilesDir(DIRECTORY_MUSIC)
         } else {
             context.getExternalFilesDir(DIRECTORY_DOWNLOADS)
         } ?: return
-        dir.mkdir()
+        dir.mkdirs()
         File(dir, mediaName ?: file.name)
     }
+    if (outFile.isDirectory) return
     withContext(Dispatchers.IO) {
         outFile.copyFromInputStream(file.inputStream())
     }
