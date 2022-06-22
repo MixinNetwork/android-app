@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="100dp"
+    android:layout_height="140dp"
+    android:orientation="vertical"
+    android:padding="1.5dp"
+    >
+
+    <ImageView
+        android:id="@+id/image"
+        android:scaleType="center"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_margin="4.5dp"
+        android:contentDescription="@null" />
+
+    <View
+        android:id="@+id/selected"
+        android:background="@drawable/image_select"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:padding="1.5dp" />
+
+</RelativeLayout>
