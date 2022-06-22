@@ -38,14 +38,26 @@ class SettingChatFragment : BaseFragment(R.layout.fragment_setting_chat) {
 
     private var currentSelected = 1
 
+    private val isNight by lazy {
+        requireContext().booleanFromAttribute(R.attr.flag_night)
+    }
+
+    private fun getChatBackground(index: Int) = when (index) {
+        0 -> if (isNight) R.drawable.bg_chat_symbol_night else R.drawable.bg_chat_symbol
+        1 -> if (isNight) R.drawable.bg_chat_star_night else R.drawable.bg_chat_star
+        2 -> if (isNight) R.drawable.bg_chat_animal_night else R.drawable.bg_chat_animal
+        3 -> if (isNight) R.drawable.bg_chat_plant_night else R.drawable.bg_chat_plant
+        else -> -1
+    }
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        if (requireContext().booleanFromAttribute(R.attr.flag_night)) {
+        if (isNight) {
             binding.container.backgroundImage =
-                ContextCompat.getDrawable(requireContext(), R.drawable.bg_chat_night)
+                ContextCompat.getDrawable(requireContext(), R.drawable.bg_chat_symbol_night)
         } else {
             binding.container.backgroundImage =
-                ContextCompat.getDrawable(requireContext(), R.drawable.bg_chat)
+                ContextCompat.getDrawable(requireContext(), R.drawable.bg_chat_symbol)
         }
         binding.titleView.leftIb.setOnClickListener {
             requireActivity().onBackPressed()
@@ -54,8 +66,9 @@ class SettingChatFragment : BaseFragment(R.layout.fragment_setting_chat) {
             // Todo save background
             requireActivity().onBackPressed()
         }
-        binding.backgroundRv.layoutManager = LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL,false)
-        binding.backgroundRv.adapter = object :RecyclerView.Adapter<BackgroundHolder>() {
+        binding.backgroundRv.layoutManager =
+            LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)
+        binding.backgroundRv.adapter = object : RecyclerView.Adapter<BackgroundHolder>() {
             override fun onCreateViewHolder(
                 parent: ViewGroup,
                 viewType: Int
@@ -72,7 +85,11 @@ class SettingChatFragment : BaseFragment(R.layout.fragment_setting_chat) {
             @SuppressLint("NotifyDataSetChanged")
             override fun onBindViewHolder(holder: BackgroundHolder, position: Int) {
                 val p = position
-                holder.bind(R.drawable.bg_chat_night, position == currentSelected)
+                if (position != 0) {
+                    holder.bind(getChatBackground(position - 1), position == currentSelected)
+                }else{
+                    holder.bind(null, position == currentSelected)
+                }
                 holder.itemView.setOnClickListener {
                     currentSelected = p
                     notifyDataSetChanged()
@@ -81,10 +98,17 @@ class SettingChatFragment : BaseFragment(R.layout.fragment_setting_chat) {
                         null,
                         position
                     )
+                    if (position != 0) {
+                        binding.container.backgroundImage =
+                            ContextCompat.getDrawable(
+                                requireContext(),
+                                getChatBackground(position - 1)
+                            )
+                    }
                 }
             }
 
-            override fun getItemCount(): Int = 4
+            override fun getItemCount(): Int = 5
         }
         binding.chatRv.adapter = object : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
             override fun onCreateViewHolder(
@@ -172,9 +196,14 @@ class SettingChatFragment : BaseFragment(R.layout.fragment_setting_chat) {
         }
     }
 
-    class BackgroundHolder constructor(val binding: ItemBackgroudBinding) : RecyclerView.ViewHolder(binding.root) {
-        fun bind(@DrawableRes resId:Int,selected:Boolean) {
-            binding.image.setImageResource(resId)
+    class BackgroundHolder constructor(val binding: ItemBackgroudBinding) :
+        RecyclerView.ViewHolder(binding.root) {
+        fun bind(@DrawableRes resId: Int?, selected: Boolean) {
+            if (resId != null) {
+                binding.image.setImageResource(resId)
+            } else {
+                binding.image.setImageDrawable(null)
+            }
             binding.image.round(3.dp)
             binding.selected.isVisible = selected
         }

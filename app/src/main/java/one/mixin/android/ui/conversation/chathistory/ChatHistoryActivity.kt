@@ -145,10 +145,10 @@ class ChatHistoryActivity : BaseActivity() {
         setContentView(binding.root)
         if (booleanFromAttribute(R.attr.flag_night)) {
             binding.container.backgroundImage =
-                ContextCompat.getDrawable(this@ChatHistoryActivity, R.drawable.bg_chat_night)
+                ContextCompat.getDrawable(this@ChatHistoryActivity, R.drawable.bg_chat_symbol_night)
         } else {
             binding.container.backgroundImage =
-                ContextCompat.getDrawable(this@ChatHistoryActivity, R.drawable.bg_chat)
+                ContextCompat.getDrawable(this@ChatHistoryActivity, R.drawable.bg_chat_symbol)
         }
         binding.titleView.leftIb.setOnClickListener { finish() }
         binding.titleView.setSubTitle(

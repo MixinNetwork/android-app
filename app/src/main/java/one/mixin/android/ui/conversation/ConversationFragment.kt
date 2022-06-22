@@ -1373,10 +1373,10 @@ class ConversationFragment() :
     private fun initView() {
         if (requireActivity().booleanFromAttribute(R.attr.flag_night)) {
             binding.inputLayout.backgroundImage =
-                ContextCompat.getDrawable(requireContext(), R.drawable.bg_chat_night)
+                ContextCompat.getDrawable(requireContext(), R.drawable.bg_chat_symbol_night)
         } else {
             binding.inputLayout.backgroundImage =
-                ContextCompat.getDrawable(requireContext(), R.drawable.bg_chat)
+                ContextCompat.getDrawable(requireContext(), R.drawable.bg_chat_symbol)
         }
         binding.chatRv.visibility = INVISIBLE
         if (binding.chatRv.adapter == null) {
