@@ -39,7 +39,6 @@ import one.mixin.android.util.blurhash.BlurHashEncoder
 import one.mixin.android.util.reportException
 import one.mixin.android.websocket.LiveMessagePayload
 import one.mixin.android.websocket.toLocationData
-import timber.log.Timber
 import java.io.File
 
 @SuppressLint("ParcelCreator")
