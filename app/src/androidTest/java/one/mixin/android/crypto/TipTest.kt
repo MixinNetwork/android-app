@@ -21,11 +21,13 @@ class TipTest {
     fun testTipGuard() {
         val suite = Crypto.newSuiteBn256()
         val signer = suite.scalar()
-        signer.setBytes("5HXAHFh8khYBGWA2V3oUUvXAX4aWnQsEyNzKoA3LnJkxtKQNhcWSh4Swt72a1bw7aG8uTg9F31ybzSJyuNHENUBtGobUfHbKNPUYYkHnhuPtWszaCuNJ3nBxZ4Crt8Q8AmJ2fZznLx3EDM2Eqf63drNmW6VVmmzBQUc4N2JaXzFtt4HFFWtvUk".base64RawUrlDecode())
+        signer.setBytes("0da58ccc3b323d92af281367333f4c120418ed2700de803046947f59707b3479".hexStringToByteArray())
         val user = suite.scalar()
+        assert(signer.publicKey().publicKeyString() == "5HSsddpV8HiKbu9vL3ZB69dtDjaZdQAn8RuL2aK1d1yZknUhBAXNhJLkZfCc2RwTxcaxKonNsXnQJFGcM8jgBztGTHzCA26LgKZWCe74Bw8VJ51FyqCGTysSLnNvkKPT3gh1RhjbyKPEoq3d3DXhJEQJt7GhVgZC82VeMfME9LnYECn9Pui1ta")
+
         user.setBytes("p8ogX1BMb-IsRisEBS2kOchXEqjbqxtsXR8J9Bf0AGI".base64RawUrlDecode())
         val ephemeral = suite.scalar()
-        ephemeral.setBytes("55ffbc2955b39a1ddb44aa5675a395ceb3766d59f11b8cf865651f72a281322e".hexStringToByteArray())
+        ephemeral.setBytes("-e7M3ZD5k-rW6KQ7GVfV9V9bpmfbUY5y8HiqqBGv8-r46YMRRSlyc-ZKGU3s92gsC9GVuIhgn33I".base64RawUrlDecode())
         val eBytes = ephemeral.privateKeyBytes()
 
         val nonce = 1024L
@@ -39,6 +41,8 @@ class TipTest {
         println("sPK: ${sPk.publicKeyString()}")
         val uPk = user.publicKey()
         val pKeyBytes = uPk.publicKeyBytes()
+        println("uSk: ${user.privateKeyBytes().toHex()}")
+        println("uPk: ${uPk.publicKeyString()}")
         val msg = pKeyBytes + eBytes + nonceBytes + graceBytes
         println("msg: ${msg.toHex()}")
 
@@ -51,7 +55,9 @@ class TipTest {
             nonce = nonce,
             grace = grace,
         )
+        println("data: ${Gson().toJson(data)}")
         val json = Gson().toJson(data).toByteArray()
+        println("json: ${json.toHex()}")
 
         val cipher = Crypto.encrypt(sPk, user, json)
         println("cipher: ${cipher.toHex()}")

@@ -10,7 +10,7 @@ import one.mixin.android.Constants
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.service.TipService
 import one.mixin.android.extension.base64RawEncode
-import one.mixin.android.extension.decodeBase64
+import one.mixin.android.extension.base64RawUrlDecode
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.putString
 import one.mixin.android.session.Session
@@ -45,7 +45,7 @@ class IdentityManager @Inject internal constructor(private val tipService: TipSe
         }
         val hashResult: Argon2KtResult = argon2Kt.hash(
             mode = Argon2Mode.ARGON2_I,
-            password = tipIdentity.seedBase64.decodeBase64() + pin.toByteArray(),
+            password = tipIdentity.seedBase64.base64RawUrlDecode() + pin.toByteArray(),
             salt = "somesalt".toByteArray(),
             tCostInIterations = 1,
             mCostInKibibyte = 1024,
