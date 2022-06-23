@@ -359,6 +359,11 @@ fun Context.getGroupAvatarPath(name: String, create: Boolean = true): File {
     return file
 }
 
+fun Context.getWallpaperFile(): File {
+    val root = getBestAvailableCacheRoot()
+    return File("$root${File.separator}wallpaper.jpge")
+}
+
 fun File.createNoMediaDir() {
     val no = File(this, ".nomedia")
     if (!exists()) {

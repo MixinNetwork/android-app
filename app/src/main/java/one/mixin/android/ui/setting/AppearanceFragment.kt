@@ -105,7 +105,7 @@ class AppearanceFragment : BaseFragment(R.layout.fragment_appearance) {
             }
 
             backgroundRl.setOnClickListener {
-                navTo(SettingChatFragment.newInstance(), SettingChatFragment.TAG)
+                navTo(SettingWallpaperFragment.newInstance(), SettingWallpaperFragment.TAG)
             }
         }
     }

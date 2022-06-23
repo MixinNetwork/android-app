@@ -1,13 +1,12 @@
 package one.mixin.android.ui.setting
 
 import android.annotation.SuppressLint
+import android.graphics.drawable.Drawable
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.annotation.DrawableRes
 import androidx.constraintlayout.widget.ConstraintLayout
-import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -17,7 +16,6 @@ import one.mixin.android.databinding.FragmentSettingChatBinding
 import one.mixin.android.databinding.ItemBackgroudBinding
 import one.mixin.android.databinding.ItemChatTextBinding
 import one.mixin.android.databinding.ItemChatTimeBinding
-import one.mixin.android.extension.booleanFromAttribute
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.nowInUtc
 import one.mixin.android.extension.round
@@ -28,42 +26,26 @@ import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.MessageStatus
 
 @AndroidEntryPoint
-class SettingChatFragment : BaseFragment(R.layout.fragment_setting_chat) {
+class SettingWallpaperFragment : BaseFragment(R.layout.fragment_setting_chat) {
     companion object {
         const val TAG = "SettingChatFragment"
-        fun newInstance() = SettingChatFragment()
+        fun newInstance() = SettingWallpaperFragment()
     }
 
     private val binding by viewBinding(FragmentSettingChatBinding::bind)
 
     private var currentSelected = 1
 
-    private val isNight by lazy {
-        requireContext().booleanFromAttribute(R.attr.flag_night)
-    }
-
-    private fun getChatBackground(index: Int) = when (index) {
-        0 -> if (isNight) R.drawable.bg_chat_symbol_night else R.drawable.bg_chat_symbol
-        1 -> if (isNight) R.drawable.bg_chat_star_night else R.drawable.bg_chat_star
-        2 -> if (isNight) R.drawable.bg_chat_animal_night else R.drawable.bg_chat_animal
-        3 -> if (isNight) R.drawable.bg_chat_plant_night else R.drawable.bg_chat_plant
-        else -> -1
-    }
-
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        if (isNight) {
-            binding.container.backgroundImage =
-                ContextCompat.getDrawable(requireContext(), R.drawable.bg_chat_symbol_night)
-        } else {
-            binding.container.backgroundImage =
-                ContextCompat.getDrawable(requireContext(), R.drawable.bg_chat_symbol)
-        }
+        currentSelected = WallpaperManager.getCurrentSelected(requireContext())
+        binding.container.backgroundImage =
+            WallpaperManager.getWallpaper(requireContext())
         binding.titleView.leftIb.setOnClickListener {
             requireActivity().onBackPressed()
         }
         binding.titleView.rightTv.setOnClickListener {
-            // Todo save background
+            WallpaperManager.save(requireContext(), currentSelected)
             requireActivity().onBackPressed()
         }
         binding.backgroundRv.layoutManager =
@@ -78,20 +60,22 @@ class SettingChatFragment : BaseFragment(R.layout.fragment_setting_chat) {
                         LayoutInflater.from(parent.context),
                         parent,
                         false
-                    )
+                    ).apply {
+                        image.round(3.dp)
+                    }
                 )
             }
 
             @SuppressLint("NotifyDataSetChanged")
             override fun onBindViewHolder(holder: BackgroundHolder, position: Int) {
-                val p = position
-                if (position != 0) {
-                    holder.bind(getChatBackground(position - 1), position == currentSelected)
-                }else{
-                    holder.bind(null, position == currentSelected)
-                }
+                val p = position - 1
+                holder.bind(
+                    WallpaperManager.getWallpaper(requireContext(), p),
+                    position == 0,
+                    position == currentSelected
+                )
                 holder.itemView.setOnClickListener {
-                    currentSelected = p
+                    currentSelected = p + 1
                     notifyDataSetChanged()
                     binding.backgroundRv.layoutManager?.smoothScrollToPosition(
                         binding.backgroundRv,
@@ -100,10 +84,7 @@ class SettingChatFragment : BaseFragment(R.layout.fragment_setting_chat) {
                     )
                     if (position != 0) {
                         binding.container.backgroundImage =
-                            ContextCompat.getDrawable(
-                                requireContext(),
-                                getChatBackground(position - 1)
-                            )
+                            WallpaperManager.getWallpaper(requireContext(), p)
                     }
                 }
             }
@@ -186,7 +167,8 @@ class SettingChatFragment : BaseFragment(R.layout.fragment_setting_chat) {
                             R.drawable.chat_bubble_me_last_night
                         )
                     }
-                    else -> (holder as TimeHolder).binding.chatTime.text = "今天"
+                    else -> (holder as TimeHolder).binding.chatTime.text =
+                        requireContext().getString(R.string.Today)
                 }
             }
 
@@ -198,13 +180,9 @@ class SettingChatFragment : BaseFragment(R.layout.fragment_setting_chat) {
 
     class BackgroundHolder constructor(val binding: ItemBackgroudBinding) :
         RecyclerView.ViewHolder(binding.root) {
-        fun bind(@DrawableRes resId: Int?, selected: Boolean) {
-            if (resId != null) {
-                binding.image.setImageResource(resId)
-            } else {
-                binding.image.setImageDrawable(null)
-            }
-            binding.image.round(3.dp)
+        fun bind(drawable: Drawable?, iconVisible: Boolean, selected: Boolean) {
+            binding.image.setImageDrawable(drawable)
+            binding.icon.isVisible = iconVisible
             binding.selected.isVisible = selected
         }
     }

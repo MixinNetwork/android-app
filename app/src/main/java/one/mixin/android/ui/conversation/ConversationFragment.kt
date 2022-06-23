@@ -180,6 +180,8 @@ import one.mixin.android.ui.player.MusicActivity
 import one.mixin.android.ui.player.MusicService
 import one.mixin.android.ui.player.collapse
 import one.mixin.android.ui.preview.TextPreviewActivity
+import one.mixin.android.ui.setting.WalletPasswordFragment
+import one.mixin.android.ui.setting.WallpaperManager
 import one.mixin.android.ui.sticker.StickerActivity
 import one.mixin.android.ui.sticker.StickerPreviewBottomSheetFragment
 import one.mixin.android.ui.tip.TipActivity
@@ -1371,13 +1373,7 @@ class ConversationFragment() :
     private var firstPosition = 0
 
     private fun initView() {
-        if (requireActivity().booleanFromAttribute(R.attr.flag_night)) {
-            binding.inputLayout.backgroundImage =
-                ContextCompat.getDrawable(requireContext(), R.drawable.bg_chat_symbol_night)
-        } else {
-            binding.inputLayout.backgroundImage =
-                ContextCompat.getDrawable(requireContext(), R.drawable.bg_chat_symbol)
-        }
+        binding.inputLayout.backgroundImage = WallpaperManager.getWallpaper(requireContext())
         binding.chatRv.visibility = INVISIBLE
         if (binding.chatRv.adapter == null) {
             binding.chatRv.adapter = conversationAdapter

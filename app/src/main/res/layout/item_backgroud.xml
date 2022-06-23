@@ -1,18 +1,30 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="100dp"
     android:layout_height="140dp"
     android:orientation="vertical"
-    android:padding="1.5dp"
-    >
+    android:foreground="?android:attr/selectableItemBackground"
+    android:padding="1.5dp">
 
     <ImageView
         android:id="@+id/image"
+        android:background="?attr/bg_window"
         android:scaleType="center"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_margin="4.5dp"
-        android:contentDescription="@null" />
+        tools:ignore="ContentDescription" />
+
+    <ImageView
+        android:id="@+id/icon"
+        android:visibility="gone"
+        android:background="?attr/bg_window"
+        android:layout_centerInParent="true"
+        android:src="@drawable/ic_chat_img"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        tools:ignore="ContentDescription" />
 
     <View
         android:id="@+id/selected"
