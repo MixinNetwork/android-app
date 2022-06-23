@@ -17,7 +17,16 @@ object WallpaperManager {
         return getWallpaper(context, getIndex(context))
     }
 
-    fun getWallpaper(context: Context, index: Int): Drawable? {
+    fun getWallpaperByPosition(context: Context, position: Int): Drawable? {
+        val index = if (wallpaperExists(context)) {
+            position - 2
+        } else {
+            position - 1
+        }
+        return getWallpaper(context, index)
+    }
+
+    private fun getWallpaper(context: Context, index: Int): Drawable? {
         val isNight = context.booleanFromAttribute(R.attr.flag_night)
         return when (index) {
             -1 -> context.getWallpaperFile().run {
@@ -47,22 +56,40 @@ object WallpaperManager {
         }
     }
 
-    fun save(context: Context, index: Int) {
-        if (index == 0){
+    fun save(context: Context, position: Int) {
+        if (position == 0) {
             return
         }
-        context.defaultSharedPreferences.putInt(INDEX_KEY, index - 1)
+        val wallpaperExists = wallpaperExists(context)
+        if (wallpaperExists && position == 1) {
+            context.defaultSharedPreferences.putInt(INDEX_KEY, -1)
+        } else {
+
+            context.defaultSharedPreferences.putInt(
+                INDEX_KEY,
+                position - if (wallpaperExists) 2 else 1
+            )
+            clear(context)
+        }
     }
 
-    fun getIndex(context: Context) =
+    private fun getIndex(context: Context) =
         context.defaultSharedPreferences.getInt(INDEX_KEY, 0)
 
-    fun getCurrentSelected(context: Context) = getIndex(context) + if (wallpaperExists(context)) 2 else 1
+    fun getCurrentSelected(context: Context) =
+        getIndex(context) + if (wallpaperExists(context)) 2 else 1
+
+    fun getWallpaperCount(context: Context) = 4 + if (wallpaperExists(context)) 2 else 1
 
     fun wallpaperExists(context: Context) = context.getWallpaperFile().exists()
 
-    // Todo delete test code
-    fun clear(context:Context) {
-        context.getWallpaperFile().delete()
+    fun wallpaperFile(context: Context) = context.getWallpaperFile()
+
+    private fun clear(context: Context) {
+        context.getWallpaperFile().apply {
+            if (exists()) {
+                delete()
+            }
+        }
     }
 }

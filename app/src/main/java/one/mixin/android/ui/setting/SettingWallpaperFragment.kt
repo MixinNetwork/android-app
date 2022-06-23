@@ -1,25 +1,41 @@
 package one.mixin.android.ui.setting
 
+import android.Manifest
 import android.annotation.SuppressLint
+import android.app.Activity
+import android.content.Intent
+import android.graphics.Color
 import android.graphics.drawable.Drawable
+import android.net.Uri
 import android.os.Bundle
+import android.provider.MediaStore
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageView
 import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.tbruyelle.rxpermissions2.RxPermissions
+import com.uber.autodispose.autoDispose
+import com.yalantis.ucrop.UCrop
 import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentSettingChatBinding
 import one.mixin.android.databinding.ItemBackgroudBinding
 import one.mixin.android.databinding.ItemChatTextBinding
 import one.mixin.android.databinding.ItemChatTimeBinding
+import one.mixin.android.extension.REQUEST_GALLERY
+import one.mixin.android.extension.displayRatio
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.nowInUtc
+import one.mixin.android.extension.openImageGallery
+import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.round
 import one.mixin.android.ui.common.BaseFragment
+import one.mixin.android.ui.common.profile.ProfileBottomSheetDialogFragment
 import one.mixin.android.ui.conversation.chathistory.holder.TextHolder
 import one.mixin.android.ui.conversation.holder.TimeHolder
 import one.mixin.android.util.viewBinding
@@ -68,28 +84,29 @@ class SettingWallpaperFragment : BaseFragment(R.layout.fragment_setting_chat) {
 
             @SuppressLint("NotifyDataSetChanged")
             override fun onBindViewHolder(holder: BackgroundHolder, position: Int) {
-                val p = position - 1
                 holder.bind(
-                    WallpaperManager.getWallpaper(requireContext(), p),
+                    WallpaperManager.getWallpaperByPosition(requireContext(), position),
                     position == 0,
-                    position == currentSelected
+                    position == currentSelected,
+                    !(position == 1 && WallpaperManager.wallpaperExists(requireContext()))
                 )
                 holder.itemView.setOnClickListener {
-                    currentSelected = p + 1
-                    notifyDataSetChanged()
-                    binding.backgroundRv.layoutManager?.smoothScrollToPosition(
-                        binding.backgroundRv,
-                        null,
-                        position
-                    )
-                    if (position != 0) {
-                        binding.container.backgroundImage =
-                            WallpaperManager.getWallpaper(requireContext(), p)
+                    if (position == 0) {
+                        selectWallpaper()
+                    } else {
+                        currentSelected = position
+                        notifyDataSetChanged()
+                        binding.backgroundRv.layoutManager?.smoothScrollToPosition(
+                            binding.backgroundRv,
+                            null,
+                            position
+                        )
+                        binding.container.backgroundImage = WallpaperManager.getWallpaperByPosition(requireContext(), position)
                     }
                 }
             }
 
-            override fun getItemCount(): Int = 5
+            override fun getItemCount(): Int = WallpaperManager.getWallpaperCount(requireContext())
         }
         binding.chatRv.adapter = object : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
             override fun onCreateViewHolder(
@@ -178,11 +195,67 @@ class SettingWallpaperFragment : BaseFragment(R.layout.fragment_setting_chat) {
         }
     }
 
+    private fun selectWallpaper() {
+        RxPermissions(requireActivity())
+            .request(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+            .autoDispose(stopScope)
+            .subscribe { granted ->
+                if (granted) {
+                    openImageGallery(true)
+                } else {
+                    context?.openPermissionSetting()
+                }
+            }
+    }
+
+    private val imageUri: Uri by lazy {
+        Uri.fromFile(WallpaperManager.wallpaperFile(requireContext()))
+    }
+
+    @SuppressLint("NotifyDataSetChanged")
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        if (requestCode == REQUEST_GALLERY && resultCode == Activity.RESULT_OK) {
+            var selectedImageUri: Uri?
+            if (data == null || data.action != null && data.action == MediaStore.ACTION_IMAGE_CAPTURE) {
+                selectedImageUri = imageUri
+            } else {
+                selectedImageUri = data.data
+                if (selectedImageUri == null) {
+                    selectedImageUri = imageUri
+                }
+            }
+            val options = UCrop.Options()
+            options.setToolbarColor(ContextCompat.getColor(requireContext(), R.color.black))
+            options.setStatusBarColor(ContextCompat.getColor(requireContext(), R.color.black))
+            options.setToolbarWidgetColor(Color.WHITE)
+            options.setHideBottomControls(true)
+            UCrop.of(selectedImageUri, imageUri)
+                .withOptions(options)
+                .withAspectRatio(1f, requireContext().displayRatio())
+                .withMaxResultSize(
+                    ProfileBottomSheetDialogFragment.MAX_PHOTO_SIZE,
+                    ProfileBottomSheetDialogFragment.MAX_PHOTO_SIZE
+                )
+                .start(requireContext(), this)
+        } else if (resultCode == Activity.RESULT_OK && requestCode == UCrop.REQUEST_CROP) {
+            binding.backgroundRv.adapter?.notifyDataSetChanged()
+            currentSelected = 1
+            binding.container.backgroundImage = WallpaperManager.getWallpaperByPosition(requireContext(), 1)
+        }
+    }
+
     class BackgroundHolder constructor(val binding: ItemBackgroudBinding) :
         RecyclerView.ViewHolder(binding.root) {
-        fun bind(drawable: Drawable?, iconVisible: Boolean, selected: Boolean) {
+        fun bind(
+            drawable: Drawable?,
+            iconVisible: Boolean,
+            selected: Boolean,
+            center: Boolean = true
+        ) {
             binding.image.setImageDrawable(drawable)
             binding.icon.isVisible = iconVisible
+            binding.image.scaleType =
+                if (center) ImageView.ScaleType.CENTER else ImageView.ScaleType.CENTER_CROP
             binding.selected.isVisible = selected
         }
     }
