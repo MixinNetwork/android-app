@@ -86,7 +86,7 @@ open class SendMessageJob(
                     message.content?.let { content ->
                         content.findLastUrl()?.let {
                             message.hyperlink = it
-                            parseHyperlink(message.id, it, hyperlinkDao, messageDao)
+                            parseHyperlink(it, hyperlinkDao)
                         }
                         parseMentionData(content, message.id, message.conversationId, userDao, messageMentionDao, message.userId)
                     }

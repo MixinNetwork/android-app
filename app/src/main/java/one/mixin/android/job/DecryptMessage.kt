@@ -569,7 +569,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                         ).apply {
                             this.content?.findLastUrl()?.let {
                                 this.hyperlink = it
-                                parseHyperlink(data.messageId, it, hyperlinkDao, messageDao)
+                                parseHyperlink(it, hyperlinkDao)
                             }
                         }
                     } else {
