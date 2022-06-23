@@ -40,6 +40,8 @@ import one.mixin.android.ui.conversation.chathistory.holder.TextHolder
 import one.mixin.android.ui.conversation.holder.TimeHolder
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.MessageStatus
+import one.mixin.android.widget.theme.Coordinate
+import one.mixin.android.widget.theme.ThemeActivity
 
 @AndroidEntryPoint
 class SettingWallpaperFragment : BaseFragment(R.layout.fragment_setting_chat) {
@@ -83,7 +85,10 @@ class SettingWallpaperFragment : BaseFragment(R.layout.fragment_setting_chat) {
             }
 
             @SuppressLint("NotifyDataSetChanged")
-            override fun onBindViewHolder(holder: BackgroundHolder, @SuppressLint("RecyclerView") position: Int) {
+            override fun onBindViewHolder(
+                holder: BackgroundHolder,
+                @SuppressLint("RecyclerView") position: Int
+            ) {
                 holder.bind(
                     WallpaperManager.getWallpaperByPosition(requireContext(), position),
                     position == 0,
@@ -94,14 +99,12 @@ class SettingWallpaperFragment : BaseFragment(R.layout.fragment_setting_chat) {
                     if (position == 0) {
                         selectWallpaper()
                     } else {
-                        currentSelected = position
+
                         notifyDataSetChanged()
-                        binding.backgroundRv.layoutManager?.smoothScrollToPosition(
-                            binding.backgroundRv,
-                            null,
-                            position
-                        )
-                        binding.container.backgroundImage = WallpaperManager.getWallpaperByPosition(requireContext(), position)
+                        scrollToPosition(position)
+                        switchWallpaper(it)
+                        binding.container.backgroundImage =
+                            WallpaperManager.getWallpaperByPosition(requireContext(), position)
                     }
                 }
             }
@@ -195,6 +198,14 @@ class SettingWallpaperFragment : BaseFragment(R.layout.fragment_setting_chat) {
         }
     }
 
+    private fun scrollToPosition(position: Int) {
+        binding.apply {
+            val centerOfScreen: Int = backgroundRv.width / 2 - 50.dp
+            (backgroundRv.layoutManager as LinearLayoutManager).scrollToPositionWithOffset(position, centerOfScreen)
+        }
+        currentSelected = position
+    }
+
     private fun selectWallpaper() {
         RxPermissions(requireActivity())
             .request(Manifest.permission.WRITE_EXTERNAL_STORAGE)
@@ -240,7 +251,8 @@ class SettingWallpaperFragment : BaseFragment(R.layout.fragment_setting_chat) {
         } else if (resultCode == Activity.RESULT_OK && requestCode == UCrop.REQUEST_CROP) {
             binding.backgroundRv.adapter?.notifyDataSetChanged()
             currentSelected = 1
-            binding.container.backgroundImage = WallpaperManager.getWallpaperByPosition(requireContext(), 1)
+            binding.container.backgroundImage =
+                WallpaperManager.getWallpaperByPosition(requireContext(), 1)
         }
     }
 
@@ -258,5 +270,36 @@ class SettingWallpaperFragment : BaseFragment(R.layout.fragment_setting_chat) {
                 if (center) ImageView.ScaleType.CENTER else ImageView.ScaleType.CENTER_CROP
             binding.selected.isVisible = selected
         }
+    }
+
+    private fun switchWallpaper(view: View) {
+        (requireActivity() as ThemeActivity).run {
+            changeTheme(
+                getViewCoordinates(view),
+                250L,
+                false
+            ) {
+
+            }
+        }
+    }
+
+    private fun getViewCoordinates(view: View): Coordinate {
+        return Coordinate(
+            getRelativeLeft(view) + view.width / 2,
+            getRelativeTop(view) + view.height / 2
+        )
+    }
+
+    private fun getRelativeLeft(myView: View): Int {
+        return if ((myView.parent as View).id == ThemeActivity.ROOT_ID) myView.left else myView.left + getRelativeLeft(
+            myView.parent as View
+        )
+    }
+
+    private fun getRelativeTop(myView: View): Int {
+        return if ((myView.parent as View).id == ThemeActivity.ROOT_ID) myView.top else myView.top + getRelativeTop(
+            myView.parent as View
+        )
     }
 }
