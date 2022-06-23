@@ -83,7 +83,7 @@ class SettingWallpaperFragment : BaseFragment(R.layout.fragment_setting_chat) {
             }
 
             @SuppressLint("NotifyDataSetChanged")
-            override fun onBindViewHolder(holder: BackgroundHolder, position: Int) {
+            override fun onBindViewHolder(holder: BackgroundHolder, @SuppressLint("RecyclerView") position: Int) {
                 holder.bind(
                     WallpaperManager.getWallpaperByPosition(requireContext(), position),
                     position == 0,

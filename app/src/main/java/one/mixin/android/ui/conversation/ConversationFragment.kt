@@ -93,7 +93,6 @@ import one.mixin.android.extension.REQUEST_LOCATION
 import one.mixin.android.extension.addFragment
 import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.animateHeight
-import one.mixin.android.extension.booleanFromAttribute
 import one.mixin.android.extension.callPhone
 import one.mixin.android.extension.checkInlinePermissions
 import one.mixin.android.extension.clickVibrate

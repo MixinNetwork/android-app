@@ -13,7 +13,6 @@ import android.provider.Settings
 import android.view.ContextThemeWrapper
 import android.view.View
 import androidx.appcompat.widget.PopupMenu
-import androidx.core.content.ContextCompat
 import androidx.core.view.children
 import androidx.core.view.isVisible
 import androidx.lifecycle.LiveData
@@ -37,7 +36,6 @@ import one.mixin.android.databinding.ViewTranscriptBinding
 import one.mixin.android.databinding.ViewUrlBottomBinding
 import one.mixin.android.event.BlinkEvent
 import one.mixin.android.extension.alert
-import one.mixin.android.extension.booleanFromAttribute
 import one.mixin.android.extension.callPhone
 import one.mixin.android.extension.getClipboardManager
 import one.mixin.android.extension.isImageSupport
