@@ -7,6 +7,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
+import okio.Buffer
 import one.mixin.android.api.request.TipSignData
 import one.mixin.android.api.request.TipSignRequest
 import one.mixin.android.api.response.TipSignResponse
@@ -127,16 +128,24 @@ class Tip @Inject internal constructor(private val tipNodeService: TipNodeServic
         val signerPk = Crypto.pubKeyFromBase58(signer.identity)
         val plain = Crypto.decrypt(signerPk, userSk, resp.data.cipher.hexStringToByteArray())
         Timber.d("plain len: ${plain.size}")
-        val nonce = plain.slice(0..7).toByteArray()
+        val nonceBytes = plain.slice(0..7).toByteArray()
         var offset = 10  // skip 2 bytes, confuse
         val partial = plain.slice(offset..offset + 63).toByteArray()
         offset += 64
         val assignor = plain.slice(offset..offset + 127).toByteArray()
         offset += 128
-        val time = plain.slice(offset..offset + 7).toByteArray()
+        val timeBytes = plain.slice(offset..offset + 7).toByteArray()
         offset += 8
-        val count = plain.slice(offset..offset + 7).toByteArray()
-        Timber.d("nonce: ${nonce.toHex()}, partial: ${partial.toHex()}, assignor: ${assignor.toHex()}, time: ${time.toHex()}, count: ${count.toHex()}")
+        val counterBytes = plain.slice(offset..offset + 7).toByteArray()
+
+        val buffer = Buffer()
+        buffer.write(nonceBytes)
+        val nonce = buffer.readLong()
+        buffer.write(timeBytes)
+        val time = buffer.readLong()
+        buffer.write(counterBytes)
+        val counter = buffer.readLong()
+        Timber.d("nonce: $nonce, partial: ${partial.toHex()}, assignor: ${assignor.toHex()}, time: $time, counter: $counter")
         return partial
     }
 
