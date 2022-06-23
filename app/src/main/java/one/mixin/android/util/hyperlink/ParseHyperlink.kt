@@ -1,14 +1,13 @@
 package one.mixin.android.util.hyperlink
 
 import one.mixin.android.db.HyperlinkDao
-import one.mixin.android.db.MessageDao
 import one.mixin.android.vo.Hyperlink
 
-fun parseHyperlink(messageId: String, hyperlink: String, hyperlinkDao: HyperlinkDao, messageDao: MessageDao) {
+fun parseHyperlink(hyperlink: String, hyperlinkDao: HyperlinkDao) {
     if (hyperlinkDao.findHyperlinkByLink(hyperlink) == null) {
         try {
             hyperlinkDao.insert(Hyperlink(hyperlink, "", "", "", null))
-        } catch (e: Exception) {
+        } catch (_: Exception) {
         }
     }
 }
