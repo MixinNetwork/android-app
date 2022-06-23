@@ -30,7 +30,7 @@ class MusicTree {
     private fun setItem(mediaItem: MediaMetadataCompat) {
         val albumMediaId = mediaItem.album ?: MUSIC_UNKNOWN_ROOT
         val albumChildren = mediaIdToChildren[albumMediaId] ?: buildAlbumRoot(mediaItem)
-        val index = albumChildren.indexOfFirst { it.description.mediaId == mediaItem.id }
+        val index = albumChildren.indexOfFirst { it.description?.mediaId == mediaItem.id }
         if (index == -1) {
             albumChildren += mediaItem
         } else {

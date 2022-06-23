@@ -150,13 +150,17 @@ class GalleryAlbumFragment : Fragment(R.layout.fragment_gallery_album), AlbumCol
 
     private val internalObserver = object : ContentObserver(Handler()) {
         override fun onChange(selfChange: Boolean) {
-            binding.va.postDelayed(restartLoadRunnable, 2000)
+            if (this@GalleryAlbumFragment.isAdded) {
+                binding.va.postDelayed(restartLoadRunnable, 2000)
+            }
         }
     }
 
     private val externalObserver = object : ContentObserver(Handler()) {
         override fun onChange(selfChange: Boolean) {
-            binding.va.postDelayed(restartLoadRunnable, 2000)
+            if (this@GalleryAlbumFragment.isAdded) {
+                binding.va.postDelayed(restartLoadRunnable, 2000)
+            }
         }
     }
 
