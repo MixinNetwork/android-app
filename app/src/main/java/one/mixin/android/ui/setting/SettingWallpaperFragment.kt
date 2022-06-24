@@ -34,8 +34,9 @@ import one.mixin.android.extension.nowInUtc
 import one.mixin.android.extension.openImageGallery
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.round
+import one.mixin.android.extension.screenHeight
+import one.mixin.android.extension.screenWidth
 import one.mixin.android.ui.common.BaseFragment
-import one.mixin.android.ui.common.profile.ProfileBottomSheetDialogFragment
 import one.mixin.android.ui.conversation.chathistory.holder.TextHolder
 import one.mixin.android.ui.conversation.holder.TimeHolder
 import one.mixin.android.util.viewBinding
@@ -244,8 +245,8 @@ class SettingWallpaperFragment : BaseFragment(R.layout.fragment_setting_chat) {
                 .withOptions(options)
                 .withAspectRatio(1f, requireContext().displayRatio())
                 .withMaxResultSize(
-                    ProfileBottomSheetDialogFragment.MAX_PHOTO_SIZE,
-                    ProfileBottomSheetDialogFragment.MAX_PHOTO_SIZE
+                    requireContext().screenWidth(),
+                    requireContext().screenHeight()
                 )
                 .start(requireContext(), this)
         } else if (resultCode == Activity.RESULT_OK && requestCode == UCrop.REQUEST_CROP) {
