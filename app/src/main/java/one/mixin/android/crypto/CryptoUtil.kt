@@ -61,12 +61,14 @@ fun ByteArray.sha3Sum256(): ByteArray {
     return digestKeccak(KeccakParameter.SHA3_256)
 }
 
-fun argon2IdHash(pin: String, seed: String): Argon2KtResult {
-    val argon2Kt = Argon2Kt()
-    return argon2Kt.hash(
+fun Argon2Kt.argon2IdHash(pin: String, seed: String): Argon2KtResult =
+    argon2IdHash(pin, seed.toByteArray())
+
+fun Argon2Kt.argon2IdHash(pin: String, seed: ByteArray): Argon2KtResult {
+    return hash(
         mode = Argon2Mode.ARGON2_I,
         password = pin.toByteArray(),
-        salt = seed.toByteArray(),
+        salt = seed,
         tCostInIterations = 4,
         mCostInKibibyte = 1024,
         hashLengthInBytes = 64
