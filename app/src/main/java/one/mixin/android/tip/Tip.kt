@@ -40,6 +40,9 @@ import one.mixin.android.extension.toBeByteArray
 import one.mixin.android.extension.toHex
 import one.mixin.android.session.Session
 import one.mixin.android.util.GsonHelper
+import one.mixin.android.util.deleteKeyByAlias
+import one.mixin.android.util.getDecryptCipher
+import one.mixin.android.util.getEncryptCipher
 import retrofit2.HttpException
 import timber.log.Timber
 import java.security.MessageDigest
@@ -52,8 +55,8 @@ class Tip @Inject internal constructor(private val tipNodeService: TipNodeServic
     private val gson = GsonHelper.customGson
 
     suspend fun getPriv(context: Context, pin: String): ByteArray? {
-        val privTip = context.defaultSharedPreferences.getString(Constants.Tip.Tip_Priv, null) ?: return null
-        Timber.d("get priv $privTip")
+        val privTip = readTipPriv(context) ?: return null
+        Timber.d("read priv from keyStore ${privTip.toHex()}")
 
         val aesKey = getAesKey(pin)
         if (aesKey == null) {
@@ -63,10 +66,10 @@ class Tip @Inject internal constructor(private val tipNodeService: TipNodeServic
 
         val privTipKey = (aesKey + pin.toByteArray()).sha3Sum256()
         Timber.d("get priv privTipKey ${privTipKey.toHex()}")
-        return aesDecrypt(privTipKey, privTip.hexStringToByteArray())
+        return aesDecrypt(privTipKey, privTip)
     }
 
-    suspend fun genPriv(context: Context, identityPub: String, ephemeral: String, pin: String): ByteArray? {
+    suspend fun genPriv(context: Context, identityPub: String, ephemeral: ByteArray, pin: String): ByteArray? {
         val tipConfig = try {
             tipNodeService.tipConfig()
         } catch (e: Exception) {
@@ -74,18 +77,14 @@ class Tip @Inject internal constructor(private val tipNodeService: TipNodeServic
             null
         } ?: return null
 
-        Timber.d("identityPub: $identityPub")
-        Timber.d("ephemeral: $ephemeral")
-
         val identityPubBytes = identityPub.base64RawUrlDecode()
-        val ephemeralBytes = ephemeral.base64RawUrlDecode()
 
         val suite = Crypto.newSuiteBn256()
         val userSk = suite.scalar()
         userSk.setBytes(identityPubBytes)
         Timber.d("user pk ${userSk.publicKey().publicKeyBytes().toHex()}")
 
-        val nodeSeeds = getNodeSeeds(tipConfig.signers, identityPubBytes, ephemeralBytes)
+        val nodeSeeds = getNodeSeeds(tipConfig.signers, identityPubBytes, ephemeral)
 
         val nodeSigs = getNodeSigs(suite, userSk, tipConfig.signers, nodeSeeds)
 
@@ -102,10 +101,10 @@ class Tip @Inject internal constructor(private val tipNodeService: TipNodeServic
 
         val privTipKey = (aesKey + pin.toByteArray()).sha3Sum256()
         Timber.d("privTipKey ${privTipKey.toHex()}")
-        val privTip = aesEncrypt(privTipKey, aggSig).toHex()
+        val privTip = aesEncrypt(privTipKey, aggSig)
         Timber.d("privTip $privTip")
 
-        context.defaultSharedPreferences.putString(Constants.Tip.Tip_Priv, privTip)
+        storeTipPriv(context, privTip)
         return aggSig
     }
 
@@ -279,7 +278,7 @@ class Tip @Inject internal constructor(private val tipNodeService: TipNodeServic
         ephemeral.setBytes(nodeSeed)
         val eBytes = ephemeral.privateKeyBytes()
 
-        val nonce = 1024L
+        val nonce = 1024L  // current time seconds
         val grace = ephemeralGrace
 
         val sig = genRequestSig(userSk, eBytes, nonce, grace)
@@ -305,5 +304,28 @@ class Tip @Inject internal constructor(private val tipNodeService: TipNodeServic
         Timber.d("m: ${m.toHex()}")
         val sig = user.sign(m)
         return sig.toHex()
+    }
+
+    private fun readTipPriv(context: Context): ByteArray? {
+        val ciphertext = context.defaultSharedPreferences.getString(Constants.Tip.TIP_PRIV, null) ?: return null
+
+        val iv = context.defaultSharedPreferences.getString(Constants.Tip.IV_TIP_PRIV, null)
+        if (iv == null) {
+            deleteKeyByAlias(Constants.Tip.ALIAS_TIP_PRIV)
+            context.defaultSharedPreferences.putString(Constants.Tip.TIP_PRIV, null)
+            return null
+        }
+
+        val cipher = getDecryptCipher(Constants.Tip.ALIAS_TIP_PRIV, iv.base64RawUrlDecode())
+        return cipher.doFinal(ciphertext.base64RawUrlDecode())
+    }
+
+    private fun storeTipPriv(context: Context, tipPriv: ByteArray) {
+        val cipher = getEncryptCipher(Constants.Tip.ALIAS_TIP_PRIV)
+        val iv = cipher.iv.base64RawEncode()
+        context.defaultSharedPreferences.putString(Constants.Tip.IV_TIP_PRIV, iv)
+        val ciphertext = cipher.doFinal(tipPriv).base64RawEncode()
+        context.defaultSharedPreferences.putString(Constants.Tip.TIP_PRIV, ciphertext)
+        // return true or false
     }
 }

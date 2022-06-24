@@ -437,7 +437,7 @@ class MainActivity : BlazeBaseActivity() {
         // check tip pub & priv
 
         val ephemeralSeed = ephemeral.getEphemeralSeed(this@MainActivity, deviceId)
-        if (ephemeralSeed.isBlank()) {
+        if (ephemeralSeed == null) {
             Timber.d("empty ephemeral seed")
             return@launch
         }

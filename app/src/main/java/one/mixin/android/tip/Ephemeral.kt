@@ -6,21 +6,27 @@ import one.mixin.android.api.request.TipRequest
 import one.mixin.android.api.service.TipService
 import one.mixin.android.crypto.generateEphemeralSeed
 import one.mixin.android.extension.base64RawEncode
+import one.mixin.android.extension.base64RawUrlDecode
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.putString
+import one.mixin.android.extension.toHex
+import one.mixin.android.util.deleteKeyByAlias
+import one.mixin.android.util.getDecryptCipher
+import one.mixin.android.util.getEncryptCipher
+import timber.log.Timber
 import javax.inject.Inject
 
-// manage Ephemeral
 class Ephemeral @Inject internal constructor(private val tipService: TipService) {
 
-    suspend fun getEphemeralSeed(context: Context, deviceId: String): String {
-        val ephemeralSeed = context.defaultSharedPreferences.getString(Constants.Tip.Ephemeral_Seed, null)
-        if (!ephemeralSeed.isNullOrEmpty()) {
-            return ephemeralSeed
+    suspend fun getEphemeralSeed(context: Context, deviceId: String): ByteArray? {
+        val seed = readEphemeralSeed(context)
+        Timber.d("getEphemeralSeed from keyStore ${seed?.toHex()}")
+        if (seed != null) {
+            return seed
         }
         val response = tipService.tipEphemerals()
         if (!response.isSuccess) {
-            return ""
+            return null
         }
         if (response.data.isNullOrEmpty()) {
             return createEphemeralSeed(context, deviceId)
@@ -29,17 +35,41 @@ class Ephemeral @Inject internal constructor(private val tipService: TipService)
         return updateEphemeralSeed(context, deviceId, ep.seedBase64)
     }
 
-    private suspend fun createEphemeralSeed(context: Context, deviceId: String): String {
+    private suspend fun createEphemeralSeed(context: Context, deviceId: String): ByteArray? {
         val seed = generateEphemeralSeed().base64RawEncode()
         return updateEphemeralSeed(context, deviceId, seed)
     }
 
-    private suspend fun updateEphemeralSeed(context: Context, deviceId: String, seed: String): String {
-        val resp = tipService.tipEphemeral(TipRequest(deviceId, seed))
+    private suspend fun updateEphemeralSeed(context: Context, deviceId: String, seedBase64: String): ByteArray? {
+        val resp = tipService.tipEphemeral(TipRequest(deviceId, seedBase64))
         if (!resp.isSuccess) {
-            return ""
+            return null
         }
-        context.defaultSharedPreferences.putString(Constants.Tip.Ephemeral_Seed, seed)
+        val seed = seedBase64.base64RawUrlDecode()
+        storeEphemeralSeed(context, seed)
         return seed
+    }
+
+    private fun readEphemeralSeed(context: Context): ByteArray? {
+        val ciphertext = context.defaultSharedPreferences.getString(Constants.Tip.EPHEMERAL_SEED, null) ?: return null
+
+        val iv = context.defaultSharedPreferences.getString(Constants.Tip.IV_EPHEMERAL_SEED, null)
+        if (iv == null) {
+            deleteKeyByAlias(Constants.Tip.ALIAS_EPHEMERAL_SEED)
+            context.defaultSharedPreferences.putString(Constants.Tip.EPHEMERAL_SEED, null)
+            return null
+        }
+
+        val cipher = getDecryptCipher(Constants.Tip.ALIAS_EPHEMERAL_SEED, iv.base64RawUrlDecode())
+        return cipher.doFinal(ciphertext.base64RawUrlDecode())
+    }
+
+    private fun storeEphemeralSeed(context: Context, seed: ByteArray) {
+        val cipher = getEncryptCipher(Constants.Tip.ALIAS_EPHEMERAL_SEED)
+        val iv = cipher.iv.base64RawEncode()
+        context.defaultSharedPreferences.putString(Constants.Tip.IV_EPHEMERAL_SEED, iv)
+        val ciphertext = cipher.doFinal(seed).base64RawEncode()
+        context.defaultSharedPreferences.putString(Constants.Tip.EPHEMERAL_SEED, ciphertext)
+        // return true or false
     }
 }

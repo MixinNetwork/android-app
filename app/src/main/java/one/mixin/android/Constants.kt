@@ -27,8 +27,13 @@ object Constants {
     }
 
     object Tip {
-        const val Ephemeral_Seed = "ephemeral_seed"
-        const val Tip_Priv = "tip_priv"
+        const val EPHEMERAL_SEED = "ephemeral_seed"
+        const val ALIAS_EPHEMERAL_SEED = "alias_ephemeral_seed"
+        const val IV_EPHEMERAL_SEED = "iv_ephemeral_seed"
+
+        const val TIP_PRIV = "tip_priv"
+        const val ALIAS_TIP_PRIV = "alias_tip_priv"
+        const val IV_TIP_PRIV = "iv_tip_priv"
     }
 
     object Account {
