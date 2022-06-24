@@ -23,6 +23,14 @@ private const val yearPatternCn = "yyyy 年 MM 月 d 日 E"
 
 fun nowInUtc() = Instant.now().toString()
 
+fun nowInUtcNano(): Long {
+    val inst = Instant.now()
+    var time = inst.epochSecond
+    time *= 1000000000L
+    time += inst.nano.toLong()
+    return time
+}
+
 fun oneWeekAgo() =
     Instant.ofEpochMilli(System.currentTimeMillis() - 60 * 60 * 1000 * 24 * 7).toString()
 

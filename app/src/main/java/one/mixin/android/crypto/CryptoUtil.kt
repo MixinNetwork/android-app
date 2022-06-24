@@ -74,7 +74,7 @@ fun argon2IdHash(pin: String, seed: String): Argon2KtResult {
 }
 
 private val secureRandom: SecureRandom = SecureRandom()
-private val GCM_IV_LENGTH = 12
+private const val GCM_IV_LENGTH = 12
 
 fun generateEphemeralSeed(): ByteArray {
     val key = ByteArray(64)
@@ -82,8 +82,8 @@ fun generateEphemeralSeed(): ByteArray {
     return key
 }
 
-fun generateAesKey(): ByteArray {
-    val key = ByteArray(16)
+fun generateAesKey(len: Int = 16): ByteArray {
+    val key = ByteArray(len)
     secureRandom.nextBytes(key)
     return key
 }
@@ -141,6 +141,12 @@ fun aesDecrypt(key: ByteArray, iv: ByteArray, ciphertext: ByteArray): ByteArray 
     val cipher = Cipher.getInstance("AES/CBC/PKCS5Padding")
     cipher.init(Cipher.DECRYPT_MODE, keySpec, IvParameterSpec(iv))
     return cipher.doFinal(ciphertext)
+}
+
+fun aesDecrypt(key: ByteArray, ciphertext: ByteArray): ByteArray {
+    val iv = ciphertext.slice(0..15).toByteArray()
+    val cipherContent = ciphertext.slice(16 until ciphertext.size).toByteArray()
+    return aesDecrypt(key, iv, cipherContent)
 }
 
 inline fun KeyPair.getPublicKey(): ByteArray {

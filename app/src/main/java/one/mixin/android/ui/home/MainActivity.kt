@@ -146,7 +146,6 @@ import one.mixin.android.vo.Participant
 import one.mixin.android.vo.ParticipantRole
 import one.mixin.android.vo.isGroupConversation
 import one.mixin.android.widget.MaterialSearchView
-import timber.log.Timber
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -442,15 +441,19 @@ class MainActivity : BlazeBaseActivity() {
         }
 
         // check user PIN
+        val pin = "654321"
 
-        val identityPub = identityManager.getIdentityPriv(this@MainActivity, "654321")
+        val identityPub = identityManager.getIdentityPriv(this@MainActivity, pin)
         if (identityPub == null) {
             Timber.d("identity pub is null")
             return@launch
         }
 
-        val tipPriv = tip.genPriv(identityPub, ephemeralSeed)
-        Timber.d("tipPriv: $tipPriv")
+        val tipPriv = tip.genPriv(this@MainActivity, identityPub, ephemeralSeed, pin)
+        Timber.d("tipPriv: ${tipPriv?.toHex()}")
+
+        val readTipPriv = tip.getPriv(this@MainActivity, pin)
+        Timber.d("read tipPriv: ${readTipPriv?.toHex()}")
     }
 
     private fun checkRoot() {

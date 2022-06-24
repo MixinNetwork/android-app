@@ -449,5 +449,5 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideTip(tipNodeService: TipNodeService) = Tip(tipNodeService)
+    fun provideTip(tipNodeService: TipNodeService, tipService: TipService) = Tip(tipNodeService, tipService)
 }

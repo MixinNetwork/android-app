@@ -1,5 +1,6 @@
 package one.mixin.android.tip
 
+import android.content.Context
 import crypto.Crypto
 import crypto.Scalar
 import crypto.SuiteBn256
@@ -7,30 +8,65 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
+import net.i2p.crypto.eddsa.EdDSAEngine
+import net.i2p.crypto.eddsa.EdDSAPrivateKey
+import net.i2p.crypto.eddsa.EdDSAPublicKey
+import net.i2p.crypto.eddsa.spec.EdDSAPrivateKeySpec
+import net.i2p.crypto.eddsa.spec.EdDSAPublicKeySpec
 import okio.Buffer
+import one.mixin.android.Constants
+import one.mixin.android.api.handleMixinResponse
+import one.mixin.android.api.request.TipSecretAction
+import one.mixin.android.api.request.TipSecretRequest
 import one.mixin.android.api.request.TipSignData
 import one.mixin.android.api.request.TipSignRequest
 import one.mixin.android.api.response.TipSignResponse
 import one.mixin.android.api.response.TipSigner
 import one.mixin.android.api.service.TipNodeService
+import one.mixin.android.api.service.TipService
+import one.mixin.android.crypto.aesDecrypt
+import one.mixin.android.crypto.aesEncrypt
+import one.mixin.android.crypto.ed25519
+import one.mixin.android.crypto.generateAesKey
 import one.mixin.android.crypto.sha3Sum256
 import one.mixin.android.extension.base64RawEncode
 import one.mixin.android.extension.base64RawUrlDecode
+import one.mixin.android.extension.decodeBase64
+import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.hexStringToByteArray
+import one.mixin.android.extension.nowInUtcNano
+import one.mixin.android.extension.putString
 import one.mixin.android.extension.toBeByteArray
 import one.mixin.android.extension.toHex
+import one.mixin.android.session.Session
 import one.mixin.android.util.GsonHelper
 import retrofit2.HttpException
 import timber.log.Timber
+import java.security.MessageDigest
 import javax.inject.Inject
 import kotlin.time.Duration.Companion.days
 
-class Tip @Inject internal constructor(private val tipNodeService: TipNodeService) {
+class Tip @Inject internal constructor(private val tipNodeService: TipNodeService, private val tipService: TipService) {
     private val ephemeralGrace = 128.days.inWholeNanoseconds
 
     private val gson = GsonHelper.customGson
 
-    suspend fun genPriv(identityPub: String, ephemeral: String): String? {
+    suspend fun getPriv(context: Context, pin: String): ByteArray? {
+        val privTip = context.defaultSharedPreferences.getString(Constants.Tip.Tip_Priv, null) ?: return null
+        Timber.d("get priv $privTip")
+
+        val aesKey = getAesKey(pin)
+        if (aesKey == null) {
+            Timber.d("read priv tip aes key failed")
+            return null
+        }
+
+        val privTipKey = (aesKey + pin.toByteArray()).sha3Sum256()
+        Timber.d("get priv privTipKey ${privTipKey.toHex()}")
+        return aesDecrypt(privTipKey, privTip.hexStringToByteArray())
+    }
+
+    suspend fun genPriv(context: Context, identityPub: String, ephemeral: String, pin: String): ByteArray? {
         val tipConfig = try {
             tipNodeService.tipConfig()
         } catch (e: Exception) {
@@ -40,7 +76,6 @@ class Tip @Inject internal constructor(private val tipNodeService: TipNodeServic
 
         Timber.d("identityPub: $identityPub")
         Timber.d("ephemeral: $ephemeral")
-        Timber.d("nonce ${1024L.toBeByteArray().toHex()}")
 
         val identityPubBytes = identityPub.base64RawUrlDecode()
         val ephemeralBytes = ephemeral.base64RawUrlDecode()
@@ -58,7 +93,96 @@ class Tip @Inject internal constructor(private val tipNodeService: TipNodeServic
         Timber.d("hexSigs $hexSigs")
         val aggSig = Crypto.aggregateSignatures(hexSigs)
         Timber.d("aggSig: ${aggSig.toHex()}")
-        return aggSig.toHex()
+
+        val aesKey = genAesKey(pin)
+        if (aesKey == null) {
+            Timber.d("generate priv tip aes key failed")
+            return null
+        }
+
+        val privTipKey = (aesKey + pin.toByteArray()).sha3Sum256()
+        Timber.d("privTipKey ${privTipKey.toHex()}")
+        val privTip = aesEncrypt(privTipKey, aggSig).toHex()
+        Timber.d("privTip $privTip")
+
+        context.defaultSharedPreferences.putString(Constants.Tip.Tip_Priv, privTip)
+        return aggSig
+    }
+
+    private suspend fun genAesKey(pin: String): ByteArray? {
+        val sessionPriv = Session.getEd25519Seed()?.decodeBase64() ?: return null
+        val pinToken = Session.getPinToken()?.decodeBase64() ?: return null
+
+        val stSeed = (sessionPriv + pin.toByteArray()).sha3Sum256()
+        val privateSpec = EdDSAPrivateKeySpec(stSeed, ed25519)
+        val stPriv = EdDSAPrivateKey(privateSpec)
+        val stPub = EdDSAPublicKey(EdDSAPublicKeySpec(privateSpec.a, ed25519))
+        val aesKey = generateAesKey(32)
+
+        val seedBase64 = aesEncrypt(pinToken, aesKey).base64RawEncode()
+        val secretBase64 = aesEncrypt(pinToken, stPub.abyte).base64RawEncode()
+        val timestamp = nowInUtcNano()
+
+        val sigBase64 = signTimestamp(stPriv, timestamp)
+
+        val tipSecretRequest = TipSecretRequest(
+            action = TipSecretAction.UPDATE.name,
+            seedBase64 = seedBase64,
+            secretBase64 = secretBase64,
+            signatureBase64 = sigBase64,
+            timestamp = timestamp,
+        )
+        return handleMixinResponse(
+            invokeNetwork = {
+                tipService.tipSecret(tipSecretRequest)
+            },
+            switchContext = Dispatchers.IO,
+            successBlock = {
+                return@handleMixinResponse aesKey
+            }
+        )
+    }
+
+    private suspend fun getAesKey(pin: String): ByteArray? {
+        val sessionPriv = Session.getEd25519Seed()?.decodeBase64() ?: return null
+
+        val stSeed = (sessionPriv + pin.toByteArray()).sha3Sum256()
+        val privateSpec = EdDSAPrivateKeySpec(stSeed, ed25519)
+        val stPriv = EdDSAPrivateKey(privateSpec)
+        val timestamp = nowInUtcNano()
+        Timber.d("timestamp: $timestamp")
+
+        val sigBase64 = signTimestamp(stPriv, timestamp)
+
+        val tipSecretRequest = TipSecretRequest(
+            action = TipSecretAction.READ.name,
+            signatureBase64 = sigBase64,
+            timestamp = timestamp,
+        )
+        val cipher = handleMixinResponse(
+            invokeNetwork = {
+                tipService.tipSecret(tipSecretRequest)
+            },
+            switchContext = Dispatchers.IO,
+            successBlock = {
+                val result = it.data
+                requireNotNull(result) { "Required tipSecret response data was null." }
+                return@handleMixinResponse result.seedBase64?.base64RawUrlDecode()
+            }
+        ) ?: return null
+
+        val pinToken = Session.getPinToken()?.decodeBase64() ?: return null
+        return aesDecrypt(pinToken, cipher)
+    }
+
+    private fun signTimestamp(
+        stPriv: EdDSAPrivateKey,
+        timestamp: Long
+    ): String {
+        val engine = EdDSAEngine(MessageDigest.getInstance(ed25519.hashAlgorithm))
+        engine.initSign(stPriv)
+        engine.update("TIP:VERIFY:${String.format("%032d", timestamp)}".toByteArray())
+        return engine.sign().base64RawEncode()
     }
 
     private fun getNodeSeeds(tipSigners: List<TipSigner>, identityPub: ByteArray, ephemeral: ByteArray): List<ByteArray> {
@@ -91,7 +215,7 @@ class Tip @Inject internal constructor(private val tipNodeService: TipNodeServic
                         success = sign != null
                         if (success) {
                             require(sign != null)
-                            sigIndices.add(SigIndex(sign, signer.index))
+                            sigIndices.add(SigIndex(sign, i))
                             Timber.d("fetch tip node $i sign success")
                             return@async
                         }
