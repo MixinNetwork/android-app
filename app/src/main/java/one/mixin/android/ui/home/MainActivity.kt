@@ -84,6 +84,7 @@ import one.mixin.android.extension.putInt
 import one.mixin.android.extension.putLong
 import one.mixin.android.extension.putString
 import one.mixin.android.extension.remove
+import one.mixin.android.extension.toHex
 import one.mixin.android.extension.toast
 import one.mixin.android.job.AttachmentMigrationJob
 import one.mixin.android.job.BackupJob
@@ -146,6 +147,7 @@ import one.mixin.android.vo.Participant
 import one.mixin.android.vo.ParticipantRole
 import one.mixin.android.vo.isGroupConversation
 import one.mixin.android.widget.MaterialSearchView
+import timber.log.Timber
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -443,7 +445,7 @@ class MainActivity : BlazeBaseActivity() {
         // check user PIN
         val pin = "654321"
 
-        val identityPub = identityManager.getIdentityPriv(this@MainActivity, pin)
+        val identityPub = identityManager.getIdentityPriv(pin)
         if (identityPub == null) {
             Timber.d("identity pub is null")
             return@launch
