@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.os.Parcelable
 import androidx.room.ColumnInfo
 import androidx.room.Entity
+import androidx.room.Ignore
 import androidx.room.PrimaryKey
 import com.google.gson.annotations.SerializedName
 import kotlinx.parcelize.Parcelize
@@ -27,7 +28,7 @@ data class Asset(
     val balance: String,
     @SerializedName("destination")
     @ColumnInfo(name = "destination")
-    val destination: String,
+    var destination: String,
     @SerializedName("tag")
     @ColumnInfo(name = "tag")
     val tag: String?,
@@ -53,8 +54,48 @@ data class Asset(
     val assetKey: String?,
     @SerializedName("reserve")
     @ColumnInfo(name = "reserve")
-    val reserve: String?
-) : Parcelable
+    val reserve: String?,
+    @SerializedName("deposit_entries")
+    @Ignore
+    val depositEntries: List<DepositEntry>? = null
+) : Parcelable {
+
+    constructor(
+        assetId: String,
+        symbol: String,
+        name: String,
+        iconUrl: String,
+        balance: String,
+        destination: String,
+        tag: String?,
+        priceBtc: String,
+        priceUsd: String,
+        chainId: String,
+        changeUsd: String,
+        changeBtc: String,
+        confirmations: Int,
+        assetKey: String?,
+        reserve: String?
+    ) :
+        this(
+            assetId,
+            symbol,
+            name,
+            iconUrl,
+            balance,
+            destination,
+            tag,
+            priceBtc,
+            priceUsd,
+            chainId,
+            changeUsd,
+            changeBtc,
+            confirmations,
+            assetKey,
+            reserve,
+            null
+        )
+}
 
 data class PriceAndChange(
     @ColumnInfo(name = "asset_id")
@@ -79,3 +120,18 @@ fun Asset.toAssetItem(chainIconUrl: String? = null): AssetItem = AssetItem(
 )
 
 fun Asset.toTopAssetItem(chainIconUrl: String?) = TopAssetItem(assetId, symbol, name, iconUrl, chainId, chainIconUrl, priceUsd, changeUsd)
+
+fun Asset.replaceDestination() {
+    if (depositEntries != null) {
+        depositEntries.firstOrNull { depositEntry ->
+            depositEntry.properties != null && depositEntry.destination.isNotBlank() && depositEntry.properties.any { property ->
+                property.equals(
+                    "SegWit",
+                    false
+                )
+            }
+        }?.let { depositEntry ->
+            destination = depositEntry.destination
+        }
+    }
+}
