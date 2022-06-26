@@ -174,6 +174,12 @@ class SettingStorageFragment : BaseFragment(R.layout.fragment_storage) {
                         }
                     }
                 }
+
+                lifecycleScope.launch {
+                    adapter.getData()?.let { list ->
+                        adapter.setData(viewModel.refreshConversationStorageUsageList(requireContext(), selectSet.first().conversationId, list))
+                    }
+                }
             }
             .observeOn(AndroidSchedulers.mainThread())
             .autoDispose(stopScope)
@@ -231,12 +237,16 @@ class SettingStorageFragment : BaseFragment(R.layout.fragment_storage) {
 
     class StorageAdapter(val action: ((String) -> Unit)) : RecyclerView.Adapter<ItemHolder>() {
 
-        private var conversationStorageUsageList: List<ConversationStorageUsage>? = null
+        private var conversationStorageUsageList: MutableList<ConversationStorageUsage>? = null
 
         @SuppressLint("NotifyDataSetChanged")
-        fun setData(users: List<ConversationStorageUsage>?) {
+        fun setData(users: MutableList<ConversationStorageUsage>?) {
             this.conversationStorageUsageList = users
             notifyDataSetChanged()
+        }
+
+        fun getData(): MutableList<ConversationStorageUsage>? {
+            return conversationStorageUsageList
         }
 
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ItemHolder {

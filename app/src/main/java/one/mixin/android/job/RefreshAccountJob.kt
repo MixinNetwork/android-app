@@ -23,7 +23,7 @@ class RefreshAccountJob : BaseJob(Params(PRIORITY_UI_HIGH).addTags(GROUP).requir
     override fun onRun() = runBlocking {
         val response = accountService.getMe().execute().body()
         if (response != null && response.isSuccess && response.data != null) {
-            val account = response.data?:return@runBlocking
+            val account = response.data ?: return@runBlocking
             val u = account.toUser()
             userRepo.upsert(u)
             Session.storeAccount(account)

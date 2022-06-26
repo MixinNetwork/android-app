@@ -29,7 +29,7 @@ class RefreshAccountWorker @AssistedInject constructor(
     override suspend fun onRun(): Result {
         val response = accountService.getMe().execute().body()
         if (response != null && response.isSuccess && response.data != null) {
-            val account = response.data?:return Result.failure()
+            val account = response.data ?: return Result.failure()
             val u = account.toUser()
             userRepo.upsert(u)
             Session.storeAccount(account)

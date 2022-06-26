@@ -31,6 +31,7 @@ import one.mixin.android.job.TranscriptDeleteJob
 import one.mixin.android.repository.ConversationRepository
 import one.mixin.android.ui.common.message.CleanMessageHelper
 import one.mixin.android.util.SINGLE_DB_THREAD
+import one.mixin.android.vo.ConversationStorageUsage
 import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.StorageUsage
 import java.io.File
@@ -74,7 +75,23 @@ internal constructor(
             conversationStorageUsage.mediaSize != 0L && conversationStorageUsage.conversationId.isNotEmpty()
         }.sortedByDescending { conversationStorageUsage ->
             conversationStorageUsage.mediaSize
-        }.toList()
+        }.toMutableList()
+    }
+
+    suspend fun refreshConversationStorageUsageList(
+        context: Context,
+        conversationId: String,
+        list: MutableList<ConversationStorageUsage>
+    ) = withContext(Dispatchers.IO) {
+        list.map { usage ->
+            usage.apply {
+                if (usage.conversationId == conversationId) {
+                    usage.mediaSize = context.getConversationMediaSize(usage.conversationId)
+                }
+            }
+        }.filter { conversationStorageUsage ->
+            conversationStorageUsage.mediaSize != 0L && conversationStorageUsage.conversationId.isNotEmpty()
+        }.toMutableList()
     }
 
     fun clear(conversationId: String, type: String) {
