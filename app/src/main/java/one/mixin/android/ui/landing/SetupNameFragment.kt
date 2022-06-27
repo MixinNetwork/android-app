@@ -71,10 +71,7 @@ class SetupNameFragment : BaseFragment(R.layout.fragment_setup_name) {
 
                             nameEt.hideKeyboard()
                             startActivity(Intent(context, MainActivity::class.java))
-                            if (Session.getAccount()?.phone?.run { startsWith("+971") || startsWith("+91") } == true) {
-                                jobManager.addJobInBackground(InitializeJob(MIXIN_BOTS_USER_ID, MIXIN_BOTS_USER_NAME))
-                                jobManager.addJobInBackground(InitializeJob(MIXIN_DATA_USER_ID, MIXIN_DATA_USER_NAME))
-                            }
+                            initializeBots()
                             activity?.finish()
                         },
                         { t: Throwable ->
@@ -91,6 +88,13 @@ class SetupNameFragment : BaseFragment(R.layout.fragment_setup_name) {
                 nameEt.requestFocus()
                 nameEt.showKeyboard()
             }
+        }
+    }
+
+    private fun initializeBots() {
+        if (Session.getAccount()?.phone?.run { startsWith("+971") || startsWith("+91") } == true) {
+            jobManager.addJobInBackground(InitializeJob(MIXIN_BOTS_USER_ID, MIXIN_BOTS_USER_NAME))
+            jobManager.addJobInBackground(InitializeJob(MIXIN_DATA_USER_ID, MIXIN_DATA_USER_NAME))
         }
     }
 

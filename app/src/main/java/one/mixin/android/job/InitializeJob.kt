@@ -15,9 +15,10 @@ class InitializeJob(private val botId: String, private val botName: String) :
     }
 
     override fun onRun(): Unit = runBlocking {
-        if (botId.isNotEmpty()) {
-            updateRelationship(botId, botName)
+        if (botId.isEmpty()) {
+            return@runBlocking
         }
+        updateRelationship(botId, botName)
     }
 
     private suspend fun updateRelationship(botId: String, botName: String) {
