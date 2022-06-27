@@ -224,6 +224,13 @@ object Constants {
     val DNS: Dns = SequentialDns(CustomDns("8.8.8.8"), CustomDns("1.1.1.1"), CustomDns("2001:4860:4860::8888"), Dns.SYSTEM)
 
     const val TEAM_MIXIN_USER_ID = "773e5e77-4107-45c2-b648-8fc722ed77f5"
+    const val MIXIN_BOTS_USER_ID = "68ef7899-3e81-4b3d-8124-83ae652def89"
+    const val MIXIN_DATA_USER_ID = "96c1460b-c7c4-480a-a342-acaa73995a37"
+
+    const val TEAM_MIXIN_USER_NAME = "Team Mixin"
+    const val MIXIN_BOTS_USER_NAME = "Mixin Bots"
+    const val MIXIN_DATA_USER_NAME = "Mixin Data"
+
     // Only for third-party messenger user
     const val TEAM_BOT_ID = ""
     const val TEAM_BOT_NAME = ""

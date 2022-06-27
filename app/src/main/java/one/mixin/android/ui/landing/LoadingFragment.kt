@@ -11,8 +11,11 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import net.i2p.crypto.eddsa.EdDSAPrivateKey
 import net.i2p.crypto.eddsa.EdDSAPublicKey
-import one.mixin.android.Constants
 import one.mixin.android.Constants.Account.PREF_TRIED_UPDATE_KEY
+import one.mixin.android.Constants.TEAM_BOT_ID
+import one.mixin.android.Constants.TEAM_BOT_NAME
+import one.mixin.android.Constants.TEAM_MIXIN_USER_ID
+import one.mixin.android.Constants.TEAM_MIXIN_USER_NAME
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.api.request.SessionSecretRequest
@@ -66,8 +69,9 @@ class LoadingFragment : BaseFragment(R.layout.fragment_loading) {
                 syncSession()
             }
 
-            if (Constants.TEAM_BOT_ID.isNotEmpty()) {
-                jobManager.addJobInBackground(InitializeJob(Constants.TEAM_BOT_ID, Constants.TEAM_BOT_NAME))
+            jobManager.addJobInBackground(InitializeJob(TEAM_MIXIN_USER_ID, TEAM_MIXIN_USER_NAME))
+            if (TEAM_BOT_ID.isNotEmpty()) {
+                jobManager.addJobInBackground(InitializeJob(TEAM_BOT_ID, TEAM_BOT_NAME))
             }
             MainActivity.show(requireContext())
             activity?.finish()
