@@ -53,7 +53,10 @@ data class Asset(
     val assetKey: String?,
     @SerializedName("reserve")
     @ColumnInfo(name = "reserve")
-    val reserve: String?
+    val reserve: String?,
+    @SerializedName("deposit_entries")
+    @ColumnInfo(name = "deposit_entries")
+    val depositEntries: List<DepositEntry>?
 ) : Parcelable
 
 data class PriceAndChange(
@@ -74,7 +77,7 @@ fun Asset.toPriceAndChange(): PriceAndChange {
 }
 
 fun Asset.toAssetItem(chainIconUrl: String? = null): AssetItem = AssetItem(
-    assetId, symbol, name, iconUrl, balance, destination, tag, priceBtc, priceUsd, chainId, changeUsd, changeBtc, false,
+    assetId, symbol, name, iconUrl, balance, destination, depositEntries, tag, priceBtc, priceUsd, chainId, changeUsd, changeBtc, false,
     confirmations, chainIconUrl, null, null, null, assetKey, reserve
 )
 

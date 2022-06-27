@@ -93,8 +93,6 @@ constructor(
 
     suspend fun simpleAsset(id: String) = assetDao.simpleAsset(id)
 
-    fun insertAsset(asset: Asset) = assetDao.insert(asset)
-
     suspend fun insertPendingDeposit(snapshot: List<Snapshot>) = snapshotDao.insertListSuspend(snapshot)
 
     fun snapshotsFromDb(

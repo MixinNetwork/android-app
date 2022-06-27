@@ -7,6 +7,7 @@ import androidx.room.RoomSQLiteQuery
 import androidx.room.util.CursorUtil
 import androidx.room.util.DBUtil
 import one.mixin.android.db.MixinDatabase
+import one.mixin.android.db.converter.DepositEntryListConverter
 import one.mixin.android.vo.AssetItem
 import one.mixin.android.vo.ChatMinimal
 import one.mixin.android.vo.ConversationItem
@@ -92,7 +93,34 @@ fun convertToConversationItems(cursor: Cursor?): List<ConversationItem> {
             cursor.getInt(cursorIndexOfMentionCount)
         }
         val tmpMentions = cursor.getString(cursorIndexOfMentions)
-        item = ConversationItem(tmpConversationId, tmpAvatarUrl, tmpGroupIconUrl, tmpCategory, tmpGroupName, tmpName, tmpOwnerId, tmpStatus, tmpLastReadMessageId, tmpUnseenMessageCount, tmpContent, tmpContentType, tmpCreatedAt, tmpPinTime, tmpSenderId, tmpSenderFullName, tmpMessageStatus, tmpActionName, tmpParticipantFullName, tmpParticipantUserId, tmpOwnerMuteUntil, tmpOwnerVerified, tmpMuteUntil, tmpAppId, tmpMentions, tmpMentionCount)
+        item = ConversationItem(
+            tmpConversationId,
+            tmpAvatarUrl,
+            tmpGroupIconUrl,
+            tmpCategory,
+            tmpGroupName,
+            tmpName,
+            tmpOwnerId,
+            tmpStatus,
+            tmpLastReadMessageId,
+            tmpUnseenMessageCount,
+            tmpContent,
+            tmpContentType,
+            tmpCreatedAt,
+            tmpPinTime,
+            tmpSenderId,
+            tmpSenderFullName,
+            tmpMessageStatus,
+            tmpActionName,
+            tmpParticipantFullName,
+            tmpParticipantUserId,
+            tmpOwnerMuteUntil,
+            tmpOwnerVerified,
+            tmpMuteUntil,
+            tmpAppId,
+            tmpMentions,
+            tmpMentionCount
+        )
         res.add(item)
     }
     return res
@@ -482,6 +510,10 @@ fun callableUser(
     }
 }
 
+private val depositEntryListConverter by lazy {
+    DepositEntryListConverter()
+}
+
 @SuppressLint("RestrictedApi")
 fun callableAssetItem(
     db: MixinDatabase,
@@ -511,6 +543,7 @@ fun callableAssetItem(
             val cursorIndexOfChainSymbol = 17
             val cursorIndexOfChainName = 18
             val cursorIndexOfAssetKey = 19
+            val cursorIndexOfDepositEntries = 20
             val result: MutableList<AssetItem> = java.util.ArrayList(cursor.count)
             while (cursor.moveToNext()) {
                 val item: AssetItem
@@ -612,6 +645,11 @@ fun callableAssetItem(
                 } else {
                     cursor.getString(cursorIndexOfAssetKey)
                 }
+                val tmpDepositEntries: String? = if (cursor.isNull(cursorIndexOfDepositEntries)) {
+                    null
+                } else {
+                    cursor.getString(cursorIndexOfDepositEntries)
+                }
                 item = AssetItem(
                     tmpAssetId!!,
                     tmpSymbol!!,
@@ -619,6 +657,7 @@ fun callableAssetItem(
                     tmpIconUrl!!,
                     tmpBalance!!,
                     tmpDestination!!,
+                    depositEntryListConverter.revertDate(tmpDepositEntries!!),
                     tmpTag,
                     tmpPriceBtc!!,
                     tmpPriceUsd!!,
@@ -632,7 +671,7 @@ fun callableAssetItem(
                     tmpChainName,
                     tmpChainPriceUsd,
                     tmpAssetKey,
-                    tmpReserve
+                    tmpReserve,
                 )
                 result.add(item)
             }
