@@ -7,9 +7,9 @@ import one.mixin.android.vo.DepositEntry
 
 class DepositEntryListConverter {
     @TypeConverter
-    fun revertDate(value: String): List<DepositEntry> {
+    fun revertDate(value: String?): List<DepositEntry> {
         val listType = object : TypeToken<ArrayList<DepositEntry>>() {}.type
-        return if (value.isBlank()) {
+        return if (value.isNullOrBlank()) {
             emptyList()
         } else {
             GsonHelper.customGson.fromJson(value, listType)

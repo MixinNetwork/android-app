@@ -4,7 +4,7 @@ import android.annotation.SuppressLint
 import android.os.Parcelable
 import androidx.recyclerview.widget.DiffUtil
 import kotlinx.parcelize.Parcelize
-import one.mixin.android.Constants.BTC_ASSET_ID
+import one.mixin.android.Constants.ChainId.BITCOIN_CHAIN_ID
 import java.math.BigDecimal
 
 @SuppressLint("ParcelCreator")
@@ -16,7 +16,7 @@ data class AssetItem(
     val iconUrl: String,
     val balance: String,
     private val destination: String,
-    val depositEntries: List<DepositEntry>,
+    val depositEntries: List<DepositEntry>?,
     private val tag: String?,
     val priceBtc: String,
     val priceUsd: String,
@@ -49,8 +49,8 @@ data class AssetItem(
     } else BigDecimal(balance).multiply(BigDecimal(priceBtc))
 
     fun getDestination(): String {
-        return if (assetId == BTC_ASSET_ID) {
-            depositEntries.firstOrNull { depositEntry ->
+        return if (assetId == BITCOIN_CHAIN_ID) {
+            depositEntries?.firstOrNull { depositEntry ->
                 depositEntry.properties != null && depositEntry.destination.isNotBlank() && depositEntry.properties.any { property ->
                     property.equals(
                         "SegWit",
@@ -58,7 +58,7 @@ data class AssetItem(
                     )
                 }
             }?.destination ?: destination
-        } else if (depositEntries.isNotEmpty()) {
+        } else if (!depositEntries.isNullOrEmpty()) {
             depositEntries.first().destination
         } else {
             destination
@@ -66,8 +66,8 @@ data class AssetItem(
     }
 
     fun getTag(): String? {
-        return if (assetId == BTC_ASSET_ID) {
-            depositEntries.firstOrNull { depositEntry ->
+        return if (assetId == BITCOIN_CHAIN_ID) {
+            depositEntries?.firstOrNull { depositEntry ->
                 depositEntry.properties != null && depositEntry.destination.isNotBlank() && depositEntry.properties.any { property ->
                     property.equals(
                         "SegWit",
@@ -75,7 +75,7 @@ data class AssetItem(
                     )
                 }
             }?.tag
-        } else if (depositEntries.isNotEmpty()) {
+        } else if (!depositEntries.isNullOrEmpty()) {
             depositEntries.first().tag
         } else {
             tag

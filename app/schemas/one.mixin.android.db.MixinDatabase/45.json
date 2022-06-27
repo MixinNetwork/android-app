@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 45,
-    "identityHash": "f4d4fafe9b79db7a795fdfc5b61db1e5",
+    "identityHash": "258db95ff48eb22615d3e17c794cf664",
     "entities": [
       {
         "tableName": "users",
@@ -632,7 +632,7 @@
       },
       {
         "tableName": "assets",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`asset_id` TEXT NOT NULL, `symbol` TEXT NOT NULL, `name` TEXT NOT NULL, `icon_url` TEXT NOT NULL, `balance` TEXT NOT NULL, `destination` TEXT NOT NULL, `tag` TEXT, `price_btc` TEXT NOT NULL, `price_usd` TEXT NOT NULL, `chain_id` TEXT NOT NULL, `change_usd` TEXT NOT NULL, `change_btc` TEXT NOT NULL, `confirmations` INTEGER NOT NULL, `asset_key` TEXT, `reserve` TEXT, `deposit_entries` TEXT NOT NULL, PRIMARY KEY(`asset_id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`asset_id` TEXT NOT NULL, `symbol` TEXT NOT NULL, `name` TEXT NOT NULL, `icon_url` TEXT NOT NULL, `balance` TEXT NOT NULL, `destination` TEXT NOT NULL, `tag` TEXT, `price_btc` TEXT NOT NULL, `price_usd` TEXT NOT NULL, `chain_id` TEXT NOT NULL, `change_usd` TEXT NOT NULL, `change_btc` TEXT NOT NULL, `confirmations` INTEGER NOT NULL, `asset_key` TEXT, `reserve` TEXT, `deposit_entries` TEXT, PRIMARY KEY(`asset_id`))",
         "fields": [
           {
             "fieldPath": "assetId",
@@ -728,7 +728,7 @@
             "fieldPath": "depositEntries",
             "columnName": "deposit_entries",
             "affinity": "TEXT",
-            "notNull": true
+            "notNull": false
           }
         ],
         "primaryKey": {
@@ -2197,7 +2197,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'f4d4fafe9b79db7a795fdfc5b61db1e5')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '258db95ff48eb22615d3e17c794cf664')"
     ]
   }
 }

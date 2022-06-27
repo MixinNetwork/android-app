@@ -56,7 +56,7 @@ data class Asset(
     val reserve: String?,
     @SerializedName("deposit_entries")
     @ColumnInfo(name = "deposit_entries")
-    val depositEntries: List<DepositEntry>
+    val depositEntries: List<DepositEntry>?
 ) : Parcelable
 
 data class PriceAndChange(
