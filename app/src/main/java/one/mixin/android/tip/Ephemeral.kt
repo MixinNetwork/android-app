@@ -1,7 +1,9 @@
 package one.mixin.android.tip
 
 import android.content.Context
+import kotlinx.coroutines.Dispatchers
 import one.mixin.android.Constants
+import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.TipRequest
 import one.mixin.android.api.service.TipService
 import one.mixin.android.crypto.generateEphemeralSeed
@@ -24,15 +26,22 @@ class Ephemeral @Inject internal constructor(private val tipService: TipService)
         if (seed != null) {
             return seed
         }
-        val response = tipService.tipEphemerals()
-        if (!response.isSuccess) {
-            return null
-        }
-        if (response.data.isNullOrEmpty()) {
-            return createEphemeralSeed(context, deviceId)
-        }
-        val ep = response.data!![0]
-        return updateEphemeralSeed(context, deviceId, ep.seedBase64)
+
+        return handleMixinResponse(
+            invokeNetwork = {
+                tipService.tipEphemerals()
+            },
+            switchContext = Dispatchers.IO,
+            successBlock = {
+                val tipEphemeralList = it.data
+                if (tipEphemeralList.isNullOrEmpty()) {
+                    createEphemeralSeed(context, deviceId)
+                } else {
+                    val first = tipEphemeralList.first()
+                    updateEphemeralSeed(context, deviceId, first.seedBase64)
+                }
+            }
+        )
     }
 
     private suspend fun createEphemeralSeed(context: Context, deviceId: String): ByteArray? {

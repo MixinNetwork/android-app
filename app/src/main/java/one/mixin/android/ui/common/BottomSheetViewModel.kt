@@ -40,6 +40,9 @@ import one.mixin.android.repository.ConversationRepository
 import one.mixin.android.repository.UserRepository
 import one.mixin.android.session.Session
 import one.mixin.android.session.encryptPin
+import one.mixin.android.session.encryptTipPin
+import one.mixin.android.tip.Tip
+import one.mixin.android.tip.TipBody
 import one.mixin.android.ui.common.message.CleanMessageHelper
 import one.mixin.android.vo.Account
 import one.mixin.android.vo.Address
@@ -66,7 +69,8 @@ class BottomSheetViewModel @Inject internal constructor(
     private val userRepository: UserRepository,
     private val assetRepository: AssetRepository,
     private val conversationRepo: ConversationRepository,
-    private val cleanMessageHelper: CleanMessageHelper
+    private val cleanMessageHelper: CleanMessageHelper,
+    private val tip: Tip,
 ) : ViewModel() {
     suspend fun searchCode(code: String) = withContext(Dispatchers.IO) {
         accountRepository.searchCode(code)
@@ -90,17 +94,7 @@ class BottomSheetViewModel @Inject internal constructor(
         code: String,
         trace: String?,
         memo: String?
-    ) =
-        assetRepository.transfer(
-            TransferRequest(
-                assetId,
-                userId,
-                amount,
-                encryptPin(Session.getPinToken()!!, code),
-                trace,
-                memo
-            )
-        )
+    ) = assetRepository.transfer(TransferRequest(assetId, userId, amount, encryptTipPin(tip, code, TipBody.forTransfer(assetId, userId, amount, trace, memo)), trace, memo))
 
     suspend fun authorize(request: AuthorizeRequest): MixinResponse<AuthorizationResponse> =
         accountRepository.authorize(request)

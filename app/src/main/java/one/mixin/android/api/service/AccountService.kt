@@ -74,6 +74,9 @@ interface AccountService {
     @POST("pin/update")
     fun updatePin(@Body request: PinRequest): Observable<MixinResponse<Account>>
 
+    @POST("pin/update")
+    suspend fun updatePinSuspend(@Body request: PinRequest): MixinResponse<Account>
+
     @POST("pin/verify")
     suspend fun verifyPin(@Body request: PinRequest): MixinResponse<Account>
 
