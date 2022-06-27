@@ -273,7 +273,12 @@ class BottomSheetViewModel @Inject internal constructor(
         )
     }
 
-    suspend fun verifyPin(code: String): MixinResponse<Account> = accountRepository.verifyPin(code)
+    suspend fun verifyPin(code: String): MixinResponse<Account> =
+        if (Session.getTipPub().isNullOrBlank()) {
+            accountRepository.verifyPin(code)
+        } else {
+            accountRepository.verifyTipPin(code)
+        }
 
     suspend fun deactivate(pin: String, verificationId: String): MixinResponse<Account> = accountRepository.deactivate(pin, verificationId)
 

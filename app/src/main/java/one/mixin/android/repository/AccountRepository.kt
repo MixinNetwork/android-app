@@ -43,9 +43,13 @@ import one.mixin.android.db.UserDao
 import one.mixin.android.db.insertUpdate
 import one.mixin.android.db.insertUpdateList
 import one.mixin.android.db.withTransaction
+import one.mixin.android.extension.nowInUtcNano
 import one.mixin.android.extension.within24Hours
 import one.mixin.android.session.Session
 import one.mixin.android.session.encryptPin
+import one.mixin.android.session.encryptTipPin
+import one.mixin.android.tip.Tip
+import one.mixin.android.tip.TipBody
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.vo.Account
 import one.mixin.android.vo.FavoriteApp
@@ -73,7 +77,8 @@ constructor(
     private val stickerAlbumDao: StickerAlbumDao,
     private val stickerRelationshipDao: StickerRelationshipDao,
     private val giphyService: GiphyService,
-    private val emergencyService: EmergencyService
+    private val emergencyService: EmergencyService,
+    private val tip: Tip,
 ) {
 
     fun verificationObserver(request: VerificationRequest): Observable<MixinResponse<VerificationResponse>> =
@@ -152,6 +157,14 @@ constructor(
 
     suspend fun verifyPin(code: String): MixinResponse<Account> = withContext(Dispatchers.IO) {
         accountService.verifyPin(PinRequest(encryptPin(Session.getPinToken()!!, code)!!))
+    }
+
+    suspend fun verifyTipPin(code: String): MixinResponse<Account> {
+        val timestamp = nowInUtcNano()
+        return accountService.verifyPin(PinRequest(
+            pin = requireNotNull(encryptTipPin(tip, code, TipBody.forVerify(timestamp))),
+            timestamp = timestamp
+        ))
     }
 
     suspend fun deactivate(pin: String, verificationId: String): MixinResponse<Account> = withContext(Dispatchers.IO) {
