@@ -84,7 +84,6 @@ import one.mixin.android.extension.putInt
 import one.mixin.android.extension.putLong
 import one.mixin.android.extension.putString
 import one.mixin.android.extension.remove
-import one.mixin.android.extension.toHex
 import one.mixin.android.extension.toast
 import one.mixin.android.job.AttachmentMigrationJob
 import one.mixin.android.job.BackupJob
@@ -105,8 +104,6 @@ import one.mixin.android.job.TranscriptAttachmentUpdateJob
 import one.mixin.android.repository.AccountRepository
 import one.mixin.android.repository.UserRepository
 import one.mixin.android.session.Session
-import one.mixin.android.tip.Ephemeral
-import one.mixin.android.tip.IdentityManager
 import one.mixin.android.tip.Tip
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.BatteryOptimizationDialogActivity
@@ -117,6 +114,7 @@ import one.mixin.android.ui.common.PinCodeFragment.Companion.FROM_EMERGENCY
 import one.mixin.android.ui.common.PinCodeFragment.Companion.FROM_LOGIN
 import one.mixin.android.ui.common.PinCodeFragment.Companion.PREF_LOGIN_FROM
 import one.mixin.android.ui.common.QrScanBottomSheetDialogFragment
+import one.mixin.android.ui.common.VerifyBottomSheetDialogFragment
 import one.mixin.android.ui.common.VerifyFragment
 import one.mixin.android.ui.common.editDialog
 import one.mixin.android.ui.conversation.ConversationActivity
@@ -147,7 +145,6 @@ import one.mixin.android.vo.Participant
 import one.mixin.android.vo.ParticipantRole
 import one.mixin.android.vo.isGroupConversation
 import one.mixin.android.widget.MaterialSearchView
-import timber.log.Timber
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -185,10 +182,6 @@ class MainActivity : BlazeBaseActivity() {
     @Inject
     lateinit var participantDao: ParticipantDao
 
-    @Inject
-    lateinit var ephemeral: Ephemeral
-    @Inject
-    lateinit var identityManager: IdentityManager
     @Inject
     lateinit var tip: Tip
 
@@ -287,7 +280,14 @@ class MainActivity : BlazeBaseActivity() {
         handlerCode(intent)
 
         if (Session.getAccount()?.hasPin == true) {
-            checkTip(deviceId)
+            VerifyBottomSheetDialogFragment.newInstance().setOnPinSuccess { pin ->
+                lifecycleScope.launch {
+                    tip.getTipPriv(this@MainActivity, pin, deviceId)
+                }
+            }.apply {
+                autoDismiss = true
+                showNow(supportFragmentManager, VerifyBottomSheetDialogFragment.TAG)
+            }
         }
 
         checkAsync()
@@ -431,31 +431,6 @@ class MainActivity : BlazeBaseActivity() {
                 dialog.dismiss()
             }
             .show()
-    }
-
-    private fun checkTip(deviceId: String) = lifecycleScope.launch(Dispatchers.IO) {
-        // check tip pub & priv
-
-        val ephemeralSeed = ephemeral.getEphemeralSeed(this@MainActivity, deviceId)
-        if (ephemeralSeed == null) {
-            Timber.d("empty ephemeral seed")
-            return@launch
-        }
-
-        // check user PIN
-        val pin = "654321"
-
-        val identityPub = identityManager.getIdentityPriv(pin)
-        if (identityPub == null) {
-            Timber.d("identity pub is null")
-            return@launch
-        }
-
-        val tipPriv = tip.genPriv(this@MainActivity, identityPub, ephemeralSeed, pin)
-        Timber.d("tipPriv: ${tipPriv?.toHex()}")
-
-        val readTipPriv = tip.getPriv(this@MainActivity, pin)
-        Timber.d("read tipPriv: ${readTipPriv?.toHex()}")
     }
 
     private fun checkRoot() {

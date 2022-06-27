@@ -47,6 +47,7 @@ class VerifyBottomSheetDialogFragment : BiometricBottomSheetDialogFragment() {
     }
 
     override fun doWhenInvokeNetworkSuccess(response: MixinResponse<*>, pin: String): Boolean {
+        onPinSuccess?.invoke(pin)
         return true
     }
 
@@ -62,5 +63,12 @@ class VerifyBottomSheetDialogFragment : BiometricBottomSheetDialogFragment() {
         return this
     }
 
+    fun setOnPinSuccess(callback: (String) -> Unit): VerifyBottomSheetDialogFragment {
+        onPinSuccess = callback
+        return this
+    }
+
     private var continueCallback: ((DialogFragment) -> Unit)? = null
+
+    private var onPinSuccess: ((String) -> Unit)? = null
 }

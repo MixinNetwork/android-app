@@ -5,9 +5,12 @@ import android.os.Build
 import com.lambdapioneer.argon2kt.Argon2Kt
 import com.lambdapioneer.argon2kt.Argon2KtResult
 import com.lambdapioneer.argon2kt.Argon2Mode
+import net.i2p.crypto.eddsa.EdDSAEngine
+import net.i2p.crypto.eddsa.EdDSAPrivateKey
 import net.i2p.crypto.eddsa.EdDSAPublicKey
 import net.i2p.crypto.eddsa.math.FieldElement
 import net.i2p.crypto.eddsa.spec.EdDSANamedCurveTable
+import net.i2p.crypto.eddsa.spec.EdDSAPrivateKeySpec
 import net.i2p.crypto.eddsa.spec.EdDSAPublicKeySpec
 import okhttp3.tls.HeldCertificate
 import one.mixin.android.extension.base64Encode
@@ -46,6 +49,24 @@ fun generateEd25519KeyPair(): KeyPair {
 
 fun calculateAgreement(publicKey: ByteArray, privateKey: ByteArray): ByteArray {
     return Curve25519.getInstance(BEST).calculateAgreement(publicKey, privateKey)
+}
+
+fun initFromSeedAndSign(seed: ByteArray, signTarget: ByteArray): ByteArray {
+    val privateSpec = EdDSAPrivateKeySpec(seed, ed25519)
+    return signWithSk(privateSpec, signTarget)
+}
+
+fun initFromSkAndSign(privateBytes: ByteArray, signTarget: ByteArray): ByteArray {
+    val privateSpec = EdDSAPrivateKeySpec(ed25519, privateBytes)
+    return signWithSk(privateSpec, signTarget)
+}
+
+private fun signWithSk(privateSpec: EdDSAPrivateKeySpec, signTarget: ByteArray): ByteArray {
+    val privateKey = EdDSAPrivateKey(privateSpec)
+    val engine = EdDSAEngine(MessageDigest.getInstance(ed25519.hashAlgorithm))
+    engine.initSign(privateKey)
+    engine.update(signTarget)
+    return engine.sign()
 }
 
 fun privateKeyToCurve25519(edSeed: ByteArray): ByteArray {

@@ -11,6 +11,7 @@ import net.i2p.crypto.eddsa.spec.EdDSAPrivateKeySpec
 import net.i2p.crypto.eddsa.spec.EdDSAPublicKeySpec
 import okhttp3.Request
 import okio.ByteString.Companion.encode
+import one.mixin.android.Constants
 import one.mixin.android.Constants.Account.PREF_TRIED_UPDATE_KEY
 import one.mixin.android.MixinApplication
 import one.mixin.android.crypto.Base64
@@ -18,6 +19,7 @@ import one.mixin.android.crypto.aesEncrypt
 import one.mixin.android.crypto.calculateAgreement
 import one.mixin.android.crypto.ed25519
 import one.mixin.android.crypto.getRSAPrivateKeyFromString
+import one.mixin.android.crypto.initFromSkAndSign
 import one.mixin.android.crypto.privateKeyToCurve25519
 import one.mixin.android.extension.base64Encode
 import one.mixin.android.extension.bodyToString
@@ -31,6 +33,7 @@ import one.mixin.android.extension.putString
 import one.mixin.android.extension.remove
 import one.mixin.android.extension.sharedPreferences
 import one.mixin.android.extension.toLeByteArray
+import one.mixin.android.tip.Tip
 import one.mixin.android.util.reportException
 import one.mixin.android.vo.Account
 import timber.log.Timber
@@ -189,7 +192,7 @@ object Session {
         return account?.sessionId
     }
 
-    fun getIdentityPub(): String? = getAccount()?.tipKeyBase64
+    fun getTipPub(): String? = getAccount()?.tipKeyBase64
 
     fun checkToken() = getAccount() != null && !getPinToken().isNullOrBlank()
 
@@ -266,9 +269,27 @@ object Session {
 
 fun encryptPin(key: String, code: String?): String? {
     val pinCode = code ?: return null
+
+    return encryptPin(key, pinCode.toByteArray())
+}
+
+fun encryptPin(key: String, code: ByteArray): String {
     val iterator = Session.getPinIterator()
-    val pinByte = pinCode.toByteArray() + currentTimeSeconds().toLeByteArray() + iterator.toLeByteArray()
+    val pinByte = code + (currentTimeSeconds()).toLeByteArray() + iterator.toLeByteArray()
     val based = aesEncrypt(Base64.decode(key), pinByte).base64Encode()
+    Session.storePinIterator(iterator + 1)
+    return based
+}
+
+suspend fun encryptTipPin(tip: Tip, pin: String, signTarget: ByteArray): String? {
+    val pinToken = Session.getPinToken()?.decodeBase64() ?: return null
+    val deviceId = MixinApplication.appContext.defaultSharedPreferences.getString(Constants.DEVICE_ID, null) ?: return null
+    val tipPriv = tip.getTipPriv(MixinApplication.appContext, pin, deviceId) ?: return null
+
+    val sig = initFromSkAndSign(tipPriv, signTarget)
+    val iterator = Session.getPinIterator()
+    val pinByte = sig + (currentTimeSeconds()).toLeByteArray() + iterator.toLeByteArray()
+    val based = aesEncrypt(pinToken, pinByte).base64Encode()
     Session.storePinIterator(iterator + 1)
     return based
 }
