@@ -216,7 +216,7 @@ class TransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>>()
 
     private fun refreshPendingDeposits(asset: AssetItem) {
         lifecycleScope.launch {
-            if (asset.destination.isNotEmpty()) {
+            if (asset.getDestination().isNotEmpty()) {
                 walletViewModel.refreshAsset(asset.assetId)
                 walletViewModel.refreshPendingDeposits(asset)
             } else {

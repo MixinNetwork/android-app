@@ -144,7 +144,7 @@ internal constructor(
     suspend fun refreshPendingDeposits(asset: AssetItem) {
         handleMixinResponse(
             invokeNetwork = {
-                assetRepository.pendingDeposits(asset.assetId, asset.destination, asset.tag)
+                assetRepository.pendingDeposits(asset.assetId, asset.getDestination(), asset.getTag())
             },
             successBlock = { list ->
                 assetRepository.clearPendingDepositsByAssetId(asset.assetId)

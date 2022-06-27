@@ -60,11 +60,11 @@ class DepositQrBottomFragment : MixinBottomSheetDialogFragment() {
             when (type) {
                 TYPE_TAG -> {
                     title.titleTv.text = getString(R.string.withdrawal_memo)
-                    addrTv.text = asset.tag
+                    addrTv.text = asset.getTag()
                 }
                 else -> {
                     title.titleTv.text = getString(R.string.Address)
-                    addrTv.text = asset.destination
+                    addrTv.text = asset.getDestination()
                 }
             }
             badgeView.apply {
@@ -97,8 +97,8 @@ class DepositQrBottomFragment : MixinBottomSheetDialogFragment() {
             qr.post {
                 Observable.create<Pair<Bitmap, Int>?> { e ->
                     val code = when (type) {
-                        TYPE_TAG -> asset.tag
-                        else -> asset.destination
+                        TYPE_TAG -> asset.getTag()
+                        else -> asset.getDestination()
                     }
                     val r = code?.generateQRCode(qr.width)
                     r?.let { e.onNext(it) }

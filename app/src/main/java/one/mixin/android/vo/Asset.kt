@@ -4,7 +4,6 @@ import android.annotation.SuppressLint
 import android.os.Parcelable
 import androidx.room.ColumnInfo
 import androidx.room.Entity
-import androidx.room.Ignore
 import androidx.room.PrimaryKey
 import com.google.gson.annotations.SerializedName
 import kotlinx.parcelize.Parcelize
@@ -28,7 +27,7 @@ data class Asset(
     val balance: String,
     @SerializedName("destination")
     @ColumnInfo(name = "destination")
-    var destination: String,
+    val destination: String,
     @SerializedName("tag")
     @ColumnInfo(name = "tag")
     val tag: String?,
@@ -56,46 +55,9 @@ data class Asset(
     @ColumnInfo(name = "reserve")
     val reserve: String?,
     @SerializedName("deposit_entries")
-    @Ignore
-    val depositEntries: List<DepositEntry>? = null
-) : Parcelable {
-
-    constructor(
-        assetId: String,
-        symbol: String,
-        name: String,
-        iconUrl: String,
-        balance: String,
-        destination: String,
-        tag: String?,
-        priceBtc: String,
-        priceUsd: String,
-        chainId: String,
-        changeUsd: String,
-        changeBtc: String,
-        confirmations: Int,
-        assetKey: String?,
-        reserve: String?
-    ) :
-        this(
-            assetId,
-            symbol,
-            name,
-            iconUrl,
-            balance,
-            destination,
-            tag,
-            priceBtc,
-            priceUsd,
-            chainId,
-            changeUsd,
-            changeBtc,
-            confirmations,
-            assetKey,
-            reserve,
-            null
-        )
-}
+    @ColumnInfo(name = "deposit_entries")
+    val depositEntries: List<DepositEntry>
+) : Parcelable
 
 data class PriceAndChange(
     @ColumnInfo(name = "asset_id")
@@ -115,23 +77,8 @@ fun Asset.toPriceAndChange(): PriceAndChange {
 }
 
 fun Asset.toAssetItem(chainIconUrl: String? = null): AssetItem = AssetItem(
-    assetId, symbol, name, iconUrl, balance, destination, tag, priceBtc, priceUsd, chainId, changeUsd, changeBtc, false,
+    assetId, symbol, name, iconUrl, balance, destination, depositEntries, tag, priceBtc, priceUsd, chainId, changeUsd, changeBtc, false,
     confirmations, chainIconUrl, null, null, null, assetKey, reserve
 )
 
 fun Asset.toTopAssetItem(chainIconUrl: String?) = TopAssetItem(assetId, symbol, name, iconUrl, chainId, chainIconUrl, priceUsd, changeUsd)
-
-fun Asset.replaceDestination() {
-    if (depositEntries != null) {
-        depositEntries.firstOrNull { depositEntry ->
-            depositEntry.properties != null && depositEntry.destination.isNotBlank() && depositEntry.properties.any { property ->
-                property.equals(
-                    "SegWit",
-                    false
-                )
-            }
-        }?.let { depositEntry ->
-            destination = depositEntry.destination
-        }
-    }
-}

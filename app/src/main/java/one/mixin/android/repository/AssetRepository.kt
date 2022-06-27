@@ -31,7 +31,6 @@ import one.mixin.android.vo.PriceAndChange
 import one.mixin.android.vo.Snapshot
 import one.mixin.android.vo.SnapshotItem
 import one.mixin.android.vo.Trace
-import one.mixin.android.vo.replaceDestination
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -55,12 +54,10 @@ constructor(
     suspend fun simpleAssetsWithBalance() = assetDao.simpleAssetsWithBalance()
 
     fun insert(asset: Asset) {
-        asset.replaceDestination()
         assetDao.insert(asset)
     }
 
     fun insertList(asset: List<Asset>) {
-        asset.forEach { it.replaceDestination() }
         assetDao.insertList(asset)
     }
 

@@ -60,10 +60,10 @@ class DepositPublicKeyFragment : DepositFragment() {
             }
             qrAvatar.setBorder()
             copyIv.setOnClickListener {
-                context?.getClipboardManager()?.setPrimaryClip(ClipData.newPlainText(null, asset.destination))
+                context?.getClipboardManager()?.setPrimaryClip(ClipData.newPlainText(null, asset.getDestination()))
                 toast(R.string.copied_to_clipboard)
             }
-            keyCode.text = asset.destination
+            keyCode.text = asset.getDestination()
             val confirmation = requireContext().resources.getQuantityString(R.plurals.deposit_confirmation, asset.confirmations, asset.confirmations)
                 .highLight(requireContext(), asset.confirmations.toString())
             val reserveTip = if (asset.needShowReserve()) {
@@ -81,7 +81,7 @@ class DepositPublicKeyFragment : DepositFragment() {
             }
             qr.post {
                 Observable.create<Pair<Bitmap, Int>> { e ->
-                    val r = asset.destination.generateQRCode(qr.width)
+                    val r = asset.getDestination().generateQRCode(qr.width)
                     e.onNext(r)
                 }.subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())
