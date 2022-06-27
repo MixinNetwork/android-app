@@ -130,7 +130,7 @@ fun SettingPage() {
                 }
                 SettingTile(
                     icon = R.drawable.ic_setting_share,
-                    title = stringResource(id = R.string.Share_This_App)
+                    title = stringResource(id = R.string.Invite_a_Friend)
                 ) {
                     val sendIntent = Intent()
                     sendIntent.action = Intent.ACTION_SEND

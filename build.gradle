@@ -100,8 +100,8 @@ buildscript {
 
         ext.bcVersion = '1.70'
         ext.jsonVersion = '20220320'
-        ext.composeVersion = '1.2.0-alpha08'
-        ext.accompanistVersion = '0.24.8-beta'
+        ext.composeVersion = '1.2.0-rc02'
+        ext.accompanistVersion = '0.24.12-rc'
     }
 
     repositories {
@@ -144,6 +144,12 @@ allprojects {
                 includeModule("com.github.warkiz.widget", "indicatorseekbar")
             }
         }
+
+        // compose pre-release maven
+        maven {
+            url "https://androidx.dev/storage/compose-compiler/repository/"
+        }
+
     }
 }
 
