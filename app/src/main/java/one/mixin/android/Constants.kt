@@ -223,6 +223,8 @@ object Constants {
 
     val DNS: Dns = SequentialDns(CustomDns("8.8.8.8"), CustomDns("1.1.1.1"), CustomDns("2001:4860:4860::8888"), Dns.SYSTEM)
 
+    const val BTC_ASSET_ID = "c6d0c728-2624-429b-8e0d-d9d19b6592fa"
+
     const val TEAM_MIXIN_USER_ID = "773e5e77-4107-45c2-b648-8fc722ed77f5"
     const val MIXIN_BOTS_USER_ID = "68ef7899-3e81-4b3d-8124-83ae652def89"
     const val MIXIN_DATA_USER_ID = "96c1460b-c7c4-480a-a342-acaa73995a37"

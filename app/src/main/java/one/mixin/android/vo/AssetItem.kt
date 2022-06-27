@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.os.Parcelable
 import androidx.recyclerview.widget.DiffUtil
 import kotlinx.parcelize.Parcelize
+import one.mixin.android.Constants.BTC_ASSET_ID
 import java.math.BigDecimal
 
 @SuppressLint("ParcelCreator")
@@ -48,40 +49,36 @@ data class AssetItem(
     } else BigDecimal(balance).multiply(BigDecimal(priceBtc))
 
     fun getDestination(): String {
-        if (depositEntries.isNotEmpty()) {
-            return if (depositEntries.size == 1) {
-                depositEntries.first().destination
-            } else {
-                depositEntries.firstOrNull { depositEntry ->
-                    depositEntry.properties != null && depositEntry.destination.isNotBlank() && depositEntry.properties.any { property ->
-                        property.equals(
-                            "SegWit",
-                            false
-                        )
-                    }
-                }?.destination ?: destination
-            }
+        return if (assetId == BTC_ASSET_ID) {
+            depositEntries.firstOrNull { depositEntry ->
+                depositEntry.properties != null && depositEntry.destination.isNotBlank() && depositEntry.properties.any { property ->
+                    property.equals(
+                        "SegWit",
+                        false
+                    )
+                }
+            }?.destination ?: destination
+        } else if (depositEntries.isNotEmpty()) {
+            depositEntries.first().destination
         } else {
-            return destination
+            destination
         }
     }
 
     fun getTag(): String? {
-        if (depositEntries.isNotEmpty()) {
-            return if (depositEntries.size == 1) {
-                depositEntries.first().tag
-            } else {
-                depositEntries.firstOrNull { depositEntry ->
-                    depositEntry.properties != null && depositEntry.destination.isNotBlank() && depositEntry.properties.any { property ->
-                        property.equals(
-                            "SegWit",
-                            false
-                        )
-                    }
-                }?.tag
-            }
+        return if (assetId == BTC_ASSET_ID) {
+            depositEntries.firstOrNull { depositEntry ->
+                depositEntry.properties != null && depositEntry.destination.isNotBlank() && depositEntry.properties.any { property ->
+                    property.equals(
+                        "SegWit",
+                        false
+                    )
+                }
+            }?.tag
+        } else if (depositEntries.isNotEmpty()) {
+            depositEntries.first().tag
         } else {
-            return tag
+            tag
         }
     }
 
