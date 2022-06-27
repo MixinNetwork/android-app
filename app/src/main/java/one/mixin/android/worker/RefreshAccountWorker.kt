@@ -9,10 +9,13 @@ import one.mixin.android.MixinApplication
 import one.mixin.android.api.service.AccountService
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.putInt
+import one.mixin.android.extension.putString
 import one.mixin.android.repository.UserRepository
 import one.mixin.android.session.Session
+import one.mixin.android.ui.setting.PhoneNumberSettingFragment
 import one.mixin.android.ui.setting.SettingConversationFragment
 import one.mixin.android.vo.MessageSource
+import one.mixin.android.vo.SearchSource
 import one.mixin.android.vo.toUser
 
 @HiltWorker
@@ -26,19 +29,19 @@ class RefreshAccountWorker @AssistedInject constructor(
     override suspend fun onRun(): Result {
         val response = accountService.getMe().execute().body()
         if (response != null && response.isSuccess && response.data != null) {
-            val account = response.data
-            val u = account!!.toUser()
+            val account = response.data ?: return Result.failure()
+            val u = account.toUser()
             userRepo.upsert(u)
             Session.storeAccount(account)
 
             val receive = MixinApplication.appContext.defaultSharedPreferences
                 .getInt(SettingConversationFragment.CONVERSATION_KEY, MessageSource.EVERYBODY.ordinal)
-            if (response.data!!.receiveMessageSource == MessageSource.EVERYBODY.name &&
+            if (account.receiveMessageSource == MessageSource.EVERYBODY.name &&
                 receive != MessageSource.EVERYBODY.ordinal
             ) {
                 MixinApplication.appContext.defaultSharedPreferences
                     .putInt(SettingConversationFragment.CONVERSATION_KEY, MessageSource.EVERYBODY.ordinal)
-            } else if (response.data!!.receiveMessageSource == MessageSource.CONTACTS.name &&
+            } else if (account.receiveMessageSource == MessageSource.CONTACTS.name &&
                 receive != MessageSource.CONTACTS.ordinal
             ) {
                 MixinApplication.appContext.defaultSharedPreferences
@@ -47,16 +50,38 @@ class RefreshAccountWorker @AssistedInject constructor(
 
             val receiveGroup = MixinApplication.appContext.defaultSharedPreferences
                 .getInt(SettingConversationFragment.CONVERSATION_GROUP_KEY, MessageSource.EVERYBODY.ordinal)
-            if (response.data!!.acceptConversationSource == MessageSource.EVERYBODY.name &&
+            if (account.acceptConversationSource == MessageSource.EVERYBODY.name &&
                 receiveGroup != MessageSource.EVERYBODY.ordinal
             ) {
                 MixinApplication.appContext.defaultSharedPreferences
                     .putInt(SettingConversationFragment.CONVERSATION_GROUP_KEY, MessageSource.EVERYBODY.ordinal)
-            } else if (response.data!!.acceptConversationSource == MessageSource.CONTACTS.name &&
+            } else if (account.acceptConversationSource == MessageSource.CONTACTS.name &&
                 receiveGroup != MessageSource.CONTACTS.ordinal
             ) {
                 MixinApplication.appContext.defaultSharedPreferences
                     .putInt(SettingConversationFragment.CONVERSATION_GROUP_KEY, MessageSource.CONTACTS.ordinal)
+            }
+            val searchSource = MixinApplication.appContext.defaultSharedPreferences.getString(
+                PhoneNumberSettingFragment.ACCEPT_SEARCH_KEY,
+                SearchSource.EVERYBODY.name
+            )
+            if (account.acceptSearchSource != searchSource) {
+                if (SearchSource.EVERYBODY.name == account.acceptSearchSource) {
+                    MixinApplication.appContext.defaultSharedPreferences.putString(
+                        PhoneNumberSettingFragment.ACCEPT_SEARCH_KEY,
+                        SearchSource.EVERYBODY.name
+                    )
+                } else if (SearchSource.CONTACTS.name == account.acceptSearchSource) {
+                    MixinApplication.appContext.defaultSharedPreferences.putString(
+                        PhoneNumberSettingFragment.ACCEPT_SEARCH_KEY,
+                        SearchSource.CONTACTS.name
+                    )
+                } else if (SearchSource.NOBODY.name == account.acceptSearchSource) {
+                    MixinApplication.appContext.defaultSharedPreferences.putString(
+                        PhoneNumberSettingFragment.ACCEPT_SEARCH_KEY,
+                        SearchSource.NOBODY.name
+                    )
+                }
             }
             return Result.success()
         } else {

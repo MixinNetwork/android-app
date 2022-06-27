@@ -198,17 +198,17 @@ class TextHolder constructor(val binding: ItemChatTextBinding) : BaseViewHolder(
     ) : GestureDetector.SimpleOnGestureListener() {
         var longPressed = false
 
-        override fun onDoubleTap(e: MotionEvent?): Boolean {
+        override fun onDoubleTap(e: MotionEvent): Boolean {
             view.context.doubleClickVibrate()
             onItemListener.onTextDoubleClick(messageItem)
             return true
         }
 
-        override fun onSingleTapConfirmed(e: MotionEvent?): Boolean {
+        override fun onSingleTapConfirmed(e: MotionEvent): Boolean {
             return true
         }
 
-        override fun onLongPress(e: MotionEvent?) {
+        override fun onLongPress(e: MotionEvent) {
             if (longPressed) {
                 longPressed = false
                 return

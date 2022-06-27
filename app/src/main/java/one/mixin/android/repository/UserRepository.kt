@@ -15,12 +15,12 @@ import one.mixin.android.db.AppDao
 import one.mixin.android.db.CircleConversationDao
 import one.mixin.android.db.CircleDao
 import one.mixin.android.db.ConversationDao
-import one.mixin.android.db.MessageProvider
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.UserDao
 import one.mixin.android.db.insertUpdate
 import one.mixin.android.db.insertUpdateList
 import one.mixin.android.db.insertUpdateSuspend
+import one.mixin.android.db.provider.DataProvider
 import one.mixin.android.db.runInTransaction
 import one.mixin.android.db.updateRelationship
 import one.mixin.android.extension.oneWeekAgo
@@ -58,7 +58,7 @@ constructor(
     suspend fun getFriends(): List<User> = userDao.getFriends()
 
     suspend fun fuzzySearchUser(query: String, cancellationSignal: CancellationSignal): List<User> =
-        MessageProvider.fuzzySearchUser(query, query, query, Session.getAccountId() ?: "", appDatabase, cancellationSignal)
+        DataProvider.fuzzySearchUser(query, query, query, Session.getAccountId() ?: "", appDatabase, cancellationSignal)
 
     suspend fun searchSuspend(query: String): MixinResponse<User> = userService.searchSuspend(query)
 

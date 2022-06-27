@@ -1,6 +1,5 @@
 package one.mixin.android.db
 
-import one.mixin.android.session.Session
 import one.mixin.android.util.chat.InvalidateFlow
 import one.mixin.android.vo.App
 import one.mixin.android.vo.Circle
@@ -8,9 +7,11 @@ import one.mixin.android.vo.CircleConversation
 import one.mixin.android.vo.Job
 import one.mixin.android.vo.Message
 import one.mixin.android.vo.MessageStatus
+import one.mixin.android.vo.RemoteMessageStatus
 import one.mixin.android.vo.Sticker
 import one.mixin.android.vo.StickerAlbum
 import one.mixin.android.vo.User
+import one.mixin.android.vo.isMine
 
 fun UserDao.insertUpdate(
     user: User,
@@ -166,13 +167,24 @@ fun JobDao.insertNoReplace(job: Job) {
     }
 }
 
-// Message SQL
+// Delete SQL, Please use FtsDeleteJob to delete fts
 fun MixinDatabase.deleteMessageById(messageId: String) {
     runInTransaction {
         pinMessageDao().deleteByMessageId(messageId)
         mentionMessageDao().deleteMessage(messageId)
         messageDao().deleteMessageById(messageId)
-        messageFts4Dao().deleteByMessageId(messageId)
+        remoteMessageStatusDao().deleteByMessageId(messageId)
+        expiredMessageDao().deleteByMessageId(messageId)
+    }
+}
+
+fun MixinDatabase.deleteMessageByIds(messageIds: List<String>) {
+    runInTransaction {
+        pinMessageDao().deleteByIds(messageIds)
+        mentionMessageDao().deleteMessage(messageIds)
+        messageDao().deleteMessageById(messageIds)
+        remoteMessageStatusDao().deleteByMessageIds(messageIds)
+        expiredMessageDao().deleteByMessageId(messageIds)
     }
 }
 
@@ -188,31 +200,14 @@ fun MessageDao.makeMessageStatus(status: String, messageId: String) {
     }
 }
 
-suspend fun MixinDatabase.deleteMessageByConversationId(conversationId: String, limit: Int) {
-    pinMessageDao().deleteConversationId(conversationId)
-    messageDao().deleteMessageByConversationId(conversationId, limit)
-    mentionMessageDao().deleteMessageByConversationId(conversationId, limit)
-    InvalidateFlow.emit(conversationId)
-}
-
-suspend fun MessageDao.batchMarkReadAndTake(
-    conversationId: String,
-    userId: String,
-    rowid: String
-) {
-    withTransaction {
-        batchMarkRead(conversationId, userId, rowid)
-        updateConversationUnseen(userId, conversationId)
-    }
-}
-
+// Insert message SQL
 fun MixinDatabase.insertAndNotifyConversation(message: Message) {
     runInTransaction {
         messageDao().insert(message)
-        val userId = Session.getAccountId()
-        if (userId != message.userId) {
-            conversationDao().unseenMessageCount(message.conversationId, userId)
+        if (!message.isMine() && message.status != MessageStatus.READ.name) {
+            remoteMessageStatusDao().insert(RemoteMessageStatus(message.id, message.conversationId, MessageStatus.DELIVERED.name))
         }
+        remoteMessageStatusDao().updateConversationUnseen(message.conversationId)
         InvalidateFlow.emit(message.conversationId)
     }
 }

@@ -89,6 +89,17 @@
         android:orientation="horizontal">
 
         <ImageView
+            android:id="@+id/msg_expire"
+            android:layout_width="12dp"
+            android:layout_height="12dp"
+            android:layout_gravity="center_vertical"
+            android:layout_marginTop="1.5dp"
+            android:layout_marginEnd="3dp"
+            android:contentDescription="@null"
+            android:src="@drawable/ic_status_expire"
+            android:visibility="gone" />
+
+        <ImageView
             android:id="@+id/msg_status"
             android:layout_width="12dp"
             android:layout_height="12dp"

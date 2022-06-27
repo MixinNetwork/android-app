@@ -7,7 +7,7 @@ import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemChatWaitingBinding
 import one.mixin.android.extension.dp
-import one.mixin.android.extension.highlightLinkText
+import one.mixin.android.extension.highlightStarTag
 import one.mixin.android.ui.conversation.adapter.ConversationAdapter
 import one.mixin.android.ui.conversation.holder.base.BaseViewHolder
 import one.mixin.android.vo.MessageItem
@@ -70,12 +70,11 @@ class WaitingHolder constructor(
                     } else {
                         messageItem.userFullName
                     },
-                    learn
+                    "**$learn**"
                 )
             val learnUrl = MixinApplication.get().getString(R.string.secret_url)
-            binding.chatTv.highlightLinkText(
+            binding.chatTv.highlightStarTag(
                 info,
-                arrayOf(learn),
                 arrayOf(learnUrl),
                 onItemListener = onItemListener
             )

@@ -690,8 +690,10 @@ class ConversationFragment() :
             }
 
             override fun onStickerClick(messageItem: MessageItem) {
-                StickerPreviewBottomSheetFragment.newInstance(requireNotNull(messageItem.stickerId))
-                    .showNow(parentFragmentManager, StickerPreviewBottomSheetFragment.TAG)
+                messageItem.stickerId?.let { stickerId ->
+                    StickerPreviewBottomSheetFragment.newInstance(stickerId)
+                        .showNow(parentFragmentManager, StickerPreviewBottomSheetFragment.TAG)
+                }
             }
 
             @TargetApi(Build.VERSION_CODES.O)
@@ -1041,7 +1043,7 @@ class ConversationFragment() :
     // for testing
     var selectItem: SelectItem? = null
 
-    private lateinit var getForwardResult: ActivityResultLauncher<Pair<ArrayList<ForwardMessage>, String?>>
+    lateinit var getForwardResult: ActivityResultLauncher<Pair<ArrayList<ForwardMessage>, String?>>
     private lateinit var getCombineForwardResult: ActivityResultLauncher<ArrayList<TranscriptMessage>>
     private lateinit var getChatHistoryResult: ActivityResultLauncher<Pair<String, Boolean>>
     private lateinit var getMediaResult: ActivityResultLauncher<MediaPagerActivity.MediaParam>
@@ -1893,7 +1895,7 @@ class ConversationFragment() :
                     }
                 }
                 conversationAdapter.submitList(list)
-                chatViewModel.markMessageRead(conversationId, sender.userId, (activity as? BubbleActivity)?.isBubbled == true)
+                chatViewModel.markMessageRead(conversationId, (activity as? BubbleActivity)?.isBubbled == true)
             }
     }
 

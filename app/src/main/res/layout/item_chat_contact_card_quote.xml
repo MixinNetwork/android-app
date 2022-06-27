@@ -4,6 +4,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:clipChildren="false"
+    android:clipToPadding="false"
     android:clickable="true"
     android:focusable="true">
 
@@ -61,6 +63,8 @@
         android:gravity="center"
         android:orientation="vertical"
         android:paddingTop="1.5dp"
+        android:clipChildren="false"
+        android:clipToPadding="false"
         tools:ignore="UselessParent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"

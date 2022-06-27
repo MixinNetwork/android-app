@@ -4,6 +4,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:clipChildren="false"
+    android:clipToPadding="false"
     android:clickable="true"
     android:focusable="true">
 
@@ -23,7 +25,7 @@
         app:layout_constraintBottom_toBottomOf="@id/chat_msg_layout"
         tools:ignore="ContentDescription,NotSibling" />
 
-     <ImageView
+    <ImageView
         android:id="@+id/chat_jump"
         android:padding="4dp"
         android:layout_width="wrap_content"
@@ -60,6 +62,8 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="vertical"
+        android:clipChildren="false"
+        android:clipToPadding="false"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/chat_name"

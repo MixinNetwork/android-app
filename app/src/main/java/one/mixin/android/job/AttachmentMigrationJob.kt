@@ -40,6 +40,7 @@ import java.nio.file.Files
 
 class AttachmentMigrationJob : BaseJob(Params(PRIORITY_LOWER).groupBy(GROUP_ID).persist()) {
     companion object {
+        private var serialVersionUID: Long = 1L
         private const val GROUP_ID = "attachment_migration"
         private const val EACH = 10
     }

@@ -37,19 +37,19 @@ class ExpandLayout @JvmOverloads constructor(
 
     private val listener by lazy {
         object : Animator.AnimatorListener {
-            override fun onAnimationStart(animation: Animator?) {
+            override fun onAnimationStart(animation: Animator) {
                 mRunning = true
             }
 
-            override fun onAnimationEnd(animation: Animator?) {
+            override fun onAnimationEnd(animation: Animator) {
                 mRunning = false
             }
 
-            override fun onAnimationCancel(animation: Animator?) {
+            override fun onAnimationCancel(animation: Animator) {
                 mRunning = false
             }
 
-            override fun onAnimationRepeat(animation: Animator?) {
+            override fun onAnimationRepeat(animation: Animator) {
                 mRunning = true
             }
         }

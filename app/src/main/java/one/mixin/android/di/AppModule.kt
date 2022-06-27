@@ -26,6 +26,7 @@ import one.mixin.android.Constants.API.GIPHY_URL
 import one.mixin.android.Constants.API.URL
 import one.mixin.android.Constants.DNS
 import one.mixin.android.MixinApplication
+import one.mixin.android.api.DataErrorException
 import one.mixin.android.api.ExpiredTokenException
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.NetworkException
@@ -162,7 +163,7 @@ object AppModule {
                     response = response.newBuilder().body(body).build()
                     if (bytes.isEmpty()) return@run
                     if (request.header(xRequestId) != response.header(xRequestId)) {
-                        throw ServerErrorException(response.code)
+                        throw DataErrorException()
                     }
                     val mixinResponse = try {
                         GsonHelper.customGson.fromJson(String(bytes), MixinResponse::class.java)

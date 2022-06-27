@@ -117,6 +117,10 @@ class ShareMessageBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 binding.shareTitle.text = getString(R.string.share_message_description_empty, getMessageCategory())
             }
         }
+
+        if (conversationId == null) {
+            binding.send.text = getString(R.string.Forward)
+        }
         binding.send.setOnClickListener {
             if (shareMessage.category == ShareCategory.Image) {
                 RxPermissions(requireActivity())
@@ -171,7 +175,7 @@ class ShareMessageBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     }
 
     private fun sendMessage() {
-        ForwardActivity.show(requireContext(), arrayListOf(shareMessage), ForwardAction.App.Resultful(conversationId, getString(R.string.Send)))
+        ForwardActivity.show(requireContext(), arrayListOf(shareMessage), ForwardAction.App.Resultful(conversationId, getString(if (conversationId == null) R.string.Forward else R.string.Send)))
         dismiss()
     }
 

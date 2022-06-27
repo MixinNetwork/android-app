@@ -9,6 +9,6 @@ import one.mixin.android.vo.Offset
 interface OffsetDao : BaseDao<Offset> {
 
     @Transaction
-    @Query("SELECT timestamp FROM offsets WHERE key = 'messages_status_offset'")
+    @Query("SELECT timestamp FROM offsets WHERE `key` = 'messages_status_offset'")
     fun getStatusOffset(): String?
 }

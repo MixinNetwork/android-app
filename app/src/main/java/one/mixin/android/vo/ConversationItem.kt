@@ -4,6 +4,7 @@ import android.view.View
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.DiffUtil
 import androidx.room.Entity
+import one.mixin.android.websocket.SystemConversationAction
 import org.threeten.bp.Instant
 
 @Entity
@@ -15,13 +16,11 @@ data class ConversationItem(
     val groupName: String?,
     val name: String,
     val ownerId: String,
-    val ownerIdentityNumber: String,
     val status: Int,
     val lastReadMessageId: String?,
     val unseenMessageCount: Int?,
     val content: String?,
     val contentType: String?,
-    val mediaUrl: String?,
     val createdAt: String?,
     val pinTime: String?,
     val senderId: String?,
@@ -33,7 +32,6 @@ data class ConversationItem(
     val ownerMuteUntil: String?,
     val ownerVerified: Boolean?,
     val muteUntil: String?,
-    val snapshotType: String?,
     val appId: String?,
     val mentions: String?,
     val mentionCount: Int?
@@ -79,6 +77,8 @@ data class ConversationItem(
         }
         return false
     }
+
+    fun isExpire() = actionName == SystemConversationAction.EXPIRE.name
 
     fun isBot(): Boolean {
         return category == ConversationCategory.CONTACT.name && appId != null

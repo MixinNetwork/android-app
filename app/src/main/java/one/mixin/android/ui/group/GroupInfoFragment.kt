@@ -1,7 +1,6 @@
 package one.mixin.android.ui.group
 
 import android.app.Dialog
-import android.content.Intent
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
@@ -27,7 +26,6 @@ import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.job.ConversationJob.Companion.TYPE_ADD
-import one.mixin.android.job.ConversationJob.Companion.TYPE_DELETE
 import one.mixin.android.job.ConversationJob.Companion.TYPE_DISMISS_ADMIN
 import one.mixin.android.job.ConversationJob.Companion.TYPE_MAKE_ADMIN
 import one.mixin.android.job.ConversationJob.Companion.TYPE_REMOVE
@@ -37,7 +35,6 @@ import one.mixin.android.ui.common.showUserBottom
 import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.group.GroupFragment.Companion.MAX_USER
 import one.mixin.android.ui.group.adapter.GroupInfoAdapter
-import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.Conversation
 import one.mixin.android.vo.Participant
@@ -311,9 +308,8 @@ class GroupInfoFragment : BaseFragment(R.layout.fragment_group_info) {
                     TYPE_REMOVE -> {
                         handleRemove(user!!)
                     }
-                    TYPE_DELETE -> {
-                        groupViewModel.deleteMessageByConversationId(conversationId)
-                        startActivity(Intent(context, MainActivity::class.java))
+                    else -> {
+                        // do nothing
                     }
                 }
                 dialog.dismiss()

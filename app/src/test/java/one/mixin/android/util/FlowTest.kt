@@ -13,7 +13,8 @@ class FlowTest {
         val dropFlow by lazy {
             MutableSharedFlow<Int>(0, 1, BufferOverflow.DROP_OLDEST)
         }
-        launch {
+
+        val job = launch {
             dropFlow.collect {
                 println("collect $it")
                 delay(200)
@@ -24,6 +25,8 @@ class FlowTest {
             delay(100)
             dropFlow.emit(it)
         }
+
+        job.cancel()
         println("Done")
     }
 }

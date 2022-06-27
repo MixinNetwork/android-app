@@ -87,7 +87,11 @@ class WalletSearchFragment : BaseFragment() {
                 activity?.onBackPressed()
             }
             searchEt.setHint(getString(R.string.search_placeholder_asset))
-            searchEt.post { searchEt.showKeyboard() }
+            searchEt.post {
+                if (isAdded) {
+                    searchEt.showKeyboard()
+                }
+            }
             @SuppressLint("AutoDispose")
             disposable = searchEt.et.textChanges().debounce(500L, TimeUnit.MILLISECONDS)
                 .observeOn(AndroidSchedulers.mainThread())

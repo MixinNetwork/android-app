@@ -26,7 +26,8 @@ data class BlazeMessageParam(
     var track_id: String? = null,
     var recipient_ids: List<String>? = null,
     val offset: String? = null,
-    val silent: Boolean? = null
+    val silent: Boolean? = null,
+    val expire_in: Long? = null
 ) : Serializable {
     companion object {
         private const val serialVersionUID: Long = 6L

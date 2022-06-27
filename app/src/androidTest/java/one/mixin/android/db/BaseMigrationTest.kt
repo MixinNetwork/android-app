@@ -10,6 +10,7 @@ import org.junit.Rule
 
 open class BaseMigrationTest {
 
+    @Suppress("DEPRECATION")
     @get: Rule
     val migrationTestHelper = MigrationTestHelper(
         InstrumentationRegistry.getInstrumentation(),

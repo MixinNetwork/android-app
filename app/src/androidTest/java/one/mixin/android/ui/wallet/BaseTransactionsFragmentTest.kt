@@ -69,27 +69,27 @@ abstract class BaseTransactionsFragmentTest {
 
             // filter by transfer
             showFilterBottom(navController, R.id.filters_radio_transfer)
-            checkTransitionName(activityScenario, ctx.getString(R.string.action_transfer))
+            checkTransitionName(activityScenario, ctx.getString(R.string.Transfer))
 
             // filter by deposit
             showFilterBottom(navController, R.id.filters_radio_deposit)
-            checkTransitionName(activityScenario, ctx.getString(R.string.filters_deposit))
+            checkTransitionName(activityScenario, ctx.getString(R.string.Deposit))
 
             // filter by withdrawal
             showFilterBottom(navController, R.id.filters_radio_withdrawal)
-            checkTransitionName(activityScenario, ctx.getString(R.string.withdrawal))
+            checkTransitionName(activityScenario, ctx.getString(R.string.Withdrawal))
 
             // filter by fee
             showFilterBottom(navController, R.id.filters_radio_fee)
-            checkTransitionName(activityScenario, ctx.getString(R.string.fee))
+            checkTransitionName(activityScenario, ctx.getString(R.string.Fee))
 
             // filter by rebate
             showFilterBottom(navController, R.id.filters_radio_rebate)
-            checkTransitionName(activityScenario, ctx.getString(R.string.action_rebate))
+            checkTransitionName(activityScenario, ctx.getString(R.string.Rebate))
 
             // filter by raw
             showFilterBottom(navController, R.id.filters_radio_raw)
-            checkTransitionName(activityScenario, ctx.getString(R.string.filters_raw))
+            checkTransitionName(activityScenario, ctx.getString(R.string.Raw))
         }
     }
 
@@ -120,7 +120,7 @@ abstract class BaseTransactionsFragmentTest {
                 val textView = rv.findViewHolderForAdapterPosition(i)?.itemView?.findViewById<TextView>(R.id.name)
                     ?: continue
                 val targetName = textView.text?.toString()
-                val confirmationString = it.resources.getQuantityString(R.plurals.pending_confirmations, 0, 0, 10).split(' ')[1]
+                val confirmationString = it.resources.getQuantityString(R.plurals.pending_confirmation, 0, 0, 10).split(' ')[1]
                 if (targetName != null && targetName.endsWith(confirmationString)) { // ignore pending
                     continue
                 }

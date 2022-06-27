@@ -21,10 +21,12 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.Constants
 import one.mixin.android.Constants.FIXED_LOAD_SIZE
-import one.mixin.android.Constants.MARK_LIMIT
 import one.mixin.android.Constants.PAGE_SIZE
 import one.mixin.android.MixinApplication
 import one.mixin.android.api.handleMixinResponse
+import one.mixin.android.api.request.ConversationRequest
+import one.mixin.android.api.request.DisappearRequest
+import one.mixin.android.api.request.ParticipantRequest
 import one.mixin.android.api.request.RelationshipRequest
 import one.mixin.android.api.request.StickerAddRequest
 import one.mixin.android.extension.copyFromInputStream
@@ -50,11 +52,13 @@ import one.mixin.android.repository.AssetRepository
 import one.mixin.android.repository.ConversationRepository
 import one.mixin.android.repository.UserRepository
 import one.mixin.android.session.Session
+import one.mixin.android.ui.common.message.CleanMessageHelper
 import one.mixin.android.ui.common.message.SendMessageHelper
 import one.mixin.android.util.Attachment
 import one.mixin.android.util.ControlledRunner
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.SINGLE_DB_THREAD
+import one.mixin.android.util.SINGLE_DRAFT_THREAD
 import one.mixin.android.util.chat.FastComputableLiveData
 import one.mixin.android.util.chat.FastLivePagedListBuilder
 import one.mixin.android.vo.AppCap
@@ -80,7 +84,6 @@ import one.mixin.android.vo.StickerAlbumAdded
 import one.mixin.android.vo.StickerAlbumOrder
 import one.mixin.android.vo.TranscriptMessage
 import one.mixin.android.vo.User
-import one.mixin.android.vo.absolutePath
 import one.mixin.android.vo.createAckJob
 import one.mixin.android.vo.createConversation
 import one.mixin.android.vo.encryptedCategory
@@ -92,10 +95,8 @@ import one.mixin.android.vo.isEncrypted
 import one.mixin.android.vo.isGroupConversation
 import one.mixin.android.vo.isImage
 import one.mixin.android.vo.isSignal
-import one.mixin.android.vo.isTranscript
 import one.mixin.android.vo.isVideo
 import one.mixin.android.webrtc.SelectItem
-import one.mixin.android.websocket.ACKNOWLEDGE_MESSAGE_RECEIPTS
 import one.mixin.android.websocket.AudioMessagePayload
 import one.mixin.android.websocket.BlazeAckMessage
 import one.mixin.android.websocket.CREATE_MESSAGE
@@ -119,7 +120,8 @@ internal constructor(
     private val jobManager: MixinJobManager,
     private val assetRepository: AssetRepository,
     private val accountRepository: AccountRepository,
-    private val messenger: SendMessageHelper
+    private val messenger: SendMessageHelper,
+    private val cleanMessageHelper: CleanMessageHelper
 ) : ViewModel() {
 
     fun getMessages(conversationId: String, firstKeyToLoad: Int = 0): FastComputableLiveData<PagedList<MessageItem>> {
@@ -132,8 +134,9 @@ internal constructor(
         return FastLivePagedListBuilder(
             conversationRepository.getMessages(
                 conversationId,
-                if (firstKeyToLoad > PAGE_SIZE) {
-                    firstKeyToLoad + FIXED_LOAD_SIZE / 2
+                if (firstKeyToLoad > FIXED_LOAD_SIZE) {
+                    // Multiple Page Size, round up
+                    ((firstKeyToLoad + PAGE_SIZE - 1) / PAGE_SIZE) * PAGE_SIZE
                 } else {
                     FIXED_LOAD_SIZE
                 }
@@ -148,9 +151,15 @@ internal constructor(
     suspend fun findFirstUnreadMessageId(conversationId: String, offset: Int): String? =
         conversationRepository.findFirstUnreadMessageId(conversationId, offset)
 
-    suspend fun getConversationDraftById(id: String) = conversationRepository.getConversationDraftById(id)
+    suspend fun getConversationDraftById(id: String) = withContext(SINGLE_DRAFT_THREAD) {
+        conversationRepository.getConversationDraftById(id)
+    }
 
     fun getConversationById(id: String) = conversationRepository.getConversationById(id)
+
+    suspend fun getConversation(id: String) = withContext(Dispatchers.IO) {
+        conversationRepository.getConversation(id)
+    }
 
     fun findUserById(conversationId: String): LiveData<User> =
         userRepository.findUserById(conversationId)
@@ -423,33 +432,12 @@ internal constructor(
         }
     }
 
-    fun markMessageRead(conversationId: String, accountId: String, isBubbled: Boolean) {
+    fun markMessageRead(conversationId: String, isBubbled: Boolean) {
         if (isBubbled.not()) {
             notificationManager.cancel(conversationId.hashCode())
         }
-        MixinApplication.appScope.launch(SINGLE_DB_THREAD) {
-            while (true) {
-                val list = conversationRepository.getUnreadMessage(conversationId, accountId, MARK_LIMIT)
-                if (list.isEmpty()) return@launch
-                conversationRepository.batchMarkReadAndTake(
-                    conversationId,
-                    accountId,
-                    list.last().rowId
-                )
-
-                list.map {
-                    createAckJob(
-                        ACKNOWLEDGE_MESSAGE_RECEIPTS,
-                        BlazeAckMessage(it.id, MessageStatus.READ.name)
-                    )
-                }.let {
-                    conversationRepository.insertList(it)
-                }
-                createReadSessionMessage(list, conversationId)
-                if (list.size < MARK_LIMIT) {
-                    return@launch
-                }
-            }
+        MixinApplication.appScope.launch {
+            conversationRepository.markMessageRead(conversationId)
         }
     }
 
@@ -467,19 +455,7 @@ internal constructor(
 
     fun deleteMessages(list: List<MessageItem>) {
         viewModelScope.launch(SINGLE_DB_THREAD) {
-            list.forEach { item ->
-                conversationRepository.deleteMessage(
-                    item.messageId,
-                    item.conversationId,
-                    item.absolutePath(),
-                    item.mediaStatus == MediaStatus.DONE.name
-                )
-                if (item.isTranscript()) {
-                    conversationRepository.deleteTranscriptByMessageId(item.messageId)
-                }
-                jobManager.cancelJobByMixinJobId(item.messageId)
-                notificationManager.cancel(item.userId.hashCode())
-            }
+            cleanMessageHelper.deleteMessageItems(list)
         }
     }
 
@@ -607,7 +583,7 @@ internal constructor(
                     botsList = it
                 }
             }
-            if (botsList.isNullOrEmpty()) {
+            if (botsList.isEmpty()) {
                 defaultSharedPreferences.putString(Constants.Account.PREF_RECENT_USED_BOTS, userId)
                 return@launch
             }
@@ -728,9 +704,6 @@ internal constructor(
         conversationRepository.markMentionRead(messageId, conversationId)
     }
 
-    suspend fun conversationZeroClear(conversationId: String) =
-        conversationRepository.conversationZeroClear(conversationId)
-
     suspend fun findLatestTrace(opponentId: String?, destination: String?, tag: String?, amount: String, assetId: String) =
         assetRepository.findLatestTrace(opponentId, destination, tag, amount, assetId)
 
@@ -823,4 +796,30 @@ internal constructor(
     suspend fun findPinMessageById(messageId: String) = withContext(Dispatchers.IO) {
         conversationRepository.findPinMessageById(messageId)
     }
+
+    suspend fun createConversation(conversationId: String, userId: String) = withContext(Dispatchers.IO) {
+        val conversation = conversationRepository.getConversation(conversationId)
+        if (conversation == null) {
+            val request = ConversationRequest(
+                conversationId = conversationId,
+                category = ConversationCategory.CONTACT.name,
+                participants = listOf(ParticipantRequest(userId, ""))
+            )
+            val response = conversationRepository.createSuspend(request)
+            if (response.isSuccess) {
+                val data = response.data
+                if (data != null) {
+                    conversationRepository.insertOrUpdateConversation(data)
+                    return@withContext true
+                }
+            }
+        }
+        return@withContext false
+    }
+
+    suspend fun disappear(conversationId: String, duration: Long) =
+        conversationRepository.disappear(conversationId, DisappearRequest(duration))
+
+    suspend fun updateConversationExpireIn(conversationId: String, expireIn: Long?) =
+        conversationRepository.updateConversationExpireIn(conversationId, expireIn)
 }

@@ -529,7 +529,7 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
             animatorSet.duration = 250
             animatorSet.addListener(
                 object : AnimatorListenerAdapter() {
-                    override fun onAnimationStart(animation: Animator?) {
+                    override fun onAnimationStart(animation: Animator) {
                         windowView.findViewById<View>(R.id.pip_iv).fadeOut()
                         windowView.findViewById<View>(R.id.close_iv).fadeOut()
                         if (windowView.findViewById<View>(R.id.live_tv).isEnabled) {
@@ -540,7 +540,7 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
                         }
                     }
 
-                    override fun onAnimationEnd(animation: Animator?) {
+                    override fun onAnimationEnd(animation: Animator) {
                         pipAnimationInProgress = false
                         if (messageItem.isVideo() && VideoPlayer.player().player.playbackState == Player.STATE_IDLE) {
                             VideoPlayer.player()

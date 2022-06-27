@@ -286,7 +286,7 @@ abstract class MixinJob(
         }
     }
 
-    private fun createConversation(conversation: Conversation) {
+    private fun createConversation(conversation: Conversation): Long? {
         val request = ConversationRequest(
             conversationId = conversation.conversationId,
             category = conversation.category,
@@ -295,6 +295,7 @@ abstract class MixinJob(
         val response = conversationApi.create(request).execute().body()
         if (response != null && response.isSuccess && response.data != null && !isCancelled) {
             conversationDao.updateConversationStatusById(conversation.conversationId, ConversationStatus.SUCCESS.ordinal)
+            conversationDao.updateConversationExpireInById(conversation.conversationId, response.data?.expireIn)
 
             val sessionParticipants = response.data!!.participantSessions.let { resp ->
                 resp?.map {
@@ -304,14 +305,17 @@ abstract class MixinJob(
             sessionParticipants?.let {
                 participantSessionDao.replaceAll(conversation.conversationId, it)
             }
+            return response.data?.expireIn
         } else {
             throw Exception("Create Conversation Exception")
         }
     }
 
-    protected fun checkConversationExist(conversation: Conversation) {
-        if (conversation.status != ConversationStatus.SUCCESS.ordinal) {
+    protected fun checkConversationExist(conversation: Conversation): Long? {
+        return if (conversation.status != ConversationStatus.SUCCESS.ordinal) {
             createConversation(conversation)
+        } else {
+            conversation.expireIn
         }
     }
 

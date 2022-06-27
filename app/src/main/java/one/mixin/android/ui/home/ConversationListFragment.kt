@@ -57,7 +57,6 @@ import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.dpToPx
-import one.mixin.android.extension.margin
 import one.mixin.android.extension.networkConnected
 import one.mixin.android.extension.notEmptyWithElse
 import one.mixin.android.extension.notNullWithElse
@@ -121,6 +120,7 @@ import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.BulletinView
 import one.mixin.android.widget.DraggableRecyclerView
 import one.mixin.android.widget.DraggableRecyclerView.Companion.FLING_DOWN
+import one.mixin.android.widget.picker.toTimeInterval
 import java.io.File
 import javax.inject.Inject
 import kotlin.math.min
@@ -136,7 +136,7 @@ class ConversationListFragment : LinkFragment() {
     private var _binding: FragmentConversationListBinding? = null
     private val binding get() = requireNotNull(_binding)
 
-    private val messagesViewModel by viewModels<ConversationListViewModel>()
+    private val conversationListViewModel by viewModels<ConversationListViewModel>()
 
     private val messageAdapter by lazy {
         MessageAdapter().apply {
@@ -154,10 +154,12 @@ class ConversationListFragment : LinkFragment() {
                 super.onItemRangeChanged(positionStart, itemCount)
                 if (scrollTop) {
                     scrollTop = false
-                    (binding.messageRv.layoutManager as LinearLayoutManager).scrollToPositionWithOffset(
-                        0,
-                        0
-                    )
+                    if (isAdded) {
+                        (binding.messageRv.layoutManager as LinearLayoutManager).scrollToPositionWithOffset(
+                            0,
+                            0
+                        )
+                    }
                 }
             }
         }
@@ -165,7 +167,7 @@ class ConversationListFragment : LinkFragment() {
     private var distance = 0
     private var shadowVisible = true
     private val touchSlop: Int by lazy {
-        ViewConfiguration.get(context).scaledTouchSlop
+        ViewConfiguration.get(requireContext()).scaledTouchSlop
     }
 
     private val vibrateDis by lazy { requireContext().dpToPx(110f) }
@@ -198,7 +200,9 @@ class ConversationListFragment : LinkFragment() {
         navigationController = NavigationController(activity as MainActivity)
         bulletinView = BulletinView(requireContext()).apply {
             layoutParams = RecyclerView.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply {
-                margin = 16.dp
+                bottomMargin = 8.dp
+                marginStart = 16.dp
+                marginEnd = 16.dp
             }
         }
         messageAdapter.headerView = bulletinView
@@ -301,16 +305,16 @@ class ConversationListFragment : LinkFragment() {
                             toast(R.string.Network_error)
                             return
                         }
-                        lifecycleScope.launch(Dispatchers.IO) { messagesViewModel.createGroupConversation(item.conversationId) }
+                        lifecycleScope.launch(Dispatchers.IO) { conversationListViewModel.createGroupConversation(item.conversationId) }
                     } else {
                         enterJob?.cancel()
                         enterJob = lifecycleScope.launch {
                             val user = if (item.isContactConversation()) {
-                                messagesViewModel.suspendFindUserById(item.ownerId)
+                                conversationListViewModel.suspendFindUserById(item.ownerId)
                             } else null
                             val messageId =
                                 if (item.unseenMessageCount != null && item.unseenMessageCount > 0) {
-                                    messagesViewModel.findFirstUnreadMessageId(
+                                    conversationListViewModel.findFirstUnreadMessageId(
                                         item.conversationId,
                                         item.unseenMessageCount - 1
                                     )
@@ -372,7 +376,7 @@ class ConversationListFragment : LinkFragment() {
             messageAdapter.submitList(pagedList)
             if (pagedList == null || pagedList.isEmpty()) {
                 if (circleId == null) {
-                    binding.emptyView.infoTv.setText(R.string.empty_info)
+                    binding.emptyView.infoTv.setText(R.string.chat_list_empty_info)
                     binding.emptyView.startBn.setText(R.string.Start_Messaging)
                 } else {
                     binding.emptyView.infoTv.setText(R.string.circle_no_conversation_hint)
@@ -395,7 +399,7 @@ class ConversationListFragment : LinkFragment() {
         }
     }
 
-    private var liveData: LiveData<PagedList<ConversationItem>>? = null
+    private var conversationLiveData: LiveData<PagedList<ConversationItem>>? = null
     var circleId: String? = null
         set(value) {
             if (field != value) {
@@ -406,11 +410,11 @@ class ConversationListFragment : LinkFragment() {
 
     private var scrollTop = false
     private fun selectCircle(circleId: String?) {
-        liveData?.removeObserver(observer)
-        val liveData = messagesViewModel.observeConversations(circleId)
+        conversationLiveData?.removeObserver(observer)
+        val liveData = conversationListViewModel.observeConversations(circleId)
         liveData.observe(viewLifecycleOwner, observer)
         scrollTop = true
-        this.liveData = liveData
+        this.conversationLiveData = liveData
     }
 
     private fun animDownIcon(expand: Boolean) {
@@ -467,7 +471,7 @@ class ConversationListFragment : LinkFragment() {
                     ) {
                         binding.shadowFl.animate().translationY(0f).duration = 200
                     }
-                    messagesViewModel.deleteConversation(conversationId)
+                    conversationListViewModel.deleteConversation(conversationId)
                     bottomSheet.dismiss()
                 }
                 .show()
@@ -475,13 +479,13 @@ class ConversationListFragment : LinkFragment() {
         if (hasPin) {
             viewBinding.pinTv.setText(R.string.Unpin)
             viewBinding.pinTv.setOnClickListener {
-                messagesViewModel.updateConversationPinTimeById(conversationId, circleId, null)
+                conversationListViewModel.updateConversationPinTimeById(conversationId, circleId, null)
                 bottomSheet.dismiss()
             }
         } else {
             viewBinding.pinTv.setText(R.string.pin_title)
             viewBinding.pinTv.setOnClickListener {
-                messagesViewModel.updateConversationPinTimeById(
+                conversationListViewModel.updateConversationPinTimeById(
                     conversationId,
                     circleId,
                     nowInUtc()
@@ -497,7 +501,7 @@ class ConversationListFragment : LinkFragment() {
         super.onResume()
 
         lifecycleScope.launch {
-            val totalUsd = messagesViewModel.findTotalUSDBalance()
+            val totalUsd = conversationListViewModel.findTotalUSDBalance()
 
             val shown = bulletinBoard
                 .addBulletin(NewWalletBulletin(bulletinView, requireActivity() as MainActivity, ::onClose))
@@ -560,7 +564,7 @@ class ConversationListFragment : LinkFragment() {
                             }
                         }
                         else -> {
-                            messagesViewModel.findAppById(id)?.notNullWithElse(
+                            conversationListViewModel.findAppById(id)?.notNullWithElse(
                                 { app ->
                                     view.isVisible = true
                                     view.setImageResource(app.getCategoryIcon())
@@ -649,6 +653,7 @@ class ConversationListFragment : LinkFragment() {
                 binding.nameTv.text = it
             }
             binding.groupNameTv.visibility = GONE
+            binding.msgExpire.isVisible = conversationItem.isExpire()
             binding.mentionFlag.isVisible =
                 conversationItem.mentionCount != null && conversationItem.mentionCount > 0
             when {
@@ -669,7 +674,7 @@ class ConversationListFragment : LinkFragment() {
                     conversationItem.content?.let {
                         conversationItem.content.let {
                             setConversationName(conversationItem)
-                            binding.msgTv.setText(R.string.conversation_not_support)
+                            binding.msgTv.setText(R.string.message_not_support)
                         }
                     }
                     null
@@ -842,7 +847,7 @@ class ConversationListFragment : LinkFragment() {
                                         conversationItem.senderFullName
                                     },
                                     if (id == conversationItem.participantUserId) {
-                                        getText(R.string.You)
+                                        getText(R.string.you)
                                     } else {
                                         conversationItem.participantFullName
                                     }
@@ -858,7 +863,7 @@ class ConversationListFragment : LinkFragment() {
                                         conversationItem.senderFullName
                                     },
                                     if (id == conversationItem.participantUserId) {
-                                        getText(R.string.You)
+                                        getText(R.string.you)
                                     } else {
                                         conversationItem.participantFullName
                                     }
@@ -888,6 +893,34 @@ class ConversationListFragment : LinkFragment() {
                         }
                         SystemConversationAction.ROLE.name -> {
                             binding.msgTv.text = getText(R.string.group_role)
+                        }
+                        SystemConversationAction.EXPIRE.name -> {
+                            val timeInterval = conversationItem.content?.toLongOrNull()
+                            val name = if (id == conversationItem.senderId) {
+                                getText(R.string.You)
+                            } else {
+                                conversationItem.senderFullName
+                            }
+                            binding.msgTv.text =
+                                when {
+                                    timeInterval == null -> {
+                                        String.format(
+                                            getText(R.string.changed_disappearing_message_settings), name
+                                        )
+                                    }
+                                    timeInterval <= 0 -> {
+                                        String.format(
+                                            getText(R.string.disable_disappearing_message), name
+                                        )
+                                    }
+                                    else -> {
+                                        String.format(
+                                            getText(R.string.set_disappearing_message_time_to),
+                                            name,
+                                            toTimeInterval(timeInterval)
+                                        )
+                                    }
+                                }
                         }
                         else -> {
                             binding.msgTv.text = ""
@@ -1055,13 +1088,13 @@ class ConversationListFragment : LinkFragment() {
                     lifecycleScope.launch {
                         handleMixinResponse(
                             invokeNetwork = {
-                                messagesViewModel.mute(
+                                conversationListViewModel.mute(
                                     duration.toLong(),
                                     conversationId = conversationItem.conversationId
                                 )
                             },
                             successBlock = { response ->
-                                messagesViewModel.updateGroupMuteUntil(
+                                conversationListViewModel.updateGroupMuteUntil(
                                     conversationItem.conversationId,
                                     response.data!!.muteUntil
                                 )
@@ -1075,14 +1108,14 @@ class ConversationListFragment : LinkFragment() {
                         lifecycleScope.launch {
                             handleMixinResponse(
                                 invokeNetwork = {
-                                    messagesViewModel.mute(
+                                    conversationListViewModel.mute(
                                         duration.toLong(),
                                         senderId = it.userId,
                                         recipientId = conversationItem.ownerId
                                     )
                                 },
                                 successBlock = { response ->
-                                    messagesViewModel.updateMuteUntil(
+                                    conversationListViewModel.updateMuteUntil(
                                         conversationItem.ownerId,
                                         response.data!!.muteUntil
                                     )
@@ -1112,10 +1145,10 @@ class ConversationListFragment : LinkFragment() {
             lifecycleScope.launch {
                 handleMixinResponse(
                     invokeNetwork = {
-                        messagesViewModel.mute(0, conversationId = conversationItem.conversationId)
+                        conversationListViewModel.mute(0, conversationId = conversationItem.conversationId)
                     },
                     successBlock = { response ->
-                        messagesViewModel.updateGroupMuteUntil(
+                        conversationListViewModel.updateGroupMuteUntil(
                             conversationItem.conversationId,
                             response.data!!.muteUntil
                         )
@@ -1128,14 +1161,14 @@ class ConversationListFragment : LinkFragment() {
                 lifecycleScope.launch {
                     handleMixinResponse(
                         invokeNetwork = {
-                            messagesViewModel.mute(
+                            conversationListViewModel.mute(
                                 0,
                                 senderId = it.userId,
                                 recipientId = conversationItem.ownerId
                             )
                         },
                         successBlock = { response ->
-                            messagesViewModel.updateMuteUntil(
+                            conversationListViewModel.updateMuteUntil(
                                 conversationItem.ownerId,
                                 response.data!!.muteUntil
                             )

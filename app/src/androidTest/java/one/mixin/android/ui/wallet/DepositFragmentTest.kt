@@ -1,6 +1,7 @@
 package one.mixin.android.ui.wallet
 
 import androidx.navigation.NavController
+import androidx.navigation.fragment.NavHostFragment
 import androidx.recyclerview.widget.RecyclerView
 import androidx.test.core.app.ActivityScenario
 import androidx.test.espresso.Espresso.onView
@@ -61,7 +62,7 @@ abstract class DepositFragmentTest {
     protected fun go2Deposit(isAccount: Boolean, action: (NavController?, ActivityScenario<WalletActivity>) -> Unit) {
         var navController: NavController? = null
         walletRule.activityScenario = ActivityScenario.launch(WalletActivity::class.java).onActivity {
-            navController = it.navController
+            navController = (it.supportFragmentManager.findFragmentById(R.id.container) as NavHostFragment).navController
         }
         onView(withId(R.id.coins_rv))
             .perform(actionOnItemAtPosition<RecyclerView.ViewHolder>(1, click()))

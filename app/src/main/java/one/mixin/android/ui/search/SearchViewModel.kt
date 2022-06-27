@@ -23,11 +23,11 @@ import one.mixin.android.api.response.ConversationResponse
 import one.mixin.android.extension.escapeSql
 import one.mixin.android.extension.pmap
 import one.mixin.android.job.MixinJobManager
-import one.mixin.android.job.TranscriptDeleteJob
 import one.mixin.android.repository.AccountRepository
 import one.mixin.android.repository.AssetRepository
 import one.mixin.android.repository.ConversationRepository
 import one.mixin.android.repository.UserRepository
+import one.mixin.android.ui.common.message.CleanMessageHelper
 import one.mixin.android.util.ControlledRunner
 import one.mixin.android.vo.AssetItem
 import one.mixin.android.vo.ChatMinimal
@@ -48,6 +48,7 @@ internal constructor(
     val assetRepository: AssetRepository,
     val accountRepository: AccountRepository,
     val jobManager: MixinJobManager,
+    val cleanMessageHelper: CleanMessageHelper
 ) : ViewModel() {
 
     val messageControlledRunner = ControlledRunner<List<SearchMessageItem>?>()
@@ -123,12 +124,10 @@ internal constructor(
             callback.invoke()
         }
 
-    fun deleteConversation(conversationId: String, callback: () -> Unit) = viewModelScope.launch(Dispatchers.IO) {
-        val ids = conversationRepository.findTranscriptIdByConversationId(conversationId)
-        if (ids.isNotEmpty()) {
-            jobManager.addJobInBackground(TranscriptDeleteJob(ids))
+    fun deleteConversation(conversationId: String, callback: () -> Unit) = viewModelScope.launch {
+        withContext(Dispatchers.IO) {
+            cleanMessageHelper.deleteMessageByConversationId(conversationId, true)
         }
-        conversationRepository.deleteConversationById(conversationId)
         callback.invoke()
     }
 

@@ -50,6 +50,7 @@ import one.mixin.android.ui.web.WebActivity
 import one.mixin.android.ui.web.refresh
 import one.mixin.android.ui.web.releaseAll
 import one.mixin.android.util.MemoryCallback
+import one.mixin.android.util.SINGLE_DRAFT_THREAD
 import one.mixin.android.util.debug.FileLogTree
 import one.mixin.android.util.initNativeLibs
 import one.mixin.android.util.language.Lingver
@@ -187,8 +188,8 @@ open class MixinApplication :
         }
     }
 
-    fun closeAndClear() {
-        if (onlining.compareAndSet(true, false)) {
+    fun closeAndClear(force: Boolean = false) {
+        if (force || onlining.compareAndSet(true, false)) {
             val sessionId = Session.getSessionId()
             BlazeMessageService.stopService(this)
             val callState = getCallState()
@@ -240,26 +241,16 @@ open class MixinApplication :
         if (activity !is AppAuthActivity) {
             activityReferences += 1
         } else {
+            // Workaround when other Activities in this task were finished
+            // async and the AppAuthActivity became the task's root.
+            if (activity.isTaskRoot) {
+                activity.finish()
+                return
+            }
             appAuthShown = true
         }
-        if (activityReferences == 1 && !isActivityChangingConfigurations) {
-            val appAuth = defaultSharedPreferences.getInt(Constants.Account.PREF_APP_AUTH, -1)
-            if (appAuth != -1) {
-                if (appAuth == 0) {
-                    AppAuthActivity.show(activity)
-                } else {
-                    val enterBackground = defaultSharedPreferences.getLong(Constants.Account.PREF_APP_ENTER_BACKGROUND, 0)
-                    val now = System.currentTimeMillis()
-                    val offset = if (appAuth == 1) {
-                        Constants.INTERVAL_1_MIN
-                    } else {
-                        Constants.INTERVAL_30_MINS
-                    }
-                    if (now - enterBackground > offset) {
-                        AppAuthActivity.show(activity)
-                    }
-                }
-            }
+        if (activityReferences == 1 && activity !is AppAuthActivity && !isActivityChangingConfigurations) {
+            checkAndShowAppAuth(activity)
         }
     }
 
@@ -327,8 +318,32 @@ open class MixinApplication :
     }
 
     fun saveDraft(conversationId: String, draft: String) =
-        appScope.launch {
+        appScope.launch(SINGLE_DRAFT_THREAD) {
             MixinDatabase.getDatabase(this@MixinApplication).conversationDao()
                 .saveDraft(conversationId, draft)
         }
+
+    fun checkAndShowAppAuth(activity: Activity): Boolean {
+        val appAuth = defaultSharedPreferences.getInt(Constants.Account.PREF_APP_AUTH, -1)
+        if (appAuth != -1) {
+            if (appAuth == 0) {
+                AppAuthActivity.show(activity)
+                return true
+            } else {
+                val enterBackground =
+                    defaultSharedPreferences.getLong(Constants.Account.PREF_APP_ENTER_BACKGROUND, 0)
+                val now = System.currentTimeMillis()
+                val offset = if (appAuth == 1) {
+                    Constants.INTERVAL_1_MIN
+                } else {
+                    Constants.INTERVAL_30_MINS
+                }
+                if (now - enterBackground > offset) {
+                    AppAuthActivity.show(activity)
+                    return true
+                }
+            }
+        }
+        return false
+    }
 }

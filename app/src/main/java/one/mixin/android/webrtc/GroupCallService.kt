@@ -35,6 +35,7 @@ import one.mixin.android.ui.call.CallActivity
 import one.mixin.android.util.ErrorHandler.Companion.CONVERSATION_CHECKSUM_INVALID_ERROR
 import one.mixin.android.util.ErrorHandler.Companion.FORBIDDEN
 import one.mixin.android.vo.CallType
+import one.mixin.android.vo.ExpiredMessage
 import one.mixin.android.vo.KrakenData
 import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.MessageStatus
@@ -1011,6 +1012,12 @@ class GroupCallService : CallService() {
             MessageStatus.READ.name,
             mediaDuration = duration
         )
+        database.conversationDao().findConversationById(cid)?.let {
+            val expiredIn = it.expireIn ?: return@let
+            if (it.expireIn > 0) {
+                database.expiredMessageDao().insert(ExpiredMessage(message.id, expiredIn, null))
+            }
+        }
         database.insertAndNotifyConversation(message)
     }
 

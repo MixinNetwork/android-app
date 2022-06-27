@@ -30,6 +30,9 @@ interface MessageMentionDao : BaseDao<MessageMention> {
     @Query("DELETE FROM message_mentions WHERE message_id = :id")
     fun deleteMessage(id: String)
 
+    @Query("DELETE FROM message_mentions WHERE message_id IN (:ids)")
+    fun deleteMessage(ids: List<String>)
+
     @Query("DELETE FROM message_mentions WHERE message_id in (SELECT message_id FROM message_mentions WHERE conversation_id=:conversationId LIMIT :limit)")
     suspend fun deleteMessageByConversationId(conversationId: String, limit: Int)
 

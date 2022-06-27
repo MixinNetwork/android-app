@@ -140,4 +140,12 @@ internal object BaseDbModule {
     @Singleton
     @Provides
     fun providesPropertyDao(db: MixinDatabase) = db.propertyDao()
+
+    @Singleton
+    @Provides
+    fun providesRemoteMessageStatusDao(db: MixinDatabase) = db.remoteMessageStatusDao()
+
+    @Singleton
+    @Provides
+    fun providesExpiredMessageDao(db: MixinDatabase) = db.expiredMessageDao()
 }

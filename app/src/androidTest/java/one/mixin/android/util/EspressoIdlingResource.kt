@@ -2,6 +2,7 @@ package one.mixin.android.util
 
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import one.mixin.android.MixinApplication
 
 object EspressoIdlingResource {
 

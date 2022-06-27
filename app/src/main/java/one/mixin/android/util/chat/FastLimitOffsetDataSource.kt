@@ -6,6 +6,7 @@ import android.annotation.SuppressLint
 import android.database.Cursor
 import androidx.annotation.RestrictTo
 import androidx.paging.PositionalDataSource
+import androidx.room.InvalidationTracker
 import androidx.room.RoomDatabase
 import androidx.room.RoomSQLiteQuery
 import one.mixin.android.util.reportException
@@ -13,13 +14,24 @@ import timber.log.Timber
 
 @SuppressLint("RestrictedApi")
 @RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
-abstract class FastLimitOffsetDataSource<T> protected constructor(
+abstract class FastLimitOffsetDataSource<T, S>(
     private val db: RoomDatabase,
     private val countQuery: RoomSQLiteQuery,
     private val offsetStatement: RoomSQLiteQuery,
     private val fastCountCallback: () -> Int?,
-    private val querySqlGenerator: (String) -> RoomSQLiteQuery
+    private val querySqlGenerator: (String) -> RoomSQLiteQuery,
+    private vararg val tables: String
 ) : PositionalDataSource<T>() {
+
+    init {
+        if (tables.isNotEmpty()) {
+            db.invalidationTracker.addWeakObserver(object : InvalidationTracker.Observer(tables) {
+                override fun onInvalidated(tables: Set<String>) {
+                    invalidate()
+                }
+            })
+        }
+    }
 
     /**
      * Count number of rows query can return
@@ -72,7 +84,7 @@ abstract class FastLimitOffsetDataSource<T> protected constructor(
             } catch (iae: IllegalArgumentException) {
                 // workaround with paging incorrect tiling
                 val message = (
-                    "MixinLimitOffsetDataSource " +
+                    "FastLimitOffsetDataSource " +
                         "firstLoadPosition: " + firstLoadPosition +
                         ", list size: " + list.size +
                         ", count: " + totalCount
@@ -93,14 +105,15 @@ abstract class FastLimitOffsetDataSource<T> protected constructor(
 
     private fun itemIds(startPosition: Int, loadCount: Int): String {
         val offsetQuery = RoomSQLiteQuery.copyFrom(offsetStatement)
-        offsetQuery.bindLong(2, loadCount.toLong())
-        offsetQuery.bindLong(3, startPosition.toLong())
+        val argCount = offsetStatement.argCount
+        offsetQuery.bindLong(argCount - 1, loadCount.toLong())
+        offsetQuery.bindLong(argCount, startPosition.toLong())
         val cursor = db.query(offsetQuery)
         val ids = mutableListOf<String>()
         try {
             while (cursor.moveToNext()) {
-                val rowid = cursor.getLong(0)
-                ids.add("'$rowid'")
+                val id = getUniqueId(cursor)
+                ids.add("'$id'")
             }
             return ids.joinToString()
         } finally {
@@ -108,6 +121,8 @@ abstract class FastLimitOffsetDataSource<T> protected constructor(
             offsetQuery.release()
         }
     }
+
+    abstract fun getUniqueId(cursor: Cursor): S
 
     /**
      * Return the rows from startPos to startPos + loadCount

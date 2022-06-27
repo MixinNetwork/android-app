@@ -30,6 +30,7 @@ import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.showKeyboard
 import one.mixin.android.extension.textColor
+import one.mixin.android.extension.toast
 import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.biometric.BiometricBottomSheetDialogFragment
@@ -64,7 +65,7 @@ class AddressAddFragment() : BaseFragment(R.layout.fragment_address_add) {
         resultRegistry = testRegistry
     }
 
-    private lateinit var getScanResult: ActivityResultLauncher<Pair<String, Boolean>>
+    lateinit var getScanResult: ActivityResultLauncher<Pair<String, Boolean>>
     private lateinit var getScanMemoResult: ActivityResultLauncher<Pair<String, Boolean>>
     private val binding by viewBinding(FragmentAddressAddBinding::bind)
     override fun onAttach(context: Context) {
@@ -104,6 +105,13 @@ class AddressAddFragment() : BaseFragment(R.layout.fragment_address_add) {
         binding.avatar.bg.loadImage(asset.iconUrl, R.drawable.ic_avatar_place_holder)
         binding.avatar.badge.loadImage(asset.chainIconUrl, R.drawable.ic_avatar_place_holder)
         binding.saveTv.setOnClickListener {
+            if (memoEnabled) {
+                val memo = binding.tagEt.text.toString()
+                if (memo.toByteArray().size > 200) {
+                    toast(R.string.error_memo_too_long)
+                    return@setOnClickListener
+                }
+            }
             var destination = binding.addrEt.text.toString()
             if (asset.chainId == BITCOIN_CHAIN_ID) {
                 val dest = BitcoinPaymentURI.parse(destination)

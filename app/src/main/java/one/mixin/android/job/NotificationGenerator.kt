@@ -35,6 +35,7 @@ import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.notificationManager
 import one.mixin.android.extension.supportsNougat
 import one.mixin.android.extension.supportsR
+import one.mixin.android.session.Session
 import one.mixin.android.ui.conversation.BubbleActivity
 import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.home.MainActivity
@@ -64,6 +65,8 @@ import one.mixin.android.vo.isSticker
 import one.mixin.android.vo.isText
 import one.mixin.android.vo.isTranscript
 import one.mixin.android.vo.isVideo
+import one.mixin.android.websocket.SystemConversationAction
+import one.mixin.android.widget.picker.toTimeInterval
 
 const val KEY_REPLY = "key_reply"
 const val CONVERSATION_ID = "conversation_id"
@@ -134,13 +137,13 @@ object NotificationGenerator : Injector() {
             var app: App? = null
             var isBot = user.isBot()
             if (user.isBot()) {
-                app = appDao.findAppById(requireNotNull(user.appId))
+                app = appDao.findAppById(requireNotNull(user.appId) { "Required userId was null." })
             } else if (message.isRepresentativeMessage(conversation)) {
                 val representativeUser = syncUser(conversation.ownerId)
                 if (representativeUser == null) {
                     isBot = false
                 } else {
-                    app = appDao.findAppById(requireNotNull(representativeUser.appId))
+                    app = appDao.findAppById(requireNotNull(representativeUser.appId) { "Required appId was null." })
                     isBot = representativeUser.isBot()
                 }
             }
@@ -344,7 +347,98 @@ object NotificationGenerator : Injector() {
                 }
             }
             message.type == MessageCategory.SYSTEM_CONVERSATION.name -> {
-                notificationBuilder.setContentTitle(context.getString(R.string.app_name))
+                val self = Session.getAccountId() ?: return@launch
+                val participantId = message.participantId ?: ""
+                val participantFullName = if (participantId.isEmpty()) {
+                    ""
+                } else {
+                    syncUser(participantId)?.fullName ?: ""
+                }
+                val content = when (message.action) {
+                    SystemConversationAction.CREATE.name -> {
+                        String.format(
+                            context.getString(R.string.created_this_group),
+                            user.fullName
+                        )
+                    }
+                    SystemConversationAction.ADD.name -> {
+                        String.format(
+                            context.getString(R.string.chat_group_add),
+
+                            user.fullName,
+                            if (self == participantId) {
+                                context.getString(R.string.you)
+                            } else {
+                                participantFullName
+                            }
+                        )
+                    }
+                    SystemConversationAction.REMOVE.name -> {
+                        String.format(
+                            context.getString(
+                                R.string.chat_group_remove
+                            ),
+                            user.fullName,
+                            if (self == participantId) {
+                                context.getString(R.string.you)
+                            } else {
+                                participantFullName
+                            }
+                        )
+                    }
+                    SystemConversationAction.JOIN.name -> {
+                        String.format(
+                            context.getString(
+                                R.string.chat_group_join
+                            ),
+                            if (self == participantId) {
+                                context.getString(R.string.You)
+                            } else {
+                                participantFullName
+                            }
+                        )
+                    }
+                    SystemConversationAction.EXIT.name -> {
+                        String.format(
+                            context.getString(
+                                R.string.chat_group_exit
+                            ),
+                            if (self == participantId) {
+                                context.getString(R.string.You)
+                            } else {
+                                participantFullName
+                            }
+                        )
+                    }
+                    SystemConversationAction.ROLE.name -> {
+                        context.getString(R.string.group_role)
+                    }
+                    SystemConversationAction.EXPIRE.name -> {
+                        val timeInterval = message.content?.toLongOrNull() ?: return@launch
+                        when {
+                            timeInterval <= 0 -> {
+                                String.format(
+                                    context.getString(R.string.disable_disappearing_message),
+                                    participantFullName
+                                )
+                            }
+                            else -> {
+                                String.format(
+                                    context.getString(R.string.set_disappearing_message_time_to),
+                                    participantFullName,
+                                    toTimeInterval(timeInterval)
+                                )
+                            }
+                        }
+                    }
+                    else -> {
+                        // No support
+                        null
+                    }
+                } ?: return@launch
+                notificationBuilder.setContentTitle(user.fullName)
+                notificationBuilder.setTicker(content)
+                contentText = content
             }
             message.type == MessageCategory.WEBRTC_AUDIO_OFFER.name -> {
                 notificationBuilder.setContentTitle(user.fullName)
@@ -377,7 +471,7 @@ object NotificationGenerator : Injector() {
                 .setImportant(true)
                 .build()
 
-            val messagingStyle = NotificationCompat.MessagingStyle(requireNotNull(person)).also { style ->
+            val messagingStyle = NotificationCompat.MessagingStyle(requireNotNull(person) { "Required person was null." }).also { style ->
                 style.addMessage(NotificationCompat.MessagingStyle.Message(contentText, System.currentTimeMillis(), person))
                 style.isGroupConversation = false
             }

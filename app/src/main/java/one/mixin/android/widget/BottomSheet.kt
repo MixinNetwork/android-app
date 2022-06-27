@@ -277,7 +277,7 @@ class BottomSheet(
         animatorSet.interpolator = DecelerateInterpolator()
         animatorSet.addListener(
             object : AnimatorListenerAdapter() {
-                override fun onAnimationEnd(animation: Animator?) {
+                override fun onAnimationEnd(animation: Animator) {
                     if (curSheetAnimation != null && curSheetAnimation == animation) {
                         curSheetAnimation = null
                         bottomSheetListener?.onOpenAnimationEnd()
@@ -286,7 +286,7 @@ class BottomSheet(
                     }
                 }
 
-                override fun onAnimationCancel(animation: Animator?) {
+                override fun onAnimationCancel(animation: Animator) {
                     if (curSheetAnimation != null && curSheetAnimation == animation) {
                         curSheetAnimation = null
                     }

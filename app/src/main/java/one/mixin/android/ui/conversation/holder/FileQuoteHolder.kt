@@ -11,7 +11,9 @@ import com.google.android.exoplayer2.util.MimeTypes
 import one.mixin.android.Constants.Colors.HIGHLIGHTED
 import one.mixin.android.Constants.Colors.SELECT_COLOR
 import one.mixin.android.R
+import one.mixin.android.RxBus
 import one.mixin.android.databinding.ItemChatFileQuoteBinding
+import one.mixin.android.event.ExpiredEvent
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.fileSize
 import one.mixin.android.extension.notNullWithElse
@@ -19,6 +21,7 @@ import one.mixin.android.extension.textResource
 import one.mixin.android.job.MixinJobManager.Companion.getAttachmentProcess
 import one.mixin.android.ui.conversation.adapter.ConversationAdapter
 import one.mixin.android.ui.conversation.holder.base.MediaHolder
+import one.mixin.android.ui.conversation.holder.base.Terminable
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.MusicPlayer
 import one.mixin.android.vo.MediaStatus
@@ -26,7 +29,8 @@ import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.QuoteMessageItem
 import one.mixin.android.vo.isSecret
 
-class FileQuoteHolder constructor(val binding: ItemChatFileQuoteBinding) : MediaHolder(binding.root) {
+class FileQuoteHolder constructor(val binding: ItemChatFileQuoteBinding) : MediaHolder(binding.root), Terminable {
+
     override fun chatLayout(isMe: Boolean, isLast: Boolean, isBlink: Boolean) {
         super.chatLayout(isMe, isLast, isBlink)
         if (isMe) {
@@ -255,6 +259,7 @@ class FileQuoteHolder constructor(val binding: ItemChatFileQuoteBinding) : Media
                 onItemListener.onSelect(!isSelect, messageItem, absoluteAdapterPosition)
             }
         }
+        chatJumpLayout(binding.chatJump, isMe, messageItem.expireIn, R.id.chat_msg_layout)
     }
 
     private fun handleClick(
@@ -277,6 +282,12 @@ class FileQuoteHolder constructor(val binding: ItemChatFileQuoteBinding) : Media
         } else if (messageItem.mediaStatus == MediaStatus.EXPIRED.name) {
         } else {
             onItemListener.onFileClick(messageItem)
+        }
+    }
+
+    override fun onRead(messageItem: MessageItem) {
+        if (messageItem.expireIn != null) {
+            RxBus.publish(ExpiredEvent(messageItem.messageId, messageItem.expireIn))
         }
     }
 }

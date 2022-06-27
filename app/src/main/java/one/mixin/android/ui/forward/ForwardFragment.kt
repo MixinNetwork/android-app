@@ -2,7 +2,7 @@ package one.mixin.android.ui.forward
 
 import android.Manifest.permission.READ_EXTERNAL_STORAGE
 import android.Manifest.permission.WRITE_EXTERNAL_STORAGE
-import android.app.Activity
+import android.app.Activity.RESULT_OK
 import android.app.Dialog
 import android.content.Context
 import android.content.Intent
@@ -27,14 +27,17 @@ import com.tbruyelle.rxpermissions2.RxPermissions
 import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersDecoration
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
+import io.reactivex.android.schedulers.AndroidSchedulers
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
+import one.mixin.android.RxBus
 import one.mixin.android.crypto.Base64
 import one.mixin.android.databinding.FragmentForwardBinding
+import one.mixin.android.event.AppAuthEvent
 import one.mixin.android.extension.base64Encode
 import one.mixin.android.extension.copyFromInputStream
 import one.mixin.android.extension.getExtensionName
@@ -276,6 +279,19 @@ class ForwardFragment : BaseFragment(R.layout.fragment_forward) {
         binding.searchEt.addTextChangedListener(mWatcher)
 
         loadData()
+
+        RxBus.listen(AppAuthEvent::class.java)
+            .observeOn(AndroidSchedulers.mainThread())
+            .autoDispose(destroyScope)
+            .subscribe { e ->
+                if (action is ForwardAction.System && !needOpenEditor()) {
+                    action.conversationId?.let { cid ->
+                        lifecycleScope.launch {
+                            sendAndGo2Chat(cid)
+                        }
+                    }
+                }
+            }
     }
 
     private fun loadData() = lifecycleScope.launch {
@@ -323,7 +339,7 @@ class ForwardFragment : BaseFragment(R.layout.fragment_forward) {
                 val result = Intent().apply {
                     putParcelableArrayListExtra(ForwardActivity.ARGS_RESULT, ArrayList(selectItems))
                 }
-                requireActivity().setResult(Activity.RESULT_OK, result)
+                requireActivity().setResult(RESULT_OK, result)
             }
             requireActivity().finish()
         }
@@ -348,7 +364,7 @@ class ForwardFragment : BaseFragment(R.layout.fragment_forward) {
         val result = Intent().apply {
             putParcelableArrayListExtra(ForwardActivity.ARGS_RESULT, ArrayList(selectItems))
         }
-        requireActivity().setResult(Activity.RESULT_OK, result)
+        requireActivity().setResult(RESULT_OK, result)
         requireActivity().finish()
     }
 
@@ -637,6 +653,12 @@ class ForwardFragment : BaseFragment(R.layout.fragment_forward) {
             return@launch
         }
 
+        if (!MixinApplication.get().checkAndShowAppAuth(requireActivity())) {
+            sendAndGo2Chat(cid)
+        }
+    }
+
+    private suspend fun sendAndGo2Chat(cid: String) {
         val err = sendMessageInternal(SelectItem(cid, null))
         if (err.isNullOrEmpty()) {
             toast(R.string.Message_sent)
@@ -713,6 +735,10 @@ class ForwardFragment : BaseFragment(R.layout.fragment_forward) {
             shareImageData.url.toUri()
         }
         getEditorResult.launch(Pair(uri, getString(R.string.Share)))
+
+        if (action is ForwardAction.System && action.conversationId != null) {
+            MixinApplication.get().checkAndShowAppAuth(requireActivity())
+        }
     }
 
     private suspend fun sendImageByUri(uri: Uri) {
@@ -748,6 +774,8 @@ class ForwardFragment : BaseFragment(R.layout.fragment_forward) {
             lifecycleScope.launch {
                 sendImageByUri(uri)
             }
+        } else {
+            requireActivity().finish()
         }
     }
 

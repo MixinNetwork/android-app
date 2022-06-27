@@ -41,8 +41,8 @@ fun Scope.convertName(ctx: Context): String {
         Scope.SCOPES[3] -> R.string.Read_Contacts
         Scope.SCOPES[4] -> R.string.Read_Assets
         Scope.SCOPES[5] -> R.string.Read_Snapshots
-        Scope.SCOPES[6] -> R.string.Read_Apps
-        Scope.SCOPES[7] -> R.string.Manage_Apps
+        Scope.SCOPES[6] -> R.string.Read_Bots
+        Scope.SCOPES[7] -> R.string.Manage_Bots
         Scope.SCOPES[8] -> R.string.Read_Circles
         Scope.SCOPES[9] -> R.string.Write_Circles
         Scope.SCOPES[10] -> R.string.Read_Collectibles

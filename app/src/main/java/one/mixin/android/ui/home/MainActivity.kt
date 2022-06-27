@@ -128,6 +128,7 @@ import one.mixin.android.util.BiometricUtil
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.ErrorHandler.Companion.errorHandler
 import one.mixin.android.util.PropertyHelper
+import one.mixin.android.util.RomUtil
 import one.mixin.android.util.RootUtil
 import one.mixin.android.util.reportException
 import one.mixin.android.vo.Conversation
@@ -190,6 +191,16 @@ class MainActivity : BlazeBaseActivity() {
         super.onCreate(savedInstanceState)
         navigationController = NavigationController(this)
 
+        val deviceId = defaultSharedPreferences.getString(DEVICE_ID, null)
+        if (deviceId == null) {
+            defaultSharedPreferences.putString(DEVICE_ID, this.getDeviceId())
+        } else if (deviceId != this.getDeviceId()) {
+            defaultSharedPreferences.remove(DEVICE_ID)
+            MixinApplication.get().closeAndClear(true)
+            finish()
+            return
+        }
+
         if (!Session.checkToken()) run {
             startActivity(Intent(this, LandingActivity::class.java))
             finish()
@@ -215,16 +226,6 @@ class MainActivity : BlazeBaseActivity() {
         }
 
         MixinApplication.get().onlining.set(true)
-
-        val deviceId = defaultSharedPreferences.getString(DEVICE_ID, null)
-        if (deviceId == null) {
-            defaultSharedPreferences.putString(DEVICE_ID, this.getDeviceId())
-        } else if (deviceId != this.getDeviceId()) {
-            defaultSharedPreferences.remove(DEVICE_ID)
-            MixinApplication.get().closeAndClear()
-            finish()
-            return
-        }
 
         if (checkNeedGo2MigrationPage()) {
             InitializeActivity.showDBUpgrade(this)
@@ -364,7 +365,7 @@ class MainActivity : BlazeBaseActivity() {
         val batteryOptimize = defaultSharedPreferences.getLong(PREF_BATTERY_OPTIMIZE, 0)
         val cur = System.currentTimeMillis()
         if (cur - batteryOptimize > INTERVAL_24_HOURS) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P && !RomUtil.isEmui) {
                 getSystemService<ActivityManager>()?.let { am ->
                     if (am.isBackgroundRestricted) {
                         BatteryOptimizationDialogActivity.show(this)
@@ -615,6 +616,7 @@ class MainActivity : BlazeBaseActivity() {
                                     data.announcement,
                                     data.muteUntil,
                                     data.createdAt,
+                                    data.expireIn,
                                     ConversationStatus.SUCCESS.ordinal
                                 )
                             }

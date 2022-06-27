@@ -14,7 +14,7 @@ object Constants {
         const val Mixin_URL = "https://api.mixin.one/"
         const val Mixin_WS_URL = "wss://blaze.mixin.one"
 
-        const val GIPHY_URL = "http://api.giphy.com/v1/"
+        const val GIPHY_URL = "https://api.giphy.com/v1/"
         const val FOURSQUARE_URL = "https://api.foursquare.com/v2/"
     }
 
@@ -88,7 +88,7 @@ object Constants {
     object DataBase {
         const val DB_NAME = "mixin.db"
         const val MINI_VERSION = 15
-        const val CURRENT_VERSION = 42
+        const val CURRENT_VERSION = 44
     }
 
     object Storage {
@@ -194,7 +194,10 @@ object Constants {
     val KEYS = arrayOf("1", "2", "3", "4", "5", "6", "7", "8", "9", "", "0", "<<")
 
     const val BATCH_SIZE = 700
+    const val MARK_REMOTE_LIMIT = 500
+    const val ACK_LIMIT = 100
     const val MARK_LIMIT = 10000
+    const val LOGS_LIMIT = 10000
 
     const val PAGE_SIZE = 16
     const val FIXED_LOAD_SIZE = 48
@@ -214,12 +217,20 @@ object Constants {
 
     const val BIG_IMAGE_SIZE = 5 * 1024 * 1024
 
-    const val DB_DELETE_THRESHOLD = 5000
+    const val DB_DELETE_MEDIA_LIMIT = 100
     const val DB_DELETE_LIMIT = 500
+    const val DB_EXPIRED_LIMIT = 20
 
     val DNS: Dns = SequentialDns(CustomDns("8.8.8.8"), CustomDns("1.1.1.1"), CustomDns("2001:4860:4860::8888"), Dns.SYSTEM)
 
     const val TEAM_MIXIN_USER_ID = "773e5e77-4107-45c2-b648-8fc722ed77f5"
+    const val MIXIN_BOTS_USER_ID = "68ef7899-3e81-4b3d-8124-83ae652def89"
+    const val MIXIN_DATA_USER_ID = "96c1460b-c7c4-480a-a342-acaa73995a37"
+
+    const val TEAM_MIXIN_USER_NAME = "Team Mixin"
+    const val MIXIN_BOTS_USER_NAME = "Mixin Bots"
+    const val MIXIN_DATA_USER_NAME = "Mixin Data"
+
     // Only for third-party messenger user
     const val TEAM_BOT_ID = ""
     const val TEAM_BOT_NAME = ""

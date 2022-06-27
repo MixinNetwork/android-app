@@ -6,11 +6,12 @@ import one.mixin.android.Constants.Colors.SELECT_COLOR
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemChatSystemBinding
-import one.mixin.android.extension.highlightLinkText
+import one.mixin.android.extension.highlightStarTag
 import one.mixin.android.ui.conversation.adapter.ConversationAdapter
 import one.mixin.android.ui.conversation.holder.base.BaseViewHolder
 import one.mixin.android.vo.MessageItem
 import one.mixin.android.websocket.SystemConversationAction
+import one.mixin.android.widget.picker.toTimeInterval
 
 class SystemHolder constructor(val binding: ItemChatSystemBinding) : BaseViewHolder(binding.root) {
 
@@ -65,7 +66,7 @@ class SystemHolder constructor(val binding: ItemChatSystemBinding) : BaseViewHol
                             messageItem.userFullName
                         },
                         if (id == messageItem.participantUserId) {
-                            getText(R.string.You)
+                            getText(R.string.you)
                         } else {
                             messageItem.participantFullName
                         }
@@ -81,7 +82,7 @@ class SystemHolder constructor(val binding: ItemChatSystemBinding) : BaseViewHol
                             messageItem.userFullName
                         },
                         if (id == messageItem.participantUserId) {
-                            getText(R.string.You)
+                            getText(R.string.you)
                         } else {
                             messageItem.participantFullName
                         }
@@ -112,13 +113,40 @@ class SystemHolder constructor(val binding: ItemChatSystemBinding) : BaseViewHol
             SystemConversationAction.ROLE.name -> {
                 binding.chatInfo.text = getText(R.string.group_role)
             }
+            SystemConversationAction.EXPIRE.name -> {
+                val timeInterval = messageItem.content?.toLongOrNull()
+                val name = if (id == messageItem.userId) {
+                    getText(R.string.You)
+                } else {
+                    messageItem.userFullName
+                }
+                binding.chatInfo.text =
+                    when {
+                        timeInterval == null -> { // Messages received in the old version
+                            String.format(
+                                getText(R.string.changed_disappearing_message_settings), name
+                            )
+                        }
+                        timeInterval <= 0 -> {
+                            String.format(
+                                getText(R.string.disable_disappearing_message), name
+                            )
+                        }
+                        else -> {
+                            String.format(
+                                getText(R.string.set_disappearing_message_time_to),
+                                name,
+                                toTimeInterval(timeInterval)
+                            )
+                        }
+                    }
+            }
             else -> {
                 val learn: String = MixinApplication.get().getString(R.string.Learn_More)
-                val info = MixinApplication.get().getString(R.string.chat_not_support, learn)
+                val info = MixinApplication.get().getString(R.string.chat_not_support, "**$learn**")
                 val learnUrl = MixinApplication.get().getString(R.string.chat_not_support_url)
-                binding.chatInfo.highlightLinkText(
+                binding.chatInfo.highlightStarTag(
                     info,
-                    arrayOf(learn),
                     arrayOf(learnUrl),
                     onItemListener = onItemListener
                 )

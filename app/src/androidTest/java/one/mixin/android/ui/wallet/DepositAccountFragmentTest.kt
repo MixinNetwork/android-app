@@ -52,7 +52,7 @@ class DepositAccountFragmentTest : DepositFragmentTest() {
             val asset = fragment!!.asset
 
             onView(withId(R.id.title_tv))
-                .check(matches(withText(ctx.getString(R.string.filters_deposit))))
+                .check(matches(withText(ctx.getString(R.string.Deposit))))
             onView(withId(R.id.sub_title_tv))
                 .check(matches(withText(asset.symbol)))
             val tips: String = fragment!!.getTipsByAsset(asset) + " " + ctx.resources.getQuantityString(R.plurals.deposit_confirmation, asset.confirmations, asset.confirmations)

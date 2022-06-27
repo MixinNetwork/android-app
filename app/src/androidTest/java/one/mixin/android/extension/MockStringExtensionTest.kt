@@ -2,12 +2,14 @@ package one.mixin.android.extension
 
 import android.net.Uri
 import androidx.core.net.toUri
+import androidx.test.ext.junit.runners.AndroidJUnit4
+import dagger.hilt.android.testing.HiltAndroidTest
+import org.junit.Assert.assertEquals
+import org.junit.Test
 import org.junit.runner.RunWith
-import org.robolectric.RobolectricTestRunner
-import kotlin.test.Test
-import kotlin.test.assertEquals
 
-@RunWith(RobolectricTestRunner::class)
+@RunWith(AndroidJUnit4::class)
+@HiltAndroidTest
 class MockStringExtensionTest {
 
     @Test

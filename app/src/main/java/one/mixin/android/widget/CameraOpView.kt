@@ -164,31 +164,31 @@ class CameraOpView : View, GestureDetector.OnGestureListener {
         return super.onTouchEvent(event)
     }
 
-    override fun onShowPress(e: MotionEvent?) {
+    override fun onShowPress(e: MotionEvent) {
     }
 
-    override fun onSingleTapUp(e: MotionEvent?): Boolean {
+    override fun onSingleTapUp(e: MotionEvent): Boolean {
         animateValue(expand, 1f)
         clean()
         callback?.onClick()
         return true
     }
 
-    override fun onDown(e: MotionEvent?): Boolean {
+    override fun onDown(e: MotionEvent): Boolean {
         animateValue(1f, expand)
         mode = Mode.EXPAND
         return true
     }
 
-    override fun onFling(e1: MotionEvent?, e2: MotionEvent?, velocityX: Float, velocityY: Float): Boolean {
+    override fun onFling(e1: MotionEvent, e2: MotionEvent, velocityX: Float, velocityY: Float): Boolean {
         return false
     }
 
-    override fun onScroll(e1: MotionEvent?, e2: MotionEvent?, distanceX: Float, distanceY: Float): Boolean {
+    override fun onScroll(e1: MotionEvent, e2: MotionEvent, distanceX: Float, distanceY: Float): Boolean {
         return false
     }
 
-    override fun onLongPress(e: MotionEvent?) {
+    override fun onLongPress(e: MotionEvent) {
         mode = Mode.PROGRESS
         callback?.readyForProgress()
     }

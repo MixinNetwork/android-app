@@ -122,7 +122,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
         }
     }
 
-    private fun getUserOrAppNotFoundTip(isApp: Boolean) = if (isApp) R.string.App_not_found else R.string.User_not_found
+    private fun getUserOrAppNotFoundTip(isApp: Boolean) = if (isApp) R.string.Bot_not_found else R.string.User_not_found
 
     @SuppressLint("RestrictedApi")
     override fun setupDialog(dialog: Dialog, style: Int) {
@@ -792,6 +792,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
             }
             linkLoading.visibility = GONE
             linkErrorInfo.visibility = VISIBLE
+            linkErrorInfo.setTextIsSelectable(true)
         }
     }
 

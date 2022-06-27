@@ -94,7 +94,7 @@ fun ImageView.loadImage(
     if (!isActivityNotDestroyed()) return
     var requestOptions = RequestOptions().dontTransform()
     if (base64Holder != null) {
-        requestOptions = requestOptions.fallback(base64Holder.toDrawable(width, height))
+        requestOptions = requestOptions.fallback(base64Holder.toDrawable(layoutParams.width, layoutParams.height))
     }
     if (overrideWidth != null && overrideHeight != null) {
         requestOptions = requestOptions.override(overrideWidth, overrideHeight)
@@ -125,7 +125,7 @@ fun ImageView.loadGif(
         requestOptions = requestOptions.placeholder(holder)
     }
     if (base64Holder != null) {
-        requestOptions = requestOptions.fallback(base64Holder.toDrawable(width, height))
+        requestOptions = requestOptions.fallback(base64Holder.toDrawable(layoutParams.width, layoutParams.height))
     }
     if (overrideWidth != null && overrideHeight != null) {
         requestOptions = requestOptions.override(overrideWidth, overrideHeight)
@@ -145,7 +145,7 @@ fun ImageView.loadGifMark(uri: String?, holder: String?, mark: Int, useSignature
         options = options.signature(StringSignature("$uri$mark"))
     }
     if (holder != null) {
-        options = options.placeholder(holder.toDrawable(width, height))
+        options = options.placeholder(holder.toDrawable(layoutParams.width, layoutParams.height))
     }
     Glide.with(this).load(uri).apply(options).into(this)
 }
@@ -156,7 +156,7 @@ fun ImageView.loadImageMark(uri: String?, holder: String?, mark: Int) {
         RequestOptions().dontAnimate()
             .signature(StringSignature("$uri$mark")).run {
                 return@run if (holder != null) {
-                    this.placeholder(holder.toDrawable(width, height))
+                    this.placeholder(holder.toDrawable(layoutParams.width, layoutParams.height))
                 } else this
             }
     ).into(this)
@@ -282,7 +282,7 @@ fun ImageView.loadVideoMark(
                 .signature(StringSignature("$uri$mark"))
                 .centerCrop().dontAnimate().run {
                     return@run if (holder != null) {
-                        this.placeholder(holder.toDrawable(width, height))
+                        this.placeholder(holder.toDrawable(layoutParams.width, layoutParams.height))
                     } else this
                 }
         ).listener(
@@ -348,6 +348,7 @@ fun RLottieImageView.loadSticker(uri: String?, type: String?, cacheKey: String) 
 }
 
 fun RLottieImageView.loadLottie(uri: String, cacheKey: String) {
+    if (!isActivityNotDestroyed()) return
     Glide.with(this)
         .`as`(RLottieDrawable::class.java)
         .load(uri).apply(

@@ -23,6 +23,7 @@ class TranscriptDeleteJob(private val messageIds: List<String>) : BaseJob(Params
         val cIds = messageDao.findConversationsByMessages(messageIds)
         messageIds.forEach { messageId ->
             mixinDatabase.deleteMessageById(messageId)
+            jobManager.addJobInBackground(FtsDeleteJob(messageId))
             transcriptMessageDao.getTranscript(messageId).forEach { transcriptMessage ->
                 if (transcriptMessage.isAttachment()) {
                     transcriptMessageDao.delete(transcriptMessage)

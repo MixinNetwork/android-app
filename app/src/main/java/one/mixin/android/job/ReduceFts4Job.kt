@@ -10,6 +10,7 @@ import timber.log.Timber
 class ReduceFts4Job :
     BaseJob(Params(PRIORITY_UI_HIGH).groupBy(GROUP_ID).persist()) {
     companion object {
+        private var serialVersionUID: Long = 1L
         private const val GROUP_ID = "ReduceFts4Job"
     }
 

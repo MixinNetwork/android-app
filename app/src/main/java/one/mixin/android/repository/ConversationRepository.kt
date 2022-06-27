@@ -11,13 +11,13 @@ import io.reactivex.Observable
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import one.mixin.android.Constants.DB_DELETE_LIMIT
-import one.mixin.android.Constants.DB_DELETE_THRESHOLD
 import one.mixin.android.MixinApplication
 import one.mixin.android.RxBus
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.ConversationCircleRequest
 import one.mixin.android.api.request.ConversationRequest
+import one.mixin.android.api.request.DisappearRequest
 import one.mixin.android.api.request.ParticipantRequest
 import one.mixin.android.api.response.ConversationResponse
 import one.mixin.android.api.response.UserSession
@@ -29,29 +29,24 @@ import one.mixin.android.db.ConversationDao
 import one.mixin.android.db.JobDao
 import one.mixin.android.db.MessageDao
 import one.mixin.android.db.MessageMentionDao
-import one.mixin.android.db.MessageProvider
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.ParticipantDao
 import one.mixin.android.db.ParticipantSessionDao
 import one.mixin.android.db.PinMessageDao
+import one.mixin.android.db.RemoteMessageStatusDao
 import one.mixin.android.db.TranscriptMessageDao
-import one.mixin.android.db.batchMarkReadAndTake
-import one.mixin.android.db.deleteMessageByConversationId
-import one.mixin.android.db.deleteMessageById
 import one.mixin.android.db.insertNoReplace
+import one.mixin.android.db.provider.DataProvider
+import one.mixin.android.db.runInTransaction
 import one.mixin.android.event.GroupEvent
 import one.mixin.android.extension.joinStar
 import one.mixin.android.extension.putBoolean
 import one.mixin.android.extension.replaceQuotationMark
 import one.mixin.android.extension.sharedPreferences
-import one.mixin.android.job.AttachmentDeleteJob
 import one.mixin.android.job.GenerateAvatarJob
-import one.mixin.android.job.MessageDeleteJob
-import one.mixin.android.job.MessageFtsDeleteJob
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshConversationJob
 import one.mixin.android.job.RefreshUserJob
-import one.mixin.android.job.TranscriptDeleteJob
 import one.mixin.android.session.Session
 import one.mixin.android.ui.media.pager.MediaPagerActivity
 import one.mixin.android.util.SINGLE_DB_THREAD
@@ -97,20 +92,21 @@ internal constructor(
     private val jobDao: JobDao,
     private val transcriptMessageDao: TranscriptMessageDao,
     private val pinMessageDao: PinMessageDao,
+    private val remoteMessageStatusDao: RemoteMessageStatusDao,
     private val conversationService: ConversationService,
     private val userService: UserService,
     private val jobManager: MixinJobManager
 ) {
 
     @SuppressLint("RestrictedApi")
-    fun getMessages(conversationId: String, count: Int?) = MessageProvider.getMessages(appDatabase, conversationId, count)
+    fun getMessages(conversationId: String, count: Int?) = DataProvider.getMessages(appDatabase, conversationId, count)
 
     suspend fun getChatMessages(conversationId: String, offset: Int, limit: Int): List<MessageItem> = messageDao.getChatMessages(conversationId, offset, limit)
 
-    fun conversations(circleId: String?): DataSource.Factory<Int, ConversationItem> = if (circleId == null) {
-        MessageProvider.getConversations(appDatabase)
+    fun observeConversations(circleId: String?): DataSource.Factory<Int, ConversationItem> = if (circleId == null) {
+        DataProvider.observeConversations(appDatabase)
     } else {
-        MessageProvider.observeConversationsByCircleId(circleId, appDatabase)
+        DataProvider.observeConversationsByCircleId(circleId, appDatabase)
     }
 
     suspend fun successConversationList(): List<ConversationMinimal> = conversationDao.successConversationList()
@@ -149,18 +145,16 @@ internal constructor(
         conversationDao.findConversationById(conversationId)
 
     suspend fun fuzzySearchMessage(query: String, limit: Int, cancellationSignal: CancellationSignal): List<SearchMessageItem> =
-        MessageProvider.fuzzySearchMessage(query.joinStar().replaceQuotationMark(), limit, appDatabase, cancellationSignal)
+        DataProvider.fuzzySearchMessage(query.joinStar().replaceQuotationMark(), limit, appDatabase, cancellationSignal)
 
     fun fuzzySearchMessageDetail(query: String, conversationId: String, cancellationSignal: CancellationSignal) =
-        MessageProvider.fuzzySearchMessageDetail(query.joinStar().replaceQuotationMark(), conversationId, appDatabase, cancellationSignal)
+        DataProvider.fuzzySearchMessageDetail(query.joinStar().replaceQuotationMark(), conversationId, appDatabase, cancellationSignal)
 
     suspend fun fuzzySearchChat(query: String, cancellationSignal: CancellationSignal): List<ChatMinimal> =
-        MessageProvider.fuzzySearchChat(query, appDatabase, cancellationSignal)
+        DataProvider.fuzzySearchChat(query, appDatabase, cancellationSignal)
 
     suspend fun indexUnread(conversationId: String) =
         conversationDao.indexUnread(conversationId)
-
-    suspend fun conversationZeroClear(conversationId: String) = conversationDao.conversationZeroClear(conversationId)
 
     suspend fun indexMediaMessages(
         conversationId: String,
@@ -244,6 +238,9 @@ internal constructor(
     suspend fun updateAnnouncement(conversationId: String, announcement: String) =
         conversationDao.updateConversationAnnouncement(conversationId, announcement)
 
+    suspend fun updateConversationExpireIn(conversationId: String, expireIn: Long?) =
+        conversationDao.updateConversationExpireIn(conversationId, expireIn)
+
     fun getLimitParticipants(conversationId: String, limit: Int) =
         participantDao.getLimitParticipants(conversationId, limit)
 
@@ -266,10 +263,6 @@ internal constructor(
 
     fun findUnreadMessagesSync(conversationId: String, accountId: String) =
         messageDao.findUnreadMessagesSync(conversationId, accountId)
-
-    suspend fun batchMarkReadAndTake(conversationId: String, userId: String, rowId: String) {
-        messageDao.batchMarkReadAndTake(conversationId, userId, rowId)
-    }
 
     fun findContactConversationByOwnerId(ownerId: String): Conversation? {
         return conversationDao.findContactConversationByOwnerId(ownerId)
@@ -309,7 +302,9 @@ internal constructor(
                 .setIconUrl(data.iconUrl)
                 .setAnnouncement(data.announcement)
                 .setMuteUntil(data.muteUntil)
-                .setCodeUrl(data.codeUrl).build()
+                .setCodeUrl(data.codeUrl)
+                .setExpireIn(data.expireIn)
+                .build()
             conversationDao.insert(c)
             if (!c.announcement.isNullOrBlank()) {
                 RxBus.publish(GroupEvent(data.conversationId))
@@ -329,6 +324,7 @@ internal constructor(
                 data.announcement,
                 data.muteUntil,
                 data.createdAt,
+                data.expireIn,
                 status
             )
             if (data.announcement.isNotBlank() && c.announcement != data.announcement) {
@@ -414,64 +410,11 @@ internal constructor(
         InvalidateFlow.emit(conversationId)
     }
 
-    suspend fun deleteMessageByConversationId(conversationId: String, deleteConversation: Boolean = false) {
-        messageDao.findAllMediaPathByConversationId(conversationId).let { list ->
-            if (list.isNotEmpty()) {
-                jobManager.addJobInBackground(AttachmentDeleteJob(* list.toTypedArray()))
-            }
-        }
-        val deleteMentionCount = messageMentionDao.countDeleteMessageByConversationId(conversationId)
-        if (deleteMentionCount > DB_DELETE_THRESHOLD) {
-            jobManager.addJobInBackground(MessageDeleteJob(conversationId, true))
-        } else {
-            val deleteTimes = deleteMentionCount / DB_DELETE_LIMIT + 1
-            repeat(deleteTimes) {
-                messageMentionDao.deleteMessageByConversationId(conversationId, DB_DELETE_LIMIT)
-            }
-        }
-        val deleteCount = messageDao.countDeleteMessageByConversationId(conversationId)
-        if (deleteCount > DB_DELETE_THRESHOLD) {
-            jobManager.addJobInBackground(MessageDeleteJob(conversationId, deleteConversation = deleteConversation))
-        } else {
-            val deleteTimes = deleteCount / DB_DELETE_LIMIT + 1
-            jobManager.addJobInBackground(
-                MessageFtsDeleteJob(
-                    messageDao.getMessageIdsByConversationId(
-                        conversationId
-                    )
-                )
-            )
-            repeat(deleteTimes) {
-                if (!deleteConversation) {
-                    appDatabase.deleteMessageByConversationId(conversationId, DB_DELETE_LIMIT)
-                }
-            }
-            if (deleteConversation) {
-                conversationDao.deleteConversationById(conversationId)
-            }
-            InvalidateFlow.emit(conversationId)
-        }
-    }
-
-    fun deleteMessage(id: String, conversationId: String, mediaUrl: String? = null, forceDelete: Boolean = true) {
-        if (!mediaUrl.isNullOrBlank() && forceDelete) {
-            jobManager.addJobInBackground(AttachmentDeleteJob(mediaUrl))
-        }
-        appDatabase.deleteMessageById(id)
-        InvalidateFlow.emit(conversationId)
-    }
-
-    fun deleteTranscriptByMessageId(messageId: String) {
-        jobManager.addJobInBackground(TranscriptDeleteJob(listOf(messageId)))
-    }
-
     suspend fun findTranscriptIdByConversationId(conversationId: String) = messageDao.findTranscriptIdByConversationId(conversationId)
 
-    suspend fun deleteConversationById(conversationId: String) {
-        deleteMessageByConversationId(conversationId, true)
-    }
-
     fun create(request: ConversationRequest) = conversationService.create(request)
+
+    suspend fun createSuspend(request: ConversationRequest) = conversationService.createSuspend(request)
 
     fun participants(id: String, action: String, requests: List<ParticipantRequest>) =
         conversationService.participants(id, action, requests)
@@ -504,7 +447,7 @@ internal constructor(
 
     suspend fun hasUploadedAttachmentSuspend(transcriptId: String) = transcriptMessageDao.hasUploadedAttachmentSuspend(transcriptId)
 
-    fun refreshConversationById(conversationId: String) = conversationDao.refreshConversationById(conversationId)
+    fun refreshConversationById(conversationId: String) = remoteMessageStatusDao.updateConversationUnseen(conversationId)
 
     suspend fun getAndSyncConversation(conversationId: String): Conversation? = withContext(Dispatchers.IO) {
         val conversation = conversationDao.getConversationByIdSuspend(conversationId)
@@ -618,4 +561,15 @@ internal constructor(
     }
 
     suspend fun findSameConversations(selfId: String, userId: String) = conversationDao.findSameConversations(selfId, userId)
+
+    suspend fun markMessageRead(conversationId: String) = withContext(SINGLE_DB_THREAD) {
+        runInTransaction {
+            remoteMessageStatusDao.markReadByConversationId(conversationId)
+            remoteMessageStatusDao.zeroConversationUnseen(conversationId)
+        }
+    }
+
+    suspend fun disappear(conversationId: String, disappearRequest: DisappearRequest) = conversationService.disappear(conversationId, disappearRequest)
+
+    suspend fun exists(messageId: String) = messageDao.exists(messageId)
 }

@@ -13,6 +13,7 @@ import java.io.File
 
 class TranscriptAttachmentUpdateJob : BaseJob(Params(PRIORITY_LOWER).groupBy(GROUP_ID).persist()) {
     companion object {
+        private var serialVersionUID: Long = 1L
         private const val GROUP_ID = "TranscriptAttachmentUpdateJob"
         private const val EACH = 10
     }

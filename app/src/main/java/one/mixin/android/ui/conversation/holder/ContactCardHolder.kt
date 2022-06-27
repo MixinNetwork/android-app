@@ -6,16 +6,19 @@ import android.view.ViewGroup
 import androidx.constraintlayout.widget.ConstraintLayout
 import one.mixin.android.Constants.Colors.SELECT_COLOR
 import one.mixin.android.R
+import one.mixin.android.RxBus
 import one.mixin.android.databinding.ItemChatContactCardBinding
+import one.mixin.android.event.ExpiredEvent
 import one.mixin.android.extension.dp
 import one.mixin.android.session.Session
 import one.mixin.android.ui.conversation.adapter.ConversationAdapter
 import one.mixin.android.ui.conversation.holder.base.BaseViewHolder
+import one.mixin.android.ui.conversation.holder.base.Terminable
 import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.isSecret
 import one.mixin.android.vo.showVerifiedOrBot
 
-class ContactCardHolder(val binding: ItemChatContactCardBinding) : BaseViewHolder(binding.root) {
+class ContactCardHolder(val binding: ItemChatContactCardBinding) : BaseViewHolder(binding.root), Terminable {
 
     fun bind(
         messageItem: MessageItem,
@@ -98,6 +101,7 @@ class ContactCardHolder(val binding: ItemChatContactCardBinding) : BaseViewHolde
                 true
             }
         }
+        chatJumpLayout(binding.chatJump, isMe, messageItem.expireIn, R.id.chat_layout)
     }
 
     override fun chatLayout(isMe: Boolean, isLast: Boolean, isBlink: Boolean) {
@@ -134,6 +138,12 @@ class ContactCardHolder(val binding: ItemChatContactCardBinding) : BaseViewHolde
                     R.drawable.chat_bubble_other_night
                 )
             }
+        }
+    }
+
+    override fun onRead(messageItem: MessageItem) {
+        if (messageItem.expireIn != null) {
+            RxBus.publish(ExpiredEvent(messageItem.messageId, messageItem.expireIn))
         }
     }
 }

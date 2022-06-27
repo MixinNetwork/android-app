@@ -12,6 +12,7 @@ import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.Player.STATE_BUFFERING
 import com.google.android.exoplayer2.Player.STATE_READY
 import com.google.android.exoplayer2.Timeline
+import com.google.android.exoplayer2.Tracks
 import com.google.android.exoplayer2.audio.AudioAttributes
 import com.google.android.exoplayer2.source.BehindLiveWindowException
 import com.google.android.exoplayer2.source.MediaSource
@@ -22,15 +23,13 @@ import com.google.android.exoplayer2.trackselection.AdaptiveTrackSelection
 import com.google.android.exoplayer2.trackselection.DefaultTrackSelector
 import com.google.android.exoplayer2.trackselection.TrackSelectionArray
 import com.google.android.exoplayer2.upstream.DataSource
-import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory
-import com.google.android.exoplayer2.util.Util
+import com.google.android.exoplayer2.upstream.DefaultDataSource
 import com.google.android.exoplayer2.video.VideoSize
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
 import okhttp3.Request
-import one.mixin.android.BuildConfig
 import one.mixin.android.MixinApplication
 import one.mixin.android.util.reportExoPlayerException
 import kotlin.math.max
@@ -154,7 +153,7 @@ class MixinPlayer(val isAudio: Boolean = false) : Player.Listener {
     }
 
     fun loadAudio(url: String) {
-        mediaSource = ProgressiveMediaSource.Factory(DefaultDataSourceFactory(MixinApplication.appContext, BuildConfig.APPLICATION_ID))
+        mediaSource = ProgressiveMediaSource.Factory(DefaultDataSource.Factory(MixinApplication.appContext))
             .createMediaSource(url.toMediaItem()).apply {
                 player.setMediaSource(this)
                 player.prepare()
@@ -202,20 +201,16 @@ class MixinPlayer(val isAudio: Boolean = false) : Player.Listener {
     }
 
     private fun buildDataSourceFactory(): DataSource.Factory {
-        return DefaultDataSourceFactory(
-            MixinApplication.appContext,
-            Util.getUserAgent(MixinApplication.appContext, "Mixin")
+        return DefaultDataSource.Factory(
+            MixinApplication.appContext
         )
     }
 
     override fun onTimelineChanged(timeline: Timeline, reason: Int) {
     }
 
-    override fun onTracksChanged(trackGroups: TrackGroupArray, trackSelections: TrackSelectionArray) {
-        onVideoPlayerListener?.onTracksChanged(trackGroups, trackSelections)
-        mId?.let {
-            onMediaPlayerListener?.onTracksChanged(it, trackGroups, trackSelections)
-        }
+    override fun onTracksChanged(tracks: Tracks) {
+        onVideoPlayerListener?.onTracksInfoChanged(tracks)
     }
 
     override fun onLoadingChanged(isLoading: Boolean) {
@@ -320,7 +315,7 @@ class MixinPlayer(val isAudio: Boolean = false) : Player.Listener {
 
         fun onLoadingChanged(isLoading: Boolean)
 
-        fun onTracksChanged(trackGroups: TrackGroupArray, trackSelections: TrackSelectionArray)
+        fun onTracksInfoChanged(tracksInfo: Tracks)
 
         fun onTimelineChanged(timeline: Timeline, manifest: Any)
 
@@ -347,7 +342,7 @@ class MixinPlayer(val isAudio: Boolean = false) : Player.Listener {
 
         override fun onLoadingChanged(isLoading: Boolean) {}
 
-        override fun onTracksChanged(trackGroups: TrackGroupArray, trackSelections: TrackSelectionArray) {}
+        override fun onTracksInfoChanged(tracksInfo: Tracks) {}
 
         override fun onTimelineChanged(timeline: Timeline, manifest: Any) {}
 

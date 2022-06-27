@@ -9,6 +9,7 @@ import androidx.room.Index
 import androidx.room.PrimaryKey
 import com.google.gson.annotations.SerializedName
 import one.mixin.android.MixinApplication
+import one.mixin.android.session.Session
 import one.mixin.android.util.GsonHelper
 import java.io.Serializable
 
@@ -100,7 +101,7 @@ class Message(
 
     @SerializedName("status")
     @ColumnInfo(name = "status")
-    val status: String,
+    var status: String,
 
     @SerializedName("created_at")
     @ColumnInfo(name = "created_at")
@@ -126,11 +127,6 @@ class Message(
     @ColumnInfo(name = "name")
     val name: String? = null,
 
-    @Deprecated(
-        "Deprecated at database version 15",
-        ReplaceWith("@{link sticker_id}", "one.mixin.android.vo.Message.sticker_id"),
-        DeprecationLevel.ERROR
-    )
     @SerializedName("album_id")
     @ColumnInfo(name = "album_id")
     val albumId: String? = null,
@@ -278,7 +274,8 @@ fun createMessage(
     action: String? = null,
     participantId: String? = null,
     snapshotId: String? = null,
-    quoteMessageId: String? = null
+    quoteMessageId: String? = null,
+    expireIn: Long? = null
 ) = MessageBuilder(messageId, conversationId, userId, category, status, createdAt)
     .setContent(content)
     .setAction(action)
@@ -598,3 +595,5 @@ fun createPinMessage(
 fun Message.absolutePath(context: Context = MixinApplication.appContext): String? {
     return absolutePath(context, conversationId, mediaUrl)
 }
+
+fun Message.isMine() = userId == Session.getAccountId()

@@ -1,6 +1,6 @@
 def versionMajor = 0
-def versionMinor = 35
-def versionPatch = 11
+def versionMinor = 36
+def versionPatch = 3
 def versionBuild = 0
 
 apply plugin: 'com.android.application'
@@ -9,10 +9,11 @@ apply plugin: 'org.jetbrains.kotlin.android'
 apply plugin: 'kotlin-kapt'
 apply plugin: 'dagger.hilt.android.plugin'
 apply plugin: 'kotlin-parcelize'
+apply plugin: 'com.google.firebase.firebase-perf'
 
 android {
-    compileSdkVersion 31
-    buildToolsVersion "31.0.0"
+    compileSdkVersion 33
+    buildToolsVersion "33.0.0"
     ndkVersion "23.0.7599858"
     defaultConfig {
         applicationId "one.mixin.messenger"
@@ -194,7 +195,7 @@ android {
 
 dependencies {
     coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:1.1.5'
-    implementation platform("com.google.firebase:firebase-bom:30.0.2")
+    implementation platform("com.google.firebase:firebase-bom:30.1.0")
     implementation fileTree(include: ['*.aar'], dir: 'libs')
     implementation "androidx.fragment:fragment-ktx:${fragmentVersion}"
     implementation "androidx.appcompat:appcompat:${appcompatVersion}"
@@ -235,7 +236,7 @@ dependencies {
     kapt "androidx.room:room-compiler:${roomVersion}"
     implementation "androidx.room:room-rxjava2:${roomVersion}"
     implementation "androidx.room:room-ktx:${roomVersion}"
-    testImplementation "androidx.room:room-testing:${roomVersion}"
+    androidTestImplementation "androidx.room:room-testing:${roomVersion}"
 
     // emoji
     implementation "androidx.emoji2:emoji2:${emojiVerison}"
@@ -277,6 +278,13 @@ dependencies {
     implementation 'com.google.firebase:firebase-analytics-ktx'
     implementation 'com.google.firebase:firebase-crashlytics-ktx'
     implementation 'com.google.firebase:firebase-dynamic-links-ktx'
+    implementation 'com.google.firebase:firebase-perf-ktx'
+
+    implementation("com.google.protobuf:protobuf-javalite") {
+        version {
+            strictly '3.11.0'
+        }
+    }
 
     implementation "com.google.mlkit:barcode-scanning:${mlkitBarcodeVersion}"
     implementation "com.google.android.play:core:${playVersion}"
@@ -359,7 +367,7 @@ dependencies {
 
     testImplementation "junit:junit:${junitVersion}"
     testImplementation "androidx.test:core:${testCoreVersion}"
-    testImplementation "org.mockito:mockito-core:${mockitoVersion}"
+    androidTestImplementation "org.mockito:mockito-core:${mockitoVersion}"
 
     testImplementation("org.robolectric:robolectric:${robolectricVersion}", {
         exclude group: 'org.bouncycastle', module: 'bcprov-jdk15on'
@@ -374,10 +382,11 @@ dependencies {
     })
     androidTestImplementation("androidx.test.espresso:espresso-contrib:${espressoVersion}", {
         exclude group: 'com.android.support', module: 'support-annotations'
+        exclude group: 'org.checkerframework', module: 'checker'
     })
     androidTestImplementation "androidx.test.espresso:espresso-idling-resource:$espressoVersion"
     androidTestImplementation "androidx.test.ext:junit:${androidxJunitVersion}"
-    stagingImplementation "androidx.fragment:fragment-testing:${fragmentVersion}"
+    androidTestImplementation "androidx.fragment:fragment-testing:${fragmentVersion}"
     androidTestImplementation "androidx.navigation:navigation-testing:$navigationVersion"
 
     // Hilt testing

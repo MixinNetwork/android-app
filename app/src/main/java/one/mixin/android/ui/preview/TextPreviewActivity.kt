@@ -130,7 +130,7 @@ class TextPreviewActivity : BlazeBaseActivity() {
             }
         }
         binding.text.listener = object : GestureDetector.SimpleOnGestureListener() {
-            override fun onSingleTapConfirmed(e: MotionEvent?): Boolean {
+            override fun onSingleTapConfirmed(e: MotionEvent): Boolean {
                 if (actionMode == null && dismissWhenClickText) {
                     finish()
                 }

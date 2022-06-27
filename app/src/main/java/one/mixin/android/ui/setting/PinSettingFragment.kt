@@ -15,7 +15,7 @@ import one.mixin.android.Constants.BIOMETRIC_INTERVAL_DEFAULT
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentPinSettingBinding
 import one.mixin.android.extension.defaultSharedPreferences
-import one.mixin.android.extension.highlightLinkText
+import one.mixin.android.extension.highlightStarTag
 import one.mixin.android.extension.navTo
 import one.mixin.android.extension.putBoolean
 import one.mixin.android.extension.putLong
@@ -60,9 +60,8 @@ class PinSettingFragment : BaseFragment(R.layout.fragment_pin_setting) {
                 timeRl.visibility = GONE
             }
             val url = Constants.HelpLink.TIP
-            val target = getString(R.string.Learn_More)
             val desc = getString(R.string.wallet_pin_tops_desc)
-            tipTv.highlightLinkText(desc, arrayOf(target), arrayOf(url))
+            tipTv.highlightStarTag(desc, arrayOf(url))
         }
     }
 

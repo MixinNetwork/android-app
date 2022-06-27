@@ -3,6 +3,7 @@ package one.mixin.android.extension
 import android.content.res.ColorStateList
 import android.text.Spannable
 import android.text.SpannableString
+import android.text.SpannableStringBuilder
 import android.text.Spanned
 import android.text.TextPaint
 import android.text.method.LinkMovementMethod
@@ -22,6 +23,41 @@ import one.mixin.android.util.mention.MentionTextView
 import one.mixin.android.widget.NoUnderLineSpan
 import one.mixin.android.widget.linktext.AutoLinkMode
 import one.mixin.android.widget.linktext.AutoLinkTextView
+
+fun TextView.highlightStarTag(
+    source: String,
+    links: Array<String>,
+    @ColorInt color: Int = ContextCompat.getColor(context, R.color.colorBlue),
+    onItemListener: ConversationAdapter.OnItemListener? = null
+) {
+    val spannableStringBuilder = try {
+        var start: Int
+        var end: Int
+        val stringBuilder = StringBuilder(source)
+        val targets = arrayListOf<Int>()
+        while (stringBuilder.indexOf("**").also { start = it } != -1) {
+            stringBuilder.replace(start, start + 2, "")
+            end = stringBuilder.indexOf("**")
+            if (end >= 0) {
+                stringBuilder.replace(end, end + 2, "")
+                targets.add(start)
+                targets.add(end)
+            }
+        }
+
+        val spannableStringBuilder = SpannableStringBuilder(stringBuilder)
+        for (i in 0 until targets.count() / 2) {
+            spannableStringBuilder.setSpan(NoUnderLineSpan(links[i], onItemListener), targets[i * 2], targets[i * 2 + 1], Spannable.SPAN_INCLUSIVE_EXCLUSIVE)
+            spannableStringBuilder.setSpan(ForegroundColorSpan(color), targets[i * 2], targets[i * 2 + 1], Spannable.SPAN_INCLUSIVE_EXCLUSIVE)
+        }
+        spannableStringBuilder
+    } catch (e: Exception) {
+        SpannableStringBuilder(source)
+    }
+
+    text = spannableStringBuilder
+    movementMethod = LinkMovementMethod.getInstance()
+}
 
 fun TextView.highlightLinkText(
     source: String,

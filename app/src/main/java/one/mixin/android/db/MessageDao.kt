@@ -5,7 +5,6 @@ import androidx.paging.DataSource
 import androidx.room.Dao
 import androidx.room.Query
 import androidx.room.RoomWarnings
-import androidx.room.Transaction
 import one.mixin.android.db.contants.AUDIOS
 import one.mixin.android.db.contants.DATA
 import one.mixin.android.db.contants.IMAGES
@@ -14,13 +13,13 @@ import one.mixin.android.db.contants.TRANSCRIPTS
 import one.mixin.android.db.contants.VIDEOS
 import one.mixin.android.ui.player.MessageIdIdAndMediaStatus
 import one.mixin.android.util.QueryMessage
-import one.mixin.android.util.chat.InvalidateFlow
 import one.mixin.android.vo.AttachmentMigration
 import one.mixin.android.vo.ConversationWithStatus
 import one.mixin.android.vo.HyperlinkItem
 import one.mixin.android.vo.MediaMessageMinimal
 import one.mixin.android.vo.Message
 import one.mixin.android.vo.MessageItem
+import one.mixin.android.vo.MessageMedia
 import one.mixin.android.vo.MessageMinimal
 import one.mixin.android.vo.QuoteMessageItem
 import one.mixin.android.vo.SearchMessageItem
@@ -40,7 +39,7 @@ interface MessageDao : BaseDao<Message> {
         st.name AS assetName, st.asset_type AS assetType, h.site_name AS siteName, h.site_title AS siteTitle, h.site_description AS siteDescription,
         h.site_image AS siteImage, m.shared_user_id AS sharedUserId, su.full_name AS sharedUserFullName, su.identity_number AS sharedUserIdentityNumber,
         su.avatar_url AS sharedUserAvatarUrl, su.is_verified AS sharedUserIsVerified, su.app_id AS sharedUserAppId, mm.mentions AS mentions, mm.has_read as mentionRead, 
-        pm.message_id IS NOT NULL as isPin, c.name AS groupName
+        pm.message_id IS NOT NULL as isPin, c.name AS groupName, em.expire_at AS expireAt
         FROM messages m
         INNER JOIN users u ON m.user_id = u.user_id
         LEFT JOIN users u1 ON m.participant_id = u1.user_id
@@ -52,6 +51,7 @@ interface MessageDao : BaseDao<Message> {
         LEFT JOIN conversations c ON m.conversation_id = c.conversation_id
         LEFT JOIN message_mentions mm ON m.id = mm.message_id 
         LEFT JOIN pin_messages pm ON m.id = pm.message_id
+        LEFT JOIN expired_messages em ON m.id = em.message_id
         """
         private const val CHAT_CATEGORY = "('SIGNAL_TEXT', 'SIGNAL_IMAGE', 'SIGNAL_VIDEO', 'SIGNAL_STICKER', 'SIGNAL_DATA', 'SIGNAL_CONTACT', 'SIGNAL_AUDIO', 'SIGNAL_LIVE', 'SIGNAL_POST', 'SIGNAL_LOCATION', 'ENCRYPTED_TEXT', 'ENCRYPTED_IMAGE', 'ENCRYPTED_VIDEO', 'ENCRYPTED_STICKER', 'ENCRYPTED_DATA', 'ENCRYPTED_CONTACT', 'ENCRYPTED_AUDIO', 'ENCRYPTED_LIVE', 'ENCRYPTED_POST', 'ENCRYPTED_LOCATION', 'PLAIN_TEXT', 'PLAIN_IMAGE', 'PLAIN_VIDEO', 'PLAIN_DATA', 'PLAIN_STICKER', 'PLAIN_CONTACT', 'PLAIN_AUDIO', 'PLAIN_LIVE', 'PLAIN_POST', 'PLAIN_LOCATION', 'APP_BUTTON_GROUP', 'APP_CARD', 'SYSTEM_ACCOUNT_SNAPSHOT')"
     }
@@ -243,8 +243,11 @@ interface MessageDao : BaseDao<Message> {
     )
     suspend fun fuzzySearchMessage(query: String, limit: Int): List<SearchMessageItem>
 
-    @Query("SELECT m.media_url FROM messages m WHERE m.conversation_id = :conversationId AND m.media_url IS NOT NULL AND m.media_status = 'DONE'")
-    suspend fun findAllMediaPathByConversationId(conversationId: String): List<String>
+    @Query("SELECT m.category as type, m.id as messageId, m.media_url as mediaUrl FROM messages m WHERE m.conversation_id = :conversationId AND m.media_url IS NOT NULL AND m.media_status = 'DONE' LIMIT :limit OFFSET :offset")
+    suspend fun getMediaMessageMinimalByConversationId(conversationId: String, limit: Int, offset: Int): List<MediaMessageMinimal>
+
+    @Query("SELECT m.id FROM messages m WHERE m.conversation_id = :conversationId AND (m.category = 'SIGNAL_TRANSCRIPT' OR m.category = 'PLAIN_TRANSCRIPT') LIMIT :limit OFFSET :offset")
+    suspend fun getTranscriptMessageIdByConversationId(conversationId: String, limit: Int, offset: Int): List<String>
 
     @Query("SELECT rowid, id FROM messages WHERE conversation_id = :conversationId AND status IN ('SENT', 'DELIVERED') AND user_id != :userId ORDER BY rowid ASC LIMIT :limit")
     fun getUnreadMessage(conversationId: String, userId: String, limit: Int): List<MessageMinimal>
@@ -316,6 +319,9 @@ interface MessageDao : BaseDao<Message> {
     @Query("SELECT id FROM messages WHERE conversation_id =:conversationId ORDER BY created_at DESC LIMIT 1")
     fun findLastMessageId(conversationId: String): String?
 
+    @Query("SELECT rowid FROM messages WHERE conversation_id =:conversationId ORDER BY rowid DESC LIMIT 1")
+    fun findLastMessageRowId(conversationId: String): Long?
+
     @Query(
         """
         SELECT id FROM messages WHERE conversation_id =:conversationId AND user_id !=:userId AND messages.rowid > 
@@ -341,8 +347,14 @@ interface MessageDao : BaseDao<Message> {
     @Query("SELECT id FROM messages WHERE conversation_id =:conversationId")
     suspend fun getMessageIdsByConversationId(conversationId: String): List<String>
 
-    @Query("SELECT id FROM messages WHERE conversation_id =:conversationId ORDER BY rowid LIMIT :limit")
-    suspend fun getMessageIdsByConversationId(conversationId: String, limit: Int): List<String>
+    @Query("SELECT id FROM messages WHERE conversation_id =:conversationId LIMIT :limit OFFSET :offset")
+    suspend fun getMessageIdsByConversationId(conversationId: String, limit: Long, offset: Long): List<String>
+
+    @Query("SELECT id FROM messages WHERE conversation_id =:conversationId AND rowid <= :rowid ORDER BY rowid LIMIT :limit")
+    suspend fun getMessageIdsByConversationId(conversationId: String, rowid: Long, limit: Int): List<String>
+
+    @Query("SELECT id FROM messages WHERE conversation_id =:conversationId AND rowid <= :rowid ORDER BY rowid")
+    suspend fun getMessageIdsByConversationId(conversationId: String, rowid: Long): List<String>
 
     @Query(
         """
@@ -368,6 +380,9 @@ interface MessageDao : BaseDao<Message> {
 
     @Query("SELECT rowid FROM messages ORDER BY rowid DESC LIMIT 1")
     fun getLastMessageRowid(): Long
+
+    @Query("SELECT id FROM messages WHERE id = :messageId")
+    suspend fun exists(messageId: String): String?
 
     // DELETE COUNT
     @Query(
@@ -432,15 +447,16 @@ interface MessageDao : BaseDao<Message> {
     @Query("SELECT id FROM messages LIMIT 1")
     suspend fun hasMessage(): String?
 
+    @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
+    @Query("SELECT * FROM messages WHERE id = :messageId")
+    fun findMessageMediaById(messageId: String): MessageMedia?
+
     // Update SQL
     @Query("UPDATE messages SET quote_content = :content WHERE conversation_id = :conversationId AND quote_message_id = :messageId")
     fun updateQuoteContentByQuoteId(conversationId: String, messageId: String, content: String)
 
     @Query("UPDATE messages SET status = :status WHERE id = :id")
     fun updateMessageStatus(status: String, id: String)
-
-    @Query("UPDATE messages SET status = 'READ' WHERE id IN (:messages) AND status != 'FAILED' AND status != 'UNKNOWN'")
-    fun markMessageRead(messages: List<String>)
 
     @Query("UPDATE messages SET status = 'SENT' WHERE id = :id AND status = 'FAILED'")
     fun recallFailedMessage(id: String)
@@ -521,36 +537,15 @@ interface MessageDao : BaseDao<Message> {
     @Query("UPDATE messages SET media_url = :mediaUrl, media_size = :mediaSize, thumb_image = :thumbImage WHERE id = :id AND category != 'MESSAGE_RECALL'")
     fun updateGiphyMessage(id: String, mediaUrl: String, mediaSize: Long, thumbImage: String?)
 
-    @Query(
-        """
-        UPDATE messages SET status = 'READ' WHERE conversation_id = :conversationId 
-        AND status IN ('SENT', 'DELIVERED') AND rowid <= :rowid AND user_id != :userId
-        """
-    )
-    suspend fun batchMarkRead(conversationId: String, userId: String, rowid: String)
-
-    @Query(
-        """
-        UPDATE conversations SET unseen_message_count = (SELECT count(1) FROM messages m WHERE m.conversation_id = :conversationId 
-        AND m.status IN ('SENT', 'DELIVERED') AND m.user_id != :userId) WHERE conversation_id = :conversationId
-        """
-    )
-    suspend fun updateConversationUnseen(userId: String, conversationId: String)
-
-    @Query(
-        """
-        UPDATE conversations SET unseen_message_count = (SELECT count(1) FROM messages m WHERE m.conversation_id = :conversationId AND m.user_id != :userId
-        AND m.status IN ('SENT', 'DELIVERED')) WHERE conversation_id = :conversationId
-        """
-    )
-    fun takeUnseen(userId: String, conversationId: String)
-
     @Query("UPDATE messages SET category = :category WHERE id = :messageId")
     fun updateCategoryById(messageId: String, category: String)
 
     // Delete SQL
     @Query("DELETE FROM messages WHERE id = :id")
     fun deleteMessageById(id: String)
+
+    @Query("DELETE FROM messages WHERE id IN (:ids)")
+    fun deleteMessageById(ids: List<String>)
 
     @Query(
         """
@@ -563,14 +558,4 @@ interface MessageDao : BaseDao<Message> {
 
     @Query("DELETE FROM messages WHERE id IN (SELECT id FROM messages WHERE conversation_id = :conversationId LIMIT :limit)")
     suspend fun deleteMessageByConversationId(conversationId: String, limit: Int)
-
-    // Insert SQL
-    @Transaction
-    fun insertAndNotifyConversation(message: Message, conversationDao: ConversationDao, userId: String?) {
-        insert(message)
-        if (userId != message.userId) {
-            conversationDao.unseenMessageCount(message.conversationId, userId)
-        }
-        InvalidateFlow.emit(message.conversationId)
-    }
 }

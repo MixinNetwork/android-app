@@ -202,7 +202,7 @@ class MaterialSearchView : FrameLayout {
         binding.actionVa.fadeOut()
         ValueAnimator.ofFloat(1f, 0f).apply {
             addListener(object : AnimatorListenerAdapter() {
-                override fun onAnimationEnd(animation: Animator?) {
+                override fun onAnimationEnd(animation: Animator) {
                     binding.containerShadow.isVisible = false
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                         (context as Activity).window.navigationBarColor = context.colorFromAttribute(R.attr.bg_white)
@@ -277,11 +277,11 @@ class MaterialSearchView : FrameLayout {
         binding.logoLayout.animate().apply {
             setListener(
                 object : AnimatorListenerAdapter() {
-                    override fun onAnimationEnd(animation: Animator?) {
+                    override fun onAnimationEnd(animation: Animator) {
                         op()
                     }
 
-                    override fun onAnimationCancel(animation: Animator?) {
+                    override fun onAnimationCancel(animation: Animator) {
                         op()
                     }
 
@@ -293,7 +293,7 @@ class MaterialSearchView : FrameLayout {
                         binding.searchEt.animate().apply {
                             setListener(
                                 object : AnimatorListenerAdapter() {
-                                    override fun onAnimationCancel(animation: Animator?) {
+                                    override fun onAnimationCancel(animation: Animator) {
                                         binding.searchEt.alpha = 1f
                                     }
                                 }
@@ -303,7 +303,7 @@ class MaterialSearchView : FrameLayout {
                         binding.backIb.animate().apply {
                             setListener(
                                 object : AnimatorListenerAdapter() {
-                                    override fun onAnimationCancel(animation: Animator?) {
+                                    override fun onAnimationCancel(animation: Animator) {
                                         binding.backIb.alpha = 1f
                                     }
                                 }
@@ -329,11 +329,11 @@ class MaterialSearchView : FrameLayout {
         binding.searchEt.animate().apply {
             setListener(
                 object : AnimatorListenerAdapter() {
-                    override fun onAnimationEnd(animation: Animator?) {
+                    override fun onAnimationEnd(animation: Animator) {
                         op()
                     }
 
-                    override fun onAnimationCancel(animation: Animator?) {
+                    override fun onAnimationCancel(animation: Animator) {
                         op()
                     }
 
@@ -347,11 +347,11 @@ class MaterialSearchView : FrameLayout {
         binding.backIb.animate().apply {
             setListener(
                 object : AnimatorListenerAdapter() {
-                    override fun onAnimationEnd(animation: Animator?) {
+                    override fun onAnimationEnd(animation: Animator) {
                         op()
                     }
 
-                    override fun onAnimationCancel(animation: Animator?) {
+                    override fun onAnimationCancel(animation: Animator) {
                         op()
                     }
 
@@ -363,7 +363,7 @@ class MaterialSearchView : FrameLayout {
                         binding.logoLayout.animate().apply {
                             setListener(
                                 object : AnimatorListenerAdapter() {
-                                    override fun onAnimationCancel(animation: Animator?) {
+                                    override fun onAnimationCancel(animation: Animator) {
                                         binding.logoLayout.alpha = 1f
                                     }
                                 }
