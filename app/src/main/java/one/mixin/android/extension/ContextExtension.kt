@@ -1071,7 +1071,7 @@ inline fun <reified T> Fragment.findListener(): T? {
 val Context.notificationManager: NotificationManager
     get() = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
-fun Context.shareFile(file: File, type: String) {
+fun Context.shareFile(file: File) {
     Intent().apply {
         val uri = getUriForFile(file)
         action = Intent.ACTION_SEND

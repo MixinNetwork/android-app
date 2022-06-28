@@ -283,7 +283,7 @@ class ForwardFragment : BaseFragment(R.layout.fragment_forward) {
         RxBus.listen(AppAuthEvent::class.java)
             .observeOn(AndroidSchedulers.mainThread())
             .autoDispose(destroyScope)
-            .subscribe { e ->
+            .subscribe {
                 if (action is ForwardAction.System && !needOpenEditor()) {
                     action.conversationId?.let { cid ->
                         lifecycleScope.launch {

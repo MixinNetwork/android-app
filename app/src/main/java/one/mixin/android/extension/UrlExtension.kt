@@ -218,7 +218,7 @@ private fun getUserOrAppNotFoundTip(isApp: Boolean) =
     if (isApp) R.string.Bot_not_found else R.string.User_not_found
 
 fun Uri.getRawQueryParameter(key: String): String? {
-    val parameters = this.getQueryParameters("data")
+    val parameters = this.getQueryParameters(key)
     return if (parameters.isEmpty()) {
         null
     } else {

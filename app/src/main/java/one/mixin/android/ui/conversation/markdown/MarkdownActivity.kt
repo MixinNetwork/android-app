@@ -179,7 +179,7 @@ class MarkdownActivity : BaseActivity() {
                         writer.write(markdown)
                     }
                     withContext(Dispatchers.Main) {
-                        this@MarkdownActivity.shareFile(file, "text/*")
+                        this@MarkdownActivity.shareFile(file)
                     }
                 }
             } catch (e: Exception) {
@@ -224,7 +224,7 @@ class MarkdownActivity : BaseActivity() {
             this@MarkdownActivity, pdfHtml, pdfFile,
             object : PrintPdfCallback {
                 override fun onSuccess() {
-                    this@MarkdownActivity.shareFile(pdfFile, "application/pdf")
+                    this@MarkdownActivity.shareFile(pdfFile)
                     dismissAction.invoke()
                     dialog.dismiss()
                 }
