@@ -149,11 +149,11 @@ class WebActivity : BaseActivity() {
                     }
                 },
                 {
-                    super.onBackPressed()
+                    onBackPressedDispatcher.onBackPressed()
                 }
             )
         } else {
-            super.onBackPressed()
+            onBackPressedDispatcher.onBackPressed()
         }
     }
 

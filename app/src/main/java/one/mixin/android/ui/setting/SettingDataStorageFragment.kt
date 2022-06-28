@@ -47,7 +47,7 @@ class SettingDataStorageFragment : BaseFragment(R.layout.fragment_storage_data) 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         binding.apply {
-            titleView.leftIb.setOnClickListener { activity?.onBackPressed() }
+            titleView.leftIb.setOnClickListener { activity?.onBackPressedDispatcher?.onBackPressed() }
             storageRl.setOnClickListener {
                 requireActivity().addFragment(
                     this@SettingDataStorageFragment,

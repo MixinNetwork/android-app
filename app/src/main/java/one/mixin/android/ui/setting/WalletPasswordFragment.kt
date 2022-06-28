@@ -89,7 +89,7 @@ class WalletPasswordFragment : BaseFragment(R.layout.fragment_wallet_password), 
             }
             titleView.leftIb.setOnClickListener {
                 when (step) {
-                    STEP1 -> activity?.onBackPressed()
+                    STEP1 -> activity?.onBackPressedDispatcher?.onBackPressed()
                     STEP2 -> toStep1()
                     STEP3 -> toStep2()
                     STEP4 -> toStep3()

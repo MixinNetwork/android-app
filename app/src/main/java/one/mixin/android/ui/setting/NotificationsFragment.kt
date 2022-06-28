@@ -45,7 +45,7 @@ class NotificationsFragment : BaseFragment(R.layout.fragment_notifications) {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         binding.apply {
-            titleView.leftIb.setOnClickListener { activity?.onBackPressed() }
+            titleView.leftIb.setOnClickListener { activity?.onBackPressedDispatcher?.onBackPressed() }
             transferRl.setOnClickListener {
                 showDialog(transferTv.text.toString().removePrefix(accountSymbol), true)
             }

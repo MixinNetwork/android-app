@@ -14,6 +14,7 @@ import android.os.Looper
 import android.view.MenuItem
 import android.view.View
 import android.widget.AdapterView
+import androidx.activity.addCallback
 import androidx.appcompat.app.AppCompatActivity
 import one.mixin.android.R
 import one.mixin.android.databinding.ActivityGalleryBinding
@@ -113,6 +114,9 @@ class GalleryActivity :
         mAlbumCollection.onCreate(this, this)
         mAlbumCollection.onRestoreInstanceState(savedInstanceState)
         mAlbumCollection.loadAlbums()
+        onBackPressedDispatcher.addCallback {
+            setResult(Activity.RESULT_CANCELED)
+        }
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
@@ -134,11 +138,6 @@ class GalleryActivity :
             return true
         }
         return super.onOptionsItemSelected(item)
-    }
-
-    override fun onBackPressed() {
-        setResult(Activity.RESULT_CANCELED)
-        super.onBackPressed()
     }
 
     override fun onItemSelected(parent: AdapterView<*>, view: View, position: Int, id: Long) {

@@ -58,7 +58,7 @@ class VerifyFragment : BaseFragment(R.layout.fragment_verify_pin), PinView.OnPin
         super.onViewCreated(view, savedInstanceState)
         activity?.window?.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
         binding.apply {
-            closeIv.setOnClickListener { activity?.onBackPressed() }
+            closeIv.setOnClickListener { activity?.onBackPressedDispatcher?.onBackPressed() }
             pin.setListener(this@VerifyFragment)
             keyboard.setKeyboardKeys(KEYS)
             keyboard.setOnClickKeyboardListener(keyboardListener)

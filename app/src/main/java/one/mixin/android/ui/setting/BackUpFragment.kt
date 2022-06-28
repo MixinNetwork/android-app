@@ -107,7 +107,7 @@ class BackUpFragment : BaseFragment(R.layout.fragment_backup) {
                     topToBottom = R.id.backup_des
                 }
             }
-            titleView.leftIb.setOnClickListener { activity?.onBackPressed() }
+            titleView.leftIb.setOnClickListener { activity?.onBackPressedDispatcher?.onBackPressed() }
             backupBn.setOnClickListener {
                 RxPermissions(requireActivity())
                     .request(Manifest.permission.WRITE_EXTERNAL_STORAGE)

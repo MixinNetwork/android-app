@@ -32,7 +32,7 @@ class ViewEmergencyContactFragment : BaseFragment(R.layout.fragment_view_emergen
         super.onViewCreated(view, savedInstanceState)
         binding.apply {
             titleView.leftIb.setOnClickListener {
-                activity?.onBackPressed()
+                activity?.onBackPressedDispatcher?.onBackPressed()
             }
             titleView.rightAnimator.setOnClickListener { context?.openUrl(Constants.HelpLink.EMERGENCY) }
             avatar.setInfo(user.fullName, user.avatarUrl, user.userId)

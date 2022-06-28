@@ -32,7 +32,7 @@ class SettingFragment : BaseFragment(R.layout.fragment_setting) {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         binding.titleView.leftIb.setOnClickListener {
-            activity?.onBackPressed()
+            activity?.onBackPressedDispatcher?.onBackPressed()
         }
         binding.apply {
             aboutRl.setOnClickListener {

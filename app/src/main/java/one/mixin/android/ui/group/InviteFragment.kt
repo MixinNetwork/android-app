@@ -61,7 +61,7 @@ class InviteFragment : BaseFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        binding.titleView.leftIb.setOnClickListener { activity?.onBackPressed() }
+        binding.titleView.leftIb.setOnClickListener { activity?.onBackPressedDispatcher?.onBackPressed() }
 
         inviteViewModel.getConversation(conversationId).observe(
             viewLifecycleOwner

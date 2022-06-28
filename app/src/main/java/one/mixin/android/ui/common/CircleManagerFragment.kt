@@ -88,7 +88,7 @@ class CircleManagerFragment : BaseFragment() {
         binding.titleView.setSubTitle(getString(R.string.circle_title, name), "")
         binding.titleView.leftIb.setOnClickListener {
             if (viewDestroyed()) return@setOnClickListener
-            activity?.onBackPressed()
+            activity?.onBackPressedDispatcher?.onBackPressed()
         }
         binding.titleView.rightIb.setOnClickListener {
             if (viewDestroyed()) return@setOnClickListener

@@ -1428,7 +1428,7 @@ class ConversationFragment() :
         initTouchHelper()
 
         binding.actionBar.leftIb.setOnClickListener {
-            activity?.onBackPressed()
+            activity?.onBackPressedDispatcher?.onBackPressed()
         }
 
         if (isGroup) {
@@ -1468,7 +1468,7 @@ class ConversationFragment() :
                 binding.chatControl.chatEt.setText(conversationDraft)
             }
         }
-        binding.toolView.closeIv.setOnClickListener { activity?.onBackPressed() }
+        binding.toolView.closeIv.setOnClickListener { activity?.onBackPressedDispatcher?.onBackPressed() }
         binding.toolView.deleteIv.setOnClickListener {
             conversationAdapter.selectSet.filter { it.isAudio() }.forEach {
                 if (AudioPlayer.isPlay(it.messageId)) {

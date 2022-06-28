@@ -87,7 +87,7 @@ class TransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>>()
         super.onViewCreated(view, savedInstanceState)
         binding.titleView.apply {
             titleTv.text = asset.name
-            leftIb.setOnClickListener { activity?.onBackPressed() }
+            leftIb.setOnClickListener { activity?.onBackPressedDispatcher?.onBackPressed() }
             rightAnimator.setOnClickListener {
                 showBottom()
             }
@@ -257,7 +257,7 @@ class TransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>>()
                     walletViewModel.updateAssetHidden(asset.assetId, asset.hidden != true)
                 }
                 bottomSheet.dismiss()
-                mainThreadDelayed({ activity?.onBackPressed() }, 200)
+                mainThreadDelayed({ activity?.onBackPressedDispatcher?.onBackPressed() }, 200)
             }
             cancel.setOnClickListener { bottomSheet.dismiss() }
         }

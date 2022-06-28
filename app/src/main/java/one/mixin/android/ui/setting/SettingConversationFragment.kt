@@ -30,7 +30,7 @@ class SettingConversationFragment : BaseFragment(R.layout.fragment_setting_conve
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        binding.titleView.leftIb.setOnClickListener { activity?.onBackPressed() }
+        binding.titleView.leftIb.setOnClickListener { activity?.onBackPressedDispatcher?.onBackPressed() }
         viewModel.initPreferences(requireContext())
             .observe(
                 viewLifecycleOwner,

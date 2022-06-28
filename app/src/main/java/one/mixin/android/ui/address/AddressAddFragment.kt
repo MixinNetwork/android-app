@@ -99,7 +99,7 @@ class AddressAddFragment() : BaseFragment(R.layout.fragment_address_add) {
             if (binding.labelEt.isFocused) binding.labelEt.hideKeyboard()
             if (binding.addrEt.isFocused) binding.addrEt.hideKeyboard()
             if (binding.tagEt.isFocused) binding.tagEt.hideKeyboard()
-            activity?.onBackPressed()
+            activity?.onBackPressedDispatcher?.onBackPressed()
         }
         binding.titleView.titleTv.text = getString(R.string.withdrawal_addr_new, asset.symbol)
         binding.avatar.bg.loadImage(asset.iconUrl, R.drawable.ic_avatar_place_holder)
@@ -141,7 +141,7 @@ class AddressAddFragment() : BaseFragment(R.layout.fragment_address_add) {
             bottomSheet.showNow(parentFragmentManager, PinAddrBottomSheetDialogFragment.TAG)
             bottomSheet.callback = object : BiometricBottomSheetDialogFragment.Callback() {
                 override fun onSuccess() {
-                    activity?.onBackPressed()
+                    activity?.onBackPressedDispatcher?.onBackPressed()
                 }
             }
         }
