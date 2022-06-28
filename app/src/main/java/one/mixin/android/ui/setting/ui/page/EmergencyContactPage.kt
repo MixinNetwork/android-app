@@ -304,7 +304,7 @@ private fun ShowEmergencyButton() {
                         invokeNetwork = { viewModel.showEmergency(pinCode) },
                         successBlock = { response ->
                             val user = response.data as one.mixin.android.vo.User
-                            navigator.navigation(SettingDestination.ViewEmergencyContact)
+                            navigator.viewEmergencyContact(user)
                         },
                         exceptionBlock = {
                             loading = false

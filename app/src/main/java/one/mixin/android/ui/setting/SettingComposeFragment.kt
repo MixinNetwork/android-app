@@ -21,6 +21,8 @@ import androidx.lifecycle.Observer
 import androidx.navigation.NavController
 import androidx.navigation.NavDeepLinkRequest
 import androidx.navigation.NavDestination
+import androidx.navigation.NavType
+import androidx.navigation.navArgument
 import com.google.accompanist.navigation.animation.AnimatedNavHost
 import com.google.accompanist.navigation.animation.composable
 import com.google.accompanist.navigation.animation.rememberAnimatedNavController
@@ -44,6 +46,7 @@ import one.mixin.android.ui.setting.ui.page.PhoneNumberSettingPage
 import one.mixin.android.ui.setting.ui.page.PinSettingPage
 import one.mixin.android.ui.setting.ui.page.SecurityPage
 import one.mixin.android.ui.setting.ui.page.SettingPage
+import one.mixin.android.ui.setting.ui.page.ViewEmergencyContactPage
 import one.mixin.android.ui.setting.ui.theme.MixinAppTheme
 import one.mixin.android.vo.User
 import timber.log.Timber
@@ -76,12 +79,16 @@ enum class SettingDestination {
 }
 
 open class SettingNavigationController {
-    open fun navigation(destination: SettingDestination) {
+    open fun navigation(destination: SettingDestination, args: Bundle? = null) {
         Timber.e("setting navigation: ${destination.name}")
     }
 
     open fun userBottomSheet(user: User, conversationId: String? = null) {
         Timber.e("userBottomSheet: ${user.userId}")
+    }
+
+    open fun viewEmergencyContact(user: User) {
+        Timber.e("viewEmergencyContact: ${user.userId}")
     }
 
     open fun pop() {
@@ -96,8 +103,8 @@ private class SettingNavControllerImpl(
     private val navController: NavController,
     private val closeActivity: () -> Unit
 ) : SettingNavigationController() {
-    override fun navigation(destination: SettingDestination) {
-        navigateTo(destination)
+    override fun navigation(destination: SettingDestination, args: Bundle?) {
+        navigateTo(destination, args)
     }
 
     private fun navigateTo(dest: SettingDestination, args: Bundle? = null) {
@@ -128,6 +135,15 @@ private class SettingNavControllerImpl(
         if (!navController.popBackStack()) {
             closeActivity()
         }
+    }
+
+    override fun viewEmergencyContact(user: User) {
+        navigateTo(
+            SettingDestination.ViewEmergencyContact,
+            Bundle().apply {
+                putParcelable(USER_KEY, user)
+            }
+        )
     }
 }
 
@@ -274,6 +290,15 @@ class SettingComposeFragment : BaseFragment() {
 
                             composable(SettingDestination.EmergencyContact.name) {
                                 EmergencyContactPage()
+                            }
+
+                            composable(SettingDestination.ViewEmergencyContact.name) {
+                                val user = it.arguments?.getParcelable<User>(USER_KEY)
+                                if (user == null) {
+                                    Timber.e("viewEmergencyContact: no user")
+                                    return@composable
+                                }
+                                ViewEmergencyContactPage(user)
                             }
 
                             // TODO(BIN) remove this. didn't work now.

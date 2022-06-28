@@ -1,6 +1,5 @@
 package one.mixin.android.ui.setting.ui.page
 
-import GlideImage
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -11,11 +10,9 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
@@ -23,29 +20,23 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.integerArrayResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import one.mixin.android.R
-import one.mixin.android.extension.CodeType
 import one.mixin.android.extension.findFragmentActivityOrNull
-import one.mixin.android.extension.getColorCode
 import one.mixin.android.ui.common.showUserBottom
 import one.mixin.android.ui.setting.SettingBlockedViewModel
 import one.mixin.android.ui.setting.ui.compose.MixinBackButton
 import one.mixin.android.ui.setting.ui.compose.MixinTopAppBar
+import one.mixin.android.ui.setting.ui.compose.UserAvatarImage
 import one.mixin.android.ui.setting.ui.compose.rememberComposeScope
 import one.mixin.android.ui.setting.ui.theme.MixinAppTheme
 import one.mixin.android.vo.User
-import one.mixin.android.widget.AvatarView
 
 @Composable
 fun BlockedPage() {
@@ -144,35 +135,6 @@ private fun BlockedUserItem(user: User) {
             text = user.fullName ?: "",
             color = MixinAppTheme.colors.textPrimary,
         )
-    }
-}
-
-@Composable
-private fun UserAvatarImage(user: User, size: Dp) {
-    if (user.avatarUrl != null && user.avatarUrl.isNotEmpty()) {
-        GlideImage(
-            data = user.avatarUrl,
-            modifier = Modifier
-                .size(size)
-                .clip(CircleShape),
-            placeHolderPainter = painterResource(id = R.drawable.ic_avatar_place_holder)
-        )
-    } else {
-        val avatarArray = integerArrayResource(id = R.array.avatar_colors)
-        val backgroundColor = user.userId.getColorCode(CodeType.Avatar(avatarArray.size))
-        Box(
-            modifier = Modifier
-                .size(size)
-                .clip(CircleShape)
-                .background(Color(backgroundColor)),
-            contentAlignment = Alignment.Center
-        ) {
-            Text(
-                text = AvatarView.checkEmoji(user.fullName),
-                color = Color.White,
-                fontSize = 22.sp
-            )
-        }
     }
 }
 
