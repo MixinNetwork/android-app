@@ -1,5 +1,3 @@
-@file:Suppress("unused")
-
 package one.mixin.android.tip
 
 import one.mixin.android.extension.sha256
@@ -24,11 +22,11 @@ object TipBody {
     fun forVerify(timestamp: Long): ByteArray =
         "$TIPVerify${String.format("%032d", timestamp)}".toByteArray()
 
-    fun forRawTransactionCreate(assetId :String, opponentKey: String, opponentReceivers: List<String>, opponentThreshold: Long, amount: Double, traceId: String, memo: String): ByteArray {
-        var body = assetId + opponentKey
+    fun forRawTransactionCreate(assetId :String, opponentKey: String, opponentReceivers: List<String>, opponentThreshold: Int, amount: String, traceId: String?, memo: String?): ByteArray {
+        var body = assetId + opponentKey // TODO fix opponentKey usage
         opponentReceivers.forEach { o -> body += o }
         body = body + opponentThreshold + amount + traceId + memo
-        return (TIPTransferCreate + body).hashToBody()
+        return (TIPRawTransactionCreate + body).hashToBody()
     }
 
     fun forWithdrawalCreate(addressId: String, amount: String, fee: String?, traceId: String, memo: String?): ByteArray =
@@ -45,6 +43,30 @@ object TipBody {
 
     fun forAddressAdd(assetId: String, publicKey: String?, keyTag: String?, name: String?): ByteArray =
         (TIPAddressAdd + assetId + publicKey + keyTag + name).hashToBody()
+
+    fun forAddressRemove(addressId: String): ByteArray =
+        (TIPAddressRemove + addressId).hashToBody()
+
+    fun forUserDeactivate(phoneVerificationId: String): ByteArray =
+        (TIPUserDeactivate + phoneVerificationId).hashToBody()
+
+    fun forEmergencyContactRead(): ByteArray =
+        (TIPEmergencyContactRead + "0").hashToBody()
+
+    fun forEmergencyContactRemove(): ByteArray =
+        (TIPEmergencyContactRemove + "0").hashToBody()
+
+    fun forMultisigRequestSign(requestId: String): ByteArray =
+        (TIPMultisigRequestSign + requestId).hashToBody()
+
+    fun forMultisigRequestUnlock(requestId: String): ByteArray =
+        (TIPMultisigRequestUnlock + requestId).hashToBody()
+
+    fun forCollectibleRequestSign(requestId: String): ByteArray =
+        (TIPCollectibleRequestSign + requestId).hashToBody()
+
+    fun forCollectibleRequestUnlock(requestId: String): ByteArray =
+        (TIPCollectibleRequestUnlock + requestId).hashToBody()
 
     private fun String.hashToBody() = sha256()
 }
