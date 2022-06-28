@@ -45,7 +45,7 @@ interface AccountService {
     suspend fun create(@Path("id") id: String, @Body request: AccountRequest): MixinResponse<Account>
 
     @POST("verifications/{id}")
-    fun changePhone(@Path("id") id: String, @Body request: AccountRequest): Observable<MixinResponse<Account>>
+    suspend fun changePhone(@Path("id") id: String, @Body request: AccountRequest): MixinResponse<Account>
 
     @POST("verifications/{id}")
     fun deactiveVerification(@Path("id") id: String, @Body request: DeactivateVerificationRequest): Observable<MixinResponse<VerificationResponse>>
