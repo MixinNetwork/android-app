@@ -17,7 +17,6 @@ import kotlinx.coroutines.withContext
 import one.mixin.android.Constants
 import one.mixin.android.Constants.PAGE_SIZE
 import one.mixin.android.api.MixinResponse
-import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.PinRequest
 import one.mixin.android.extension.escapeSql
 import one.mixin.android.extension.putString
@@ -141,22 +140,35 @@ internal constructor(
             .setInitialLoadKey(initialLoadKey)
             .build()
 
-    suspend fun refreshPendingDeposits(asset: AssetItem) {
-        handleMixinResponse(
-            invokeNetwork = {
-                assetRepository.pendingDeposits(asset.assetId, asset.getDestination(), asset.getTag())
-            },
-            successBlock = { list ->
-                assetRepository.clearPendingDepositsByAssetId(asset.assetId)
-                val pendingDeposits = list.data ?: return@handleMixinResponse
-
-                pendingDeposits.chunked(100) { trunk ->
-                    viewModelScope.launch(Dispatchers.IO) {
-                        processPendingDepositTrunk(asset.assetId, trunk)
+    suspend fun refreshPendingDeposits(asset: AssetItem) = withContext(Dispatchers.IO) {
+        val pendingDeposits = mutableListOf<PendingDeposit>()
+        asset.depositEntries?.forEach { depositEntry ->
+            val response = try {
+                assetRepository.pendingDeposits(
+                    asset.assetId,
+                    depositEntry.destination,
+                    depositEntry.tag.run {
+                        if (this.isNullOrEmpty()) null
+                        else this
                     }
+                )
+            } catch (e: Throwable) {
+                null
+            }
+            if (response?.isSuccess==true) {
+                response.data?.let { data ->
+                    pendingDeposits.addAll(data)
                 }
             }
-        )
+        }
+        assetRepository.clearPendingDepositsByAssetId(asset.assetId)
+        if (pendingDeposits.isNotEmpty()) {
+            pendingDeposits.chunked(100) { trunk ->
+                viewModelScope.launch(Dispatchers.IO) {
+                    processPendingDepositTrunk(asset.assetId, trunk)
+                }
+            }
+        }
     }
 
     private suspend fun processPendingDepositTrunk(assetId: String, trunk: List<PendingDeposit>) {
