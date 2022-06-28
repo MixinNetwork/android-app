@@ -29,19 +29,7 @@ import one.mixin.android.extension.toUri
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.UserBottomSheetDialogFragment
 import one.mixin.android.ui.setting.ui.compose.MixinSettingFragment
-import one.mixin.android.ui.setting.ui.page.AboutPage
-import one.mixin.android.ui.setting.ui.page.AccountPage
-import one.mixin.android.ui.setting.ui.page.AccountPrivacyPage
-import one.mixin.android.ui.setting.ui.page.AppAuthSettingPage
-import one.mixin.android.ui.setting.ui.page.AppearancePage
-import one.mixin.android.ui.setting.ui.page.BlockedPage
-import one.mixin.android.ui.setting.ui.page.ConversationSettingPage
-import one.mixin.android.ui.setting.ui.page.MobileContactPage
-import one.mixin.android.ui.setting.ui.page.NotificationsPage
-import one.mixin.android.ui.setting.ui.page.PhoneNumberSettingPage
-import one.mixin.android.ui.setting.ui.page.PinSettingPage
-import one.mixin.android.ui.setting.ui.page.SecurityPage
-import one.mixin.android.ui.setting.ui.page.SettingPage
+import one.mixin.android.ui.setting.ui.page.*
 import one.mixin.android.ui.setting.ui.theme.MixinAppTheme
 import one.mixin.android.vo.User
 import timber.log.Timber
@@ -169,7 +157,7 @@ class SettingComposeFragment : BaseFragment() {
                     val navController = rememberAnimatedNavController()
                     val navigationController = remember {
                         SettingNavControllerImpl(navController, closeActivity = {
-                            activity?.onBackPressed()
+                            activity?.onBackPressedDispatcher?.onBackPressed()
                         })
                     }
 
@@ -263,6 +251,10 @@ class SettingComposeFragment : BaseFragment() {
 
                             composable(SettingDestination.PinSetting.name) {
                                 PinSettingPage()
+                            }
+
+                            composable(SettingDestination.BiometricTime.name) {
+                                BiometricTimePage()
                             }
 
                             // TODO(BIN) remove this. didn't work now.
