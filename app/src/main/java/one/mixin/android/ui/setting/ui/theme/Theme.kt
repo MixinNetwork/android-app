@@ -28,6 +28,8 @@ class AppColors(
 class AppDrawables(
     @DrawableRes
     val emergencyAvatar: Int,
+    @DrawableRes
+    val emergencyContact: Int,
 )
 
 object MixinAppTheme {
@@ -64,9 +66,11 @@ private val DarkColorPalette = AppColors(
 
 private val LightDrawablePalette = AppDrawables(
     emergencyAvatar = R.drawable.ic_emergency_avatar,
+    emergencyContact = R.drawable.ic_emergency_contact,
 )
 private val DarkDrawablePalette = AppDrawables(
     emergencyAvatar = R.drawable.ic_emergency_avatar_night,
+    emergencyContact = R.drawable.ic_emergency_contact_night,
 )
 
 private val LocalColors = compositionLocalOf { LightColorPalette }
