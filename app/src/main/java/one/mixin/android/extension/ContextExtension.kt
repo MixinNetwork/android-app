@@ -90,11 +90,11 @@ import kotlin.math.roundToInt
 
 private val uiHandler = Handler(Looper.getMainLooper())
 
-fun Context.mainThread(runnable: () -> Unit) {
+fun mainThread(runnable: () -> Unit) {
     uiHandler.post(runnable)
 }
 
-fun Context.mainThreadDelayed(runnable: () -> Unit, delayMillis: Long) {
+fun mainThreadDelayed(runnable: () -> Unit, delayMillis: Long) {
     uiHandler.postDelayed(runnable, delayMillis)
 }
 
@@ -127,7 +127,7 @@ fun Context.runOnUiThread(f: Context.() -> Unit) {
     runOnUiThread(f, 0L)
 }
 
-fun Context.runOnUiThread(runnable: Runnable, delay: Long = 0L) {
+fun runOnUiThread(runnable: Runnable, delay: Long = 0L) {
     if (delay == 0L) {
         uiHandler.post(runnable)
     } else {
@@ -135,15 +135,15 @@ fun Context.runOnUiThread(runnable: Runnable, delay: Long = 0L) {
     }
 }
 
-fun Context.cancelRunOnUiThread(runnable: Runnable) {
+fun cancelRunOnUiThread(runnable: Runnable) {
     uiHandler.removeCallbacks(runnable)
 }
 
-fun Context.async(runnable: () -> Unit) {
+fun async(runnable: () -> Unit) {
     Thread(runnable).start()
 }
 
-fun Context.async(runnable: () -> Unit, executor: ExecutorService): Future<out Any?> =
+fun async(runnable: () -> Unit, executor: ExecutorService): Future<out Any?> =
     executor.submit(runnable)
 
 fun Context.statusBarHeight(): Int {
@@ -179,7 +179,7 @@ fun Context.hasNavigationBar(): Boolean {
         } else if ("0" == navBarOverride) {
             hasNavigationBar = true
         }
-    } catch (e: Exception) {
+    } catch (_: Exception) {
     }
     return hasNavigationBar
 }

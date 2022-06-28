@@ -243,7 +243,7 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
         if (list.isNotEmpty()) {
             _headBinding?.pieItemContainer?.removeAllViews()
             list.sortWith { o1, o2 -> ((o2.percent - o1.percent) * 100).toInt() }
-            context?.mainThread {
+            mainThread {
                 _headBinding?.percentView?.setPercents(list)
             }
             when {

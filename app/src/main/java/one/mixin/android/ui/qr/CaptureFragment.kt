@@ -293,7 +293,7 @@ class CaptureFragment() : BaseCameraxFragment() {
             unbindUseCases(getVideoCapture())
 
             if (Build.VERSION.SDK_INT != Build.VERSION_CODES.N && Build.VERSION.SDK_INT != Build.VERSION_CODES.N_MR1) {
-                requireContext().mainThreadDelayed(
+                mainThreadDelayed(
                     {
                         try {
                             audioManager.setStreamVolume(AudioManager.STREAM_SYSTEM, oldStreamVolume, 0)

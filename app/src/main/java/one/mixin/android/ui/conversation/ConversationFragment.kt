@@ -2640,7 +2640,7 @@ class ConversationFragment() :
                 0,
                 binding.chatRv.measuredHeight * 3 / 4,
                 action = {
-                    requireContext().mainThreadDelayed(
+                    mainThreadDelayed(
                         {
                             RxBus.publish(BlinkEvent(messageId))
                         },
@@ -2655,7 +2655,7 @@ class ConversationFragment() :
                     index,
                     0,
                     action = {
-                        requireContext().mainThreadDelayed(
+                        mainThreadDelayed(
                             {
                                 RxBus.publish(BlinkEvent(messageId))
                             },
@@ -2668,7 +2668,7 @@ class ConversationFragment() :
                 val lastPosition = lm.findLastCompletelyVisibleItemPosition()
                 val firstPosition = lm.findFirstVisibleItemPosition()
                 if (index in firstPosition..lastPosition) {
-                    requireContext().mainThreadDelayed(
+                    mainThreadDelayed(
                         {
                             RxBus.publish(BlinkEvent(messageId))
                         },
@@ -2679,7 +2679,7 @@ class ConversationFragment() :
                         index + 1,
                         binding.chatRv.measuredHeight * 3 / 4,
                         action = {
-                            requireContext().mainThreadDelayed(
+                            mainThreadDelayed(
                                 {
                                     RxBus.publish(BlinkEvent(messageId))
                                 },

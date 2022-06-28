@@ -257,7 +257,7 @@ class TransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>>()
                     walletViewModel.updateAssetHidden(asset.assetId, asset.hidden != true)
                 }
                 bottomSheet.dismiss()
-                activity?.mainThreadDelayed({ activity?.onBackPressed() }, 200)
+                mainThreadDelayed({ activity?.onBackPressed() }, 200)
             }
             cancel.setOnClickListener { bottomSheet.dismiss() }
         }
