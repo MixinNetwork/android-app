@@ -56,6 +56,7 @@ import one.mixin.android.extension.createGifTemp
 import one.mixin.android.extension.createImageTemp
 import one.mixin.android.extension.createPngTemp
 import one.mixin.android.extension.fadeOut
+import one.mixin.android.extension.getParcelableExtra
 import one.mixin.android.extension.getPublicPicturePath
 import one.mixin.android.extension.isAutoRotate
 import one.mixin.android.extension.isLandscape
@@ -112,7 +113,7 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
         intent.getFloatExtra(RATIO, 0f)
     }
     private val initialItem by lazy {
-        intent.getParcelableExtra(INITIAL_ITEM) as? MessageItem
+        getParcelableExtra(intent, INITIAL_ITEM, MessageItem::class.java)
     }
 
     private var initialIndex: Int = 0

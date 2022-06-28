@@ -82,6 +82,7 @@ import one.mixin.android.widget.gallery.MimeType
 import one.mixin.android.widget.gallery.engine.impl.GlideEngine
 import timber.log.Timber
 import java.io.File
+import java.io.Serializable
 import java.util.Locale
 import java.util.UUID
 import java.util.concurrent.ExecutorService
@@ -1140,5 +1141,23 @@ fun Context.callPhone(phone: String) {
         startActivity(intent)
     } catch (e: Exception) {
         Timber.e(e)
+    }
+}
+
+@SuppressWarnings("deprecation")
+fun <T : Serializable?> getSerializableExtra(intent: Intent, name: String, clazz: Class<T>): T? {
+    return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+        intent.getSerializableExtra(name, clazz)
+    } else {
+        intent.getSerializableExtra(name) as? T
+    }
+}
+
+@SuppressWarnings("deprecation")
+fun <T> getParcelableExtra(intent: Intent, name: String, clazz: Class<T>): T? {
+    return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+        intent.getParcelableExtra(name, clazz)
+    } else {
+        intent.getParcelableExtra(name) as T?
     }
 }

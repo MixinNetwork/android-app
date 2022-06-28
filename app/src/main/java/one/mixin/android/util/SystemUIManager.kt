@@ -25,14 +25,14 @@ object SystemUIManager {
     fun fullScreen(window: Window) {
         WindowCompat.setDecorFitsSystemWindows(window, false)
 
-        WindowCompat.getInsetsController(window,window.decorView).apply {
+        WindowCompat.getInsetsController(window, window.decorView).apply {
             hide(WindowInsetsCompat.Type.systemBars())
             systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
         }
     }
 
     fun lightUI(window: Window, light: Boolean) {
-        val controller = WindowCompat.getInsetsController(window,window.decorView)
+        val controller = WindowCompat.getInsetsController(window, window.decorView)
         controller.apply {
             isAppearanceLightStatusBars = light
             isAppearanceLightNavigationBars = light
@@ -40,7 +40,7 @@ object SystemUIManager {
     }
 
     fun hideSystemUI(window: Window) {
-        val controller = WindowCompat.getInsetsController(window,window.decorView)
+        val controller = WindowCompat.getInsetsController(window, window.decorView)
         controller.apply {
             hide(WindowInsetsCompat.Type.systemBars())
             systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
@@ -48,7 +48,7 @@ object SystemUIManager {
     }
 
     fun showSystemUI(window: Window) {
-        val controller = WindowCompat.getInsetsController(window,window.decorView)
+        val controller = WindowCompat.getInsetsController(window, window.decorView)
         controller.apply {
             show(WindowInsetsCompat.Type.systemBars())
         }
