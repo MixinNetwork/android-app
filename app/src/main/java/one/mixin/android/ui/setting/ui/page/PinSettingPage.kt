@@ -35,7 +35,7 @@ import one.mixin.android.ui.common.biometric.BiometricBottomSheetDialogFragment
 import one.mixin.android.ui.setting.BiometricTimeFragment
 import one.mixin.android.ui.setting.LocalSettingNav
 import one.mixin.android.ui.setting.SettingDestination
-import one.mixin.android.ui.setting.ui.compose.HighlightLinkText
+import one.mixin.android.ui.setting.ui.compose.HighlightStarText
 import one.mixin.android.ui.setting.ui.compose.MixinBottomSheetDialog
 import one.mixin.android.ui.setting.ui.compose.SettingPageScaffold
 import one.mixin.android.ui.setting.ui.compose.SettingTile
@@ -66,9 +66,8 @@ fun PinSettingPage() {
 
             val context = LocalContext.current
 
-            HighlightLinkText(
+            HighlightStarText(
                 source = stringResource(R.string.wallet_pin_tops_desc),
-                texts = arrayOf(stringResource(R.string.Learn_More)),
                 links = arrayOf(Constants.HelpLink.TIP),
                 textStyle = TextStyle(
                     fontSize = 12.sp,

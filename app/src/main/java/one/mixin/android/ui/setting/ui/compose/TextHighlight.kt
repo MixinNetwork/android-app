@@ -15,32 +15,43 @@ import one.mixin.android.ui.setting.ui.theme.MixinAppTheme
 private const val TAG_URL = "URL"
 
 @Composable
-fun HighlightLinkText(
+fun HighlightStarText(
     modifier: Modifier = Modifier,
     source: String,
-    texts: Array<String>,
     links: Array<String>,
     highlightStyle: SpanStyle = SpanStyle(color = MixinAppTheme.colors.accent),
     textStyle: TextStyle = TextStyle(color = MixinAppTheme.colors.textPrimary, fontSize = 14.sp),
     onClick: (link: String) -> Unit
 ) {
-
-    require(texts.size == links.size) { "text's length should equals with links" }
-
     val annotatedString = remember {
         buildAnnotatedString {
-            append(source)
-            for (i in texts.indices) {
-                val text = texts[i]
-                val link = links[i]
-                val start = source.indexOf(text)
-                require(start != -1) { "start index can not be -1" }
+            var start: Int
+            var end: Int
+            val stringBuilder = StringBuilder(source)
+            val targets = arrayListOf<Pair<Int, Int>>()
 
-                addStyle(
-                    highlightStyle,
-                    start, start + text.length
-                )
-                addStringAnnotation(TAG_URL, annotation = link, start, start + text.length)
+            kotlin.runCatching {
+                while (stringBuilder.indexOf("**").also { start = it } != -1) {
+                    stringBuilder.replace(start, start + 2, "")
+                    end = stringBuilder.indexOf("**")
+                    if (end >= 0) {
+                        stringBuilder.replace(end, end + 2, "")
+                        targets.add(start to end)
+                    }
+                }
+            }
+
+            append(stringBuilder.toString())
+
+            kotlin.runCatching {
+                for (i in targets.indices) {
+                    val (highlightStart, highlightEnd) = targets[i]
+                    addStyle(
+                        highlightStyle,
+                        highlightStart, highlightEnd
+                    )
+                    addStringAnnotation(TAG_URL, annotation = links[i], highlightStart, highlightEnd)
+                }
             }
         }
     }
@@ -64,9 +75,8 @@ fun HighlightLinkText(
 fun HighlightLinkTextPreview() {
     MixinAppTheme {
         Surface(color = MixinAppTheme.colors.background) {
-            HighlightLinkText(
-                source = "Test Mixin Test One",
-                texts = arrayOf("Mixin", "One"),
+            HighlightStarText(
+                source = "Test **Mixin** Test **One**",
                 links = arrayOf("https://www.mixin.one/", "https://www.mixin.one/"),
                 onClick = {
                     println(it)
