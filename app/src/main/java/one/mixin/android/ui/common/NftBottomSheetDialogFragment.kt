@@ -23,6 +23,9 @@ import one.mixin.android.extension.round
 import one.mixin.android.extension.withArgs
 import one.mixin.android.session.Session
 import one.mixin.android.session.encryptPin
+import one.mixin.android.session.encryptTipPin
+import one.mixin.android.tip.Tip
+import one.mixin.android.tip.TipBody
 import one.mixin.android.ui.common.biometric.BiometricBottomSheetDialogFragment
 import one.mixin.android.ui.common.biometric.BiometricInfo
 import one.mixin.android.ui.common.biometric.BiometricItem
@@ -31,6 +34,7 @@ import one.mixin.android.ui.common.biometric.ValuableBiometricBottomSheetDialogF
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.User
 import one.mixin.android.widget.BottomSheet
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class NftBottomSheetDialogFragment : BiometricBottomSheetDialogFragment() {
@@ -42,6 +46,9 @@ class NftBottomSheetDialogFragment : BiometricBottomSheetDialogFragment() {
                 putParcelable(ARGS_BIOMETRIC_ITEM, t)
             }
     }
+
+    @Inject
+    lateinit var tip: Tip
 
     private var success: Boolean = false
 
@@ -147,13 +154,18 @@ class NftBottomSheetDialogFragment : BiometricBottomSheetDialogFragment() {
     }
 
     override suspend fun invokeNetwork(pin: String): MixinResponse<*> {
-        val request = CollectibleRequest(t.action, t.rawTransaction, encryptPin(Session.getPinToken()!!, pin)!!)
+        suspend fun getRequest(body: ByteArray): CollectibleRequest =
+            CollectibleRequest(t.action, t.rawTransaction, requireNotNull(if (Session.getTipPub().isNullOrBlank()){
+                encryptPin(Session.getPinToken()!!, pin)
+            } else {
+                encryptTipPin(tip, pin, body)
+            }))
         return when (t.action) {
             SignatureAction.sign.name -> {
-                bottomViewModel.signCollectibleTransfer(t.requestId, request)
+                bottomViewModel.signCollectibleTransfer(t.requestId, getRequest(TipBody.forCollectibleRequestSign(t.requestId)))
             }
             SignatureAction.unlock.name -> {
-                bottomViewModel.unlockCollectibleTransfer(t.requestId, request)
+                bottomViewModel.unlockCollectibleTransfer(t.requestId, getRequest(TipBody.forCollectibleRequestUnlock(t.requestId)))
             }
             else -> {
                 bottomViewModel.cancelCollectibleTransfer(t.requestId)

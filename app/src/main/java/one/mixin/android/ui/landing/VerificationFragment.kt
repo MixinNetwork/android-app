@@ -230,7 +230,6 @@ class VerificationFragment : PinCodeFragment(R.layout.fragment_verification) {
             binding.pinVerificationView.code(),
             registration_id = registrationId,
             purpose = VerificationPurpose.SESSION.name,
-            pin = Session.getPinToken()?.let { encryptPin(it, pin) },
             session_secret = sessionSecret
         )
 

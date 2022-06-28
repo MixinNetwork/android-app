@@ -168,7 +168,14 @@ constructor(
     }
 
     suspend fun deactivate(pin: String, verificationId: String): MixinResponse<Account> = withContext(Dispatchers.IO) {
-        accountService.deactivate(DeactivateRequest(encryptPin(Session.getPinToken()!!, pin)!!, verificationId))
+        accountService.deactivate(DeactivateRequest(
+            requireNotNull(if (Session.getTipPub().isNullOrBlank()){
+                encryptPin(Session.getPinToken()!!, pin)
+            } else {
+                encryptTipPin(tip, pin, TipBody.forUserDeactivate(verificationId))
+            }),
+            verificationId
+        ))
     }
 
     suspend fun authorize(request: AuthorizeRequest) = authService.authorize(request)
@@ -256,10 +263,18 @@ constructor(
         emergencyService.loginVerify(id, request)
 
     suspend fun showEmergency(pin: String) =
-        emergencyService.show(PinRequest(encryptPin(Session.getPinToken()!!, pin)!!))
+        emergencyService.show(PinRequest(requireNotNull(if (Session.getTipPub().isNullOrBlank()){
+            encryptPin(Session.getPinToken()!!, pin)
+        } else {
+            encryptTipPin(tip, pin, TipBody.forEmergencyContactRead())
+        })))
 
     suspend fun deleteEmergency(pin: String) =
-        emergencyService.delete(PinRequest(encryptPin(Session.getPinToken()!!, pin)!!))
+        emergencyService.delete(PinRequest(requireNotNull(if (Session.getTipPub().isNullOrBlank()){
+            encryptPin(Session.getPinToken()!!, pin)
+        } else {
+            encryptTipPin(tip, pin, TipBody.forEmergencyContactRemove())
+        })))
 
     suspend fun getFiats() = accountService.getFiats()
 

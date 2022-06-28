@@ -173,11 +173,10 @@ class VerificationEmergencyFragment : PinCodeFragment(R.layout.fragment_verifica
         val publicKey = sessionKey.public as EdDSAPublicKey
         val sessionSecret = publicKey.abyte.base64Encode()
         return EmergencyRequest(
-            user?.phone,
-            user?.identityNumber ?: userIdentityNumber,
-            Session.getPinToken()?.let { encryptPin(it, pin)!! },
-            binding.pinVerificationView.code(),
-            EmergencyPurpose.SESSION.name,
+            phone = user?.phone,
+            identityNumber = user?.identityNumber ?: userIdentityNumber,
+            code = binding.pinVerificationView.code(),
+            purpose = EmergencyPurpose.SESSION.name,
             sessionSecret = sessionSecret,
             registrationId = registrationId
         )
