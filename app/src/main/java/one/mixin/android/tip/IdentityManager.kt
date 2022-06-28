@@ -13,7 +13,7 @@ import javax.inject.Inject
 
 class IdentityManager @Inject internal constructor(private val tipService: TipService) {
 
-    suspend fun getIdentityPriv(pin: String): String? {
+    suspend fun getIdentityPriv(pin: String): ByteArray? {
         val tipIdentity = handleMixinResponse(
             invokeNetwork = {
                 tipService.tipIdentity()
@@ -28,6 +28,6 @@ class IdentityManager @Inject internal constructor(private val tipService: TipSe
             Argon2Kt()
         }
         val hashResult: Argon2KtResult = argon2Kt.argon2IdHash(pin, tipIdentity.seedBase64.base64RawUrlDecode())
-        return hashResult.rawHashAsByteArray().base64RawEncode()
+        return hashResult.rawHashAsByteArray()
     }
 }

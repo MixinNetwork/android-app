@@ -5,12 +5,14 @@ import android.os.Bundle
 import android.view.View
 import android.view.WindowManager
 import androidx.fragment.app.viewModels
-import com.uber.autodispose.autoDispose
+import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import one.mixin.android.Constants
 import one.mixin.android.Constants.INTERVAL_10_MINS
 import one.mixin.android.R
-import one.mixin.android.api.MixinResponse
+import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.crypto.PrivacyPreference.putPrefPinInterval
 import one.mixin.android.databinding.FragmentWalletPasswordBinding
 import one.mixin.android.extension.clickVibrate
@@ -23,6 +25,7 @@ import one.mixin.android.extension.toast
 import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.extension.withArgs
 import one.mixin.android.session.Session
+import one.mixin.android.tip.Tip
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.contacts.ContactsActivity
 import one.mixin.android.ui.conversation.ConversationActivity
@@ -30,12 +33,11 @@ import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.ui.wallet.WalletActivity
 import one.mixin.android.ui.wallet.WalletViewModel
 import one.mixin.android.util.BiometricUtil
-import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.viewBinding
-import one.mixin.android.vo.Account
 import one.mixin.android.vo.toUser
 import one.mixin.android.widget.Keyboard
 import one.mixin.android.widget.PinView
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class WalletPasswordFragment : BaseFragment(R.layout.fragment_wallet_password), PinView.OnPinListener {
@@ -62,6 +64,9 @@ class WalletPasswordFragment : BaseFragment(R.layout.fragment_wallet_password), 
 
     private val walletViewModel by viewModels<WalletViewModel>()
     private val binding by viewBinding(FragmentWalletPasswordBinding::bind)
+
+    @Inject
+    lateinit var tip: Tip
 
     private val change: Boolean by lazy {
         requireArguments().getBoolean(ARGS_CHANGE)
@@ -239,62 +244,78 @@ class WalletPasswordFragment : BaseFragment(R.layout.fragment_wallet_password), 
             STEP4 -> {
                 if (checkEqual()) return
 
-                val dialog = indeterminateProgressDialog(
-                    message = getString(R.string.Please_wait_a_bit),
-                    title = if (change) getString(R.string.Changing) else getString(R.string.Creating)
-                )
-                dialog.setCancelable(false)
-                dialog.show()
+                createPinInternal()
+            }
+        }
+    }
 
-                if (viewDestroyed()) return
+    private fun createPinInternal() = lifecycleScope.launch {
+        if (viewDestroyed()) return@launch
 
-                walletViewModel.updatePin(binding.pin.code(), oldPassword)
-                    .autoDispose(stopScope).subscribe(
-                        { r: MixinResponse<Account> ->
-                            if (r.isSuccess) {
-                                r.data?.let {
-                                    Session.storeAccount(it)
-                                    walletViewModel.insertUser(it.toUser())
+        val dialog = indeterminateProgressDialog(
+            message = getString(R.string.Please_wait_a_bit),
+            title = if (change) getString(R.string.Changing) else getString(R.string.Creating)
+        )
+        dialog.setCancelable(false)
+        dialog.show()
 
-                                    val cur = System.currentTimeMillis()
-                                    defaultSharedPreferences.putLong(Constants.Account.PREF_PIN_CHECK, cur)
-                                    putPrefPinInterval(requireContext(), INTERVAL_10_MINS)
+        val pin = binding.pin.code()
+        if (Session.getTipPub().isNullOrBlank().not()) {
+            val deviceId = defaultSharedPreferences.getString(Constants.DEVICE_ID, null) ?: return@launch
+            val tipPriv = tip.updateTipPriv(this@WalletPasswordFragment.requireContext(), requireNotNull(oldPassword), deviceId, pin)
+            dialog.dismiss()
+            if (tipPriv != null) {
+                afterPinSuccess(pin)
+            }
+            return@launch
+        }
 
-                                    val openBiometrics = defaultSharedPreferences.getBoolean(Constants.Account.PREF_BIOMETRICS, false)
-                                    if (openBiometrics) {
-                                        BiometricUtil.savePin(requireContext(), binding.pin.code(), this@WalletPasswordFragment)
-                                    }
+        handleMixinResponse(
+            invokeNetwork = { walletViewModel.updatePin(pin, oldPassword) },
+            switchContext = Dispatchers.IO,
+            successBlock = { r ->
+                r.data?.let {
+                    Session.storeAccount(it)
+                    walletViewModel.insertUser(it.toUser())
 
-                                    activity?.let { activity ->
-                                        if (activity is ConversationActivity ||
-                                            activity is ContactsActivity
-                                        ) {
-                                            toast(R.string.Set_PIN_successfully)
-                                            parentFragmentManager.popBackStackImmediate()
-                                        } else if (activity is MainActivity) {
-                                            toast(R.string.Set_PIN_successfully)
-                                            parentFragmentManager.popBackStackImmediate()
-                                            WalletActivity.show(activity)
-                                        } else {
-                                            if (change) {
-                                                toast(R.string.Change_PIN_successfully)
-                                            } else {
-                                                toast(R.string.Set_PIN_successfully)
-                                            }
-                                            parentFragmentManager.popBackStackImmediate()
-                                        }
-                                    }
-                                }
-                            } else {
-                                ErrorHandler.handleMixinError(r.errorCode, r.errorDescription)
-                            }
-                            dialog.dismiss()
-                        },
-                        { t ->
-                            dialog.dismiss()
-                            ErrorHandler.handleError(t)
-                        }
-                    )
+                    afterPinSuccess(pin)
+                }
+            },
+            doAfterNetworkSuccess = { dialog.dismiss() },
+            exceptionBlock = {
+                dialog.dismiss()
+                return@handleMixinResponse false
+            }
+        )
+    }
+
+    private fun afterPinSuccess(pin: String) {
+        val cur = System.currentTimeMillis()
+        defaultSharedPreferences.putLong(Constants.Account.PREF_PIN_CHECK, cur)
+        putPrefPinInterval(requireContext(), INTERVAL_10_MINS)
+
+        val openBiometrics = defaultSharedPreferences.getBoolean(Constants.Account.PREF_BIOMETRICS, false)
+        if (openBiometrics) {
+            BiometricUtil.savePin(requireContext(), pin, this@WalletPasswordFragment)
+        }
+
+        activity?.let { activity ->
+            if (activity is ConversationActivity ||
+                activity is ContactsActivity
+            ) {
+                toast(R.string.Set_PIN_successfully)
+                parentFragmentManager.popBackStackImmediate()
+            } else if (activity is MainActivity) {
+                toast(R.string.Set_PIN_successfully)
+                parentFragmentManager.popBackStackImmediate()
+                WalletActivity.show(activity)
+            } else {
+                if (change) {
+                    toast(R.string.Change_PIN_successfully)
+                } else {
+                    toast(R.string.Set_PIN_successfully)
+                }
+                parentFragmentManager.popBackStackImmediate()
             }
         }
     }
