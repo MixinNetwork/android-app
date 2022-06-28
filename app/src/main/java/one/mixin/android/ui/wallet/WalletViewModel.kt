@@ -7,9 +7,6 @@ import androidx.lifecycle.viewModelScope
 import androidx.paging.LivePagedListBuilder
 import androidx.paging.PagedList
 import dagger.hilt.android.lifecycle.HiltViewModel
-import io.reactivex.Observable
-import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.schedulers.Schedulers
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -95,11 +92,11 @@ internal constructor(
 
     suspend fun simpleAssetItem(id: String) = assetRepository.simpleAssetItem(id)
 
-    fun updatePin(pin: String, oldPin: String?): Observable<MixinResponse<Account>> {
+    suspend fun updatePin(pin: String, oldPin: String?): MixinResponse<Account> {
         val pinToken = Session.getPinToken()!!
         val old = encryptPin(pinToken, oldPin)
         val fresh = encryptPin(pinToken, pin)!!
-        return accountRepository.updatePin(PinRequest(fresh, old)).observeOn(AndroidSchedulers.mainThread()).subscribeOn(Schedulers.io())
+        return accountRepository.updatePinSuspend(PinRequest(fresh, old))
     }
 
     suspend fun verifyPin(code: String) = withContext(Dispatchers.IO) {

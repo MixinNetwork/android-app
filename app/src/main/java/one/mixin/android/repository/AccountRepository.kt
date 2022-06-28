@@ -153,7 +153,7 @@ constructor(
 
     fun findUsersByType(relationship: String) = userDao.findUsersByType(relationship)
 
-    fun updatePin(request: PinRequest) = accountService.updatePin(request)
+    suspend fun updatePinSuspend(request: PinRequest) = accountService.updatePinSuspend(request)
 
     suspend fun verifyPin(code: String): MixinResponse<Account> = withContext(Dispatchers.IO) {
         return@withContext if (Session.getTipPub().isNullOrBlank()) {
