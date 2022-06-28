@@ -51,7 +51,6 @@ import one.mixin.android.ui.setting.delete.DeleteAccountPinBottomSheetDialogFrag
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.ErrorHandler.Companion.NEED_CAPTCHA
 import one.mixin.android.util.viewBinding
-import one.mixin.android.vo.Account
 import one.mixin.android.vo.User
 import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.CaptchaView
@@ -183,39 +182,39 @@ class VerificationFragment : PinCodeFragment(R.layout.fragment_verification) {
             )
     }
 
-    private fun handlePhoneModification() {
+    private fun handlePhoneModification() = lifecycleScope.launch {
         showLoading()
-        viewModel.changePhone(requireArguments().getString(ARGS_ID)!!, binding.pinVerificationView.code(), pin = pin!!)
-            .autoDispose(stopScope).subscribe(
-                { r: MixinResponse<Account> ->
-                    binding.verificationNextFab.hide()
-                    binding.verificationCover.visibility = GONE
-                    if (!r.isSuccess) {
-                        handleFailure(r)
-                        return@subscribe
+        handleMixinResponse(
+            invokeNetwork = {
+                viewModel.changePhone(requireArguments().getString(ARGS_ID)!!, binding.pinVerificationView.code(), pin = pin!!)
+            },
+            switchContext = Dispatchers.IO,
+            successBlock = {
+                withContext(Dispatchers.IO) {
+                    val a = Session.getAccount()
+                    a?.let {
+                        val phone = requireArguments().getString(ARGS_PHONE_NUM)
+                            ?: return@withContext
+                        viewModel.updatePhone(a.userId, phone)
+                        a.phone = phone
+                        Session.storeAccount(a)
                     }
-                    lifecycleScope.launch(Dispatchers.IO) {
-                        val a = Session.getAccount()
-                        a?.let {
-                            val phone = requireArguments().getString(ARGS_PHONE_NUM) ?: return@launch
-                            viewModel.updatePhone(a.userId, phone)
-                            a.phone = phone
-                            Session.storeAccount(a)
-                        }
-                        withContext(Dispatchers.Main) {
-                            alert(getString(R.string.Changed))
-                                .setPositiveButton(android.R.string.ok) { dialog, _ ->
-                                    dialog.dismiss()
-                                    activity?.finish()
-                                }
-                                .show()
-                        }
-                    }
-                },
-                { t: Throwable ->
-                    handleError(t)
                 }
-            )
+                alert(getString(R.string.Changed))
+                    .setPositiveButton(android.R.string.ok) { dialog, _ ->
+                        dialog.dismiss()
+                        activity?.finish()
+                    }
+                    .show()
+            },
+            doAfterNetworkSuccess = { hideLoading() },
+            defaultErrorHandle = {
+                handleFailure(it)
+            },
+            defaultExceptionHandle = {
+                handleError(it)
+            }
+        )
     }
 
     private fun handleLogin() = lifecycleScope.launch {

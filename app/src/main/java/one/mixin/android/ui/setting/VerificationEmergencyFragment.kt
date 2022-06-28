@@ -23,12 +23,16 @@ import one.mixin.android.extension.putInt
 import one.mixin.android.extension.withArgs
 import one.mixin.android.session.Session
 import one.mixin.android.session.encryptPin
+import one.mixin.android.session.encryptTipPin
+import one.mixin.android.tip.Tip
+import one.mixin.android.tip.TipBody
 import one.mixin.android.ui.common.PinCodeFragment
 import one.mixin.android.ui.landing.LandingActivity.Companion.ARGS_PIN
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.Account
 import one.mixin.android.vo.User
 import java.security.KeyPair
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class VerificationEmergencyFragment : PinCodeFragment(R.layout.fragment_verification_emergency) {
@@ -66,6 +70,9 @@ class VerificationEmergencyFragment : PinCodeFragment(R.layout.fragment_verifica
 
     private val binding by viewBinding(FragmentVerificationEmergencyBinding::bind)
 
+    @Inject
+    lateinit var tip: Tip
+
     override fun getContentView() = binding.root
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -88,6 +95,7 @@ class VerificationEmergencyFragment : PinCodeFragment(R.layout.fragment_verifica
 
     private fun createVerify() = lifecycleScope.launch {
         showLoading()
+        val code = binding.pinVerificationView.code()
         handleMixinResponse(
             invokeNetwork = {
                 viewModel.createVerifyEmergency(
@@ -95,8 +103,12 @@ class VerificationEmergencyFragment : PinCodeFragment(R.layout.fragment_verifica
                     EmergencyRequest(
                         user?.phone,
                         user?.identityNumber ?: userIdentityNumber,
-                        Session.getPinToken()?.let { encryptPin(it, pin)!! },
-                        binding.pinVerificationView.code(),
+                        if (Session.getTipPub().isNullOrBlank()) {
+                            Session.getPinToken()?.let { encryptPin(it, pin)!! }
+                        } else {
+                            encryptTipPin(tip, requireNotNull(pin), TipBody.forEmergencyContactCreate(verificationId, code))
+                        },
+                        code,
                         EmergencyPurpose.CONTACT.name
                     )
                 )

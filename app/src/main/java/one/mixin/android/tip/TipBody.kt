@@ -1,3 +1,5 @@
+@file:Suppress("unused")
+
 package one.mixin.android.tip
 
 import one.mixin.android.extension.sha256
@@ -29,7 +31,7 @@ object TipBody {
         return (TIPTransferCreate + body).hashToBody()
     }
 
-    fun forWithdrawalCreate(addressId: String, amount: Double, fee: Double, traceId: String, memo: String): ByteArray =
+    fun forWithdrawalCreate(addressId: String, amount: String, fee: String?, traceId: String, memo: String?): ByteArray =
         (TIPWithdrawalCreate + addressId + amount + fee + traceId + memo).hashToBody()
 
     fun forTransfer(assetId: String, counterUserId: String, amount: String, traceId: String?, memo: String?): ByteArray =
@@ -41,7 +43,7 @@ object TipBody {
     fun forEmergencyContactCreate(verificationId: String, code: String): ByteArray =
         (TIPEmergencyContactCreate + verificationId + code).hashToBody()
 
-    fun forAddressAdd(assetId: String, publicKey: String, keyTag: String, name: String): ByteArray =
+    fun forAddressAdd(assetId: String, publicKey: String?, keyTag: String?, name: String?): ByteArray =
         (TIPAddressAdd + assetId + publicKey + keyTag + name).hashToBody()
 
     private fun String.hashToBody() = sha256()

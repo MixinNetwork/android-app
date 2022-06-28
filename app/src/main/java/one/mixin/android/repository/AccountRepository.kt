@@ -90,7 +90,7 @@ constructor(
     suspend fun create(id: String, request: AccountRequest): MixinResponse<Account> =
         accountService.create(id, request)
 
-    fun changePhone(id: String, request: AccountRequest): Observable<MixinResponse<Account>> =
+    suspend fun changePhone(id: String, request: AccountRequest): MixinResponse<Account> =
         accountService.changePhone(id, request)
 
     fun deactiveVerification(id: String, request: DeactivateVerificationRequest): Observable<MixinResponse<VerificationResponse>> =
@@ -156,15 +156,15 @@ constructor(
     fun updatePin(request: PinRequest) = accountService.updatePin(request)
 
     suspend fun verifyPin(code: String): MixinResponse<Account> = withContext(Dispatchers.IO) {
-        accountService.verifyPin(PinRequest(encryptPin(Session.getPinToken()!!, code)!!))
-    }
-
-    suspend fun verifyTipPin(code: String): MixinResponse<Account> {
-        val timestamp = nowInUtcNano()
-        return accountService.verifyPin(PinRequest(
-            pin = requireNotNull(encryptTipPin(tip, code, TipBody.forVerify(timestamp))),
-            timestamp = timestamp
-        ))
+        return@withContext if (Session.getTipPub().isNullOrBlank()) {
+            accountService.verifyPin(PinRequest(encryptPin(Session.getPinToken()!!, code)!!))
+        } else {
+            val timestamp = nowInUtcNano()
+            accountService.verifyPin(PinRequest(
+                pin = requireNotNull(encryptTipPin(tip, code, TipBody.forVerify(timestamp))),
+                timestamp = timestamp
+            ))
+        }
     }
 
     suspend fun deactivate(pin: String, verificationId: String): MixinResponse<Account> = withContext(Dispatchers.IO) {

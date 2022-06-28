@@ -96,7 +96,20 @@ class BottomSheetViewModel @Inject internal constructor(
         code: String,
         trace: String?,
         memo: String?
-    ) = assetRepository.transfer(TransferRequest(assetId, userId, amount, encryptTipPin(tip, code, TipBody.forTransfer(assetId, userId, amount, trace, memo)), trace, memo))
+    ) = assetRepository.transfer(
+            TransferRequest(
+                assetId,
+                userId,
+                amount,
+                requireNotNull(if (Session.getTipPub().isNullOrBlank()) {
+                    encryptPin(Session.getPinToken()!!, code)
+                } else {
+                    encryptTipPin(tip, code, TipBody.forTransfer(assetId, userId, amount, trace, memo))
+                }),
+                trace,
+                memo
+            )
+        )
 
     suspend fun authorize(request: AuthorizeRequest): MixinResponse<AuthorizationResponse> =
         accountRepository.authorize(request)
@@ -112,17 +125,20 @@ class BottomSheetViewModel @Inject internal constructor(
         traceId: String,
         memo: String?,
         fee: String?,
-    ) =
-        assetRepository.withdrawal(
-            WithdrawalRequest(
-                addressId,
-                amount,
-                encryptPin(Session.getPinToken()!!, code)!!,
-                traceId,
-                memo,
-                fee,
-            )
+    ) = assetRepository.withdrawal(
+        WithdrawalRequest(
+            addressId,
+            amount,
+            requireNotNull(if (Session.getTipPub().isNullOrBlank()) {
+                encryptPin(Session.getPinToken()!!, code)
+            } else {
+                encryptTipPin(tip, code, TipBody.forWithdrawalCreate(addressId, amount, fee, traceId, memo))
+            }),
+            traceId,
+            memo,
+            fee,
         )
+    )
 
     suspend fun syncAddr(
         assetId: String,
@@ -137,7 +153,11 @@ class BottomSheetViewModel @Inject internal constructor(
                 destination,
                 tag,
                 label,
-                encryptPin(Session.getPinToken()!!, code)!!
+                requireNotNull(if (Session.getTipPub().isNullOrBlank()) {
+                    encryptPin(Session.getPinToken()!!, code)
+                } else {
+                    encryptTipPin(tip, code, TipBody.forAddressAdd(assetId, destination, tag, label))
+                }),
             )
         )
 
@@ -275,12 +295,7 @@ class BottomSheetViewModel @Inject internal constructor(
         )
     }
 
-    suspend fun verifyPin(code: String): MixinResponse<Account> =
-        if (Session.getTipPub().isNullOrBlank()) {
-            accountRepository.verifyPin(code)
-        } else {
-            accountRepository.verifyTipPin(code)
-        }
+    suspend fun verifyPin(code: String): MixinResponse<Account> = accountRepository.verifyPin(code)
 
     suspend fun deactivate(pin: String, verificationId: String): MixinResponse<Account> = accountRepository.deactivate(pin, verificationId)
 
