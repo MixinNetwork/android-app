@@ -42,7 +42,6 @@ import one.mixin.android.ui.common.biometric.BiometricBottomSheetDialogFragment
 import one.mixin.android.ui.setting.EmergencyViewModel
 import one.mixin.android.ui.setting.LocalSettingNav
 import one.mixin.android.ui.setting.PinEmergencyBottomSheetDialog
-import one.mixin.android.ui.setting.SettingDestination
 import one.mixin.android.ui.setting.WalletPasswordFragment
 import one.mixin.android.ui.setting.ui.compose.MixinBottomSheetDialog
 import one.mixin.android.ui.setting.ui.compose.SettingPageScaffold
@@ -174,10 +173,21 @@ private fun HasEmergencyLayout(
 
     Box(modifier = Modifier.height(24.dp))
 
+    val context = LocalContext.current
     SettingTile(
         title = stringResource(id = R.string.Change_emergency_contact),
     ) {
-
+        val activity = context.findFragmentActivityOrNull()
+        activity?.supportFragmentManager?.inTransaction {
+            setCustomAnimations(
+                R.anim.slide_in_bottom,
+                R.anim.slide_out_bottom,
+                R.anim.slide_in_bottom,
+                R.anim.slide_out_bottom
+            )
+                .add(R.id.container, VerifyFragment.newInstance(VerifyFragment.FROM_EMERGENCY))
+                .addToBackStack(null)
+        }
     }
 
     Box(modifier = Modifier.height(24.dp))
