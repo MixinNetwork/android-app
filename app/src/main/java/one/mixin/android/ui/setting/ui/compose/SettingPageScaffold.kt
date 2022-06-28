@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -35,6 +36,7 @@ import one.mixin.android.ui.setting.ui.theme.MixinAppTheme
 @Composable
 fun SettingPageScaffold(
     title: String,
+    titleBarActions: @Composable RowScope.() -> Unit = {},
     body: @Composable ColumnScope.() -> Unit,
 ) {
     Scaffold(
@@ -46,7 +48,8 @@ fun SettingPageScaffold(
                 },
                 navigationIcon = {
                     MixinBackButton()
-                }
+                },
+                actions = titleBarActions,
             )
         },
     ) {

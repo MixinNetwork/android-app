@@ -32,7 +32,7 @@ fun SecurityPage() {
 
         Box(modifier = Modifier.height(16.dp))
         SettingTile(title = stringResource(R.string.Emergency_Contact)) {
-            navController.navigation(SettingDestination.Emergency)
+            navController.navigation(SettingDestination.EmergencyContact)
         }
 
         Box(modifier = Modifier.height(16.dp))

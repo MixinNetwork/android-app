@@ -1,33 +1,22 @@
 package one.mixin.android.ui.setting.ui.page
 
 import android.content.Intent
-import androidx.annotation.DrawableRes
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.Icon
 import androidx.compose.material.Scaffold
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants
@@ -42,6 +31,7 @@ import one.mixin.android.ui.setting.SettingDestination
 import one.mixin.android.ui.setting.SettingViewModel
 import one.mixin.android.ui.setting.ui.compose.MixinBackButton
 import one.mixin.android.ui.setting.ui.compose.MixinTopAppBar
+import one.mixin.android.ui.setting.ui.compose.SettingTile
 import one.mixin.android.ui.setting.ui.theme.MixinAppTheme
 
 @Composable
@@ -154,47 +144,6 @@ fun SettingPage() {
                     settingNavController.navigation(SettingDestination.About)
                 }
             }
-        }
-    }
-}
-
-@Composable
-fun SettingTile(
-    @DrawableRes icon: Int,
-    title: String,
-    onClick: () -> Unit,
-) {
-    Row(
-        modifier = Modifier
-            .height(60.dp)
-            .background(MixinAppTheme.colors.background)
-            .clickable { onClick() }
-            .padding(start = 16.dp, end = 16.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Icon(
-            painter = painterResource(id = icon),
-            contentDescription = null,
-            tint = MixinAppTheme.colors.icon
-        )
-        Box(modifier = Modifier.width(16.dp))
-        Text(
-            text = title,
-            modifier = Modifier.fillMaxWidth(),
-            fontSize = 14.sp,
-            color = MixinAppTheme.colors.textPrimary
-        )
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun DefaultPreview() {
-    MixinAppTheme {
-        SettingTile(
-            icon = R.drawable.ic_setting_about,
-            title = stringResource(id = R.string.About)
-        ) {
         }
     }
 }
