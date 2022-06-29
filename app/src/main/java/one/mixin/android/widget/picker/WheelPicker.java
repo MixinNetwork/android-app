@@ -14,6 +14,7 @@ import android.view.View;
 import android.view.ViewConfiguration;
 import android.widget.Scroller;
 import one.mixin.android.R;
+import timber.log.Timber;
 
 import java.util.Arrays;
 import java.util.List;
@@ -258,14 +259,14 @@ public class WheelPicker extends View implements IDebug, IWheelPicker, Runnable 
             resultHeight = (int) (2 * resultHeight / Math.PI);
         }
         if (isDebug)
-            Log.i(TAG, "Wheel's content size is (" + resultWidth + ":" + resultHeight + ")");
+            Timber.tag(TAG).i("Wheel's content size is (" + resultWidth + ":" + resultHeight + ")");
 
         // 考虑内边距对尺寸的影响
         // Consideration padding influence the view sizes
         resultWidth += getPaddingLeft() + getPaddingRight();
         resultHeight += getPaddingTop() + getPaddingBottom();
         if (isDebug)
-            Log.i(TAG, "Wheel's size is (" + resultWidth + ":" + resultHeight + ")");
+            Timber.tag(TAG).i("Wheel's size is (" + resultWidth + ":" + resultHeight + ")");
 
         // 考虑父容器对尺寸的影响
         // Consideration sizes of parent can influence the view sizes
@@ -294,7 +295,7 @@ public class WheelPicker extends View implements IDebug, IWheelPicker, Runnable 
         mRectDrawn.set(getPaddingLeft(), getPaddingTop(), getWidth() - getPaddingRight(),
                 getHeight() - getPaddingBottom());
         if (isDebug)
-            Log.i(TAG, "Wheel's drawn rect size is (" + mRectDrawn.width() + ":" +
+            Timber.tag(TAG).i("Wheel's drawn rect size is (" + mRectDrawn.width() + ":" +
                     mRectDrawn.height() + ") and location is (" + mRectDrawn.left + ":" +
                     mRectDrawn.top + ")");
 
