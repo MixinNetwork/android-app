@@ -1,13 +1,17 @@
 package one.mixin.android.ui.setting.ui.compose
 
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.text.ClickableText
 import androidx.compose.material.Surface
+import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.sp
 import one.mixin.android.ui.setting.ui.theme.MixinAppTheme
@@ -15,7 +19,7 @@ import one.mixin.android.ui.setting.ui.theme.MixinAppTheme
 private const val TAG_URL = "URL"
 
 @Composable
-fun HighlightStarText(
+fun HighlightStarLinkText(
     modifier: Modifier = Modifier,
     source: String,
     links: Array<String>,
@@ -75,12 +79,63 @@ fun HighlightStarText(
 fun HighlightLinkTextPreview() {
     MixinAppTheme {
         Surface(color = MixinAppTheme.colors.background) {
-            HighlightStarText(
+            HighlightStarLinkText(
                 source = "Test **Mixin** Test **One**",
                 links = arrayOf("https://www.mixin.one/", "https://www.mixin.one/"),
                 onClick = {
                     println(it)
                 }
+            )
+        }
+    }
+}
+
+@Composable
+fun HighlightText(
+    text: String,
+    target: String?,
+    ignoreCase: Boolean = true,
+    highlightStyle: SpanStyle = SpanStyle(color = MixinAppTheme.colors.accent),
+    textStyle: TextStyle = TextStyle(color = MixinAppTheme.colors.textPrimary, fontSize = 14.sp),
+    overflow: TextOverflow = TextOverflow.Clip,
+) {
+    val annotatedString = remember {
+        buildAnnotatedString {
+            append(text)
+
+            if (!target.isNullOrBlank()) {
+                var index = text.indexOf(target, ignoreCase = ignoreCase)
+                while (index != -1) {
+                    addStyle(
+                        highlightStyle,
+                        index,
+                        index + target.length
+                    )
+                    index = text.indexOf(target, index + target.length, ignoreCase = ignoreCase)
+                }
+            }
+        }
+    }
+    Text(
+        text = annotatedString,
+        style = textStyle,
+        overflow = overflow,
+    )
+}
+
+
+@Composable
+@Preview
+fun HighlightTextPreview() {
+    MixinAppTheme {
+        Column {
+            HighlightText(
+                text = "Test Mixin Test mixin",
+                target = "Mixin",
+            )
+            HighlightText(
+                text = "7000100212",
+                target = "212",
             )
         }
     }

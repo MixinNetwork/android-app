@@ -36,6 +36,7 @@ import one.mixin.android.ui.setting.ui.theme.MixinAppTheme
 @Composable
 fun SettingPageScaffold(
     title: String,
+    verticalScrollable: Boolean = true,
     titleBarActions: @Composable RowScope.() -> Unit = {},
     body: @Composable ColumnScope.() -> Unit,
 ) {
@@ -56,7 +57,11 @@ fun SettingPageScaffold(
         Column(
             Modifier
                 .padding(it)
-                .verticalScroll(rememberScrollState())
+                .apply {
+                    if (verticalScrollable) {
+                        verticalScroll(rememberScrollState())
+                    }
+                }
         ) {
             body()
         }

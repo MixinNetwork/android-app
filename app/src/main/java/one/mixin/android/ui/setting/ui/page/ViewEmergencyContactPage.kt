@@ -24,7 +24,7 @@ import androidx.compose.ui.unit.sp
 import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.extension.openUrl
-import one.mixin.android.ui.setting.ui.compose.HighlightStarText
+import one.mixin.android.ui.setting.ui.compose.HighlightStarLinkText
 import one.mixin.android.ui.setting.ui.compose.SettingPageScaffold
 import one.mixin.android.ui.setting.ui.compose.UserAvatarImage
 import one.mixin.android.ui.setting.ui.theme.MixinAppTheme
@@ -80,7 +80,7 @@ fun ViewEmergencyContactPage(user: User) {
         Box(modifier = Modifier.height(8.dp))
 
         val context = LocalContext.current
-        HighlightStarText(
+        HighlightStarLinkText(
             modifier = Modifier.padding(horizontal = 16.dp),
             source = stringResource(id = R.string.setting_emergency_desc),
             links = arrayOf(Constants.HelpLink.EMERGENCY),

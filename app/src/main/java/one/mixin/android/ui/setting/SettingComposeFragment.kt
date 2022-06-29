@@ -21,8 +21,6 @@ import androidx.lifecycle.Observer
 import androidx.navigation.NavController
 import androidx.navigation.NavDeepLinkRequest
 import androidx.navigation.NavDestination
-import androidx.navigation.NavType
-import androidx.navigation.navArgument
 import com.google.accompanist.navigation.animation.AnimatedNavHost
 import com.google.accompanist.navigation.animation.composable
 import com.google.accompanist.navigation.animation.rememberAnimatedNavController
@@ -36,6 +34,7 @@ import one.mixin.android.ui.setting.ui.page.AccountPage
 import one.mixin.android.ui.setting.ui.page.AccountPrivacyPage
 import one.mixin.android.ui.setting.ui.page.AppAuthSettingPage
 import one.mixin.android.ui.setting.ui.page.AppearancePage
+import one.mixin.android.ui.setting.ui.page.AuthenticationsPage
 import one.mixin.android.ui.setting.ui.page.BiometricTimePage
 import one.mixin.android.ui.setting.ui.page.BlockedPage
 import one.mixin.android.ui.setting.ui.page.ConversationSettingPage
@@ -299,6 +298,10 @@ class SettingComposeFragment : BaseFragment() {
                                     return@composable
                                 }
                                 ViewEmergencyContactPage(user)
+                            }
+
+                            composable(SettingDestination.Authentications.name) {
+                                AuthenticationsPage()
                             }
 
                             // TODO(BIN) remove this. didn't work now.
