@@ -10,7 +10,7 @@ import (
 )
 
 const (
-	KeyVersion = 'T'
+	version = 'T'
 )
 
 type Point struct {
@@ -24,7 +24,7 @@ func (p *Point) Verify(msg, sig []byte) error {
 
 func (p *Point) PublicKeyString() string {
 	b := p.PublicKeyBytes()
-	return base58.CheckEncode(b, KeyVersion)
+	return base58.CheckEncode(b, version)
 }
 
 func (p *Point) PublicKeyBytes() []byte {
@@ -47,7 +47,7 @@ func PubKeyFromBase58(s string) (*Point, error) {
 	if err != nil {
 		return nil, err
 	}
-	if ver != KeyVersion {
+	if ver != version {
 		return nil, fmt.Errorf("invalid version %d", ver)
 	}
 	return PubKeyFromBytes(b)
