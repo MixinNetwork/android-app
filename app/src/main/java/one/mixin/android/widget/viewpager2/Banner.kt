@@ -6,7 +6,6 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Outline
 import android.graphics.Rect
-import android.os.Build
 import android.os.Bundle
 import android.util.AttributeSet
 import android.view.MotionEvent
@@ -15,7 +14,6 @@ import android.view.ViewConfiguration
 import android.view.ViewGroup
 import android.view.ViewOutlineProvider
 import android.widget.RelativeLayout
-import androidx.annotation.RequiresApi
 import androidx.core.view.accessibility.AccessibilityNodeInfoCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.LinearSmoothScroller
@@ -466,7 +464,6 @@ class Banner @JvmOverloads constructor(
         return isAutoPlay && realCount > 1
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     fun setRoundCorners(radius: Float): Banner {
         outlineProvider = object : ViewOutlineProvider() {
             override fun getOutline(view: View, outline: Outline) {

@@ -47,7 +47,6 @@ import android.view.Window
 import android.view.WindowManager
 import androidx.annotation.AttrRes
 import androidx.annotation.ColorInt
-import androidx.annotation.RequiresApi
 import androidx.browser.customtabs.CustomTabsIntent
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
@@ -1031,7 +1030,6 @@ fun Context.openIgnoreBatteryOptimizationSetting(newTask: Boolean = false) {
     }
 }
 
-@RequiresApi(Build.VERSION_CODES.N)
 fun Context.getDisplayPath(uri: Uri): String {
     val lastPathSegment = requireNotNull(uri.lastPathSegment)
     val backupVolume = lastPathSegment.replaceFirst(":.*".toRegex(), "")
