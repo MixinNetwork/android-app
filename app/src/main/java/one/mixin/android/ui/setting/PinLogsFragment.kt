@@ -30,6 +30,54 @@ class PinLogsFragment : BaseFragment(R.layout.fragment_pin_logs) {
     companion object {
         const val TAG = "PinLogsFragment"
         fun newInstance() = PinLogsFragment()
+
+        fun getLogDescription(context: Context, code: String): Pair<String, String> {
+            when (code) {
+                "VERIFICATION" ->
+                    return Pair(context.getString(R.string.PIN_incorrect), context.getString(R.string.Verify))
+                "RAW_TRANSFER" ->
+                    return Pair(context.getString(R.string.PIN_incorrect), context.getString(R.string.Transfer_to_Mixin_address))
+                "USER_TRANSFER" ->
+                    return Pair(context.getString(R.string.PIN_incorrect), context.getString(R.string.Transfer_to_user_or_bot))
+                "WITHDRAWAL" ->
+                    return Pair(context.getString(R.string.PIN_incorrect), context.getString(R.string.Withdrawal))
+                "ADD_ADDRESS" ->
+                    return Pair(context.getString(R.string.PIN_incorrect), context.getString(R.string.Add_address))
+                "DELETE_ADDRESS" ->
+                    return Pair(context.getString(R.string.PIN_incorrect), context.getString(R.string.Delete_address))
+                "ADD_EMERGENCY" ->
+                    return Pair(context.getString(R.string.PIN_incorrect), context.getString(R.string.Add_emergency_contact))
+                "DELETE_EMERGENCY" ->
+                    return Pair(context.getString(R.string.PIN_incorrect), context.getString(R.string.Delete_emergency_contact))
+                "READ_EMERGENCY" ->
+                    return Pair(context.getString(R.string.PIN_incorrect), context.getString(R.string.View_emergency_contact))
+                "UPDATE_PHONE" ->
+                    return Pair(context.getString(R.string.PIN_incorrect), context.getString(R.string.Change_Phone_Number))
+                "UPDATE_PIN" ->
+                    return Pair(context.getString(R.string.PIN_incorrect), context.getString(R.string.PIN_change))
+                "MULTISIG_SIGN" ->
+                    return Pair(context.getString(R.string.PIN_incorrect), context.getString(R.string.Multisig_Transaction))
+                "MULTISIG_UNLOCK" ->
+                    return Pair(context.getString(R.string.PIN_incorrect), context.getString(R.string.Revoke_multisig_transaction))
+                "ACTIVITY_PIN_CREATION" ->
+                    return Pair(context.getString(R.string.pin_creation), context.getString(R.string.your_pin_has_been_created))
+                "ACTIVITY_PIN_MODIFICATION" ->
+                    return Pair(context.getString(R.string.PIN_change), context.getString(R.string.PIN_change))
+                "ACTIVITY_EMERGENCY_CONTACT_MODIFICATION" ->
+                    return Pair(context.getString(R.string.Emergency_Contact), context.getString(R.string.Change_emergency_contact))
+                "ACTIVITY_PHONE_MODIFICATION" ->
+                    return Pair(context.getString(R.string.Phone_number_change), context.getString(R.string.Phone_number_change))
+                "ACTIVITY_LOGIN_BY_PHONE" ->
+                    return Pair(context.getString(R.string.Sign_in), context.getString(R.string.Sign_with_phone_number))
+                "ACTIVITY_LOGIN_BY_EMERGENCY_CONTACT" ->
+                    return Pair(context.getString(R.string.Sign_in), context.getString(R.string.Sign_with_emergency_contact))
+                "ACTIVITY_LOGIN_FROM_DESKTOP" ->
+                    return Pair(context.getString(R.string.Sign_in), context.getString(R.string.Sign_in_desktop_app))
+                else ->
+                    return Pair(code, code)
+            }
+        }
+
     }
 
     @SuppressLint("NotifyDataSetChanged")
@@ -116,52 +164,6 @@ class PinLogsFragment : BaseFragment(R.layout.fragment_pin_logs) {
             }
         }
 
-        private fun getLogDescription(context: Context, code: String): Pair<String, String> {
-            when (code) {
-                "VERIFICATION" ->
-                    return Pair(context.getString(R.string.PIN_incorrect), context.getString(R.string.Verify))
-                "RAW_TRANSFER" ->
-                    return Pair(context.getString(R.string.PIN_incorrect), context.getString(R.string.Transfer_to_Mixin_address))
-                "USER_TRANSFER" ->
-                    return Pair(context.getString(R.string.PIN_incorrect), context.getString(R.string.Transfer_to_user_or_bot))
-                "WITHDRAWAL" ->
-                    return Pair(context.getString(R.string.PIN_incorrect), context.getString(R.string.Withdrawal))
-                "ADD_ADDRESS" ->
-                    return Pair(context.getString(R.string.PIN_incorrect), context.getString(R.string.Add_address))
-                "DELETE_ADDRESS" ->
-                    return Pair(context.getString(R.string.PIN_incorrect), context.getString(R.string.Delete_address))
-                "ADD_EMERGENCY" ->
-                    return Pair(context.getString(R.string.PIN_incorrect), context.getString(R.string.Add_emergency_contact))
-                "DELETE_EMERGENCY" ->
-                    return Pair(context.getString(R.string.PIN_incorrect), context.getString(R.string.Delete_emergency_contact))
-                "READ_EMERGENCY" ->
-                    return Pair(context.getString(R.string.PIN_incorrect), context.getString(R.string.View_emergency_contact))
-                "UPDATE_PHONE" ->
-                    return Pair(context.getString(R.string.PIN_incorrect), context.getString(R.string.Change_Phone_Number))
-                "UPDATE_PIN" ->
-                    return Pair(context.getString(R.string.PIN_incorrect), context.getString(R.string.PIN_change))
-                "MULTISIG_SIGN" ->
-                    return Pair(context.getString(R.string.PIN_incorrect), context.getString(R.string.Multisig_Transaction))
-                "MULTISIG_UNLOCK" ->
-                    return Pair(context.getString(R.string.PIN_incorrect), context.getString(R.string.Revoke_multisig_transaction))
-                "ACTIVITY_PIN_CREATION" ->
-                    return Pair(context.getString(R.string.pin_creation), context.getString(R.string.your_pin_has_been_created))
-                "ACTIVITY_PIN_MODIFICATION" ->
-                    return Pair(context.getString(R.string.PIN_change), context.getString(R.string.PIN_change))
-                "ACTIVITY_EMERGENCY_CONTACT_MODIFICATION" ->
-                    return Pair(context.getString(R.string.Emergency_Contact), context.getString(R.string.Change_emergency_contact))
-                "ACTIVITY_PHONE_MODIFICATION" ->
-                    return Pair(context.getString(R.string.Phone_number_change), context.getString(R.string.Phone_number_change))
-                "ACTIVITY_LOGIN_BY_PHONE" ->
-                    return Pair(context.getString(R.string.Sign_in), context.getString(R.string.Sign_with_phone_number))
-                "ACTIVITY_LOGIN_BY_EMERGENCY_CONTACT" ->
-                    return Pair(context.getString(R.string.Sign_in), context.getString(R.string.Sign_with_emergency_contact))
-                "ACTIVITY_LOGIN_FROM_DESKTOP" ->
-                    return Pair(context.getString(R.string.Sign_in), context.getString(R.string.Sign_in_desktop_app))
-                else ->
-                    return Pair(code, code)
-            }
-        }
     }
 
     class PinAdapter : RecyclerView.Adapter<PinHolder>() {

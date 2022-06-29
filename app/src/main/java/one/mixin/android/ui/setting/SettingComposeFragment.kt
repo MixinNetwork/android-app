@@ -46,6 +46,7 @@ import one.mixin.android.ui.setting.ui.page.MobileContactPage
 import one.mixin.android.ui.setting.ui.page.NotificationsPage
 import one.mixin.android.ui.setting.ui.page.PermissionListPage
 import one.mixin.android.ui.setting.ui.page.PhoneNumberSettingPage
+import one.mixin.android.ui.setting.ui.page.PinLogsPage
 import one.mixin.android.ui.setting.ui.page.PinSettingPage
 import one.mixin.android.ui.setting.ui.page.SecurityPage
 import one.mixin.android.ui.setting.ui.page.SettingPage
@@ -78,7 +79,7 @@ enum class SettingDestination {
     ViewEmergencyContact,
     Authentications,
     AuthenticationPermissions,
-    Logs,
+    PinLogs,
     BiometricTime,
 }
 
@@ -339,6 +340,10 @@ class SettingComposeFragment : BaseFragment() {
                                 }
                                 val authViewModel = parentEntry?.let { hiltViewModel<AuthenticationsViewModel>(it) }
                                 PermissionListPage(auth, authViewModel)
+                            }
+
+                            composable(SettingDestination.PinLogs.name) {
+                                PinLogsPage()
                             }
 
                             // TODO(BIN) remove this. didn't work now.

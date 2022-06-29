@@ -42,7 +42,7 @@ fun SecurityPage() {
 
         Box(modifier = Modifier.height(16.dp))
         SettingTile(title = stringResource(R.string.Logs)) {
-            navController.navigation(SettingDestination.Logs)
+            navController.navigation(SettingDestination.PinLogs)
         }
     }
 }
