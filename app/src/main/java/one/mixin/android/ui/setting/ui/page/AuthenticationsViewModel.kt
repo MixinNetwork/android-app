@@ -40,12 +40,13 @@ class AuthenticationsViewModel @Inject constructor(
 
     fun onDeAuthorize(appId: String) {
         viewModelScope.launch {
-            authenticationsState.emit(authentications.value?.map { list ->
-                list.filter { it.app.appId != appId }
-            })
+            authenticationsState.emit(
+                authentications.value?.map { list ->
+                    list.filter { it.app.appId != appId }
+                }
+            )
         }
     }
-
 }
 
 private fun <T : Any> MixinResponse<T>.toResult(): Result<T> {

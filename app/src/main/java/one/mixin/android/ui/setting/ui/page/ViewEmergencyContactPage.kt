@@ -93,10 +93,8 @@ fun ViewEmergencyContactPage(user: User) {
         }
 
         Box(modifier = Modifier.height(16.dp))
-
     }
 }
-
 
 @Composable
 @Preview

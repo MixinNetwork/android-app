@@ -71,10 +71,8 @@ fun PermissionListPage(
                 )
             }
         }
-
     }
 }
-
 
 @Composable
 private fun PermissionScopeItem(scope: Scope) {
@@ -119,7 +117,6 @@ private fun Footer(
         Box(modifier = Modifier.height(16.dp))
 
         var showRevokeAlert by remember { mutableStateOf(false) }
-
 
         SettingTile(
             title = stringResource(R.string.Revoke_access),
@@ -185,12 +182,10 @@ private fun RevokeAlertDialog(
         }
     )
 
-
     if (showLoading) {
         IndeterminateProgressDialog(
             message = stringResource(R.string.Please_wait_a_bit),
             cancelable = false,
         )
     }
-
 }

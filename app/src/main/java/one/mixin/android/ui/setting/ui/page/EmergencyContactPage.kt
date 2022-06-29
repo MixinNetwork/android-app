@@ -147,11 +147,9 @@ fun EmergencyContactPage() {
                                     .addToBackStack(null)
                             }
                         }
-
                     }
                 )
             }
-
         } else {
             HasEmergencyLayout(
                 onEmergencyAccountRemoved = {
@@ -159,10 +157,8 @@ fun EmergencyContactPage() {
                 },
             )
         }
-
     }
 }
-
 
 @Composable
 private fun HasEmergencyLayout(
@@ -193,7 +189,6 @@ private fun HasEmergencyLayout(
     Box(modifier = Modifier.height(24.dp))
 
     RemoveEmergencyButton(onEmergencyAccountRemoved)
-
 }
 
 @Composable
@@ -286,7 +281,6 @@ private fun RemoveEmergencyButton(
             }
         )
     }
-
 }
 
 @Composable
@@ -345,7 +339,6 @@ private fun ShowEmergencyButton() {
     ) {
         showPinBottomSheet = true
     }
-
 }
 
 @Composable

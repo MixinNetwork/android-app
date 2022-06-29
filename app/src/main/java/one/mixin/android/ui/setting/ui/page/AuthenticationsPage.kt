@@ -54,7 +54,6 @@ import one.mixin.android.ui.setting.ui.compose.SettingPageScaffold
 import one.mixin.android.ui.setting.ui.theme.MixinAppTheme
 import one.mixin.android.vo.App
 
-
 @Composable
 fun AuthenticationsPage() {
     SettingPageScaffold(
@@ -83,7 +82,6 @@ fun AuthenticationsPage() {
         } else {
             EmptyLayout()
         }
-
     }
 }
 
@@ -186,7 +184,6 @@ private fun SearchTextFiled(text: MutableState<String>) {
     }
 }
 
-
 @Composable
 private fun EmptyLayout() {
     Box(
@@ -214,7 +211,6 @@ private fun EmptyLayout() {
         }
     }
 }
-
 
 @Composable
 private fun AuthenticationItem(
@@ -260,7 +256,6 @@ private fun AuthenticationItem(
         Box(modifier = Modifier.width(16.dp))
     }
 }
-
 
 @Composable
 @Preview
@@ -308,7 +303,6 @@ fun PreviewAuthorizationItem() {
             ),
             "123",
         ) {
-
         }
     }
 }

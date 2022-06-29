@@ -45,7 +45,6 @@ fun AppAvatarImage(app: App, size: Dp) {
     )
 }
 
-
 @Composable
 private fun AvatarImage(
     name: String,
@@ -81,7 +80,6 @@ private fun AvatarImage(
     }
 }
 
-
 @Composable
 @Preview
 fun AvatarImagePreview() {
@@ -93,5 +91,4 @@ fun AvatarImagePreview() {
             size = 100.dp
         )
     }
-
 }
