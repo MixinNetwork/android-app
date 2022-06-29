@@ -123,7 +123,7 @@ User ID: ${Session.getAccountId()}
 Google Available: ${context.isGooglePlayServicesAvailable()}
 User-agent: ${WebView(context).settings.userAgentString}
 """
-        context.alert(content).setPositiveButton(R.string.copy) { dialog, _ ->
+        context.alert(content).setPositiveButton(android.R.string.copy) { dialog, _ ->
             context.getClipboardManager().setPrimaryClip(
                 ClipData.newPlainText(
                     null,
