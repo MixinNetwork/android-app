@@ -21,10 +21,11 @@ import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rxjava2.subscribeAsState
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
@@ -47,7 +48,6 @@ import one.mixin.android.api.response.AuthorizationResponse
 import one.mixin.android.extension.containsIgnoreCase
 import one.mixin.android.extension.equalsIgnoreCase
 import one.mixin.android.ui.setting.LocalSettingNav
-import one.mixin.android.ui.setting.SettingViewModel
 import one.mixin.android.ui.setting.ui.compose.AppAvatarImage
 import one.mixin.android.ui.setting.ui.compose.HighlightText
 import one.mixin.android.ui.setting.ui.compose.SettingPageScaffold
@@ -62,21 +62,19 @@ fun AuthenticationsPage() {
         verticalScrollable = false,
     ) {
 
-        val viewModel = hiltViewModel<SettingViewModel>()
+        val viewModel = hiltViewModel<AuthenticationsViewModel>()
 
-        val text = remember {
+        val text = rememberSaveable {
             mutableStateOf("")
         }
         SearchTextFiled(text)
 
-        val response by remember {
-            viewModel.authorizations()
-        }.subscribeAsState(initial = null)
+        val response by viewModel.authentications.collectAsState()
 
         if (response == null) {
             Loading()
         } else if (response?.isSuccess == true) {
-            val data = response?.data ?: emptyList()
+            val data = response?.getOrNull() ?: emptyList()
             if (data.isEmpty()) {
                 EmptyLayout()
             } else {

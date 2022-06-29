@@ -16,6 +16,7 @@ import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.ComposeView
 import androidx.fragment.app.FragmentManager
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
 import androidx.navigation.NavController
@@ -36,6 +37,7 @@ import one.mixin.android.ui.setting.ui.page.AccountPrivacyPage
 import one.mixin.android.ui.setting.ui.page.AppAuthSettingPage
 import one.mixin.android.ui.setting.ui.page.AppearancePage
 import one.mixin.android.ui.setting.ui.page.AuthenticationsPage
+import one.mixin.android.ui.setting.ui.page.AuthenticationsViewModel
 import one.mixin.android.ui.setting.ui.page.BiometricTimePage
 import one.mixin.android.ui.setting.ui.page.BlockedPage
 import one.mixin.android.ui.setting.ui.page.ConversationSettingPage
@@ -321,13 +323,22 @@ class SettingComposeFragment : BaseFragment() {
                                 AuthenticationsPage()
                             }
 
-                            composable(SettingDestination.AuthenticationPermissions.name) {
-                                val auth = it.arguments?.getParcelable<AuthorizationResponse>(AUTHORIZATION_KEY)
+                            composable(SettingDestination.AuthenticationPermissions.name) { backStackEntry ->
+                                val auth =
+                                    backStackEntry.arguments?.getParcelable<AuthorizationResponse>(AUTHORIZATION_KEY)
                                 if (auth == null) {
                                     Timber.e("viewEmergencyContact: no auth")
                                     return@composable
                                 }
-                                PermissionListPage(auth)
+                                val parentEntry = remember(backStackEntry) {
+                                    try {
+                                        navController.getBackStackEntry(SettingDestination.Authentications.name)
+                                    } catch (e: Exception) {
+                                        null
+                                    }
+                                }
+                                val authViewModel = parentEntry?.let { hiltViewModel<AuthenticationsViewModel>(it) }
+                                PermissionListPage(auth, authViewModel)
                             }
 
                             // TODO(BIN) remove this. didn't work now.

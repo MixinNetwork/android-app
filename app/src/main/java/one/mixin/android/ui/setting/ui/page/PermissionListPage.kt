@@ -42,7 +42,10 @@ import one.mixin.android.vo.Scope
 import one.mixin.android.vo.convertName
 
 @Composable
-fun PermissionListPage(auth: AuthorizationResponse) {
+fun PermissionListPage(
+    auth: AuthorizationResponse,
+    authViewModel: AuthenticationsViewModel?,
+) {
     SettingPageScaffold(title = stringResource(id = R.string.Permissions)) {
         val viewModel = hiltViewModel<SettingViewModel>()
 
@@ -62,7 +65,10 @@ fun PermissionListPage(auth: AuthorizationResponse) {
                 PermissionScopeItem(scope = item)
             }
             item {
-                Footer(auth = auth)
+                Footer(
+                    auth = auth,
+                    authViewModel = authViewModel,
+                )
             }
         }
 
@@ -99,7 +105,8 @@ private fun PermissionScopeItem(scope: Scope) {
 
 @Composable
 private fun Footer(
-    auth: AuthorizationResponse
+    auth: AuthorizationResponse,
+    authViewModel: AuthenticationsViewModel?,
 ) {
     Column {
         Box(modifier = Modifier.height(8.dp))
@@ -127,6 +134,7 @@ private fun Footer(
                     showRevokeAlert = false
                 },
                 auth = auth,
+                authViewModel = authViewModel,
             )
         }
     }
@@ -136,9 +144,10 @@ private fun Footer(
 private fun RevokeAlertDialog(
     onRequestDismiss: () -> Unit,
     auth: AuthorizationResponse,
+    authViewModel: AuthenticationsViewModel?,
 ) {
     val scope = rememberComposeScope()
-    val viewModel = hiltViewModel<SettingViewModel>()
+    val settingViewModel = hiltViewModel<SettingViewModel>()
 
     var showLoading by remember { mutableStateOf(false) }
 
@@ -152,10 +161,10 @@ private fun RevokeAlertDialog(
         confirmButton = {
             TextButton(onClick = {
                 showLoading = true
-                viewModel.deauthApp(auth.app.appId).autoDispose(scope).subscribe({
+                settingViewModel.deauthApp(auth.app.appId).autoDispose(scope).subscribe({
                     PermissionListFragment.clearRelatedCookies(auth.app)
 
-                    // TODO notify back
+                    authViewModel?.onDeAuthorize(auth.app.appId)
 
                     showLoading = false
                     onRequestDismiss()
