@@ -26,7 +26,8 @@
             android:layout_gravity="center"
             android:layout_marginTop="36dp"
             android:layout_marginBottom="20dp"
-            android:src="@drawable/ic_disappearing" />
+            android:src="@drawable/ic_disappearing"
+            tools:ignore="ContentDescription" />
 
         <TextView
             android:id="@+id/tip_tv"

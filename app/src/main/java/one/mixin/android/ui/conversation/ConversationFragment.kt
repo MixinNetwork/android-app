@@ -1118,6 +1118,7 @@ class ConversationFragment() :
     private var paused = false
     private var starTransition = false
 
+    @SuppressLint("NotifyDataSetChanged")
     override fun onResume() {
         super.onResume()
         sensorManager.registerListener(
@@ -1336,6 +1337,7 @@ class ConversationFragment() :
         }
     }
 
+    @SuppressLint("NotifyDataSetChanged")
     private fun closeTool() {
         conversationAdapter.selectSet.clear()
         if (!binding.chatRv.isComputingLayout) {
@@ -2566,6 +2568,7 @@ class ConversationFragment() :
         }
     }
 
+    @SuppressLint("NotifyDataSetChanged")
     private fun scrollToDown() {
         binding.chatRv.layoutManager?.scrollToPosition(0)
         if (firstPosition > PAGE_SIZE * 6) {

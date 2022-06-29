@@ -57,6 +57,7 @@ import java.nio.charset.Charset
 @AndroidEntryPoint
 class MarkdownActivity : BaseActivity() {
     private lateinit var binding: ActivityMarkdownBinding
+    @SuppressLint("NotifyDataSetChanged")
     public override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMarkdownBinding.inflate(layoutInflater)
