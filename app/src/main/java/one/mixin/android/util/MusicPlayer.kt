@@ -4,18 +4,19 @@ import android.media.browse.MediaBrowser
 import android.support.v4.media.MediaDescriptionCompat
 import android.support.v4.media.MediaMetadataCompat
 import com.google.android.exoplayer2.C
+import com.google.android.exoplayer2.C.AUDIO_CONTENT_TYPE_MUSIC
 import com.google.android.exoplayer2.ExoPlaybackException
 import com.google.android.exoplayer2.ExoPlaybackException.TYPE_SOURCE
+import com.google.android.exoplayer2.ExoPlayer
 import com.google.android.exoplayer2.PlaybackException
 import com.google.android.exoplayer2.PlaybackParameters
 import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.Player.DISCONTINUITY_REASON_REMOVE
-import com.google.android.exoplayer2.SimpleExoPlayer
 import com.google.android.exoplayer2.Timeline
 import com.google.android.exoplayer2.audio.AudioAttributes
 import com.google.android.exoplayer2.source.ConcatenatingMediaSource
 import com.google.android.exoplayer2.source.UnrecognizedInputFormatException
-import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory
+import com.google.android.exoplayer2.upstream.DefaultDataSource
 import com.google.android.exoplayer2.util.MimeTypes
 import com.google.android.exoplayer2.util.Util
 import io.reactivex.Observable
@@ -133,14 +134,14 @@ class MusicPlayer private constructor() {
     }
 
     private val audioAttributes = AudioAttributes.Builder()
-        .setContentType(C.CONTENT_TYPE_MUSIC)
+        .setContentType(AUDIO_CONTENT_TYPE_MUSIC)
         .setUsage(C.USAGE_MEDIA)
         .build()
 
     private val playerListener = PlayerListener()
 
-    val exoPlayer: SimpleExoPlayer by lazy {
-        SimpleExoPlayer.Builder(MixinApplication.appContext).build().apply {
+    val exoPlayer: ExoPlayer by lazy {
+        ExoPlayer.Builder(MixinApplication.appContext).build().apply {
             setAudioAttributes(this@MusicPlayer.audioAttributes, true)
             setHandleAudioBecomingNoisy(true)
             addListener(playerListener)
@@ -196,9 +197,12 @@ class MusicPlayer private constructor() {
             reportExoPlayerException("MusicPlayer", error)
         }
 
-        override fun onPositionDiscontinuity(reason: Int) {
+        override fun onPositionDiscontinuity(
+            oldPosition: Player.PositionInfo,
+            newPosition: Player.PositionInfo,
+            reason: Int
+        ) {
             if (reason == DISCONTINUITY_REASON_REMOVE) return
-
             val newMediaItem = exoPlayer.currentMediaItem ?: return
             if (newMediaItem.mediaId != id) {
                 id = newMediaItem.mediaId
@@ -207,12 +211,14 @@ class MusicPlayer private constructor() {
         }
     }
 
-    private val dataSourceFactory: DefaultDataSourceFactory by lazy {
-        DefaultDataSourceFactory(
-            MixinApplication.appContext,
-            Util.getUserAgent(MixinApplication.appContext, BuildConfig.APPLICATION_ID),
-            null
-        )
+    private val dataSourceFactory: DefaultDataSource.Factory by lazy {
+        DefaultDataSource.Factory(MixinApplication.appContext) {
+            DefaultDataSource(
+                MixinApplication.appContext,
+                Util.getUserAgent(MixinApplication.appContext, BuildConfig.APPLICATION_ID),
+                true
+            )
+        }
     }
 
     private val cacheDataSourceFactory = CacheDataSourceFactory(MixinApplication.appContext)
@@ -423,7 +429,7 @@ class MusicPlayer private constructor() {
     private fun checkAddToPlaylist(messageItem: MessageItem) {
         if (messageItem.isData() && MimeTypes.isAudio(messageItem.mediaMimeType)) {
             val mediaMetadata = buildFromMessageItem(messageItem)
-            if (currentPlaylistItems.isNullOrEmpty() || currentPlaylistItems[0].album != messageItem.conversationId) {
+            if (currentPlaylistItems.isEmpty() || currentPlaylistItems[0].album != messageItem.conversationId) {
                 currentPlaylistItems = mutableListOf(mediaMetadata)
             } else {
                 val exists = currentPlaylistItems.find { it.description.mediaId == messageItem.messageId }
