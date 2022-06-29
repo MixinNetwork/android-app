@@ -1,4 +1,4 @@
 #!/bin/bash
 
-gomobile bind -o ../libs/crypto.aar tip/crypto
-rm ../libs/crypto-sources.jar
+gomobile bind -o ../libs/tip.aar -target=android tip/crypto
+rm ../libs/tip-sources.jar
