@@ -51,6 +51,25 @@ class PermissionListFragment : BaseFragment(R.layout.fragment_permission_list) {
             putParcelable(ARGS_APP, app)
             putParcelable(ARGS_AUTHORIZATION, authorization)
         }
+
+
+        fun clearRelatedCookies(app: App) {
+            val cm = CookieManager.getInstance()
+            val cookieString = cm.getCookie(app.homeUri)
+            if (cookieString.isNullOrBlank()) return
+
+            val cookies = cookieString.split(";")
+            val keys = mutableListOf<String>()
+            cookies.forEach { c ->
+                val kv = c.split("=")
+                keys.add(kv[0].trim())
+            }
+            keys.forEach { k ->
+                cm.setCookie(app.homeUri, "$k=")
+            }
+        }
+
+
     }
 
     private val app: App by lazy {
@@ -120,22 +139,6 @@ class PermissionListFragment : BaseFragment(R.layout.fragment_permission_list) {
                     getButton(DialogInterface.BUTTON_POSITIVE).setTextColor(Color.RED)
                 }
             }.show()
-    }
-
-    private fun clearRelatedCookies(app: App) {
-        val cm = CookieManager.getInstance()
-        val cookieString = cm.getCookie(app.homeUri)
-        if (cookieString.isNullOrBlank()) return
-
-        val cookies = cookieString.split(";")
-        val keys = mutableListOf<String>()
-        cookies.forEach { c ->
-            val kv = c.split("=")
-            keys.add(kv[0].trim())
-        }
-        keys.forEach { k ->
-            cm.setCookie(app.homeUri, "$k=")
-        }
     }
 
     class PermissionListAdapter : FooterListAdapter<Scope, RecyclerView.ViewHolder>(Scope.DIFF_CALLBACK) {

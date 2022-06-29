@@ -12,7 +12,8 @@ import one.mixin.android.extension.indeterminateProgressDialog
 @Composable
 fun IndeterminateProgressDialog(
     message: String = "",
-    title: String = ""
+    title: String = "",
+    cancelable: Boolean? = null,
 ) {
 
     val context = LocalContext.current
@@ -26,6 +27,10 @@ fun IndeterminateProgressDialog(
     SideEffect {
         progressDialog?.setTitle(title)
         progressDialog?.setMessage(message)
+
+        if (cancelable != null) {
+            progressDialog?.setCancelable(cancelable)
+        }
     }
 
     DisposableEffect(progressDialog) {

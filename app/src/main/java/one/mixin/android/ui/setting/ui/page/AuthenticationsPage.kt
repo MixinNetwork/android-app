@@ -46,6 +46,7 @@ import one.mixin.android.R
 import one.mixin.android.api.response.AuthorizationResponse
 import one.mixin.android.extension.containsIgnoreCase
 import one.mixin.android.extension.equalsIgnoreCase
+import one.mixin.android.ui.setting.LocalSettingNav
 import one.mixin.android.ui.setting.SettingViewModel
 import one.mixin.android.ui.setting.ui.compose.AppAvatarImage
 import one.mixin.android.ui.setting.ui.compose.HighlightText
@@ -108,8 +109,9 @@ private fun AuthorizationsList(
         items(filteredData, key = {
             listOf(it.app.appId, keyword)
         }) { item ->
+            val navigationController = LocalSettingNav.current
             AuthenticationItem(item.app, keyword) {
-
+                navigationController.authorizationPermissions(item)
             }
         }
     }

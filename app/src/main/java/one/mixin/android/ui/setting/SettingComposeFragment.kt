@@ -24,6 +24,7 @@ import androidx.navigation.NavDestination
 import com.google.accompanist.navigation.animation.AnimatedNavHost
 import com.google.accompanist.navigation.animation.composable
 import com.google.accompanist.navigation.animation.rememberAnimatedNavController
+import one.mixin.android.api.response.AuthorizationResponse
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.toUri
 import one.mixin.android.ui.common.BaseFragment
@@ -41,6 +42,7 @@ import one.mixin.android.ui.setting.ui.page.ConversationSettingPage
 import one.mixin.android.ui.setting.ui.page.EmergencyContactPage
 import one.mixin.android.ui.setting.ui.page.MobileContactPage
 import one.mixin.android.ui.setting.ui.page.NotificationsPage
+import one.mixin.android.ui.setting.ui.page.PermissionListPage
 import one.mixin.android.ui.setting.ui.page.PhoneNumberSettingPage
 import one.mixin.android.ui.setting.ui.page.PinSettingPage
 import one.mixin.android.ui.setting.ui.page.SecurityPage
@@ -73,6 +75,7 @@ enum class SettingDestination {
     EmergencyContact,
     ViewEmergencyContact,
     Authentications,
+    AuthenticationPermissions,
     Logs,
     BiometricTime,
 }
@@ -90,6 +93,10 @@ open class SettingNavigationController {
         Timber.e("viewEmergencyContact: ${user.userId}")
     }
 
+    open fun authorizationPermissions(auth: AuthorizationResponse) {
+        Timber.e("authorizationPermissions: ${auth.authorizationId}")
+    }
+
     open fun pop() {
         Timber.e("setting pop")
     }
@@ -97,6 +104,7 @@ open class SettingNavigationController {
 
 private const val USER_KEY = "user_key"
 private const val CONVERSATION_ID_KEY = "conversation_id_key"
+private const val AUTHORIZATION_KEY = "authorization_key"
 
 private class SettingNavControllerImpl(
     private val navController: NavController,
@@ -141,6 +149,15 @@ private class SettingNavControllerImpl(
             SettingDestination.ViewEmergencyContact,
             Bundle().apply {
                 putParcelable(USER_KEY, user)
+            }
+        )
+    }
+
+    override fun authorizationPermissions(auth: AuthorizationResponse) {
+        navigateTo(
+            SettingDestination.AuthenticationPermissions,
+            Bundle().apply {
+                putParcelable(AUTHORIZATION_KEY, auth)
             }
         )
     }
@@ -302,6 +319,15 @@ class SettingComposeFragment : BaseFragment() {
 
                             composable(SettingDestination.Authentications.name) {
                                 AuthenticationsPage()
+                            }
+
+                            composable(SettingDestination.AuthenticationPermissions.name) {
+                                val auth = it.arguments?.getParcelable<AuthorizationResponse>(AUTHORIZATION_KEY)
+                                if (auth == null) {
+                                    Timber.e("viewEmergencyContact: no auth")
+                                    return@composable
+                                }
+                                PermissionListPage(auth)
                             }
 
                             // TODO(BIN) remove this. didn't work now.
