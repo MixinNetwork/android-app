@@ -270,6 +270,7 @@ class WalletPasswordFragment : BaseFragment(R.layout.fragment_wallet_password), 
             return@launch
         }
 
+        walletViewModel // init on main thread
         handleMixinResponse(
             invokeNetwork = { walletViewModel.updatePin(pin, oldPassword) },
             switchContext = Dispatchers.IO,
