@@ -1,5 +1,6 @@
 package one.mixin.android.ui.setting.ui.page
 
+import android.view.View
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -12,6 +13,7 @@ import kotlinx.coroutines.launch
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.response.AuthorizationResponse
 import one.mixin.android.api.service.AuthorizationService
+import one.mixin.android.util.ErrorHandler
 import javax.inject.Inject
 
 @HiltViewModel
@@ -31,11 +33,19 @@ class AuthenticationsViewModel @Inject constructor(
     init {
         authorizationService
             .authorizations().subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
-            .subscribe {
-                viewModelScope.launch {
-                    authenticationsState.emit(it.toResult())
-                }
-            }
+            .subscribe(
+                {
+                    viewModelScope.launch {
+                        authenticationsState.emit(it.toResult())
+                    }
+                },
+                {
+                    viewModelScope.launch {
+                        authenticationsState.emit(Result.failure(it))
+                    }
+                    ErrorHandler.handleError(it)
+                },
+            )
     }
 
     fun onDeAuthorize(appId: String) {
