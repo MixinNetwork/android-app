@@ -332,6 +332,7 @@ dependencies {
     implementation "com.github.warkiz.widget:indicatorseekbar:$indicatorseekbarVersion"
     implementation "org.bouncycastle:bcprov-jdk15on:${bcVersion}"
     implementation "org.jetbrains:markdown:${markdownVersion}"
+    implementation "com.otaliastudios:transcoder:${transcoderVersion}"
 
     ktlint "com.pinterest:ktlint:${ktlintVersion}"
 
