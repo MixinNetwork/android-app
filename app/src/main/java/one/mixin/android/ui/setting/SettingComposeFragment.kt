@@ -63,7 +63,6 @@ enum class SettingDestination {
     BackUp,
     DataStorage,
     Appearance,
-    Desktop,
     About,
     DatabaseDebug,
     AccountPrivacy,

@@ -329,10 +329,13 @@ private fun TransferLargeAmountItem() {
         },
         title = stringResource(R.string.Transfer_Notifications),
         description = if (threshold.value <= 0.0)
-            stringResource(R.string.setting_transfer_large_summary_greater)
+            stringResource(
+                R.string.setting_transfer_large_summary_greater,
+                "${accountSymbol}0",
+            )
         else stringResource(
             R.string.setting_transfer_large_summary,
-            "$accountSymbol${threshold.value}"
+            "$accountSymbol${threshold.value}",
         )
     )
 
