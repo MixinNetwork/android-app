@@ -30,6 +30,7 @@ import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.toUri
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.UserBottomSheetDialogFragment
+import one.mixin.android.ui.setting.delete.DeleteAccountFragment
 import one.mixin.android.ui.setting.ui.compose.MixinSettingFragment
 import one.mixin.android.ui.setting.ui.page.AboutPage
 import one.mixin.android.ui.setting.ui.page.AccountPage
@@ -67,6 +68,7 @@ enum class SettingDestination {
     DatabaseDebug,
     AccountPrivacy,
     AccountSecurity,
+    DeleteAccount,
     Blocked,
     Conversation,
     PhoneNumber,
@@ -383,6 +385,13 @@ class SettingComposeFragment : BaseFragment() {
                                     }
                                 }
                             }
+
+                            composable(SettingDestination.DeleteAccount.name) {
+                                MixinSettingFragment(DeleteAccountFragment.TAG) {
+                                    DeleteAccountFragment.newInstance()
+                                }
+                            }
+
                         }
                     }
                 }

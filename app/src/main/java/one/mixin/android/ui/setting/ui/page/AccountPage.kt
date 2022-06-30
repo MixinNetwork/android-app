@@ -66,6 +66,7 @@ fun AccountPage() {
             ChangeNumberButton()
             Box(modifier = Modifier.height(16.dp))
             AccountTile(stringResource(R.string.Delete_my_account)) {
+                navController.navigation(SettingDestination.DeleteAccount)
             }
         }
     }
