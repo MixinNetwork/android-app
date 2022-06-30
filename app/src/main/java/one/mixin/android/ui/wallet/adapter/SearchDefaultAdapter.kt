@@ -94,7 +94,6 @@ class SearchDefaultAdapter : RecyclerView.Adapter<ItemViewHolder>(), StickyRecyc
 abstract class ItemViewHolder(val binding: ItemWalletSearchBinding) : RecyclerView.ViewHolder(binding.root) {
     @SuppressLint("SetTextI18n")
     fun bindView(
-        assetId: String,
         iconUrl: String,
         chainIconUrl: String?,
         name: String,
@@ -125,7 +124,15 @@ abstract class ItemViewHolder(val binding: ItemWalletSearchBinding) : RecyclerVi
 
 class AssetHolder(binding: ItemWalletSearchBinding) : ItemViewHolder(binding) {
     fun bind(asset: AssetItem, callback: WalletSearchCallback? = null) {
-        bindView(asset.assetId, asset.iconUrl, asset.chainIconUrl, asset.name, asset.symbol, asset.priceUsd, asset.changeUsd, asset.priceFiat())
+        bindView(
+            asset.iconUrl,
+            asset.chainIconUrl,
+            asset.name,
+            asset.symbol,
+            asset.priceUsd,
+            asset.changeUsd,
+            asset.priceFiat()
+        )
         itemView.setOnClickListener {
             callback?.onAssetClick(asset.assetId, asset)
         }
@@ -134,7 +141,15 @@ class AssetHolder(binding: ItemWalletSearchBinding) : ItemViewHolder(binding) {
 
 class TopAssetHolder(binding: ItemWalletSearchBinding) : ItemViewHolder(binding) {
     fun bind(asset: TopAssetItem, callback: WalletSearchCallback? = null) {
-        bindView(asset.assetId, asset.iconUrl, asset.chainIconUrl, asset.name, asset.symbol, asset.priceUsd, asset.changeUsd, asset.priceFiat())
+        bindView(
+            asset.iconUrl,
+            asset.chainIconUrl,
+            asset.name,
+            asset.symbol,
+            asset.priceUsd,
+            asset.changeUsd,
+            asset.priceFiat()
+        )
         itemView.setOnClickListener {
             callback?.onAssetClick(asset.assetId)
         }

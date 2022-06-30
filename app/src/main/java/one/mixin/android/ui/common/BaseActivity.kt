@@ -1,9 +1,11 @@
 package one.mixin.android.ui.common
 
 import android.annotation.SuppressLint
-import android.os.Build
 import android.os.Bundle
+import android.view.View
+import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.doOnPreDraw
 import androidx.lifecycle.Lifecycle
 import com.uber.autodispose.android.lifecycle.scope
 import one.mixin.android.R
@@ -19,18 +21,44 @@ open class BaseActivity : AppCompatActivity() {
 
     lateinit var lastLang: String
     var lastThemeId: Int = defaultThemeId
+    protected var skipSystemUi: Boolean = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         if (isNightMode()) {
             setTheme(getNightThemeId())
-            SystemUIManager.lightUI(window, false)
         } else {
             setTheme(getDefaultThemeId())
-            SystemUIManager.lightUI(window, true)
         }
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+        if (!skipSystemUi) {
             window.navigationBarColor = colorFromAttribute(R.attr.bg_white)
+        }
+    }
+
+    override fun setContentView(layoutResID: Int) {
+        super.setContentView(layoutResID)
+        if (!skipSystemUi) {
+            window.decorView.doOnPreDraw {
+                SystemUIManager.lightUI(window, !(isNightMode()))
+            }
+        }
+    }
+
+    override fun setContentView(view: View?, params: ViewGroup.LayoutParams?) {
+        super.setContentView(view, params)
+        if (!skipSystemUi) {
+            view?.doOnPreDraw {
+                SystemUIManager.lightUI(window, !(isNightMode()))
+            }
+        }
+    }
+
+    override fun setContentView(view: View?) {
+        super.setContentView(view)
+        if (!skipSystemUi) {
+            view?.doOnPreDraw {
+                SystemUIManager.lightUI(window, !(isNightMode()))
+            }
         }
     }
 

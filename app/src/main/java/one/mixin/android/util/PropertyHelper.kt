@@ -22,7 +22,6 @@ import one.mixin.android.MixinApplication
 import one.mixin.android.db.MessageDao
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.PropertyDao
-import one.mixin.android.db.TranscriptMessageDao
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.nowInUtc
 import one.mixin.android.vo.Property
@@ -70,9 +69,8 @@ object PropertyHelper {
     suspend fun checkMigrated(): PropertyDao {
         val propertyDao = MixinDatabase.getDatabase(MixinApplication.appContext).propertyDao()
         val messageDao = MixinDatabase.getDatabase(MixinApplication.appContext).messageDao()
-        val transcriptDao = MixinDatabase.getDatabase(MixinApplication.appContext).transcriptDao()
         if (!hasMigrated(propertyDao)) {
-            migrateProperties(propertyDao, messageDao, transcriptDao)
+            migrateProperties(propertyDao, messageDao)
         }
         return propertyDao
     }
@@ -87,7 +85,7 @@ object PropertyHelper {
         return propertyDao.findValueByKey(key)
     }
 
-    private suspend fun migrateProperties(propertyDao: PropertyDao, messageDao: MessageDao, transcriptDao: TranscriptMessageDao) {
+    private suspend fun migrateProperties(propertyDao: PropertyDao, messageDao: MessageDao) {
         val pref = MixinApplication.appContext.defaultSharedPreferences
         val updatedAt = nowInUtc()
         val fts4Upgrade = pref.getBoolean(PREF_FTS4_UPGRADE, messageDao.hasMessage() == null)

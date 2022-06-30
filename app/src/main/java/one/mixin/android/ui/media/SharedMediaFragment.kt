@@ -34,7 +34,7 @@ class SharedMediaFragment : BaseFragment(R.layout.fragment_shared_media) {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        binding.titleView.leftIb.setOnClickListener { activity?.onBackPressed() }
+        binding.titleView.leftIb.setOnClickListener { activity?.onBackPressedDispatcher?.onBackPressed() }
         binding.viewPager.adapter = adapter
         TabLayoutMediator(
             binding.sharedTl,

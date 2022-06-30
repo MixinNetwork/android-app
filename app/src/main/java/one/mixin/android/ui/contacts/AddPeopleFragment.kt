@@ -49,7 +49,7 @@ class AddPeopleFragment : BaseFragment(R.layout.fragment_add_people) {
         super.onViewCreated(view, savedInstanceState)
         binding.apply {
             titleView.leftIb.setOnClickListener {
-                activity?.onBackPressed()
+                activity?.onBackPressedDispatcher?.onBackPressed()
             }
             val account = Session.getAccount()
             if (account != null) {

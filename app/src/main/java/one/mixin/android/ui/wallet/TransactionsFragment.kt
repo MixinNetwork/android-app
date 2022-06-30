@@ -87,7 +87,7 @@ class TransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>>()
         super.onViewCreated(view, savedInstanceState)
         binding.titleView.apply {
             titleTv.text = asset.name
-            leftIb.setOnClickListener { activity?.onBackPressed() }
+            leftIb.setOnClickListener { activity?.onBackPressedDispatcher?.onBackPressed() }
             rightAnimator.setOnClickListener {
                 showBottom()
             }
@@ -216,7 +216,7 @@ class TransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>>()
 
     private fun refreshPendingDeposits(asset: AssetItem) {
         lifecycleScope.launch {
-            if (asset.destination.isNotEmpty()) {
+            if (asset.getDestination().isNotEmpty()) {
                 walletViewModel.refreshAsset(asset.assetId)
                 walletViewModel.refreshPendingDeposits(asset)
             } else {
@@ -257,7 +257,7 @@ class TransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>>()
                     walletViewModel.updateAssetHidden(asset.assetId, asset.hidden != true)
                 }
                 bottomSheet.dismiss()
-                activity?.mainThreadDelayed({ activity?.onBackPressed() }, 200)
+                mainThreadDelayed({ activity?.onBackPressedDispatcher?.onBackPressed() }, 200)
             }
             cancel.setOnClickListener { bottomSheet.dismiss() }
         }

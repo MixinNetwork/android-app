@@ -55,12 +55,12 @@ class CaptchaView(private val context: Context, private val callback: Callback) 
         webView.webViewClient = object : WebViewClient() {
             override fun onPageStarted(view: WebView?, url: String?, favicon: Bitmap?) {
                 super.onPageStarted(view, url, favicon)
-                context.runOnUiThread(stopWebViewRunnable, WEB_VIEW_TIME_OUT)
+                runOnUiThread(stopWebViewRunnable, WEB_VIEW_TIME_OUT)
             }
 
             override fun onPageFinished(view: WebView?, url: String?) {
                 super.onPageFinished(view, url)
-                context.cancelRunOnUiThread(stopWebViewRunnable)
+                cancelRunOnUiThread(stopWebViewRunnable)
                 webView.animate().translationY(0f)
             }
         }
@@ -87,14 +87,14 @@ class CaptchaView(private val context: Context, private val callback: Callback) 
     @Suppress("unused")
     @JavascriptInterface
     fun postMessage(@Suppress("UNUSED_PARAMETER") value: String) {
-        context.cancelRunOnUiThread(stopWebViewRunnable)
-        context.runOnUiThread(stopWebViewRunnable)
+        cancelRunOnUiThread(stopWebViewRunnable)
+        runOnUiThread(stopWebViewRunnable)
     }
 
     @Suppress("unused")
     @JavascriptInterface
     fun postToken(value: String) {
-        context.cancelRunOnUiThread(stopWebViewRunnable)
+        cancelRunOnUiThread(stopWebViewRunnable)
         webView.post {
             hide()
             webView.loadUrl("about:blank")

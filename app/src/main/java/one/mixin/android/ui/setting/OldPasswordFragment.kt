@@ -41,7 +41,7 @@ class OldPasswordFragment : BaseFragment(R.layout.fragment_old_password), PinVie
         super.onViewCreated(view, savedInstanceState)
         activity?.window?.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
         binding.apply {
-            titleView.leftIb.setOnClickListener { activity?.onBackPressed() }
+            titleView.leftIb.setOnClickListener { activity?.onBackPressedDispatcher?.onBackPressed() }
             titleView.rightAnimator.setOnClickListener { verify(binding.pin.code()) }
             titleView.setSubTitle(getString(R.string.Old_PIN), "1/5")
             disableTitleRight()
@@ -89,7 +89,7 @@ class OldPasswordFragment : BaseFragment(R.layout.fragment_old_password), PinVie
                 context?.updatePinCheck()
                 response.data?.let {
                     val pin = binding.pin.code()
-                    activity?.onBackPressed()
+                    activity?.onBackPressedDispatcher?.onBackPressed()
                     navTo(WalletPasswordFragment.newInstance(true, pin), WalletPasswordFragment.TAG)
                 }
             },

@@ -50,6 +50,7 @@ import one.mixin.android.api.service.FoursquareService
 import one.mixin.android.databinding.ActivityLocationBinding
 import one.mixin.android.extension.REQUEST_LOCATION
 import one.mixin.android.extension.dp
+import one.mixin.android.extension.getParcelableExtra
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.loadImage
@@ -92,7 +93,7 @@ class LocationActivity : BaseActivity(), OnMapReadyCallback {
     private var onResumeCalled = false
 
     private val location: LocationPayload? by lazy {
-        intent.getParcelableExtra(LOCATION)
+        getParcelableExtra(intent, LOCATION, LocationPayload::class.java)
     }
 
     private val locationAdapter by lazy {
@@ -642,7 +643,7 @@ class LocationActivity : BaseActivity(), OnMapReadyCallback {
         private const val LOCATION = "location"
 
         fun getResult(intent: Intent): LocationPayload? {
-            return intent.getParcelableExtra(LOCATION_NAME)
+            return getParcelableExtra(intent, LOCATION_NAME, LocationPayload::class.java)
         }
 
         fun show(fragment: Fragment) {

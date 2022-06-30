@@ -154,7 +154,7 @@
     <string name="chat_group_add">%1$sが%2$sを追加しました</string>
     <string name="chat_group_call_cancel">%1$sグループ通話をキャンセルしました</string>
     <string name="chat_group_call_decline">%1$sグループ通話が終了しました</string>
-    <string name="chat_group_call_end">グループ通話が終了しました 通話時間: %1$s</string>
+    <string name="chat_group_call_end">グループ通話が終了しました</string>
     <string name="chat_group_call_invite">%1$sからグループ通話の招待がきています</string>
     <string name="chat_group_call_mute">入室時にマイクは自動でミュートになります</string>
     <string name="chat_group_call_remote_peer_closed">通信が切れました、リトライしてください</string>

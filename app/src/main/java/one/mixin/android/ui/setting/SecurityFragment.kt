@@ -26,7 +26,7 @@ class SecurityFragment : BaseFragment(R.layout.fragment_security) {
         super.onViewCreated(view, savedInstanceState)
         binding.apply {
             titleView.leftIb.setOnClickListener {
-                activity?.onBackPressed()
+                activity?.onBackPressedDispatcher?.onBackPressed()
             }
             pinRl.setOnClickListener {
                 if (Session.getAccount()?.hasPin == true) {

@@ -85,7 +85,7 @@ class PermissionListFragment : BaseFragment(R.layout.fragment_permission_list) {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         binding.apply {
-            titleView.leftIb.setOnClickListener { activity?.onBackPressed() }
+            titleView.leftIb.setOnClickListener { activity?.onBackPressedDispatcher?.onBackPressed() }
             permissionRv.layoutManager = LinearLayoutManager(requireContext())
             val footBinding = LayoutPermissionListFootBinding.inflate(layoutInflater, permissionRv, false).apply {
                 revokeRl.setOnClickListener { showDialog(app) }
@@ -126,7 +126,7 @@ class PermissionListFragment : BaseFragment(R.layout.fragment_permission_list) {
                                 putExtra(ARGS_SUCCESS, true)
                             }
                         )
-                        activity?.onBackPressed()
+                        activity?.onBackPressedDispatcher?.onBackPressed()
                     },
                     {
                         pb.dismiss()

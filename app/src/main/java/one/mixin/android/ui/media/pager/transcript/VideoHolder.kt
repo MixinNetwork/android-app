@@ -99,7 +99,7 @@ class VideoHolder(
             }
         }
         val ratio = messageItem.mediaWidth!!.toFloat() / messageItem.mediaHeight!!.toFloat()
-        setSize(context, ratio, itemView)
+        setSize(context, ratio)
         itemView.tag = "$PREFIX${messageItem.messageId}"
         if (messageItem.isLive()) {
             circleProgress.isVisible = false
@@ -154,7 +154,7 @@ class VideoHolder(
         }
     }
 
-    private fun setSize(context: Context, ratio: Float, view: View) {
+    private fun setSize(context: Context, ratio: Float) {
         val w = context.realSize().x
         val h = context.realSize().y
         val deviceRatio = w / h.toFloat()

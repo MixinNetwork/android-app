@@ -41,7 +41,7 @@ class AppearanceFragment : BaseFragment(R.layout.fragment_appearance) {
         super.onViewCreated(view, savedInstanceState)
         binding.apply {
             titleView.leftIb.setOnClickListener {
-                activity?.onBackPressed()
+                activity?.onBackPressedDispatcher?.onBackPressed()
             }
             nightModeTv.setText(R.string.Theme)
             val currentId = defaultSharedPreferences.getInt(

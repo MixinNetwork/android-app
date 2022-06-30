@@ -192,7 +192,6 @@ class StickerManagementFragment : BaseFragment() {
                 }
             }
             val v = holder.itemView
-            val ctx = v.context
 
             val params = v.layoutParams
             params.height = size

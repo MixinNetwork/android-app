@@ -138,7 +138,7 @@ class EditFragment : VisionFragment() {
             binding.sendFl.translationY = -navigationBarHeight.toFloat()
             binding.downloadIv.translationY = -navigationBarHeight.toFloat()
         }
-        binding.closeIv.setOnClickListener { activity?.onBackPressed() }
+        binding.closeIv.setOnClickListener { activity?.onBackPressedDispatcher?.onBackPressed() }
         binding.downloadIv.setOnClickListener {
             RxPermissions(requireActivity())
                 .request(Manifest.permission.WRITE_EXTERNAL_STORAGE)
@@ -265,7 +265,7 @@ class EditFragment : VisionFragment() {
                 dialog.dismiss()
             }
             .setOnDismissListener {
-                activity?.onBackPressed()
+                activity?.onBackPressedDispatcher?.onBackPressed()
             }
             .show()
     }

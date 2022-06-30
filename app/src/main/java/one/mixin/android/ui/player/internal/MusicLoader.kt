@@ -78,10 +78,10 @@ abstract class MusicLoader {
                     }
                 }
                 is ApicFrame -> {
-                    albumArt = AlbumArtCache.getAlbumArtUri(id, url, entry.pictureData)
+                    albumArt = AlbumArtCache.getAlbumArtUri(id, entry.pictureData)
                 }
                 is PictureFrame -> {
-                    albumArt = AlbumArtCache.getAlbumArtUri(id, url, entry.pictureData)
+                    albumArt = AlbumArtCache.getAlbumArtUri(id, entry.pictureData)
                 }
                 is VorbisComment -> {
                     when (entry.key) {

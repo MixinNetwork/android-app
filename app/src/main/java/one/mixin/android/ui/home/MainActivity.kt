@@ -874,9 +874,9 @@ class MainActivity : BlazeBaseActivity() {
         val conversationCircleEditFragment =
             supportFragmentManager.findFragmentByTag(ConversationCircleEditFragment.TAG)
         when {
-            searchMessageFragment != null -> super.onBackPressed()
-            searchSingleFragment != null -> super.onBackPressed()
-            conversationCircleEditFragment != null -> super.onBackPressed()
+            searchMessageFragment != null -> onBackPressedDispatcher.onBackPressed()
+            searchSingleFragment != null -> onBackPressedDispatcher.onBackPressed()
+            conversationCircleEditFragment != null -> onBackPressedDispatcher.onBackPressed()
             binding.searchBar.isOpen -> binding.searchBar.closeSearch()
             binding.searchBar.containerDisplay -> {
                 if (!circlesFragment.onBackPressed()) {
@@ -890,7 +890,7 @@ class MainActivity : BlazeBaseActivity() {
                 if (Build.VERSION.SDK_INT == Build.VERSION_CODES.Q && isTaskRoot) {
                     finishAfterTransition()
                 } else {
-                    super.onBackPressed()
+                    onBackPressedDispatcher.onBackPressed()
                 }
             }
         }

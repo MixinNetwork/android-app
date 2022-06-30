@@ -53,7 +53,7 @@ class DepositAccountFragment : DepositFragment() {
         super.onViewCreated(view, savedInstanceState)
         binding.apply {
             title.apply {
-                leftIb.setOnClickListener { activity?.onBackPressed() }
+                leftIb.setOnClickListener { activity?.onBackPressedDispatcher?.onBackPressed() }
                 rightAnimator.setOnClickListener { context?.openUrl(Constants.HelpLink.DEPOSIT) }
             }
             title.setSubTitle(getString(R.string.Deposit), asset.symbol)
@@ -67,8 +67,8 @@ class DepositAccountFragment : DepositFragment() {
                 badge.loadImage(asset.chainIconUrl, R.drawable.ic_avatar_place_holder)
             }
             accountMemoQrAvatar.setBorder()
-            accountNameKeyCode.text = asset.destination
-            accountMemoKeyCode.text = asset.tag
+            accountNameKeyCode.text = asset.getDestination()
+            accountMemoKeyCode.text = asset.getTag()
             val reserveTip = if (asset.needShowReserve()) {
                 getString(R.string.deposit_reserve, "${asset.reserve} ${asset.symbol}").highLight(requireContext(), "${asset.reserve} ${asset.symbol}")
             } else SpannableStringBuilder()
@@ -83,17 +83,17 @@ class DepositAccountFragment : DepositFragment() {
             }
             accountNameCopyIv.setOnClickListener {
                 context?.getClipboardManager()
-                    ?.setPrimaryClip(ClipData.newPlainText(null, asset.destination))
+                    ?.setPrimaryClip(ClipData.newPlainText(null, asset.getDestination()))
                 toast(R.string.copied_to_clipboard)
             }
             accountMemoCopyIv.setOnClickListener {
-                context?.getClipboardManager()?.setPrimaryClip(ClipData.newPlainText(null, asset.tag))
+                context?.getClipboardManager()?.setPrimaryClip(ClipData.newPlainText(null, asset.getTag()))
                 toast(R.string.copied_to_clipboard)
             }
 
-            showQR(accountNameQr, accountNameQrAvatar, asset.destination)
-            if (!asset.tag.isNullOrEmpty()) {
-                showQR(accountMemoQr, accountMemoQrAvatar, asset.tag!!)
+            showQR(accountNameQr, accountNameQrAvatar, asset.getDestination())
+            if (!asset.getTag().isNullOrEmpty()) {
+                showQR(accountMemoQr, accountMemoQrAvatar, asset.getTag()!!)
             }
         }
         alertDialogBuilder()

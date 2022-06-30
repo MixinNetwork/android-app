@@ -59,7 +59,7 @@ constructor(
             id, DeactivateVerificationRequest(VerificationPurpose.DEACTIVATED.name, code)
         ).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
 
-    suspend fun deactivate(pin: String, verificationId: String, code: String) = accountRepository.deactivate(pin, verificationId)
+    suspend fun deactivate(pin: String, verificationId: String) = accountRepository.deactivate(pin, verificationId)
 
     fun update(request: AccountUpdateRequest): Observable<MixinResponse<Account>> =
         accountRepository.update(request).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())

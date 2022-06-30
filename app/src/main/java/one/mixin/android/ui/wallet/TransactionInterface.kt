@@ -324,7 +324,7 @@ interface TransactionInterface {
                     }
                 }
                 else -> {
-                    if (!asset.tag.isNullOrEmpty()) {
+                    if (!asset.getTag().isNullOrEmpty()) {
                         receiverTitle.text = fragment.getString(R.string.Address)
                     } else {
                         receiverTitle.text = fragment.getString(R.string.To)
