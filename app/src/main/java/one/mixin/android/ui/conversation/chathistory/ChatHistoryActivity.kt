@@ -775,6 +775,7 @@ class ChatHistoryActivity : BaseActivity() {
                                 it.conversationId,
                                 it.userId,
                                 Uri.parse(it.mediaUrl),
+                                0f, 1f, // Todo
                                 when {
                                     it.isSignal() -> EncryptCategory.SIGNAL
                                     it.isEncrypted() -> EncryptCategory.ENCRYPTED

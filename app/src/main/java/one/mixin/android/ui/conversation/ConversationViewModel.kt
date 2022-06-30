@@ -250,12 +250,14 @@ internal constructor(
         conversationId: String,
         senderId: String,
         uri: Uri,
+        start: Float,
+        end: Float,
         encryptCategory: EncryptCategory,
         messageId: String? = null,
         createdAt: String? = null,
         replyMessage: MessageItem? = null
     ) {
-        messenger.sendVideoMessage(conversationId, senderId, uri, encryptCategory, messageId, createdAt, replyMessage)
+        messenger.sendVideoMessage(conversationId, senderId, uri, start, end, encryptCategory, messageId, createdAt, replyMessage)
     }
 
     fun sendVideoMessage(
@@ -268,7 +270,7 @@ internal constructor(
         val uri = videoMessagePayload.url.toUri()
         val messageId = videoMessagePayload.messageId
         val createdAt = videoMessagePayload.createdAt
-        messenger.sendVideoMessage(conversationId, senderId, uri, encryptCategory, messageId, createdAt, replyMessage)
+        messenger.sendVideoMessage(conversationId, senderId, uri, 0f, 1f, encryptCategory, messageId, createdAt, replyMessage)
     }
 
     fun sendRecallMessage(conversationId: String, sender: User, list: List<MessageItem>) {
@@ -387,6 +389,7 @@ internal constructor(
                                 it.conversationId,
                                 it.userId,
                                 Uri.parse(it.mediaUrl),
+                                0f, 1f, // Todo
                                 when {
                                     it.isSignal() -> EncryptCategory.SIGNAL
                                     it.isEncrypted() -> EncryptCategory.ENCRYPTED

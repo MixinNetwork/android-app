@@ -199,12 +199,13 @@ public class MediaController {
     }
 
     public boolean convertVideo(String videoPath, int bitrate, int resultWidth,
-                                int resultHeight, File cacheFile, boolean needChange, long duration, VideoConvertorListener callback) throws
+                                int resultHeight, File cacheFile, boolean needChange, long duration, float startTime, float endTime, VideoConvertorListener callback) throws
             IOException {
         if (!needChange) {
             Util.copy(new FileInputStream(videoPath), new FileOutputStream(cacheFile));
             return false;
         }
-        return new MediaCodecVideoConvertor().convertVideo(videoPath, cacheFile, 0, false, resultWidth, resultHeight, 25, bitrate, 0, duration * 1000, true, duration, callback);
+
+        return new MediaCodecVideoConvertor().convertVideo(videoPath, cacheFile, 0, false, resultWidth, resultHeight, 25, bitrate, (long) (duration * 1000 * startTime), (long) (duration * 1000 * endTime), true, duration, callback);
     }
 }

@@ -355,13 +355,15 @@ class SendMessageHelper @Inject internal constructor(private val jobManager: Mix
         conversationId: String,
         senderId: String,
         uri: Uri,
+        start: Float,
+        end: Float,
         encryptCategory: EncryptCategory,
         messageId: String? = null,
         createdAt: String? = null,
         replyMessage: MessageItem? = null,
     ) {
         val mid = messageId ?: UUID.randomUUID().toString()
-        jobManager.addJobInBackground(ConvertVideoJob(conversationId, senderId, uri, encryptCategory, mid, createdAt, replyMessage))
+        jobManager.addJobInBackground(ConvertVideoJob(conversationId, senderId, uri, start, end, encryptCategory, mid, createdAt, replyMessage))
     }
 
     fun sendRecallMessage(conversationId: String, sender: User, list: List<MessageItem>) {

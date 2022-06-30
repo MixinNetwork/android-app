@@ -28,6 +28,8 @@ class ConvertVideoJob(
     private val conversationId: String,
     private val senderId: String,
     private val uri: Uri,
+    private val start: Float,
+    private val end: Float,
     encryptCategory: EncryptCategory,
     private val messageId: String,
     createdAt: String? = null,
@@ -51,9 +53,7 @@ class ConvertVideoJob(
         if (video == null) {
             return
         }
-        if (mimeType != "video/mp4") {
-            video.needChange = true
-        }
+        video.needChange = mimeType != "video/mp4" || start != 0f || end != 1f
         if (!video.fileName.endsWith(".mp4")) {
             video.fileName = "${video.fileName.getFileNameNoEx()}.mp4"
         }
@@ -91,6 +91,8 @@ class ConvertVideoJob(
             videoFile,
             video.needChange,
             video.duration,
+            start,
+            end,
             object : MediaController.VideoConvertorListener {
                 override fun didWriteData(availableSize: Long, progress: Float) {
                     RxBus.publish(ConvertEvent(messageId, progress / 10f))
@@ -105,9 +107,10 @@ class ConvertVideoJob(
             removeJob()
             return
         }
+        val duration = (video.duration * (end - start)).toLong()
         val message = createVideoMessage(
             messageId, conversationId, senderId, category, null,
-            video.fileName, videoFile.name, video.duration, video.resultWidth,
+            video.fileName, videoFile.name, duration, video.resultWidth,
             video.resultHeight, video.thumbnail, "video/mp4",
             videoFile.length(), createdAt, null, null,
             if (error) MediaStatus.CANCELED else MediaStatus.PENDING,
@@ -115,6 +118,7 @@ class ConvertVideoJob(
         )
         if (!error) {
             messageDao.updateMediaMessageUrl(videoFile.name, messageId)
+            messageDao.updateMediaDuration(duration.toString(), messageId)
             InvalidateFlow.emit(conversationId)
             jobManager.addJobInBackground(SendAttachmentMessageJob(message))
         }
