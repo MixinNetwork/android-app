@@ -75,6 +75,7 @@ fun AccountPrivacyPage() {
                     key = Constants.Account.PREF_INCOGNITO_KEYBOARD,
                     defaultValue = false
                 )
+            Box(modifier = Modifier.height(16.dp))
             SettingTile(
                 title = stringResource(R.string.Incognito_Keyboard),
                 description = stringResource(R.string.setting_incognito_prompt),
@@ -83,9 +84,9 @@ fun AccountPrivacyPage() {
                         checked = incognitoEnable,
                         colors = SwitchDefaults.colors(
                             checkedThumbColor = MixinAppTheme.colors.accent,
-                            uncheckedThumbColor = MixinAppTheme.colors.accent,
+                            uncheckedThumbColor = MixinAppTheme.colors.unchecked,
                             checkedTrackColor = MixinAppTheme.colors.accent,
-                            uncheckedTrackColor = MixinAppTheme.colors.accent,
+                            uncheckedTrackColor = MixinAppTheme.colors.unchecked,
                         ),
                         onCheckedChange = null
                     )

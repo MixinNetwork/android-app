@@ -23,6 +23,8 @@ class AppColors(
     val backgroundWindow: Color,
     val background: Color,
     val red: Color = Color(0xFFE55541),
+
+    val unchecked: Color
 )
 
 class AppDrawables(
@@ -51,6 +53,7 @@ private val LightColorPalette = AppColors(
     iconGray = Color(0xFFD2D4DA),
     backgroundWindow = Color(0xFFF6F7FA),
     background = Color(0xFFFFFFFF),
+    unchecked = Color(0xFFECECEC),
 )
 
 private val DarkColorPalette = AppColors(
@@ -62,6 +65,7 @@ private val DarkColorPalette = AppColors(
     iconGray = Color(0xFF808691),
     backgroundWindow = Color(0xFF23272B),
     background = Color(0xFF2c3136),
+    unchecked = Color(0xFFECECEC),
 )
 
 private val LightDrawablePalette = AppDrawables(

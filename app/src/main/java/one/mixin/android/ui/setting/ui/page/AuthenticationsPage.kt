@@ -148,6 +148,7 @@ private fun SearchTextFiled(text: MutableState<String>) {
             .fillMaxWidth()
             .height(60.dp)
             .focusRequester(focusRequester)
+            .background(MixinAppTheme.colors.background)
             .onFocusChanged {
                 if (it.isFocused) {
                     keyboardController?.show()

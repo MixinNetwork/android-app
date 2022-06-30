@@ -92,9 +92,9 @@ fun AppAuthSettingPage() {
                     checked = fingerPrintEnabled != FINGERPRINT_DISABLED,
                     colors = SwitchDefaults.colors(
                         checkedThumbColor = MixinAppTheme.colors.accent,
-                        uncheckedThumbColor = MixinAppTheme.colors.accent,
+                        uncheckedThumbColor = MixinAppTheme.colors.unchecked,
                         checkedTrackColor = MixinAppTheme.colors.accent,
-                        uncheckedTrackColor = MixinAppTheme.colors.accent,
+                        uncheckedTrackColor = MixinAppTheme.colors.unchecked,
                     ),
                     onCheckedChange = null
                 )

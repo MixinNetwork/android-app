@@ -109,9 +109,9 @@ fun NotificationsPage() {
                         checked = duplicateTransferSelected,
                         colors = SwitchDefaults.colors(
                             checkedThumbColor = MixinAppTheme.colors.accent,
-                            uncheckedThumbColor = MixinAppTheme.colors.accent,
+                            uncheckedThumbColor = MixinAppTheme.colors.unchecked,
                             checkedTrackColor = MixinAppTheme.colors.accent,
-                            uncheckedTrackColor = MixinAppTheme.colors.accent,
+                            uncheckedTrackColor = MixinAppTheme.colors.unchecked,
                         ),
                         onCheckedChange = null
                     )
@@ -135,9 +135,9 @@ fun NotificationsPage() {
                         checked = strangerTransferChecked,
                         colors = SwitchDefaults.colors(
                             checkedThumbColor = MixinAppTheme.colors.accent,
-                            uncheckedThumbColor = MixinAppTheme.colors.accent,
+                            uncheckedThumbColor = MixinAppTheme.colors.unchecked,
                             checkedTrackColor = MixinAppTheme.colors.accent,
-                            uncheckedTrackColor = MixinAppTheme.colors.accent,
+                            uncheckedTrackColor = MixinAppTheme.colors.unchecked,
                         ),
                         onCheckedChange = null
                     )

@@ -188,8 +188,8 @@ private fun UploadButton(
                         { contacts ->
                             uploadContacts(contacts)
                         }, {
-                            processing = false
-                        }
+                        processing = false
+                    }
                     )
             }
     }

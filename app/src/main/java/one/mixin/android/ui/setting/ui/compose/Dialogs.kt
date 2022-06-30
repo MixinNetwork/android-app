@@ -49,7 +49,6 @@ fun IndeterminateProgressDialog(
     }
 }
 
-
 @Composable
 fun MixinAlertDialog(
     modifier: Modifier = Modifier,
@@ -105,10 +104,8 @@ fun PreviewMixinAlertDialog() {
     MixinAppTheme {
         MixinAlertDialog(
             onDismissRequest = {
-
             },
             onConfirmClick = {
-
             },
             title = {
                 Text("Title")
