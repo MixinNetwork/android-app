@@ -396,6 +396,12 @@ class SettingComposeFragment : BaseFragment() {
                                     OldPasswordFragment.newInstance()
                                 }
                             }
+
+                            composable(SettingDestination.DatabaseDebug.name) {
+                                MixinSettingFragment(DatabaseDebugFragment.TAG) {
+                                    DatabaseDebugFragment.newInstance()
+                                }
+                            }
                         }
                     }
                 }
