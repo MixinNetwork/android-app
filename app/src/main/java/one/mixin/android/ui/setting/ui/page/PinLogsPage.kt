@@ -52,7 +52,6 @@ fun PinLogsPage() {
 
         val viewModel = hiltViewModel<SettingViewModel>()
 
-
         var logs by remember {
             mutableStateOf(listOf<LogResponse>())
         }
@@ -107,7 +106,6 @@ fun PinLogsPage() {
                 },
             )
         }
-
     }
 }
 
@@ -182,11 +180,8 @@ private fun LogItem(log: LogResponse) {
             color = MixinAppTheme.colors.textSubtitle,
             fontSize = 14.sp,
         )
-
     }
-
 }
-
 
 @Composable
 private fun Loading() {
@@ -220,9 +215,7 @@ private fun EmptyLayout() {
             color = MixinAppTheme.colors.textSubtitle,
         )
     }
-
 }
-
 
 @Composable
 @Preview

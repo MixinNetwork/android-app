@@ -398,7 +398,6 @@ class SettingComposeFragment : BaseFragment() {
                                     OldPasswordFragment.newInstance()
                                 }
                             }
-
                         }
                     }
                 }
