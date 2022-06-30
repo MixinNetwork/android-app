@@ -12,13 +12,10 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.selection.selectable
-import androidx.compose.material.AlertDialog
-import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.RadioButton
 import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
-import androidx.compose.material.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -42,13 +39,14 @@ import one.mixin.android.session.Session
 import one.mixin.android.ui.setting.AppearanceFragment
 import one.mixin.android.ui.setting.Currency
 import one.mixin.android.ui.setting.CurrencyBottomSheetDialogFragment
+import one.mixin.android.ui.setting.ui.compose.MixinAlertDialog
 import one.mixin.android.ui.setting.ui.compose.MixinBackButton
 import one.mixin.android.ui.setting.ui.compose.MixinTopAppBar
 import one.mixin.android.ui.setting.ui.theme.MixinAppTheme
 import one.mixin.android.util.TimeCache
 import one.mixin.android.util.language.Lingver
 import one.mixin.android.vo.Fiats
-import java.util.Locale
+import java.util.*
 
 @Composable
 fun AppearancePage() {
@@ -171,7 +169,8 @@ private fun LanguageItem() {
 
     if (showLanguageDialog.value) {
         val dialogSelected = remember { mutableStateOf(currentLanguage.value) }
-        AlertDialog(
+        val context = LocalContext.current
+        MixinAlertDialog(
             title = {
                 Text(stringResource(R.string.Language))
             },
@@ -197,52 +196,38 @@ private fun LanguageItem() {
                     }
                 }
             },
-            dismissButton = {
-                TextButton(
-                    onClick = { showLanguageDialog.value = false },
-                    colors = ButtonDefaults.textButtonColors(
-                        contentColor = MixinAppTheme.colors.textSubtitle,
-                    ),
-                ) {
-                    Text(stringResource(R.string.Cancel))
-                }
-            },
-            confirmButton = {
-                val context = LocalContext.current
+            dismissText = stringResource(R.string.Cancel),
+            confirmText = stringResource(R.string.OK),
+            onConfirmClick = {
+                showLanguageDialog.value = false
 
-                TextButton(onClick = {
-                    showLanguageDialog.value = false
-
-                    val newSelected = dialogSelected.value
-                    if (currentLanguage.value != newSelected) {
-                        currentLanguage.value = newSelected
-                        if (newSelected == AppearanceFragment.POS_FOLLOW_SYSTEM) {
-                            Lingver.getInstance().setFollowSystemLocale(context)
-                        } else {
-                            val selectedLang = when (newSelected) {
-                                AppearanceFragment.POS_SIMPLIFY_CHINESE -> Locale.SIMPLIFIED_CHINESE.language
-                                AppearanceFragment.POS_INDONESIA -> Constants.Locale.Indonesian.Language
-                                AppearanceFragment.POS_Malay -> Constants.Locale.Malay.Language
-                                else -> Locale.US.language
-                            }
-                            val selectedCountry = when (newSelected) {
-                                AppearanceFragment.POS_SIMPLIFY_CHINESE -> Locale.SIMPLIFIED_CHINESE.country
-                                AppearanceFragment.POS_INDONESIA -> Constants.Locale.Indonesian.Country
-                                AppearanceFragment.POS_Malay -> Constants.Locale.Malay.Country
-                                else -> Locale.US.country
-                            }
-                            val newLocale = Locale(selectedLang, selectedCountry)
-                            Lingver.getInstance().setLocale(context, newLocale)
+                val newSelected = dialogSelected.value
+                if (currentLanguage.value != newSelected) {
+                    currentLanguage.value = newSelected
+                    if (newSelected == AppearanceFragment.POS_FOLLOW_SYSTEM) {
+                        Lingver.getInstance().setFollowSystemLocale(context)
+                    } else {
+                        val selectedLang = when (newSelected) {
+                            AppearanceFragment.POS_SIMPLIFY_CHINESE -> Locale.SIMPLIFIED_CHINESE.language
+                            AppearanceFragment.POS_INDONESIA -> Constants.Locale.Indonesian.Language
+                            AppearanceFragment.POS_Malay -> Constants.Locale.Malay.Language
+                            else -> Locale.US.language
                         }
-
-                        TimeCache.singleton.evictAll()
-                        context.findFragmentActivityOrNull()?.apply {
-                            onBackPressed()
-                            recreate()
+                        val selectedCountry = when (newSelected) {
+                            AppearanceFragment.POS_SIMPLIFY_CHINESE -> Locale.SIMPLIFIED_CHINESE.country
+                            AppearanceFragment.POS_INDONESIA -> Constants.Locale.Indonesian.Country
+                            AppearanceFragment.POS_Malay -> Constants.Locale.Malay.Country
+                            else -> Locale.US.country
                         }
+                        val newLocale = Locale(selectedLang, selectedCountry)
+                        Lingver.getInstance().setLocale(context, newLocale)
                     }
-                }) {
-                    Text(stringResource(R.string.OK))
+
+                    TimeCache.singleton.evictAll()
+                    context.findFragmentActivityOrNull()?.apply {
+                        onBackPressed()
+                        recreate()
+                    }
                 }
             },
         )

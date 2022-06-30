@@ -9,9 +9,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material.AlertDialog
 import androidx.compose.material.Text
-import androidx.compose.material.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -34,6 +32,7 @@ import one.mixin.android.ui.setting.LocalSettingNav
 import one.mixin.android.ui.setting.PermissionListFragment
 import one.mixin.android.ui.setting.SettingViewModel
 import one.mixin.android.ui.setting.ui.compose.IndeterminateProgressDialog
+import one.mixin.android.ui.setting.ui.compose.MixinAlertDialog
 import one.mixin.android.ui.setting.ui.compose.SettingPageScaffold
 import one.mixin.android.ui.setting.ui.compose.SettingTile
 import one.mixin.android.ui.setting.ui.compose.rememberComposeScope
@@ -150,36 +149,29 @@ private fun RevokeAlertDialog(
 
     val navController = LocalSettingNav.current
 
-    AlertDialog(
+    MixinAlertDialog(
         onDismissRequest = onRequestDismiss,
         text = {
             Text(text = stringResource(R.string.setting_revoke_confirmation, auth.app.name))
         },
-        confirmButton = {
-            TextButton(onClick = {
-                showLoading = true
-                settingViewModel.deauthApp(auth.app.appId).autoDispose(scope).subscribe({
-                    PermissionListFragment.clearRelatedCookies(auth.app)
+        confirmText = stringResource(id = android.R.string.ok),
+        onConfirmClick = {
+            showLoading = true
+            settingViewModel.deauthApp(auth.app.appId).autoDispose(scope).subscribe({
+                PermissionListFragment.clearRelatedCookies(auth.app)
 
-                    authViewModel?.onDeAuthorize(auth.app.appId)
+                authViewModel?.onDeAuthorize(auth.app.appId)
 
-                    showLoading = false
-                    onRequestDismiss()
+                showLoading = false
+                onRequestDismiss()
 
-                    navController.pop()
-                }, {
-                    showLoading = false
-                    onRequestDismiss()
-                })
-            }) {
-                Text(text = stringResource(id = android.R.string.ok))
-            }
+                navController.pop()
+            }, {
+                showLoading = false
+                onRequestDismiss()
+            })
         },
-        dismissButton = {
-            TextButton(onClick = onRequestDismiss) {
-                Text(text = stringResource(id = R.string.Cancel))
-            }
-        }
+        dismissText = stringResource(id = R.string.Cancel),
     )
 
     if (showLoading) {

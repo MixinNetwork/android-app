@@ -8,12 +8,10 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.material.AlertDialog
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.Text
-import androidx.compose.material.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -43,6 +41,7 @@ import one.mixin.android.ui.setting.EmergencyViewModel
 import one.mixin.android.ui.setting.LocalSettingNav
 import one.mixin.android.ui.setting.PinEmergencyBottomSheetDialog
 import one.mixin.android.ui.setting.WalletPasswordFragment
+import one.mixin.android.ui.setting.ui.compose.MixinAlertDialog
 import one.mixin.android.ui.setting.ui.compose.MixinBottomSheetDialog
 import one.mixin.android.ui.setting.ui.compose.SettingPageScaffold
 import one.mixin.android.ui.setting.ui.compose.SettingTile
@@ -230,26 +229,17 @@ private fun RemoveEmergencyButton(
     }
 
     if (showConfirmDialog) {
-        AlertDialog(
+        MixinAlertDialog(
             onDismissRequest = { showConfirmDialog = false },
             text = {
                 Text(text = stringResource(id = R.string.Remove_emergency_contact_confirmation))
             },
-            confirmButton = {
-                TextButton(onClick = {
-                    showConfirmDialog = false
-                    showPinBottomSheet = true
-                }) {
-                    Text(text = stringResource(id = R.string.Delete))
-                }
+            confirmText = stringResource(id = R.string.Delete),
+            onConfirmClick = {
+                showConfirmDialog = false
+                showPinBottomSheet = true
             },
-            dismissButton = {
-                TextButton(onClick = {
-                    showConfirmDialog = false
-                }) {
-                    Text(text = stringResource(id = R.string.Cancel))
-                }
-            }
+            dismissText = stringResource(id = R.string.Cancel),
         )
     }
 

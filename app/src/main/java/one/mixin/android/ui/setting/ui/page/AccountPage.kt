@@ -10,10 +10,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.AlertDialog
 import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
-import androidx.compose.material.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -32,6 +30,7 @@ import one.mixin.android.ui.common.VerifyFragment
 import one.mixin.android.ui.setting.LocalSettingNav
 import one.mixin.android.ui.setting.SettingDestination
 import one.mixin.android.ui.setting.WalletPasswordFragment
+import one.mixin.android.ui.setting.ui.compose.MixinAlertDialog
 import one.mixin.android.ui.setting.ui.compose.MixinBackButton
 import one.mixin.android.ui.setting.ui.compose.MixinTopAppBar
 import one.mixin.android.ui.setting.ui.theme.MixinAppTheme
@@ -78,56 +77,51 @@ private fun ChangeNumberButton() {
         mutableStateOf(false)
     }
     if (openDialog.value) {
-        AlertDialog(
+
+        val context = LocalContext.current
+
+        MixinAlertDialog(
             text = {
                 Text(stringResource(R.string.profile_modify_number))
             },
-            confirmButton = {
-                val context = LocalContext.current
-                TextButton(onClick = {
-                    openDialog.value = false
+            confirmText = stringResource(R.string.Change_Phone_Number),
+            onConfirmClick = {
+                openDialog.value = false
 
-                    val activity = context.findFragmentActivityOrNull()
+                val activity = context.findFragmentActivityOrNull()
 
-                    if (Session.getAccount()?.hasPin == true) {
-                        activity?.supportFragmentManager?.inTransaction {
-                            setCustomAnimations(
-                                R.anim.slide_in_bottom,
-                                R.anim.slide_out_bottom,
-                                R.anim.slide_in_bottom,
-                                R.anim.slide_out_bottom
+                if (Session.getAccount()?.hasPin == true) {
+                    activity?.supportFragmentManager?.inTransaction {
+                        setCustomAnimations(
+                            R.anim.slide_in_bottom,
+                            R.anim.slide_out_bottom,
+                            R.anim.slide_in_bottom,
+                            R.anim.slide_out_bottom
+                        )
+                            .add(
+                                R.id.container,
+                                VerifyFragment.newInstance(VerifyFragment.FROM_PHONE)
                             )
-                                .add(
-                                    R.id.container,
-                                    VerifyFragment.newInstance(VerifyFragment.FROM_PHONE)
-                                )
-                                .addToBackStack(null)
-                        }
-                    } else {
-                        activity?.supportFragmentManager?.inTransaction {
-                            setCustomAnimations(
-                                R.anim.slide_in_bottom,
-                                R.anim.slide_out_bottom,
-                                R.anim.slide_in_bottom,
-                                R.anim.slide_out_bottom
-                            )
-                                .add(
-                                    R.id.container,
-                                    WalletPasswordFragment.newInstance(),
-                                    WalletPasswordFragment.TAG
-                                )
-                                .addToBackStack(null)
-                        }
+                            .addToBackStack(null)
                     }
-                }) {
-                    Text(stringResource(R.string.Change_Phone_Number))
+                } else {
+                    activity?.supportFragmentManager?.inTransaction {
+                        setCustomAnimations(
+                            R.anim.slide_in_bottom,
+                            R.anim.slide_out_bottom,
+                            R.anim.slide_in_bottom,
+                            R.anim.slide_out_bottom
+                        )
+                            .add(
+                                R.id.container,
+                                WalletPasswordFragment.newInstance(),
+                                WalletPasswordFragment.TAG
+                            )
+                            .addToBackStack(null)
+                    }
                 }
             },
-            dismissButton = {
-                TextButton(onClick = { openDialog.value = false }) {
-                    Text(stringResource(android.R.string.cancel))
-                }
-            },
+            dismissText = stringResource(android.R.string.cancel),
             onDismissRequest = {
                 openDialog.value = false
             },

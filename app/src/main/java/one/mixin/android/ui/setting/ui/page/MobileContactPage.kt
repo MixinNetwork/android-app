@@ -8,10 +8,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.material.AlertDialog
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Text
-import androidx.compose.material.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -42,6 +40,7 @@ import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.putBoolean
 import one.mixin.android.extension.toast
 import one.mixin.android.ui.setting.SettingViewModel
+import one.mixin.android.ui.setting.ui.compose.MixinAlertDialog
 import one.mixin.android.ui.setting.ui.compose.SettingPageScaffold
 import one.mixin.android.ui.setting.ui.compose.SettingTile
 import one.mixin.android.ui.setting.ui.compose.rememberComposeScope
@@ -189,8 +188,8 @@ private fun UploadButton(
                         { contacts ->
                             uploadContacts(contacts)
                         }, {
-                        processing = false
-                    }
+                            processing = false
+                        }
                     )
             }
     }
@@ -251,26 +250,17 @@ private fun DeleteButton(
     }
 
     if (showAlert) {
-        AlertDialog(
+        MixinAlertDialog(
             onDismissRequest = { showAlert = false },
             text = {
                 Text(text = stringResource(id = R.string.setting_mobile_contact_warning))
             },
-            confirmButton = {
-                TextButton(onClick = {
-                    showAlert = false
-                    deleteContacts()
-                }) {
-                    Text(text = stringResource(id = R.string.Delete))
-                }
+            confirmText = stringResource(id = R.string.Delete),
+            onConfirmClick = {
+                showAlert = false
+                deleteContacts()
             },
-            dismissButton = {
-                TextButton(onClick = {
-                    showAlert = false
-                }) {
-                    Text(text = stringResource(id = R.string.Cancel))
-                }
-            }
+            dismissText = stringResource(id = R.string.Cancel),
         )
     }
 }
