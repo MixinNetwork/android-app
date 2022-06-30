@@ -83,6 +83,7 @@ enum class SettingDestination {
     AuthenticationPermissions,
     PinLogs,
     BiometricTime,
+    ChangePin,
 }
 
 open class SettingNavigationController {
@@ -389,6 +390,12 @@ class SettingComposeFragment : BaseFragment() {
                             composable(SettingDestination.DeleteAccount.name) {
                                 MixinSettingFragment(DeleteAccountFragment.TAG) {
                                     DeleteAccountFragment.newInstance()
+                                }
+                            }
+
+                            composable(SettingDestination.ChangePin.name) {
+                                MixinSettingFragment(OldPasswordFragment.TAG) {
+                                    OldPasswordFragment.newInstance()
                                 }
                             }
 

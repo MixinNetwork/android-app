@@ -119,8 +119,10 @@ fun PinSettingPage() {
                 )
             },
         ) {
-            isSupportWithErrorInfo =
-                BiometricUtil.isSupportWithErrorInfo(context, BiometricManager.Authenticators.BIOMETRIC_STRONG)
+            isSupportWithErrorInfo = BiometricUtil.isSupportWithErrorInfo(
+                context,
+                BiometricManager.Authenticators.BIOMETRIC_STRONG
+            )
             val isSupport = isSupportWithErrorInfo?.first == true
             if (!isSupport) {
                 enableBiometrics = false
@@ -155,9 +157,9 @@ fun PinSettingPage() {
                 }
             })
         }
+        val navController = LocalSettingNav.current
 
         if (enableBiometrics) {
-            val navController = LocalSettingNav.current
             SettingTile(
                 title = stringResource(R.string.Pay_with_PIN_interval),
                 trailing = {
@@ -199,6 +201,7 @@ fun PinSettingPage() {
         Box(modifier = Modifier.height(16.dp))
 
         SettingTile(title = stringResource(R.string.Change_PIN)) {
+            navController.navigation(SettingDestination.ChangePin)
         }
     }
 }
