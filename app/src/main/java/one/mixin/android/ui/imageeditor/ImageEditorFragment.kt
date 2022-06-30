@@ -105,7 +105,7 @@ class ImageEditorFragment : BaseFragment(), TextEntryDialogFragment.Controller {
             requireArguments().getString(ARGS_NEXT_TITLE)?.let {
                 nextTv.text = it
             }
-            closeIv.setOnClickListener { activity?.onBackPressed() }
+            closeIv.setOnClickListener { activity?.onBackPressedDispatcher?.onBackPressed() }
             nextTv.setOnClickListener { goNext() }
             cropLl.setOnClickListener { setMode(Mode.Crop) }
             textLl.setOnClickListener { setMode(Mode.Text) }

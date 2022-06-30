@@ -47,7 +47,6 @@ import android.view.Window
 import android.view.WindowManager
 import androidx.annotation.AttrRes
 import androidx.annotation.ColorInt
-import androidx.annotation.RequiresApi
 import androidx.browser.customtabs.CustomTabsIntent
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
@@ -82,6 +81,7 @@ import one.mixin.android.widget.gallery.MimeType
 import one.mixin.android.widget.gallery.engine.impl.GlideEngine
 import timber.log.Timber
 import java.io.File
+import java.io.Serializable
 import java.util.Locale
 import java.util.UUID
 import java.util.concurrent.ExecutorService
@@ -90,11 +90,11 @@ import kotlin.math.roundToInt
 
 private val uiHandler = Handler(Looper.getMainLooper())
 
-fun Context.mainThread(runnable: () -> Unit) {
+fun mainThread(runnable: () -> Unit) {
     uiHandler.post(runnable)
 }
 
-fun Context.mainThreadDelayed(runnable: () -> Unit, delayMillis: Long) {
+fun mainThreadDelayed(runnable: () -> Unit, delayMillis: Long) {
     uiHandler.postDelayed(runnable, delayMillis)
 }
 
@@ -127,7 +127,7 @@ fun Context.runOnUiThread(f: Context.() -> Unit) {
     runOnUiThread(f, 0L)
 }
 
-fun Context.runOnUiThread(runnable: Runnable, delay: Long = 0L) {
+fun runOnUiThread(runnable: Runnable, delay: Long = 0L) {
     if (delay == 0L) {
         uiHandler.post(runnable)
     } else {
@@ -135,15 +135,15 @@ fun Context.runOnUiThread(runnable: Runnable, delay: Long = 0L) {
     }
 }
 
-fun Context.cancelRunOnUiThread(runnable: Runnable) {
+fun cancelRunOnUiThread(runnable: Runnable) {
     uiHandler.removeCallbacks(runnable)
 }
 
-fun Context.async(runnable: () -> Unit) {
+fun async(runnable: () -> Unit) {
     Thread(runnable).start()
 }
 
-fun Context.async(runnable: () -> Unit, executor: ExecutorService): Future<out Any?> =
+fun async(runnable: () -> Unit, executor: ExecutorService): Future<out Any?> =
     executor.submit(runnable)
 
 fun Context.statusBarHeight(): Int {
@@ -179,7 +179,7 @@ fun Context.hasNavigationBar(): Boolean {
         } else if ("0" == navBarOverride) {
             hasNavigationBar = true
         }
-    } catch (e: Exception) {
+    } catch (_: Exception) {
     }
     return hasNavigationBar
 }
@@ -1030,7 +1030,6 @@ fun Context.openIgnoreBatteryOptimizationSetting(newTask: Boolean = false) {
     }
 }
 
-@RequiresApi(Build.VERSION_CODES.N)
 fun Context.getDisplayPath(uri: Uri): String {
     val lastPathSegment = requireNotNull(uri.lastPathSegment)
     val backupVolume = lastPathSegment.replaceFirst(":.*".toRegex(), "")
@@ -1071,7 +1070,7 @@ inline fun <reified T> Fragment.findListener(): T? {
 val Context.notificationManager: NotificationManager
     get() = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
-fun Context.shareFile(file: File, type: String) {
+fun Context.shareFile(file: File) {
     Intent().apply {
         val uri = getUriForFile(file)
         action = Intent.ACTION_SEND
@@ -1140,5 +1139,23 @@ fun Context.callPhone(phone: String) {
         startActivity(intent)
     } catch (e: Exception) {
         Timber.e(e)
+    }
+}
+
+@SuppressWarnings("deprecation")
+fun <T : Serializable?> getSerializableExtra(intent: Intent, name: String, clazz: Class<T>): T? {
+    return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+        intent.getSerializableExtra(name, clazz)
+    } else {
+        intent.getSerializableExtra(name) as? T
+    }
+}
+
+@SuppressWarnings("deprecation")
+fun <T> getParcelableExtra(intent: Intent, name: String, clazz: Class<T>): T? {
+    return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+        intent.getParcelableExtra(name, clazz)
+    } else {
+        intent.getParcelableExtra(name) as T?
     }
 }

@@ -23,8 +23,6 @@ import android.provider.Settings
 import android.view.MotionEvent
 import android.view.TextureView
 import android.view.View
-import android.view.View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR
-import android.view.View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
 import android.view.ViewGroup
 import android.view.WindowManager
 import android.view.animation.DecelerateInterpolator
@@ -119,30 +117,24 @@ class TranscriptMediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismis
     lateinit var conversationRepository: ConversationRepository
     private lateinit var binding: ActivityMediaPagerBinding
     override fun onCreate(savedInstanceState: Bundle?) {
+        skipSystemUi = true
         postponeEnterTransition()
         super.onCreate(savedInstanceState)
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
-        window.sharedElementEnterTransition.duration = SHARED_ELEMENT_TRANSITION_DURATION
-        window.sharedElementExitTransition.duration = SHARED_ELEMENT_TRANSITION_DURATION
         binding = ActivityMediaPagerBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        window.decorView.systemUiVisibility =
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                View.SYSTEM_UI_FLAG_FULLSCREEN or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN or View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY or
-                    SYSTEM_UI_FLAG_LIGHT_STATUS_BAR or SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR or View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
-            } else {
-                View.SYSTEM_UI_FLAG_FULLSCREEN or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN or View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY or
-                    SYSTEM_UI_FLAG_LIGHT_STATUS_BAR or View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
-            }
+        window.sharedElementEnterTransition.duration = SHARED_ELEMENT_TRANSITION_DURATION
+        window.sharedElementExitTransition.duration = SHARED_ELEMENT_TRANSITION_DURATION
         supportsPie {
             val lp = window.attributes
             lp.layoutInDisplayCutoutMode =
                 WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES
             window.attributes = lp
         }
-        SystemUIManager.setSystemUiColor(window, Color.BLACK)
-        SystemUIManager.lightUI(window, false)
-
+        SystemUIManager.fitsSystem(window)
+        binding.root.doOnPreDraw {
+            SystemUIManager.lightUI(window, false)
+        }
         colorDrawable = ColorDrawable(Color.BLACK)
         binding.viewPager.backgroundDrawable = colorDrawable
         binding.viewPager.adapter = adapter
@@ -211,6 +203,11 @@ class TranscriptMediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismis
             180 -> ActivityInfo.SCREEN_ORIENTATION_REVERSE_PORTRAIT
             90 -> ActivityInfo.SCREEN_ORIENTATION_REVERSE_LANDSCAPE
             else -> ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+        }
+        if (requestedOrientation == ActivityInfo.SCREEN_ORIENTATION_PORTRAIT || requestedOrientation == ActivityInfo.SCREEN_ORIENTATION_REVERSE_PORTRAIT) {
+            SystemUIManager.showSystemUI(window)
+        } else {
+            SystemUIManager.hideSystemUI(window)
         }
         findViewPagerChildByTag {
             ItemPagerVideoLayoutBinding.bind(it).playerView.switchFullscreen(orientation == 90 || orientation == 270)
@@ -444,12 +441,6 @@ class TranscriptMediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismis
             val animatorSet = AnimatorSet()
             val position = IntArray(2)
             videoAspectRatioLayout.getLocationOnScreen(position)
-            window.decorView.systemUiVisibility =
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                    SYSTEM_UI_FLAG_LIGHT_STATUS_BAR or SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR
-                } else {
-                    SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
-                }
             val changedTextureView = pipVideoView.show(
                 videoAspectRatioLayout.aspectRatio,
                 videoAspectRatioLayout.videoRotation,
@@ -487,9 +478,6 @@ class TranscriptMediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismis
                         windowView.findViewById<View>(R.id.close_iv).fadeOut()
                         if (windowView.findViewById<View>(R.id.live_tv).isEnabled) {
                             windowView.findViewById<View>(R.id.live_tv).fadeOut()
-                        }
-                        if (!SystemUIManager.hasCutOut(window)) {
-                            SystemUIManager.clearStyle(window)
                         }
                     }
 
@@ -690,12 +678,6 @@ class TranscriptMediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismis
     }
 
     override fun finish() {
-        window.decorView.systemUiVisibility =
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                SYSTEM_UI_FLAG_LIGHT_STATUS_BAR or SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR
-            } else {
-                SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
-            }
         if (!pipVideoView.shown) {
             VideoPlayer.destroy()
         }

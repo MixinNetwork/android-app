@@ -57,6 +57,7 @@ import java.nio.charset.Charset
 @AndroidEntryPoint
 class MarkdownActivity : BaseActivity() {
     private lateinit var binding: ActivityMarkdownBinding
+    @SuppressLint("NotifyDataSetChanged")
     public override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMarkdownBinding.inflate(layoutInflater)
@@ -179,7 +180,7 @@ class MarkdownActivity : BaseActivity() {
                         writer.write(markdown)
                     }
                     withContext(Dispatchers.Main) {
-                        this@MarkdownActivity.shareFile(file, "text/*")
+                        this@MarkdownActivity.shareFile(file)
                     }
                 }
             } catch (e: Exception) {
@@ -224,7 +225,7 @@ class MarkdownActivity : BaseActivity() {
             this@MarkdownActivity, pdfHtml, pdfFile,
             object : PrintPdfCallback {
                 override fun onSuccess() {
-                    this@MarkdownActivity.shareFile(pdfFile, "application/pdf")
+                    this@MarkdownActivity.shareFile(pdfFile)
                     dismissAction.invoke()
                     dialog.dismiss()
                 }

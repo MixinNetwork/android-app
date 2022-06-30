@@ -30,7 +30,7 @@ class AccountFragment : BaseFragment(R.layout.fragment_account) {
         super.onViewCreated(view, savedInstanceState)
         binding.apply {
             titleView.leftIb.setOnClickListener {
-                activity?.onBackPressed()
+                activity?.onBackPressedDispatcher?.onBackPressed()
             }
             privacyRl.setOnClickListener {
                 navTo(PrivacyFragment.newInstance(), PrivacyFragment.TAG)

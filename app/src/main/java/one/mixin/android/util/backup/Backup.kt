@@ -6,7 +6,6 @@ import android.database.sqlite.SQLiteDatabase
 import android.net.Uri
 import android.os.Build
 import android.os.StatFs
-import androidx.annotation.RequiresApi
 import androidx.annotation.RequiresPermission
 import androidx.core.net.toUri
 import androidx.documentfile.provider.DocumentFile
@@ -397,7 +396,6 @@ private suspend fun internalFindBackup(
     ) ?: findOldBackup(context, coroutineContext)
     )
 
-@RequiresApi(Build.VERSION_CODES.N)
 suspend fun findBackupApi29(
     context: Context,
     coroutineContext: CoroutineContext

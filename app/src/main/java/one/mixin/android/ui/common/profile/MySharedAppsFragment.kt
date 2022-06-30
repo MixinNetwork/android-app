@@ -42,7 +42,7 @@ class MySharedAppsFragment : BaseFragment() {
         binding.apply {
             recyclerView.adapter = adapter
             recyclerView.addItemDecoration(SegmentationItemDecoration())
-            titleView.leftIb.setOnClickListener { activity?.onBackPressed() }
+            titleView.leftIb.setOnClickListener { activity?.onBackPressedDispatcher?.onBackPressed() }
         }
         loadData()
         refresh()

@@ -544,7 +544,7 @@ object NotificationGenerator : Injector() {
     }
 
     private fun loadBitmap(context: Context, url: String?, onComplete: (Bitmap?) -> Unit) {
-        context.mainThread {
+        mainThread {
             val height =
                 context.resources.getDimensionPixelSize(android.R.dimen.notification_large_icon_height)
             val width =

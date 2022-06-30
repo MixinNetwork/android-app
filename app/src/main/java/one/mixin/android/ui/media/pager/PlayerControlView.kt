@@ -289,6 +289,9 @@ class PlayerControlView(context: Context, attributeSet: AttributeSet) :
             Player.STATE_ENDED -> {
                 playView.status = STATUS_IDLE
             }
+            Player.STATE_BUFFERING -> {
+                // Do nothing
+            }
         }
     }
 

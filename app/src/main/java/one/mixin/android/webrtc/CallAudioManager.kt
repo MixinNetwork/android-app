@@ -82,7 +82,7 @@ class CallAudioManager(
 
     fun start(isInitiator: Boolean, playRingtone: Boolean = true) {
         initAudioSwitch()
-        context.mainThread {
+        mainThread {
             AudioPlayer.pause()
             MusicPlayer.pause()
         }

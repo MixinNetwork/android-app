@@ -87,7 +87,7 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
         super.onViewCreated(view, savedInstanceState)
         binding.apply {
             titleView.rightAnimator.setOnClickListener { showBottom() }
-            titleView.leftIb.setOnClickListener { activity?.onBackPressed() }
+            titleView.leftIb.setOnClickListener { activity?.onBackPressedDispatcher?.onBackPressed() }
             searchIb.setOnClickListener { view.navigate(R.id.action_wallet_to_wallet_search) }
 
             _headBinding = ViewWalletFragmentHeaderBinding.bind(layoutInflater.inflate(R.layout.view_wallet_fragment_header, coinsRv, false))
@@ -243,7 +243,7 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
         if (list.isNotEmpty()) {
             _headBinding?.pieItemContainer?.removeAllViews()
             list.sortWith { o1, o2 -> ((o2.percent - o1.percent) * 100).toInt() }
-            context?.mainThread {
+            mainThread {
                 _headBinding?.percentView?.setPercents(list)
             }
             when {

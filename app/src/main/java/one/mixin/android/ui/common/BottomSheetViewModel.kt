@@ -272,7 +272,7 @@ class BottomSheetViewModel @Inject internal constructor(
         jobManager.addJobInBackground(RefreshUserJob(listOf(userId), forceRefresh = forceRefresh))
     }
 
-    fun refreshUsers(userIds: List<String>, conversationId: String?, conversationAvatarUserIds: List<String>?) {
+    fun refreshUsers(userIds: List<String>, conversationId: String?) {
         jobManager.addJobInBackground(
             RefreshUserJob(userIds, conversationId)
         )

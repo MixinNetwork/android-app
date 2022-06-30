@@ -10,7 +10,6 @@ import android.os.Bundle
 import android.view.View
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.ActivityResultRegistry
-import androidx.annotation.RequiresApi
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
@@ -107,7 +106,7 @@ class BackUpFragment : BaseFragment(R.layout.fragment_backup) {
                     topToBottom = R.id.backup_des
                 }
             }
-            titleView.leftIb.setOnClickListener { activity?.onBackPressed() }
+            titleView.leftIb.setOnClickListener { activity?.onBackPressedDispatcher?.onBackPressed() }
             backupBn.setOnClickListener {
                 RxPermissions(requireActivity())
                     .request(Manifest.permission.WRITE_EXTERNAL_STORAGE)
@@ -248,7 +247,6 @@ class BackUpFragment : BaseFragment(R.layout.fragment_backup) {
         dialog.show()
     }
 
-    @RequiresApi(Build.VERSION_CODES.N)
     private fun callbackChooseFolder(uri: Uri?) {
         if (uri != null) {
             Timber.d(requireContext().getDisplayPath(uri))

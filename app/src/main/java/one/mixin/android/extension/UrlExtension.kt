@@ -123,7 +123,7 @@ User ID: ${Session.getAccountId()}
 Google Available: ${context.isGooglePlayServicesAvailable()}
 User-agent: ${WebView(context).settings.userAgentString}
 """
-        context.alert(content).setPositiveButton(R.string.copy) { dialog, _ ->
+        context.alert(content).setPositiveButton(android.R.string.copy) { dialog, _ ->
             context.getClipboardManager().setPrimaryClip(
                 ClipData.newPlainText(
                     null,
@@ -218,7 +218,7 @@ private fun getUserOrAppNotFoundTip(isApp: Boolean) =
     if (isApp) R.string.Bot_not_found else R.string.User_not_found
 
 fun Uri.getRawQueryParameter(key: String): String? {
-    val parameters = this.getQueryParameters("data")
+    val parameters = this.getQueryParameters(key)
     return if (parameters.isEmpty()) {
         null
     } else {

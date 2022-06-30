@@ -92,7 +92,6 @@ import one.mixin.android.extension.REQUEST_FILE
 import one.mixin.android.extension.REQUEST_GALLERY
 import one.mixin.android.extension.REQUEST_LOCATION
 import one.mixin.android.extension.addFragment
-import one.mixin.android.extension.alert
 import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.animateHeight
 import one.mixin.android.extension.booleanFromAttribute
@@ -107,7 +106,6 @@ import one.mixin.android.extension.fadeIn
 import one.mixin.android.extension.fadeOut
 import one.mixin.android.extension.getAttachment
 import one.mixin.android.extension.getClipboardManager
-import one.mixin.android.extension.getFilePath
 import one.mixin.android.extension.getMimeType
 import one.mixin.android.extension.getOtherPath
 import one.mixin.android.extension.getUriForFile
@@ -197,7 +195,6 @@ import one.mixin.android.util.MusicPlayer
 import one.mixin.android.util.chat.InvalidateFlow
 import one.mixin.android.util.debug.FileLogTree
 import one.mixin.android.util.debug.debugLongClick
-import one.mixin.android.util.import.ImportChatUtil
 import one.mixin.android.util.mention.mentionDisplay
 import one.mixin.android.util.mention.mentionEnd
 import one.mixin.android.util.mention.mentionReplace
@@ -232,6 +229,7 @@ import one.mixin.android.vo.isLive
 import one.mixin.android.vo.isSticker
 import one.mixin.android.vo.isText
 import one.mixin.android.vo.isTranscript
+import one.mixin.android.vo.mediaExists
 import one.mixin.android.vo.saveToLocal
 import one.mixin.android.vo.supportSticker
 import one.mixin.android.vo.toApp
@@ -668,13 +666,7 @@ class ConversationFragment() :
                     )
                     return
                 }
-                val path = messageItem.absolutePath()?.toUri()?.getFilePath()
-                if (path == null) {
-                    toast(R.string.File_does_not_exist)
-                    return
-                }
-                val file = File(path)
-                if (file.exists()) {
+                if (messageItem.mediaExists()) {
                     getMediaResult.launch(
                         MediaPagerActivity.MediaParam(
                             messageItem.conversationId,
@@ -1024,7 +1016,7 @@ class ConversationFragment() :
     }
     private val aodWakeLock by lazy {
         powerManager.newWakeLock(
-            PowerManager.SCREEN_BRIGHT_WAKE_LOCK or PowerManager.ON_AFTER_RELEASE,
+            PowerManager.PARTIAL_WAKE_LOCK or PowerManager.ON_AFTER_RELEASE,
             "mixin"
         )
     }
@@ -1043,7 +1035,7 @@ class ConversationFragment() :
     // for testing
     var selectItem: SelectItem? = null
 
-    lateinit var getForwardResult: ActivityResultLauncher<Pair<ArrayList<ForwardMessage>, String?>>
+    private lateinit var getForwardResult: ActivityResultLauncher<Pair<ArrayList<ForwardMessage>, String?>>
     private lateinit var getCombineForwardResult: ActivityResultLauncher<ArrayList<TranscriptMessage>>
     private lateinit var getChatHistoryResult: ActivityResultLauncher<Pair<String, Boolean>>
     private lateinit var getMediaResult: ActivityResultLauncher<MediaPagerActivity.MediaParam>
@@ -1126,6 +1118,7 @@ class ConversationFragment() :
     private var paused = false
     private var starTransition = false
 
+    @SuppressLint("NotifyDataSetChanged")
     override fun onResume() {
         super.onResume()
         sensorManager.registerListener(
@@ -1252,7 +1245,7 @@ class ConversationFragment() :
         if (aodWakeLock.isHeld) {
             aodWakeLock.release()
         }
-        snackbar?.dismiss()
+        snackBar?.dismiss()
         binding.chatRv.let { rv ->
             rv.children.forEach {
                 val vh = rv.getChildViewHolder(it)
@@ -1344,6 +1337,7 @@ class ConversationFragment() :
         }
     }
 
+    @SuppressLint("NotifyDataSetChanged")
     private fun closeTool() {
         conversationAdapter.selectSet.clear()
         if (!binding.chatRv.isComputingLayout) {
@@ -1436,7 +1430,7 @@ class ConversationFragment() :
         initTouchHelper()
 
         binding.actionBar.leftIb.setOnClickListener {
-            activity?.onBackPressed()
+            activity?.onBackPressedDispatcher?.onBackPressed()
         }
 
         if (isGroup) {
@@ -1476,7 +1470,7 @@ class ConversationFragment() :
                 binding.chatControl.chatEt.setText(conversationDraft)
             }
         }
-        binding.toolView.closeIv.setOnClickListener { activity?.onBackPressed() }
+        binding.toolView.closeIv.setOnClickListener { activity?.onBackPressedDispatcher?.onBackPressed() }
         binding.toolView.deleteIv.setOnClickListener {
             conversationAdapter.selectSet.filter { it.isAudio() }.forEach {
                 if (AudioPlayer.isPlay(it.messageId)) {
@@ -2574,6 +2568,7 @@ class ConversationFragment() :
         }
     }
 
+    @SuppressLint("NotifyDataSetChanged")
     private fun scrollToDown() {
         binding.chatRv.layoutManager?.scrollToPosition(0)
         if (firstPosition > PAGE_SIZE * 6) {
@@ -2640,7 +2635,7 @@ class ConversationFragment() :
                 0,
                 binding.chatRv.measuredHeight * 3 / 4,
                 action = {
-                    requireContext().mainThreadDelayed(
+                    mainThreadDelayed(
                         {
                             RxBus.publish(BlinkEvent(messageId))
                         },
@@ -2655,7 +2650,7 @@ class ConversationFragment() :
                     index,
                     0,
                     action = {
-                        requireContext().mainThreadDelayed(
+                        mainThreadDelayed(
                             {
                                 RxBus.publish(BlinkEvent(messageId))
                             },
@@ -2668,7 +2663,7 @@ class ConversationFragment() :
                 val lastPosition = lm.findLastCompletelyVisibleItemPosition()
                 val firstPosition = lm.findFirstVisibleItemPosition()
                 if (index in firstPosition..lastPosition) {
-                    requireContext().mainThreadDelayed(
+                    mainThreadDelayed(
                         {
                             RxBus.publish(BlinkEvent(messageId))
                         },
@@ -2679,7 +2674,7 @@ class ConversationFragment() :
                         index + 1,
                         binding.chatRv.measuredHeight * 3 / 4,
                         action = {
-                            requireContext().mainThreadDelayed(
+                            mainThreadDelayed(
                                 {
                                     RxBus.publish(BlinkEvent(messageId))
                                 },
@@ -2930,7 +2925,7 @@ class ConversationFragment() :
                 }
             }
             requireContext().clickVibrate()
-            PopupWindowCompat.showAsDropDown(popupWindow, binding.chatControl.anchorView, -200.dp, -110.dp, Gravity.END)
+            PopupWindowCompat.showAsDropDown(popupWindow, binding.chatControl.anchorView, (-200).dp, (-110).dp, Gravity.END)
         }
 
         override fun onRecordStart(audio: Boolean) {
@@ -3046,22 +3041,22 @@ class ConversationFragment() :
         checkPeers(requireContext(), conversationId)
     }
 
-    private var snackbar: Snackbar? = null
+    private var snackBar: Snackbar? = null
     private fun callbackForward(data: Intent?) {
         val selectItems = data?.getParcelableArrayListExtra<SelectItem>(ARGS_RESULT)
         if (selectItems.isNullOrEmpty()) return
 
         val selectItem = selectItems[0]
         this.selectItem = selectItem
-        snackbar = Snackbar.make(binding.barLayout, getString(R.string.Forward_success), Snackbar.LENGTH_LONG)
+        snackBar = Snackbar.make(binding.barLayout, getString(R.string.Forward_success), Snackbar.LENGTH_LONG)
             .setAction(R.string.View) {
                 ConversationActivity.show(requireContext(), selectItem.conversationId, selectItem.userId)
             }.setActionTextColor(ContextCompat.getColor(requireContext(), R.color.wallet_blue)).apply {
                 (view.findViewById<TextView>(R.id.snackbar_text)).setTextColor(ContextCompat.getColor(requireContext(), R.color.white))
             }.apply {
-                snackbar?.config(binding.barLayout.context)
+                snackBar?.config(binding.barLayout.context)
             }
-        snackbar?.show()
+        snackBar?.show()
     }
     private fun callbackChatHistory(data: Intent?) {
         data?.getStringExtra(JUMP_ID)?.let { messageId ->
@@ -3100,7 +3095,7 @@ class ConversationFragment() :
     }
 
     private fun checkTranscript() {
-        transcriptData?.let { transcriptData ->
+        transcriptData?.let { _ ->
             RxPermissions(requireActivity())
                 .request(Manifest.permission.WRITE_EXTERNAL_STORAGE)
                 .autoDispose(stopScope)
@@ -3113,11 +3108,9 @@ class ConversationFragment() :
                             .setView(transcriptDialogLayoutBinding.root)
                             .create()
                         transcriptDialogLayoutBinding.importChat.setOnClickListener {
-                            sendTranscript(transcriptData)
                             transcriptDialog?.dismiss()
                         }
                         transcriptDialogLayoutBinding.sendChat.setOnClickListener {
-                            sendFile(transcriptData)
                             transcriptDialog?.dismiss()
                         }
                         transcriptDialog?.show()
@@ -3126,31 +3119,6 @@ class ConversationFragment() :
                     }
                 }
         }
-    }
-
-    private fun sendTranscript(transcriptData: TranscriptData) {
-        try {
-            val importChatUtil = ImportChatUtil.get()
-            val content = importChatUtil.generateTranscriptMessage(requireContext(), transcriptData.chatUri, transcriptData.documentUris)
-            // todo
-            // content?.notEmptyWithElse({ sendTranscriptMessage(content) }, { sendFileAlert(transcriptData) })
-        } catch (e: Exception) {
-            Timber.e(e)
-            sendFileAlert(transcriptData)
-        }
-    }
-
-    private fun sendFileAlert(transcriptData: TranscriptData) {
-        alert(getString(R.string.chat_import_fail_content))
-            .setNegativeButton(android.R.string.cancel) { dialog, _ -> dialog.dismiss() }
-            .setPositiveButton(R.string.Send_as_file) { dialog, _ ->
-                sendFile(transcriptData)
-                dialog.dismiss()
-            }
-    }
-
-    private fun sendFile(transcriptData: TranscriptData) {
-        // todo
     }
 
     private var forwardDialog: AlertDialog? = null

@@ -50,7 +50,7 @@ class DeleteAccountFragment : BaseFragment(R.layout.fragment_delete_account) {
         super.onViewCreated(view, savedInstanceState)
         binding.apply {
             titleView.leftIb.setOnClickListener {
-                activity?.onBackPressed()
+                activity?.onBackPressedDispatcher?.onBackPressed()
             }
             titleView.rightAnimator.setOnClickListener { context?.openUrl(Constants.HelpLink.EMERGENCY) }
             deleteRl.setOnClickListener {
