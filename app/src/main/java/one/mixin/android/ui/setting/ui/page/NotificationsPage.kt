@@ -1,5 +1,6 @@
 package one.mixin.android.ui.setting.ui.page
 
+import android.content.res.Configuration
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -22,7 +23,6 @@ import androidx.compose.material.SwitchDefaults
 import androidx.compose.material.Text
 import androidx.compose.material.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -39,12 +39,15 @@ import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants
 import one.mixin.android.R
@@ -405,7 +408,12 @@ private fun EditDialog(
     onConfirm: (String) -> Unit = {},
 ) {
     val inputText = remember {
-        mutableStateOf(text)
+        mutableStateOf(
+            TextFieldValue(
+                text = text,
+                selection = TextRange(text.length)
+            )
+        )
     }
     Column(
         modifier = Modifier
@@ -415,7 +423,10 @@ private fun EditDialog(
             )
             .padding(24.dp)
     ) {
-        Text(text = title)
+        Text(
+            text = title,
+            color = MixinAppTheme.colors.textPrimary
+        )
 
         val focusRequester = remember {
             FocusRequester()
@@ -426,6 +437,23 @@ private fun EditDialog(
         var hasFocus by remember {
             mutableStateOf(false)
         }
+
+        val scope = rememberCoroutineScope()
+
+        LaunchedEffect(Unit) {
+            scope.launch {
+                // delay to request focus. make sure the compose is ready.
+                delay(50)
+                focusRequester.requestFocus()
+            }
+        }
+
+        LaunchedEffect(hasFocus) {
+            if (hasFocus) {
+                keyboardController?.show()
+            }
+        }
+
         BasicTextField(
             value = inputText.value,
             onValueChange = { inputText.value = it },
@@ -434,9 +462,6 @@ private fun EditDialog(
                 .height(48.dp)
                 .focusRequester(focusRequester)
                 .onFocusChanged {
-                    if (it.isFocused) {
-                        keyboardController?.show()
-                    }
                     hasFocus = it.isFocused
                 },
             interactionSource = interactionSource,
@@ -445,6 +470,7 @@ private fun EditDialog(
             ),
             textStyle = TextStyle(
                 fontSize = 14.sp,
+                color = MixinAppTheme.colors.textPrimary
             ),
             cursorBrush = SolidColor(MixinAppTheme.colors.accent),
         ) { innerTextField ->
@@ -467,23 +493,30 @@ private fun EditDialog(
             }
         }
 
-        DisposableEffect(Unit) {
-            focusRequester.requestFocus()
-            onDispose { }
-        }
-
         Row {
             Spacer(Modifier.weight(1f))
             TextButton(onClick = {
                 onClose()
             }) {
-                Text(text = stringResource(R.string.Cancel))
+                Text(
+                    text = stringResource(R.string.Cancel),
+                    style = TextStyle(
+                        fontSize = 14.sp,
+                        color = MixinAppTheme.colors.accent,
+                    )
+                )
             }
             TextButton(onClick = {
                 onClose()
-                onConfirm(inputText.value)
+                onConfirm(inputText.value.text)
             }) {
-                Text(text = stringResource(R.string.Save))
+                Text(
+                    text = stringResource(R.string.Save),
+                    style = TextStyle(
+                        fontSize = 14.sp,
+                        color = MixinAppTheme.colors.accent,
+                    )
+                )
             }
         }
     }
@@ -506,6 +539,7 @@ fun NotificationItemPreview() {
 
 @Composable
 @Preview
+@Preview(uiMode = Configuration.UI_MODE_NIGHT_YES)
 fun EditDialogPreview() {
     MixinAppTheme {
         EditDialog(
