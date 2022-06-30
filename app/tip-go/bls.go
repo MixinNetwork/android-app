@@ -4,18 +4,30 @@ import (
 	"encoding/hex"
 	"strings"
 
+	"github.com/drand/kyber"
 	"github.com/drand/kyber/pairing/bn256"
-	"github.com/drand/kyber/sign/bls"
+	"github.com/drand/kyber/share"
+	"github.com/drand/kyber/sign/tbls"
 )
 
-func AggregateSignatures(sigs string) ([]byte, error) {
-	sigSlice := strings.Split(sigs, ",")
-	var sigBytes [][]byte
-	for i := range sigSlice {
-		b, _ := hex.DecodeString(sigSlice[i])
-		sigBytes = append(sigBytes, b[:])
+func RecoverSignature(partialStrings string, commitmentStrings string, assignor []byte, signersLen int) ([]byte, error) {
+	partialSlice := strings.Split(partialStrings, ",")
+	var partials [][]byte
+	for i := range partialSlice {
+		b, _ := hex.DecodeString(partialSlice[i])
+		partials = append(partials, b[:])
 	}
 
-	scheme := bls.NewSchemeOnG1(bn256.NewSuiteG2())
-	return scheme.AggregateSignatures(sigBytes...)
+	commitmentSlice := strings.Split(commitmentStrings, ",")
+	var commitments []kyber.Point
+	for i := range commitmentSlice {
+		point, _ := PubKeyFromBase58(commitmentSlice[i])
+		commitments = append(commitments, point.point)
+	}
+
+	suite := bn256.NewSuiteG2()
+	scheme := tbls.NewThresholdSchemeOnG1(bn256.NewSuiteG2())
+	poly := share.NewPubPoly(suite, suite.Point().Base(), commitments)
+	sig, err := scheme.Recover(poly, assignor, partials, len(commitments), signersLen)
+	return sig, err
 }

@@ -6,12 +6,16 @@ import one.mixin.android.Constants
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.TipRequest
 import one.mixin.android.api.service.TipService
+import one.mixin.android.crypto.aesDecrypt
+import one.mixin.android.crypto.aesEncrypt
 import one.mixin.android.crypto.generateEphemeralSeed
 import one.mixin.android.extension.base64RawEncode
 import one.mixin.android.extension.base64RawUrlDecode
+import one.mixin.android.extension.decodeBase64
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.putString
 import one.mixin.android.extension.toHex
+import one.mixin.android.session.Session
 import one.mixin.android.util.deleteKeyByAlias
 import one.mixin.android.util.getDecryptCipher
 import one.mixin.android.util.getEncryptCipher
@@ -45,18 +49,25 @@ class Ephemeral @Inject internal constructor(private val tipService: TipService)
     }
 
     private suspend fun createEphemeralSeed(context: Context, deviceId: String): ByteArray? {
-        val seed = generateEphemeralSeed().base64RawEncode()
-        return updateEphemeralSeed(context, deviceId, seed)
+        val pinToken = Session.getPinToken()?.decodeBase64() ?: return null
+        val seed = generateEphemeralSeed()
+        val cipher = aesEncrypt(pinToken, seed)
+        return updateEphemeralSeed(context, deviceId, cipher.base64RawEncode())
     }
 
     private suspend fun updateEphemeralSeed(context: Context, deviceId: String, seedBase64: String): ByteArray? {
-        val resp = tipService.tipEphemeral(TipRequest(deviceId, seedBase64))
-        if (!resp.isSuccess) {
-            return null
-        }
-        val seed = seedBase64.base64RawUrlDecode()
-        storeEphemeralSeed(context, seed)
-        return seed
+        return handleMixinResponse(
+            invokeNetwork = { tipService.tipEphemeral(TipRequest(deviceId, seedBase64)) },
+            switchContext = Dispatchers.IO,
+            successBlock = {
+                val pinToken = Session.getPinToken()?.decodeBase64() ?: return@handleMixinResponse null
+
+                val cipher = seedBase64.base64RawUrlDecode()
+                val plain = aesDecrypt(pinToken, cipher)
+                storeEphemeralSeed(context, plain)
+                plain
+            }
+        )
     }
 
     private fun readEphemeralSeed(context: Context): ByteArray? {

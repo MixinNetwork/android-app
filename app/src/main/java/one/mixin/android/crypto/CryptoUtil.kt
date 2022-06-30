@@ -100,7 +100,7 @@ private val secureRandom: SecureRandom = SecureRandom()
 private const val GCM_IV_LENGTH = 12
 
 fun generateEphemeralSeed(): ByteArray {
-    val key = ByteArray(64)
+    val key = ByteArray(32)
     secureRandom.nextBytes(key)
     return key
 }
