@@ -59,4 +59,9 @@ fun MixinSettingFragment(
             fragmentManager?.popBackStack()
         }
     }
+
+    // Add this as placeholder to ensure router animation work correctly.
+    SettingPageScaffold(title = "") {
+
+    }
 }
