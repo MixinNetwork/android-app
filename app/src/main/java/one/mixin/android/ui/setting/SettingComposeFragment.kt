@@ -60,7 +60,7 @@ enum class SettingDestination {
     Account,
     NotificationAndConfirm,
     BackUp,
-    Storage,
+    DataStorage,
     Appearance,
     Desktop,
     About,
@@ -198,7 +198,11 @@ class SettingComposeFragment : BaseFragment() {
         parentFragmentManager.removeOnBackStackChangedListener(onParentBackStackChanged)
     }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
         return ComposeView(inflater.context).apply {
             setContent {
                 MixinAppTheme(
@@ -267,6 +271,11 @@ class SettingComposeFragment : BaseFragment() {
                             composable(SettingDestination.NotificationAndConfirm.name) {
                                 NotificationsPage()
                             }
+                            composable(SettingDestination.DataStorage.name) {
+                                MixinSettingFragment(SettingDataStorageFragment.TAG) {
+                                    SettingDataStorageFragment.newInstance()
+                                }
+                            }
                             composable(SettingDestination.BackUp.name) {
                                 MixinSettingFragment(BackUpFragment.TAG) {
                                     BackUpFragment.newInstance()
@@ -326,7 +335,9 @@ class SettingComposeFragment : BaseFragment() {
 
                             composable(SettingDestination.AuthenticationPermissions.name) { backStackEntry ->
                                 val auth =
-                                    backStackEntry.arguments?.getParcelable<AuthorizationResponse>(AUTHORIZATION_KEY)
+                                    backStackEntry.arguments?.getParcelable<AuthorizationResponse>(
+                                        AUTHORIZATION_KEY
+                                    )
                                 if (auth == null) {
                                     Timber.e("viewEmergencyContact: no auth")
                                     return@composable
@@ -338,7 +349,8 @@ class SettingComposeFragment : BaseFragment() {
                                         null
                                     }
                                 }
-                                val authViewModel = parentEntry?.let { hiltViewModel<AuthenticationsViewModel>(it) }
+                                val authViewModel =
+                                    parentEntry?.let { hiltViewModel<AuthenticationsViewModel>(it) }
                                 PermissionListPage(auth, authViewModel)
                             }
 
@@ -355,7 +367,10 @@ class SettingComposeFragment : BaseFragment() {
                                     if (user == null) {
                                         null
                                     } else {
-                                        UserBottomSheetDialogFragment.newInstance(user, conversationId)
+                                        UserBottomSheetDialogFragment.newInstance(
+                                            user,
+                                            conversationId
+                                        )
                                     }
                                 }
                                 if (fragment != null) {

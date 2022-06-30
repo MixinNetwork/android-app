@@ -10,6 +10,7 @@ import one.mixin.android.R
 import one.mixin.android.extension.findFragmentActivityOrNull
 import one.mixin.android.extension.inTransaction
 import one.mixin.android.ui.setting.LocalSettingNav
+import timber.log.Timber
 
 @Composable
 fun MixinSettingFragment(
@@ -24,11 +25,19 @@ fun MixinSettingFragment(
 
     val navigationController = LocalSettingNav.current
 
+    val initialBackStackEntryCount = remember {
+        val activity = context.findFragmentActivityOrNull()
+        activity?.supportFragmentManager?.backStackEntryCount ?: 0
+    }
+
     BackHandler {
         val activity = context.findFragmentActivityOrNull()
         val fragmentManager = activity?.supportFragmentManager
         fragmentManager?.popBackStack()
-        navigationController.pop()
+        Timber.d("back pressed: ${fragmentManager?.backStackEntryCount} $initialBackStackEntryCount")
+        if (fragmentManager?.backStackEntryCount == initialBackStackEntryCount + 1) {
+            navigationController.pop()
+        }
     }
 
     DisposableEffect(fragment) {

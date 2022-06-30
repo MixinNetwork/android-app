@@ -82,7 +82,7 @@ fun SettingPage() {
                     icon = R.drawable.ic_setting_data,
                     title = stringResource(id = R.string.Data_and_Storage_Usage)
                 ) {
-                    settingNavController.navigation(SettingDestination.Storage)
+                    settingNavController.navigation(SettingDestination.DataStorage)
                 }
                 Box(modifier = Modifier.height(16.dp))
                 SettingTile(
