@@ -119,15 +119,17 @@ fun AboutPage() {
             val navController = LocalSettingNav.current
             val context = LocalContext.current
             Image(
-                modifier = Modifier.debugClickable {
-                    if (preferences.getBoolean(Constants.Debug.WEB_DEBUG, false)) {
-                        preferences.putBoolean(Constants.Debug.WEB_DEBUG, false)
-                        toast(R.string.Disable_web_debug)
-                    } else {
-                        preferences.putBoolean(Constants.Debug.WEB_DEBUG, true)
-                        toast(R.string.Enable_web_debug)
+                modifier = Modifier
+                    .debugClickable {
+                        if (preferences.getBoolean(Constants.Debug.WEB_DEBUG, false)) {
+                            preferences.putBoolean(Constants.Debug.WEB_DEBUG, false)
+                            toast(R.string.Disable_web_debug)
+                        } else {
+                            preferences.putBoolean(Constants.Debug.WEB_DEBUG, true)
+                            toast(R.string.Enable_web_debug)
+                        }
                     }
-                },
+                    .align(Alignment.CenterHorizontally),
                 painter = painterResource(id = R.drawable.ic_logo), contentDescription = null
             )
             AboutTile(
