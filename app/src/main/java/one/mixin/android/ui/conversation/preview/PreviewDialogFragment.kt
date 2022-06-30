@@ -26,10 +26,11 @@ import one.mixin.android.extension.screenHeight
 import one.mixin.android.extension.screenWidth
 import one.mixin.android.extension.toast
 import one.mixin.android.util.video.MixinPlayer
-import one.mixin.android.widget.VideoTimelineView
+import one.mixin.android.widget.VideoTimelinePlayView
+import timber.log.Timber
 import java.util.concurrent.TimeUnit
 
-class PreviewDialogFragment : DialogFragment(), VideoTimelineView.VideoTimelineViewDelegate {
+class PreviewDialogFragment : DialogFragment(), VideoTimelinePlayView.VideoTimelineViewDelegate {
 
     companion object {
         const val IS_VIDEO: String = "IS_VIDEO"
@@ -105,7 +106,7 @@ class PreviewDialogFragment : DialogFragment(), VideoTimelineView.VideoTimelineV
                     setOnVideoPlayerListener(videoListener)
                     loadVideo(uri.toString())
                     setVideoTextureView(videoBinding.dialogVideoTexture)
-                    videoBinding.time.setVideoPath(uri.getFilePath(requireContext()))
+                    videoBinding.time.setVideoPath(uri.getFilePath(requireContext()),0f,1f)
                     Observable.interval(0, 100, TimeUnit.MILLISECONDS)
                         .observeOn(AndroidSchedulers.mainThread())
                         .autoDispose(this@PreviewDialogFragment).subscribe {
@@ -197,20 +198,32 @@ class PreviewDialogFragment : DialogFragment(), VideoTimelineView.VideoTimelineV
         }
     }
 
-    override fun didStopDragging() {
-        if (currentState) {
-            mixinPlayer?.start()
-        }
+    override fun onLeftProgressChanged(progress: Float) {
+        // Todo
+        Timber.e("onLeftProgressChanged $progress")
     }
 
-    override fun didStartDragging() {
-        currentState = mixinPlayer?.isPlaying() == true
-        mixinPlayer?.pause()
+    override fun onRightProgressChanged(progress: Float) {
+        // Todo
+        Timber.e("onRightProgressChanged $progress")
+
     }
 
     override fun onPlayProgressChanged(progress: Float) {
         mixinPlayer?.let {
-            it.seekTo((progress * it.duration()).toInt())
+            it.seekTo((videoBinding.time.progress * it.duration()).toInt())
         }
     }
+
+    override fun didStartDragging(type: Int) {
+        currentState = mixinPlayer?.isPlaying() == true
+            mixinPlayer?.pause()
+    }
+
+    override fun didStopDragging(type: Int) {
+        mixinPlayer?.let {
+            it.seekTo((videoBinding.time.progress * it.duration()).toInt())
+        }
+    }
+
 }
