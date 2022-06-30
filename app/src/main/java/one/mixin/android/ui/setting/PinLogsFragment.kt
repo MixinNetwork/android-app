@@ -77,7 +77,6 @@ class PinLogsFragment : BaseFragment(R.layout.fragment_pin_logs) {
                     return Pair(code, code)
             }
         }
-
     }
 
     @SuppressLint("NotifyDataSetChanged")
@@ -163,7 +162,6 @@ class PinLogsFragment : BaseFragment(R.layout.fragment_pin_logs) {
                 logAddress.text = pin.ipAddress
             }
         }
-
     }
 
     class PinAdapter : RecyclerView.Adapter<PinHolder>() {

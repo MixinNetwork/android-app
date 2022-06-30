@@ -125,7 +125,7 @@ private fun BlockedUserItem(user: User) {
                     showUserBottom(user = user, fragmentManager = fragmentManager)
                 }
             }
-            .background(MixinAppTheme.colors.backgroundWindow),
+            .background(MixinAppTheme.colors.background),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Box(modifier = Modifier.width(16.dp))

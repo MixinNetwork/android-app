@@ -52,7 +52,6 @@ class PermissionListFragment : BaseFragment(R.layout.fragment_permission_list) {
             putParcelable(ARGS_AUTHORIZATION, authorization)
         }
 
-
         fun clearRelatedCookies(app: App) {
             val cm = CookieManager.getInstance()
             val cookieString = cm.getCookie(app.homeUri)
@@ -68,8 +67,6 @@ class PermissionListFragment : BaseFragment(R.layout.fragment_permission_list) {
                 cm.setCookie(app.homeUri, "$k=")
             }
         }
-
-
     }
 
     private val app: App by lazy {

@@ -29,7 +29,7 @@ import one.mixin.android.widget.AvatarView
 fun UserAvatarImage(user: User, size: Dp) {
     AvatarImage(
         name = user.fullName ?: "",
-        imageUrl = user.fullName,
+        imageUrl = user.avatarUrl,
         identityNumber = user.identityNumber,
         size = size,
     )
