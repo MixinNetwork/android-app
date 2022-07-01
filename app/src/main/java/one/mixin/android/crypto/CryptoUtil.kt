@@ -92,7 +92,7 @@ fun Argon2Kt.argon2IdHash(pin: String, seed: ByteArray): Argon2KtResult {
         salt = seed,
         tCostInIterations = 4,
         mCostInKibibyte = 1024,
-        hashLengthInBytes = 64
+        hashLengthInBytes = 32
     )
 }
 
