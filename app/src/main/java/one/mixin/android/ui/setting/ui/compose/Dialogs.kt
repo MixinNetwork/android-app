@@ -1,5 +1,6 @@
 package one.mixin.android.ui.setting.ui.compose
 
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.AlertDialog
 import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.Text
@@ -12,6 +13,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import one.mixin.android.extension.findFragmentActivityOrNull
 import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.ui.setting.ui.theme.MixinAppTheme
@@ -62,6 +64,9 @@ fun MixinAlertDialog(
 ) {
     AlertDialog(
         modifier = modifier,
+        shape = RoundedCornerShape(
+            1.5.dp
+        ),
         onDismissRequest = onDismissRequest,
         confirmButton = {
             TextButton(
