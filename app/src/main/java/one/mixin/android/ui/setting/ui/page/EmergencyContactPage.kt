@@ -13,6 +13,7 @@ import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -94,6 +95,12 @@ fun EmergencyContactPage() {
         var hasEmergencyContact by remember {
             mutableStateOf(Session.hasEmergencyContact())
         }
+
+        OnPageResumeFromBackStack {
+            // recheck hasEmergencyContact when page resume from backstack.
+            hasEmergencyContact = Session.hasEmergencyContact()
+        }
+
         if (!hasEmergencyContact) {
 
             var showEnableTip by remember {
@@ -350,4 +357,32 @@ private fun PinEmergencyBottomSheetDialog(
             }
         }
     })
+}
+
+
+@Composable
+private fun OnPageResumeFromBackStack(onResume: () -> Unit) {
+    val context = LocalContext.current
+
+    val fragmentManager = remember {
+        context.findFragmentActivityOrNull()?.supportFragmentManager
+    }
+
+    val initialBackStackEntryCount = remember {
+        fragmentManager?.backStackEntryCount ?: 0
+    }
+
+    DisposableEffect(fragmentManager) {
+        val backStackChanged = {
+            Timber.d("back stack changed $initialBackStackEntryCount ${fragmentManager?.backStackEntryCount}")
+            if (fragmentManager?.backStackEntryCount == initialBackStackEntryCount) {
+                onResume()
+            }
+        }
+        fragmentManager?.addOnBackStackChangedListener(backStackChanged)
+        onDispose {
+            fragmentManager?.removeOnBackStackChangedListener(backStackChanged)
+        }
+    }
+
 }
