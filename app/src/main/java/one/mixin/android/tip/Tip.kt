@@ -361,6 +361,16 @@ class Tip @Inject internal constructor(
         val tipSignRequest = genTipSignRequest(userSk, tipSigner, ephemeral, nonce, grace, assigneePub)
         return try {
             val r = tipNodeService.postSign(tipSignRequest, tipSigner.api)
+
+            val signerPk = Crypto.pubKeyFromBase58(tipSigner.identity)
+            val msg = gson.toJson(r.data).toByteArray()
+            try {
+                signerPk.verify(msg, r.signature.hexStringToByteArray())
+            } catch (e: Exception) {
+                Timber.d("verify node response meet ${e.localizedMessage}")
+                return Pair(null, -1)
+            }
+
             val sig = parseNodeSigResp(userSk, tipSigner, r)
             Pair(sig, -1)
         } catch (e: Exception) {
