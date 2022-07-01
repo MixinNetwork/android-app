@@ -877,7 +877,7 @@ class GroupCallService : CallService() {
             if (data != null) {
                 val signalKeys = Gson().fromJson<ArrayList<SignalKey>>(data)
                 val keys = arrayListOf<BlazeMessageParamSession>()
-                if (signalKeys.isNotEmpty()) {
+                if (!signalKeys.isNullOrEmpty()) {
                     for (key in signalKeys) {
                         val preKeyBundle = createPreKeyBundle(key)
                         signalProtocol.processSession(key.userId!!, preKeyBundle)
