@@ -142,9 +142,11 @@ object NotificationGenerator : Injector() {
                 val representativeUser = syncUser(conversation.ownerId)
                 if (representativeUser == null) {
                     isBot = false
-                } else {
+                } else if (representativeUser.appId != null) {
                     app = appDao.findAppById(requireNotNull(representativeUser.appId) { "Required appId was null." })
                     isBot = representativeUser.isBot()
+                } else {
+                    isBot = false
                 }
             }
             val encryptCategory = getEncryptedCategory(isBot, app)
