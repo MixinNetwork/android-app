@@ -20,7 +20,7 @@ fun SecurityPage() {
 
     val navController = LocalSettingNav.current
 
-    SettingPageScaffold(title = stringResource(id = R.string.Account)) {
+    SettingPageScaffold(title = stringResource(id = R.string.Security)) {
 
         SettingTile(title = stringResource(R.string.PIN)) {
             if (Session.getAccount()?.hasPin == true) {

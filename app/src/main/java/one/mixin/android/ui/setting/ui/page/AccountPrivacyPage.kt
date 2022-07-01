@@ -29,7 +29,7 @@ import one.mixin.android.ui.setting.ui.theme.MixinAppTheme
 
 @Composable
 fun AccountPrivacyPage() {
-    SettingPageScaffold(title = stringResource(R.string.Account)) {
+    SettingPageScaffold(title = stringResource(R.string.Privacy)) {
         val viewModel = hiltViewModel<SettingViewModel>()
         val navController = LocalSettingNav.current
 
