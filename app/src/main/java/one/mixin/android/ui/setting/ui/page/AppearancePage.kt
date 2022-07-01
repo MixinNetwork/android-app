@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.selection.selectable
-import androidx.compose.material.MaterialTheme
 import androidx.compose.material.RadioButton
 import androidx.compose.material.RadioButtonDefaults
 import androidx.compose.material.Scaffold
@@ -47,7 +46,7 @@ import one.mixin.android.ui.setting.ui.theme.MixinAppTheme
 import one.mixin.android.util.TimeCache
 import one.mixin.android.util.language.Lingver
 import one.mixin.android.vo.Fiats
-import java.util.Locale
+import java.util.*
 
 @Composable
 fun AppearancePage() {
@@ -147,6 +146,9 @@ private fun LanguageItem() {
                 Locale.SIMPLIFIED_CHINESE.language -> {
                     AppearanceFragment.POS_SIMPLIFY_CHINESE
                 }
+                Locale.JAPANESE.language -> {
+                    AppearanceFragment.POS_SIMPLIFY_JAPANESE
+                }
                 Constants.Locale.Indonesian.Language -> {
                     AppearanceFragment.POS_INDONESIA
                 }
@@ -180,10 +182,14 @@ private fun LanguageItem() {
             },
             text = {
                 Column {
+
+                    Box(modifier = Modifier.height(8.dp))
+
                     listOf(
                         AppearanceFragment.POS_FOLLOW_SYSTEM,
                         AppearanceFragment.POS_ENGLISH,
                         AppearanceFragment.POS_SIMPLIFY_CHINESE,
+                        AppearanceFragment.POS_SIMPLIFY_JAPANESE,
                         AppearanceFragment.POS_INDONESIA,
                         AppearanceFragment.POS_Malay,
                     ).forEach { index ->
@@ -212,12 +218,14 @@ private fun LanguageItem() {
                             AppearanceFragment.POS_SIMPLIFY_CHINESE -> Locale.SIMPLIFIED_CHINESE.language
                             AppearanceFragment.POS_INDONESIA -> Constants.Locale.Indonesian.Language
                             AppearanceFragment.POS_Malay -> Constants.Locale.Malay.Language
+                            AppearanceFragment.POS_SIMPLIFY_JAPANESE -> Locale.JAPANESE.language
                             else -> Locale.US.language
                         }
                         val selectedCountry = when (newSelected) {
                             AppearanceFragment.POS_SIMPLIFY_CHINESE -> Locale.SIMPLIFIED_CHINESE.country
                             AppearanceFragment.POS_INDONESIA -> Constants.Locale.Indonesian.Country
                             AppearanceFragment.POS_Malay -> Constants.Locale.Malay.Country
+                            AppearanceFragment.POS_SIMPLIFY_JAPANESE -> Locale.JAPANESE.country
                             else -> Locale.US.country
                         }
                         val newLocale = Locale(selectedLang, selectedCountry)
@@ -249,8 +257,7 @@ private fun LanguageRadioItem(
                 selected = (selected),
                 onClick = { onOptionSelected() },
                 role = Role.RadioButton
-            )
-            .padding(horizontal = 16.dp),
+            ),
         verticalAlignment = Alignment.CenterVertically
     ) {
         RadioButton(
@@ -262,8 +269,9 @@ private fun LanguageRadioItem(
         )
         Text(
             text = name,
-            style = MaterialTheme.typography.body1.merge(),
-            modifier = Modifier.padding(start = 16.dp)
+            modifier = Modifier.padding(start = 16.dp),
+            fontSize = 14.sp,
+            color = MixinAppTheme.colors.textPrimary,
         )
     }
 }
