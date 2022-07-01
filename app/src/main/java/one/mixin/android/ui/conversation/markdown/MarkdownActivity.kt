@@ -27,7 +27,9 @@ import one.mixin.android.extension.createPdfTemp
 import one.mixin.android.extension.createPostTemp
 import one.mixin.android.extension.getOtherPath
 import one.mixin.android.extension.indeterminateProgressDialog
+import one.mixin.android.extension.isMixinUrl
 import one.mixin.android.extension.isNightMode
+import one.mixin.android.extension.openAsUrl
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.shareFile
 import one.mixin.android.extension.toast
@@ -94,8 +96,17 @@ class MarkdownActivity : BaseActivity() {
         val markwon = MarkwonUtil.getMarkwon(
             this,
             { link ->
-                LinkBottomSheetDialogFragment.newInstance(link)
-                    .showNow(supportFragmentManager, LinkBottomSheetDialogFragment.TAG)
+                if (link.isMixinUrl()) {
+                    link.openAsUrl(
+                        this@MarkdownActivity,
+                        supportFragmentManager,
+                        lifecycleScope,
+                        currentConversation = intent.getStringExtra(CONVERSATION_ID)
+                    ) {}
+                } else {
+                    LinkBottomSheetDialogFragment.newInstance(link)
+                        .showNow(supportFragmentManager, LinkBottomSheetDialogFragment.TAG)
+                }
             },
             { link ->
                 WebActivity.show(this, link, intent.getStringExtra(CONVERSATION_ID))
