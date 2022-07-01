@@ -109,7 +109,7 @@ buildscript {
         maven { url "https://jitpack.io" }
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:7.2.1'
+        classpath 'com.android.tools.build:gradle:7.3.0-beta03'
         classpath 'com.android.tools.build.jetifier:jetifier-processor:1.0.0-beta10'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:${kotlinVersion}"
         classpath 'com.google.gms:google-services:4.3.10'
