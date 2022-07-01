@@ -142,7 +142,7 @@ abstract class MixinJob(
         val blazeMessage = createConsumeSessionSignalKeys(createConsumeSignalKeysParam(arrayListOf(BlazeMessageParamSession(recipientId, sessionId))))
         val data = signalKeysChannel(blazeMessage) ?: return false
         val keys = Gson().fromJson<ArrayList<SignalKey>>(data)
-        if (keys.isNotEmpty() && keys.count() > 0) {
+        if (keys.isNotEmpty()) {
             val preKeyBundle = createPreKeyBundle(keys[0])
             signalProtocol.processSession(recipientId, preKeyBundle)
         } else {
@@ -182,7 +182,7 @@ abstract class MixinJob(
 
             val data = signalKeysChannel(blazeMessage) ?: return false
             val keys = Gson().fromJson<ArrayList<SignalKey>>(data)
-            if (keys.isNotEmpty() && keys.count() > 0) {
+            if (keys.isNotEmpty()) {
                 val preKeyBundle = createPreKeyBundle(keys[0])
                 signalProtocol.processSession(recipientId, preKeyBundle)
             } else {
@@ -201,17 +201,21 @@ abstract class MixinJob(
             SystemClock.sleep(SLEEP_MILLIS)
             return deliverNoThrow(blazeMessage)
         } else if (bm.error != null) {
-            return if (bm.error.code == CONVERSATION_CHECKSUM_INVALID_ERROR) {
-                blazeMessage.params?.conversation_id?.let {
-                    syncConversation(it)
+            return when (bm.error.code) {
+                CONVERSATION_CHECKSUM_INVALID_ERROR -> {
+                    blazeMessage.params?.conversation_id?.let {
+                        syncConversation(it)
+                    }
+                    MessageResult(false, retry = true)
                 }
-                MessageResult(false, retry = true)
-            } else if (bm.error.code == FORBIDDEN) {
-                MessageResult(true, retry = false)
-            } else {
-                SystemClock.sleep(SLEEP_MILLIS)
-                // warning: may caused job leak if server return error data and come to this branch
-                return deliverNoThrow(blazeMessage)
+                FORBIDDEN -> {
+                    MessageResult(true, retry = false)
+                }
+                else -> {
+                    SystemClock.sleep(SLEEP_MILLIS)
+                    // warning: may caused job leak if server return error data and come to this branch
+                    return deliverNoThrow(blazeMessage)
+                }
             }
         } else {
             return MessageResult(true, retry = false)
@@ -227,20 +231,25 @@ abstract class MixinJob(
             SystemClock.sleep(SLEEP_MILLIS)
             throw WebSocketException()
         } else if (bm.error != null) {
-            if (bm.error.code == CONVERSATION_CHECKSUM_INVALID_ERROR) {
-                blazeMessage.params?.conversation_id?.let {
-                    syncConversation(it)
+            when (bm.error.code) {
+                CONVERSATION_CHECKSUM_INVALID_ERROR -> {
+                    blazeMessage.params?.conversation_id?.let {
+                        syncConversation(it)
+                    }
+                    throw ChecksumException()
                 }
-                throw ChecksumException()
-            } else if (bm.error.code == FORBIDDEN) {
-                return true
-            } else if (bm.error.code == BAD_DATA) {
-                reportException(IllegalArgumentException("$blazeMessage, $bm"))
-                return true
-            } else {
-                SystemClock.sleep(SLEEP_MILLIS)
-                Timber.e("$blazeMessage, $bm")
-                throw NetworkException()
+                FORBIDDEN -> {
+                    return true
+                }
+                BAD_DATA -> {
+                    reportException(IllegalArgumentException("$blazeMessage, $bm"))
+                    return true
+                }
+                else -> {
+                    SystemClock.sleep(SLEEP_MILLIS)
+                    Timber.e("$blazeMessage, $bm")
+                    throw NetworkException()
+                }
             }
         }
         return true
@@ -349,7 +358,7 @@ abstract class MixinJob(
             participantSessionDao.insertList(remote)
             return
         }
-        val common = remote.intersect(local)
+        val common = remote.intersect(local.toSet())
         val remove = local.minus(common)
         val add = remote.minus(common)
         if (remove.isNotEmpty()) {
