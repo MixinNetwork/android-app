@@ -144,16 +144,18 @@ class Tip @Inject internal constructor(
         val userPkBytes = userSk.publicKey().publicKeyBytes()
         Timber.d("user pk ${userPkBytes.toHex()}")
 
-        val partials = getNodeSigs(userSk, tipConfig.signers, ephemeral)
-        if (partials.size < tipConfig.commitments.size) {
-            Timber.d("not enough partials ${partials.size} ${tipConfig.commitments.size}")
+        val data = getNodeSigs(userSk, tipConfig.signers, ephemeral, null)
+        if (data.size < tipConfig.commitments.size) {
+            Timber.d("not enough partials ${data.size} ${tipConfig.commitments.size}")
             return null
         }
 
-        val hexSigs = partials.joinToString(",") { it.toHex() }
+        val pair = parseAssignorAndPartials(data)
+
+        val hexSigs = pair.second.joinToString(",") { it.toHex() }
         val commitments = tipConfig.commitments.joinToString(",")
         Timber.d("hexSigs $hexSigs")
-        val aggSig = Crypto.recoverSignature(hexSigs, commitments, userPkBytes, tipConfig.signers.size.toLong())
+        val aggSig = Crypto.recoverSignature(hexSigs, commitments, pair.first, tipConfig.signers.size.toLong())
         Timber.d("aggSig: ${aggSig.toHex()}")
 
         val privateSpec = EdDSAPrivateKeySpec(ed25519, aggSig.copyOf())
@@ -220,16 +222,19 @@ class Tip @Inject internal constructor(
         val assignee = assigneePub + assigneeSig
         Timber.d("assignee ${assignee.toHex()}")
 
-        val partials = getNodeSigs(userSk, tipConfig.signers, ephemeral)
-        if (partials.size < tipConfig.commitments.size) {
-            Timber.d("not enough partials ${partials.size} ${tipConfig.commitments.size}")
+        val data = getNodeSigs(userSk, tipConfig.signers, ephemeral, assignee)
+
+        if (data.size < tipConfig.commitments.size) {
+            Timber.d("not enough partials ${data.size} ${tipConfig.commitments.size}")
             return null
         }
 
-        val hexSigs = partials.joinToString(",") { it.toHex() }
+        val pair = parseAssignorAndPartials(data)
+
+        val hexSigs = pair.second.joinToString(",") { it.toHex() }
         val commitments = tipConfig.commitments.joinToString(",")
         Timber.d("hexSigs $hexSigs")
-        val aggSig = Crypto.recoverSignature(hexSigs, commitments, userPkBytes, tipConfig.signers.size.toLong())
+        val aggSig = Crypto.recoverSignature(hexSigs, commitments, pair.first, tipConfig.signers.size.toLong())
         Timber.d("aggSig: ${aggSig.toHex()}")
 
         val aesKey = genAesKey(newPin)
@@ -244,6 +249,25 @@ class Tip @Inject internal constructor(
 
         storeTipPriv(context, privTip)
         return aggSig
+    }
+
+    private fun parseAssignorAndPartials(data: List<TipSignRespData>): Pair<ByteArray, List<ByteArray>> {
+        val acm = mutableMapOf<String, Int>()
+        val partials = mutableListOf<ByteArray>()
+        data.forEach { d ->
+            acm[d.assignor] = (acm[d.assignor] ?: 0) + 1
+            partials.add(d.partial)
+        }
+        var amc = 0
+        var assignor = data.first().assignor.hexStringToByteArray()
+        acm.forEach { (a, c) ->
+            if(c > amc) {
+                assignor = a.hexStringToByteArray()
+                amc = c
+            }
+        }
+        Timber.d("amc: $amc, assignor ${assignor.toHex()}")
+        return Pair(assignor, partials)
     }
 
     private suspend fun genAesKey(pin: String): ByteArray? {
@@ -321,8 +345,8 @@ class Tip @Inject internal constructor(
         return engine.sign().base64RawEncode()
     }
 
-    private suspend fun getNodeSigs(userSk: Scalar, tipSigners: List<TipSigner>, ephemeral: ByteArray, assigneePub: ByteArray? = null): List<ByteArray> {
-        val result = mutableListOf<ByteArray>()
+    private suspend fun getNodeSigs(userSk: Scalar, tipSigners: List<TipSigner>, ephemeral: ByteArray, assignee: ByteArray?): List<TipSignRespData> {
+        val result = mutableListOf<TipSignRespData>()
 
         val nonce = currentTimeSeconds()
         val grace = ephemeralGrace
@@ -334,7 +358,7 @@ class Tip @Inject internal constructor(
                     var retryCount = 0
 
                     while (!success) {
-                        val pair = fetchTipNodeSigns(userSk, signer, ephemeral, nonce, grace, assigneePub)
+                        val pair = fetchTipNodeSigns(userSk, signer, ephemeral, nonce, grace, assignee)
                         if (pair.second == 429) {
                             return@async
                         }
@@ -357,8 +381,8 @@ class Tip @Inject internal constructor(
         return result
     }
 
-    private suspend fun fetchTipNodeSigns(userSk: Scalar, tipSigner: TipSigner, ephemeral: ByteArray, nonce: Long, grace: Long, assigneePub: ByteArray? = null): Pair<ByteArray?, Int> {
-        val tipSignRequest = genTipSignRequest(userSk, tipSigner, ephemeral, nonce, grace, assigneePub)
+    private suspend fun fetchTipNodeSigns(userSk: Scalar, tipSigner: TipSigner, ephemeral: ByteArray, nonce: Long, grace: Long, assignee: ByteArray?): Pair<TipSignRespData?, Int> {
+        val tipSignRequest = genTipSignRequest(userSk, tipSigner, ephemeral, nonce, grace, assignee)
         return try {
             val r = tipNodeService.postSign(tipSignRequest, tipSigner.api)
 
@@ -371,8 +395,8 @@ class Tip @Inject internal constructor(
                 return Pair(null, -1)
             }
 
-            val sig = parseNodeSigResp(userSk, tipSigner, r)
-            Pair(sig, -1)
+            val data = parseNodeSigResp(userSk, tipSigner, r)
+            Pair(data, -1)
         } catch (e: Exception) {
             Timber.d(e)
             if (e is HttpException) {
@@ -383,7 +407,10 @@ class Tip @Inject internal constructor(
         }
     }
 
-    private fun parseNodeSigResp(userSk: Scalar, signer: TipSigner, resp: TipSignResponse): ByteArray {
+    @Suppress("ArrayInDataClass")
+    private data class TipSignRespData(val partial: ByteArray, val assignor: String, val counter: Long)
+
+    private fun parseNodeSigResp(userSk: Scalar, signer: TipSigner, resp: TipSignResponse): TipSignRespData {
         val signerPk = Crypto.pubKeyFromBase58(signer.identity)
         val plain = Crypto.decrypt(signerPk, userSk, resp.data.cipher.hexStringToByteArray())
         val nonceBytes = plain.slice(0..7).toByteArray()
@@ -404,24 +431,24 @@ class Tip @Inject internal constructor(
         buffer.write(counterBytes)
         val counter = buffer.readLong()
         Timber.d("nonce: $nonce, partial: ${partial.toHex()}, assignor: ${assignor.toHex()}, time: $time, counter: $counter")
-        return partial
+        return TipSignRespData(partial, assignor.toHex(), counter)
     }
 
-    private fun genTipSignRequest(userSk: Scalar, tipSigner: TipSigner, ephemeral: ByteArray, nonce: Long, grace: Long, assigneePub: ByteArray? = null): TipSignRequest {
+    private fun genTipSignRequest(userSk: Scalar, tipSigner: TipSigner, ephemeral: ByteArray, nonce: Long, grace: Long, assignee: ByteArray?): TipSignRequest {
         val signerPk = Crypto.pubKeyFromBase58(tipSigner.identity)
         val userPk = userSk.publicKey()
         val esum = (ephemeral + tipSigner.identity.toByteArray()).sha3Sum256()
 
         var msg = userPk.publicKeyBytes() + esum + nonce.toBeByteArray() + grace.toBeByteArray()
-        if (assigneePub != null) {
-           msg += assigneePub
+        if (assignee != null) {
+           msg += assignee
         }
         val sig = userSk.sign(msg).toHex()
 
         val userPkStr = userPk.publicKeyString()
         val data = TipSignData(
             identity = userPkStr,
-            assignee = assigneePub?.toHex(),
+            assignee = assignee?.toHex(),
             ephemeral = esum.toHex(),
             nonce = nonce,
             grace = grace,
