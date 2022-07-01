@@ -62,6 +62,5 @@ fun MixinSettingFragment(
 
     // Add this as placeholder to ensure router animation work correctly.
     SettingPageScaffold(title = "") {
-
     }
 }

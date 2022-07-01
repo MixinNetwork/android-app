@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.RadioButton
+import androidx.compose.material.RadioButtonDefaults
 import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
@@ -46,7 +47,7 @@ import one.mixin.android.ui.setting.ui.theme.MixinAppTheme
 import one.mixin.android.util.TimeCache
 import one.mixin.android.util.language.Lingver
 import one.mixin.android.vo.Fiats
-import java.util.*
+import java.util.Locale
 
 @Composable
 fun AppearancePage() {
@@ -253,6 +254,9 @@ private fun LanguageRadioItem(
         verticalAlignment = Alignment.CenterVertically
     ) {
         RadioButton(
+            colors = RadioButtonDefaults.colors(
+                selectedColor = MixinAppTheme.colors.accent
+            ),
             selected = selected,
             onClick = null // null recommended for accessibility with screenreaders
         )
@@ -324,7 +328,10 @@ private fun CurrencyItem() {
                 currentCurrency.value = currency.name
             }
         }
-        currencyBottom.showNow(activity.supportFragmentManager, CurrencyBottomSheetDialogFragment.TAG)
+        currencyBottom.showNow(
+            activity.supportFragmentManager,
+            CurrencyBottomSheetDialogFragment.TAG
+        )
     }
 }
 
@@ -333,5 +340,30 @@ private fun CurrencyItem() {
 fun AppearanceItemPreview() {
     MixinAppTheme {
         AppearanceItem("Label", "Value") {}
+    }
+}
+
+@Composable
+@Preview
+fun LanguageRadioItemPreview() {
+    MixinAppTheme {
+        Column(
+            modifier = Modifier.background(MixinAppTheme.colors.background)
+        ) {
+            listOf(
+                LanguageRadioItem(
+                    name = "name",
+                    selected = true,
+                    onOptionSelected = {
+                    }
+                ),
+                LanguageRadioItem(
+                    name = "name",
+                    selected = false,
+                    onOptionSelected = {
+                    }
+                )
+            )
+        }
     }
 }
