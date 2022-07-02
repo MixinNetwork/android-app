@@ -52,6 +52,7 @@ import one.mixin.android.widget.CircleProgress.Companion.STATUS_ERROR
 import one.mixin.android.widget.CircleProgress.Companion.STATUS_PAUSE
 import one.mixin.android.widget.CircleProgress.Companion.STATUS_PLAY
 import timber.log.Timber
+import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.TimeUnit
 
 class MusicPlayer private constructor() {
@@ -227,7 +228,7 @@ class MusicPlayer private constructor() {
     private var messageItem: MessageItem? = null
     private var status = STATUS_PAUSE
 
-    var currentPlaylistItems: MutableList<MediaMetadataCompat> = mutableListOf()
+    var currentPlaylistItems = CopyOnWriteArrayList<MediaMetadataCompat>()
 
     private var concatenatingMediaSource = ConcatenatingMediaSource()
 
@@ -238,8 +239,13 @@ class MusicPlayer private constructor() {
         playbackStartPositionMs: Long = 0,
     ) {
         val downloadedList = metadataList.filter { it.downloadStatus == MediaDescriptionCompat.STATUS_DOWNLOADED }
-        currentPlaylistItems = downloadedList.toMutableList()
+        replaceCurrentPlayListItems(downloadedList)
         playMusicList(downloadedList, itemToPlay, playWhenReady, playbackStartPositionMs)
+    }
+
+    private fun replaceCurrentPlayListItems(newList: List<MediaMetadataCompat>) {
+        currentPlaylistItems.clear()
+        currentPlaylistItems.addAll(newList)
     }
 
     private fun playMusic(messageItem: MessageItem) {
@@ -270,7 +276,7 @@ class MusicPlayer private constructor() {
             val itemToPlay = currentMediaItem?.mediaId
             val index = currentPlaylistItems.indexOfFirst { it.description.mediaId == itemToPlay }
             val remain = currentPlaylistItems.size - index
-            currentPlaylistItems = downloadedList.toMutableList()
+            replaceCurrentPlayListItems(downloadedList)
             val initialWindowIndex = if (itemToPlay == null) 0 else downloadedList.indexOfFirst { it.description.mediaId == itemToPlay }
             if (initialWindowIndex == -1) {
                 val mediaSource = downloadedList.toMediaSource(dataSourceFactory, cacheDataSourceFactory)
@@ -430,7 +436,7 @@ class MusicPlayer private constructor() {
         if (messageItem.isData() && MimeTypes.isAudio(messageItem.mediaMimeType)) {
             val mediaMetadata = buildFromMessageItem(messageItem)
             if (currentPlaylistItems.isEmpty() || currentPlaylistItems[0].album != messageItem.conversationId) {
-                currentPlaylistItems = mutableListOf(mediaMetadata)
+                replaceCurrentPlayListItems(listOf(mediaMetadata))
             } else {
                 val exists = currentPlaylistItems.find { it.description.mediaId == messageItem.messageId }
                 if (exists == null) {
