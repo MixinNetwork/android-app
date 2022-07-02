@@ -54,6 +54,7 @@ import one.mixin.android.R
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.AccountUpdateRequest
 import one.mixin.android.extension.openNotificationSetting
+import one.mixin.android.extension.supportsOreo
 import one.mixin.android.extension.toast
 import one.mixin.android.session.Session
 import one.mixin.android.ui.setting.SettingViewModel
@@ -62,6 +63,7 @@ import one.mixin.android.ui.setting.ui.compose.MixinBackButton
 import one.mixin.android.ui.setting.ui.compose.MixinBottomSheetDialog
 import one.mixin.android.ui.setting.ui.compose.MixinTopAppBar
 import one.mixin.android.ui.setting.ui.theme.MixinAppTheme
+import one.mixin.android.util.ChannelManager
 import one.mixin.android.util.PropertyHelper
 import one.mixin.android.vo.Fiats
 import timber.log.Timber
@@ -166,6 +168,17 @@ fun NotificationsPage() {
                 },
                 title = stringResource(id = R.string.System_options),
             )
+
+            supportsOreo {
+                NotificationItem(
+                    onClick = {
+                        ChannelManager.resetChannelSound(context)
+                        toast(R.string.Successful)
+                    },
+                    title = stringResource(id = R.string.Reset_notifications),
+                )
+            }
+
         }
     }
 }
