@@ -208,7 +208,7 @@ class SettingComposeFragment : BaseFragment() {
         return ComposeView(inflater.context).apply {
             setContent {
                 MixinAppTheme(
-                    darkTheme = context.isNightMode() || isSystemInDarkTheme(),
+                    darkTheme = context.isNightMode(),
                 ) {
                     val navController = rememberAnimatedNavController()
                     val navigationController = remember {
