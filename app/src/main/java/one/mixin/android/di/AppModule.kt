@@ -450,5 +450,5 @@ object AppModule {
     @Provides
     @Singleton
     fun provideTip(ephemeral: Ephemeral, identityManager: IdentityManager, tipNodeService: TipNodeService, tipService: TipService, accountService: AccountService) =
-        Tip(ephemeral, identityManager, tipNodeService, tipService, accountService)
+        Tip(ephemeral, identityManager, tipService, accountService, tipNodeService)
 }
