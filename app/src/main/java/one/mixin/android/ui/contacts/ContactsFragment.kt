@@ -16,6 +16,7 @@ import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 import ir.mirrajabi.rxcontacts.Contact
 import ir.mirrajabi.rxcontacts.RxContacts
+import one.mixin.android.BuildConfig
 import one.mixin.android.Constants.Account.PREF_DELETE_MOBILE_CONTACTS
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentContactsBinding
@@ -81,10 +82,14 @@ class ContactsFragment : BaseFragment(R.layout.fragment_contacts) {
             }
             contactAdapter.setContactListener(mContactListener)
             titleView.leftIb.setOnClickListener { activity?.onBackPressedDispatcher?.onBackPressed() }
-            titleView.rightAnimator.setOnClickListener { SettingActivity.show(requireContext()) }
-            titleView.rightAnimator.setOnLongClickListener {
+            titleView.rightAnimator.setOnClickListener {
                 SettingActivity.show(requireContext(), compose = false)
-                true
+            }
+            if (BuildConfig.DEBUG) {
+                titleView.rightAnimator.setOnLongClickListener {
+                    SettingActivity.show(requireContext())
+                    true
+                }
             }
         }
 
