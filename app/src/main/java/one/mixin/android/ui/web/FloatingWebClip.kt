@@ -102,8 +102,8 @@ class FloatingWebClip(private var isNightMode: Boolean) {
             recreate(appContext.isNightMode()).show()
         } else {
             if (!isShown) {
-                init()
                 isShown = true
+                init()
                 windowView?.let { windowManager.addView(it, windowLayoutParams) }
             }
             reload()
