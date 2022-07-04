@@ -39,7 +39,7 @@ import one.mixin.android.ui.setting.SettingActivity
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.User
 import one.mixin.android.vo.UserRelationship
-import java.util.Collections
+import java.util.*
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -81,7 +81,13 @@ class ContactsFragment : BaseFragment(R.layout.fragment_contacts) {
             }
             contactAdapter.setContactListener(mContactListener)
             titleView.leftIb.setOnClickListener { activity?.onBackPressedDispatcher?.onBackPressed() }
-            titleView.rightAnimator.setOnClickListener { SettingActivity.show(requireContext()) }
+            titleView.rightAnimator.setOnClickListener {
+                SettingActivity.show(requireContext(), compose = false)
+            }
+            titleView.rightAnimator.setOnLongClickListener {
+                SettingActivity.show(requireContext())
+                true
+            }
         }
 
         if (hasContactPermission() &&

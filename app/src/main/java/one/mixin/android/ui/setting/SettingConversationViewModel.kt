@@ -43,7 +43,12 @@ internal constructor(private val userService: AccountService) : ViewModel() {
     lateinit var preferences: MessageSourcePreferences
     lateinit var groupPreferences: MessageGroupSourcePreferences
 
-    class MessageSourcePreferences(val context: Context) : LiveData<Int>() {
+    abstract class BaseMessageSourcePreferences : LiveData<Int>() {
+        abstract fun setEveryBody()
+        abstract fun setContacts()
+    }
+
+    class MessageSourcePreferences(val context: Context) : BaseMessageSourcePreferences() {
         init {
             value = context.defaultSharedPreferences.getInt(
                 SettingConversationFragment.CONVERSATION_KEY,
@@ -51,7 +56,7 @@ internal constructor(private val userService: AccountService) : ViewModel() {
             )
         }
 
-        fun setEveryBody() {
+        override fun setEveryBody() {
             value = MessageSource.EVERYBODY.ordinal
             context.defaultSharedPreferences.putInt(
                 SettingConversationFragment.CONVERSATION_KEY,
@@ -59,7 +64,7 @@ internal constructor(private val userService: AccountService) : ViewModel() {
             )
         }
 
-        fun setContacts() {
+        override fun setContacts() {
             value = MessageSource.CONTACTS.ordinal
             context.defaultSharedPreferences.putInt(
                 SettingConversationFragment.CONVERSATION_KEY,
@@ -68,7 +73,7 @@ internal constructor(private val userService: AccountService) : ViewModel() {
         }
     }
 
-    class MessageGroupSourcePreferences(val context: Context) : LiveData<Int>() {
+    class MessageGroupSourcePreferences(val context: Context) : BaseMessageSourcePreferences() {
         init {
             value = context.defaultSharedPreferences.getInt(
                 SettingConversationFragment.CONVERSATION_GROUP_KEY,
@@ -76,7 +81,7 @@ internal constructor(private val userService: AccountService) : ViewModel() {
             )
         }
 
-        fun setEveryBody() {
+        override fun setEveryBody() {
             value = MessageSource.EVERYBODY.ordinal
             context.defaultSharedPreferences.putInt(
                 SettingConversationFragment.CONVERSATION_GROUP_KEY,
@@ -84,7 +89,7 @@ internal constructor(private val userService: AccountService) : ViewModel() {
             )
         }
 
-        fun setContacts() {
+        override fun setContacts() {
             value = MessageSource.CONTACTS.ordinal
             context.defaultSharedPreferences.putInt(
                 SettingConversationFragment.CONVERSATION_GROUP_KEY,

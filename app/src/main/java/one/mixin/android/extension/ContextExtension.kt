@@ -12,7 +12,7 @@ import android.content.ComponentName
 import android.content.ContentResolver
 import android.content.Context
 import android.content.Context.ACTIVITY_SERVICE
-import android.content.Context.CLIPBOARD_SERVICE
+import android.content.ContextWrapper
 import android.content.DialogInterface
 import android.content.Intent
 import android.content.Intent.FLAG_ACTIVITY_NEW_TASK
@@ -51,6 +51,7 @@ import androidx.browser.customtabs.CustomTabsIntent
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
+import androidx.core.content.getSystemService
 import androidx.core.net.toUri
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
@@ -685,7 +686,7 @@ fun Context.openUrl(url: String) {
     }
 }
 
-fun Context.getClipboardManager(): ClipboardManager = this.getSystemService(CLIPBOARD_SERVICE) as ClipboardManager
+fun Context.getClipboardManager(): ClipboardManager = requireNotNull(getSystemService())
 
 fun Window.isNotchScreen(): Boolean {
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
@@ -1140,6 +1141,17 @@ fun Context.callPhone(phone: String) {
     } catch (e: Exception) {
         Timber.e(e)
     }
+}
+
+fun Context.findFragmentActivityOrNull(): FragmentActivity? {
+    var ctx = this
+    while (ctx is ContextWrapper) {
+        if (ctx is FragmentActivity) {
+            return ctx
+        }
+        ctx = ctx.baseContext
+    }
+    return null
 }
 
 @SuppressWarnings("deprecation")
