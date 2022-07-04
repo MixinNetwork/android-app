@@ -359,7 +359,6 @@ private fun PinEmergencyBottomSheetDialog(
     })
 }
 
-
 @Composable
 private fun OnPageResumeFromBackStack(onResume: () -> Unit) {
     val context = LocalContext.current
@@ -384,5 +383,4 @@ private fun OnPageResumeFromBackStack(onResume: () -> Unit) {
             fragmentManager?.removeOnBackStackChangedListener(backStackChanged)
         }
     }
-
 }

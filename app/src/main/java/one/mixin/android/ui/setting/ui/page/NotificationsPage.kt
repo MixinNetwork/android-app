@@ -178,7 +178,6 @@ fun NotificationsPage() {
                     title = stringResource(id = R.string.Reset_notifications),
                 )
             }
-
         }
     }
 }
