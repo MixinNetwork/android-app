@@ -74,7 +74,7 @@ fun SettingPage() {
                 }
                 SettingTile(
                     icon = R.drawable.ic_setting_backup,
-                    title = stringResource(id = R.string.Backup)
+                    title = stringResource(id = R.string.Chat_Backup)
                 ) {
                     settingNavController.navigation(SettingDestination.BackUp)
                 }
