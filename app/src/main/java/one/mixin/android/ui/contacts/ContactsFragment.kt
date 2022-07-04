@@ -16,7 +16,6 @@ import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 import ir.mirrajabi.rxcontacts.Contact
 import ir.mirrajabi.rxcontacts.RxContacts
-import one.mixin.android.BuildConfig
 import one.mixin.android.Constants.Account.PREF_DELETE_MOBILE_CONTACTS
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentContactsBinding
@@ -40,7 +39,7 @@ import one.mixin.android.ui.setting.SettingActivity
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.User
 import one.mixin.android.vo.UserRelationship
-import java.util.Collections
+import java.util.*
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -85,11 +84,9 @@ class ContactsFragment : BaseFragment(R.layout.fragment_contacts) {
             titleView.rightAnimator.setOnClickListener {
                 SettingActivity.show(requireContext(), compose = false)
             }
-            if (BuildConfig.DEBUG) {
-                titleView.rightAnimator.setOnLongClickListener {
-                    SettingActivity.show(requireContext())
-                    true
-                }
+            titleView.rightAnimator.setOnLongClickListener {
+                SettingActivity.show(requireContext())
+                true
             }
         }
 
