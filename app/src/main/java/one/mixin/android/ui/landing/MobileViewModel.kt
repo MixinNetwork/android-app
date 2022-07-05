@@ -59,7 +59,8 @@ constructor(
                 } else {
                     encryptTipPin(tip, pin, TipBody.forPhoneNumberUpdate(id, verificationCode))
                 },
-            ))
+            )
+        )
 
     fun deactiveVerification(id: String, code: String): Observable<MixinResponse<VerificationResponse>> =
         accountRepository.deactiveVerification(
