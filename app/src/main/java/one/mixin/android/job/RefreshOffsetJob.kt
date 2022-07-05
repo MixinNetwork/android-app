@@ -39,8 +39,9 @@ class RefreshOffsetJob : MixinJob(
                     break
                 }
                 for (m in blazeMessages) {
-                    pendingMessageStatusMap[m.messageId] = m.status
-                    messageDao.makeMessageStatus(m.status, m.messageId)
+                    messageDao.makeMessageStatus(m.status, m.messageId) {
+                        pendingMessageStatusMap[m.messageId] = m.status
+                    }
                     offsetDao.insert(Offset(STATUS_OFFSET, m.updatedAt))
                 }
                 if (blazeMessages.isNotEmpty() && blazeMessages.last().updatedAt.getEpochNano() == status) {
