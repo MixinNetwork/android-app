@@ -155,11 +155,16 @@ class NftBottomSheetDialogFragment : BiometricBottomSheetDialogFragment() {
 
     override suspend fun invokeNetwork(pin: String): MixinResponse<*> {
         suspend fun getRequest(body: ByteArray): CollectibleRequest =
-            CollectibleRequest(t.action, t.rawTransaction, requireNotNull(if (Session.getTipPub().isNullOrBlank()){
-                encryptPin(Session.getPinToken()!!, pin)
-            } else {
-                encryptTipPin(tip, pin, body)
-            }))
+            CollectibleRequest(
+                t.action, t.rawTransaction,
+                requireNotNull(
+                    if (Session.getTipPub().isNullOrBlank()) {
+                        encryptPin(Session.getPinToken()!!, pin)
+                    } else {
+                        encryptTipPin(tip, pin, body)
+                    }
+                )
+            )
         return when (t.action) {
             SignatureAction.sign.name -> {
                 bottomViewModel.signCollectibleTransfer(t.requestId, getRequest(TipBody.forCollectibleRequestSign(t.requestId)))

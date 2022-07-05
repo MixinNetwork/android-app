@@ -160,22 +160,28 @@ constructor(
             accountService.verifyPin(PinRequest(encryptPin(Session.getPinToken()!!, code)!!))
         } else {
             val timestamp = nowInUtcNano()
-            accountService.verifyPin(PinRequest(
-                pin = requireNotNull(encryptTipPin(tip, code, TipBody.forVerify(timestamp))),
-                timestamp = timestamp
-            ))
+            accountService.verifyPin(
+                PinRequest(
+                    pin = requireNotNull(encryptTipPin(tip, code, TipBody.forVerify(timestamp))),
+                    timestamp = timestamp
+                )
+            )
         }
     }
 
     suspend fun deactivate(pin: String, verificationId: String): MixinResponse<Account> = withContext(Dispatchers.IO) {
-        accountService.deactivate(DeactivateRequest(
-            requireNotNull(if (Session.getTipPub().isNullOrBlank()){
-                encryptPin(Session.getPinToken()!!, pin)
-            } else {
-                encryptTipPin(tip, pin, TipBody.forUserDeactivate(verificationId))
-            }),
-            verificationId
-        ))
+        accountService.deactivate(
+            DeactivateRequest(
+                requireNotNull(
+                    if (Session.getTipPub().isNullOrBlank()) {
+                        encryptPin(Session.getPinToken()!!, pin)
+                    } else {
+                        encryptTipPin(tip, pin, TipBody.forUserDeactivate(verificationId))
+                    }
+                ),
+                verificationId
+            )
+        )
     }
 
     suspend fun authorize(request: AuthorizeRequest) = authService.authorize(request)
@@ -263,18 +269,30 @@ constructor(
         emergencyService.loginVerify(id, request)
 
     suspend fun showEmergency(pin: String) =
-        emergencyService.show(PinRequest(requireNotNull(if (Session.getTipPub().isNullOrBlank()){
-            encryptPin(Session.getPinToken()!!, pin)
-        } else {
-            encryptTipPin(tip, pin, TipBody.forEmergencyContactRead())
-        })))
+        emergencyService.show(
+            PinRequest(
+                requireNotNull(
+                    if (Session.getTipPub().isNullOrBlank()) {
+                        encryptPin(Session.getPinToken()!!, pin)
+                    } else {
+                        encryptTipPin(tip, pin, TipBody.forEmergencyContactRead())
+                    }
+                )
+            )
+        )
 
     suspend fun deleteEmergency(pin: String) =
-        emergencyService.delete(PinRequest(requireNotNull(if (Session.getTipPub().isNullOrBlank()){
-            encryptPin(Session.getPinToken()!!, pin)
-        } else {
-            encryptTipPin(tip, pin, TipBody.forEmergencyContactRemove())
-        })))
+        emergencyService.delete(
+            PinRequest(
+                requireNotNull(
+                    if (Session.getTipPub().isNullOrBlank()) {
+                        encryptPin(Session.getPinToken()!!, pin)
+                    } else {
+                        encryptTipPin(tip, pin, TipBody.forEmergencyContactRemove())
+                    }
+                )
+            )
+        )
 
     suspend fun getFiats() = accountService.getFiats()
 

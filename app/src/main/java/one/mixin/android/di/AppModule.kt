@@ -69,6 +69,7 @@ import one.mixin.android.session.Session
 import one.mixin.android.tip.Ephemeral
 import one.mixin.android.tip.IdentityManager
 import one.mixin.android.tip.Tip
+import one.mixin.android.tip.TipNode
 import one.mixin.android.util.ErrorHandler.Companion.AUTHENTICATION
 import one.mixin.android.util.ErrorHandler.Companion.OLD_VERSION
 import one.mixin.android.util.GsonHelper
@@ -449,6 +450,10 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideTip(ephemeral: Ephemeral, identityManager: IdentityManager, tipNodeService: TipNodeService, tipService: TipService, accountService: AccountService) =
-        Tip(ephemeral, identityManager, tipService, accountService, tipNodeService)
+    fun provideTipNode(TipNodeService: TipNodeService) = TipNode(TipNodeService)
+
+    @Provides
+    @Singleton
+    fun provideTip(ephemeral: Ephemeral, identityManager: IdentityManager, tipNode: TipNode, tipService: TipService, accountService: AccountService) =
+        Tip(ephemeral, identityManager, tipService, accountService, tipNode)
 }

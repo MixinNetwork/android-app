@@ -13,7 +13,6 @@ import one.mixin.android.api.request.PinRequest
 import one.mixin.android.api.request.TipSecretAction
 import one.mixin.android.api.request.TipSecretRequest
 import one.mixin.android.api.service.AccountService
-import one.mixin.android.api.service.TipNodeService
 import one.mixin.android.api.service.TipService
 import one.mixin.android.crypto.aesDecrypt
 import one.mixin.android.crypto.aesEncrypt
@@ -40,9 +39,8 @@ class Tip @Inject internal constructor(
     private val identityManager: IdentityManager,
     private val tipService: TipService,
     private val accountService: AccountService,
-    tipNodeService: TipNodeService,
+    private val tipNode: TipNode
 ) {
-    private val tipNode = TipNode(tipNodeService)
 
     suspend fun getTipPriv(context: Context, pin: String, deviceId: String): ByteArray? {
         val ephemeralSeed = ephemeral.getEphemeralSeed(context, deviceId)

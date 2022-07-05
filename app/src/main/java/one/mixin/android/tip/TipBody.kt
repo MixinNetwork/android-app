@@ -22,7 +22,7 @@ object TipBody {
     fun forVerify(timestamp: Long): ByteArray =
         "$TIPVerify${String.format("%032d", timestamp)}".toByteArray()
 
-    fun forRawTransactionCreate(assetId :String, opponentKey: String, opponentReceivers: List<String>, opponentThreshold: Int, amount: String, traceId: String?, memo: String?): ByteArray {
+    fun forRawTransactionCreate(assetId: String, opponentKey: String, opponentReceivers: List<String>, opponentThreshold: Int, amount: String, traceId: String?, memo: String?): ByteArray {
         var body = assetId + opponentKey // TODO fix opponentKey usage
         opponentReceivers.forEach { o -> body += o }
         body = body + opponentThreshold + amount + traceId + memo

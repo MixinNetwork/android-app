@@ -97,19 +97,21 @@ class BottomSheetViewModel @Inject internal constructor(
         trace: String?,
         memo: String?
     ) = assetRepository.transfer(
-            TransferRequest(
-                assetId,
-                userId,
-                amount,
-                requireNotNull(if (Session.getTipPub().isNullOrBlank()) {
+        TransferRequest(
+            assetId,
+            userId,
+            amount,
+            requireNotNull(
+                if (Session.getTipPub().isNullOrBlank()) {
                     encryptPin(Session.getPinToken()!!, code)
                 } else {
                     encryptTipPin(tip, code, TipBody.forTransfer(assetId, userId, amount, trace, memo))
-                }),
-                trace,
-                memo
-            )
+                }
+            ),
+            trace,
+            memo
         )
+    )
 
     suspend fun authorize(request: AuthorizeRequest): MixinResponse<AuthorizationResponse> =
         accountRepository.authorize(request)
@@ -129,11 +131,13 @@ class BottomSheetViewModel @Inject internal constructor(
         WithdrawalRequest(
             addressId,
             amount,
-            requireNotNull(if (Session.getTipPub().isNullOrBlank()) {
-                encryptPin(Session.getPinToken()!!, code)
-            } else {
-                encryptTipPin(tip, code, TipBody.forWithdrawalCreate(addressId, amount, fee, traceId, memo))
-            }),
+            requireNotNull(
+                if (Session.getTipPub().isNullOrBlank()) {
+                    encryptPin(Session.getPinToken()!!, code)
+                } else {
+                    encryptTipPin(tip, code, TipBody.forWithdrawalCreate(addressId, amount, fee, traceId, memo))
+                }
+            ),
             traceId,
             memo,
             fee,
@@ -153,11 +157,13 @@ class BottomSheetViewModel @Inject internal constructor(
                 destination,
                 tag,
                 label,
-                requireNotNull(if (Session.getTipPub().isNullOrBlank()) {
-                    encryptPin(Session.getPinToken()!!, code)
-                } else {
-                    encryptTipPin(tip, code, TipBody.forAddressAdd(assetId, destination, tag, label))
-                }),
+                requireNotNull(
+                    if (Session.getTipPub().isNullOrBlank()) {
+                        encryptPin(Session.getPinToken()!!, code)
+                    } else {
+                        encryptTipPin(tip, code, TipBody.forAddressAdd(assetId, destination, tag, label))
+                    }
+                ),
             )
         )
 
@@ -166,12 +172,15 @@ class BottomSheetViewModel @Inject internal constructor(
     }
 
     suspend fun deleteAddr(id: String, code: String): MixinResponse<Unit> =
-        assetRepository.deleteAddr(id,
-            requireNotNull(if (Session.getTipPub().isNullOrBlank()) {
-                encryptPin(Session.getPinToken()!!, code)
-            } else {
-                encryptTipPin(tip, code, TipBody.forAddressRemove(id))
-            })
+        assetRepository.deleteAddr(
+            id,
+            requireNotNull(
+                if (Session.getTipPub().isNullOrBlank()) {
+                    encryptPin(Session.getPinToken()!!, code)
+                } else {
+                    encryptTipPin(tip, code, TipBody.forAddressRemove(id))
+                }
+            )
         )
 
     suspend fun deleteLocalAddr(id: String) = assetRepository.deleteLocalAddr(id)
@@ -466,21 +475,29 @@ class BottomSheetViewModel @Inject internal constructor(
     suspend fun signMultisigs(requestId: String, pin: String) =
         accountRepository.signMultisigs(
             requestId,
-            PinRequest(requireNotNull(if (Session.getTipPub().isNullOrBlank()){
-                encryptPin(Session.getPinToken()!!, pin)
-            } else {
-                encryptTipPin(tip, pin, TipBody.forMultisigRequestSign(requestId))
-            }))
+            PinRequest(
+                requireNotNull(
+                    if (Session.getTipPub().isNullOrBlank()) {
+                        encryptPin(Session.getPinToken()!!, pin)
+                    } else {
+                        encryptTipPin(tip, pin, TipBody.forMultisigRequestSign(requestId))
+                    }
+                )
+            )
         )
 
     suspend fun unlockMultisigs(requestId: String, pin: String) =
         accountRepository.unlockMultisigs(
             requestId,
-            PinRequest(requireNotNull(if (Session.getTipPub().isNullOrBlank()){
-                encryptPin(Session.getPinToken()!!, pin)
-            } else {
-                encryptTipPin(tip, pin, TipBody.forMultisigRequestUnlock(requestId))
-            }))
+            PinRequest(
+                requireNotNull(
+                    if (Session.getTipPub().isNullOrBlank()) {
+                        encryptPin(Session.getPinToken()!!, pin)
+                    } else {
+                        encryptTipPin(tip, pin, TipBody.forMultisigRequestUnlock(requestId))
+                    }
+                )
+            )
         )
 
     suspend fun cancelMultisigs(requestId: String) = withContext(Dispatchers.IO) {
@@ -499,11 +516,13 @@ class BottomSheetViewModel @Inject internal constructor(
         rawTransactionsRequest: RawTransactionsRequest,
         pin: String
     ): MixinResponse<Void> {
-        rawTransactionsRequest.pin = requireNotNull(if (Session.getTipPub().isNullOrBlank()) {
-            encryptPin(Session.getPinToken()!!, pin)
-        } else {
-            encryptTipPin(tip, pin, TipBody.forRawTransactionCreate(rawTransactionsRequest.assetId, "", rawTransactionsRequest.opponentMultisig.receivers.toList(), rawTransactionsRequest.opponentMultisig.threshold, rawTransactionsRequest.amount, rawTransactionsRequest.traceId, rawTransactionsRequest.memo))
-        })
+        rawTransactionsRequest.pin = requireNotNull(
+            if (Session.getTipPub().isNullOrBlank()) {
+                encryptPin(Session.getPinToken()!!, pin)
+            } else {
+                encryptTipPin(tip, pin, TipBody.forRawTransactionCreate(rawTransactionsRequest.assetId, "", rawTransactionsRequest.opponentMultisig.receivers.toList(), rawTransactionsRequest.opponentMultisig.threshold, rawTransactionsRequest.amount, rawTransactionsRequest.traceId, rawTransactionsRequest.memo))
+            }
+        )
         return accountRepository.transactions(rawTransactionsRequest)
     }
 
