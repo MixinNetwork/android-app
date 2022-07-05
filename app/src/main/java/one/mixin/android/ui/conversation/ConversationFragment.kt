@@ -2360,7 +2360,7 @@ class ConversationFragment() :
                 val uri = item.uri
                 if (item.isVideo) {
                     if (send) {
-                        sendVideoMessage(uri, 0f, 1f) // Todo check
+                        sendVideoMessage(uri, 0f, 1f)
                     } else {
                         showPreview(uri, getString(R.string.Send), true) { uri, start, end -> sendVideoMessage(uri, start, end) }
                     }
@@ -2693,7 +2693,7 @@ class ConversationFragment() :
         if (requestCode == REQUEST_GALLERY && resultCode == Activity.RESULT_OK) {
             data?.data?.let {
                 if (data.hasExtra(IS_VIDEO)) {
-                    sendVideoMessage(it, 0f, 1f) // Todo
+                    sendVideoMessage(it, 0f, 1f)
                 } else {
                     getEditorResult.launch(Pair(it, getString(R.string.Send)))
                 }

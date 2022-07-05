@@ -18,8 +18,10 @@ import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.MessageStatus
+import one.mixin.android.vo.VideoClip
 import one.mixin.android.vo.createVideoMessage
 import one.mixin.android.vo.toCategory
+import one.mixin.android.vo.toJson
 import one.mixin.android.vo.toQuoteMessageItem
 import one.mixin.android.widget.ConvertEvent
 import java.io.File
@@ -57,8 +59,9 @@ class ConvertVideoJob(
         if (!video.fileName.endsWith(".mp4")) {
             video.fileName = "${video.fileName.getFileNameNoEx()}.mp4"
         }
+
         val message = createVideoMessage(
-            messageId, conversationId, senderId, category, null,
+            messageId, conversationId, senderId, category, VideoClip(uri.toString(), start, end).toJson(),
             video.fileName, uri.toString(), video.duration, video.resultWidth,
             video.resultHeight, video.thumbnail, "video/mp4",
             0L, createdAt, null, null, MediaStatus.PENDING, MessageStatus.SENDING.name,
@@ -118,6 +121,7 @@ class ConvertVideoJob(
         )
         if (!error) {
             messageDao.updateMediaMessageUrl(videoFile.name, messageId)
+            messageDao.updateMessageContent(null, messageId)
             messageDao.updateMediaDuration(duration.toString(), messageId)
             InvalidateFlow.emit(conversationId)
             jobManager.addJobInBackground(SendAttachmentMessageJob(message))

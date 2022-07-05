@@ -209,12 +209,10 @@ class PreviewDialogFragment : DialogFragment(), VideoTimelinePlayView.VideoTimel
     }
 
     override fun onLeftProgressChanged(progress: Float) {
-        // Todo
         Timber.e("onLeftProgressChanged $progress")
     }
 
     override fun onRightProgressChanged(progress: Float) {
-        // Todo
         Timber.e("onRightProgressChanged $progress")
     }
 

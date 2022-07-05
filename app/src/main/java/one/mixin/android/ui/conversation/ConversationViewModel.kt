@@ -96,6 +96,7 @@ import one.mixin.android.vo.isGroupConversation
 import one.mixin.android.vo.isImage
 import one.mixin.android.vo.isSignal
 import one.mixin.android.vo.isVideo
+import one.mixin.android.vo.toVideoClip
 import one.mixin.android.webrtc.SelectItem
 import one.mixin.android.websocket.AudioMessagePayload
 import one.mixin.android.websocket.BlazeAckMessage
@@ -380,47 +381,49 @@ internal constructor(
     @RequiresPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)
     fun retryUpload(id: String, onError: () -> Unit) {
         viewModelScope.launch(Dispatchers.IO) {
-            conversationRepository.findMessageById(id)?.let {
-                if (it.isVideo() && it.mediaSize != null && it.mediaSize == 0L) {
+            conversationRepository.findMessageById(id)?.let { message ->
+                if (message.isVideo() && message.mediaSize != null && message.mediaSize == 0L) {
                     try {
-                        conversationRepository.updateMediaStatus(MediaStatus.PENDING.name, it.id, it.conversationId)
+                        conversationRepository.updateMediaStatus(MediaStatus.PENDING.name, message.id, message.conversationId)
+                        val videoClip = toVideoClip(message.content, message.mediaUrl)
                         jobManager.addJobInBackground(
                             ConvertVideoJob(
-                                it.conversationId,
-                                it.userId,
-                                Uri.parse(it.mediaUrl),
-                                0f, 1f, // Todo
+                                message.conversationId,
+                                message.userId,
+                                Uri.parse(videoClip.uri),
+                                videoClip.startProgress,
+                                videoClip.endProgress,
                                 when {
-                                    it.isSignal() -> EncryptCategory.SIGNAL
-                                    it.isEncrypted() -> EncryptCategory.ENCRYPTED
+                                    message.isSignal() -> EncryptCategory.SIGNAL
+                                    message.isEncrypted() -> EncryptCategory.ENCRYPTED
                                     else -> EncryptCategory.PLAIN
                                 },
-                                it.id,
-                                it.createdAt
+                                message.id,
+                                message.createdAt
                             )
                         )
                     } catch (e: NullPointerException) {
                         onError.invoke()
                     }
-                } else if (it.isImage() && it.mediaMimeType == MimeType.GIF.toString() && it.mediaUrl?.startsWith("http") == true) { // un-downloaded GIPHY
+                } else if (message.isImage() && message.mediaMimeType == MimeType.GIF.toString() && message.mediaUrl?.startsWith("http") == true) { // un-downloaded GIPHY
                     val category = when {
-                        it.isSignal() -> MessageCategory.SIGNAL_IMAGE
-                        it.isEncrypted() -> MessageCategory.ENCRYPTED_IMAGE
+                        message.isSignal() -> MessageCategory.SIGNAL_IMAGE
+                        message.isEncrypted() -> MessageCategory.ENCRYPTED_IMAGE
                         else -> MessageCategory.PLAIN_IMAGE
                     }.name
                     try {
                         jobManager.addJobInBackground(
                             SendGiphyJob(
-                                it.conversationId, it.userId, it.mediaUrl, it.mediaWidth!!, it.mediaHeight!!,
-                                it.mediaSize ?: 0L, category, it.id, it.thumbImage ?: "", it.createdAt
+                                message.conversationId, message.userId, message.mediaUrl, message.mediaWidth!!, message.mediaHeight!!,
+                                message.mediaSize ?: 0L, category, message.id, message.thumbImage ?: "", message.createdAt
                             )
                         )
                     } catch (e: NullPointerException) {
                         onError.invoke()
                     }
                 } else {
-                    conversationRepository.updateMediaStatus(MediaStatus.PENDING.name, it.id, it.conversationId)
-                    jobManager.addJobInBackground(SendAttachmentMessageJob(it))
+                    conversationRepository.updateMediaStatus(MediaStatus.PENDING.name, message.id, message.conversationId)
+                    jobManager.addJobInBackground(SendAttachmentMessageJob(message))
                 }
             }
         }
