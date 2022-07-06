@@ -49,10 +49,10 @@ class TipNode @Inject internal constructor(private val tipNodeService: TipNodeSe
             return null
         }
 
-        val pair = parseAssignorAndPartials(data)
-        val hexSigs = pair.second.joinToString(",") { it.toHex() }
+        val (assignor, partials) = parseAssignorAndPartials(data)
+        val hexSigs = partials.joinToString(",") { it.toHex() }
         val commitments = tipConfig.commitments.joinToString(",")
-        return Crypto.recoverSignature(hexSigs, commitments, pair.first, tipConfig.signers.size.toLong())
+        return Crypto.recoverSignature(hexSigs, commitments, assignor, tipConfig.signers.size.toLong())
     }
 
     private suspend fun getNodeSigs(userSk: Scalar, tipSigners: List<TipSigner>, ephemeral: ByteArray, assignee: ByteArray?): List<TipSignRespData> {
@@ -61,29 +61,25 @@ class TipNode @Inject internal constructor(private val tipNodeService: TipNodeSe
         val grace = ephemeralGrace
 
         coroutineScope {
-            tipSigners.mapIndexed { i, signer ->
+            tipSigners.mapIndexed { index, signer ->
                 async(Dispatchers.IO) {
-                    var success = false
                     var retryCount = 0
 
-                    while (!success) {
-                        val pair = fetchTipNodeSigns(userSk, signer, ephemeral, nonce, grace, assignee)
-                        if (pair.second == 429 || pair.second == 500) {
-                            Timber.d("fetch tip node $i meet ${pair.second}")
+                    while (true) {
+                        val (sign, code) = fetchTipNodeSigns(userSk, signer, ephemeral, nonce, grace, assignee)
+                        if (code == 429 || code == 500) {
+                            Timber.d("fetch tip node $index meet $code")
                             return@async
                         }
 
-                        val sign = pair.first
-                        success = sign != null
-                        if (success) {
-                            require(sign != null)
+                        if (sign != null) {
                             result.add(sign)
-                            Timber.d("fetch tip node $i sign success")
+                            Timber.d("fetch tip node $index sign success")
                             return@async
                         }
 
                         retryCount++
-                        Timber.d("fetch tip node $i failed, retry $retryCount")
+                        Timber.d("fetch tip node $index failed, retry $retryCount")
                     }
                 }
             }.awaitAll()
@@ -94,18 +90,18 @@ class TipNode @Inject internal constructor(private val tipNodeService: TipNodeSe
     private suspend fun fetchTipNodeSigns(userSk: Scalar, tipSigner: TipSigner, ephemeral: ByteArray, nonce: Long, grace: Long, assignee: ByteArray?): Pair<TipSignRespData?, Int> {
         val tipSignRequest = genTipSignRequest(userSk, tipSigner, ephemeral, nonce, grace, assignee)
         return try {
-            val r = tipNodeService.postSign(tipSignRequest, tipSigner.api)
+            val tipSignResponse = tipNodeService.postSign(tipSignRequest, tipSigner.api)
 
             val signerPk = Crypto.pubKeyFromBase58(tipSigner.identity)
-            val msg = gson.toJson(r.data).toByteArray()
+            val msg = gson.toJson(tipSignResponse.data).toByteArray()
             try {
-                signerPk.verify(msg, r.signature.hexStringToByteArray())
+                signerPk.verify(msg, tipSignResponse.signature.hexStringToByteArray())
             } catch (e: Exception) {
                 Timber.d("verify node response meet ${e.localizedMessage}")
                 return Pair(null, -1)
             }
 
-            val data = parseNodeSigResp(userSk, tipSigner, r)
+            val data = parseNodeSigResp(userSk, tipSigner, tipSignResponse)
             Pair(data, -1)
         } catch (e: Exception) {
             Timber.d(e)
