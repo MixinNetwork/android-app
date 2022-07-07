@@ -268,6 +268,8 @@ dependencies {
     implementation "com.jakewharton.rxbinding3:rxbinding:${rxbindingVersion}"
     implementation("com.jakewharton.retrofit:retrofit2-kotlin-coroutines-adapter:${coroutineAdapterVersion}")
 
+    implementation "com.google.net.cronet:cronet-okhttp:${cronetOkhttpVersion}"
+
     implementation "com.google.code.gson:gson:${gsonVersion}"
 
     implementation "com.google.firebase:firebase-messaging-ktx"
@@ -286,6 +288,7 @@ dependencies {
     implementation "com.google.android.play:core:${playVersion}"
     implementation "com.google.android.gms:play-services-safetynet:${googlePlayServicesVersion}"
     implementation "com.google.android.gms:play-services-maps:${googlePlayServicesVersion}"
+    implementation "com.google.android.gms:play-services-cronet:${googlePlayServicesVersion}"
     implementation "com.google.zxing:core:${zxingVersion}"
     implementation "com.github.tougee:sticky-headers-recyclerview:${stickyheadersrecyclerviewVersion}"
     implementation "org.whispersystems:signal-protocol-android:${signalVersion}"

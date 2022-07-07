@@ -69,6 +69,7 @@ buildscript {
         ext.swirlVersion = '1.3.0'
         ext.indicatorseekbarVersion = '2.1.2'
         ext.emojiVerison = '1.2.0-alpha04'
+        ext.cronetOkhttpVersion = '0.1.0'
 
         ext.mapboxSdkVersion= '10.4.0'
 
