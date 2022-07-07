@@ -23,6 +23,7 @@ import one.mixin.android.Constants
 import one.mixin.android.Constants.ALLOW_INTERVAL
 import one.mixin.android.Constants.API.FOURSQUARE_URL
 import one.mixin.android.Constants.API.GIPHY_URL
+import one.mixin.android.Constants.API.Mixin_URL
 import one.mixin.android.Constants.API.URL
 import one.mixin.android.Constants.DNS
 import one.mixin.android.MixinApplication
@@ -54,13 +55,16 @@ import one.mixin.android.db.MessageDao
 import one.mixin.android.db.OffsetDao
 import one.mixin.android.extension.filterNonAscii
 import one.mixin.android.extension.getDeviceId
+import one.mixin.android.extension.isGooglePlayServicesAvailable
 import one.mixin.android.extension.networkConnected
 import one.mixin.android.extension.show
+import one.mixin.android.extension.toUri
 import one.mixin.android.job.BaseJob
 import one.mixin.android.job.JobLogger
 import one.mixin.android.job.JobNetworkUtil
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.MyJobService
+import com.google.net.cronet.okhttptransport.MixinCronetInterceptor
 import one.mixin.android.session.JwtResult
 import one.mixin.android.session.Session
 import one.mixin.android.ui.player.MusicService
@@ -74,6 +78,7 @@ import one.mixin.android.vo.CallStateLiveData
 import one.mixin.android.vo.LinkState
 import one.mixin.android.webrtc.CallDebugLiveData
 import one.mixin.android.websocket.ChatWebSocket
+import org.chromium.net.CronetEngine
 import retrofit2.Retrofit
 import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory
 import retrofit2.converter.gson.GsonConverterFactory
@@ -111,11 +116,26 @@ object AppModule {
 
     @Singleton
     @Provides
-    fun provideOkHttp(resolver: ContentResolver, httpLoggingInterceptor: HttpLoggingInterceptor?): OkHttpClient {
+    fun provideCronetEngine(): CronetEngine? {
+        val ctx = MixinApplication.appContext
+        return if (ctx.isGooglePlayServicesAvailable()) {
+            CronetEngine.Builder(ctx)
+                .addQuicHint(URL.toUri().host, 443, 443)
+                .addQuicHint(Mixin_URL.toUri().host, 443, 443)
+                .enableQuic(true)
+                .enableHttp2(true)
+                .enableHttpCache(CronetEngine.Builder.HTTP_CACHE_IN_MEMORY, 100 * 1024)
+                .build()
+        } else null
+    }
+
+    @Singleton
+    @Provides
+    fun provideOkHttp(resolver: ContentResolver, httpLoggingInterceptor: HttpLoggingInterceptor?, engine: CronetEngine?): OkHttpClient {
         val builder = OkHttpClient.Builder()
         builder.addInterceptor(HostSelectionInterceptor.get())
         httpLoggingInterceptor?.let { interceptor ->
-            builder.addNetworkInterceptor(interceptor)
+            builder.addInterceptor(interceptor)
         }
         builder.connectTimeout(10, TimeUnit.SECONDS)
         builder.writeTimeout(10, TimeUnit.SECONDS)
@@ -204,6 +224,9 @@ object AppModule {
             } else {
                 throw NetworkException()
             }
+        }
+        if (engine != null) {
+            builder.addInterceptor(MixinCronetInterceptor.newBuilder(engine).build())
         }
         return builder.build()
     }
