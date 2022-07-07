@@ -11,6 +11,7 @@ import androidx.camera.camera2.Camera2Config
 import androidx.camera.core.CameraXConfig
 import androidx.hilt.work.HiltWorkerFactory
 import androidx.work.Configuration
+import com.google.android.gms.net.CronetProviderInstaller
 import com.microsoft.appcenter.AppCenter
 import com.microsoft.appcenter.analytics.Analytics
 import com.microsoft.appcenter.crashes.Crashes
@@ -139,6 +140,7 @@ open class MixinApplication :
     }
 
     private fun init() {
+        CronetProviderInstaller.installProvider(this)
         if (BuildConfig.DEBUG) {
             Timber.plant(Timber.DebugTree())
         } else {

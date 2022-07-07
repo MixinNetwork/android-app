@@ -6,7 +6,9 @@ import android.content.ComponentName
 import android.content.ContentResolver
 import com.birbit.android.jobqueue.config.Configuration
 import com.birbit.android.jobqueue.scheduling.FrameworkJobSchedulerService
+import com.google.android.gms.net.CronetProviderInstaller
 import com.google.gson.JsonSyntaxException
+import com.google.net.cronet.okhttptransport.MixinCronetInterceptor
 import com.jakewharton.retrofit2.adapter.kotlin.coroutines.CoroutineCallAdapterFactory
 import com.twilio.audioswitch.AudioDevice
 import com.twilio.audioswitch.AudioSwitch
@@ -64,7 +66,6 @@ import one.mixin.android.job.JobLogger
 import one.mixin.android.job.JobNetworkUtil
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.MyJobService
-import com.google.net.cronet.okhttptransport.MixinCronetInterceptor
 import one.mixin.android.session.JwtResult
 import one.mixin.android.session.Session
 import one.mixin.android.ui.player.MusicService
@@ -116,17 +117,21 @@ object AppModule {
 
     @Singleton
     @Provides
-    fun provideCronetEngine(): CronetEngine? {
-        val ctx = MixinApplication.appContext
-        return if (ctx.isGooglePlayServicesAvailable()) {
-            CronetEngine.Builder(ctx)
-                .addQuicHint(URL.toUri().host, 443, 443)
-                .addQuicHint(Mixin_URL.toUri().host, 443, 443)
-                .enableQuic(true)
-                .enableHttp2(true)
-                .enableHttpCache(CronetEngine.Builder.HTTP_CACHE_IN_MEMORY, 100 * 1024)
-                .build()
-        } else null
+    fun provideCronetEngine(app: Application): CronetEngine? {
+        val ctx = app.applicationContext
+        if (!ctx.isGooglePlayServicesAvailable()) {
+            return null
+        }
+        if (!CronetProviderInstaller.isInstalled()) {
+            return null
+        }
+        return CronetEngine.Builder(ctx)
+            .addQuicHint(URL.toUri().host, 443, 443)
+            .addQuicHint(Mixin_URL.toUri().host, 443, 443)
+            .enableQuic(true)
+            .enableHttp2(true)
+            .enableHttpCache(CronetEngine.Builder.HTTP_CACHE_IN_MEMORY, 10 * 1024)
+            .build()
     }
 
     @Singleton

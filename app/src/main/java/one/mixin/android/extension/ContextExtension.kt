@@ -58,7 +58,7 @@ import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentTransaction
 import com.google.android.gms.common.ConnectionResult
-import com.google.android.gms.common.GoogleApiAvailability
+import com.google.android.gms.common.GoogleApiAvailabilityLight
 import com.google.android.gms.common.GooglePlayServicesUtil
 import com.google.firebase.installations.FirebaseInstallations
 import one.mixin.android.BuildConfig
@@ -820,7 +820,7 @@ inline fun <T : Fragment> T.withArgs(argsBuilder: Bundle.() -> Unit): T =
     this.apply { arguments = Bundle().apply(argsBuilder) }
 
 fun Context.isGooglePlayServicesAvailable() =
-    GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(this) == ConnectionResult.SUCCESS
+    GoogleApiAvailabilityLight.getInstance().isGooglePlayServicesAvailable(this) == ConnectionResult.SUCCESS
 
 fun Context.isFirebaseDecodeAvailable() =
     isGooglePlayServicesAvailable() && Locale.getDefault() != Locale.CHINA
