@@ -1470,7 +1470,13 @@ class ConversationFragment() :
                 binding.chatControl.chatEt.setText(conversationDraft)
             }
         }
-        binding.toolView.closeIv.setOnClickListener { activity?.onBackPressedDispatcher?.onBackPressed() }
+        binding.toolView.closeIv.setOnClickListener {
+            if (binding.toolView.isVisible) {
+                closeTool()
+            } else {
+                activity?.onBackPressedDispatcher?.onBackPressed()
+            }
+        }
         binding.toolView.deleteIv.setOnClickListener {
             conversationAdapter.selectSet.filter { it.isAudio() }.forEach {
                 if (AudioPlayer.isPlay(it.messageId)) {
