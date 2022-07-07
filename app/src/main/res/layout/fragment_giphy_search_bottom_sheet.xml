@@ -67,6 +67,6 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
-            android:text="@string/No_results" />
+            android:text="@string/NO_RESULTS" />
     </ViewAnimator>
 </one.mixin.android.widget.BottomSheetRelativeLayout>

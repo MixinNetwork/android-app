@@ -62,17 +62,17 @@ open class ErrorHandler {
                     BAD_REQUEST -> {
                     }
                     AUTHENTICATION -> {
-                        toast(getString(R.string.error_authentication, AUTHENTICATION))
+                        toast(getString(R.string.error_authentication))
                         reportException(IllegalStateException("Force logout error code."))
                     }
                     FORBIDDEN -> {
                         toast(R.string.Access_denied)
                     }
                     NOT_FOUND -> {
-                        toast(getString(R.string.error_not_found, NOT_FOUND))
+                        toast(getString(R.string.error_not_found))
                     }
                     TOO_MANY_REQUEST -> {
-                        toast(getString(R.string.error_too_many_request, TOO_MANY_REQUEST))
+                        toast(getString(R.string.error_too_many_request))
                     }
                     SERVER, INSUFFICIENT_POOL -> {
                         toast(getString(R.string.error_server_5xx_code, code))
@@ -137,116 +137,83 @@ fun Context.getMixinErrorStringByCode(code: Int, message: String): String {
     return when (code) {
         ErrorHandler.TRANSACTION -> "${ErrorHandler.TRANSACTION} TRANSACTION"
         ErrorHandler.BAD_DATA -> {
-            getString(R.string.error_bad_data, ErrorHandler.BAD_DATA)
+            getString(R.string.error_bad_data)
         }
         ErrorHandler.PHONE_SMS_DELIVERY -> {
-            getString(R.string.error_phone_sms_delivery, ErrorHandler.PHONE_SMS_DELIVERY)
+            getString(R.string.error_phone_sms_delivery)
         }
         ErrorHandler.RECAPTCHA_IS_INVALID -> {
-            getString(
-                R.string.error_recaptcha_is_invalid,
-                ErrorHandler.RECAPTCHA_IS_INVALID
-            )
+            getString(R.string.error_recaptcha_is_invalid)
         }
         ErrorHandler.OLD_VERSION -> {
             val versionName = packageManager.getPackageInfo(packageName, 0).versionName
-            getString(R.string.error_old_version, ErrorHandler.OLD_VERSION, versionName)
+            getString(R.string.error_old_version, versionName)
         }
         ErrorHandler.PHONE_INVALID_FORMAT -> {
-            getString(
-                R.string.error_phone_invalid_format,
-                ErrorHandler.PHONE_INVALID_FORMAT
-            )
+            getString(R.string.error_phone_invalid_format)
         }
         ErrorHandler.INSUFFICIENT_IDENTITY_NUMBER -> "${ErrorHandler.INSUFFICIENT_IDENTITY_NUMBER} INSUFFICIENT_IDENTITY_NUMBER"
         ErrorHandler.INVALID_INVITATION_CODE -> "${ErrorHandler.INVALID_INVITATION_CODE} INVALID_INVITATION_CODE"
         ErrorHandler.PHONE_VERIFICATION_CODE_INVALID -> {
-            getString(
-                R.string.error_phone_verification_code_invalid,
-                ErrorHandler.PHONE_VERIFICATION_CODE_INVALID
-            )
+            getString(R.string.error_phone_verification_code_invalid)
         }
         ErrorHandler.PHONE_VERIFICATION_CODE_EXPIRED -> {
-            getString(
-                R.string.error_phone_verification_code_expired,
-                ErrorHandler.PHONE_VERIFICATION_CODE_EXPIRED
-            )
+            getString(R.string.error_phone_verification_code_expired)
         }
         ErrorHandler.INVALID_QR_CODE -> "${ErrorHandler.INVALID_QR_CODE} ${getString(R.string.Invalid_QR_Code)}"
         ErrorHandler.NOT_FOUND -> {
-            getString(R.string.error_not_found, ErrorHandler.NOT_FOUND)
+            getString(R.string.error_not_found)
         }
         ErrorHandler.GROUP_CHAT_FULL -> {
-            getString(R.string.error_full_group, ErrorHandler.GROUP_CHAT_FULL)
+            getString(R.string.error_full_group)
         }
         ErrorHandler.INSUFFICIENT_BALANCE -> {
-            getString(
-                R.string.error_insufficient_balance,
-                ErrorHandler.INSUFFICIENT_BALANCE
-            )
+            getString(R.string.error_insufficient_balance)
         }
         ErrorHandler.INVALID_PIN_FORMAT -> {
-            getString(R.string.error_invalid_pin_format, ErrorHandler.INVALID_PIN_FORMAT)
+            getString(R.string.error_invalid_pin_format)
         }
         ErrorHandler.PIN_INCORRECT -> {
-            getString(R.string.error_pin_incorrect, ErrorHandler.PIN_INCORRECT)
+            getString(R.string.error_pin_incorrect)
         }
         ErrorHandler.TOO_SMALL -> {
-            getString(R.string.error_too_small_transfer_amount, ErrorHandler.TOO_SMALL)
+            getString(R.string.error_too_small_transfer_amount)
         }
         ErrorHandler.TOO_MANY_REQUEST -> {
-            getString(R.string.error_too_many_request, ErrorHandler.TOO_MANY_REQUEST)
+            getString(R.string.error_too_many_request)
         }
         ErrorHandler.USED_PHONE -> {
-            getString(R.string.error_used_phone, ErrorHandler.USED_PHONE)
+            getString(R.string.error_used_phone)
         }
         ErrorHandler.TRANSFER_IS_ALREADY_PAID -> {
-            getString(R.string.error_transfer_is_already_paid, ErrorHandler.TRANSFER_IS_ALREADY_PAID)
+            getString(R.string.error_transfer_is_already_paid)
         }
         ErrorHandler.TOO_MANY_STICKERS -> {
-            getString(R.string.error_too_many_stickers, ErrorHandler.TOO_MANY_STICKERS)
+            getString(R.string.error_too_many_stickers)
         }
         ErrorHandler.BLOCKCHAIN_ERROR -> {
-            getString(R.string.error_blockchain, ErrorHandler.BLOCKCHAIN_ERROR)
+            getString(R.string.error_blockchain)
         }
         ErrorHandler.INVALID_ADDRESS -> {
-            getString(R.string.error_invalid_address_plain, ErrorHandler.INVALID_ADDRESS)
+            getString(R.string.error_invalid_address_plain)
         }
         ErrorHandler.WITHDRAWAL_AMOUNT_SMALL -> {
-            getString(
-                R.string.error_too_small_withdraw_amount,
-                ErrorHandler.WITHDRAWAL_AMOUNT_SMALL
-            )
+            getString(R.string.error_too_small_withdraw_amount)
         }
         ErrorHandler.TOO_MANY_FRIENDS -> {
-            getString(
-                R.string.error_too_many_friends,
-                ErrorHandler.TOO_MANY_FRIENDS
-            )
+            getString(R.string.error_too_many_friends)
         }
         ErrorHandler.INVALID_CODE_TOO_FREQUENT -> {
-            getString(
-                R.string.error_invalid_code_too_frequent,
-                ErrorHandler.INVALID_CODE_TOO_FREQUENT
-            )
+            getString(R.string.error_invalid_code_too_frequent)
         }
         ErrorHandler.INVALID_EMERGENCY_CONTACT -> {
-            getString(
-                R.string.error_invalid_emergency_contact,
-                ErrorHandler.INVALID_EMERGENCY_CONTACT
-            )
+            getString(R.string.error_invalid_emergency_contact)
         }
         ErrorHandler.WITHDRAWAL_MEMO_FORMAT_INCORRECT -> {
-            getString(
-                R.string.error_withdrawal_memo_format_incorrect,
-                ErrorHandler.WITHDRAWAL_MEMO_FORMAT_INCORRECT
-            )
+            getString(R.string.error_withdrawal_memo_format_incorrect)
         }
         ErrorHandler.FAVORITE_LIMIT, ErrorHandler.CIRCLE_LIMIT -> {
-            getString(
-                R.string.error_number_reached_limit,
-                ErrorHandler.FAVORITE_LIMIT
-            )
+            getString(R.string.error_number_reached_limit)
         }
         ErrorHandler.FORBIDDEN -> {
             getString(R.string.Access_denied)

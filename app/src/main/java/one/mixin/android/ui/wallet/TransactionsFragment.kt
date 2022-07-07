@@ -121,7 +121,7 @@ class TransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>>()
                         )
                     },
                     {
-                        toast(getString(R.string.error_bad_data, ErrorHandler.BAD_DATA))
+                        toast(getString(R.string.error_bad_data))
                     }
                 )
             }
