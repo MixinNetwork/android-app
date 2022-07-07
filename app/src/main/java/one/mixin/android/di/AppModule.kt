@@ -130,7 +130,6 @@ object AppModule {
             .addQuicHint(Mixin_URL.toUri().host, 443, 443)
             .enableQuic(true)
             .enableHttp2(true)
-            .enableHttpCache(CronetEngine.Builder.HTTP_CACHE_IN_MEMORY, 10 * 1024)
             .build()
     }
 
