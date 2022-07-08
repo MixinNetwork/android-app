@@ -30,7 +30,6 @@ class RefreshOffsetJob : MixinJob(
     }
 
     override fun onRun() {
-
         val statusOffset = offsetDao.getStatusOffset()
         var status = statusOffset?.getEpochNano() ?: firstInstallTime
         while (true) {
