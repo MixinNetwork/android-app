@@ -5,6 +5,7 @@ import com.birbit.android.jobqueue.Params
 import one.mixin.android.db.makeMessageStatus
 import one.mixin.android.extension.getEpochNano
 import one.mixin.android.extension.notNullWithElse
+import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.MessageStatus
 import one.mixin.android.vo.Offset
 import one.mixin.android.vo.STATUS_OFFSET
@@ -30,7 +31,6 @@ class RefreshOffsetJob : MixinJob(
     }
 
     override fun onRun() {
-
         val statusOffset = offsetDao.getStatusOffset()
         var status = statusOffset?.getEpochNano() ?: firstInstallTime
         while (true) {
@@ -41,6 +41,11 @@ class RefreshOffsetJob : MixinJob(
                     break
                 }
                 for (m in blazeMessages) {
+                    if (m.category == MessageCategory.SIGNAL_KEY.name) {
+                        offsetDao.insert(Offset(STATUS_OFFSET, m.updatedAt))
+                        continue
+                    }
+
                     messageDao.makeMessageStatus(m.status, m.messageId) {
                         pendingMessageStatusMap[m.messageId]?.notNullWithElse({ status ->
                             val currentStatus = MessageStatus.values().firstOrNull { it.name == m.status }?.ordinal ?: return@makeMessageStatus
