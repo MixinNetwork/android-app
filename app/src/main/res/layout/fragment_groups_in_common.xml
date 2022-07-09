@@ -32,14 +32,14 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_horizontal"
                 android:src="@drawable/ic_search_empty"
-                android:contentDescription="@string/No_results" />
+                android:contentDescription="@string/NO_RESULTS" />
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_horizontal"
                 android:layout_marginTop="@dimen/margin16"
-                android:text="@string/No_results"
+                android:text="@string/NO_RESULTS"
                 android:textColor="?attr/text_minor" />
         </LinearLayout>
 

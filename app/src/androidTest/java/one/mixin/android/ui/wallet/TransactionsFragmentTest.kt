@@ -131,7 +131,7 @@ class TransactionsFragmentTest : BaseTransactionsFragmentTest() {
 
             fragment?.asset = mockAsset().toAssetItem()
             onView(withId(R.id.receive_tv)).perform(click())
-            onView(withText(ctx.getString(R.string.error_bad_data, ErrorHandler.BAD_DATA)))
+            onView(withText(ctx.getString(R.string.error_bad_data)))
                 .inRoot(withDecorView(not(`is`(fragment?.activity?.window?.decorView))))
                 .check(matches(isDisplayed()))
 

@@ -139,7 +139,7 @@ class PinAddrBottomSheetDialogFragment : BiometricBottomSheetDialogFragment() {
     override suspend fun doWithMixinErrorCode(errorCode: Int, pin: String): String? {
         return if (errorCode == INVALID_ADDRESS) {
             getString(
-                R.string.error_invalid_address, INVALID_ADDRESS,
+                R.string.error_invalid_address,
                 when (chainId) {
                     ETHEREUM_CHAIN_ID -> "Ethereum(ERC20)"
                     TRON_CHAIN_ID -> "TRON(TRC20)"
