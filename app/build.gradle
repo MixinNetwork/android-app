@@ -64,6 +64,10 @@ android {
         kotlinOptions {
             jvmTarget = '11'
             freeCompilerArgs += ['-opt-in=kotlin.contracts.ExperimentalContracts']
+            freeCompilerArgs += [
+                    "-P",
+                    "plugin:androidx.compose.compiler.plugins.kotlin:suppressKotlinVersionCompatibilityCheck=true"
+            ]
         }
 
         lintOptions{
