@@ -9,6 +9,7 @@ import kotlinx.coroutines.coroutineScope
 import okio.Buffer
 import one.mixin.android.api.request.TipSignData
 import one.mixin.android.api.request.TipSignRequest
+import one.mixin.android.api.request.TipWatchRequest
 import one.mixin.android.api.response.TipConfig
 import one.mixin.android.api.response.TipSignResponse
 import one.mixin.android.api.response.TipSigner
@@ -30,7 +31,9 @@ class TipNode @Inject internal constructor(private val tipNodeService: TipNodeSe
 
     private val gson = GsonHelper.customGson
 
-    suspend fun generatePriv(identityPriv: ByteArray, ephemeral: ByteArray, assigneePriv: ByteArray?): ByteArray? {
+    private val maxRetryCount = 2
+
+    suspend fun generatePriv(identityPriv: ByteArray, ephemeral: ByteArray, assigneePriv: ByteArray?, assigneeSigners: List<TipSigner>? = null): ByteArray? {
         val suite = Crypto.newSuiteBn256()
         val userSk = suite.scalar()
         userSk.setBytes(identityPriv)
@@ -43,7 +46,19 @@ class TipNode @Inject internal constructor(private val tipNodeService: TipNodeSe
             assigneePub + assigneeSig
         } else null
 
-        val data = getNodeSigs(userSk, tipConfig.signers, ephemeral, assignee)
+        val data = if (!assigneeSigners.isNullOrEmpty()) {
+            val assigneeData = getNodeSigs(userSk, assigneeSigners, ephemeral, assignee)
+            if (assigneeData.size < tipConfig.commitments.size) {
+                val noAssigneeSigners = tipConfig.signers - assigneeSigners
+                val noAssigneeData = getNodeSigs(userSk, noAssigneeSigners, ephemeral, null)
+                assigneeData + noAssigneeData
+            } else {
+                assigneeData
+            }
+        } else {
+            getNodeSigs(userSk, tipConfig.signers, ephemeral, assignee)
+        }
+
         if (data.size < tipConfig.commitments.size) {
             Timber.d("not enough partials ${data.size} ${tipConfig.commitments.size}")
             return null
@@ -55,6 +70,35 @@ class TipNode @Inject internal constructor(private val tipNodeService: TipNodeSe
         return Crypto.recoverSignature(hexSigs, commitments, assignor, tipConfig.signers.size.toLong())
     }
 
+    suspend fun watch(watcher: ByteArray): List<TipNodeCounter> {
+        val result = mutableListOf<TipNodeCounter>()
+        coroutineScope {
+            tipConfig.signers.mapIndexed { index, signer ->
+                async(Dispatchers.IO) {
+                    var retryCount = 0
+
+                    while (retryCount <= maxRetryCount) {
+                        val (counter, code) = watchTipNode(signer, watcher)
+                        if (code == 500) {
+                            Timber.d("watch tip node $index meet $code")
+                            return@async
+                        }
+
+                        if (counter >= 0) {
+                            result.add(TipNodeCounter(counter, signer))
+                            Timber.d("watch tip node $index success")
+                            return@async
+                        }
+
+                        retryCount++
+                        Timber.d("watch tip node $index failed, retry $retryCount")
+                    }
+                }
+            }.awaitAll()
+        }
+        return result
+    }
+
     private suspend fun getNodeSigs(userSk: Scalar, tipSigners: List<TipSigner>, ephemeral: ByteArray, assignee: ByteArray?): List<TipSignRespData> {
         val result = mutableListOf<TipSignRespData>()
         val nonce = currentTimeSeconds()
@@ -64,9 +108,8 @@ class TipNode @Inject internal constructor(private val tipNodeService: TipNodeSe
             tipSigners.mapIndexed { index, signer ->
                 async(Dispatchers.IO) {
                     var retryCount = 0
-
-                    while (true) {
-                        val (sign, code) = fetchTipNodeSigns(userSk, signer, ephemeral, nonce, grace, assignee)
+                    while (retryCount <= maxRetryCount) {
+                        val (sign, code) = signTipNode(userSk, signer, ephemeral, nonce, grace, assignee)
                         if (code == 429 || code == 500) {
                             Timber.d("fetch tip node $index meet $code")
                             return@async
@@ -87,10 +130,25 @@ class TipNode @Inject internal constructor(private val tipNodeService: TipNodeSe
         return result
     }
 
-    private suspend fun fetchTipNodeSigns(userSk: Scalar, tipSigner: TipSigner, ephemeral: ByteArray, nonce: Long, grace: Long, assignee: ByteArray?): Pair<TipSignRespData?, Int> {
+    private suspend fun watchTipNode(tipSigner: TipSigner, watcher: ByteArray): Pair<Int, Int> {
+        val tipWatchRequest = TipWatchRequest(watcher.toHex())
+        return try {
+            val tipWatchResponse = tipNodeService.watch(tipWatchRequest, tipSigner.api)
+            return Pair(tipWatchResponse.counter, -1)
+        } catch (e: Exception) {
+            Timber.d(e)
+            if (e is HttpException) {
+                Pair(-1, e.code())
+            } else {
+                Pair(-1, -1)
+            }
+        }
+    }
+
+    private suspend fun signTipNode(userSk: Scalar, tipSigner: TipSigner, ephemeral: ByteArray, nonce: Long, grace: Long, assignee: ByteArray?): Pair<TipSignRespData?, Int> {
         val tipSignRequest = genTipSignRequest(userSk, tipSigner, ephemeral, nonce, grace, assignee)
         return try {
-            val tipSignResponse = tipNodeService.postSign(tipSignRequest, tipSigner.api)
+            val tipSignResponse = tipNodeService.sign(tipSignRequest, tipSigner.api)
 
             val signerPk = Crypto.pubKeyFromBase58(tipSigner.identity)
             val msg = gson.toJson(tipSignResponse.data).toByteArray()
@@ -181,10 +239,14 @@ class TipNode @Inject internal constructor(private val tipNodeService: TipNodeSe
     @Suppress("ArrayInDataClass")
     private data class TipSignRespData(val partial: ByteArray, val assignor: String, val counter: Long)
 
+    data class TipNodeCounter(val counter: Int, val tipSigner: TipSigner)
+
     private val tipConfig = gson.fromJson(
         """
         {"commitments":["5HYSNEcudZqucSo8tjVkkkuz6QiTQPSCjSxdGY9gZ1V3JKGtJ5bfZXS3QbB8AnBPLVrJQLEyJaucw4S6MmJhkwTpqCpTiovjiiaab4PUZsS8NBUBFharae9R3QUMR9ouPTgFxqmqMGGXSAqrRziSqneTcEkgLymx5oahxGfSeovgTN1FDgKiAt","5Jr6mXiEF1xtR7jJ8o2923vsGcqnjnegK9eVybDfXCnFXKhRVaJDCMHvGuHLo92TWSuBVrwDxYM8nHDiqYVb7csPQHHTyPjrGMPZiPe3PFhBYpz5nsDeVxjknZ8C9fPYYi67qyBy4fy1T6U4itXQEzjCTBdtjw2TXrNKe5oYPvJWx3X6ZpygCi","5JTnSpeBG9NyBAEkXL6KxFW3fYMhM4rgBqLMXynrBxHcshuQViedG2H4UumcdLZzMjkyyAdsGmEAf4MKiULmN93aaNvqCXiHH7MYnyvGp96s9bXs2M61HgH1KKZ4Tvk6yBfnVmvwmGVnnsQMd7fTky37VZGqn56SkQa7ANEz52Bwfs7uBBVZzV","5JDXsF4qPcf9cwKuAL2H4scnaMEz3GYnyM3koVx5AE7rDvaLCeqWZ8ksXES9eQooKtfQHZyxhhFZumrQqkMqsbxatYSvZJFSWtTESoBqGSqb9F2pvQboik1uJyw7VNrDFUkvVj64JXY6cThHvWQpK96zqELurNjfEPjNRB79c5ESqqfK4FXtce","5Jr8U6gPzoi9iYLRY4bVJBbYfsk95xM7AUyMhrsXzfG16nzkzcR2LpEsPFeYwS75WCDMGVta55SDWjb1cRPmWVKrKvr9A8RKRJkF3yop9gc2Kia4bccYqH1QcnNZAGoDLcqHiLSgbWwvjb1NaS2vVtUHsfnbKAQ64jX96gSMJis39UEh9HJiiA"],"signers":[{"identity":"5HXAHFh8khYBGWA2V3oUUvXAX4aWnQsEyNzKoA3LnJkxtKQNhcWSh4Swt72a1bw7aG8uTg9F31ybzSJyuNHENUBtGobUfHbKNPUYYkHnhuPtWszaCuNJ3nBxZ4Crt8Q8AmJ2fZznLx3EDM2Eqf63drNmW6VVmmzBQUc4N2JaXzFtt4HFFWtvUk","index":0,"api":"https://mercury.tip.id"},{"identity":"5HrtnCWMLkh2R82iwztEorvRhdZkZwhE77ohPekJKumbko2gZ4RJ4HDiP9VRp1ZvjJi1CR7UB5WCxPGwcQS5oapXb2gtC7X37YhJ1TonFMfpiMy1a8w4VbrHsva3HyLeukUNvQ9vwn8eShRkqGXDhs83GGPcMjvpMWE7BrQuowCuzh5Rh1A3Zm","index":1,"api":"https://saturn.tip.id"},{"identity":"5JPtzVXJB5qPf4hZ8PgMFDyrqpjhUkYFSeLyME8mc61z7RErZxKj9To7CBhCpFPtt6LyfPH8D6knWjA8LgcAUjjS1EjbPzGNJ8GWFMP5ZtTh1HLgtLEnT5eJXvPHataxruYTmXMmuxZZiMKWvXf9crHggZBLPTaAxfgiis3JdwUUXYXhN91vi3","index":2,"api":"https://jupiter.tip.id"},{"identity":"5JZegBrWEedonzKwhWYhKjVuDd2ADWnFnnGWp7yjfAJCQSwwSFU7K22hwFeGtyHy9r8Zn7M5R6rX7WMYDQQupKP2NbqxsfSggxj3YrjC5msA4TdWavdLjFFPjNMdcCQHhUQhexkvxenDwjBgBFtsnHMMbSUTPk4nDQEjiF4J1ihZ6bwY3trTVD","index":3,"api":"https://mars.tip.id"},{"identity":"5JaU587MEXez1onCX7RkRyNkswfpdQ979Nsyv6niBFgUKJQmRTmoCy8phdUhMtwfzoJ8fu3zt8Mae1VVoTM5iNL4gP9zWkT8JscsNJSG5vnT6soM511V8exwmgUeXDfugNshJjqaskhyAAih4FfLxtV3NcBZk1zMDxnctwGQaM7z1G2L9Tf9H1","index":4,"api":"https://moon.tip.id"},{"identity":"5JaUby8CxXdEhYcEH2VEbkhdj6zDd1fj3wGdyTjiRQtres4yVoLhkHMf8wZ4qsNMhLvJgk9Mgae1Rs9cm6rY41yCTEzQQRA3a3D8FDDdv4dQms735noeqgxxzZs15utTnu7S5XFDiTUcMhue1Re7DZvvATKFpCbHzwoymU9yhXZBxsYCaHbULa","index":5,"api":"https://venus.tip.id"},{"identity":"5JrHfpJ6ML88u3nbvsB4dej7aHXdvShTEfxNF3mZ8no8wxsdhLTP4sh2Kt6AKboCcBRWGkFPky85e6DkMZsT3WSZ1q8V7gNF4Bdyipw7aS7TP8vtgG7USRJhVe36gNa8LJktf2a2chsWRT6egeB59wEyCHmgiNZpZSPwaezwS32ADTgCSDkzKY","index":6,"api":"https://sun.tip.id"}]}
     """,
         TipConfig::class.java
     )
+
+    val nodeCount = tipConfig.signers.size
 }

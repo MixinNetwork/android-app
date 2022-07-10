@@ -143,6 +143,7 @@ import one.mixin.android.vo.Participant
 import one.mixin.android.vo.ParticipantRole
 import one.mixin.android.vo.isGroupConversation
 import one.mixin.android.widget.MaterialSearchView
+import timber.log.Timber
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -365,6 +366,33 @@ class MainActivity : BlazeBaseActivity() {
 
         jobManager.addJobInBackground(RefreshContactJob())
         jobManager.addJobInBackground(RefreshFcmJob())
+
+        watchTipNodeCounters()
+    }
+
+    private fun watchTipNodeCounters() = lifecycleScope.launch {
+        val counters = tip.watchTipNodeCounters()
+        if (counters.isNullOrEmpty()) {
+            Timber.w("watch tip node counters but counters is $counters")
+            return@launch
+        }
+
+        if (counters.size != tip.tipNodeCount()) {
+            Timber.w("watch tip node result size is ${counters.size} is not equals to node count ${tip.tipNodeCount()}")
+        }
+        val group = counters.groupBy { it.counter }
+        if (group.size <= 1) {
+            Timber.i("watch tip node all counter are ${counters.first().counter}")
+            return@launch
+        }
+        if (group.size > 2) {
+            Timber.w("watch tip node meet ${group.size} kinds of counter!")
+            return@launch
+        }
+
+        val smallNodes = group[group.keys.minBy { it }]
+        Timber.d("watch tip node counter need update nodes: $smallNodes")
+        // TODO jump to change PIN
     }
 
     @SuppressLint("RestrictedApi")

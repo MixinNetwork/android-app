@@ -12,6 +12,7 @@ import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.PinRequest
 import one.mixin.android.api.request.TipSecretAction
 import one.mixin.android.api.request.TipSecretRequest
+import one.mixin.android.api.response.TipSigner
 import one.mixin.android.api.service.AccountService
 import one.mixin.android.api.service.TipService
 import one.mixin.android.crypto.aesDecrypt
@@ -64,7 +65,7 @@ class Tip @Inject internal constructor(
         return tipPriv
     }
 
-    suspend fun updateTipPriv(context: Context, pin: String, deviceId: String, newPin: String): ByteArray? {
+    suspend fun updateTipPriv(context: Context, pin: String, deviceId: String, newPin: String, assigneeSigners: List<TipSigner>? = null): ByteArray? {
         val ephemeralSeed = ephemeral.getEphemeralSeed(context, deviceId)
         if (ephemeralSeed == null) {
             Timber.d("empty ephemeral seed")
@@ -83,8 +84,15 @@ class Tip @Inject internal constructor(
             return null
         }
 
-        return updatePriv(context, identityPriv, ephemeralSeed, newPin, assigneePriv)
+        return updatePriv(context, identityPriv, ephemeralSeed, newPin, assigneePriv, assigneeSigners)
     }
+
+    suspend fun watchTipNodeCounters(): List<TipNode.TipNodeCounter>? {
+        val seed = identityManager.getIdentitySeed() ?: return null
+        return tipNode.watch(seed.sha3Sum256())
+    }
+
+    fun tipNodeCount() = tipNode.nodeCount
 
     private suspend fun getPriv(context: Context, pin: String): ByteArray? {
         val privTip = readTipPriv(context) ?: return null
@@ -131,8 +139,8 @@ class Tip @Inject internal constructor(
         return encryptAndSave(pin, aggSig, context)
     }
 
-    private suspend fun updatePriv(context: Context, identityPriv: ByteArray, ephemeral: ByteArray, newPin: String, assigneePriv: ByteArray): ByteArray? {
-        val aggSig = tipNode.generatePriv(identityPriv, ephemeral, assigneePriv) ?: return null
+    private suspend fun updatePriv(context: Context, identityPriv: ByteArray, ephemeral: ByteArray, newPin: String, assigneePriv: ByteArray, assigneeSigners: List<TipSigner>? = null): ByteArray? {
+        val aggSig = tipNode.generatePriv(identityPriv, ephemeral, assigneePriv, assigneeSigners) ?: return null
 
         return encryptAndSave(newPin, aggSig, context)
     }
