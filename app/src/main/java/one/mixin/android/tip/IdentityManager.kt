@@ -18,18 +18,9 @@ import javax.inject.Inject
 class IdentityManager @Inject internal constructor(private val tipService: TipService) {
 
     suspend fun getIdentityPriv(pin: String): ByteArray? {
-        val tipIdentity = handleMixinResponse(
-            invokeNetwork = {
-                tipService.tipIdentity()
-            },
-            switchContext = Dispatchers.IO,
-            successBlock = {
-                requireNotNull(it.data) { "Required tipIdentity response data was null." }
-            }
-        ) ?: return null
-
+        val tipIdentity = getIdentitySeed() ?: return null
         val pinToken = Session.getPinToken()?.decodeBase64() ?: return null
-        val plain = aesDecrypt(pinToken, tipIdentity.seedBase64.base64RawUrlDecode())
+        val plain = aesDecrypt(pinToken, tipIdentity)
         Timber.d("tip identity ${plain.toHex()}")
         val argon2Kt = withContext(Dispatchers.Main) {
             Argon2Kt()
@@ -37,4 +28,15 @@ class IdentityManager @Inject internal constructor(private val tipService: TipSe
         val hashResult: Argon2KtResult = argon2Kt.argon2IdHash(pin, plain)
         return hashResult.rawHashAsByteArray()
     }
+
+    suspend fun getIdentitySeed(): ByteArray? =
+        handleMixinResponse(
+            invokeNetwork = {
+                tipService.tipIdentity()
+            },
+            switchContext = Dispatchers.IO,
+            successBlock = {
+                it.data?.seedBase64?.base64RawUrlDecode()
+            }
+        )
 }

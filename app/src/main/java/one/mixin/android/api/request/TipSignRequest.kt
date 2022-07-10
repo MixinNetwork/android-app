@@ -9,6 +9,8 @@ class TipSignRequest(
     val identity: String,
     @SerializedName("data")
     val data: String,
+    @SerializedName("action")
+    val action: String = "SIGN",
 )
 
 class TipSignData(
