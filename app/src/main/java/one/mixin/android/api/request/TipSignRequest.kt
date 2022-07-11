@@ -9,6 +9,8 @@ class TipSignRequest(
     val identity: String,
     @SerializedName("data")
     val data: String,
+    @SerializedName("watcher")
+    val watcher: String,
     @SerializedName("action")
     val action: String = "SIGN",
 )
@@ -20,6 +22,8 @@ class TipSignData(
     val assignee: String? = null,
     @SerializedName("ephemeral")
     val ephemeral: String,
+    @SerializedName("watcher")
+    val watcher: String,
     @SerializedName("grace")
     val grace: Long,
     @SerializedName("nonce")
