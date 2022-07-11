@@ -22,7 +22,7 @@ class IdentityManager @Inject internal constructor(private val tipService: TipSe
             Argon2Kt()
         }
         val hashResult: Argon2KtResult = argon2Kt.argon2IdHash(pin, plain)
-        return Pair(plain.sha3Sum256(), hashResult.rawHashAsByteArray())
+        return Pair(hashResult.rawHashAsByteArray(), plain.sha3Sum256())
     }
 
     suspend fun getWatcher(): ByteArray? = getIdentitySeed()?.sha3Sum256()
