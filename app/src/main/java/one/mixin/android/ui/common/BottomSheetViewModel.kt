@@ -102,10 +102,8 @@ class BottomSheetViewModel @Inject internal constructor(
             )
         )
 
-    fun authorize(request: AuthorizeRequest): Observable<MixinResponse<AuthorizationResponse>> =
-        accountRepository.authorize(request).subscribeOn(Schedulers.io()).observeOn(
-            AndroidSchedulers.mainThread()
-        )
+    suspend fun authorize(request: AuthorizeRequest): MixinResponse<AuthorizationResponse> =
+        accountRepository.authorize(request)
 
     suspend fun paySuspend(request: TransferRequest) = withContext(Dispatchers.IO) {
         assetRepository.paySuspend(request)

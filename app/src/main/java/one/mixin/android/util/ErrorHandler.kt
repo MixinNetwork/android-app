@@ -114,6 +114,7 @@ open class ErrorHandler {
         const val INVALID_PIN_FORMAT = 20118
         const val PIN_INCORRECT = 20119
         const val TOO_SMALL = 20120
+        const val EXPIRED_AUTHORIZATION_CODE = 20121
         const val USED_PHONE = 20122
         const val INSUFFICIENT_TRANSACTION_FEE = 20124
         const val TRANSFER_IS_ALREADY_PAID = 20125
@@ -178,6 +179,9 @@ fun Context.getMixinErrorStringByCode(code: Int, message: String): String {
         }
         ErrorHandler.TOO_SMALL -> {
             getString(R.string.error_too_small_transfer_amount)
+        }
+        ErrorHandler.EXPIRED_AUTHORIZATION_CODE -> {
+            getString(R.string.error_expired_authorization_code)
         }
         ErrorHandler.TOO_MANY_REQUEST -> {
             getString(R.string.error_too_many_request)
