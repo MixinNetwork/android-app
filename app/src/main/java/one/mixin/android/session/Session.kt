@@ -194,6 +194,8 @@ object Session {
 
     fun getTipPub(): String? = getAccount()?.tipKeyBase64
 
+    fun getTipCounter(): Int? = getAccount()?.tipCounter
+
     fun checkToken() = getAccount() != null && !getPinToken().isNullOrBlank()
 
     fun shouldUpdateKey() = getEd25519Seed().isNullOrBlank() &&
@@ -281,17 +283,20 @@ fun encryptPin(key: String, code: ByteArray): String {
     return based
 }
 
-suspend fun encryptTipPin(tip: Tip, pin: String, signTarget: ByteArray): String? {
+fun encryptTipPin(tipPriv: ByteArray, signTarget: ByteArray): String? {
     val pinToken = Session.getPinToken()?.decodeBase64() ?: return null
-    val deviceId = MixinApplication.appContext.defaultSharedPreferences.getString(Constants.DEVICE_ID, null) ?: return null
-    val tipPriv = tip.getTipPriv(MixinApplication.appContext, pin, deviceId) ?: return null
-
     val sig = initFromSkAndSign(tipPriv, signTarget)
     val iterator = Session.getPinIterator()
     val pinByte = sig + (currentTimeSeconds()).toLeByteArray() + iterator.toLeByteArray()
     val based = aesEncrypt(pinToken, pinByte).base64Encode()
     Session.storePinIterator(iterator + 1)
     return based
+}
+
+suspend fun encryptTipPin(tip: Tip, pin: String, signTarget: ByteArray): String? {
+    val deviceId = MixinApplication.appContext.defaultSharedPreferences.getString(Constants.DEVICE_ID, null) ?: return null
+    val tipPriv = tip.getTipPriv(MixinApplication.appContext, pin, deviceId) ?: return null
+    return encryptTipPin(tipPriv, signTarget)
 }
 
 fun decryptPinToken(serverPublicKey: ByteArray, privateKey: EdDSAPrivateKey): ByteArray? {
