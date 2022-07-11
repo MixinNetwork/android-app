@@ -157,7 +157,7 @@ constructor(
         accountService.deactivate(DeactivateRequest(encryptPin(Session.getPinToken()!!, pin)!!, verificationId))
     }
 
-    fun authorize(request: AuthorizeRequest) = authService.authorize(request)
+    suspend fun authorize(request: AuthorizeRequest) = authService.authorize(request)
 
     fun deAuthorize(deauthorRequest: DeauthorRequest) = authService.deAuthorize(deauthorRequest)
 

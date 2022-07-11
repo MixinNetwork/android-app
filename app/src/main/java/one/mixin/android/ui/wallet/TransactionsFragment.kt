@@ -43,7 +43,6 @@ import one.mixin.android.ui.common.UserBottomSheetDialogFragment
 import one.mixin.android.ui.conversation.TransferFragment
 import one.mixin.android.ui.wallet.adapter.OnSnapshotListener
 import one.mixin.android.ui.wallet.adapter.TransactionsAdapter
-import one.mixin.android.util.ErrorHandler
 import one.mixin.android.vo.AssetItem
 import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.SnapshotItem

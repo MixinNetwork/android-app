@@ -13,7 +13,7 @@ import retrofit2.http.Query
 interface AuthorizationService {
 
     @POST("oauth/authorize")
-    fun authorize(@Body request: AuthorizeRequest): Observable<MixinResponse<AuthorizationResponse>>
+    suspend fun authorize(@Body request: AuthorizeRequest): MixinResponse<AuthorizationResponse>
 
     @GET("authorizations")
     fun authorizations(): Observable<MixinResponse<List<AuthorizationResponse>>>

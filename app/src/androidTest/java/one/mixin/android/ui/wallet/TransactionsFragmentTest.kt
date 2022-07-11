@@ -23,7 +23,6 @@ import one.mixin.android.extension.getRVCount
 import one.mixin.android.mock.mockAsset
 import one.mixin.android.mock.mockAssetWithDestination
 import one.mixin.android.mock.mockAssetWithDestinationAndTag
-import one.mixin.android.util.ErrorHandler
 import one.mixin.android.vo.toAssetItem
 import org.hamcrest.core.Is.`is`
 import org.hamcrest.core.IsNot.not

@@ -30,6 +30,7 @@ import one.mixin.android.extension.escapeSql
 import one.mixin.android.job.ConversationJob
 import one.mixin.android.job.GenerateAvatarJob
 import one.mixin.android.job.MixinJobManager
+import one.mixin.android.job.RefreshAccountJob
 import one.mixin.android.job.RefreshConversationJob
 import one.mixin.android.job.RefreshUserJob
 import one.mixin.android.job.UpdateRelationshipJob
@@ -101,10 +102,8 @@ class BottomSheetViewModel @Inject internal constructor(
             )
         )
 
-    fun authorize(request: AuthorizeRequest): Observable<MixinResponse<AuthorizationResponse>> =
-        accountRepository.authorize(request).subscribeOn(Schedulers.io()).observeOn(
-            AndroidSchedulers.mainThread()
-        )
+    suspend fun authorize(request: AuthorizeRequest): MixinResponse<AuthorizationResponse> =
+        accountRepository.authorize(request)
 
     suspend fun paySuspend(request: TransferRequest) = withContext(Dispatchers.IO) {
         assetRepository.paySuspend(request)
@@ -486,6 +485,10 @@ class BottomSheetViewModel @Inject internal constructor(
     }
 
     suspend fun errorCount() = accountRepository.errorCount()
+
+    fun refreshAccount() {
+        jobManager.addJobInBackground(RefreshAccountJob())
+    }
 
     suspend fun loadFavoriteApps(userId: String, loadAction: (List<App>?) -> Unit) {
         withContext(Dispatchers.IO) {
