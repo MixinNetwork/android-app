@@ -50,15 +50,15 @@ class Tip @Inject internal constructor(
             return null
         }
 
-        val identityPriv = identityManager.getIdentityPriv(pin)
-        if (identityPriv == null) {
-            Timber.d("identity pub is null")
+        val identityPair = identityManager.getIdentityPrivAndWatcher(pin)
+        if (identityPair == null) {
+            Timber.d("identity pair is null")
             return null
         }
 
         val tipPub = Session.getTipPub()
         val tipPriv = if (tipPub.isNullOrBlank()) {
-            createPriv(context, identityPriv, ephemeralSeed, pin)
+            createPriv(context, identityPair.first, ephemeralSeed, identityPair.second, pin)
         } else {
             getPriv(context, pin)
         }
@@ -72,24 +72,24 @@ class Tip @Inject internal constructor(
             return null
         }
 
-        val identityPriv = identityManager.getIdentityPriv(pin)
-        if (identityPriv == null) {
-            Timber.d("identity priv is null")
+        val identityPair = identityManager.getIdentityPrivAndWatcher(pin)
+        if (identityPair == null) {
+            Timber.d("identity priv and seed is null")
             return null
         }
 
-        val assigneePriv = identityManager.getIdentityPriv(newPin)
+        val assigneePriv = identityManager.getIdentityPrivAndWatcher(newPin)?.first
         if (assigneePriv == null) {
             Timber.d("assignee priv is null")
             return null
         }
 
-        return updatePriv(context, identityPriv, ephemeralSeed, newPin, assigneePriv, assigneeSigners)
+        return updatePriv(context, identityPair.first, ephemeralSeed, identityPair.second, newPin, assigneePriv, assigneeSigners)
     }
 
     suspend fun watchTipNodeCounters(): List<TipNode.TipNodeCounter>? {
-        val seed = identityManager.getIdentitySeed() ?: return null
-        return tipNode.watch(seed.sha3Sum256())
+        val watcher = identityManager.getWatcher() ?: return null
+        return tipNode.watch(watcher)
     }
 
     fun tipNodeCount() = tipNode.nodeCount
@@ -107,14 +107,14 @@ class Tip @Inject internal constructor(
         return aesDecrypt(privTipKey, privTip)
     }
 
-    private suspend fun createPriv(context: Context, identityPriv: ByteArray, ephemeral: ByteArray, pin: String): ByteArray? {
-        val aggSig = tipNode.generatePriv(identityPriv, ephemeral, null) ?: return null
+    private suspend fun createPriv(context: Context, identityPriv: ByteArray, ephemeral: ByteArray, watcher: ByteArray, pin: String): ByteArray? {
+        val aggSig = tipNode.generatePriv(identityPriv, ephemeral, watcher, null) ?: return null
 
         val privateSpec = EdDSAPrivateKeySpec(ed25519, aggSig.copyOf())
         val pub = EdDSAPublicKey(EdDSAPublicKeySpec(privateSpec.a, ed25519))
 
         val localPub = Session.getTipPub()
-        if (localPub != null && localPub != pub.abyte.base64RawEncode()) {
+        if (!localPub.isNullOrBlank() && localPub != pub.abyte.base64RawEncode()) {
             Timber.d("local pub not equals to new generated, PIN incorrect")
             return null
         }
@@ -139,8 +139,8 @@ class Tip @Inject internal constructor(
         return encryptAndSave(pin, aggSig, context)
     }
 
-    private suspend fun updatePriv(context: Context, identityPriv: ByteArray, ephemeral: ByteArray, newPin: String, assigneePriv: ByteArray, assigneeSigners: List<TipSigner>? = null): ByteArray? {
-        val aggSig = tipNode.generatePriv(identityPriv, ephemeral, assigneePriv, assigneeSigners) ?: return null
+    private suspend fun updatePriv(context: Context, identityPriv: ByteArray, ephemeral: ByteArray, watcher: ByteArray, newPin: String, assigneePriv: ByteArray, assigneeSigners: List<TipSigner>? = null): ByteArray? {
+        val aggSig = tipNode.generatePriv(identityPriv, ephemeral, watcher, assigneePriv, assigneeSigners) ?: return null
 
         return encryptAndSave(newPin, aggSig, context)
     }

@@ -33,7 +33,7 @@ class TipNode @Inject internal constructor(private val tipNodeService: TipNodeSe
 
     private val maxRetryCount = 2
 
-    suspend fun generatePriv(identityPriv: ByteArray, ephemeral: ByteArray, assigneePriv: ByteArray?, assigneeSigners: List<TipSigner>? = null): ByteArray? {
+    suspend fun generatePriv(identityPriv: ByteArray, ephemeral: ByteArray, watcher: ByteArray, assigneePriv: ByteArray?, assigneeSigners: List<TipSigner>? = null): ByteArray? {
         val suite = Crypto.newSuiteBn256()
         val userSk = suite.scalar()
         userSk.setBytes(identityPriv)
@@ -47,16 +47,16 @@ class TipNode @Inject internal constructor(private val tipNodeService: TipNodeSe
         } else null
 
         val data = if (!assigneeSigners.isNullOrEmpty()) {
-            val assigneeData = getNodeSigs(userSk, assigneeSigners, ephemeral, assignee)
+            val assigneeData = getNodeSigs(userSk, assigneeSigners, ephemeral, watcher, assignee)
             if (assigneeData.size < tipConfig.commitments.size) {
                 val noAssigneeSigners = tipConfig.signers - assigneeSigners
-                val noAssigneeData = getNodeSigs(userSk, noAssigneeSigners, ephemeral, null)
+                val noAssigneeData = getNodeSigs(userSk, noAssigneeSigners, ephemeral, watcher, null)
                 assigneeData + noAssigneeData
             } else {
                 assigneeData
             }
         } else {
-            getNodeSigs(userSk, tipConfig.signers, ephemeral, assignee)
+            getNodeSigs(userSk, tipConfig.signers, ephemeral, watcher, assignee)
         }
 
         if (data.size < tipConfig.commitments.size) {
@@ -99,7 +99,7 @@ class TipNode @Inject internal constructor(private val tipNodeService: TipNodeSe
         return result
     }
 
-    private suspend fun getNodeSigs(userSk: Scalar, tipSigners: List<TipSigner>, ephemeral: ByteArray, assignee: ByteArray?): List<TipSignRespData> {
+    private suspend fun getNodeSigs(userSk: Scalar, tipSigners: List<TipSigner>, ephemeral: ByteArray, watcher: ByteArray, assignee: ByteArray?): List<TipSignRespData> {
         val result = mutableListOf<TipSignRespData>()
         val nonce = currentTimeSeconds()
         val grace = ephemeralGrace
@@ -109,7 +109,7 @@ class TipNode @Inject internal constructor(private val tipNodeService: TipNodeSe
                 async(Dispatchers.IO) {
                     var retryCount = 0
                     while (retryCount <= maxRetryCount) {
-                        val (sign, code) = signTipNode(userSk, signer, ephemeral, nonce, grace, assignee)
+                        val (sign, code) = signTipNode(userSk, signer, ephemeral, watcher, nonce, grace, assignee)
                         if (code == 429 || code == 500) {
                             Timber.d("fetch tip node $index meet $code")
                             return@async
@@ -145,8 +145,8 @@ class TipNode @Inject internal constructor(private val tipNodeService: TipNodeSe
         }
     }
 
-    private suspend fun signTipNode(userSk: Scalar, tipSigner: TipSigner, ephemeral: ByteArray, nonce: Long, grace: Long, assignee: ByteArray?): Pair<TipSignRespData?, Int> {
-        val tipSignRequest = genTipSignRequest(userSk, tipSigner, ephemeral, nonce, grace, assignee)
+    private suspend fun signTipNode(userSk: Scalar, tipSigner: TipSigner, ephemeral: ByteArray, watcher: ByteArray, nonce: Long, grace: Long, assignee: ByteArray?): Pair<TipSignRespData?, Int> {
+        val tipSignRequest = genTipSignRequest(userSk, tipSigner, ephemeral, watcher, nonce, grace, assignee)
         return try {
             val tipSignResponse = tipNodeService.sign(tipSignRequest, tipSigner.api)
 
@@ -213,7 +213,7 @@ class TipNode @Inject internal constructor(private val tipNodeService: TipNodeSe
         return TipSignRespData(partial, assignor.toHex(), counter)
     }
 
-    private fun genTipSignRequest(userSk: Scalar, tipSigner: TipSigner, ephemeral: ByteArray, nonce: Long, grace: Long, assignee: ByteArray?): TipSignRequest {
+    private fun genTipSignRequest(userSk: Scalar, tipSigner: TipSigner, ephemeral: ByteArray, watcher: ByteArray, nonce: Long, grace: Long, assignee: ByteArray?): TipSignRequest {
         val signerPk = Crypto.pubKeyFromBase58(tipSigner.identity)
         val userPk = userSk.publicKey()
         val esum = (ephemeral + tipSigner.identity.toByteArray()).sha3Sum256()
@@ -224,16 +224,18 @@ class TipNode @Inject internal constructor(private val tipNodeService: TipNodeSe
         val sig = userSk.sign(msg).toHex()
 
         val userPkStr = userPk.publicKeyString()
+        val watcherHex = watcher.toHex()
         val data = TipSignData(
             identity = userPkStr,
             assignee = assignee?.toHex(),
             ephemeral = esum.toHex(),
+            watcher = watcherHex,
             nonce = nonce,
             grace = grace,
         )
         val dataJson = gson.toJson(data).toByteArray()
         val cipher = Crypto.encrypt(signerPk, userSk, dataJson)
-        return TipSignRequest(sig, userPkStr, cipher.base64RawEncode())
+        return TipSignRequest(sig, userPkStr, cipher.base64RawEncode(), watcherHex)
     }
 
     @Suppress("ArrayInDataClass")
