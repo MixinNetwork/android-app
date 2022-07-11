@@ -26,8 +26,10 @@ import one.mixin.android.extension.decodeBase64
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.nowInUtcNano
 import one.mixin.android.extension.putString
+import one.mixin.android.extension.toBeByteArray
 import one.mixin.android.session.Session
 import one.mixin.android.session.encryptPin
+import one.mixin.android.session.encryptTipPin
 import one.mixin.android.util.deleteKeyByAlias
 import one.mixin.android.util.getDecryptCipher
 import one.mixin.android.util.getEncryptCipher
@@ -119,9 +121,11 @@ class Tip @Inject internal constructor(
             return null
         }
 
+        encryptAndSave(pin, aggSig, context)
+
         val pinToken = requireNotNull(Session.getPinToken())
         val oldPin = encryptPin(pinToken, pin)
-        val newPin = encryptPin(pinToken, pub.abyte)
+        val newPin = encryptPin(pinToken, pub.abyte + 1L.toBeByteArray())
         val pinRequest = PinRequest(newPin, oldPin)
         handleMixinResponse(
             invokeNetwork = {
@@ -132,17 +136,39 @@ class Tip @Inject internal constructor(
                 val r = it.data
                 requireNotNull(r) { "Required respond account was null." }
                 Session.storeAccount(r)
-                return@handleMixinResponse r.tipKeyBase64
             }
         ) ?: return null
 
-        return encryptAndSave(pin, aggSig, context)
+        return aggSig
     }
 
     private suspend fun updatePriv(context: Context, identityPriv: ByteArray, ephemeral: ByteArray, watcher: ByteArray, newPin: String, assigneePriv: ByteArray, assigneeSigners: List<TipSigner>? = null): ByteArray? {
         val aggSig = tipNode.generatePriv(identityPriv, ephemeral, watcher, assigneePriv, assigneeSigners) ?: return null
 
-        return encryptAndSave(newPin, aggSig, context)
+        val privateSpec = EdDSAPrivateKeySpec(ed25519, aggSig.copyOf())
+        val pub = EdDSAPublicKey(EdDSAPublicKeySpec(privateSpec.a, ed25519))
+
+        encryptAndSave(newPin, aggSig, context)
+
+        val pinToken = requireNotNull(Session.getPinToken())
+        val counter = requireNotNull(Session.getTipCounter()).toLong()
+        val timestamp = TipBody.forVerify(counter)
+        val oldPin = encryptTipPin(aggSig, timestamp)
+        val newEncryptPin = encryptPin(pinToken, pub.abyte + (counter + 1).toBeByteArray()) // TODO should use tip node counter?
+        val pinRequest = PinRequest(newEncryptPin, oldPin)
+        handleMixinResponse(
+            invokeNetwork = {
+                accountService.updatePinSuspend(pinRequest)
+            },
+            switchContext = Dispatchers.IO,
+            successBlock = {
+                val r = it.data
+                requireNotNull(r) { "Required respond account was null." }
+                Session.storeAccount(r)
+            }
+        ) ?: return null
+
+        return aggSig
     }
 
     private suspend fun encryptAndSave(pin: String, aggSig: ByteArray, context: Context): ByteArray? {
