@@ -143,6 +143,8 @@ class ProfileBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragmen
                 ErrorHandler.handleError(e)
             }
         }
+
+        bottomViewModel.refreshAccount()
     }
 
     private fun refreshInfo(account: Account) {
