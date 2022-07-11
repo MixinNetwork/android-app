@@ -657,7 +657,7 @@ fun callableAssetItem(
                     tmpIconUrl!!,
                     tmpBalance!!,
                     tmpDestination!!,
-                    depositEntryListConverter.revertDate(tmpDepositEntries!!),
+                    depositEntryListConverter.revertDate(tmpDepositEntries),
                     tmpTag,
                     tmpPriceBtc!!,
                     tmpPriceUsd!!,
