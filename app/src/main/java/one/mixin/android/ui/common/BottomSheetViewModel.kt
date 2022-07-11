@@ -490,6 +490,8 @@ class BottomSheetViewModel @Inject internal constructor(
         jobManager.addJobInBackground(RefreshAccountJob())
     }
 
+    fun observeSelf(): LiveData<User?> = userRepository.findSelf()
+
     suspend fun loadFavoriteApps(userId: String, loadAction: (List<App>?) -> Unit) {
         withContext(Dispatchers.IO) {
             withContext(Dispatchers.Main) {

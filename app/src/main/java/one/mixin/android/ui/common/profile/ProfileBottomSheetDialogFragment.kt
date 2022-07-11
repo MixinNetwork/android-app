@@ -120,7 +120,29 @@ class ProfileBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragmen
                 url.openAsUrlOrWeb(requireContext(), null, parentFragmentManager, lifecycleScope)
                 dismiss()
             }
+
             createdTv.text = getString(R.string.Joined_in, account.createdAt.dayTime())
+
+            lifecycleScope.launch {
+                try {
+                    bottomViewModel.loadFavoriteApps((account.userId)) {
+                        initMenu(account, it)
+                    }
+                } catch (e: Exception) {
+                    ErrorHandler.handleError(e)
+                }
+            }
+        }
+
+        bottomViewModel.observeSelf().observe(this@ProfileBottomSheetDialogFragment) {
+            Session.getAccount()?.let { refreshInfo(it) }
+        }
+
+        bottomViewModel.refreshAccount()
+    }
+
+    private fun refreshInfo(account: Account) {
+        binding.apply {
             avatar.setOnClickListener {
                 if (!isAdded) return@setOnClickListener
 
@@ -131,24 +153,7 @@ class ProfileBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragmen
                 AvatarActivity.show(requireActivity(), avatar, binding.avatar)
                 dismiss()
             }
-            refreshInfo(account)
-        }
 
-        lifecycleScope.launch {
-            try {
-                bottomViewModel.loadFavoriteApps((account.userId)) {
-                    initMenu(account, it)
-                }
-            } catch (e: Exception) {
-                ErrorHandler.handleError(e)
-            }
-        }
-
-        bottomViewModel.refreshAccount()
-    }
-
-    private fun refreshInfo(account: Account) {
-        binding.apply {
             name.text = account.fullName
             avatar.setInfo(account.fullName, account.avatarUrl, account.userId)
             idTv.text = getString(R.string.contact_mixin_id, account.identityNumber)
