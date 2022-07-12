@@ -11,7 +11,6 @@ import net.i2p.crypto.eddsa.spec.EdDSAPrivateKeySpec
 import net.i2p.crypto.eddsa.spec.EdDSAPublicKeySpec
 import okhttp3.Request
 import okio.ByteString.Companion.encode
-import one.mixin.android.Constants
 import one.mixin.android.Constants.Account.PREF_TRIED_UPDATE_KEY
 import one.mixin.android.MixinApplication
 import one.mixin.android.crypto.Base64
@@ -194,7 +193,7 @@ object Session {
 
     fun getTipPub(): String? = getAccount()?.tipKeyBase64
 
-    fun getTipCounter(): Int? = getAccount()?.tipCounter
+    fun getTipCounter(): Int = getAccount()?.tipCounter ?: 0
 
     fun checkToken() = getAccount() != null && !getPinToken().isNullOrBlank()
 
@@ -294,8 +293,8 @@ fun encryptTipPin(tipPriv: ByteArray, signTarget: ByteArray): String? {
 }
 
 suspend fun encryptTipPin(tip: Tip, pin: String, signTarget: ByteArray): String? {
-    val deviceId = MixinApplication.appContext.defaultSharedPreferences.getString(Constants.DEVICE_ID, null) ?: return null
-    val tipPriv = tip.getTipPriv(MixinApplication.appContext, pin, deviceId) ?: return null
+    // TODO create if tipCounter > 1 for new installed user?
+    val tipPriv = tip.getTipPriv(MixinApplication.appContext, pin) ?: return null
     return encryptTipPin(tipPriv, signTarget)
 }
 

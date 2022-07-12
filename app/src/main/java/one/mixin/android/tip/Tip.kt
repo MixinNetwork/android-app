@@ -30,6 +30,7 @@ import one.mixin.android.extension.toBeByteArray
 import one.mixin.android.session.Session
 import one.mixin.android.session.encryptPin
 import one.mixin.android.session.encryptTipPin
+import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.deleteKeyByAlias
 import one.mixin.android.util.getDecryptCipher
 import one.mixin.android.util.getEncryptCipher
@@ -44,8 +45,7 @@ class Tip @Inject internal constructor(
     private val accountService: AccountService,
     private val tipNode: TipNode
 ) {
-
-    suspend fun getTipPriv(context: Context, pin: String, deviceId: String): ByteArray? {
+    suspend fun createTipPriv(context: Context, pin: String, deviceId: String, failedSigners: List<TipSigner>? = null, legacyPin: String? = null): ByteArray? {
         val ephemeralSeed = ephemeral.getEphemeralSeed(context, deviceId)
         if (ephemeralSeed == null) {
             Timber.d("empty ephemeral seed")
@@ -58,16 +58,10 @@ class Tip @Inject internal constructor(
             return null
         }
 
-        val tipPub = Session.getTipPub()
-        val tipPriv = if (tipPub.isNullOrBlank()) {
-            createPriv(context, identityPair.first, ephemeralSeed, identityPair.second, pin)
-        } else {
-            getPriv(context, pin)
-        }
-        return tipPriv
+        return createPriv(context, identityPair.first, ephemeralSeed, identityPair.second, pin, failedSigners, legacyPin)
     }
 
-    suspend fun updateTipPriv(context: Context, pin: String, deviceId: String, newPin: String, assigneeSigners: List<TipSigner>? = null): ByteArray? {
+    suspend fun updateTipPriv(context: Context, pin: String, deviceId: String, newPin: String, nodeSuccess: Boolean, failedSigners: List<TipSigner>? = null): ByteArray? {
         val ephemeralSeed = ephemeral.getEphemeralSeed(context, deviceId)
         if (ephemeralSeed == null) {
             Timber.d("empty ephemeral seed")
@@ -86,7 +80,7 @@ class Tip @Inject internal constructor(
             return null
         }
 
-        return updatePriv(context, identityPair.first, ephemeralSeed, identityPair.second, newPin, assigneePriv, assigneeSigners)
+        return updatePriv(context, identityPair.first, ephemeralSeed, identityPair.second, newPin, assigneePriv, nodeSuccess, failedSigners)
     }
 
     suspend fun watchTipNodeCounters(): List<TipNode.TipNodeCounter>? {
@@ -96,7 +90,7 @@ class Tip @Inject internal constructor(
 
     fun tipNodeCount() = tipNode.nodeCount
 
-    private suspend fun getPriv(context: Context, pin: String): ByteArray? {
+    suspend fun getTipPriv(context: Context, pin: String): ByteArray? {
         val privTip = readTipPriv(context) ?: return null
 
         val aesKey = getAesKey(pin)
@@ -109,8 +103,8 @@ class Tip @Inject internal constructor(
         return aesDecrypt(privTipKey, privTip)
     }
 
-    private suspend fun createPriv(context: Context, identityPriv: ByteArray, ephemeral: ByteArray, watcher: ByteArray, pin: String): ByteArray? {
-        val aggSig = tipNode.generatePriv(identityPriv, ephemeral, watcher, null) ?: return null
+    private suspend fun createPriv(context: Context, identityPriv: ByteArray, ephemeral: ByteArray, watcher: ByteArray, pin: String, failedSigners: List<TipSigner>? = null, legacyPin: String? = null): ByteArray? {
+        val aggSig = tipNode.generatePriv(identityPriv, ephemeral, watcher, null, failedSigners) ?: return null
 
         val privateSpec = EdDSAPrivateKeySpec(ed25519, aggSig.copyOf())
         val pub = EdDSAPublicKey(EdDSAPublicKeySpec(privateSpec.a, ed25519))
@@ -121,12 +115,16 @@ class Tip @Inject internal constructor(
             return null
         }
 
-        encryptAndSave(pin, aggSig, context)
+        encryptAndSave(pin, aggSig, context) ?: return null
 
         val pinToken = requireNotNull(Session.getPinToken())
-        val oldPin = encryptPin(pinToken, pin)
+        val oldEncryptedPin = if (legacyPin != null) {
+            encryptPin(pinToken, legacyPin) // create Tip with legacy pin
+        } else {
+            encryptPin(pinToken, pin)
+        }
         val newPin = encryptPin(pinToken, pub.abyte + 1L.toBeByteArray())
-        val pinRequest = PinRequest(newPin, oldPin)
+        val pinRequest = PinRequest(newPin, oldEncryptedPin)
         handleMixinResponse(
             invokeNetwork = {
                 accountService.updatePinSuspend(pinRequest)
@@ -142,14 +140,17 @@ class Tip @Inject internal constructor(
         return aggSig
     }
 
-    private suspend fun updatePriv(context: Context, identityPriv: ByteArray, ephemeral: ByteArray, watcher: ByteArray, newPin: String, assigneePriv: ByteArray, assigneeSigners: List<TipSigner>? = null): ByteArray? {
-        val aggSig = tipNode.generatePriv(identityPriv, ephemeral, watcher, assigneePriv, assigneeSigners) ?: return null
+    private suspend fun updatePriv(context: Context, identityPriv: ByteArray, ephemeral: ByteArray, watcher: ByteArray, newPin: String, assigneePriv: ByteArray, nodeSuccess: Boolean, failedSigners: List<TipSigner>? = null): ByteArray? {
+        val aggSig = if (nodeSuccess) {
+            tipNode.generatePriv(assigneePriv, ephemeral, watcher, null, null)
+        } else {
+            tipNode.generatePriv(identityPriv, ephemeral, watcher, assigneePriv, failedSigners)
+        } ?: return null
+
+        encryptAndSave(newPin, aggSig, context) ?: return null
 
         val privateSpec = EdDSAPrivateKeySpec(ed25519, aggSig.copyOf())
         val pub = EdDSAPublicKey(EdDSAPublicKeySpec(privateSpec.a, ed25519))
-
-        encryptAndSave(newPin, aggSig, context)
-
         val pinToken = requireNotNull(Session.getPinToken())
         val counter = requireNotNull(Session.getTipCounter()).toLong()
         val timestamp = TipBody.forVerify(counter)
@@ -280,3 +281,10 @@ class Tip @Inject internal constructor(
         // return true or false
     }
 }
+
+fun nodeListJsonToSigners(nodeListJson: String?): List<TipSigner>? =
+    if (nodeListJson != null) {
+        val assignees = mutableListOf<TipSigner>()
+        GsonHelper.customGson.fromJson(nodeListJson, Array<TipNode.TipNodeCounter>::class.java)
+            .mapTo(assignees) { it.tipSigner }
+    } else null

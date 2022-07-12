@@ -33,24 +33,29 @@ class TipNode @Inject internal constructor(private val tipNodeService: TipNodeSe
 
     private val maxRetryCount = 2
 
-    suspend fun generatePriv(identityPriv: ByteArray, ephemeral: ByteArray, watcher: ByteArray, assigneePriv: ByteArray?, assigneeSigners: List<TipSigner>? = null): ByteArray? {
+    suspend fun generatePriv(identityPriv: ByteArray, ephemeral: ByteArray, watcher: ByteArray, assigneePriv: ByteArray?, failedSigners: List<TipSigner>? = null): ByteArray? {
         val suite = Crypto.newSuiteBn256()
         val userSk = suite.scalar()
         userSk.setBytes(identityPriv)
 
-        val assignee = if (assigneePriv != null) {
-            val assigneeSk = suite.scalar()
+        var assigneeSk: Scalar? = null
+        var assignee: ByteArray? = null
+        if (assigneePriv != null) {
+            assigneeSk = suite.scalar()
             assigneeSk.setBytes(assigneePriv)
             val assigneePub = assigneeSk.publicKey().publicKeyBytes()
             val assigneeSig = assigneeSk.sign(assigneePub)
-            assigneePub + assigneeSig
-        } else null
+            assignee = assigneePub + assigneeSig
+        }
 
-        val data = if (!assigneeSigners.isNullOrEmpty()) {
-            val assigneeData = getNodeSigs(userSk, assigneeSigners, ephemeral, watcher, assignee)
+        Timber.d("tip get node sig failedSigners size ${failedSigners?.size}")
+        val data = if (!failedSigners.isNullOrEmpty()) {
+            val assigneeData = getNodeSigs(userSk, failedSigners, ephemeral, watcher, assignee)
             if (assigneeData.size < tipConfig.commitments.size) {
-                val noAssigneeSigners = tipConfig.signers - assigneeSigners
-                val noAssigneeData = getNodeSigs(userSk, noAssigneeSigners, ephemeral, watcher, null)
+                val noAssigneeSigners = tipConfig.signers - failedSigners
+                val noAssigneeData = if (assigneeSk != null) {
+                    getNodeSigs(assigneeSk, noAssigneeSigners, ephemeral, watcher, null)
+                } else emptyList()
                 assigneeData + noAssigneeData
             } else {
                 assigneeData
@@ -59,12 +64,19 @@ class TipNode @Inject internal constructor(private val tipNodeService: TipNodeSe
             getNodeSigs(userSk, tipConfig.signers, ephemeral, watcher, assignee)
         }
 
-        if (data.size < tipConfig.commitments.size) {
-            Timber.d("not enough partials ${data.size} ${tipConfig.commitments.size}")
+        if (data.size < tipConfig.signers.size) {
+            Timber.w("not all signer success ${data.size}")
+            // TODO should watch nodes after this
             return null
         }
 
         val (assignor, partials) = parseAssignorAndPartials(data)
+
+        if (partials.size < tipConfig.commitments.size) {
+            Timber.d("not enough partials ${partials.size} ${tipConfig.commitments.size}")
+            return null
+        }
+
         val hexSigs = partials.joinToString(",") { it.toHex() }
         val commitments = tipConfig.commitments.joinToString(",")
         return Crypto.recoverSignature(hexSigs, commitments, assignor, tipConfig.signers.size.toLong())
@@ -210,6 +222,7 @@ class TipNode @Inject internal constructor(private val tipNodeService: TipNodeSe
         @Suppress("UNUSED_VARIABLE") val time = buffer.readLong()
         buffer.write(counterBytes)
         val counter = buffer.readLong()
+        Timber.d("tip sign node ${signer.index} counter $counter")
         return TipSignRespData(partial, assignor.toHex(), counter)
     }
 
