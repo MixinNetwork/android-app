@@ -534,8 +534,7 @@ class MainActivity : BlazeBaseActivity() {
 
     private val getScanResult = registerForActivityResult(CaptureActivity.CaptureContract()) { data ->
         if (data != null) {
-            intent = data
-            handlerCode(intent)
+            handlerCode(data)
         }
     }
 
