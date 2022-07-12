@@ -58,6 +58,7 @@ import one.mixin.android.Constants.INTERVAL_24_HOURS
 import one.mixin.android.Constants.SAFETY_NET_INTERVAL_KEY
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
+import one.mixin.android.RxBus
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.SessionRequest
 import one.mixin.android.api.service.ConversationService
@@ -69,6 +70,7 @@ import one.mixin.android.databinding.ActivityMainBinding
 import one.mixin.android.db.ConversationDao
 import one.mixin.android.db.ParticipantDao
 import one.mixin.android.db.UserDao
+import one.mixin.android.event.TipEvent
 import one.mixin.android.extension.alert
 import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.areBubblesAllowedCompat
@@ -103,6 +105,7 @@ import one.mixin.android.repository.AccountRepository
 import one.mixin.android.repository.UserRepository
 import one.mixin.android.session.Session
 import one.mixin.android.tip.Tip
+import one.mixin.android.tip.nodeListJsonToSigners
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.BatteryOptimizationDialogActivity
 import one.mixin.android.ui.common.BlazeBaseActivity
@@ -128,6 +131,7 @@ import one.mixin.android.ui.qr.CaptureActivity.Companion.ARGS_SHOW_SCAN
 import one.mixin.android.ui.search.SearchFragment
 import one.mixin.android.ui.search.SearchMessageFragment
 import one.mixin.android.ui.search.SearchSingleFragment
+import one.mixin.android.ui.setting.SettingActivity
 import one.mixin.android.util.BiometricUtil
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.ErrorHandler.Companion.errorHandler
@@ -143,7 +147,6 @@ import one.mixin.android.vo.Participant
 import one.mixin.android.vo.ParticipantRole
 import one.mixin.android.vo.isGroupConversation
 import one.mixin.android.widget.MaterialSearchView
-import timber.log.Timber
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -272,18 +275,27 @@ class MainActivity : BlazeBaseActivity() {
         initView()
         handlerCode(intent)
 
-        if (Session.getAccount()?.hasPin == true) {
-            VerifyBottomSheetDialogFragment.newInstance().setOnPinSuccess { pin ->
-                lifecycleScope.launch {
-                    tip.getTipPriv(this@MainActivity, pin, deviceId)
-                }
-            }.apply {
-                autoDismiss = true
-                showNow(supportFragmentManager, VerifyBottomSheetDialogFragment.TAG)
-            }
-        }
-
         checkAsync()
+
+        RxBus.listen(TipEvent::class.java)
+            .autoDispose(destroyScope)
+            .subscribe { e ->
+                val nodeCounter = e.nodeCounter
+                if (nodeCounter == 1) {
+                    VerifyBottomSheetDialogFragment.newInstance().setOnPinSuccess { pin ->
+                        lifecycleScope.launch {
+                            tip.createTipPriv(this@MainActivity, pin, deviceId, nodeListJsonToSigners(e.nodesListJson))
+                        }
+                    }.apply {
+                        autoDismiss = true
+                        showNow(supportFragmentManager, VerifyBottomSheetDialogFragment.TAG)
+                    }
+                } else if (nodeCounter > 1) {
+                    SettingActivity.showPinChange(this, e.nodesListJson, nodeCounter)
+                } else {
+                    reportException(IllegalStateException("Receive TipEvent nodeCounter < 1"))
+                }
+            }
     }
 
     override fun onStart() {
@@ -366,33 +378,6 @@ class MainActivity : BlazeBaseActivity() {
 
         jobManager.addJobInBackground(RefreshContactJob())
         jobManager.addJobInBackground(RefreshFcmJob())
-
-        watchTipNodeCounters()
-    }
-
-    private fun watchTipNodeCounters() = lifecycleScope.launch {
-        val counters = tip.watchTipNodeCounters()
-        if (counters.isNullOrEmpty()) {
-            Timber.w("watch tip node counters but counters is $counters")
-            return@launch
-        }
-
-        if (counters.size != tip.tipNodeCount()) {
-            Timber.w("watch tip node result size is ${counters.size} is not equals to node count ${tip.tipNodeCount()}")
-        }
-        val group = counters.groupBy { it.counter }
-        if (group.size <= 1) {
-            Timber.i("watch tip node all counter are ${counters.first().counter}")
-            return@launch
-        }
-        if (group.size > 2) {
-            Timber.w("watch tip node meet ${group.size} kinds of counter!")
-            return@launch
-        }
-
-        val smallNodes = group[group.keys.minBy { it }]
-        Timber.d("watch tip node counter need update nodes: $smallNodes")
-        // TODO jump to change PIN
     }
 
     @SuppressLint("RestrictedApi")

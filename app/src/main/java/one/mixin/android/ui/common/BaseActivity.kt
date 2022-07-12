@@ -18,6 +18,7 @@ import one.mixin.android.util.SystemUIManager
 open class BaseActivity : AppCompatActivity() {
 
     protected val stopScope = scope(Lifecycle.Event.ON_STOP)
+    protected val destroyScope = scope(Lifecycle.Event.ON_DESTROY)
 
     lateinit var lastLang: String
     var lastThemeId: Int = defaultThemeId

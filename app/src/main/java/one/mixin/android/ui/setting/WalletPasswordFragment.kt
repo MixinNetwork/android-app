@@ -7,12 +7,10 @@ import android.view.WindowManager
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants
 import one.mixin.android.Constants.INTERVAL_10_MINS
 import one.mixin.android.R
-import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.crypto.PrivacyPreference.putPrefPinInterval
 import one.mixin.android.databinding.FragmentWalletPasswordBinding
 import one.mixin.android.extension.clickVibrate
@@ -26,17 +24,20 @@ import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.extension.withArgs
 import one.mixin.android.session.Session
 import one.mixin.android.tip.Tip
+import one.mixin.android.tip.nodeListJsonToSigners
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.contacts.ContactsActivity
 import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.home.MainActivity
+import one.mixin.android.ui.setting.SettingActivity.Companion.EXTRA_NODE_COUNTER
+import one.mixin.android.ui.setting.SettingActivity.Companion.EXTRA_NODE_LIST_JSON
 import one.mixin.android.ui.wallet.WalletActivity
 import one.mixin.android.ui.wallet.WalletViewModel
 import one.mixin.android.util.BiometricUtil
 import one.mixin.android.util.viewBinding
-import one.mixin.android.vo.toUser
 import one.mixin.android.widget.Keyboard
 import one.mixin.android.widget.PinView
+import timber.log.Timber
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -52,12 +53,14 @@ class WalletPasswordFragment : BaseFragment(R.layout.fragment_wallet_password), 
         private const val STEP3 = 2
         private const val STEP4 = 3
 
-        fun newInstance(change: Boolean = false, oldPassword: String? = null): WalletPasswordFragment {
+        fun newInstance(change: Boolean = false, oldPassword: String? = null, nodeListJson: String? = null, nodeCounter: Int = 0): WalletPasswordFragment {
             return WalletPasswordFragment().withArgs {
                 putBoolean(ARGS_CHANGE, change)
                 if (change) {
                     putString(ARGS_OLD_PASSWORD, oldPassword)
                 }
+                nodeListJson?.let { putString(EXTRA_NODE_LIST_JSON, it) }
+                putInt(EXTRA_NODE_COUNTER, nodeCounter)
             }
         }
     }
@@ -260,34 +263,23 @@ class WalletPasswordFragment : BaseFragment(R.layout.fragment_wallet_password), 
         dialog.show()
 
         val pin = binding.pin.code()
-        if (Session.getTipPub().isNullOrBlank().not()) {
-            val deviceId = defaultSharedPreferences.getString(Constants.DEVICE_ID, null) ?: return@launch
-            val tipPriv = tip.updateTipPriv(this@WalletPasswordFragment.requireContext(), requireNotNull(oldPassword), deviceId, pin)
-            dialog.dismiss()
-            if (tipPriv != null) {
-                afterPinSuccess(pin)
-            }
-            return@launch
+        val deviceId = requireNotNull(defaultSharedPreferences.getString(Constants.DEVICE_ID, null))
+        val tipCounter = Session.getTipCounter()
+        val nodeListJson = arguments?.getString(EXTRA_NODE_LIST_JSON)
+        val signers = nodeListJsonToSigners(nodeListJson)
+        val nodeCounter = arguments?.getInt(EXTRA_NODE_COUNTER) ?: 0
+        Timber.d("tip nodeCounter $nodeCounter, tipCounter $tipCounter, signers size ${signers?.size}")
+        val tipPriv = if (tipCounter < 1) {
+            tip.createTipPriv(this@WalletPasswordFragment.requireContext(), pin, deviceId, signers, oldPassword)
+        } else {
+            val nodeSuccess = nodeCounter > tipCounter && signers.isNullOrEmpty()
+            tip.updateTipPriv(this@WalletPasswordFragment.requireContext(), requireNotNull(oldPassword), deviceId, pin, nodeSuccess, signers)
         }
 
-        walletViewModel // init on main thread
-        handleMixinResponse(
-            invokeNetwork = { walletViewModel.updatePin(pin, oldPassword) },
-            switchContext = Dispatchers.IO,
-            successBlock = { r ->
-                r.data?.let {
-                    Session.storeAccount(it)
-                    walletViewModel.insertUser(it.toUser())
-
-                    afterPinSuccess(pin)
-                }
-            },
-            doAfterNetworkSuccess = { dialog.dismiss() },
-            exceptionBlock = {
-                dialog.dismiss()
-                return@handleMixinResponse false
-            }
-        )
+        dialog.dismiss()
+        if (tipPriv != null) {
+            afterPinSuccess(pin)
+        }
     }
 
     private fun afterPinSuccess(pin: String) {
@@ -316,7 +308,12 @@ class WalletPasswordFragment : BaseFragment(R.layout.fragment_wallet_password), 
                 } else {
                     toast(R.string.Set_PIN_successfully)
                 }
-                parentFragmentManager.popBackStackImmediate()
+
+                if (arguments?.getString(EXTRA_NODE_LIST_JSON) != null || arguments?.getInt(EXTRA_NODE_COUNTER) != 0) {
+                    activity.finish()
+                } else {
+                    parentFragmentManager.popBackStackImmediate()
+                }
             }
         }
     }

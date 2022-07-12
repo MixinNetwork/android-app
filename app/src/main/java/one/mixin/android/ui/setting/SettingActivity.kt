@@ -22,9 +22,12 @@ class SettingActivity : BlazeBaseActivity() {
         const val EXTRA_SHOW_PIN_SETTING = "extra_show_pin_setting"
         const val EXTRA_EMERGENCY_CONTACT = "extra_emergency_contact"
         const val EXTRA_SHOW_PERMISSION_LIST = "extra_show_permission_list"
+        const val EXTRA_SHOW_PIN_CHANGE = "extra_show_pin_change"
         const val EXTRA_SHOW_COMPOSE = "extra_show_compose"
         const val EXTRA_APP = "extra_app"
         const val EXTRA_AUTH = "extra_auth"
+        const val EXTRA_NODE_LIST_JSON = "extra_node_list_json"
+        const val EXTRA_NODE_COUNTER = "extra_node_counter"
         const val ARGS_SUCCESS = "args_success"
 
         fun show(context: Context, compose: Boolean = true) {
@@ -50,6 +53,16 @@ class SettingActivity : BlazeBaseActivity() {
                 }
             )
         }
+
+        fun showPinChange(context: Context, nodeListJson: String? = null, nodeCounter: Int = 0) {
+            context.startActivity(
+                Intent(context, SettingActivity::class.java).apply {
+                    putExtra(EXTRA_SHOW_PIN_CHANGE, true)
+                    nodeListJson?.let { putExtra(EXTRA_NODE_LIST_JSON, it) }
+                    putExtra(EXTRA_NODE_COUNTER, nodeCounter)
+                }
+            )
+        }
     }
 
     private val binding by viewBinding(ActivityContactBinding::inflate)
@@ -67,6 +80,11 @@ class SettingActivity : BlazeBaseActivity() {
             replaceFragment(PermissionListFragment.newInstance(app, auth), R.id.container, PermissionListFragment.TAG)
         } else if (intent.getBooleanExtra(EXTRA_SHOW_COMPOSE, false)) {
             replaceFragment(SettingComposeFragment.newInstance(), R.id.container, SettingComposeFragment.TAG)
+        } else if (intent.getBooleanExtra(EXTRA_SHOW_PIN_CHANGE, false)) {
+            replaceFragment(OldPasswordFragment.newInstance(
+                intent.getStringExtra(EXTRA_NODE_LIST_JSON),
+                intent.getIntExtra(EXTRA_NODE_COUNTER, 0),
+            ), R.id.container, OldPasswordFragment.TAG)
         } else {
             val fragment = SettingFragment.newInstance()
             replaceFragment(fragment, R.id.container, SettingFragment.TAG)
