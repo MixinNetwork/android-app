@@ -50,16 +50,22 @@ class TipNode @Inject internal constructor(private val tipNodeService: TipNodeSe
 
         Timber.d("tip get node sig failedSigners size ${failedSigners?.size}")
         val data = if (!failedSigners.isNullOrEmpty()) {
-            val assigneeData = getNodeSigs(userSk, failedSigners, ephemeral, watcher, assignee)
-            if (assigneeData.size < tipConfig.commitments.size) {
-                val noAssigneeSigners = tipConfig.signers - failedSigners
-                val noAssigneeData = if (assigneeSk != null) {
-                    getNodeSigs(assigneeSk, noAssigneeSigners, ephemeral, watcher, null)
-                } else emptyList()
-                assigneeData + noAssigneeData
+            // should sign successful signers before failed signers,
+            // prevent signing failed signers with different PINs.
+            val successfulSigners = tipConfig.signers - failedSigners
+            val successfulData = if (assigneeSk != null) {
+                getNodeSigs(assigneeSk, successfulSigners, ephemeral, watcher, null)
             } else {
-                assigneeData
+                getNodeSigs(userSk, successfulSigners, ephemeral, watcher, null)
             }
+            if (successfulData.isEmpty()) {
+                Timber.w("previously successful signers can not sign with this pin")
+                return null
+            }
+
+            val failedData = getNodeSigs(userSk, failedSigners, ephemeral, watcher, assignee)
+            Timber.d("tip successful data size ${successfulData.size}, failed data size ${failedData.size}")
+            failedData + successfulData
         } else {
             getNodeSigs(userSk, tipConfig.signers, ephemeral, watcher, assignee)
         }
