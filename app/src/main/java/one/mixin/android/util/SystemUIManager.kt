@@ -15,7 +15,9 @@ object SystemUIManager {
 
         window.statusBarColor = color
         window.navigationBarColor = color
-        window.navigationBarDividerColor = color
+        supportsPie {
+            window.navigationBarDividerColor = color
+        }
     }
 
     fun clearStyle(window: Window) {
