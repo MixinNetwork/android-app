@@ -81,10 +81,13 @@ class SettingActivity : BlazeBaseActivity() {
         } else if (intent.getBooleanExtra(EXTRA_SHOW_COMPOSE, false)) {
             replaceFragment(SettingComposeFragment.newInstance(), R.id.container, SettingComposeFragment.TAG)
         } else if (intent.getBooleanExtra(EXTRA_SHOW_PIN_CHANGE, false)) {
-            replaceFragment(OldPasswordFragment.newInstance(
-                intent.getStringExtra(EXTRA_NODE_LIST_JSON),
-                intent.getIntExtra(EXTRA_NODE_COUNTER, 0),
-            ), R.id.container, OldPasswordFragment.TAG)
+            replaceFragment(
+                OldPasswordFragment.newInstance(
+                    intent.getStringExtra(EXTRA_NODE_LIST_JSON),
+                    intent.getIntExtra(EXTRA_NODE_COUNTER, 0),
+                ),
+                R.id.container, OldPasswordFragment.TAG
+            )
         } else {
             val fragment = SettingFragment.newInstance()
             replaceFragment(fragment, R.id.container, SettingFragment.TAG)

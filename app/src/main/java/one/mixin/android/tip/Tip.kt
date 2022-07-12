@@ -45,7 +45,27 @@ class Tip @Inject internal constructor(
     private val accountService: AccountService,
     private val tipNode: TipNode
 ) {
-    suspend fun createTipPriv(context: Context, pin: String, deviceId: String, failedSigners: List<TipSigner>? = null, legacyPin: String? = null): ByteArray? {
+    suspend fun getOrRecoverTipPriv(context: Context, pin: String, recoverIfNotExists: Boolean): ByteArray? {
+        val privTip = readTipPriv(context)
+        if (privTip == null) {
+            if (recoverIfNotExists) {
+                val deviceId = context.defaultSharedPreferences.getString(Constants.DEVICE_ID, null) ?: return null
+                return createTipPriv(context, pin, deviceId, forRecover = true)
+            }
+            return null
+        }
+
+        val aesKey = getAesKey(pin)
+        if (aesKey == null) {
+            Timber.d("read priv tip aes key failed")
+            return null
+        }
+
+        val privTipKey = (aesKey + pin.toByteArray()).sha3Sum256()
+        return aesDecrypt(privTipKey, privTip)
+    }
+
+    suspend fun createTipPriv(context: Context, pin: String, deviceId: String, failedSigners: List<TipSigner>? = null, legacyPin: String? = null, forRecover: Boolean = false): ByteArray? {
         val ephemeralSeed = ephemeral.getEphemeralSeed(context, deviceId)
         if (ephemeralSeed == null) {
             Timber.d("empty ephemeral seed")
@@ -58,7 +78,7 @@ class Tip @Inject internal constructor(
             return null
         }
 
-        return createPriv(context, identityPair.first, ephemeralSeed, identityPair.second, pin, failedSigners, legacyPin)
+        return createPriv(context, identityPair.first, ephemeralSeed, identityPair.second, pin, failedSigners, legacyPin, forRecover)
     }
 
     suspend fun updateTipPriv(context: Context, pin: String, deviceId: String, newPin: String, nodeSuccess: Boolean, failedSigners: List<TipSigner>? = null): ByteArray? {
@@ -90,39 +110,26 @@ class Tip @Inject internal constructor(
 
     fun tipNodeCount() = tipNode.nodeCount
 
-    suspend fun getTipPriv(context: Context, pin: String): ByteArray? {
-        val privTip = readTipPriv(context) ?: return null
-
-        val aesKey = getAesKey(pin)
-        if (aesKey == null) {
-            Timber.d("read priv tip aes key failed")
-            return null
-        }
-
-        val privTipKey = (aesKey + pin.toByteArray()).sha3Sum256()
-        return aesDecrypt(privTipKey, privTip)
-    }
-
-    private suspend fun createPriv(context: Context, identityPriv: ByteArray, ephemeral: ByteArray, watcher: ByteArray, pin: String, failedSigners: List<TipSigner>? = null, legacyPin: String? = null): ByteArray? {
+    private suspend fun createPriv(context: Context, identityPriv: ByteArray, ephemeral: ByteArray, watcher: ByteArray, pin: String, failedSigners: List<TipSigner>? = null, legacyPin: String? = null, forRecover: Boolean = false): ByteArray? {
         val aggSig = tipNode.generatePriv(identityPriv, ephemeral, watcher, null, failedSigners) ?: return null
 
         val privateSpec = EdDSAPrivateKeySpec(ed25519, aggSig.copyOf())
         val pub = EdDSAPublicKey(EdDSAPublicKeySpec(privateSpec.a, ed25519))
 
-        val localPub = Session.getTipPub()
-        if (!localPub.isNullOrBlank() && localPub != pub.abyte.base64RawEncode()) {
+        val localPub = Session.getTipPub()?.base64RawUrlDecode()
+        if (localPub != null && !localPub.contentEquals(pub.abyte)) {
             Timber.d("local pub not equals to new generated, PIN incorrect")
             return null
         }
 
         encryptAndSave(pin, aggSig, context) ?: return null
 
+        if (forRecover) return aggSig
+
         val pinToken = requireNotNull(Session.getPinToken())
         val oldEncryptedPin = if (legacyPin != null) {
-            encryptPin(pinToken, legacyPin) // create Tip with legacy pin
-        } else {
-            encryptPin(pinToken, pin)
-        }
+            encryptPin(pinToken, legacyPin)
+        } else null
         val newPin = encryptPin(pinToken, pub.abyte + 1L.toBeByteArray())
         val pinRequest = PinRequest(newPin, oldEncryptedPin)
         handleMixinResponse(
