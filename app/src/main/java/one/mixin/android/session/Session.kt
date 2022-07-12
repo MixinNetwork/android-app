@@ -293,8 +293,7 @@ fun encryptTipPin(tipPriv: ByteArray, signTarget: ByteArray): String? {
 }
 
 suspend fun encryptTipPin(tip: Tip, pin: String, signTarget: ByteArray): String? {
-    // TODO create if tipCounter > 1 for new installed user?
-    val tipPriv = tip.getTipPriv(MixinApplication.appContext, pin) ?: return null
+    val tipPriv = tip.getOrRecoverTipPriv(MixinApplication.appContext, pin, true) ?: return null
     return encryptTipPin(tipPriv, signTarget)
 }
 

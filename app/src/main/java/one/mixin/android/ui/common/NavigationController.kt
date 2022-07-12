@@ -23,12 +23,12 @@ constructor(mainActivity: MainActivity) {
         ContactsActivity.show(context)
     }
 
-    fun pushWallet() {
+    fun pushWallet(nodeListJson: String? = null, nodeCounter: Int = 0) {
         if (Session.getAccount()?.hasPin == true) {
             WalletActivity.show(context)
         } else {
             fragmentManager.beginTransaction()
-                .replace(R.id.root_view, WalletPasswordFragment.newInstance(false))
+                .replace(R.id.root_view, WalletPasswordFragment.newInstance(false, null, nodeListJson, nodeCounter))
                 .addToBackStack(null)
                 .commitAllowingStateLoss()
         }

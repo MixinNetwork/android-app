@@ -282,13 +282,19 @@ class MainActivity : BlazeBaseActivity() {
             .subscribe { e ->
                 val nodeCounter = e.nodeCounter
                 if (nodeCounter == 1) {
-                    VerifyBottomSheetDialogFragment.newInstance().setOnPinSuccess { pin ->
-                        lifecycleScope.launch {
-                            tip.createTipPriv(this@MainActivity, pin, deviceId, nodeListJsonToSigners(e.nodesListJson))
+                    lifecycleScope.launch {
+                        if (Session.getAccount()?.hasPin == true) {
+                            VerifyBottomSheetDialogFragment.newInstance().setOnPinSuccess { pin ->
+                                lifecycleScope.launch {
+                                    tip.createTipPriv(this@MainActivity, pin, deviceId, nodeListJsonToSigners(e.nodesListJson))
+                                }
+                            }.apply {
+                                autoDismiss = true
+                                showNow(supportFragmentManager, VerifyBottomSheetDialogFragment.TAG)
+                            }
+                        } else {
+                            navigationController.pushWallet(e.nodesListJson, nodeCounter)
                         }
-                    }.apply {
-                        autoDismiss = true
-                        showNow(supportFragmentManager, VerifyBottomSheetDialogFragment.TAG)
                     }
                 } else if (nodeCounter > 1) {
                     SettingActivity.showPinChange(this, e.nodesListJson, nodeCounter)

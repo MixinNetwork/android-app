@@ -293,6 +293,7 @@ class WalletPasswordFragment : BaseFragment(R.layout.fragment_wallet_password), 
         }
 
         activity?.let { activity ->
+            val recoverTip = arguments?.getString(EXTRA_NODE_LIST_JSON) != null || arguments?.getInt(EXTRA_NODE_COUNTER) != 0
             if (activity is ConversationActivity ||
                 activity is ContactsActivity
             ) {
@@ -301,7 +302,9 @@ class WalletPasswordFragment : BaseFragment(R.layout.fragment_wallet_password), 
             } else if (activity is MainActivity) {
                 toast(R.string.Set_PIN_successfully)
                 parentFragmentManager.popBackStackImmediate()
-                WalletActivity.show(activity)
+                if (!recoverTip) {
+                    WalletActivity.show(activity)
+                } else null
             } else {
                 if (change) {
                     toast(R.string.Change_PIN_successfully)
@@ -309,11 +312,10 @@ class WalletPasswordFragment : BaseFragment(R.layout.fragment_wallet_password), 
                     toast(R.string.Set_PIN_successfully)
                 }
 
-                if (arguments?.getString(EXTRA_NODE_LIST_JSON) != null || arguments?.getInt(EXTRA_NODE_COUNTER) != 0) {
-                    activity.finish()
-                } else {
+                if (recoverTip) {
                     parentFragmentManager.popBackStackImmediate()
                 }
+                parentFragmentManager.popBackStackImmediate()
             }
         }
     }
