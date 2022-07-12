@@ -116,8 +116,8 @@ class Tip @Inject internal constructor(
         val privateSpec = EdDSAPrivateKeySpec(ed25519, aggSig.copyOf())
         val pub = EdDSAPublicKey(EdDSAPublicKeySpec(privateSpec.a, ed25519))
 
-        val localPub = Session.getTipPub()?.base64RawUrlDecode()
-        if (localPub != null && !localPub.contentEquals(pub.abyte)) {
+        val localPub = Session.getTipPub()
+        if (!localPub.isNullOrBlank() && !localPub.base64RawUrlDecode().contentEquals(pub.abyte)) {
             Timber.d("local pub not equals to new generated, PIN incorrect")
             return null
         }
