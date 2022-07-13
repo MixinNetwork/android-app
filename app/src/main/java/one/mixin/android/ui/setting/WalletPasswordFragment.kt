@@ -10,6 +10,7 @@ import kotlinx.coroutines.launch
 import one.mixin.android.Constants
 import one.mixin.android.Constants.INTERVAL_10_MINS
 import one.mixin.android.R
+import one.mixin.android.api.response.TipSigner
 import one.mixin.android.crypto.PrivacyPreference.putPrefPinInterval
 import one.mixin.android.databinding.FragmentWalletPasswordBinding
 import one.mixin.android.extension.clickVibrate
@@ -26,6 +27,7 @@ import one.mixin.android.tip.Tip
 import one.mixin.android.tip.checkCounter
 import one.mixin.android.tip.handleTipException
 import one.mixin.android.tip.nodeListJsonToSigners
+import one.mixin.android.tip.tipNodeCounterToSigners
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.contacts.ContactsActivity
 import one.mixin.android.ui.conversation.ConversationActivity
@@ -81,14 +83,14 @@ class WalletPasswordFragment : BaseFragment(R.layout.fragment_wallet_password), 
 
     private var lastPassword: String? = null
 
-    private var nodeListJson: String? = null
+    private var failedSigners: List<TipSigner>? = null
     private var nodeCounter: Int = 0
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         activity?.window?.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
 
-        nodeListJson = arguments?.getString(EXTRA_NODE_LIST_JSON)
+        failedSigners = nodeListJsonToSigners(arguments?.getString(EXTRA_NODE_LIST_JSON))
         nodeCounter = arguments?.getInt(EXTRA_NODE_COUNTER) ?: 0
 
         binding.apply {
@@ -271,14 +273,13 @@ class WalletPasswordFragment : BaseFragment(R.layout.fragment_wallet_password), 
         val pin = binding.pin.code()
         val deviceId = requireNotNull(defaultSharedPreferences.getString(Constants.DEVICE_ID, null))
         val tipCounter = Session.getTipCounter()
-        val signers = nodeListJsonToSigners(nodeListJson)
-        Timber.d("tip nodeCounter $nodeCounter, tipCounter $tipCounter, signers size ${signers?.size}")
+        Timber.d("tip nodeCounter $nodeCounter, tipCounter $tipCounter, signers size ${failedSigners?.size}")
         try {
             val tipPriv = if (tipCounter < 1) {
-                tip.createTipPriv(this@WalletPasswordFragment.requireContext(), pin, deviceId, signers, oldPassword)
+                tip.createTipPriv(this@WalletPasswordFragment.requireContext(), pin, deviceId, failedSigners, oldPassword)
             } else {
-                val nodeSuccess = nodeCounter > tipCounter && signers.isNullOrEmpty()
-                tip.updateTipPriv(this@WalletPasswordFragment.requireContext(), requireNotNull(oldPassword), deviceId, pin, nodeSuccess, signers)
+                val nodeSuccess = nodeCounter > tipCounter && failedSigners.isNullOrEmpty()
+                tip.updateTipPriv(this@WalletPasswordFragment.requireContext(), requireNotNull(oldPassword), deviceId, pin, nodeSuccess, failedSigners)
             }
 
             dialog.dismiss()
@@ -295,15 +296,17 @@ class WalletPasswordFragment : BaseFragment(R.layout.fragment_wallet_password), 
             tip.checkCounter(
                 tipCounter,
                 onNodeCounterGreaterThanServer = { setNodeArgs(null, it) },
-                onNodeCounterNotConsistency = { nodeMaxCounter, nodesJson -> setNodeArgs(nodesJson, nodeMaxCounter) }
+                onNodeCounterNotConsistency = { nodeMaxCounter, tipNodeCounters ->
+                    setNodeArgs(tipNodeCounterToSigners(tipNodeCounters), nodeMaxCounter)
+                }
             )
 
             dialog.dismiss()
         }
     }
 
-    private fun setNodeArgs(nodeListJson: String?, nodeCounter: Int) {
-        this.nodeListJson = nodeListJson
+    private fun setNodeArgs(failedSigners: List<TipSigner>?, nodeCounter: Int) {
+        this.failedSigners = failedSigners
         this.nodeCounter = nodeCounter
     }
 
@@ -318,7 +321,7 @@ class WalletPasswordFragment : BaseFragment(R.layout.fragment_wallet_password), 
         }
 
         activity?.let { activity ->
-            val recoverTip = arguments?.getString(EXTRA_NODE_LIST_JSON) != null || arguments?.getInt(EXTRA_NODE_COUNTER) != 0
+            val forFixTip = failedSigners != null || nodeCounter != 0
             if (activity is ConversationActivity ||
                 activity is ContactsActivity
             ) {
@@ -327,9 +330,11 @@ class WalletPasswordFragment : BaseFragment(R.layout.fragment_wallet_password), 
             } else if (activity is MainActivity) {
                 toast(R.string.Set_PIN_successfully)
                 parentFragmentManager.popBackStackImmediate()
-                if (!recoverTip) {
+                if (forFixTip) {
+                    parentFragmentManager.popBackStackImmediate()
+                } else {
                     WalletActivity.show(activity)
-                } else null
+                }
             } else {
                 if (change) {
                     toast(R.string.Change_PIN_successfully)
@@ -337,7 +342,7 @@ class WalletPasswordFragment : BaseFragment(R.layout.fragment_wallet_password), 
                     toast(R.string.Set_PIN_successfully)
                 }
 
-                if (recoverTip) {
+                if (forFixTip) {
                     parentFragmentManager.popBackStackImmediate()
                 }
                 parentFragmentManager.popBackStackImmediate()

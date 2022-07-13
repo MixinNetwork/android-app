@@ -23,6 +23,7 @@ import one.mixin.android.extension.toHex
 import one.mixin.android.util.GsonHelper
 import retrofit2.HttpException
 import timber.log.Timber
+import java.util.concurrent.CopyOnWriteArrayList
 import javax.inject.Inject
 import kotlin.time.Duration.Companion.days
 
@@ -96,7 +97,7 @@ class TipNode @Inject internal constructor(private val tipNodeService: TipNodeSe
     }
 
     suspend fun watch(watcher: ByteArray): List<TipNodeCounter> {
-        val result = mutableListOf<TipNodeCounter>()
+        val result = CopyOnWriteArrayList<TipNodeCounter>()
         coroutineScope {
             tipConfig.signers.mapIndexed { index, signer ->
                 async(Dispatchers.IO) {
@@ -125,7 +126,7 @@ class TipNode @Inject internal constructor(private val tipNodeService: TipNodeSe
     }
 
     private suspend fun getNodeSigs(userSk: Scalar, tipSigners: List<TipSigner>, ephemeral: ByteArray, watcher: ByteArray, assignee: ByteArray?): List<TipSignRespData> {
-        val result = mutableListOf<TipSignRespData>()
+        val result = CopyOnWriteArrayList<TipSignRespData>()
         val nonce = currentTimeSeconds()
         val grace = ephemeralGrace
 
