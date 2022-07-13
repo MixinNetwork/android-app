@@ -302,9 +302,13 @@ class Tip @Inject internal constructor(
 
 fun nodeListJsonToSigners(nodeListJson: String?): List<TipSigner>? =
     if (nodeListJson != null) {
-        val assignees = mutableListOf<TipSigner>()
-        GsonHelper.customGson.fromJson(nodeListJson, Array<TipNode.TipNodeCounter>::class.java)
-            .mapTo(assignees) { it.tipSigner }
+        tipNodeCounterToSigners(GsonHelper.customGson.fromJson(nodeListJson, Array<TipNode.TipNodeCounter>::class.java).toList())
+    } else null
+
+fun tipNodeCounterToSigners(tipNodeCounters: List<TipNode.TipNodeCounter>?): List<TipSigner>? =
+    if (tipNodeCounters != null) {
+        val signers = mutableListOf<TipSigner>()
+        tipNodeCounters.mapTo(signers) { it.tipSigner }
     } else null
 
 fun Exception.handleTipException() {
@@ -323,7 +327,7 @@ fun Exception.handleTipException() {
 suspend fun Tip.checkCounter(
     tipCounter: Int,
     onNodeCounterGreaterThanServer: suspend (Int) -> Unit,
-    onNodeCounterNotConsistency: suspend (Int, String) -> Unit,
+    onNodeCounterNotConsistency: suspend (Int, List<TipNode.TipNodeCounter>?) -> Unit,
 ) {
     val counters = watchTipNodeCounters()
     if (counters.isNullOrEmpty()) {
@@ -355,9 +359,9 @@ suspend fun Tip.checkCounter(
     }
 
     val maxCounter = group.keys.maxBy { it }
-    val smallNodes = group[group.keys.minBy { it }]
-    Timber.d("watch tip node counter maxCounter $maxCounter, need update nodes: $smallNodes")
-    onNodeCounterNotConsistency(maxCounter, GsonHelper.customGson.toJson(smallNodes))
+    val failedNodes = group[group.keys.minBy { it }]
+    Timber.d("watch tip node counter maxCounter $maxCounter, need update nodes: $failedNodes")
+    onNodeCounterNotConsistency(maxCounter, failedNodes)
 }
 
 private fun reportIllegal(msg: String) {
