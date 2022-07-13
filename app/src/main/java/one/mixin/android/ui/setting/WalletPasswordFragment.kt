@@ -4,7 +4,6 @@ import android.annotation.SuppressLint
 import android.os.Bundle
 import android.view.View
 import android.view.WindowManager
-import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
@@ -24,6 +23,8 @@ import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.extension.withArgs
 import one.mixin.android.session.Session
 import one.mixin.android.tip.Tip
+import one.mixin.android.tip.checkCounter
+import one.mixin.android.tip.handleTipException
 import one.mixin.android.tip.nodeListJsonToSigners
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.contacts.ContactsActivity
@@ -32,7 +33,6 @@ import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.ui.setting.SettingActivity.Companion.EXTRA_NODE_COUNTER
 import one.mixin.android.ui.setting.SettingActivity.Companion.EXTRA_NODE_LIST_JSON
 import one.mixin.android.ui.wallet.WalletActivity
-import one.mixin.android.ui.wallet.WalletViewModel
 import one.mixin.android.util.BiometricUtil
 import one.mixin.android.util.viewBinding
 import one.mixin.android.widget.Keyboard
@@ -65,7 +65,6 @@ class WalletPasswordFragment : BaseFragment(R.layout.fragment_wallet_password), 
         }
     }
 
-    private val walletViewModel by viewModels<WalletViewModel>()
     private val binding by viewBinding(FragmentWalletPasswordBinding::bind)
 
     @Inject
@@ -82,9 +81,16 @@ class WalletPasswordFragment : BaseFragment(R.layout.fragment_wallet_password), 
 
     private var lastPassword: String? = null
 
+    private var nodeListJson: String? = null
+    private var nodeCounter: Int = 0
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         activity?.window?.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
+
+        nodeListJson = arguments?.getString(EXTRA_NODE_LIST_JSON)
+        nodeCounter = arguments?.getInt(EXTRA_NODE_COUNTER) ?: 0
+
         binding.apply {
             if (change) {
                 titleView.setSubTitle(getString(R.string.Set_new_PIN), "2/5")
@@ -265,21 +271,40 @@ class WalletPasswordFragment : BaseFragment(R.layout.fragment_wallet_password), 
         val pin = binding.pin.code()
         val deviceId = requireNotNull(defaultSharedPreferences.getString(Constants.DEVICE_ID, null))
         val tipCounter = Session.getTipCounter()
-        val nodeListJson = arguments?.getString(EXTRA_NODE_LIST_JSON)
         val signers = nodeListJsonToSigners(nodeListJson)
-        val nodeCounter = arguments?.getInt(EXTRA_NODE_COUNTER) ?: 0
         Timber.d("tip nodeCounter $nodeCounter, tipCounter $tipCounter, signers size ${signers?.size}")
-        val tipPriv = if (tipCounter < 1) {
-            tip.createTipPriv(this@WalletPasswordFragment.requireContext(), pin, deviceId, signers, oldPassword)
-        } else {
-            val nodeSuccess = nodeCounter > tipCounter && signers.isNullOrEmpty()
-            tip.updateTipPriv(this@WalletPasswordFragment.requireContext(), requireNotNull(oldPassword), deviceId, pin, nodeSuccess, signers)
-        }
+        try {
+            val tipPriv = if (tipCounter < 1) {
+                tip.createTipPriv(this@WalletPasswordFragment.requireContext(), pin, deviceId, signers, oldPassword)
+            } else {
+                val nodeSuccess = nodeCounter > tipCounter && signers.isNullOrEmpty()
+                tip.updateTipPriv(this@WalletPasswordFragment.requireContext(), requireNotNull(oldPassword), deviceId, pin, nodeSuccess, signers)
+            }
 
-        dialog.dismiss()
-        if (tipPriv != null) {
-            afterPinSuccess(pin)
+            dialog.dismiss()
+            if (tipPriv != null) {
+                afterPinSuccess(pin)
+            } else {
+                // no exception happen means the nodes part must success,
+                // clear failed node list to prepare for a new try.
+                setNodeArgs(null, nodeCounter)
+            }
+        } catch (e: Exception) {
+            e.handleTipException()
+
+            tip.checkCounter(
+                tipCounter,
+                onNodeCounterGreaterThanServer = { setNodeArgs(null, it) },
+                onNodeCounterNotConsistency = { nodeMaxCounter, nodesJson -> setNodeArgs(nodesJson, nodeMaxCounter) }
+            )
+
+            dialog.dismiss()
         }
+    }
+
+    private fun setNodeArgs(nodeListJson: String?, nodeCounter: Int) {
+        this.nodeListJson = nodeListJson
+        this.nodeCounter = nodeCounter
     }
 
     private fun afterPinSuccess(pin: String) {

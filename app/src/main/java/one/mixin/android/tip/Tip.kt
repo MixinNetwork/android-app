@@ -27,6 +27,7 @@ import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.nowInUtcNano
 import one.mixin.android.extension.putString
 import one.mixin.android.extension.toBeByteArray
+import one.mixin.android.extension.toast
 import one.mixin.android.session.Session
 import one.mixin.android.session.encryptPin
 import one.mixin.android.session.encryptTipPin
@@ -34,6 +35,7 @@ import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.deleteKeyByAlias
 import one.mixin.android.util.getDecryptCipher
 import one.mixin.android.util.getEncryptCipher
+import one.mixin.android.util.reportException
 import timber.log.Timber
 import java.security.MessageDigest
 import javax.inject.Inject
@@ -50,7 +52,12 @@ class Tip @Inject internal constructor(
         if (privTip == null) {
             if (recoverIfNotExists) {
                 val deviceId = context.defaultSharedPreferences.getString(Constants.DEVICE_ID, null) ?: return null
-                return createTipPriv(context, pin, deviceId, forRecover = true)
+                return try {
+                    createTipPriv(context, pin, deviceId, forRecover = true)
+                } catch (e: Exception) {
+                    Timber.d(e)
+                    null
+                }
             }
             return null
         }
@@ -65,6 +72,7 @@ class Tip @Inject internal constructor(
         return aesDecrypt(privTipKey, privTip)
     }
 
+    @Throws(TipException::class, TipNodeException::class)
     suspend fun createTipPriv(context: Context, pin: String, deviceId: String, failedSigners: List<TipSigner>? = null, legacyPin: String? = null, forRecover: Boolean = false): ByteArray? {
         val ephemeralSeed = ephemeral.getEphemeralSeed(context, deviceId)
         if (ephemeralSeed == null) {
@@ -81,6 +89,7 @@ class Tip @Inject internal constructor(
         return createPriv(context, identityPair.first, ephemeralSeed, identityPair.second, pin, failedSigners, legacyPin, forRecover)
     }
 
+    @Throws(TipNodeException::class)
     suspend fun updateTipPriv(context: Context, pin: String, deviceId: String, newPin: String, nodeSuccess: Boolean, failedSigners: List<TipSigner>? = null): ByteArray? {
         val ephemeralSeed = ephemeral.getEphemeralSeed(context, deviceId)
         if (ephemeralSeed == null) {
@@ -110,8 +119,9 @@ class Tip @Inject internal constructor(
 
     fun tipNodeCount() = tipNode.nodeCount
 
+    @Throws(TipException::class, TipNodeException::class)
     private suspend fun createPriv(context: Context, identityPriv: ByteArray, ephemeral: ByteArray, watcher: ByteArray, pin: String, failedSigners: List<TipSigner>? = null, legacyPin: String? = null, forRecover: Boolean = false): ByteArray? {
-        val aggSig = tipNode.generatePriv(identityPriv, ephemeral, watcher, null, failedSigners) ?: return null
+        val aggSig = tipNode.sign(identityPriv, ephemeral, watcher, null, failedSigners)
 
         val privateSpec = EdDSAPrivateKeySpec(ed25519, aggSig.copyOf())
         val pub = EdDSAPublicKey(EdDSAPublicKeySpec(privateSpec.a, ed25519))
@@ -119,7 +129,7 @@ class Tip @Inject internal constructor(
         val localPub = Session.getTipPub()
         if (!localPub.isNullOrBlank() && !localPub.base64RawUrlDecode().contentEquals(pub.abyte)) {
             Timber.d("local pub not equals to new generated, PIN incorrect")
-            return null
+            throw PinIncorrectException()
         }
 
         encryptAndSave(pin, aggSig, context) ?: return null
@@ -147,12 +157,13 @@ class Tip @Inject internal constructor(
         return aggSig
     }
 
+    @Throws(TipNodeException::class)
     private suspend fun updatePriv(context: Context, identityPriv: ByteArray, ephemeral: ByteArray, watcher: ByteArray, newPin: String, assigneePriv: ByteArray, nodeSuccess: Boolean, failedSigners: List<TipSigner>? = null): ByteArray? {
         val aggSig = if (nodeSuccess) {
-            tipNode.generatePriv(assigneePriv, ephemeral, watcher, null, null)
+            tipNode.sign(assigneePriv, ephemeral, watcher, null, null)
         } else {
-            tipNode.generatePriv(identityPriv, ephemeral, watcher, assigneePriv, failedSigners)
-        } ?: return null
+            tipNode.sign(identityPriv, ephemeral, watcher, assigneePriv, failedSigners)
+        }
 
         encryptAndSave(newPin, aggSig, context) ?: return null
 
@@ -295,3 +306,61 @@ fun nodeListJsonToSigners(nodeListJson: String?): List<TipSigner>? =
         GsonHelper.customGson.fromJson(nodeListJson, Array<TipNode.TipNodeCounter>::class.java)
             .mapTo(assignees) { it.tipSigner }
     } else null
+
+fun Exception.handleTipException() {
+    // TODO i18n
+    toast(
+        when (this) {
+            is PinIncorrectException -> "PIN incorrect"
+            is NotEnoughPartialsException -> "Not enough partials"
+            is NotAllSignerSuccessException -> "Not all signer success"
+            is DifferentIdentityException -> "PIN not same as last time"
+            else -> "Set or update PIN failed"
+        }
+    )
+}
+
+suspend fun Tip.checkCounter(
+    tipCounter: Int,
+    onNodeCounterGreaterThanServer: suspend (Int) -> Unit,
+    onNodeCounterNotConsistency: suspend (Int, String) -> Unit,
+) {
+    val counters = watchTipNodeCounters()
+    if (counters.isNullOrEmpty()) {
+        Timber.w("watch tip node counters but counters is $counters")
+        return
+    }
+
+    if (counters.size != tipNodeCount()) {
+        Timber.w("watch tip node result size is ${counters.size} is not equals to node count ${tipNodeCount()}")
+    }
+    val group = counters.groupBy { it.counter }
+    if (group.size <= 1) {
+        val nodeCounter = counters.first().counter
+        Timber.d("watch tip node all counter are $nodeCounter, tipCounter $tipCounter")
+        if (nodeCounter == tipCounter) {
+            return
+        }
+        if (nodeCounter < tipCounter) {
+            reportIllegal("watch tip node node counter $nodeCounter < tipCounter $tipCounter")
+            return
+        }
+
+        onNodeCounterGreaterThanServer(nodeCounter)
+        return
+    }
+    if (group.size > 2) {
+        reportIllegal("watch tip node meet ${group.size} kinds of counter!")
+        return
+    }
+
+    val maxCounter = group.keys.maxBy { it }
+    val smallNodes = group[group.keys.minBy { it }]
+    Timber.d("watch tip node counter maxCounter $maxCounter, need update nodes: $smallNodes")
+    onNodeCounterNotConsistency(maxCounter, GsonHelper.customGson.toJson(smallNodes))
+}
+
+private fun reportIllegal(msg: String) {
+    Timber.w(msg)
+    reportException(IllegalStateException(msg))
+}
