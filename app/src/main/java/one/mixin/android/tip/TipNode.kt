@@ -33,7 +33,15 @@ class TipNode @Inject internal constructor(private val tipNodeService: TipNodeSe
 
     private val maxRetryCount = 2
 
-    suspend fun generatePriv(identityPriv: ByteArray, ephemeral: ByteArray, watcher: ByteArray, assigneePriv: ByteArray?, failedSigners: List<TipSigner>? = null): ByteArray? {
+    @Throws(TipNodeException::class)
+    suspend fun sign(
+        identityPriv: ByteArray,
+        ephemeral: ByteArray,
+        watcher: ByteArray,
+        assigneePriv: ByteArray?,
+        failedSigners: List<TipSigner>? = null,
+        forRecover: Boolean = false,
+    ): ByteArray {
         val suite = Crypto.newSuiteBn256()
         val userSk = suite.scalar()
         userSk.setBytes(identityPriv)
@@ -60,7 +68,7 @@ class TipNode @Inject internal constructor(private val tipNodeService: TipNodeSe
             }
             if (successfulData.isEmpty()) {
                 Timber.w("previously successful signers can not sign with this pin")
-                return null
+                throw DifferentIdentityException()
             }
 
             val failedData = getNodeSigs(userSk, failedSigners, ephemeral, watcher, assignee)
@@ -70,17 +78,16 @@ class TipNode @Inject internal constructor(private val tipNodeService: TipNodeSe
             getNodeSigs(userSk, tipConfig.signers, ephemeral, watcher, assignee)
         }
 
-        if (data.size < tipConfig.signers.size) {
+        if (!forRecover && data.size < tipConfig.signers.size) {
             Timber.w("not all signer success ${data.size}")
-            // TODO should watch nodes after this
-            return null
+            throw NotAllSignerSuccessException(data.size)
         }
 
         val (assignor, partials) = parseAssignorAndPartials(data)
 
         if (partials.size < tipConfig.commitments.size) {
             Timber.d("not enough partials ${partials.size} ${tipConfig.commitments.size}")
-            return null
+            throw NotEnoughPartialsException(partials.size)
         }
 
         val hexSigs = partials.joinToString(",") { it.toHex() }

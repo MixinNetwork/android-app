@@ -105,6 +105,7 @@ import one.mixin.android.repository.AccountRepository
 import one.mixin.android.repository.UserRepository
 import one.mixin.android.session.Session
 import one.mixin.android.tip.Tip
+import one.mixin.android.tip.handleTipException
 import one.mixin.android.tip.nodeListJsonToSigners
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.BatteryOptimizationDialogActivity
@@ -280,27 +281,7 @@ class MainActivity : BlazeBaseActivity() {
         RxBus.listen(TipEvent::class.java)
             .autoDispose(destroyScope)
             .subscribe { e ->
-                val nodeCounter = e.nodeCounter
-                if (nodeCounter == 1) {
-                    lifecycleScope.launch {
-                        if (Session.getAccount()?.hasPin == true) {
-                            VerifyBottomSheetDialogFragment.newInstance().setOnPinSuccess { pin ->
-                                lifecycleScope.launch {
-                                    tip.createTipPriv(this@MainActivity, pin, deviceId, nodeListJsonToSigners(e.nodesListJson))
-                                }
-                            }.apply {
-                                autoDismiss = true
-                                showNow(supportFragmentManager, VerifyBottomSheetDialogFragment.TAG)
-                            }
-                        } else {
-                            navigationController.pushWallet(e.nodesListJson, nodeCounter)
-                        }
-                    }
-                } else if (nodeCounter > 1) {
-                    SettingActivity.showPinChange(this, e.nodesListJson, nodeCounter)
-                } else {
-                    reportException(IllegalStateException("Receive TipEvent nodeCounter < 1"))
-                }
+                handleTipEvent(e, deviceId)
             }
     }
 
@@ -384,6 +365,36 @@ class MainActivity : BlazeBaseActivity() {
 
         jobManager.addJobInBackground(RefreshContactJob())
         jobManager.addJobInBackground(RefreshFcmJob())
+    }
+
+    private fun handleTipEvent(e: TipEvent, deviceId: String) {
+        val nodeCounter = e.nodeCounter
+        if (nodeCounter == 1) {
+            lifecycleScope.launch {
+                if (Session.getAccount()?.hasPin == true) {
+                    VerifyBottomSheetDialogFragment.newInstance().setOnPinSuccess { pin ->
+                        afterVerifyPin(pin, deviceId, e)
+                    }.apply {
+                        autoDismiss = true
+                        showNow(supportFragmentManager, VerifyBottomSheetDialogFragment.TAG)
+                    }
+                } else {
+                    navigationController.pushWallet(e.nodesListJson, nodeCounter)
+                }
+            }
+        } else if (nodeCounter > 1) {
+            SettingActivity.showPinChange(this, e.nodesListJson, nodeCounter)
+        } else {
+            reportException(IllegalStateException("Receive TipEvent nodeCounter < 1"))
+        }
+    }
+
+    private fun afterVerifyPin(pin: String, deviceId: String, e: TipEvent) = lifecycleScope.launch {
+        try {
+            tip.createTipPriv(this@MainActivity, pin, deviceId, nodeListJsonToSigners(e.nodesListJson))
+        } catch (e: Exception) {
+            e.handleTipException()
+        }
     }
 
     @SuppressLint("RestrictedApi")

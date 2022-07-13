@@ -9,14 +9,13 @@ import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.putInt
 import one.mixin.android.extension.putString
 import one.mixin.android.session.Session
+import one.mixin.android.tip.checkCounter
 import one.mixin.android.ui.setting.PhoneNumberSettingFragment
 import one.mixin.android.ui.setting.SettingConversationFragment
 import one.mixin.android.util.GsonHelper
-import one.mixin.android.util.reportException
 import one.mixin.android.vo.MessageSource
 import one.mixin.android.vo.SearchSource
 import one.mixin.android.vo.toUser
-import timber.log.Timber
 
 class RefreshAccountJob : BaseJob(Params(PRIORITY_UI_HIGH).addTags(GROUP).requireNetwork().persist()) {
 
@@ -83,48 +82,13 @@ class RefreshAccountJob : BaseJob(Params(PRIORITY_UI_HIGH).addTags(GROUP).requir
                 }
             }
 
-            checkCounter(account.tipCounter)
+            tip.checkCounter(
+                account.tipCounter,
+                onNodeCounterGreaterThanServer = { RxBus.publish(TipEvent(it)) },
+                onNodeCounterNotConsistency = { nodeMaxCounter, failedNodeJson ->
+                    RxBus.publish(TipEvent(nodeMaxCounter, GsonHelper.customGson.toJson(failedNodeJson)))
+                }
+            )
         }
-    }
-
-    private suspend fun checkCounter(tipCounter: Int) {
-        val counters = tip.watchTipNodeCounters()
-        if (counters.isNullOrEmpty()) {
-            Timber.w("watch tip node counters but counters is $counters")
-            return
-        }
-
-        if (counters.size != tip.tipNodeCount()) {
-            Timber.w("watch tip node result size is ${counters.size} is not equals to node count ${tip.tipNodeCount()}")
-        }
-        val group = counters.groupBy { it.counter }
-        if (group.size <= 1) {
-            val nodeCounter = counters.first().counter
-            Timber.d("watch tip node all counter are $nodeCounter, tipCounter $tipCounter")
-            if (nodeCounter == tipCounter) {
-                return
-            }
-            if (nodeCounter < tipCounter) {
-                reportIllegal("watch tip node node counter $nodeCounter < tipCounter $tipCounter")
-                return
-            }
-
-            RxBus.publish(TipEvent(nodeCounter))
-            return
-        }
-        if (group.size > 2) {
-            reportIllegal("watch tip node meet ${group.size} kinds of counter!")
-            return
-        }
-
-        val maxCounter = group.keys.maxBy { it }
-        val smallNodes = group[group.keys.minBy { it }]
-        Timber.d("watch tip node counter maxCounter $maxCounter, need update nodes: $smallNodes")
-        RxBus.publish(TipEvent(maxCounter, GsonHelper.customGson.toJson(smallNodes)))
-    }
-
-    private fun reportIllegal(msg: String) {
-        Timber.w(msg)
-        reportException(IllegalStateException(msg))
     }
 }
