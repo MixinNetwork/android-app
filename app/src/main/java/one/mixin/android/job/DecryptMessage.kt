@@ -1081,7 +1081,6 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
 
     private fun processSignalMessage(data: BlazeMessageData) {
         if (data.category == MessageCategory.SIGNAL_KEY.name) {
-            pendingMessageStatusMap.remove(data.messageId)
             updateRemoteMessageStatus(data.messageId, MessageStatus.READ)
             messageHistoryDao.insert(MessageHistory(data.messageId))
         } else {
