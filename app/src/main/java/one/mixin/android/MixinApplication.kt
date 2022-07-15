@@ -10,8 +10,10 @@ import android.webkit.WebStorage
 import androidx.camera.camera2.Camera2Config
 import androidx.camera.core.CameraXConfig
 import androidx.hilt.work.HiltWorkerFactory
+import androidx.startup.AppInitializer
 import androidx.work.Configuration
 import com.google.android.gms.net.CronetProviderInstaller
+import com.mapbox.maps.loader.MapboxMapsInitializer
 import com.microsoft.appcenter.AppCenter
 import com.microsoft.appcenter.analytics.Analytics
 import com.microsoft.appcenter.crashes.Crashes
@@ -40,6 +42,7 @@ import one.mixin.android.session.Session
 import one.mixin.android.ui.PipVideoView
 import one.mixin.android.ui.auth.AppAuthActivity
 import one.mixin.android.ui.call.CallActivity
+import one.mixin.android.ui.conversation.location.useMapbox
 import one.mixin.android.ui.landing.InitializeActivity
 import one.mixin.android.ui.landing.LandingActivity
 import one.mixin.android.ui.media.pager.MediaPagerActivity
@@ -133,6 +136,10 @@ open class MixinApplication :
             Analytics::class.java,
             Crashes::class.java
         )
+        if (useMapbox()) {
+            AppInitializer.getInstance(this)
+                .initializeComponent(MapboxMapsInitializer::class.java)
+        }
 
         initNativeLibs(applicationContext)
 
