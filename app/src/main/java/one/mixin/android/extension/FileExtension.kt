@@ -283,12 +283,6 @@ fun Context.getConversationAudioPath(conversationId: String): File? {
     return File("$root${File.separator}Audios${File.separator}$conversationId")
 }
 
-fun Context.getConversationTranscriptPath(conversationId: String): File? {
-    if (conversationId.isBlank()) return null
-    val root = getMediaPath() ?: return null
-    return File("$root${File.separator}Transcripts${File.separator}$conversationId")
-}
-
 fun Context.getConversationMediaSize(conversationId: String): Long {
     var mediaSize = 0L
     getConversationImagePath(conversationId)?.apply {
@@ -307,11 +301,6 @@ fun Context.getConversationMediaSize(conversationId: String): Long {
         }
     }
     getConversationDocumentPath(conversationId)?.apply {
-        if (exists()) {
-            mediaSize += dirSize() ?: 0
-        }
-    }
-    getConversationTranscriptPath(conversationId)?.apply {
         if (exists()) {
             mediaSize += dirSize() ?: 0
         }
