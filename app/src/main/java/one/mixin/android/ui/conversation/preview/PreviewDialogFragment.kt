@@ -1,3 +1,5 @@
+@file:OptIn(ObsoleteCoroutinesApi::class)
+
 package one.mixin.android.ui.conversation.preview
 
 import android.annotation.SuppressLint
@@ -13,9 +15,10 @@ import android.view.WindowManager
 import androidx.core.os.bundleOf
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.FragmentManager
-import com.uber.autodispose.android.lifecycle.autoDispose
-import io.reactivex.Observable
-import io.reactivex.android.schedulers.AndroidSchedulers
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.ObsoleteCoroutinesApi
+import kotlinx.coroutines.channels.ticker
+import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentPreviewBinding
 import one.mixin.android.databinding.FragmentPreviewVideoBinding
@@ -27,7 +30,6 @@ import one.mixin.android.extension.screenWidth
 import one.mixin.android.extension.toast
 import one.mixin.android.util.video.MixinPlayer
 import one.mixin.android.widget.VideoTimelineView
-import java.util.concurrent.TimeUnit
 
 class PreviewDialogFragment : DialogFragment(), VideoTimelineView.VideoTimelineViewDelegate {
 
@@ -106,13 +108,13 @@ class PreviewDialogFragment : DialogFragment(), VideoTimelineView.VideoTimelineV
                     loadVideo(uri.toString())
                     setVideoTextureView(videoBinding.dialogVideoTexture)
                     videoBinding.time.setVideoPath(uri.getFilePath(requireContext()))
-                    Observable.interval(0, 100, TimeUnit.MILLISECONDS)
-                        .observeOn(AndroidSchedulers.mainThread())
-                        .autoDispose(this@PreviewDialogFragment).subscribe {
+                    lifecycleScope.launch{
+                        for (i in ticker(100,0)){
                             if (duration() != 0 && isPlaying()) {
                                 videoBinding.time.progress = getCurrentPos().toFloat() / duration()
                             }
                         }
+                    }
                     okText?.let { videoBinding.dialogOk.text = it }
                     videoBinding.dialogOk.setOnClickListener {
                         action!!(uri)

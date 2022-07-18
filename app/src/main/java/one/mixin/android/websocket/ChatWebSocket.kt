@@ -1,11 +1,16 @@
+@file:OptIn(ObsoleteCoroutinesApi::class)
+
 package one.mixin.android.websocket
 
 import android.annotation.SuppressLint
 import android.app.Application
 import com.google.firebase.crashlytics.FirebaseCrashlytics
 import com.google.gson.Gson
-import io.reactivex.Observable
-import io.reactivex.disposables.Disposable
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.ObsoleteCoroutinesApi
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.channels.ticker
 import kotlinx.coroutines.launch
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -48,6 +53,8 @@ import timber.log.Timber
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
+import kotlin.coroutines.CoroutineContext
+import kotlin.coroutines.EmptyCoroutineContext
 
 class ChatWebSocket(
     private val okHttpClient: OkHttpClient,
@@ -99,7 +106,9 @@ class ChatWebSocket(
         if (client != null) {
             closeInternal(quitCode)
             transactions.clear()
-            connectTimer?.dispose()
+            tickerChannel?.cancel()
+            tickerChannel = null
+            coroutineContext.cancel()
             client = null
             connected = false
         }
@@ -163,7 +172,9 @@ class ChatWebSocket(
             MixinApplication.appContext.runOnUiThread {
                 linkState.state = LinkState.ONLINE
             }
-            connectTimer?.dispose()
+            tickerChannel?.cancel()
+            tickerChannel = null
+            coroutineContext.cancel()
             jobManager.start()
             jobManager.addJobInBackground(RefreshOffsetJob())
             sendPendingMessage()
@@ -218,24 +229,24 @@ class ChatWebSocket(
         connected = false
         if (code == failCode) {
             closeInternal(code)
-            jobManager.stop()
-            if (connectTimer == null || connectTimer?.isDisposed == true) {
-                connectTimer = Observable.interval(2000, TimeUnit.MILLISECONDS).subscribe(
-                    {
-                        if (MixinApplication.appContext.networkConnected() && Session.checkToken()) {
-                            connect()
+            // jobManager.stop()
+            if (tickerChannel == null) {
+                CoroutineScope(coroutineContext).launch {
+                        val tickerChannel = ticker(2000, 0)
+                        for (e in tickerChannel) {
+                            if (MixinApplication.appContext.networkConnected() && Session.checkToken()) {
+                                connect()
+                            }
                         }
-                    },
-                    {
                     }
-                )
             }
         } else {
             webSocket.cancel()
         }
     }
 
-    private var connectTimer: Disposable? = null
+    private val coroutineContext: CoroutineContext = EmptyCoroutineContext
+    private var tickerChannel:Channel<Unit>? =null
 
     @Synchronized
     override fun onFailure(webSocket: WebSocket, t: Throwable, response: Response?) {

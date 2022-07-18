@@ -1,13 +1,19 @@
+@file:OptIn(ObsoleteCoroutinesApi::class)
+
 package one.mixin.android.util
 
 import android.media.AudioManager
 import com.google.android.exoplayer2.ExoPlaybackException
 import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.source.UnrecognizedInputFormatException
-import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ObsoleteCoroutinesApi
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.channels.ticker
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.MixinApplication
@@ -39,7 +45,7 @@ import one.mixin.android.widget.CircleProgress.Companion.STATUS_PAUSE
 import one.mixin.android.widget.CircleProgress.Companion.STATUS_PLAY
 import org.threeten.bp.ZonedDateTime
 import timber.log.Timber
-import java.util.concurrent.TimeUnit
+import kotlin.coroutines.EmptyCoroutineContext
 
 class AudioPlayer private constructor() {
     companion object {
@@ -273,30 +279,32 @@ class AudioPlayer private constructor() {
         id?.let { id -> RxBus.publish(playEvent(id, p)) }
     }
 
-    private var timerDisposable: Disposable? = null
+    private val coroutineScope = CoroutineScope(EmptyCoroutineContext)
+    private var tickerChannel: Channel<Unit>? =null
     var progress = 0f
     private fun startTimer() {
-        if (timerDisposable == null) {
-            timerDisposable = Observable.interval(0, 100, TimeUnit.MILLISECONDS)
-                .observeOn(AndroidSchedulers.mainThread()).subscribe {
-                    if (player.duration() == 0) {
-                        return@subscribe
-                    }
-                    progress = player.getCurrentPos().toFloat() / player.duration()
-                    id?.let { id ->
-                        RxBus.publish(playEvent(id, progress))
+        if (tickerChannel == null) {
+            coroutineScope.launch {
+                val tickerChannel = ticker(2000, 0)
+                for (e in tickerChannel) {
+                    withContext(Dispatchers.Main) {
+                        if (player.duration() == 0) {
+                            return@withContext
+                        }
+                        progress = player.getCurrentPos().toFloat() / player.duration()
+                        id?.let { id ->
+                            RxBus.publish(playEvent(id, progress))
+                        }
                     }
                 }
+            }
         }
     }
 
     private fun stopTimber() {
-        timerDisposable?.let {
-            if (!it.isDisposed) {
-                it.dispose()
-            }
-        }
-        timerDisposable = null
+        tickerChannel?.cancel()
+        tickerChannel = null
+        coroutineScope.cancel()
     }
 
     private fun checkNext() {
