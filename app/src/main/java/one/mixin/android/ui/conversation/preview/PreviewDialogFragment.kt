@@ -108,8 +108,8 @@ class PreviewDialogFragment : DialogFragment(), VideoTimelineView.VideoTimelineV
                     loadVideo(uri.toString())
                     setVideoTextureView(videoBinding.dialogVideoTexture)
                     videoBinding.time.setVideoPath(uri.getFilePath(requireContext()))
-                    lifecycleScope.launch{
-                        for (i in ticker(100,0)){
+                    lifecycleScope.launch {
+                        for (i in ticker(100, 0)) {
                             if (duration() != 0 && isPlaying()) {
                                 videoBinding.time.progress = getCurrentPos().toFloat() / duration()
                             }

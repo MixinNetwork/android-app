@@ -12,7 +12,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ObsoleteCoroutinesApi
 import kotlinx.coroutines.cancel
-import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.ticker
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -279,13 +278,13 @@ class AudioPlayer private constructor() {
         id?.let { id -> RxBus.publish(playEvent(id, p)) }
     }
 
-    private val coroutineScope = CoroutineScope(EmptyCoroutineContext)
-    private var tickerChannel: Channel<Unit>? =null
     var progress = 0f
+    private var tickerScope: CoroutineScope? = null
     private fun startTimer() {
-        if (tickerChannel == null) {
-            coroutineScope.launch {
-                val tickerChannel = ticker(2000, 0)
+        if (tickerScope == null) {
+            tickerScope = CoroutineScope(EmptyCoroutineContext)
+            tickerScope?.launch {
+                val tickerChannel = ticker(100, 0)
                 for (e in tickerChannel) {
                     withContext(Dispatchers.Main) {
                         if (player.duration() == 0) {
@@ -302,9 +301,8 @@ class AudioPlayer private constructor() {
     }
 
     private fun stopTimber() {
-        tickerChannel?.cancel()
-        tickerChannel = null
-        coroutineScope.cancel()
+        tickerScope?.cancel()
+        tickerScope = null
     }
 
     private fun checkNext() {

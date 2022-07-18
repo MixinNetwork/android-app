@@ -9,7 +9,6 @@ import com.google.gson.Gson
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ObsoleteCoroutinesApi
 import kotlinx.coroutines.cancel
-import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.ticker
 import kotlinx.coroutines.launch
 import okhttp3.OkHttpClient
@@ -53,7 +52,6 @@ import timber.log.Timber
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
-import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 
 class ChatWebSocket(
@@ -79,7 +77,7 @@ class ChatWebSocket(
     private var homeUrl = Mixin_WS_URL
 
     companion object {
-        val TAG = ChatWebSocket::class.java.simpleName
+        val TAG: String = ChatWebSocket::class.java.simpleName
     }
 
     init {
@@ -106,9 +104,8 @@ class ChatWebSocket(
         if (client != null) {
             closeInternal(quitCode)
             transactions.clear()
-            tickerChannel?.cancel()
-            tickerChannel = null
-            coroutineContext.cancel()
+            tickerScope?.cancel()
+            tickerScope = null
             client = null
             connected = false
         }
@@ -172,9 +169,8 @@ class ChatWebSocket(
             MixinApplication.appContext.runOnUiThread {
                 linkState.state = LinkState.ONLINE
             }
-            tickerChannel?.cancel()
-            tickerChannel = null
-            coroutineContext.cancel()
+            tickerScope?.cancel()
+            tickerScope = null
             jobManager.start()
             jobManager.addJobInBackground(RefreshOffsetJob())
             sendPendingMessage()
@@ -230,23 +226,23 @@ class ChatWebSocket(
         if (code == failCode) {
             closeInternal(code)
             // jobManager.stop()
-            if (tickerChannel == null) {
-                CoroutineScope(coroutineContext).launch {
-                        val tickerChannel = ticker(2000, 0)
-                        for (e in tickerChannel) {
-                            if (MixinApplication.appContext.networkConnected() && Session.checkToken()) {
-                                connect()
-                            }
+            if (tickerScope == null) {
+                tickerScope = CoroutineScope(EmptyCoroutineContext)
+                tickerScope?.launch {
+                    val tickerChannel = ticker(2000, 0)
+                    for (e in tickerChannel) {
+                        if (MixinApplication.appContext.networkConnected() && Session.checkToken()) {
+                            connect()
                         }
                     }
+                }
             }
         } else {
             webSocket.cancel()
         }
     }
 
-    private val coroutineContext: CoroutineContext = EmptyCoroutineContext
-    private var tickerChannel:Channel<Unit>? =null
+    private var tickerScope: CoroutineScope? = null
 
     @Synchronized
     override fun onFailure(webSocket: WebSocket, t: Throwable, response: Response?) {
