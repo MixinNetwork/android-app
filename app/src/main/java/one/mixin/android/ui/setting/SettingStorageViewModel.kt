@@ -69,7 +69,9 @@ internal constructor(
 
     suspend fun getConversationStorageUsage(context: Context) = withContext(Dispatchers.IO) {
         conversationRepository.getConversationStorageUsage().asSequence().map { item ->
-            item.apply { item.mediaSize = context.getConversationMediaSize(item.conversationId) }
+            item.apply {
+                item.mediaSize = context.getConversationMediaSize(item.conversationId) + (conversationRepository.getMediaSizeTotalById(conversationId) ?: 0L) / 1024
+            }
         }.filter { conversationStorageUsage ->
             conversationStorageUsage.mediaSize != 0L && conversationStorageUsage.conversationId.isNotEmpty()
         }.sortedByDescending { conversationStorageUsage ->

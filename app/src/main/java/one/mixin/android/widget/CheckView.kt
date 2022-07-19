@@ -8,6 +8,7 @@ import android.widget.CompoundButton
 import android.widget.FrameLayout
 import androidx.annotation.StringRes
 import one.mixin.android.databinding.ViewCheckBinding
+import one.mixin.android.extension.FileSizeUnit
 import one.mixin.android.extension.fileSize
 
 class CheckView(context: Context, attrs: AttributeSet) : FrameLayout(context, attrs), Checkable {
@@ -40,7 +41,7 @@ class CheckView(context: Context, attrs: AttributeSet) : FrameLayout(context, at
     }
 
     fun setSize(size: Long) {
-        binding.storageTv.text = size.fileSize()
+        binding.storageTv.text = size.fileSize(FileSizeUnit.KB)
     }
 
     fun setOnCheckedChangeListener(listener: CompoundButton.OnCheckedChangeListener) {
