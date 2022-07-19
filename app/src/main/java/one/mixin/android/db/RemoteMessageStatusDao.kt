@@ -8,7 +8,7 @@ import one.mixin.android.vo.StatusMessage
 
 @Dao
 interface RemoteMessageStatusDao : BaseDao<RemoteMessageStatus> {
-    @Query("SELECT rm.*, em.expire_at FROM remote_messages_status rm LEFT JOIN expired_messages em WHERE rm.status = 'READ' LIMIT $MARK_REMOTE_LIMIT")
+    @Query("SELECT rm.*, em.expire_at FROM remote_messages_status rm LEFT JOIN expired_messages em WHERE rm.status = 'READ' ORDER BY rm.rowid ASC LIMIT $MARK_REMOTE_LIMIT")
     fun findRemoteMessageStatus(): List<StatusMessage>
 
     @Query("UPDATE remote_messages_status SET status = 'READ' WHERE conversation_id = :conversationId")
