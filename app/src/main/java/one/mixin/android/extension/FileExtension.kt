@@ -435,7 +435,7 @@ private fun File.createDocumentFile(
     noMedia: Boolean = true,
     name: String? = null,
     extensionName: String? = null
-): Pair<File, Boolean> {
+): File {
     val defaultName = "FILE_${
     SimpleDateFormat(
         "yyyyMMdd_HHmmss_SSS", Locale.US
@@ -454,8 +454,7 @@ private fun File.createDocumentFile(
     if (noMedia) {
         createNoMediaDir()
     }
-    val f = File(this, fileName)
-    return Pair(f, f.exists())
+    return File(this, fileName)
 }
 
 fun File.createVideoTemp(conversationId: String, messageId: String, type: String, noMedia: Boolean = true): File {
@@ -588,11 +587,8 @@ fun Uri.copyFileUrlWithAuthority(context: Context, name: String? = null): String
         return try {
             val extensionName = getFileName(context).getExtensionName()
             input = context.contentResolver.openInputStream(this) ?: return null
-            val pair = context.getDocumentPath()?.createDocumentFile(name = name, extensionName = extensionName) ?: return null
-            val outFile = pair.first
-            if (!pair.second) {
-                outFile.copyFromInputStream(input)
-            }
+            val outFile = context.getDocumentPath().createDocumentFile(name = name, extensionName = extensionName)
+            outFile.copyFromInputStream(input)
             outFile.absolutePath
         } catch (e: Exception) {
             reportException("Uri.copyFileUrlWithAuthority name: $name", e)
