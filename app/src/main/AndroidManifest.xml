@@ -362,6 +362,14 @@
         <receiver
             android:name=".receiver.ExitBroadcastReceiver"
             android:enabled="true" />
+        <receiver
+            android:name=".receiver.TimezoneChangedReceiver"
+            android:exported="false"
+            android:enabled="true" >
+            <intent-filter>
+                <action android:name="android.intent.action.TIMEZONE_CHANGED"/>
+            </intent-filter>
+        </receiver>
 
         <provider
             android:name="androidx.startup.InitializationProvider"
