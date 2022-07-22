@@ -549,7 +549,7 @@ class WebFragment : BaseFragment() {
                         if (code == PermissionRequest.RESOURCE_AUDIO_CAPTURE) {
                             permission.add(Manifest.permission.RECORD_AUDIO)
                         } else if (code == PermissionRequest.RESOURCE_VIDEO_CAPTURE) {
-                            permission.add(Manifest.permission.RECORD_AUDIO)
+                            permission.add(Manifest.permission.CAMERA)
                         }
                         if (code != PermissionRequest.RESOURCE_VIDEO_CAPTURE && code != PermissionRequest.RESOURCE_AUDIO_CAPTURE) {
                             request.deny()
