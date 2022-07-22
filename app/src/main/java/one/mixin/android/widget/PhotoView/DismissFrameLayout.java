@@ -102,8 +102,10 @@ public class DismissFrameLayout extends FrameLayout {
                     }
                 }
             } else if (view instanceof LargeImageView) {
-                if (view.onTouchEvent(event)) {
-                    return true;
+                if (((LargeImageView) view).getScale() != 1 || event.getPointerCount() > 1) {
+                    if (view.onTouchEvent(event)) {
+                        return true;
+                    }
                 }
             }
         }
