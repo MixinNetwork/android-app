@@ -66,6 +66,9 @@ fun parseMentionData(
         val identityNumber = matcher.group().replace("@", "").replace(" ", "")
         numbers.add(identityNumber)
     }
+    if (numbers.isEmpty()) {
+        return Pair(null, false)
+    }
     val account = Session.getAccount()
     val mentions = userDao.findUserByIdentityNumbers(numbers)
     if (mentions.isEmpty()) {
