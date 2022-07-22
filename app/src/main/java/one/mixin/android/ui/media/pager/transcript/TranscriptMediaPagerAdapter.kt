@@ -8,7 +8,6 @@ import android.view.ViewGroup
 import android.widget.FrameLayout
 import androidx.core.view.updateLayoutParams
 import androidx.recyclerview.widget.RecyclerView
-import com.shizhefei.view.largeimage.LargeImageView
 import one.mixin.android.Constants.BIG_IMAGE_SIZE
 import one.mixin.android.R
 import one.mixin.android.extension.displayRatio
@@ -23,6 +22,7 @@ import one.mixin.android.widget.PhotoView.DismissFrameLayout
 import one.mixin.android.widget.PhotoView.PhotoView
 import one.mixin.android.widget.PhotoView.PhotoViewAttacher
 import one.mixin.android.widget.gallery.MimeType
+import one.mixin.android.widget.largeimage.LargeImageView
 
 class TranscriptMediaPagerAdapter(
     private val context: Context,
