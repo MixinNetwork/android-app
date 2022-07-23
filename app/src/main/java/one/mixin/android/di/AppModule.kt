@@ -125,13 +125,21 @@ object AppModule {
         if (!CronetProviderInstaller.isInstalled()) {
             return null
         }
-        return CronetEngine.Builder(ctx)
-            .addQuicHint(URL.toUri().host, 443, 443)
-            .addQuicHint(Mixin_URL.toUri().host, 443, 443)
-            .enableQuic(true)
-            .enableHttp2(true)
-            .enableHttpCache(CronetEngine.Builder.HTTP_CACHE_IN_MEMORY, 10 * 1024)
-            .build()
+        return try {
+            CronetEngine.Builder(ctx)
+                .addQuicHint(URL.toUri().host, 443, 443)
+                .addQuicHint(Mixin_URL.toUri().host, 443, 443)
+                .enableQuic(true)
+                .enableHttp2(true)
+                .enableHttpCache(CronetEngine.Builder.HTTP_CACHE_IN_MEMORY, 10 * 1024)
+                .build()
+        } catch (e: UnsatisfiedLinkError) {
+            reportException(e)
+            null
+        } catch (e: Exception) {
+            reportException(e)
+            null
+        }
     }
 
     @Singleton

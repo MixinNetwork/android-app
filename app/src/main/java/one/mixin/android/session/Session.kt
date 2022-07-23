@@ -265,7 +265,7 @@ object Session {
 fun encryptPin(key: String, code: String?): String? {
     val pinCode = code ?: return null
     val iterator = Session.getPinIterator()
-    val pinByte = pinCode.toByteArray() + (currentTimeSeconds()).toLeByteArray() + iterator.toLeByteArray()
+    val pinByte = pinCode.toByteArray() + currentTimeSeconds().toLeByteArray() + iterator.toLeByteArray()
     val based = aesEncrypt(Base64.decode(key), pinByte).base64Encode()
     Session.storePinIterator(iterator + 1)
     return based
