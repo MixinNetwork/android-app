@@ -324,7 +324,6 @@ dependencies {
     implementation "com.google.android.exoplayer:exoplayer-ui:${exoplayerVersion}"
     implementation "com.google.android.exoplayer:extension-mediasession:${exoplayerVersion}"
     implementation "com.googlecode.mp4parser:isoparser:${isoparserVersion}"
-    implementation "com.github.SeniorZhai:LargeImage:${largeImageViewVersion}"
     implementation "io.noties.markwon:core:${markwonVersion}"
     implementation "io.noties.markwon:image:${markwonVersion}"
     implementation "io.noties.markwon:image-glide:${markwonVersion}"

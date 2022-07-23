@@ -5,8 +5,6 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.ViewCompat
 import androidx.core.view.isVisible
-import com.shizhefei.view.largeimage.LargeImageView
-import com.shizhefei.view.largeimage.factory.FileBitmapDecoderFactory
 import one.mixin.android.R
 import one.mixin.android.extension.getFilePath
 import one.mixin.android.extension.screenWidth
@@ -18,6 +16,8 @@ import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.absolutePath
 import one.mixin.android.widget.CircleProgress
+import one.mixin.android.widget.largeimage.LargeImageView
+import one.mixin.android.widget.largeimage.factory.FileBitmapDecoderFactory
 import java.io.File
 
 class LargeImageHolder(itemView: View) : MediaPagerHolder(itemView) {

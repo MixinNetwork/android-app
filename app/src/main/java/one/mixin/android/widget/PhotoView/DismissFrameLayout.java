@@ -11,9 +11,10 @@ import androidx.annotation.AttrRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.StyleRes;
-import com.shizhefei.view.largeimage.LargeImageView;
 
 import static one.mixin.android.widget.PhotoView.SwipeGestureDetector.DIRECTION_LEFT_RIGHT;
+
+import one.mixin.android.widget.largeimage.LargeImageView;
 
 public class DismissFrameLayout extends FrameLayout {
     private SwipeGestureDetector swipeGestureDetector;
@@ -101,8 +102,10 @@ public class DismissFrameLayout extends FrameLayout {
                     }
                 }
             } else if (view instanceof LargeImageView) {
-                if (view.onTouchEvent(event)) {
-                    return true;
+                if (((LargeImageView) view).getScale() != 1 || event.getPointerCount() > 1) {
+                    if (view.onTouchEvent(event)) {
+                        return true;
+                    }
                 }
             }
         }
