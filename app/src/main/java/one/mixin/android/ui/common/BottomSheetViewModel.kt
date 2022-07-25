@@ -310,7 +310,7 @@ class BottomSheetViewModel @Inject internal constructor(
         }
     }
 
-    suspend fun refreshSnapshot(snapshotId: String): SnapshotItem? {
+    private suspend fun refreshSnapshot(snapshotId: String): SnapshotItem? {
         return withContext(Dispatchers.IO) {
             assetRepository.refreshAndGetSnapshot(snapshotId)
         }
