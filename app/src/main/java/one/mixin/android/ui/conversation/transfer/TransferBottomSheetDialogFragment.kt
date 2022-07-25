@@ -196,7 +196,7 @@ class TransferBottomSheetDialogFragment : ValuableBiometricBottomSheetDialogFrag
                 val item = t as WithdrawBiometricItem
                 return getString(
                     R.string.error_insufficient_transaction_fee_with_amount,
-                    INSUFFICIENT_TRANSACTION_FEE, "${item.fee} ${t.asset.chainSymbol}"
+                    "${item.fee} ${t.asset.chainSymbol}"
                 )
             }
         } else if (errorCode == ErrorHandler.WITHDRAWAL_FEE_TOO_SMALL) {

@@ -567,7 +567,7 @@
     <string name="Monday">月曜日</string>
     <string name="More">もっとみる</string>
     <string name="Multisig_by_PIN">PINコードでマルチシグウォレットを使用する</string>
-    <string name="multisig_receivers_threshold">受取人</string>
+    <string name="multisig_receivers_threshold">受取人 (%1$s)</string>
     <string name="multisig_state_signed">このマルチシグリンクはすでにあなたが署名しているため、重複した操作を行うことはできません</string>
     <string name="multisig_state_unlocked">このマルチシグリンクは既に他のユーザーによってロック解除されています。重複した操作を行うことはできません。</string>
     <string name="Multisig_Transaction">マルチシグトランザクション</string>
@@ -849,7 +849,7 @@
     <string name="share_message_description">%1$sから%2$sを送信しますか？</string>
     <string name="share_message_description_empty">%1$sを送信しますか？</string>
     <string name="Share_QR_Code">QRコードを共有</string>
-    <string name="share_to">共有する</string>
+    <string name="share_to">共有%1$sする</string>
     <string name="Shared_Media">共有されたメディア</string>
     <string name="Show">表示</string>
     <string name="Show_in_chat">チャット内で表示</string>
