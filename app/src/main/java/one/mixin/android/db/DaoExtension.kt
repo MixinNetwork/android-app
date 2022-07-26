@@ -211,6 +211,7 @@ fun MixinDatabase.insertAndNotifyConversation(message: Message) {
         if (!message.isMine() && message.status != MessageStatus.READ.name) {
             remoteMessageStatusDao().insert(RemoteMessageStatus(message.id, message.conversationId, MessageStatus.DELIVERED.name))
         }
+        conversationDao().updateLastMessageId(message.id, message.createdAt, message.conversationId)
         remoteMessageStatusDao().updateConversationUnseen(message.conversationId)
         InvalidateFlow.emit(message.conversationId)
     }
