@@ -146,8 +146,14 @@ private fun LanguageItem() {
                 Locale.SIMPLIFIED_CHINESE.language -> {
                     AppearanceFragment.POS_SIMPLIFY_CHINESE
                 }
+                Locale.TRADITIONAL_CHINESE.language -> {
+                    AppearanceFragment.POS_TRADITIONAL_CHINESE
+                }
                 Locale.JAPANESE.language -> {
                     AppearanceFragment.POS_SIMPLIFY_JAPANESE
+                }
+                Constants.Locale.Russian.Language -> {
+                    AppearanceFragment.POS_RUSSIAN
                 }
                 Constants.Locale.Indonesian.Language -> {
                     AppearanceFragment.POS_INDONESIA
@@ -189,7 +195,9 @@ private fun LanguageItem() {
                         AppearanceFragment.POS_FOLLOW_SYSTEM,
                         AppearanceFragment.POS_ENGLISH,
                         AppearanceFragment.POS_SIMPLIFY_CHINESE,
+                        AppearanceFragment.POS_TRADITIONAL_CHINESE,
                         AppearanceFragment.POS_SIMPLIFY_JAPANESE,
+                        AppearanceFragment.POS_RUSSIAN,
                         AppearanceFragment.POS_INDONESIA,
                         AppearanceFragment.POS_Malay,
                     ).forEach { index ->
@@ -216,16 +224,20 @@ private fun LanguageItem() {
                     } else {
                         val selectedLang = when (newSelected) {
                             AppearanceFragment.POS_SIMPLIFY_CHINESE -> Locale.SIMPLIFIED_CHINESE.language
+                            AppearanceFragment.POS_TRADITIONAL_CHINESE -> Locale.TRADITIONAL_CHINESE.language
+                            AppearanceFragment.POS_SIMPLIFY_JAPANESE -> Locale.JAPANESE.language
+                            AppearanceFragment.POS_RUSSIAN -> Constants.Locale.Russian.Language
                             AppearanceFragment.POS_INDONESIA -> Constants.Locale.Indonesian.Language
                             AppearanceFragment.POS_Malay -> Constants.Locale.Malay.Language
-                            AppearanceFragment.POS_SIMPLIFY_JAPANESE -> Locale.JAPANESE.language
                             else -> Locale.US.language
                         }
                         val selectedCountry = when (newSelected) {
                             AppearanceFragment.POS_SIMPLIFY_CHINESE -> Locale.SIMPLIFIED_CHINESE.country
+                            AppearanceFragment.POS_TRADITIONAL_CHINESE -> Locale.TRADITIONAL_CHINESE.country
+                            AppearanceFragment.POS_SIMPLIFY_JAPANESE -> Locale.JAPANESE.country
+                            AppearanceFragment.POS_RUSSIAN -> Constants.Locale.Russian.Country
                             AppearanceFragment.POS_INDONESIA -> Constants.Locale.Indonesian.Country
                             AppearanceFragment.POS_Malay -> Constants.Locale.Malay.Country
-                            AppearanceFragment.POS_SIMPLIFY_JAPANESE -> Locale.JAPANESE.country
                             else -> Locale.US.country
                         }
                         val newLocale = Locale(selectedLang, selectedCountry)

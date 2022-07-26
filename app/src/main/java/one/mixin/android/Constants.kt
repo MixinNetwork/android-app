@@ -147,6 +147,10 @@ object Constants {
     }
 
     object Locale {
+        object Russian {
+            const val Language = "ru"
+            const val Country = ""
+        }
         object Indonesian {
             const val Language = "id"
             const val Country = "ID"
