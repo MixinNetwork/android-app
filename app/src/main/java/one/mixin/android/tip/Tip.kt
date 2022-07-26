@@ -55,7 +55,7 @@ class Tip @Inject internal constructor(
                 return try {
                     createTipPriv(context, pin, deviceId, forRecover = true)
                 } catch (e: Exception) {
-                    Timber.d(e)
+                    Timber.e(e)
                     null
                 }
             }
@@ -64,7 +64,7 @@ class Tip @Inject internal constructor(
 
         val aesKey = getAesKey(pin)
         if (aesKey == null) {
-            Timber.d("read priv tip aes key failed")
+            Timber.e("read priv tip aes key failed")
             return null
         }
 
@@ -76,40 +76,40 @@ class Tip @Inject internal constructor(
     suspend fun createTipPriv(context: Context, pin: String, deviceId: String, failedSigners: List<TipSigner>? = null, legacyPin: String? = null, forRecover: Boolean = false): ByteArray? {
         val ephemeralSeed = ephemeral.getEphemeralSeed(context, deviceId)
         if (ephemeralSeed == null) {
-            Timber.d("empty ephemeral seed")
+            Timber.e("empty ephemeral seed")
             return null
         }
 
         val identityPair = identityManager.getIdentityPrivAndWatcher(pin)
         if (identityPair == null) {
-            Timber.d("identity pair is null")
+            Timber.e("identity pair is null")
             return null
         }
 
-        return createPriv(context, identityPair.first, ephemeralSeed, identityPair.second, pin, failedSigners, legacyPin, forRecover)
+        return createPriv(context, identityPair.priKey, ephemeralSeed, identityPair.watcher, pin, failedSigners, legacyPin, forRecover)
     }
 
     @Throws(TipNodeException::class)
     suspend fun updateTipPriv(context: Context, pin: String, deviceId: String, newPin: String, nodeSuccess: Boolean, failedSigners: List<TipSigner>? = null): ByteArray? {
         val ephemeralSeed = ephemeral.getEphemeralSeed(context, deviceId)
         if (ephemeralSeed == null) {
-            Timber.d("empty ephemeral seed")
+            Timber.e("empty ephemeral seed")
             return null
         }
 
         val identityPair = identityManager.getIdentityPrivAndWatcher(pin)
         if (identityPair == null) {
-            Timber.d("identity priv and seed is null")
+            Timber.e("identity priv and seed is null")
             return null
         }
 
-        val assigneePriv = identityManager.getIdentityPrivAndWatcher(newPin)?.first
+        val assigneePriv = identityManager.getIdentityPrivAndWatcher(newPin)?.priKey
         if (assigneePriv == null) {
-            Timber.d("assignee priv is null")
+            Timber.e("assignee priv is null")
             return null
         }
 
-        return updatePriv(context, identityPair.first, ephemeralSeed, identityPair.second, newPin, assigneePriv, nodeSuccess, failedSigners)
+        return updatePriv(context, identityPair.priKey, ephemeralSeed, identityPair.watcher, newPin, assigneePriv, nodeSuccess, failedSigners)
     }
 
     suspend fun watchTipNodeCounters(): List<TipNode.TipNodeCounter>? {
@@ -128,21 +128,30 @@ class Tip @Inject internal constructor(
 
         val localPub = Session.getTipPub()
         if (!localPub.isNullOrBlank() && !localPub.base64RawUrlDecode().contentEquals(pub.abyte)) {
-            Timber.d("local pub not equals to new generated, PIN incorrect")
+            Timber.e("local pub not equals to new generated, PIN incorrect")
             throw PinIncorrectException()
         }
-
-        encryptAndSave(pin, aggSig, context) ?: return null
+        if (!encryptAndSave(context, pin, aggSig)) return null
 
         if (forRecover) return aggSig
 
+        val replaceResult = replaceOldEncryptedPin(pub, legacyPin)
+        if (!replaceResult) return null
+
+        return aggSig
+    }
+
+    private suspend fun replaceOldEncryptedPin(
+        pub: EdDSAPublicKey,
+        legacyPin: String? = null
+    ): Boolean {
         val pinToken = requireNotNull(Session.getPinToken())
         val oldEncryptedPin = if (legacyPin != null) {
             encryptPin(pinToken, legacyPin)
         } else null
         val newPin = encryptPin(pinToken, pub.abyte + 1L.toBeByteArray())
         val pinRequest = PinRequest(newPin, oldEncryptedPin)
-        handleMixinResponse(
+        return handleMixinResponse(
             invokeNetwork = {
                 accountService.updatePinSuspend(pinRequest)
             },
@@ -152,9 +161,7 @@ class Tip @Inject internal constructor(
                 requireNotNull(r) { "Required respond account was null." }
                 Session.storeAccount(r)
             }
-        ) ?: return null
-
-        return aggSig
+        ) != null
     }
 
     @Throws(TipNodeException::class)
@@ -165,8 +172,13 @@ class Tip @Inject internal constructor(
             tipNode.sign(identityPriv, ephemeral, watcher, assigneePriv, failedSigners)
         }
 
-        encryptAndSave(newPin, aggSig, context) ?: return null
+        if (!encryptAndSave(context, newPin, aggSig)) return null
+        val replaceResult = replaceEncryptedPin(aggSig)
+        if (!replaceResult) return null
+        return aggSig
+    }
 
+    private suspend fun replaceEncryptedPin(aggSig: ByteArray): Boolean {
         val privateSpec = EdDSAPrivateKeySpec(ed25519, aggSig.copyOf())
         val pub = EdDSAPublicKey(EdDSAPublicKeySpec(privateSpec.a, ed25519))
         val pinToken = requireNotNull(Session.getPinToken())
@@ -175,7 +187,7 @@ class Tip @Inject internal constructor(
         val oldPin = encryptTipPin(aggSig, timestamp)
         val newEncryptPin = encryptPin(pinToken, pub.abyte + (counter + 1).toBeByteArray()) // TODO should use tip node counter?
         val pinRequest = PinRequest(newEncryptPin, oldPin)
-        handleMixinResponse(
+        return handleMixinResponse(
             invokeNetwork = {
                 accountService.updatePinSuspend(pinRequest)
             },
@@ -185,23 +197,21 @@ class Tip @Inject internal constructor(
                 requireNotNull(r) { "Required respond account was null." }
                 Session.storeAccount(r)
             }
-        ) ?: return null
-
-        return aggSig
+        ) != null
     }
 
-    private suspend fun encryptAndSave(pin: String, aggSig: ByteArray, context: Context): ByteArray? {
+    private suspend fun encryptAndSave(context: Context, pin: String, aggSig: ByteArray): Boolean {
         val aesKey = generateAesKey(pin)
         if (aesKey == null) {
-            Timber.d("generate priv tip aes key failed")
-            return null
+            Timber.e("generate priv tip aes key failed")
+            return false
         }
 
         val privTipKey = (aesKey + pin.toByteArray()).sha3Sum256()
         val privTip = aesEncrypt(privTipKey, aggSig)
 
         storeTipPriv(context, privTip)
-        return aggSig
+        return true
     }
 
     private suspend fun generateAesKey(pin: String): ByteArray? {
@@ -341,7 +351,7 @@ suspend fun Tip.checkCounter(
     val group = counters.groupBy { it.counter }
     if (group.size <= 1) {
         val nodeCounter = counters.first().counter
-        Timber.d("watch tip node all counter are $nodeCounter, tipCounter $tipCounter")
+        Timber.e("watch tip node all counter are $nodeCounter, tipCounter $tipCounter")
         if (nodeCounter == tipCounter) {
             return
         }
@@ -360,7 +370,7 @@ suspend fun Tip.checkCounter(
 
     val maxCounter = group.keys.maxBy { it }
     val failedNodes = group[group.keys.minBy { it }]
-    Timber.d("watch tip node counter maxCounter $maxCounter, need update nodes: $failedNodes")
+    Timber.e("watch tip node counter maxCounter $maxCounter, need update nodes: $failedNodes")
     onNodeCounterNotConsistency(maxCounter, failedNodes)
 }
 
