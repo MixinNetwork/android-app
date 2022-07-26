@@ -122,7 +122,7 @@ class TipNode @Inject internal constructor(private val tipNodeService: TipNodeSe
     }
 
     private suspend fun getNodeSigs(userSk: Scalar, tipSigners: List<TipSigner>, ephemeral: ByteArray, watcher: ByteArray, assignee: ByteArray?): List<TipSignRespData> {
-        val result = CopyOnWriteArrayList<TipSignRespData>()
+        val signResult = CopyOnWriteArrayList<TipSignRespData>()
         val nonce = currentTimeSeconds()
         val grace = ephemeralGrace
 
@@ -138,7 +138,7 @@ class TipNode @Inject internal constructor(private val tipNodeService: TipNodeSe
                         }
 
                         if (sign != null) {
-                            result.add(sign)
+                            signResult.add(sign)
                             Timber.d("fetch tip node $index sign success")
                             return@async
                         }
@@ -149,7 +149,7 @@ class TipNode @Inject internal constructor(private val tipNodeService: TipNodeSe
                 }
             }.awaitAll()
         }
-        return result
+        return signResult
     }
 
     private suspend fun watchTipNode(tipSigner: TipSigner, watcher: ByteArray): Pair<Int, Int> {
@@ -168,8 +168,8 @@ class TipNode @Inject internal constructor(private val tipNodeService: TipNodeSe
     }
 
     private suspend fun signTipNode(userSk: Scalar, tipSigner: TipSigner, ephemeral: ByteArray, watcher: ByteArray, nonce: Long, grace: Long, assignee: ByteArray?): Pair<TipSignRespData?, Int> {
-        val tipSignRequest = genTipSignRequest(userSk, tipSigner, ephemeral, watcher, nonce, grace, assignee)
         return try {
+            val tipSignRequest = genTipSignRequest(userSk, tipSigner, ephemeral, watcher, nonce, grace, assignee)
             val tipSignResponse = tipNodeService.sign(tipSignRequest, tipSigner.api)
 
             val signerPk = Crypto.pubKeyFromBase58(tipSigner.identity)
