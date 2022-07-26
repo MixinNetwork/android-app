@@ -236,4 +236,7 @@ interface ConversationDao : BaseDao<Conversation> {
         """
     )
     suspend fun findSameConversations(selfId: String, userId: String): List<GroupMinimal>
+
+    @Query("UPDATE conversations SET last_message_id = :id, last_message_created_at = :createdAt  WHERE conversation_id = :conversationId")
+    fun updateLastMessageId(id: String, createdAt: String, conversationId: String)
 }
