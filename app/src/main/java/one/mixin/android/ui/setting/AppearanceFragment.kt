@@ -82,34 +82,11 @@ class AppearanceFragment : BaseFragment(R.layout.fragment_appearance) {
                     }
                 }
             }
-            val language = Lingver.getInstance().getLanguage()
             val languageNames = resources.getStringArray(R.array.language_names)
             languageDescTv.text = if (Lingver.getInstance().isFollowingSystemLocale()) {
                 getString(R.string.Follow_system)
             } else {
-                when (language) {
-                    Locale.SIMPLIFIED_CHINESE.language -> {
-                        languageNames[POS_SIMPLIFY_CHINESE]
-                    }
-                    Locale.TRADITIONAL_CHINESE.language -> {
-                        languageNames[POS_TRADITIONAL_CHINESE]
-                    }
-                    Locale.JAPANESE.language -> {
-                        languageNames[POS_SIMPLIFY_JAPANESE]
-                    }
-                    Constants.Locale.Russian.Language -> {
-                        languageNames[POS_RUSSIAN]
-                    }
-                    Constants.Locale.Indonesian.Language -> {
-                        languageNames[POS_INDONESIA]
-                    }
-                    Constants.Locale.Malay.Language -> {
-                        languageNames[POS_Malay]
-                    }
-                    else -> {
-                        languageNames[POS_ENGLISH]
-                    }
-                }
+                languageNames[getLanguagePos()]
             }
             languageRl.setOnClickListener { showLanguageAlert() }
             currentTv.text = getString(R.string.wallet_setting_currency_desc, Session.getFiatCurrency(), Fiats.getSymbol())
@@ -128,33 +105,7 @@ class AppearanceFragment : BaseFragment(R.layout.fragment_appearance) {
     private fun showLanguageAlert() {
         val choice = resources.getStringArray(R.array.language_names)
         choice[0] = getString(R.string.Follow_system)
-        val selectItem = if (Lingver.getInstance().isFollowingSystemLocale()) {
-            POS_FOLLOW_SYSTEM
-        } else {
-            when (Lingver.getInstance().getLanguage()) {
-                Locale.SIMPLIFIED_CHINESE.language -> {
-                    POS_SIMPLIFY_CHINESE
-                }
-                Locale.TRADITIONAL_CHINESE.language -> {
-                    POS_TRADITIONAL_CHINESE
-                }
-                Locale.JAPANESE.language -> {
-                    POS_SIMPLIFY_JAPANESE
-                }
-                Constants.Locale.Russian.Language -> {
-                    POS_RUSSIAN
-                }
-                Constants.Locale.Indonesian.Language -> {
-                    POS_INDONESIA
-                }
-                Constants.Locale.Malay.Language -> {
-                    POS_Malay
-                }
-                else -> {
-                    POS_ENGLISH
-                }
-            }
-        }
+        val selectItem = getLanguagePos()
         var newSelectItem = selectItem
         alertDialogBuilder()
             .setTitle(R.string.Language)
@@ -197,5 +148,26 @@ class AppearanceFragment : BaseFragment(R.layout.fragment_appearance) {
                 dialog.dismiss()
             }
             .show()
+    }
+}
+
+fun getLanguagePos() = when (Lingver.getInstance().getLanguage()) {
+    Locale.SIMPLIFIED_CHINESE.language, Locale.TRADITIONAL_CHINESE.language -> {
+        if (Lingver.getInstance().getLocale().country == "CN") AppearanceFragment.POS_SIMPLIFY_CHINESE else AppearanceFragment.POS_TRADITIONAL_CHINESE
+    }
+    Locale.JAPANESE.language -> {
+        AppearanceFragment.POS_SIMPLIFY_JAPANESE
+    }
+    Constants.Locale.Russian.Language -> {
+        AppearanceFragment.POS_RUSSIAN
+    }
+    Constants.Locale.Indonesian.Language -> {
+        AppearanceFragment.POS_INDONESIA
+    }
+    Constants.Locale.Malay.Language -> {
+        AppearanceFragment.POS_Malay
+    }
+    else -> {
+        AppearanceFragment.POS_ENGLISH
     }
 }
