@@ -39,6 +39,7 @@ import one.mixin.android.session.Session
 import one.mixin.android.ui.setting.AppearanceFragment
 import one.mixin.android.ui.setting.Currency
 import one.mixin.android.ui.setting.CurrencyBottomSheetDialogFragment
+import one.mixin.android.ui.setting.getLanguagePos
 import one.mixin.android.ui.setting.ui.compose.MixinAlertDialog
 import one.mixin.android.ui.setting.ui.compose.MixinBackButton
 import one.mixin.android.ui.setting.ui.compose.MixinTopAppBar
@@ -142,29 +143,7 @@ private fun LanguageItem() {
         val index = if (Lingver.getInstance().isFollowingSystemLocale()) {
             AppearanceFragment.POS_FOLLOW_SYSTEM
         } else {
-            when (Lingver.getInstance().getLanguage()) {
-                Locale.SIMPLIFIED_CHINESE.language -> {
-                    AppearanceFragment.POS_SIMPLIFY_CHINESE
-                }
-                Locale.TRADITIONAL_CHINESE.language -> {
-                    AppearanceFragment.POS_TRADITIONAL_CHINESE
-                }
-                Locale.JAPANESE.language -> {
-                    AppearanceFragment.POS_SIMPLIFY_JAPANESE
-                }
-                Constants.Locale.Russian.Language -> {
-                    AppearanceFragment.POS_RUSSIAN
-                }
-                Constants.Locale.Indonesian.Language -> {
-                    AppearanceFragment.POS_INDONESIA
-                }
-                Constants.Locale.Malay.Language -> {
-                    AppearanceFragment.POS_Malay
-                }
-                else -> {
-                    AppearanceFragment.POS_ENGLISH
-                }
-            }
+            getLanguagePos()
         }
         mutableStateOf(index)
     }
