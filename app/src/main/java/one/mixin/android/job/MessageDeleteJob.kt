@@ -5,6 +5,7 @@ import kotlinx.coroutines.runBlocking
 import one.mixin.android.Constants.DB_DELETE_LIMIT
 import one.mixin.android.db.deleteMessageByIds
 import one.mixin.android.util.chat.InvalidateFlow
+import timber.log.Timber
 
 class MessageDeleteJob(
     private val conversationId: String,
@@ -30,6 +31,7 @@ class MessageDeleteJob(
                 DB_DELETE_LIMIT
             )
             jobManager.addJobInBackground(MessageFtsDeleteJob(ids))
+            Timber.e("MessageDeleteJob $ids")
             appDatabase.deleteMessageByIds(ids)
         }
         val currentRowId = messageDao.findLastMessageRowId(conversationId)

@@ -24,6 +24,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants.DB_EXPIRED_LIMIT
+import one.mixin.android.Constants.LOGS_LIMIT
 import one.mixin.android.Constants.MARK_REMOTE_LIMIT
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
@@ -311,7 +312,7 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
             return false
         } else if (ackMessages.size == 100) {
             jobDao.getJobsCount().apply {
-                if (this >= 10000 && this - lastAckPendingCount >= 10000) {
+                if (this >= LOGS_LIMIT && this - lastAckPendingCount >= LOGS_LIMIT) {
                     lastAckPendingCount = this
                     reportException("ack job count: $this", Exception())
                 }
@@ -324,11 +325,14 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
                         it.blazeMessage,
                         BlazeAckMessage::class.java
                     )
+                }.apply {
+                    Timber.e("Send ack: $this")
                 }
             )
             jobDao.deleteList(ackMessages)
         } catch (e: Exception) {
             Timber.e(e, "Send ack exception")
+            reportException(e)
         }
         return processAck()
     }
