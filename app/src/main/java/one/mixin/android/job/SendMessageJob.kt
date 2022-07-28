@@ -93,6 +93,7 @@ open class SendMessageJob(
                 }
                 if (!message.isTranscript()) {
                     messageDao.insert(message)
+                    conversationDao.updateLastMessageId(message.id, message.createdAt, message.conversationId)
                     InvalidateFlow.emit(message.conversationId)
                     MessageFts4Helper.insertOrReplaceMessageFts4(message, message.name)
                 }
