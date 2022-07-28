@@ -1495,8 +1495,10 @@ class ConversationFragment() :
                 context?.getClipboardManager()?.setPrimaryClip(
                     ClipData.newPlainText(null, conversationAdapter.selectSet.valueAt(0)?.content)
                 )
+                Timber.e("Copy ${conversationAdapter.selectSet.valueAt(0)?.messageId}")
                 toast(R.string.copied_to_clipboard)
             } catch (e: ArrayIndexOutOfBoundsException) {
+                Timber.e("Copy ArrayIndexOutOfBoundsException")
             }
             closeTool()
         }

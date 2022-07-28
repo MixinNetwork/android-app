@@ -13,6 +13,7 @@ import one.mixin.android.vo.Sticker
 import one.mixin.android.vo.StickerAlbum
 import one.mixin.android.vo.User
 import one.mixin.android.vo.isMine
+import timber.log.Timber
 
 fun UserDao.insertUpdate(
     user: User,
@@ -213,5 +214,6 @@ fun MixinDatabase.insertAndNotifyConversation(message: Message) {
         conversationDao().updateLastMessageId(message.id, message.createdAt, message.conversationId)
         remoteMessageStatusDao().updateConversationUnseen(message.conversationId)
         InvalidateFlow.emit(message.conversationId)
+        Timber.e("insert ${message.id}")
     }
 }

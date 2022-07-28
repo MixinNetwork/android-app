@@ -18,11 +18,13 @@ import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.absolutePath
 import one.mixin.android.vo.isTranscript
+import timber.log.Timber
 import javax.inject.Inject
 
 class CleanMessageHelper @Inject internal constructor(private val jobManager: MixinJobManager, private val appDatabase: MixinDatabase) {
 
     suspend fun deleteMessageByConversationId(conversationId: String, deleteConversation: Boolean = false) {
+        Timber.e("deleteMessageByConversationId $conversationId")
         // DELETE message's media
         var repeatTimes = 0
         var messageList: List<MediaMessageMinimal>
@@ -58,6 +60,7 @@ class CleanMessageHelper @Inject internal constructor(private val jobManager: Mi
         } else {
             val lastRowId = appDatabase.messageDao().findLastMessageRowId(conversationId) ?: return
             if (deleteCount > DB_DELETE_LIMIT) {
+                Timber.e("deleteMessageByConversationId async $conversationId")
                 jobManager.addJobInBackground(
                     MessageDeleteJob(
                         conversationId,
@@ -77,11 +80,13 @@ class CleanMessageHelper @Inject internal constructor(private val jobManager: Mi
                 }
                 appDatabase.conversationDao().refreshLastMessageId(conversationId)
                 InvalidateFlow.emit(conversationId)
+                Timber.e("deleteMessageByConversationId sync $conversationId")
             }
         }
     }
 
     fun deleteMessageItems(messageItems: List<MessageItem>) {
+        Timber.e("deleteMessageItems ${messageItems.map { it.messageId }}")
         messageItems.forEach { item ->
             deleteMessage(
                 item.messageId,
@@ -108,9 +113,11 @@ class CleanMessageHelper @Inject internal constructor(private val jobManager: Mi
                 item.absolutePath(MixinApplication.appContext, conversationId, item.mediaUrl)
             )
         }
+        Timber.e("deleteMessageMinimals ${messageItems.map { it.messageId }}")
     }
 
     private fun deleteMessage(messageId: String, conversationId: String, mediaUrl: String? = null, forceDelete: Boolean = true) {
+        Timber.e("deleteMessage $messageId")
         if (!mediaUrl.isNullOrBlank() && forceDelete) {
             jobManager.addJobInBackground(AttachmentDeleteJob(mediaUrl))
         }
