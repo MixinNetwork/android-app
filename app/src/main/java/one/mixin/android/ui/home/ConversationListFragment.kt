@@ -415,6 +415,9 @@ class ConversationListFragment : LinkFragment() {
         liveData.observe(viewLifecycleOwner, observer)
         scrollTop = true
         this.conversationLiveData = liveData
+        binding.shadowFl.animate().translationY(0f).duration = 200
+        distance = 0
+        shadowVisible = true
     }
 
     private fun animDownIcon(expand: Boolean) {
