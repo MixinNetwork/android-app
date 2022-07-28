@@ -65,12 +65,14 @@ class SendAttachmentMessageJob(
                 InvalidateFlow.emit(message.conversationId)
             } else {
                 messageDao.insert(message)
+                conversationDao.updateLastMessageId(message.id, message.createdAt, message.conversationId)
                 InvalidateFlow.emit(message.conversationId)
             }
         } else {
             val mId = messageDao.findMessageIdById(message.id)
             if (mId == null) {
                 messageDao.insert(message)
+                conversationDao.updateLastMessageId(message.id, message.createdAt, message.conversationId)
                 InvalidateFlow.emit(message.conversationId)
             }
         }

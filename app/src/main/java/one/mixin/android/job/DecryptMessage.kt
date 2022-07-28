@@ -344,6 +344,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                                 MessageStatus.READ.name
                             )
                         )
+                        conversationDao.updateLastMessageId(message.id, message.createdAt, message.conversationId)
                         InvalidateFlow.emit(data.conversationId)
                         if (message.category.endsWith("_TEXT")) {
                             messageMentionDao.findMessageMentionById(message.id)?.let { mention ->
@@ -358,17 +359,17 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                             }
                         }
                     } else {
-                        messageDao.insert(
-                            createPinMessage(
-                                UUID.randomUUID().toString(),
-                                data.conversationId,
-                                data.userId,
-                                messageId, // quote pinned message id
-                                null,
-                                nowInUtc(),
-                                MessageStatus.READ.name
-                            )
+                        val m =  createPinMessage(
+                            UUID.randomUUID().toString(),
+                            data.conversationId,
+                            data.userId,
+                            messageId, // quote pinned message id
+                            null,
+                            nowInUtc(),
+                            MessageStatus.READ.name
                         )
+                        messageDao.insert(m)
+                        conversationDao.updateLastMessageId(m.id, m.createdAt, m.conversationId)
                         InvalidateFlow.emit(data.conversationId)
                     }
                     if (index == transferPinData.messageIds.size - 1) {
@@ -808,7 +809,9 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                     0,
                     data.createdAt,
                     MessageStatus.UNKNOWN.name
-                )
+                ).apply {
+                    conversationDao.updateLastMessageId(this.id, this.createdAt, this.conversationId)
+                }
             )
             InvalidateFlow.emit(data.conversationId)
             return null
@@ -1160,6 +1163,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
     private fun insertInvalidMessage(data: BlazeMessageData) {
         val message = createMessage(data.messageId, data.conversationId, data.userId, data.category, data.data, data.createdAt, MessageStatus.UNKNOWN.name)
         messageDao.insert(message)
+        conversationDao.updateLastMessageId(data.messageId, data.createdAt, data.conversationId)
         InvalidateFlow.emit(data.conversationId)
     }
 

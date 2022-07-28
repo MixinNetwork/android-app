@@ -540,6 +540,7 @@ internal constructor(
 
     fun insertMessage(message: Message) {
         messageDao.insert(message)
+        conversationDao.updateLastMessageId(message.id, message.createdAt, message.conversationId)
         InvalidateFlow.emit(message.conversationId)
     }
 
