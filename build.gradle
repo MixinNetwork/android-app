@@ -2,9 +2,9 @@
 buildscript {
 
     ext {
-        ext.fragmentVersion = '1.5.0'
+        ext.fragmentVersion = '1.5.1'
         ext.lifecycleVersion = '2.5.1'
-        ext.appcompatVersion = '1.5.0-beta01'
+        ext.appcompatVersion = '1.5.0-rc01'
         ext.pagingVersion = '2.1.2'
         ext.collectionx = '1.2.0'
         ext.roomVersion = '2.4.3'
@@ -102,7 +102,7 @@ buildscript {
         ext.bcVersion = '1.70'
         ext.jsonVersion = '20220320'
         ext.composeVersion = '1.2.0-rc02'
-        ext.accompanistVersion = '0.24.13-rc'
+        ext.accompanistVersion = '0.25.0'
     }
 
     repositories {
