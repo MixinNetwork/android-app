@@ -484,7 +484,7 @@ object NotificationGenerator : Injector() {
                 .setStyle(messagingStyle)
         })
 
-        val canBubble = Build.VERSION.SDK_INT >= Build.VERSION_CODES.R && notificationManager.areBubblesAllowed()
+        val canBubble = Build.VERSION.SDK_INT >= Build.VERSION_CODES.R && notificationManager.areBubblesEnabled()
         if (canBubble) {
             loadBitmap(context, conversation.iconUrl()) { bitmap ->
                 val resource = bitmap ?: BitmapFactory.decodeResource(context.resources, R.drawable.ic_group_place_holder)

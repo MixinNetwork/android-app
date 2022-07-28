@@ -269,7 +269,7 @@ class MainActivity : BlazeBaseActivity() {
     override fun onStart() {
         super.onStart()
         val notificationManager = getSystemService<NotificationManager>() ?: return
-        if ((Build.VERSION.SDK_INT >= Build.VERSION_CODES.R && notificationManager.areBubblesAllowed()).not()) {
+        if ((Build.VERSION.SDK_INT >= Build.VERSION_CODES.R && notificationManager.areBubblesEnabled()).not()) {
             notificationManager.cancelAll()
         }
     }
@@ -322,19 +322,19 @@ class MainActivity : BlazeBaseActivity() {
             PropertyHelper.migration()
         }
 
-        PropertyHelper.checkAttachmentMigrated() {
+        PropertyHelper.checkAttachmentMigrated {
             jobManager.addJobInBackground(AttachmentMigrationJob())
         }
 
-        PropertyHelper.checkTranscriptAttachmentMigrated() {
+        PropertyHelper.checkTranscriptAttachmentMigrated {
             jobManager.addJobInBackground(TranscriptAttachmentMigrationJob())
         }
 
-        PropertyHelper.checkTranscriptAttachmentUpdated() {
+        PropertyHelper.checkTranscriptAttachmentUpdated {
             jobManager.addJobInBackground(TranscriptAttachmentUpdateJob())
         }
 
-        PropertyHelper.checkBackupMigrated() {
+        PropertyHelper.checkBackupMigrated {
             jobManager.addJobInBackground(BackupJob(force = true, delete = true))
         }
 
@@ -753,10 +753,6 @@ class MainActivity : BlazeBaseActivity() {
         navigationController.pushWallet()
     }
 
-    fun openCircle() {
-        binding.searchBar.showContainer()
-    }
-
     private val circlesFragment by lazy {
         CirclesFragment.newInstance()
     }
@@ -863,6 +859,7 @@ class MainActivity : BlazeBaseActivity() {
         }
     }
 
+    @Deprecated("Deprecated in Java")
     override fun onBackPressed() {
         val searchMessageFragment =
             supportFragmentManager.findFragmentByTag(SearchMessageFragment.TAG)
