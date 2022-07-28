@@ -72,8 +72,8 @@ class ScanFragment : BaseCameraxFragment() {
                 override fun onSuccess(result: Void?) {
                 }
 
-                override fun onFailure(t: Throwable?) {
-                    Timber.d("enableTorch onFailure, ${t?.getStackTraceString()}")
+                override fun onFailure(t: Throwable) {
+                    Timber.d("enableTorch onFailure, ${t.getStackTraceString()}")
                 }
             },
             mainExecutor

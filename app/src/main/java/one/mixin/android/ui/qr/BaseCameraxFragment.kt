@@ -366,17 +366,15 @@ abstract class BaseCameraxFragment : VisionFragment() {
                     override fun onSuccess(result: Void?) {
                     }
 
-                    override fun onFailure(t: Throwable?) {
-                        t?.let { throwable ->
-                            if (throwable is CameraControl.OperationCanceledException) {
-                                Timber.d("$CRASHLYTICS_CAMERAX-setZoomRatio onFailure, ${throwable.getStackTraceString()}")
-                                return
-                            }
-                            if (BuildConfig.DEBUG) {
-                                Timber.w("$CRASHLYTICS_CAMERAX-setZoomRatio onFailure, ${throwable.getStackTraceString()}")
-                            } else {
-                                reportException("$CRASHLYTICS_CAMERAX-setZoomRatio onFailure", throwable)
-                            }
+                    override fun onFailure(t: Throwable) {
+                        if (t is CameraControl.OperationCanceledException) {
+                            Timber.d("$CRASHLYTICS_CAMERAX-setZoomRatio onFailure, ${t.getStackTraceString()}")
+                            return
+                        }
+                        if (BuildConfig.DEBUG) {
+                            Timber.w("$CRASHLYTICS_CAMERAX-setZoomRatio onFailure, ${t.getStackTraceString()}")
+                        } else {
+                            reportException("$CRASHLYTICS_CAMERAX-setZoomRatio onFailure", t)
                         }
                     }
                 },
@@ -424,17 +422,15 @@ abstract class BaseCameraxFragment : VisionFragment() {
                     override fun onSuccess(result: FocusMeteringResult?) {
                     }
 
-                    override fun onFailure(t: Throwable?) {
-                        t?.let { throwable ->
-                            if (throwable is CameraControl.OperationCanceledException) {
-                                Timber.d("$CRASHLYTICS_CAMERAX-focusAndMeter onFailure, ${throwable.getStackTraceString()}")
-                                return
-                            }
-                            if (BuildConfig.DEBUG) {
-                                Timber.w("$CRASHLYTICS_CAMERAX-focusAndMeter onFailure, ${throwable.getStackTraceString()}")
-                            } else {
-                                reportException("$CRASHLYTICS_CAMERAX-focusAndMeter onFailure", throwable)
-                            }
+                    override fun onFailure(t: Throwable) {
+                        if (t is CameraControl.OperationCanceledException) {
+                            Timber.d("$CRASHLYTICS_CAMERAX-focusAndMeter onFailure, ${t.getStackTraceString()}")
+                            return
+                        }
+                        if (BuildConfig.DEBUG) {
+                            Timber.w("$CRASHLYTICS_CAMERAX-focusAndMeter onFailure, ${t.getStackTraceString()}")
+                        } else {
+                            reportException("$CRASHLYTICS_CAMERAX-focusAndMeter onFailure", t)
                         }
                     }
                 },
@@ -502,7 +498,7 @@ abstract class BaseCameraxFragment : VisionFragment() {
         private val detecting = AtomicBoolean(false)
 
         override fun analyze(image: ImageProxy) {
-            if (!alreadyDetected && !image.planes.isNullOrEmpty() &&
+            if (!alreadyDetected && image.planes.isNotEmpty() &&
                 detecting.compareAndSet(false, true)
             ) {
                 try {
@@ -607,8 +603,7 @@ abstract class BaseCameraxFragment : VisionFragment() {
         }
 
         override fun onScale(detector: ScaleGestureDetector): Boolean {
-            var scale = detector?.scaleFactor ?: return true
-
+            var scale = detector.scaleFactor
             scale = if (scale > 1f) {
                 1.0f + (scale - 1.0f) * 2
             } else {
