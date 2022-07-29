@@ -65,6 +65,7 @@ class ProfileBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragmen
 
         const val MAX_PHOTO_SIZE = 512
 
+        @SuppressLint("StaticFieldLeak")
         private var instant: ProfileBottomSheetDialogFragment? = null
         fun newInstance(): ProfileBottomSheetDialogFragment {
             try {

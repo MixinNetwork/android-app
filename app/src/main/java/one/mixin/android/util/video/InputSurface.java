@@ -1,6 +1,5 @@
 package one.mixin.android.util.video;
 
-import android.annotation.TargetApi;
 import android.opengl.EGL14;
 import android.opengl.EGLExt;
 import android.opengl.EGLConfig;
@@ -10,7 +9,6 @@ import android.opengl.EGLSurface;
 import android.os.Build;
 import android.view.Surface;
 
-@TargetApi(17)
 public class InputSurface {
 
     private static final int EGL_RECORDABLE_ANDROID = 0x3142;
@@ -103,7 +101,6 @@ public class InputSurface {
         return mSurface;
     }
 
-    @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
     public void setPresentationTime(long nsecs) {
         EGLExt.eglPresentationTimeANDROID(mEGLDisplay, mEGLSurface, nsecs);
     }

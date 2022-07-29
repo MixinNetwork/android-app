@@ -50,6 +50,7 @@ class PipCallView {
 
         private const val SIZE = 80f
 
+        @SuppressLint("StaticFieldLeak")
         private var INSTANCE: PipCallView? = null
 
         fun get(): PipCallView {

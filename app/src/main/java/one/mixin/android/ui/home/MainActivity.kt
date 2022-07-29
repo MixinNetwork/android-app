@@ -71,6 +71,7 @@ import one.mixin.android.db.ParticipantDao
 import one.mixin.android.db.UserDao
 import one.mixin.android.extension.alert
 import one.mixin.android.extension.alertDialogBuilder
+import one.mixin.android.extension.areBubblesAllowedCompat
 import one.mixin.android.extension.checkStorageNotLow
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.getDeviceId
@@ -269,7 +270,7 @@ class MainActivity : BlazeBaseActivity() {
     override fun onStart() {
         super.onStart()
         val notificationManager = getSystemService<NotificationManager>() ?: return
-        if ((Build.VERSION.SDK_INT >= Build.VERSION_CODES.R && notificationManager.areBubblesEnabled()).not()) {
+        if ((Build.VERSION.SDK_INT >= Build.VERSION_CODES.R && notificationManager.areBubblesAllowedCompat()).not()) {
             notificationManager.cancelAll()
         }
     }

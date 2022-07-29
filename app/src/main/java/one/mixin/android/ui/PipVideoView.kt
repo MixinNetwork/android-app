@@ -385,7 +385,7 @@ class PipVideoView {
                                 playView?.status = STATUS_PAUSE
                             }
                             if (!aodWakeLock.isHeld) {
-                                aodWakeLock.acquire()
+                                aodWakeLock.acquire(10 * 60 * 1000L)
                             }
                         }
                         STATE_BUFFERING -> {
@@ -431,7 +431,7 @@ class PipVideoView {
         }
         windowView?.keepScreenOn = true
         if (!aodWakeLock.isHeld) {
-            aodWakeLock.acquire()
+            aodWakeLock.acquire(10 * 60 * 1000L)
         }
         return textureView
     }
