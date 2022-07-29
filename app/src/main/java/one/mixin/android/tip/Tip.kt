@@ -67,8 +67,11 @@ class Tip @Inject internal constructor(
             return Result.failure(TipNullException("PrivTip is null, but not recover"))
         }
 
-        val aesKey = getAesKey(pin)
-            ?: return Result.failure(TipNullException("Read priv tip aes key failed"))
+        val aesKey = try {
+            getAesKey(pin)
+        } catch (e: TipException) {
+            return Result.failure(e)
+        }
 
         val privTipKey = (aesKey + pin.toByteArray()).sha3Sum256()
         return Result.success(aesDecrypt(privTipKey, privTip))
@@ -202,12 +205,9 @@ class Tip @Inject internal constructor(
         ) != null
     }
 
+    @Throws(TipException::class)
     private suspend fun encryptAndSave(context: Context, pin: String, aggSig: ByteArray): Boolean {
         val aesKey = generateAesKey(pin)
-        if (aesKey == null) {
-            Timber.e("generate priv tip aes key failed")
-            return false
-        }
 
         val privTipKey = (aesKey + pin.toByteArray()).sha3Sum256()
         val privTip = aesEncrypt(privTipKey, aggSig)
@@ -216,9 +216,10 @@ class Tip @Inject internal constructor(
         return true
     }
 
-    private suspend fun generateAesKey(pin: String): ByteArray? {
-        val sessionPriv = Session.getEd25519Seed()?.decodeBase64() ?: return null
-        val pinToken = Session.getPinToken()?.decodeBase64() ?: return null
+    @Throws(TipException::class)
+    private suspend fun generateAesKey(pin: String): ByteArray {
+        val sessionPriv = Session.getEd25519Seed()?.decodeBase64() ?: throw TipNullException("No de25519 key")
+        val pinToken = Session.getPinToken()?.decodeBase64() ?: throw TipNullException("No pin token")
 
         val stSeed = (sessionPriv + pin.toByteArray()).sha3Sum256()
         val privateSpec = EdDSAPrivateKeySpec(stSeed, ed25519)
@@ -239,7 +240,7 @@ class Tip @Inject internal constructor(
             signatureBase64 = sigBase64,
             timestamp = timestamp,
         )
-        return handleMixinResponse(
+        val tipSecret = handleMixinResponse(
             invokeNetwork = {
                 tipService.tipSecret(tipSecretRequest)
             },
@@ -247,11 +248,12 @@ class Tip @Inject internal constructor(
             successBlock = {
                 return@handleMixinResponse aesKey
             }
-        )
+        ) ?: throw TipNullException("No get tip secret")
+        return tipSecret
     }
 
-    private suspend fun getAesKey(pin: String): ByteArray? {
-        val sessionPriv = Session.getEd25519Seed()?.decodeBase64() ?: return null
+    private suspend fun getAesKey(pin: String): ByteArray {
+        val sessionPriv = Session.getEd25519Seed()?.decodeBase64() ?: throw TipNullException("No ed25519 key")
 
         val stSeed = (sessionPriv + pin.toByteArray()).sha3Sum256()
         val privateSpec = EdDSAPrivateKeySpec(stSeed, ed25519)
@@ -275,9 +277,9 @@ class Tip @Inject internal constructor(
                 requireNotNull(result) { "Required tipSecret response data was null." }
                 return@handleMixinResponse result.seedBase64?.base64RawUrlDecode()
             }
-        ) ?: return null
+        ) ?: throw TipNullException("Not get tip secret")
 
-        val pinToken = Session.getPinToken()?.decodeBase64() ?: return null
+        val pinToken = Session.getPinToken()?.decodeBase64() ?: throw TipNullException("No pin token")
         return aesDecrypt(pinToken, cipher)
     }
 
