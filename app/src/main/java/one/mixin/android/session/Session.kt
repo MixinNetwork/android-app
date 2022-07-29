@@ -293,7 +293,7 @@ fun encryptTipPin(tipPriv: ByteArray, signTarget: ByteArray): String? {
 }
 
 suspend fun encryptTipPin(tip: Tip, pin: String, signTarget: ByteArray): String? {
-    val tipPriv = tip.getOrRecoverTipPriv(MixinApplication.appContext, pin, true) ?: return null
+    val tipPriv = tip.getOrRecoverTipPriv(MixinApplication.appContext, pin, true).getOrNull() ?: return null
     return encryptTipPin(tipPriv, signTarget)
 }
 
