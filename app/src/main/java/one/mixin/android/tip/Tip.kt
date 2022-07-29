@@ -47,29 +47,31 @@ class Tip @Inject internal constructor(
     private val accountService: AccountService,
     private val tipNode: TipNode
 ) {
-    suspend fun getOrRecoverTipPriv(context: Context, pin: String, recoverIfNotExists: Boolean): ByteArray? {
+    suspend fun getOrRecoverTipPriv(context: Context, pin: String, recoverIfNotExists: Boolean): Result<ByteArray> {
         val privTip = readTipPriv(context)
         if (privTip == null) {
             if (recoverIfNotExists) {
-                val deviceId = context.defaultSharedPreferences.getString(Constants.DEVICE_ID, null) ?: return null
+                val deviceId = context.defaultSharedPreferences.getString(Constants.DEVICE_ID, null) ?: return Result.failure(TipNullException("Device id is null"))
                 return try {
-                    createTipPriv(context, pin, deviceId, forRecover = true)
+                    val result = createTipPriv(context, pin, deviceId, forRecover = true)
+                    if (result == null) {
+                        Result.failure(TipNullException("Create tip priV failed"))
+                    } else {
+                        Result.success(result)
+                    }
                 } catch (e: Exception) {
                     Timber.e(e)
-                    null
+                    Result.failure(e)
                 }
             }
-            return null
+            return Result.failure(TipNullException("PrivTip is null, but not recover"))
         }
 
         val aesKey = getAesKey(pin)
-        if (aesKey == null) {
-            Timber.e("read priv tip aes key failed")
-            return null
-        }
+            ?: return Result.failure(TipNullException("Read priv tip aes key failed"))
 
         val privTipKey = (aesKey + pin.toByteArray()).sha3Sum256()
-        return aesDecrypt(privTipKey, privTip)
+        return Result.success(aesDecrypt(privTipKey, privTip))
     }
 
     @Throws(TipException::class, TipNodeException::class)
