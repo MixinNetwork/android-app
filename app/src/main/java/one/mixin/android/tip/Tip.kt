@@ -2,13 +2,14 @@ package one.mixin.android.tip
 
 import android.content.Context
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import net.i2p.crypto.eddsa.EdDSAEngine
 import net.i2p.crypto.eddsa.EdDSAPrivateKey
 import net.i2p.crypto.eddsa.EdDSAPublicKey
 import net.i2p.crypto.eddsa.spec.EdDSAPrivateKeySpec
 import net.i2p.crypto.eddsa.spec.EdDSAPublicKeySpec
 import one.mixin.android.Constants
-import one.mixin.android.api.handleMixinResponse
+import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.request.PinRequest
 import one.mixin.android.api.request.TipSecretAction
 import one.mixin.android.api.request.TipSecretRequest
@@ -37,6 +38,7 @@ import one.mixin.android.util.getDecryptCipher
 import one.mixin.android.util.getEncryptCipher
 import one.mixin.android.util.reportException
 import timber.log.Timber
+import java.io.IOException
 import java.security.MessageDigest
 import javax.inject.Inject
 
@@ -51,18 +53,9 @@ class Tip @Inject internal constructor(
         val privTip = readTipPriv(context)
         if (privTip == null) {
             if (recoverIfNotExists) {
-                val deviceId = context.defaultSharedPreferences.getString(Constants.DEVICE_ID, null) ?: return Result.failure(TipNullException("Device id is null"))
-                return try {
-                    val result = createTipPriv(context, pin, deviceId, forRecover = true)
-                    if (result == null) {
-                        Result.failure(TipNullException("Create tip priV failed"))
-                    } else {
-                        Result.success(result)
-                    }
-                } catch (e: Exception) {
-                    Timber.e(e)
-                    Result.failure(e)
-                }
+                val deviceId = context.defaultSharedPreferences.getString(Constants.DEVICE_ID, null)
+                    ?: return Result.failure(TipNullException("Device id is null"))
+                return createTipPriv(context, pin, deviceId, forRecover = true)
             }
             return Result.failure(TipNullException("PrivTip is null, but not recover"))
         }
@@ -78,41 +71,26 @@ class Tip @Inject internal constructor(
     }
 
     @Throws(TipException::class, TipNodeException::class)
-    suspend fun createTipPriv(context: Context, pin: String, deviceId: String, failedSigners: List<TipSigner>? = null, legacyPin: String? = null, forRecover: Boolean = false): ByteArray? {
+    suspend fun createTipPriv(context: Context, pin: String, deviceId: String, failedSigners: List<TipSigner>? = null, legacyPin: String? = null, forRecover: Boolean = false): Result<ByteArray> {
         val ephemeralSeed = ephemeral.getEphemeralSeed(context, deviceId)
-        if (ephemeralSeed == null) {
-            Timber.e("empty ephemeral seed")
-            return null
-        }
+            ?: return Result.failure(TipNullException("empty ephemeral seed"))
 
         val identityPair = identityManager.getIdentityPrivAndWatcher(pin)
-        if (identityPair == null) {
-            Timber.e("identity pair is null")
-            return null
-        }
+            ?: return Result.failure(TipNullException("identity pair is null"))
 
         return createPriv(context, identityPair.priKey, ephemeralSeed, identityPair.watcher, pin, failedSigners, legacyPin, forRecover)
     }
 
     @Throws(TipNodeException::class)
-    suspend fun updateTipPriv(context: Context, pin: String, deviceId: String, newPin: String, nodeSuccess: Boolean, failedSigners: List<TipSigner>? = null): ByteArray? {
+    suspend fun updateTipPriv(context: Context, pin: String, deviceId: String, newPin: String, nodeSuccess: Boolean, failedSigners: List<TipSigner>? = null): Result<ByteArray> {
         val ephemeralSeed = ephemeral.getEphemeralSeed(context, deviceId)
-        if (ephemeralSeed == null) {
-            Timber.e("empty ephemeral seed")
-            return null
-        }
+            ?: return Result.failure(TipNullException("empty ephemeral seed"))
 
         val identityPair = identityManager.getIdentityPrivAndWatcher(pin)
-        if (identityPair == null) {
-            Timber.e("identity priv and seed is null")
-            return null
-        }
+            ?: return Result.failure(TipNullException("identity priv and seed is null"))
 
         val assigneePriv = identityManager.getIdentityPrivAndWatcher(newPin)?.priKey
-        if (assigneePriv == null) {
-            Timber.e("assignee priv is null")
-            return null
-        }
+            ?: return Result.failure(TipNullException("assignee priv is null"))
 
         return updatePriv(context, identityPair.priKey, ephemeralSeed, identityPair.watcher, newPin, assigneePriv, nodeSuccess, failedSigners)
     }
@@ -125,101 +103,96 @@ class Tip @Inject internal constructor(
     fun tipNodeCount() = tipNode.nodeCount
 
     @Throws(TipException::class, TipNodeException::class)
-    private suspend fun createPriv(context: Context, identityPriv: ByteArray, ephemeral: ByteArray, watcher: ByteArray, pin: String, failedSigners: List<TipSigner>? = null, legacyPin: String? = null, forRecover: Boolean = false): ByteArray? {
-        val aggSig = tipNode.sign(identityPriv, ephemeral, watcher, null, failedSigners)
+    private suspend fun createPriv(context: Context, identityPriv: ByteArray, ephemeral: ByteArray, watcher: ByteArray, pin: String, failedSigners: List<TipSigner>? = null, legacyPin: String? = null, forRecover: Boolean = false): Result<ByteArray> {
+        try {
+            val aggSig = tipNode.sign(identityPriv, ephemeral, watcher, null, failedSigners)
 
-        val privateSpec = EdDSAPrivateKeySpec(ed25519, aggSig.copyOf())
-        val pub = EdDSAPublicKey(EdDSAPublicKeySpec(privateSpec.a, ed25519))
+            val privateSpec = EdDSAPrivateKeySpec(ed25519, aggSig.copyOf())
+            val pub = EdDSAPublicKey(EdDSAPublicKeySpec(privateSpec.a, ed25519))
 
-        val localPub = Session.getTipPub()
-        if (!localPub.isNullOrBlank() && !localPub.base64RawUrlDecode().contentEquals(pub.abyte)) {
-            Timber.e("local pub not equals to new generated, PIN incorrect")
-            throw PinIncorrectException()
+            val localPub = Session.getTipPub()
+            if (!localPub.isNullOrBlank() && !localPub.base64RawUrlDecode()
+                .contentEquals(pub.abyte)
+            ) {
+                Timber.e("local pub not equals to new generated, PIN incorrect")
+                throw PinIncorrectException()
+            }
+            encryptAndSave(context, pin, aggSig)
+
+            if (forRecover) return Result.success(aggSig)
+
+            replaceOldEncryptedPin(pub, legacyPin)
+
+            return Result.success(aggSig)
+        } catch (e: Exception) {
+            return Result.failure(e)
         }
-        if (!encryptAndSave(context, pin, aggSig)) return null
-
-        if (forRecover) return aggSig
-
-        val replaceResult = replaceOldEncryptedPin(pub, legacyPin)
-        if (!replaceResult) return null
-
-        return aggSig
     }
 
+    @Throws(IOException::class, TipNetWorkException::class)
     private suspend fun replaceOldEncryptedPin(
         pub: EdDSAPublicKey,
         legacyPin: String? = null
-    ): Boolean {
+    ) {
         val pinToken = requireNotNull(Session.getPinToken())
         val oldEncryptedPin = if (legacyPin != null) {
             encryptPin(pinToken, legacyPin)
         } else null
         val newPin = encryptPin(pinToken, pub.abyte + 1L.toBeByteArray())
         val pinRequest = PinRequest(newPin, oldEncryptedPin)
-        return handleMixinResponse(
-            invokeNetwork = {
-                accountService.updatePinSuspend(pinRequest)
-            },
-            switchContext = Dispatchers.IO,
-            successBlock = {
-                val r = it.data
-                requireNotNull(r) { "Required respond account was null." }
-                Session.storeAccount(r)
+        val account = tipNetwork { accountService.updatePinSuspend(pinRequest) }.getOrThrow()
+        Session.storeAccount(account)
+    }
+
+    @Throws(IOException::class, TipNodeException::class, TipNetWorkException::class)
+    private suspend fun updatePriv(context: Context, identityPriv: ByteArray, ephemeral: ByteArray, watcher: ByteArray, newPin: String, assigneePriv: ByteArray, nodeSuccess: Boolean, failedSigners: List<TipSigner>? = null): Result<ByteArray> {
+        return try {
+            val aggSig = if (nodeSuccess) {
+                tipNode.sign(assigneePriv, ephemeral, watcher, null, null)
+            } else {
+                tipNode.sign(identityPriv, ephemeral, watcher, assigneePriv, failedSigners)
             }
-        ) != null
-    }
-
-    @Throws(TipNodeException::class)
-    private suspend fun updatePriv(context: Context, identityPriv: ByteArray, ephemeral: ByteArray, watcher: ByteArray, newPin: String, assigneePriv: ByteArray, nodeSuccess: Boolean, failedSigners: List<TipSigner>? = null): ByteArray? {
-        val aggSig = if (nodeSuccess) {
-            tipNode.sign(assigneePriv, ephemeral, watcher, null, null)
-        } else {
-            tipNode.sign(identityPriv, ephemeral, watcher, assigneePriv, failedSigners)
+            encryptAndSave(context, newPin, aggSig)
+            replaceEncryptedPin(aggSig)
+            Result.success(aggSig)
+        } catch (e: Exception) {
+            Result.failure(e)
         }
-
-        if (!encryptAndSave(context, newPin, aggSig)) return null
-        val replaceResult = replaceEncryptedPin(aggSig)
-        if (!replaceResult) return null
-        return aggSig
     }
 
-    private suspend fun replaceEncryptedPin(aggSig: ByteArray): Boolean {
+    @Throws(IOException::class, TipNetWorkException::class)
+    private suspend fun replaceEncryptedPin(aggSig: ByteArray) {
         val privateSpec = EdDSAPrivateKeySpec(ed25519, aggSig.copyOf())
         val pub = EdDSAPublicKey(EdDSAPublicKeySpec(privateSpec.a, ed25519))
         val pinToken = requireNotNull(Session.getPinToken())
         val counter = requireNotNull(Session.getTipCounter()).toLong()
         val timestamp = TipBody.forVerify(counter)
         val oldPin = encryptTipPin(aggSig, timestamp)
-        val newEncryptPin = encryptPin(pinToken, pub.abyte + (counter + 1).toBeByteArray()) // TODO should use tip node counter?
+        val newEncryptPin = encryptPin(
+            pinToken,
+            pub.abyte + (counter + 1).toBeByteArray()
+        ) // TODO should use tip node counter?
         val pinRequest = PinRequest(newEncryptPin, oldPin)
-        return handleMixinResponse(
-            invokeNetwork = {
-                accountService.updatePinSuspend(pinRequest)
-            },
-            switchContext = Dispatchers.IO,
-            successBlock = {
-                val r = it.data
-                requireNotNull(r) { "Required respond account was null." }
-                Session.storeAccount(r)
-            }
-        ) != null
+        val account = tipNetwork { accountService.updatePinSuspend(pinRequest) }.getOrThrow()
+        Session.storeAccount(account)
     }
 
     @Throws(TipException::class)
-    private suspend fun encryptAndSave(context: Context, pin: String, aggSig: ByteArray): Boolean {
+    private suspend fun encryptAndSave(context: Context, pin: String, aggSig: ByteArray) {
         val aesKey = generateAesKey(pin)
 
         val privTipKey = (aesKey + pin.toByteArray()).sha3Sum256()
         val privTip = aesEncrypt(privTipKey, aggSig)
 
         storeTipPriv(context, privTip)
-        return true
     }
 
     @Throws(TipException::class)
     private suspend fun generateAesKey(pin: String): ByteArray {
-        val sessionPriv = Session.getEd25519Seed()?.decodeBase64() ?: throw TipNullException("No de25519 key")
-        val pinToken = Session.getPinToken()?.decodeBase64() ?: throw TipNullException("No pin token")
+        val sessionPriv =
+            Session.getEd25519Seed()?.decodeBase64() ?: throw TipNullException("No de25519 key")
+        val pinToken =
+            Session.getPinToken()?.decodeBase64() ?: throw TipNullException("No pin token")
 
         val stSeed = (sessionPriv + pin.toByteArray()).sha3Sum256()
         val privateSpec = EdDSAPrivateKeySpec(stSeed, ed25519)
@@ -240,20 +213,13 @@ class Tip @Inject internal constructor(
             signatureBase64 = sigBase64,
             timestamp = timestamp,
         )
-        val tipSecret = handleMixinResponse(
-            invokeNetwork = {
-                tipService.tipSecret(tipSecretRequest)
-            },
-            switchContext = Dispatchers.IO,
-            successBlock = {
-                return@handleMixinResponse aesKey
-            }
-        ) ?: throw TipNullException("No get tip secret")
-        return tipSecret
+        tipNetwork { tipService.tipSecret(tipSecretRequest) }
+        return aesKey
     }
 
     private suspend fun getAesKey(pin: String): ByteArray {
-        val sessionPriv = Session.getEd25519Seed()?.decodeBase64() ?: throw TipNullException("No ed25519 key")
+        val sessionPriv =
+            Session.getEd25519Seed()?.decodeBase64() ?: throw TipNullException("No ed25519 key")
 
         val stSeed = (sessionPriv + pin.toByteArray()).sha3Sum256()
         val privateSpec = EdDSAPrivateKeySpec(stSeed, ed25519)
@@ -267,19 +233,11 @@ class Tip @Inject internal constructor(
             signatureBase64 = sigBase64,
             timestamp = timestamp,
         )
-        val cipher = handleMixinResponse(
-            invokeNetwork = {
-                tipService.tipSecret(tipSecretRequest)
-            },
-            switchContext = Dispatchers.IO,
-            successBlock = {
-                val result = it.data
-                requireNotNull(result) { "Required tipSecret response data was null." }
-                return@handleMixinResponse result.seedBase64?.base64RawUrlDecode()
-            }
-        ) ?: throw TipNullException("Not get tip secret")
+        val response = tipNetwork { tipService.tipSecret(tipSecretRequest) }.getOrThrow()
+        val cipher = response.seedBase64?.base64RawUrlDecode() ?: throw TipNullException("Not get tip secret")
 
-        val pinToken = Session.getPinToken()?.decodeBase64() ?: throw TipNullException("No pin token")
+        val pinToken =
+            Session.getPinToken()?.decodeBase64() ?: throw TipNullException("No pin token")
         return aesDecrypt(pinToken, cipher)
     }
 
@@ -291,7 +249,8 @@ class Tip @Inject internal constructor(
     }
 
     private fun readTipPriv(context: Context): ByteArray? {
-        val ciphertext = context.defaultSharedPreferences.getString(Constants.Tip.TIP_PRIV, null) ?: return null
+        val ciphertext =
+            context.defaultSharedPreferences.getString(Constants.Tip.TIP_PRIV, null) ?: return null
 
         val iv = context.defaultSharedPreferences.getString(Constants.Tip.IV_TIP_PRIV, null)
         if (iv == null) {
@@ -311,6 +270,24 @@ class Tip @Inject internal constructor(
         val ciphertext = cipher.doFinal(tipPriv).base64RawEncode()
         context.defaultSharedPreferences.putString(Constants.Tip.TIP_PRIV, ciphertext)
         // return true or false
+    }
+}
+
+@Throws(IOException::class)
+suspend fun <T> tipNetwork(network: suspend () -> MixinResponse<T>): Result<T> {
+    return withContext(Dispatchers.IO) {
+        val response = network.invoke()
+        val data = response.data
+        if (response.isSuccess && data != null) {
+            return@withContext Result.success(data)
+        } else {
+            return@withContext Result.failure(
+                TipNetWorkException(
+                    response.error?.description ?: "Empty error description",
+                    response.errorCode
+                )
+            )
+        }
     }
 }
 
