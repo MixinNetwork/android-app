@@ -1,9 +1,7 @@
 package one.mixin.android.tip
 
 import android.content.Context
-import kotlinx.coroutines.Dispatchers
 import one.mixin.android.Constants
-import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.TipRequest
 import one.mixin.android.api.service.TipService
 import one.mixin.android.crypto.aesDecrypt
@@ -24,50 +22,35 @@ import javax.inject.Inject
 
 class Ephemeral @Inject internal constructor(private val tipService: TipService) {
 
-    suspend fun getEphemeralSeed(context: Context, deviceId: String): ByteArray? {
+    suspend fun getEphemeralSeed(context: Context, deviceId: String): ByteArray {
         val seed = readEphemeralSeed(context)
         Timber.d("getEphemeralSeed from keyStore ${seed?.toHex()}")
         if (seed != null) {
             return seed
         }
-
-        return handleMixinResponse(
-            invokeNetwork = {
-                tipService.tipEphemerals()
-            },
-            switchContext = Dispatchers.IO,
-            successBlock = {
-                val tipEphemeralList = it.data
-                if (tipEphemeralList.isNullOrEmpty()) {
-                    createEphemeralSeed(context, deviceId)
-                } else {
-                    val first = tipEphemeralList.first()
-                    updateEphemeralSeed(context, deviceId, first.seedBase64)
-                }
-            }
-        )
+        val tipEphemeralList = tipNetwork { tipService.tipEphemerals() }.getOrThrow()
+        return if (tipEphemeralList.isEmpty()) {
+            createEphemeralSeed(context, deviceId)
+        } else {
+            val first = tipEphemeralList.first()
+            updateEphemeralSeed(context, deviceId, first.seedBase64)
+        }
     }
 
-    private suspend fun createEphemeralSeed(context: Context, deviceId: String): ByteArray? {
-        val pinToken = Session.getPinToken()?.decodeBase64() ?: return null
+    private suspend fun createEphemeralSeed(context: Context, deviceId: String): ByteArray {
+        val pinToken = Session.getPinToken()?.decodeBase64() ?: throw TipNullException("No pin token")
         val seed = generateEphemeralSeed()
         val cipher = aesEncrypt(pinToken, seed)
         return updateEphemeralSeed(context, deviceId, cipher.base64RawEncode())
     }
 
-    private suspend fun updateEphemeralSeed(context: Context, deviceId: String, seedBase64: String): ByteArray? {
-        return handleMixinResponse(
-            invokeNetwork = { tipService.tipEphemeral(TipRequest(deviceId, seedBase64)) },
-            switchContext = Dispatchers.IO,
-            successBlock = {
-                val pinToken = Session.getPinToken()?.decodeBase64() ?: return@handleMixinResponse null
-
-                val cipher = seedBase64.base64RawUrlDecode()
-                val plain = aesDecrypt(pinToken, cipher)
-                storeEphemeralSeed(context, plain)
-                plain
-            }
-        )
+    private suspend fun updateEphemeralSeed(context: Context, deviceId: String, seedBase64: String): ByteArray {
+        tipNetwork { tipService.tipEphemeral(TipRequest(deviceId, seedBase64)) }.getOrThrow()
+        val pinToken = Session.getPinToken()?.decodeBase64() ?: throw TipNullException("No pin token")
+        val cipher = seedBase64.base64RawUrlDecode()
+        val plain = aesDecrypt(pinToken, cipher)
+        storeEphemeralSeed(context, plain)
+        return plain
     }
 
     private fun readEphemeralSeed(context: Context): ByteArray? {
