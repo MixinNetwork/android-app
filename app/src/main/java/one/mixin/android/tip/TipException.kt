@@ -1,6 +1,6 @@
 package one.mixin.android.tip
 
-abstract class TipException : Exception {
+open class TipException : Exception {
 
     constructor(message: String) : super(message)
 

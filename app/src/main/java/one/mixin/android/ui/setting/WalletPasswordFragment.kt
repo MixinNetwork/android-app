@@ -280,7 +280,7 @@ class WalletPasswordFragment : BaseFragment(R.layout.fragment_wallet_password), 
             } else {
                 val nodeSuccess = nodeCounter > tipCounter && failedSigners.isNullOrEmpty()
                 tip.updateTipPriv(this@WalletPasswordFragment.requireContext(), requireNotNull(oldPassword), deviceId, pin, nodeSuccess, failedSigners)
-            }
+            }.getOrNull()
 
             dialog.dismiss()
             if (tipPriv != null) {
