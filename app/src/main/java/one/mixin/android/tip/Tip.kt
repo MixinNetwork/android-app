@@ -73,10 +73,8 @@ class Tip @Inject internal constructor(
     @Throws(TipException::class, TipNodeException::class)
     suspend fun createTipPriv(context: Context, pin: String, deviceId: String, failedSigners: List<TipSigner>? = null, legacyPin: String? = null, forRecover: Boolean = false): Result<ByteArray> {
         val ephemeralSeed = ephemeral.getEphemeralSeed(context, deviceId)
-            ?: return Result.failure(TipNullException("empty ephemeral seed"))
 
         val identityPair = identityManager.getIdentityPrivAndWatcher(pin)
-            ?: return Result.failure(TipNullException("identity pair is null"))
 
         return createPriv(context, identityPair.priKey, ephemeralSeed, identityPair.watcher, pin, failedSigners, legacyPin, forRecover)
     }
@@ -84,13 +82,10 @@ class Tip @Inject internal constructor(
     @Throws(TipNodeException::class)
     suspend fun updateTipPriv(context: Context, pin: String, deviceId: String, newPin: String, nodeSuccess: Boolean, failedSigners: List<TipSigner>? = null): Result<ByteArray> {
         val ephemeralSeed = ephemeral.getEphemeralSeed(context, deviceId)
-            ?: return Result.failure(TipNullException("empty ephemeral seed"))
 
         val identityPair = identityManager.getIdentityPrivAndWatcher(pin)
-            ?: return Result.failure(TipNullException("identity priv and seed is null"))
 
-        val assigneePriv = identityManager.getIdentityPrivAndWatcher(newPin)?.priKey
-            ?: return Result.failure(TipNullException("assignee priv is null"))
+        val assigneePriv = identityManager.getIdentityPrivAndWatcher(newPin).priKey
 
         return updatePriv(context, identityPair.priKey, ephemeralSeed, identityPair.watcher, newPin, assigneePriv, nodeSuccess, failedSigners)
     }
