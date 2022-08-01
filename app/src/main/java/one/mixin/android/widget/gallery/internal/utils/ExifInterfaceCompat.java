@@ -1,8 +1,6 @@
 
 package one.mixin.android.widget.gallery.internal.utils;
 
-import android.annotation.TargetApi;
-import android.os.Build;
 import android.text.TextUtils;
 import androidx.exifinterface.media.ExifInterface;
 import timber.log.Timber;
@@ -14,7 +12,6 @@ import java.util.Date;
 import java.util.TimeZone;
 
 
-@TargetApi(Build.VERSION_CODES.ECLAIR)
 final class ExifInterfaceCompat {
     private static final String TAG = ExifInterfaceCompat.class.getSimpleName();
     private static final int EXIF_DEGREE_FALLBACK_VALUE = -1;

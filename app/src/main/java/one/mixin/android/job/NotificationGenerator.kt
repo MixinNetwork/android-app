@@ -12,6 +12,7 @@ import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationCompat.Action.SEMANTIC_ACTION_MARK_AS_READ
 import androidx.core.app.NotificationCompat.Action.SEMANTIC_ACTION_REPLY
 import androidx.core.app.NotificationCompat.CATEGORY_MESSAGE
+import androidx.core.app.NotificationManagerCompat
 import androidx.core.app.Person
 import androidx.core.app.RemoteInput
 import androidx.core.content.ContextCompat
@@ -29,6 +30,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
+import one.mixin.android.extension.areBubblesAllowedCompat
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.mainThread
 import one.mixin.android.extension.notNullWithElse
@@ -484,7 +486,7 @@ object NotificationGenerator : Injector() {
                 .setStyle(messagingStyle)
         })
 
-        val canBubble = Build.VERSION.SDK_INT >= Build.VERSION_CODES.R && notificationManager.areBubblesAllowed()
+        val canBubble = Build.VERSION.SDK_INT >= Build.VERSION_CODES.R && notificationManager.areBubblesAllowedCompat()
         if (canBubble) {
             loadBitmap(context, conversation.iconUrl()) { bitmap ->
                 val resource = bitmap ?: BitmapFactory.decodeResource(context.resources, R.drawable.ic_group_place_holder)

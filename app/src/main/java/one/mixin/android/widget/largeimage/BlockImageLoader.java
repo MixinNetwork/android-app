@@ -19,19 +19,12 @@ import android.graphics.BitmapRegionDecoder;
 import android.graphics.Rect;
 import android.os.Build;
 import android.util.DisplayMetrics;
-import android.util.Log;
 import android.util.SparseIntArray;
-
 import androidx.core.util.Pools;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-
 import one.mixin.android.widget.largeimage.factory.BitmapDecoderFactory;
+import timber.log.Timber;
+
+import java.util.*;
 
 /**
  * create by LuckyJayce at 2017/3/14
@@ -101,7 +94,7 @@ public class BlockImageLoader {
 
     private void release(LoadData loadData) {
         if (DEBUG) {
-            Log.d(TAG, "release loadData:" + loadData);
+            Timber.tag(TAG).d("release loadData:%s", loadData);
         }
         cancelTask(loadData.task);
         loadData.task = null;
@@ -112,7 +105,7 @@ public class BlockImageLoader {
     public void stopLoad() {
         if (mLoadData != null) {
             if (DEBUG) {
-                Log.d(TAG, "stopLoad ");
+                Timber.tag(TAG).d("stopLoad");
             }
             cancelTask(mLoadData.task);
             mLoadData.task = null;
@@ -205,7 +198,7 @@ public class BlockImageLoader {
         }
 
         if (DEBUG)
-            Log.d(TAG, "loadImageBlocks ---------- imageRect:" + showImageRect + " imageScale:" + imageScale + " currentScale:" + scale);
+            Timber.tag(TAG).d("loadImageBlocks ---------- imageRect:" + showImageRect + " imageScale:" + imageScale + " currentScale:" + scale);
 
         //如果缩略图的清晰够用，就不需要去加载图片块，直接画缩略图就好啦
         if (thumbnailScale <= scale) {
@@ -334,7 +327,7 @@ public class BlockImageLoader {
             Map<Position, BlockData> preSmall = loadData.smallDataMap;
             Map<Position, BlockData> preCurrent = loadData.currentScaleDataMap;
             if (DEBUG) {
-                Log.d(TAG, "preScale:" + preScale + " currentScale:" + scale + " ds:" + (1.0f * scale / preScale));
+                Timber.tag(TAG).d("preScale:" + preScale + " currentScale:" + scale + " ds:" + (1.0f * scale / preScale));
             }
             if (scale == preScale * 2) {//相当于图片通过手势缩小了2倍，原先相对模糊的small 已经被定义为 当前的缩放度
                 loadData.currentScaleDataMap = preSmall;
@@ -342,7 +335,7 @@ public class BlockImageLoader {
                 recycleMap(preCurrent);
                 loadData.smallDataMap = preCurrent;
                 if (DEBUG) {
-                    Log.d(TAG, "相当于图片通过手势缩小了2倍，原先相对模糊的small 已经被定义为 当前的缩放度");
+                    Timber.tag(TAG).d("相当于图片通过手势缩小了2倍，原先相对模糊的small 已经被定义为 当前的缩放度");
                 }
             } else if (scale == preScale / 2) {//相当于通过手势放大了2倍，原先相对清晰的large 已经被定义为 当前的缩放度
                 loadData.smallDataMap = preCurrent;
@@ -350,14 +343,14 @@ public class BlockImageLoader {
                 recycleMap(preSmall);
                 loadData.currentScaleDataMap = preSmall;
                 if (DEBUG) {
-                    Log.d(TAG, "相当于通过手势放大了2倍，原先相对清晰的large 已经被定义为 当前的缩放度");
+                    Timber.tag(TAG).d("相当于通过手势放大了2倍，原先相对清晰的large 已经被定义为 当前的缩放度");
                 }
             } else { //相对原先 缩小倍数过多，放大倍数过多，这种情况是直接设置scale，通过手势都会走上面的倍数
                 //回收
                 recycleMap(preSmall);
                 recycleMap(preCurrent);
                 if (DEBUG) {
-                    Log.d(TAG, "相对原先 缩小倍数过多，放大倍数过多，这种情况是直接设置scale，通过手势都会走上面的倍数");
+                    Timber.tag(TAG).d("相对原先 缩小倍数过多，放大倍数过多，这种情况是直接设置scale，通过手势都会走上面的倍数");
                 }
             }
         }
@@ -393,7 +386,7 @@ public class BlockImageLoader {
                     drawData.bitmap = blockData.bitmap;
                     currentDrawCaches.add(drawData);
                     if (DEBUG)
-                        Log.d(TAG, "cache add--  添加  normal position :" + positionKey + " src:" + drawData.srcRect + " imageRect:" + drawData.imageRect + " w:" + drawData.imageRect.width() + " h:" + drawData.imageRect.height());
+                        Timber.tag(TAG).d("cache add--  添加  normal position :" + positionKey + " src:" + drawData.srcRect + " imageRect:" + drawData.imageRect + " w:" + drawData.imageRect.width() + " h:" + drawData.imageRect.height());
                 } else {
                     needShowPositions.add(new Position(row, col));
                 }
@@ -441,7 +434,7 @@ public class BlockImageLoader {
         //移除掉那些没被用到的缓存的图片块
         tempCurrentDataMap.keySet().removeAll(loadData.currentScaleDataMap.keySet());
         if (DEBUG) {
-            Log.d(TAG, "preCurrentDataMap: " + tempCurrentDataMap.toString() + " needShowPositions：" + needShowPositions);
+            Timber.tag(TAG).d("preCurrentDataMap: " + tempCurrentDataMap.toString() + " needShowPositions：" + needShowPositions);
         }
         recycleMap(tempCurrentDataMap);
 
@@ -449,16 +442,16 @@ public class BlockImageLoader {
         drawDataList.addAll(smallDataList);
         drawDataList.addAll(currentDrawCaches);
         if (DEBUG) {
-            Log.d(TAG, "detail current scale:" + scale + " startRow:" + startRow + " endRow:" + endRow + " startCol:" + startCol + " endCol:" + endCol + " blockSize:" + blockSize + " size:" + loadData.currentScaleDataMap.size() + " small size:" + (loadData.smallDataMap == null ? "null" : loadData.smallDataMap.size()));
-            Log.d(TAG, "detail thumbnailScale:" + thumbnailScale + " cacheStartRow:" + cacheStartRow + " cacheEndRow:" + cacheEndRow + " cacheStartCol:" + cacheStartCol + " cacheEndCol:" + cacheEndCol + " draDataList.size:" + drawDataList.size());
-            Log.d(TAG, "detail imageRect:" + showImageRect);
+            Timber.tag(TAG).d("detail current scale:" + scale + " startRow:" + startRow + " endRow:" + endRow + " startCol:" + startCol + " endCol:" + endCol + " blockSize:" + blockSize + " size:" + loadData.currentScaleDataMap.size() + " small size:" + (loadData.smallDataMap == null ? "null" : loadData.smallDataMap.size()));
+            Timber.tag(TAG).d("detail thumbnailScale:" + thumbnailScale + " cacheStartRow:" + cacheStartRow + " cacheEndRow:" + cacheEndRow + " cacheStartCol:" + cacheStartCol + " cacheEndCol:" + cacheEndCol + " draDataList.size:" + drawDataList.size());
+            Timber.tag(TAG).d("detail imageRect:%s", showImageRect);
             sparseIntArray.put(loadData.currentScaleDataMap.size(), sparseIntArray.get(loadData.currentScaleDataMap.size(), 0) + 1);
             StringBuilder s = new StringBuilder();
             s.append("detail 统计次数 ");
             for (int i = 0; i < sparseIntArray.size(); i++) {
-                s.append("size:" + sparseIntArray.keyAt(i) + "->time:" + sparseIntArray.valueAt(i) + "  ");
+                s.append("size:").append(sparseIntArray.keyAt(i)).append("->time:").append(sparseIntArray.valueAt(i)).append("  ");
             }
-            Log.d(TAG, s.toString());
+            Timber.tag(TAG).d(s.toString());
         }
 //        if(blockData1.size()>0)
 
@@ -469,7 +462,7 @@ public class BlockImageLoader {
     private List<DrawData> loadSmallDatas(LoadData loadData, int scale, List<Position> needShowPositions, int startRow, int endRow, int startCol, int endCol) {
         List<DrawData> cacheDraws = new ArrayList<>();
         if (DEBUG) {
-            Log.d(TAG, "之前 loadData.largeDataMap :" + (loadData.smallDataMap == null ? "null" : loadData.smallDataMap.size()));
+            Timber.tag(TAG).d("之前 loadData.largeDataMap :%s", (loadData.smallDataMap == null ? "null" : loadData.smallDataMap.size()));
         }
         Position currentScalePosition = new Position();
         //largeDataMap: 手势放大后需要用到的缓存map，BlockData的bitmap显示占图片比例的区域小，（图片块相对清晰）
@@ -491,7 +484,7 @@ public class BlockImageLoader {
                 Position position = entry.getKey();
                 BlockData blockData = entry.getValue();
                 if (DEBUG) {
-                    Log.d(TAG, "cache add-- 遍历 largeDataMap position :" + position);
+                    Timber.tag(TAG).d("cache add-- 遍历 largeDataMap position :%s", position);
                 }
                 //取消加载图片的任务
                 cancelTask(blockData.task);
@@ -544,7 +537,7 @@ public class BlockImageLoader {
                                 drawData.bitmap = blockData.bitmap;
                                 cacheDraws.add(drawData);
                                 if (DEBUG) {
-                                    Log.d(TAG, "cache add--添加  smallDataMap position :" + position + " 到 当前currentScalePosition:" + currentScalePosition + " src:" + drawData.srcRect + "w:" + drawData.srcRect.width() + " h:" + drawData.srcRect.height() + " imageRect:" + drawData.imageRect + " w:" + drawData.imageRect.width() + " h:" + drawData.imageRect.height());
+                                    Timber.tag(TAG).d("cache add--添加  smallDataMap position :" + position + " 到 当前currentScalePosition:" + currentScalePosition + " src:" + drawData.srcRect + "w:" + drawData.srcRect.width() + " h:" + drawData.srcRect.height() + " imageRect:" + drawData.imageRect + " w:" + drawData.imageRect.width() + " h:" + drawData.imageRect.height());
                                 }
                             }
                         }
@@ -775,7 +768,7 @@ public class BlockImageLoader {
             this.onImageLoadListener = onImageLoadListener;
             this.onLoadStateChangeListener = onLoadStateChangeListener;
             if (DEBUG) {
-                Log.d(TAG, "start LoadImageInfoTask:imageW:" + imageWidth + " imageH:" + imageHeight);
+                Timber.tag(TAG).d("start LoadImageInfoTask:imageW:" + imageWidth + " imageH:" + imageHeight);
             }
         }
 
@@ -794,7 +787,7 @@ public class BlockImageLoader {
                 imageWidth = decoder.getWidth();
                 imageHeight = decoder.getHeight();
                 if (DEBUG) {
-                    Log.d(TAG, "LoadImageInfoTask doInBackground");
+                    Timber.tag(TAG).d("LoadImageInfoTask doInBackground");
                 }
             } catch (Exception e) {
                 e.printStackTrace();
@@ -810,7 +803,7 @@ public class BlockImageLoader {
             mFactory = null;
             imageInfo = null;
             if (DEBUG) {
-                Log.d(TAG, "LoadImageInfoTask: onCancelled");
+                Timber.tag(TAG).d("LoadImageInfoTask: onCancelled");
             }
         }
 
@@ -818,7 +811,7 @@ public class BlockImageLoader {
         protected void onPostExecute() {
             super.onPostExecute();
             if (DEBUG) {
-                Log.d(TAG, "onPostExecute LoadImageInfoTask:" + e + " imageW:" + imageWidth + " imageH:" + imageHeight + " e:" + e);
+                Timber.tag(TAG).d("onPostExecute LoadImageInfoTask:" + e + " imageW:" + imageWidth + " imageH:" + imageHeight + " e:" + e);
             }
             imageInfo.task = null;
             if (e == null) {
@@ -862,7 +855,7 @@ public class BlockImageLoader {
             this.onImageLoadListener = onImageLoadListener;
             this.onLoadStateChangeListener = onLoadStateChangeListener;
             if (DEBUG) {
-                Log.d(TAG, "start LoadBlockTask position:" + position + " currentScale:" + scale);
+                Timber.tag(TAG).d("start LoadBlockTask position:" + position + " currentScale:" + scale);
             }
         }
 
@@ -877,7 +870,7 @@ public class BlockImageLoader {
         @Override
         protected void doInBackground() {
             if (DEBUG) {
-                Log.d(TAG,"doInBackground："+Thread.currentThread()+" "+Thread.currentThread().getId());
+                Timber.tag(TAG).d("doInBackground：" + Thread.currentThread() + " " + Thread.currentThread().getId());
             }
             int imageBlockSize = BASE_BLOCKSIZE * scale;
             int left = imageBlockSize * position.col;
@@ -906,7 +899,7 @@ public class BlockImageLoader {
                 throwable = e;
             } catch (Exception e) {
                 if (DEBUG)
-                    Log.d(TAG, position.toString() + " " + clipImageRect.toShortString());
+                    Timber.tag(TAG).d(position.toString() + " " + clipImageRect.toShortString());
                 throwable = e;
                 e.printStackTrace();
             }
@@ -925,7 +918,7 @@ public class BlockImageLoader {
             onLoadStateChangeListener = null;
             position = null;
             if (DEBUG) {
-                Log.d(TAG, "onCancelled LoadBlockTask position:" + position + " currentScale:" + scale + " bit:");
+                Timber.tag(TAG).d("onCancelled LoadBlockTask position:" + position + " currentScale:" + scale + " bit:");
             }
         }
 
@@ -933,7 +926,7 @@ public class BlockImageLoader {
         protected void onPostExecute() {
             super.onPostExecute();
             if (DEBUG) {
-                Log.d(TAG, "finish LoadBlockTask position:" + position + " currentScale:" + scale + " bitmap: " + (bitmap == null ? "" : bitmap.getWidth() + " bitH:" + bitmap.getHeight()));
+                Timber.tag(TAG).d("finish LoadBlockTask position:" + position + " currentScale:" + scale + " bitmap: " + (bitmap == null ? "" : bitmap.getWidth() + " bitH:" + bitmap.getHeight()));
             }
             blockData.task = null;
             if (bitmap != null) {
@@ -983,7 +976,7 @@ public class BlockImageLoader {
             this.onImageLoadListener = onImageLoadListener;
             this.onLoadStateChangeListener = onLoadStateChangeListener;
             if (DEBUG)
-                Log.d(TAG, "LoadThumbnailTask LoadThumbnailTask thumbnailScale:" + thumbnailScale);
+                Timber.tag(TAG).d("LoadThumbnailTask LoadThumbnailTask thumbnailScale:%s", thumbnailScale);
         }
 
         @Override
@@ -1018,7 +1011,7 @@ public class BlockImageLoader {
             loadData = null;
             decoder = null;
             if (DEBUG) {
-                Log.d(TAG, "onCancelled LoadThumbnailTask thumbnailScale:" + scale);
+                Timber.tag(TAG).d("onCancelled LoadThumbnailTask thumbnailScale:" + scale);
             }
         }
 
@@ -1026,7 +1019,7 @@ public class BlockImageLoader {
         protected void onPostExecute() {
             super.onPostExecute();
             if (DEBUG) {
-                Log.d(TAG, "LoadThumbnailTask bitmap:" + bitmap + " currentScale:" + scale + " bitW:" + (bitmap == null ? "" : bitmap.getWidth() + " bitH:" + bitmap.getHeight()));
+                Timber.tag(TAG).d("LoadThumbnailTask bitmap:" + bitmap + " currentScale:" + scale + " bitW:" + (bitmap == null ? "" : bitmap.getWidth() + " bitH:" + bitmap.getHeight()));
             }
             loadData.thumbnailBlockData.task = null;
             if (bitmap != null) {

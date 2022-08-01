@@ -1195,7 +1195,7 @@ class ConversationFragment() :
         if (isNearToSensor) return
         if (status == STATUS_PLAY) {
             if (!aodWakeLock.isHeld) {
-                aodWakeLock.acquire()
+                aodWakeLock.acquire(10 * 60 * 1000L)
             }
         } else {
             if (aodWakeLock.isHeld) {
@@ -2940,7 +2940,7 @@ class ConversationFragment() :
             OpusAudioRecorder.get(conversationId).startRecording(this@ConversationFragment)
             if (!isNearToSensor) {
                 if (!aodWakeLock.isHeld) {
-                    aodWakeLock.acquire()
+                    aodWakeLock.acquire(10 * 60 * 1000L)
                 }
             }
         }

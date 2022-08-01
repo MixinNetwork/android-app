@@ -5,6 +5,7 @@ import android.app.Activity
 import android.app.ActivityManager
 import android.app.NotificationChannel
 import android.app.NotificationManager
+import android.app.NotificationManager.BUBBLE_PREFERENCE_NONE
 import android.app.PendingIntent
 import android.content.ActivityNotFoundException
 import android.content.ClipboardManager
@@ -47,6 +48,7 @@ import android.view.Window
 import android.view.WindowManager
 import androidx.annotation.AttrRes
 import androidx.annotation.ColorInt
+import androidx.annotation.RequiresApi
 import androidx.browser.customtabs.CustomTabsIntent
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
@@ -1070,6 +1072,15 @@ inline fun <reified T> Fragment.findListener(): T? {
 
 val Context.notificationManager: NotificationManager
     get() = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+
+@RequiresApi(Build.VERSION_CODES.Q)
+fun NotificationManager.areBubblesAllowedCompat(): Boolean {
+    return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+        bubblePreference != BUBBLE_PREFERENCE_NONE
+    } else {
+        areBubblesAllowed()
+    }
+}
 
 fun Context.shareFile(file: File) {
     Intent().apply {

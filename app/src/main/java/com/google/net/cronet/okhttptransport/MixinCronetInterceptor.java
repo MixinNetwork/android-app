@@ -84,7 +84,7 @@ public final class MixinCronetInterceptor implements Interceptor, AutoCloseable 
                     activeCall.getValue().cancel();
                   }
                 } catch (RuntimeException e) {
-                  Log.w(TAG, "Unable to propagate cancellation status", e);
+                  Timber.tag(TAG).w(e, "Unable to propagate cancellation status");
                 }
               }
             },

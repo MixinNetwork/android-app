@@ -7,7 +7,6 @@ import android.os.Build;
 import android.os.Handler;
 import android.text.TextUtils;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.MotionEvent;
 import android.view.VelocityTracker;
 import android.view.View;
@@ -622,7 +621,7 @@ public class WheelPicker extends View implements IDebug, IWheelPicker, Runnable 
             int position = (-mScrollOffsetY / mItemHeight + mSelectedItemPosition) % mData.size();
             position = position < 0 ? position + mData.size() : position;
             if (isDebug)
-                Log.i(TAG, position + ":" + mData.get(position) + ":" + mScrollOffsetY);
+                Timber.tag(TAG).i(position + ":" + mData.get(position) + ":" + mScrollOffsetY);
             mCurrentItemPosition = position;
             if (null != mOnItemSelectedListener && isTouchTriggered)
                 mOnItemSelectedListener.onItemSelected(this, mData.get(position), position);

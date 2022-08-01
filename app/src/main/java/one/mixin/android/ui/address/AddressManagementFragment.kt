@@ -147,17 +147,17 @@ class AddressManagementFragment : BaseFragment(R.layout.fragment_address_managem
         addressViewModel.refreshAddressesByAssetId(asset.assetId)
     }
 
-    private fun showBottomSheet(addr: Address, asset: AssetItem): BiometricBottomSheetDialogFragment {
+    private fun showBottomSheet(address: Address, asset: AssetItem): BiometricBottomSheetDialogFragment {
         val bottomSheet = PinAddrBottomSheetDialogFragment.newInstance(
-            addressId = addr.addressId,
+            addressId = address.addressId,
             assetUrl = asset.iconUrl,
             assetSymbol = asset.symbol,
             chainId = asset.chainId,
             chainName = asset.chainName,
             chainIconUrl = asset.chainIconUrl,
-            destination = addr.destination,
-            label = addr.label,
-            tag = addr.tag,
+            destination = address.destination,
+            label = address.label,
+            tag = address.tag,
             assetName = asset.name,
             type = DELETE
         )
