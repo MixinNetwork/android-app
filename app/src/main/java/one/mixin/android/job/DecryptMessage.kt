@@ -449,6 +449,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
 
                     if (updateExpiredMessageList.isNotEmpty()) {
                         val updateMessageIds = updateExpiredMessageList.map { it.first }
+                        Timber.e("Update read $updateExpiredMessageList")
                         remoteMessageStatusDao.deleteByMessageIds(updateMessageIds)
                         updateExpiredMessageList.forEach { expiredMessage ->
                             val messageId = expiredMessage.first
