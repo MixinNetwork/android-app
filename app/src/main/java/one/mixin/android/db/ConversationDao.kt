@@ -218,6 +218,12 @@ interface ConversationDao : BaseDao<Conversation> {
     @Query("UPDATE conversations SET last_message_id = :lastMessageId WHERE conversation_id = :conversationId AND last_message_id = :lastMessageId")
     fun forceRefreshConversationsByLastMessageId(conversationId: String, lastMessageId: String)
 
+    @Query("UPDATE conversations SET last_message_id = (select id from messages where conversation_id = :conversationId ORDER BY created_at DESC limit 1) WHERE conversation_id =:conversationId")
+    fun refreshLastMessageId(conversationId: String)
+
+    @Query("UPDATE conversations SET last_message_id = (select id from messages where conversation_id = :conversationId ORDER BY created_at DESC limit 1) WHERE last_message_id =:messageId AND conversation_id =:conversationId")
+    fun refreshLastMessageId(conversationId: String, messageId: String)
+
     // Delete SQL
     @Query("DELETE FROM conversations WHERE conversation_id = :conversationId")
     suspend fun deleteConversationById(conversationId: String)
