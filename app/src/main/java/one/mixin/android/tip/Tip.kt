@@ -72,22 +72,30 @@ class Tip @Inject internal constructor(
 
     @Throws(TipException::class, TipNodeException::class)
     suspend fun createTipPriv(context: Context, pin: String, deviceId: String, failedSigners: List<TipSigner>? = null, legacyPin: String? = null, forRecover: Boolean = false): Result<ByteArray> {
-        val ephemeralSeed = ephemeral.getEphemeralSeed(context, deviceId)
+        return try {
+            val ephemeralSeed = ephemeral.getEphemeralSeed(context, deviceId)
 
-        val identityPair = identityManager.getIdentityPrivAndWatcher(pin)
+            val identityPair = identityManager.getIdentityPrivAndWatcher(pin)
 
-        return createPriv(context, identityPair.priKey, ephemeralSeed, identityPair.watcher, pin, failedSigners, legacyPin, forRecover)
+            createPriv(context, identityPair.priKey, ephemeralSeed, identityPair.watcher, pin, failedSigners, legacyPin, forRecover)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
     }
 
     @Throws(TipNodeException::class)
     suspend fun updateTipPriv(context: Context, pin: String, deviceId: String, newPin: String, nodeSuccess: Boolean, failedSigners: List<TipSigner>? = null): Result<ByteArray> {
-        val ephemeralSeed = ephemeral.getEphemeralSeed(context, deviceId)
+        return try {
+            val ephemeralSeed = ephemeral.getEphemeralSeed(context, deviceId)
 
-        val identityPair = identityManager.getIdentityPrivAndWatcher(pin)
+            val identityPair = identityManager.getIdentityPrivAndWatcher(pin)
 
-        val assigneePriv = identityManager.getIdentityPrivAndWatcher(newPin).priKey
+            val assigneePriv = identityManager.getIdentityPrivAndWatcher(newPin).priKey
 
-        return updatePriv(context, identityPair.priKey, ephemeralSeed, identityPair.watcher, newPin, assigneePriv, nodeSuccess, failedSigners)
+            return updatePriv(context, identityPair.priKey, ephemeralSeed, identityPair.watcher, newPin, assigneePriv, nodeSuccess, failedSigners)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
     }
 
     suspend fun watchTipNodeCounters(): List<TipNode.TipNodeCounter>? {
