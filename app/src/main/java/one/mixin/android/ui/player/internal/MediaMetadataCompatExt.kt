@@ -2,8 +2,9 @@ package one.mixin.android.ui.player.internal
 
 import android.graphics.Bitmap
 import android.net.Uri
-import android.support.v4.media.MediaBrowserCompat.MediaItem
 import android.support.v4.media.MediaMetadataCompat
+import androidx.recyclerview.widget.DiffUtil
+import com.google.android.exoplayer2.MediaItem
 import com.google.android.exoplayer2.source.ConcatenatingMediaSource
 import com.google.android.exoplayer2.source.MediaSource
 import com.google.android.exoplayer2.source.ProgressiveMediaSource
@@ -265,7 +266,7 @@ fun MediaMetadataCompat.toMediaSource(
         cacheDataSourceFactory
     } else dataSourceFactory
     return ProgressiveMediaSource.Factory(targetDataSourceFactory).createMediaSource(
-        com.google.android.exoplayer2.MediaItem.Builder()
+        MediaItem.Builder()
             .setMediaId(id!!)
             .setUri(mediaUri)
             .build()
@@ -283,8 +284,59 @@ fun List<MediaMetadataCompat>.toMediaSource(
     return concatenatingMediaSource
 }
 
+fun List<MediaItem>.toMediaSources(
+    dataSourceFactory: DataSource.Factory,
+    cacheDataSourceFactory: DataSource.Factory,
+): List<MediaSource> {
+    val mediaSources = mutableListOf<MediaSource>()
+    forEach {
+        mediaSources.add(it.toMediaSource(dataSourceFactory, cacheDataSourceFactory))
+    }
+    return mediaSources
+}
+
+fun MediaItem.toMediaSource(
+    dataSourceFactory: DataSource.Factory,
+    cacheDataSourceFactory: DataSource.Factory,
+): MediaSource {
+    val targetDataSourceFactory = if (requestMetadata.mediaUri?.scheme?.isLocalScheme() == false) {
+        cacheDataSourceFactory
+    } else dataSourceFactory
+    return ProgressiveMediaSource.Factory(targetDataSourceFactory).createMediaSource(this)
+}
+
+fun List<MediaMetadataCompat>.toMediaItems(): List<MediaItem> {
+    return map { mediaMetadataCompat ->
+        MediaItem.Builder()
+            .setMediaId(requireNotNull(mediaMetadataCompat.id))
+            .setUri(mediaMetadataCompat.mediaUri)
+            .build()
+    }
+}
+
 /**
  * Custom property that holds whether an item is [MediaItem.FLAG_BROWSABLE] or
  * [MediaItem.FLAG_PLAYABLE].
  */
 const val METADATA_KEY_MIXIN_FLAGS = "one.mixin.messenger.player.METADATA_KEY_MIXIN_FLAGS"
+
+internal val diffCallback = object : DiffUtil.ItemCallback<MediaMetadataCompat>() {
+    override fun areItemsTheSame(
+        oldItem: MediaMetadataCompat,
+        newItem: MediaMetadataCompat
+    ): Boolean =
+        oldItem.id == newItem.id
+
+    override fun areContentsTheSame(oldItem: MediaMetadataCompat, newItem: MediaMetadataCompat): Boolean =
+        oldItem.id == newItem.id &&
+            oldItem.title == newItem.title &&
+            oldItem.artist == newItem.artist &&
+            oldItem.album == newItem.album &&
+            oldItem.mediaUri == newItem.mediaUri &&
+            oldItem.downloadStatus == newItem.downloadStatus &&
+            oldItem.flag == newItem.flag &&
+            oldItem.albumArtUri == newItem.albumArtUri &&
+            oldItem.displayTitle == newItem.displayTitle &&
+            oldItem.displaySubtitle == newItem.displaySubtitle &&
+            oldItem.displayIconUri == newItem.displayIconUri
+}

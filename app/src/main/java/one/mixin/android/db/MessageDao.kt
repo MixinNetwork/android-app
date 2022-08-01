@@ -410,7 +410,22 @@ interface MessageDao : BaseDao<Message> {
         ORDER BY m.created_at ASC, m.rowid ASC
         """
     )
-    suspend fun findAudiosByConversationId(conversationId: String): List<MessageItem>
+    fun findAudiosByConversationId(conversationId: String): DataSource.Factory<Int, MessageItem>
+
+    @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
+    @Query(
+        """
+        SELECT count(1) FROM messages
+        INDEXED BY index_messages_conversation_id_category 
+        WHERE conversation_id = :conversationId 
+        AND category IN ($DATA) 
+        AND media_mime_type IN ("audio/mpeg", "audio/flac")
+        AND media_status != 'EXPIRED'
+        AND created_at < (SELECT created_at FROM messages WHERE id = :messageId)
+        ORDER BY created_at ASC, rowid ASC
+        """
+    )
+    suspend fun indexAudioByConversationId(messageId: String, conversationId: String): Int
 
     @Query(
         """

@@ -48,7 +48,7 @@ import one.mixin.android.ui.landing.LandingActivity
 import one.mixin.android.ui.media.pager.MediaPagerActivity
 import one.mixin.android.ui.player.FloatingPlayer
 import one.mixin.android.ui.player.MusicActivity
-import one.mixin.android.ui.player.isMusicServiceRunning
+import one.mixin.android.ui.player.MusicService
 import one.mixin.android.ui.web.FloatingWebClip
 import one.mixin.android.ui.web.WebActivity
 import one.mixin.android.ui.web.refresh
@@ -270,18 +270,12 @@ open class MixinApplication :
             FloatingWebClip.getInstance(activity.isNightMode()).hide()
             FloatingPlayer.getInstance(activity.isNightMode()).hide()
         } else if (activity !is LandingActivity && activity !is InitializeActivity) {
-            if (activity !is WebActivity) {
-                currentActivity = activity
-                appScope.launch(Dispatchers.Main) {
-                    refresh()
-                }
-            }
-            if (activity !is MusicActivity) {
-                currentActivity = activity
-                appScope.launch(Dispatchers.Main) {
-                    if (isMusicServiceRunning(activity)) {
-                        FloatingPlayer.getInstance(activity.isNightMode()).show()
-                    }
+            currentActivity = activity
+            appScope.launch(Dispatchers.Main) {
+                refresh()
+
+                if (MusicService.isRunning(activity)) {
+                    FloatingPlayer.getInstance(activity.isNightMode()).show()
                 }
             }
         }

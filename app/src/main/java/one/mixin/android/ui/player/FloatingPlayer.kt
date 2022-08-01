@@ -29,6 +29,7 @@ import one.mixin.android.extension.realSize
 import one.mixin.android.util.MusicPlayer
 import one.mixin.android.widget.RLottieDrawable
 import one.mixin.android.widget.RLottieImageView
+import timber.log.Timber
 import kotlin.math.abs
 
 class FloatingPlayer(private var isNightMode: Boolean) {
@@ -93,6 +94,7 @@ class FloatingPlayer(private var isNightMode: Boolean) {
     }
     private var isShown = false
     fun init() {
+        Timber.d("@@@ init")
         if (windowView == null) {
             initWindowView()
         }
@@ -102,6 +104,7 @@ class FloatingPlayer(private var isNightMode: Boolean) {
     }
 
     fun show(conversationId: String? = null) {
+        Timber.d("@@@ show cid: $conversationId")
         if (!appContext.checkInlinePermissions()) return
 
         if (conversationId != null && this.conversationId != conversationId) {
@@ -121,6 +124,7 @@ class FloatingPlayer(private var isNightMode: Boolean) {
     }
 
     fun reload() {
+        Timber.d("@@@ reload")
         animateToBoundsMaybe()
     }
 
@@ -234,8 +238,9 @@ class FloatingPlayer(private var isNightMode: Boolean) {
         }
     }
 
-    fun hide() {
-        if (!isShown) return
+    fun hide(force: Boolean = false) {
+        Timber.d("@@@ hide isShown: $isShown")
+        if (!isShown && !force) return
         isShown = false
         windowView?.let { windowManager.removeView(it) }
         windowView = null

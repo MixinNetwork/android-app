@@ -111,10 +111,8 @@ import one.mixin.android.ui.conversation.web.PermissionBottomSheetDialogFragment
 import one.mixin.android.ui.conversation.web.PermissionBottomSheetDialogFragment.Companion.PERMISSION_VIDEO
 import one.mixin.android.ui.forward.ForwardActivity
 import one.mixin.android.ui.player.MusicActivity
-import one.mixin.android.ui.player.MusicViewModel
-import one.mixin.android.ui.player.internal.MUSIC_PLAYLIST
-import one.mixin.android.ui.player.internal.MusicServiceConnection
-import one.mixin.android.ui.player.provideMusicViewModel
+import one.mixin.android.ui.player.MusicService
+import one.mixin.android.ui.player.MusicService.Companion.MUSIC_PLAYLIST
 import one.mixin.android.ui.qr.QRCodeProcessor
 import one.mixin.android.ui.setting.SettingActivity
 import one.mixin.android.ui.setting.SettingActivity.Companion.ARGS_SUCCESS
@@ -135,7 +133,6 @@ import timber.log.Timber
 import java.io.ByteArrayInputStream
 import java.io.FileInputStream
 import java.util.concurrent.TimeUnit
-import javax.inject.Inject
 
 @AndroidEntryPoint
 class WebFragment : BaseFragment() {
@@ -170,11 +167,6 @@ class WebFragment : BaseFragment() {
         }
     }
 
-    @Inject
-    lateinit var musicServiceConnection: MusicServiceConnection
-    private val musicViewModel by viewModels<MusicViewModel> {
-        provideMusicViewModel(musicServiceConnection, MUSIC_PLAYLIST)
-    }
     private val bottomViewModel by viewModels<BottomSheetViewModel>()
     private val url: String by lazy {
         requireArguments().getString(URL)!!
@@ -772,17 +764,18 @@ class WebFragment : BaseFragment() {
         if (!checkFloatingPermission()) {
             return
         }
+
         lifecycleScope.launch {
-            musicViewModel.showPlaylist(playlist) {
-                if (viewDestroyed()) return@showPlaylist
-                if (checkFloatingPermission()) {
-                    one.mixin.android.ui.player.collapse(MUSIC_PLAYLIST)
-                } else {
-                    requireActivity().showPipPermissionNotification(
-                        MusicActivity::class.java,
-                        getString(R.string.web_floating_permission)
-                    )
-                }
+            if (viewDestroyed()) return@launch
+
+            MusicService.playUrls(requireContext(), playlist)
+            if (checkFloatingPermission()) {
+                one.mixin.android.ui.player.collapse(MUSIC_PLAYLIST)
+            } else {
+                requireActivity().showPipPermissionNotification(
+                    MusicActivity::class.java,
+                    getString(R.string.web_floating_permission)
+                )
             }
         }
     }
