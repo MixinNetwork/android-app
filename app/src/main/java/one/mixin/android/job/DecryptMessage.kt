@@ -359,7 +359,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                             }
                         }
                     } else {
-                        val m =  createPinMessage(
+                        val m = createPinMessage(
                             UUID.randomUUID().toString(),
                             data.conversationId,
                             data.userId,
