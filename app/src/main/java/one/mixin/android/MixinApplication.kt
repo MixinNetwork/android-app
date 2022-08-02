@@ -148,7 +148,7 @@ open class MixinApplication :
 
     private fun init() {
         CronetProviderInstaller.installProvider(this)
-        if (BuildConfig.DEBUG ) {
+        if (BuildConfig.DEBUG) {
             Timber.plant(Timber.DebugTree(), FileLogTree())
         } else {
             Timber.plant(FileLogTree())
@@ -326,11 +326,14 @@ open class MixinApplication :
         }
     }
 
-    fun saveDraft(conversationId: String, draft: String) =
+    fun saveDraft(conversationId: String, draft: String) {
+        Timber.e("save draft ${MixinDatabase.getDatabase(this@MixinApplication).inTransaction()}")
         appScope.launch(SINGLE_DRAFT_THREAD) {
+            Timber.e("run save draft ${MixinDatabase.getDatabase(this@MixinApplication).inTransaction()}")
             MixinDatabase.getDatabase(this@MixinApplication).conversationDao()
                 .saveDraft(conversationId, draft)
         }
+    }
 
     fun checkAndShowAppAuth(activity: Activity): Boolean {
         val appAuth = defaultSharedPreferences.getInt(Constants.Account.PREF_APP_AUTH, -1)
