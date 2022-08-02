@@ -38,6 +38,7 @@ class MessageDeleteJob(
         } else {
             appDatabase.remoteMessageStatusDao().countUnread(conversationId)
         }
+        appDatabase.conversationDao().refreshLastMessageId(conversationId)
         InvalidateFlow.emit(conversationId)
     }
 }

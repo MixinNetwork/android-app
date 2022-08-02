@@ -214,6 +214,12 @@ interface ConversationDao : BaseDao<Conversation> {
     @Query("UPDATE conversations SET draft = :text WHERE conversation_id = :conversationId AND draft != :text")
     suspend fun saveDraft(conversationId: String, text: String)
 
+    @Query("UPDATE conversations SET last_message_id = (select id from messages where conversation_id = :conversationId ORDER BY created_at DESC limit 1) WHERE conversation_id =:conversationId")
+    fun refreshLastMessageId(conversationId: String)
+
+    @Query("UPDATE conversations SET last_message_id = (select id from messages where conversation_id = :conversationId ORDER BY created_at DESC limit 1) WHERE last_message_id =:messageId AND conversation_id =:conversationId")
+    fun refreshLastMessageId(conversationId: String, messageId: String)
+
     // Delete SQL
     @Query("DELETE FROM conversations WHERE conversation_id = :conversationId")
     suspend fun deleteConversationById(conversationId: String)
@@ -232,4 +238,7 @@ interface ConversationDao : BaseDao<Conversation> {
         """
     )
     suspend fun findSameConversations(selfId: String, userId: String): List<GroupMinimal>
+
+    @Query("UPDATE conversations SET last_message_id = :id, last_message_created_at = :createdAt  WHERE conversation_id = :conversationId AND :createdAt >= last_message_created_at")
+    fun updateLastMessageId(id: String, createdAt: String, conversationId: String)
 }

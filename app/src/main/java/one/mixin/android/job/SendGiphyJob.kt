@@ -39,7 +39,7 @@ class SendGiphyJob(
             MimeType.GIF.toString(), size, width, height, previewUrl, null, null,
             time, MediaStatus.PENDING, MessageStatus.SENDING.name
         )
-        messageDao.insert(message)
+        conversationDao.updateLastMessageId(message.id, message.createdAt, message.conversationId)
         InvalidateFlow.emit(message.conversationId)
     }
 

@@ -25,6 +25,7 @@ class ConvertDataJob(
 
     override fun onAdded() {
         messageDao.insert(message)
+        conversationDao.updateLastMessageId(message.id, message.createdAt, message.conversationId)
         InvalidateFlow.emit(message.conversationId)
     }
 
