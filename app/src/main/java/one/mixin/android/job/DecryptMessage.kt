@@ -435,6 +435,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
             } else if (plainData.action == PlainDataAction.NO_KEY.name) {
                 ratchetSenderKeyDao.delete(data.conversationId, SignalProtocolAddress(data.userId, data.sessionId.getDeviceId()).toString())
             } else if (plainData.action == PlainDataAction.ACKNOWLEDGE_MESSAGE_RECEIPTS.name) {
+                Timber.e("Update ACK ${GsonHelper.customGson.toJson(plainData.ackMessages)}")
                 plainData.ackMessages?.let { ackMessages ->
                     val updateExpiredMessageList = arrayListOf<Pair<String, Long?>>()
                     for (m in ackMessages) {
