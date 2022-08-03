@@ -14,12 +14,17 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
 import androidx.paging.PagedList
 import com.google.android.exoplayer2.Player
+import com.google.android.exoplayer2.Player.DISCONTINUITY_REASON_INTERNAL
+import com.google.android.exoplayer2.Player.DISCONTINUITY_REASON_REMOVE
+import com.google.android.exoplayer2.Player.DISCONTINUITY_REASON_SEEK_ADJUSTMENT
 import com.google.android.exoplayer2.ext.mediasession.MediaSessionConnector
 import com.google.android.exoplayer2.ext.mediasession.TimelineQueueNavigator
 import com.google.android.exoplayer2.ui.PlayerNotificationManager
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
+import one.mixin.android.RxBus
 import one.mixin.android.db.MixinDatabase
+import one.mixin.android.event.ProgressEvent.Companion.playEvent
 import one.mixin.android.extension.isServiceRunning
 import one.mixin.android.ui.player.internal.ConversationLoader
 import one.mixin.android.ui.player.internal.UrlLoader
@@ -137,8 +142,10 @@ class MusicService : LifecycleService() {
             if (mediaId != MusicPlayer.get().currentPlayMediaId()) {
                 val exists = MusicPlayer.get().exoPlayer.currentMediaItems().find { it.mediaId == mediaId }
                 if (exists == null) {
+                    RxBus.publish(playEvent(mediaId))  // respond UI before load
+
                     val index = db.messageDao().indexAudioByConversationId(mediaId, albumId)
-                    Timber.d("@@@ not found index: $index")
+                    Timber.d("@@@ not found, new index: $index")
                     conversationObserver.loadAround(index, mediaId)
                 } else {
                     MusicPlayer.get().playMediaById(mediaId)
@@ -157,6 +164,9 @@ class MusicService : LifecycleService() {
         if (::conversationObserver.isInitialized) {
             conversationLiveData?.removeObserver(conversationObserver)
         }
+
+        mediaId?.let { RxBus.publish(playEvent(it)) }  // respond UI before load
+
         conversationObserver = ConversationObserver(mediaId)
         val initialLoadKey = if (mediaId != null) {
             measureTimeMillis("@@@ index cost: ") {
@@ -164,7 +174,7 @@ class MusicService : LifecycleService() {
             }
         } else 0
         Timber.d("@@@ initialLoadKey: $initialLoadKey")
-        conversationLiveData = conversationLoader.conversationLiveData(albumId, db, initialLoadKey)
+        conversationLiveData = conversationLoader.conversationLiveData(albumId, db, initialLoadKey = initialLoadKey)
         conversationLiveData?.observe(this, conversationObserver)
     }
 
@@ -175,7 +185,13 @@ class MusicService : LifecycleService() {
         override fun onChanged(pagedList: PagedList<MediaMetadataCompat>) {
             Timber.d("@@@ pagedList size: ${pagedList.size}")
             currentPagedList = pagedList
-            val downloadedList = pagedList.filter { it.downloadStatus == MediaDescriptionCompat.STATUS_DOWNLOADED }
+            val downloadedList = mutableListOf<MediaMetadataCompat>()
+            for (i in 0 until pagedList.size) {
+                val item = pagedList[i]
+                if (item != null && item.downloadStatus == MediaDescriptionCompat.STATUS_DOWNLOADED) {
+                    downloadedList.add(item)
+                }
+            }
             Timber.d("@@@ downloadedList size: ${downloadedList.size}")
             currentPlaylist = downloadedList
             lifecycleScope.launch {
@@ -192,8 +208,7 @@ class MusicService : LifecycleService() {
 
         fun loadAround(index: Int, mediaId: String) {
             currentPagedList?.let { list ->
-                val i = max(0, min(list.size - 1, index))
-                list.loadAround(i)
+                list.loadAround(max(0, min(list.size - 1, index)))
                 this.mediaId = mediaId
                 first = true
                 list.dataSource.invalidate()
@@ -214,6 +229,7 @@ class MusicService : LifecycleService() {
 
         this@MusicService.albumId = MUSIC_PLAYLIST
         MusicPlayer.resetModeAndSpeed()
+        urlObserver?.let { urlLoader.removeObserver(it) }
 
         urlObserver = UrlObserver().apply {
             urlLoader.addObserver(this)
@@ -225,7 +241,6 @@ class MusicService : LifecycleService() {
         private var first = true
 
         override fun onUpdate(mediaList: List<MediaMetadataCompat>) {
-            Timber.d("@@@ onUpdate mediaList size: ${mediaList.size}, first: $first")
             currentPlaylist = mediaList
             lifecycleScope.launch {
                 MusicPlayer.get().updatePlaylist(mediaList)
@@ -275,15 +290,40 @@ class MusicService : LifecycleService() {
     }
 
     private inner class PlayerEventListener : Player.Listener {
-        override fun onPlayerStateChanged(playWhenReady: Boolean, playbackState: Int) {
+        override fun onPlaybackStateChanged(playbackState: Int) {
             when (playbackState) {
                 Player.STATE_BUFFERING,
                 Player.STATE_READY -> {
-                    notificationManager.showNotificationForPlayer(MusicPlayer.get().exoPlayer)
+                    val player = MusicPlayer.get().exoPlayer
+                    notificationManager.showNotificationForPlayer(player)
                     if (playbackState == Player.STATE_READY) {
-                        if (!playWhenReady) {
+                        if (!player.playWhenReady) {
                             stopForeground(false)
                         }
+                    }
+                }
+            }
+        }
+
+        override fun onPositionDiscontinuity(
+            oldPosition: Player.PositionInfo,
+            newPosition: Player.PositionInfo,
+            reason: Int
+        ) {
+            if (reason == DISCONTINUITY_REASON_SEEK_ADJUSTMENT ||
+                reason == DISCONTINUITY_REASON_REMOVE ||
+                reason == DISCONTINUITY_REASON_INTERNAL) {
+                return
+            }
+
+            if (albumId != MUSIC_PLAYLIST && !currentPlaylist.isNullOrEmpty()) {
+                val oldPos = oldPosition.mediaItemIndex
+                val newPos = newPosition.mediaItemIndex
+                if (oldPos != newPos && newPos == 0 || newPos == (currentPlaylist?.size ?: 0) - 1) {
+                    lifecycleScope.launch {
+                        val item = newPosition.mediaItem ?: return@launch
+                        val index = db.messageDao().indexAudioByConversationId(item.mediaId, albumId)
+                        conversationObserver.loadAround(index, item.mediaId)
                     }
                 }
             }

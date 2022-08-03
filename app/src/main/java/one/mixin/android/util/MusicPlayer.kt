@@ -9,7 +9,6 @@ import com.google.android.exoplayer2.ExoPlayer
 import com.google.android.exoplayer2.PlaybackException
 import com.google.android.exoplayer2.PlaybackParameters
 import com.google.android.exoplayer2.Player
-import com.google.android.exoplayer2.Player.DISCONTINUITY_REASON_REMOVE
 import com.google.android.exoplayer2.Timeline
 import com.google.android.exoplayer2.audio.AudioAttributes
 import com.google.android.exoplayer2.source.UnrecognizedInputFormatException
@@ -27,7 +26,6 @@ import one.mixin.android.extension.toast
 import one.mixin.android.ui.player.FloatingPlayer
 import one.mixin.android.ui.player.MusicService
 import one.mixin.android.ui.player.internal.MusicPlayerUpdater
-import one.mixin.android.ui.player.internal.currentMediaItems
 import one.mixin.android.widget.CircleProgress.Companion.STATUS_DONE
 import one.mixin.android.widget.CircleProgress.Companion.STATUS_ERROR
 import one.mixin.android.widget.CircleProgress.Companion.STATUS_PAUSE
@@ -124,9 +122,6 @@ class MusicPlayer private constructor() {
                 status = STATUS_ERROR
                 id()?.let { id -> RxBus.publish(errorEvent(id)) }
                 toast(R.string.error_not_supported_audio_format)
-                // mediaMetadataCompat?.let {
-                //     MixinApplication.appContext.openMedia(it)
-                // }
             } else {
                 if (error is ExoPlaybackException && error.type == TYPE_SOURCE) {
                     toast(R.string.Playback_failed)
@@ -140,19 +135,6 @@ class MusicPlayer private constructor() {
 
             reportExoPlayerException("MusicPlayer", error)
         }
-
-        override fun onPositionDiscontinuity(
-            oldPosition: Player.PositionInfo,
-            newPosition: Player.PositionInfo,
-            reason: Int
-        ) {
-            if (reason == DISCONTINUITY_REASON_REMOVE) return
-            val newMediaItem = exoPlayer.currentMediaItem ?: return
-            // if (newMediaItem.mediaId != id) {
-            //     id = newMediaItem.mediaId
-            //     resume()
-            // }
-        }
     }
 
     private var status = STATUS_PAUSE
@@ -165,20 +147,16 @@ class MusicPlayer private constructor() {
     }
 
     fun playMediaById(mediaId: String) {
-        val index = exoPlayer.currentMediaItems().indexOfFirst { it.mediaId == mediaId }
+        val index = updater.indexOfMediaItem(mediaId)
         Timber.d("@@@ playMediaById index: $index, mediaId: $mediaId")
         if (index == -1) return
 
-        if (index == exoPlayer.currentMediaItemIndex) {
-            if (!exoPlayer.playWhenReady) {
-                resume()
-                return
-            }
+        if (index != exoPlayer.currentMediaItemIndex) {
+            exoPlayer.seekToDefaultPosition(index)
         }
-
-        exoPlayer.seekToDefaultPosition(index)
-        exoPlayer.prepare()
-        resume()
+        if (!exoPlayer.playWhenReady) {
+            resume()
+        }
     }
 
     fun currentPlayMediaId(): String? = notNullWithElse({ return id() }, null)

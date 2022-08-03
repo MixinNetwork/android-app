@@ -121,7 +121,5 @@ abstract class MusicMetaLoader {
 
     companion object {
         private const val RETRIEVE_TIMEOUT_MILLI_SEC = 100L
-
-        const val PLAYLIST_PAGE_SIZE = 10
     }
 }

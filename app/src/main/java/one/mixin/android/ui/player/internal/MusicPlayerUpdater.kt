@@ -13,6 +13,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import one.mixin.android.BuildConfig
 import one.mixin.android.MixinApplication
+import timber.log.Timber
 
 internal class MusicPlayerUpdater(private val player: ExoPlayer) {
     private var mediaSource = ConcatenatingMediaSource()
@@ -30,6 +31,7 @@ internal class MusicPlayerUpdater(private val player: ExoPlayer) {
     suspend fun update(incoming: List<MediaMetadataCompat>) {
         val find = incoming.find { it.id == player.currentMediaItem?.mediaId }
         if (find == null) {
+            Timber.d("@@@ update use incoming")
             val mediaSource = incoming.toMediaSource(dataSourceFactory, cacheDataSourceFactory)
             this.mediaSource = mediaSource
             player.setMediaSource(mediaSource)
@@ -46,6 +48,7 @@ internal class MusicPlayerUpdater(private val player: ExoPlayer) {
 
         var changed = false
         patch.deltas.forEach { delta ->
+            Timber.d("@@@ delta type: ${delta.type}, target size: ${delta.target.size()}, source size: ${delta.source.size()}")
             when (delta.type) {
                 DeltaType.INSERT -> delta.insert()
                 DeltaType.DELETE -> {
@@ -64,6 +67,16 @@ internal class MusicPlayerUpdater(private val player: ExoPlayer) {
             player.setMediaSource(mediaSource)
             player.prepare()
         }
+    }
+
+    fun indexOfMediaItem(mediaId: String): Int {
+        for (i in 0 until mediaSource.size) {
+            val id = mediaSource.getMediaSource(i).mediaItem.mediaId
+            if (mediaId == id) {
+                return i
+            }
+        }
+        return -1
     }
 
     private fun AbstractDelta<MediaItem>.delete() {

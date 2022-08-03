@@ -575,4 +575,7 @@ internal constructor(
 
     fun findAudiosByConversationId(conversationId: String): DataSource.Factory<Int, MessageItem> =
         messageDao.findAudiosByConversationId(conversationId)
+
+    suspend fun indexAudioByConversationId(messageId: String, conversationId: String): Int =
+        messageDao.indexAudioByConversationId(messageId, conversationId)
 }

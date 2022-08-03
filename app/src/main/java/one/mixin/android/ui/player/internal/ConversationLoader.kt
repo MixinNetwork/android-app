@@ -18,14 +18,15 @@ class ConversationLoader: MusicMetaLoader() {
     fun conversationLiveData(
         conversationId: String,
         db: MixinDatabase,
+        pageSize: Int = 5,
         initialLoadKey: Int = 0,
     ): LiveData<PagedList<MediaMetadataCompat>> =
         db.messageDao().findAudiosByConversationId(conversationId)
             .mapByPage { loadMessageItems(it) }
             .toLiveData(
                 PagedList.Config.Builder()
-                    .setPageSize(PLAYLIST_PAGE_SIZE)
-                    .setEnablePlaceholders(false)
+                    .setPageSize(pageSize)
+                    .setEnablePlaceholders(true)
                     .build(),
                 initialLoadKey,
             )

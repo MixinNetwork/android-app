@@ -16,18 +16,19 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.paging.PagedList
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.google.android.exoplayer2.MediaItem
+import com.google.android.exoplayer2.Player
+import com.google.android.exoplayer2.Player.MEDIA_ITEM_TRANSITION_REASON_PLAYLIST_CHANGED
+import com.google.android.exoplayer2.Player.MEDIA_ITEM_TRANSITION_REASON_REPEAT
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.android.lifecycle.scope
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
-import io.reactivex.android.schedulers.AndroidSchedulers
 import kotlinx.coroutines.launch
 import one.mixin.android.R
-import one.mixin.android.RxBus
 import one.mixin.android.databinding.FragmentMusicBottomSheetBinding
-import one.mixin.android.event.ProgressEvent
 import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.booleanFromAttribute
 import one.mixin.android.extension.dp
@@ -35,7 +36,6 @@ import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.player.MusicService.Companion.MUSIC_PLAYLIST
-import one.mixin.android.ui.player.internal.MusicMetaLoader
 import one.mixin.android.ui.player.internal.UrlLoader
 import one.mixin.android.ui.player.internal.album
 import one.mixin.android.ui.player.internal.albumArtUri
@@ -48,14 +48,16 @@ import one.mixin.android.util.SystemUIManager
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.FixedMessageDataSource
 import one.mixin.android.webrtc.EXTRA_CONVERSATION_ID
-import one.mixin.android.widget.CircleProgress.Companion.STATUS_PLAY
 import one.mixin.android.widget.MixinBottomSheetDialog
 import timber.log.Timber
+import kotlin.math.max
+import kotlin.math.min
 
 @AndroidEntryPoint
 class MusicBottomSheetDialogFragment : BottomSheetDialogFragment() {
     companion object {
         const val TAG = "MusicBottomSheetDialogFragment"
+        const val CONVERSATION_UI_PAGE_SIZE = 10
 
         fun newInstance(conversationId: String) = MusicBottomSheetDialogFragment().withArgs {
             putString(EXTRA_CONVERSATION_ID, conversationId)
@@ -153,40 +155,25 @@ class MusicBottomSheetDialogFragment : BottomSheetDialogFragment() {
             if (conversationId == MUSIC_PLAYLIST) {
                 urlLoader.addObserver(urlObserver)
             } else {
-                viewModel.conversationLiveData(conversationId).observe(this@MusicBottomSheetDialogFragment) { list ->
-                    listAdapter.submitList(list)
-                    pb.isVisible = false
-                }
+                lifecycleScope.launch {
+                    val mediaId = MusicPlayer.get().currentPlayMediaId()
+                    val index = if (mediaId != null) {
+                        viewModel.indexAudioByConversationId(conversationId, mediaId)
+                    } else 0
+                    viewModel.conversationLiveData(conversationId, index)
+                        .observe(this@MusicBottomSheetDialogFragment) { list ->
+                            listAdapter.submitList(list)
+                            pb.isVisible = false
 
-                RxBus.listen(ProgressEvent::class.java)
-                    .observeOn(AndroidSchedulers.mainThread())
-                    .autoDispose(stopScope)
-                    .subscribe { event ->
-                        if (event.status == STATUS_PLAY) {
-                            val list = listAdapter.currentList ?: return@subscribe
-
-                            var mediaItem = list.find { it?.id == MusicPlayer.get().currentPlayMediaId() }
-                            if (mediaItem == null) {
-                                mediaItem = list.firstOrNull()
-                            }
-                            musicLayout.title.text = mediaItem?.displayTitle
-                            musicLayout.subtitle.text = mediaItem?.displaySubtitle
-                            musicLayout.albumArt.loadImage(mediaItem?.albumArtUri?.path, R.drawable.ic_music_place_holder)
-
-                            if (list.isNotEmpty() && firstOpen) {
-                                firstOpen = false
-                                val pos = list.indexOf(mediaItem)
-                                if (pos != -1) {
-                                    playlistRv.post {
-                                        (playlistRv.layoutManager as LinearLayoutManager).scrollToPosition(pos)
-                                    }
-                                }
+                            if (firstOpen && mediaId != null) {
+                                updateMusicLayout(list, mediaId)
                             }
                         }
-                    }
+                }
             }
 
             playerControlView.player = MusicPlayer.get().exoPlayer
+            MusicPlayer.get().exoPlayer.addListener(playerListener)
         }
     }
 
@@ -205,6 +192,7 @@ class MusicBottomSheetDialogFragment : BottomSheetDialogFragment() {
         super.onDestroyView()
         urlLoader.removeObserver(urlObserver)
         binding.playerControlView.player = null
+        MusicPlayer.get().exoPlayer.removeListener(playerListener)
     }
 
     override fun onDetach() {
@@ -221,8 +209,41 @@ class MusicBottomSheetDialogFragment : BottomSheetDialogFragment() {
     override fun dismissAllowingStateLoss() {
         try {
             super.dismissAllowingStateLoss()
-        } catch (e: IllegalStateException) {
-            Timber.e(e)
+        } catch (ignored: IllegalStateException) {
+        }
+    }
+
+    private fun updateMusicLayout(pagedList: PagedList<MediaMetadataCompat>, mediaId: String) {
+        binding.apply {
+            var mediaItem: MediaMetadataCompat? = null
+            for (i in 0 until pagedList.size) {
+                val item = pagedList[i]
+                if (item != null && item.id == mediaId) {
+                    mediaItem = item
+                    break
+                }
+            }
+            if (mediaItem == null) {
+                lifecycleScope.launch {
+                    val index = viewModel.indexAudioByConversationId(conversationId, mediaId)
+                    pagedList.loadAround(max(0, min(pagedList.size - 1, index)))
+                    firstOpen = true
+                    return@launch
+                }
+            }
+            musicLayout.title.text = mediaItem?.displayTitle
+            musicLayout.subtitle.text = mediaItem?.displaySubtitle
+            musicLayout.albumArt.loadImage(mediaItem?.albumArtUri?.path, R.drawable.ic_music_place_holder)
+
+            if (pagedList.isNotEmpty() && firstOpen) {
+                firstOpen = false
+                val pos = pagedList.indexOf(mediaItem)
+                if (pos != -1) {
+                    playlistRv.post {
+                        (playlistRv.layoutManager as LinearLayoutManager).scrollToPosition(pos)
+                    }
+                }
+            }
         }
     }
 
@@ -244,10 +265,25 @@ class MusicBottomSheetDialogFragment : BottomSheetDialogFragment() {
             )
     }
 
+    private val playerListener = object : Player.Listener {
+        override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
+            Timber.d("@@@ onMediaItemTransition reason: $reason, mediaItem: ${mediaItem?.mediaId}, list: ${listAdapter.currentList?.size}")
+            if (reason == MEDIA_ITEM_TRANSITION_REASON_REPEAT ||
+                reason == MEDIA_ITEM_TRANSITION_REASON_PLAYLIST_CHANGED ||
+                mediaItem == null
+            ) {
+                return
+            }
+            val pagedList = listAdapter.currentList ?: return
+
+            val mediaId = mediaItem.mediaId
+            updateMusicLayout(pagedList, mediaId)
+        }
+    }
+
     private val urlObserver = UrlLoader.UrlObserver { list ->
-        Timber.d("@@@ urlObserver list size: ${list.size}")
         val pagedConfig = PagedList.Config.Builder()
-            .setPageSize(MusicMetaLoader.PLAYLIST_PAGE_SIZE)
+            .setPageSize(CONVERSATION_UI_PAGE_SIZE)
             .build()
         val pagedList = PagedList.Builder(
             FixedMessageDataSource(list, list.size),

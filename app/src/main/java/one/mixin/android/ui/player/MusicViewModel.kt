@@ -9,6 +9,7 @@ import one.mixin.android.db.MixinDatabase
 import one.mixin.android.job.AttachmentDownloadJob
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.repository.ConversationRepository
+import one.mixin.android.ui.player.MusicBottomSheetDialogFragment.Companion.CONVERSATION_UI_PAGE_SIZE
 import one.mixin.android.ui.player.internal.ConversationLoader
 import one.mixin.android.vo.MediaStatus
 import javax.inject.Inject
@@ -24,8 +25,12 @@ internal constructor(
 
     private val conversationLoader = ConversationLoader()
 
-    fun conversationLiveData(conversationId: String) =
-        conversationLoader.conversationLiveData(conversationId, mixinDatabase)
+    fun conversationLiveData(conversationId: String, initialLoadKey: Int) =
+        conversationLoader.conversationLiveData(conversationId, mixinDatabase, CONVERSATION_UI_PAGE_SIZE, initialLoadKey)
+
+    suspend fun indexAudioByConversationId(conversationId: String, mediaId: String) =
+        conversationRepo.indexAudioByConversationId(mediaId, conversationId)
+
 
     suspend fun download(mediaId: String) {
         conversationRepo.suspendFindMessageById(mediaId)?.let {

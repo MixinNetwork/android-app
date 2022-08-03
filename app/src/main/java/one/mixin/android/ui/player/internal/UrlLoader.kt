@@ -13,6 +13,7 @@ class UrlLoader : MusicMetaLoader() {
 
     suspend fun load(urls: Array<String>?) {
         if (urls.isNullOrEmpty()) return
+        mediaList.clear()
 
         withContext(Dispatchers.IO) {
             val list = urls.toMutableList()
