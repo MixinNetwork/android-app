@@ -239,6 +239,6 @@ interface ConversationDao : BaseDao<Conversation> {
     )
     suspend fun findSameConversations(selfId: String, userId: String): List<GroupMinimal>
 
-    @Query("UPDATE conversations SET last_message_id = :id, last_message_created_at = :createdAt  WHERE conversation_id = :conversationId AND :createdAt >= last_message_created_at")
+    @Query("UPDATE conversations SET last_message_id = :id, last_message_created_at = :createdAt  WHERE conversation_id = :conversationId AND (last_message_created_at ISNULL OR :createdAt >= last_message_created_at)")
     fun updateLastMessageId(id: String, createdAt: String, conversationId: String)
 }
