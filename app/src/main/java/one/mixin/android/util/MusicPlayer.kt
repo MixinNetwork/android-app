@@ -55,6 +55,10 @@ class MusicPlayer private constructor() {
             instance = null
         }
 
+        fun resume() {
+            instance?.resume()
+        }
+
         fun pause() {
             instance?.pause()
         }

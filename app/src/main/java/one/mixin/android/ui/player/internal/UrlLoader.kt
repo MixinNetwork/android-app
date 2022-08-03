@@ -9,33 +9,42 @@ import one.mixin.android.ui.player.MusicService.Companion.MUSIC_PLAYLIST
 
 class UrlLoader : MusicMetaLoader() {
     private val observers = mutableSetOf<UrlObserver>()
-    private var mediaList: MutableList<MediaMetadataCompat>? = null
+    private var mediaList: MutableList<MediaMetadataCompat> = mutableListOf()
 
-    suspend fun load(urls: Array<String>?): List<MediaMetadataCompat> {
-        if (urls.isNullOrEmpty()) return emptyList()
+    suspend fun load(urls: Array<String>?) {
+        if (urls.isNullOrEmpty()) return
 
-        val mediaMetadataCompatList = mutableListOf<MediaMetadataCompat>()
         withContext(Dispatchers.IO) {
-            urls.forEach { url ->
-                val musicMeta = retrieveMetadata(url, url, 1000) ?: return@forEach
-                mediaMetadataCompatList.add(
-                    MediaMetadataCompat.Builder()
-                        .from(url, musicMeta)
-                        .build()
-                )
-            }
-            mediaMetadataCompatList.forEach { it.description.extras?.putAll(it.bundle) }
+            val list = urls.toMutableList()
+
+            loadInternal(list.take(1))
+
+            list.drop(1)
+                .chunked(5) { chunk ->
+                    loadInternal(chunk)
+                }
         }
-        mediaList = mediaMetadataCompatList
+    }
 
-        observers.forEach { it.onUpdate(mediaMetadataCompatList) }
-
-        return mediaMetadataCompatList
+    private fun loadInternal(chunk: List<String>) {
+        val mediaMetadataCompatList = mutableListOf<MediaMetadataCompat>()
+        chunk.forEach { url ->
+            val musicMeta = retrieveMetadata(url, url, 1000) ?: return@forEach
+            val item = MediaMetadataCompat.Builder()
+                .from(url, musicMeta)
+                .build()
+            item.description.extras?.putAll(item.bundle)
+            mediaMetadataCompatList.add(item)
+        }
+        mediaList += mediaMetadataCompatList
+        observers.forEach { it.onUpdate(mediaList.toList()) }
     }
 
     fun addObserver(observer: UrlObserver) {
         observers.add(observer)
-        mediaList?.let { observer.onUpdate(it) }
+        if (mediaList.isNotEmpty()) {
+            observer.onUpdate(mediaList.toList())
+        }
     }
 
     fun removeObserver(observer: UrlObserver) {
@@ -43,7 +52,7 @@ class UrlLoader : MusicMetaLoader() {
     }
 
     fun clear() {
-        mediaList?.clear()
+        mediaList.clear()
     }
 
     private fun MediaMetadataCompat.Builder.from(url: String, musicMeta: MusicMeta): MediaMetadataCompat.Builder {

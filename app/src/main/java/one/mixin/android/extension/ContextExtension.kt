@@ -955,10 +955,7 @@ fun Context.openMarket() {
 fun <T> Context.isServiceRunning(service: Class<T>) =
     (getSystemService(ACTIVITY_SERVICE) as ActivityManager)
         .getRunningServices(Integer.MAX_VALUE)
-        .any {
-            Timber.d("@@@ serviceName ${it.service.className}")
-            it.service.className == service.name
-        }
+        .any { it.service.className == service.name }
 
 fun Activity.showPipPermissionNotification(targetActivity: Class<*>, title: String) {
     val pendingIntent = PendingIntent.getActivity(

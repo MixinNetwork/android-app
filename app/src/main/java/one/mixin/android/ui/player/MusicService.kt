@@ -13,7 +13,6 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
 import androidx.paging.PagedList
-import com.google.android.exoplayer2.PlaybackException
 import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.ext.mediasession.MediaSessionConnector
 import com.google.android.exoplayer2.ext.mediasession.TimelineQueueNavigator
@@ -23,6 +22,7 @@ import kotlinx.coroutines.launch
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.extension.isServiceRunning
 import one.mixin.android.ui.player.internal.ConversationLoader
+import one.mixin.android.ui.player.internal.UrlLoader
 import one.mixin.android.ui.player.internal.currentMediaItems
 import one.mixin.android.ui.player.internal.downloadStatus
 import one.mixin.android.ui.player.internal.id
@@ -79,7 +79,6 @@ class MusicService : LifecycleService() {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        Timber.d("@@@ onStartCommand")
         super.onStartCommand(intent, flags, startId)
         val action = intent?.action
         if (intent == null || action == null) {
@@ -99,6 +98,7 @@ class MusicService : LifecycleService() {
     override fun onDestroy() {
         super.onDestroy()
 
+        urlObserver?.let { urlLoader.removeObserver(it) }
         urlLoader.clear()
         if (::conversationObserver.isInitialized) {
             conversationLiveData?.removeObserver(conversationObserver)
@@ -122,6 +122,7 @@ class MusicService : LifecycleService() {
 
     private var conversationLiveData: LiveData<PagedList<MediaMetadataCompat>>? = null
     private lateinit var conversationObserver: ConversationObserver
+    private var urlObserver: UrlObserver? = null
 
     private suspend fun handleConversation(intent: Intent) {
         val albumId = intent.getStringExtra(EXTRA_ALBUM_ID) ?: return
@@ -142,12 +143,15 @@ class MusicService : LifecycleService() {
                 } else {
                     MusicPlayer.get().playMediaById(mediaId)
                 }
+            } else {
+                MusicPlayer.resume()
             }
             return
         }
 
         this.albumId = albumId
         MusicPlayer.resetModeAndSpeed()
+        urlObserver?.let { urlLoader.removeObserver(it) }
         urlLoader.clear()
 
         if (::conversationObserver.isInitialized) {
@@ -189,7 +193,6 @@ class MusicService : LifecycleService() {
         fun loadAround(index: Int, mediaId: String) {
             currentPagedList?.let { list ->
                 val i = max(0, min(list.size - 1, index))
-                Timber.d("@@@ loadAround index: $i, mediaId: $mediaId")
                 list.loadAround(i)
                 this.mediaId = mediaId
                 first = true
@@ -209,15 +212,31 @@ class MusicService : LifecycleService() {
         }
         conversationLiveData = null
 
-        val playlist = urlLoader.load(urls)
-
         this@MusicService.albumId = MUSIC_PLAYLIST
         MusicPlayer.resetModeAndSpeed()
 
-        currentPlaylist = playlist
-        MusicPlayer.get().updatePlaylist(playlist)
-        playlist.firstOrNull()?.id?.let {
-            MusicPlayer.get().playMediaById(it)
+        urlObserver = UrlObserver().apply {
+            urlLoader.addObserver(this)
+        }
+        urlLoader.load(urls)
+    }
+
+    private inner class UrlObserver : UrlLoader.UrlObserver {
+        private var first = true
+
+        override fun onUpdate(mediaList: List<MediaMetadataCompat>) {
+            Timber.d("@@@ onUpdate mediaList size: ${mediaList.size}, first: $first")
+            currentPlaylist = mediaList
+            lifecycleScope.launch {
+                MusicPlayer.get().updatePlaylist(mediaList)
+
+                if (mediaList.isNotEmpty() && first) {
+                    first = false
+                    mediaList.firstOrNull()?.id?.let {
+                        MusicPlayer.get().playMediaById(it)
+                    }
+                }
+            }
         }
     }
 
@@ -268,10 +287,6 @@ class MusicService : LifecycleService() {
                     }
                 }
             }
-        }
-
-        override fun onPlayerError(error: PlaybackException) {
-            Timber.i(error)
         }
     }
 

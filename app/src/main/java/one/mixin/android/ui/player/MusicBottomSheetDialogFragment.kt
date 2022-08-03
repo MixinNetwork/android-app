@@ -245,6 +245,7 @@ class MusicBottomSheetDialogFragment : BottomSheetDialogFragment() {
     }
 
     private val urlObserver = UrlLoader.UrlObserver { list ->
+        Timber.d("@@@ urlObserver list size: ${list.size}")
         val pagedConfig = PagedList.Config.Builder()
             .setPageSize(MusicMetaLoader.PLAYLIST_PAGE_SIZE)
             .build()
@@ -254,8 +255,10 @@ class MusicBottomSheetDialogFragment : BottomSheetDialogFragment() {
         ).setNotifyExecutor(ArchTaskExecutor.getMainThreadExecutor())
             .setFetchExecutor(ArchTaskExecutor.getIOThreadExecutor())
             .build()
-        listAdapter.submitList(pagedList)
-        binding.pb.isVisible = false
+        lifecycleScope.launch {
+            listAdapter.submitList(pagedList)
+            binding.pb.isVisible = false
+        }
     }
 
     private val bottomSheetBehaviorCallback = object : BottomSheetBehavior.BottomSheetCallback() {

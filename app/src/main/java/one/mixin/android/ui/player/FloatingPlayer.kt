@@ -104,7 +104,6 @@ class FloatingPlayer(private var isNightMode: Boolean) {
     }
 
     fun show(conversationId: String? = null) {
-        Timber.d("@@@ show cid: $conversationId")
         if (!appContext.checkInlinePermissions()) return
 
         if (conversationId != null && this.conversationId != conversationId) {

@@ -13,7 +13,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import one.mixin.android.BuildConfig
 import one.mixin.android.MixinApplication
-import timber.log.Timber
 
 internal class MusicPlayerUpdater(private val player: ExoPlayer) {
     private var mediaSource = ConcatenatingMediaSource()
@@ -47,12 +46,8 @@ internal class MusicPlayerUpdater(private val player: ExoPlayer) {
 
         var changed = false
         patch.deltas.forEach { delta ->
-            Timber.d("@@@ delta type: ${delta.type}, target size: ${delta.target.size()}, source size: ${delta.source.size()}")
             when (delta.type) {
-                DeltaType.INSERT -> {
-                    delta.insert()
-                    changed = true
-                }
+                DeltaType.INSERT -> delta.insert()
                 DeltaType.DELETE -> {
                     delta.delete()
                     changed = true
