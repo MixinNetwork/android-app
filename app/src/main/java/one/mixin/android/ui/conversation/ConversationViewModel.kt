@@ -58,7 +58,6 @@ import one.mixin.android.util.Attachment
 import one.mixin.android.util.ControlledRunner
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.SINGLE_DB_THREAD
-import one.mixin.android.util.SINGLE_DRAFT_THREAD
 import one.mixin.android.util.chat.FastComputableLiveData
 import one.mixin.android.util.chat.FastLivePagedListBuilder
 import one.mixin.android.vo.AppCap
@@ -151,7 +150,7 @@ internal constructor(
     suspend fun findFirstUnreadMessageId(conversationId: String, offset: Int): String? =
         conversationRepository.findFirstUnreadMessageId(conversationId, offset)
 
-    suspend fun getConversationDraftById(id: String) = withContext(SINGLE_DRAFT_THREAD) {
+    suspend fun getConversationDraftById(id: String) = withContext(SINGLE_DB_THREAD) {
         conversationRepository.getConversationDraftById(id)
     }
 
