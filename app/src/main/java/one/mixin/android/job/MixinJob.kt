@@ -27,6 +27,7 @@ import one.mixin.android.vo.Conversation
 import one.mixin.android.vo.ConversationStatus
 import one.mixin.android.vo.LinkState
 import one.mixin.android.vo.MessageCategory
+import one.mixin.android.vo.MessageHistory
 import one.mixin.android.vo.MessageStatus
 import one.mixin.android.vo.Participant
 import one.mixin.android.vo.ParticipantSession
@@ -131,6 +132,9 @@ abstract class MixinJob(
             return checkSessionSenderKey(conversationId)
         }
         if (result.success) {
+            for (s in signalKeyMessages) {
+                messageHistoryDao.insert(MessageHistory(s.message_id))
+            }
             val sentSenderKeys = signalKeyMessages.map {
                 ParticipantSessionSent(conversationId, it.recipient_id, it.sessionId!!, SenderKeyStatus.SENT.ordinal)
             }

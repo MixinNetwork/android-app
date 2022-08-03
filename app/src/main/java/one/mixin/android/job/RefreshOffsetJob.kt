@@ -41,6 +41,10 @@ class RefreshOffsetJob : MixinJob(
                 }
                 for (m in blazeMessages) {
                     messageDao.makeMessageStatus(m.status, m.messageId) {
+                        val mh = messageHistoryDao.findMessageHistoryById(m.messageId)
+                        if (mh != null) {
+                            return@makeMessageStatus
+                        }
                         pendingMessageStatusMap[m.messageId]?.notNullWithElse({ status ->
                             val currentStatus = MessageStatus.values().firstOrNull { it.name == m.status }?.ordinal ?: return@makeMessageStatus
                             val localStatus = MessageStatus.values().firstOrNull { it.name == status }?.ordinal ?: return@makeMessageStatus
