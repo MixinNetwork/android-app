@@ -132,9 +132,8 @@ abstract class MixinJob(
             return checkSessionSenderKey(conversationId)
         }
         if (result.success) {
-            for (s in signalKeyMessages) {
-                messageHistoryDao.insert(MessageHistory(s.message_id))
-            }
+            val messageIds = signalKeyMessages.map { MessageHistory(it.message_id) }
+            messageHistoryDao.insertList(messageIds)
             val sentSenderKeys = signalKeyMessages.map {
                 ParticipantSessionSent(conversationId, it.recipient_id, it.sessionId!!, SenderKeyStatus.SENT.ordinal)
             }
