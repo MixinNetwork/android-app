@@ -21,7 +21,7 @@ class FileHolderBottomLayout constructor(context: Context, attrs: AttributeSet) 
         set(value) {
             if (field != value) {
                 field = value
-               seekBar.progress = 0
+                seekBar.progress = 0
             }
         }
 
@@ -35,9 +35,9 @@ class FileHolderBottomLayout constructor(context: Context, attrs: AttributeSet) 
                             it.progress in 0f..seekBar.max.toFloat()
                         ) {
                             if (!seekBar.isDragging) {
-                                val eventProgress = (it.progress *seekBar.max).toInt()
+                                val eventProgress = (it.progress * seekBar.max).toInt()
                                 if (eventProgress > 0) {
-                                   seekBar.progress = eventProgress
+                                    seekBar.progress = eventProgress
                                 }
                             }
                             if (displayedChild != POS_SEEK_BAR) {
@@ -53,7 +53,7 @@ class FileHolderBottomLayout constructor(context: Context, attrs: AttributeSet) 
                             (it.status == CircleProgress.STATUS_PLAY && it.progress == 0f) ||
                             it.status == CircleProgress.STATUS_ERROR
                         ) {
-                           seekBar.progress = 0
+                            seekBar.progress = 0
                             if (displayedChild != POS_TEXT) {
                                 showText()
                             }

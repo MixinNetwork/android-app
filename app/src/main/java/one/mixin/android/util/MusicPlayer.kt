@@ -146,7 +146,7 @@ class MusicPlayer private constructor() {
         Timber.d("@@@ updatePlaylist size: ${exoPlayer.mediaItemCount}")
     }
 
-    fun playMediaById(mediaId: String) {
+    fun playMediaById(mediaId: String, playWhenReady: Boolean = true) {
         val index = updater.indexOfMediaItem(mediaId)
         Timber.d("@@@ playMediaById index: $index, mediaId: $mediaId")
         if (index == -1) return
@@ -155,15 +155,15 @@ class MusicPlayer private constructor() {
             exoPlayer.seekToDefaultPosition(index)
         }
         if (!exoPlayer.playWhenReady) {
-            resume()
+            resume(playWhenReady)
         }
     }
 
     fun currentPlayMediaId(): String? = notNullWithElse({ return id() }, null)
 
-    private fun resume() {
+    private fun resume(playWhenReady: Boolean = true) {
         status = STATUS_PLAY
-        if (!exoPlayer.playWhenReady) {
+        if (playWhenReady && !exoPlayer.playWhenReady) {
             exoPlayer.playWhenReady = true
         }
         id()?.let {

@@ -57,7 +57,7 @@ import kotlin.math.min
 class MusicBottomSheetDialogFragment : BottomSheetDialogFragment() {
     companion object {
         const val TAG = "MusicBottomSheetDialogFragment"
-        const val CONVERSATION_UI_PAGE_SIZE = 10
+        const val CONVERSATION_UI_PAGE_SIZE = 15
 
         fun newInstance(conversationId: String) = MusicBottomSheetDialogFragment().withArgs {
             putString(EXTRA_CONVERSATION_ID, conversationId)

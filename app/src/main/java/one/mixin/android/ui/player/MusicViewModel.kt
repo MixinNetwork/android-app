@@ -31,7 +31,6 @@ internal constructor(
     suspend fun indexAudioByConversationId(conversationId: String, mediaId: String) =
         conversationRepo.indexAudioByConversationId(mediaId, conversationId)
 
-
     suspend fun download(mediaId: String) {
         conversationRepo.suspendFindMessageById(mediaId)?.let {
             jobManager.addJobInBackground(AttachmentDownloadJob(it))
@@ -40,7 +39,7 @@ internal constructor(
 
     fun cancel(conversationId: String, mediaId: String) = viewModelScope.launch(Dispatchers.IO) {
         jobManager.cancelJobByMixinJobId(mediaId) {
-             viewModelScope.launch {
+            viewModelScope.launch {
                 conversationRepo.updateMediaStatusSuspend(MediaStatus.CANCELED.name, mediaId, conversationId)
             }
         }

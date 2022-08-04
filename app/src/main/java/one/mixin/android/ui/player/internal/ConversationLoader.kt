@@ -13,12 +13,12 @@ import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.absolutePath
 
-class ConversationLoader: MusicMetaLoader() {
+class ConversationLoader : MusicMetaLoader() {
 
     fun conversationLiveData(
         conversationId: String,
         db: MixinDatabase,
-        pageSize: Int = 5,
+        pageSize: Int = 10,
         initialLoadKey: Int = 0,
     ): LiveData<PagedList<MediaMetadataCompat>> =
         db.messageDao().findAudiosByConversationId(conversationId)

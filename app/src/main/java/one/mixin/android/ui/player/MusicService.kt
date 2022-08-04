@@ -142,7 +142,7 @@ class MusicService : LifecycleService() {
             if (mediaId != MusicPlayer.get().currentPlayMediaId()) {
                 val exists = MusicPlayer.get().exoPlayer.currentMediaItems().find { it.mediaId == mediaId }
                 if (exists == null) {
-                    RxBus.publish(playEvent(mediaId))  // respond UI before load
+                    RxBus.publish(playEvent(mediaId)) // respond UI before load
 
                     val index = db.messageDao().indexAudioByConversationId(mediaId, albumId)
                     Timber.d("@@@ not found, new index: $index")
@@ -165,7 +165,7 @@ class MusicService : LifecycleService() {
             conversationLiveData?.removeObserver(conversationObserver)
         }
 
-        mediaId?.let { RxBus.publish(playEvent(it)) }  // respond UI before load
+        mediaId?.let { RxBus.publish(playEvent(it)) } // respond UI before load
 
         conversationObserver = ConversationObserver(mediaId)
         val initialLoadKey = if (mediaId != null) {
@@ -181,6 +181,7 @@ class MusicService : LifecycleService() {
     private inner class ConversationObserver(private var mediaId: String? = null) : Observer<PagedList<MediaMetadataCompat>> {
         private var first = true
         private var currentPagedList: PagedList<MediaMetadataCompat>? = null
+        private var playWhenReady = true
 
         override fun onChanged(pagedList: PagedList<MediaMetadataCompat>) {
             Timber.d("@@@ pagedList size: ${pagedList.size}")
@@ -200,16 +201,17 @@ class MusicService : LifecycleService() {
                 if (first) {
                     first = false
                     mediaId?.let {
-                        MusicPlayer.get().playMediaById(it)
+                        MusicPlayer.get().playMediaById(it, playWhenReady)
                     }
                 }
             }
         }
 
-        fun loadAround(index: Int, mediaId: String) {
+        fun loadAround(index: Int, mediaId: String, playWhenReady: Boolean = true) {
             currentPagedList?.let { list ->
                 list.loadAround(max(0, min(list.size - 1, index)))
                 this.mediaId = mediaId
+                this.playWhenReady = playWhenReady
                 first = true
                 list.dataSource.invalidate()
             }
@@ -260,8 +262,8 @@ class MusicService : LifecycleService() {
     ) : TimelineQueueNavigator(mediaSession) {
         override fun getMediaDescription(player: Player, windowIndex: Int): MediaDescriptionCompat {
             return try {
-                currentPlaylist?.get(windowIndex)?.description ?:
-                    MediaDescriptionCompat.Builder().setMediaId(MUSIC_UNKNOWN_ROOT).build()
+                currentPlaylist?.get(windowIndex)?.description
+                    ?: MediaDescriptionCompat.Builder().setMediaId(MUSIC_UNKNOWN_ROOT).build()
             } catch (e: IndexOutOfBoundsException) {
                 Timber.w(e)
                 MediaDescriptionCompat.Builder().setMediaId(MUSIC_UNKNOWN_ROOT).build()
@@ -296,11 +298,6 @@ class MusicService : LifecycleService() {
                 Player.STATE_READY -> {
                     val player = MusicPlayer.get().exoPlayer
                     notificationManager.showNotificationForPlayer(player)
-                    if (playbackState == Player.STATE_READY) {
-                        if (!player.playWhenReady) {
-                            stopForeground(false)
-                        }
-                    }
                 }
             }
         }
@@ -312,7 +309,8 @@ class MusicService : LifecycleService() {
         ) {
             if (reason == DISCONTINUITY_REASON_SEEK_ADJUSTMENT ||
                 reason == DISCONTINUITY_REASON_REMOVE ||
-                reason == DISCONTINUITY_REASON_INTERNAL) {
+                reason == DISCONTINUITY_REASON_INTERNAL
+            ) {
                 return
             }
 
@@ -323,7 +321,7 @@ class MusicService : LifecycleService() {
                     lifecycleScope.launch {
                         val item = newPosition.mediaItem ?: return@launch
                         val index = db.messageDao().indexAudioByConversationId(item.mediaId, albumId)
-                        conversationObserver.loadAround(index, item.mediaId)
+                        conversationObserver.loadAround(index, item.mediaId, false)
                     }
                 }
             }
