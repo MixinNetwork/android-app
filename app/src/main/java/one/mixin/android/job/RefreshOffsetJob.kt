@@ -45,7 +45,7 @@ class RefreshOffsetJob : MixinJob(
                         if (mh != null) {
                             return@makeMessageStatus
                         }
-                        pendingMessageStatusMap[m.messageId]?.notNullWithElse({ status ->
+                        pendingMessageStatusMap[m.messageId].notNullWithElse({ status ->
                             val currentStatus = MessageStatus.values().firstOrNull { it.name == m.status }?.ordinal ?: return@makeMessageStatus
                             val localStatus = MessageStatus.values().firstOrNull { it.name == status }?.ordinal ?: return@makeMessageStatus
                             if (currentStatus > localStatus) {
