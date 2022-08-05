@@ -724,6 +724,7 @@ inline fun <T, R> T?.notNullWithElse(normalAction: (T) -> R, elseAction: () -> R
     }
 }
 
+@Deprecated("Not recommend", ReplaceWith("regular function"))
 inline fun <T> T?.notNullWithElse(normalAction: (T) -> Unit, elseAction: () -> Unit) {
     return if (this != null) {
         normalAction(this)

@@ -223,7 +223,6 @@ open class SendMessageJob(
         callback(expireIn)
     }
 
-    @ExperimentalUnsignedTypes
     private fun sendEncryptedMessage(conversation: Conversation?, callback: (Long?) -> Unit) {
         conversation ?: return
         val expireIn = checkConversationExist(conversation)

@@ -12,7 +12,6 @@ import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationCompat.Action.SEMANTIC_ACTION_MARK_AS_READ
 import androidx.core.app.NotificationCompat.Action.SEMANTIC_ACTION_REPLY
 import androidx.core.app.NotificationCompat.CATEGORY_MESSAGE
-import androidx.core.app.NotificationManagerCompat
 import androidx.core.app.Person
 import androidx.core.app.RemoteInput
 import androidx.core.content.ContextCompat
