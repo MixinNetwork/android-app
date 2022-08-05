@@ -5,11 +5,6 @@ import android.net.Uri
 import android.support.v4.media.MediaMetadataCompat
 import androidx.recyclerview.widget.DiffUtil
 import com.google.android.exoplayer2.MediaItem
-import com.google.android.exoplayer2.source.ConcatenatingMediaSource
-import com.google.android.exoplayer2.source.MediaSource
-import com.google.android.exoplayer2.source.ProgressiveMediaSource
-import com.google.android.exoplayer2.upstream.DataSource
-import one.mixin.android.extension.isLocalScheme
 import one.mixin.android.extension.toUri
 
 /**
@@ -256,53 +251,6 @@ fun MediaMetadataCompat.Builder.copy(media: MediaMetadataCompat, status: Long): 
     displaySubtitle = media.artist
     displayIconUri = media.albumArtUri.path
     return this
-}
-
-fun MediaMetadataCompat.toMediaSource(
-    dataSourceFactory: DataSource.Factory,
-    cacheDataSourceFactory: DataSource.Factory,
-): MediaSource {
-    val targetDataSourceFactory = if (mediaUri.scheme?.isLocalScheme() == false) {
-        cacheDataSourceFactory
-    } else dataSourceFactory
-    return ProgressiveMediaSource.Factory(targetDataSourceFactory).createMediaSource(
-        MediaItem.Builder()
-            .setMediaId(id!!)
-            .setUri(mediaUri)
-            .build()
-    )
-}
-
-fun List<MediaMetadataCompat>.toMediaSource(
-    dataSourceFactory: DataSource.Factory,
-    cacheDataSourceFactory: DataSource.Factory,
-): ConcatenatingMediaSource {
-    val concatenatingMediaSource = ConcatenatingMediaSource()
-    forEach {
-        concatenatingMediaSource.addMediaSource(it.toMediaSource(dataSourceFactory, cacheDataSourceFactory))
-    }
-    return concatenatingMediaSource
-}
-
-fun List<MediaItem>.toMediaSources(
-    dataSourceFactory: DataSource.Factory,
-    cacheDataSourceFactory: DataSource.Factory,
-): List<MediaSource> {
-    val mediaSources = mutableListOf<MediaSource>()
-    forEach {
-        mediaSources.add(it.toMediaSource(dataSourceFactory, cacheDataSourceFactory))
-    }
-    return mediaSources
-}
-
-fun MediaItem.toMediaSource(
-    dataSourceFactory: DataSource.Factory,
-    cacheDataSourceFactory: DataSource.Factory,
-): MediaSource {
-    val targetDataSourceFactory = if (requestMetadata.mediaUri?.scheme?.isLocalScheme() == false) {
-        cacheDataSourceFactory
-    } else dataSourceFactory
-    return ProgressiveMediaSource.Factory(targetDataSourceFactory).createMediaSource(this)
 }
 
 fun List<MediaMetadataCompat>.toMediaItems(): List<MediaItem> {

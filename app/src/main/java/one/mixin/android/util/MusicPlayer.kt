@@ -26,6 +26,7 @@ import one.mixin.android.extension.toast
 import one.mixin.android.ui.player.FloatingPlayer
 import one.mixin.android.ui.player.MusicService
 import one.mixin.android.ui.player.internal.MusicPlayerUpdater
+import one.mixin.android.ui.player.internal.currentMediaItems
 import one.mixin.android.widget.CircleProgress.Companion.STATUS_DONE
 import one.mixin.android.widget.CircleProgress.Companion.STATUS_ERROR
 import one.mixin.android.widget.CircleProgress.Companion.STATUS_PAUSE
@@ -147,11 +148,13 @@ class MusicPlayer private constructor() {
     }
 
     fun playMediaById(mediaId: String, playWhenReady: Boolean = true) {
-        val index = updater.indexOfMediaItem(mediaId)
+        val index = exoPlayer.currentMediaItems.indexOfFirst { it.mediaId == mediaId }
         Timber.d("@@@ playMediaById index: $index, mediaId: $mediaId")
         if (index == -1) return
 
-        if (index != exoPlayer.currentMediaItemIndex) {
+        val currentIndex = exoPlayer.currentMediaItemIndex
+        if (index != currentIndex) {
+            Timber.d("@@@ index != $currentIndex")
             exoPlayer.seekToDefaultPosition(index)
         }
         if (!exoPlayer.playWhenReady) {

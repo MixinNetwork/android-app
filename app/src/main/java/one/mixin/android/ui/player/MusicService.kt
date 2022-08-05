@@ -140,12 +140,12 @@ class MusicService : LifecycleService() {
             if (mediaId == null) return
 
             if (mediaId != MusicPlayer.get().currentPlayMediaId()) {
-                val exists = MusicPlayer.get().exoPlayer.currentMediaItems().find { it.mediaId == mediaId }
+                val exists = MusicPlayer.get().exoPlayer.currentMediaItems.find { it.mediaId == mediaId }
                 if (exists == null) {
                     RxBus.publish(playEvent(mediaId)) // respond UI before load
 
                     val index = db.messageDao().indexAudioByConversationId(mediaId, albumId)
-                    Timber.d("@@@ not found, new index: $index")
+                    Timber.d("@@@ not found $mediaId, new index: $index")
                     conversationObserver.loadAround(index, mediaId)
                 } else {
                     MusicPlayer.get().playMediaById(mediaId)

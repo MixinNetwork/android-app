@@ -11,7 +11,6 @@ import one.mixin.android.db.contants.IMAGES
 import one.mixin.android.db.contants.LIVES
 import one.mixin.android.db.contants.TRANSCRIPTS
 import one.mixin.android.db.contants.VIDEOS
-import one.mixin.android.ui.player.MessageIdIdAndMediaStatus
 import one.mixin.android.util.QueryMessage
 import one.mixin.android.vo.AttachmentMigration
 import one.mixin.android.vo.ConversationWithStatus
@@ -426,17 +425,6 @@ interface MessageDao : BaseDao<Message> {
         """
     )
     suspend fun indexAudioByConversationId(messageId: String, conversationId: String): Int
-
-    @Query(
-        """
-        SELECT id as mediaId, media_status as mediaStatus FROM messages 
-        WHERE conversation_id = :conversationId
-        AND (category in ($DATA)) AND media_mime_type IN ("audio/mpeg", "audio/flac")
-        AND media_status != 'EXPIRED'
-        ORDER BY created_at ASC, rowid ASC
-        """
-    )
-    fun observeMediaStatus(conversationId: String): LiveData<List<MessageIdIdAndMediaStatus>>
 
     @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
     @Query(
