@@ -333,16 +333,21 @@ fun ImageView.loadVideo(uri: String?, holder: String?, width: Int, height: Int) 
         .into(this)
 }
 
-fun RLottieImageView.loadSticker(uri: String?, type: String?, cacheKey: String) {
+fun RLottieImageView.loadSticker(url: String?, type: String?, cacheKey: String) {
     if (!isActivityNotDestroyed()) return
-    uri?.let {
-        when (type?.uppercase()) {
+    url?.let {
+        val imgType = type?.uppercase() ?: try {
+            url.substring(url.lastIndexOf("." + 1)).uppercase()
+        } catch (e: Exception) {
+            null
+        }
+        when (imgType) {
             "JSON" ->
                 loadLottie(it, cacheKey)
             "GIF" -> {
-                loadGif(uri)
+                loadGif(url)
             }
-            else -> loadImage(uri)
+            else -> loadImage(url)
         }
     }
 }

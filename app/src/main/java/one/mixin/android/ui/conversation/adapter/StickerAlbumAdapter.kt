@@ -9,7 +9,7 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.viewpager2.adapter.FragmentStateAdapter
 import one.mixin.android.R
 import one.mixin.android.databinding.LayoutStickerTabBinding
-import one.mixin.android.extension.loadImage
+import one.mixin.android.extension.loadSticker
 import one.mixin.android.ui.conversation.GiphyFragment
 import one.mixin.android.ui.conversation.StickerAlbumFragment
 import one.mixin.android.ui.conversation.StickerFragment
@@ -102,7 +102,11 @@ class StickerAlbumAdapter(
             TYPE_RECENT -> binding.icon.setImageResource(R.drawable.ic_sticker_common)
             TYPE_LIKE -> binding.icon.setImageResource(R.drawable.ic_sticker_favorite)
             TYPE_GIPHY -> binding.icon.setImageResource(R.drawable.ic_sticker_gif)
-            else -> binding.icon.loadImage(albums[pos - UN_NORMAL_COUNT].iconUrl)
+            else -> {
+                val album = albums[pos - UN_NORMAL_COUNT]
+                val url = album.iconUrl
+                binding.icon.loadSticker(url, null, "${url}${album.albumId}")
+            }
         }
         return binding.root
     }
