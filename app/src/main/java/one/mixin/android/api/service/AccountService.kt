@@ -6,6 +6,7 @@ import kotlinx.coroutines.Deferred
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.request.AccountRequest
 import one.mixin.android.api.request.AccountUpdateRequest
+import one.mixin.android.api.request.AlbumUploadRequest
 import one.mixin.android.api.request.CollectibleRequest
 import one.mixin.android.api.request.DeactivateRequest
 import one.mixin.android.api.request.DeactivateVerificationRequest
@@ -142,4 +143,7 @@ interface AccountService {
 
     @GET("external/schemes")
     suspend fun getExternalSchemes(): MixinResponse<Set<String>>
+
+    @POST("albums")
+    suspend fun uploadAlbum(@Body albumUploadRequest: AlbumUploadRequest): MixinResponse<StickerAlbum>
 }

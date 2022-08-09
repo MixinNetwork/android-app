@@ -5,7 +5,9 @@ import android.util.AttributeSet
 import android.view.LayoutInflater
 import android.view.View
 import android.widget.RelativeLayout
+import androidx.annotation.DrawableRes
 import androidx.core.content.ContextCompat
+import androidx.core.view.isVisible
 import one.mixin.android.R
 import one.mixin.android.databinding.ViewTitleBinding
 
@@ -83,6 +85,11 @@ class TitleView(context: Context, attrs: AttributeSet) : RelativeLayout(context,
             binding.subTitleTv.visibility = View.VISIBLE
             binding.subTitleTv.text = second
         }
+    }
+
+    fun setRightIcon(@DrawableRes resId: Int) {
+        rightIb.setImageResource(resId)
+        rightAnimator.isVisible = true
     }
 
     companion object {

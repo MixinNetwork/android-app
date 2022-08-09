@@ -1,16 +1,28 @@
 package one.mixin.android.ui.sticker
 
+import android.Manifest
 import android.os.Bundle
 import android.view.View
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.tbruyelle.rxpermissions2.RxPermissions
+import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import one.mixin.android.BuildConfig
 import one.mixin.android.R
+import one.mixin.android.api.handleMixinResponse
+import one.mixin.android.api.request.AlbumUploadRequest
 import one.mixin.android.databinding.FragmentStickerAlbumManagementBinding
+import one.mixin.android.extension.base64RawEncode
+import one.mixin.android.extension.indeterminateProgressDialog
+import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.conversation.ConversationViewModel
 import one.mixin.android.util.viewBinding
@@ -33,10 +45,55 @@ class StickerAlbumManagementFragment : BaseFragment(R.layout.fragment_sticker_al
 
     private lateinit var itemTouchHelper: ItemTouchHelper
 
+    private val selectZip = registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
+        if (uri == null) return@registerForActivityResult
+
+        lifecycleScope.launch {
+            val dialog = indeterminateProgressDialog(
+                message = R.string.Please_wait_a_bit,
+                title = R.string.Creating
+            ).apply {
+                setCancelable(false)
+            }
+            dialog.show()
+
+            val albumUploadRequest = withContext(Dispatchers.IO) {
+                val bytes = requireContext().contentResolver.openInputStream(uri)?.readBytes()
+                if (bytes == null) {
+                    null
+                } else {
+                    AlbumUploadRequest(bytes.base64RawEncode())
+                }
+            }
+            if (albumUploadRequest == null) {
+                dialog.dismiss()
+                return@launch
+            }
+
+            handleMixinResponse(
+                invokeNetwork = { viewModel.uploadAlbum(albumUploadRequest) },
+                switchContext = Dispatchers.IO,
+                successBlock = { rep ->
+                    val album = requireNotNull(rep.data)
+                    viewModel.saveAlbum(album)
+                },
+                doAfterNetworkSuccess = { dialog.dismiss() },
+                exceptionBlock = {
+                    dialog.dismiss()
+                    return@handleMixinResponse false
+                }
+            )
+        }
+    }
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         binding.apply {
             title.leftIb.setOnClickListener { activity?.onBackPressedDispatcher?.onBackPressed() }
+            if (BuildConfig.DEBUG) {
+                title.setRightIcon(R.drawable.ic_add_black_24dp)
+                title.rightIb.setOnClickListener { uploadAlbum() }
+            }
             val callback: ItemTouchHelper.Callback = SimpleItemTouchHelperCallback(albumAdapter)
             itemTouchHelper = ItemTouchHelper(callback)
             itemTouchHelper.attachToRecyclerView(albumsRv)
@@ -77,5 +134,22 @@ class StickerAlbumManagementFragment : BaseFragment(R.layout.fragment_sticker_al
                 }
             }
         }
+    }
+
+    private fun uploadAlbum() {
+        RxPermissions(requireActivity())
+            .request(Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+            .autoDispose(stopScope)
+            .subscribe(
+                { granted ->
+                    if (granted) {
+                        selectZip.launch("application/zip")
+                    } else {
+                        context?.openPermissionSetting()
+                    }
+                },
+                {
+                }
+            )
     }
 }
