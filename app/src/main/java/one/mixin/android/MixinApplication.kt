@@ -68,6 +68,7 @@ import timber.log.Timber
 import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
+import kotlin.system.exitProcess
 
 open class MixinApplication :
     Application(),
@@ -144,6 +145,10 @@ open class MixinApplication :
         initNativeLibs(applicationContext)
 
         registerComponentCallbacks(MemoryCallback())
+        Thread.setDefaultUncaughtExceptionHandler { thread, throwable ->
+            Timber.e("${thread.name}-${throwable.message}")
+            exitProcess(2)
+        }
     }
 
     private fun init() {
