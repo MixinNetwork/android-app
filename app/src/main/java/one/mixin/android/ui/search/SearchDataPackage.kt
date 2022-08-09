@@ -19,10 +19,10 @@ class SearchDataPackage(
     }
 
     var showTip = false
-    var assetLimit = true
-    var userLimit = true
-    var chatLimit = true
-    var messageLimit = true
+    private var assetLimit = true
+    private var userLimit = true
+    private var chatLimit = true
+    private var messageLimit = true
 
     fun getHeaderFactor(position: Int) =
         when (getItem(position)) {
@@ -33,28 +33,44 @@ class SearchDataPackage(
             else -> if (messageShowMore()) 10 else 0
         }
 
-    fun assetShowMore() = if (assetList == null || !assetLimit) {
-        false
-    } else {
-        assetLimit && assetList!!.size > LIMIT_COUNT
+    fun assetShowMore(): Boolean {
+        val assetList = this.assetList
+        return if (assetList == null || !assetLimit) {
+            false
+        } else {
+            @Suppress("KotlinConstantConditions")
+            assetLimit && assetList.size > LIMIT_COUNT
+        }
     }
 
-    fun userShowMore() = if (userList == null || !userLimit) {
-        false
-    } else {
-        userLimit && userList!!.size > LIMIT_COUNT
+    fun userShowMore(): Boolean {
+        val userList = this.userList
+        return if (userList == null || !userLimit) {
+            false
+        } else {
+            @Suppress("KotlinConstantConditions")
+            userLimit && userList.size > LIMIT_COUNT
+        }
     }
 
-    fun chatShowMore() = if (chatList == null || !chatLimit) {
-        false
-    } else {
-        chatLimit && chatList!!.size > LIMIT_COUNT
+    fun chatShowMore(): Boolean {
+        val chatList = this.chatList
+        return if (chatList == null || !chatLimit) {
+            false
+        } else {
+            @Suppress("KotlinConstantConditions")
+            chatLimit && chatList.size > LIMIT_COUNT
+        }
     }
 
-    fun messageShowMore() = if (messageList == null || !messageLimit) {
-        false
-    } else {
-        messageLimit && messageList!!.size > LIMIT_COUNT
+    fun messageShowMore(): Boolean {
+        val messageList = this.messageList
+        return if (messageList == null || !messageLimit) {
+            false
+        } else {
+            @Suppress("KotlinConstantConditions")
+            messageLimit && messageList.size > LIMIT_COUNT
+        }
     }
 
     private fun assetCount() = if (assetLimit) {
@@ -83,23 +99,23 @@ class SearchDataPackage(
 
     fun getCount() = assetCount() + chatCount() + userCount() + messageCount().incTip()
 
-    private fun assetItem(position: Int): AssetItem {
-        return assetList!![position.decTip()]
+    private fun assetItem(position: Int): AssetItem? {
+        return assetList?.get(position.decTip())
     }
 
-    private fun userItem(position: Int): User {
-        return userList!![position.decTip() - assetCount()]
+    private fun userItem(position: Int): User? {
+        return userList?.get(position.decTip() - assetCount())
     }
 
-    private fun chatItem(position: Int): ChatMinimal {
-        return chatList!![position.decTip() - assetCount() - userCount()]
+    private fun chatItem(position: Int): ChatMinimal? {
+        return chatList?.get(position.decTip() - assetCount() - userCount())
     }
 
-    private fun messageItem(position: Int): SearchMessageItem {
-        return messageList!![position.decTip() - assetCount() - userCount() - chatCount()]
+    private fun messageItem(position: Int): SearchMessageItem? {
+        return messageList?.get(position.decTip() - assetCount() - userCount() - chatCount())
     }
 
-    fun getItem(position: Int): Any {
+    fun getItem(position: Int): Any? {
         return when {
             showTip && position < 1 -> TipItem()
             position < assetCount().incTip() -> assetItem(position)
