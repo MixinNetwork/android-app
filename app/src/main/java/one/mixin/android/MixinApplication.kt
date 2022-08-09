@@ -149,7 +149,7 @@ open class MixinApplication :
     private fun init() {
         CronetProviderInstaller.installProvider(this)
         if (BuildConfig.DEBUG) {
-            Timber.plant(Timber.DebugTree())
+            Timber.plant(Timber.DebugTree(), FileLogTree())
         } else {
             Timber.plant(FileLogTree())
         }

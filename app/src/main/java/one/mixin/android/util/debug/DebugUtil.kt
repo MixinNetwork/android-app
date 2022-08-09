@@ -49,7 +49,7 @@ inline fun <T> timeoutEarlyWarning(block: () -> T, timeout: Long = 50L): T {
     val start = System.currentTimeMillis()
     val result = block()
     val time = System.currentTimeMillis() - start
-    if (time >= timeout){
+    if (time >= timeout) {
         Timber.e("It takes $time milliseconds")
         reportException(Exception("It takes $time milliseconds"))
     }
