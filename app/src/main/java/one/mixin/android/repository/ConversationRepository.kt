@@ -35,6 +35,7 @@ import one.mixin.android.db.ParticipantSessionDao
 import one.mixin.android.db.PinMessageDao
 import one.mixin.android.db.RemoteMessageStatusDao
 import one.mixin.android.db.TranscriptMessageDao
+import one.mixin.android.db.insertMessage
 import one.mixin.android.db.insertNoReplace
 import one.mixin.android.db.provider.DataProvider
 import one.mixin.android.db.runInTransaction
@@ -539,8 +540,7 @@ internal constructor(
     }
 
     fun insertMessage(message: Message) {
-        messageDao.insert(message)
-        conversationDao.updateLastMessageId(message.id, message.createdAt, message.conversationId)
+        appDatabase.insertMessage(message)
         InvalidateFlow.emit(message.conversationId)
     }
 

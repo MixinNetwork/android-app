@@ -2,6 +2,7 @@ package one.mixin.android.db
 
 import one.mixin.android.session.Session
 import one.mixin.android.util.chat.InvalidateFlow
+import one.mixin.android.util.debug.timeoutEarlyWarning
 import one.mixin.android.vo.App
 import one.mixin.android.vo.Circle
 import one.mixin.android.vo.CircleConversation
@@ -219,4 +220,11 @@ fun MixinDatabase.insertAndNotifyConversation(message: Message) {
         remoteMessageStatusDao().updateConversationUnseen(message.conversationId)
         InvalidateFlow.emit(message.conversationId)
     }
+}
+
+fun MixinDatabase.insertMessage(message: Message) {
+    timeoutEarlyWarning({
+        messageDao().insert(message)
+        conversationDao().updateLastMessageId(message.id, message.createdAt, message.conversationId)
+    })
 }
