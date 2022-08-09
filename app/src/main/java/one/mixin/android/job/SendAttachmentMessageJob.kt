@@ -13,6 +13,7 @@ import one.mixin.android.crypto.Util
 import one.mixin.android.crypto.attachment.AttachmentCipherOutputStream
 import one.mixin.android.crypto.attachment.AttachmentCipherOutputStreamFactory
 import one.mixin.android.crypto.attachment.PushAttachmentData
+import one.mixin.android.db.insertMessage
 import one.mixin.android.event.ProgressEvent.Companion.loadingEvent
 import one.mixin.android.extension.base64Encode
 import one.mixin.android.extension.getStackTraceString
@@ -64,8 +65,7 @@ class SendAttachmentMessageJob(
                 messageDao.updateMediaSize(message.mediaSize ?: 0, mId)
                 InvalidateFlow.emit(message.conversationId)
             } else {
-                messageDao.insert(message)
-                conversationDao.updateLastMessageId(message.id, message.createdAt, message.conversationId)
+                mixinDatabase.insertMessage(message)
                 InvalidateFlow.emit(message.conversationId)
             }
         } else {

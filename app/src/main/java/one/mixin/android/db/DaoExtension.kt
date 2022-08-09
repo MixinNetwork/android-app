@@ -1,6 +1,7 @@
 package one.mixin.android.db
 
 import one.mixin.android.util.chat.InvalidateFlow
+import one.mixin.android.util.debug.timeoutEarlyWarning
 import one.mixin.android.vo.App
 import one.mixin.android.vo.Circle
 import one.mixin.android.vo.CircleConversation
@@ -188,7 +189,11 @@ fun MixinDatabase.deleteMessageByIds(messageIds: List<String>) {
     }
 }
 
-fun MessageDao.makeMessageStatus(status: String, messageId: String, noExistCallback: (() -> Unit)? = null) {
+fun MessageDao.makeMessageStatus(
+    status: String,
+    messageId: String,
+    noExistCallback: (() -> Unit)? = null
+) {
     val messageStatus = MessageStatus.values().firstOrNull { it.name == status } ?: return
     if (messageStatus != MessageStatus.SENT && messageStatus != MessageStatus.DELIVERED && messageStatus != MessageStatus.READ) {
         return
@@ -209,10 +214,23 @@ fun MixinDatabase.insertAndNotifyConversation(message: Message) {
     runInTransaction {
         messageDao().insert(message)
         if (!message.isMine() && message.status != MessageStatus.READ.name) {
-            remoteMessageStatusDao().insert(RemoteMessageStatus(message.id, message.conversationId, MessageStatus.DELIVERED.name))
+            remoteMessageStatusDao().insert(
+                RemoteMessageStatus(
+                    message.id,
+                    message.conversationId,
+                    MessageStatus.DELIVERED.name
+                )
+            )
         }
         conversationDao().updateLastMessageId(message.id, message.createdAt, message.conversationId)
         remoteMessageStatusDao().updateConversationUnseen(message.conversationId)
         InvalidateFlow.emit(message.conversationId)
     }
+}
+
+fun MixinDatabase.insertMessage(message: Message) {
+    timeoutEarlyWarning({
+        messageDao().insert(message)
+        conversationDao().updateLastMessageId(message.id, message.createdAt, message.conversationId)
+    })
 }

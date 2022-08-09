@@ -3,6 +3,7 @@ package one.mixin.android.job
 import android.net.Uri
 import com.birbit.android.jobqueue.Params
 import one.mixin.android.MixinApplication
+import one.mixin.android.db.insertMessage
 import one.mixin.android.extension.copyFromInputStream
 import one.mixin.android.extension.createDocumentTemp
 import one.mixin.android.extension.getDocumentPath
@@ -24,8 +25,7 @@ class ConvertDataJob(
     }
 
     override fun onAdded() {
-        messageDao.insert(message)
-        conversationDao.updateLastMessageId(message.id, message.createdAt, message.conversationId)
+        appDatabase.insertMessage(message)
         InvalidateFlow.emit(message.conversationId)
     }
 
