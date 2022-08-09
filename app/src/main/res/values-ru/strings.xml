@@ -275,7 +275,7 @@
     <string name="Data_loading">Загрузка данных, пожалуйста, подождите…</string>
     <string name="database_upgrade_tips">База данных обновляется, это может занять несколько минут, пожалуйста, не закрывайте это приложение.</string>
     <string name="Date">Дата</string>
-    <string name="date_format_date">МММ дд, гггг</string>
+    <string name="date_format_date">dd.MM.yyyy</string>
     <string name="db_debug_warning">Внимание: Если выполняется вредоносная инструкция SQL, результат необратим!</string>
     <string name="Debug_database">Отладка базы данных</string>
     <string name="Decline">Отклонить</string>
@@ -333,7 +333,7 @@
     <string name="disappearing_option_5">1 неделя</string>
     <string name="DISCARD">ОТКАЗАТЬСЯ</string>
     <string name="Dismiss_as_Admin">Закрыть как администратор</string>
-    <string name="divide">, </string>
+    <string name="divide">, </string>
     <string name="Documents">Документы</string>
     <string name="Done">Сделано</string>
     <string name="Draw">Рисовать</string>
@@ -349,8 +349,8 @@
     <string name="Edit_Name">Редактировать название</string>
     <string name="Emergency_Contact">Экстренный контакт</string>
     <string name="Empty_address_book">Пустая адресная книга</string>
-    <string name="Enable_after_1_minute">Включено через 1 минуту</string>
-    <string name="Enable_after_30_minutes">Включено через 30 минут</string>
+    <string name="Enable_after_1_minute">Включено через 1 минуту</string>
+    <string name="Enable_after_30_minutes">Включено через 30 минут</string>
     <string name="Enable_db_debug">Включить отладку БД</string>
     <string name="Enable_Emergency_Contact">Включить экстренный контакт</string>
     <string name="Enable_immediately">Включено немедленно</string>
@@ -480,9 +480,9 @@
     <string name="hold_to_record_audio">Удерживайте, чтобы записать, отпустите, чтобы отправить</string>
     <plurals name="Hour" tools:ignore="UnusedQuantity">
         <item quantity="one">%d час</item>
-        <item quantity="few">%d часы</item>
-        <item quantity="many">%d часы</item>
-        <item quantity="other">%d часы</item>
+        <item quantity="few">%d часы</item>
+        <item quantity="many">%d часы</item>
+        <item quantity="other">%d часы</item>
     </plurals>
     <string name="I_know">Я знаю</string>
     <string name="Immediately">Немедленно</string>
@@ -696,7 +696,7 @@
     <string name="pin_creation">создание PIN-кода</string>
     <string name="PIN_incorrect">PIN-код неверный</string>
     <string name="pin_lost_hint">В случае утери кошелек невозможно восстановить.</string>
-    <string name="pin_title">Pin</string>
+    <string name="pin_title">Закрепить</string>
     <plurals name="pinned_message_title" tools:ignore="UnusedQuantity">
         <item quantity="one">%1$d закрепленное сообщение</item>
         <item quantity="few">%1$d закрепленных сообщений</item>
@@ -978,7 +978,7 @@
     <string name="Use_Biometric_Multisig">Использовать биометрическую мультиподпись</string>
     <string name="User_not_found">Пользователь не найден</string>
     <string name="value_now">значение сейчас %1$s</string>
-    <string name="value_then">значение, затем %1$s</string>
+    <string name="value_then">значение затем %1$s</string>
     <string name="Verify">Проверить</string>
     <string name="Verify_by_Biometric">Подтвердить по биометрии</string>
     <string name="Verify_PIN">Подтвердить PIN-код</string>

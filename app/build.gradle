@@ -10,6 +10,7 @@ apply plugin: 'kotlin-kapt'
 apply plugin: 'dagger.hilt.android.plugin'
 apply plugin: 'kotlin-parcelize'
 apply plugin: 'com.google.firebase.firebase-perf'
+apply plugin: 'de.undercouch.download'
 
 android {
     compileSdkVersion 33
@@ -429,4 +430,27 @@ apply plugin: 'com.google.firebase.crashlytics'
 
 task allTests(dependsOn: ['testStagingUnitTest', 'connectedStagingAndroidTest']) {
     description = "Run unit tests and instrumentation tests"
+}
+
+task syncStrings {
+    doLast {
+        ['en', 'zh', 'zh-TW', 'ja', 'ru', 'in', 'ms'].forEach { i ->
+            def lang = i
+            download {
+                src "https://raw.githubusercontent.com/Tougee/sync-google-sheet/master/generated/output/Android/value-$lang/strings.xml"
+
+                if (lang == 'en') {
+                    dest "src/main/res/values"
+                } else if (lang == 'zh') {
+                    dest "src/main/res/values-zh-rCN"
+                } else if (lang == 'zh-TW') {
+                    dest "src/main/res/values-zh-rTW"
+                } else if (lang == 'zh-HK') {
+                    dest "src/main/res/values-zh-rHK"
+                } else {
+                    dest "src/main/res/values-$lang"
+                }
+            }
+        }
+    }
 }
