@@ -35,12 +35,16 @@ class PostFragment : BaseFragment(R.layout.layout_recycler_view) {
             requireActivity(),
             fun(messageItem: MessageItem) {
                 MarkdownActivity.show(requireActivity(), messageItem.content!!, conversationId)
+            },
+            fun(messageId: String) {
+                longClickListener?.invoke(messageId)
             }
         )
     }
 
     private val viewModel by viewModels<SharedMediaViewModel>()
     private val binding by viewBinding(LayoutRecyclerViewBinding::bind)
+    var longClickListener: ((String) -> Unit)? = null
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -50,15 +54,14 @@ class PostFragment : BaseFragment(R.layout.layout_recycler_view) {
         binding.recyclerView.addItemDecoration(StickyRecyclerHeadersDecoration(adapter))
         binding.recyclerView.adapter = adapter
         viewModel.getPostMessages(conversationId).observe(
-            viewLifecycleOwner,
-            {
-                if (it.size <= 0) {
-                    (view as ViewAnimator).displayedChild = 1
-                } else {
-                    (view as ViewAnimator).displayedChild = 0
-                }
-                adapter.submitList(it)
+            viewLifecycleOwner
+        ) {
+            if (it.size <= 0) {
+                (view as ViewAnimator).displayedChild = 1
+            } else {
+                (view as ViewAnimator).displayedChild = 0
             }
-        )
+            adapter.submitList(it)
+        }
     }
 }

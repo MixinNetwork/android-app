@@ -44,11 +44,15 @@ class MediaFragment : BaseFragment(R.layout.layout_recycler_view) {
     private val adapter = MediaAdapter(
         fun(imageView: View, messageItem: MessageItem) {
             MediaPagerActivity.show(requireActivity(), imageView, conversationId, messageItem.messageId, messageItem, MediaPagerActivity.MediaSource.SharedMedia)
+        },
+        fun(messageId: String) {
+            longClickListener?.invoke(messageId)
         }
     )
 
     private val viewModel by viewModels<SharedMediaViewModel>()
     private val binding by viewBinding(LayoutRecyclerViewBinding::bind)
+    var longClickListener: ((String) -> Unit)? = null
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)

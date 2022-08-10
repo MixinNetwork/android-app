@@ -14,7 +14,7 @@ import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.MessageItem
 import java.util.Locale
 
-class FileAdapter(private val onClickListener: (MessageItem) -> Unit) :
+class FileAdapter(private val onClickListener: (MessageItem) -> Unit, private val onLongClickListener: (String) -> Unit) :
     SharedMediaHeaderAdapter<FileHolder>() {
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) =
         FileHolder(
@@ -27,7 +27,7 @@ class FileAdapter(private val onClickListener: (MessageItem) -> Unit) :
 
     override fun onBindViewHolder(holder: FileHolder, position: Int) {
         getItem(position)?.let {
-            holder.bind(it, onClickListener)
+            holder.bind(it, onClickListener, onLongClickListener)
         }
     }
 
@@ -36,7 +36,7 @@ class FileAdapter(private val onClickListener: (MessageItem) -> Unit) :
 
 class FileHolder(itemView: View) : NormalHolder(itemView) {
     private val binding = ItemFileBinding.bind(itemView)
-    fun bind(item: MessageItem, onClickListener: (MessageItem) -> Unit) {
+    fun bind(item: MessageItem, onClickListener: (MessageItem) -> Unit, onLongClickListener: (String) -> Unit) {
         binding.nameTv.text = item.mediaName
         binding.sizeTv.text = item.mediaSize?.fileSize()
         var type = item.mediaName
@@ -83,6 +83,10 @@ class FileHolder(itemView: View) : NormalHolder(itemView) {
         }
         itemView.setOnClickListener {
             item.let(onClickListener)
+        }
+        itemView.setOnLongClickListener {
+            item.messageId.let(onLongClickListener)
+            true
         }
     }
 }

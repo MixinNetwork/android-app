@@ -32,9 +32,9 @@ class FileFragment : BaseFragment(R.layout.layout_recycler_view) {
         requireArguments().getString(Constants.ARGS_CONVERSATION_ID)!!
     }
 
-    private val adapter = FileAdapter { messageItem ->
-        when {
-            messageItem.mediaStatus == MediaStatus.CANCELED.name -> {
+    private val adapter = FileAdapter({ messageItem ->
+        when (messageItem.mediaStatus) {
+            MediaStatus.CANCELED.name -> {
                 if (Session.getAccountId() == messageItem.userId) {
                     viewModel.retryUpload(messageItem.messageId) {
                         toast(R.string.Retry_upload_failed)
@@ -43,16 +43,19 @@ class FileFragment : BaseFragment(R.layout.layout_recycler_view) {
                     viewModel.retryDownload(messageItem.messageId)
                 }
             }
-            messageItem.mediaStatus == MediaStatus.PENDING.name -> {
+            MediaStatus.PENDING.name -> {
                 viewModel.cancel(messageItem.messageId, messageItem.conversationId)
             }
-            messageItem.mediaStatus == MediaStatus.EXPIRED.name -> {}
+            MediaStatus.EXPIRED.name -> {}
             else -> requireContext().openMedia(messageItem)
         }
-    }
+    }, { messageId ->
+        longClickListener?.invoke(messageId)
+    })
 
     private val viewModel by viewModels<SharedMediaViewModel>()
     private val binding by viewBinding(LayoutRecyclerViewBinding::bind)
+    var longClickListener: ((String) -> Unit)? = null
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -62,15 +65,14 @@ class FileFragment : BaseFragment(R.layout.layout_recycler_view) {
         binding.recyclerView.addItemDecoration(StickyRecyclerHeadersDecoration(adapter))
         binding.recyclerView.adapter = adapter
         viewModel.getFileMessages(conversationId).observe(
-            viewLifecycleOwner,
-            {
-                if (it.size <= 0) {
-                    (view as ViewAnimator).displayedChild = 1
-                } else {
-                    (view as ViewAnimator).displayedChild = 0
-                }
-                adapter.submitList(it)
+            viewLifecycleOwner
+        ) {
+            if (it.size <= 0) {
+                (view as ViewAnimator).displayedChild = 1
+            } else {
+                (view as ViewAnimator).displayedChild = 0
             }
-        )
+            adapter.submitList(it)
+        }
     }
 }
