@@ -50,12 +50,12 @@ class FileFragment : BaseFragment(R.layout.layout_recycler_view) {
             else -> requireContext().openMedia(messageItem)
         }
     }, { messageId ->
-        longClickListener?.invoke(messageId)
+        onLongClickListener?.invoke(messageId)
     })
 
     private val viewModel by viewModels<SharedMediaViewModel>()
     private val binding by viewBinding(LayoutRecyclerViewBinding::bind)
-    var longClickListener: ((String) -> Unit)? = null
+    var onLongClickListener: ((String) -> Unit)? = null
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)

@@ -177,7 +177,7 @@ interface MessageDao : BaseDao<Message> {
 
     @Query(
         """
-        SELECT h.hyperlink AS hyperlink, h.site_description AS siteDescription, h.site_image AS siteImage,
+        SELECT m.id AS messageId, h.hyperlink AS hyperlink, h.site_description AS siteDescription, h.site_image AS siteImage,
         h.site_name AS siteName, h.site_title AS siteTitle, m.created_at AS createdAt
         FROM hyperlinks h INNER JOIN messages m ON h.hyperlink = m.hyperlink
         WHERE m.conversation_id = :conversationId

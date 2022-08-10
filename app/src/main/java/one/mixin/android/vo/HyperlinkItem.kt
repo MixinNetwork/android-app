@@ -4,6 +4,8 @@ import androidx.recyclerview.widget.DiffUtil
 import com.google.gson.annotations.SerializedName
 
 data class HyperlinkItem(
+    @SerializedName("message_id")
+    val messageId: String,
     @SerializedName("hyperlink")
     val hyperlink: String,
     @SerializedName("site_name")
@@ -20,7 +22,7 @@ data class HyperlinkItem(
     companion object {
         val DIFF_CALLBACK = object : DiffUtil.ItemCallback<HyperlinkItem>() {
             override fun areItemsTheSame(oldItem: HyperlinkItem, newItem: HyperlinkItem) =
-                oldItem.hyperlink == newItem.hyperlink
+                oldItem.messageId == newItem.messageId
 
             override fun areContentsTheSame(oldItem: HyperlinkItem, newItem: HyperlinkItem) =
                 oldItem == newItem

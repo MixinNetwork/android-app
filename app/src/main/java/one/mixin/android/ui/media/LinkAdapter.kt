@@ -6,6 +6,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.updateLayoutParams
 import com.jakewharton.rxbinding3.view.clicks
+import com.jakewharton.rxbinding3.view.longClicks
 import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersAdapter
 import io.reactivex.android.schedulers.AndroidSchedulers
 import one.mixin.android.R
@@ -20,7 +21,7 @@ import one.mixin.android.vo.HyperlinkItem
 import java.util.concurrent.TimeUnit
 import kotlin.math.abs
 
-class LinkAdapter(private val onClickListener: (url: String) -> Unit) :
+class LinkAdapter(private val onClickListener: (url: String) -> Unit, private val onLongClickListener: (String) -> Unit) :
     SafePagedListAdapter<HyperlinkItem, LinkHolder>(HyperlinkItem.DIFF_CALLBACK),
     StickyRecyclerHeadersAdapter<MediaHeaderViewHolder> {
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) =
@@ -34,7 +35,7 @@ class LinkAdapter(private val onClickListener: (url: String) -> Unit) :
 
     override fun onBindViewHolder(holder: LinkHolder, position: Int) {
         getItem(position)?.let {
-            holder.bind(it, onClickListener)
+            holder.bind(it, onClickListener, onLongClickListener)
         }
     }
 
@@ -64,7 +65,7 @@ class LinkHolder(itemView: View) : NormalHolder(itemView) {
     private val binding = ItemSharedMediaLinkBinding.bind(itemView)
 
     @SuppressLint("CheckResult")
-    fun bind(item: HyperlinkItem, onClickListener: (url: String) -> Unit) {
+    fun bind(item: HyperlinkItem, onClickListener: (url: String) -> Unit, onLongClickListener: (messageId: String) -> Unit) {
         binding.linkTv.text = item.hyperlink
         itemView.clicks()
             .observeOn(AndroidSchedulers.mainThread())
@@ -72,5 +73,9 @@ class LinkHolder(itemView: View) : NormalHolder(itemView) {
             .subscribe {
                 item.hyperlink.let(onClickListener)
             }
+        itemView.longClicks {
+            item.messageId.let(onLongClickListener)
+            true
+        }
     }
 }
