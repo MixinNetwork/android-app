@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.view.View
+import androidx.activity.result.contract.ActivityResultContract
 import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.Constants.ARGS_CONVERSATION_ID
 import one.mixin.android.R
@@ -19,6 +20,19 @@ class SharedMediaActivity : BaseActivity() {
         fun show(context: Context, conversationId: String) {
             Intent(context, SharedMediaActivity::class.java).run {
                 putExtra(ARGS_CONVERSATION_ID, conversationId)
+                context.startActivity(this)
+            }
+        }
+    }
+
+    class SharedMediaContract : ActivityResultContract<String, Intent?>() {
+        override fun parseResult(resultCode: Int, intent: Intent?): Intent? {
+            return intent
+        }
+
+        override fun createIntent(context: Context, input: String): Intent {
+            return Intent(context, SharedMediaActivity::class.java).apply {
+                putExtra(ARGS_CONVERSATION_ID, input)
                 context.startActivity(this)
             }
         }
