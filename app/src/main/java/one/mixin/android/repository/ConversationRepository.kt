@@ -52,6 +52,7 @@ import one.mixin.android.session.Session
 import one.mixin.android.ui.media.pager.MediaPagerActivity
 import one.mixin.android.util.SINGLE_DB_THREAD
 import one.mixin.android.util.chat.InvalidateFlow
+import one.mixin.android.util.debug.timeoutEarlyWarning
 import one.mixin.android.vo.ChatMinimal
 import one.mixin.android.vo.CircleConversation
 import one.mixin.android.vo.Conversation
@@ -563,11 +564,13 @@ internal constructor(
 
     suspend fun findSameConversations(selfId: String, userId: String) = conversationDao.findSameConversations(selfId, userId)
 
-    suspend fun markMessageRead(conversationId: String) = withContext(SINGLE_DB_THREAD) {
-        runInTransaction {
-            remoteMessageStatusDao.markReadByConversationId(conversationId)
-            remoteMessageStatusDao.zeroConversationUnseen(conversationId)
-        }
+    fun markMessageRead(conversationId: String)  {
+        timeoutEarlyWarning({
+            runInTransaction {
+                remoteMessageStatusDao.markReadByConversationId(conversationId)
+                remoteMessageStatusDao.zeroConversationUnseen(conversationId)
+            }
+        })
     }
 
     suspend fun disappear(conversationId: String, disappearRequest: DisappearRequest) = conversationService.disappear(conversationId, disappearRequest)

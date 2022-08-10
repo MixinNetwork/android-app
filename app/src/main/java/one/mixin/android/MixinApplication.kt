@@ -56,6 +56,7 @@ import one.mixin.android.ui.web.releaseAll
 import one.mixin.android.util.MemoryCallback
 import one.mixin.android.util.SINGLE_DB_THREAD
 import one.mixin.android.util.debug.FileLogTree
+import one.mixin.android.util.debug.timeoutEarlyWarning
 import one.mixin.android.util.initNativeLibs
 import one.mixin.android.util.language.Lingver
 import one.mixin.android.util.reportException
@@ -327,8 +328,10 @@ open class MixinApplication :
 
     fun saveDraft(conversationId: String, draft: String) =
         appScope.launch(SINGLE_DB_THREAD) {
-            MixinDatabase.getDatabase(this@MixinApplication).conversationDao()
-                .saveDraft(conversationId, draft)
+            timeoutEarlyWarning({
+                MixinDatabase.getDatabase(this@MixinApplication).conversationDao()
+                    .saveDraft(conversationId, draft)
+            })
         }
 
     fun checkAndShowAppAuth(activity: Activity): Boolean {
