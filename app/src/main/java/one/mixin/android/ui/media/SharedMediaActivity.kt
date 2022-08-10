@@ -33,7 +33,6 @@ class SharedMediaActivity : BaseActivity() {
         override fun createIntent(context: Context, input: String): Intent {
             return Intent(context, SharedMediaActivity::class.java).apply {
                 putExtra(ARGS_CONVERSATION_ID, input)
-                context.startActivity(this)
             }
         }
     }

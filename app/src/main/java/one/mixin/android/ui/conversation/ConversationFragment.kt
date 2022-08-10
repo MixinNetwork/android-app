@@ -752,7 +752,14 @@ class ConversationFragment() :
                 chatViewModel.getUserById(userId).autoDispose(stopScope).subscribe(
                     {
                         it?.let {
-                            showUserBottom(parentFragmentManager, it, conversationId)
+                            showUserBottom(
+                                parentFragmentManager, it, conversationId,
+                                if (it.userId == recipient?.userId) {
+                                    { getShareMediaResult.launch(conversationId) }
+                                } else {
+                                    null
+                                }
+                            )
                         }
                     },
                     {
@@ -801,7 +808,14 @@ class ConversationFragment() :
                             ProfileBottomSheetDialogFragment.newInstance()
                                 .showNow(parentFragmentManager, ProfileBottomSheetDialogFragment.TAG)
                         } else {
-                            showUserBottom(parentFragmentManager, user, conversationId)
+                            showUserBottom(
+                                parentFragmentManager, user, conversationId,
+                                if (user.userId == recipient?.userId) {
+                                    { getShareMediaResult.launch(conversationId) }
+                                } else {
+                                    null
+                                }
+                            )
                         }
                     }
                 }
@@ -876,7 +890,14 @@ class ConversationFragment() :
                 chatViewModel.getUserById(userId).autoDispose(stopScope).subscribe(
                     {
                         it?.let {
-                            showUserBottom(parentFragmentManager, it, conversationId)
+                            showUserBottom(
+                                parentFragmentManager, it, conversationId,
+                                if (it.userId == recipient?.userId) {
+                                    { getShareMediaResult.launch(conversationId) }
+                                } else {
+                                    null
+                                }
+                            )
                         }
                     },
                     {
@@ -2239,6 +2260,7 @@ class ConversationFragment() :
         }
         bottomSheetDialogFragment.sharedMediaCallback = {
             getShareMediaResult.launch(conversationId)
+            bottomSheetDialogFragment.dismiss()
         }
     }
 
@@ -2266,7 +2288,14 @@ class ConversationFragment() :
         }
         binding.actionBar.avatarIv.setOnClickListener {
             hideIfShowBottomSheet()
-            showUserBottom(parentFragmentManager, user, conversationId)
+            showUserBottom(
+                parentFragmentManager, user, conversationId,
+                if (user.userId == recipient?.userId) {
+                    { getShareMediaResult.launch(conversationId) }
+                } else {
+                    null
+                }
+            )
         }
         binding.bottomUnblock.setOnClickListener {
             recipient?.let { user ->
