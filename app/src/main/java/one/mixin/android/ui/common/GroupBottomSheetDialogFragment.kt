@@ -91,6 +91,7 @@ class GroupBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment(
     }
 
     var callback: Callback? = null
+    var sharedMediaCallback: (() -> Unit)? = null
 
     private val conversationId: String by lazy {
         requireArguments().getString(ARGS_CONVERSATION_ID)!!
@@ -207,7 +208,12 @@ class GroupBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment(
                 menu {
                     title = getString(R.string.Shared_Media)
                     action = {
-                        SharedMediaActivity.show(requireContext(), conversationId)
+                        val callback = this@GroupBottomSheetDialogFragment.sharedMediaCallback
+                        if (callback != null) {
+                            callback.invoke()
+                        } else {
+                            SharedMediaActivity.show(requireContext(), conversationId, false)
+                        }
                         dismiss()
                     }
                 }

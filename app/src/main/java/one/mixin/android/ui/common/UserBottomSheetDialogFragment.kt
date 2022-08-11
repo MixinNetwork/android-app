@@ -151,6 +151,7 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
     private var menuListLayout: ViewGroup? = null
 
     var showUserTransactionAction: (() -> Unit)? = null
+    var sharedMediaCallback: (() -> Unit)? = null
 
     override fun getLayoutId() = R.layout.fragment_user_bottom_sheet
 
@@ -382,7 +383,12 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
                 menu {
                     title = getString(R.string.Shared_Media)
                     action = {
-                        SharedMediaActivity.show(requireContext(), conversationId)
+                        val callback = this@UserBottomSheetDialogFragment.sharedMediaCallback
+                        if (callback != null) {
+                            callback.invoke()
+                        } else {
+                            SharedMediaActivity.show(requireContext(), conversationId, false)
+                        }
                         RxBus.publish(BotCloseEvent())
                         dismiss()
                     }
@@ -1015,12 +1021,15 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
     }
 }
 
-fun showUserBottom(fragmentManager: FragmentManager, user: User, conversationId: String? = null) {
+fun showUserBottom(fragmentManager: FragmentManager, user: User, conversationId: String? = null, sharedMediaCallback: (() -> Unit)? = null) {
     if (user.notMessengerUser()) {
         NonMessengerUserBottomSheetDialogFragment.newInstance(user, conversationId)
             .showNow(fragmentManager, NonMessengerUserBottomSheetDialogFragment.TAG)
     } else {
-        UserBottomSheetDialogFragment.newInstance(user, conversationId)
-            ?.showNow(fragmentManager, UserBottomSheetDialogFragment.TAG)
+        UserBottomSheetDialogFragment.newInstance(user, conversationId)?.apply {
+            sharedMediaCallback?.let {
+                this.sharedMediaCallback = sharedMediaCallback
+            }
+        }?.showNow(fragmentManager, UserBottomSheetDialogFragment.TAG)
     }
 }

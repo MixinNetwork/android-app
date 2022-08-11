@@ -172,6 +172,7 @@ import one.mixin.android.ui.conversation.preview.PreviewDialogFragment
 import one.mixin.android.ui.forward.ForwardActivity
 import one.mixin.android.ui.forward.ForwardActivity.Companion.ARGS_RESULT
 import one.mixin.android.ui.imageeditor.ImageEditorActivity
+import one.mixin.android.ui.media.SharedMediaActivity
 import one.mixin.android.ui.media.pager.MediaPagerActivity
 import one.mixin.android.ui.player.FloatingPlayer
 import one.mixin.android.ui.player.MediaItemData
@@ -751,7 +752,14 @@ class ConversationFragment() :
                 chatViewModel.getUserById(userId).autoDispose(stopScope).subscribe(
                     {
                         it?.let {
-                            showUserBottom(parentFragmentManager, it, conversationId)
+                            showUserBottom(
+                                parentFragmentManager, it, conversationId,
+                                if (it.userId == recipient?.userId) {
+                                    { getShareMediaResult.launch(Pair(conversationId, true)) }
+                                } else {
+                                    null
+                                }
+                            )
                         }
                     },
                     {
@@ -800,7 +808,14 @@ class ConversationFragment() :
                             ProfileBottomSheetDialogFragment.newInstance()
                                 .showNow(parentFragmentManager, ProfileBottomSheetDialogFragment.TAG)
                         } else {
-                            showUserBottom(parentFragmentManager, user, conversationId)
+                            showUserBottom(
+                                parentFragmentManager, user, conversationId,
+                                if (user.userId == recipient?.userId) {
+                                    { getShareMediaResult.launch(Pair(conversationId, true)) }
+                                } else {
+                                    null
+                                }
+                            )
                         }
                     }
                 }
@@ -875,7 +890,14 @@ class ConversationFragment() :
                 chatViewModel.getUserById(userId).autoDispose(stopScope).subscribe(
                     {
                         it?.let {
-                            showUserBottom(parentFragmentManager, it, conversationId)
+                            showUserBottom(
+                                parentFragmentManager, it, conversationId,
+                                if (it.userId == recipient?.userId) {
+                                    { getShareMediaResult.launch(Pair(conversationId, true)) }
+                                } else {
+                                    null
+                                }
+                            )
                         }
                     },
                     {
@@ -1039,6 +1061,7 @@ class ConversationFragment() :
     private lateinit var getCombineForwardResult: ActivityResultLauncher<ArrayList<TranscriptMessage>>
     private lateinit var getChatHistoryResult: ActivityResultLauncher<Pair<String, Boolean>>
     private lateinit var getMediaResult: ActivityResultLauncher<MediaPagerActivity.MediaParam>
+    private lateinit var getShareMediaResult: ActivityResultLauncher<Pair<String, Boolean>>
     lateinit var getEditorResult: ActivityResultLauncher<Pair<Uri, String?>>
 
     override fun onAttach(context: Context) {
@@ -1049,6 +1072,7 @@ class ConversationFragment() :
         getCombineForwardResult = registerForActivityResult(ForwardActivity.CombineForwardContract(), resultRegistry, ::callbackForward)
         getChatHistoryResult = registerForActivityResult(ChatHistoryContract(), resultRegistry, ::callbackChatHistory)
         getMediaResult = registerForActivityResult(MediaPagerActivity.MediaContract(), resultRegistry, ::callbackChatHistory)
+        getShareMediaResult = registerForActivityResult(SharedMediaActivity.SharedMediaContract(), resultRegistry, ::callbackChatHistory)
         getEditorResult = registerForActivityResult(ImageEditorActivity.ImageEditorContract(), resultRegistry, ::callbackEditor)
     }
 
@@ -2234,6 +2258,10 @@ class ConversationFragment() :
                 activity?.finish()
             }
         }
+        bottomSheetDialogFragment.sharedMediaCallback = {
+            getShareMediaResult.launch(Pair(conversationId, true))
+            bottomSheetDialogFragment.dismiss()
+        }
     }
 
     override fun onKeyboardHidden() {
@@ -2260,7 +2288,14 @@ class ConversationFragment() :
         }
         binding.actionBar.avatarIv.setOnClickListener {
             hideIfShowBottomSheet()
-            showUserBottom(parentFragmentManager, user, conversationId)
+            showUserBottom(
+                parentFragmentManager, user, conversationId,
+                if (user.userId == recipient?.userId) {
+                    { getShareMediaResult.launch(Pair(conversationId, true)) }
+                } else {
+                    null
+                }
+            )
         }
         binding.bottomUnblock.setOnClickListener {
             recipient?.let { user ->

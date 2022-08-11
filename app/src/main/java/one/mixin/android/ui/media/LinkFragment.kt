@@ -28,10 +28,13 @@ class LinkFragment : BaseFragment(R.layout.layout_recycler_view) {
     private val conversationId: String by lazy {
         requireArguments().getString(Constants.ARGS_CONVERSATION_ID)!!
     }
+    var onLongClickListener: ((String) -> Unit)? = null
 
-    private val adapter = LinkAdapter {
+    private val adapter = LinkAdapter({
         WebActivity.show(requireActivity(), it, conversationId)
-    }
+    }, { messageId ->
+        onLongClickListener?.invoke(messageId)
+    })
 
     private val viewModel by viewModels<SharedMediaViewModel>()
     private val binding by viewBinding(LayoutRecyclerViewBinding::bind)

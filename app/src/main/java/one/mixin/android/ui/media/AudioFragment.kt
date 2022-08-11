@@ -32,6 +32,7 @@ class AudioFragment : BaseFragment(R.layout.layout_recycler_view) {
 
     private val viewModel by viewModels<SharedMediaViewModel>()
     private val binding by viewBinding(LayoutRecyclerViewBinding::bind)
+    var onLongClickListener: ((String) -> Unit)? = null
 
     private val conversationId: String by lazy {
         requireArguments().getString(Constants.ARGS_CONVERSATION_ID)!!
@@ -59,6 +60,9 @@ class AudioFragment : BaseFragment(R.layout.layout_recycler_view) {
                         AudioPlayer.play(messageItem, continuePlayOnlyToday = true)
                     }
             }
+        },
+        fun(messageId: String) {
+            onLongClickListener?.invoke(messageId)
         }
     )
 

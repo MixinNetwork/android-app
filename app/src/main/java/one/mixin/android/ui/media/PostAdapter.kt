@@ -15,7 +15,8 @@ import one.mixin.android.vo.MessageItem
 
 class PostAdapter(
     private val context: Activity,
-    private val onClickListener: (messageItem: MessageItem) -> Unit
+    private val onClickListener: (messageItem: MessageItem) -> Unit,
+    private val onLongClickListener: (String) -> Unit
 ) : SharedMediaHeaderAdapter<PostHolder>() {
     private val miniMarkwon by lazy {
         MarkwonUtil.getMiniMarkwon(context)
@@ -35,6 +36,10 @@ class PostAdapter(
             holder.bind(item, miniMarkwon)
             holder.chatTv.setOnClickListener {
                 onClickListener(item)
+            }
+            holder.chatTv.setOnLongClickListener {
+                onLongClickListener(item.messageId)
+                true
             }
         }
     }
