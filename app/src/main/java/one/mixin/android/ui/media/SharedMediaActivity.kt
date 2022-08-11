@@ -17,22 +17,25 @@ import one.mixin.android.util.viewBinding
 @AndroidEntryPoint
 class SharedMediaActivity : BaseActivity() {
     companion object {
-        fun show(context: Context, conversationId: String) {
+        const val FROM_CHAT = "from_chat"
+        fun show(context: Context, conversationId: String, fromChat: Boolean) {
             Intent(context, SharedMediaActivity::class.java).run {
                 putExtra(ARGS_CONVERSATION_ID, conversationId)
+                putExtra(FROM_CHAT, fromChat)
                 context.startActivity(this)
             }
         }
     }
 
-    class SharedMediaContract : ActivityResultContract<String, Intent?>() {
+    class SharedMediaContract : ActivityResultContract<Pair<String, Boolean>, Intent?>() {
         override fun parseResult(resultCode: Int, intent: Intent?): Intent? {
             return intent
         }
 
-        override fun createIntent(context: Context, input: String): Intent {
+        override fun createIntent(context: Context, input: Pair<String, Boolean>): Intent {
             return Intent(context, SharedMediaActivity::class.java).apply {
-                putExtra(ARGS_CONVERSATION_ID, input)
+                putExtra(ARGS_CONVERSATION_ID, input.first)
+                putExtra(FROM_CHAT, input.second)
             }
         }
     }
@@ -43,8 +46,9 @@ class SharedMediaActivity : BaseActivity() {
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
         val conversationId = intent.getStringExtra(ARGS_CONVERSATION_ID)
+        val fromChat = intent.getBooleanExtra(FROM_CHAT, false)
         require(conversationId != null)
-        replaceFragment(SharedMediaFragment.newInstance(conversationId), R.id.container, SharedMediaFragment.TAG)
+        replaceFragment(SharedMediaFragment.newInstance(conversationId, fromChat), R.id.container, SharedMediaFragment.TAG)
         window.decorView.systemUiVisibility = window.decorView.systemUiVisibility or View.SYSTEM_UI_FLAG_LAYOUT_STABLE
     }
 

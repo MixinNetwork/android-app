@@ -755,7 +755,7 @@ class ConversationFragment() :
                             showUserBottom(
                                 parentFragmentManager, it, conversationId,
                                 if (it.userId == recipient?.userId) {
-                                    { getShareMediaResult.launch(conversationId) }
+                                    { getShareMediaResult.launch(Pair(conversationId, true)) }
                                 } else {
                                     null
                                 }
@@ -811,7 +811,7 @@ class ConversationFragment() :
                             showUserBottom(
                                 parentFragmentManager, user, conversationId,
                                 if (user.userId == recipient?.userId) {
-                                    { getShareMediaResult.launch(conversationId) }
+                                    { getShareMediaResult.launch(Pair(conversationId, true)) }
                                 } else {
                                     null
                                 }
@@ -893,7 +893,7 @@ class ConversationFragment() :
                             showUserBottom(
                                 parentFragmentManager, it, conversationId,
                                 if (it.userId == recipient?.userId) {
-                                    { getShareMediaResult.launch(conversationId) }
+                                    { getShareMediaResult.launch(Pair(conversationId, true)) }
                                 } else {
                                     null
                                 }
@@ -1061,7 +1061,7 @@ class ConversationFragment() :
     private lateinit var getCombineForwardResult: ActivityResultLauncher<ArrayList<TranscriptMessage>>
     private lateinit var getChatHistoryResult: ActivityResultLauncher<Pair<String, Boolean>>
     private lateinit var getMediaResult: ActivityResultLauncher<MediaPagerActivity.MediaParam>
-    private lateinit var getShareMediaResult: ActivityResultLauncher<String>
+    private lateinit var getShareMediaResult: ActivityResultLauncher<Pair<String, Boolean>>
     lateinit var getEditorResult: ActivityResultLauncher<Pair<Uri, String?>>
 
     override fun onAttach(context: Context) {
@@ -2259,7 +2259,7 @@ class ConversationFragment() :
             }
         }
         bottomSheetDialogFragment.sharedMediaCallback = {
-            getShareMediaResult.launch(conversationId)
+            getShareMediaResult.launch(Pair(conversationId, true))
             bottomSheetDialogFragment.dismiss()
         }
     }
@@ -2291,7 +2291,7 @@ class ConversationFragment() :
             showUserBottom(
                 parentFragmentManager, user, conversationId,
                 if (user.userId == recipient?.userId) {
-                    { getShareMediaResult.launch(conversationId) }
+                    { getShareMediaResult.launch(Pair(conversationId, true)) }
                 } else {
                     null
                 }

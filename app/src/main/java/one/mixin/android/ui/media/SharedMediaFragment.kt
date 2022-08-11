@@ -14,7 +14,9 @@ import one.mixin.android.databinding.FragmentSharedMediaBinding
 import one.mixin.android.databinding.ViewSharedMediaBinding
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.BaseFragment
+import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.conversation.chathistory.ChatHistoryActivity
+import one.mixin.android.ui.media.SharedMediaActivity.Companion.FROM_CHAT
 import one.mixin.android.util.viewBinding
 import one.mixin.android.widget.BottomSheet
 
@@ -23,13 +25,18 @@ class SharedMediaFragment : BaseFragment(R.layout.fragment_shared_media) {
     companion object {
         const val TAG = "SharedMediaFragment"
 
-        fun newInstance(conversationId: String) = SharedMediaFragment().withArgs {
+        fun newInstance(conversationId: String, fromChat: Boolean) = SharedMediaFragment().withArgs {
             putString(ARGS_CONVERSATION_ID, conversationId)
+            putBoolean(FROM_CHAT, fromChat)
         }
     }
 
     private val conversationId: String by lazy {
         requireArguments().getString(ARGS_CONVERSATION_ID)!!
+    }
+
+    private val fromChat: Boolean by lazy {
+        requireArguments().getBoolean(FROM_CHAT, false)
     }
 
     private val adapter: SharedMediaAdapter by lazy {
@@ -47,12 +54,16 @@ class SharedMediaFragment : BaseFragment(R.layout.fragment_shared_media) {
                 bottomSheet.dismiss()
             }
             binding.showInChat.setOnClickListener {
-                requireActivity().setResult(
-                    Activity.RESULT_OK,
-                    Intent().apply {
-                        putExtra(ChatHistoryActivity.JUMP_ID, messageId)
-                    }
-                )
+                if (fromChat) {
+                    requireActivity().setResult(
+                        Activity.RESULT_OK,
+                        Intent().apply {
+                            putExtra(ChatHistoryActivity.JUMP_ID, messageId)
+                        }
+                    )
+                } else {
+                    ConversationActivity.showAndClear(requireActivity(), conversationId, messageId = messageId)
+                }
                 requireActivity().finish()
                 bottomSheet.dismiss()
             }

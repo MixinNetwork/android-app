@@ -6,7 +6,6 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.updateLayoutParams
 import com.jakewharton.rxbinding3.view.clicks
-import com.jakewharton.rxbinding3.view.longClicks
 import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersAdapter
 import io.reactivex.android.schedulers.AndroidSchedulers
 import one.mixin.android.R
@@ -73,7 +72,7 @@ class LinkHolder(itemView: View) : NormalHolder(itemView) {
             .subscribe {
                 item.hyperlink.let(onClickListener)
             }
-        itemView.longClicks {
+        itemView.setOnLongClickListener {
             item.messageId.let(onLongClickListener)
             true
         }

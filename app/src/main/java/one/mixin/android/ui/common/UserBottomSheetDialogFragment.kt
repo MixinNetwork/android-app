@@ -387,7 +387,7 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
                         if (callback != null) {
                             callback.invoke()
                         } else {
-                            SharedMediaActivity.show(requireContext(), conversationId)
+                            SharedMediaActivity.show(requireContext(), conversationId, false)
                         }
                         RxBus.publish(BotCloseEvent())
                         dismiss()
