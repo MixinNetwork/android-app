@@ -114,7 +114,7 @@ buildscript {
         classpath 'com.android.tools.build:gradle:7.3.0-beta05'
         classpath 'com.android.tools.build.jetifier:jetifier-processor:1.0.0-beta10'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:${kotlinVersion}"
-        classpath 'com.google.gms:google-services:4.3.10'
+        classpath 'com.google.gms:google-services:4.3.13'
         classpath 'com.google.firebase:firebase-crashlytics-gradle:2.9.1'
         classpath "com.google.dagger:hilt-android-gradle-plugin:${hiltVersion}"
         classpath 'com.google.firebase:perf-plugin:1.4.1'
