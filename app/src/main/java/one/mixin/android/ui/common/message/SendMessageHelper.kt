@@ -544,6 +544,7 @@ class SendMessageHelper @Inject internal constructor(private val jobManager: Mix
         encryptCategory: EncryptCategory,
         mime: String? = null,
         replyMessage: MessageItem? = null,
+        fromInput: Boolean = false,
     ): Int {
         val category = encryptCategory.toCategory(
             MessageCategory.PLAIN_IMAGE,
@@ -588,18 +589,36 @@ class SendMessageHelper @Inject internal constructor(private val jobManager: Mix
             jobManager.addJobInBackground(SendAttachmentMessageJob(message))
             return 0
         }
-
-        val temp = MixinApplication.get().getImagePath().createImageTemp(conversationId, messageId, type = ".png")
+        val newMimeType = if (fromInput) MimeType.WEBP else MimeType.JPG
+        val temp = MixinApplication.get().getImagePath().createImageTemp(
+            conversationId, messageId,
+            type = if (fromInput) {
+                ".webp"
+            } else {
+                ".jpg"
+            }
+        )
         val imageFile: File = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P && mimeType == MimeType.HEIC.toString()) {
             val source = ImageDecoder.createSource(MixinApplication.get().contentResolver, uri)
             val bitmap = ImageDecoder.decodeBitmap(source)
             temp.outputStream().use {
-                bitmap.compress(Bitmap.CompressFormat.PNG, 100, it)
+                bitmap.compress(Bitmap.CompressFormat.JPEG, 100, it)
             }
             temp
         } else {
             Compressor()
-                .setCompressFormat(Bitmap.CompressFormat.PNG)
+                .setCompressFormat(
+                    if (fromInput) {
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                            Bitmap.CompressFormat.WEBP_LOSSLESS
+                        } else {
+                            @Suppress("DEPRECATION")
+                            Bitmap.CompressFormat.WEBP
+                        }
+                    } else {
+                        Bitmap.CompressFormat.JPEG
+                    }
+                )
                 .compressToFile(uri, temp.absolutePath)
         }
         val length = imageFile.length()
@@ -615,7 +634,7 @@ class SendMessageHelper @Inject internal constructor(private val jobManager: Mix
             category,
             null,
             temp.name,
-            MimeType.PNG.toString(),
+            newMimeType.toString(),
             length,
             size.width,
             size.height,
