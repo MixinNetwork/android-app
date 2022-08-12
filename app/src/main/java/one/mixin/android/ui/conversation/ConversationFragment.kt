@@ -1407,7 +1407,7 @@ class ConversationFragment() :
                 ) {
                     lifecycleScope.launch(Dispatchers.IO) {
                         if (inputContentInfo != null) {
-                            sendImageMessage(inputContentInfo.contentUri)
+                            sendImageMessage(inputContentInfo.contentUri, null, true)
                         }
                     }
                 }
@@ -2009,7 +2009,7 @@ class ConversationFragment() :
 
     private fun encryptCategory(): EncryptCategory = getEncryptedCategory(isBot, app)
 
-    private fun sendImageMessage(uri: Uri, mimeType: String? = null) {
+    private fun sendImageMessage(uri: Uri, mimeType: String? = null, fromInput: Boolean = false) {
         createConversation {
             lifecycleScope.launch {
                 val code = withContext(Dispatchers.IO) {
@@ -2019,7 +2019,8 @@ class ConversationFragment() :
                         uri,
                         encryptCategory(),
                         mimeType,
-                        getRelyMessage()
+                        getRelyMessage(),
+                        fromInput,
                     )
                 }
                 when (code) {
