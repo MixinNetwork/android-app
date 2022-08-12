@@ -33,7 +33,7 @@ class RefreshAssetsJob(
                 response.data?.map {
                     it.assetId
                 }?.let { ids ->
-                    assetDao.findAllAssetIdSuspend().subtract(ids).chunked(100).forEach {
+                    assetDao.findAllAssetIdSuspend().subtract(ids.toSet()).chunked(100).forEach {
                         assetDao.zeroClearSuspend(it)
                     }
                 }
