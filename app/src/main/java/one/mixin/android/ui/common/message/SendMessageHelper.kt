@@ -588,8 +588,17 @@ class SendMessageHelper @Inject internal constructor(private val jobManager: Mix
             jobManager.addJobInBackground(SendAttachmentMessageJob(message))
             return 0
         }
-
-        val temp = MixinApplication.get().getImagePath().createImageTemp(conversationId, messageId, type = ".png")
+        val newMimeType =
+            if (mimeType == MimeType.PNG.toString() || (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P && mimeType == MimeType.HEIC.toString())) {
+                MimeType.PNG
+            } else {
+                MimeType.JPEG
+            }
+        val temp = MixinApplication.get().getImagePath().createImageTemp(conversationId, messageId, type =   if (newMimeType == MimeType.PNG) {
+            ".png"
+        } else {
+            ".jpg"
+        })
         val imageFile: File = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P && mimeType == MimeType.HEIC.toString()) {
             val source = ImageDecoder.createSource(MixinApplication.get().contentResolver, uri)
             val bitmap = ImageDecoder.decodeBitmap(source)
@@ -598,8 +607,15 @@ class SendMessageHelper @Inject internal constructor(private val jobManager: Mix
             }
             temp
         } else {
+
             Compressor()
-                .setCompressFormat(Bitmap.CompressFormat.PNG)
+                .setCompressFormat(
+                    if (newMimeType == MimeType.PNG) {
+                        Bitmap.CompressFormat.PNG
+                    } else {
+                        Bitmap.CompressFormat.JPEG
+                    }
+                )
                 .compressToFile(uri, temp.absolutePath)
         }
         val length = imageFile.length()
@@ -615,7 +631,7 @@ class SendMessageHelper @Inject internal constructor(private val jobManager: Mix
             category,
             null,
             temp.name,
-            MimeType.PNG.toString(),
+            newMimeType.toString(),
             length,
             size.width,
             size.height,
