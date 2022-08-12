@@ -594,11 +594,14 @@ class SendMessageHelper @Inject internal constructor(private val jobManager: Mix
             } else {
                 MimeType.JPEG
             }
-        val temp = MixinApplication.get().getImagePath().createImageTemp(conversationId, messageId, type =   if (newMimeType == MimeType.PNG) {
-            ".png"
-        } else {
-            ".jpg"
-        })
+        val temp = MixinApplication.get().getImagePath().createImageTemp(
+            conversationId, messageId,
+            type = if (newMimeType == MimeType.PNG) {
+                ".png"
+            } else {
+                ".jpg"
+            }
+        )
         val imageFile: File = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P && mimeType == MimeType.HEIC.toString()) {
             val source = ImageDecoder.createSource(MixinApplication.get().contentResolver, uri)
             val bitmap = ImageDecoder.decodeBitmap(source)
