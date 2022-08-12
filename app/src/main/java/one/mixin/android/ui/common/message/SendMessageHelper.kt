@@ -589,17 +589,17 @@ class SendMessageHelper @Inject internal constructor(private val jobManager: Mix
             return 0
         }
 
-        val temp = MixinApplication.get().getImagePath().createImageTemp(conversationId, messageId, type = ".jpg")
+        val temp = MixinApplication.get().getImagePath().createImageTemp(conversationId, messageId, type = ".png")
         val imageFile: File = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P && mimeType == MimeType.HEIC.toString()) {
             val source = ImageDecoder.createSource(MixinApplication.get().contentResolver, uri)
             val bitmap = ImageDecoder.decodeBitmap(source)
             temp.outputStream().use {
-                bitmap.compress(Bitmap.CompressFormat.JPEG, 100, it)
+                bitmap.compress(Bitmap.CompressFormat.PNG, 100, it)
             }
             temp
         } else {
             Compressor()
-                .setCompressFormat(Bitmap.CompressFormat.JPEG)
+                .setCompressFormat(Bitmap.CompressFormat.PNG)
                 .compressToFile(uri, temp.absolutePath)
         }
         val length = imageFile.length()
@@ -615,7 +615,7 @@ class SendMessageHelper @Inject internal constructor(private val jobManager: Mix
             category,
             null,
             temp.name,
-            MimeType.JPEG.toString(),
+            MimeType.PNG.toString(),
             length,
             size.width,
             size.height,
