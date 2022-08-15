@@ -64,7 +64,13 @@ data class User(
     var appId: String? = null,
     @SerializedName("is_scam")
     @ColumnInfo(name = "is_scam")
-    var isScam: Boolean? = null
+    var isScam: Boolean? = null,
+    @SerializedName("code_id")
+    @ColumnInfo(name = "code_id")
+    var codeId: String? = null,
+    @SerializedName("code_url")
+    @ColumnInfo(name = "code_url")
+    var codeUrl: String? = null
 ) : Parcelable {
     @SerializedName("app")
     @Ignore
