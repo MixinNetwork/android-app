@@ -31,7 +31,6 @@ import one.mixin.android.widget.CircleProgress.Companion.STATUS_DONE
 import one.mixin.android.widget.CircleProgress.Companion.STATUS_ERROR
 import one.mixin.android.widget.CircleProgress.Companion.STATUS_PAUSE
 import one.mixin.android.widget.CircleProgress.Companion.STATUS_PLAY
-import timber.log.Timber
 import java.util.concurrent.TimeUnit
 
 class MusicPlayer private constructor() {
@@ -144,17 +143,14 @@ class MusicPlayer private constructor() {
 
     suspend fun updatePlaylist(mediaMetadataCompatList: List<MediaMetadataCompat>) {
         updater.update(mediaMetadataCompatList)
-        Timber.d("@@@ updatePlaylist size: ${exoPlayer.mediaItemCount}")
     }
 
     fun playMediaById(mediaId: String, playWhenReady: Boolean = true) {
         val index = exoPlayer.currentMediaItems.indexOfFirst { it.mediaId == mediaId }
-        Timber.d("@@@ playMediaById index: $index, mediaId: $mediaId")
         if (index == -1) return
 
         val currentIndex = exoPlayer.currentMediaItemIndex
         if (index != currentIndex) {
-            Timber.d("@@@ index != $currentIndex")
             exoPlayer.seekToDefaultPosition(index)
         }
         if (!exoPlayer.playWhenReady) {

@@ -49,7 +49,6 @@ import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.FixedMessageDataSource
 import one.mixin.android.webrtc.EXTRA_CONVERSATION_ID
 import one.mixin.android.widget.MixinBottomSheetDialog
-import timber.log.Timber
 import kotlin.math.max
 import kotlin.math.min
 
@@ -267,7 +266,6 @@ class MusicBottomSheetDialogFragment : BottomSheetDialogFragment() {
 
     private val playerListener = object : Player.Listener {
         override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
-            Timber.d("@@@ onMediaItemTransition reason: $reason, mediaItem: ${mediaItem?.mediaId}, list: ${listAdapter.currentList?.size}")
             if (reason == MEDIA_ITEM_TRANSITION_REASON_REPEAT ||
                 reason == MEDIA_ITEM_TRANSITION_REASON_PLAYLIST_CHANGED ||
                 mediaItem == null

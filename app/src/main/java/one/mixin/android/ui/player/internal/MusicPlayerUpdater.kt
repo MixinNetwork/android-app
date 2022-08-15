@@ -8,14 +8,12 @@ import com.google.android.exoplayer2.ExoPlayer
 import com.google.android.exoplayer2.MediaItem
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import timber.log.Timber
 
 internal class MusicPlayerUpdater(private val player: ExoPlayer) {
 
     suspend fun update(incoming: List<MediaMetadataCompat>) {
         val find = incoming.find { it.id == player.currentMediaItem?.mediaId }
         if (find == null) {
-            Timber.d("@@@ update use incoming")
             val mediaItems = incoming.toMediaItems()
             player.setMediaItems(mediaItems)
             player.prepare()
@@ -30,7 +28,6 @@ internal class MusicPlayerUpdater(private val player: ExoPlayer) {
         }
 
         patch.deltas.forEach { delta ->
-            Timber.d("@@@ delta type: ${delta.type}, target size: ${delta.target.size()}, source size: ${delta.source.size()}")
             when (delta.type) {
                 DeltaType.INSERT -> delta.insert()
                 DeltaType.DELETE -> delta.delete()

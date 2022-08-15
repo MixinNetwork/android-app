@@ -33,7 +33,6 @@ import one.mixin.android.ui.player.internal.downloadStatus
 import one.mixin.android.ui.player.internal.id
 import one.mixin.android.ui.player.internal.urlLoader
 import one.mixin.android.util.MusicPlayer
-import one.mixin.android.util.debug.measureTimeMillis
 import timber.log.Timber
 import javax.inject.Inject
 import kotlin.math.max
@@ -145,7 +144,6 @@ class MusicService : LifecycleService() {
                     RxBus.publish(playEvent(mediaId)) // respond UI before load
 
                     val index = db.messageDao().indexAudioByConversationId(mediaId, albumId)
-                    Timber.d("@@@ not found $mediaId, new index: $index")
                     conversationObserver.loadAround(index, mediaId)
                 } else {
                     MusicPlayer.get().playMediaById(mediaId)
@@ -169,11 +167,8 @@ class MusicService : LifecycleService() {
 
         conversationObserver = ConversationObserver(mediaId)
         val initialLoadKey = if (mediaId != null) {
-            measureTimeMillis("@@@ index cost: ") {
-                db.messageDao().indexAudioByConversationId(mediaId, albumId)
-            }
+            db.messageDao().indexAudioByConversationId(mediaId, albumId)
         } else 0
-        Timber.d("@@@ initialLoadKey: $initialLoadKey")
         conversationLiveData = conversationLoader.conversationLiveData(albumId, db, initialLoadKey = initialLoadKey)
         conversationLiveData?.observe(this, conversationObserver)
     }
@@ -184,7 +179,6 @@ class MusicService : LifecycleService() {
         private var playWhenReady = true
 
         override fun onChanged(pagedList: PagedList<MediaMetadataCompat>) {
-            Timber.d("@@@ pagedList size: ${pagedList.size}")
             currentPagedList = pagedList
             val downloadedList = mutableListOf<MediaMetadataCompat>()
             for (i in 0 until pagedList.size) {
@@ -193,7 +187,6 @@ class MusicService : LifecycleService() {
                     downloadedList.add(item)
                 }
             }
-            Timber.d("@@@ downloadedList size: ${downloadedList.size}")
             currentPlaylist = downloadedList
             lifecycleScope.launch {
                 MusicPlayer.get().updatePlaylist(downloadedList)
