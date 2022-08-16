@@ -550,7 +550,7 @@ interface MessageDao : BaseDao<Message> {
     @Query(
         """
         DELETE FROM messages WHERE id IN (
-        SELECT id FROM messages WHERE  conversation_id = :conversationId AND  media_status = 'DONE'
+        SELECT id FROM messages WHERE  conversation_id = :conversationId AND (media_status = 'DONE' OR media_status ISNULL)
         AND category IN (:signalCategory, :plainCategory, :encryptedCategory) LIMIT :limit)
         """
     )

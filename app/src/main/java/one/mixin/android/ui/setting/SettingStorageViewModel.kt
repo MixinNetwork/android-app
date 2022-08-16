@@ -146,7 +146,7 @@ internal constructor(
     }
 
     private fun clear(conversationId: String, signalCategory: String, plainCategory: String, encryptedCategory: String) {
-        if (signalCategory == MessageCategory.SIGNAL_TRANSCRIPT.name && plainCategory == MessageCategory.PLAIN_TRANSCRIPT.name && plainCategory == MessageCategory.ENCRYPTED_TRANSCRIPT.name) {
+        if (signalCategory == MessageCategory.SIGNAL_TRANSCRIPT.name && plainCategory == MessageCategory.PLAIN_TRANSCRIPT.name && encryptedCategory == MessageCategory.ENCRYPTED_TRANSCRIPT.name) {
             viewModelScope.launch(SINGLE_DB_THREAD) {
                 val ids = conversationRepository.findTranscriptIdByConversationId(conversationId)
                 if (ids.isEmpty()) {
