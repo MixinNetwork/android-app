@@ -47,7 +47,6 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import java.util.Scanner
-import java.util.concurrent.atomic.AtomicLong
 
 private fun isAvailable(): Boolean {
     val state = Environment.getExternalStorageState()
@@ -288,28 +287,28 @@ fun Context.getConversationMediaSize(conversationId: String): Long {
     var mediaSize = 0L
     getConversationImagePath(conversationId)?.apply {
         if (exists()) {
-            mediaSize += getDirSize(this) ?: 0
+            mediaSize += getDirSize() ?: 0
         }
     }
     getConversationVideoPath(conversationId)?.apply {
         if (exists()) {
-            mediaSize += getDirSize(this) ?: 0
+            mediaSize += getDirSize() ?: 0
         }
     }
     getConversationAudioPath(conversationId)?.apply {
         if (exists()) {
-            mediaSize += getDirSize(this) ?: 0
+            mediaSize += getDirSize() ?: 0
         }
     }
     getConversationDocumentPath(conversationId)?.apply {
         if (exists()) {
-            mediaSize += getDirSize(this) ?: 0
+            mediaSize += getDirSize() ?: 0
         }
     }
     return mediaSize
 }
 
-suspend fun Context.getStorageUsageByConversationAndType(conversationId: String, type: String): StorageUsage? {
+fun Context.getStorageUsageByConversationAndType(conversationId: String, type: String): StorageUsage? {
     val dir = when (type) {
         IMAGE -> getConversationImagePath(conversationId)
         VIDEO -> getConversationVideoPath(conversationId)
@@ -658,32 +657,23 @@ fun File.blurThumbnail(size: Size): Bitmap? {
 
 fun File.dirSize(): Long? {
     return if (isDirectory) {
-        val size = AtomicLong(0)
-        if (this.isDirectory) {
-            getDirSize(this)?.let { s ->
-                size.addAndGet(s)
-            }
-        } else {
-            Timber.e(this.absolutePath)
-            size.addAndGet(this.length())
-        }
-        return size.get()
+        getDirSize()
+    } else if (isFile) {
+        length()
     } else {
         null
     }
 }
 
-private fun getDirSize(dir: File): Long? {
+private fun File.getDirSize(): Long? {
     try {
         val du = Runtime.getRuntime().exec(
-            "/system/bin/du -s " + dir.canonicalPath,
+            "/system/bin/du -s $canonicalPath",
             arrayOf(),
             Environment.getRootDirectory()
         )
         val br = BufferedReader(InputStreamReader(du.inputStream))
-        return Scanner(br.readLine()).nextLong().apply {
-            Timber.e("$dir: $this")
-        }
+        return Scanner(br.readLine()).nextLong()
     } catch (e: Exception) {
         Timber.e(e.message)
     }

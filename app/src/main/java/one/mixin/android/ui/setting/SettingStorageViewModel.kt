@@ -33,7 +33,6 @@ import one.mixin.android.job.TranscriptDeleteJob
 import one.mixin.android.repository.ConversationRepository
 import one.mixin.android.ui.common.message.CleanMessageHelper
 import one.mixin.android.util.SINGLE_DB_THREAD
-import one.mixin.android.util.debug.measureTimeMillis
 import one.mixin.android.vo.ConversationStorageUsage
 import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.StorageUsage
@@ -50,34 +49,25 @@ internal constructor(
 ) : ViewModel() {
 
     suspend fun getStorageUsage(context: Context, conversationId: String): List<StorageUsage> = withContext(Dispatchers.IO) {
-        measureTimeMillis("Storage") {
-            val result = mutableListOf<StorageUsage>()
-            context.getStorageUsageByConversationAndType(conversationId, IMAGE)?.apply {
-                result.add(this)
-            }
-            context.getStorageUsageByConversationAndType(conversationId, VIDEO)?.apply {
-                result.add(this)
-            }
-            context.getStorageUsageByConversationAndType(conversationId, AUDIO)?.apply {
-                result.add(this)
-            }
-            context.getStorageUsageByConversationAndType(conversationId, DATA)?.apply {
-                result.add(this)
-            }
-            conversationRepository.getMediaSizeTotalById(conversationId)?.apply {
-                if (this > 0) {
-                    result.add(
-                        StorageUsage(
-                            conversationId,
-                            TRANSCRIPT,
-                            conversationRepository.countTranscriptById(conversationId),
-                            this / 1024
-                        )
-                    )
-                }
-            }
-            result.toList()
+        val result = mutableListOf<StorageUsage>()
+        context.getStorageUsageByConversationAndType(conversationId, IMAGE)?.apply {
+            result.add(this)
         }
+        context.getStorageUsageByConversationAndType(conversationId, VIDEO)?.apply {
+            result.add(this)
+        }
+        context.getStorageUsageByConversationAndType(conversationId, AUDIO)?.apply {
+            result.add(this)
+        }
+        context.getStorageUsageByConversationAndType(conversationId, DATA)?.apply {
+            result.add(this)
+        }
+        conversationRepository.getMediaSizeTotalById(conversationId)?.apply {
+            if (this > 0) {
+                result.add(StorageUsage(conversationId, TRANSCRIPT, conversationRepository.countTranscriptById(conversationId), this / 1024))
+            }
+        }
+        result.toList()
     }
 
     suspend fun getConversationStorageUsage(context: Context): List<ConversationStorageUsage> =
