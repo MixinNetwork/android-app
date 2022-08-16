@@ -5,6 +5,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.Constants
@@ -81,12 +83,11 @@ internal constructor(
     suspend fun getConversationStorageUsage(context: Context): List<ConversationStorageUsage> =
         withContext(Dispatchers.IO) {
             conversationRepository.getConversationStorageUsage()
-                .asSequence()
                 .map { item ->
-                    item.apply {
-                        mediaSize = context.getConversationMediaSize(conversationId) + (conversationRepository.getMediaSizeTotalById(conversationId) ?: 0L) / 1024
+                    async(Dispatchers.IO) {
+                        item.apply { mediaSize = context.getConversationMediaSize(conversationId) + (conversationRepository.getMediaSizeTotalById(conversationId) ?: 0L) / 1024 }
                     }
-                }
+                }.awaitAll()
                 .filter { conversationStorageUsage ->
                     conversationStorageUsage.mediaSize != 0L && conversationStorageUsage.conversationId.isNotEmpty()
                 }.sortedByDescending { conversationStorageUsage ->
