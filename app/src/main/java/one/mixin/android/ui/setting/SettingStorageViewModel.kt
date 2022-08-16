@@ -80,14 +80,19 @@ internal constructor(
 
     suspend fun getConversationStorageUsage(context: Context): List<ConversationStorageUsage> =
         withContext(Dispatchers.IO) {
-            conversationRepository.getConversationStorageUsage().asSequence().apply {
-            forEach { item -> item.apply { item.mediaSize = context.getConversationMediaSize(item.conversationId) + (conversationRepository.getMediaSizeTotalById(conversationId) ?: 0L) / 1024 } }
-        }.filter { conversationStorageUsage ->
-            conversationStorageUsage.mediaSize != 0L && conversationStorageUsage.conversationId.isNotEmpty()
-        }.sortedByDescending { conversationStorageUsage ->
-            conversationStorageUsage.mediaSize
-        }.toList()
-    }
+            conversationRepository.getConversationStorageUsage()
+                .asSequence()
+                .map { item ->
+                    item.apply {
+                        mediaSize = context.getConversationMediaSize(conversationId) + (conversationRepository.getMediaSizeTotalById(conversationId) ?: 0L) / 1024
+                    }
+                }
+                .filter { conversationStorageUsage ->
+                    conversationStorageUsage.mediaSize != 0L && conversationStorageUsage.conversationId.isNotEmpty()
+                }.sortedByDescending { conversationStorageUsage ->
+                    conversationStorageUsage.mediaSize
+                }.toList()
+        }
 
     fun clear(conversationId: String, type: String) {
         if (MixinApplication.appContext.defaultSharedPreferences.getBoolean(Constants.Account.PREF_ATTACHMENT, false)) {

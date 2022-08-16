@@ -18,7 +18,6 @@ import android.provider.OpenableColumns
 import android.util.Base64
 import android.util.Size
 import android.webkit.MimeTypeMap
-import androidx.annotation.RequiresApi
 import androidx.core.content.ContextCompat
 import androidx.core.net.toUri
 import androidx.core.os.EnvironmentCompat
@@ -44,11 +43,6 @@ import java.io.FileOutputStream
 import java.io.IOException
 import java.io.InputStream
 import java.io.InputStreamReader
-import java.nio.file.FileVisitResult
-import java.nio.file.Files
-import java.nio.file.Path
-import java.nio.file.SimpleFileVisitor
-import java.nio.file.attribute.BasicFileAttributes
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -290,26 +284,26 @@ fun Context.getConversationAudioPath(conversationId: String): File? {
     return File("$root${File.separator}Audios${File.separator}$conversationId")
 }
 
-suspend fun Context.getConversationMediaSize(conversationId: String): Long {
+fun Context.getConversationMediaSize(conversationId: String): Long {
     var mediaSize = 0L
     getConversationImagePath(conversationId)?.apply {
         if (exists()) {
-            mediaSize += dirSize() ?: 0
+            mediaSize += getDirSize(this) ?: 0
         }
     }
     getConversationVideoPath(conversationId)?.apply {
         if (exists()) {
-            mediaSize += dirSize() ?: 0
+            mediaSize += getDirSize(this) ?: 0
         }
     }
     getConversationAudioPath(conversationId)?.apply {
         if (exists()) {
-            mediaSize += dirSize() ?: 0
+            mediaSize += getDirSize(this) ?: 0
         }
     }
     getConversationDocumentPath(conversationId)?.apply {
         if (exists()) {
-            mediaSize += dirSize() ?: 0
+            mediaSize += getDirSize(this) ?: 0
         }
     }
     return mediaSize
@@ -694,59 +688,6 @@ private fun getDirSize(dir: File): Long? {
         Timber.e(e.message)
     }
     return null
-}
-
-private fun getDirApacheSize(dir: File): Long {
-    return org.apache.commons.io.FileUtils.sizeOfDirectory(dir)
-}
-
-@RequiresApi(Build.VERSION_CODES.O)
-private fun getDirVisitorSize(dir: File): Long? {
-    return try {
-        val size = AtomicLong(0)
-        Files.walkFileTree(
-            dir.toPath(),
-            object : SimpleFileVisitor<Path>() {
-                override fun visitFile(file: Path, attrs: BasicFileAttributes): FileVisitResult {
-                    size.addAndGet(attrs.size())
-                    return FileVisitResult.CONTINUE
-                }
-
-                override fun visitFileFailed(file: Path?, e: IOException?): FileVisitResult {
-                    Timber.e(e)
-                    return FileVisitResult.CONTINUE
-                }
-            }
-        )
-        return size.get()
-    } catch (e: Exception) {
-        Timber.e(e.message)
-        null
-    }
-}
-
-@RequiresApi(Build.VERSION_CODES.O)
-private fun getDirWalkSize(dir: File): Long? {
-    var size: Long? = null
-    try {
-        Files.walk(dir.toPath()).use { walk ->
-            size = walk // .peek(System.out::println) // debug
-                .filter(Files::isRegularFile)
-                .mapToLong { p ->
-                    // ugly, can pretty it with an extract method
-                    try {
-                        return@mapToLong Files.size(p)
-                    } catch (e: IOException) {
-                        Timber.e(e.message)
-                        return@mapToLong 0L
-                    }
-                }
-                .sum()
-        }
-    } catch (e: IOException) {
-        Timber.e(e.message)
-    }
-    return size
 }
 
 fun File.encodeBlurHash(): String? {
