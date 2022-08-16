@@ -139,6 +139,8 @@ internal constructor(
 
     fun findMessageById(messageId: String) = messageDao.findMessageById(messageId)
 
+    suspend fun findMessageItemById(messageId: String) = messageDao.findMessageItemById(messageId)
+
     suspend fun suspendFindMessageById(messageId: String) = messageDao.suspendFindMessageById(messageId)
 
     fun getConversation(conversationId: String) =

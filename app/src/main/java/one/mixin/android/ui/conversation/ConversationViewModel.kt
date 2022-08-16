@@ -642,8 +642,8 @@ internal constructor(
     suspend fun getSortMessagesByIds(messages: Set<MessageItem>): ArrayList<ForwardMessage> {
         return withContext(Dispatchers.IO) {
             val list = ArrayList<ForwardMessage>()
-            val sortMessages = conversationRepository.getSortMessagesByIds(messages.map { it.messageId })
-            for (m in sortMessages) {
+            val sortedMessages = messages.sortedBy { it.createdAt }
+            for (m in sortedMessages) {
                 val forwardMessage = generateForwardMessage(m)
                 forwardMessage?.let { fm -> list.add(fm) }
             }

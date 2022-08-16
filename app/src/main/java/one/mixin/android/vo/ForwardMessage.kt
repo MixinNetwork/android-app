@@ -186,16 +186,16 @@ fun String.getShareCategory() =
 fun String.getForwardCategory() =
     ForwardCategories.any { this.contains(it.toString(), true) }
 
-fun generateForwardMessage(m: Message): ForwardMessage? {
+fun generateForwardMessage(m: MessageItem): ForwardMessage? {
     return when {
-        m.category.endsWith("_TEXT") ->
+        m.isText() ->
             m.content.notNullWithElse<String, ForwardMessage?>(
                 { c ->
-                    ForwardMessage(ShareCategory.Text, c, m.id)
+                    ForwardMessage(ShareCategory.Text, c, m.messageId)
                 },
                 { null }
             )
-        m.category.endsWith("_IMAGE") ->
+        m.isImage() ->
             m.mediaUrl.notNullWithElse<String, ForwardMessage?>(
                 {
                     ForwardMessage(
@@ -210,16 +210,16 @@ fun generateForwardMessage(m: Message): ForwardMessage? {
                 },
                 { null }
             )
-        m.category.endsWith("_DATA") -> {
+        m.isData() -> {
             if (m.absolutePath()?.fileExists() != true) {
                 return null
             }
-            m.name ?: return null
+            m.mediaName ?: return null
             m.mediaMimeType ?: return null
             m.mediaSize ?: return null
             val dataMessagePayload = DataMessagePayload(
                 requireNotNull(m.absolutePath()),
-                m.name,
+                m.mediaName,
                 m.mediaMimeType,
                 m.mediaSize,
                 m.content,
@@ -227,10 +227,10 @@ fun generateForwardMessage(m: Message): ForwardMessage? {
             ForwardMessage(
                 ForwardCategory.Data,
                 GsonHelper.customGson.toJson(dataMessagePayload),
-                m.id
+                m.messageId
             )
         }
-        m.category.endsWith("_VIDEO") -> {
+        m.isVideo() -> {
             if (m.absolutePath()?.fileExists() != true) {
                 return null
             }
@@ -240,22 +240,22 @@ fun generateForwardMessage(m: Message): ForwardMessage? {
                 nowInUtc(),
                 m.content,
             )
-            ForwardMessage(ForwardCategory.Video, GsonHelper.customGson.toJson(videoData), m.id)
+            ForwardMessage(ForwardCategory.Video, GsonHelper.customGson.toJson(videoData), m.messageId)
         }
-        m.category.endsWith("_CONTACT") -> {
+        m.isContact() -> {
             val shareUserId = m.sharedUserId ?: return null
             val contactData = ContactMessagePayload(shareUserId)
-            ForwardMessage(ShareCategory.Contact, GsonHelper.customGson.toJson(contactData), m.id)
+            ForwardMessage(ShareCategory.Contact, GsonHelper.customGson.toJson(contactData), m.messageId)
         }
-        m.category.endsWith("_STICKER") -> {
+        m.isSticker() -> {
             val stickerData = StickerMessagePayload(
-                name = m.name,
+                name = m.mediaName,
                 stickerId = m.stickerId,
-                albumId = m.albumId,
+                albumId = m.albumId ?: "",
             )
-            ForwardMessage(ForwardCategory.Sticker, GsonHelper.customGson.toJson(stickerData), m.id)
+            ForwardMessage(ForwardCategory.Sticker, GsonHelper.customGson.toJson(stickerData), m.messageId)
         }
-        m.category.endsWith("_AUDIO") -> {
+        m.isAudio() -> {
             if (m.absolutePath()?.fileExists() != true) {
                 return null
             }
@@ -268,9 +268,9 @@ fun generateForwardMessage(m: Message): ForwardMessage? {
                 waveForm,
                 m.content,
             )
-            ForwardMessage(ForwardCategory.Audio, GsonHelper.customGson.toJson(audioData), m.id)
+            ForwardMessage(ForwardCategory.Audio, GsonHelper.customGson.toJson(audioData), m.messageId)
         }
-        m.category.endsWith("_LIVE") -> {
+        m.isLive() -> {
             if (m.mediaWidth == null ||
                 m.mediaWidth == 0 ||
                 m.mediaHeight == null ||
@@ -291,16 +291,16 @@ fun generateForwardMessage(m: Message): ForwardMessage? {
                 m.mediaUrl,
                 shareable
             )
-            ForwardMessage(ShareCategory.Live, GsonHelper.customGson.toJson(liveData), m.id)
+            ForwardMessage(ShareCategory.Live, GsonHelper.customGson.toJson(liveData), m.messageId)
         }
-        m.category.endsWith("_POST") ->
+        m.isPost() ->
             m.content.notNullWithElse<String, ForwardMessage?>(
                 { c ->
-                    ForwardMessage(ShareCategory.Post, c, m.id)
+                    ForwardMessage(ShareCategory.Post, c, m.messageId)
                 },
                 { null }
             )
-        m.category.endsWith("_LOCATION") ->
+        m.isLocation() ->
             m.content.notNullWithElse<String, ForwardMessage?>(
                 { c ->
                     ForwardMessage(
@@ -308,22 +308,22 @@ fun generateForwardMessage(m: Message): ForwardMessage? {
                         GsonHelper.customGson.toJson(
                             toLocationData(c)
                         ),
-                        m.id
+                        m.messageId
                     )
                 },
                 { null }
             )
-        m.category == MessageCategory.APP_CARD.name ->
+        m.type == MessageCategory.APP_CARD.name ->
             m.content.notNullWithElse<String, ForwardMessage?>(
                 { c ->
-                    ForwardMessage(ShareCategory.AppCard, c, m.id)
+                    ForwardMessage(ShareCategory.AppCard, c, m.messageId)
                 },
                 { null }
             )
-        m.category.endsWith("_TRANSCRIPT") ->
+        m.isTranscript() ->
             m.content.notNullWithElse<String, ForwardMessage?>(
                 { c ->
-                    ForwardMessage(ForwardCategory.Transcript, c, m.id)
+                    ForwardMessage(ForwardCategory.Transcript, c, m.messageId)
                 },
                 { null }
             )

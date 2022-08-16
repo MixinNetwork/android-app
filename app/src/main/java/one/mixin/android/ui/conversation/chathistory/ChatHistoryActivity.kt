@@ -571,18 +571,15 @@ class ChatHistoryActivity : BaseActivity() {
                                 }
                             }
                             R.id.forward -> {
-                                lifecycleScope.launch(Dispatchers.IO) {
-                                    conversationRepository.findMessageById(messageItem.messageId)
+                                lifecycleScope.launch {
+                                    conversationRepository.findMessageItemById(messageItem.messageId)
                                         ?.let { message ->
-                                            val forwardMessage =
-                                                generateForwardMessage(message) ?: return@launch
-                                            withContext(Dispatchers.Main) {
-                                                ForwardActivity.show(
-                                                    this@ChatHistoryActivity,
-                                                    arrayListOf(forwardMessage),
-                                                    ForwardAction.App.Resultless()
-                                                )
-                                            }
+                                            val forwardMessage = generateForwardMessage(message) ?: return@launch
+                                            ForwardActivity.show(
+                                                this@ChatHistoryActivity,
+                                                arrayListOf(forwardMessage),
+                                                ForwardAction.App.Resultless()
+                                            )
                                         }
                                 }
                             }

@@ -163,6 +163,7 @@ fun convertToMessageItems(cursor: Cursor?): ArrayList<MessageItem> {
     val cursorIndexOfAssetUrl = cursor.getColumnIndexOrThrow("assetUrl")
     val cursorIndexOfAssetWidth = cursor.getColumnIndexOrThrow("assetWidth")
     val cursorIndexOfAssetHeight = cursor.getColumnIndexOrThrow("assetHeight")
+    val cursorIndexOfAlbumId = cursor.getColumnIndexOrThrow("albumId")
     val cursorIndexOfStickerId = cursor.getColumnIndexOrThrow("stickerId")
     val cursorIndexOfAssetName = cursor.getColumnIndexOrThrow("assetName")
     val cursorIndexOfAssetType = cursor.getColumnIndexOrThrow("assetType")
@@ -240,6 +241,7 @@ fun convertToMessageItems(cursor: Cursor?): ArrayList<MessageItem> {
         } else {
             cursor.getInt(cursorIndexOfAssetHeight)
         }
+        val tmpAlbumId: String? = cursor.getString(cursorIndexOfAlbumId)
         val tmpStickerId: String? = cursor.getString(cursorIndexOfStickerId)
         val tmpAssetName: String? = cursor.getString(cursorIndexOfAssetName)
         val tmpAssetType: String? = cursor.getString(cursorIndexOfAssetType)
@@ -313,7 +315,7 @@ fun convertToMessageItems(cursor: Cursor?): ArrayList<MessageItem> {
             tmpAssetUrl,
             tmpAssetHeight,
             tmpAssetWidth,
-            null,
+            tmpAlbumId,
             tmpStickerId,
             tmpAssetName,
             tmpAppId,
