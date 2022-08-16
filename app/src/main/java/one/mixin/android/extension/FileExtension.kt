@@ -290,7 +290,7 @@ fun Context.getConversationAudioPath(conversationId: String): File? {
     return File("$root${File.separator}Audios${File.separator}$conversationId")
 }
 
-fun Context.getConversationMediaSize(conversationId: String): Long {
+suspend fun Context.getConversationMediaSize(conversationId: String): Long {
     var mediaSize = 0L
     getConversationImagePath(conversationId)?.apply {
         if (exists()) {
@@ -315,7 +315,7 @@ fun Context.getConversationMediaSize(conversationId: String): Long {
     return mediaSize
 }
 
-fun Context.getStorageUsageByConversationAndType(conversationId: String, type: String): StorageUsage? {
+suspend fun Context.getStorageUsageByConversationAndType(conversationId: String, type: String): StorageUsage? {
     val dir = when (type) {
         IMAGE -> getConversationImagePath(conversationId)
         VIDEO -> getConversationVideoPath(conversationId)
@@ -664,7 +664,16 @@ fun File.blurThumbnail(size: Size): Bitmap? {
 
 fun File.dirSize(): Long? {
     return if (isDirectory) {
-        return getDirSize(this)
+        val size = AtomicLong(0)
+        if (this.isDirectory) {
+            getDirSize(this)?.let { s ->
+                size.addAndGet(s)
+            }
+        } else {
+            Timber.e(this.absolutePath)
+            size.addAndGet(this.length())
+        }
+        return size.get()
     } else {
         null
     }
@@ -695,17 +704,20 @@ private fun getDirApacheSize(dir: File): Long {
 private fun getDirVisitorSize(dir: File): Long? {
     return try {
         val size = AtomicLong(0)
-        Files.walkFileTree(dir.toPath(), object : SimpleFileVisitor<Path>() {
-            override fun visitFile(file: Path, attrs: BasicFileAttributes): FileVisitResult {
-                size.addAndGet(attrs.size())
-                return FileVisitResult.CONTINUE
-            }
+        Files.walkFileTree(
+            dir.toPath(),
+            object : SimpleFileVisitor<Path>() {
+                override fun visitFile(file: Path, attrs: BasicFileAttributes): FileVisitResult {
+                    size.addAndGet(attrs.size())
+                    return FileVisitResult.CONTINUE
+                }
 
-            override fun visitFileFailed(file: Path?, e: IOException?): FileVisitResult {
-                Timber.e(e)
-                return FileVisitResult.CONTINUE
+                override fun visitFileFailed(file: Path?, e: IOException?): FileVisitResult {
+                    Timber.e(e)
+                    return FileVisitResult.CONTINUE
+                }
             }
-        })
+        )
         return size.get()
     } catch (e: Exception) {
         Timber.e(e.message)
@@ -718,7 +730,7 @@ private fun getDirWalkSize(dir: File): Long? {
     var size: Long? = null
     try {
         Files.walk(dir.toPath()).use { walk ->
-            size = walk //.peek(System.out::println) // debug
+            size = walk // .peek(System.out::println) // debug
                 .filter(Files::isRegularFile)
                 .mapToLong { p ->
                     // ugly, can pretty it with an extract method

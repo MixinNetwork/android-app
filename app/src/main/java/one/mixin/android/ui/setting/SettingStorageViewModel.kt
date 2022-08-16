@@ -32,6 +32,7 @@ import one.mixin.android.repository.ConversationRepository
 import one.mixin.android.ui.common.message.CleanMessageHelper
 import one.mixin.android.util.SINGLE_DB_THREAD
 import one.mixin.android.util.debug.measureTimeMillis
+import one.mixin.android.vo.ConversationStorageUsage
 import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.StorageUsage
 import java.io.File
@@ -77,11 +78,10 @@ internal constructor(
         }
     }
 
-    suspend fun getConversationStorageUsage(context: Context) = withContext(Dispatchers.IO) {
-        conversationRepository.getConversationStorageUsage().asSequence().map { item ->
-            item.apply {
-                item.mediaSize = context.getConversationMediaSize(item.conversationId) + (conversationRepository.getMediaSizeTotalById(conversationId) ?: 0L) / 1024
-            }
+    suspend fun getConversationStorageUsage(context: Context): List<ConversationStorageUsage> =
+        withContext(Dispatchers.IO) {
+            conversationRepository.getConversationStorageUsage().asSequence().apply {
+            forEach { item -> item.apply { item.mediaSize = context.getConversationMediaSize(item.conversationId) + (conversationRepository.getMediaSizeTotalById(conversationId) ?: 0L) / 1024 } }
         }.filter { conversationStorageUsage ->
             conversationStorageUsage.mediaSize != 0L && conversationStorageUsage.conversationId.isNotEmpty()
         }.sortedByDescending { conversationStorageUsage ->
