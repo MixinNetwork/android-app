@@ -70,7 +70,7 @@ class StickerAlbumAdapter(
         }
         if (fragment is GiphyFragment) {
             fragment.callback = object : Callback {
-                override fun onStickerClick(stickerId: String, albumId: String?) {
+                override fun onStickerClick(stickerId: String) {
                 }
 
                 override fun onGiphyClick(image: Image, previewUrl: String) {
@@ -85,8 +85,8 @@ class StickerAlbumAdapter(
                     override fun onGiphyClick(image: Image, previewUrl: String) {
                     }
 
-                    override fun onStickerClick(stickerId: String, albumId: String?) {
-                        callback?.onStickerClick(stickerId, albumId)
+                    override fun onStickerClick(stickerId: String) {
+                        callback?.onStickerClick(stickerId)
                     }
                 }
             )
@@ -122,7 +122,7 @@ class StickerAlbumAdapter(
     }
 
     interface Callback {
-        fun onStickerClick(stickerId: String, albumId: String?)
+        fun onStickerClick(stickerId: String)
         fun onGiphyClick(image: Image, previewUrl: String)
     }
 }
