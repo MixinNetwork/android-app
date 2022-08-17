@@ -139,15 +139,7 @@ class StickerFragment : BaseFragment(R.layout.fragment_sticker) {
                         if (type != TYPE_RECENT) {
                             stickerViewModel.updateStickerUsedAt(sticker.stickerId)
                         }
-                        if (sticker.albumId == personalAlbumId) {
-                            // check if this sticker belong to a system album
-                            lifecycleScope.launch {
-                                val systemAlbumId = stickerViewModel.findStickerSystemAlbumId(sticker.stickerId)
-                                callback?.onStickerClick(sticker.stickerId, systemAlbumId)
-                            }
-                        } else {
-                            callback?.onStickerClick(sticker.stickerId, sticker.albumId)
-                        }
+                        callback?.onStickerClick(sticker.stickerId)
                     }
 
                     override fun onAddClick() {

@@ -2122,12 +2122,12 @@ class ConversationFragment() :
         }
     }
 
-    private fun sendStickerMessage(stickerId: String, albumId: String?) {
+    private fun sendStickerMessage(stickerId: String) {
         createConversation {
             chatViewModel.sendStickerMessage(
                 conversationId,
                 sender,
-                StickerMessagePayload(stickerId, albumId),
+                StickerMessagePayload(stickerId),
                 encryptCategory()
             )
             scrollToDown()
@@ -2580,12 +2580,12 @@ class ConversationFragment() :
         )
         stickerAlbumFragment.setCallback(
             object : StickerAlbumFragment.Callback {
-                override fun onStickerClick(stickerId: String, albumId: String?) {
+                override fun onStickerClick(stickerId: String) {
                     if (isAdded) {
                         if (binding.stickerContainer.height != binding.inputLayout.keyboardHeight) {
                             binding.inputLayout.openInputArea(binding.chatControl.chatEt)
                         }
-                        sendStickerMessage(stickerId, albumId)
+                        sendStickerMessage(stickerId)
                     }
                 }
 

@@ -18,12 +18,17 @@ class RefreshStickerAndRelatedAlbumJob(private val stickerId: String) : BaseJob(
     }
 
     override fun onRun() = runBlocking {
-        val response = accountService.getStickerById(stickerId).execute().body()
+        val localSticker = stickerDao.findStickerById(stickerId)
         var albumId: String? = null
-        var singleSticker: Sticker? = null
-        if (response != null && response.isSuccess && response.data != null) {
-            singleSticker = response.data as Sticker
-            albumId = singleSticker.albumId
+        if (localSticker != null) {
+            albumId = localSticker.albumId
+        }
+
+        if (albumId.isNullOrBlank()) {
+            val response = accountService.getStickerById(stickerId).execute().body()
+            if (response != null && response.isSuccess && response.data != null) {
+                albumId = (response.data as Sticker).albumId
+            }
         }
 
         if (albumId.isNullOrBlank()) {
@@ -40,7 +45,7 @@ class RefreshStickerAndRelatedAlbumJob(private val stickerId: String) : BaseJob(
             }
         }
 
-        if (album == null) {
+        if (album == null || album.category == "PERSONAL") {
             stickerDao.updateAlbumId(stickerId, albumId)
             return@runBlocking
         }
