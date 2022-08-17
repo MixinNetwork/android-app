@@ -90,7 +90,7 @@ class SettingStorageFragment : BaseFragment(R.layout.fragment_storage) {
             }
         }
         lifecycleScope.launch {
-            val list = measureTimeMillis("Storage") { viewModel.getConversationStorageUsage(requireContext()) }
+            val list = measureTimeMillis("StorageUsage") { viewModel.getConversationStorageUsage(requireContext()) }
             binding.progress.isVisible = false
             adapter.setData(list)
         }
@@ -179,6 +179,7 @@ class SettingStorageFragment : BaseFragment(R.layout.fragment_storage) {
             .autoDispose(stopScope)
             .subscribe(
                 {
+                    adapter.clearData(selectSet.first().conversationId, selectSet.sumOf { it.mediaSize })
                     dialog.dismiss()
                 },
                 {
@@ -231,11 +232,23 @@ class SettingStorageFragment : BaseFragment(R.layout.fragment_storage) {
 
     class StorageAdapter(val action: ((String) -> Unit)) : RecyclerView.Adapter<ItemHolder>() {
 
-        private var conversationStorageUsageList: List<ConversationStorageUsage>? = null
+        private var conversationStorageUsageList: MutableList<ConversationStorageUsage>? = null
 
         @SuppressLint("NotifyDataSetChanged")
-        fun setData(users: List<ConversationStorageUsage>?) {
-            this.conversationStorageUsageList = users
+        fun setData(usages: List<ConversationStorageUsage>?) {
+            this.conversationStorageUsageList = usages?.toMutableList()
+            notifyDataSetChanged()
+        }
+
+        @SuppressLint("NotifyDataSetChanged")
+        fun clearData(conversationId: String, size: Long) {
+            conversationStorageUsageList?.find { it.conversationId == conversationId }?.let {
+                if (it.mediaSize <= size) {
+                    conversationStorageUsageList?.remove(it)
+                } else {
+                    it.mediaSize -= size
+                }
+            }
             notifyDataSetChanged()
         }
 

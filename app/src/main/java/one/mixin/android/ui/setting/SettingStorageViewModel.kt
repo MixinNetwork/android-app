@@ -5,6 +5,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.Constants
@@ -31,6 +33,7 @@ import one.mixin.android.job.TranscriptDeleteJob
 import one.mixin.android.repository.ConversationRepository
 import one.mixin.android.ui.common.message.CleanMessageHelper
 import one.mixin.android.util.SINGLE_DB_THREAD
+import one.mixin.android.vo.ConversationStorageUsage
 import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.StorageUsage
 import java.io.File
@@ -67,17 +70,20 @@ internal constructor(
         result.toList()
     }
 
-    suspend fun getConversationStorageUsage(context: Context) = withContext(Dispatchers.IO) {
-        conversationRepository.getConversationStorageUsage().asSequence().map { item ->
-            item.apply {
-                item.mediaSize = context.getConversationMediaSize(item.conversationId) + (conversationRepository.getMediaSizeTotalById(conversationId) ?: 0L) / 1024
-            }
-        }.filter { conversationStorageUsage ->
-            conversationStorageUsage.mediaSize != 0L && conversationStorageUsage.conversationId.isNotEmpty()
-        }.sortedByDescending { conversationStorageUsage ->
-            conversationStorageUsage.mediaSize
-        }.toList()
-    }
+    suspend fun getConversationStorageUsage(context: Context): List<ConversationStorageUsage> =
+        withContext(Dispatchers.IO) {
+            conversationRepository.getConversationStorageUsage()
+                .map { item ->
+                    async(Dispatchers.IO) {
+                        item.apply { mediaSize = context.getConversationMediaSize(conversationId) + (conversationRepository.getMediaSizeTotalById(conversationId) ?: 0L) / 1024 }
+                    }
+                }.awaitAll()
+                .filter { conversationStorageUsage ->
+                    conversationStorageUsage.mediaSize != 0L && conversationStorageUsage.conversationId.isNotEmpty()
+                }.sortedByDescending { conversationStorageUsage ->
+                    conversationStorageUsage.mediaSize
+                }.toList()
+        }
 
     fun clear(conversationId: String, type: String) {
         if (MixinApplication.appContext.defaultSharedPreferences.getBoolean(Constants.Account.PREF_ATTACHMENT, false)) {
@@ -140,7 +146,7 @@ internal constructor(
     }
 
     private fun clear(conversationId: String, signalCategory: String, plainCategory: String, encryptedCategory: String) {
-        if (signalCategory == MessageCategory.SIGNAL_TRANSCRIPT.name && plainCategory == MessageCategory.PLAIN_TRANSCRIPT.name && plainCategory == MessageCategory.ENCRYPTED_TRANSCRIPT.name) {
+        if (signalCategory == MessageCategory.SIGNAL_TRANSCRIPT.name && plainCategory == MessageCategory.PLAIN_TRANSCRIPT.name && encryptedCategory == MessageCategory.ENCRYPTED_TRANSCRIPT.name) {
             viewModelScope.launch(SINGLE_DB_THREAD) {
                 val ids = conversationRepository.findTranscriptIdByConversationId(conversationId)
                 if (ids.isEmpty()) {

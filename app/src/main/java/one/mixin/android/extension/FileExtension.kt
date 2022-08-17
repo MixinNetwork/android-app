@@ -287,22 +287,22 @@ fun Context.getConversationMediaSize(conversationId: String): Long {
     var mediaSize = 0L
     getConversationImagePath(conversationId)?.apply {
         if (exists()) {
-            mediaSize += dirSize() ?: 0
+            mediaSize += getDirSize() ?: 0
         }
     }
     getConversationVideoPath(conversationId)?.apply {
         if (exists()) {
-            mediaSize += dirSize() ?: 0
+            mediaSize += getDirSize() ?: 0
         }
     }
     getConversationAudioPath(conversationId)?.apply {
         if (exists()) {
-            mediaSize += dirSize() ?: 0
+            mediaSize += getDirSize() ?: 0
         }
     }
     getConversationDocumentPath(conversationId)?.apply {
         if (exists()) {
-            mediaSize += dirSize() ?: 0
+            mediaSize += getDirSize() ?: 0
         }
     }
     return mediaSize
@@ -657,23 +657,23 @@ fun File.blurThumbnail(size: Size): Bitmap? {
 
 fun File.dirSize(): Long? {
     return if (isDirectory) {
-        return getDirSize(this)
+        getDirSize()
+    } else if (isFile) {
+        length()
     } else {
         null
     }
 }
 
-private fun getDirSize(dir: File): Long? {
+private fun File.getDirSize(): Long? {
     try {
         val du = Runtime.getRuntime().exec(
-            "/system/bin/du -s " + dir.canonicalPath,
+            "/system/bin/du -s $canonicalPath",
             arrayOf(),
             Environment.getRootDirectory()
         )
         val br = BufferedReader(InputStreamReader(du.inputStream))
-        return Scanner(br.readLine()).nextLong().apply {
-            Timber.e("$dir: $this")
-        }
+        return Scanner(br.readLine()).nextLong()
     } catch (e: Exception) {
         Timber.e(e.message)
     }
