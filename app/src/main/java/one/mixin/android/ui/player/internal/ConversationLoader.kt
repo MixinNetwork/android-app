@@ -3,6 +3,9 @@ package one.mixin.android.ui.player.internal
 import android.support.v4.media.MediaBrowserCompat
 import android.support.v4.media.MediaDescriptionCompat
 import android.support.v4.media.MediaMetadataCompat
+import androidx.lifecycle.LiveData
+import androidx.paging.PagedList
+import androidx.paging.toLiveData
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.extension.fileSize
 import one.mixin.android.ui.player.internal.AlbumArtCache.DEFAULT_ALBUM_ART
@@ -10,48 +13,48 @@ import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.absolutePath
 
-class ConversationLoader(
-    private val database: MixinDatabase,
-    val conversationId: String,
-) : MusicLoader() {
+class ConversationLoader : MusicMetaLoader() {
 
-    override suspend fun load(): List<MediaMetadataCompat> {
-        var messageItems = database.messageDao().findAudiosByConversationId(conversationId)
-        messageItems = messageItems.filter { !ignoreSet.contains(it.messageId) }
-        return loadMessageItems(messageItems)
-    }
-
-    suspend fun loadByIds(items: Array<String>): List<MediaMetadataCompat> {
-        var messageItems = database.messageDao().suspendFindMessagesByIds(conversationId, items.toList())
-        messageItems = messageItems.filter { !ignoreSet.contains(it.messageId) }
-        return loadMessageItems(messageItems)
-    }
+    fun conversationLiveData(
+        conversationId: String,
+        db: MixinDatabase,
+        pageSize: Int = 10,
+        initialLoadKey: Int = 0,
+    ): LiveData<PagedList<MediaMetadataCompat>> =
+        db.messageDao().findAudiosByConversationId(conversationId)
+            .mapByPage { loadMessageItems(it) }
+            .toLiveData(
+                PagedList.Config.Builder()
+                    .setPageSize(pageSize)
+                    .setEnablePlaceholders(true)
+                    .build(),
+                initialLoadKey,
+            )
 
     private fun loadMessageItems(messageItems: List<MessageItem>): List<MediaMetadataCompat> {
-        val mediaMetadataCompats = mutableListOf<MediaMetadataCompat>()
-        messageItems.forEach { m ->
-            when (m.mediaStatus) {
-                MediaStatus.CANCELED.name, MediaStatus.PENDING.name -> {
-                    mediaMetadataCompats.add(
-                        MediaMetadataCompat.Builder()
-                            .from(m)
-                            .build()
-                    )
-                }
-                else -> {
-                    val url = m.absolutePath() ?: return@forEach
-                    val musicMeta = retrieveMetadata(m.messageId, url) ?: return@forEach
-                    mediaMetadataCompats.add(
-                        MediaMetadataCompat.Builder()
-                            .from(m, musicMeta)
-                            .build()
-                    )
-                }
+        val mediaMetadataCompatList = mutableListOf<MediaMetadataCompat>()
+        messageItems.forEach { m -> loadMessageItem(m).let { mediaMetadataCompatList.add(it) } }
+        mediaMetadataCompatList.forEach { it.description.extras?.putAll(it.bundle) }
+        return mediaMetadataCompatList
+    }
+
+    private fun loadMessageItem(m: MessageItem): MediaMetadataCompat {
+        if (ignoreSet.contains(m.messageId)) return MediaMetadataCompat.Builder().from(m).build()
+
+        return when (m.mediaStatus) {
+            MediaStatus.CANCELED.name, MediaStatus.PENDING.name -> {
+                MediaMetadataCompat.Builder()
+                    .from(m)
+                    .build()
+            }
+            else -> {
+                val url = m.absolutePath() ?: return MediaMetadataCompat.Builder().from(m).build()
+                val musicMeta = retrieveMetadata(m.messageId, url) ?: return MediaMetadataCompat.Builder().from(m).build()
+                MediaMetadataCompat.Builder()
+                    .from(m, musicMeta)
+                    .build()
             }
         }
-
-        mediaMetadataCompats.forEach { it.description.extras?.putAll(it.bundle) }
-        return mediaMetadataCompats
     }
 
     fun MediaMetadataCompat.Builder.from(messageItem: MessageItem): MediaMetadataCompat.Builder {
@@ -59,7 +62,7 @@ class ConversationLoader(
         title = messageItem.mediaName
         val subtitle = messageItem.mediaSize?.fileSize()
         artist = subtitle
-        album = conversationId
+        album = messageItem.conversationId
         flag = MediaBrowserCompat.MediaItem.FLAG_PLAYABLE
         messageItem.mediaStatus?.let { s ->
             downloadStatus = getDownloadStatus(s)
@@ -77,7 +80,7 @@ class ConversationLoader(
         val subtitle = musicMeta.artist ?: unknownString
         title = titleString
         artist = subtitle
-        album = conversationId
+        album = messageItem.conversationId
         mediaUri = messageItem.absolutePath()
         flag = MediaBrowserCompat.MediaItem.FLAG_PLAYABLE
         messageItem.mediaStatus?.let { s ->

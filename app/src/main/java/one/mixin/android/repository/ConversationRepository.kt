@@ -572,4 +572,10 @@ internal constructor(
     suspend fun disappear(conversationId: String, disappearRequest: DisappearRequest) = conversationService.disappear(conversationId, disappearRequest)
 
     suspend fun exists(messageId: String) = messageDao.exists(messageId)
+
+    fun findAudiosByConversationId(conversationId: String): DataSource.Factory<Int, MessageItem> =
+        messageDao.findAudiosByConversationId(conversationId)
+
+    suspend fun indexAudioByConversationId(messageId: String, conversationId: String): Int =
+        messageDao.indexAudioByConversationId(messageId, conversationId)
 }

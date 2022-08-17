@@ -307,17 +307,17 @@ private fun MessageItem.simpleChat(): String {
     }
 }
 
-class FixedMessageDataSource(private val messageItems: List<MessageItem>) :
-    PositionalDataSource<MessageItem>() {
-    override fun loadRange(params: LoadRangeParams, callback: LoadRangeCallback<MessageItem>) {
-        callback.onResult(messageItems)
+class FixedMessageDataSource<T>(private val items: List<T>, private val totalCount: Int) :
+    PositionalDataSource<T>() {
+    override fun loadRange(params: LoadRangeParams, callback: LoadRangeCallback<T>) {
+        callback.onResult(items)
     }
 
     override fun loadInitial(
         params: LoadInitialParams,
-        callback: LoadInitialCallback<MessageItem>
+        callback: LoadInitialCallback<T>
     ) {
-        callback.onResult(messageItems, 0, 1)
+        callback.onResult(items, 0, totalCount)
     }
 }
 
