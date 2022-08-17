@@ -26,6 +26,9 @@ interface StickerAlbumDao : BaseDao<StickerAlbum> {
     @Query("SELECT * FROM sticker_albums WHERE category = 'PERSONAL' ORDER BY created_at ASC")
     suspend fun getPersonalAlbums(): StickerAlbum?
 
+    @Query("SELECT album_id FROM sticker_albums WHERE category = 'PERSONAL'")
+    suspend fun findPersonalAlbumId(): String?
+
     @Query("SELECT * FROM sticker_albums WHERE album_id = :albumId")
     suspend fun findAlbumById(albumId: String): StickerAlbum?
 
