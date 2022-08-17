@@ -8,6 +8,7 @@ import one.mixin.android.Constants.PIN_ERROR_MAX
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.request.AccountRequest
 import one.mixin.android.api.request.AccountUpdateRequest
+import one.mixin.android.api.request.AlbumUploadRequest
 import one.mixin.android.api.request.AuthorizeRequest
 import one.mixin.android.api.request.CollectibleRequest
 import one.mixin.android.api.request.DeactivateRequest
@@ -331,4 +332,6 @@ constructor(
     suspend fun modifySessionSecret(request: SessionSecretRequest) = accountService.modifySessionSecret(request)
 
     suspend fun getExternalSchemes() = accountService.getExternalSchemes()
+
+    suspend fun uploadAlbum(albumUploadRequest: AlbumUploadRequest) = accountService.uploadAlbum(albumUploadRequest)
 }

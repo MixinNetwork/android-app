@@ -24,6 +24,7 @@ import one.mixin.android.Constants.FIXED_LOAD_SIZE
 import one.mixin.android.Constants.PAGE_SIZE
 import one.mixin.android.MixinApplication
 import one.mixin.android.api.handleMixinResponse
+import one.mixin.android.api.request.AlbumUploadRequest
 import one.mixin.android.api.request.ConversationRequest
 import one.mixin.android.api.request.DisappearRequest
 import one.mixin.android.api.request.ParticipantRequest
@@ -39,6 +40,7 @@ import one.mixin.android.extension.putString
 import one.mixin.android.job.AttachmentDownloadJob
 import one.mixin.android.job.ConvertVideoJob
 import one.mixin.android.job.MixinJobManager
+import one.mixin.android.job.RefreshAlbumStickersJob
 import one.mixin.android.job.RefreshStickerAlbumJob
 import one.mixin.android.job.RefreshStickerAndRelatedAlbumJob
 import one.mixin.android.job.RefreshUserJob
@@ -80,6 +82,7 @@ import one.mixin.android.vo.PinMessageData
 import one.mixin.android.vo.PinMessageMinimal
 import one.mixin.android.vo.QuoteMessageItem
 import one.mixin.android.vo.Sticker
+import one.mixin.android.vo.StickerAlbum
 import one.mixin.android.vo.StickerAlbumAdded
 import one.mixin.android.vo.StickerAlbumOrder
 import one.mixin.android.vo.TranscriptMessage
@@ -823,4 +826,13 @@ internal constructor(
 
     suspend fun updateConversationExpireIn(conversationId: String, expireIn: Long?) =
         conversationRepository.updateConversationExpireIn(conversationId, expireIn)
+
+    suspend fun uploadAlbum(albumUploadRequest: AlbumUploadRequest) =
+        accountRepository.uploadAlbum(albumUploadRequest)
+
+    suspend fun saveAlbum(album: StickerAlbum) {
+        album.added = true
+        accountRepository.insertAlbumSuspend(album)
+        jobManager.addJobInBackground(RefreshAlbumStickersJob(album.albumId))
+    }
 }
