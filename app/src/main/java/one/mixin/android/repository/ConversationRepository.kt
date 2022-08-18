@@ -136,7 +136,7 @@ internal constructor(
             conversationDao.findConversationById(conversationId)
         }
 
-    suspend fun getConversationDraftById(conversationId: String) =
+    suspend fun getConversationDraftById(conversationId: String): String? =
         conversationDao.getConversationDraftById(conversationId)
 
     fun findMessageById(messageId: String) = messageDao.findMessageById(messageId)
@@ -564,7 +564,7 @@ internal constructor(
 
     suspend fun findSameConversations(selfId: String, userId: String) = conversationDao.findSameConversations(selfId, userId)
 
-    fun markMessageRead(conversationId: String)  {
+    fun markMessageRead(conversationId: String) {
         timeoutEarlyWarning({
             runInTransaction {
                 remoteMessageStatusDao.markReadByConversationId(conversationId)

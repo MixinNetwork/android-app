@@ -108,6 +108,7 @@ import one.mixin.android.widget.gallery.MimeType
 import java.io.File
 import java.util.UUID
 import javax.inject.Inject
+import kotlin.coroutines.CoroutineContext
 
 @Suppress("NULLABILITY_MISMATCH_BASED_ON_JAVA_ANNOTATIONS")
 @HiltViewModel
@@ -150,9 +151,10 @@ internal constructor(
     suspend fun findFirstUnreadMessageId(conversationId: String, offset: Int): String? =
         conversationRepository.findFirstUnreadMessageId(conversationId, offset)
 
-    suspend fun getConversationDraftById(id: String) = withContext(SINGLE_DB_THREAD) {
-        conversationRepository.getConversationDraftById(id)
-    }
+    suspend fun getConversationDraftById(context: CoroutineContext, id: String): String? =
+        withContext(SINGLE_DB_THREAD + context) {
+            conversationRepository.getConversationDraftById(id)
+        }
 
     fun getConversationById(id: String) = conversationRepository.getConversationById(id)
 
