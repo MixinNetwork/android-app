@@ -151,10 +151,7 @@ internal constructor(
     suspend fun findFirstUnreadMessageId(conversationId: String, offset: Int): String? =
         conversationRepository.findFirstUnreadMessageId(conversationId, offset)
 
-    suspend fun getConversationDraftById(context: CoroutineContext, id: String): String? =
-        withContext(SINGLE_DB_THREAD + context) {
-            conversationRepository.getConversationDraftById(id)
-        }
+    suspend fun getConversationDraftById(context: CoroutineContext, id: String): String? = conversationRepository.getConversationDraftById(id)
 
     fun getConversationById(id: String) = conversationRepository.getConversationById(id)
 
