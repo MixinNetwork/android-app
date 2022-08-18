@@ -434,9 +434,7 @@ internal constructor(
         if (isBubbled.not()) {
             notificationManager.cancel(conversationId.hashCode())
         }
-        MixinApplication.appScope.launch {
-            conversationRepository.markMessageRead(conversationId)
-        }
+        MixinApplication.get().markMessageRead(conversationId)
     }
 
     suspend fun getFriends(): List<User> = userRepository.getFriends()
