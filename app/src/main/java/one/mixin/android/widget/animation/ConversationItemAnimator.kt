@@ -45,12 +45,17 @@ class ConversationItemAnimator(
         return false
     }
 
+    private var firstAppearanceAnimate = true
     override fun animateAppearance(viewHolder: RecyclerView.ViewHolder, preLayoutInfo: ItemHolderInfo?, postLayoutInfo: ItemHolderInfo): Boolean {
-        if (viewHolder.absoluteAdapterPosition > 1) {
+        if (viewHolder.absoluteAdapterPosition >= 1) {
             dispatchAnimationFinished(viewHolder)
             return false
         }
-
+        if (firstAppearanceAnimate) {
+            firstAppearanceAnimate = false
+            dispatchAnimationFinished(viewHolder)
+            return false
+        }
         return animateSlide(viewHolder, preLayoutInfo, postLayoutInfo)
     }
 
