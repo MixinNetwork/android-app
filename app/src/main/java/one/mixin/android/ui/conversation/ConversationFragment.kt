@@ -189,6 +189,7 @@ import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.ErrorHandler.Companion.FORBIDDEN
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.MusicPlayer
+import one.mixin.android.util.SINGLE_DB_THREAD
 import one.mixin.android.util.chat.InvalidateFlow
 import one.mixin.android.util.debug.FileLogTree
 import one.mixin.android.util.debug.debugLongClick
@@ -1456,7 +1457,7 @@ class ConversationFragment() :
                 binding.flagLayout.bottomCountFlag = false
             }
         }
-        lifecycleScope.launch {
+        lifecycleScope.launch(SINGLE_DB_THREAD) {
             conversationDraft = chatViewModel.getConversationDraftById(this.coroutineContext, conversationId)
             if (isAdded && !conversationDraft.isNullOrBlank()) {
                 binding.chatControl.chatEt.setText(conversationDraft)
