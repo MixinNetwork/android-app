@@ -249,7 +249,6 @@ fun generateForwardMessage(m: Message): ForwardMessage? {
         }
         m.isSticker() -> {
             val stickerData = StickerMessagePayload(
-                name = m.name,
                 stickerId = m.stickerId,
             )
             ForwardMessage(ForwardCategory.Sticker, GsonHelper.customGson.toJson(stickerData), m.id)

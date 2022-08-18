@@ -722,7 +722,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                     }
                     createStickerMessage(
                         data.messageId, data.conversationId, data.userId, data.category, null,
-                        mediaData.stickerId, mediaData.name, data.status, data.createdAt
+                        mediaData.stickerId, data.status, data.createdAt
                     )
                 }
                 insertMessage(message, data)

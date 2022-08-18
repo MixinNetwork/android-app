@@ -471,13 +471,11 @@ fun createStickerMessage(
     category: String,
     content: String?,
     stickerId: String,
-    stickerName: String?,
     status: String,
     createdAt: String
 ) = MessageBuilder(messageId, conversationId, userId, category, status, createdAt)
     .setContent(content)
     .setStickerId(stickerId)
-    .setName(stickerName)
     .build()
 
 fun createLiveMessage(

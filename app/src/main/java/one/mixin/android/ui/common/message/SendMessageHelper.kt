@@ -320,7 +320,6 @@ class SendMessageHelper @Inject internal constructor(private val jobManager: Mix
                 category,
                 encoded,
                 it,
-                transferStickerData.name,
                 MessageStatus.SENDING.name,
                 nowInUtc()
             )
