@@ -22,7 +22,6 @@ import android.os.Bundle
 import android.os.PowerManager
 import android.os.SystemClock
 import android.provider.Settings
-import android.support.v4.media.MediaDescriptionCompat.STATUS_DOWNLOADED
 import android.text.method.LinkMovementMethod
 import android.view.ContextThemeWrapper
 import android.view.Gravity
@@ -175,12 +174,9 @@ import one.mixin.android.ui.imageeditor.ImageEditorActivity
 import one.mixin.android.ui.media.SharedMediaActivity
 import one.mixin.android.ui.media.pager.MediaPagerActivity
 import one.mixin.android.ui.player.FloatingPlayer
-import one.mixin.android.ui.player.MediaItemData
 import one.mixin.android.ui.player.MusicActivity
-import one.mixin.android.ui.player.MusicViewModel
+import one.mixin.android.ui.player.MusicService
 import one.mixin.android.ui.player.collapse
-import one.mixin.android.ui.player.internal.MusicServiceConnection
-import one.mixin.android.ui.player.provideMusicViewModel
 import one.mixin.android.ui.preview.TextPreviewActivity
 import one.mixin.android.ui.setting.WalletPasswordFragment
 import one.mixin.android.ui.sticker.StickerActivity
@@ -330,13 +326,6 @@ class ConversationFragment() :
     lateinit var audioSwitch: AudioSwitch
 
     private val chatViewModel by viewModels<ConversationViewModel>()
-
-    @Inject
-    lateinit var musicServiceConnection: MusicServiceConnection
-
-    private val musicViewModel by viewModels<MusicViewModel> {
-        provideMusicViewModel(musicServiceConnection, conversationId)
-    }
 
     private val transcriptData: TranscriptData? by lazy {
         requireArguments().getParcelable(TRANSCRIPT_DATA)
@@ -715,34 +704,14 @@ class ConversationFragment() :
                     binding.chatControl.isRecording -> showRecordingAlert()
                     MusicPlayer.isPlay(messageItem.messageId) -> MusicPlayer.pause()
                     else -> {
-                        if (!MusicPlayer.sameChatAudioFilePlaying(conversationId)) {
-                            MusicPlayer.playMusic(messageItem)
-                            FloatingPlayer.getInstance().hide()
-                        } else {
-                            if (checkFloatingPermission()) {
+                        FloatingPlayer.getInstance().conversationId = conversationId
+                        MusicService.playConversation(requireContext(), conversationId, messageItem.messageId)
+                        if (checkFloatingPermission()) {
+                            if (MixinApplication.get().activityInForeground) {
                                 collapse(conversationId)
                             }
-                        }
-                        FloatingPlayer.getInstance().conversationId = conversationId
-
-                        musicViewModel.playMedia(
-                            MediaItemData(
-                                messageItem.messageId,
-                                messageItem.mediaName ?: "",
-                                "",
-                                Uri.EMPTY,
-                                false,
-                                STATUS_DOWNLOADED
-                            )
-                        ) {
-                            if (viewDestroyed()) return@playMedia
-                            if (checkFloatingPermission()) {
-                                if (MixinApplication.get().activityInForeground) {
-                                    collapse(conversationId)
-                                }
-                            } else {
-                                requireActivity().showPipPermissionNotification(MusicActivity::class.java, getString(R.string.web_floating_permission))
-                            }
+                        } else {
+                            requireActivity().showPipPermissionNotification(MusicActivity::class.java, getString(R.string.web_floating_permission))
                         }
                     }
                 }

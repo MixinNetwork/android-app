@@ -4,49 +4,59 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.app.Dialog
 import android.os.Bundle
+import android.support.v4.media.MediaMetadataCompat
 import android.view.View
 import android.view.ViewGroup
+import androidx.arch.core.executor.ArchTaskExecutor
 import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.view.isVisible
 import androidx.core.view.setPadding
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
+import androidx.paging.PagedList
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.google.android.exoplayer2.MediaItem
+import com.google.android.exoplayer2.Player
+import com.google.android.exoplayer2.Player.MEDIA_ITEM_TRANSITION_REASON_PLAYLIST_CHANGED
+import com.google.android.exoplayer2.Player.MEDIA_ITEM_TRANSITION_REASON_REPEAT
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.android.lifecycle.scope
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentMusicBottomSheetBinding
-import one.mixin.android.db.MessageDao
 import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.booleanFromAttribute
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.withArgs
-import one.mixin.android.job.AttachmentDownloadJob
-import one.mixin.android.job.MixinJobManager
-import one.mixin.android.ui.player.internal.MusicServiceConnection
+import one.mixin.android.ui.player.MusicService.Companion.MUSIC_PLAYLIST
+import one.mixin.android.ui.player.internal.UrlLoader
+import one.mixin.android.ui.player.internal.album
+import one.mixin.android.ui.player.internal.albumArtUri
+import one.mixin.android.ui.player.internal.displaySubtitle
+import one.mixin.android.ui.player.internal.displayTitle
+import one.mixin.android.ui.player.internal.id
+import one.mixin.android.ui.player.internal.urlLoader
 import one.mixin.android.util.MusicPlayer
 import one.mixin.android.util.SystemUIManager
-import one.mixin.android.util.chat.InvalidateFlow
 import one.mixin.android.util.viewBinding
-import one.mixin.android.vo.MediaStatus
+import one.mixin.android.vo.FixedMessageDataSource
 import one.mixin.android.webrtc.EXTRA_CONVERSATION_ID
 import one.mixin.android.widget.MixinBottomSheetDialog
-import timber.log.Timber
-import javax.inject.Inject
+import kotlin.math.max
+import kotlin.math.min
 
 @AndroidEntryPoint
 class MusicBottomSheetDialogFragment : BottomSheetDialogFragment() {
     companion object {
         const val TAG = "MusicBottomSheetDialogFragment"
+        const val CONVERSATION_UI_PAGE_SIZE = 15
 
         fun newInstance(conversationId: String) = MusicBottomSheetDialogFragment().withArgs {
             putString(EXTRA_CONVERSATION_ID, conversationId)
@@ -61,19 +71,6 @@ class MusicBottomSheetDialogFragment : BottomSheetDialogFragment() {
         requireArguments().getString(EXTRA_CONVERSATION_ID)!!
     }
 
-    @Inject
-    lateinit var musicServiceConnection: MusicServiceConnection
-
-    private val viewModel by viewModels<MusicViewModel> {
-        provideMusicViewModel(musicServiceConnection, conversationId)
-    }
-
-    @Inject
-    lateinit var jobManager: MixinJobManager
-
-    @Inject
-    lateinit var messageDao: MessageDao
-
     override fun getTheme() = R.style.MixinBottomSheet
 
     private val listAdapter = MediaItemAdapter()
@@ -81,6 +78,8 @@ class MusicBottomSheetDialogFragment : BottomSheetDialogFragment() {
     private lateinit var contentView: View
 
     private var firstOpen = true
+
+    private val viewModel by viewModels<MusicViewModel>()
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         return MixinBottomSheetDialog(requireContext(), theme).apply {
@@ -106,16 +105,26 @@ class MusicBottomSheetDialogFragment : BottomSheetDialogFragment() {
 
         binding.apply {
             listAdapter.listener = object : MediaItemListener {
-                override fun onItemClick(mediaItem: MediaItemData) {
-                    viewModel.playOrPauseMedia(mediaItem) {}
+                override fun onItemClick(mediaItem: MediaMetadataCompat) {
+                    val id = requireNotNull(mediaItem.id)
+                    if (MusicPlayer.isPlay(id)) {
+                        MusicPlayer.pause()
+                    } else {
+                        val albumId = requireNotNull(mediaItem.album)
+                        if (albumId == MUSIC_PLAYLIST) {
+                            MusicPlayer.get().playMediaById(id)
+                        } else {
+                            MusicService.playConversation(requireContext(), requireNotNull(mediaItem.album), id)
+                        }
+                    }
                 }
 
-                override fun onDownload(mediaItem: MediaItemData) {
-                    download(mediaItem)
+                override fun onDownload(mediaItem: MediaMetadataCompat) {
+                    download(requireNotNull(mediaItem.id))
                 }
 
-                override fun onCancel(mediaItem: MediaItemData) {
-                    cancel(mediaItem)
+                override fun onCancel(mediaItem: MediaMetadataCompat) {
+                    viewModel.cancel(requireNotNull(mediaItem.id), conversationId)
                 }
             }
             titleView.leftIv.setPadding(12.dp)
@@ -128,9 +137,12 @@ class MusicBottomSheetDialogFragment : BottomSheetDialogFragment() {
                         dialog.dismiss()
                     }
                     .setPositiveButton(R.string.Stop_Playing) { _, _ ->
-                        (requireActivity() as MusicActivity).serviceStopped = true
-                        viewModel.stopMusicService()
-                        dismiss()
+                        MusicPlayer.pause()
+                        MusicService.stopMusic(this@MusicBottomSheetDialogFragment.requireContext())
+                        lifecycleScope.launch {
+                            (requireActivity() as MusicActivity).serviceStopped = true
+                            dismiss()
+                        }
                     }
                     .show()
             }
@@ -139,32 +151,28 @@ class MusicBottomSheetDialogFragment : BottomSheetDialogFragment() {
 
             musicLayout.progress.isVisible = false
 
-            viewModel.subscribe()
-            viewModel.mediaItems.observe(
-                this@MusicBottomSheetDialogFragment,
-                { list ->
-                    listAdapter.submitList(list)
+            if (conversationId == MUSIC_PLAYLIST) {
+                urlLoader.addObserver(urlObserver)
+            } else {
+                lifecycleScope.launch {
+                    val mediaId = MusicPlayer.get().currentPlayMediaId()
+                    val index = if (mediaId != null) {
+                        viewModel.indexAudioByConversationId(conversationId, mediaId)
+                    } else 0
+                    viewModel.conversationLiveData(conversationId, index)
+                        .observe(this@MusicBottomSheetDialogFragment) { list ->
+                            listAdapter.submitList(list)
+                            pb.isVisible = false
 
-                    var mediaItem = list.find { it.mediaId == MusicPlayer.get().exoPlayer.currentMediaItem?.mediaId }
-                    if (mediaItem == null) {
-                        mediaItem = list.firstOrNull()
-                    }
-                    musicLayout.title.text = mediaItem?.title
-                    musicLayout.subtitle.text = mediaItem?.subtitle
-                    musicLayout.albumArt.loadImage(mediaItem?.albumArtUri?.path, R.drawable.ic_music_place_holder)
-
-                    if (list.isNotEmpty() && firstOpen) {
-                        firstOpen = false
-                        val pos = list.indexOf(mediaItem)
-                        if (pos != -1) {
-                            playlistRv.post {
-                                (playlistRv.layoutManager as LinearLayoutManager).scrollToPosition(pos)
+                            if (firstOpen && mediaId != null) {
+                                updateMusicLayout(list, mediaId)
                             }
                         }
-                    }
                 }
-            )
+            }
+
             playerControlView.player = MusicPlayer.get().exoPlayer
+            MusicPlayer.get().exoPlayer.addListener(playerListener)
         }
     }
 
@@ -181,7 +189,9 @@ class MusicBottomSheetDialogFragment : BottomSheetDialogFragment() {
 
     override fun onDestroyView() {
         super.onDestroyView()
+        urlLoader.removeObserver(urlObserver)
         binding.playerControlView.player = null
+        MusicPlayer.get().exoPlayer.removeListener(playerListener)
     }
 
     override fun onDetach() {
@@ -198,12 +208,45 @@ class MusicBottomSheetDialogFragment : BottomSheetDialogFragment() {
     override fun dismissAllowingStateLoss() {
         try {
             super.dismissAllowingStateLoss()
-        } catch (e: IllegalStateException) {
-            Timber.e(e)
+        } catch (ignored: IllegalStateException) {
         }
     }
 
-    private fun download(mediaItemData: MediaItemData) {
+    private fun updateMusicLayout(pagedList: PagedList<MediaMetadataCompat>, mediaId: String) {
+        binding.apply {
+            var mediaItem: MediaMetadataCompat? = null
+            for (i in 0 until pagedList.size) {
+                val item = pagedList[i]
+                if (item != null && item.id == mediaId) {
+                    mediaItem = item
+                    break
+                }
+            }
+            if (mediaItem == null) {
+                lifecycleScope.launch {
+                    val index = viewModel.indexAudioByConversationId(conversationId, mediaId)
+                    pagedList.loadAround(max(0, min(pagedList.size - 1, index)))
+                    firstOpen = true
+                    return@launch
+                }
+            }
+            musicLayout.title.text = mediaItem?.displayTitle
+            musicLayout.subtitle.text = mediaItem?.displaySubtitle
+            musicLayout.albumArt.loadImage(mediaItem?.albumArtUri?.path, R.drawable.ic_music_place_holder)
+
+            if (pagedList.isNotEmpty() && firstOpen) {
+                firstOpen = false
+                val pos = pagedList.indexOf(mediaItem)
+                if (pos != -1) {
+                    playlistRv.post {
+                        (playlistRv.layoutManager as LinearLayoutManager).scrollToPosition(pos)
+                    }
+                }
+            }
+        }
+    }
+
+    private fun download(mediaId: String) {
         RxPermissions(requireActivity())
             .request(Manifest.permission.WRITE_EXTERNAL_STORAGE)
             .autoDispose(stopScope)
@@ -211,9 +254,7 @@ class MusicBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 { granted ->
                     if (granted) {
                         lifecycleScope.launch {
-                            messageDao.suspendFindMessageById(mediaItemData.mediaId)?.let {
-                                jobManager.addJobInBackground(AttachmentDownloadJob(it))
-                            }
+                            viewModel.download(mediaId)
                         }
                     } else {
                         context?.openPermissionSetting()
@@ -223,12 +264,34 @@ class MusicBottomSheetDialogFragment : BottomSheetDialogFragment() {
             )
     }
 
-    private fun cancel(mediaItemData: MediaItemData) = lifecycleScope.launch(Dispatchers.IO) {
-        jobManager.cancelJobByMixinJobId(mediaItemData.mediaId) {
-            lifecycleScope.launch {
-                messageDao.updateMediaStatusSuspend(MediaStatus.CANCELED.name, mediaItemData.mediaId)
-                InvalidateFlow.emit(conversationId)
+    private val playerListener = object : Player.Listener {
+        override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
+            if (reason == MEDIA_ITEM_TRANSITION_REASON_REPEAT ||
+                reason == MEDIA_ITEM_TRANSITION_REASON_PLAYLIST_CHANGED ||
+                mediaItem == null
+            ) {
+                return
             }
+            val pagedList = listAdapter.currentList ?: return
+
+            val mediaId = mediaItem.mediaId
+            updateMusicLayout(pagedList, mediaId)
+        }
+    }
+
+    private val urlObserver = UrlLoader.UrlObserver { list ->
+        val pagedConfig = PagedList.Config.Builder()
+            .setPageSize(CONVERSATION_UI_PAGE_SIZE)
+            .build()
+        val pagedList = PagedList.Builder(
+            FixedMessageDataSource(list, list.size),
+            pagedConfig
+        ).setNotifyExecutor(ArchTaskExecutor.getMainThreadExecutor())
+            .setFetchExecutor(ArchTaskExecutor.getIOThreadExecutor())
+            .build()
+        lifecycleScope.launch {
+            listAdapter.submitList(pagedList)
+            binding.pb.isVisible = false
         }
     }
 

@@ -183,7 +183,7 @@ class CircleProgress @JvmOverloads constructor(
                             }
                         }
                     } else if (status == STATUS_PAUSE || status == STATUS_PLAY || status == STATUS_ERROR) {
-                        if (event.status == STATUS_PAUSE || event.status == STATUS_PLAY || event.status == STATUS_ERROR) {
+                        if (event.status == STATUS_PAUSE || (event.status == STATUS_PLAY && event.progress == 0f) || event.status == STATUS_ERROR) {
                             setPlay()
                             invalidate()
                         }

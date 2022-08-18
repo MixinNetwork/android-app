@@ -1,6 +1,6 @@
 package one.mixin.android.ui.player.internal
 
-import android.support.v4.media.MediaMetadataCompat
+import android.util.LruCache
 import com.google.android.exoplayer2.MediaItem
 import com.google.android.exoplayer2.MetadataRetriever
 import com.google.android.exoplayer2.metadata.Metadata
@@ -17,14 +17,17 @@ import java.io.FileNotFoundException
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.TimeoutException
 
-abstract class MusicLoader {
+abstract class MusicMetaLoader {
     val unknownString = MixinApplication.appContext.getString(R.string.Unknown)
 
     val ignoreSet = mutableSetOf<String>()
 
-    abstract suspend fun load(): List<MediaMetadataCompat>
+    private val metaCache = LruCache<String, MusicMeta>(100 * 1024)
 
     protected fun retrieveMetadata(id: String, url: String, timeoutMillis: Long = RETRIEVE_TIMEOUT_MILLI_SEC): MusicMeta? {
+        val hit = metaCache[url]
+        if (hit != null) return hit
+
         try {
             val item = MediaItem.fromUri(url)
             val trackGroupsFuture = MetadataRetriever.retrieveMetadata(MixinApplication.appContext, item)
@@ -34,7 +37,9 @@ abstract class MusicLoader {
                 for (j in 0 until trackGroup.length) {
                     val trackMetadata = trackGroup.getFormat(j).metadata
                     if (trackMetadata != null) {
-                        return decodeMetadata(id, url, trackMetadata)
+                        val meta = decodeMetadata(id, url, trackMetadata)
+                        metaCache.put(url, meta)
+                        return meta
                     }
                 }
             }

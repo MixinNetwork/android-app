@@ -351,6 +351,7 @@ dependencies {
     implementation "com.github.warkiz.widget:indicatorseekbar:$indicatorseekbarVersion"
     implementation "org.bouncycastle:bcprov-jdk15on:${bcVersion}"
     implementation "org.jetbrains:markdown:${markdownVersion}"
+    implementation "io.github.java-diff-utils:java-diff-utils:${diffUtilsVersion}"
 
     // compose
     debugImplementation "androidx.compose.ui:ui-tooling:${composeVersion}"

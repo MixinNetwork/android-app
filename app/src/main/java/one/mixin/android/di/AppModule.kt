@@ -2,7 +2,6 @@ package one.mixin.android.di
 
 import android.annotation.SuppressLint
 import android.app.Application
-import android.content.ComponentName
 import android.content.ContentResolver
 import com.birbit.android.jobqueue.config.Configuration
 import com.birbit.android.jobqueue.scheduling.FrameworkJobSchedulerService
@@ -68,8 +67,6 @@ import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.MyJobService
 import one.mixin.android.session.JwtResult
 import one.mixin.android.session.Session
-import one.mixin.android.ui.player.MusicService
-import one.mixin.android.ui.player.internal.MusicServiceConnection
 import one.mixin.android.util.ErrorHandler.Companion.AUTHENTICATION
 import one.mixin.android.util.ErrorHandler.Companion.OLD_VERSION
 import one.mixin.android.util.GsonHelper
@@ -421,13 +418,5 @@ object AppModule {
                 AudioDevice.Speakerphone::class.java,
                 AudioDevice.Earpiece::class.java
             )
-        )
-
-    @Provides
-    @Singleton
-    fun provideMusicServiceConnection(app: Application): MusicServiceConnection =
-        MusicServiceConnection.getInstance(
-            app.applicationContext,
-            ComponentName(app.applicationContext, MusicService::class.java)
         )
 }

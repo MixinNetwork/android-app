@@ -88,45 +88,56 @@ class StickerPreviewBottomSheetFragment : MixinBottomSheetDialogFragment() {
                 }
                 stickerLiveData.removeObserver(this)
 
-                viewModel.observeSystemAlbumById(albumId)
-                    .observe(this@StickerPreviewBottomSheetFragment) albumObserve@{ album ->
-                        if (album == null) return@albumObserve
-
-                        binding.tileTv.text = album.name
-                        binding.actionTv.isVisible = album.category == "SYSTEM"
-                        binding.actionTv.updateAlbumAdd(requireContext(), album.added) {
-                            lifecycleScope.launch {
-                                val maxOrder = viewModel.findMaxOrder()
-                                viewModel.updateAlbumAdded(
-                                    StickerAlbumAdded(
-                                        albumId,
-                                        true,
-                                        maxOrder + 1
-                                    )
-                                )
-                            }
-                        }
+                lifecycleScope.launch {
+                    val personalAlbumId = viewModel.findPersonalAlbumId()
+                    if (personalAlbumId == albumId) {
+                        return@launch
                     }
 
-                viewModel.observeSystemStickersByAlbumId(albumId)
-                    .observe(this@StickerPreviewBottomSheetFragment) { stickers ->
-                        adapter.submitList(stickers)
-                        if (stickers.isNullOrEmpty()) {
-                            if (firstLoad) {
-                                binding.bottomVa.displayedChild = 1
-                                firstLoad = false
-                            } else {
-                                binding.bottomVa.displayedChild = 0
-                            }
-                        } else {
-                            if (binding.bottomVa.displayedChild != 2) {
-                                binding.bottomVa.displayedChild = 2
-                            }
-                        }
-                    }
+                    observeAlbum(albumId, adapter)
+                }
             }
         }
         stickerLiveData.observe(this, observer)
         viewModel.refreshStickerAndRelatedAlbum(stickerId)
+    }
+
+    private fun observeAlbum(albumId: String, adapter: StickerAdapter) {
+        viewModel.observeSystemAlbumById(albumId)
+            .observe(this@StickerPreviewBottomSheetFragment) albumObserve@{ album ->
+                if (album == null) return@albumObserve
+
+                binding.tileTv.text = album.name
+                binding.actionTv.isVisible = album.category == "SYSTEM"
+                binding.actionTv.updateAlbumAdd(requireContext(), album.added) {
+                    lifecycleScope.launch {
+                        val maxOrder = viewModel.findMaxOrder()
+                        viewModel.updateAlbumAdded(
+                            StickerAlbumAdded(
+                                albumId,
+                                true,
+                                maxOrder + 1
+                            )
+                        )
+                    }
+                }
+            }
+
+        viewModel.observeSystemStickersByAlbumId(albumId)
+            .observe(this@StickerPreviewBottomSheetFragment) { stickers ->
+                adapter.submitList(stickers)
+                if (stickers.isNullOrEmpty()) {
+                    if (firstLoad) {
+                        binding.bottomVa.displayedChild = 1
+                        firstLoad = false
+                    } else {
+                        binding.bottomVa.displayedChild = 0
+                    }
+                } else {
+                    if (binding.bottomVa.displayedChild != 2) {
+                        binding.bottomVa.displayedChild = 2
+                    }
+                }
+            }
     }
 }

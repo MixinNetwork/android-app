@@ -340,12 +340,7 @@
             android:enabled="true" />
         <service
             android:name=".ui.player.MusicService"
-            android:exported="true"
-            tools:ignore="ExportedService">
-            <intent-filter>
-                <action android:name="android.media.browse.MediaBrowserService" />
-            </intent-filter>
-        </service>
+            tools:ignore="ExportedService" />
         <service
             android:name="androidx.sharetarget.ChooserTargetServiceCompat"
             android:exported="true"

@@ -714,23 +714,15 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                 }
                 val mediaData = gson.fromJson(decoded, StickerMessagePayload::class.java)
                 val message = if (mediaData.stickerId == null) {
-                    val sticker = stickerDao.getStickerByAlbumIdAndName(mediaData.albumId!!, mediaData.name!!)
-                    if (sticker != null) {
-                        createStickerMessage(
-                            data.messageId, data.conversationId, data.userId, data.category, null,
-                            mediaData.albumId, sticker.stickerId, mediaData.name, data.status, data.createdAt
-                        )
-                    } else {
-                        return
-                    }
+                    return
                 } else {
                     val sticker = stickerDao.getStickerByUnique(mediaData.stickerId)
-                    if (sticker == null || (mediaData.albumId != null && sticker.albumId.isNullOrBlank())) {
+                    if (sticker == null || sticker.albumId.isNullOrBlank()) {
                         jobManager.addJobInBackground(RefreshStickerJob(mediaData.stickerId))
                     }
                     createStickerMessage(
                         data.messageId, data.conversationId, data.userId, data.category, null,
-                        mediaData.albumId, mediaData.stickerId, mediaData.name, data.status, data.createdAt
+                        mediaData.stickerId, data.status, data.createdAt
                     )
                 }
                 insertMessage(message, data)
@@ -1237,7 +1229,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
             val stickerData = gson.fromJson(String(decoded), StickerMessagePayload::class.java)
             if (stickerData.stickerId != null) {
                 val sticker = stickerDao.getStickerByUnique(stickerData.stickerId)
-                if (sticker == null || (stickerData.albumId != null && sticker.albumId.isNullOrBlank())) {
+                if (sticker == null || sticker.albumId.isNullOrBlank()) {
                     jobManager.addJobInBackground(RefreshStickerJob(stickerData.stickerId))
                 }
             }

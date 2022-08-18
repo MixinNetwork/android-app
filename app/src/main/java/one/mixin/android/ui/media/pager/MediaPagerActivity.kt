@@ -251,7 +251,7 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
             .setPageSize(1)
             .build()
         val pagedList = PagedList.Builder(
-            FixedMessageDataSource(listOf(messageItem)),
+            FixedMessageDataSource(listOf(messageItem), 1),
             pagedConfig
         ).setNotifyExecutor(ArchTaskExecutor.getMainThreadExecutor())
             .setFetchExecutor(ArchTaskExecutor.getIOThreadExecutor())
