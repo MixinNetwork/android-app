@@ -31,6 +31,7 @@ import one.mixin.android.crypto.MixinSignalProtocolLogger
 import one.mixin.android.crypto.PrivacyPreference.clearPrivacyPreferences
 import one.mixin.android.crypto.db.SignalDatabase
 import one.mixin.android.db.MixinDatabase
+import one.mixin.android.db.runInTransaction
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.notificationManager
@@ -333,6 +334,15 @@ open class MixinApplication :
                     .saveDraft(conversationId, draft)
             })
         }
+
+    fun markMessageRead(conversationId: String) {
+        timeoutEarlyWarning({
+            runInTransaction {
+                MixinDatabase.getDatabase(this@MixinApplication).remoteMessageStatusDao().markReadByConversationId(conversationId)
+                MixinDatabase.getDatabase(this@MixinApplication).remoteMessageStatusDao().zeroConversationUnseen(conversationId)
+            }
+        })
+    }
 
     fun checkAndShowAppAuth(activity: Activity): Boolean {
         val appAuth = defaultSharedPreferences.getInt(Constants.Account.PREF_APP_AUTH, -1)
