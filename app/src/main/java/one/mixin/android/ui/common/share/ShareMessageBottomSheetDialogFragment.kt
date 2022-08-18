@@ -33,6 +33,7 @@ import one.mixin.android.ui.common.share.renderer.ShareTextRenderer
 import one.mixin.android.ui.forward.ForwardActivity
 import one.mixin.android.ui.url.UrlInterpreterActivity
 import one.mixin.android.util.GsonHelper
+import one.mixin.android.util.reportException
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.App
 import one.mixin.android.vo.AppCardData
@@ -102,6 +103,7 @@ class ShareMessageBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             }
         } catch (e: Exception) {
             Timber.e("Load \"${shareMessage.content}\" ERROR!!!")
+            reportException(IllegalArgumentException("${e.javaClass.name} ${shareMessage.content}"))
             toast(getString(R.string.error_unknown_with_message, "${e.javaClass.name} ${shareMessage.content}"))
             dismiss()
             return
@@ -201,7 +203,7 @@ class ShareMessageBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 loadLive(content)
             }
             else -> {
-                throw IllegalArgumentException()
+                throw IllegalArgumentException("Unknown category")
             }
         }
     }
