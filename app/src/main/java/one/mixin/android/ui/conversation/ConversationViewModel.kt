@@ -468,6 +468,8 @@ internal constructor(
 
     suspend fun getPersonalAlbums() = accountRepository.getPersonalAlbums()
 
+    suspend fun findPersonalAlbumId() = accountRepository.findPersonalAlbumId()
+
     fun observeStickers(id: String) = accountRepository.observeStickers(id)
 
     fun observeSystemStickersByAlbumId(id: String) = accountRepository.observeSystemStickersByAlbumId(id)

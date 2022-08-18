@@ -403,7 +403,7 @@ class ForwardFragment : BaseFragment(R.layout.fragment_forward) {
                         chatViewModel.sendPostMessage(conversationId, sender, content, encryptCategory)
                     }
                     ShareCategory.Image -> {
-                        val shareImageData = GsonHelper.customGson.fromJson(content, ShareImageData::class.java)
+                        val shareImageData = GsonHelper.customGson.fromJson(content, ShareImageData::class.java) ?: return@checkData
                         sendAttachmentMessage(
                             conversationId, sender, shareImageData.url, shareImageData.attachmentExtra,
                             {
@@ -439,7 +439,7 @@ class ForwardFragment : BaseFragment(R.layout.fragment_forward) {
                         )
                     }
                     ShareCategory.Contact -> {
-                        val contactData = GsonHelper.customGson.fromJson(content, ContactMessagePayload::class.java)
+                        val contactData = GsonHelper.customGson.fromJson(content, ContactMessagePayload::class.java) ?: return@checkData
                         chatViewModel.sendContactMessage(conversationId, sender, contactData.userId, encryptCategory)
                     }
                     ShareCategory.Contact -> {
@@ -449,11 +449,11 @@ class ForwardFragment : BaseFragment(R.layout.fragment_forward) {
                         chatViewModel.sendAppCardMessage(conversationId, sender, content)
                     }
                     ShareCategory.Live -> {
-                        val liveData = GsonHelper.customGson.fromJson(content, LiveMessagePayload::class.java)
+                        val liveData = GsonHelper.customGson.fromJson(content, LiveMessagePayload::class.java) ?: return@checkData
                         chatViewModel.sendLiveMessage(conversationId, sender, liveData, encryptCategory)
                     }
                     ForwardCategory.Video -> {
-                        val videoData = GsonHelper.customGson.fromJson(content, VideoMessagePayload::class.java)
+                        val videoData = GsonHelper.customGson.fromJson(content, VideoMessagePayload::class.java) ?: return@checkData
                         showPb()
                         sendAttachmentMessage(
                             conversationId, sender, videoData.url, videoData.attachmentExtra,
@@ -470,7 +470,7 @@ class ForwardFragment : BaseFragment(R.layout.fragment_forward) {
                         )
                     }
                     ForwardCategory.Data -> {
-                        val dataMessagePayload = GsonHelper.customGson.fromJson(content, DataMessagePayload::class.java)
+                        val dataMessagePayload = GsonHelper.customGson.fromJson(content, DataMessagePayload::class.java) ?: return@checkData
                         showPb()
                         sendAttachmentMessage(
                             conversationId, sender, dataMessagePayload.url, dataMessagePayload.attachmentExtra,
@@ -487,7 +487,7 @@ class ForwardFragment : BaseFragment(R.layout.fragment_forward) {
                         )
                     }
                     ForwardCategory.Audio -> {
-                        val audioData = GsonHelper.customGson.fromJson(content, AudioMessagePayload::class.java)
+                        val audioData = GsonHelper.customGson.fromJson(content, AudioMessagePayload::class.java) ?: return@checkData
                         sendAttachmentMessage(
                             conversationId, sender, audioData.url, audioData.attachmentExtra,
                             {
@@ -503,11 +503,11 @@ class ForwardFragment : BaseFragment(R.layout.fragment_forward) {
                         )
                     }
                     ForwardCategory.Sticker -> {
-                        val stickerData = GsonHelper.customGson.fromJson(content, StickerMessagePayload::class.java)
+                        val stickerData = GsonHelper.customGson.fromJson(content, StickerMessagePayload::class.java) ?: return@checkData
                         chatViewModel.sendStickerMessage(conversationId, sender, stickerData, encryptCategory)
                     }
                     ForwardCategory.Location -> {
-                        val locationPayload = GsonHelper.customGson.fromJson(content, LocationPayload::class.java)
+                        val locationPayload = GsonHelper.customGson.fromJson(content, LocationPayload::class.java) ?: return@checkData
                         chatViewModel.sendLocationMessage(conversationId, sender.userId, locationPayload, encryptCategory)
                     }
                     ForwardCategory.Transcript -> {

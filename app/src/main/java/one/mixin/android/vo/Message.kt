@@ -470,16 +470,12 @@ fun createStickerMessage(
     userId: String,
     category: String,
     content: String?,
-    albumId: String?,
     stickerId: String,
-    stickerName: String?,
     status: String,
     createdAt: String
 ) = MessageBuilder(messageId, conversationId, userId, category, status, createdAt)
     .setContent(content)
     .setStickerId(stickerId)
-    .setAlbumId(albumId)
-    .setName(stickerName)
     .build()
 
 fun createLiveMessage(

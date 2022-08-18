@@ -171,6 +171,8 @@ constructor(
 
     suspend fun getPersonalAlbums() = stickerAlbumDao.getPersonalAlbums()
 
+    suspend fun findPersonalAlbumId() = stickerAlbumDao.findPersonalAlbumId()
+
     fun observeStickers(id: String) = stickerRelationshipDao.observeStickersByAlbumId(id)
 
     fun observeSystemStickersByAlbumId(id: String) = stickerRelationshipDao.observeSystemStickersByAlbumId(id)
