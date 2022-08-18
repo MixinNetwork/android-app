@@ -1457,7 +1457,7 @@ class ConversationFragment() :
             }
         }
         lifecycleScope.launch {
-            conversationDraft = chatViewModel.getConversationDraftById(conversationId)
+            conversationDraft = chatViewModel.getConversationDraftById(this.coroutineContext, conversationId)
             if (isAdded && !conversationDraft.isNullOrBlank()) {
                 binding.chatControl.chatEt.setText(conversationDraft)
             }
