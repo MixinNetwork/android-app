@@ -252,6 +252,7 @@ import one.mixin.android.widget.ContentEditText
 import one.mixin.android.widget.DraggableRecyclerView
 import one.mixin.android.widget.DraggableRecyclerView.Companion.FLING_DOWN
 import one.mixin.android.widget.MixinHeadersDecoration
+import one.mixin.android.widget.animation.ConversationItemAnimator
 import one.mixin.android.widget.buildBottomSheetView
 import one.mixin.android.widget.gallery.internal.entity.Item
 import one.mixin.android.widget.gallery.ui.GalleryActivity.Companion.IS_VIDEO
@@ -1384,7 +1385,13 @@ class ConversationFragment() :
         )
         binding.chatRv.layoutManager = LinearLayoutManager(requireContext(), RecyclerView.VERTICAL, true)
         binding.chatRv.addItemDecoration(decoration)
-        binding.chatRv.itemAnimator = null
+        binding.chatRv.itemAnimator = ConversationItemAnimator({
+            conversationAdapter.selectSet.isNotEmpty()
+        }, {
+            binding.chatRv.scrollState == RecyclerView.SCROLL_STATE_IDLE
+        }, {
+            binding.chatRv.canScrollVertically(1) || binding.chatRv.canScrollVertically(-1)
+        })
 
         binding.chatRv.addOnScrollListener(
             object : RecyclerView.OnScrollListener() {
