@@ -336,12 +336,14 @@ open class MixinApplication :
         }
 
     fun markMessageRead(conversationId: String) {
-        timeoutEarlyWarning({
-            runInTransaction {
-                MixinDatabase.getDatabase(this@MixinApplication).remoteMessageStatusDao().markReadByConversationId(conversationId)
-                MixinDatabase.getDatabase(this@MixinApplication).remoteMessageStatusDao().zeroConversationUnseen(conversationId)
-            }
-        })
+        appScope.launch(Dispatchers.IO) {
+            timeoutEarlyWarning({
+                runInTransaction {
+                    MixinDatabase.getDatabase(this@MixinApplication).remoteMessageStatusDao().markReadByConversationId(conversationId)
+                    MixinDatabase.getDatabase(this@MixinApplication).remoteMessageStatusDao().zeroConversationUnseen(conversationId)
+                }
+            })
+        }
     }
 
     fun checkAndShowAppAuth(activity: Activity): Boolean {
