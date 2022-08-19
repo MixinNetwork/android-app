@@ -29,6 +29,7 @@ import one.mixin.android.ui.common.share.renderer.ShareContactRenderer
 import one.mixin.android.ui.common.share.renderer.ShareImageRenderer
 import one.mixin.android.ui.common.share.renderer.ShareLiveRenderer
 import one.mixin.android.ui.common.share.renderer.SharePostRenderer
+import one.mixin.android.ui.common.share.renderer.ShareStickerRenderer
 import one.mixin.android.ui.common.share.renderer.ShareTextRenderer
 import one.mixin.android.ui.forward.ForwardActivity
 import one.mixin.android.ui.url.UrlInterpreterActivity
@@ -42,6 +43,7 @@ import one.mixin.android.vo.ShareCategory
 import one.mixin.android.vo.ShareImageData
 import one.mixin.android.websocket.ContactMessagePayload
 import one.mixin.android.websocket.LiveMessagePayload
+import one.mixin.android.websocket.StickerMessagePayload
 import one.mixin.android.widget.BottomSheet
 import timber.log.Timber
 
@@ -158,6 +160,9 @@ class ShareMessageBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             ShareCategory.Image -> {
                 getString(R.string.Photo)
             }
+            ShareCategory.Sticker -> {
+                getString(R.string.Sticker)
+            }
             ShareCategory.Contact -> {
                 getString(R.string.Contact)
             }
@@ -188,6 +193,9 @@ class ShareMessageBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             ShareCategory.Image -> {
                 loadImage(content)
             }
+            ShareCategory.Sticker -> {
+                loadSticker(content)
+            }
             ShareCategory.Contact -> {
                 loadContact(content)
             }
@@ -217,6 +225,23 @@ class ShareMessageBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         val renderer = ShareImageRenderer(requireContext())
         binding.contentLayout.addView(renderer.contentView, generateLayoutParams())
         renderer.render(shareImageData)
+    }
+
+    private fun loadSticker(content: String) {
+        lifecycleScope.launch {
+            val shareStickerData = GsonHelper.customGson.fromJson(content, StickerMessagePayload::class.java)
+            binding.progress.isVisible = true
+            val sticker = viewModel.refreshSticker(requireNotNull(shareStickerData.stickerId))
+            if (sticker == null) {
+                toast(R.string.error_not_found)
+                binding.progress.isVisible = false
+                return@launch
+            }
+            val renderer = ShareStickerRenderer(requireContext())
+            binding.contentLayout.addView(renderer.contentView, generateLayoutParams())
+            renderer.render(sticker)
+            binding.progress.isVisible = false
+        }
     }
 
     private fun loadContact(content: String) {
