@@ -103,7 +103,9 @@ class ShareMessageBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             }
         } catch (e: Exception) {
             Timber.e("Load \"${shareMessage.content}\" ERROR!!!")
-            reportException(IllegalArgumentException("${e.javaClass.name} ${shareMessage.content}"))
+            if (app != null || host != null) {
+                reportException(IllegalArgumentException("${e.javaClass.name} app:${app?.appNumber} host:$host"))
+            }
             toast(getString(R.string.error_unknown_with_message, "${e.javaClass.name} ${shareMessage.content}"))
             dismiss()
             return
