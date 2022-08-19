@@ -19,6 +19,7 @@ import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentShareMessageBottomSheetBinding
 import one.mixin.android.extension.isNightMode
+import one.mixin.android.extension.isUUID
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.withArgs
@@ -227,6 +228,10 @@ class ShareMessageBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     }
 
     private fun loadSticker(content: String) {
+        if (!content.isUUID()) {
+            toast(R.string.Data_error)
+            return
+        }
         lifecycleScope.launch {
             binding.progress.isVisible = true
             val sticker = viewModel.refreshSticker(content)
