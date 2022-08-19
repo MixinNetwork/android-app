@@ -43,7 +43,6 @@ import one.mixin.android.vo.ShareCategory
 import one.mixin.android.vo.ShareImageData
 import one.mixin.android.websocket.ContactMessagePayload
 import one.mixin.android.websocket.LiveMessagePayload
-import one.mixin.android.websocket.StickerMessagePayload
 import one.mixin.android.widget.BottomSheet
 import timber.log.Timber
 
@@ -229,9 +228,8 @@ class ShareMessageBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
 
     private fun loadSticker(content: String) {
         lifecycleScope.launch {
-            val shareStickerData = GsonHelper.customGson.fromJson(content, StickerMessagePayload::class.java)
             binding.progress.isVisible = true
-            val sticker = viewModel.refreshSticker(requireNotNull(shareStickerData.stickerId))
+            val sticker = viewModel.refreshSticker(content)
             if (sticker == null) {
                 toast(R.string.error_not_found)
                 binding.progress.isVisible = false
