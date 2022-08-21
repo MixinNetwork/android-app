@@ -15,7 +15,6 @@ import one.mixin.android.websocket.AudioMessagePayload
 import one.mixin.android.websocket.ContactMessagePayload
 import one.mixin.android.websocket.DataMessagePayload
 import one.mixin.android.websocket.LiveMessagePayload
-import one.mixin.android.websocket.StickerMessagePayload
 import one.mixin.android.websocket.VideoMessagePayload
 import one.mixin.android.websocket.toLocationData
 import java.util.UUID
@@ -248,10 +247,7 @@ fun generateForwardMessage(m: Message): ForwardMessage? {
             ForwardMessage(ShareCategory.Contact, GsonHelper.customGson.toJson(contactData), m.id)
         }
         m.isSticker() -> {
-            val stickerData = StickerMessagePayload(
-                stickerId = m.stickerId,
-            )
-            ForwardMessage(ShareCategory.Sticker, GsonHelper.customGson.toJson(stickerData), m.id)
+            ForwardMessage(ShareCategory.Sticker, requireNotNull(m.stickerId))
         }
         m.isAudio() -> {
             if (m.absolutePath()?.fileExists() != true) {

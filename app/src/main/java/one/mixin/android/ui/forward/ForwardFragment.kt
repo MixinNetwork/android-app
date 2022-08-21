@@ -91,7 +91,6 @@ import one.mixin.android.websocket.ContactMessagePayload
 import one.mixin.android.websocket.DataMessagePayload
 import one.mixin.android.websocket.LiveMessagePayload
 import one.mixin.android.websocket.LocationPayload
-import one.mixin.android.websocket.StickerMessagePayload
 import one.mixin.android.websocket.VideoMessagePayload
 import java.io.File
 import java.io.FileInputStream
@@ -503,8 +502,7 @@ class ForwardFragment : BaseFragment(R.layout.fragment_forward) {
                         )
                     }
                     ShareCategory.Sticker -> {
-                        val stickerData = GsonHelper.customGson.fromJson(content, StickerMessagePayload::class.java) ?: return@checkData
-                        chatViewModel.sendStickerMessage(conversationId, sender, stickerData, encryptCategory)
+                        chatViewModel.sendStickerMessage(conversationId, sender, content, encryptCategory)
                     }
                     ForwardCategory.Location -> {
                         val locationPayload = GsonHelper.customGson.fromJson(content, LocationPayload::class.java) ?: return@checkData

@@ -713,18 +713,14 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                     String(Base64.decode(plainText))
                 }
                 val mediaData = gson.fromJson(decoded, StickerMessagePayload::class.java)
-                val message = if (mediaData.stickerId == null) {
-                    return
-                } else {
-                    val sticker = stickerDao.getStickerByUnique(mediaData.stickerId)
-                    if (sticker == null || sticker.albumId.isNullOrBlank()) {
-                        jobManager.addJobInBackground(RefreshStickerJob(mediaData.stickerId))
-                    }
-                    createStickerMessage(
-                        data.messageId, data.conversationId, data.userId, data.category, null,
-                        mediaData.stickerId, data.status, data.createdAt
-                    )
+                val sticker = stickerDao.getStickerByUnique(mediaData.stickerId)
+                if (sticker == null || sticker.albumId.isNullOrBlank()) {
+                    jobManager.addJobInBackground(RefreshStickerJob(mediaData.stickerId))
                 }
+                val message = createStickerMessage(
+                    data.messageId, data.conversationId, data.userId, data.category, null,
+                    mediaData.stickerId, data.status, data.createdAt
+                )
                 insertMessage(message, data)
                 generateNotification(message, data)
             }
@@ -1227,13 +1223,11 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
         } else if (data.category == MessageCategory.SIGNAL_STICKER.name) {
             val decoded = Base64.decode(plainText)
             val stickerData = gson.fromJson(String(decoded), StickerMessagePayload::class.java)
-            if (stickerData.stickerId != null) {
-                val sticker = stickerDao.getStickerByUnique(stickerData.stickerId)
-                if (sticker == null || sticker.albumId.isNullOrBlank()) {
-                    jobManager.addJobInBackground(RefreshStickerJob(stickerData.stickerId))
-                }
+            val sticker = stickerDao.getStickerByUnique(stickerData.stickerId)
+            if (sticker == null || sticker.albumId.isNullOrBlank()) {
+                jobManager.addJobInBackground(RefreshStickerJob(stickerData.stickerId))
             }
-            stickerData.stickerId?.let { messageDao.updateStickerMessage(it, data.status, messageId) }
+            messageDao.updateStickerMessage(stickerData.stickerId, data.status, messageId)
             InvalidateFlow.emit(data.conversationId)
         } else if (data.category == MessageCategory.SIGNAL_CONTACT.name) {
             val decoded = Base64.decode(plainText)

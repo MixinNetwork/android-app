@@ -243,7 +243,6 @@ import one.mixin.android.webrtc.receiveInvite
 import one.mixin.android.websocket.LIST_KRAKEN_PEERS
 import one.mixin.android.websocket.LocationPayload
 import one.mixin.android.websocket.PinAction
-import one.mixin.android.websocket.StickerMessagePayload
 import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.BottomSheetItem
 import one.mixin.android.widget.ChatControlView
@@ -2096,7 +2095,7 @@ class ConversationFragment() :
             chatViewModel.sendStickerMessage(
                 conversationId,
                 sender,
-                StickerMessagePayload(stickerId),
+                stickerId,
                 encryptCategory()
             )
             scrollToDown()
