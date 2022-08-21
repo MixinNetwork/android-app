@@ -180,6 +180,17 @@ fun MixinDatabase.deleteMessageById(messageId: String) {
     }
 }
 
+fun MixinDatabase.deleteMessageById(messageId: String, conversationId: String) {
+    runInTransaction {
+        pinMessageDao().deleteByMessageId(messageId)
+        mentionMessageDao().deleteMessage(messageId)
+        messageDao().deleteMessageById(messageId)
+        remoteMessageStatusDao().deleteByMessageId(messageId)
+        expiredMessageDao().deleteByMessageId(messageId)
+        conversationDao().refreshLastMessageId(conversationId, messageId)
+    }
+}
+
 fun MixinDatabase.deleteMessageByIds(messageIds: List<String>) {
     runInTransaction {
         pinMessageDao().deleteByIds(messageIds)
