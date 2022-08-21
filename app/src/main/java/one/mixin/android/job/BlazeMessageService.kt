@@ -527,7 +527,7 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
                 val messageMedia = messageDao.findMessageMediaById(messageId)
                 Timber.e("Expired job: delete messages ${messageMedia?.type} - ${messageMedia?.messageId}")
                 messageMedia?.absolutePath(
-                    this@BlazeMessageService,
+                    MixinApplication.appContext,
                     messageMedia.conversationId,
                     messageMedia.mediaUrl
                 )?.let {
