@@ -265,10 +265,10 @@ fun View.navigate(
 
 @Throws(IOException::class)
 fun View.capture(context: Context): String? {
-    val outFile = context.getPublicPicturePath().createImagePngTemp(false)
-    val b = drawToBitmap()
-    b.save(outFile)
     return try {
+        val outFile = context.getPublicPicturePath().createImagePngTemp(false)
+        val b = drawToBitmap()
+        b.save(outFile)
         MediaScannerConnection.scanFile(context, arrayOf(outFile.toString()), null, null)
         outFile.absolutePath
     } catch (e: FileNotFoundException) {
