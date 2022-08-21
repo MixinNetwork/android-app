@@ -75,9 +75,13 @@ class InviteQrBottomFragment : MixinBottomSheetDialogFragment() {
                             if (granted) {
                                 lifecycleScope.launch(Dispatchers.IO) {
                                     if (!isAdded) return@launch
-                                    val path = contentLl.capture(requireContext())
+                                    val path = contentLl.capture(requireContext()).getOrNull()
                                     withContext(Dispatchers.Main) {
-                                        toast(getString(R.string.Save_to, path))
+                                        if (path.isNullOrBlank()) {
+                                            toast(getString(R.string.Save_failure))
+                                        } else {
+                                            toast(getString(R.string.Save_to, path))
+                                        }
                                     }
                                 }
                             } else {

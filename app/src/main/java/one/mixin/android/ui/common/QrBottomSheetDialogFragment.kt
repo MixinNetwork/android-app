@@ -74,9 +74,13 @@ class QrBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         binding.shareBtn.setOnClickListener {
             lifecycleScope.launch(Dispatchers.IO) {
                 if (!isAdded) return@launch
-                val path = binding.bottomLl.capture(requireContext()) ?: return@launch
+                val path = binding.bottomLl.capture(requireContext()).getOrNull()
                 withContext(Dispatchers.Main) {
-                    requireContext().shareMedia(false, File(path).toUri().toString())
+                    if (path.isNullOrBlank()) {
+                        toast(getString(R.string.Share_error))
+                    } else {
+                        requireContext().shareMedia(false, File(path).toUri().toString())
+                    }
                 }
             }
         }
@@ -138,7 +142,7 @@ class QrBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                         if (granted) {
                             lifecycleScope.launch(Dispatchers.IO) {
                                 if (!isAdded) return@launch
-                                val path = binding.bottomLl.capture(requireContext())
+                                val path = binding.bottomLl.capture(requireContext()).getOrNull()
                                 withContext(Dispatchers.Main) {
                                     if (path.isNullOrBlank()) {
                                         toast(getString(R.string.Save_failure))
