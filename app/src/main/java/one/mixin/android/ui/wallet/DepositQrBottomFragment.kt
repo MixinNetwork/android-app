@@ -13,6 +13,7 @@ import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentDepositQrBottomBinding
 import one.mixin.android.extension.capture
@@ -81,9 +82,15 @@ class DepositQrBottomFragment : MixinBottomSheetDialogFragment() {
                             if (granted) {
                                 lifecycleScope.launch(Dispatchers.IO) {
                                     if (!isAdded) return@launch
-                                    contentLl.capture(requireContext())
+                                    val path = contentLl.capture(requireContext()).getOrNull()
+                                    withContext(Dispatchers.Main) {
+                                        if (path.isNullOrBlank()) {
+                                            toast(getString(R.string.Save_failure))
+                                        } else {
+                                            toast(R.string.Save_success)
+                                        }
+                                    }
                                 }
-                                toast(R.string.Save_success)
                             } else {
                                 requireContext().openPermissionSetting()
                             }

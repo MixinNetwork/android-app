@@ -39,7 +39,6 @@ import com.facebook.rebound.SpringConfig
 import com.facebook.rebound.SpringSystem
 import one.mixin.android.util.reportException
 import timber.log.Timber
-import java.io.FileNotFoundException
 import java.io.IOException
 import java.lang.reflect.Field
 
@@ -264,16 +263,15 @@ fun View.navigate(
 }
 
 @Throws(IOException::class)
-fun View.capture(context: Context): String? {
-    return try {
+fun View.capture(context: Context): Result<String> {
+    return kotlin.runCatching {
         val outFile = context.getPublicPicturePath().createImagePngTemp(false)
         val b = drawToBitmap()
         b.save(outFile)
         MediaScannerConnection.scanFile(context, arrayOf(outFile.toString()), null, null)
         outFile.absolutePath
-    } catch (e: FileNotFoundException) {
-        reportException(e)
-        null
+    }.onFailure {
+        reportException(it)
     }
 }
 
