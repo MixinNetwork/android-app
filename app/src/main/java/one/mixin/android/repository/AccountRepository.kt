@@ -6,6 +6,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import one.mixin.android.Constants.PIN_ERROR_MAX
 import one.mixin.android.api.MixinResponse
+import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.AccountRequest
 import one.mixin.android.api.request.AccountUpdateRequest
 import one.mixin.android.api.request.AuthorizeRequest
@@ -333,4 +334,22 @@ constructor(
     suspend fun modifySessionSecret(request: SessionSecretRequest) = accountService.modifySessionSecret(request)
 
     suspend fun getExternalSchemes() = accountService.getExternalSchemes()
+
+    suspend fun refreshSticker(id: String): Sticker? {
+        val sticker = stickerDao.findStickerById(id)
+        if (sticker != null) return sticker
+
+        return handleMixinResponse(
+            invokeNetwork = {
+                accountService.getStickerByIdSuspend(id)
+            },
+            switchContext = Dispatchers.IO,
+            successBlock = {
+                it.data?.let { s ->
+                    stickerDao.insertSuspend(s)
+                    return@handleMixinResponse s
+                }
+            }
+        )
+    }
 }

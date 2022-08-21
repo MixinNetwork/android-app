@@ -502,7 +502,7 @@ class ForwardFragment : BaseFragment(R.layout.fragment_forward) {
                             }
                         )
                     }
-                    ForwardCategory.Sticker -> {
+                    ShareCategory.Sticker -> {
                         val stickerData = GsonHelper.customGson.fromJson(content, StickerMessagePayload::class.java) ?: return@checkData
                         chatViewModel.sendStickerMessage(conversationId, sender, stickerData, encryptCategory)
                     }

@@ -95,6 +95,9 @@ interface AccountService {
     @GET("stickers/{id}")
     fun getStickerById(@Path("id") id: String): Call<MixinResponse<Sticker>>
 
+    @GET("stickers/{id}")
+    suspend fun getStickerByIdSuspend(@Path("id") id: String): MixinResponse<Sticker>
+
     @POST("stickers/favorite/add")
     fun addStickerAsync(@Body request: StickerAddRequest): Deferred<MixinResponse<Sticker>>
 

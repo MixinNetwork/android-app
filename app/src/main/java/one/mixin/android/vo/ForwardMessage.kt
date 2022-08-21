@@ -30,11 +30,6 @@ data class ForwardMessage(
 
 sealed class ForwardCategory : Parcelable {
     @Parcelize
-    object Sticker : ForwardCategory() {
-        override fun toString() = "Sticker"
-    }
-
-    @Parcelize
     object Video : ForwardCategory() {
         override fun toString() = "Video"
     }
@@ -80,6 +75,11 @@ sealed class ShareCategory : ForwardCategory() {
                 -2 -> R.string.Format_not_supported
                 else -> null
             }
+    }
+
+    @Parcelize
+    object Sticker : ShareCategory() {
+        override fun toString() = "Sticker"
     }
 
     @Parcelize
@@ -165,6 +165,7 @@ inline fun <reified T : ForwardCategory> Uri.systemMediaToMessage(
 val ShareCategories = arrayOf(
     ShareCategory.Text,
     ShareCategory.Image,
+    ShareCategory.Sticker,
     ShareCategory.Live,
     ShareCategory.Contact,
     ShareCategory.Post,
@@ -173,7 +174,6 @@ val ShareCategories = arrayOf(
 )
 val ForwardCategories = arrayOf(
     ShareCategories,
-    ForwardCategory.Sticker,
     ForwardCategory.Video,
     ForwardCategory.Data,
     ForwardCategory.Audio,
@@ -251,7 +251,7 @@ fun generateForwardMessage(m: Message): ForwardMessage? {
             val stickerData = StickerMessagePayload(
                 stickerId = m.stickerId,
             )
-            ForwardMessage(ForwardCategory.Sticker, GsonHelper.customGson.toJson(stickerData), m.id)
+            ForwardMessage(ShareCategory.Sticker, GsonHelper.customGson.toJson(stickerData), m.id)
         }
         m.isAudio() -> {
             if (m.absolutePath()?.fileExists() != true) {
