@@ -14,6 +14,7 @@ import one.mixin.android.job.MessageFtsDeleteJob
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.TranscriptDeleteJob
 import one.mixin.android.util.chat.InvalidateFlow
+import one.mixin.android.util.debug.measureTimeMillis
 import one.mixin.android.vo.MediaMessageMinimal
 import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.MessageItem
@@ -118,7 +119,9 @@ class CleanMessageHelper @Inject internal constructor(private val jobManager: Mi
         jobManager.addJobInBackground(FtsDeleteJob(messageId))
         runInTransaction {
             appDatabase.deleteMessageById(messageId)
-            appDatabase.conversationDao().refreshLastMessageId(conversationId, messageId)
+            measureTimeMillis("DELETE message $conversationId $messageId") {
+                appDatabase.conversationDao().refreshLastMessageId(conversationId, messageId)
+            }
         }
         InvalidateFlow.emit(conversationId)
     }

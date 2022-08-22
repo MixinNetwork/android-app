@@ -338,6 +338,13 @@ class MixinDatabaseMigrations private constructor() {
             }
         }
 
+        val MIGRATION_45_46: Migration = object : Migration(45, 46){
+            override fun migrate(database: SupportSQLiteDatabase) {
+                database.execSQL("DROP INDEX IF EXISTS `index_messages_conversation_id_created_at`")
+                database.execSQL("CREATE INDEX IF NOT EXISTS `index_messages_conversation_id_created_at_desc` ON `messages` (`conversation_id` ASC, `created_at` DESC)")
+            }
+        }
+
         // If you add a new table, be sure to add a clear method to the DatabaseUtil
     }
 }
