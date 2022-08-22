@@ -303,7 +303,7 @@ class SendMessageHelper @Inject internal constructor(private val jobManager: Mix
     fun sendStickerMessage(
         conversationId: String,
         sender: User,
-        transferStickerData: StickerMessagePayload,
+        stickerId: String,
         encryptCategory: EncryptCategory
     ) {
         val category = encryptCategory.toCategory(
@@ -311,20 +311,19 @@ class SendMessageHelper @Inject internal constructor(private val jobManager: Mix
             MessageCategory.SIGNAL_STICKER,
             MessageCategory.ENCRYPTED_STICKER
         )
+        val transferStickerData = StickerMessagePayload(stickerId)
         val encoded = GsonHelper.customGson.toJson(transferStickerData).base64Encode()
-        transferStickerData.stickerId?.let {
-            val message = createStickerMessage(
-                UUID.randomUUID().toString(),
-                conversationId,
-                sender.userId,
-                category,
-                encoded,
-                it,
-                MessageStatus.SENDING.name,
-                nowInUtc()
-            )
-            jobManager.addJobInBackground(SendMessageJob(message))
-        }
+        val message = createStickerMessage(
+            UUID.randomUUID().toString(),
+            conversationId,
+            sender.userId,
+            category,
+            encoded,
+            stickerId,
+            MessageStatus.SENDING.name,
+            nowInUtc()
+        )
+        jobManager.addJobInBackground(SendMessageJob(message))
     }
 
     fun sendContactMessage(

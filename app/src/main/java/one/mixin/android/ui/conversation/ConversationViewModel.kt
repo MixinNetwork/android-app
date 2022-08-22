@@ -103,7 +103,6 @@ import one.mixin.android.websocket.CREATE_MESSAGE
 import one.mixin.android.websocket.LiveMessagePayload
 import one.mixin.android.websocket.LocationPayload
 import one.mixin.android.websocket.PinAction
-import one.mixin.android.websocket.StickerMessagePayload
 import one.mixin.android.websocket.VideoMessagePayload
 import one.mixin.android.widget.gallery.MimeType
 import java.io.File
@@ -233,10 +232,10 @@ internal constructor(
     fun sendStickerMessage(
         conversationId: String,
         sender: User,
-        transferStickerData: StickerMessagePayload,
+        stickerId: String,
         encryptCategory: EncryptCategory
     ) {
-        messenger.sendStickerMessage(conversationId, sender, transferStickerData, encryptCategory)
+        messenger.sendStickerMessage(conversationId, sender, stickerId, encryptCategory)
     }
 
     fun sendContactMessage(conversationId: String, sender: User, shareUserId: String, encryptCategory: EncryptCategory, replyMessage: MessageItem? = null) {
