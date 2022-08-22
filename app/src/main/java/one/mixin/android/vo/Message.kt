@@ -16,11 +16,7 @@ import java.io.Serializable
 @Entity(
     tableName = "messages",
     indices = [
-        Index(
-            name = "index_messages_conversation_id_created_at_desc",
-            value = arrayOf("conversation_id", "created_at"),
-            orders = arrayOf(Index.Order.ASC, Index.Order.DESC)
-        ),
+        Index(value = arrayOf("conversation_id", "created_at")),
         Index(value = arrayOf("conversation_id", "category")),
         Index(value = arrayOf("conversation_id", "quote_message_id")),
         Index(value = arrayOf("conversation_id", "status", "user_id", "created_at"))
