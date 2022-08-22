@@ -217,7 +217,7 @@ interface ConversationDao : BaseDao<Conversation> {
     @Query("UPDATE conversations SET last_message_id = (select id from messages where conversation_id = :conversationId ORDER BY created_at DESC limit 1) WHERE conversation_id =:conversationId")
     fun refreshLastMessageId(conversationId: String)
 
-    @Query("UPDATE conversations SET last_message_id = (select id from messages where conversation_id = :conversationId ORDER BY created_at DESC limit 1) WHERE last_message_id =:messageId AND conversation_id =:conversationId")
+    @Query("UPDATE conversations SET last_message_id = (select id from messages where conversation_id = :conversationId ORDER BY created_at DESC limit 1) WHERE conversation_id =:conversationId AND last_message_id =:messageId")
     fun refreshLastMessageId(conversationId: String, messageId: String)
 
     @Query("UPDATE conversations SET last_message_id = :id, last_message_created_at = :createdAt  WHERE conversation_id = :conversationId AND (last_message_created_at ISNULL OR :createdAt >= last_message_created_at)")

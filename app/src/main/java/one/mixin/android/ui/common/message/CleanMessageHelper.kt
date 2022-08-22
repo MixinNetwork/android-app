@@ -6,6 +6,7 @@ import one.mixin.android.MixinApplication
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.deleteMessageById
 import one.mixin.android.db.deleteMessageByIds
+import one.mixin.android.db.runInTransaction
 import one.mixin.android.job.AttachmentDeleteJob
 import one.mixin.android.job.FtsDeleteJob
 import one.mixin.android.job.MessageDeleteJob
@@ -114,9 +115,11 @@ class CleanMessageHelper @Inject internal constructor(private val jobManager: Mi
         if (!mediaUrl.isNullOrBlank() && forceDelete) {
             jobManager.addJobInBackground(AttachmentDeleteJob(mediaUrl))
         }
-        appDatabase.deleteMessageById(messageId)
         jobManager.addJobInBackground(FtsDeleteJob(messageId))
-        appDatabase.conversationDao().refreshLastMessageId(conversationId, messageId)
+        runInTransaction {
+            appDatabase.deleteMessageById(messageId)
+            appDatabase.conversationDao().refreshLastMessageId(conversationId, messageId)
+        }
         InvalidateFlow.emit(conversationId)
     }
 
