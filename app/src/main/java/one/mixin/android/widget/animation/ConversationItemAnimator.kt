@@ -97,12 +97,18 @@ class ConversationItemAnimator(
         return true
     }
 
+    private var firstPersistence = true
     override fun animatePersistence(viewHolder: RecyclerView.ViewHolder, preLayoutInfo: ItemHolderInfo, postLayoutInfo: ItemHolderInfo): Boolean {
         return if (!isInMultiSelectMode() && shouldPlayMessageAnimations() && isParentFilled()) {
             if (pendingSlideAnimations.contains(viewHolder) || slideAnimations.containsKey(viewHolder)) {
                 dispatchAnimationFinished(viewHolder)
                 false
             } else {
+                if (firstPersistence) {
+                    firstPersistence = false
+                    dispatchAnimationFinished(viewHolder)
+                    return false
+                }
                 animateSlide(viewHolder, preLayoutInfo, postLayoutInfo)
             }
         } else {
