@@ -12,7 +12,6 @@ import one.mixin.android.session.Session
 import one.mixin.android.tip.checkCounter
 import one.mixin.android.ui.setting.PhoneNumberSettingFragment
 import one.mixin.android.ui.setting.SettingConversationFragment
-import one.mixin.android.util.GsonHelper
 import one.mixin.android.vo.MessageSource
 import one.mixin.android.vo.SearchSource
 import one.mixin.android.vo.toUser
@@ -85,8 +84,8 @@ class RefreshAccountJob : BaseJob(Params(PRIORITY_UI_HIGH).addTags(GROUP).requir
             tip.checkCounter(
                 account.tipCounter,
                 onNodeCounterGreaterThanServer = { RxBus.publish(TipEvent(it)) },
-                onNodeCounterNotConsistency = { nodeMaxCounter, failedNodeJson ->
-                    RxBus.publish(TipEvent(nodeMaxCounter, GsonHelper.customGson.toJson(failedNodeJson)))
+                onNodeCounterNotConsistency = { nodeMaxCounter, failedSigners ->
+                    RxBus.publish(TipEvent(nodeMaxCounter, failedSigners))
                 }
             )
         }

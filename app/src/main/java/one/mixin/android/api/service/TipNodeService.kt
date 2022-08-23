@@ -19,4 +19,7 @@ interface TipNodeService {
 
     @POST
     suspend fun watch(@Body tipWatchRequest: TipWatchRequest, @Url baseUrl: String): TipWatchResponse
+
+    @GET("")
+    suspend fun get(@Url baseUrl: String): Any
 }

@@ -178,9 +178,10 @@ import one.mixin.android.ui.player.MusicActivity
 import one.mixin.android.ui.player.MusicService
 import one.mixin.android.ui.player.collapse
 import one.mixin.android.ui.preview.TextPreviewActivity
-import one.mixin.android.ui.setting.WalletPasswordFragment
 import one.mixin.android.ui.sticker.StickerActivity
 import one.mixin.android.ui.sticker.StickerPreviewBottomSheetFragment
+import one.mixin.android.ui.tip.TipActivity
+import one.mixin.android.ui.tip.TipType
 import one.mixin.android.ui.wallet.TransactionFragment
 import one.mixin.android.ui.web.WebActivity
 import one.mixin.android.util.Attachment
@@ -2450,21 +2451,7 @@ class ConversationFragment() :
                                     .showNow(parentFragmentManager, TransferFragment.TAG)
                             }
                         } else {
-                            parentFragmentManager.inTransaction {
-                                setCustomAnimations(
-                                    R.anim.slide_in_bottom,
-                                    R.anim.slide_out_bottom,
-                                    R
-                                        .anim.slide_in_bottom,
-                                    R.anim.slide_out_bottom
-                                )
-                                    .add(
-                                        R.id.container,
-                                        WalletPasswordFragment.newInstance(),
-                                        WalletPasswordFragment.TAG
-                                    )
-                                    .addToBackStack(null)
-                            }
+                            TipActivity.show(requireActivity(), TipType.Create, true)
                         }
                     }
                     MenuType.Contact -> {

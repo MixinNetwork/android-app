@@ -1,3 +1,8 @@
 package one.mixin.android.event
 
-data class TipEvent(val nodeCounter: Int, val nodesListJson: String? = null)
+import android.os.Parcelable
+import kotlinx.parcelize.Parcelize
+import one.mixin.android.api.response.TipSigner
+
+@Parcelize
+data class TipEvent(val nodeCounter: Int, val failedSigners: List<TipSigner>? = null) : Parcelable

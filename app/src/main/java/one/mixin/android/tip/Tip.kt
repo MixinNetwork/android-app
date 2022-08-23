@@ -32,7 +32,6 @@ import one.mixin.android.extension.toast
 import one.mixin.android.session.Session
 import one.mixin.android.session.encryptPin
 import one.mixin.android.session.encryptTipPin
-import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.deleteKeyByAlias
 import one.mixin.android.util.getDecryptCipher
 import one.mixin.android.util.getEncryptCipher
@@ -49,6 +48,8 @@ class Tip @Inject internal constructor(
     private val accountService: AccountService,
     private val tipNode: TipNode
 ) {
+    private val observers = mutableListOf<Observer>()
+
     suspend fun getOrRecoverTipPriv(context: Context, pin: String, recoverIfNotExists: Boolean): Result<ByteArray> {
         val privTip = readTipPriv(context)
         if (privTip == null) {
@@ -110,6 +111,8 @@ class Tip @Inject internal constructor(
         try {
             val aggSig = tipNode.sign(identityPriv, ephemeral, watcher, null, failedSigners)
 
+            observers.forEach { it.onTipNodeComplete() }
+
             val privateSpec = EdDSAPrivateKeySpec(ed25519, aggSig.copyOf())
             val pub = EdDSAPublicKey(EdDSAPublicKeySpec(privateSpec.a, ed25519))
 
@@ -155,6 +158,9 @@ class Tip @Inject internal constructor(
             } else {
                 tipNode.sign(identityPriv, ephemeral, watcher, assigneePriv, failedSigners)
             }
+
+            observers.forEach { it.onTipNodeComplete() }
+
             encryptAndSave(context, newPin, aggSig)
             replaceEncryptedPin(aggSig)
             Result.success(aggSig)
@@ -274,6 +280,18 @@ class Tip @Inject internal constructor(
         context.defaultSharedPreferences.putString(Constants.Tip.TIP_PRIV, ciphertext)
         // return true or false
     }
+
+    fun addObserver(observer: Observer) {
+        observers.add(observer)
+    }
+
+    fun removeObserver(observer: Observer) {
+        observers.remove(observer)
+    }
+
+    interface Observer {
+        fun onTipNodeComplete()
+    }
 }
 
 @Throws(IOException::class)
@@ -293,11 +311,6 @@ suspend fun <T> tipNetwork(network: suspend () -> MixinResponse<T>): Result<T> {
         }
     }
 }
-
-fun nodeListJsonToSigners(nodeListJson: String?): List<TipSigner>? =
-    if (nodeListJson != null) {
-        tipNodeCounterToSigners(GsonHelper.customGson.fromJson(nodeListJson, Array<TipNode.TipNodeCounter>::class.java).toList())
-    } else null
 
 fun tipNodeCounterToSigners(tipNodeCounters: List<TipNode.TipNodeCounter>?): List<TipSigner>? =
     if (tipNodeCounters != null) {
@@ -321,7 +334,7 @@ fun Exception.handleTipException() {
 suspend fun Tip.checkCounter(
     tipCounter: Int,
     onNodeCounterGreaterThanServer: suspend (Int) -> Unit,
-    onNodeCounterNotConsistency: suspend (Int, List<TipNode.TipNodeCounter>?) -> Unit,
+    onNodeCounterNotConsistency: suspend (Int, List<TipSigner>?) -> Unit,
 ) {
     val counters = watchTipNodeCounters()
     if (counters.isNullOrEmpty()) {
@@ -354,8 +367,12 @@ suspend fun Tip.checkCounter(
 
     val maxCounter = group.keys.maxBy { it }
     val failedNodes = group[group.keys.minBy { it }]
-    Timber.e("watch tip node counter maxCounter $maxCounter, need update nodes: $failedNodes")
-    onNodeCounterNotConsistency(maxCounter, failedNodes)
+    val failedSigners = if (failedNodes != null) {
+        val signers = mutableListOf<TipSigner>()
+        failedNodes.mapTo(signers) { it.tipSigner }
+    } else null
+    Timber.e("watch tip node counter maxCounter $maxCounter, need update nodes: $failedSigners")
+    onNodeCounterNotConsistency(maxCounter, failedSigners)
 }
 
 private fun reportIllegal(msg: String) {

@@ -29,11 +29,12 @@ import one.mixin.android.session.Session
 import one.mixin.android.ui.common.VerifyFragment
 import one.mixin.android.ui.setting.LocalSettingNav
 import one.mixin.android.ui.setting.SettingDestination
-import one.mixin.android.ui.setting.WalletPasswordFragment
 import one.mixin.android.ui.setting.ui.compose.MixinAlertDialog
 import one.mixin.android.ui.setting.ui.compose.MixinBackButton
 import one.mixin.android.ui.setting.ui.compose.MixinTopAppBar
 import one.mixin.android.ui.setting.ui.theme.MixinAppTheme
+import one.mixin.android.ui.tip.TipActivity
+import one.mixin.android.ui.tip.TipType
 
 @Composable
 fun AccountPage() {
@@ -105,20 +106,7 @@ private fun ChangeNumberButton() {
                             .addToBackStack(null)
                     }
                 } else {
-                    activity?.supportFragmentManager?.inTransaction {
-                        setCustomAnimations(
-                            R.anim.slide_in_bottom,
-                            R.anim.slide_out_bottom,
-                            R.anim.slide_in_bottom,
-                            R.anim.slide_out_bottom
-                        )
-                            .add(
-                                R.id.container,
-                                WalletPasswordFragment.newInstance(),
-                                WalletPasswordFragment.TAG
-                            )
-                            .addToBackStack(null)
-                    }
+                    activity?.let { TipActivity.show(it, TipType.Create, true) }
                 }
             },
             dismissText = stringResource(android.R.string.cancel),

@@ -105,8 +105,6 @@ import one.mixin.android.repository.AccountRepository
 import one.mixin.android.repository.UserRepository
 import one.mixin.android.session.Session
 import one.mixin.android.tip.Tip
-import one.mixin.android.tip.handleTipException
-import one.mixin.android.tip.nodeListJsonToSigners
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.BatteryOptimizationDialogActivity
 import one.mixin.android.ui.common.BlazeBaseActivity
@@ -116,7 +114,6 @@ import one.mixin.android.ui.common.PinCodeFragment.Companion.FROM_EMERGENCY
 import one.mixin.android.ui.common.PinCodeFragment.Companion.FROM_LOGIN
 import one.mixin.android.ui.common.PinCodeFragment.Companion.PREF_LOGIN_FROM
 import one.mixin.android.ui.common.QrScanBottomSheetDialogFragment
-import one.mixin.android.ui.common.VerifyBottomSheetDialogFragment
 import one.mixin.android.ui.common.VerifyFragment
 import one.mixin.android.ui.common.editDialog
 import one.mixin.android.ui.conversation.ConversationActivity
@@ -132,7 +129,10 @@ import one.mixin.android.ui.qr.CaptureActivity.Companion.ARGS_SHOW_SCAN
 import one.mixin.android.ui.search.SearchFragment
 import one.mixin.android.ui.search.SearchMessageFragment
 import one.mixin.android.ui.search.SearchSingleFragment
-import one.mixin.android.ui.setting.SettingActivity
+import one.mixin.android.ui.tip.TipActivity
+import one.mixin.android.ui.tip.TipBundle
+import one.mixin.android.ui.tip.TipType
+import one.mixin.android.ui.tip.TryConnecting
 import one.mixin.android.util.BiometricUtil
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.ErrorHandler.Companion.errorHandler
@@ -370,30 +370,12 @@ class MainActivity : BlazeBaseActivity() {
     private fun handleTipEvent(e: TipEvent, deviceId: String) {
         val nodeCounter = e.nodeCounter
         if (nodeCounter == 1) {
-            lifecycleScope.launch {
-                if (Session.getAccount()?.hasPin == true) {
-                    VerifyBottomSheetDialogFragment.newInstance().setOnPinSuccess { pin ->
-                        afterVerifyPin(pin, deviceId, e)
-                    }.apply {
-                        autoDismiss = true
-                        showNow(supportFragmentManager, VerifyBottomSheetDialogFragment.TAG)
-                    }
-                } else {
-                    navigationController.pushWallet(e.nodesListJson, nodeCounter)
-                }
-            }
+            val tipType = if (Session.getAccount()?.hasPin == true) TipType.Upgrade else TipType.Create
+            TipActivity.show(this, TipBundle(tipType, deviceId, TryConnecting, tipEvent = e))
         } else if (nodeCounter > 1) {
-            SettingActivity.showPinChange(this, e.nodesListJson, nodeCounter)
+            TipActivity.show(this, TipBundle(TipType.Change, deviceId, TryConnecting, tipEvent = e))
         } else {
             reportException(IllegalStateException("Receive TipEvent nodeCounter < 1"))
-        }
-    }
-
-    private fun afterVerifyPin(pin: String, deviceId: String, e: TipEvent) = lifecycleScope.launch {
-        try {
-            tip.createTipPriv(this@MainActivity, pin, deviceId, nodeListJsonToSigners(e.nodesListJson))
-        } catch (e: Exception) {
-            e.handleTipException()
         }
     }
 

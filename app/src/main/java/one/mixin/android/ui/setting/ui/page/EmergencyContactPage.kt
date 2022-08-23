@@ -41,12 +41,13 @@ import one.mixin.android.ui.common.biometric.BiometricBottomSheetDialogFragment
 import one.mixin.android.ui.setting.EmergencyViewModel
 import one.mixin.android.ui.setting.LocalSettingNav
 import one.mixin.android.ui.setting.PinEmergencyBottomSheetDialog
-import one.mixin.android.ui.setting.WalletPasswordFragment
 import one.mixin.android.ui.setting.ui.compose.MixinAlertDialog
 import one.mixin.android.ui.setting.ui.compose.MixinBottomSheetDialog
 import one.mixin.android.ui.setting.ui.compose.SettingPageScaffold
 import one.mixin.android.ui.setting.ui.compose.SettingTile
 import one.mixin.android.ui.setting.ui.theme.MixinAppTheme
+import one.mixin.android.ui.tip.TipActivity
+import one.mixin.android.ui.tip.TipType
 import one.mixin.android.vo.Account
 import timber.log.Timber
 
@@ -138,20 +139,7 @@ fun EmergencyContactPage() {
                                     .addToBackStack(null)
                             }
                         } else {
-                            activity?.supportFragmentManager?.inTransaction {
-                                setCustomAnimations(
-                                    R.anim.slide_in_bottom,
-                                    R.anim.slide_out_bottom,
-                                    R.anim.slide_in_bottom,
-                                    R.anim.slide_out_bottom
-                                )
-                                    .add(
-                                        R.id.container,
-                                        WalletPasswordFragment.newInstance(),
-                                        WalletPasswordFragment.TAG
-                                    )
-                                    .addToBackStack(null)
-                            }
+                            activity?.let { TipActivity.show(it, TipType.Create, true) }
                         }
                     }
                 )

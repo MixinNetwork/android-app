@@ -965,6 +965,7 @@
     <string name="Update_Mixin">Update Mixin</string>
     <string name="update_mixin_description">The current version (%1$s) is no longer available!\nPlease click \"Update\" below to update to the latest version from the Google Play.</string>
     <string name="Upgrade_Database">Upgrade Database</string>
+    <string name="Upgrade_TIP">Upgrade TIP</string>
     <string name="Upgrading">Upgrading</string>
     <string name="Upload_Mobile_Contacts">Upload Mobile Contacts</string>
     <string name="Upload_timeout">Upload timeout</string>
@@ -1052,4 +1053,21 @@
     <string name="You_deleted_this_message">You deleted this message</string>
     <string name="You_have_left_the_group">You have left the group</string>
     <string name="your_pin_has_been_created">Your PIN has been created</string>
+
+    <string name="Upgrade">Upgrade</string>
+    <string name="Create_PIN">Create PIN</string>
+    <string name="Upgrade_PIN">Upgrade PIN</string>
+    <string name="Start">Start</string>
+    <string name="TIP_introduction">The PIN is based on the Throttled Identity Protocol, which is the decentralized key derivation protocol, read the document to **learn more**.</string>
+    <string name="Please_use_when_network_is_connected">Please use when network is connected</string>
+    <string name="Please_keep_app_in_foreground">Please keep App in foreground</string>
+    <string name="Process_can_not_be_stop">Process can not be stop if start</string>
+    <string name="Trying_connect_tip_network">Trying connect TIP network</string>
+    <string name="Trying_connect_tip_node">Trying connect TIP node</string>
+    <string name="Connect_to_TIP_network_failed">Connect to TIP network failed, please check your network and try to switch 4G, Wi-Fi or VPN</string>
+    <string name="Upgrade_need_verify_your_PIN">Upgrade need verify your PIN</string>
+    <string name="Continue_need_verify_your_PIN">Continue need to verify your old PIN and new PIN</string>
+    <string name="Exchanging_data">Exchanging data(%1$d/%2$d)…</string>
+    <string name="Upgrade_PIN_aborted_unexpectedly_at">Upgrade PIN aborted unexpectedly at %1$s</string>
+    <string name="Syncing_and_verifying_TIP">Syncing and verifying TIP, please keep App in foreground</string>
 </resources>
