@@ -121,6 +121,7 @@ class MixinHeadersDecoration private constructor(
             if (hasStickyHeader || mHeaderPositionCalculator.hasNewHeader(position, mOrientationProvider.isReverseLayout(parent))) {
                 val header = mHeaderProvider.getHeader(parent, position)
                 val headerOffset: Rect? = mHeaderRects.get(position).apply {
+                    if (top == 0) return@apply // Skip the top decoration
                     top = (top + itemView.translationY).toInt()
                 }
                 if (headerOffset != null) {
