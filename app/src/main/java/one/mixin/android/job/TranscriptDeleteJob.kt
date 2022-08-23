@@ -35,7 +35,10 @@ class TranscriptDeleteJob(private val messageIds: List<String>) : BaseJob(Params
                 }
             }
         }
-        cIds.forEach { InvalidateFlow.emit(it) }
+        cIds.forEach {
+            conversationDao.refreshLastMessageId(it)
+            InvalidateFlow.emit(it)
+        }
     }
 
     private fun deleteAttachment(messageId: String, mediaUrl: String) {
