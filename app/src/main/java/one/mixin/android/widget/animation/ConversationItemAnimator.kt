@@ -5,6 +5,7 @@ import android.animation.AnimatorSet
 import android.animation.ValueAnimator
 import androidx.core.animation.doOnEnd
 import androidx.recyclerview.widget.RecyclerView
+import one.mixin.android.extension.ANIMATION_DURATION_SHORTEST
 import timber.log.Timber
 
 class ConversationItemAnimator(
@@ -30,17 +31,23 @@ class ConversationItemAnimator(
     private val pendingSlideAnimations: MutableMap<RecyclerView.ViewHolder, TweeningInfo> = mutableMapOf()
     private val slideAnimations: MutableMap<RecyclerView.ViewHolder, AnimationInfo> = mutableMapOf()
 
+    private var firstDisappearanceAnimate = true
     override fun animateDisappearance(viewHolder: RecyclerView.ViewHolder, preLayoutInfo: ItemHolderInfo, postLayoutInfo: ItemHolderInfo?): Boolean {
         if (!pendingSlideAnimations.containsKey(viewHolder) &&
             !slideAnimations.containsKey(viewHolder) &&
             shouldPlayMessageAnimations() &&
-            isParentFilled()
+            isParentFilled() &&
+            postLayoutInfo != null
         ) {
-            pendingSlideAnimations[viewHolder] = TweeningInfo(0f, viewHolder.itemView.height.toFloat())
+            if (firstDisappearanceAnimate) {
+                firstDisappearanceAnimate = false
+                dispatchAnimationFinished(viewHolder)
+                return false
+            }
+            pendingSlideAnimations[viewHolder] = TweeningInfo((preLayoutInfo.bottom -postLayoutInfo.bottom).toFloat(), 0f)
             dispatchAnimationStarted(viewHolder)
             return true
         }
-
         dispatchAnimationFinished(viewHolder)
         return false
     }
@@ -123,7 +130,7 @@ class ConversationItemAnimator(
         for ((viewHolder, tweeningInfo) in pendingSlideAnimations) {
             val animator = ValueAnimator.ofFloat(0f, 1f)
             slideAnimations[viewHolder] = AnimationInfo(animator, tweeningInfo)
-            animator.duration = 150L
+            animator.duration = ANIMATION_DURATION_SHORTEST
             animator.addUpdateListener {
                 if (viewHolder in slideAnimations) {
                     viewHolder.itemView.translationY = tweeningInfo.lerp(it.animatedFraction)
