@@ -13,6 +13,8 @@ import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.VerifyFragment
 import one.mixin.android.ui.setting.delete.DeleteAccountFragment
+import one.mixin.android.ui.tip.TipActivity
+import one.mixin.android.ui.tip.TipType
 import one.mixin.android.util.viewBinding
 
 @AndroidEntryPoint
@@ -67,20 +69,7 @@ class AccountFragment : BaseFragment(R.layout.fragment_account) {
                             .addToBackStack(null)
                     }
                 } else {
-                    activity?.supportFragmentManager?.inTransaction {
-                        setCustomAnimations(
-                            R.anim.slide_in_bottom,
-                            R.anim.slide_out_bottom,
-                            R.anim.slide_in_bottom,
-                            R.anim.slide_out_bottom
-                        )
-                            .add(
-                                R.id.container,
-                                WalletPasswordFragment.newInstance(),
-                                WalletPasswordFragment.TAG
-                            )
-                            .addToBackStack(null)
-                    }
+                    TipActivity.show(requireActivity(), TipType.Create, true)
                 }
             }.show()
     }

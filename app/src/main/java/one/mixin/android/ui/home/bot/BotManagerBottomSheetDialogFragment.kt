@@ -37,7 +37,8 @@ import one.mixin.android.extension.putString
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.showUserBottom
 import one.mixin.android.ui.home.MainActivity
-import one.mixin.android.ui.setting.WalletPasswordFragment
+import one.mixin.android.ui.tip.TipActivity
+import one.mixin.android.ui.tip.TipType
 import one.mixin.android.ui.url.UrlInterpreterActivity
 import one.mixin.android.ui.wallet.WalletActivity
 import one.mixin.android.util.GsonHelper
@@ -215,10 +216,7 @@ class BotManagerBottomSheetDialogFragment : BottomSheetDialogFragment(), BotDock
                     if (Session.getAccount()?.hasPin == true) {
                         WalletActivity.show(requireActivity())
                     } else {
-                        parentFragmentManager.beginTransaction()
-                            .replace(R.id.root_view, WalletPasswordFragment.newInstance(false))
-                            .addToBackStack(null)
-                            .commitAllowingStateLoss()
+                        TipActivity.show(requireActivity(), TipType.Create, false)
                     }
                     dismissAllowingStateLoss()
                 }

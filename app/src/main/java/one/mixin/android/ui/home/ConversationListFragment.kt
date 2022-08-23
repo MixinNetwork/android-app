@@ -86,6 +86,7 @@ import one.mixin.android.util.EmergencyContactBulletin
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.NewWalletBulletin
 import one.mixin.android.util.NotificationBulletin
+import one.mixin.android.util.UpgradeTipBulletin
 import one.mixin.android.util.markdown.MarkwonUtil
 import one.mixin.android.util.mention.MentionRenderCache
 import one.mixin.android.vo.AppButtonData
@@ -510,6 +511,7 @@ class ConversationListFragment : LinkFragment() {
                 .addBulletin(NewWalletBulletin(bulletinView, requireActivity() as MainActivity, ::onClose))
                 .addBulletin(NotificationBulletin(bulletinView, ::onClose))
                 .addBulletin(EmergencyContactBulletin(bulletinView, totalUsd >= 100, ::onClose))
+                .addBulletin(UpgradeTipBulletin(requireActivity(), bulletinView))
                 .post()
             messageAdapter.setShowHeader(shown, binding.messageRv)
         }

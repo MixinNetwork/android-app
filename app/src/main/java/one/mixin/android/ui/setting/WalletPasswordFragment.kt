@@ -4,97 +4,57 @@ import android.annotation.SuppressLint
 import android.os.Bundle
 import android.view.View
 import android.view.WindowManager
-import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.launch
 import one.mixin.android.Constants
-import one.mixin.android.Constants.INTERVAL_10_MINS
 import one.mixin.android.R
-import one.mixin.android.api.response.TipSigner
-import one.mixin.android.crypto.PrivacyPreference.putPrefPinInterval
 import one.mixin.android.databinding.FragmentWalletPasswordBinding
 import one.mixin.android.extension.clickVibrate
-import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.highlightStarTag
-import one.mixin.android.extension.indeterminateProgressDialog
-import one.mixin.android.extension.putLong
+import one.mixin.android.extension.replaceFragment
 import one.mixin.android.extension.tickVibrate
 import one.mixin.android.extension.toast
-import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.extension.withArgs
-import one.mixin.android.session.Session
-import one.mixin.android.tip.Tip
-import one.mixin.android.tip.checkCounter
-import one.mixin.android.tip.handleTipException
-import one.mixin.android.tip.nodeListJsonToSigners
-import one.mixin.android.tip.tipNodeCounterToSigners
 import one.mixin.android.ui.common.BaseFragment
-import one.mixin.android.ui.contacts.ContactsActivity
-import one.mixin.android.ui.conversation.ConversationActivity
-import one.mixin.android.ui.home.MainActivity
-import one.mixin.android.ui.setting.SettingActivity.Companion.EXTRA_NODE_COUNTER
-import one.mixin.android.ui.setting.SettingActivity.Companion.EXTRA_NODE_LIST_JSON
-import one.mixin.android.ui.wallet.WalletActivity
-import one.mixin.android.util.BiometricUtil
+import one.mixin.android.ui.tip.SyncingNode
+import one.mixin.android.ui.tip.TipBundle
+import one.mixin.android.ui.tip.TipFragment
+import one.mixin.android.ui.tip.TipFragment.Companion.ARGS_TIP_BUNDLE
+import one.mixin.android.ui.tip.getTipBundle
 import one.mixin.android.util.viewBinding
 import one.mixin.android.widget.Keyboard
 import one.mixin.android.widget.PinView
-import timber.log.Timber
-import javax.inject.Inject
 
 @AndroidEntryPoint
 class WalletPasswordFragment : BaseFragment(R.layout.fragment_wallet_password), PinView.OnPinListener {
 
     companion object {
         const val TAG = "WalletPasswordFragment"
-        const val ARGS_CHANGE = "args_change"
-        const val ARGS_OLD_PASSWORD = "args_old_password"
 
         private const val STEP1 = 0
         private const val STEP2 = 1
         private const val STEP3 = 2
         private const val STEP4 = 3
 
-        fun newInstance(change: Boolean = false, oldPassword: String? = null, nodeListJson: String? = null, nodeCounter: Int = 0): WalletPasswordFragment {
+        fun newInstance(tipBundle: TipBundle): WalletPasswordFragment {
             return WalletPasswordFragment().withArgs {
-                putBoolean(ARGS_CHANGE, change)
-                if (change) {
-                    putString(ARGS_OLD_PASSWORD, oldPassword)
-                }
-                nodeListJson?.let { putString(EXTRA_NODE_LIST_JSON, it) }
-                putInt(EXTRA_NODE_COUNTER, nodeCounter)
+                putParcelable(ARGS_TIP_BUNDLE, tipBundle)
             }
         }
     }
 
     private val binding by viewBinding(FragmentWalletPasswordBinding::bind)
 
-    @Inject
-    lateinit var tip: Tip
-
-    private val change: Boolean by lazy {
-        requireArguments().getBoolean(ARGS_CHANGE)
-    }
-    private val oldPassword: String? by lazy {
-        if (change) requireArguments().getString(ARGS_OLD_PASSWORD) else null
-    }
-
     private var step = STEP1
 
     private var lastPassword: String? = null
 
-    private var failedSigners: List<TipSigner>? = null
-    private var nodeCounter: Int = 0
+    private val tipBundle: TipBundle by lazy { requireArguments().getTipBundle() }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         activity?.window?.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
-
-        failedSigners = nodeListJsonToSigners(arguments?.getString(EXTRA_NODE_LIST_JSON))
-        nodeCounter = arguments?.getInt(EXTRA_NODE_COUNTER) ?: 0
-
         binding.apply {
-            if (change) {
+            if (tipBundle.forChange()) {
                 titleView.setSubTitle(getString(R.string.Set_new_PIN), "2/5")
                 tipTv.text = getString(R.string.wallet_password_set_new_pin_desc)
             } else {
@@ -165,10 +125,10 @@ class WalletPasswordFragment : BaseFragment(R.layout.fragment_wallet_password), 
         lastPassword = null
         binding.pin.clear()
         binding.titleView.setSubTitle(
-            getString(if (change) R.string.Set_new_PIN else R.string.Set_PIN),
+            getString(if (tipBundle.forChange()) R.string.Set_new_PIN else R.string.Set_PIN),
             getSubTitle()
         )
-        if (change) {
+        if (tipBundle.forChange()) {
             binding.tipTv.text = getString(R.string.wallet_password_set_new_pin_desc)
         } else {
             val url = Constants.HelpLink.TIP
@@ -217,6 +177,7 @@ class WalletPasswordFragment : BaseFragment(R.layout.fragment_wallet_password), 
     }
 
     private fun getSubTitle(): String {
+        val change = tipBundle.forChange()
         return when (step) {
             STEP1 -> if (change) "2/5" else "1/4"
             STEP2 -> if (change) "3/5" else "2/4"
@@ -255,97 +216,11 @@ class WalletPasswordFragment : BaseFragment(R.layout.fragment_wallet_password), 
             STEP4 -> {
                 if (checkEqual()) return
 
-                createPinInternal()
-            }
-        }
-    }
-
-    private fun createPinInternal() = lifecycleScope.launch {
-        if (viewDestroyed()) return@launch
-
-        val dialog = indeterminateProgressDialog(
-            message = getString(R.string.Please_wait_a_bit),
-            title = if (change) getString(R.string.Changing) else getString(R.string.Creating)
-        )
-        dialog.setCancelable(false)
-        dialog.show()
-
-        val pin = binding.pin.code()
-        val deviceId = requireNotNull(defaultSharedPreferences.getString(Constants.DEVICE_ID, null))
-        val tipCounter = Session.getTipCounter()
-        Timber.d("tip nodeCounter $nodeCounter, tipCounter $tipCounter, signers size ${failedSigners?.size}")
-        try {
-            val tipPriv = if (tipCounter < 1) {
-                tip.createTipPriv(this@WalletPasswordFragment.requireContext(), pin, deviceId, failedSigners, oldPassword)
-            } else {
-                val nodeSuccess = nodeCounter > tipCounter && failedSigners.isNullOrEmpty()
-                tip.updateTipPriv(this@WalletPasswordFragment.requireContext(), requireNotNull(oldPassword), deviceId, pin, nodeSuccess, failedSigners)
-            }.getOrNull()
-
-            dialog.dismiss()
-            if (tipPriv != null) {
-                afterPinSuccess(pin)
-            } else {
-                // no exception happen means the nodes part must success,
-                // clear failed node list to prepare for a new try.
-                setNodeArgs(null, nodeCounter)
-            }
-        } catch (e: Exception) {
-            e.handleTipException()
-
-            tip.checkCounter(
-                tipCounter,
-                onNodeCounterGreaterThanServer = { setNodeArgs(null, it) },
-                onNodeCounterNotConsistency = { nodeMaxCounter, tipNodeCounters ->
-                    setNodeArgs(tipNodeCounterToSigners(tipNodeCounters), nodeMaxCounter)
-                }
-            )
-
-            dialog.dismiss()
-        }
-    }
-
-    private fun setNodeArgs(failedSigners: List<TipSigner>?, nodeCounter: Int) {
-        this.failedSigners = failedSigners
-        this.nodeCounter = nodeCounter
-    }
-
-    private fun afterPinSuccess(pin: String) {
-        val cur = System.currentTimeMillis()
-        defaultSharedPreferences.putLong(Constants.Account.PREF_PIN_CHECK, cur)
-        putPrefPinInterval(requireContext(), INTERVAL_10_MINS)
-
-        val openBiometrics = defaultSharedPreferences.getBoolean(Constants.Account.PREF_BIOMETRICS, false)
-        if (openBiometrics) {
-            BiometricUtil.savePin(requireContext(), pin, this@WalletPasswordFragment)
-        }
-
-        activity?.let { activity ->
-            val forFixTip = failedSigners != null || nodeCounter != 0
-            if (activity is ConversationActivity ||
-                activity is ContactsActivity
-            ) {
-                toast(R.string.Set_PIN_successfully)
-                parentFragmentManager.popBackStackImmediate()
-            } else if (activity is MainActivity) {
-                toast(R.string.Set_PIN_successfully)
-                parentFragmentManager.popBackStackImmediate()
-                if (forFixTip) {
-                    parentFragmentManager.popBackStackImmediate()
-                } else {
-                    WalletActivity.show(activity)
-                }
-            } else {
-                if (change) {
-                    toast(R.string.Change_PIN_successfully)
-                } else {
-                    toast(R.string.Set_PIN_successfully)
-                }
-
-                if (forFixTip) {
-                    parentFragmentManager.popBackStackImmediate()
-                }
-                parentFragmentManager.popBackStackImmediate()
+                val pin = binding.pin.code()
+                tipBundle.pin = pin
+                tipBundle.tipStep = SyncingNode
+                val tipFragment = TipFragment.newInstance(tipBundle)
+                activity?.replaceFragment(tipFragment, R.id.container, TipFragment.TAG)
             }
         }
     }

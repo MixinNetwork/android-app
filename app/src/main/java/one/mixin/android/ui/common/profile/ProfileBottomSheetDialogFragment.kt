@@ -47,7 +47,8 @@ import one.mixin.android.ui.common.editDialog
 import one.mixin.android.ui.common.info.MixinScrollableBottomSheetDialogFragment
 import one.mixin.android.ui.common.info.createMenuLayout
 import one.mixin.android.ui.common.info.menuList
-import one.mixin.android.ui.setting.WalletPasswordFragment
+import one.mixin.android.ui.tip.TipActivity
+import one.mixin.android.ui.tip.TipType
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.vo.Account
 import one.mixin.android.vo.App
@@ -314,20 +315,7 @@ class ProfileBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragmen
                             .addToBackStack(null)
                     }
                 } else {
-                    activity?.supportFragmentManager?.inTransaction {
-                        setCustomAnimations(
-                            R.anim.slide_in_bottom,
-                            R.anim.slide_out_bottom,
-                            R.anim.slide_in_bottom,
-                            R.anim.slide_out_bottom
-                        )
-                            .add(
-                                R.id.container,
-                                WalletPasswordFragment.newInstance(),
-                                WalletPasswordFragment.TAG
-                            )
-                            .addToBackStack(null)
-                    }
+                    TipActivity.show(requireActivity(), TipType.Create, true)
                 }
                 dismiss()
             }.show()

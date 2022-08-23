@@ -19,8 +19,9 @@ import one.mixin.android.extension.toast
 import one.mixin.android.extension.updatePinCheck
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.BaseFragment
-import one.mixin.android.ui.setting.SettingActivity.Companion.EXTRA_NODE_COUNTER
-import one.mixin.android.ui.setting.SettingActivity.Companion.EXTRA_NODE_LIST_JSON
+import one.mixin.android.ui.tip.TipBundle
+import one.mixin.android.ui.tip.TipFragment.Companion.ARGS_TIP_BUNDLE
+import one.mixin.android.ui.tip.getTipBundle
 import one.mixin.android.ui.wallet.WalletViewModel
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.viewBinding
@@ -33,9 +34,8 @@ class OldPasswordFragment : BaseFragment(R.layout.fragment_old_password), PinVie
     companion object {
         const val TAG = "OldPasswordFragment"
 
-        fun newInstance(nodeListJson: String? = null, nodeCounter: Int = 0) = OldPasswordFragment().withArgs {
-            nodeListJson?.let { putString(EXTRA_NODE_LIST_JSON, it) }
-            putInt(EXTRA_NODE_COUNTER, nodeCounter)
+        fun newInstance(tipBundle: TipBundle) = OldPasswordFragment().withArgs {
+            putParcelable(ARGS_TIP_BUNDLE, tipBundle)
         }
     }
 
@@ -94,13 +94,10 @@ class OldPasswordFragment : BaseFragment(R.layout.fragment_old_password), PinVie
                 context?.updatePinCheck()
                 response.data?.let {
                     val pin = binding.pin.code()
-                    val nodeListJson = arguments?.getString(EXTRA_NODE_LIST_JSON)
-                    val nodeCounter = arguments?.getInt(EXTRA_NODE_COUNTER) ?: 0
-                    if (nodeListJson == null && nodeCounter == 0) {
-                        activity?.onBackPressedDispatcher?.onBackPressed()
-                    }
+                    val tipBundle = requireArguments().getTipBundle()
+                    tipBundle.oldPin = pin
                     navTo(
-                        WalletPasswordFragment.newInstance(true, pin, nodeListJson, nodeCounter),
+                        WalletPasswordFragment.newInstance(tipBundle),
                         WalletPasswordFragment.TAG
                     )
                 }

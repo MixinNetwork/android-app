@@ -183,6 +183,12 @@
         <item name="android:indeterminateTintMode">src_atop</item>
     </style>
 
+    <style name="AppTheme.GrayProgressIndeterminate">
+        <item name="android:indeterminateTint">?attr/icon_gray</item>
+        <item name="android:indeterminate">true</item>
+        <item name="android:indeterminateTintMode">src_atop</item>
+    </style>
+
     <style name="AppTheme.BlueProgress">
         <item name="android:indeterminateTint">@color/colorBlue</item>
         <item name="android:indeterminate">true</item>
