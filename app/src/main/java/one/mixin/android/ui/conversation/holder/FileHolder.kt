@@ -17,7 +17,6 @@ import one.mixin.android.databinding.ItemChatFileBinding
 import one.mixin.android.event.ExpiredEvent
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.fileSize
-import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.job.MixinJobManager.Companion.getAttachmentProcess
 import one.mixin.android.ui.conversation.adapter.ConversationAdapter
 import one.mixin.android.ui.conversation.holder.base.BaseViewHolder
@@ -62,41 +61,36 @@ class FileHolder constructor(val binding: ItemChatFileBinding) : BaseViewHolder(
         } else {
             binding.chatName.visibility = View.GONE
         }
-        keyword.notNullWithElse(
-            { k ->
-                messageItem.mediaName?.let { str ->
-                    val start = str.indexOf(k, 0, true)
-                    if (start >= 0) {
-                        val sp = SpannableString(str)
-                        sp.setSpan(
-                            BackgroundColorSpan(HIGHLIGHTED),
-                            start,
-                            start + k.length,
-                            Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
-                        )
-                        binding.fileNameTv.text = sp
-                    } else {
-                        binding.fileNameTv.text = messageItem.mediaName
-                    }
+        if (keyword != null) {
+            messageItem.mediaName?.let { str ->
+                val start = str.indexOf(keyword, 0, true)
+                if (start >= 0) {
+                    val sp = SpannableString(str)
+                    sp.setSpan(
+                        BackgroundColorSpan(HIGHLIGHTED),
+                        start,
+                        start + keyword.length,
+                        Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+                    )
+                    binding.fileNameTv.text = sp
+                } else {
+                    binding.fileNameTv.text = messageItem.mediaName
                 }
-            },
-            {
-                binding.fileNameTv.text = messageItem.mediaName
             }
-        )
+        } else {
+            binding.fileNameTv.text = messageItem.mediaName
+        }
         when (messageItem.mediaStatus) {
             MediaStatus.EXPIRED.name -> {
                 binding.bottomLayout.fileSizeTv.clearBindIdAndSetText(binding.root.context.getString(R.string.Expired))
             }
             MediaStatus.PENDING.name -> {
-                messageItem.mediaSize?.notNullWithElse(
-                    { it ->
-                        binding.bottomLayout.fileSizeTv.setBindId(messageItem.messageId, it)
-                    },
-                    {
-                        binding.bottomLayout.fileSizeTv.clearBindIdAndSetText(messageItem.mediaSize.fileSize())
-                    }
-                )
+                val mediaSize = messageItem.mediaSize
+                if (mediaSize != null) {
+                    binding.bottomLayout.fileSizeTv.setBindId(messageItem.messageId, mediaSize)
+                } else {
+                    binding.bottomLayout.fileSizeTv.clearBindIdAndSetText(null)
+                }
             }
             else -> {
                 binding.bottomLayout.fileSizeTv.clearBindIdAndSetText(messageItem.mediaSize?.fileSize())

@@ -6,7 +6,6 @@ import android.graphics.drawable.Drawable
 import android.util.AttributeSet
 import androidx.constraintlayout.widget.ConstraintLayout
 import one.mixin.android.extension.appCompatActionBarHeight
-import one.mixin.android.extension.notNullWithElse
 import kotlin.math.ceil
 
 class BackgroundConstraintLayout : ConstraintLayout {
@@ -31,31 +30,29 @@ class BackgroundConstraintLayout : ConstraintLayout {
         }
 
     override fun onDraw(canvas: Canvas) {
-        backgroundImage.notNullWithElse(
-            { backgroundImage ->
-                val actionBarHeight = context.appCompatActionBarHeight()
-                val scaleX = measuredWidth.toFloat() / backgroundImage.intrinsicWidth.toFloat()
-                val scaleY = (measuredHeight).toFloat() / backgroundImage.intrinsicHeight.toFloat()
-                val scale = if (scaleX < scaleY) scaleY else scaleX
-                val width = ceil((backgroundImage.intrinsicWidth * scale).toDouble()).toInt()
-                val height =
-                    ceil((backgroundImage.intrinsicHeight * scale).toDouble()).toInt()
-                val x = (measuredWidth - width) / 2
-                val y = (measuredHeight - height) / 2
-                canvas.save()
-                canvas.clipRect(
-                    0,
-                    actionBarHeight,
-                    measuredWidth,
-                    measuredHeight
-                )
-                backgroundImage.setBounds(x, y, x + width, y + height)
-                backgroundImage.draw(canvas)
-                canvas.restore()
-            },
-            {
-                super.onDraw(canvas)
-            }
-        )
+        val bg = backgroundImage
+        if (bg != null) {
+            val actionBarHeight = context.appCompatActionBarHeight()
+            val scaleX = measuredWidth.toFloat() / bg.intrinsicWidth.toFloat()
+            val scaleY = (measuredHeight).toFloat() / bg.intrinsicHeight.toFloat()
+            val scale = if (scaleX < scaleY) scaleY else scaleX
+            val width = ceil((bg.intrinsicWidth * scale).toDouble()).toInt()
+            val height =
+                ceil((bg.intrinsicHeight * scale).toDouble()).toInt()
+            val x = (measuredWidth - width) / 2
+            val y = (measuredHeight - height) / 2
+            canvas.save()
+            canvas.clipRect(
+                0,
+                actionBarHeight,
+                measuredWidth,
+                measuredHeight
+            )
+            bg.setBounds(x, y, x + width, y + height)
+            bg.draw(canvas)
+            canvas.restore()
+        } else {
+            super.onDraw(canvas)
+        }
     }
 }

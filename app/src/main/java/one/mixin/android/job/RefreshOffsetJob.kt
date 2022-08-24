@@ -4,7 +4,6 @@ import androidx.collection.ArrayMap
 import com.birbit.android.jobqueue.Params
 import one.mixin.android.db.makeMessageStatus
 import one.mixin.android.extension.getEpochNano
-import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.vo.MessageStatus
 import one.mixin.android.vo.Offset
 import one.mixin.android.vo.STATUS_OFFSET
@@ -45,15 +44,16 @@ class RefreshOffsetJob : MixinJob(
                         if (mh != null) {
                             return@makeMessageStatus
                         }
-                        pendingMessageStatusMap[m.messageId].notNullWithElse({ status ->
+                        val pendingMessageStatus = pendingMessageStatusMap[m.messageId]
+                        if (pendingMessageStatus != null) {
                             val currentStatus = MessageStatus.values().firstOrNull { it.name == m.status }?.ordinal ?: return@makeMessageStatus
-                            val localStatus = MessageStatus.values().firstOrNull { it.name == status }?.ordinal ?: return@makeMessageStatus
+                            val localStatus = MessageStatus.values().firstOrNull { it.name == pendingMessageStatus }?.ordinal ?: return@makeMessageStatus
                             if (currentStatus > localStatus) {
                                 pendingMessageStatusMap[m.messageId] = m.status
                             }
-                        }, {
+                        } else {
                             pendingMessageStatusMap[m.messageId] = m.status
-                        })
+                        }
                     }
                     offsetDao.insert(Offset(STATUS_OFFSET, m.updatedAt))
                 }

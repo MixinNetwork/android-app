@@ -9,7 +9,6 @@ import one.mixin.android.R
 import one.mixin.android.databinding.ItemChatFileBinding
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.fileSize
-import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.session.Session
 import one.mixin.android.ui.conversation.chathistory.ChatHistoryAdapter
@@ -50,14 +49,12 @@ class FileHolder constructor(val binding: ItemChatFileBinding) : BaseViewHolder(
                 binding.bottomLayout.fileSizeTv.clearBindIdAndSetText(binding.root.context.getString(R.string.Expired))
             }
             MediaStatus.PENDING.name -> {
-                messageItem.mediaSize?.notNullWithElse(
-                    { it ->
-                        binding.bottomLayout.fileSizeTv.setBindId(messageItem.messageId, it)
-                    },
-                    {
-                        binding.bottomLayout.fileSizeTv.clearBindIdAndSetText(messageItem.mediaSize.fileSize())
-                    }
-                )
+                val mediaSize = messageItem.mediaSize
+                if (mediaSize != null) {
+                    binding.bottomLayout.fileSizeTv.setBindId(messageItem.messageId, mediaSize)
+                } else {
+                    binding.bottomLayout.fileSizeTv.clearBindIdAndSetText(null)
+                }
             }
             else -> {
                 binding.bottomLayout.fileSizeTv.clearBindIdAndSetText(messageItem.mediaSize?.fileSize())

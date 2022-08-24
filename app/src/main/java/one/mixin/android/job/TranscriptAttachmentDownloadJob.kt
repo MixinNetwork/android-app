@@ -79,16 +79,14 @@ class TranscriptAttachmentDownloadJob(
         attachmentCall = conversationApi.getAttachment(attachmentId)
         val body = attachmentCall!!.execute().body()
         if (body != null && (body.isSuccess || !isCancelled) && body.data != null) {
-            body.data?.view_url.notNullWithElse(
-                {
-                    if (decryptAttachment(it, transcriptMessage)) {
-                        processTranscript()
-                    }
-                },
-                {
-                    transcriptMessageDao.updateMediaStatus(transcriptMessage.transcriptId, transcriptMessage.messageId, MediaStatus.CANCELED.name)
+            val viewUrl = body.data?.view_url
+            if (viewUrl != null) {
+                if (decryptAttachment(viewUrl, transcriptMessage)) {
+                    processTranscript()
                 }
-            )
+            } else {
+                transcriptMessageDao.updateMediaStatus(transcriptMessage.transcriptId, transcriptMessage.messageId, MediaStatus.CANCELED.name)
+            }
         } else {
             transcriptMessageDao.updateMediaStatus(transcriptMessage.transcriptId, transcriptMessage.messageId, MediaStatus.CANCELED.name)
             Timber.e(TAG, "get attachment url failed")

@@ -238,44 +238,41 @@ fun Uri.handleSchemeSend(
     onError: ((String) -> Unit)? = null,
 ) {
     val text = this.getQueryParameter("text")
-    text.notNullWithElse(
-        {
-            ForwardActivity.show(
-                context,
-                arrayListOf(ForwardMessage(ShareCategory.Text, it)),
-                ForwardAction.App.Resultless()
-            )
-            afterShareText?.invoke()
-        },
-        {
-            val category = this.getQueryParameter("category")
-            val conversationId = this.getQueryParameter("conversation").let {
-                if (it == currentConversation) {
-                    it
-                } else {
-                    null
-                }
-            }
-            val data = this.getRawQueryParameter("data")
-            val shareCategory = category?.getShareCategory()
-            if (shareCategory != null && data != null) {
-                try {
-                    afterShareData?.invoke()
-                    val fragment = ShareMessageBottomSheetDialogFragment.newInstance(
-                        ForwardMessage(shareCategory, String(Base64.decode(data))),
-                        conversationId, app, host
-                    )
-                    if (showNow) {
-                        fragment.showNow(supportFragmentManager, ShareMessageBottomSheetDialogFragment.TAG)
-                    } else {
-                        fragment.show(supportFragmentManager, ShareMessageBottomSheetDialogFragment.TAG)
-                    }
-                } catch (e: Exception) {
-                    onError?.invoke("Error data:${e.message}")
-                }
+    if (text != null) {
+        ForwardActivity.show(
+            context,
+            arrayListOf(ForwardMessage(ShareCategory.Text, text)),
+            ForwardAction.App.Resultless()
+        )
+        afterShareText?.invoke()
+    } else {
+        val category = this.getQueryParameter("category")
+        val conversationId = this.getQueryParameter("conversation").let {
+            if (it == currentConversation) {
+                it
             } else {
-                onError?.invoke("Error data")
+                null
             }
         }
-    )
+        val data = this.getRawQueryParameter("data")
+        val shareCategory = category?.getShareCategory()
+        if (shareCategory != null && data != null) {
+            try {
+                afterShareData?.invoke()
+                val fragment = ShareMessageBottomSheetDialogFragment.newInstance(
+                    ForwardMessage(shareCategory, String(Base64.decode(data))),
+                    conversationId, app, host
+                )
+                if (showNow) {
+                    fragment.showNow(supportFragmentManager, ShareMessageBottomSheetDialogFragment.TAG)
+                } else {
+                    fragment.show(supportFragmentManager, ShareMessageBottomSheetDialogFragment.TAG)
+                }
+            } catch (e: Exception) {
+                onError?.invoke("Error data:${e.message}")
+            }
+        } else {
+            onError?.invoke("Error data")
+        }
+    }
 }

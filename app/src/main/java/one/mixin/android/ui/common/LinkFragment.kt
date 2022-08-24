@@ -12,7 +12,6 @@ import one.mixin.android.db.FloodMessageDao
 import one.mixin.android.extension.animateHeight
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.networkConnected
-import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.ui.setting.diagnosis.DiagnosisActivity
 import one.mixin.android.vo.LinkState
 import javax.inject.Inject
@@ -49,19 +48,16 @@ abstract class LinkFragment : BaseFragment(), Observer<Int> {
     }
 
     override fun onChanged(t: Int?) {
-        t.notNullWithElse(
-            {
-                if (it > 500) {
-                    setSyncing()
-                    showBar()
-                } else {
-                    hiddenBar()
-                }
-            },
-            {
+        if (t != null) {
+            if (t > 500) {
+                setSyncing()
+                showBar()
+            } else {
                 hiddenBar()
             }
-        )
+        } else {
+            hiddenBar()
+        }
     }
 
     abstract fun getContentView(): View
