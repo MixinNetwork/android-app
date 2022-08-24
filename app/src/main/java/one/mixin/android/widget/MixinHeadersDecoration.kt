@@ -133,7 +133,6 @@ class MixinHeadersDecoration private constructor(
 
     override fun onDraw(canvas: Canvas, parent: RecyclerView, state: RecyclerView.State) {
         super.onDraw(canvas, parent, state)
-
         val childCount = parent.childCount
         if (childCount <= 0 || mAdapter.itemCount <= 0) {
             return
@@ -158,7 +157,6 @@ class MixinHeadersDecoration private constructor(
                     mHeaderRects.put(position, headerOffset)
                 }
                 mHeaderPositionCalculator.initHeaderBounds(headerOffset, parent, header, itemView, hasStickyHeader)
-                mRenderer.drawHeader(parent, canvas, header, headerOffset)
                 if (mAdapter.hasAttachView(position)) {
                     getAttachView(parent).let { view ->
                         val top = (headerOffset.top - view.measuredHeight)
