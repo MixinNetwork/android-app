@@ -8,6 +8,7 @@ import com.google.android.exoplayer2.ExoPlayer
 import com.google.android.exoplayer2.MediaItem
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import one.mixin.android.util.reportException
 
 internal class MusicPlayerUpdater(private val player: ExoPlayer) {
 
@@ -15,8 +16,10 @@ internal class MusicPlayerUpdater(private val player: ExoPlayer) {
         val find = incoming.find { it.id == player.currentMediaItem?.mediaId }
         if (find == null) {
             val mediaItems = incoming.toMediaItems()
-            player.setMediaItems(mediaItems)
-            player.prepare()
+            kotlin.runCatching {
+                player.setMediaItems(mediaItems)
+                player.prepare()
+            }.onFailure { reportException("MusicPlayerUpdater replace MediaItems", it) }
             return
         }
 
@@ -41,10 +44,14 @@ internal class MusicPlayerUpdater(private val player: ExoPlayer) {
     }
 
     private fun AbstractDelta<MediaItem>.delete() {
-        player.removeMediaItems(target.position, target.position + source.lines.size)
+        kotlin.runCatching {
+            player.removeMediaItems(target.position, target.position + source.lines.size)
+        }.onFailure { reportException("MusicPlayerUpdater delete MediaItems", it) }
     }
 
     private fun AbstractDelta<MediaItem>.insert() {
-        player.addMediaItems(target.position, target.lines)
+        kotlin.runCatching {
+            player.addMediaItems(target.position, target.lines)
+        }.onFailure { reportException("MusicPlayerUpdater insert MediaItems", it) }
     }
 }
