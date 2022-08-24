@@ -158,6 +158,24 @@ class MixinHeadersDecoration private constructor(
                     mHeaderRects.put(position, headerOffset)
                 }
                 mHeaderPositionCalculator.initHeaderBounds(headerOffset, parent, header, itemView, hasStickyHeader)
+                mRenderer.drawHeader(parent, canvas, header, headerOffset)
+                if (mAdapter.hasAttachView(position)) {
+                    getAttachView(parent).let { view ->
+                        val top = (headerOffset.top - view.measuredHeight)
+                        canvas.save()
+                        canvas.translate(0f, top.toFloat())
+                        view.draw(canvas)
+                        canvas.restore()
+                    }
+                }
+            } else if (mAdapter.hasAttachView(position)) {
+                getAttachView(parent).let { view ->
+                    val top = (itemView.y - view.measuredHeight).toInt()
+                    canvas.save()
+                    canvas.translate(0f, top.toFloat())
+                    view.draw(canvas)
+                    canvas.restore()
+                }
             }
         }
     }
