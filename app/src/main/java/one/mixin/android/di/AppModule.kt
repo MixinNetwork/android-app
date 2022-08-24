@@ -49,11 +49,7 @@ import one.mixin.android.api.service.SignalKeyService
 import one.mixin.android.api.service.UserService
 import one.mixin.android.crypto.EncryptedProtocol
 import one.mixin.android.crypto.SignalProtocol
-import one.mixin.android.db.ConversationDao
-import one.mixin.android.db.FloodMessageDao
-import one.mixin.android.db.JobDao
-import one.mixin.android.db.MessageDao
-import one.mixin.android.db.OffsetDao
+import one.mixin.android.db.MixinDatabase
 import one.mixin.android.extension.filterNonAscii
 import one.mixin.android.extension.getDeviceId
 import one.mixin.android.extension.isGooglePlayServicesAvailable
@@ -353,17 +349,12 @@ object AppModule {
     @Singleton
     fun provideChatWebSocket(
         okHttp: OkHttpClient,
-        app: Application,
         accountService: AccountService,
-        conversationDao: ConversationDao,
-        messageDao: MessageDao,
-        offsetDao: OffsetDao,
-        floodMessageDao: FloodMessageDao,
+        mixinDatabase: MixinDatabase,
         jobManager: MixinJobManager,
         linkState: LinkState,
-        jobDao: JobDao
     ): ChatWebSocket =
-        ChatWebSocket(okHttp, app, accountService, conversationDao, messageDao, offsetDao, floodMessageDao, jobManager, linkState, jobDao)
+        ChatWebSocket(okHttp, accountService, mixinDatabase, jobManager, linkState)
 
     @Provides
     @Singleton

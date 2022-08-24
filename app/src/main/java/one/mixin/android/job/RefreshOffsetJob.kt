@@ -40,7 +40,7 @@ class RefreshOffsetJob : MixinJob(
                     break
                 }
                 for (m in blazeMessages) {
-                    messageDao.makeMessageStatus(m.status, m.messageId) {
+                    mixinDatabase.makeMessageStatus(m.status, m.messageId) {
                         val mh = messageHistoryDao.findMessageHistoryById(m.messageId)
                         if (mh != null) {
                             return@makeMessageStatus

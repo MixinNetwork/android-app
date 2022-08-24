@@ -1,5 +1,6 @@
 package one.mixin.android.db
 
+import one.mixin.android.session.Session
 import one.mixin.android.util.chat.InvalidateFlow
 import one.mixin.android.vo.App
 import one.mixin.android.vo.Circle
@@ -188,18 +189,21 @@ fun MixinDatabase.deleteMessageByIds(messageIds: List<String>) {
     }
 }
 
-fun MessageDao.makeMessageStatus(status: String, messageId: String, noExistCallback: (() -> Unit)? = null) {
+fun MixinDatabase.makeMessageStatus(status: String, messageId: String, noExistCallback: (() -> Unit)? = null) {
     val messageStatus = MessageStatus.values().firstOrNull { it.name == status } ?: return
     if (messageStatus != MessageStatus.SENT && messageStatus != MessageStatus.DELIVERED && messageStatus != MessageStatus.READ) {
         return
     }
-    val message = findMessageStatusById(messageId)
+    val message = messageDao().findMessageStatusById(messageId)
     if (message == null) {
         noExistCallback?.invoke()
         return
     }
     if (messageStatus.ordinal > message.status.ordinal) {
-        updateMessageStatus(status, messageId)
+        messageDao().updateMessageStatus(status, messageId)
+        if (message.userId == Session.getAccountId()) {
+            conversationDao().refreshIfStatusChanges(message.conversationId, messageId)
+        }
         InvalidateFlow.emit(message.conversationId) // Update and notify flow
     }
 }

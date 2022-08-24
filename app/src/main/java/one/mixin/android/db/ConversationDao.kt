@@ -170,6 +170,9 @@ interface ConversationDao : BaseDao<Conversation> {
     @Query("SELECT * FROM conversations WHERE owner_id =:ownerId AND category = 'CONTACT'")
     fun findContactConversationByOwnerId(ownerId: String): Conversation?
 
+    @Query("UPDATE conversations SET last_message_id = :lastMessageId WHERE conversation_id = :conversationId AND last_message_id = :lastMessageId")
+    fun refreshIfStatusChanges(conversationId: String, lastMessageId: String)
+
     // Update SQL
     @Query("UPDATE conversations SET code_url = :codeUrl WHERE conversation_id = :conversationId")
     suspend fun updateCodeUrl(conversationId: String, codeUrl: String)
