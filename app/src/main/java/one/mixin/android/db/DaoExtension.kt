@@ -202,7 +202,7 @@ fun MixinDatabase.makeMessageStatus(status: String, messageId: String, noExistCa
     if (messageStatus.ordinal > message.status.ordinal) {
         messageDao().updateMessageStatus(status, messageId)
         if (message.userId == Session.getAccountId()) {
-            conversationDao().refreshIfStatusChanges(message.conversationId, messageId)
+            conversationDao().forceRefreshConversationsByLastMessageId(message.conversationId, messageId)
         }
         InvalidateFlow.emit(message.conversationId) // Update and notify flow
     }
