@@ -24,7 +24,7 @@ abstract class MixinLimitOffsetDataSource<T> protected constructor(
     /**
      * Count number of rows query can return
      */
-    fun countItems(): Int {
+    private fun countItems(): Int {
         val cursor = db.query(countQuery)
         return try {
             if (cursor.moveToFirst()) {

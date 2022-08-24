@@ -260,7 +260,7 @@ interface MessageDao : BaseDao<Message> {
     @Query("SELECT * FROM messages WHERE id = :messageId")
     suspend fun suspendFindMessageById(messageId: String): Message?
 
-    @Query("SELECT conversation_id, status FROM messages WHERE id = :messageId")
+    @Query("SELECT conversation_id, user_id, status FROM messages WHERE id = :messageId")
     fun findMessageStatusById(messageId: String): ConversationWithStatus?
 
     // id not null means message exists

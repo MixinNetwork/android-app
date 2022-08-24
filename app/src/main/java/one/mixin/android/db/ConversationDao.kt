@@ -214,6 +214,10 @@ interface ConversationDao : BaseDao<Conversation> {
     @Query("UPDATE conversations SET draft = :text WHERE conversation_id = :conversationId AND draft != :text")
     suspend fun saveDraft(conversationId: String, text: String)
 
+    // Force refresh of conversation table without changing the data
+    @Query("UPDATE conversations SET last_message_id = :lastMessageId WHERE conversation_id = :conversationId AND last_message_id = :lastMessageId")
+    fun forceRefreshConversationsByLastMessageId(conversationId: String, lastMessageId: String)
+
     // Delete SQL
     @Query("DELETE FROM conversations WHERE conversation_id = :conversationId")
     suspend fun deleteConversationById(conversationId: String)

@@ -1,7 +1,6 @@
 package one.mixin.android.websocket
 
 import android.annotation.SuppressLint
-import android.app.Application
 import com.google.firebase.crashlytics.FirebaseCrashlytics
 import com.google.gson.Gson
 import io.reactivex.Observable
@@ -18,10 +17,9 @@ import one.mixin.android.Constants.API.WS_URL
 import one.mixin.android.MixinApplication
 import one.mixin.android.api.ClientErrorException
 import one.mixin.android.api.service.AccountService
-import one.mixin.android.db.ConversationDao
 import one.mixin.android.db.FloodMessageDao
 import one.mixin.android.db.JobDao
-import one.mixin.android.db.MessageDao
+import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.OffsetDao
 import one.mixin.android.db.insertNoReplace
 import one.mixin.android.db.makeMessageStatus
@@ -51,16 +49,16 @@ import java.util.concurrent.TimeUnit
 
 class ChatWebSocket(
     private val okHttpClient: OkHttpClient,
-    val app: Application,
-    val accountService: AccountService,
-    val conversationDao: ConversationDao,
-    val messageDao: MessageDao,
-    private val offsetDao: OffsetDao,
-    private val floodMessageDao: FloodMessageDao,
-    val jobManager: MixinJobManager,
+    private val accountService: AccountService,
+    private val mixinDatabase: MixinDatabase,
+    private val jobManager: MixinJobManager,
     private val linkState: LinkState,
-    private val jobDao: JobDao
+
 ) : WebSocketListener() {
+
+    private val offsetDao: OffsetDao = mixinDatabase.offsetDao()
+    private val jobDao: JobDao = mixinDatabase.jobDao()
+    private val floodMessageDao: FloodMessageDao = mixinDatabase.floodMessageDao()
 
     private val failCode = 1000
     private val quitCode = 1001
@@ -272,11 +270,11 @@ class ChatWebSocket(
     private fun handleReceiveMessage(blazeMessage: BlazeMessage) {
         val data = gson.fromJson(blazeMessage.data, BlazeMessageData::class.java)
         if (blazeMessage.action == ACKNOWLEDGE_MESSAGE_RECEIPT) {
-            messageDao.makeMessageStatus(data.status, data.messageId) // Ack of the server, conversationId is ""
+            mixinDatabase.makeMessageStatus(data.status, data.messageId) // Ack of the server, conversationId is ""
             offsetDao.insert(Offset(STATUS_OFFSET, data.updatedAt))
         } else if (blazeMessage.action == CREATE_MESSAGE || blazeMessage.action == CREATE_CALL || blazeMessage.action == CREATE_KRAKEN) {
             if (data.userId == accountId && data.category.isEmpty()) { // Ack of the create message
-                messageDao.makeMessageStatus(data.status, data.messageId)
+                mixinDatabase.makeMessageStatus(data.status, data.messageId)
             } else {
                 floodMessageDao.insert(FloodMessage(data.messageId, gson.toJson(data), data.createdAt))
             }
