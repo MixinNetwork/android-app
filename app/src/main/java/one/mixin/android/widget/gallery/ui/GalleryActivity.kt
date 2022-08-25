@@ -114,7 +114,7 @@ class GalleryActivity :
         mAlbumCollection.onCreate(this, this)
         mAlbumCollection.onRestoreInstanceState(savedInstanceState)
         mAlbumCollection.loadAlbums()
-        onBackPressedDispatcher.addCallback {
+        onBackPressedDispatcher.addCallback(enabled = false) {
             setResult(Activity.RESULT_CANCELED)
         }
     }
@@ -134,7 +134,7 @@ class GalleryActivity :
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         if (item.itemId == android.R.id.home) {
-            onBackPressed()
+            onBackPressedDispatcher.onBackPressed()
             return true
         }
         return super.onOptionsItemSelected(item)
