@@ -23,10 +23,14 @@ import one.mixin.android.extension.putLong
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.withArgs
 import one.mixin.android.session.Session
+import one.mixin.android.tip.DifferentIdentityException
+import one.mixin.android.tip.NotAllSignerSuccessException
 import one.mixin.android.tip.Tip
+import one.mixin.android.tip.TipNodeException
 import one.mixin.android.tip.checkCounter
-import one.mixin.android.tip.handleTipException
+import one.mixin.android.tip.getTipExceptionMsg
 import one.mixin.android.ui.common.BaseFragment
+import one.mixin.android.ui.common.PinInputBottomSheetDialogFragment
 import one.mixin.android.ui.common.VerifyBottomSheetDialogFragment
 import one.mixin.android.ui.setting.OldPasswordFragment
 import one.mixin.android.ui.setting.WalletPasswordFragment
@@ -77,10 +81,7 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
         }
 
         when (tipBundle.tipStep) {
-            SyncingNode -> {
-                updateTipStep(SyncingNode)
-                processTip()
-            }
+            Processing.Creating -> processTip()
             else -> tryConnect()
         }
     }
@@ -90,11 +91,16 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
         updateUI(newVal)
     }
 
-    private fun updateUI(newVal: TipStep) = binding.apply {
-        when (newVal) {
+    private fun updateUI(tipStep: TipStep) = binding.apply {
+        val forRecover = tipBundle.forRecover()
+        when (tipStep) {
             is TryConnecting -> {
                 closeIv.isVisible = true
-                descTv.highlightStarTag(getString(R.string.TIP_introduction), arrayOf(Constants.HelpLink.TIP))
+                if (forRecover) {
+                    descTv.text = getString(R.string.Upgrade_PIN_aborted_unexpectedly_at, "2022")
+                } else {
+                    descTv.highlightStarTag(getString(R.string.TIP_introduction), arrayOf(Constants.HelpLink.TIP))
+                }
                 tipsTv.isVisible = true
                 bottomVa.displayedChild = 0
                 innerVa.displayedChild = 1
@@ -103,7 +109,11 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
             }
             is RetryConnect -> {
                 closeIv.isVisible = true
-                descTv.highlightStarTag(getString(R.string.TIP_introduction), arrayOf(Constants.HelpLink.TIP))
+                if (forRecover) {
+                    descTv.text = getString(R.string.Upgrade_PIN_aborted_unexpectedly_at, "2022")
+                } else {
+                    descTv.highlightStarTag(getString(R.string.TIP_introduction), arrayOf(Constants.HelpLink.TIP))
+                }
                 tipsTv.isVisible = true
                 bottomVa.displayedChild = 0
                 innerVa.displayedChild = 0
@@ -114,47 +124,78 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
             }
             is ReadyStart -> {
                 closeIv.isVisible = true
-                descTv.highlightStarTag(getString(R.string.TIP_introduction), arrayOf(Constants.HelpLink.TIP))
+                if (forRecover) {
+                    descTv.text = getString(R.string.Upgrade_PIN_aborted_unexpectedly_at, "2022")
+                } else {
+                    descTv.highlightStarTag(getString(R.string.TIP_introduction), arrayOf(Constants.HelpLink.TIP))
+                }
                 tipsTv.isVisible = true
                 bottomVa.displayedChild = 0
                 innerVa.displayedChild = 0
-                when (tipBundle.tipType) {
-                    TipType.Upgrade -> {
-                        innerTv.text = getString(R.string.Upgrade)
-                        innerTv.setOnClickListener { upgrade() }
-                    }
-                    else -> {
-                        innerTv.text = getString(R.string.Start)
-                        innerTv.setOnClickListener { start() }
+                if (forRecover) {
+                    innerTv.text = getString(R.string.Continue)
+                    innerTv.setOnClickListener { recover() }
+                } else {
+                    when (tipBundle.tipType) {
+                        TipType.Upgrade -> {
+                            innerTv.text = getString(R.string.Upgrade)
+                            innerTv.setOnClickListener {
+                                showVerifyPin { pin ->
+                                    tipBundle.pin = pin
+                                    processTip()
+                                }
+                            }
+                        }
+                        else -> {
+                            innerTv.text = getString(R.string.Start)
+                            innerTv.setOnClickListener { start() }
+                        }
                     }
                 }
                 bottomHintTv.text = ""
             }
-            is SyncingNode -> {
+            is RetryProcess -> {
+                closeIv.isVisible = true
+                if (forRecover) {
+                    descTv.text = getString(R.string.Upgrade_PIN_aborted_unexpectedly_at, "2022")
+                } else {
+                    descTv.highlightStarTag(getString(R.string.TIP_introduction), arrayOf(Constants.HelpLink.TIP))
+                }
+                tipsTv.isVisible = true
+                bottomVa.displayedChild = 0
+                innerVa.displayedChild = 0
+                innerTv.text = getString(R.string.Retry)
+                innerTv.setOnClickListener {
+                    if (tipBundle.pin.isNullOrBlank()) {
+                        showInputPin { pin ->
+                            tipBundle.pin = pin
+                            processTip()
+                        }
+                    } else {
+                        processTip()
+                    }
+                }
+                bottomHintTv.text = tipStep.reason
+                bottomHintTv.setTextColor(requireContext().getColor(R.color.colorRed))
+            }
+            is Processing -> {
                 closeIv.isVisible = false
                 descTv.setText(R.string.Syncing_and_verifying_TIP)
                 tipsTv.isVisible = false
                 bottomVa.displayedChild = 2
-                bottomHintTv.text = getString(R.string.Trying_connect_tip_node)
                 bottomHintTv.setTextColor(requireContext().colorFromAttribute(R.attr.text_minor))
-            }
-            is ExchangeData -> {
-                closeIv.isVisible = false
-                descTv.setText(R.string.Syncing_and_verifying_TIP)
-                tipsTv.isVisible = false
-                bottomVa.displayedChild = 1
-                bottomHintTv.text = getString(R.string.Exchanging_data, 1, 12)
-                bottomHintTv.setTextColor(requireContext().colorFromAttribute(R.attr.text_minor))
-            }
-            is FromRecover -> {
-                closeIv.isVisible = true
-                descTv.text = getString(R.string.Upgrade_PIN_aborted_unexpectedly_at, "2022")
-                tipsTv.isVisible = true
-                bottomVa.displayedChild = 0
-                innerVa.displayedChild = 0
-                innerTv.text = getString(R.string.Continue)
-                bottomHintTv.text = getString(R.string.Continue_need_verify_your_PIN)
-                bottomHintTv.setTextColor(requireContext().colorFromAttribute(R.attr.text_minor))
+
+                when (tipStep) {
+                    is Processing.Creating -> {
+                        bottomHintTv.text = getString(R.string.Trying_connect_tip_node)
+                    }
+                    is Processing.SyncingNode -> {
+                        bottomHintTv.text = getString(R.string.Exchanging_data, tipStep.step, tipStep.total)
+                    }
+                    is Processing.Updating -> {
+                        bottomHintTv.text = getString(R.string.Upgrading)
+                    }
+                }
             }
         }
     }
@@ -167,6 +208,26 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
                 updateTipStep(ReadyStart)
             } else {
                 updateTipStep(RetryConnect)
+            }
+        }
+    }
+
+    private fun recover() {
+        when (tipBundle.tipType) {
+            TipType.Change -> {
+                showVerifyPin { oldPin ->
+                    tipBundle.oldPin = oldPin
+                    showInputPin { pin ->
+                        tipBundle.pin = pin
+                        processTip()
+                    }
+                }
+            }
+            else -> {
+                showVerifyPin { pin ->
+                    tipBundle.pin = pin
+                    processTip()
+                }
             }
         }
     }
@@ -188,23 +249,9 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
         }
     }
 
-    private fun upgrade() {
-        val deviceId = defaultSharedPreferences.getString(Constants.DEVICE_ID, null)
-        if (deviceId == null) {
-            toast(R.string.Data_error)
-            return
-        }
-        VerifyBottomSheetDialogFragment.newInstance().setOnPinSuccess { pin ->
-            lifecycleScope.launch {
-                tip.createTipPriv(requireContext(), pin, deviceId, tipBundle.tipEvent?.failedSigners)
-            }
-        }.apply {
-            autoDismiss = true
-            showNow(parentFragmentManager, VerifyBottomSheetDialogFragment.TAG)
-        }
-    }
-
     private fun processTip() = lifecycleScope.launch {
+        updateTipStep(Processing.Creating)
+
         val tipCounter = Session.getTipCounter()
         val deviceId = tipBundle.deviceId
         val nodeCounter = tipBundle.tipEvent?.nodeCounter ?: 0
@@ -212,30 +259,31 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
         val pin = requireNotNull(tipBundle.pin) { "process tip step pin can not be null" }
         val oldPin = tipBundle.oldPin
         Timber.d("tip nodeCounter $nodeCounter, tipCounter $tipCounter, signers size ${failedSigners?.size}")
-        try {
-            tip.addObserver(tipObserver)
 
-            val tipPriv = if (tipCounter < 1) {
-                tip.createTipPriv(requireContext(), pin, deviceId, failedSigners, oldPin)
-            } else {
-                val nodeSuccess = nodeCounter > tipCounter && failedSigners.isNullOrEmpty()
-                tip.updateTipPriv(requireContext(), requireNotNull(oldPin), deviceId, pin, nodeSuccess, failedSigners)
-            }.getOrNull()
-
+        tip.addObserver(tipObserver)
+        if (tipCounter < 1) {
+            tip.createTipPriv(requireContext(), pin, deviceId, failedSigners, oldPin)
+        } else {
+            val nodeSuccess = nodeCounter > tipCounter && failedSigners.isNullOrEmpty()
+            tip.updateTipPriv(requireContext(), requireNotNull(oldPin), deviceId, pin, nodeSuccess, failedSigners)
+        }.onSuccess {
             tip.removeObserver(tipObserver)
-
-            if (tipPriv != null) {
-                afterPinSuccess(pin)
-            } else {
-                // no exception happen means the nodes part must success,
-                // clear failed node list to prepare for a new try.
-                tipBundle.updateTipEvent(null, nodeCounter)
-            }
-        } catch (e: Exception) {
-            e.handleTipException()
-
+            onTipProcessSuccess(pin)
+        }.onFailure { e ->
             tip.removeObserver(tipObserver)
+            onTipProcessFailure(e, tipCounter, nodeCounter)
+        }
+    }
 
+    private suspend fun onTipProcessFailure(
+        e: Throwable,
+        tipCounter: Int,
+        nodeCounter: Int
+    ) {
+        val errMsg = e.getTipExceptionMsg()
+        toast(errMsg)
+
+        if (e is TipNodeException) {
             tip.checkCounter(
                 tipCounter,
                 onNodeCounterGreaterThanServer = { tipBundle.updateTipEvent(null, it) },
@@ -243,10 +291,22 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
                     tipBundle.updateTipEvent(nodeFailedSigners, nodeMaxCounter)
                 }
             )
+
+            if ((e is DifferentIdentityException) ||
+                (e is NotAllSignerSuccessException && e.successSignerSize == 0) // all signer failed perhaps means PIN incorrect
+            ) {
+                tipBundle.pin = null
+            }
+            updateTipStep(RetryProcess(errMsg))
+        } else {
+            // NOT TipNodeException means the nodes part must success,
+            // clear failed node list to prepare for a new try to communicate with API server.
+            tipBundle.updateTipEvent(null, nodeCounter)
+            updateTipStep(RetryProcess(errMsg))
         }
     }
 
-    private fun afterPinSuccess(pin: String) {
+    private fun onTipProcessSuccess(pin: String) {
         val cur = System.currentTimeMillis()
         defaultSharedPreferences.putLong(Constants.Account.PREF_PIN_CHECK, cur)
         putPrefPinInterval(requireContext(), INTERVAL_10_MINS)
@@ -266,9 +326,31 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
         activity?.finish()
     }
 
+    private fun showVerifyPin(onVerifySuccess: (String) -> Unit) {
+        VerifyBottomSheetDialogFragment.newInstance(getString(R.string.Enter_your_old_PIN)).setOnPinSuccess { pin ->
+            onVerifySuccess(pin)
+        }.apply {
+            autoDismiss = true
+        }.showNow(parentFragmentManager, VerifyBottomSheetDialogFragment.TAG)
+    }
+
+    private fun showInputPin(onInputComplete: (String) -> Unit) {
+        PinInputBottomSheetDialogFragment.newInstance(getString(R.string.Enter_your_new_PIN)).setOnPinComplete { pin ->
+            onInputComplete(pin)
+        }.showNow(parentFragmentManager, PinInputBottomSheetDialogFragment.TAG)
+    }
+
     private val tipObserver = object : Tip.Observer {
-        override fun onTipNodeComplete() {
-            updateTipStep(ExchangeData)
+        override fun onSyncing(step: Int, total: Int) {
+            lifecycleScope.launch {
+                updateTipStep(Processing.SyncingNode(step, total))
+            }
+        }
+
+        override fun onSyncingComplete() {
+            lifecycleScope.launch {
+                updateTipStep(Processing.Updating)
+            }
         }
     }
 }

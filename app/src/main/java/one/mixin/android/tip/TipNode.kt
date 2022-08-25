@@ -24,6 +24,7 @@ import one.mixin.android.util.GsonHelper
 import retrofit2.HttpException
 import timber.log.Timber
 import java.util.concurrent.CopyOnWriteArrayList
+import java.util.concurrent.atomic.AtomicInteger
 import javax.inject.Inject
 import kotlin.time.Duration.Companion.days
 
@@ -42,6 +43,7 @@ class TipNode @Inject internal constructor(private val tipNodeService: TipNodeSe
         assigneePriv: ByteArray?,
         failedSigners: List<TipSigner>? = null,
         forRecover: Boolean = false,
+        callback: Callback? = null,
     ): ByteArray {
         val suite = Crypto.newSuiteBn256()
         val userSk = suite.scalar()
@@ -62,17 +64,17 @@ class TipNode @Inject internal constructor(private val tipNodeService: TipNodeSe
             // should sign successful signers before failed signers,
             // prevent signing failed signers with different identities.
             val successfulSigners = tipConfig.signers - failedSigners
-            val successfulData = getNodeSigs(assigneeSk, successfulSigners, ephemeral, watcher, null)
+            val successfulData = getNodeSigs(assigneeSk, successfulSigners, ephemeral, watcher, null, callback)
             if (successfulData.isEmpty() || successfulData.any { it.counter <= 1 }) {
                 Timber.w("previously successful signers use different identities")
                 throw DifferentIdentityException()
             }
 
-            val failedData = getNodeSigs(userSk, failedSigners, ephemeral, watcher, assignee)
+            val failedData = getNodeSigs(userSk, failedSigners, ephemeral, watcher, assignee, callback)
             Timber.d("tip successful data size ${successfulData.size}, failed data size ${failedData.size}")
             failedData + successfulData
         } else {
-            getNodeSigs(userSk, tipConfig.signers, ephemeral, watcher, assignee)
+            getNodeSigs(userSk, tipConfig.signers, ephemeral, watcher, assignee, callback)
         }
 
         if (!forRecover && data.size < tipConfig.signers.size) {
@@ -92,8 +94,12 @@ class TipNode @Inject internal constructor(private val tipNodeService: TipNodeSe
         return Crypto.recoverSignature(hexSigs, commitments, assignor, tipConfig.signers.size.toLong())
     }
 
-    suspend fun watch(watcher: ByteArray): List<TipNodeCounter> {
+    suspend fun watch(watcher: ByteArray, callback: Callback? = null): List<TipNodeCounter> {
         val result = CopyOnWriteArrayList<TipNodeCounter>()
+
+        val total = tipConfig.signers.size
+        val completeCount = AtomicInteger(0)
+
         coroutineScope {
             tipConfig.signers.mapIndexed { index, signer ->
                 async(Dispatchers.IO) {
@@ -108,6 +114,10 @@ class TipNode @Inject internal constructor(private val tipNodeService: TipNodeSe
 
                         if (counter >= 0) {
                             result.add(TipNodeCounter(counter, signer))
+
+                            val step = completeCount.incrementAndGet()
+                            callback?.onNodeComplete(step, total)
+
                             Timber.d("watch tip node $index success")
                             return@async
                         }
@@ -121,10 +131,13 @@ class TipNode @Inject internal constructor(private val tipNodeService: TipNodeSe
         return result
     }
 
-    private suspend fun getNodeSigs(userSk: Scalar, tipSigners: List<TipSigner>, ephemeral: ByteArray, watcher: ByteArray, assignee: ByteArray?): List<TipSignRespData> {
+    private suspend fun getNodeSigs(userSk: Scalar, tipSigners: List<TipSigner>, ephemeral: ByteArray, watcher: ByteArray, assignee: ByteArray?, callback: Callback?): List<TipSignRespData> {
         val signResult = CopyOnWriteArrayList<TipSignRespData>()
         val nonce = currentTimeSeconds()
         val grace = ephemeralGrace
+
+        val total = tipSigners.size
+        val completeCount = AtomicInteger(0)
 
         coroutineScope {
             tipSigners.mapIndexed { index, signer ->
@@ -139,6 +152,10 @@ class TipNode @Inject internal constructor(private val tipNodeService: TipNodeSe
 
                         if (sign != null) {
                             signResult.add(sign)
+
+                            val step = completeCount.incrementAndGet()
+                            callback?.onNodeComplete(step, total)
+
                             Timber.d("fetch tip node $index sign success")
                             return@async
                         }
@@ -274,4 +291,8 @@ class TipNode @Inject internal constructor(private val tipNodeService: TipNodeSe
     )
 
     val nodeCount = tipConfig.signers.size
+
+    interface Callback {
+        fun onNodeComplete(step: Int, total: Int)
+    }
 }

@@ -28,7 +28,6 @@ import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.nowInUtcNano
 import one.mixin.android.extension.putString
 import one.mixin.android.extension.toBeByteArray
-import one.mixin.android.extension.toast
 import one.mixin.android.session.Session
 import one.mixin.android.session.encryptPin
 import one.mixin.android.session.encryptTipPin
@@ -109,9 +108,16 @@ class Tip @Inject internal constructor(
     @Throws(TipException::class, TipNodeException::class)
     private suspend fun createPriv(context: Context, identityPriv: ByteArray, ephemeral: ByteArray, watcher: ByteArray, pin: String, failedSigners: List<TipSigner>? = null, legacyPin: String? = null, forRecover: Boolean = false): Result<ByteArray> {
         try {
-            val aggSig = tipNode.sign(identityPriv, ephemeral, watcher, null, failedSigners)
+            val aggSig = tipNode.sign(
+                identityPriv, ephemeral, watcher, null, failedSigners,
+                callback = object : TipNode.Callback {
+                    override fun onNodeComplete(step: Int, total: Int) {
+                        observers.forEach { it.onSyncing(step, total) }
+                    }
+                }
+            )
 
-            observers.forEach { it.onTipNodeComplete() }
+            observers.forEach { it.onSyncingComplete() }
 
             val privateSpec = EdDSAPrivateKeySpec(ed25519, aggSig.copyOf())
             val pub = EdDSAPublicKey(EdDSAPublicKeySpec(privateSpec.a, ed25519))
@@ -153,16 +159,22 @@ class Tip @Inject internal constructor(
     @Throws(IOException::class, TipNodeException::class, TipNetWorkException::class)
     private suspend fun updatePriv(context: Context, identityPriv: ByteArray, ephemeral: ByteArray, watcher: ByteArray, newPin: String, assigneePriv: ByteArray, nodeSuccess: Boolean, failedSigners: List<TipSigner>? = null): Result<ByteArray> {
         return try {
+            val callback = object : TipNode.Callback {
+                override fun onNodeComplete(step: Int, total: Int) {
+                    observers.forEach { it.onSyncing(step, total) }
+                }
+            }
             val aggSig = if (nodeSuccess) {
-                tipNode.sign(assigneePriv, ephemeral, watcher, null, null)
+                tipNode.sign(assigneePriv, ephemeral, watcher, null, null, callback = callback)
             } else {
-                tipNode.sign(identityPriv, ephemeral, watcher, assigneePriv, failedSigners)
+                tipNode.sign(identityPriv, ephemeral, watcher, assigneePriv, failedSigners, callback = callback)
             }
 
-            observers.forEach { it.onTipNodeComplete() }
+            observers.forEach { it.onSyncingComplete() }
 
             encryptAndSave(context, newPin, aggSig)
             replaceEncryptedPin(aggSig)
+
             Result.success(aggSig)
         } catch (e: Exception) {
             Result.failure(e)
@@ -290,7 +302,8 @@ class Tip @Inject internal constructor(
     }
 
     interface Observer {
-        fun onTipNodeComplete()
+        fun onSyncing(step: Int, total: Int)
+        fun onSyncingComplete()
     }
 }
 
@@ -318,18 +331,15 @@ fun tipNodeCounterToSigners(tipNodeCounters: List<TipNode.TipNodeCounter>?): Lis
         tipNodeCounters.mapTo(signers) { it.tipSigner }
     } else null
 
-fun Exception.handleTipException() {
+fun Throwable.getTipExceptionMsg(): String =
     // TODO i18n
-    toast(
-        when (this) {
-            is PinIncorrectException -> "PIN incorrect"
-            is NotEnoughPartialsException -> "Not enough partials"
-            is NotAllSignerSuccessException -> "Not all signer success"
-            is DifferentIdentityException -> "PIN not same as last time"
-            else -> "Set or update PIN failed"
-        }
-    )
-}
+    when (this) {
+        is PinIncorrectException -> "PIN incorrect"
+        is NotEnoughPartialsException -> "Not enough partials"
+        is NotAllSignerSuccessException -> "Not all signer success"
+        is DifferentIdentityException -> "PIN not same as last time"
+        else -> "Set or update PIN failed"
+    }
 
 suspend fun Tip.checkCounter(
     tipCounter: Int,
