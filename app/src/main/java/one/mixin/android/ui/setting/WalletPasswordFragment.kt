@@ -15,7 +15,7 @@ import one.mixin.android.extension.tickVibrate
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.BaseFragment
-import one.mixin.android.ui.tip.SyncingNode
+import one.mixin.android.ui.tip.Processing
 import one.mixin.android.ui.tip.TipBundle
 import one.mixin.android.ui.tip.TipFragment
 import one.mixin.android.ui.tip.TipFragment.Companion.ARGS_TIP_BUNDLE
@@ -218,7 +218,7 @@ class WalletPasswordFragment : BaseFragment(R.layout.fragment_wallet_password), 
 
                 val pin = binding.pin.code()
                 tipBundle.pin = pin
-                tipBundle.tipStep = SyncingNode
+                tipBundle.tipStep = Processing.Creating
                 val tipFragment = TipFragment.newInstance(tipBundle)
                 activity?.replaceFragment(tipFragment, R.id.container, TipFragment.TAG)
             }

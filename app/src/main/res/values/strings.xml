@@ -1058,6 +1058,8 @@
     <string name="Create_PIN">Create PIN</string>
     <string name="Upgrade_PIN">Upgrade PIN</string>
     <string name="Start">Start</string>
+    <string name="Enter_your_old_PIN">Enter your old PIN</string>
+    <string name="Enter_your_new_PIN">Enter your new PIN</string>
     <string name="TIP_introduction">The PIN is based on the Throttled Identity Protocol, which is the decentralized key derivation protocol, read the document to **learn more**.</string>
     <string name="Please_use_when_network_is_connected">Please use when network is connected</string>
     <string name="Please_keep_app_in_foreground">Please keep App in foreground</string>

@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.app.Dialog
 import android.content.DialogInterface
 import dagger.hilt.android.AndroidEntryPoint
+import one.mixin.android.Constants.ARGS_TITLE
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentPermissionBinding
 import one.mixin.android.extension.realSize
@@ -19,7 +20,6 @@ class PermissionBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         const val TAG = "PermissionBottomSheetDialogFragment"
 
         private const val ARGS_PERMISSION = "args_permission"
-        private const val ARGS_TITLE = "args_title"
         private const val ARGS_NAME = "args_name"
         private const val ARGS_NUMBER = "args_number"
 

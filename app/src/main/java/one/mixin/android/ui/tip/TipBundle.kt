@@ -17,10 +17,12 @@ sealed class TipStep : Parcelable
 @Parcelize internal object TryConnecting : TipStep()
 @Parcelize internal object RetryConnect : TipStep()
 @Parcelize internal object ReadyStart : TipStep()
-// TODO add tip failed state for retry
-@Parcelize internal object SyncingNode : TipStep()
-@Parcelize internal object ExchangeData : TipStep()
-@Parcelize internal object FromRecover : TipStep()
+@Parcelize internal data class RetryProcess(val reason: String) : TipStep()
+@Parcelize internal sealed class Processing : TipStep() {
+    @Parcelize internal object Creating : Processing()
+    @Parcelize internal data class SyncingNode(val step: Int, val total: Int) : Processing()
+    @Parcelize internal object Updating : Processing()
+}
 
 @Parcelize
 data class TipBundle(
@@ -32,6 +34,8 @@ data class TipBundle(
     var tipEvent: TipEvent? = null,
 ) : Parcelable {
     fun forChange() = tipType == TipType.Change
+
+    fun forRecover() = tipEvent != null
 
     fun updateTipEvent(failedSigners: List<TipSigner>?, nodeCounter: Int) {
         tipEvent = TipEvent(nodeCounter, failedSigners)
