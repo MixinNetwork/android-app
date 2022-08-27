@@ -141,7 +141,7 @@ class Tip @Inject internal constructor(
         }
     }
 
-    @Throws(IOException::class, TipNetWorkException::class)
+    @Throws(IOException::class, TipNetworkException::class)
     private suspend fun replaceOldEncryptedPin(
         pub: EdDSAPublicKey,
         legacyPin: String? = null
@@ -156,7 +156,7 @@ class Tip @Inject internal constructor(
         Session.storeAccount(account)
     }
 
-    @Throws(IOException::class, TipNodeException::class, TipNetWorkException::class)
+    @Throws(IOException::class, TipNodeException::class, TipNetworkException::class)
     private suspend fun updatePriv(context: Context, identityPriv: ByteArray, ephemeral: ByteArray, watcher: ByteArray, newPin: String, assigneePriv: ByteArray, nodeSuccess: Boolean, failedSigners: List<TipSigner>? = null): Result<ByteArray> {
         return try {
             val callback = object : TipNode.Callback {
@@ -181,7 +181,7 @@ class Tip @Inject internal constructor(
         }
     }
 
-    @Throws(IOException::class, TipNetWorkException::class)
+    @Throws(IOException::class, TipNetworkException::class)
     private suspend fun replaceEncryptedPin(aggSig: ByteArray) {
         val privateSpec = EdDSAPrivateKeySpec(ed25519, aggSig.copyOf())
         val pub = EdDSAPublicKey(EdDSAPublicKeySpec(privateSpec.a, ed25519))
@@ -316,7 +316,7 @@ suspend fun <T> tipNetwork(network: suspend () -> MixinResponse<T>): Result<T> {
             return@withContext Result.success(data)
         } else {
             return@withContext Result.failure(
-                TipNetWorkException(
+                TipNetworkException(
                     response.error?.description ?: "Empty error description",
                     response.errorCode
                 )

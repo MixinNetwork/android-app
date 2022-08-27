@@ -254,7 +254,7 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
 
         val tipCounter = Session.getTipCounter()
         val deviceId = tipBundle.deviceId
-        val nodeCounter = tipBundle.tipEvent?.nodeCounter ?: 0
+        val nodeCounter = tipBundle.tipEvent?.nodeCounter ?: tipCounter
         val failedSigners = tipBundle.tipEvent?.failedSigners
         val pin = requireNotNull(tipBundle.pin) { "process tip step pin can not be null" }
         val oldPin = tipBundle.oldPin
