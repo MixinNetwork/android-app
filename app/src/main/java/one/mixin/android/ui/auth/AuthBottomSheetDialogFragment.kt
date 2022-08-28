@@ -160,7 +160,7 @@ class AuthBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
 
     private class ScopeAdapter(val scopes: List<Scope>) : RecyclerView.Adapter<ScopeViewHolder>() {
         val checkedScopes = ArraySet<String>().apply {
-            addAll(SCOPES)
+            addAll(scopes.map { it.name })
         }
         var onScopeListener: OnScopeListener? = null
 
