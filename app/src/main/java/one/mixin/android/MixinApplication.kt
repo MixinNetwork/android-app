@@ -303,6 +303,9 @@ open class MixinApplication :
 
     override fun onActivityStopped(activity: Activity) {
         isActivityChangingConfigurations = activity.isChangingConfigurations
+        if (contextWrapper.baseContext == activity) {
+            contextWrapper.baseContext = this@MixinApplication
+        }
         if (activity !is AppAuthActivity) {
             activityReferences -= 1
         } else {
