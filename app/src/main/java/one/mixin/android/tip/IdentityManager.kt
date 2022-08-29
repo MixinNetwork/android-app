@@ -24,7 +24,7 @@ class IdentityManager @Inject internal constructor(private val tipService: TipSe
         return PriKeyAndWatcher(hashResult.rawHashAsByteArray(), plain.sha3Sum256())
     }
 
-    suspend fun getWatcher(): ByteArray? = getIdentitySeed().sha3Sum256()
+    suspend fun getWatcher(): ByteArray = getIdentitySeed().sha3Sum256()
 
     private suspend fun getIdentitySeed(): ByteArray {
         val tipIdentity = tipNetwork { tipService.tipIdentity() }.getOrThrow().seedBase64.base64RawUrlDecode()

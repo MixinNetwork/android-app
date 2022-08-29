@@ -15,7 +15,7 @@ enum class TipType : Parcelable {
 
 sealed class TipStep : Parcelable
 @Parcelize internal object TryConnecting : TipStep()
-@Parcelize internal object RetryConnect : TipStep()
+@Parcelize internal data class RetryConnect(val shouldWatch: Boolean) : TipStep()
 @Parcelize internal object ReadyStart : TipStep()
 @Parcelize internal data class RetryProcess(val reason: String) : TipStep()
 @Parcelize internal sealed class Processing : TipStep() {

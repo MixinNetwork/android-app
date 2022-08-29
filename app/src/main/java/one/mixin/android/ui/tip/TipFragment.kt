@@ -82,7 +82,7 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
 
         when (tipBundle.tipStep) {
             Processing.Creating -> processTip()
-            else -> tryConnect()
+            else -> tryConnect(false)
         }
     }
 
@@ -118,7 +118,7 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
                 bottomVa.displayedChild = 0
                 innerVa.displayedChild = 0
                 innerTv.text = getString(R.string.Retry)
-                innerTv.setOnClickListener { tryConnect() }
+                innerTv.setOnClickListener { tryConnect(tipStep.shouldWatch) }
                 bottomHintTv.text = getString(R.string.Connect_to_TIP_network_failed)
                 bottomHintTv.setTextColor(requireContext().getColor(R.color.colorRed))
             }
@@ -200,14 +200,35 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
         }
     }
 
-    private fun tryConnect() {
+    private fun tryConnect(shouldWatch: Boolean) {
         updateTipStep(TryConnecting)
         lifecycleScope.launch {
-            val available = viewModel.checkTipNodeConnect()
+            var available = viewModel.checkTipNodeConnect()
+            if (!available) {
+                updateTipStep(RetryConnect(shouldWatch))
+                return@launch
+            }
+
+            if (shouldWatch) {
+                val tipCounter = Session.getTipCounter()
+                kotlin.runCatching {
+                    tip.checkCounter(
+                        tipCounter,
+                        onNodeCounterGreaterThanServer = { tipBundle.updateTipEvent(null, it) },
+                        onNodeCounterNotConsistency = { nodeMaxCounter, nodeFailedSigners ->
+                            tipBundle.updateTipEvent(nodeFailedSigners, nodeMaxCounter)
+                        }
+                    )
+                }.onFailure {
+                    Timber.d("try connect tip watch failure $it")
+                    available = false
+                }
+            }
+
             if (available) {
                 updateTipStep(ReadyStart)
             } else {
-                updateTipStep(RetryConnect)
+                updateTipStep(RetryConnect(true))
             }
         }
     }
@@ -284,19 +305,29 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
         toast(errMsg)
 
         if (e is TipNodeException) {
-            tip.checkCounter(
-                tipCounter,
-                onNodeCounterGreaterThanServer = { tipBundle.updateTipEvent(null, it) },
-                onNodeCounterNotConsistency = { nodeMaxCounter, nodeFailedSigners ->
-                    tipBundle.updateTipEvent(nodeFailedSigners, nodeMaxCounter)
-                }
-            )
-
             if ((e is DifferentIdentityException) ||
                 (e is NotAllSignerSuccessException && e.successSignerSize == 0) // all signer failed perhaps means PIN incorrect
             ) {
                 tipBundle.pin = null
             }
+
+            kotlin.runCatching {
+                tip.checkCounter(
+                    tipCounter,
+                    onNodeCounterGreaterThanServer = { tipBundle.updateTipEvent(null, it) },
+                    onNodeCounterNotConsistency = { nodeMaxCounter, nodeFailedSigners ->
+                        tipBundle.updateTipEvent(nodeFailedSigners, nodeMaxCounter)
+                    }
+                )
+            }.onFailure {
+                // Generally, check-counter should NOT meet exceptions, if this happens,
+                // we should go to the RetryConnect step to check network and other steps.
+                tipBundle.pin = null
+                tipBundle.oldPin = null
+                updateTipStep(RetryConnect(true))
+                return
+            }
+
             updateTipStep(RetryProcess(errMsg))
         } else {
             // NOT TipNodeException means the nodes part must success,
