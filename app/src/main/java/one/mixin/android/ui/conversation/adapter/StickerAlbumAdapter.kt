@@ -105,7 +105,6 @@ class StickerAlbumAdapter(
             else -> {
                 val album = albums[pos - UN_NORMAL_COUNT]
                 val url = album.iconUrl
-                // Todo 
                 val type = if (url.endsWith(".json")) {
                     "JSON"
                 } else {
