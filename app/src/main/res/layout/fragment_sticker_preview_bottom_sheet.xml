@@ -22,7 +22,7 @@
         android:layout_marginEnd="26dp"
         android:layout_marginBottom="26dp">
 
-        <ImageView
+        <one.mixin.android.widget.RLottieImageView
             android:id="@+id/preview_iv"
             android:layout_width="180dp"
             android:layout_height="180dp"
