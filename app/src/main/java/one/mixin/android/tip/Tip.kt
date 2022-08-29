@@ -98,9 +98,10 @@ class Tip @Inject internal constructor(
         }
     }
 
-    suspend fun watchTipNodeCounters(): List<TipNode.TipNodeCounter>? {
-        val watcher = identityManager.getWatcher() ?: return null
-        return tipNode.watch(watcher)
+    @Throws(IOException::class)
+    suspend fun watchTipNodeCounters(): Result<List<TipNode.TipNodeCounter>> = kotlin.runCatching {
+        val watcher = identityManager.getWatcher()
+        tipNode.watch(watcher)
     }
 
     fun tipNodeCount() = tipNode.nodeCount
@@ -211,7 +212,7 @@ class Tip @Inject internal constructor(
     @Throws(TipException::class)
     private suspend fun generateAesKey(pin: String): ByteArray {
         val sessionPriv =
-            Session.getEd25519Seed()?.decodeBase64() ?: throw TipNullException("No de25519 key")
+            Session.getEd25519Seed()?.decodeBase64() ?: throw TipNullException("No ed25519 key")
         val pinToken =
             Session.getPinToken()?.decodeBase64() ?: throw TipNullException("No pin token")
 
@@ -325,12 +326,6 @@ suspend fun <T> tipNetwork(network: suspend () -> MixinResponse<T>): Result<T> {
     }
 }
 
-fun tipNodeCounterToSigners(tipNodeCounters: List<TipNode.TipNodeCounter>?): List<TipSigner>? =
-    if (tipNodeCounters != null) {
-        val signers = mutableListOf<TipSigner>()
-        tipNodeCounters.mapTo(signers) { it.tipSigner }
-    } else null
-
 fun Throwable.getTipExceptionMsg(): String =
     // TODO i18n
     when (this) {
@@ -341,15 +336,16 @@ fun Throwable.getTipExceptionMsg(): String =
         else -> "Set or update PIN failed"
     }
 
+@Throws(IOException::class, TipNullException::class)
 suspend fun Tip.checkCounter(
     tipCounter: Int,
     onNodeCounterGreaterThanServer: suspend (Int) -> Unit,
     onNodeCounterNotConsistency: suspend (Int, List<TipSigner>?) -> Unit,
 ) {
-    val counters = watchTipNodeCounters()
-    if (counters.isNullOrEmpty()) {
-        Timber.w("watch tip node counters but counters is $counters")
-        return
+    val counters = watchTipNodeCounters().getOrThrow()
+    if (counters.isEmpty()) {
+        Timber.w("watch tip node counters but counters is empty")
+        throw TipNullException("watch tip node counters but counters is empty")
     }
 
     if (counters.size != tipNodeCount()) {
