@@ -11,6 +11,7 @@ import androidx.annotation.StringRes
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.view.isInvisible
 import androidx.core.view.isVisible
+import com.uber.autodispose.android.autoDispose
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
 import one.mixin.android.R
@@ -68,6 +69,7 @@ class PinMessageLayout constructor(context: Context, attrs: AttributeSet) :
         super.onAttachedToWindow()
         disposable = RxBus.listen(PinMessageEvent::class.java)
             .observeOn(AndroidSchedulers.mainThread())
+            .autoDispose(this)
             .subscribe {
                 if (it.conversationId == conversationId) {
                     context.sharedPreferences(RefreshConversationJob.PREFERENCES_CONVERSATION)

@@ -2,10 +2,12 @@ package one.mixin.android.ui.call
 
 import android.annotation.SuppressLint
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
+import com.uber.autodispose.android.autoDispose
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
 import one.mixin.android.R
@@ -76,7 +78,7 @@ class CallUserAdapter(private val self: CallUser, private val callClicker: (Stri
     override fun onViewAttachedToWindow(holder: RecyclerView.ViewHolder) {
         if (holder is CallUserHolder) {
             getItem(holder.layoutPosition - 1)?.let {
-                holder.listen(it.userId)
+                holder.listen(holder.itemView, it.userId)
             }
         }
     }
@@ -129,10 +131,11 @@ class CallUserHolder(val binding: ItemCallUserBinding) : RecyclerView.ViewHolder
     private var blinkDisposable: Disposable? = null
     private var disposable: Disposable? = null
 
-    fun listen(userId: String) {
+    fun listen(view: View, userId: String) {
         if (blinkDisposable == null) {
             blinkDisposable = RxBus.listen(VoiceEvent::class.java)
                 .observeOn(AndroidSchedulers.mainThread())
+                .autoDispose(view)
                 .subscribe {
                     if (it.userId == userId) {
                         binding.blinkRing.updateAudioLevel(it.audioLevel)
@@ -145,6 +148,7 @@ class CallUserHolder(val binding: ItemCallUserBinding) : RecyclerView.ViewHolder
         if (disposable == null) {
             disposable = RxBus.listen(FrameKeyEvent::class.java)
                 .observeOn(AndroidSchedulers.mainThread())
+                .autoDispose(view)
                 .subscribe {
                     if (it.userId == userId) {
                         binding.ring.isVisible = !it.hasKey

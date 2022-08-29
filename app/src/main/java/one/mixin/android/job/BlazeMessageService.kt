@@ -11,11 +11,14 @@ import android.os.PowerManager
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import androidx.core.content.getSystemService
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleService
 import androidx.lifecycle.lifecycleScope
 import androidx.room.InvalidationTracker
 import com.birbit.android.jobqueue.network.NetworkEventProvider
 import com.birbit.android.jobqueue.network.NetworkUtil
+import com.uber.autodispose.android.lifecycle.scope
+import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import io.reactivex.disposables.Disposable
 import io.reactivex.schedulers.Schedulers
@@ -146,6 +149,7 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
     private val activityManager by lazy { getSystemService<ActivityManager>() }
     private var isIgnoringBatteryOptimizations = false
     private var disposable: Disposable? = null
+    private val destroyScope = scope(Lifecycle.Event.ON_DESTROY)
 
     override fun onBind(intent: Intent): IBinder? {
         super.onBind(intent)
@@ -165,6 +169,7 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
         networkUtil.setListener(this)
         if (disposable == null) {
             disposable = RxBus.listen(ExpiredEvent::class.java).observeOn(Schedulers.io())
+                .autoDispose(destroyScope)
                 .subscribe { event ->
                     val expiredIn = event.expireIn
                     if (expiredIn != null) {
