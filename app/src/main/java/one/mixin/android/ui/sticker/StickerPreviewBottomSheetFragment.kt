@@ -13,7 +13,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import one.mixin.android.databinding.FragmentStickerPreviewBottomSheetBinding
 import one.mixin.android.extension.dp
-import one.mixin.android.extension.loadImage
+import one.mixin.android.extension.loadSticker
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
 import one.mixin.android.ui.conversation.ConversationViewModel
 import one.mixin.android.util.viewBinding
@@ -72,7 +72,7 @@ class StickerPreviewBottomSheetFragment : MixinBottomSheetDialogFragment() {
             }
             adapter.stickerListener = object : StickerListener {
                 override fun onItemClick(sticker: Sticker) {
-                    previewIv.loadImage(sticker.assetUrl)
+                    previewIv.loadSticker(sticker.assetUrl, sticker.assetType, "${sticker.assetUrl}${sticker.albumId}")
                 }
             }
         }
@@ -80,7 +80,7 @@ class StickerPreviewBottomSheetFragment : MixinBottomSheetDialogFragment() {
         val stickerLiveData = viewModel.observeStickerById(stickerId)
         val observer = object : Observer<Sticker> {
             override fun onChanged(sticker: Sticker) {
-                binding.previewIv.loadImage(sticker.assetUrl)
+                binding.previewIv.loadSticker(sticker.assetUrl, sticker.assetType, "${sticker.assetUrl}${sticker.albumId}")
 
                 val albumId = sticker.albumId
                 if (albumId.isNullOrBlank()) {

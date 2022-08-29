@@ -105,7 +105,13 @@ class StickerAlbumAdapter(
             else -> {
                 val album = albums[pos - UN_NORMAL_COUNT]
                 val url = album.iconUrl
-                binding.icon.loadSticker(url, null, "${url}${album.albumId}")
+                // Todo 
+                val type = if (url.endsWith(".json")) {
+                    "JSON"
+                } else {
+                    null
+                }
+                binding.icon.loadSticker(url, type, "${url}${album.albumId}")
             }
         }
         return binding.root
