@@ -72,7 +72,11 @@ class StickerPreviewBottomSheetFragment : MixinBottomSheetDialogFragment() {
             }
             adapter.stickerListener = object : StickerListener {
                 override fun onItemClick(sticker: Sticker) {
-                    previewIv.loadSticker(sticker.assetUrl, sticker.assetType, "${sticker.assetUrl}${sticker.albumId}")
+                    previewIv.loadSticker(
+                        sticker.assetUrl,
+                        sticker.assetType,
+                        "${sticker.assetUrl}${sticker.albumId}"
+                    )
                 }
             }
         }
@@ -80,7 +84,11 @@ class StickerPreviewBottomSheetFragment : MixinBottomSheetDialogFragment() {
         val stickerLiveData = viewModel.observeStickerById(stickerId)
         val observer = object : Observer<Sticker> {
             override fun onChanged(sticker: Sticker) {
-                binding.previewIv.loadSticker(sticker.assetUrl, sticker.assetType, "${sticker.assetUrl}${sticker.albumId}")
+                binding.previewIv.loadSticker(
+                    sticker.assetUrl,
+                    sticker.assetType,
+                    "${sticker.assetUrl}${sticker.albumId}"
+                )
 
                 val albumId = sticker.albumId
                 if (albumId.isNullOrBlank()) {
@@ -109,19 +117,31 @@ class StickerPreviewBottomSheetFragment : MixinBottomSheetDialogFragment() {
 
                 binding.tileTv.text = album.name
                 binding.actionTv.isVisible = album.category == "SYSTEM"
-                binding.actionTv.updateAlbumAdd(requireContext(), album.added) {
-                    lifecycleScope.launch {
-                        val maxOrder = viewModel.findMaxOrder()
-                        viewModel.updateAlbumAdded(
-                            StickerAlbumAdded(
-                                albumId,
-                                true,
-                                maxOrder + 1
-                            )
-                        )
-                    }
-                }
+                binding.actionTv.setStatus(album.added)
             }
+
+        binding.actionTv.init({
+            lifecycleScope.launch {
+                viewModel.updateAlbumAdded(
+                    StickerAlbumAdded(
+                        albumId,
+                        false,
+                        0
+                    )
+                )
+            }
+        }, {
+            lifecycleScope.launch {
+                val maxOrder = viewModel.findMaxOrder()
+                viewModel.updateAlbumAdded(
+                    StickerAlbumAdded(
+                        albumId,
+                        true,
+                        maxOrder + 1
+                    )
+                )
+            }
+        })
 
         viewModel.observeSystemStickersByAlbumId(albumId)
             .observe(this@StickerPreviewBottomSheetFragment) { stickers ->
