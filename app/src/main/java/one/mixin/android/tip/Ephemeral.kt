@@ -45,7 +45,7 @@ class Ephemeral @Inject internal constructor(private val tipService: TipService)
     }
 
     private suspend fun updateEphemeralSeed(context: Context, deviceId: String, seedBase64: String): ByteArray {
-        tipNetwork { tipService.tipEphemeral(TipRequest(deviceId, seedBase64)) }.getOrThrow()
+        tipNetworkNullable { tipService.tipEphemeral(TipRequest(deviceId, seedBase64)) }.getOrThrow()
         val pinToken = Session.getPinToken()?.decodeBase64() ?: throw TipNullException("No pin token")
         val cipher = seedBase64.base64RawUrlDecode()
         val plain = aesDecrypt(pinToken, cipher)
