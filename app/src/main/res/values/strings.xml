@@ -1060,16 +1060,17 @@
     <string name="Start">Start</string>
     <string name="Enter_your_old_PIN">Enter your old PIN</string>
     <string name="Enter_your_new_PIN">Enter your new PIN</string>
-    <string name="TIP_introduction">The PIN is based on the Throttled Identity Protocol, which is the decentralized key derivation protocol, read the document to **learn more**.</string>
-    <string name="Please_use_when_network_is_connected">Please use when network is connected</string>
-    <string name="Please_keep_app_in_foreground">Please keep App in foreground</string>
-    <string name="Process_can_not_be_stop">Process can not be stop if start</string>
-    <string name="Trying_connect_tip_network">Trying connect TIP network</string>
+    <string name="TIP_introduction">The 6-digit PIN is based on the Throttled Identity Protocol, which is the decentralized key derivation protocol, read the document to **learn more**.</string>
+    <string name="Please_use_when_network_is_connected">Please complete the operation under a stable network environment.</string>
+    <string name="Please_keep_app_in_foreground">Please keep the app in the foreground and do not force quit it during the setup process.</string>
+    <string name="Process_can_not_be_stop">The process cannot be canceled when it begins. Please remember the 6-digit PIN and reenter it if the process is aborted unexpectedly.</string>
+    <string name="Trying_connect_tip_network">Connecting the TIP network</string>
     <string name="Trying_connect_tip_node">Trying connect TIP node</string>
-    <string name="Connect_to_TIP_network_failed">Connect to TIP network failed, please check your network and try to switch 4G, Wi-Fi or VPN</string>
-    <string name="Upgrade_need_verify_your_PIN">Upgrade need verify your PIN</string>
+    <string name="Connect_to_TIP_network_failed">If you see "Failed to connect to the TIP network", please try switching to 4G, Wi-Fi, or VPN and attempting again.</string>
+    <string name="Upgrade_need_verify_your_PIN">The upgrade requires verifying your PIN.</string>
     <string name="Continue_need_verify_your_PIN">Continue need to verify your old PIN and new PIN</string>
-    <string name="Exchanging_data">Exchanging data(%1$d/%2$d)…</string>
-    <string name="Upgrade_PIN_aborted_unexpectedly_at">Upgrade PIN aborted unexpectedly at %1$s</string>
-    <string name="Syncing_and_verifying_TIP">Syncing and verifying TIP, please keep App in foreground</string>
+    <string name="Exchanging_data">Synchronization key shards in progress:(%1$d/%2$d)…</string>
+    <string name="Upgrade_PIN_aborted_unexpectedly_at">The process of upgrading TIP terminated unexpectedly at %1$s</string>
+    <string name="Syncing_and_verifying_TIP">Please keep the app in the foreground while verifying and synchronizing shard keys to the TIP network; do not force quit the app during the setup process.
+</string>
 </resources>
