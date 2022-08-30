@@ -204,12 +204,7 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
     private fun tryConnect(shouldWatch: Boolean) {
         updateTipStep(TryConnecting)
         lifecycleScope.launch {
-            var available = viewModel.checkTipNodeConnect()
-            if (!available) {
-                updateTipStep(RetryConnect(shouldWatch))
-                return@launch
-            }
-
+            var available = false
             if (shouldWatch) {
                 val tipCounter = Session.getTipCounter()
                 kotlin.runCatching {
@@ -220,16 +215,19 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
                             tipBundle.updateTipEvent(nodeFailedSigners, nodeMaxCounter)
                         }
                     )
-                }.onFailure {
-                    Timber.d("try connect tip watch failure $it")
-                    available = false
-                }
+                }.onSuccess { available = true }
+                    .onFailure {
+                        Timber.d("try connect tip watch failure $it")
+                        available = false
+                    }
+            } else {
+                available = viewModel.checkTipNodeConnect()
             }
 
             if (available) {
                 updateTipStep(ReadyStart)
             } else {
-                updateTipStep(RetryConnect(true))
+                updateTipStep(RetryConnect(shouldWatch))
             }
         }
     }
