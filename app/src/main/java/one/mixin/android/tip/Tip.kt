@@ -326,6 +326,23 @@ suspend fun <T> tipNetwork(network: suspend () -> MixinResponse<T>): Result<T> {
     }
 }
 
+@Throws(IOException::class)
+suspend fun <T> tipNetworkNullable(network: suspend () -> MixinResponse<T>): Result<T?> {
+    return withContext(Dispatchers.IO) {
+        val response = network.invoke()
+        if (response.isSuccess) {
+            return@withContext Result.success(response.data)
+        } else {
+            return@withContext Result.failure(
+                TipNetworkException(
+                    response.error?.description ?: "Empty error description",
+                    response.errorCode
+                )
+            )
+        }
+    }
+}
+
 fun Throwable.getTipExceptionMsg(): String =
     // TODO i18n
     when (this) {
@@ -333,7 +350,7 @@ fun Throwable.getTipExceptionMsg(): String =
         is NotEnoughPartialsException -> "Not enough partials"
         is NotAllSignerSuccessException -> "Not all signer success"
         is DifferentIdentityException -> "PIN not same as last time"
-        else -> "Set or update PIN failed"
+        else -> "Set or update PIN failed, ${this.localizedMessage}"
     }
 
 @Throws(IOException::class, TipNullException::class)

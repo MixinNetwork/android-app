@@ -141,6 +141,7 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
                             innerTv.text = getString(R.string.Upgrade)
                             innerTv.setOnClickListener {
                                 showVerifyPin { pin ->
+                                    tipBundle.oldPin = pin // as legacy pin
                                     tipBundle.pin = pin
                                     processTip()
                                 }
@@ -244,7 +245,14 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
                     }
                 }
             }
-            else -> {
+            TipType.Upgrade -> {
+                showVerifyPin { pin ->
+                    tipBundle.oldPin = pin // as legacy pin
+                    tipBundle.pin = pin
+                    processTip()
+                }
+            }
+            TipType.Create -> {
                 showVerifyPin { pin ->
                     tipBundle.pin = pin
                     processTip()
