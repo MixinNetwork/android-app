@@ -17,6 +17,9 @@ import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.putLong
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.updatePinCheck
+import one.mixin.android.job.TipCounterSyncedLiveData
+import one.mixin.android.tip.Tip
+import one.mixin.android.tip.checkAndPublishTipCounterSynced
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
 import one.mixin.android.util.BiometricUtil
 import one.mixin.android.util.ErrorHandler
@@ -24,11 +27,17 @@ import one.mixin.android.util.getMixinErrorStringByCode
 import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.Keyboard
 import one.mixin.android.widget.RoundTitleView
+import javax.inject.Inject
 
 abstract class BiometricBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     private var biometricDialog: BiometricDialog? = null
     private var dismissRunnable: Runnable? = null
     var autoDismiss: Boolean = true
+
+    @Inject
+    lateinit var tip: Tip
+    @Inject
+    lateinit var tipCounterSynced: TipCounterSyncedLiveData
 
     override fun onCreateDialog(savedInstanceState: Bundle?): BottomSheet {
         val dialog = super.onCreateDialog(savedInstanceState)
@@ -131,6 +140,13 @@ abstract class BiometricBottomSheetDialogFragment : MixinBottomSheetDialogFragme
         if (!isAdded) return@launch
 
         biometricLayout.showPb()
+
+        if (checkAndPublishTipCounterSynced(tip, tipCounterSynced)) {
+            dialog?.window?.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
+            biometricLayout.showPin(true)
+            return@launch
+        }
+
         val response = try {
             // initialize this in main thread
             bottomViewModel

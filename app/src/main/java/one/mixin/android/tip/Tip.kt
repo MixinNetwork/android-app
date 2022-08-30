@@ -9,6 +9,7 @@ import net.i2p.crypto.eddsa.EdDSAPublicKey
 import net.i2p.crypto.eddsa.spec.EdDSAPrivateKeySpec
 import net.i2p.crypto.eddsa.spec.EdDSAPublicKeySpec
 import one.mixin.android.Constants
+import one.mixin.android.RxBus
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.request.PinRequest
 import one.mixin.android.api.request.TipSecretAction
@@ -21,6 +22,7 @@ import one.mixin.android.crypto.aesEncrypt
 import one.mixin.android.crypto.ed25519
 import one.mixin.android.crypto.generateAesKey
 import one.mixin.android.crypto.sha3Sum256
+import one.mixin.android.event.TipEvent
 import one.mixin.android.extension.base64RawEncode
 import one.mixin.android.extension.base64RawUrlDecode
 import one.mixin.android.extension.decodeBase64
@@ -28,9 +30,11 @@ import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.nowInUtcNano
 import one.mixin.android.extension.putString
 import one.mixin.android.extension.toBeByteArray
+import one.mixin.android.job.TipCounterSyncedLiveData
 import one.mixin.android.session.Session
 import one.mixin.android.session.encryptPin
 import one.mixin.android.session.encryptTipPin
+import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.deleteKeyByAlias
 import one.mixin.android.util.getDecryptCipher
 import one.mixin.android.util.getEncryptCipher
@@ -42,7 +46,7 @@ import javax.inject.Inject
 
 class Tip @Inject internal constructor(
     private val ephemeral: Ephemeral,
-    private val identityManager: IdentityManager,
+    private val identity: Identity,
     private val tipService: TipService,
     private val accountService: AccountService,
     private val tipNode: TipNode
@@ -75,7 +79,7 @@ class Tip @Inject internal constructor(
         return try {
             val ephemeralSeed = ephemeral.getEphemeralSeed(context, deviceId)
 
-            val identityPair = identityManager.getIdentityPrivAndWatcher(pin)
+            val identityPair = identity.getIdentityPrivAndWatcher(pin)
 
             createPriv(context, identityPair.priKey, ephemeralSeed, identityPair.watcher, pin, failedSigners, legacyPin, forRecover)
         } catch (e: Exception) {
@@ -88,9 +92,9 @@ class Tip @Inject internal constructor(
         return try {
             val ephemeralSeed = ephemeral.getEphemeralSeed(context, deviceId)
 
-            val identityPair = identityManager.getIdentityPrivAndWatcher(pin)
+            val identityPair = identity.getIdentityPrivAndWatcher(pin)
 
-            val assigneePriv = identityManager.getIdentityPrivAndWatcher(newPin).priKey
+            val assigneePriv = identity.getIdentityPrivAndWatcher(newPin).priKey
 
             return updatePriv(context, identityPair.priKey, ephemeralSeed, identityPair.watcher, newPin, assigneePriv, nodeSuccess, failedSigners)
         } catch (e: Exception) {
@@ -99,9 +103,9 @@ class Tip @Inject internal constructor(
     }
 
     @Throws(IOException::class)
-    suspend fun watchTipNodeCounters(): Result<List<TipNode.TipNodeCounter>> = kotlin.runCatching {
-        val watcher = identityManager.getWatcher()
-        tipNode.watch(watcher)
+    suspend fun watchTipNodeCounters(): List<TipNode.TipNodeCounter> {
+        val watcher = identity.getWatcher()
+        return tipNode.watch(watcher)
     }
 
     fun tipNodeCount() = tipNode.nodeCount
@@ -357,9 +361,9 @@ fun Throwable.getTipExceptionMsg(): String =
 suspend fun Tip.checkCounter(
     tipCounter: Int,
     onNodeCounterGreaterThanServer: suspend (Int) -> Unit,
-    onNodeCounterNotConsistency: suspend (Int, List<TipSigner>?) -> Unit,
+    onNodeCounterInconsistency: suspend (Int, List<TipSigner>?) -> Unit,
 ) {
-    val counters = watchTipNodeCounters().getOrThrow()
+    val counters = watchTipNodeCounters()
     if (counters.isEmpty()) {
         Timber.w("watch tip node counters but counters is empty")
         throw TipNullException("watch tip node counters but counters is empty")
@@ -367,6 +371,7 @@ suspend fun Tip.checkCounter(
 
     if (counters.size != tipNodeCount()) {
         Timber.w("watch tip node result size is ${counters.size} is not equals to node count ${tipNodeCount()}")
+        // TODO should we consider this case as an incomplete state?
     }
     val group = counters.groupBy { it.counter }
     if (group.size <= 1) {
@@ -395,7 +400,32 @@ suspend fun Tip.checkCounter(
         failedNodes.mapTo(signers) { it.tipSigner }
     } else null
     Timber.e("watch tip node counter maxCounter $maxCounter, need update nodes: $failedSigners")
-    onNodeCounterNotConsistency(maxCounter, failedSigners)
+    onNodeCounterInconsistency(maxCounter, failedSigners)
+}
+
+suspend fun checkAndPublishTipCounterSynced(tip: Tip, tipCounterSynced: TipCounterSyncedLiveData): Boolean {
+    var shouldInterrupt = false
+    if (!tipCounterSynced.synced) {
+        runCatching {
+            tip.checkCounter(
+                Session.getTipCounter(),
+                onNodeCounterGreaterThanServer = {
+                    shouldInterrupt = true
+                    RxBus.publish(TipEvent(it))
+                },
+                onNodeCounterInconsistency = { nodeMaxCounter, failedSigners ->
+                    shouldInterrupt = true
+                    RxBus.publish(TipEvent(nodeMaxCounter, failedSigners))
+                }
+            )
+        }.onSuccess { tipCounterSynced.synced = true }
+            .onFailure {
+                shouldInterrupt = true
+                Timber.d("checkAndPublishTipCounterSynced meet ${it.localizedMessage}")
+                ErrorHandler.handleError(it)
+            }
+    }
+    return shouldInterrupt
 }
 
 private fun reportIllegal(msg: String) {

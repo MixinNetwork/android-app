@@ -13,7 +13,7 @@ import one.mixin.android.extension.decodeBase64
 import one.mixin.android.session.Session
 import javax.inject.Inject
 
-class IdentityManager @Inject internal constructor(private val tipService: TipService) {
+class Identity @Inject internal constructor(private val tipService: TipService) {
 
     suspend fun getIdentityPrivAndWatcher(pin: String): PriKeyAndWatcher {
         val plain = getIdentitySeed()

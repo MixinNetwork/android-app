@@ -64,10 +64,11 @@ import one.mixin.android.job.JobLogger
 import one.mixin.android.job.JobNetworkUtil
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.MyJobService
+import one.mixin.android.job.TipCounterSyncedLiveData
 import one.mixin.android.session.JwtResult
 import one.mixin.android.session.Session
 import one.mixin.android.tip.Ephemeral
-import one.mixin.android.tip.IdentityManager
+import one.mixin.android.tip.Identity
 import one.mixin.android.tip.Tip
 import one.mixin.android.tip.TipNode
 import one.mixin.android.util.ErrorHandler.Companion.AUTHENTICATION
@@ -442,7 +443,7 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideIdentityManager(tipService: TipService) = IdentityManager(tipService)
+    fun provideIdentity(tipService: TipService) = Identity(tipService)
 
     @Provides
     @Singleton
@@ -454,6 +455,10 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideTip(ephemeral: Ephemeral, identityManager: IdentityManager, tipNode: TipNode, tipService: TipService, accountService: AccountService) =
-        Tip(ephemeral, identityManager, tipService, accountService, tipNode)
+    fun provideTip(ephemeral: Ephemeral, identity: Identity, tipNode: TipNode, tipService: TipService, accountService: AccountService) =
+        Tip(ephemeral, identity, tipService, accountService, tipNode)
+
+    @Provides
+    @Singleton
+    fun provideTipCounterSynced() = TipCounterSyncedLiveData()
 }
