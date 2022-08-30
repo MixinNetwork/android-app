@@ -77,7 +77,7 @@
                     android:textSize="16sp"
                     android:textColor="?attr/text_primary" />
 
-                <TextView
+                <one.mixin.android.widget.StickerManagerButton
                     android:id="@+id/action_tv"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -87,10 +87,7 @@
                     android:paddingEnd="12dp"
                     android:paddingTop="4dp"
                     android:paddingBottom="4dp"
-                    android:layout_marginEnd="20dp"
-                    android:textColor="@color/white"
-                    android:text="@string/Add"
-                    android:background="@drawable/bg_round_blue_btn_solid" />
+                    android:layout_marginEnd="20dp" />
             </RelativeLayout>
 
             <androidx.recyclerview.widget.RecyclerView
