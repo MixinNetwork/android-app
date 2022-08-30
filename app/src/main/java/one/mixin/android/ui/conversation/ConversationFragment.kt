@@ -1103,7 +1103,8 @@ class ConversationFragment() :
                     }
                 }
             }
-
+        bindData()
+        bindPinMessage()
         checkPeerIfNeeded()
         checkTranscript()
     }
@@ -1489,7 +1490,7 @@ class ConversationFragment() :
                     ClipData.newPlainText(null, conversationAdapter.selectSet.valueAt(0)?.content)
                 )
                 toast(R.string.copied_to_clipboard)
-            } catch (e: ArrayIndexOutOfBoundsException) {
+            } catch (_: ArrayIndexOutOfBoundsException) {
             }
             closeTool()
         }
@@ -1678,8 +1679,6 @@ class ConversationFragment() :
                     }.show()
             }
         )
-        bindData()
-        bindPinMessage()
     }
 
     lateinit var itemTouchHelper: ItemTouchHelper
