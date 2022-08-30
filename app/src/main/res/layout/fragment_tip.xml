@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="?attr/bg_window"
+    android:background="?attr/bg_white"
     android:orientation="vertical">
 
     <ImageView
@@ -33,14 +33,14 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintVertical_bias="0.25"
+        app:layout_constraintVertical_bias="0.2"
         tools:ignore="ContentDescription" />
 
     <TextView
         android:id="@+id/title_tv"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="20dp"
+        android:layout_marginTop="24dp"
         android:text="@string/Upgrade_TIP"
         android:textColor="?attr/text_primary"
         android:textSize="18sp"
@@ -70,7 +70,7 @@
         android:layout_marginStart="20dp"
         android:layout_marginEnd="20dp"
         android:layout_marginTop="@dimen/margin16"
-        android:background="@drawable/bg_round_8_solid_dark_gray"
+        android:background="@drawable/bg_round_8_solid_gray"
         android:gravity="start"
         android:padding="10dp"
         android:textColor="?attr/text_minor"
@@ -145,7 +145,7 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="70dp"
         android:layout_marginEnd="70dp"
-        android:layout_marginBottom="50dp"
+        android:layout_marginBottom="40dp"
         android:gravity="center_horizontal"
         android:text="@string/Upgrade_need_verify_your_PIN"
         android:textColor="?attr/text_minor"

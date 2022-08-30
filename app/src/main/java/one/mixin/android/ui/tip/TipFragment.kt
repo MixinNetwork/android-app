@@ -156,7 +156,7 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
                 bottomHintTv.text = ""
             }
             is RetryProcess -> {
-                closeIv.isVisible = true
+                closeIv.isVisible = false
                 if (forRecover) {
                     descTv.text = getString(R.string.Upgrade_PIN_aborted_unexpectedly_at, "2022")
                 } else {
@@ -183,17 +183,21 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
                 closeIv.isVisible = false
                 descTv.setText(R.string.Syncing_and_verifying_TIP)
                 tipsTv.isVisible = false
-                bottomVa.displayedChild = 2
                 bottomHintTv.setTextColor(requireContext().colorFromAttribute(R.attr.text_minor))
 
                 when (tipStep) {
                     is Processing.Creating -> {
+                        bottomVa.displayedChild = 2
                         bottomHintTv.text = getString(R.string.Trying_connect_tip_node)
                     }
                     is Processing.SyncingNode -> {
+                        bottomVa.displayedChild = 1
+                        pb.max = tipStep.total
+                        pb.progress = tipStep.step
                         bottomHintTv.text = getString(R.string.Exchanging_data, tipStep.step, tipStep.total)
                     }
                     is Processing.Updating -> {
+                        bottomVa.displayedChild = 2
                         bottomHintTv.text = getString(R.string.Upgrading)
                     }
                 }
