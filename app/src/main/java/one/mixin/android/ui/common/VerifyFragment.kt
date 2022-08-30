@@ -20,7 +20,10 @@ import one.mixin.android.extension.toast
 import one.mixin.android.extension.updatePinCheck
 import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.extension.withArgs
+import one.mixin.android.job.TipCounterSyncedLiveData
 import one.mixin.android.repository.AccountRepository
+import one.mixin.android.tip.Tip
+import one.mixin.android.tip.checkAndPublishTipCounterSynced
 import one.mixin.android.ui.landing.LandingActivity
 import one.mixin.android.ui.landing.MobileFragment
 import one.mixin.android.ui.setting.FriendsNoBotFragment
@@ -51,6 +54,10 @@ class VerifyFragment : BaseFragment(R.layout.fragment_verify_pin), PinView.OnPin
 
     @Inject
     lateinit var accountRepository: AccountRepository
+    @Inject
+    lateinit var tip: Tip
+    @Inject
+    lateinit var tipCounterSynced: TipCounterSyncedLiveData
 
     private val binding by viewBinding(FragmentVerifyPinBinding::bind)
 
@@ -102,8 +109,17 @@ class VerifyFragment : BaseFragment(R.layout.fragment_verify_pin), PinView.OnPin
 
     private fun verify(pinCode: String) = lifecycleScope.launch {
         showLoading()
+
+        if (checkAndPublishTipCounterSynced(tip, tipCounterSynced)) {
+            hideLoading()
+            clearPin()
+            return@launch
+        }
+
         handleMixinResponse(
-            invokeNetwork = { accountRepository.verifyPin(pinCode) },
+            invokeNetwork = {
+                accountRepository.verifyPin(pinCode)
+            },
             successBlock = {
                 hideLoading()
                 clearPin()

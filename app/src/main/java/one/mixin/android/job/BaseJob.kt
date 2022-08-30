@@ -212,6 +212,9 @@ abstract class BaseJob(params: Params) : Job(params) {
     @Transient
     @Inject
     lateinit var tip: Tip
+    @Transient
+    @Inject
+    lateinit var tipCounterSynced: TipCounterSyncedLiveData
 
     open fun shouldRetry(throwable: Throwable): Boolean {
         if (throwable is SocketTimeoutException) {

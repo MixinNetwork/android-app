@@ -24,7 +24,6 @@ import one.mixin.android.extension.withArgs
 import one.mixin.android.session.Session
 import one.mixin.android.session.encryptPin
 import one.mixin.android.session.encryptTipPin
-import one.mixin.android.tip.Tip
 import one.mixin.android.tip.TipBody
 import one.mixin.android.ui.common.biometric.BiometricBottomSheetDialogFragment
 import one.mixin.android.ui.common.biometric.BiometricInfo
@@ -34,7 +33,6 @@ import one.mixin.android.ui.common.biometric.ValuableBiometricBottomSheetDialogF
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.User
 import one.mixin.android.widget.BottomSheet
-import javax.inject.Inject
 
 @AndroidEntryPoint
 class NftBottomSheetDialogFragment : BiometricBottomSheetDialogFragment() {
@@ -46,9 +44,6 @@ class NftBottomSheetDialogFragment : BiometricBottomSheetDialogFragment() {
                 putParcelable(ARGS_BIOMETRIC_ITEM, t)
             }
     }
-
-    @Inject
-    lateinit var tip: Tip
 
     private var success: Boolean = false
 

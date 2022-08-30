@@ -140,7 +140,7 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
                         TipType.Upgrade -> {
                             innerTv.text = getString(R.string.Upgrade)
                             innerTv.setOnClickListener {
-                                showVerifyPin { pin ->
+                                showVerifyPin(getString(R.string.Enter_your_PIN)) { pin ->
                                     tipBundle.oldPin = pin // as legacy pin
                                     tipBundle.pin = pin
                                     processTip()
@@ -216,7 +216,7 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
                     tip.checkCounter(
                         tipCounter,
                         onNodeCounterGreaterThanServer = { tipBundle.updateTipEvent(null, it) },
-                        onNodeCounterNotConsistency = { nodeMaxCounter, nodeFailedSigners ->
+                        onNodeCounterInconsistency = { nodeMaxCounter, nodeFailedSigners ->
                             tipBundle.updateTipEvent(nodeFailedSigners, nodeMaxCounter)
                         }
                     )
@@ -246,7 +246,7 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
                 }
             }
             TipType.Upgrade -> {
-                showVerifyPin { pin ->
+                showVerifyPin(getString(R.string.Enter_your_PIN)) { pin ->
                     tipBundle.oldPin = pin // as legacy pin
                     tipBundle.pin = pin
                     processTip()
@@ -323,7 +323,7 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
                 tip.checkCounter(
                     tipCounter,
                     onNodeCounterGreaterThanServer = { tipBundle.updateTipEvent(null, it) },
-                    onNodeCounterNotConsistency = { nodeMaxCounter, nodeFailedSigners ->
+                    onNodeCounterInconsistency = { nodeMaxCounter, nodeFailedSigners ->
                         tipBundle.updateTipEvent(nodeFailedSigners, nodeMaxCounter)
                     }
                 )
@@ -365,8 +365,8 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
         activity?.finish()
     }
 
-    private fun showVerifyPin(onVerifySuccess: (String) -> Unit) {
-        VerifyBottomSheetDialogFragment.newInstance(getString(R.string.Enter_your_old_PIN)).setOnPinSuccess { pin ->
+    private fun showVerifyPin(title: String? = null, onVerifySuccess: (String) -> Unit) {
+        VerifyBottomSheetDialogFragment.newInstance(title ?: getString(R.string.Enter_your_old_PIN)).setOnPinSuccess { pin ->
             onVerifySuccess(pin)
         }.apply {
             autoDismiss = true
