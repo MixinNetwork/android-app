@@ -572,6 +572,9 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
         }
 
     private fun dismiss() {
+        if (!pipVideoView.shown) {
+            VideoPlayer.destroy()
+        }
         binding.viewPager.visibility = View.INVISIBLE
         overridePendingTransition(0, 0)
         super.finish()
