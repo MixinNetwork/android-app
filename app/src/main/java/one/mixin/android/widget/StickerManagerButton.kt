@@ -23,19 +23,19 @@ class StickerManagerButton : AppCompatTextView {
         this.addCallback = addCallback
     }
 
-     fun setStatus(status: Boolean) {
+    fun setStatus(status: Boolean) {
         this.status = status
-        if (status){
+        if (status) {
             setText(R.string.Delete)
             setBackgroundResource(R.drawable.bg_round_red_btn_solid)
-        }else{
+        } else {
             setText(R.string.Add)
             setBackgroundResource(R.drawable.bg_round_blue_btn_solid)
         }
     }
 
     init {
-        setTextColor(ContextCompat.getColor(context,R.color.white))
+        setTextColor(ContextCompat.getColor(context, R.color.white))
         setOnClickListener {
             if (status) {
                 deleteCallback?.onClick(this)
