@@ -9,6 +9,7 @@ import net.i2p.crypto.eddsa.EdDSAPublicKey
 import net.i2p.crypto.eddsa.spec.EdDSAPrivateKeySpec
 import net.i2p.crypto.eddsa.spec.EdDSAPublicKeySpec
 import one.mixin.android.Constants
+import one.mixin.android.R
 import one.mixin.android.RxBus
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.request.PinRequest
@@ -348,14 +349,13 @@ suspend fun <T> tipNetworkNullable(network: suspend () -> MixinResponse<T>): Res
     }
 }
 
-fun Throwable.getTipExceptionMsg(): String =
-    // TODO i18n
+fun Throwable.getTipExceptionMsg(context: Context): String =
     when (this) {
-        is PinIncorrectException -> "PIN incorrect"
-        is NotEnoughPartialsException -> "Not enough partials"
-        is NotAllSignerSuccessException -> "Not all signer success"
-        is DifferentIdentityException -> "PIN not same as last time"
-        else -> "Set or update PIN failed, ${this.localizedMessage}"
+        is PinIncorrectException -> context.getString(R.string.PIN_incorrect)
+        is NotEnoughPartialsException -> context.getString(R.string.Not_enough_partials)
+        is NotAllSignerSuccessException -> context.getString(R.string.Not_all_signer_success)
+        is DifferentIdentityException -> context.getString(R.string.PIN_not_same_as_last_time)
+        else -> "${context.getString(R.string.Set_or_update_PIN_failed)}\n$localizedMessage"
     }
 
 @Throws(IOException::class, TipNullException::class)

@@ -965,7 +965,6 @@
     <string name="Update_Mixin">Update Mixin</string>
     <string name="update_mixin_description">The current version (%1$s) is no longer available!\nPlease click \"Update\" below to update to the latest version from the Google Play.</string>
     <string name="Upgrade_Database">Upgrade Database</string>
-    <string name="Upgrade_TIP">Upgrade TIP</string>
     <string name="Upgrading">Upgrading</string>
     <string name="Upload_Mobile_Contacts">Upload Mobile Contacts</string>
     <string name="Upload_timeout">Upload timeout</string>
@@ -1060,6 +1059,10 @@
     <string name="Start">Start</string>
     <string name="Enter_your_old_PIN">Enter your old PIN</string>
     <string name="Enter_your_new_PIN">Enter your new PIN</string>
+    <string name="Not_enough_partials">Not enough nodes return key shard</string>
+    <string name="Not_all_signer_success">Not all node success</string>
+    <string name="PIN_not_same_as_last_time">PIN does not match what was set when it was last terminated unexpectedly</string>
+    <string name="Set_or_update_PIN_failed">Set or update PIN failed</string>
     <string name="TIP_introduction">The 6-digit PIN is based on the Throttled Identity Protocol, which is the decentralized key derivation protocol, read the document to **learn more**.</string>
     <string name="Please_use_when_network_is_connected">Please complete the operation under a stable network environment.</string>
     <string name="Please_keep_app_in_foreground">Please keep the app in the foreground and do not force quit it during the setup process.</string>
