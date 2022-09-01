@@ -13,6 +13,8 @@ import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.Constants.MIXIN_BOTS_USER_ID
 import one.mixin.android.Constants.MIXIN_BOTS_USER_NAME
+import one.mixin.android.Constants.MIXIN_COMMUNITY_USER_ID
+import one.mixin.android.Constants.MIXIN_COMMUNITY_USER_NAME
 import one.mixin.android.Constants.MIXIN_DATA_USER_ID
 import one.mixin.android.Constants.MIXIN_DATA_USER_NAME
 import one.mixin.android.MixinApplication
@@ -92,7 +94,9 @@ class SetupNameFragment : BaseFragment(R.layout.fragment_setup_name) {
     }
 
     private fun initializeBots() {
-        if (Session.getAccount()?.phone?.run { startsWith("+971") || startsWith("+91") } == true) {
+        if (Session.getAccount()?.phone?.run { startsWith("+81") } == true) {
+            jobManager.addJobInBackground(InitializeJob(MIXIN_COMMUNITY_USER_ID, MIXIN_COMMUNITY_USER_NAME))
+        } else if (Session.getAccount()?.phone?.run { startsWith("+971") || startsWith("+91") } == true) {
             jobManager.addJobInBackground(InitializeJob(MIXIN_BOTS_USER_ID, MIXIN_BOTS_USER_NAME))
             jobManager.addJobInBackground(InitializeJob(MIXIN_DATA_USER_ID, MIXIN_DATA_USER_NAME))
         }
