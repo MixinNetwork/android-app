@@ -18,7 +18,7 @@ import one.mixin.android.crypto.aesEncrypt
 import one.mixin.android.crypto.calculateAgreement
 import one.mixin.android.crypto.ed25519
 import one.mixin.android.crypto.getRSAPrivateKeyFromString
-import one.mixin.android.crypto.initFromSkAndSign
+import one.mixin.android.crypto.initFromSeedAndSign
 import one.mixin.android.crypto.privateKeyToCurve25519
 import one.mixin.android.extension.base64Encode
 import one.mixin.android.extension.bodyToString
@@ -284,7 +284,7 @@ fun encryptPin(key: String, code: ByteArray): String {
 
 fun encryptTipPin(tipPriv: ByteArray, signTarget: ByteArray): String? {
     val pinToken = Session.getPinToken()?.decodeBase64() ?: return null
-    val sig = initFromSkAndSign(tipPriv, signTarget)
+    val sig = initFromSeedAndSign(tipPriv, signTarget)
     val iterator = Session.getPinIterator()
     val pinByte = sig + (currentTimeSeconds()).toLeByteArray() + iterator.toLeByteArray()
     val based = aesEncrypt(pinToken, pinByte).base64Encode()

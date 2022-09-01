@@ -56,11 +56,6 @@ fun initFromSeedAndSign(seed: ByteArray, signTarget: ByteArray): ByteArray {
     return signWithSk(privateSpec, signTarget)
 }
 
-fun initFromSkAndSign(privateBytes: ByteArray, signTarget: ByteArray): ByteArray {
-    val privateSpec = EdDSAPrivateKeySpec(ed25519, privateBytes)
-    return signWithSk(privateSpec, signTarget)
-}
-
 private fun signWithSk(privateSpec: EdDSAPrivateKeySpec, signTarget: ByteArray): ByteArray {
     val privateKey = EdDSAPrivateKey(privateSpec)
     val engine = EdDSAEngine(MessageDigest.getInstance(ed25519.hashAlgorithm))

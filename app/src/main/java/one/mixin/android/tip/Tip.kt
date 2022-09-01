@@ -29,6 +29,7 @@ import one.mixin.android.extension.decodeBase64
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.nowInUtcNano
 import one.mixin.android.extension.putString
+import one.mixin.android.extension.sha256
 import one.mixin.android.extension.toBeByteArray
 import one.mixin.android.job.TipCounterSyncedLiveData
 import one.mixin.android.session.Session
@@ -120,11 +121,11 @@ class Tip @Inject internal constructor(
                         observers.forEach { it.onSyncing(step, total) }
                     }
                 }
-            )
+            ).sha256() // use sha256(recover-signature) as priv
 
             observers.forEach { it.onSyncingComplete() }
 
-            val privateSpec = EdDSAPrivateKeySpec(ed25519, aggSig.copyOf())
+            val privateSpec = EdDSAPrivateKeySpec(aggSig.copyOf(), ed25519)
             val pub = EdDSAPublicKey(EdDSAPublicKeySpec(privateSpec.a, ed25519))
 
             val localPub = Session.getTipPub()
@@ -173,7 +174,7 @@ class Tip @Inject internal constructor(
                 tipNode.sign(assigneePriv, ephemeral, watcher, null, null, callback = callback)
             } else {
                 tipNode.sign(identityPriv, ephemeral, watcher, assigneePriv, failedSigners, callback = callback)
-            }
+            }.sha256() // use sha256(recover-signature) as priv
 
             observers.forEach { it.onSyncingComplete() }
 
@@ -188,7 +189,7 @@ class Tip @Inject internal constructor(
 
     @Throws(IOException::class, TipNetworkException::class)
     private suspend fun replaceEncryptedPin(aggSig: ByteArray) {
-        val privateSpec = EdDSAPrivateKeySpec(ed25519, aggSig.copyOf())
+        val privateSpec = EdDSAPrivateKeySpec(aggSig.copyOf(), ed25519)
         val pub = EdDSAPublicKey(EdDSAPublicKeySpec(privateSpec.a, ed25519))
         val pinToken = requireNotNull(Session.getPinToken())
         val counter = requireNotNull(Session.getTipCounter()).toLong()

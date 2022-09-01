@@ -209,9 +209,11 @@ inline fun String.md5(): String {
     }
 }
 
-inline fun String.sha256(): ByteArray {
+inline fun String.sha256(): ByteArray = toByteArray().sha256()
+
+inline fun ByteArray.sha256(): ByteArray {
     val md = MessageDigest.getInstance("SHA256")
-    return md.digest(toByteArray())
+    return md.digest(this)
 }
 
 inline fun String.isWebUrl(): Boolean {
