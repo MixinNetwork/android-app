@@ -104,6 +104,7 @@ import one.mixin.android.ui.common.BottomSheetViewModel
 import one.mixin.android.ui.common.info.createMenuLayout
 import one.mixin.android.ui.common.info.menu
 import one.mixin.android.ui.common.info.menuList
+import one.mixin.android.ui.common.profile.ProfileBottomSheetDialogFragment
 import one.mixin.android.ui.common.showUserBottom
 import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.conversation.web.PermissionBottomSheetDialogFragment
@@ -401,6 +402,12 @@ class WebFragment : BaseFragment() {
                     lifecycleScope.launch {
                         val user = bottomViewModel.refreshUser(app.creatorId)
                         if (user != null) {
+                            if (app.creatorId == Session.getAccountId()) {
+                                ProfileBottomSheetDialogFragment.newInstance()
+                                    .showNow(parentFragmentManager, ProfileBottomSheetDialogFragment.TAG)
+                                return@launch
+                            }
+
                             ConversationActivity.show(requireContext(), recipientId = app.creatorId)
                             this@WebFragment.requireActivity().finish()
                         }
