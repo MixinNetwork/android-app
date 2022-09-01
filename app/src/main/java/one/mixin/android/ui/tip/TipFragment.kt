@@ -311,7 +311,7 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
         tipCounter: Int,
         nodeCounter: Int
     ) {
-        val errMsg = e.getTipExceptionMsg()
+        val errMsg = e.getTipExceptionMsg(requireContext())
         toast(errMsg)
 
         if (e is TipNodeException) {
