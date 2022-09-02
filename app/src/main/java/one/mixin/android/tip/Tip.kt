@@ -76,7 +76,6 @@ class Tip @Inject internal constructor(
         return Result.success(aesDecrypt(privTipKey, privTip))
     }
 
-    @Throws(TipException::class, TipNodeException::class)
     suspend fun createTipPriv(context: Context, pin: String, deviceId: String, failedSigners: List<TipSigner>? = null, legacyPin: String? = null, forRecover: Boolean = false): Result<ByteArray> {
         return try {
             val ephemeralSeed = ephemeral.getEphemeralSeed(context, deviceId)
@@ -89,7 +88,6 @@ class Tip @Inject internal constructor(
         }
     }
 
-    @Throws(TipNodeException::class)
     suspend fun updateTipPriv(context: Context, pin: String, deviceId: String, newPin: String, nodeSuccess: Boolean, failedSigners: List<TipSigner>? = null): Result<ByteArray> {
         return try {
             val ephemeralSeed = ephemeral.getEphemeralSeed(context, deviceId)
@@ -112,7 +110,6 @@ class Tip @Inject internal constructor(
 
     fun tipNodeCount() = tipNode.nodeCount
 
-    @Throws(TipException::class, TipNodeException::class)
     private suspend fun createPriv(context: Context, identityPriv: ByteArray, ephemeral: ByteArray, watcher: ByteArray, pin: String, failedSigners: List<TipSigner>? = null, legacyPin: String? = null, forRecover: Boolean = false): Result<ByteArray> {
         try {
             val aggSig = tipNode.sign(
@@ -163,7 +160,6 @@ class Tip @Inject internal constructor(
         Session.storeAccount(account)
     }
 
-    @Throws(IOException::class, TipNodeException::class, TipNetworkException::class)
     private suspend fun updatePriv(context: Context, identityPriv: ByteArray, ephemeral: ByteArray, watcher: ByteArray, newPin: String, assigneePriv: ByteArray, nodeSuccess: Boolean, failedSigners: List<TipSigner>? = null): Result<ByteArray> {
         return try {
             val callback = object : TipNode.Callback {
@@ -245,6 +241,7 @@ class Tip @Inject internal constructor(
         return aesKey
     }
 
+    @Throws(TipException::class)
     private suspend fun getAesKey(pin: String): ByteArray {
         val sessionPriv =
             Session.getEd25519Seed()?.decodeBase64() ?: throw TipNullException("No ed25519 key")
@@ -314,7 +311,6 @@ class Tip @Inject internal constructor(
     }
 }
 
-@Throws(IOException::class)
 suspend fun <T> tipNetwork(network: suspend () -> MixinResponse<T>): Result<T> {
     return withContext(Dispatchers.IO) {
         val response = network.invoke()
@@ -332,7 +328,6 @@ suspend fun <T> tipNetwork(network: suspend () -> MixinResponse<T>): Result<T> {
     }
 }
 
-@Throws(IOException::class)
 suspend fun <T> tipNetworkNullable(network: suspend () -> MixinResponse<T>): Result<T?> {
     return withContext(Dispatchers.IO) {
         val response = network.invoke()

@@ -33,6 +33,8 @@ import one.mixin.android.extension.remove
 import one.mixin.android.extension.sharedPreferences
 import one.mixin.android.extension.toLeByteArray
 import one.mixin.android.tip.Tip
+import one.mixin.android.tip.TipException
+import one.mixin.android.tip.TipNodeException
 import one.mixin.android.util.reportException
 import one.mixin.android.vo.Account
 import timber.log.Timber
@@ -292,12 +294,13 @@ fun encryptTipPin(tipPriv: ByteArray, signTarget: ByteArray): String? {
     return based
 }
 
+@Throws(TipException::class, TipNodeException::class)
 suspend fun encryptTipPin(tip: Tip, pin: String, signTarget: ByteArray): String? {
-    val tipPriv = tip.getOrRecoverTipPriv(MixinApplication.appContext, pin, true).getOrNull() ?: return null
+    val tipPriv = tip.getOrRecoverTipPriv(MixinApplication.appContext, pin, true).getOrThrow()
     return encryptTipPin(tipPriv, signTarget)
 }
 
-fun decryptPinToken(serverPublicKey: ByteArray, privateKey: EdDSAPrivateKey): ByteArray? {
+fun decryptPinToken(serverPublicKey: ByteArray, privateKey: EdDSAPrivateKey): ByteArray {
     val private = privateKeyToCurve25519(privateKey.seed)
     return calculateAgreement(serverPublicKey, private)
 }
