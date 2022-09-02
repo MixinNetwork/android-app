@@ -14,6 +14,7 @@ import io.reactivex.disposables.CompositeDisposable
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants.KEYS
 import one.mixin.android.R
+import one.mixin.android.api.ResponseError
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.databinding.FragmentPinCheckBinding
 import one.mixin.android.extension.clickVibrate
@@ -22,6 +23,7 @@ import one.mixin.android.extension.tickVibrate
 import one.mixin.android.extension.updatePinCheck
 import one.mixin.android.job.TipCounterSyncedLiveData
 import one.mixin.android.tip.Tip
+import one.mixin.android.tip.TipNetworkException
 import one.mixin.android.tip.checkAndPublishTipCounterSynced
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.getMixinErrorStringByCode
@@ -102,29 +104,39 @@ class PinCheckDialogFragment : DialogFragment() {
                     dismiss()
                 },
                 exceptionBlock = {
-                    pin.clear()
-                    pinVa.displayedChild = POS_PIN
+                    if (it is TipNetworkException) {
+                        handleFailure(it.error)
+                    } else {
+                        pin.clear()
+                        pinVa.displayedChild = POS_PIN
+                    }
                     return@handleMixinResponse false
                 },
                 failureBlock = { response ->
-                    pin.clear()
-                    if (response.errorCode == ErrorHandler.PIN_INCORRECT) {
-                        val errorCount = pinCheckViewModel.errorCount()
-                        pinVa.displayedChild = POS_PIN
-                        pin.error(requireContext().resources.getQuantityString(R.plurals.error_pin_incorrect_with_times, errorCount, errorCount))
-                    } else if (response.errorCode == ErrorHandler.TOO_MANY_REQUEST) {
-                        pinVa.displayedChild = POS_TIP
-                        tipVa.showNext()
-                        val transY = root.height / 2 - topLl.translationY * 2
-                        topLl.animate()?.translationY(transY)?.start()
-                        keyboard.animate()?.translationY(keyboard.height.toFloat())?.start()
-                    } else {
-                        pinVa.displayedChild = POS_PIN
-                        pin.error(requireContext().getMixinErrorStringByCode(response.errorCode, response.errorDescription))
-                    }
+                    handleFailure(requireNotNull(response.error))
                     return@handleMixinResponse false
                 }
             )
+        }
+    }
+
+    private suspend fun handleFailure(error: ResponseError) {
+        binding.apply {
+            pin.clear()
+            if (error.code == ErrorHandler.PIN_INCORRECT) {
+                val errorCount = pinCheckViewModel.errorCount()
+                pinVa.displayedChild = POS_PIN
+                pin.error(requireContext().resources.getQuantityString(R.plurals.error_pin_incorrect_with_times, errorCount, errorCount))
+            } else if (error.code == ErrorHandler.TOO_MANY_REQUEST) {
+                pinVa.displayedChild = POS_TIP
+                tipVa.showNext()
+                val transY = root.height / 2 - topLl.translationY * 2
+                topLl.animate()?.translationY(transY)?.start()
+                keyboard.animate()?.translationY(keyboard.height.toFloat())?.start()
+            } else {
+                pinVa.displayedChild = POS_PIN
+                pin.error(requireContext().getMixinErrorStringByCode(error.code, error.description))
+            }
         }
     }
 

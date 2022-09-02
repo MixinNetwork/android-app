@@ -38,6 +38,7 @@ import one.mixin.android.extension.navTo
 import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.putInt
 import one.mixin.android.session.Session
+import one.mixin.android.tip.TipNetworkException
 import one.mixin.android.ui.common.PinCodeFragment
 import one.mixin.android.ui.landing.LandingActivity.Companion.ARGS_PIN
 import one.mixin.android.ui.landing.MobileFragment.Companion.ARGS_FROM
@@ -211,7 +212,11 @@ class VerificationFragment : PinCodeFragment(R.layout.fragment_verification) {
                 handleFailure(it)
             },
             defaultExceptionHandle = {
-                handleError(it)
+                if (it is TipNetworkException) {
+                    handleFailure(it.error)
+                } else {
+                    handleError(it)
+                }
             }
         )
     }
