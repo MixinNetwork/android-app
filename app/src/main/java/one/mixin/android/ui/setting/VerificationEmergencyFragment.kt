@@ -26,6 +26,7 @@ import one.mixin.android.session.encryptPin
 import one.mixin.android.session.encryptTipPin
 import one.mixin.android.tip.Tip
 import one.mixin.android.tip.TipBody
+import one.mixin.android.tip.TipNetworkException
 import one.mixin.android.ui.common.PinCodeFragment
 import one.mixin.android.ui.landing.LandingActivity.Companion.ARGS_PIN
 import one.mixin.android.util.viewBinding
@@ -142,7 +143,11 @@ class VerificationEmergencyFragment : PinCodeFragment(R.layout.fragment_verifica
                 handleFailure(it)
             },
             defaultExceptionHandle = {
-                handleError(it)
+                if (it is TipNetworkException) {
+                    handleFailure(it.error)
+                } else {
+                    handleError(it)
+                }
             }
         )
     }

@@ -10,6 +10,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants.KEYS
 import one.mixin.android.R
+import one.mixin.android.api.ResponseError
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.databinding.FragmentVerifyPinBinding
 import one.mixin.android.extension.addFragment
@@ -23,6 +24,7 @@ import one.mixin.android.extension.withArgs
 import one.mixin.android.job.TipCounterSyncedLiveData
 import one.mixin.android.repository.AccountRepository
 import one.mixin.android.tip.Tip
+import one.mixin.android.tip.TipNetworkException
 import one.mixin.android.tip.checkAndPublishTipCounterSynced
 import one.mixin.android.ui.landing.LandingActivity
 import one.mixin.android.ui.landing.MobileFragment
@@ -145,28 +147,36 @@ class VerifyFragment : BaseFragment(R.layout.fragment_verify_pin), PinView.OnPin
                 }
             },
             failureBlock = {
-                clearPin()
-                if (it.errorCode == ErrorHandler.TOO_MANY_REQUEST) {
-                    hideLoading()
-                    toast(R.string.error_pin_check_too_many_request)
-                    return@handleMixinResponse true
-                } else if (it.errorCode == ErrorHandler.PIN_INCORRECT) {
-                    val errorCount = accountRepository.errorCount()
-                    hideLoading()
-                    toast(
-                        requireContext().resources.getQuantityString(R.plurals.error_pin_incorrect_with_times, errorCount, errorCount)
-                    )
-                    return@handleMixinResponse true
-                }
-                hideLoading()
-                return@handleMixinResponse false
+                return@handleMixinResponse handleFailure(requireNotNull(it.error))
             },
             exceptionBlock = {
-                hideLoading()
-                clearPin()
-                return@handleMixinResponse false
+                if (it is TipNetworkException) {
+                    return@handleMixinResponse handleFailure(it.error)
+                } else {
+                    hideLoading()
+                    clearPin()
+                    return@handleMixinResponse false
+                }
             }
         )
+    }
+
+    private suspend fun handleFailure(error: ResponseError): Boolean {
+        clearPin()
+        if (error.code == ErrorHandler.TOO_MANY_REQUEST) {
+            hideLoading()
+            toast(R.string.error_pin_check_too_many_request)
+            return true
+        } else if (error.code == ErrorHandler.PIN_INCORRECT) {
+            val errorCount = accountRepository.errorCount()
+            hideLoading()
+            toast(
+                requireContext().resources.getQuantityString(R.plurals.error_pin_incorrect_with_times, errorCount, errorCount)
+            )
+            return true
+        }
+        hideLoading()
+        return false
     }
 
     private val keyboardListener: Keyboard.OnClickKeyboardListener =

@@ -12,6 +12,7 @@ import one.mixin.android.Constants.KEYS
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.api.MixinResponse
+import one.mixin.android.api.ResponseError
 import one.mixin.android.extension.base64Encode
 import one.mixin.android.extension.clear
 import one.mixin.android.extension.clickVibrate
@@ -61,15 +62,19 @@ abstract class PinCodeFragment(@LayoutRes contentLayoutId: Int) : FabLoadingFrag
     }
 
     protected fun handleFailure(r: MixinResponse<*>) {
+        return handleFailure(requireNotNull(r.error))
+    }
+
+    protected fun handleFailure(error: ResponseError) {
         pinVerificationView.error()
         pinVerificationTipTv.visibility = View.VISIBLE
         pinVerificationTipTv.text = getString(R.string.The_code_is_incorrect)
-        if (r.errorCode == ErrorHandler.PHONE_VERIFICATION_CODE_INVALID ||
-            r.errorCode == ErrorHandler.PHONE_VERIFICATION_CODE_EXPIRED
+        if (error.code == ErrorHandler.PHONE_VERIFICATION_CODE_INVALID ||
+            error.code == ErrorHandler.PHONE_VERIFICATION_CODE_EXPIRED
         ) {
             verificationNextFab.visibility = View.INVISIBLE
         }
-        ErrorHandler.handleMixinError(r.errorCode, r.errorDescription)
+        ErrorHandler.handleMixinError(error.code, error.description)
     }
 
     protected suspend fun handleAccount(
