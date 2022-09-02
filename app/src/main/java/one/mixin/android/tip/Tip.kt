@@ -237,7 +237,7 @@ class Tip @Inject internal constructor(
             signatureBase64 = sigBase64,
             timestamp = timestamp,
         )
-        tipNetwork { tipService.tipSecret(tipSecretRequest) }
+        tipNetworkNullable { tipService.updateTipSecret(tipSecretRequest) }
         return aesKey
     }
 
@@ -258,7 +258,7 @@ class Tip @Inject internal constructor(
             signatureBase64 = sigBase64,
             timestamp = timestamp,
         )
-        val response = tipNetwork { tipService.tipSecret(tipSecretRequest) }.getOrThrow()
+        val response = tipNetwork { tipService.readTipSecret(tipSecretRequest) }.getOrThrow()
         val cipher = response.seedBase64?.base64RawUrlDecode() ?: throw TipNullException("Not get tip secret")
 
         val pinToken =
