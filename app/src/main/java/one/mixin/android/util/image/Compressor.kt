@@ -32,7 +32,7 @@ class Compressor {
     }
 
     @Throws(IOException::class)
-    fun compressToFile(imageUri: Uri, compressedFilePath: String): File {
+    fun compressToFile(imageUri: Uri, compressedFilePath: String): File? {
         return ImageUtil.compressImage(
             imageUri,
             maxWidth,

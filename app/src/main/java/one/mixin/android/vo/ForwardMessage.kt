@@ -11,6 +11,7 @@ import one.mixin.android.extension.getAttachment
 import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.nowInUtc
 import one.mixin.android.util.GsonHelper
+import one.mixin.android.util.image.ImageStatus
 import one.mixin.android.websocket.AudioMessagePayload
 import one.mixin.android.websocket.ContactMessagePayload
 import one.mixin.android.websocket.DataMessagePayload
@@ -68,10 +69,10 @@ sealed class ShareCategory : ForwardCategory() {
     @Parcelize
     object Image : ShareCategory() {
         override fun toString() = "Image"
-        fun getErrorStringOrNull(code: Int) =
+        fun getErrorStringOrNull(code: ImageStatus) =
             when (code) {
-                -1 -> R.string.File_error
-                -2 -> R.string.Format_not_supported
+                ImageStatus.SUCCESS -> R.string.File_error
+                ImageStatus.FORMAT_ERROR -> R.string.Format_not_supported
                 else -> null
             }
     }

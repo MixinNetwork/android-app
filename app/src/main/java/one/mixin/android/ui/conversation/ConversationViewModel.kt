@@ -61,6 +61,7 @@ import one.mixin.android.util.SINGLE_DB_THREAD
 import one.mixin.android.util.SINGLE_DRAFT_THREAD
 import one.mixin.android.util.chat.FastComputableLiveData
 import one.mixin.android.util.chat.FastLivePagedListBuilder
+import one.mixin.android.util.image.ImageStatus
 import one.mixin.android.vo.AppCap
 import one.mixin.android.vo.AppItem
 import one.mixin.android.vo.AssetItem
@@ -334,7 +335,7 @@ internal constructor(
         mime: String? = null,
         replyMessage: MessageItem? = null,
         fromInput: Boolean = false,
-    ): Int {
+    ): ImageStatus {
         return messenger.sendImageMessage(conversationId, sender, uri, encryptCategory, mime, replyMessage, fromInput)
     }
 

@@ -23,7 +23,7 @@ internal object ImageUtil {
         compressFormat: Bitmap.CompressFormat,
         quality: Int,
         destinationPath: String
-    ): File {
+    ): File? {
         var fileOutputStream: FileOutputStream? = null
         val file = File(destinationPath).parentFile
         if (file != null && !file.exists()) {
@@ -32,7 +32,7 @@ internal object ImageUtil {
         try {
             fileOutputStream = FileOutputStream(destinationPath)
             decodeSampledBitmapFromFile(imageUri, reqWidth, reqHeight)
-                .compress(compressFormat, quality, fileOutputStream)
+                ?.compress(compressFormat, quality, fileOutputStream) ?: return null
         } finally {
             if (fileOutputStream != null) {
                 fileOutputStream.flush()
@@ -44,8 +44,8 @@ internal object ImageUtil {
     }
 
     @Throws(IOException::class)
-    fun decodeSampledBitmapFromFile(imageUri: Uri, reqWidth: Int, reqHeight: Int): Bitmap {
-        val imageInputStream = MixinApplication.get().contentResolver.openInputStream(imageUri)!!
+    fun decodeSampledBitmapFromFile(imageUri: Uri, reqWidth: Int, reqHeight: Int): Bitmap? {
+        val imageInputStream = MixinApplication.get().contentResolver.openInputStream(imageUri) ?: return null
         val options = BitmapFactory.Options()
         var bitmap = requireNotNull(BitmapFactory.decodeStream(imageInputStream, null, options))
         val scale = calculateInScale(bitmap.width, bitmap.height, reqWidth, reqHeight)

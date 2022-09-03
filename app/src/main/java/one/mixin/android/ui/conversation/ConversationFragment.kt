@@ -192,6 +192,7 @@ import one.mixin.android.util.MusicPlayer
 import one.mixin.android.util.chat.InvalidateFlow
 import one.mixin.android.util.debug.FileLogTree
 import one.mixin.android.util.debug.debugLongClick
+import one.mixin.android.util.image.ImageStatus
 import one.mixin.android.util.mention.mentionDisplay
 import one.mixin.android.util.mention.mentionEnd
 import one.mixin.android.util.mention.mentionReplace
@@ -1992,12 +1993,12 @@ class ConversationFragment() :
                     )
                 }
                 when (code) {
-                    0 -> {
+                    ImageStatus.SUCCESS -> {
                         scrollToDown()
                         markRead()
                     }
-                    -1 -> toast(R.string.File_error)
-                    -2 -> toast(R.string.Format_not_supported)
+                    ImageStatus.FILE_ERROR -> toast(R.string.File_error)
+                    ImageStatus.FORMAT_ERROR -> toast(R.string.Format_not_supported)
                 }
             }
         }

@@ -35,6 +35,7 @@ import one.mixin.android.repository.UserRepository
 import one.mixin.android.util.Attachment
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.image.Compressor
+import one.mixin.android.util.image.ImageStatus
 import one.mixin.android.vo.AppCap
 import one.mixin.android.vo.EncryptCategory
 import one.mixin.android.vo.MediaStatus
@@ -542,7 +543,7 @@ class SendMessageHelper @Inject internal constructor(private val jobManager: Mix
         mime: String? = null,
         replyMessage: MessageItem? = null,
         fromInput: Boolean = false,
-    ): Int {
+    ): ImageStatus {
         val category = encryptCategory.toCategory(
             MessageCategory.PLAIN_IMAGE,
             MessageCategory.SIGNAL_IMAGE,
@@ -552,13 +553,13 @@ class SendMessageHelper @Inject internal constructor(private val jobManager: Mix
         if (mimeType == null) {
             mimeType = getMimeType(uri, true)
             if (mimeType?.isImageSupport() != true) {
-                return -2
+                return ImageStatus.FORMAT_ERROR
             }
         }
         val messageId = UUID.randomUUID().toString()
         if (mimeType == MimeType.GIF.toString()) {
             val gifFile = MixinApplication.get().getImagePath().createGifTemp(conversationId, messageId)
-            val path = uri.getFilePath(MixinApplication.get()) ?: return -1
+            val path = uri.getFilePath(MixinApplication.get()) ?: return ImageStatus.FILE_ERROR
             gifFile.copyFromInputStream(FileInputStream(path))
             val size = getImageSize(gifFile)
             val thumbnail = gifFile.encodeBlurHash()
@@ -584,7 +585,7 @@ class SendMessageHelper @Inject internal constructor(private val jobManager: Mix
                 replyMessage?.toQuoteMessageItem()
             )
             jobManager.addJobInBackground(SendAttachmentMessageJob(message))
-            return 0
+            return ImageStatus.SUCCESS
         }
         val newMimeType = if (fromInput) MimeType.WEBP else MimeType.JPG
         val temp = MixinApplication.get().getImagePath().createImageTemp(
@@ -616,11 +617,11 @@ class SendMessageHelper @Inject internal constructor(private val jobManager: Mix
                         Bitmap.CompressFormat.JPEG
                     }
                 )
-                .compressToFile(uri, temp.absolutePath)
+                .compressToFile(uri, temp.absolutePath) ?: return return ImageStatus.FILE_ERROR
         }
         val length = imageFile.length()
         if (length <= 0) {
-            return -1
+            return ImageStatus.FILE_ERROR
         }
         val size = getImageSize(imageFile)
         val thumbnail = imageFile.encodeBlurHash()
@@ -645,6 +646,6 @@ class SendMessageHelper @Inject internal constructor(private val jobManager: Mix
             replyMessage?.toQuoteMessageItem()
         )
         jobManager.addJobInBackground(SendAttachmentMessageJob(message))
-        return 0
+        return ImageStatus.SUCCESS
     }
 }
