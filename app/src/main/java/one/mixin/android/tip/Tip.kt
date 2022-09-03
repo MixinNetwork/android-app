@@ -79,24 +79,25 @@ class Tip @Inject internal constructor(
     suspend fun createTipPriv(context: Context, pin: String, deviceId: String, failedSigners: List<TipSigner>? = null, legacyPin: String? = null, forRecover: Boolean = false): Result<ByteArray> {
         return try {
             val ephemeralSeed = ephemeral.getEphemeralSeed(context, deviceId)
-
             val identityPair = identity.getIdentityPrivAndWatcher(pin)
-
             createPriv(context, identityPair.priKey, ephemeralSeed, identityPair.watcher, pin, failedSigners, legacyPin, forRecover)
         } catch (e: Exception) {
             Result.failure(e)
         }
     }
 
-    suspend fun updateTipPriv(context: Context, pin: String, deviceId: String, newPin: String, nodeSuccess: Boolean, failedSigners: List<TipSigner>? = null): Result<ByteArray> {
+    suspend fun updateTipPriv(context: Context, deviceId: String, newPin: String, oldPin: String?, failedSigners: List<TipSigner>? = null): Result<ByteArray> {
         return try {
             val ephemeralSeed = ephemeral.getEphemeralSeed(context, deviceId)
 
-            val identityPair = identity.getIdentityPrivAndWatcher(pin)
-
-            val assigneePriv = identity.getIdentityPrivAndWatcher(newPin).priKey
-
-            return updatePriv(context, identityPair.priKey, ephemeralSeed, identityPair.watcher, newPin, assigneePriv, nodeSuccess, failedSigners)
+            if (oldPin.isNullOrBlank()) { // node success
+                val identityPair = identity.getIdentityPrivAndWatcher(newPin)
+                return updatePriv(context, identityPair.priKey, ephemeralSeed, identityPair.watcher, newPin, null)
+            } else {
+                val identityPair = identity.getIdentityPrivAndWatcher(oldPin)
+                val assigneePriv = identity.getIdentityPrivAndWatcher(newPin).priKey
+                return updatePriv(context, identityPair.priKey, ephemeralSeed, identityPair.watcher, newPin, assigneePriv, failedSigners)
+            }
         } catch (e: Exception) {
             Result.failure(e)
         }
@@ -127,21 +128,45 @@ class Tip @Inject internal constructor(
             val pub = EdDSAPublicKey(EdDSAPublicKeySpec(privateSpec.a, ed25519))
 
             val localPub = Session.getTipPub()
-            if (!localPub.isNullOrBlank() && !localPub.base64RawUrlDecode()
-                .contentEquals(pub.abyte)
-            ) {
+            if (!localPub.isNullOrBlank() && !localPub.base64RawUrlDecode().contentEquals(pub.abyte)) {
                 Timber.e("local pub not equals to new generated, PIN incorrect")
                 throw PinIncorrectException()
             }
-            encryptAndSave(context, pin, aggSig)
 
-            if (forRecover) return Result.success(aggSig)
+            val aesKey = generateAesKey(pin)
+            if (forRecover) {
+                encryptAndSaveTipPriv(context, pin, aggSig, aesKey)
+                return Result.success(aggSig)
+            }
 
             replaceOldEncryptedPin(pub, legacyPin)
+            encryptAndSaveTipPriv(context, pin, aggSig, aesKey)
 
             return Result.success(aggSig)
         } catch (e: Exception) {
             return Result.failure(e)
+        }
+    }
+
+    private suspend fun updatePriv(context: Context, identityPriv: ByteArray, ephemeral: ByteArray, watcher: ByteArray, newPin: String, assigneePriv: ByteArray?, failedSigners: List<TipSigner>? = null): Result<ByteArray> {
+        return try {
+            val callback = object : TipNode.Callback {
+                override fun onNodeComplete(step: Int, total: Int) {
+                    observers.forEach { it.onSyncing(step, total) }
+                }
+            }
+            val aggSig = tipNode.sign(identityPriv, ephemeral, watcher, assigneePriv, failedSigners, callback = callback)
+                .sha256() // use sha256(recover-signature) as priv
+
+            observers.forEach { it.onSyncingComplete() }
+
+            val aesKey = generateAesKey(newPin)
+            replaceEncryptedPin(aggSig)
+            encryptAndSaveTipPriv(context, newPin, aggSig, aesKey)
+
+            Result.success(aggSig)
+        } catch (e: Exception) {
+            Result.failure(e)
         }
     }
 
@@ -158,30 +183,6 @@ class Tip @Inject internal constructor(
         val pinRequest = PinRequest(newPin, oldEncryptedPin)
         val account = tipNetwork { accountService.updatePinSuspend(pinRequest) }.getOrThrow()
         Session.storeAccount(account)
-    }
-
-    private suspend fun updatePriv(context: Context, identityPriv: ByteArray, ephemeral: ByteArray, watcher: ByteArray, newPin: String, assigneePriv: ByteArray, nodeSuccess: Boolean, failedSigners: List<TipSigner>? = null): Result<ByteArray> {
-        return try {
-            val callback = object : TipNode.Callback {
-                override fun onNodeComplete(step: Int, total: Int) {
-                    observers.forEach { it.onSyncing(step, total) }
-                }
-            }
-            val aggSig = if (nodeSuccess) {
-                tipNode.sign(assigneePriv, ephemeral, watcher, null, null, callback = callback)
-            } else {
-                tipNode.sign(identityPriv, ephemeral, watcher, assigneePriv, failedSigners, callback = callback)
-            }.sha256() // use sha256(recover-signature) as priv
-
-            observers.forEach { it.onSyncingComplete() }
-
-            encryptAndSave(context, newPin, aggSig)
-            replaceEncryptedPin(aggSig)
-
-            Result.success(aggSig)
-        } catch (e: Exception) {
-            Result.failure(e)
-        }
     }
 
     @Throws(IOException::class, TipNetworkException::class)
@@ -202,9 +203,7 @@ class Tip @Inject internal constructor(
     }
 
     @Throws(TipException::class)
-    private suspend fun encryptAndSave(context: Context, pin: String, aggSig: ByteArray) {
-        val aesKey = generateAesKey(pin)
-
+    private fun encryptAndSaveTipPriv(context: Context, pin: String, aggSig: ByteArray, aesKey: ByteArray) {
         val privTipKey = (aesKey + pin.toByteArray()).sha3Sum256()
         val privTip = aesEncrypt(privTipKey, aggSig)
 

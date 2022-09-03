@@ -239,11 +239,22 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
     private fun recover() {
         when (tipBundle.tipType) {
             TipType.Change -> {
-                showVerifyPin { oldPin ->
-                    tipBundle.oldPin = oldPin
+                val tipCounter = Session.getTipCounter()
+                val nodeCounter = tipBundle.tipEvent?.nodeCounter ?: tipCounter
+                val failedSigners = tipBundle.tipEvent?.failedSigners
+                val nodeSuccess = nodeCounter > tipCounter && failedSigners.isNullOrEmpty()
+                if (nodeSuccess) {
                     showInputPin { pin ->
                         tipBundle.pin = pin
                         processTip()
+                    }
+                } else {
+                    showVerifyPin { oldPin ->
+                        tipBundle.oldPin = oldPin
+                        showInputPin { pin ->
+                            tipBundle.pin = pin
+                            processTip()
+                        }
                     }
                 }
             }
@@ -294,9 +305,10 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
         tip.addObserver(tipObserver)
         if (tipCounter < 1) {
             tip.createTipPriv(requireContext(), pin, deviceId, failedSigners, oldPin)
+        } else if (nodeCounter > tipCounter && failedSigners.isNullOrEmpty()) {
+            tip.updateTipPriv(requireContext(), deviceId, pin, null, null)
         } else {
-            val nodeSuccess = nodeCounter > tipCounter && failedSigners.isNullOrEmpty()
-            tip.updateTipPriv(requireContext(), requireNotNull(oldPin), deviceId, pin, nodeSuccess, failedSigners)
+            tip.updateTipPriv(requireContext(), deviceId, pin, requireNotNull(oldPin), failedSigners)
         }.onSuccess {
             tip.removeObserver(tipObserver)
             onTipProcessSuccess(pin)
