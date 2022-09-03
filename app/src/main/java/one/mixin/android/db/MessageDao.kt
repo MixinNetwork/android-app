@@ -404,7 +404,8 @@ interface MessageDao : BaseDao<Message> {
         m.media_url AS mediaUrl, m.media_mime_type AS mediaMimeType, m.name AS mediaName, m.media_size AS mediaSize
         FROM messages m INNER JOIN users u ON m.user_id = u.user_id 
         WHERE m.conversation_id = :conversationId
-        AND (m.category in ($DATA)) AND m.media_mime_type IN ("audio/mpeg", "audio/flac")
+        AND (m.category in ($DATA)) 
+        AND m.media_mime_type LIKE 'audio%'
         AND m.media_status != 'EXPIRED'
         ORDER BY m.created_at ASC, m.rowid ASC
         """
@@ -418,7 +419,7 @@ interface MessageDao : BaseDao<Message> {
         INDEXED BY index_messages_conversation_id_category 
         WHERE conversation_id = :conversationId 
         AND category IN ($DATA) 
-        AND media_mime_type IN ("audio/mpeg", "audio/flac")
+        AND media_mime_type LIKE 'audio%'
         AND media_status != 'EXPIRED'
         AND created_at < (SELECT created_at FROM messages WHERE id = :messageId)
         ORDER BY created_at ASC, rowid ASC
