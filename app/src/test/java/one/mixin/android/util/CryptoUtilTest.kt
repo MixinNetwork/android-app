@@ -6,9 +6,11 @@ import one.mixin.android.crypto.ed25519
 import one.mixin.android.crypto.privateKeyToCurve25519
 import one.mixin.android.crypto.publicKeyToCurve25519
 import one.mixin.android.crypto.sha3Sum256
+import one.mixin.android.extension.hexStringToByteArray
 import one.mixin.android.extension.toHex
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 
 class CryptoUtilTest {
 
@@ -39,5 +41,14 @@ class CryptoUtilTest {
         println("digest1: ${digest1.toHex()}")
         println("digest2: ${digest2.toHex()}")
         assertEquals("f345a219da005ebe9c1a1eaad97bbf38a10c8473e41d0af7fb617caa0c6aa722", digest1.toHex())
+    }
+
+    @Test
+    fun `test sha3-256 hash tip priv`() {
+        val targetHex = "3039326262663461613432633963643336376239663465383363353861393031363539353037316465636261386436646330633437643565613862326363633535485841484668386b6859424757413256336f5555765841583461576e517345794e7a4b6f41334c6e4a6b78744b514e686357536834537774373261316277376147387554673946333179627a534a79754e48454e554274476f62556648624b4e505559596b486e6875507457737a6143754e4a336e42785a34437274385138416d4a32665a7a6e4c783345444d32457166363364724e6d573656566d6d7a42515563344e324a61587a46747434484646577476556b"
+        val result = targetHex.hexStringToByteArray().sha3Sum256()
+        println("sha3-256: ${result.toHex()}")
+        assertEquals("25c945f52d5742aa6c3d26edaab75113cb59e824e7ff5a42f71da86800c7ce14", result.toHex())
+        assertTrue("25c945f52d5742aa6c3d26edaab75113cb59e824e7ff5a42f71da86800c7ce14".hexStringToByteArray().contentEquals(result))
     }
 }
