@@ -308,18 +308,19 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
         Timber.d("tip nodeCounter $nodeCounter, tipCounter $tipCounter, signers size ${failedSigners?.size}")
 
         tip.addObserver(tipObserver)
-        if (tipCounter < 1) {
-            tip.createTipPriv(requireContext(), pin, deviceId, failedSigners, oldPin)
-        } else if (nodeCounter > tipCounter && failedSigners.isNullOrEmpty()) {
-            tip.updateTipPriv(requireContext(), deviceId, pin, null, null)
-        } else {
-            tip.updateTipPriv(requireContext(), deviceId, pin, requireNotNull(oldPin), failedSigners)
-        }.onSuccess {
-            tip.removeObserver(tipObserver)
-            onTipProcessSuccess(pin)
+        when {
+            tipCounter < 1 ->
+                tip.createTipPriv(requireContext(), pin, deviceId, failedSigners, oldPin)
+            nodeCounter > tipCounter && failedSigners.isNullOrEmpty() ->
+                tip.updateTipPriv(requireContext(), deviceId, pin, null, null)
+            else ->
+                tip.updateTipPriv(requireContext(), deviceId, pin, requireNotNull(oldPin), failedSigners)
         }.onFailure { e ->
             tip.removeObserver(tipObserver)
             onTipProcessFailure(e, tipCounter, nodeCounter)
+        }.onSuccess {
+            tip.removeObserver(tipObserver)
+            onTipProcessSuccess(pin)
         }
     }
 

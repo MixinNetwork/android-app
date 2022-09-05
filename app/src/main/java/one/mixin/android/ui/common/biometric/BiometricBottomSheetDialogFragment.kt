@@ -18,10 +18,9 @@ import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.putLong
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.updatePinCheck
-import one.mixin.android.job.TipCounterSyncedLiveData
 import one.mixin.android.tip.Tip
+import one.mixin.android.tip.TipCounterNotSyncedException
 import one.mixin.android.tip.TipNetworkException
-import one.mixin.android.tip.checkAndPublishTipCounterSynced
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
 import one.mixin.android.util.BiometricUtil
 import one.mixin.android.util.ErrorHandler
@@ -38,8 +37,6 @@ abstract class BiometricBottomSheetDialogFragment : MixinBottomSheetDialogFragme
 
     @Inject
     lateinit var tip: Tip
-    @Inject
-    lateinit var tipCounterSynced: TipCounterSyncedLiveData
 
     override fun onCreateDialog(savedInstanceState: Bundle?): BottomSheet {
         val dialog = super.onCreateDialog(savedInstanceState)
@@ -143,12 +140,6 @@ abstract class BiometricBottomSheetDialogFragment : MixinBottomSheetDialogFragme
 
         biometricLayout.showPb()
 
-        if (checkAndPublishTipCounterSynced(tip, tipCounterSynced)) {
-            dialog?.window?.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
-            biometricLayout.showPin(true)
-            return@launch
-        }
-
         val response = try {
             // initialize this in main thread
             bottomViewModel
@@ -159,6 +150,9 @@ abstract class BiometricBottomSheetDialogFragment : MixinBottomSheetDialogFragme
         } catch (t: Throwable) {
             if (t is TipNetworkException) {
                 handleWithErrorCodeAndDesc(pin, t.error)
+            } else if (t is TipCounterNotSyncedException) {
+                dialog?.window?.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
+                biometricLayout.showPin(true)
             } else {
                 dialog?.window?.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
                 biometricLayout.showPin(true)
