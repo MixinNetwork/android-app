@@ -266,7 +266,7 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
                 }
             }
             TipType.Create -> {
-                showVerifyPin { pin ->
+                showInputPin(getString(R.string.Enter_your_PIN)) { pin ->
                     tipBundle.pin = pin
                     processTip()
                 }
@@ -387,8 +387,8 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
         }.showNow(parentFragmentManager, VerifyBottomSheetDialogFragment.TAG)
     }
 
-    private fun showInputPin(onInputComplete: (String) -> Unit) {
-        PinInputBottomSheetDialogFragment.newInstance(getString(R.string.Enter_your_new_PIN)).setOnPinComplete { pin ->
+    private fun showInputPin(title: String? = null, onInputComplete: (String) -> Unit) {
+        PinInputBottomSheetDialogFragment.newInstance(title ?: getString(R.string.Enter_your_new_PIN)).setOnPinComplete { pin ->
             onInputComplete(pin)
         }.showNow(parentFragmentManager, PinInputBottomSheetDialogFragment.TAG)
     }
