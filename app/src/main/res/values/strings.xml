@@ -1061,6 +1061,7 @@
     <string name="Enter_your_new_PIN">Enter your new PIN</string>
     <string name="Not_enough_partials">Not enough nodes return key shard</string>
     <string name="Not_all_signer_success">Not all node success</string>
+    <string name="All_signer_failure">All node failure, perhaps PIN does not match what was set when it was last terminated unexpectedly</string>
     <string name="PIN_not_same_as_last_time">PIN does not match what was set when it was last terminated unexpectedly</string>
     <string name="Set_or_update_PIN_failed">Set or update PIN failed</string>
     <string name="TIP_introduction">The 6-digit PIN is based on the Throttled Identity Protocol, which is the decentralized key derivation protocol, read the document to **learn more**.</string>

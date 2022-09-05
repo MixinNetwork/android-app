@@ -20,6 +20,8 @@ class NotAllSignerSuccessException(
     companion object {
         private const val serialVersionUID: Long = 1L
     }
+
+    fun allFailure() = successSignerSize == 0
 }
 
 class DifferentIdentityException : TipNodeException() {

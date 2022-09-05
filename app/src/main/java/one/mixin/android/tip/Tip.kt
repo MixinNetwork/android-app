@@ -341,7 +341,11 @@ fun Throwable.getTipExceptionMsg(context: Context): String =
     when (this) {
         is PinIncorrectException -> context.getString(R.string.PIN_incorrect)
         is NotEnoughPartialsException -> context.getString(R.string.Not_enough_partials)
-        is NotAllSignerSuccessException -> context.getString(R.string.Not_all_signer_success)
+        is NotAllSignerSuccessException -> if (allFailure()) {
+            context.getString(R.string.All_signer_failure)
+        } else {
+            context.getString(R.string.Not_all_signer_success)
+        }
         is DifferentIdentityException -> context.getString(R.string.PIN_not_same_as_last_time)
         else -> "${context.getString(R.string.Set_or_update_PIN_failed)}\n$localizedMessage"
     }

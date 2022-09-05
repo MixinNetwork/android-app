@@ -1038,7 +1038,8 @@
     <string name="Enter_your_old_PIN">输入你的旧 PIN</string>
     <string name="Enter_your_new_PIN">输入你的新 PIN</string>
     <string name="Not_enough_partials">没有足够的节点返回密钥分片</string>
-    <string name="Not_all_signer_success">不是所有的节点都成功</string>
+    <string name="Not_all_signer_success">有些节点失败了</string>
+    <string name="All_signer_failure">所有节点失败，也许 PIN 跟上次意外退出时设置的不一致</string>
     <string name="PIN_not_same_as_last_time">PIN 跟上次意外退出时设置的不一致</string>
     <string name="Set_or_update_PIN_failed">设置或更新 PIN 失败</string>
     <string name="TIP_introduction">6 位数字 PIN 基于去中心化密钥派生协议 Throttled Identity Protocol，阅读文档以**了解更多**。</string>
