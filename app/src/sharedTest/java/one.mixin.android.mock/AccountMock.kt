@@ -9,7 +9,7 @@ fun mockAccount(): Account {
         MOCK_ME_USER_ID, "94EF6A7F-52A6-4019-996F-C30C77F248A6",
         "user", "7000", "ME", "Mixin", "Mixin",
         "", "", "", "", // PinToken is AES key encrypted with RSA
-        "", "", "2018-10-01T02:17:44.806365421Z", "", true, "", "EVERYBODY",
-        "EVERYBODY", true, "USD"
+        "", "", "2018-10-01T02:17:44.806365421Z", "", true, "", 0, "EVERYBODY",
+        "EVERYBODY", true, "USD",
     )
 }

@@ -30,7 +30,6 @@ import one.mixin.android.extension.decodeBase64
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.nowInUtcNano
 import one.mixin.android.extension.putString
-import one.mixin.android.extension.sha256
 import one.mixin.android.extension.toBeByteArray
 import one.mixin.android.job.TipCounterSyncedLiveData
 import one.mixin.android.session.Session
@@ -120,7 +119,7 @@ class Tip @Inject internal constructor(
                         observers.forEach { it.onSyncing(step, total) }
                     }
                 }
-            ).sha256() // use sha256(recover-signature) as priv
+            ).sha3Sum256() // use sha3-256(recover-signature) as priv
 
             observers.forEach { it.onSyncingComplete() }
 
@@ -156,7 +155,7 @@ class Tip @Inject internal constructor(
                 }
             }
             val aggSig = tipNode.sign(identityPriv, ephemeral, watcher, assigneePriv, failedSigners, callback = callback)
-                .sha256() // use sha256(recover-signature) as priv
+                .sha3Sum256() // use sha3-256(recover-signature) as priv
 
             observers.forEach { it.onSyncingComplete() }
 
