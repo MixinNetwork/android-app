@@ -21,6 +21,7 @@ import one.mixin.android.extension.highlightStarTag
 import one.mixin.android.extension.navTo
 import one.mixin.android.extension.putLong
 import one.mixin.android.extension.toast
+import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.extension.withArgs
 import one.mixin.android.session.Session
 import one.mixin.android.tip.DifferentIdentityException
@@ -91,114 +92,118 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
         updateUI(newVal)
     }
 
-    private fun updateUI(tipStep: TipStep) = binding.apply {
-        val forRecover = tipBundle.forRecover()
-        when (tipStep) {
-            is TryConnecting -> {
-                closeIv.isVisible = true
-                if (forRecover) {
-                    descTv.text = getString(R.string.Upgrade_PIN_aborted_unexpectedly_at, "2022")
-                } else {
-                    descTv.highlightStarTag(getString(R.string.TIP_introduction), arrayOf(Constants.HelpLink.TIP))
+    private fun updateUI(tipStep: TipStep) {
+        if (viewDestroyed()) return
+
+        binding.apply {
+            val forRecover = tipBundle.forRecover()
+            when (tipStep) {
+                is TryConnecting -> {
+                    closeIv.isVisible = true
+                    if (forRecover) {
+                        descTv.text = getString(R.string.Upgrade_PIN_aborted_unexpectedly_at, "2022")
+                    } else {
+                        descTv.highlightStarTag(getString(R.string.TIP_introduction), arrayOf(Constants.HelpLink.TIP))
+                    }
+                    tipsTv.isVisible = true
+                    bottomVa.displayedChild = 0
+                    innerVa.displayedChild = 1
+                    bottomHintTv.text = getString(R.string.Trying_connect_tip_network)
+                    bottomHintTv.setTextColor(requireContext().colorFromAttribute(R.attr.text_minor))
                 }
-                tipsTv.isVisible = true
-                bottomVa.displayedChild = 0
-                innerVa.displayedChild = 1
-                bottomHintTv.text = getString(R.string.Trying_connect_tip_network)
-                bottomHintTv.setTextColor(requireContext().colorFromAttribute(R.attr.text_minor))
-            }
-            is RetryConnect -> {
-                closeIv.isVisible = true
-                if (forRecover) {
-                    descTv.text = getString(R.string.Upgrade_PIN_aborted_unexpectedly_at, "2022")
-                } else {
-                    descTv.highlightStarTag(getString(R.string.TIP_introduction), arrayOf(Constants.HelpLink.TIP))
+                is RetryConnect -> {
+                    closeIv.isVisible = true
+                    if (forRecover) {
+                        descTv.text = getString(R.string.Upgrade_PIN_aborted_unexpectedly_at, "2022")
+                    } else {
+                        descTv.highlightStarTag(getString(R.string.TIP_introduction), arrayOf(Constants.HelpLink.TIP))
+                    }
+                    tipsTv.isVisible = true
+                    bottomVa.displayedChild = 0
+                    innerVa.displayedChild = 0
+                    innerTv.text = getString(R.string.Retry)
+                    innerTv.setOnClickListener { tryConnect(tipStep.shouldWatch) }
+                    bottomHintTv.text = getString(R.string.Connect_to_TIP_network_failed)
+                    bottomHintTv.setTextColor(requireContext().getColor(R.color.colorRed))
                 }
-                tipsTv.isVisible = true
-                bottomVa.displayedChild = 0
-                innerVa.displayedChild = 0
-                innerTv.text = getString(R.string.Retry)
-                innerTv.setOnClickListener { tryConnect(tipStep.shouldWatch) }
-                bottomHintTv.text = getString(R.string.Connect_to_TIP_network_failed)
-                bottomHintTv.setTextColor(requireContext().getColor(R.color.colorRed))
-            }
-            is ReadyStart -> {
-                closeIv.isVisible = true
-                if (forRecover) {
-                    descTv.text = getString(R.string.Upgrade_PIN_aborted_unexpectedly_at, "2022")
-                } else {
-                    descTv.highlightStarTag(getString(R.string.TIP_introduction), arrayOf(Constants.HelpLink.TIP))
-                }
-                tipsTv.isVisible = true
-                bottomVa.displayedChild = 0
-                innerVa.displayedChild = 0
-                if (forRecover) {
-                    innerTv.text = getString(R.string.Continue)
-                    innerTv.setOnClickListener { recover() }
-                } else {
-                    when (tipBundle.tipType) {
-                        TipType.Upgrade -> {
-                            innerTv.text = getString(R.string.Upgrade)
-                            innerTv.setOnClickListener {
-                                showVerifyPin(getString(R.string.Enter_your_PIN)) { pin ->
-                                    tipBundle.oldPin = pin // as legacy pin
-                                    tipBundle.pin = pin
-                                    processTip()
+                is ReadyStart -> {
+                    closeIv.isVisible = true
+                    if (forRecover) {
+                        descTv.text = getString(R.string.Upgrade_PIN_aborted_unexpectedly_at, "2022")
+                    } else {
+                        descTv.highlightStarTag(getString(R.string.TIP_introduction), arrayOf(Constants.HelpLink.TIP))
+                    }
+                    tipsTv.isVisible = true
+                    bottomVa.displayedChild = 0
+                    innerVa.displayedChild = 0
+                    if (forRecover) {
+                        innerTv.text = getString(R.string.Continue)
+                        innerTv.setOnClickListener { recover() }
+                    } else {
+                        when (tipBundle.tipType) {
+                            TipType.Upgrade -> {
+                                innerTv.text = getString(R.string.Upgrade)
+                                innerTv.setOnClickListener {
+                                    showVerifyPin(getString(R.string.Enter_your_PIN)) { pin ->
+                                        tipBundle.oldPin = pin // as legacy pin
+                                        tipBundle.pin = pin
+                                        processTip()
+                                    }
                                 }
                             }
-                        }
-                        else -> {
-                            innerTv.text = getString(R.string.Start)
-                            innerTv.setOnClickListener { start() }
+                            else -> {
+                                innerTv.text = getString(R.string.Start)
+                                innerTv.setOnClickListener { start() }
+                            }
                         }
                     }
+                    bottomHintTv.text = ""
                 }
-                bottomHintTv.text = ""
-            }
-            is RetryProcess -> {
-                closeIv.isVisible = false
-                if (forRecover) {
-                    descTv.text = getString(R.string.Upgrade_PIN_aborted_unexpectedly_at, "2022")
-                } else {
-                    descTv.highlightStarTag(getString(R.string.TIP_introduction), arrayOf(Constants.HelpLink.TIP))
-                }
-                tipsTv.isVisible = true
-                bottomVa.displayedChild = 0
-                innerVa.displayedChild = 0
-                innerTv.text = getString(R.string.Retry)
-                innerTv.setOnClickListener {
-                    if (tipBundle.pin.isNullOrBlank()) {
-                        showInputPin { pin ->
-                            tipBundle.pin = pin
+                is RetryProcess -> {
+                    closeIv.isVisible = false
+                    if (forRecover) {
+                        descTv.text = getString(R.string.Upgrade_PIN_aborted_unexpectedly_at, "2022")
+                    } else {
+                        descTv.highlightStarTag(getString(R.string.TIP_introduction), arrayOf(Constants.HelpLink.TIP))
+                    }
+                    tipsTv.isVisible = true
+                    bottomVa.displayedChild = 0
+                    innerVa.displayedChild = 0
+                    innerTv.text = getString(R.string.Retry)
+                    innerTv.setOnClickListener {
+                        if (tipBundle.pin.isNullOrBlank()) {
+                            showInputPin { pin ->
+                                tipBundle.pin = pin
+                                processTip()
+                            }
+                        } else {
                             processTip()
                         }
-                    } else {
-                        processTip()
                     }
+                    bottomHintTv.text = tipStep.reason
+                    bottomHintTv.setTextColor(requireContext().getColor(R.color.colorRed))
                 }
-                bottomHintTv.text = tipStep.reason
-                bottomHintTv.setTextColor(requireContext().getColor(R.color.colorRed))
-            }
-            is Processing -> {
-                closeIv.isVisible = false
-                descTv.setText(R.string.Syncing_and_verifying_TIP)
-                tipsTv.isVisible = false
-                bottomHintTv.setTextColor(requireContext().colorFromAttribute(R.attr.text_minor))
+                is Processing -> {
+                    closeIv.isVisible = false
+                    descTv.setText(R.string.Syncing_and_verifying_TIP)
+                    tipsTv.isVisible = false
+                    bottomHintTv.setTextColor(requireContext().colorFromAttribute(R.attr.text_minor))
 
-                when (tipStep) {
-                    is Processing.Creating -> {
-                        bottomVa.displayedChild = 2
-                        bottomHintTv.text = getString(R.string.Trying_connect_tip_node)
-                    }
-                    is Processing.SyncingNode -> {
-                        bottomVa.displayedChild = 1
-                        pb.max = tipStep.total
-                        pb.progress = tipStep.step
-                        bottomHintTv.text = getString(R.string.Exchanging_data, tipStep.step, tipStep.total)
-                    }
-                    is Processing.Updating -> {
-                        bottomVa.displayedChild = 2
-                        bottomHintTv.text = getString(R.string.Upgrading)
+                    when (tipStep) {
+                        is Processing.Creating -> {
+                            bottomVa.displayedChild = 2
+                            bottomHintTv.text = getString(R.string.Trying_connect_tip_node)
+                        }
+                        is Processing.SyncingNode -> {
+                            bottomVa.displayedChild = 1
+                            pb.max = tipStep.total
+                            pb.progress = tipStep.step
+                            bottomHintTv.text = getString(R.string.Exchanging_data, tipStep.step, tipStep.total)
+                        }
+                        is Processing.Updating -> {
+                            bottomVa.displayedChild = 2
+                            bottomHintTv.text = getString(R.string.Upgrading)
+                        }
                     }
                 }
             }
