@@ -69,8 +69,8 @@ class OldPasswordFragment : BaseFragment(R.layout.fragment_old_password), PinVie
         }
     }
 
-    override fun onDestroy() {
-        super.onDestroy()
+    override fun onDestroyView() {
+        super.onDestroyView()
         activity?.window?.clearFlags(WindowManager.LayoutParams.FLAG_SECURE)
     }
 

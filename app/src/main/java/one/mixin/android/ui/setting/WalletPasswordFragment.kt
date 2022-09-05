@@ -80,8 +80,8 @@ class WalletPasswordFragment : BaseFragment(R.layout.fragment_wallet_password), 
         }
     }
 
-    override fun onDestroy() {
-        super.onDestroy()
+    override fun onDestroyView() {
+        super.onDestroyView()
         activity?.window?.clearFlags(WindowManager.LayoutParams.FLAG_SECURE)
     }
 
