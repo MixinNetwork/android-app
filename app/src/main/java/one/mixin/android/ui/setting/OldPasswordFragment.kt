@@ -20,10 +20,7 @@ import one.mixin.android.extension.tickVibrate
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.updatePinCheck
 import one.mixin.android.extension.withArgs
-import one.mixin.android.job.TipCounterSyncedLiveData
-import one.mixin.android.tip.Tip
 import one.mixin.android.tip.TipNetworkException
-import one.mixin.android.tip.checkAndPublishTipCounterSynced
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.tip.TipBundle
 import one.mixin.android.ui.tip.TipFragment.Companion.ARGS_TIP_BUNDLE
@@ -33,7 +30,6 @@ import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.viewBinding
 import one.mixin.android.widget.Keyboard
 import one.mixin.android.widget.PinView
-import javax.inject.Inject
 
 @AndroidEntryPoint
 class OldPasswordFragment : BaseFragment(R.layout.fragment_old_password), PinView.OnPinListener {
@@ -48,11 +44,6 @@ class OldPasswordFragment : BaseFragment(R.layout.fragment_old_password), PinVie
 
     private val walletViewModel by viewModels<WalletViewModel>()
     private val binding by viewBinding(FragmentOldPasswordBinding::bind)
-
-    @Inject
-    lateinit var tip: Tip
-    @Inject
-    lateinit var tipCounterSynced: TipCounterSyncedLiveData
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -99,12 +90,6 @@ class OldPasswordFragment : BaseFragment(R.layout.fragment_old_password), PinVie
         )
         dialog.setCancelable(false)
         dialog.show()
-
-        if (checkAndPublishTipCounterSynced(tip, tipCounterSynced)) {
-            dialog.dismiss()
-            binding.pin.clear()
-            return@launch
-        }
 
         handleMixinResponse(
             invokeNetwork = { walletViewModel.verifyPin(pinCode) },

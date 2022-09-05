@@ -21,16 +21,12 @@ import one.mixin.android.extension.clickVibrate
 import one.mixin.android.extension.realSize
 import one.mixin.android.extension.tickVibrate
 import one.mixin.android.extension.updatePinCheck
-import one.mixin.android.job.TipCounterSyncedLiveData
-import one.mixin.android.tip.Tip
 import one.mixin.android.tip.TipNetworkException
-import one.mixin.android.tip.checkAndPublishTipCounterSynced
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.getMixinErrorStringByCode
 import one.mixin.android.util.viewBinding
 import one.mixin.android.widget.Keyboard
 import one.mixin.android.widget.PinView
-import javax.inject.Inject
 
 @AndroidEntryPoint
 class PinCheckDialogFragment : DialogFragment() {
@@ -49,11 +45,6 @@ class PinCheckDialogFragment : DialogFragment() {
     private val pinCheckViewModel by viewModels<PinCheckViewModel>()
 
     private val disposable = CompositeDisposable()
-
-    @Inject
-    lateinit var tip: Tip
-    @Inject
-    lateinit var tipCounterSynced: TipCounterSyncedLiveData
 
     @SuppressLint("RestrictedApi")
     override fun setupDialog(dialog: Dialog, style: Int) {
@@ -88,12 +79,6 @@ class PinCheckDialogFragment : DialogFragment() {
     private fun verify(pinCode: String) = lifecycleScope.launch {
         binding.apply {
             pinVa.displayedChild = POS_PB
-
-            if (checkAndPublishTipCounterSynced(tip, tipCounterSynced)) {
-                pin.clear()
-                pinVa.displayedChild = POS_PIN
-                return@launch
-            }
 
             handleMixinResponse(
                 invokeNetwork = { pinCheckViewModel.verifyPin(pinCode) },

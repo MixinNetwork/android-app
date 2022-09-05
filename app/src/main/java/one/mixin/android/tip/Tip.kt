@@ -50,57 +50,51 @@ class Tip @Inject internal constructor(
     private val identity: Identity,
     private val tipService: TipService,
     private val accountService: AccountService,
-    private val tipNode: TipNode
+    private val tipNode: TipNode,
+    private val tipCounterSynced: TipCounterSyncedLiveData,
 ) {
     private val observers = mutableListOf<Observer>()
 
-    suspend fun getOrRecoverTipPriv(context: Context, pin: String, recoverIfNotExists: Boolean): Result<ByteArray> {
-        val privTip = readTipPriv(context)
-        if (privTip == null) {
-            if (recoverIfNotExists) {
-                val deviceId = context.defaultSharedPreferences.getString(Constants.DEVICE_ID, null)
-                    ?: return Result.failure(TipNullException("Device id is null"))
-                return createTipPriv(context, pin, deviceId, forRecover = true)
+    suspend fun getOrRecoverTipPriv(context: Context, pin: String, recoverIfNotExists: Boolean): Result<ByteArray> =
+        kotlin.runCatching {
+            assertTipCounterSynced(tipCounterSynced)
+
+            val privTip = readTipPriv(context)
+            if (privTip == null) {
+                if (recoverIfNotExists) {
+                    val deviceId = context.defaultSharedPreferences.getString(Constants.DEVICE_ID, null)
+                        ?: throw TipNullException("Device id is null")
+                    return@runCatching createTipPriv(context, pin, deviceId, forRecover = true).getOrThrow()
+                }
+                throw TipNullException("PrivTip is null, but not recover")
             }
-            return Result.failure(TipNullException("PrivTip is null, but not recover"))
+
+            val aesKey = getAesKey(pin)
+
+            val privTipKey = (aesKey + pin.toByteArray()).sha3Sum256()
+            aesDecrypt(privTipKey, privTip)
         }
 
-        val aesKey = try {
-            getAesKey(pin)
-        } catch (e: TipException) {
-            return Result.failure(e)
-        }
-
-        val privTipKey = (aesKey + pin.toByteArray()).sha3Sum256()
-        return Result.success(aesDecrypt(privTipKey, privTip))
-    }
-
-    suspend fun createTipPriv(context: Context, pin: String, deviceId: String, failedSigners: List<TipSigner>? = null, legacyPin: String? = null, forRecover: Boolean = false): Result<ByteArray> {
-        return try {
+    suspend fun createTipPriv(context: Context, pin: String, deviceId: String, failedSigners: List<TipSigner>? = null, legacyPin: String? = null, forRecover: Boolean = false): Result<ByteArray> =
+        kotlin.runCatching {
             val ephemeralSeed = ephemeral.getEphemeralSeed(context, deviceId)
             val identityPair = identity.getIdentityPrivAndWatcher(pin)
             createPriv(context, identityPair.priKey, ephemeralSeed, identityPair.watcher, pin, failedSigners, legacyPin, forRecover)
-        } catch (e: Exception) {
-            Result.failure(e)
         }
-    }
 
-    suspend fun updateTipPriv(context: Context, deviceId: String, newPin: String, oldPin: String?, failedSigners: List<TipSigner>? = null): Result<ByteArray> {
-        return try {
+    suspend fun updateTipPriv(context: Context, deviceId: String, newPin: String, oldPin: String?, failedSigners: List<TipSigner>? = null): Result<ByteArray> =
+        kotlin.runCatching {
             val ephemeralSeed = ephemeral.getEphemeralSeed(context, deviceId)
 
             if (oldPin.isNullOrBlank()) { // node success
                 val identityPair = identity.getIdentityPrivAndWatcher(newPin)
-                return updatePriv(context, identityPair.priKey, ephemeralSeed, identityPair.watcher, newPin, null)
+                updatePriv(context, identityPair.priKey, ephemeralSeed, identityPair.watcher, newPin, null)
             } else {
                 val identityPair = identity.getIdentityPrivAndWatcher(oldPin)
                 val assigneePriv = identity.getIdentityPrivAndWatcher(newPin).priKey
-                return updatePriv(context, identityPair.priKey, ephemeralSeed, identityPair.watcher, newPin, assigneePriv, failedSigners)
+                updatePriv(context, identityPair.priKey, ephemeralSeed, identityPair.watcher, newPin, assigneePriv, failedSigners)
             }
-        } catch (e: Exception) {
-            Result.failure(e)
         }
-    }
 
     @Throws(IOException::class)
     suspend fun watchTipNodeCounters(): List<TipNode.TipNodeCounter> {
@@ -110,63 +104,57 @@ class Tip @Inject internal constructor(
 
     fun tipNodeCount() = tipNode.nodeCount
 
-    private suspend fun createPriv(context: Context, identityPriv: ByteArray, ephemeral: ByteArray, watcher: ByteArray, pin: String, failedSigners: List<TipSigner>? = null, legacyPin: String? = null, forRecover: Boolean = false): Result<ByteArray> {
-        try {
-            val aggSig = tipNode.sign(
-                identityPriv, ephemeral, watcher, null, failedSigners,
-                callback = object : TipNode.Callback {
-                    override fun onNodeComplete(step: Int, total: Int) {
-                        observers.forEach { it.onSyncing(step, total) }
-                    }
-                }
-            ).sha3Sum256() // use sha3-256(recover-signature) as priv
-
-            observers.forEach { it.onSyncingComplete() }
-
-            val privateSpec = EdDSAPrivateKeySpec(aggSig.copyOf(), ed25519)
-            val pub = EdDSAPublicKey(EdDSAPublicKeySpec(privateSpec.a, ed25519))
-
-            val localPub = Session.getTipPub()
-            if (!localPub.isNullOrBlank() && !localPub.base64RawUrlDecode().contentEquals(pub.abyte)) {
-                Timber.e("local pub not equals to new generated, PIN incorrect")
-                throw PinIncorrectException()
-            }
-
-            val aesKey = generateAesKey(pin)
-            if (forRecover) {
-                encryptAndSaveTipPriv(context, pin, aggSig, aesKey)
-                return Result.success(aggSig)
-            }
-
-            replaceOldEncryptedPin(pub, legacyPin)
-            encryptAndSaveTipPriv(context, pin, aggSig, aesKey)
-
-            return Result.success(aggSig)
-        } catch (e: Exception) {
-            return Result.failure(e)
-        }
-    }
-
-    private suspend fun updatePriv(context: Context, identityPriv: ByteArray, ephemeral: ByteArray, watcher: ByteArray, newPin: String, assigneePriv: ByteArray?, failedSigners: List<TipSigner>? = null): Result<ByteArray> {
-        return try {
-            val callback = object : TipNode.Callback {
+    @Throws(TipException::class, TipNodeException::class)
+    private suspend fun createPriv(context: Context, identityPriv: ByteArray, ephemeral: ByteArray, watcher: ByteArray, pin: String, failedSigners: List<TipSigner>? = null, legacyPin: String? = null, forRecover: Boolean = false): ByteArray {
+        val aggSig = tipNode.sign(
+            identityPriv, ephemeral, watcher, null, failedSigners,
+            callback = object : TipNode.Callback {
                 override fun onNodeComplete(step: Int, total: Int) {
                     observers.forEach { it.onSyncing(step, total) }
                 }
             }
-            val aggSig = tipNode.sign(identityPriv, ephemeral, watcher, assigneePriv, failedSigners, callback = callback)
-                .sha3Sum256() // use sha3-256(recover-signature) as priv
+        ).sha3Sum256() // use sha3-256(recover-signature) as priv
 
-            observers.forEach { it.onSyncingComplete() }
+        observers.forEach { it.onSyncingComplete() }
 
-            val aesKey = generateAesKey(newPin)
-            replaceEncryptedPin(aggSig)
-            encryptAndSaveTipPriv(context, newPin, aggSig, aesKey)
+        val privateSpec = EdDSAPrivateKeySpec(aggSig.copyOf(), ed25519)
+        val pub = EdDSAPublicKey(EdDSAPublicKeySpec(privateSpec.a, ed25519))
 
-            Result.success(aggSig)
-        } catch (e: Exception) {
-            Result.failure(e)
+        val localPub = Session.getTipPub()
+        if (!localPub.isNullOrBlank() && !localPub.base64RawUrlDecode().contentEquals(pub.abyte)) {
+            Timber.e("local pub not equals to new generated, PIN incorrect")
+            throw PinIncorrectException()
         }
+
+        val aesKey = generateAesKey(pin)
+        if (forRecover) {
+            encryptAndSaveTipPriv(context, pin, aggSig, aesKey)
+            return aggSig
+        }
+
+        replaceOldEncryptedPin(pub, legacyPin)
+        encryptAndSaveTipPriv(context, pin, aggSig, aesKey)
+
+        return aggSig
+    }
+
+    @Throws(TipException::class, TipNodeException::class)
+    private suspend fun updatePriv(context: Context, identityPriv: ByteArray, ephemeral: ByteArray, watcher: ByteArray, newPin: String, assigneePriv: ByteArray?, failedSigners: List<TipSigner>? = null): ByteArray {
+        val callback = object : TipNode.Callback {
+            override fun onNodeComplete(step: Int, total: Int) {
+                observers.forEach { it.onSyncing(step, total) }
+            }
+        }
+        val aggSig = tipNode.sign(identityPriv, ephemeral, watcher, assigneePriv, failedSigners, callback = callback)
+            .sha3Sum256() // use sha3-256(recover-signature) as priv
+
+        observers.forEach { it.onSyncingComplete() }
+
+        val aesKey = generateAesKey(newPin)
+        replaceEncryptedPin(aggSig)
+        encryptAndSaveTipPriv(context, newPin, aggSig, aesKey)
+
+        return aggSig
     }
 
     @Throws(IOException::class, TipNetworkException::class)
@@ -269,6 +257,30 @@ class Tip @Inject internal constructor(
         engine.initSign(stPriv)
         engine.update(TipBody.forVerify(timestamp))
         return engine.sign().base64RawEncode()
+    }
+
+    @Throws(TipCounterNotSyncedException::class)
+    private suspend fun assertTipCounterSynced(tipCounterSynced: TipCounterSyncedLiveData) {
+        if (!tipCounterSynced.synced) {
+            runCatching {
+                checkCounter(
+                    Session.getTipCounter(),
+                    onNodeCounterGreaterThanServer = {
+                        RxBus.publish(TipEvent(it))
+                        throw TipCounterNotSyncedException()
+                    },
+                    onNodeCounterInconsistency = { nodeMaxCounter, failedSigners ->
+                        RxBus.publish(TipEvent(nodeMaxCounter, failedSigners))
+                        throw TipCounterNotSyncedException()
+                    }
+                )
+            }.onSuccess { tipCounterSynced.synced = true }
+                .onFailure {
+                    Timber.d("checkAndPublishTipCounterSynced meet ${it.localizedMessage}")
+                    ErrorHandler.handleError(it)
+                    throw TipCounterNotSyncedException()
+                }
+        }
     }
 
     private fun readTipPriv(context: Context): ByteArray? {
@@ -393,31 +405,6 @@ suspend fun Tip.checkCounter(
     } else null
     Timber.e("watch tip node counter maxCounter $maxCounter, need update nodes: $failedSigners")
     onNodeCounterInconsistency(maxCounter, failedSigners)
-}
-
-suspend fun checkAndPublishTipCounterSynced(tip: Tip, tipCounterSynced: TipCounterSyncedLiveData): Boolean {
-    var shouldInterrupt = false
-    if (!tipCounterSynced.synced) {
-        runCatching {
-            tip.checkCounter(
-                Session.getTipCounter(),
-                onNodeCounterGreaterThanServer = {
-                    shouldInterrupt = true
-                    RxBus.publish(TipEvent(it))
-                },
-                onNodeCounterInconsistency = { nodeMaxCounter, failedSigners ->
-                    shouldInterrupt = true
-                    RxBus.publish(TipEvent(nodeMaxCounter, failedSigners))
-                }
-            )
-        }.onSuccess { tipCounterSynced.synced = true }
-            .onFailure {
-                shouldInterrupt = true
-                Timber.d("checkAndPublishTipCounterSynced meet ${it.localizedMessage}")
-                ErrorHandler.handleError(it)
-            }
-    }
-    return shouldInterrupt
 }
 
 private fun reportIllegal(msg: String) {
