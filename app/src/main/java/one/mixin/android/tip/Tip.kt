@@ -235,7 +235,7 @@ class Tip @Inject internal constructor(
             signatureBase64 = sigBase64,
             timestamp = timestamp,
         )
-        tipNetworkNullable { tipService.updateTipSecret(tipSecretRequest) }
+        tipNetworkNullable { tipService.updateTipSecret(tipSecretRequest) }.getOrThrow()
         return aesKey
     }
 
