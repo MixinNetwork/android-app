@@ -140,7 +140,7 @@ class RestoreActivity : BaseActivity() {
             }
             .setNegativeButton(
                 if (userBackup) {
-                    R.string.CHOOSE
+                    R.string.Choose
                 } else {
                     R.string.Retry
                 }

@@ -190,7 +190,7 @@
     <string name="check_trace_failed">檢查支付資訊失敗，請重試</string>
     <string name="Checking_link">正在檢查連結</string>
     <string name="Checking_payment_info">請檢查支付資訊</string>
-    <string name="CHOOSE">選擇</string>
+    <string name="Choose">選擇</string>
     <string name="Choose_folder">選擇資料夾</string>
     <string name="circle_bottom">為不同對話建立圈子然後在它們之間快速切換</string>
     <string name="circle_delete_tip">確認刪除 \"%1$s\"？</string>

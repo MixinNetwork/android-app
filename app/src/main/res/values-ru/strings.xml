@@ -197,7 +197,7 @@
     <string name="check_trace_failed">Не удалось проверить данные трассировки. Повторите попытку.</string>
     <string name="Checking_link">Проверка ссылки</string>
     <string name="Checking_payment_info">Проверка платежной информации</string>
-    <string name="CHOOSE">ВЫБРАТЬ</string>
+    <string name="Choose">ВЫБРАТЬ</string>
     <string name="Choose_folder">Выбрать папку</string>
     <string name="circle_bottom">Создайте круг для разных групп чатов и быстро переключайтесь между ними</string>
     <string name="circle_delete_tip">Удалить %1$s ?</string>

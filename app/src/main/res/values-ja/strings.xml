@@ -195,7 +195,7 @@
     <string name="check_trace_failed">記録情報の確認失敗、もう一度お試しください</string>
     <string name="Checking_link">リンク確認中</string>
     <string name="Checking_payment_info">支払い情報を確認中</string>
-    <string name="CHOOSE">選択</string>
+    <string name="Choose">選択</string>
     <string name="Choose_folder">フォルダを選択する</string>
     <string name="circle_bottom">グループリストを作成し、種類の異なるチャットを切り替えましょう</string>
     <string name="circle_delete_tip">\"%1$s\"を削除しますか？</string>
