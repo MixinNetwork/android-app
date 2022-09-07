@@ -34,7 +34,7 @@ import one.mixin.android.extension.sharedPreferences
 import one.mixin.android.extension.toLeByteArray
 import one.mixin.android.tip.Tip
 import one.mixin.android.tip.TipException
-import one.mixin.android.tip.TipNodeException
+import one.mixin.android.tip.exception.TipNodeException
 import one.mixin.android.util.reportException
 import one.mixin.android.vo.Account
 import timber.log.Timber

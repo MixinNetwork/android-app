@@ -10,7 +10,6 @@ import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.putInt
 import one.mixin.android.extension.putString
 import one.mixin.android.session.Session
-import one.mixin.android.tip.checkCounter
 import one.mixin.android.ui.setting.PhoneNumberSettingFragment
 import one.mixin.android.ui.setting.SettingConversationFragment
 import one.mixin.android.vo.MessageSource
@@ -82,15 +81,13 @@ class RefreshAccountJob : BaseJob(Params(PRIORITY_UI_HIGH).addTags(GROUP).requir
                 }
             }
 
-            kotlin.runCatching {
-                tip.checkCounter(
-                    account.tipCounter,
-                    onNodeCounterGreaterThanServer = { RxBus.publish(TipEvent(it)) },
-                    onNodeCounterInconsistency = { nodeMaxCounter, failedSigners ->
-                        RxBus.publish(TipEvent(nodeMaxCounter, failedSigners))
-                    }
-                )
-            }.onSuccess {
+            tip.checkCounter(
+                account.tipCounter,
+                onNodeCounterGreaterThanServer = { RxBus.publish(TipEvent(it)) },
+                onNodeCounterInconsistency = { nodeMaxCounter, failedSigners ->
+                    RxBus.publish(TipEvent(nodeMaxCounter, failedSigners))
+                }
+            ).onSuccess {
                 tipCounterSynced.synced = true
             }
         }

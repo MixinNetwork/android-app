@@ -24,11 +24,10 @@ import one.mixin.android.extension.toast
 import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.extension.withArgs
 import one.mixin.android.session.Session
-import one.mixin.android.tip.DifferentIdentityException
-import one.mixin.android.tip.NotAllSignerSuccessException
 import one.mixin.android.tip.Tip
-import one.mixin.android.tip.TipNodeException
-import one.mixin.android.tip.checkCounter
+import one.mixin.android.tip.exception.DifferentIdentityException
+import one.mixin.android.tip.exception.NotAllSignerSuccessException
+import one.mixin.android.tip.exception.TipNodeException
 import one.mixin.android.tip.getTipExceptionMsg
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.PinInputBottomSheetDialogFragment
@@ -216,15 +215,13 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
             var available = false
             if (shouldWatch) {
                 val tipCounter = Session.getTipCounter()
-                kotlin.runCatching {
-                    tip.checkCounter(
-                        tipCounter,
-                        onNodeCounterGreaterThanServer = { tipBundle.updateTipEvent(null, it) },
-                        onNodeCounterInconsistency = { nodeMaxCounter, nodeFailedSigners ->
-                            tipBundle.updateTipEvent(nodeFailedSigners, nodeMaxCounter)
-                        }
-                    )
-                }.onSuccess { available = true }
+                tip.checkCounter(
+                    tipCounter,
+                    onNodeCounterGreaterThanServer = { tipBundle.updateTipEvent(null, it) },
+                    onNodeCounterInconsistency = { nodeMaxCounter, nodeFailedSigners ->
+                        tipBundle.updateTipEvent(nodeFailedSigners, nodeMaxCounter)
+                    }
+                ).onSuccess { available = true }
                     .onFailure {
                         Timber.d("try connect tip watch failure $it")
                         available = false
@@ -339,15 +336,13 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
                 tipBundle.pin = null
             }
 
-            kotlin.runCatching {
-                tip.checkCounter(
-                    tipCounter,
-                    onNodeCounterGreaterThanServer = { tipBundle.updateTipEvent(null, it) },
-                    onNodeCounterInconsistency = { nodeMaxCounter, nodeFailedSigners ->
-                        tipBundle.updateTipEvent(nodeFailedSigners, nodeMaxCounter)
-                    }
-                )
-            }.onFailure {
+            tip.checkCounter(
+                tipCounter,
+                onNodeCounterGreaterThanServer = { tipBundle.updateTipEvent(null, it) },
+                onNodeCounterInconsistency = { nodeMaxCounter, nodeFailedSigners ->
+                    tipBundle.updateTipEvent(nodeFailedSigners, nodeMaxCounter)
+                }
+            ).onFailure {
                 // Generally, check-counter should NOT meet exceptions, if this happens,
                 // we should go to the RetryConnect step to check network and other steps.
                 tipBundle.pin = null
