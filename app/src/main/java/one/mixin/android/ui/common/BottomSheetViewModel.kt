@@ -495,7 +495,7 @@ class BottomSheetViewModel @Inject internal constructor(
     fun observeSelf(): LiveData<User?> = userRepository.findSelf()
 
     suspend fun loadFavoriteApps(userId: String, loadAction: (List<App>?) -> Unit) {
-        viewModelScope.launch (Dispatchers.IO) {
+        viewModelScope.launch(Dispatchers.IO) {
             withContext(Dispatchers.Main) {
                 loadAction(
                     accountRepository.getFavoriteAppsByUserId(
@@ -521,7 +521,7 @@ class BottomSheetViewModel @Inject internal constructor(
         }
     }
 
-    private suspend fun refreshAppNotExist(appIds: List<String>) = viewModelScope.launch (Dispatchers.IO) {
+    private suspend fun refreshAppNotExist(appIds: List<String>) = viewModelScope.launch(Dispatchers.IO) {
         accountRepository.refreshAppNotExist(appIds)
     }
 

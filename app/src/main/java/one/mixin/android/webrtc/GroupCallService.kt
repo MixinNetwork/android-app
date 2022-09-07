@@ -10,7 +10,6 @@ import com.google.gson.JsonElement
 import com.uber.autodispose.android.lifecycle.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import io.reactivex.disposables.Disposable
-import io.reactivex.schedulers.Schedulers
 import one.mixin.android.Constants.SLEEP_MILLIS
 import one.mixin.android.R
 import one.mixin.android.RxBus
@@ -206,7 +205,6 @@ class GroupCallService : CallService() {
         )
 
         disposable = RxBus.listen(SenderKeyChange::class.java)
-            .observeOn(Schedulers.io())
             .autoDispose(this)
             .subscribe { event ->
                 if (event.conversationId != conversationId) {

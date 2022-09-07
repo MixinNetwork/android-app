@@ -192,7 +192,7 @@ abstract class MixinDatabase : RoomDatabase() {
                     if (BuildConfig.DEBUG) {
                         builder.setQueryCallback(
                             { sqlQuery, bindArgs ->
-                                // Timber.d(sqlQuery)
+                                // Timber.e("${Thread.currentThread().name} - $sqlQuery")
                             },
                             ArchTaskExecutor.getIOThreadExecutor()
                         )
@@ -241,6 +241,8 @@ abstract class MixinDatabase : RoomDatabase() {
             }
         }
     }
+
+    fun isDbLockedByCurrentThread() = supportSQLiteDatabase?.isDbLockedByCurrentThread
 }
 
 fun runInTransaction(block: () -> Unit) {
