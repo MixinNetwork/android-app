@@ -31,6 +31,7 @@ import one.mixin.android.job.TipCounterSyncedLiveData
 import one.mixin.android.session.Session
 import one.mixin.android.session.encryptPin
 import one.mixin.android.session.encryptTipPin
+import one.mixin.android.tip.exception.TipNodeException
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.deleteKeyByAlias
 import one.mixin.android.util.getDecryptCipher
@@ -90,6 +91,51 @@ class Tip @Inject internal constructor(
                 updatePriv(context, identityPair.priKey, ephemeralSeed, identityPair.watcher, newPin, assigneePriv, failedSigners)
             }
         }
+
+    suspend fun checkCounter(
+        tipCounter: Int,
+        onNodeCounterGreaterThanServer: suspend (Int) -> Unit,
+        onNodeCounterInconsistency: suspend (Int, List<TipSigner>?) -> Unit,
+    ) = kotlin.runCatching {
+        val counters = watchTipNodeCounters()
+        if (counters.isEmpty()) {
+            Timber.w("watch tip node counters but counters is empty")
+            throw TipNullException("watch tip node counters but counters is empty")
+        }
+
+        if (counters.size != tipNodeCount()) {
+            Timber.w("watch tip node result size is ${counters.size} is not equals to node count ${tipNodeCount()}")
+            // TODO should we consider this case as an incomplete state?
+        }
+        val group = counters.groupBy { it.counter }
+        if (group.size <= 1) {
+            val nodeCounter = counters.first().counter
+            Timber.e("watch tip node all counter are $nodeCounter, tipCounter $tipCounter")
+            if (nodeCounter == tipCounter) {
+                return@runCatching
+            }
+            if (nodeCounter < tipCounter) {
+                reportIllegal("watch tip node node counter $nodeCounter < tipCounter $tipCounter")
+                return@runCatching
+            }
+
+            onNodeCounterGreaterThanServer(nodeCounter)
+            return@runCatching
+        }
+        if (group.size > 2) {
+            reportIllegal("watch tip node meet ${group.size} kinds of counter!")
+            return@runCatching
+        }
+
+        val maxCounter = group.keys.maxBy { it }
+        val failedNodes = group[group.keys.minBy { it }]
+        val failedSigners = if (failedNodes != null) {
+            val signers = mutableListOf<TipSigner>()
+            failedNodes.mapTo(signers) { it.tipSigner }
+        } else null
+        Timber.e("watch tip node counter maxCounter $maxCounter, need update nodes: $failedSigners")
+        onNodeCounterInconsistency(maxCounter, failedSigners)
+    }
 
     @Throws(IOException::class)
     suspend fun watchTipNodeCounters(): List<TipNode.TipNodeCounter> {
@@ -257,19 +303,17 @@ class Tip @Inject internal constructor(
     @Throws(TipCounterNotSyncedException::class)
     private suspend fun assertTipCounterSynced(tipCounterSynced: TipCounterSyncedLiveData) {
         if (!tipCounterSynced.synced) {
-            runCatching {
-                checkCounter(
-                    Session.getTipCounter(),
-                    onNodeCounterGreaterThanServer = {
-                        RxBus.publish(TipEvent(it))
-                        throw TipCounterNotSyncedException()
-                    },
-                    onNodeCounterInconsistency = { nodeMaxCounter, failedSigners ->
-                        RxBus.publish(TipEvent(nodeMaxCounter, failedSigners))
-                        throw TipCounterNotSyncedException()
-                    }
-                )
-            }.onSuccess { tipCounterSynced.synced = true }
+            checkCounter(
+                Session.getTipCounter(),
+                onNodeCounterGreaterThanServer = {
+                    RxBus.publish(TipEvent(it))
+                    throw TipCounterNotSyncedException()
+                },
+                onNodeCounterInconsistency = { nodeMaxCounter, failedSigners ->
+                    RxBus.publish(TipEvent(nodeMaxCounter, failedSigners))
+                    throw TipCounterNotSyncedException()
+                }
+            ).onSuccess { tipCounterSynced.synced = true }
                 .onFailure {
                     Timber.d("checkAndPublishTipCounterSynced meet ${it.localizedMessage}")
                     ErrorHandler.handleError(it)
