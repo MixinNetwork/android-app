@@ -771,6 +771,7 @@
     <string name="Send_Message">发消息</string>
     <string name="Send_This_Location">发送这个位置</string>
     <string name="send_to">发送给 %1$s</string>
+    <string name="Send_to_contact">转账给联系人</string>
     <string name="Send_transfer">转出</string>
     <string name="Send_Without_Sound">静音发送</string>
     <string name="Send_your_Current_Location">发送您当前的位置</string>
@@ -903,8 +904,6 @@
     <string name="Transfer_Notifications">转账通知</string>
     <string name="transfer_qrcode_prompt">用 Mixin 扫描二维码给我转账</string>
     <string name="transfer_to">转账给 %1$s</string>
-    <string name="Transfer_to_Mixin_address">给主网地址转账</string>
-    <string name="Transfer_to_user_or_bot">给用户或机器人转账</string>
     <string name="transfer_without_pin">转账前请先设置 PIN</string>
     <string name="Trending">热门资产</string>
     <string name="Try_Again">请重试</string>

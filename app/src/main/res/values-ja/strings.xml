@@ -567,7 +567,7 @@
     <string name="Monday">月曜日</string>
     <string name="More">もっとみる</string>
     <string name="Multisig_by_PIN">PINコードでマルチシグウォレットを使用する</string>
-    <string name="multisig_receivers_threshold">受取人</string>
+    <string name="multisig_receivers_threshold">受取人(%1$s)</string>
     <string name="multisig_state_signed">このマルチシグリンクはすでにあなたが署名しているため、重複した操作を行うことはできません</string>
     <string name="multisig_state_unlocked">このマルチシグリンクは既に他のユーザーによってロック解除されています。重複した操作を行うことはできません。</string>
     <string name="Multisig_Transaction">マルチシグトランザクション</string>
@@ -921,8 +921,6 @@
     <string name="Transfer_Notifications">送金の受取通知</string>
     <string name="transfer_qrcode_prompt">私に送金するためにQRコードをスキャンして下さい。</string>
     <string name="transfer_to">%1$sに送金する</string>
-    <string name="Transfer_to_Mixin_address">Mixinのアドレスへ送金する</string>
-    <string name="Transfer_to_user_or_bot">ミニアプリまたはユーザーへ送金する</string>
     <string name="transfer_without_pin">送金するにはPINコードの設定が必要です</string>
     <string name="Trending">トレンド</string>
     <string name="Try_Again">もう一度試す</string>

@@ -36,9 +36,9 @@ class PinLogsFragment : BaseFragment(R.layout.fragment_pin_logs) {
                 "VERIFICATION" ->
                     return Pair(context.getString(R.string.PIN_incorrect), context.getString(R.string.Verify))
                 "RAW_TRANSFER" ->
-                    return Pair(context.getString(R.string.PIN_incorrect), context.getString(R.string.Transfer_to_Mixin_address))
+                    return Pair(context.getString(R.string.PIN_incorrect), context.getString(R.string.Raw_Transfer))
                 "USER_TRANSFER" ->
-                    return Pair(context.getString(R.string.PIN_incorrect), context.getString(R.string.Transfer_to_user_or_bot))
+                    return Pair(context.getString(R.string.PIN_incorrect), context.getString(R.string.Transfer))
                 "WITHDRAWAL" ->
                     return Pair(context.getString(R.string.PIN_incorrect), context.getString(R.string.Withdrawal))
                 "ADD_ADDRESS" ->

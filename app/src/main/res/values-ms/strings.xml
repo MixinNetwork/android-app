@@ -700,8 +700,6 @@
     <string name="Transfer_Amount_count_down">Jumlah Pindahan(%1$s)</string>
     <string name="Transfer_Notifications">Pindahkan Pemberitahuan</string>
     <string name="transfer_to">Pindahkan ke %1$s</string>
-    <string name="Transfer_to_Mixin_address">Pindahkan ke alamat Mixin</string>
-    <string name="Transfer_to_user_or_bot">Pindahkan ke pengguna atau bot</string>
     <string name="transfer_without_pin">Anda mesti sediakan PIN untuk pemindahan</string>
     <string name="Trending">Sohor Kini</string>
     <string name="Try_Again">Cuba lagi</string>

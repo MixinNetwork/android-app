@@ -190,7 +190,6 @@
     <string name="check_trace_failed">檢查支付資訊失敗，請重試</string>
     <string name="Checking_link">正在檢查連結</string>
     <string name="Checking_payment_info">請檢查支付資訊</string>
-    <string name="Choose">選擇</string>
     <string name="Choose_folder">選擇資料夾</string>
     <string name="circle_bottom">為不同對話建立圈子然後在它們之間快速切換</string>
     <string name="circle_delete_tip">確認刪除 \"%1$s\"？</string>
@@ -903,8 +902,6 @@
     <string name="Transfer_Notifications">轉賬通知</string>
     <string name="transfer_qrcode_prompt">用 Mixin 掃描二維碼給我轉賬</string>
     <string name="transfer_to">轉賬給 %1$s</string>
-    <string name="Transfer_to_Mixin_address">給主網地址轉賬</string>
-    <string name="Transfer_to_user_or_bot">給使用者或機器人轉賬</string>
     <string name="transfer_without_pin">轉賬前請先設定 PIN</string>
     <string name="Trending">熱門資產</string>
     <string name="Try_Again">請重試</string>
