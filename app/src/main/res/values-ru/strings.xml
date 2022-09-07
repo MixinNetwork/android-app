@@ -28,7 +28,7 @@
     <string name="Add_conversations">Добавить беседы</string>
     <string name="Add_emergency_contact">Добавить экстренный контакт</string>
     <string name="Add_group_description">Добавить описание группы</string>
-    <string name="Add_memo">Добавить памятку</string>
+    <string name="Add_memo">добавить памятку</string>
     <string name="Add_participants">Добавить участников</string>
     <string name="Add_people_hint">Добавляйте людей по Mixin ID или номеру телефона</string>
     <string name="add_people_search_hint">Mixin ID или номер телефона</string>
@@ -36,7 +36,7 @@
     <string name="Add_sticker_failed">Не удалось добавить стикер</string>
     <string name="Add_stickers">Добавить стикеры</string>
     <string name="Add_success">Добавить успех</string>
-    <string name="Add_Tag">Добавить метку</string>
+    <string name="Add_Tag">Добавить тега</string>
     <string name="Add_to_Home_screen">Добавить на домашний экран</string>
     <string name="Added">Добавлен</string>
     <string name="Adding">Добавление…</string>
@@ -197,7 +197,6 @@
     <string name="check_trace_failed">Не удалось проверить данные трассировки. Повторите попытку.</string>
     <string name="Checking_link">Проверка ссылки</string>
     <string name="Checking_payment_info">Проверка платежной информации</string>
-    <string name="Choose">ВЫБРАТЬ</string>
     <string name="Choose_folder">Выбрать папку</string>
     <string name="circle_bottom">Создайте круг для разных групп чатов и быстро переключайтесь между ними</string>
     <string name="circle_delete_tip">Удалить %1$s ?</string>
@@ -948,8 +947,6 @@
     <string name="Transfer_Notifications">Уведомления о переносе</string>
     <string name="transfer_qrcode_prompt">Отсканируйте QR-код, чтобы перевести меня на Mixin</string>
     <string name="transfer_to">Перевести на %1$s</string>
-    <string name="Transfer_to_Mixin_address">Перевод на Mixin адрес</string>
-    <string name="Transfer_to_user_or_bot">Перевод пользователю или боту</string>
     <string name="transfer_without_pin">Вы должны установить PIN-код для перевода</string>
     <string name="Trending">В тренде</string>
     <string name="Try_Again">Попробуйте еще раз</string>
@@ -1034,14 +1031,14 @@
     <string name="withdrawal_addr_biometric_add">Использовать биометрию для сохранения адреса</string>
     <string name="withdrawal_addr_biometric_delete">Использовать биометрию для удаления адреса</string>
     <string name="withdrawal_addr_biometric_modify">Использовать биометрию для изменения адреса</string>
-    <string name="withdrawal_addr_memo">Тег назначения или идентификационный номер или примечания. Если нет, вы можете установить No Memo.</string>
+    <string name="withdrawal_addr_memo">Тег назначения или идентификационный номер или примечания. Если нет, вы можете установить Нет памятки.</string>
     <string name="withdrawal_addr_new">Новый адрес %1$s</string>
     <string name="withdrawal_addr_no_memo">Если вам необходимо заполнить тег назначения или идентификационный номер или примечания, вы можете добавить памятку.</string>
-    <string name="withdrawal_addr_no_tag">Если вам необходимо заполнить тег назначения, идентификационный номер или примечания, вы можете добавить тег.</string>
+    <string name="withdrawal_addr_no_tag">Если вам необходимо заполнить тег назначения, идентификационный номер или примечания, вы можете Добавить тега.</string>
     <string name="withdrawal_addr_pin_add">Введите PIN-код, чтобы сохранить адрес</string>
     <string name="withdrawal_addr_pin_delete">Введите PIN-код, чтобы удалить адрес</string>
     <string name="withdrawal_addr_pin_modify">Введите PIN-код, чтобы изменить адрес</string>
-    <string name="withdrawal_addr_tag">Тег назначения или идентификационный номер или примечания. Если нет, вы можете установить его без тега.</string>
+    <string name="withdrawal_addr_tag">Тег назначения или идентификационный номер или примечания. Если нет, вы можете установить его Нет тега.</string>
     <string name="withdrawal_address_tips">Для первого вывода на новый адрес попробуйте небольшие суммы! Если вы выведете активы не на тот адрес, они не будут восстановлены!</string>
     <string name="withdrawal_label">Ярлык (например, биржи, кошельки и т.д.)</string>
     <string name="withdrawal_memo">Памятка</string>

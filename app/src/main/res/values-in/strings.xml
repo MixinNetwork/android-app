@@ -647,8 +647,6 @@
     <string name="Transfer_Amount_count_down">Jumlah Transfer(%1$s)</string>
     <string name="Transfer_Notifications">Notifikasi Transfer</string>
     <string name="transfer_to">Transfer ke %1$s</string>
-    <string name="Transfer_to_Mixin_address">Transfer ke alamat Mixin</string>
-    <string name="Transfer_to_user_or_bot">Transfer ke pengguna atau bot</string>
     <string name="transfer_without_pin">Anda harus membuat PIN untuk transfer</string>
     <string name="Try_Again">Coba lagi</string>
     <string name="Tuesday">Selasa</string>
