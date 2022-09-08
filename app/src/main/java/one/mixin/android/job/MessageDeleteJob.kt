@@ -37,6 +37,7 @@ class MessageDeleteJob(
             conversationDao.deleteConversationById(conversationId)
         } else {
             appDatabase.remoteMessageStatusDao().countUnread(conversationId)
+            appDatabase.conversationDao().refreshLastMessageId(conversationId)
         }
         InvalidateFlow.emit(conversationId)
     }

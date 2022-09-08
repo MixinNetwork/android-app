@@ -18,6 +18,7 @@ import one.mixin.android.crypto.SignalProtocol
 import one.mixin.android.crypto.vo.RatchetSenderKey
 import one.mixin.android.crypto.vo.RatchetStatus
 import one.mixin.android.db.insertAndNotifyConversation
+import one.mixin.android.db.insertMessage
 import one.mixin.android.db.insertNoReplace
 import one.mixin.android.db.insertUpdate
 import one.mixin.android.db.runInTransaction
@@ -325,7 +326,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                     if (message != null) {
                         pinMessageDao.insert(PinMessage(messageId, message.conversationId, data.createdAt))
                         val mid = UUID.randomUUID().toString()
-                        messageDao.insert(
+                        database.insertMessage(
                             createPinMessage(
                                 mid,
                                 data.conversationId,
@@ -358,17 +359,17 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                             }
                         }
                     } else {
-                        messageDao.insert(
-                            createPinMessage(
-                                UUID.randomUUID().toString(),
-                                data.conversationId,
-                                data.userId,
-                                messageId, // quote pinned message id
-                                null,
-                                nowInUtc(),
-                                MessageStatus.READ.name
-                            )
+                        val m = createPinMessage(
+                            UUID.randomUUID().toString(),
+                            data.conversationId,
+                            data.userId,
+                            messageId, // quote pinned message id
+                            null,
+                            nowInUtc(),
+                            MessageStatus.READ.name
                         )
+                        messageDao.insert(m)
+                        conversationDao.updateLastMessageId(m.id, m.createdAt, m.conversationId)
                         InvalidateFlow.emit(data.conversationId)
                     }
                     if (index == transferPinData.messageIds.size - 1) {
@@ -786,7 +787,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                     expiredMessageDao.insert(ExpiredMessage(data.messageId, expireIn, null))
                 }
             }
-            messageDao.insert(
+            database.insertMessage(
                 createTranscriptMessage(
                     data.messageId,
                     data.conversationId,
@@ -1148,7 +1149,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
 
     private fun insertInvalidMessage(data: BlazeMessageData) {
         val message = createMessage(data.messageId, data.conversationId, data.userId, data.category, data.data, data.createdAt, MessageStatus.UNKNOWN.name)
-        messageDao.insert(message)
+        database.insertMessage(message)
         InvalidateFlow.emit(data.conversationId)
     }
 

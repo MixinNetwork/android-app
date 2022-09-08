@@ -179,6 +179,17 @@ fun MixinDatabase.deleteMessageById(messageId: String) {
     }
 }
 
+fun MixinDatabase.deleteMessageById(messageId: String, conversationId: String) {
+    runInTransaction {
+        pinMessageDao().deleteByMessageId(messageId)
+        mentionMessageDao().deleteMessage(messageId)
+        messageDao().deleteMessageById(messageId)
+        remoteMessageStatusDao().deleteByMessageId(messageId)
+        expiredMessageDao().deleteByMessageId(messageId)
+        conversationDao().refreshLastMessageId(conversationId, messageId)
+    }
+}
+
 fun MixinDatabase.deleteMessageByIds(messageIds: List<String>) {
     runInTransaction {
         pinMessageDao().deleteByIds(messageIds)
@@ -215,7 +226,13 @@ fun MixinDatabase.insertAndNotifyConversation(message: Message) {
         if (!message.isMine() && message.status != MessageStatus.READ.name) {
             remoteMessageStatusDao().insert(RemoteMessageStatus(message.id, message.conversationId, MessageStatus.DELIVERED.name))
         }
+        conversationDao().updateLastMessageId(message.id, message.createdAt, message.conversationId)
         remoteMessageStatusDao().updateConversationUnseen(message.conversationId)
         InvalidateFlow.emit(message.conversationId)
     }
+}
+
+fun MixinDatabase.insertMessage(message: Message) {
+    messageDao().insert(message)
+    conversationDao().updateLastMessageId(message.id, message.createdAt, message.conversationId)
 }

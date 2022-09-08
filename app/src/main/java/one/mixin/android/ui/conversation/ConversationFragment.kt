@@ -189,6 +189,7 @@ import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.ErrorHandler.Companion.FORBIDDEN
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.MusicPlayer
+import one.mixin.android.util.SINGLE_DB_THREAD
 import one.mixin.android.util.chat.InvalidateFlow
 import one.mixin.android.util.debug.FileLogTree
 import one.mixin.android.util.debug.debugLongClick
@@ -1102,7 +1103,8 @@ class ConversationFragment() :
                     }
                 }
             }
-
+        bindData()
+        bindPinMessage()
         checkPeerIfNeeded()
         checkTranscript()
     }
@@ -1456,8 +1458,8 @@ class ConversationFragment() :
                 binding.flagLayout.bottomCountFlag = false
             }
         }
-        lifecycleScope.launch {
-            conversationDraft = chatViewModel.getConversationDraftById(conversationId)
+        lifecycleScope.launch(SINGLE_DB_THREAD) {
+            conversationDraft = chatViewModel.getConversationDraftById(this.coroutineContext, conversationId)
             if (isAdded && !conversationDraft.isNullOrBlank()) {
                 binding.chatControl.chatEt.setText(conversationDraft)
             }
@@ -1488,7 +1490,7 @@ class ConversationFragment() :
                     ClipData.newPlainText(null, conversationAdapter.selectSet.valueAt(0)?.content)
                 )
                 toast(R.string.copied_to_clipboard)
-            } catch (e: ArrayIndexOutOfBoundsException) {
+            } catch (_: ArrayIndexOutOfBoundsException) {
             }
             closeTool()
         }
@@ -1677,8 +1679,6 @@ class ConversationFragment() :
                     }.show()
             }
         )
-        bindData()
-        bindPinMessage()
     }
 
     lateinit var itemTouchHelper: ItemTouchHelper

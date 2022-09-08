@@ -58,7 +58,6 @@ import one.mixin.android.util.Attachment
 import one.mixin.android.util.ControlledRunner
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.SINGLE_DB_THREAD
-import one.mixin.android.util.SINGLE_DRAFT_THREAD
 import one.mixin.android.util.chat.FastComputableLiveData
 import one.mixin.android.util.chat.FastLivePagedListBuilder
 import one.mixin.android.vo.AppCap
@@ -108,6 +107,7 @@ import one.mixin.android.widget.gallery.MimeType
 import java.io.File
 import java.util.UUID
 import javax.inject.Inject
+import kotlin.coroutines.CoroutineContext
 
 @Suppress("NULLABILITY_MISMATCH_BASED_ON_JAVA_ANNOTATIONS")
 @HiltViewModel
@@ -150,9 +150,7 @@ internal constructor(
     suspend fun findFirstUnreadMessageId(conversationId: String, offset: Int): String? =
         conversationRepository.findFirstUnreadMessageId(conversationId, offset)
 
-    suspend fun getConversationDraftById(id: String) = withContext(SINGLE_DRAFT_THREAD) {
-        conversationRepository.getConversationDraftById(id)
-    }
+    suspend fun getConversationDraftById(context: CoroutineContext, id: String): String? = conversationRepository.getConversationDraftById(id)
 
     fun getConversationById(id: String) = conversationRepository.getConversationById(id)
 
@@ -436,9 +434,7 @@ internal constructor(
         if (isBubbled.not()) {
             notificationManager.cancel(conversationId.hashCode())
         }
-        MixinApplication.appScope.launch {
-            conversationRepository.markMessageRead(conversationId)
-        }
+        MixinApplication.get().markMessageRead(conversationId)
     }
 
     suspend fun getFriends(): List<User> = userRepository.getFriends()

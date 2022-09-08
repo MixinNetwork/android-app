@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.util.AttributeSet
 import androidx.appcompat.widget.AppCompatTextView
+import com.uber.autodispose.android.autoDispose
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
 import one.mixin.android.RxBus
@@ -29,6 +30,7 @@ class FileProgressTextView @JvmOverloads constructor(
         if (disposable == null) {
             disposable = RxBus.listen(ProgressEvent::class.java)
                 .observeOn(AndroidSchedulers.mainThread())
+                .autoDispose(this)
                 .subscribe { event ->
                     if (event.id == mBindId && progress != event.progress) {
                         progress = event.progress

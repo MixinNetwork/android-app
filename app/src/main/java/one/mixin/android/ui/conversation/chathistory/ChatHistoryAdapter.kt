@@ -395,7 +395,7 @@ class ChatHistoryAdapter(
 
     override fun onViewAttachedToWindow(holder: BaseViewHolder) {
         getItem(holder.layoutPosition).let {
-            holder.listen(it.messageId)
+            holder.listen(holder.itemView, it.messageId)
         }
     }
 

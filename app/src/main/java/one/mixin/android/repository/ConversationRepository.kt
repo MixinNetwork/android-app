@@ -35,6 +35,7 @@ import one.mixin.android.db.ParticipantSessionDao
 import one.mixin.android.db.PinMessageDao
 import one.mixin.android.db.RemoteMessageStatusDao
 import one.mixin.android.db.TranscriptMessageDao
+import one.mixin.android.db.insertMessage
 import one.mixin.android.db.insertNoReplace
 import one.mixin.android.db.provider.DataProvider
 import one.mixin.android.db.runInTransaction
@@ -134,7 +135,7 @@ internal constructor(
             conversationDao.findConversationById(conversationId)
         }
 
-    suspend fun getConversationDraftById(conversationId: String) =
+    suspend fun getConversationDraftById(conversationId: String): String? =
         conversationDao.getConversationDraftById(conversationId)
 
     fun findMessageById(messageId: String) = messageDao.findMessageById(messageId)
@@ -539,7 +540,7 @@ internal constructor(
     }
 
     fun insertMessage(message: Message) {
-        messageDao.insert(message)
+        appDatabase.insertMessage(message)
         InvalidateFlow.emit(message.conversationId)
     }
 
@@ -561,13 +562,6 @@ internal constructor(
     }
 
     suspend fun findSameConversations(selfId: String, userId: String) = conversationDao.findSameConversations(selfId, userId)
-
-    suspend fun markMessageRead(conversationId: String) = withContext(SINGLE_DB_THREAD) {
-        runInTransaction {
-            remoteMessageStatusDao.markReadByConversationId(conversationId)
-            remoteMessageStatusDao.zeroConversationUnseen(conversationId)
-        }
-    }
 
     suspend fun disappear(conversationId: String, disappearRequest: DisappearRequest) = conversationService.disappear(conversationId, disappearRequest)
 

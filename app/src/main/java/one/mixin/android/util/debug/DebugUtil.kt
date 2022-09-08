@@ -11,6 +11,7 @@ import androidx.core.database.getShortOrNull
 import androidx.core.database.getStringOrNull
 import one.mixin.android.BuildConfig
 import one.mixin.android.extension.heavyClickVibrate
+import one.mixin.android.util.reportException
 import timber.log.Timber
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
@@ -38,6 +39,20 @@ inline fun <T> measureTimeMillis(tag: String, block: () -> T): T {
     val start = System.currentTimeMillis()
     val result = block()
     Timber.d("$tag ${System.currentTimeMillis() - start} ms")
+    return result
+}
+
+inline fun <T> timeoutEarlyWarning(block: () -> T, timeout: Long = 50L): T {
+    contract {
+        callsInPlace(block, InvocationKind.EXACTLY_ONCE)
+    }
+    val start = System.currentTimeMillis()
+    val result = block()
+    val time = System.currentTimeMillis() - start
+    if (time >= timeout) {
+        Timber.e("It takes $time milliseconds")
+        reportException(Exception("It takes $time milliseconds"))
+    }
     return result
 }
 

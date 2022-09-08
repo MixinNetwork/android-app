@@ -184,7 +184,7 @@ internal constructor(
     }
 
     suspend fun queryAsset(query: String): List<AssetItem> =
-        withContext(Dispatchers.IO) {
+        withContext(viewModelScope.coroutineContext + Dispatchers.IO) {
             val response = try {
                 assetRepository.queryAssets(query)
             } catch (t: Throwable) {

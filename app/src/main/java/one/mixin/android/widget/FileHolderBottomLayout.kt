@@ -4,6 +4,7 @@ import android.content.Context
 import android.util.AttributeSet
 import android.view.LayoutInflater
 import android.widget.ViewAnimator
+import com.uber.autodispose.android.autoDispose
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
 import one.mixin.android.RxBus
@@ -29,6 +30,7 @@ class FileHolderBottomLayout constructor(context: Context, attrs: AttributeSet) 
         if (disposable == null) {
             disposable = RxBus.listen(ProgressEvent::class.java)
                 .observeOn(AndroidSchedulers.mainThread())
+                .autoDispose(this)
                 .subscribe {
                     if (it.id == bindId) {
                         if (it.status == CircleProgress.STATUS_PLAY &&

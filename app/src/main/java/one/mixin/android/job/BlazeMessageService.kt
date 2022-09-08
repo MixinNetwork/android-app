@@ -11,11 +11,14 @@ import android.os.PowerManager
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import androidx.core.content.getSystemService
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleService
 import androidx.lifecycle.lifecycleScope
 import androidx.room.InvalidationTracker
 import com.birbit.android.jobqueue.network.NetworkEventProvider
 import com.birbit.android.jobqueue.network.NetworkUtil
+import com.uber.autodispose.android.lifecycle.scope
+import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import io.reactivex.disposables.Disposable
 import io.reactivex.schedulers.Schedulers
@@ -45,6 +48,7 @@ import one.mixin.android.extension.networkConnected
 import one.mixin.android.extension.notificationManager
 import one.mixin.android.extension.supportsOreo
 import one.mixin.android.job.BaseJob.Companion.PRIORITY_ACK_MESSAGE
+import one.mixin.android.job.NotificationGenerator.conversationDao
 import one.mixin.android.receiver.ExitBroadcastReceiver
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BatteryOptimizationDialogActivity
@@ -145,6 +149,7 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
     private val activityManager by lazy { getSystemService<ActivityManager>() }
     private var isIgnoringBatteryOptimizations = false
     private var disposable: Disposable? = null
+    private val destroyScope = scope(Lifecycle.Event.ON_DESTROY)
 
     override fun onBind(intent: Intent): IBinder? {
         super.onBind(intent)
@@ -164,6 +169,7 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
         networkUtil.setListener(this)
         if (disposable == null) {
             disposable = RxBus.listen(ExpiredEvent::class.java).observeOn(Schedulers.io())
+                .autoDispose(destroyScope)
                 .subscribe { event ->
                     val expiredIn = event.expireIn
                     if (expiredIn != null) {
@@ -209,6 +215,10 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
         stopObserveFlood()
         stopObserveStatus()
         stopObserveExpired()
+        ackJob?.cancel()
+        statusJob?.cancel()
+        floodJob?.cancel()
+        expiredJob?.cancel()
         webSocket.disconnect()
         webSocket.setWebSocketObserver(null)
         networkUtil.unregisterListener()
@@ -527,7 +537,7 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
                 val messageMedia = messageDao.findMessageMediaById(messageId)
                 Timber.e("Expired job: delete messages ${messageMedia?.type} - ${messageMedia?.messageId}")
                 messageMedia?.absolutePath(
-                    this@BlazeMessageService,
+                    MixinApplication.appContext,
                     messageMedia.conversationId,
                     messageMedia.mediaUrl
                 )?.let {
@@ -539,6 +549,7 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
                 database.deleteMessageById(messageId)
             }
             cIds.forEach { id ->
+                conversationDao.refreshLastMessageId(id)
                 InvalidateFlow.emit(id)
             }
             nextExpirationTime = null

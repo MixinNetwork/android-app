@@ -18,6 +18,7 @@ import android.util.AttributeSet
 import android.view.View
 import android.view.animation.LinearInterpolator
 import androidx.core.view.isVisible
+import com.uber.autodispose.android.autoDispose
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
 import one.mixin.android.R
@@ -154,6 +155,7 @@ class CircleProgress @JvmOverloads constructor(
         if (disposable == null) {
             disposable = RxBus.listen(ProgressEvent::class.java)
                 .observeOn(AndroidSchedulers.mainThread())
+                .autoDispose(this)
                 .subscribe { event ->
                     if (event.id == mBindId) {
                         if (event.status == STATUS_LOADING) {

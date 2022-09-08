@@ -74,13 +74,14 @@ class CleanMessageHelper @Inject internal constructor(private val jobManager: Mi
                     appDatabase.conversationDao().deleteConversationById(conversationId)
                 } else {
                     appDatabase.remoteMessageStatusDao().countUnread(conversationId)
+                    appDatabase.conversationDao().refreshLastMessageId(conversationId)
                 }
                 InvalidateFlow.emit(conversationId)
             }
         }
     }
 
-    suspend fun deleteMessageItems(messageItems: List<MessageItem>) {
+    fun deleteMessageItems(messageItems: List<MessageItem>) {
         messageItems.forEach { item ->
             deleteMessage(
                 item.messageId,
@@ -96,7 +97,7 @@ class CleanMessageHelper @Inject internal constructor(private val jobManager: Mi
         }
     }
 
-    suspend fun deleteMessageMinimals(
+    fun deleteMessageMinimals(
         conversationId: String,
         messageItems: List<MediaMessageMinimal>
     ) {
@@ -113,7 +114,7 @@ class CleanMessageHelper @Inject internal constructor(private val jobManager: Mi
         if (!mediaUrl.isNullOrBlank() && forceDelete) {
             jobManager.addJobInBackground(AttachmentDeleteJob(mediaUrl))
         }
-        appDatabase.deleteMessageById(messageId)
+        appDatabase.deleteMessageById(messageId, conversationId)
         jobManager.addJobInBackground(FtsDeleteJob(messageId))
         InvalidateFlow.emit(conversationId)
     }

@@ -2,6 +2,7 @@ package one.mixin.android.job
 
 import com.birbit.android.jobqueue.Params
 import one.mixin.android.RxBus
+import one.mixin.android.db.insertMessage
 import one.mixin.android.event.RecallEvent
 import one.mixin.android.extension.base64Encode
 import one.mixin.android.extension.base64RawUrlDecode
@@ -92,7 +93,7 @@ open class SendMessageJob(
                     }
                 }
                 if (!message.isTranscript()) {
-                    messageDao.insert(message)
+                    mixinDatabase.insertMessage(message)
                     InvalidateFlow.emit(message.conversationId)
                     MessageFts4Helper.insertOrReplaceMessageFts4(message, message.name)
                 }

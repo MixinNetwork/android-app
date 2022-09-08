@@ -126,7 +126,7 @@ class GalleryItemFragment : Fragment(R.layout.fragment_draggable_recycler_view),
     }
 
     override fun onAlbumMediaLoad(cursor: Cursor?) {
-        if (cursor == null || cursor.isClosed) return
+        if (!isAdded || cursor == null || cursor.isClosed) return
 
         binding.rv.post {
             val itemList = arrayListOf<Item>()
@@ -134,7 +134,7 @@ class GalleryItemFragment : Fragment(R.layout.fragment_draggable_recycler_view),
                 val item = Item.valueOf(cursor)
                 itemList.add(item)
             }
-            if (itemList.isNullOrEmpty()) return@post
+            if (itemList.isEmpty()) return@post
 
             adapter.items = itemList
         }

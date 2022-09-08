@@ -7,6 +7,7 @@ import android.os.SystemClock
 import com.google.firebase.crashlytics.FirebaseCrashlytics
 import com.google.gson.Gson
 import com.google.gson.JsonElement
+import com.uber.autodispose.android.lifecycle.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import io.reactivex.disposables.Disposable
 import one.mixin.android.Constants.SLEEP_MILLIS
@@ -115,7 +116,6 @@ class GroupCallService : CallService() {
 
     private fun handleReceivePublish(intent: Intent) {
         val blazeMessageData = getSerializableExtra(intent, EXTRA_BLAZE, BlazeMessageData::class.java) ?: return
-        requireNotNull(blazeMessageData)
         val cid = blazeMessageData.conversationId
         val userId = blazeMessageData.userId
         callState.addUser(cid, userId)
@@ -205,6 +205,7 @@ class GroupCallService : CallService() {
         )
 
         disposable = RxBus.listen(SenderKeyChange::class.java)
+            .autoDispose(this)
             .subscribe { event ->
                 if (event.conversationId != conversationId) {
                     return@subscribe

@@ -791,7 +791,7 @@ class ConversationAdapter(
 
     override fun onViewAttachedToWindow(holder: RecyclerView.ViewHolder) {
         getItem(holder.layoutPosition)?.let { messageItem ->
-            (holder as BaseViewHolder).listen(messageItem.messageId)
+            (holder as BaseViewHolder).listen(holder.itemView, messageItem.messageId)
             if (holder is BaseMentionHolder) {
                 holder.onViewAttachedToWindow()
             }

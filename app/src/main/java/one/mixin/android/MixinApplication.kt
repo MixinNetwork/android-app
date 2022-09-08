@@ -31,6 +31,7 @@ import one.mixin.android.crypto.MixinSignalProtocolLogger
 import one.mixin.android.crypto.PrivacyPreference.clearPrivacyPreferences
 import one.mixin.android.crypto.db.SignalDatabase
 import one.mixin.android.db.MixinDatabase
+import one.mixin.android.db.runInTransaction
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.notificationManager
@@ -54,8 +55,10 @@ import one.mixin.android.ui.web.WebActivity
 import one.mixin.android.ui.web.refresh
 import one.mixin.android.ui.web.releaseAll
 import one.mixin.android.util.MemoryCallback
-import one.mixin.android.util.SINGLE_DRAFT_THREAD
+import one.mixin.android.util.SINGLE_DB_THREAD
+import one.mixin.android.util.SINGLE_THREAD
 import one.mixin.android.util.debug.FileLogTree
+import one.mixin.android.util.debug.timeoutEarlyWarning
 import one.mixin.android.util.initNativeLibs
 import one.mixin.android.util.language.Lingver
 import one.mixin.android.util.reportException
@@ -68,6 +71,7 @@ import timber.log.Timber
 import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
+import kotlin.system.exitProcess
 
 open class MixinApplication :
     Application(),
@@ -144,12 +148,16 @@ open class MixinApplication :
         initNativeLibs(applicationContext)
 
         registerComponentCallbacks(MemoryCallback())
+        Thread.setDefaultUncaughtExceptionHandler { thread, throwable ->
+            Timber.e("${thread.name}-${throwable.message}")
+            exitProcess(2)
+        }
     }
 
     private fun init() {
         CronetProviderInstaller.installProvider(this)
         if (BuildConfig.DEBUG) {
-            Timber.plant(Timber.DebugTree())
+            Timber.plant(Timber.DebugTree(), FileLogTree())
         } else {
             Timber.plant(FileLogTree())
         }
@@ -296,6 +304,9 @@ open class MixinApplication :
 
     override fun onActivityStopped(activity: Activity) {
         isActivityChangingConfigurations = activity.isChangingConfigurations
+        if (contextWrapper.baseContext == activity) {
+            contextWrapper.baseContext = this@MixinApplication
+        }
         if (activity !is AppAuthActivity) {
             activityReferences -= 1
         } else {
@@ -320,11 +331,29 @@ open class MixinApplication :
         }
     }
 
+    private val db by lazy {
+        MixinDatabase.getDatabase(this)
+    }
+
     fun saveDraft(conversationId: String, draft: String) =
-        appScope.launch(SINGLE_DRAFT_THREAD) {
-            MixinDatabase.getDatabase(this@MixinApplication).conversationDao()
-                .saveDraft(conversationId, draft)
+        appScope.launch(SINGLE_DB_THREAD) {
+            timeoutEarlyWarning({
+                db.conversationDao()
+                    .saveDraft(conversationId, draft)
+            })
         }
+
+    fun markMessageRead(conversationId: String) {
+        appScope.launch(SINGLE_THREAD) {
+            val remoteMessageDao = db.remoteMessageStatusDao()
+            timeoutEarlyWarning({
+                runInTransaction {
+                    remoteMessageDao.markReadByConversationId(conversationId)
+                    remoteMessageDao.zeroConversationUnseen(conversationId)
+                }
+            })
+        }
+    }
 
     fun checkAndShowAppAuth(activity: Activity): Boolean {
         val appAuth = defaultSharedPreferences.getInt(Constants.Account.PREF_APP_AUTH, -1)

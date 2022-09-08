@@ -13,6 +13,7 @@ import androidx.appcompat.content.res.AppCompatResources
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.RecyclerView
+import com.uber.autodispose.android.autoDispose
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
 import one.mixin.android.Constants.Colors.SELECT_COLOR
@@ -94,10 +95,11 @@ abstract class BaseViewHolder constructor(containerView: View) :
     private var disposable: Disposable? = null
     protected var messageId: String? = null
 
-    fun listen(bindId: String) {
+    fun listen(view: View, bindId: String) {
         if (disposable == null) {
             disposable = RxBus.listen(BlinkEvent::class.java)
                 .observeOn(AndroidSchedulers.mainThread())
+                .autoDispose(view)
                 .subscribe {
                     if (it.messageId == this.messageId) {
                         if (it.type != null) {
