@@ -79,7 +79,7 @@ class Tip @Inject internal constructor(
             if (privTip == null) {
                 val deviceId = context.defaultSharedPreferences.getString(Constants.DEVICE_ID, null) ?: throw TipNullException("Device id is null")
                 createTipPriv(context, pin, deviceId, forRecover = true).getOrThrow()
-            }else{
+            } else {
                 val aesKey = getAesKey(pin)
                 val privTipKey = (aesKey + pin.toByteArray()).sha3Sum256()
                 aesDecrypt(privTipKey, privTip)
