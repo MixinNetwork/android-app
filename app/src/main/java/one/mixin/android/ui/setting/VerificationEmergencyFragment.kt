@@ -13,6 +13,7 @@ import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.EmergencyPurpose
 import one.mixin.android.api.request.EmergencyRequest
 import one.mixin.android.crypto.CryptoPreference
+import one.mixin.android.crypto.PinCipher
 import one.mixin.android.crypto.SignalProtocol
 import one.mixin.android.crypto.generateEd25519KeyPair
 import one.mixin.android.databinding.FragmentVerificationEmergencyBinding
@@ -22,9 +23,6 @@ import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.putInt
 import one.mixin.android.extension.withArgs
 import one.mixin.android.session.Session
-import one.mixin.android.session.encryptPin
-import one.mixin.android.session.encryptTipPin
-import one.mixin.android.tip.Tip
 import one.mixin.android.tip.TipBody
 import one.mixin.android.tip.TipNetworkException
 import one.mixin.android.ui.common.PinCodeFragment
@@ -72,7 +70,7 @@ class VerificationEmergencyFragment : PinCodeFragment(R.layout.fragment_verifica
     private val binding by viewBinding(FragmentVerificationEmergencyBinding::bind)
 
     @Inject
-    lateinit var tip: Tip
+    lateinit var pinCipher: PinCipher
 
     override fun getContentView() = binding.root
 
@@ -104,11 +102,7 @@ class VerificationEmergencyFragment : PinCodeFragment(R.layout.fragment_verifica
                     EmergencyRequest(
                         user?.phone,
                         user?.identityNumber ?: userIdentityNumber,
-                        if (Session.getTipPub().isNullOrBlank()) {
-                            Session.getPinToken()?.let { encryptPin(it, pin)!! }
-                        } else {
-                            encryptTipPin(tip, requireNotNull(pin), TipBody.forEmergencyContactCreate(verificationId, code))
-                        },
+                        pinCipher.encryptPin(requireNotNull(pin), TipBody.forEmergencyContactCreate(verificationId, code)),
                         code,
                         EmergencyPurpose.CONTACT.name
                     )

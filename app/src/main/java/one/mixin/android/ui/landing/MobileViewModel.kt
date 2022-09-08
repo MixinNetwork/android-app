@@ -16,14 +16,11 @@ import one.mixin.android.api.request.DeactivateVerificationRequest
 import one.mixin.android.api.request.VerificationPurpose
 import one.mixin.android.api.request.VerificationRequest
 import one.mixin.android.api.response.VerificationResponse
+import one.mixin.android.crypto.PinCipher
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.SyncFts4Job
 import one.mixin.android.repository.AccountRepository
 import one.mixin.android.repository.UserRepository
-import one.mixin.android.session.Session
-import one.mixin.android.session.encryptPin
-import one.mixin.android.session.encryptTipPin
-import one.mixin.android.tip.Tip
 import one.mixin.android.tip.TipBody
 import one.mixin.android.vo.Account
 import one.mixin.android.vo.User
@@ -35,7 +32,7 @@ constructor(
     private val accountRepository: AccountRepository,
     private val userRepository: UserRepository,
     private val jobManager: MixinJobManager,
-    private val tip: Tip,
+    private val pinCipher: PinCipher,
 ) : ViewModel() {
 
     fun loginVerification(request: VerificationRequest): Observable<MixinResponse<VerificationResponse>> =
@@ -54,11 +51,7 @@ constructor(
             AccountRequest(
                 verificationCode,
                 purpose = VerificationPurpose.PHONE.name,
-                pin = if (Session.getTipPub().isNullOrBlank()) {
-                    encryptPin(Session.getPinToken()!!, pin)
-                } else {
-                    encryptTipPin(tip, pin, TipBody.forPhoneNumberUpdate(id, verificationCode))
-                },
+                pin = pinCipher.encryptPin(pin, TipBody.forPhoneNumberUpdate(id, verificationCode))
             )
         )
 
