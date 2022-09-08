@@ -14,11 +14,11 @@ import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.ResponseError
+import one.mixin.android.crypto.PinCipher
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.putLong
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.updatePinCheck
-import one.mixin.android.tip.Tip
 import one.mixin.android.tip.TipCounterNotSyncedException
 import one.mixin.android.tip.TipNetworkException
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
@@ -36,7 +36,7 @@ abstract class BiometricBottomSheetDialogFragment : MixinBottomSheetDialogFragme
     var autoDismiss: Boolean = true
 
     @Inject
-    lateinit var tip: Tip
+    lateinit var pinCipher: PinCipher
 
     override fun onCreateDialog(savedInstanceState: Bundle?): BottomSheet {
         val dialog = super.onCreateDialog(savedInstanceState)

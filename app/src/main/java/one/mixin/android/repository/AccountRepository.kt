@@ -34,6 +34,7 @@ import one.mixin.android.api.service.ConversationService
 import one.mixin.android.api.service.EmergencyService
 import one.mixin.android.api.service.GiphyService
 import one.mixin.android.api.service.UserService
+import one.mixin.android.crypto.PinCipher
 import one.mixin.android.db.AppDao
 import one.mixin.android.db.FavoriteAppDao
 import one.mixin.android.db.StickerAlbumDao
@@ -46,9 +47,6 @@ import one.mixin.android.db.withTransaction
 import one.mixin.android.extension.nowInUtcNano
 import one.mixin.android.extension.within24Hours
 import one.mixin.android.session.Session
-import one.mixin.android.session.encryptPin
-import one.mixin.android.session.encryptTipPin
-import one.mixin.android.tip.Tip
 import one.mixin.android.tip.TipBody
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.vo.Account
@@ -78,7 +76,7 @@ constructor(
     private val stickerRelationshipDao: StickerRelationshipDao,
     private val giphyService: GiphyService,
     private val emergencyService: EmergencyService,
-    private val tip: Tip,
+    private val pinCipher: PinCipher,
 ) {
 
     fun verificationObserver(request: VerificationRequest): Observable<MixinResponse<VerificationResponse>> =
@@ -156,29 +154,18 @@ constructor(
     suspend fun updatePinSuspend(request: PinRequest) = accountService.updatePinSuspend(request)
 
     suspend fun verifyPin(code: String): MixinResponse<Account> = withContext(Dispatchers.IO) {
+        val timestamp = nowInUtcNano()
         return@withContext if (Session.getTipPub().isNullOrBlank()) {
-            accountService.verifyPin(PinRequest(encryptPin(Session.getPinToken()!!, code)!!))
+            accountService.verifyPin(PinRequest(pinCipher.encryptPin(code, TipBody.forVerify(timestamp))))
         } else {
-            val timestamp = nowInUtcNano()
-            accountService.verifyPin(
-                PinRequest(
-                    pin = requireNotNull(encryptTipPin(tip, code, TipBody.forVerify(timestamp))),
-                    timestamp = timestamp
-                )
-            )
+            accountService.verifyPin(PinRequest(pinCipher.encryptPin(code, TipBody.forVerify(timestamp)), timestamp = timestamp))
         }
     }
 
     suspend fun deactivate(pin: String, verificationId: String): MixinResponse<Account> = withContext(Dispatchers.IO) {
         accountService.deactivate(
             DeactivateRequest(
-                requireNotNull(
-                    if (Session.getTipPub().isNullOrBlank()) {
-                        encryptPin(Session.getPinToken()!!, pin)
-                    } else {
-                        encryptTipPin(tip, pin, TipBody.forUserDeactivate(verificationId))
-                    }
-                ),
+                pinCipher.encryptPin(pin, TipBody.forUserDeactivate(verificationId)),
                 verificationId
             )
         )
@@ -269,30 +256,9 @@ constructor(
         emergencyService.loginVerify(id, request)
 
     suspend fun showEmergency(pin: String) =
-        emergencyService.show(
-            PinRequest(
-                requireNotNull(
-                    if (Session.getTipPub().isNullOrBlank()) {
-                        encryptPin(Session.getPinToken()!!, pin)
-                    } else {
-                        encryptTipPin(tip, pin, TipBody.forEmergencyContactRead())
-                    }
-                )
-            )
-        )
+        emergencyService.show(PinRequest(pinCipher.encryptPin(pin, TipBody.forEmergencyContactRead())))
 
-    suspend fun deleteEmergency(pin: String) =
-        emergencyService.delete(
-            PinRequest(
-                requireNotNull(
-                    if (Session.getTipPub().isNullOrBlank()) {
-                        encryptPin(Session.getPinToken()!!, pin)
-                    } else {
-                        encryptTipPin(tip, pin, TipBody.forEmergencyContactRemove())
-                    }
-                )
-            )
-        )
+    suspend fun deleteEmergency(pin: String) = emergencyService.delete(PinRequest(pinCipher.encryptPin(pin, TipBody.forEmergencyContactRemove())))
 
     suspend fun getFiats() = accountService.getFiats()
 

@@ -14,6 +14,7 @@ import one.mixin.android.api.request.TipSecretRequest
 import one.mixin.android.api.response.TipSigner
 import one.mixin.android.api.service.AccountService
 import one.mixin.android.api.service.TipService
+import one.mixin.android.crypto.BasePinCipher
 import one.mixin.android.crypto.aesDecrypt
 import one.mixin.android.crypto.aesEncrypt
 import one.mixin.android.crypto.ed25519
@@ -29,8 +30,6 @@ import one.mixin.android.extension.putString
 import one.mixin.android.extension.toBeByteArray
 import one.mixin.android.job.TipCounterSyncedLiveData
 import one.mixin.android.session.Session
-import one.mixin.android.session.encryptPin
-import one.mixin.android.session.encryptTipPin
 import one.mixin.android.tip.exception.TipNodeException
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.deleteKeyByAlias
@@ -46,30 +45,10 @@ class Tip @Inject internal constructor(
     private val identity: Identity,
     private val tipService: TipService,
     private val accountService: AccountService,
-    internal val tipNode: TipNode,
+    private val tipNode: TipNode,
     private val tipCounterSynced: TipCounterSyncedLiveData,
-) {
+) : BasePinCipher() {
     private val observers = mutableListOf<Observer>()
-
-    suspend fun getOrRecoverTipPriv(context: Context, pin: String, recoverIfNotExists: Boolean): Result<ByteArray> =
-        kotlin.runCatching {
-            assertTipCounterSynced(tipCounterSynced)
-
-            val privTip = readTipPriv(context)
-            if (privTip == null) {
-                if (recoverIfNotExists) {
-                    val deviceId = context.defaultSharedPreferences.getString(Constants.DEVICE_ID, null)
-                        ?: throw TipNullException("Device id is null")
-                    return@runCatching createTipPriv(context, pin, deviceId, forRecover = true).getOrThrow()
-                }
-                throw TipNullException("PrivTip is null, but not recover")
-            }
-
-            val aesKey = getAesKey(pin)
-
-            val privTipKey = (aesKey + pin.toByteArray()).sha3Sum256()
-            aesDecrypt(privTipKey, privTip)
-        }
 
     suspend fun createTipPriv(context: Context, pin: String, deviceId: String, failedSigners: List<TipSigner>? = null, legacyPin: String? = null, forRecover: Boolean = false): Result<ByteArray> =
         kotlin.runCatching {
@@ -89,6 +68,21 @@ class Tip @Inject internal constructor(
                 val identityPair = identity.getIdentityPrivAndWatcher(oldPin)
                 val assigneePriv = identity.getIdentityPrivAndWatcher(newPin).priKey
                 updatePriv(context, identityPair.priKey, ephemeralSeed, identityPair.watcher, newPin, assigneePriv, failedSigners)
+            }
+        }
+
+    suspend fun getOrRecoverTipPriv(context: Context, pin: String): Result<ByteArray> =
+        kotlin.runCatching {
+            assertTipCounterSynced(tipCounterSynced)
+
+            val privTip = readTipPriv(context)
+            if (privTip == null) {
+                val deviceId = context.defaultSharedPreferences.getString(Constants.DEVICE_ID, null) ?: throw TipNullException("Device id is null")
+                createTipPriv(context, pin, deviceId, forRecover = true).getOrThrow()
+            }else{
+                val aesKey = getAesKey(pin)
+                val privTipKey = (aesKey + pin.toByteArray()).sha3Sum256()
+                aesDecrypt(privTipKey, privTip)
             }
         }
 
@@ -143,7 +137,7 @@ class Tip @Inject internal constructor(
         return tipNode.watch(watcher)
     }
 
-    internal fun tipNodeCount() = tipNode.nodeCount
+    private fun tipNodeCount() = tipNode.nodeCount
 
     @Throws(TipException::class, TipNodeException::class)
     private suspend fun createPriv(context: Context, identityPriv: ByteArray, ephemeral: ByteArray, watcher: ByteArray, pin: String, failedSigners: List<TipSigner>? = null, legacyPin: String? = null, forRecover: Boolean = false): ByteArray {
@@ -203,11 +197,9 @@ class Tip @Inject internal constructor(
         pub: EdDSAPublicKey,
         legacyPin: String? = null
     ) {
-        val pinToken = requireNotNull(Session.getPinToken())
-        val oldEncryptedPin = if (legacyPin != null) {
-            encryptPin(pinToken, legacyPin)
-        } else null
-        val newPin = encryptPin(pinToken, pub.abyte + 1L.toBeByteArray())
+        val pinToken = requireNotNull(Session.getPinToken()?.decodeBase64() ?: throw TipNullException("No pin token"))
+        val oldEncryptedPin = if (legacyPin != null) { encryptPinInternal(pinToken, legacyPin.toByteArray()) } else null
+        val newPin = encryptPinInternal(pinToken, pub.abyte + 1L.toBeByteArray())
         val pinRequest = PinRequest(newPin, oldEncryptedPin)
         val account = tipNetwork { accountService.updatePinSuspend(pinRequest) }.getOrThrow()
         Session.storeAccount(account)
@@ -217,11 +209,11 @@ class Tip @Inject internal constructor(
     private suspend fun replaceEncryptedPin(aggSig: ByteArray) {
         val privateSpec = EdDSAPrivateKeySpec(aggSig.copyOf(), ed25519)
         val pub = EdDSAPublicKey(EdDSAPublicKeySpec(privateSpec.a, ed25519))
-        val pinToken = requireNotNull(Session.getPinToken())
+        val pinToken = requireNotNull(Session.getPinToken()?.decodeBase64() ?: throw TipNullException("No pin token"))
         val counter = requireNotNull(Session.getTipCounter()).toLong()
         val timestamp = TipBody.forVerify(counter)
-        val oldPin = encryptTipPin(aggSig, timestamp)
-        val newEncryptPin = encryptPin(
+        val oldPin = encryptTipPinInternal(pinToken, aggSig, timestamp)
+        val newEncryptPin = encryptPinInternal(
             pinToken,
             pub.abyte + (counter + 1).toBeByteArray()
         ) // TODO should use tip node counter?

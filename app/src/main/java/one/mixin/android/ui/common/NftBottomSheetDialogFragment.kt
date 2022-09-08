@@ -21,9 +21,6 @@ import one.mixin.android.extension.dp
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.round
 import one.mixin.android.extension.withArgs
-import one.mixin.android.session.Session
-import one.mixin.android.session.encryptPin
-import one.mixin.android.session.encryptTipPin
 import one.mixin.android.tip.TipBody
 import one.mixin.android.ui.common.biometric.BiometricBottomSheetDialogFragment
 import one.mixin.android.ui.common.biometric.BiometricInfo
@@ -149,17 +146,7 @@ class NftBottomSheetDialogFragment : BiometricBottomSheetDialogFragment() {
     }
 
     override suspend fun invokeNetwork(pin: String): MixinResponse<*> {
-        suspend fun getRequest(body: ByteArray): CollectibleRequest =
-            CollectibleRequest(
-                t.action, t.rawTransaction,
-                requireNotNull(
-                    if (Session.getTipPub().isNullOrBlank()) {
-                        encryptPin(Session.getPinToken()!!, pin)
-                    } else {
-                        encryptTipPin(tip, pin, body)
-                    }
-                )
-            )
+        suspend fun getRequest(body: ByteArray): CollectibleRequest = CollectibleRequest(t.action, t.rawTransaction, pinCipher.encryptPin(pin, body))
         return when (t.action) {
             SignatureAction.sign.name -> {
                 bottomViewModel.signCollectibleTransfer(t.requestId, getRequest(TipBody.forCollectibleRequestSign(t.requestId)))

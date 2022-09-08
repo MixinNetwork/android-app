@@ -51,6 +51,7 @@ import one.mixin.android.api.service.TipNodeService
 import one.mixin.android.api.service.TipService
 import one.mixin.android.api.service.UserService
 import one.mixin.android.crypto.EncryptedProtocol
+import one.mixin.android.crypto.PinCipher
 import one.mixin.android.crypto.SignalProtocol
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.extension.filterNonAscii
@@ -457,6 +458,10 @@ object AppModule {
     @Singleton
     fun provideTip(ephemeral: Ephemeral, identity: Identity, tipNode: TipNode, tipService: TipService, accountService: AccountService, tipCounterSyncedLiveData: TipCounterSyncedLiveData) =
         Tip(ephemeral, identity, tipService, accountService, tipNode, tipCounterSyncedLiveData)
+
+    @Provides
+    @Singleton
+    fun providePinCipher(tip: Tip) = PinCipher(tip)
 
     @Provides
     @Singleton
