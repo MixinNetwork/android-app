@@ -20,7 +20,7 @@ import one.mixin.android.extension.tickVibrate
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.updatePinCheck
 import one.mixin.android.extension.withArgs
-import one.mixin.android.tip.TipNetworkException
+import one.mixin.android.tip.exception.TipNetworkException
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.tip.TipBundle
 import one.mixin.android.ui.tip.TipFragment.Companion.ARGS_TIP_BUNDLE

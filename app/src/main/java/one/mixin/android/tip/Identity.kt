@@ -11,6 +11,7 @@ import one.mixin.android.crypto.sha3Sum256
 import one.mixin.android.extension.base64RawUrlDecode
 import one.mixin.android.extension.decodeBase64
 import one.mixin.android.session.Session
+import one.mixin.android.tip.exception.TipNullException
 import javax.inject.Inject
 
 class Identity @Inject internal constructor(private val tipService: TipService) {

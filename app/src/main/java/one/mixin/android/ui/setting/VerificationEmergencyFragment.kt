@@ -24,7 +24,7 @@ import one.mixin.android.extension.putInt
 import one.mixin.android.extension.withArgs
 import one.mixin.android.session.Session
 import one.mixin.android.tip.TipBody
-import one.mixin.android.tip.TipNetworkException
+import one.mixin.android.tip.exception.TipNetworkException
 import one.mixin.android.ui.common.PinCodeFragment
 import one.mixin.android.ui.landing.LandingActivity.Companion.ARGS_PIN
 import one.mixin.android.util.viewBinding

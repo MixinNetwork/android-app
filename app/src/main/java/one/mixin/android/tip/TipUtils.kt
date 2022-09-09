@@ -8,6 +8,8 @@ import one.mixin.android.api.MixinResponse
 import one.mixin.android.tip.exception.DifferentIdentityException
 import one.mixin.android.tip.exception.NotAllSignerSuccessException
 import one.mixin.android.tip.exception.NotEnoughPartialsException
+import one.mixin.android.tip.exception.PinIncorrectException
+import one.mixin.android.tip.exception.TipNetworkException
 import one.mixin.android.util.reportException
 import timber.log.Timber
 
