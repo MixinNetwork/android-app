@@ -14,6 +14,7 @@ import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.putString
 import one.mixin.android.extension.toHex
 import one.mixin.android.session.Session
+import one.mixin.android.tip.exception.TipNullException
 import one.mixin.android.util.deleteKeyByAlias
 import one.mixin.android.util.getDecryptCipher
 import one.mixin.android.util.getEncryptCipher

@@ -19,8 +19,8 @@ import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.putLong
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.updatePinCheck
-import one.mixin.android.tip.TipCounterNotSyncedException
-import one.mixin.android.tip.TipNetworkException
+import one.mixin.android.tip.exception.TipCounterNotSyncedException
+import one.mixin.android.tip.exception.TipNetworkException
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
 import one.mixin.android.util.BiometricUtil
 import one.mixin.android.util.ErrorHandler

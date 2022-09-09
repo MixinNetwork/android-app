@@ -30,7 +30,12 @@ import one.mixin.android.extension.putString
 import one.mixin.android.extension.toBeByteArray
 import one.mixin.android.job.TipCounterSyncedLiveData
 import one.mixin.android.session.Session
+import one.mixin.android.tip.exception.PinIncorrectException
+import one.mixin.android.tip.exception.TipCounterNotSyncedException
+import one.mixin.android.tip.exception.TipException
+import one.mixin.android.tip.exception.TipNetworkException
 import one.mixin.android.tip.exception.TipNodeException
+import one.mixin.android.tip.exception.TipNullException
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.deleteKeyByAlias
 import one.mixin.android.util.getDecryptCipher

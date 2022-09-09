@@ -22,7 +22,7 @@ import one.mixin.android.extension.updatePinCheck
 import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.extension.withArgs
 import one.mixin.android.repository.AccountRepository
-import one.mixin.android.tip.TipNetworkException
+import one.mixin.android.tip.exception.TipNetworkException
 import one.mixin.android.ui.landing.LandingActivity
 import one.mixin.android.ui.landing.MobileFragment
 import one.mixin.android.ui.setting.FriendsNoBotFragment
