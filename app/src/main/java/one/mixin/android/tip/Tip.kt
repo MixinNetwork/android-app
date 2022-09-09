@@ -132,7 +132,7 @@ class Tip @Inject internal constructor(
     }
 
     @Throws(IOException::class)
-    suspend fun watchTipNodeCounters(): List<TipNode.TipNodeCounter> {
+    private suspend fun watchTipNodeCounters(): List<TipNode.TipNodeCounter> {
         val watcher = identity.getWatcher()
         return tipNode.watch(watcher)
     }
