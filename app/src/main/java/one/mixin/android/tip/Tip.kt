@@ -36,6 +36,9 @@ import one.mixin.android.tip.exception.TipException
 import one.mixin.android.tip.exception.TipNetworkException
 import one.mixin.android.tip.exception.TipNodeException
 import one.mixin.android.tip.exception.TipNullException
+import one.mixin.android.tip.test.TroubleMarker.STOP_CREATE_PIN
+import one.mixin.android.tip.test.TroubleMarker.STOP_SAVE_AES
+import one.mixin.android.tip.test.TroubleMarker.trouble
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.deleteKeyByAlias
 import one.mixin.android.util.getDecryptCipher
@@ -161,6 +164,7 @@ class Tip @Inject internal constructor(
             }
         ).sha3Sum256() // use sha3-256(recover-signature) as priv
 
+        trouble(STOP_CREATE_PIN)
         observers.forEach { it.onSyncingComplete() }
 
         val privateSpec = EdDSAPrivateKeySpec(aggSig.copyOf(), ed25519)
@@ -346,8 +350,10 @@ class Tip @Inject internal constructor(
         val iv = cipher.iv.base64RawEncode()
         // Atomic save IV and KEY
         val edit = context.defaultSharedPreferences.edit()
+        context.defaultSharedPreferences.putString(Constants.Tip.IV_TIP_PRIV, iv)
         val ciphertext = cipher.doFinal(tipPriv).base64RawEncode()
         edit.putString(Constants.Tip.IV_TIP_PRIV, iv)
+        trouble(STOP_SAVE_AES)
         edit.putString(Constants.Tip.TIP_PRIV, ciphertext)
         return edit.commit()
     }

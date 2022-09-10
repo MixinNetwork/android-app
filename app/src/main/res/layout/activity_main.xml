@@ -30,5 +30,12 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 
+    <!--  Todo delete this  -->
+    <one.mixin.android.tip.test.DebugView
+        android:layout_gravity="start"
+        android:layout_marginTop="200dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"/>
+
 </FrameLayout>
 
