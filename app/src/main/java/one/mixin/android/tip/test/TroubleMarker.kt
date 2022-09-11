@@ -8,7 +8,8 @@ import kotlin.random.Random
 object TroubleMarker {
     const val STOP_NODE_SIGN = 0
     const val STOP_CREATE_PIN = 1
-    const val STOP_SAVE_AES = 2
+    const val STOP_STORE_TIP = 2
+    const val STOP_STORE_TIP_PRIV = 3
 
     private var random: Int = -1
 

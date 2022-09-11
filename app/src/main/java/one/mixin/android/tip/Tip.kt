@@ -37,7 +37,8 @@ import one.mixin.android.tip.exception.TipNetworkException
 import one.mixin.android.tip.exception.TipNodeException
 import one.mixin.android.tip.exception.TipNullException
 import one.mixin.android.tip.test.TroubleMarker.STOP_CREATE_PIN
-import one.mixin.android.tip.test.TroubleMarker.STOP_SAVE_AES
+import one.mixin.android.tip.test.TroubleMarker.STOP_STORE_TIP
+import one.mixin.android.tip.test.TroubleMarker.STOP_STORE_TIP_PRIV
 import one.mixin.android.tip.test.TroubleMarker.trouble
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.deleteKeyByAlias
@@ -353,8 +354,9 @@ class Tip @Inject internal constructor(
         context.defaultSharedPreferences.putString(Constants.Tip.IV_TIP_PRIV, iv)
         val ciphertext = cipher.doFinal(tipPriv).base64RawEncode()
         edit.putString(Constants.Tip.IV_TIP_PRIV, iv)
-        trouble(STOP_SAVE_AES)
+        trouble(STOP_STORE_TIP)
         edit.putString(Constants.Tip.TIP_PRIV, ciphertext)
+        trouble(STOP_STORE_TIP_PRIV)
         return edit.commit()
     }
 

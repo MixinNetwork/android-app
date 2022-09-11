@@ -53,7 +53,15 @@
                 android:id="@+id/radio3"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="stop save priv"
+                android:text="stop store tip"
+                android:textColor="?attr/text_primary"
+                />
+
+            <RadioButton
+                android:id="@+id/radio4"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="stop store tip priv"
                 android:textColor="?attr/text_primary"
                 />
 
