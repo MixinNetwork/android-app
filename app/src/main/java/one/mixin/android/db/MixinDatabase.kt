@@ -12,6 +12,8 @@ import androidx.room.TypeConverters
 import androidx.room.withTransaction
 import androidx.sqlite.db.SupportSQLiteDatabase
 import androidx.sqlite.db.framework.FrameworkSQLiteOpenHelperFactory
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.asExecutor
 import one.mixin.android.BuildConfig
 import one.mixin.android.Constants.DataBase.CURRENT_VERSION
 import one.mixin.android.Constants.DataBase.DB_NAME
@@ -49,6 +51,7 @@ import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_44_45
 import one.mixin.android.db.converter.DepositEntryListConverter
 import one.mixin.android.db.converter.MessageStatusConverter
 import one.mixin.android.util.GsonHelper
+import one.mixin.android.util.SINGLE_DB_EXECUTORS
 import one.mixin.android.util.debug.getContent
 import one.mixin.android.util.reportException
 import one.mixin.android.vo.Address
@@ -84,6 +87,7 @@ import one.mixin.android.vo.TopAsset
 import one.mixin.android.vo.Trace
 import one.mixin.android.vo.TranscriptMessage
 import one.mixin.android.vo.User
+import timber.log.Timber
 
 @Database(
     entities = [
@@ -187,12 +191,14 @@ abstract class MixinDatabase : RoomDatabase() {
                             MIGRATION_36_37, MIGRATION_37_38, MIGRATION_38_39, MIGRATION_39_40, MIGRATION_40_41, MIGRATION_41_42, MIGRATION_42_43,
                             MIGRATION_43_44, MIGRATION_44_45
                         )
+                        .setTransactionExecutor(SINGLE_DB_EXECUTORS)
+                        .setQueryExecutor(Dispatchers.IO.asExecutor())
                         .enableMultiInstanceInvalidation()
                         .addCallback(CALLBACK)
                     if (BuildConfig.DEBUG) {
                         builder.setQueryCallback(
                             { sqlQuery, bindArgs ->
-                                // Timber.e("${Thread.currentThread().name} - $sqlQuery")
+                                Timber.e("${Thread.currentThread().name} - $sqlQuery")
                             },
                             ArchTaskExecutor.getIOThreadExecutor()
                         )
