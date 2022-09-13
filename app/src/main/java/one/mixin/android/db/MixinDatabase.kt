@@ -49,6 +49,7 @@ import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_44_45
 import one.mixin.android.db.converter.DepositEntryListConverter
 import one.mixin.android.db.converter.MessageStatusConverter
 import one.mixin.android.util.GsonHelper
+import one.mixin.android.util.SINGLE_DB_EXECUTOR
 import one.mixin.android.util.debug.getContent
 import one.mixin.android.util.reportException
 import one.mixin.android.vo.Address
@@ -84,6 +85,9 @@ import one.mixin.android.vo.TopAsset
 import one.mixin.android.vo.Trace
 import one.mixin.android.vo.TranscriptMessage
 import one.mixin.android.vo.User
+import java.util.concurrent.Executors
+import kotlin.math.max
+import kotlin.math.min
 
 @Database(
     entities = [
@@ -188,6 +192,13 @@ abstract class MixinDatabase : RoomDatabase() {
                             MIGRATION_43_44, MIGRATION_44_45
                         )
                         .enableMultiInstanceInvalidation()
+                        .setQueryExecutor(Executors.newFixedThreadPool(
+                            max(
+                                2,
+                                min(Runtime.getRuntime().availableProcessors() - 1, 4)
+                            )
+                        ))
+                        .setTransactionExecutor(SINGLE_DB_EXECUTOR)
                         .addCallback(CALLBACK)
                     if (BuildConfig.DEBUG) {
                         builder.setQueryCallback(
