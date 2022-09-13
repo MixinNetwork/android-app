@@ -10,6 +10,7 @@ object TroubleMarker {
     const val STOP_CREATE_PIN = 1
     const val STOP_STORE_TIP = 2
     const val STOP_STORE_TIP_PRIV = 3
+    const val STOP_REPLACE_OLD = 4
 
     private var random: Int = -1
 

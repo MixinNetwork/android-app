@@ -37,6 +37,7 @@ import one.mixin.android.tip.exception.TipNetworkException
 import one.mixin.android.tip.exception.TipNodeException
 import one.mixin.android.tip.exception.TipNullException
 import one.mixin.android.tip.test.TroubleMarker.STOP_CREATE_PIN
+import one.mixin.android.tip.test.TroubleMarker.STOP_REPLACE_OLD
 import one.mixin.android.tip.test.TroubleMarker.STOP_STORE_TIP
 import one.mixin.android.tip.test.TroubleMarker.STOP_STORE_TIP_PRIV
 import one.mixin.android.tip.test.TroubleMarker.trouble
@@ -184,6 +185,7 @@ class Tip @Inject internal constructor(
         }
 
         replaceOldEncryptedPin(pub, legacyPin)
+        trouble(STOP_REPLACE_OLD)
         encryptAndSaveTipPriv(context, pin, aggSig, aesKey)
 
         return aggSig

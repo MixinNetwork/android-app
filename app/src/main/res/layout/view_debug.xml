@@ -65,6 +65,14 @@
                 android:textColor="?attr/text_primary"
                 />
 
+            <RadioButton
+                android:id="@+id/radio5"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="stop replace"
+                android:textColor="?attr/text_primary"
+                />
+
         </RadioGroup>
     </LinearLayout>
 

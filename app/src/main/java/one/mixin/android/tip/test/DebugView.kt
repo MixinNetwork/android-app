@@ -10,6 +10,7 @@ import one.mixin.android.R
 import one.mixin.android.databinding.ViewDebugBinding
 import one.mixin.android.tip.test.TroubleMarker.STOP_CREATE_PIN
 import one.mixin.android.tip.test.TroubleMarker.STOP_NODE_SIGN
+import one.mixin.android.tip.test.TroubleMarker.STOP_REPLACE_OLD
 import one.mixin.android.tip.test.TroubleMarker.STOP_STORE_TIP
 import one.mixin.android.tip.test.TroubleMarker.STOP_STORE_TIP_PRIV
 
@@ -30,6 +31,7 @@ class DebugView(context: Context, attributeSet: AttributeSet) : ViewAnimator(con
                 R.id.radio2 -> TroubleMarker.enableStop(STOP_CREATE_PIN)
                 R.id.radio3 -> TroubleMarker.enableStop(STOP_STORE_TIP)
                 R.id.radio4 -> TroubleMarker.enableStop(STOP_STORE_TIP_PRIV)
+                R.id.radio5 -> TroubleMarker.enableStop(STOP_REPLACE_OLD)
             }
         }
     }
