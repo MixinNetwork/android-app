@@ -80,7 +80,13 @@ class Tip @Inject internal constructor(
         kotlin.runCatching {
             assertTipCounterSynced(tipCounterSynced)
 
-            val privTip = readTipPriv(context)
+            val privTip = try {
+                readTipPriv(context)
+            } catch (e: Exception) {
+                Timber.d("read tip priv meet $e")
+                clearTipPriv(context)
+                null
+            }
             if (privTip == null) {
                 val deviceId = context.defaultSharedPreferences.getString(Constants.DEVICE_ID, null) ?: throw TipNullException("Device id is null")
                 createTipPriv(context, pin, deviceId, forRecover = true).getOrThrow()
@@ -343,6 +349,12 @@ class Tip @Inject internal constructor(
         val ciphertext = cipher.doFinal(tipPriv).base64RawEncode()
         edit.putString(Constants.Tip.TIP_PRIV, ciphertext)
         edit.apply()
+    }
+
+    private fun clearTipPriv(context: Context) {
+        context.defaultSharedPreferences.putString(Constants.Tip.IV_TIP_PRIV, null)
+        context.defaultSharedPreferences.putString(Constants.Tip.TIP_PRIV, null)
+        deleteKeyByAlias(Constants.Tip.ALIAS_TIP_PRIV)
     }
 
     fun addObserver(observer: Observer) {
