@@ -381,7 +381,7 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
     }
 
     private fun showVerifyPin(title: String? = null, onVerifySuccess: (String) -> Unit) {
-        VerifyBottomSheetDialogFragment.newInstance(title ?: getString(R.string.Enter_your_old_PIN)).setOnPinSuccess { pin ->
+        VerifyBottomSheetDialogFragment.newInstance(title ?: getString(R.string.Enter_your_old_PIN), true).setOnPinSuccess { pin ->
             onVerifySuccess(pin)
         }.apply {
             autoDismiss = true
