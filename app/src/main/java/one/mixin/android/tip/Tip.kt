@@ -337,10 +337,12 @@ class Tip @Inject internal constructor(
     private fun storeTipPriv(context: Context, tipPriv: ByteArray) {
         val cipher = getEncryptCipher(Constants.Tip.ALIAS_TIP_PRIV)
         val iv = cipher.iv.base64RawEncode()
-        context.defaultSharedPreferences.putString(Constants.Tip.IV_TIP_PRIV, iv)
+        // Atomic save IV and KEY
+        val edit = context.defaultSharedPreferences.edit()
+        edit.putString(Constants.Tip.IV_TIP_PRIV, iv)
         val ciphertext = cipher.doFinal(tipPriv).base64RawEncode()
-        context.defaultSharedPreferences.putString(Constants.Tip.TIP_PRIV, ciphertext)
-        // return true or false
+        edit.putString(Constants.Tip.TIP_PRIV, ciphertext)
+        edit.apply()
     }
 
     fun addObserver(observer: Observer) {
