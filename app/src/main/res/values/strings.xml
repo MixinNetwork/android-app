@@ -1074,7 +1074,9 @@
     <string name="Upgrade_need_verify_your_PIN">The upgrade requires verifying your PIN.</string>
     <string name="Continue_need_verify_your_PIN">Continue need to verify your old PIN and new PIN</string>
     <string name="Exchanging_data">Synchronization key shards in progress:(%1$d/%2$d)…</string>
-    <string name="Upgrade_PIN_aborted_unexpectedly_at">The process of upgrading TIP terminated unexpectedly at %1$s</string>
+    <string name="Creating_wallet_terminated_unexpectedly">Creating wallet terminated unexpectedly, click \"Continue\" to complete the creation</string>
+    <string name="Upgrading_TIP_terminated_unexpectedly">Upgrading TIP terminated unexpectedly, click \"Continue\" to complete the upgrade</string>
+    <string name="Changing_PIN_terminated_unexpectedly">Changing PIN terminated unexpectedly, click \"Continue\" to complete the change</string>
     <string name="Syncing_and_verifying_TIP">Please keep the app in the foreground while verifying and synchronizing shard keys to the TIP network; do not force quit the app during the setup process.
 </string>
 </resources>
