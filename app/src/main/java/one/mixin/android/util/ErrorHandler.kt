@@ -11,6 +11,8 @@ import one.mixin.android.api.NetworkException
 import one.mixin.android.api.ServerErrorException
 import one.mixin.android.extension.runOnUiThread
 import one.mixin.android.extension.toast
+import one.mixin.android.tip.exception.TipNodeException
+import one.mixin.android.tip.getTipExceptionMsg
 import retrofit2.HttpException
 import java.io.IOException
 import java.net.SocketTimeoutException
@@ -40,6 +42,9 @@ open class ErrorHandler {
                     }
                     is CancellationException -> {
                         // ignore kotlin coroutine job cancellation exception
+                    }
+                    is TipNodeException -> {
+                        toast(throwable.getTipExceptionMsg(ctx))
                     }
                     else -> toast(getString(R.string.error_unknown_with_message, throwable.message))
                 }

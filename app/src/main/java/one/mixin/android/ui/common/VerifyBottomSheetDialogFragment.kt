@@ -2,6 +2,7 @@ package one.mixin.android.ui.common
 
 import android.annotation.SuppressLint
 import android.app.Dialog
+import androidx.core.view.isVisible
 import androidx.fragment.app.DialogFragment
 import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.Constants.ARGS_TITLE
@@ -18,8 +19,11 @@ import one.mixin.android.widget.BottomSheet
 class VerifyBottomSheetDialogFragment : BiometricBottomSheetDialogFragment() {
     companion object {
         const val TAG = "VerifyBottomSheetDialogFragment"
-        fun newInstance(title: String? = null) = VerifyBottomSheetDialogFragment().withArgs {
+        const val ARGS_DISABLE_BIOMETRIC = "args_disable_biometric"
+
+        fun newInstance(title: String? = null, disableBiometric: Boolean = false) = VerifyBottomSheetDialogFragment().withArgs {
             title?.let { putString(ARGS_TITLE, it) }
+            putBoolean(ARGS_DISABLE_BIOMETRIC, disableBiometric)
         }
     }
 
@@ -40,7 +44,13 @@ class VerifyBottomSheetDialogFragment : BiometricBottomSheetDialogFragment() {
         if (!title.isNullOrBlank()) {
             binding.title.text = title
         }
-        binding.biometricLayout.biometricTv.setText(R.string.Verify_by_Biometric)
+
+        val disableBiometric = arguments?.getBoolean(ARGS_DISABLE_BIOMETRIC) ?: false
+        if (disableBiometric) {
+            binding.biometricLayout.biometricTv.isVisible = false
+        } else {
+            binding.biometricLayout.biometricTv.setText(R.string.Verify_by_Biometric)
+        }
         binding.biometricLayout.measureAllChildren = false
         callback = object : Callback() {
             override fun onSuccess() {
