@@ -237,8 +237,9 @@ class Tip @Inject internal constructor(
     private fun encryptAndSaveTipPriv(context: Context, pin: String, aggSig: ByteArray, aesKey: ByteArray) {
         val privTipKey = (aesKey + pin.toByteArray()).sha3Sum256()
         val privTip = aesEncrypt(privTipKey, aggSig)
-
-        storeTipPriv(context, privTip)
+        if (!storeTipPriv(context, privTip)) {
+            throw TipException("Store tip error")
+        }
     }
 
     @Throws(TipException::class)
@@ -340,15 +341,15 @@ class Tip @Inject internal constructor(
         return cipher.doFinal(ciphertext.base64RawUrlDecode())
     }
 
-    private fun storeTipPriv(context: Context, tipPriv: ByteArray) {
+    private fun storeTipPriv(context: Context, tipPriv: ByteArray): Boolean {
         val cipher = getEncryptCipher(Constants.Tip.ALIAS_TIP_PRIV)
         val iv = cipher.iv.base64RawEncode()
         // Atomic save IV and KEY
         val edit = context.defaultSharedPreferences.edit()
-        edit.putString(Constants.Tip.IV_TIP_PRIV, iv)
         val ciphertext = cipher.doFinal(tipPriv).base64RawEncode()
+        edit.putString(Constants.Tip.IV_TIP_PRIV, iv)
         edit.putString(Constants.Tip.TIP_PRIV, ciphertext)
-        edit.apply()
+        return edit.commit()
     }
 
     private fun clearTipPriv(context: Context) {
