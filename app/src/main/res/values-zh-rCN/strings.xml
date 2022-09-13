@@ -1052,6 +1052,8 @@
     <string name="Upgrade_need_verify_your_PIN">升级需要验证你的 PIN</string>
     <string name="Continue_need_verify_your_PIN">继续需要验证你的旧 PIN 以及新 PIN</string>
     <string name="Exchanging_data">正在同步密钥分片，进度（%1$d/%2$d）…</string>
-    <string name="Upgrade_PIN_aborted_unexpectedly_at">升级 TIP 意外终止于 %1$s</string>
+    <string name="Creating_wallet_terminated_unexpectedly">创建钱包意外中止，点继续完成钱包创建</string>
+    <string name="Upgrading_TIP_terminated_unexpectedly">升级 TIP 意外中止，点继续完成 TIP 升级</string>
+    <string name="Changing_PIN_terminated_unexpectedly">更新 PIN 意外中止，点继续完成 PIN 修改</string>
     <string name="Syncing_and_verifying_TIP">正在验证并同步密钥分片到 TIP 网络，请保持应用在前台，设置过程中不要强制关闭应用</string>
 </resources>

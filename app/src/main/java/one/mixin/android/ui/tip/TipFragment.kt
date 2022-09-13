@@ -100,7 +100,7 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
                 is TryConnecting -> {
                     closeIv.isVisible = true
                     if (forRecover) {
-                        descTv.text = getString(R.string.Upgrade_PIN_aborted_unexpectedly_at, "2022")
+                        descTv.text = terminatedTitle()
                     } else {
                         descTv.highlightStarTag(getString(R.string.TIP_introduction), arrayOf(Constants.HelpLink.TIP))
                     }
@@ -113,7 +113,7 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
                 is RetryConnect -> {
                     closeIv.isVisible = true
                     if (forRecover) {
-                        descTv.text = getString(R.string.Upgrade_PIN_aborted_unexpectedly_at, "2022")
+                        descTv.text = terminatedTitle()
                     } else {
                         descTv.highlightStarTag(getString(R.string.TIP_introduction), arrayOf(Constants.HelpLink.TIP))
                     }
@@ -128,7 +128,7 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
                 is ReadyStart -> {
                     closeIv.isVisible = true
                     if (forRecover) {
-                        descTv.text = getString(R.string.Upgrade_PIN_aborted_unexpectedly_at, "2022")
+                        descTv.text = terminatedTitle()
                     } else {
                         descTv.highlightStarTag(getString(R.string.TIP_introduction), arrayOf(Constants.HelpLink.TIP))
                     }
@@ -161,7 +161,7 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
                 is RetryProcess -> {
                     closeIv.isVisible = false
                     if (forRecover) {
-                        descTv.text = getString(R.string.Upgrade_PIN_aborted_unexpectedly_at, "2022")
+                        descTv.text = terminatedTitle()
                     } else {
                         descTv.highlightStarTag(getString(R.string.TIP_introduction), arrayOf(Constants.HelpLink.TIP))
                     }
@@ -393,6 +393,14 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
             onInputComplete(pin)
         }.showNow(parentFragmentManager, PinInputBottomSheetDialogFragment.TAG)
     }
+
+    private fun terminatedTitle(): String = getString(
+        when (tipBundle.tipType) {
+            TipType.Create -> R.string.Creating_wallet_terminated_unexpectedly
+            TipType.Upgrade -> R.string.Upgrading_TIP_terminated_unexpectedly
+            TipType.Change -> R.string.Changing_PIN_terminated_unexpectedly
+        }
+    )
 
     private val tipObserver = object : Tip.Observer {
         override fun onSyncing(step: Int, total: Int) {
