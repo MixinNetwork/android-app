@@ -248,7 +248,7 @@ open class Injector {
                     return status
                 }
             }
-        } catch (e: IOException) {
+        } catch (_: IOException) {
         }
         return ConversationStatus.START.ordinal
     }
