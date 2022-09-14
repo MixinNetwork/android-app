@@ -35,6 +35,8 @@ data class TipBundle(
 ) : Parcelable {
     fun forChange() = tipType == TipType.Change
 
+    fun forCreate() = tipType == TipType.Create
+
     fun forRecover() = tipEvent != null
 
     fun updateTipEvent(failedSigners: List<TipSigner>?, nodeCounter: Int) {

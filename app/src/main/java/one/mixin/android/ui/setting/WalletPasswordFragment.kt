@@ -9,7 +9,6 @@ import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentWalletPasswordBinding
 import one.mixin.android.extension.clickVibrate
-import one.mixin.android.extension.highlightStarTag
 import one.mixin.android.extension.replaceFragment
 import one.mixin.android.extension.tickVibrate
 import one.mixin.android.extension.toast
@@ -59,9 +58,7 @@ class WalletPasswordFragment : BaseFragment(R.layout.fragment_wallet_password), 
                 tipTv.text = getString(R.string.wallet_password_set_new_pin_desc)
             } else {
                 titleView.setSubTitle(getString(R.string.Set_PIN), "1/4")
-                val url = Constants.HelpLink.TIP
-                val desc = requireContext().getString(R.string.wallet_password_set_pin_desc)
-                tipTv.highlightStarTag(desc, arrayOf(url))
+                tipTv.text = getString(R.string.tip_create_pin_title)
             }
             titleView.leftIb.setOnClickListener {
                 when (step) {
@@ -131,9 +128,7 @@ class WalletPasswordFragment : BaseFragment(R.layout.fragment_wallet_password), 
         if (tipBundle.forChange()) {
             binding.tipTv.text = getString(R.string.wallet_password_set_new_pin_desc)
         } else {
-            val url = Constants.HelpLink.TIP
-            val desc = requireContext().getString(R.string.wallet_password_set_pin_desc)
-            binding.tipTv.highlightStarTag(desc, arrayOf(url))
+            binding.tipTv.text = getString(R.string.tip_create_pin_title)
         }
     }
 

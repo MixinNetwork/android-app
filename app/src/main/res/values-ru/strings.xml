@@ -1001,7 +1001,7 @@
     <string name="wallet_password_change_tip">Пожалуйста, введите 6-значный PIN-код для подтверждения.</string>
     <string name="wallet_password_not_equal">PIN-код не повторяется дважды, попробуйте еще раз.</string>
     <string name="wallet_password_set_new_pin_desc">Установите новый 6-значный PIN-код.</string>
-    <string name="wallet_password_set_pin_desc">Установите 6-значный PIN-код, чтобы создать свой первый цифровой кошелек. Прочтите документ, чтобы **узнать больше**.</string>
+    <string name="tip_create_pin_title">Установите 6-значный PIN-код, чтобы создать свой первый цифровой кошелек</string>
     <string name="wallet_password_unsafe">PIN-код слишком прост и ненадежен.</string>
     <string name="wallet_pin_modify_biometrics">Введите PIN-код, чтобы изменить оплату с интервалом PIN-кода.</string>
     <string name="wallet_pin_open_biometrics">Пожалуйста, введите PIN-код, чтобы открыть биометрию</string>

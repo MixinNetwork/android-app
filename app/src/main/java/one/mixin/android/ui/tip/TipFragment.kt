@@ -38,6 +38,7 @@ import one.mixin.android.util.BiometricUtil
 import one.mixin.android.util.viewBinding
 import timber.log.Timber
 import javax.inject.Inject
+import kotlin.math.ceil
 
 @AndroidEntryPoint
 class TipFragment : BaseFragment(R.layout.fragment_tip) {
@@ -76,7 +77,7 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
             when (tipBundle.tipType) {
                 TipType.Create -> titleTv.setText(R.string.Create_PIN)
                 TipType.Change -> titleTv.setText(R.string.Change_PIN)
-                TipType.Upgrade -> titleTv.setText(R.string.Upgrade_PIN)
+                TipType.Upgrade -> titleTv.setText(R.string.Upgrade_TIP)
             }
         }
 
@@ -99,11 +100,7 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
             when (tipStep) {
                 is TryConnecting -> {
                     closeIv.isVisible = true
-                    if (forRecover) {
-                        descTv.text = terminatedTitle()
-                    } else {
-                        descTv.highlightStarTag(getString(R.string.TIP_introduction), arrayOf(Constants.HelpLink.TIP))
-                    }
+                    setTitle(forRecover)
                     tipsTv.isVisible = true
                     bottomVa.displayedChild = 0
                     innerVa.displayedChild = 1
@@ -112,11 +109,7 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
                 }
                 is RetryConnect -> {
                     closeIv.isVisible = true
-                    if (forRecover) {
-                        descTv.text = terminatedTitle()
-                    } else {
-                        descTv.highlightStarTag(getString(R.string.TIP_introduction), arrayOf(Constants.HelpLink.TIP))
-                    }
+                    setTitle(forRecover)
                     tipsTv.isVisible = true
                     bottomVa.displayedChild = 0
                     innerVa.displayedChild = 0
@@ -127,11 +120,7 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
                 }
                 is ReadyStart -> {
                     closeIv.isVisible = true
-                    if (forRecover) {
-                        descTv.text = terminatedTitle()
-                    } else {
-                        descTv.highlightStarTag(getString(R.string.TIP_introduction), arrayOf(Constants.HelpLink.TIP))
-                    }
+                    setTitle(forRecover)
                     tipsTv.isVisible = true
                     bottomVa.displayedChild = 0
                     innerVa.displayedChild = 0
@@ -160,11 +149,7 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
                 }
                 is RetryProcess -> {
                     closeIv.isVisible = false
-                    if (forRecover) {
-                        descTv.text = terminatedTitle()
-                    } else {
-                        descTv.highlightStarTag(getString(R.string.TIP_introduction), arrayOf(Constants.HelpLink.TIP))
-                    }
+                    setTitle(forRecover)
                     tipsTv.isVisible = true
                     bottomVa.displayedChild = 0
                     innerVa.displayedChild = 0
@@ -197,11 +182,12 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
                             bottomVa.displayedChild = 1
                             pb.max = tipStep.total
                             pb.progress = tipStep.step
-                            bottomHintTv.text = getString(R.string.Exchanging_data, tipStep.step, tipStep.total)
+                            val percent = ceil((tipStep.step / tipStep.total.toDouble()) * 100).toInt()
+                            bottomHintTv.text = getString(R.string.Exchanging_data, percent.toString())
                         }
                         is Processing.Updating -> {
                             bottomVa.displayedChild = 2
-                            bottomHintTv.text = getString(R.string.Upgrading)
+                            bottomHintTv.text = getString(R.string.Generating_keys)
                         }
                     }
                 }
@@ -370,10 +356,10 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
             BiometricUtil.savePin(requireContext(), pin, this)
         }
 
-        if (tipBundle.forChange()) {
-            toast(R.string.Change_PIN_successfully)
-        } else {
-            toast(R.string.Set_PIN_successfully)
+        when (tipBundle.tipType) {
+            TipType.Change -> toast(R.string.Change_PIN_successfully)
+            TipType.Create -> toast(R.string.Set_PIN_successfully)
+            TipType.Upgrade -> toast(R.string.Upgrade_TIP_successfully)
         }
 
         // TODO go somewhere after set PIN
@@ -394,13 +380,25 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
         }.showNow(parentFragmentManager, PinInputBottomSheetDialogFragment.TAG)
     }
 
-    private fun terminatedTitle(): String = getString(
-        when (tipBundle.tipType) {
-            TipType.Create -> R.string.Creating_wallet_terminated_unexpectedly
-            TipType.Upgrade -> R.string.Upgrading_TIP_terminated_unexpectedly
-            TipType.Change -> R.string.Changing_PIN_terminated_unexpectedly
+    private fun setTitle(forRecover: Boolean) {
+        binding.apply {
+            if (forRecover) {
+                descTv.text = getString(
+                    when (tipBundle.tipType) {
+                        TipType.Create -> R.string.Creating_wallet_terminated_unexpectedly
+                        TipType.Upgrade -> R.string.Upgrading_TIP_terminated_unexpectedly
+                        TipType.Change -> R.string.Changing_PIN_terminated_unexpectedly
+                    }
+                )
+            } else {
+                if (tipBundle.forCreate()) {
+                    descTv.highlightStarTag(getString(R.string.TIP_creation_introduction), arrayOf(Constants.HelpLink.TIP))
+                } else {
+                    descTv.highlightStarTag(getString(R.string.TIP_introduction), arrayOf(Constants.HelpLink.TIP))
+                }
+            }
         }
-    )
+    }
 
     private val tipObserver = object : Tip.Observer {
         override fun onSyncing(step: Int, total: Int) {

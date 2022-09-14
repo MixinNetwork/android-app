@@ -977,7 +977,7 @@
     <string name="wallet_password_change_tip">请输入6位 PIN 来验证</string>
     <string name="wallet_password_not_equal">PIN 不一致, 请重新输入</string>
     <string name="wallet_password_set_new_pin_desc">设置新的 6 位数字 PIN</string>
-    <string name="wallet_password_set_pin_desc">设置 6 位数字 PIN 创建你的第一个数字钱包，阅读文档以**了解更多**。</string>
+    <string name="tip_create_pin_title">设置 6 位数字 PIN 创建你的第一个数字钱包</string>
     <string name="wallet_password_unsafe">PIN 过于简单不安全</string>
     <string name="wallet_pin_modify_biometrics">请输入 PIN 来修改支付 PIN 使用间隔</string>
     <string name="wallet_pin_open_biometrics">请输入 PIN 来启用生物识别支付</string>
@@ -1032,8 +1032,10 @@
     <string name="your_pin_has_been_created">PIN 已创建</string>
 
     <string name="Upgrade">升级</string>
-    <string name="Create_PIN">创建 PIN</string>
-    <string name="Upgrade_PIN">升级 PIN</string>
+    <string name="Create_PIN">创建钱包</string>
+    <string name="Upgrade_TIP">升级 TIP</string>
+    <string name="Upgrade_TIP_successfully">TIP 升级成功</string>
+    <string name="Generating_keys">正在创建密钥…</string>
     <string name="Start">开始</string>
     <string name="Enter_your_old_PIN">输入你的旧 PIN</string>
     <string name="Enter_your_new_PIN">输入你的新 PIN</string>
@@ -1043,6 +1045,7 @@
     <string name="PIN_not_same_as_last_time">PIN 跟上次意外退出时设置的不一致</string>
     <string name="Set_or_update_PIN_failed">设置或更新 PIN 失败</string>
     <string name="TIP_introduction">6 位数字 PIN 基于去中心化密钥派生协议 Throttled Identity Protocol，阅读文档以**了解更多**。</string>
+    <string name="TIP_creation_introduction">设置 6 位数字 PIN 创建你的第一个加密货币钱包，PIN 基于去中心化密钥派生协议 Throttled Identity Protocol，阅读文档以**了解更多**。</string>
     <string name="Please_use_when_network_is_connected">请在网络流畅的环境下进行此操作</string>
     <string name="Please_keep_app_in_foreground">请保持应用在前台，设置过程中不要强制关闭应用</string>
     <string name="Process_can_not_be_stop">流程一旦开始无法取消，请牢记 6 位数字 PIN，意外中止流程需要再次输入</string>
@@ -1051,7 +1054,7 @@
     <string name="Connect_to_TIP_network_failed">连接 TIP 网络失败，请尝试切换4G、Wi-Fi 或 VPN 后重试</string>
     <string name="Upgrade_need_verify_your_PIN">升级需要验证你的 PIN</string>
     <string name="Continue_need_verify_your_PIN">继续需要验证你的旧 PIN 以及新 PIN</string>
-    <string name="Exchanging_data">正在同步密钥分片，进度（%1$d/%2$d）…</string>
+    <string name="Exchanging_data">正在同步密钥分片，进度 %1$s%%…</string>
     <string name="Creating_wallet_terminated_unexpectedly">创建钱包意外中止，点继续完成钱包创建</string>
     <string name="Upgrading_TIP_terminated_unexpectedly">升级 TIP 意外中止，点继续完成 TIP 升级</string>
     <string name="Changing_PIN_terminated_unexpectedly">更新 PIN 意外中止，点继续完成 PIN 修改</string>
