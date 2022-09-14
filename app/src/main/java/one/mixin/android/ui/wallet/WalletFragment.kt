@@ -21,13 +21,10 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants
 import one.mixin.android.R
-import one.mixin.android.crypto.PrivacyPreference.getPrefPinInterval
-import one.mixin.android.crypto.PrivacyPreference.putPrefPinInterval
 import one.mixin.android.databinding.FragmentWalletBinding
 import one.mixin.android.databinding.ViewWalletBottomBinding
 import one.mixin.android.databinding.ViewWalletFragmentHeaderBinding
 import one.mixin.android.extension.config
-import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.mainThread
@@ -36,7 +33,6 @@ import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.numberFormat8
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshAssetsJob
-import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.recyclerview.HeaderAdapter
 import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
@@ -288,18 +284,19 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
     }
 
     private fun checkPin() {
-        val cur = System.currentTimeMillis()
-        val last = defaultSharedPreferences.getLong(Constants.Account.PREF_PIN_CHECK, 0)
-        var interval = getPrefPinInterval(requireContext(), 0)
-        val account = Session.getAccount()
-        if (account != null && account.hasPin && last == 0L) {
-            interval = Constants.INTERVAL_24_HOURS
-            putPrefPinInterval(requireContext(), Constants.INTERVAL_24_HOURS)
-        }
-        if (cur - last > interval) {
-            val pinCheckDialog = PinCheckDialogFragment.newInstance()
-            pinCheckDialog.show(parentFragmentManager, PinCheckDialogFragment.TAG)
-        }
+        // val cur = System.currentTimeMillis()
+        // val last = defaultSharedPreferences.getLong(Constants.Account.PREF_PIN_CHECK, 0)
+        // var interval = getPrefPinInterval(requireContext(), 0)
+        // val account = Session.getAccount()
+        // if (account != null && account.hasPin && last == 0L) {
+        //     interval = Constants.INTERVAL_24_HOURS
+        //     putPrefPinInterval(requireContext(), Constants.INTERVAL_24_HOURS)
+        // }
+        // if (cur - last > interval) {
+        // Todo delete: the test environment checks PIN every time
+        val pinCheckDialog = PinCheckDialogFragment.newInstance()
+        pinCheckDialog.show(parentFragmentManager, PinCheckDialogFragment.TAG)
+        // }
     }
 
     private fun addItem(p: PercentView.PercentItem, index: Int) {
