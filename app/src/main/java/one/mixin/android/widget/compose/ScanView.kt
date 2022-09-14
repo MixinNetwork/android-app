@@ -11,6 +11,8 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
@@ -25,6 +27,7 @@ import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import one.mixin.android.R
+import timber.log.Timber
 
 @Composable
 fun ScanView() {
@@ -45,6 +48,8 @@ fun ScanView() {
 
     val gridVector = ImageVector.vectorResource(id = R.drawable.scan_grid)
     val gridPainter = rememberVectorPainter(image = gridVector)
+    val lastDrawTime = remember { mutableStateOf(System.currentTimeMillis()) }
+    val count = remember { mutableStateOf(0) }
     Canvas(
         modifier = Modifier
             .width(236.dp)
@@ -65,6 +70,13 @@ fun ScanView() {
             endY = startY + brushHeight,
             tileMode = TileMode.Decal
         )
+        if (System.currentTimeMillis() >= lastDrawTime.value + 1000L) {
+            Timber.e("Frame rate:${count.value}")
+            count.value = 0
+            lastDrawTime.value = System.currentTimeMillis()
+        } else {
+            count.value = count.value + 1
+        }
 
         drawRect(
             brush = brush,

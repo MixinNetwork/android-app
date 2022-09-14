@@ -1,5 +1,6 @@
 package one.mixin.android.ui.home
 
+import ScanView
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.ActivityManager
@@ -12,6 +13,7 @@ import android.os.Build
 import android.os.Bundle
 import android.os.PowerManager
 import android.view.KeyEvent
+import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.core.content.getSystemService
 import androidx.core.view.isVisible
 import androidx.fragment.app.DialogFragment
@@ -746,6 +748,12 @@ class MainActivity : BlazeBaseActivity() {
         }
         supportFragmentManager.beginTransaction().add(R.id.container_circle, circlesFragment, CirclesFragment.TAG).commit()
         observeOtherCircleUnread(defaultSharedPreferences.getString(CIRCLE_ID, null))
+        binding.composeView.apply {
+            setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
+            setContent {
+                ScanView()
+            }
+        }
     }
 
     fun openSearch() {

@@ -233,7 +233,7 @@ abstract class BaseCameraxFragment : VisionFragment() {
                         cameraSelector!!,
                         *useCases.toTypedArray()
                     )
-                    preview?.setSurfaceProvider(viewFinder.surfaceProvider)
+                    preview?.setSurfaceProvider(backgroundExecutor, viewFinder.surfaceProvider)
                 } catch (e: Exception) {
                     reportException("$CRASHLYTICS_CAMERAX-camera bindToLifecycle failure", e)
                     Timber.w(e)

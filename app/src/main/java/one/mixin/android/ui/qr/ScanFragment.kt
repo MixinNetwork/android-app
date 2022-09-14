@@ -1,5 +1,6 @@
 package one.mixin.android.ui.qr
 
+import ScanView
 import android.annotation.SuppressLint
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -9,6 +10,7 @@ import androidx.camera.core.TorchState
 import androidx.camera.core.UseCase
 import androidx.camera.core.impl.utils.futures.FutureCallback
 import androidx.camera.core.impl.utils.futures.Futures
+import androidx.compose.ui.platform.ViewCompositionStrategy
 import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentScanBinding
@@ -40,12 +42,21 @@ class ScanFragment : BaseCameraxFragment() {
         fromShortcut = requireArguments().getBoolean(ARGS_SHORTCUT)
     }
 
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        binding.composeView.apply {
+            setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
+            setContent {
+                ScanView()
+            }
+        }
+    }
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? =
-        layoutInflater.inflate(R.layout.fragment_scan, container, false)
+    ): View? = layoutInflater.inflate(R.layout.fragment_scan, container, false)
 
     private val binding by viewBinding(FragmentScanBinding::bind)
 

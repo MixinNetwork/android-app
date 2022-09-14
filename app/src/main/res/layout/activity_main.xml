@@ -30,5 +30,16 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 
+    <one.mixin.android.widget.ScanView
+        android:layout_gravity="center_horizontal"
+        android:layout_width="236dp"
+        android:layout_height="236dp" />
+
+    <androidx.compose.ui.platform.ComposeView
+        android:id="@+id/compose_view"
+        android:layout_gravity="center"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
+
 </FrameLayout>
 

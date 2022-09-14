@@ -23,6 +23,7 @@ import androidx.core.content.ContextCompat
 import androidx.core.view.doOnPreDraw
 import one.mixin.android.R
 import one.mixin.android.extension.dp
+import timber.log.Timber
 
 class ScanView(context: Context, attributeSet: AttributeSet) : View(context, attributeSet) {
 
@@ -94,9 +95,19 @@ class ScanView(context: Context, attributeSet: AttributeSet) : View(context, att
         path.close()
     }
 
+    private var count = 0
+    private var lastDrawTime = System.currentTimeMillis()
+
     @SuppressLint("DrawAllocation")
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
+        if (System.currentTimeMillis() >= lastDrawTime + 1000L) {
+            Timber.e("Frame rate:${count}")
+            count = 0
+            lastDrawTime = System.currentTimeMillis()
+        } else {
+            count++
+        }
         val save = canvas.save()
         canvas.clipPath(path)
         paint.shader = null
