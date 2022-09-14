@@ -10,8 +10,6 @@ import one.mixin.android.tip.exception.NotAllSignerSuccessException
 import one.mixin.android.tip.exception.NotEnoughPartialsException
 import one.mixin.android.tip.exception.PinIncorrectException
 import one.mixin.android.tip.exception.TipNetworkException
-import one.mixin.android.util.reportException
-import timber.log.Timber
 
 suspend fun <T> tipNetwork(network: suspend () -> MixinResponse<T>): Result<T> {
     return withContext(Dispatchers.IO) {
@@ -52,8 +50,3 @@ fun Throwable.getTipExceptionMsg(context: Context): String =
         is DifferentIdentityException -> context.getString(R.string.PIN_not_same_as_last_time)
         else -> "${context.getString(R.string.Set_or_update_PIN_failed)}\n$localizedMessage"
     }
-
-fun reportIllegal(msg: String) {
-    Timber.w(msg)
-    reportException(IllegalStateException(msg))
-}
