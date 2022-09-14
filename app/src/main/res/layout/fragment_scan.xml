@@ -80,4 +80,11 @@
             android:src="@drawable/ic_scan_flash"
             tools:ignore="ContentDescription"/>
     </RelativeLayout>
+
+    <androidx.compose.ui.platform.ComposeView
+        android:id="@+id/compose_view"
+        android:layout_centerInParent="true"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
+
 </RelativeLayout>
