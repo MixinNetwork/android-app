@@ -31,8 +31,10 @@ import one.mixin.android.extension.toBeByteArray
 import one.mixin.android.job.TipCounterSyncedLiveData
 import one.mixin.android.session.Session
 import one.mixin.android.tip.exception.PinIncorrectException
+import one.mixin.android.tip.exception.TipCounterExceedsNodeCounter
 import one.mixin.android.tip.exception.TipCounterNotSyncedException
 import one.mixin.android.tip.exception.TipException
+import one.mixin.android.tip.exception.TipInvalidCounterGroups
 import one.mixin.android.tip.exception.TipNetworkException
 import one.mixin.android.tip.exception.TipNodeException
 import one.mixin.android.tip.exception.TipNullException
@@ -125,16 +127,14 @@ class Tip @Inject internal constructor(
                 return@runCatching
             }
             if (nodeCounter < tipCounter) {
-                reportIllegal("watch tip node node counter $nodeCounter < tipCounter $tipCounter")
-                return@runCatching
+                throw TipCounterExceedsNodeCounter("watch tip node node counter $nodeCounter < tipCounter $tipCounter")
             }
 
             onNodeCounterGreaterThanServer(nodeCounter)
             return@runCatching
         }
         if (group.size > 2) {
-            reportIllegal("watch tip node meet ${group.size} kinds of counter!")
-            return@runCatching
+            throw TipInvalidCounterGroups()
         }
 
         val maxCounter = group.keys.maxBy { it }
