@@ -85,7 +85,7 @@ class Tip @Inject internal constructor(
             val privTip = try {
                 readTipPriv(context)
             } catch (e: Exception) {
-                Timber.d("read tip priv meet $e")
+                Timber.e("read tip priv meet $e")
                 clearTipPriv(context)
                 null
             }
