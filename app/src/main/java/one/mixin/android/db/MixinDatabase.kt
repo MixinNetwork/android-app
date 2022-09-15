@@ -192,12 +192,14 @@ abstract class MixinDatabase : RoomDatabase() {
                             MIGRATION_43_44, MIGRATION_44_45
                         )
                         .enableMultiInstanceInvalidation()
-                        .setQueryExecutor(Executors.newFixedThreadPool(
-                            max(
-                                2,
-                                min(Runtime.getRuntime().availableProcessors() - 1, 4)
+                        .setQueryExecutor(
+                            Executors.newFixedThreadPool(
+                                max(
+                                    2,
+                                    min(Runtime.getRuntime().availableProcessors() - 1, 4)
+                                )
                             )
-                        ))
+                        )
                         .setTransactionExecutor(SINGLE_DB_EXECUTOR)
                         .addCallback(CALLBACK)
                     if (BuildConfig.DEBUG) {

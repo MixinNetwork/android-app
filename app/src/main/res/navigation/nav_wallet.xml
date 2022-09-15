@@ -29,10 +29,34 @@
             app:popExitAnim="@anim/slide_out_right"/>
 
         <action
+            android:id="@+id/action_wallet_to_deposit_public_key"
+            app:destination="@id/deposit_public_key_fragment"
+            app:enterAnim="@anim/slide_in_right"
+            app:popExitAnim="@anim/slide_out_right"/>
+
+        <action
+            android:id="@+id/action_wallet_to_deposit_account"
+            app:destination="@id/deposit_account_fragment"
+            app:enterAnim="@anim/slide_in_right"
+            app:popExitAnim="@anim/slide_out_right"/>
+
+        <action
             android:id="@+id/action_wallet_to_wallet_search"
             app:destination="@id/wallet_search_fragment"
             app:enterAnim="@anim/fade_in"
             app:popExitAnim="@anim/fade_out"/>
+
+        <action
+            android:id="@+id/action_wallet_to_single_friend_select"
+            app:destination="@id/single_friend_select_fragment"
+            app:enterAnim="@anim/slide_in_right"
+            app:popExitAnim="@anim/slide_out_right"/>
+
+        <action
+            android:id="@+id/action_wallet_to_address_management"
+            app:destination="@id/address_management_fragment"
+            app:enterAnim="@anim/slide_in_right"
+            app:popExitAnim="@anim/slide_out_right"/>
     </fragment>
 
     <fragment

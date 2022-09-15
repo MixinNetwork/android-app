@@ -61,49 +61,13 @@
                 tools:ignore="ContentDescription" />
         </RelativeLayout>
 
-        <LinearLayout
+        <one.mixin.android.widget.SendReceiveView
+            android:id="@+id/send_receive_view"
             android:layout_width="match_parent"
-            android:layout_height="60dp"
-            android:weightSum="2">
-
-            <TextView
-                android:id="@+id/send_tv"
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight="1"
-                android:gravity="center"
-                android:text="@string/Send_transfer"
-                android:textColor="@color/wallet_blue_secondary" />
-
-            <View
-                android:layout_width="1dp"
-                android:layout_height="18dp"
-                android:layout_gravity="center_vertical"
-                android:background="#f3f3f3" />
-
-            <FrameLayout
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight="1">
-
-                <TextView
-                    android:id="@+id/receive_tv"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:gravity="center"
-                    android:text="@string/Receive"
-                    android:textColor="@color/wallet_blue_secondary" />
-
-                <ProgressBar
-                    android:id="@+id/receive_progress"
-                    style="?android:attr/progressBarStyleSmall"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center"
-                    android:theme="@style/AppTheme.BlueProgress"
-                    android:visibility="gone" />
-            </FrameLayout>
-        </LinearLayout>
+            android:layout_height="44dp"
+            android:layout_marginBottom="@dimen/margin16"
+            android:layout_marginStart="@dimen/margin20"
+            android:layout_marginEnd="@dimen/margin20"/>
 
         <View
             android:layout_width="match_parent"
