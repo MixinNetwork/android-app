@@ -1073,7 +1073,7 @@
     <string name="Process_can_not_be_stop">The process cannot be canceled when it begins. Please remember the 6 digit PIN and reenter it if the process is aborted unexpectedly.</string>
     <string name="Trying_connect_tip_network">Connecting the TIP network</string>
     <string name="Trying_connect_tip_node">Trying connect TIP node</string>
-    <string name="Connect_to_TIP_network_failed">If you see "Failed to connect to the TIP network", please try switching to 4G, Wi-Fi, or VPN and attempting again.</string>
+    <string name="Connect_to_TIP_network_failed">Unable to connect to TIP network. Check your connection and try again.</string>
     <string name="Upgrade_need_verify_your_PIN">The upgrade requires verifying your PIN.</string>
     <string name="Continue_need_verify_your_PIN">Continue need to verify your old PIN and new PIN</string>
     <string name="Exchanging_data">Synchronization key shards in progress %1$s%%…</string>
