@@ -95,7 +95,15 @@ class Tip @Inject internal constructor(
             } else {
                 val aesKey = getAesKey(pin)
                 val privTipKey = (aesKey + pin.toByteArray()).sha3Sum256()
-                aesDecrypt(privTipKey, privTip)
+                try {
+                    aesDecrypt(privTipKey, privTip)
+                } catch (e: Exception) {
+                    // AES decrypt failure means the local priv is not match the AES key,
+                    // clearing the local priv and it can be recovered on the next try.
+                    Timber.e("aes decrypt local priv meet $e")
+                    clearTipPriv(context)
+                    throw e
+                }
             }
         }
 
@@ -178,6 +186,11 @@ class Tip @Inject internal constructor(
             return aggSig
         }
 
+        // Clearing local priv before update remote PIN.
+        // If the process crashes after updating PIN and before saving to local,
+        // the local priv does not match the remote, and this cannot be detected by checkCounter.
+        clearTipPriv(context)
+
         replaceOldEncryptedPin(pub, legacyPin)
         encryptAndSaveTipPriv(context, pin, aggSig, aesKey)
 
@@ -197,6 +210,12 @@ class Tip @Inject internal constructor(
         observers.forEach { it.onSyncingComplete() }
 
         val aesKey = generateAesKey(newPin)
+
+        // Clearing local priv before update remote PIN.
+        // If the process crashes after updating PIN and before saving to local,
+        // the local priv does not match the remote, and this cannot be detected by checkCounter.
+        clearTipPriv(context)
+
         replaceEncryptedPin(aggSig)
         encryptAndSaveTipPriv(context, newPin, aggSig, aesKey)
 
