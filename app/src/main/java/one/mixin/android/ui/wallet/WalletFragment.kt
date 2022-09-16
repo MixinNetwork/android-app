@@ -96,13 +96,13 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
 
             _headBinding = ViewWalletFragmentHeaderBinding.bind(layoutInflater.inflate(R.layout.view_wallet_fragment_header, coinsRv, false)).apply {
                 sendReceiveView.send.setOnClickListener {
-                    AssetListBottomSheetDialogFragment.newInstance()
+                    AssetListBottomSheetDialogFragment.newInstance(true)
                         .setCallback {
                             sendBottomSheet.show(it)
                         }.showNow(parentFragmentManager, AssetListBottomSheetDialogFragment.TAG)
                 }
                 sendReceiveView.receive.setOnClickListener {
-                    AssetListBottomSheetDialogFragment.newInstance()
+                    AssetListBottomSheetDialogFragment.newInstance(false)
                         .setCallback { asset ->
                             asset.differentProcess(
                                 {

@@ -1,7 +1,6 @@
 package one.mixin.android.ui.wallet
 
 import android.content.SharedPreferences
-import androidx.collection.ArraySet
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -31,17 +30,13 @@ import one.mixin.android.repository.AssetRepository
 import one.mixin.android.repository.UserRepository
 import one.mixin.android.session.Session
 import one.mixin.android.session.encryptPin
-import one.mixin.android.util.ErrorHandler
 import one.mixin.android.vo.Account
 import one.mixin.android.vo.Asset
 import one.mixin.android.vo.AssetItem
 import one.mixin.android.vo.PendingDeposit
-import one.mixin.android.vo.PriceAndChange
 import one.mixin.android.vo.SnapshotItem
 import one.mixin.android.vo.TopAssetItem
 import one.mixin.android.vo.User
-import one.mixin.android.vo.toAssetItem
-import one.mixin.android.vo.toPriceAndChange
 import one.mixin.android.vo.toSnapshot
 import javax.inject.Inject
 
@@ -185,56 +180,8 @@ internal constructor(
 
     suspend fun queryAsset(query: String): List<AssetItem> =
         withContext(viewModelScope.coroutineContext + Dispatchers.IO) {
-            val response = try {
-                assetRepository.queryAssets(query)
-            } catch (t: Throwable) {
-                ErrorHandler.handleError(t)
-                return@withContext emptyList()
-            }
-            if (response.isSuccess) {
-                val assetList = response.data as List<Asset>
-                val assetItemList = arrayListOf<AssetItem>()
-                assetList.mapTo(assetItemList) { asset ->
-                    var chainIconUrl = assetRepository.getIconUrl(asset.chainId)
-                    if (chainIconUrl == null) {
-                        chainIconUrl = fetchAsset(asset.chainId)
-                    }
-                    asset.toAssetItem(chainIconUrl)
-                }
-                val existsSet = ArraySet<AssetItem>()
-                val needUpdatePrice = arrayListOf<PriceAndChange>()
-                assetList.forEach {
-                    val exists = assetRepository.findAssetItemById(it.assetId)
-                    if (exists != null) {
-                        needUpdatePrice.add(it.toPriceAndChange())
-                        existsSet.add(exists)
-                    }
-                }
-                if (needUpdatePrice.isNotEmpty()) {
-                    assetRepository.suspendUpdatePrices(needUpdatePrice)
-                }
-                return@withContext assetItemList
-            }
-            return@withContext emptyList<AssetItem>()
+            return@withContext assetRepository.queryAsset(query)
         }
-
-    private suspend fun fetchAsset(assetId: String) = withContext(Dispatchers.IO) {
-        val r = try {
-            assetRepository.asset(assetId)
-        } catch (t: Throwable) {
-            ErrorHandler.handleError(t)
-            return@withContext null
-        }
-        if (r.isSuccess) {
-            r.data?.let {
-                assetRepository.insert(it)
-                return@withContext it.iconUrl
-            }
-        } else {
-            ErrorHandler.handleMixinError(r.errorCode, r.errorDescription)
-        }
-        return@withContext null
-    }
 
     fun saveAssets(hotAssetList: List<TopAssetItem>) {
         hotAssetList.forEach {

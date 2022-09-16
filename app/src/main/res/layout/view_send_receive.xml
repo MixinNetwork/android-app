@@ -10,7 +10,7 @@
         android:layout_height="match_parent"
         android:layout_weight="1"
         android:gravity="center"
-        android:foreground="?android:attr/selectableItemBackground"
+        android:foreground="@drawable/mixin_ripple_round_left_12dp"
         android:text="@string/Send_transfer"
         android:textSize="16sp"
         android:textColor="?attr/text_primary" />
@@ -31,7 +31,7 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:gravity="center"
-            android:foreground="?android:attr/selectableItemBackground"
+            android:foreground="@drawable/mixin_ripple_round_right_12dp"
             android:text="@string/Receive"
             android:textSize="16sp"
             android:textColor="?attr/text_primary" />

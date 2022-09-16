@@ -1,6 +1,7 @@
 package one.mixin.android.repository
 
 import android.os.CancellationSignal
+import androidx.collection.ArraySet
 import androidx.paging.DataSource
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -31,6 +32,8 @@ import one.mixin.android.vo.PriceAndChange
 import one.mixin.android.vo.Snapshot
 import one.mixin.android.vo.SnapshotItem
 import one.mixin.android.vo.Trace
+import one.mixin.android.vo.toAssetItem
+import one.mixin.android.vo.toPriceAndChange
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -183,6 +186,58 @@ constructor(
         assetService.pendingDeposits(asset, destination, tag)
 
     suspend fun clearPendingDepositsByAssetId(assetId: String) = snapshotDao.clearPendingDepositsByAssetId(assetId)
+
+    suspend fun queryAsset(query: String): List<AssetItem> {
+        val response = try {
+            queryAssets(query)
+        } catch (t: Throwable) {
+            ErrorHandler.handleError(t)
+            return emptyList()
+        }
+        if (response.isSuccess) {
+            val assetList = response.data as List<Asset>
+            val assetItemList = arrayListOf<AssetItem>()
+            assetList.mapTo(assetItemList) { asset ->
+                var chainIconUrl = getIconUrl(asset.chainId)
+                if (chainIconUrl == null) {
+                    chainIconUrl = fetchAsset(asset.chainId)
+                }
+                asset.toAssetItem(chainIconUrl)
+            }
+            val existsSet = ArraySet<AssetItem>()
+            val needUpdatePrice = arrayListOf<PriceAndChange>()
+            assetList.forEach {
+                val exists = findAssetItemById(it.assetId)
+                if (exists != null) {
+                    needUpdatePrice.add(it.toPriceAndChange())
+                    existsSet.add(exists)
+                }
+            }
+            if (needUpdatePrice.isNotEmpty()) {
+                suspendUpdatePrices(needUpdatePrice)
+            }
+            return assetItemList
+        }
+        return emptyList()
+    }
+
+    private suspend fun fetchAsset(assetId: String) = withContext(Dispatchers.IO) {
+        val r = try {
+            asset(assetId)
+        } catch (t: Throwable) {
+            ErrorHandler.handleError(t)
+            return@withContext null
+        }
+        if (r.isSuccess) {
+            r.data?.let {
+                insert(it)
+                return@withContext it.iconUrl
+            }
+        } else {
+            ErrorHandler.handleMixinError(r.errorCode, r.errorDescription)
+        }
+        return@withContext null
+    }
 
     suspend fun queryAssets(query: String) = assetService.queryAssets(query)
 

@@ -23,7 +23,6 @@ import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentWalletSearchBinding
 import one.mixin.android.extension.defaultSharedPreferences
-import one.mixin.android.extension.equalsIgnoreCase
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.navigate
@@ -34,7 +33,6 @@ import one.mixin.android.ui.wallet.adapter.SearchAdapter
 import one.mixin.android.ui.wallet.adapter.SearchDefaultAdapter
 import one.mixin.android.ui.wallet.adapter.WalletSearchCallback
 import one.mixin.android.vo.AssetItem
-import java.math.BigDecimal
 import java.util.concurrent.TimeUnit
 
 @AndroidEntryPoint
@@ -163,9 +161,9 @@ class WalletSearchFragment : BaseFragment() {
         return withContext(Dispatchers.IO) {
             val assetList = defaultSharedPreferences.getString(Constants.Account.PREF_RECENT_SEARCH_ASSETS, null)?.split("=")
                 ?: return@withContext null
-            if (assetList.isNullOrEmpty()) return@withContext null
+            if (assetList.isEmpty()) return@withContext null
             val result = viewModel.findAssetsByIds(assetList.take(2))
-            if (result.isNullOrEmpty()) return@withContext null
+            if (result.isEmpty()) return@withContext null
             result.sortedBy {
                 assetList.indexOf(it.assetId)
             }
@@ -194,8 +192,6 @@ class WalletSearchFragment : BaseFragment() {
         }
     }
 
-    private val defaultIconUrl = "https://images.mixin.one/yH_I5b0GiV2zDmvrXRyr3bK5xusjfy5q7FX3lw3mM2Ryx4Dfuj6Xcw8SHNRnDKm7ZVE3_LvpKlLdcLrlFQUBhds=s128"
-
     private fun search(query: String) {
         currentSearch?.cancel()
         currentSearch = lifecycleScope.launch {
@@ -208,52 +204,12 @@ class WalletSearchFragment : BaseFragment() {
             searchAdapter.submitList(localAssets)
 
             val remoteAssets = viewModel.queryAsset(query)
-            val result = localAssets?.plus(
-                remoteAssets.filterNot { r ->
-                    localAssets.any { l ->
-                        l.assetId == r.assetId
-                    }
-                }
-            )?.sortedWith(
-                Comparator { o1, o2 ->
-                    if (o1 == null && o2 == null) return@Comparator 0
-                    if (o1 == null) return@Comparator 1
-                    if (o2 == null) return@Comparator -1
-
-                    val equal2Keyword1 = o1.symbol.equalsIgnoreCase(query)
-                    val equal2Keyword2 = o2.symbol.equalsIgnoreCase(query)
-                    if (equal2Keyword1 && !equal2Keyword2) {
-                        return@Comparator -1
-                    } else if (!equal2Keyword1 && equal2Keyword2) {
-                        return@Comparator 1
-                    }
-
-                    val capitalization1 = o1.priceFiat() * BigDecimal(o1.balance)
-                    val capitalization2 = o2.priceFiat() * BigDecimal(o2.balance)
-                    if (capitalization1 != capitalization2) {
-                        if (capitalization2 > capitalization1) {
-                            return@Comparator 1
-                        } else if (capitalization2 < capitalization1) {
-                            return@Comparator -1
-                        }
-                    }
-
-                    val hasIcon1 = o1.iconUrl != defaultIconUrl
-                    val hasIcon2 = o2.iconUrl != defaultIconUrl
-                    if (hasIcon1 && !hasIcon2) {
-                        return@Comparator -1
-                    } else if (!hasIcon1 && hasIcon2) {
-                        return@Comparator 1
-                    }
-
-                    return@Comparator o1.name.compareTo(o2.name)
-                }
-            )
+            val result = sortQueryAsset(query, localAssets, remoteAssets)
 
             searchAdapter.submitList(result)
             binding.pb.isVisible = false
 
-            if (localAssets.isNullOrEmpty() && remoteAssets.isNullOrEmpty()) {
+            if (localAssets.isNullOrEmpty() && remoteAssets.isEmpty()) {
                 binding.rvVa.displayedChild = POS_EMPTY
             }
         }
