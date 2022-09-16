@@ -1,7 +1,8 @@
-package one.mixin.android.util
+package one.mixin.android.tip
 
 import android.security.keystore.KeyGenParameterSpec
 import android.security.keystore.KeyProperties
+import one.mixin.android.util.reportException
 import java.security.KeyStore
 import javax.crypto.Cipher
 import javax.crypto.KeyGenerator

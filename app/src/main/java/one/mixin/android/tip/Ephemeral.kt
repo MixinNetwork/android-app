@@ -12,13 +12,11 @@ import one.mixin.android.extension.base64RawUrlDecode
 import one.mixin.android.extension.decodeBase64
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.putString
+import one.mixin.android.extension.remove
 import one.mixin.android.extension.toHex
 import one.mixin.android.session.Session
 import one.mixin.android.tip.exception.TipException
 import one.mixin.android.tip.exception.TipNullException
-import one.mixin.android.util.deleteKeyByAlias
-import one.mixin.android.util.getDecryptCipher
-import one.mixin.android.util.getEncryptCipher
 import timber.log.Timber
 import javax.inject.Inject
 
@@ -88,8 +86,8 @@ class Ephemeral @Inject internal constructor(private val tipService: TipService)
     }
 
     private fun clearEphemeralSeed(context: Context) {
-        context.defaultSharedPreferences.putString(Constants.Tip.IV_EPHEMERAL_SEED, null)
-        context.defaultSharedPreferences.putString(Constants.Tip.EPHEMERAL_SEED, null)
+        context.defaultSharedPreferences.remove(Constants.Tip.IV_EPHEMERAL_SEED)
+        context.defaultSharedPreferences.remove(Constants.Tip.EPHEMERAL_SEED)
         deleteKeyByAlias(Constants.Tip.ALIAS_EPHEMERAL_SEED)
     }
 }
