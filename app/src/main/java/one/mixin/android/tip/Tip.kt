@@ -25,9 +25,11 @@ import one.mixin.android.extension.base64RawEncode
 import one.mixin.android.extension.base64RawUrlDecode
 import one.mixin.android.extension.decodeBase64
 import one.mixin.android.extension.defaultSharedPreferences
+import one.mixin.android.extension.hexStringToByteArray
 import one.mixin.android.extension.nowInUtcNano
-import one.mixin.android.extension.putString
+import one.mixin.android.extension.remove
 import one.mixin.android.extension.toBeByteArray
+import one.mixin.android.extension.toHex
 import one.mixin.android.job.TipCounterSyncedLiveData
 import one.mixin.android.session.Session
 import one.mixin.android.tip.exception.PinIncorrectException
@@ -343,34 +345,25 @@ class Tip @Inject internal constructor(
     }
 
     private fun readTipPriv(context: Context): ByteArray? {
-        val ciphertext =
-            context.defaultSharedPreferences.getString(Constants.Tip.TIP_PRIV, null) ?: return null
+        val tipPriv = context.defaultSharedPreferences.getString(Constants.Tip.TIP_PRIV, null)?.hexStringToByteArray() ?: return null
 
-        val iv = context.defaultSharedPreferences.getString(Constants.Tip.IV_TIP_PRIV, null)
-        if (iv == null) {
-            deleteKeyByAlias(Constants.Tip.ALIAS_TIP_PRIV)
-            context.defaultSharedPreferences.putString(Constants.Tip.TIP_PRIV, null)
-            return null
-        }
-
-        val cipher = getDecryptCipher(Constants.Tip.ALIAS_TIP_PRIV, iv.base64RawUrlDecode())
-        return cipher.doFinal(ciphertext.base64RawUrlDecode())
+        val iv = tipPriv.slice(0..15).toByteArray()
+        val ciphertext = tipPriv.slice(16 until tipPriv.size).toByteArray()
+        val cipher = getDecryptCipher(Constants.Tip.ALIAS_TIP_PRIV, iv)
+        return cipher.doFinal(ciphertext)
     }
 
     private fun storeTipPriv(context: Context, tipPriv: ByteArray): Boolean {
         val cipher = getEncryptCipher(Constants.Tip.ALIAS_TIP_PRIV)
-        val iv = cipher.iv.base64RawEncode()
-        // Atomic save IV and KEY
+        val iv = cipher.iv
         val edit = context.defaultSharedPreferences.edit()
-        val ciphertext = cipher.doFinal(tipPriv).base64RawEncode()
-        edit.putString(Constants.Tip.IV_TIP_PRIV, iv)
-        edit.putString(Constants.Tip.TIP_PRIV, ciphertext)
+        val ciphertext = cipher.doFinal(tipPriv)
+        edit.putString(Constants.Tip.TIP_PRIV, (iv + ciphertext).toHex())
         return edit.commit()
     }
 
     private fun clearTipPriv(context: Context) {
-        context.defaultSharedPreferences.putString(Constants.Tip.IV_TIP_PRIV, null)
-        context.defaultSharedPreferences.putString(Constants.Tip.TIP_PRIV, null)
+        context.defaultSharedPreferences.remove(Constants.Tip.TIP_PRIV)
         deleteKeyByAlias(Constants.Tip.ALIAS_TIP_PRIV)
     }
 

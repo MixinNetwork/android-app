@@ -11,7 +11,7 @@ import one.mixin.android.extension.base64RawEncode
 import one.mixin.android.extension.base64RawUrlDecode
 import one.mixin.android.extension.decodeBase64
 import one.mixin.android.extension.defaultSharedPreferences
-import one.mixin.android.extension.putString
+import one.mixin.android.extension.hexStringToByteArray
 import one.mixin.android.extension.remove
 import one.mixin.android.extension.toHex
 import one.mixin.android.session.Session
@@ -62,31 +62,24 @@ class Ephemeral @Inject internal constructor(private val tipService: TipService)
     }
 
     private fun readEphemeralSeed(context: Context): ByteArray? {
-        val ciphertext = context.defaultSharedPreferences.getString(Constants.Tip.EPHEMERAL_SEED, null) ?: return null
+        val ephemeralSeed = context.defaultSharedPreferences.getString(Constants.Tip.EPHEMERAL_SEED, null)?.hexStringToByteArray() ?: return null
 
-        val iv = context.defaultSharedPreferences.getString(Constants.Tip.IV_EPHEMERAL_SEED, null)
-        if (iv == null) {
-            deleteKeyByAlias(Constants.Tip.ALIAS_EPHEMERAL_SEED)
-            context.defaultSharedPreferences.putString(Constants.Tip.EPHEMERAL_SEED, null)
-            return null
-        }
-
-        val cipher = getDecryptCipher(Constants.Tip.ALIAS_EPHEMERAL_SEED, iv.base64RawUrlDecode())
-        return cipher.doFinal(ciphertext.base64RawUrlDecode())
+        val iv = ephemeralSeed.slice(0..15).toByteArray()
+        val ciphertext = ephemeralSeed.slice(16 until ephemeralSeed.size).toByteArray()
+        val cipher = getDecryptCipher(Constants.Tip.ALIAS_EPHEMERAL_SEED, iv)
+        return cipher.doFinal(ciphertext)
     }
 
     private fun storeEphemeralSeed(context: Context, seed: ByteArray): Boolean {
         val cipher = getEncryptCipher(Constants.Tip.ALIAS_EPHEMERAL_SEED)
-        val iv = cipher.iv.base64RawEncode()
-        val ciphertext = cipher.doFinal(seed).base64RawEncode()
+        val iv = cipher.iv
+        val ciphertext = cipher.doFinal(seed)
         val edit = context.defaultSharedPreferences.edit()
-        edit.putString(Constants.Tip.IV_EPHEMERAL_SEED, iv)
-        edit.putString(Constants.Tip.EPHEMERAL_SEED, ciphertext)
+        edit.putString(Constants.Tip.EPHEMERAL_SEED, (iv + ciphertext).toHex())
         return edit.commit()
     }
 
     private fun clearEphemeralSeed(context: Context) {
-        context.defaultSharedPreferences.remove(Constants.Tip.IV_EPHEMERAL_SEED)
         context.defaultSharedPreferences.remove(Constants.Tip.EPHEMERAL_SEED)
         deleteKeyByAlias(Constants.Tip.ALIAS_EPHEMERAL_SEED)
     }

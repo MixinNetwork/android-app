@@ -287,7 +287,8 @@ class TipNode @Inject internal constructor(private val tipNodeService: TipNodeSe
 
     data class TipNodeCounter(val counter: Int, val tipSigner: TipSigner)
 
-    val tipConfig: TipConfig = gson.fromJson(TipConstants.tipConfig,
+    val tipConfig: TipConfig = gson.fromJson(
+        TipConstants.tipConfig,
         TipConfig::class.java
     )
     val nodeCount = tipConfig.signers.size
