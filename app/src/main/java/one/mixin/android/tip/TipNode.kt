@@ -63,33 +63,34 @@ class TipNode @Inject internal constructor(private val tipNodeService: TipNodeSe
             assignee = assigneePub + assigneeSig
         }
 
-        Timber.d("tip get node sig failedSigners size ${failedSigners?.size}")
+        Timber.e("tip get node sig failedSigners size ${failedSigners?.size}, assigneeSk != null: ${assigneeSk != null}")
         val data = if (!failedSigners.isNullOrEmpty() && assigneeSk != null) {
             // should sign successful signers before failed signers,
             // prevent signing failed signers with different identities.
             val successfulSigners = tipConfig.signers - failedSigners
             val successfulData = getNodeSigs(assigneeSk, successfulSigners, ephemeral, watcher, null, callback)
             if (successfulData.isEmpty() || successfulData.any { it.counter <= 1 }) {
-                Timber.w("previously successful signers use different identities")
+                Timber.e("previously successful signers use different identities")
                 throw DifferentIdentityException()
             }
 
             val failedData = getNodeSigs(userSk, failedSigners, ephemeral, watcher, assignee, callback)
-            Timber.d("tip successful data size ${successfulData.size}, failed data size ${failedData.size}")
+            Timber.e("tip successful data size ${successfulData.size}, failed data size ${failedData.size}")
             failedData + successfulData
         } else {
             getNodeSigs(userSk, tipConfig.signers, ephemeral, watcher, assignee, callback)
         }
 
         if (!forRecover && data.size < tipConfig.signers.size) {
-            Timber.w("not all signer success ${data.size}")
+            Timber.e("not all signer success ${data.size}")
             throw NotAllSignerSuccessException(data.size)
         }
 
         val (assignor, partials) = parseAssignorAndPartials(data)
+        Timber.e("after parseAssignorAndPartials")
 
         if (partials.size < tipConfig.commitments.size) {
-            Timber.d("not enough partials ${partials.size} ${tipConfig.commitments.size}")
+            Timber.e("not enough partials ${partials.size} ${tipConfig.commitments.size}")
             throw NotEnoughPartialsException(partials.size)
         }
 
@@ -112,7 +113,7 @@ class TipNode @Inject internal constructor(private val tipNodeService: TipNodeSe
                     while (retryCount <= maxRetryCount) {
                         val (counter, code) = watchTipNode(signer, watcher)
                         if (code == 500) {
-                            Timber.d("watch tip node $index meet $code")
+                            Timber.e("watch tip node $index meet $code")
                             return@async
                         }
 
@@ -122,12 +123,12 @@ class TipNode @Inject internal constructor(private val tipNodeService: TipNodeSe
                             val step = completeCount.incrementAndGet()
                             callback?.onNodeComplete(step, total)
 
-                            Timber.d("watch tip node $index success")
+                            Timber.e("watch tip node $index success")
                             return@async
                         }
 
                         retryCount++
-                        Timber.d("watch tip node $index failed, retry $retryCount")
+                        Timber.e("watch tip node $index failed, retry $retryCount")
                     }
                 }
             }.awaitAll()
@@ -150,7 +151,7 @@ class TipNode @Inject internal constructor(private val tipNodeService: TipNodeSe
                     while (retryCount <= maxRetryCount) {
                         val (sign, code) = signTipNode(userSk, signer, ephemeral, watcher, nonce, grace, assignee)
                         if (code == 429 || code == 500) {
-                            Timber.d("fetch tip node $index meet $code")
+                            Timber.e("fetch tip node $index meet $code")
                             return@async
                         }
 
@@ -160,12 +161,12 @@ class TipNode @Inject internal constructor(private val tipNodeService: TipNodeSe
                             val step = completeCount.incrementAndGet()
                             callback?.onNodeComplete(step, total)
 
-                            Timber.d("fetch tip node $index sign success")
+                            Timber.e("fetch tip node $index sign success")
                             return@async
                         }
 
                         retryCount++
-                        Timber.d("fetch tip node $index failed, retry $retryCount")
+                        Timber.e("fetch tip node $index failed, retry $retryCount")
                     }
                 }
             }.awaitAll()
@@ -198,7 +199,7 @@ class TipNode @Inject internal constructor(private val tipNodeService: TipNodeSe
             try {
                 signerPk.verify(msg, tipSignResponse.signature.hexStringToByteArray())
             } catch (e: Exception) {
-                Timber.d("verify node response meet ${e.localizedMessage}")
+                Timber.e("verify node response meet ${e.localizedMessage}")
                 return Pair(null, -1)
             }
 

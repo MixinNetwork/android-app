@@ -59,20 +59,28 @@ class Tip @Inject internal constructor(
     suspend fun createTipPriv(context: Context, pin: String, deviceId: String, failedSigners: List<TipSigner>? = null, legacyPin: String? = null, forRecover: Boolean = false): Result<ByteArray> =
         kotlin.runCatching {
             val ephemeralSeed = ephemeral.getEphemeralSeed(context, deviceId)
+            Timber.e("createTipPriv after getEphemeralSeed")
             val identityPair = identity.getIdentityPrivAndWatcher(pin)
+            Timber.e("createTipPriv after getIdentityPrivAndWatcher")
             createPriv(context, identityPair.priKey, ephemeralSeed, identityPair.watcher, pin, failedSigners, legacyPin, forRecover)
         }
 
     suspend fun updateTipPriv(context: Context, deviceId: String, newPin: String, oldPin: String?, failedSigners: List<TipSigner>? = null): Result<ByteArray> =
         kotlin.runCatching {
             val ephemeralSeed = ephemeral.getEphemeralSeed(context, deviceId)
+            Timber.e("updateTipPriv after getEphemeralSeed")
 
             if (oldPin.isNullOrBlank()) { // node success
+                Timber.e("updateTipPriv oldPin isNullOrBlank")
                 val identityPair = identity.getIdentityPrivAndWatcher(newPin)
+                Timber.e("updateTipPriv after getIdentityPrivAndWatcher")
                 updatePriv(context, identityPair.priKey, ephemeralSeed, identityPair.watcher, newPin, null)
             } else {
+                Timber.e("updateTipPriv oldPin is not null")
                 val identityPair = identity.getIdentityPrivAndWatcher(oldPin)
+                Timber.e("updateTipPriv after getIdentityPrivAndWatcher")
                 val assigneePriv = identity.getIdentityPrivAndWatcher(newPin).priKey
+                Timber.e("updateTipPriv after get assignee priv")
                 updatePriv(context, identityPair.priKey, ephemeralSeed, identityPair.watcher, newPin, assigneePriv, failedSigners)
             }
         }
@@ -88,11 +96,13 @@ class Tip @Inject internal constructor(
                 clearTipPriv(context)
                 null
             }
+            Timber.e("getOrRecoverTipPriv after readTipPriv privTip == null is ${privTip == null}")
             if (privTip == null) {
                 val deviceId = context.defaultSharedPreferences.getString(Constants.DEVICE_ID, null) ?: throw TipNullException("Device id is null")
                 createTipPriv(context, pin, deviceId, forRecover = true).getOrThrow()
             } else {
                 val aesKey = getAesKey(pin)
+                Timber.e("getOrRecoverTipPriv after getAesKey")
                 val privTipKey = (aesKey + pin.toByteArray()).sha3Sum256()
                 try {
                     aesDecrypt(privTipKey, privTip)
@@ -113,12 +123,12 @@ class Tip @Inject internal constructor(
     ) = kotlin.runCatching {
         val counters = watchTipNodeCounters()
         if (counters.isEmpty()) {
-            Timber.w("watch tip node counters but counters is empty")
+            Timber.e("watch tip node counters but counters is empty")
             throw TipNullException("watch tip node counters but counters is empty")
         }
 
         if (counters.size != tipNodeCount()) {
-            Timber.w("watch tip node result size is ${counters.size} is not equals to node count ${tipNodeCount()}")
+            Timber.e("watch tip node result size is ${counters.size} is not equals to node count ${tipNodeCount()}")
             // TODO should we consider this case as an incomplete state?
         }
         val group = counters.groupBy { it.counter }
@@ -136,6 +146,7 @@ class Tip @Inject internal constructor(
             return@runCatching
         }
         if (group.size > 2) {
+            Timber.e("watch tip node group size is ${group.size} > 2")
             throw TipInvalidCounterGroups()
         }
 
@@ -169,6 +180,7 @@ class Tip @Inject internal constructor(
         ).sha3Sum256() // use sha3-256(recover-signature) as priv
 
         observers.forEach { it.onSyncingComplete() }
+        Timber.e("createPriv after sign")
 
         val privateSpec = EdDSAPrivateKeySpec(aggSig.copyOf(), ed25519)
         val pub = EdDSAPublicKey(EdDSAPublicKeySpec(privateSpec.a, ed25519))
@@ -178,8 +190,10 @@ class Tip @Inject internal constructor(
             Timber.e("local pub not equals to new generated, PIN incorrect")
             throw PinIncorrectException()
         }
+        Timber.e("createPriv after compare local pub and remote pub")
 
         val aesKey = generateAesKey(pin)
+        Timber.e("createPriv after generateAesKey, forRecover: $forRecover")
         if (forRecover) {
             encryptAndSaveTipPriv(context, pin, aggSig, aesKey)
             return aggSig
@@ -189,9 +203,12 @@ class Tip @Inject internal constructor(
         // If the process crashes after updating PIN and before saving to local,
         // the local priv does not match the remote, and this cannot be detected by checkCounter.
         clearTipPriv(context)
+        Timber.e("createPriv after clear tip priv")
 
         replaceOldEncryptedPin(pub, legacyPin)
+        Timber.e("createPriv after replaceOldEncryptedPin")
         encryptAndSaveTipPriv(context, pin, aggSig, aesKey)
+        Timber.e("createPriv after encryptAndSaveTipPriv")
 
         return aggSig
     }
@@ -207,6 +224,7 @@ class Tip @Inject internal constructor(
             .sha3Sum256() // use sha3-256(recover-signature) as priv
 
         observers.forEach { it.onSyncingComplete() }
+        Timber.e("updatePriv after sign")
 
         val aesKey = generateAesKey(newPin)
 
@@ -214,9 +232,12 @@ class Tip @Inject internal constructor(
         // If the process crashes after updating PIN and before saving to local,
         // the local priv does not match the remote, and this cannot be detected by checkCounter.
         clearTipPriv(context)
+        Timber.e("updatePriv after clear tip priv")
 
         replaceEncryptedPin(aggSig)
+        Timber.e("updatePriv replaceEncryptedPin")
         encryptAndSaveTipPriv(context, newPin, aggSig, aesKey)
+        Timber.e("updatePriv encryptAndSaveTipPriv")
 
         return aggSig
     }
@@ -324,6 +345,7 @@ class Tip @Inject internal constructor(
 
     @Throws(TipCounterNotSyncedException::class)
     private suspend fun assertTipCounterSynced(tipCounterSynced: TipCounterSyncedLiveData) {
+        Timber.e("assertTipCounterSynced tipCounterSynced.synced: ${tipCounterSynced.synced}")
         if (!tipCounterSynced.synced) {
             checkCounter(
                 Session.getTipCounter(),
@@ -337,7 +359,7 @@ class Tip @Inject internal constructor(
                 }
             ).onSuccess { tipCounterSynced.synced = true }
                 .onFailure {
-                    Timber.d("checkAndPublishTipCounterSynced meet ${it.localizedMessage}")
+                    Timber.e("checkAndPublishTipCounterSynced meet ${it.localizedMessage}")
                     ErrorHandler.handleError(it)
                     throw TipCounterNotSyncedException()
                 }
