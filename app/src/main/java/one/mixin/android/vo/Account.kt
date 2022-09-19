@@ -34,6 +34,10 @@ open class Account(
     val receiveMessageSource: String,
     @SerializedName("has_pin")
     val hasPin: Boolean,
+    @SerializedName("tip_key_base64")
+    val tipKeyBase64: String,
+    @SerializedName("tip_counter")
+    val tipCounter: Int,
     @SerializedName("accept_conversation_source")
     val acceptConversationSource: String,
     @SerializedName("accept_search_source")

@@ -8,6 +8,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import dagger.hilt.android.AndroidEntryPoint
+import one.mixin.android.Constants.ARGS_TITLE
 import one.mixin.android.databinding.FragmentUserListBottomSheetBinding
 import one.mixin.android.databinding.ItemUserListBinding
 import one.mixin.android.extension.withArgs
@@ -20,7 +21,6 @@ class UserListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     companion object {
         const val TAG = "UserListBottomSheetDialogFragment"
         const val ARGS_USER_LIST = "args_user_list"
-        const val ARGS_TITLE = "args_title"
 
         fun newInstance(
             userList: ArrayList<User>,

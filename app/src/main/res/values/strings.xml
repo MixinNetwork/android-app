@@ -997,7 +997,7 @@
     <string name="wallet_password_change_tip">Please enter the 6 digit PIN to verify.</string>
     <string name="wallet_password_not_equal">The PIN is not the same twice, please try again.</string>
     <string name="wallet_password_set_new_pin_desc">Please set a new 6 digit PIN.</string>
-    <string name="wallet_password_set_pin_desc">Set a 6 digit PIN to create your first digital wallet, read the document to **learn more**.</string>
+    <string name="tip_create_pin_title">Set a 6 digit PIN to create your first digital wallet</string>
     <string name="wallet_password_unsafe">The PIN is too simple and insecure.</string>
     <string name="wallet_pin_modify_biometrics">Please enter PIN to Modify Pay with PIN interval</string>
     <string name="wallet_pin_open_biometrics">Please enter PIN to open Biometrics</string>
@@ -1052,4 +1052,34 @@
     <string name="You_deleted_this_message">You deleted this message</string>
     <string name="You_have_left_the_group">You have left the group</string>
     <string name="your_pin_has_been_created">Your PIN has been created</string>
+
+    <string name="Upgrade">Upgrade</string>
+    <string name="Create_PIN">Create PIN</string>
+    <string name="Upgrade_TIP">Upgrade TIP</string>
+    <string name="Upgrade_TIP_successfully">Upgrade TIP successfully</string>
+    <string name="Generating_keys">Generating keys…</string>
+    <string name="Start">Start</string>
+    <string name="Enter_your_old_PIN">Enter your old PIN</string>
+    <string name="Enter_your_new_PIN">Enter your new PIN</string>
+    <string name="Not_enough_partials">Not enough nodes return key shard</string>
+    <string name="Not_all_signer_success">Not all node success</string>
+    <string name="All_signer_failure">All node failure, perhaps PIN does not match what was set when it was last terminated unexpectedly</string>
+    <string name="PIN_not_same_as_last_time">PIN does not match what was set when it was last terminated unexpectedly</string>
+    <string name="Set_or_update_PIN_failed">Set or update PIN failed</string>
+    <string name="TIP_introduction">The 6 digit PIN is based on the Throttled Identity Protocol, which is the decentralized key derivation protocol, read the document to **learn more**.</string>
+    <string name="TIP_creation_introduction">Set a 6 digit Wallet PIN to create your first digital wallet, the PIN is based on the Throttled Identity Protocol, which is the decentralized key derivation protocol, read the document to **learn more**.</string>
+    <string name="Please_use_when_network_is_connected">Please complete the operation under a stable network environment.</string>
+    <string name="Please_keep_app_in_foreground">Please keep the app in the foreground and do not force quit it during the setup process.</string>
+    <string name="Process_can_not_be_stop">The process cannot be canceled when it begins. Please remember the 6 digit PIN and reenter it if the process is aborted unexpectedly.</string>
+    <string name="Trying_connect_tip_network">Connecting the TIP network</string>
+    <string name="Trying_connect_tip_node">Trying connect TIP node</string>
+    <string name="Connect_to_TIP_network_failed">Unable to connect to TIP network. Check your connection and try again.</string>
+    <string name="Upgrade_need_verify_your_PIN">The upgrade requires verifying your PIN.</string>
+    <string name="Continue_need_verify_your_PIN">Continue need to verify your old PIN and new PIN</string>
+    <string name="Exchanging_data">Synchronization key shards in progress %1$s%%…</string>
+    <string name="Creating_wallet_terminated_unexpectedly">Creating wallet terminated unexpectedly, click \"Continue\" to complete the creation</string>
+    <string name="Upgrading_TIP_terminated_unexpectedly">Upgrading TIP terminated unexpectedly, click \"Continue\" to complete the upgrade</string>
+    <string name="Changing_PIN_terminated_unexpectedly">Changing PIN terminated unexpectedly, click \"Continue\" to complete the change</string>
+    <string name="Syncing_and_verifying_TIP">Please keep the app in the foreground while verifying and synchronizing shard keys to the TIP network; do not force quit the app during the setup process.
+</string>
 </resources>

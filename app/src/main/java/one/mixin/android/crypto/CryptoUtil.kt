@@ -2,12 +2,20 @@
 package one.mixin.android.crypto
 
 import android.os.Build
+import com.lambdapioneer.argon2kt.Argon2Kt
+import com.lambdapioneer.argon2kt.Argon2KtResult
+import com.lambdapioneer.argon2kt.Argon2Mode
+import net.i2p.crypto.eddsa.EdDSAEngine
+import net.i2p.crypto.eddsa.EdDSAPrivateKey
 import net.i2p.crypto.eddsa.EdDSAPublicKey
 import net.i2p.crypto.eddsa.math.FieldElement
 import net.i2p.crypto.eddsa.spec.EdDSANamedCurveTable
+import net.i2p.crypto.eddsa.spec.EdDSAPrivateKeySpec
 import net.i2p.crypto.eddsa.spec.EdDSAPublicKeySpec
 import okhttp3.tls.HeldCertificate
 import one.mixin.android.extension.base64Encode
+import org.komputing.khash.keccak.KeccakParameter
+import org.komputing.khash.keccak.extensions.digestKeccak
 import org.whispersystems.curve25519.Curve25519
 import org.whispersystems.curve25519.Curve25519.BEST
 import java.security.KeyFactory
@@ -43,6 +51,19 @@ fun calculateAgreement(publicKey: ByteArray, privateKey: ByteArray): ByteArray {
     return Curve25519.getInstance(BEST).calculateAgreement(publicKey, privateKey)
 }
 
+fun initFromSeedAndSign(seed: ByteArray, signTarget: ByteArray): ByteArray {
+    val privateSpec = EdDSAPrivateKeySpec(seed, ed25519)
+    return signWithSk(privateSpec, signTarget)
+}
+
+private fun signWithSk(privateSpec: EdDSAPrivateKeySpec, signTarget: ByteArray): ByteArray {
+    val privateKey = EdDSAPrivateKey(privateSpec)
+    val engine = EdDSAEngine(MessageDigest.getInstance(ed25519.hashAlgorithm))
+    engine.initSign(privateKey)
+    engine.update(signTarget)
+    return engine.sign()
+}
+
 fun privateKeyToCurve25519(edSeed: ByteArray): ByteArray {
     val md = MessageDigest.getInstance("SHA-512")
     val h = md.digest(edSeed).sliceArray(IntRange(0, 31))
@@ -52,11 +73,35 @@ fun privateKeyToCurve25519(edSeed: ByteArray): ByteArray {
     return h
 }
 
-private val secureRandom: SecureRandom = SecureRandom()
-private val GCM_IV_LENGTH = 12
+fun ByteArray.sha3Sum256(): ByteArray {
+    return digestKeccak(KeccakParameter.SHA3_256)
+}
 
-fun generateAesKey(): ByteArray {
-    val key = ByteArray(16)
+fun Argon2Kt.argon2IdHash(pin: String, seed: String): Argon2KtResult =
+    argon2IdHash(pin, seed.toByteArray())
+
+fun Argon2Kt.argon2IdHash(pin: String, seed: ByteArray): Argon2KtResult {
+    return hash(
+        mode = Argon2Mode.ARGON2_I,
+        password = pin.toByteArray(),
+        salt = seed,
+        tCostInIterations = 4,
+        mCostInKibibyte = 1024,
+        hashLengthInBytes = 32
+    )
+}
+
+private val secureRandom: SecureRandom = SecureRandom()
+private const val GCM_IV_LENGTH = 12
+
+fun generateEphemeralSeed(): ByteArray {
+    val key = ByteArray(32)
+    secureRandom.nextBytes(key)
+    return key
+}
+
+fun generateAesKey(len: Int = 16): ByteArray {
+    val key = ByteArray(len)
     secureRandom.nextBytes(key)
     return key
 }
@@ -114,6 +159,12 @@ fun aesDecrypt(key: ByteArray, iv: ByteArray, ciphertext: ByteArray): ByteArray 
     val cipher = Cipher.getInstance("AES/CBC/PKCS5Padding")
     cipher.init(Cipher.DECRYPT_MODE, keySpec, IvParameterSpec(iv))
     return cipher.doFinal(ciphertext)
+}
+
+fun aesDecrypt(key: ByteArray, ciphertext: ByteArray): ByteArray {
+    val iv = ciphertext.slice(0..15).toByteArray()
+    val cipherContent = ciphertext.slice(16 until ciphertext.size).toByteArray()
+    return aesDecrypt(key, iv, cipherContent)
 }
 
 inline fun KeyPair.getPublicKey(): ByteArray {

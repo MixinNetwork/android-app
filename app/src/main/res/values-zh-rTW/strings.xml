@@ -975,7 +975,7 @@
     <string name="wallet_password_change_tip">請輸入6位 PIN 來驗證</string>
     <string name="wallet_password_not_equal">PIN 不一致, 請重新輸入</string>
     <string name="wallet_password_set_new_pin_desc">設定新的 6 位數字 PIN</string>
-    <string name="wallet_password_set_pin_desc">設定 6 位數字 PIN 建立你的第一個數字錢包，閱讀檔案以**瞭解更多**。</string>
+    <string name="tip_create_pin_title">設定 6 位數字 PIN 建立你的第一個數字錢包</string>
     <string name="wallet_password_unsafe">PIN 過於簡單不安全</string>
     <string name="wallet_pin_modify_biometrics">請輸入 PIN 來修改支付 PIN 使用間隔</string>
     <string name="wallet_pin_open_biometrics">請輸入 PIN 來啟用生物識別支付</string>

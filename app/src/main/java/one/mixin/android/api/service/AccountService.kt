@@ -45,7 +45,7 @@ interface AccountService {
     suspend fun create(@Path("id") id: String, @Body request: AccountRequest): MixinResponse<Account>
 
     @POST("verifications/{id}")
-    fun changePhone(@Path("id") id: String, @Body request: AccountRequest): Observable<MixinResponse<Account>>
+    suspend fun changePhone(@Path("id") id: String, @Body request: AccountRequest): MixinResponse<Account>
 
     @POST("verifications/{id}")
     fun deactiveVerification(@Path("id") id: String, @Body request: DeactivateVerificationRequest): Observable<MixinResponse<VerificationResponse>>
@@ -72,7 +72,7 @@ interface AccountService {
     suspend fun code(@Path("id") id: String): MixinResponse<JsonObject>
 
     @POST("pin/update")
-    fun updatePin(@Body request: PinRequest): Observable<MixinResponse<Account>>
+    suspend fun updatePinSuspend(@Body request: PinRequest): MixinResponse<Account>
 
     @POST("pin/verify")
     suspend fun verifyPin(@Body request: PinRequest): MixinResponse<Account>

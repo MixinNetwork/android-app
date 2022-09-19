@@ -13,10 +13,14 @@ import kotlinx.coroutines.withContext
 import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.api.MixinResponse
+import one.mixin.android.api.ResponseError
+import one.mixin.android.crypto.PinCipher
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.putLong
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.updatePinCheck
+import one.mixin.android.tip.exception.TipCounterNotSyncedException
+import one.mixin.android.tip.exception.TipNetworkException
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
 import one.mixin.android.util.BiometricUtil
 import one.mixin.android.util.ErrorHandler
@@ -24,11 +28,15 @@ import one.mixin.android.util.getMixinErrorStringByCode
 import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.Keyboard
 import one.mixin.android.widget.RoundTitleView
+import javax.inject.Inject
 
 abstract class BiometricBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     private var biometricDialog: BiometricDialog? = null
     private var dismissRunnable: Runnable? = null
-    protected var autoDismiss: Boolean = true
+    var autoDismiss: Boolean = true
+
+    @Inject
+    lateinit var pinCipher: PinCipher
 
     override fun onCreateDialog(savedInstanceState: Bundle?): BottomSheet {
         val dialog = super.onCreateDialog(savedInstanceState)
@@ -131,6 +139,7 @@ abstract class BiometricBottomSheetDialogFragment : MixinBottomSheetDialogFragme
         if (!isAdded) return@launch
 
         biometricLayout.showPb()
+
         val response = try {
             // initialize this in main thread
             bottomViewModel
@@ -139,9 +148,16 @@ abstract class BiometricBottomSheetDialogFragment : MixinBottomSheetDialogFragme
                 invokeNetwork(pin)
             }
         } catch (t: Throwable) {
-            dialog?.window?.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
-            biometricLayout.showPin(true)
-            ErrorHandler.handleError(t)
+            if (t is TipNetworkException) {
+                handleWithErrorCodeAndDesc(pin, t.error)
+            } else if (t is TipCounterNotSyncedException) {
+                dialog?.window?.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
+                biometricLayout.showPin(true)
+            } else {
+                dialog?.window?.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
+                biometricLayout.showPin(true)
+                ErrorHandler.handleError(t)
+            }
             return@launch
         }
 
@@ -159,23 +175,29 @@ abstract class BiometricBottomSheetDialogFragment : MixinBottomSheetDialogFragme
                 callback?.onSuccess() ?: toast(R.string.Successful)
             }
         } else {
-            val errorString = doWithMixinErrorCode(response.errorCode, pin)
-
-            biometricLayout.let { layout ->
-                layout.setErrorButton(layout.getErrorActionByErrorCode(response.errorCode))
-                layout.pin.clear()
-            }
-            val errorInfo = if (response.errorCode == ErrorHandler.PIN_INCORRECT || response.errorCode == ErrorHandler.TOO_MANY_REQUEST) {
-                val errorCount = bottomViewModel.errorCount()
-                requireContext().resources.getQuantityString(R.plurals.error_pin_incorrect_with_times, errorCount, errorCount)
-            } else if (!errorString.isNullOrBlank()) {
-                errorString
-            } else {
-                requireContext().getMixinErrorStringByCode(response.errorCode, response.errorDescription)
-            }
-            showErrorInfo(errorInfo, true)
+            handleWithErrorCodeAndDesc(pin, requireNotNull(response.error))
         }
         dialog?.window?.clearFlags(WindowManager.LayoutParams.FLAG_SECURE)
+    }
+
+    private suspend fun handleWithErrorCodeAndDesc(pin: String, error: ResponseError) {
+        val errorCode = error.code
+        val errorDescription = error.description
+        val errorString = doWithMixinErrorCode(errorCode, pin)
+
+        biometricLayout.let { layout ->
+            layout.setErrorButton(layout.getErrorActionByErrorCode(errorCode))
+            layout.pin.clear()
+        }
+        val errorInfo = if (errorCode == ErrorHandler.PIN_INCORRECT || errorCode == ErrorHandler.TOO_MANY_REQUEST) {
+            val errorCount = bottomViewModel.errorCount()
+            requireContext().resources.getQuantityString(R.plurals.error_pin_incorrect_with_times, errorCount, errorCount)
+        } else if (!errorString.isNullOrBlank()) {
+            errorString
+        } else {
+            requireContext().getMixinErrorStringByCode(errorCode, errorDescription)
+        }
+        showErrorInfo(errorInfo, true)
     }
 
     private val biometricDialogCallback = object : BiometricDialog.Callback {

@@ -1,5 +1,6 @@
 package one.mixin.android.ui.setting
 
+import android.app.Dialog
 import android.os.Bundle
 import android.view.View
 import android.view.WindowManager
@@ -9,6 +10,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants.KEYS
 import one.mixin.android.R
+import one.mixin.android.api.ResponseError
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.databinding.FragmentOldPasswordBinding
 import one.mixin.android.extension.clickVibrate
@@ -17,7 +19,12 @@ import one.mixin.android.extension.navTo
 import one.mixin.android.extension.tickVibrate
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.updatePinCheck
+import one.mixin.android.extension.withArgs
+import one.mixin.android.tip.exception.TipNetworkException
 import one.mixin.android.ui.common.BaseFragment
+import one.mixin.android.ui.tip.TipBundle
+import one.mixin.android.ui.tip.TipFragment.Companion.ARGS_TIP_BUNDLE
+import one.mixin.android.ui.tip.getTipBundle
 import one.mixin.android.ui.wallet.WalletViewModel
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.viewBinding
@@ -30,8 +37,9 @@ class OldPasswordFragment : BaseFragment(R.layout.fragment_old_password), PinVie
     companion object {
         const val TAG = "OldPasswordFragment"
 
-        fun newInstance(): OldPasswordFragment =
-            OldPasswordFragment()
+        fun newInstance(tipBundle: TipBundle) = OldPasswordFragment().withArgs {
+            putParcelable(ARGS_TIP_BUNDLE, tipBundle)
+        }
     }
 
     private val walletViewModel by viewModels<WalletViewModel>()
@@ -52,8 +60,8 @@ class OldPasswordFragment : BaseFragment(R.layout.fragment_old_password), PinVie
         }
     }
 
-    override fun onDestroy() {
-        super.onDestroy()
+    override fun onDestroyView() {
+        super.onDestroyView()
         activity?.window?.clearFlags(WindowManager.LayoutParams.FLAG_SECURE)
     }
 
@@ -82,6 +90,7 @@ class OldPasswordFragment : BaseFragment(R.layout.fragment_old_password), PinVie
         )
         dialog.setCancelable(false)
         dialog.show()
+
         handleMixinResponse(
             invokeNetwork = { walletViewModel.verifyPin(pinCode) },
             successBlock = { response ->
@@ -89,31 +98,43 @@ class OldPasswordFragment : BaseFragment(R.layout.fragment_old_password), PinVie
                 context?.updatePinCheck()
                 response.data?.let {
                     val pin = binding.pin.code()
-                    activity?.onBackPressedDispatcher?.onBackPressed()
-                    navTo(WalletPasswordFragment.newInstance(true, pin), WalletPasswordFragment.TAG)
+                    val tipBundle = requireArguments().getTipBundle()
+                    tipBundle.oldPin = pin
+                    navTo(
+                        WalletPasswordFragment.newInstance(tipBundle),
+                        WalletPasswordFragment.TAG
+                    )
                 }
             },
             exceptionBlock = {
-                dialog.dismiss()
-                binding.pin.clear()
-                return@handleMixinResponse false
+                if (it is TipNetworkException) {
+                    return@handleMixinResponse handleFailure(it.error, dialog)
+                } else {
+                    dialog.dismiss()
+                    binding.pin.clear()
+                    return@handleMixinResponse false
+                }
             },
             failureBlock = {
-                binding.pin.clear()
-                if (it.errorCode == ErrorHandler.TOO_MANY_REQUEST) {
-                    dialog.dismiss()
-                    toast(R.string.error_pin_check_too_many_request)
-                    return@handleMixinResponse true
-                } else if (it.errorCode == ErrorHandler.PIN_INCORRECT) {
-                    val errorCount = walletViewModel.errorCount()
-                    toast(requireContext().resources.getQuantityString(R.plurals.error_pin_incorrect_with_times, errorCount, errorCount))
-                    dialog.dismiss()
-                    return@handleMixinResponse true
-                }
-                dialog.dismiss()
-                return@handleMixinResponse false
+                return@handleMixinResponse handleFailure(requireNotNull(it.error), dialog)
             }
         )
+    }
+
+    private suspend fun handleFailure(error: ResponseError, dialog: Dialog): Boolean {
+        binding.pin.clear()
+        if (error.code == ErrorHandler.TOO_MANY_REQUEST) {
+            dialog.dismiss()
+            toast(R.string.error_pin_check_too_many_request)
+            return true
+        } else if (error.code == ErrorHandler.PIN_INCORRECT) {
+            val errorCount = walletViewModel.errorCount()
+            toast(requireContext().resources.getQuantityString(R.plurals.error_pin_incorrect_with_times, errorCount, errorCount))
+            dialog.dismiss()
+            return true
+        }
+        dialog.dismiss()
+        return false
     }
 
     private val keyboardListener: Keyboard.OnClickKeyboardListener = object : Keyboard.OnClickKeyboardListener {

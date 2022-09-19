@@ -55,6 +55,7 @@ import one.mixin.android.db.UserDao
 import one.mixin.android.repository.AssetRepository
 import one.mixin.android.repository.ConversationRepository
 import one.mixin.android.repository.UserRepository
+import one.mixin.android.tip.Tip
 import one.mixin.android.util.reportException
 import one.mixin.android.vo.LinkState
 import one.mixin.android.websocket.ChatWebSocket
@@ -208,6 +209,12 @@ abstract class BaseJob(params: Params) : Job(params) {
     @Transient
     @Inject
     lateinit var linkState: LinkState
+    @Transient
+    @Inject
+    lateinit var tip: Tip
+    @Transient
+    @Inject
+    lateinit var tipCounterSynced: TipCounterSyncedLiveData
 
     open fun shouldRetry(throwable: Throwable): Boolean {
         if (throwable is SocketTimeoutException) {

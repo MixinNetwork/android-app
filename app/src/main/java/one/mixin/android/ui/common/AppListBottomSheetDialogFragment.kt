@@ -10,6 +10,7 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
+import one.mixin.android.Constants.ARGS_TITLE
 import one.mixin.android.databinding.FragmentAppListBottomSheetBinding
 import one.mixin.android.databinding.ItemAppListBinding
 import one.mixin.android.extension.loadImage
@@ -23,7 +24,6 @@ class AppListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     companion object {
         const val TAG = "AppListBottomSheetDialogFragment"
         const val ARGS_APP_LIST = "args_app_list"
-        const val ARGS_TITLE = "args_title"
 
         fun newInstance(
             appList: List<App>,

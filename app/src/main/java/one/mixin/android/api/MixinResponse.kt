@@ -38,7 +38,7 @@ suspend fun <T, R> handleMixinResponse(
     switchContext: CoroutineContext? = null,
     successBlock: (suspend (MixinResponse<T>) -> R)? = null,
     failureBlock: (suspend (MixinResponse<T>) -> Boolean)? = null,
-    exceptionBlock: ((t: Throwable) -> Boolean)? = null,
+    exceptionBlock: (suspend (t: Throwable) -> Boolean)? = null,
     doAfterNetworkSuccess: (() -> Unit)? = null,
     defaultErrorHandle: (suspend (MixinResponse<T>) -> Unit) = {
         ErrorHandler.handleMixinError(it.errorCode, it.errorDescription)

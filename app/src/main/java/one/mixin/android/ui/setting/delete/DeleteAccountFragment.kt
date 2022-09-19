@@ -27,7 +27,8 @@ import one.mixin.android.ui.common.VerifyFragment
 import one.mixin.android.ui.landing.MobileFragment.Companion.FROM_DELETE_ACCOUNT
 import one.mixin.android.ui.landing.VerificationFragment
 import one.mixin.android.ui.setting.SettingViewModel
-import one.mixin.android.ui.setting.WalletPasswordFragment
+import one.mixin.android.ui.tip.TipActivity
+import one.mixin.android.ui.tip.TipType
 import one.mixin.android.ui.wallet.WalletActivity
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.viewBinding
@@ -79,10 +80,7 @@ class DeleteAccountFragment : BaseFragment(R.layout.fragment_delete_account) {
             if (Session.getAccount()?.hasPin == true) {
                 WalletActivity.show(requireActivity())
             } else {
-                parentFragmentManager.beginTransaction()
-                    .replace(R.id.container, WalletPasswordFragment.newInstance(false))
-                    .addToBackStack(null)
-                    .commitAllowingStateLoss()
+                TipActivity.show(requireActivity(), TipType.Create, false)
             }
         }
     }
@@ -227,20 +225,7 @@ class DeleteAccountFragment : BaseFragment(R.layout.fragment_delete_account) {
                             .addToBackStack(null)
                     }
                 } else {
-                    activity?.supportFragmentManager?.inTransaction {
-                        setCustomAnimations(
-                            R.anim.slide_in_bottom,
-                            R.anim.slide_out_bottom,
-                            R.anim.slide_in_bottom,
-                            R.anim.slide_out_bottom
-                        )
-                            .add(
-                                R.id.container,
-                                WalletPasswordFragment.newInstance(),
-                                WalletPasswordFragment.TAG
-                            )
-                            .addToBackStack(null)
-                    }
+                    TipActivity.show(requireActivity(), TipType.Create, true)
                 }
             }.show()
     }

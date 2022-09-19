@@ -13,6 +13,7 @@ import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.EmergencyPurpose
 import one.mixin.android.api.request.EmergencyRequest
 import one.mixin.android.crypto.CryptoPreference
+import one.mixin.android.crypto.PinCipher
 import one.mixin.android.crypto.SignalProtocol
 import one.mixin.android.crypto.generateEd25519KeyPair
 import one.mixin.android.databinding.FragmentVerificationEmergencyBinding
@@ -22,13 +23,15 @@ import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.putInt
 import one.mixin.android.extension.withArgs
 import one.mixin.android.session.Session
-import one.mixin.android.session.encryptPin
+import one.mixin.android.tip.TipBody
+import one.mixin.android.tip.exception.TipNetworkException
 import one.mixin.android.ui.common.PinCodeFragment
 import one.mixin.android.ui.landing.LandingActivity.Companion.ARGS_PIN
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.Account
 import one.mixin.android.vo.User
 import java.security.KeyPair
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class VerificationEmergencyFragment : PinCodeFragment(R.layout.fragment_verification_emergency) {
@@ -66,6 +69,9 @@ class VerificationEmergencyFragment : PinCodeFragment(R.layout.fragment_verifica
 
     private val binding by viewBinding(FragmentVerificationEmergencyBinding::bind)
 
+    @Inject
+    lateinit var pinCipher: PinCipher
+
     override fun getContentView() = binding.root
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -88,6 +94,7 @@ class VerificationEmergencyFragment : PinCodeFragment(R.layout.fragment_verifica
 
     private fun createVerify() = lifecycleScope.launch {
         showLoading()
+        val code = binding.pinVerificationView.code()
         handleMixinResponse(
             invokeNetwork = {
                 viewModel.createVerifyEmergency(
@@ -95,8 +102,8 @@ class VerificationEmergencyFragment : PinCodeFragment(R.layout.fragment_verifica
                     EmergencyRequest(
                         user?.phone,
                         user?.identityNumber ?: userIdentityNumber,
-                        Session.getPinToken()?.let { encryptPin(it, pin)!! },
-                        binding.pinVerificationView.code(),
+                        pinCipher.encryptPin(requireNotNull(pin), TipBody.forEmergencyContactCreate(verificationId, code)),
+                        code,
                         EmergencyPurpose.CONTACT.name
                     )
                 )
@@ -130,7 +137,11 @@ class VerificationEmergencyFragment : PinCodeFragment(R.layout.fragment_verifica
                 handleFailure(it)
             },
             defaultExceptionHandle = {
-                handleError(it)
+                if (it is TipNetworkException) {
+                    handleFailure(it.error)
+                } else {
+                    handleError(it)
+                }
             }
         )
     }
@@ -161,11 +172,10 @@ class VerificationEmergencyFragment : PinCodeFragment(R.layout.fragment_verifica
         val publicKey = sessionKey.public as EdDSAPublicKey
         val sessionSecret = publicKey.abyte.base64Encode()
         return EmergencyRequest(
-            user?.phone,
-            user?.identityNumber ?: userIdentityNumber,
-            Session.getPinToken()?.let { encryptPin(it, pin)!! },
-            binding.pinVerificationView.code(),
-            EmergencyPurpose.SESSION.name,
+            phone = user?.phone,
+            identityNumber = user?.identityNumber ?: userIdentityNumber,
+            code = binding.pinVerificationView.code(),
+            purpose = EmergencyPurpose.SESSION.name,
             sessionSecret = sessionSecret,
             registrationId = registrationId
         )

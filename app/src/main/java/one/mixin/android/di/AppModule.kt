@@ -25,6 +25,7 @@ import one.mixin.android.Constants.ALLOW_INTERVAL
 import one.mixin.android.Constants.API.FOURSQUARE_URL
 import one.mixin.android.Constants.API.GIPHY_URL
 import one.mixin.android.Constants.API.Mixin_URL
+import one.mixin.android.Constants.API.TIP_URL
 import one.mixin.android.Constants.API.URL
 import one.mixin.android.Constants.DNS
 import one.mixin.android.MixinApplication
@@ -46,8 +47,11 @@ import one.mixin.android.api.service.GiphyService
 import one.mixin.android.api.service.MessageService
 import one.mixin.android.api.service.ProvisioningService
 import one.mixin.android.api.service.SignalKeyService
+import one.mixin.android.api.service.TipNodeService
+import one.mixin.android.api.service.TipService
 import one.mixin.android.api.service.UserService
 import one.mixin.android.crypto.EncryptedProtocol
+import one.mixin.android.crypto.PinCipher
 import one.mixin.android.crypto.SignalProtocol
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.extension.filterNonAscii
@@ -61,8 +65,13 @@ import one.mixin.android.job.JobLogger
 import one.mixin.android.job.JobNetworkUtil
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.MyJobService
+import one.mixin.android.job.TipCounterSyncedLiveData
 import one.mixin.android.session.JwtResult
 import one.mixin.android.session.Session
+import one.mixin.android.tip.Ephemeral
+import one.mixin.android.tip.Identity
+import one.mixin.android.tip.Tip
+import one.mixin.android.tip.TipNode
 import one.mixin.android.util.ErrorHandler.Companion.AUTHENTICATION
 import one.mixin.android.util.ErrorHandler.Companion.OLD_VERSION
 import one.mixin.android.util.GsonHelper
@@ -302,6 +311,11 @@ object AppModule {
 
     @Singleton
     @Provides
+    fun provideTipService(retrofit: Retrofit) =
+        retrofit.create(TipService::class.java) as TipService
+
+    @Singleton
+    @Provides
     fun provideContentResolver(app: Application) = app.contentResolver as ContentResolver
 
     @Provides
@@ -375,6 +389,23 @@ object AppModule {
 
     @Provides
     @Singleton
+    fun provideTipNodeService(httpLoggingInterceptor: HttpLoggingInterceptor?): TipNodeService {
+        val client = OkHttpClient.Builder().apply {
+            httpLoggingInterceptor?.let { interceptor ->
+                addNetworkInterceptor(interceptor)
+            }
+        }.build()
+        val retrofit = Retrofit.Builder()
+            .baseUrl(TIP_URL)
+            .addConverterFactory(GsonConverterFactory.create())
+            .addCallAdapterFactory(CoroutineCallAdapterFactory())
+            .client(client)
+            .build()
+        return retrofit.create(TipNodeService::class.java)
+    }
+
+    @Provides
+    @Singleton
     fun provideFoursquareService(httpLoggingInterceptor: HttpLoggingInterceptor?): FoursquareService {
         val client = OkHttpClient.Builder().apply {
             httpLoggingInterceptor?.let { interceptor ->
@@ -410,4 +441,29 @@ object AppModule {
                 AudioDevice.Earpiece::class.java
             )
         )
+
+    @Provides
+    @Singleton
+    fun provideIdentity(tipService: TipService) = Identity(tipService)
+
+    @Provides
+    @Singleton
+    fun provideEphemeral(tipService: TipService) = Ephemeral(tipService)
+
+    @Provides
+    @Singleton
+    fun provideTipNode(TipNodeService: TipNodeService) = TipNode(TipNodeService)
+
+    @Provides
+    @Singleton
+    fun provideTip(ephemeral: Ephemeral, identity: Identity, tipNode: TipNode, tipService: TipService, accountService: AccountService, tipCounterSyncedLiveData: TipCounterSyncedLiveData) =
+        Tip(ephemeral, identity, tipService, accountService, tipNode, tipCounterSyncedLiveData)
+
+    @Provides
+    @Singleton
+    fun providePinCipher(tip: Tip) = PinCipher(tip)
+
+    @Provides
+    @Singleton
+    fun provideTipCounterSynced() = TipCounterSyncedLiveData()
 }

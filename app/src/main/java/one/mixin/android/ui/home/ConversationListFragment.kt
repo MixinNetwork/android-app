@@ -16,6 +16,7 @@ import android.widget.ImageView
 import androidx.appcompat.content.res.AppCompatResources
 import androidx.appcompat.view.ContextThemeWrapper
 import androidx.appcompat.widget.LinearLayoutCompat
+import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.view.children
 import androidx.core.view.isGone
 import androidx.core.view.isInvisible
@@ -382,8 +383,16 @@ class ConversationListFragment : LinkFragment() {
                     binding.emptyView.infoTv.setText(R.string.circle_no_conversation_hint)
                     binding.emptyView.startBn.setText(R.string.Add_conversations)
                 }
+                binding.messageRv.updateLayoutParams<ConstraintLayout.LayoutParams> {
+                    height = ViewGroup.LayoutParams.WRAP_CONTENT
+                    bottomToBottom = ConstraintLayout.LayoutParams.UNSET
+                }
                 binding.emptyView.root.isVisible = true
             } else {
+                binding.messageRv.updateLayoutParams<ConstraintLayout.LayoutParams> {
+                    height = 0
+                    bottomToBottom = ConstraintLayout.LayoutParams.PARENT_ID
+                }
                 binding.emptyView.root.isVisible = false
                 pagedList
                     .filter { item: ConversationItem? ->

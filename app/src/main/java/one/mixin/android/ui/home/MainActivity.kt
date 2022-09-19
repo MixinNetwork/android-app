@@ -59,6 +59,7 @@ import one.mixin.android.Constants.INTERVAL_7_DAYS
 import one.mixin.android.Constants.SAFETY_NET_INTERVAL_KEY
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
+import one.mixin.android.RxBus
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.SessionRequest
 import one.mixin.android.api.service.ConversationService
@@ -70,6 +71,7 @@ import one.mixin.android.databinding.ActivityMainBinding
 import one.mixin.android.db.ConversationDao
 import one.mixin.android.db.ParticipantDao
 import one.mixin.android.db.UserDao
+import one.mixin.android.event.TipEvent
 import one.mixin.android.extension.alert
 import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.areBubblesAllowedCompat
@@ -104,6 +106,7 @@ import one.mixin.android.job.TranscriptAttachmentUpdateJob
 import one.mixin.android.repository.AccountRepository
 import one.mixin.android.repository.UserRepository
 import one.mixin.android.session.Session
+import one.mixin.android.tip.Tip
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.BatteryOptimizationDialogActivity
 import one.mixin.android.ui.common.BlazeBaseActivity
@@ -128,6 +131,10 @@ import one.mixin.android.ui.qr.CaptureActivity.Companion.ARGS_SHOW_SCAN
 import one.mixin.android.ui.search.SearchFragment
 import one.mixin.android.ui.search.SearchMessageFragment
 import one.mixin.android.ui.search.SearchSingleFragment
+import one.mixin.android.ui.tip.TipActivity
+import one.mixin.android.ui.tip.TipBundle
+import one.mixin.android.ui.tip.TipType
+import one.mixin.android.ui.tip.TryConnecting
 import one.mixin.android.util.BiometricUtil
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.ErrorHandler.Companion.errorHandler
@@ -174,6 +181,9 @@ class MainActivity : BlazeBaseActivity() {
     @Inject
     lateinit var participantDao: ParticipantDao
 
+    @Inject
+    lateinit var tip: Tip
+
     private val appUpdateManager by lazy { AppUpdateManagerFactory.create(this) }
     private val updatedListener = InstallStateUpdatedListener { state ->
         if (state.installStatus() == InstallStatus.DOWNLOADED) {
@@ -195,9 +205,10 @@ class MainActivity : BlazeBaseActivity() {
         super.onCreate(savedInstanceState)
         navigationController = NavigationController(this)
 
-        val deviceId = defaultSharedPreferences.getString(DEVICE_ID, null)
+        var deviceId = defaultSharedPreferences.getString(DEVICE_ID, null)
         if (deviceId == null) {
-            defaultSharedPreferences.putString(DEVICE_ID, this.getDeviceId())
+            deviceId = this.getDeviceId()
+            defaultSharedPreferences.putString(DEVICE_ID, deviceId)
         } else if (deviceId != this.getDeviceId()) {
             defaultSharedPreferences.remove(DEVICE_ID)
             MixinApplication.get().closeAndClear(true)
@@ -268,6 +279,12 @@ class MainActivity : BlazeBaseActivity() {
         handlerCode(intent)
 
         checkAsync()
+
+        RxBus.listen(TipEvent::class.java)
+            .autoDispose(destroyScope)
+            .subscribe { e ->
+                handleTipEvent(e, deviceId)
+            }
     }
 
     override fun onStart() {
@@ -294,6 +311,8 @@ class MainActivity : BlazeBaseActivity() {
         sendSafetyNetRequest()
         checkBatteryOptimization()
 
+        jobManager.addJobInBackground(RefreshAccountJob())
+
         if (!defaultSharedPreferences.getBoolean(PREF_SYNC_CIRCLE, false)) {
             jobManager.addJobInBackground(RefreshCircleJob())
             defaultSharedPreferences.putBoolean(PREF_SYNC_CIRCLE, true)
@@ -303,8 +322,6 @@ class MainActivity : BlazeBaseActivity() {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q && PropertyHelper.findValueByKey(PREF_BACKUP)?.toBooleanStrictOrNull() == true) {
             jobManager.addJobInBackground(BackupJob())
         }
-
-        jobManager.addJobInBackground(RefreshAccountJob())
 
         if (defaultSharedPreferences.getInt(PREF_LOGIN_FROM, FROM_LOGIN) == FROM_EMERGENCY) {
             defaultSharedPreferences.putInt(PREF_LOGIN_FROM, FROM_LOGIN)
@@ -351,6 +368,18 @@ class MainActivity : BlazeBaseActivity() {
 
         jobManager.addJobInBackground(RefreshContactJob())
         jobManager.addJobInBackground(RefreshFcmJob())
+    }
+
+    private fun handleTipEvent(e: TipEvent, deviceId: String) {
+        val nodeCounter = e.nodeCounter
+        if (nodeCounter == 1) {
+            val tipType = if (Session.getAccount()?.hasPin == true) TipType.Upgrade else TipType.Create
+            TipActivity.show(this, TipBundle(tipType, deviceId, TryConnecting, tipEvent = e))
+        } else if (nodeCounter > 1) {
+            TipActivity.show(this, TipBundle(TipType.Change, deviceId, TryConnecting, tipEvent = e))
+        } else {
+            reportException(IllegalStateException("Receive TipEvent nodeCounter < 1"))
+        }
     }
 
     @SuppressLint("RestrictedApi")

@@ -15,7 +15,6 @@ import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.navTo
 import one.mixin.android.extension.withArgs
 import one.mixin.android.session.Session
-import one.mixin.android.session.encryptPin
 import one.mixin.android.ui.common.friends.BaseFriendsFragment
 import one.mixin.android.ui.common.friends.FriendsListener
 import one.mixin.android.ui.landing.LandingActivity
@@ -91,7 +90,6 @@ class FriendsNoBotFragment : BaseFriendsFragment<FriendsNoBotViewHolder>(), Frie
 
     private fun buildEmergencyRequest(user: User) = EmergencyRequest(
         identityNumber = user.identityNumber,
-        pin = Session.getPinToken()?.let { encryptPin(it, pin)!! },
         purpose = EmergencyPurpose.CONTACT.name
     )
 }

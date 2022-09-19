@@ -9,7 +9,6 @@
         android:id="@+id/count_rl"
         android:layout_width="match_parent"
         android:layout_height="@dimen/item_contact_height"
-        android:foreground="?android:attr/selectableItemBackground"
         android:background="?attr/bg_white">
 
         <TextView

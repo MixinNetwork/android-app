@@ -52,6 +52,8 @@ import one.mixin.android.ui.setting.ui.page.SecurityPage
 import one.mixin.android.ui.setting.ui.page.SettingPage
 import one.mixin.android.ui.setting.ui.page.ViewEmergencyContactPage
 import one.mixin.android.ui.setting.ui.theme.MixinAppTheme
+import one.mixin.android.ui.tip.TipActivity
+import one.mixin.android.ui.tip.TipType
 import one.mixin.android.vo.User
 import timber.log.Timber
 
@@ -391,9 +393,7 @@ class SettingComposeFragment : BaseFragment() {
                             }
 
                             composable(SettingDestination.ChangePin.name) {
-                                MixinSettingFragment(OldPasswordFragment.TAG) {
-                                    OldPasswordFragment.newInstance()
-                                }
+                                TipActivity.show(requireActivity(), TipType.Change)
                             }
 
                             composable(SettingDestination.DatabaseDebug.name) {

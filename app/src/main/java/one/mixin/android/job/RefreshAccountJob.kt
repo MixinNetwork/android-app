@@ -1,8 +1,11 @@
 package one.mixin.android.job
 
+import androidx.lifecycle.LiveData
 import com.birbit.android.jobqueue.Params
 import kotlinx.coroutines.runBlocking
 import one.mixin.android.MixinApplication
+import one.mixin.android.RxBus
+import one.mixin.android.event.TipEvent
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.putInt
 import one.mixin.android.extension.putString
@@ -77,6 +80,27 @@ class RefreshAccountJob : BaseJob(Params(PRIORITY_UI_HIGH).addTags(GROUP).requir
                     )
                 }
             }
+
+            tip.checkCounter(
+                account.tipCounter,
+                onNodeCounterGreaterThanServer = { RxBus.publish(TipEvent(it)) },
+                onNodeCounterInconsistency = { nodeMaxCounter, failedSigners ->
+                    RxBus.publish(TipEvent(nodeMaxCounter, failedSigners))
+                }
+            ).onSuccess {
+                tipCounterSynced.synced = true
+            }
         }
     }
+}
+
+// global LiveData to observe if Tip.checkCounter inside RefreshAccountJob is success
+class TipCounterSyncedLiveData : LiveData<Boolean>() {
+    var synced: Boolean = false
+        set(value) {
+            if (value == field) return
+
+            field = value
+            postValue(value)
+        }
 }

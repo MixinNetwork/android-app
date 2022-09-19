@@ -34,6 +34,7 @@ import one.mixin.android.api.service.ConversationService
 import one.mixin.android.api.service.EmergencyService
 import one.mixin.android.api.service.GiphyService
 import one.mixin.android.api.service.UserService
+import one.mixin.android.crypto.PinCipher
 import one.mixin.android.db.AppDao
 import one.mixin.android.db.FavoriteAppDao
 import one.mixin.android.db.StickerAlbumDao
@@ -43,9 +44,10 @@ import one.mixin.android.db.UserDao
 import one.mixin.android.db.insertUpdate
 import one.mixin.android.db.insertUpdateList
 import one.mixin.android.db.withTransaction
+import one.mixin.android.extension.nowInUtcNano
 import one.mixin.android.extension.within24Hours
 import one.mixin.android.session.Session
-import one.mixin.android.session.encryptPin
+import one.mixin.android.tip.TipBody
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.vo.Account
 import one.mixin.android.vo.FavoriteApp
@@ -73,7 +75,8 @@ constructor(
     private val stickerAlbumDao: StickerAlbumDao,
     private val stickerRelationshipDao: StickerRelationshipDao,
     private val giphyService: GiphyService,
-    private val emergencyService: EmergencyService
+    private val emergencyService: EmergencyService,
+    private val pinCipher: PinCipher,
 ) {
 
     fun verificationObserver(request: VerificationRequest): Observable<MixinResponse<VerificationResponse>> =
@@ -85,7 +88,7 @@ constructor(
     suspend fun create(id: String, request: AccountRequest): MixinResponse<Account> =
         accountService.create(id, request)
 
-    fun changePhone(id: String, request: AccountRequest): Observable<MixinResponse<Account>> =
+    suspend fun changePhone(id: String, request: AccountRequest): MixinResponse<Account> =
         accountService.changePhone(id, request)
 
     fun deactiveVerification(id: String, request: DeactivateVerificationRequest): Observable<MixinResponse<VerificationResponse>> =
@@ -148,14 +151,24 @@ constructor(
 
     fun findUsersByType(relationship: String) = userDao.findUsersByType(relationship)
 
-    fun updatePin(request: PinRequest) = accountService.updatePin(request)
+    suspend fun updatePinSuspend(request: PinRequest) = accountService.updatePinSuspend(request)
 
     suspend fun verifyPin(code: String): MixinResponse<Account> = withContext(Dispatchers.IO) {
-        accountService.verifyPin(PinRequest(encryptPin(Session.getPinToken()!!, code)!!))
+        val timestamp = nowInUtcNano()
+        return@withContext if (Session.getTipPub().isNullOrBlank()) {
+            accountService.verifyPin(PinRequest(pinCipher.encryptPin(code, TipBody.forVerify(timestamp))))
+        } else {
+            accountService.verifyPin(PinRequest(pinCipher.encryptPin(code, TipBody.forVerify(timestamp)), timestamp = timestamp))
+        }
     }
 
     suspend fun deactivate(pin: String, verificationId: String): MixinResponse<Account> = withContext(Dispatchers.IO) {
-        accountService.deactivate(DeactivateRequest(encryptPin(Session.getPinToken()!!, pin)!!, verificationId))
+        accountService.deactivate(
+            DeactivateRequest(
+                pinCipher.encryptPin(pin, TipBody.forUserDeactivate(verificationId)),
+                verificationId
+            )
+        )
     }
 
     suspend fun authorize(request: AuthorizeRequest) = authService.authorize(request)
@@ -243,10 +256,9 @@ constructor(
         emergencyService.loginVerify(id, request)
 
     suspend fun showEmergency(pin: String) =
-        emergencyService.show(PinRequest(encryptPin(Session.getPinToken()!!, pin)!!))
+        emergencyService.show(PinRequest(pinCipher.encryptPin(pin, TipBody.forEmergencyContactRead())))
 
-    suspend fun deleteEmergency(pin: String) =
-        emergencyService.delete(PinRequest(encryptPin(Session.getPinToken()!!, pin)!!))
+    suspend fun deleteEmergency(pin: String) = emergencyService.delete(PinRequest(pinCipher.encryptPin(pin, TipBody.forEmergencyContactRemove())))
 
     suspend fun getFiats() = accountService.getFiats()
 

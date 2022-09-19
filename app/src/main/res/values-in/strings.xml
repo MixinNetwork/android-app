@@ -684,7 +684,7 @@
     <string name="wallet_password_change_tip">Harap masukkan PIN 6 digit untuk memverifikasi.</string>
     <string name="wallet_password_not_equal">PIN tidak cocok dengan PIN yang diketik ulang, harap coba lagi.</string>
     <string name="wallet_password_set_new_pin_desc">Harap buat PIN 6 digit baru.</string>
-    <string name="wallet_password_set_pin_desc">Siapkan PIN dompet 6 digit untuk membuat dompet digital pertama Anda, baca dokumentasi kami untuk **mempelajari lebih lanjut**.</string>
+    <string name="tip_create_pin_title">Siapkan PIN dompet 6 digit untuk membuat dompet digital pertama Anda</string>
     <string name="wallet_password_unsafe">PIN-nya terlalu sederhana dan tidak aman.</string>
     <string name="wallet_pin_modify_biometrics">Harap masukkan PIN untuk Mengubah Pembayaran dengan interval PIN</string>
     <string name="wallet_pin_open_biometrics">Harap masukkan PIN untuk membuka Biometrik</string>

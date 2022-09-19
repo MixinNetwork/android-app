@@ -7,17 +7,12 @@ import androidx.lifecycle.viewModelScope
 import androidx.paging.LivePagedListBuilder
 import androidx.paging.PagedList
 import dagger.hilt.android.lifecycle.HiltViewModel
-import io.reactivex.Observable
-import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.schedulers.Schedulers
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.Constants
 import one.mixin.android.Constants.PAGE_SIZE
-import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.handleMixinResponse
-import one.mixin.android.api.request.PinRequest
 import one.mixin.android.extension.escapeSql
 import one.mixin.android.extension.putString
 import one.mixin.android.job.MixinJobManager
@@ -28,9 +23,6 @@ import one.mixin.android.job.RefreshUserJob
 import one.mixin.android.repository.AccountRepository
 import one.mixin.android.repository.AssetRepository
 import one.mixin.android.repository.UserRepository
-import one.mixin.android.session.Session
-import one.mixin.android.session.encryptPin
-import one.mixin.android.vo.Account
 import one.mixin.android.vo.Asset
 import one.mixin.android.vo.AssetItem
 import one.mixin.android.vo.PendingDeposit
@@ -94,13 +86,6 @@ internal constructor(
     fun assetItem(id: String): LiveData<AssetItem> = assetRepository.assetItem(id)
 
     suspend fun simpleAssetItem(id: String) = assetRepository.simpleAssetItem(id)
-
-    fun updatePin(pin: String, oldPin: String?): Observable<MixinResponse<Account>> {
-        val pinToken = Session.getPinToken()!!
-        val old = encryptPin(pinToken, oldPin)
-        val fresh = encryptPin(pinToken, pin)!!
-        return accountRepository.updatePin(PinRequest(fresh, old)).observeOn(AndroidSchedulers.mainThread()).subscribeOn(Schedulers.io())
-    }
 
     suspend fun verifyPin(code: String) = withContext(Dispatchers.IO) {
         accountRepository.verifyPin(code)

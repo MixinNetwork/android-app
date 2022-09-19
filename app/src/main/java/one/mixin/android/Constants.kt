@@ -15,6 +15,7 @@ object Constants {
         const val Mixin_WS_URL = "wss://blaze.mixin.one"
 
         const val GIPHY_URL = "https://api.giphy.com/v1/"
+        const val TIP_URL = "https://tip.id/"
         const val FOURSQUARE_URL = "https://api.foursquare.com/v2/"
     }
 
@@ -23,6 +24,14 @@ object Constants {
         const val EMERGENCY = "https://mixinmessenger.zendesk.com/hc/articles/360029154692"
         const val DEPOSIT = "https://mixinmessenger.zendesk.com/hc/articles/360018789931"
         const val TIP = "https://tip.id"
+    }
+
+    object Tip {
+        const val EPHEMERAL_SEED = "ephemeral_seed"
+        const val ALIAS_EPHEMERAL_SEED = "alias_ephemeral_seed"
+
+        const val TIP_PRIV = "tip_priv"
+        const val ALIAS_TIP_PRIV = "alias_tip_priv"
     }
 
     object Account {
@@ -191,6 +200,7 @@ object Constants {
     const val ARGS_USER_ID = "args_user_id"
     const val ARGS_CONVERSATION_ID = "args_conversation_id"
     const val ARGS_ASSET_ID = "args_asset_id"
+    const val ARGS_TITLE = "args_title"
 
     const val MY_QR = "my_qr"
 

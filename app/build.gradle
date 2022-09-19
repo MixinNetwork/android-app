@@ -352,6 +352,8 @@ dependencies {
     implementation "org.bouncycastle:bcprov-jdk15on:${bcVersion}"
     implementation "org.jetbrains:markdown:${markdownVersion}"
     implementation "io.github.java-diff-utils:java-diff-utils:${diffUtilsVersion}"
+    implementation "com.lambdapioneer.argon2kt:argon2kt:${argon2ktVersion}"
+    implementation "com.github.komputing.khash:keccak-jvm:${keccakVersion}"
 
     // compose
     debugImplementation "androidx.compose.ui:ui-tooling:${composeVersion}"

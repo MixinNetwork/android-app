@@ -16,12 +16,12 @@ import one.mixin.android.api.request.DeactivateVerificationRequest
 import one.mixin.android.api.request.VerificationPurpose
 import one.mixin.android.api.request.VerificationRequest
 import one.mixin.android.api.response.VerificationResponse
+import one.mixin.android.crypto.PinCipher
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.SyncFts4Job
 import one.mixin.android.repository.AccountRepository
 import one.mixin.android.repository.UserRepository
-import one.mixin.android.session.Session
-import one.mixin.android.session.encryptPin
+import one.mixin.android.tip.TipBody
 import one.mixin.android.vo.Account
 import one.mixin.android.vo.User
 import javax.inject.Inject
@@ -31,7 +31,8 @@ class MobileViewModel @Inject internal
 constructor(
     private val accountRepository: AccountRepository,
     private val userRepository: UserRepository,
-    private val jobManager: MixinJobManager
+    private val jobManager: MixinJobManager,
+    private val pinCipher: PinCipher,
 ) : ViewModel() {
 
     fun loginVerification(request: VerificationRequest): Observable<MixinResponse<VerificationResponse>> =
@@ -44,22 +45,20 @@ constructor(
         accountRepository.create(id, request)
     }
 
-    fun changePhone(id: String, verificationCode: String, pin: String): Observable<MixinResponse<Account>> =
+    suspend fun changePhone(id: String, verificationCode: String, pin: String): MixinResponse<Account> =
         accountRepository.changePhone(
             id,
             AccountRequest(
                 verificationCode,
                 purpose = VerificationPurpose.PHONE.name,
-                pin = encryptPin(Session.getPinToken()!!, pin)
+                pin = pinCipher.encryptPin(pin, TipBody.forPhoneNumberUpdate(id, verificationCode))
             )
-        ).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
+        )
 
     fun deactiveVerification(id: String, code: String): Observable<MixinResponse<VerificationResponse>> =
         accountRepository.deactiveVerification(
             id, DeactivateVerificationRequest(VerificationPurpose.DEACTIVATED.name, code)
         ).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
-
-    suspend fun deactivate(pin: String, verificationId: String) = accountRepository.deactivate(pin, verificationId)
 
     fun update(request: AccountUpdateRequest): Observable<MixinResponse<Account>> =
         accountRepository.update(request).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())

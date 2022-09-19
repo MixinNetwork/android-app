@@ -16,18 +16,17 @@ set_target_properties(lib_opusenc PROPERTIES IMPORTED_LOCATION
         ${distribution_OPUS_DIR}/lib/${ANDROID_ABI}/libopusenc.a)
 
 add_library(mixin SHARED
-        audio.c
-        )
+            audio.c)
 
 target_include_directories(mixin PRIVATE
         ${distribution_OPUS_DIR}/include)
 
 target_link_libraries(mixin
-        android
-        lib_opusenc
-        lib_opus
-        lib_ogg
-        log)
+                      android
+                      lib_opusenc
+                      lib_opus
+                      lib_ogg
+                      log)
 
 
 add_library(lib_lz4 STATIC IMPORTED)
