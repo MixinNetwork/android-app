@@ -161,12 +161,14 @@ class AttachmentDownloadJob(
             messageDao.updateMediaStatus(MediaStatus.CANCELED.name, message.id)
             InvalidateFlow.emit(message.conversationId)
             attachmentProcess.remove(message.id)
+            destination.delete()
             return false
         }
         if (response.code == 404) {
             messageDao.updateMediaStatus(MediaStatus.EXPIRED.name, message.id)
             InvalidateFlow.emit(message.conversationId)
             attachmentProcess.remove(message.id)
+            destination.delete()
             return true
         } else if (response.isSuccessful && !isCancelled && response.body != null) {
             val sink = destination.sink().buffer()
@@ -240,11 +242,13 @@ class AttachmentDownloadJob(
                 InvalidateFlow.emit(message.conversationId)
                 attachmentProcess.remove(message.id)
             }
+            destination.delete()
             return true
         } else {
             messageDao.updateMediaStatus(MediaStatus.CANCELED.name, message.id)
             InvalidateFlow.emit(message.conversationId)
             attachmentProcess.remove(message.id)
+            destination.delete()
             return false
         }
     }
