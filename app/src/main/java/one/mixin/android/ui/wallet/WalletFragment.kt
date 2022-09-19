@@ -34,6 +34,7 @@ import one.mixin.android.extension.mainThread
 import one.mixin.android.extension.navigate
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.numberFormat8
+import one.mixin.android.extension.toast
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshAssetsJob
 import one.mixin.android.session.Session
@@ -45,6 +46,7 @@ import one.mixin.android.ui.wallet.adapter.WalletAssetAdapter
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.AssetItem
 import one.mixin.android.vo.Fiats
+import one.mixin.android.vo.differentProcess
 import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.PercentItemView
 import one.mixin.android.widget.PercentView
@@ -68,6 +70,8 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
     private var _bottomBinding: ViewWalletBottomBinding? = null
     private val bottomBinding get() = requireNotNull(_bottomBinding)
 
+    private val sendBottomSheet = SendBottomSheet(this, R.id.action_wallet_to_single_friend_select, R.id.action_wallet_to_address_management)
+
     private val walletViewModel by viewModels<WalletViewModel>()
     private val binding by viewBinding(FragmentWalletBinding::bind, destroyTask = { b ->
         b.coinsRv.adapter = null
@@ -90,7 +94,36 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
             titleView.leftIb.setOnClickListener { activity?.onBackPressedDispatcher?.onBackPressed() }
             searchIb.setOnClickListener { view.navigate(R.id.action_wallet_to_wallet_search) }
 
-            _headBinding = ViewWalletFragmentHeaderBinding.bind(layoutInflater.inflate(R.layout.view_wallet_fragment_header, coinsRv, false))
+            _headBinding = ViewWalletFragmentHeaderBinding.bind(layoutInflater.inflate(R.layout.view_wallet_fragment_header, coinsRv, false)).apply {
+                sendReceiveView.send.setOnClickListener {
+                    AssetListBottomSheetDialogFragment.newInstance(true)
+                        .setCallback {
+                            sendBottomSheet.show(it)
+                        }.showNow(parentFragmentManager, AssetListBottomSheetDialogFragment.TAG)
+                }
+                sendReceiveView.receive.setOnClickListener {
+                    AssetListBottomSheetDialogFragment.newInstance(false)
+                        .setCallback { asset ->
+                            asset.differentProcess(
+                                {
+                                    view.navigate(
+                                        R.id.action_wallet_to_deposit_public_key,
+                                        Bundle().apply { putParcelable(ARGS_ASSET, asset) }
+                                    )
+                                },
+                                {
+                                    view.navigate(
+                                        R.id.action_wallet_to_deposit_account,
+                                        Bundle().apply { putParcelable(ARGS_ASSET, asset) }
+                                    )
+                                },
+                                {
+                                    toast(getString(R.string.error_bad_data))
+                                }
+                            )
+                        }.showNow(parentFragmentManager, AssetListBottomSheetDialogFragment.TAG)
+                }
+            }
             assetsAdapter.headerView = _headBinding!!.root
             (coinsRv.itemAnimator as SimpleItemAnimator).supportsChangeAnimations = false
             coinsRv.setHasFixedSize(true)
@@ -167,6 +200,7 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
         assetsAdapter.onItemListener = null
         _headBinding = null
         _bottomBinding = null
+        sendBottomSheet.release()
         super.onDestroyView()
     }
 

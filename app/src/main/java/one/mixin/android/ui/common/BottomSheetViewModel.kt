@@ -83,6 +83,8 @@ class BottomSheetViewModel @Inject internal constructor(
         assetRepository.simpleAssetsWithBalance()
     }
 
+    fun assetItems(): LiveData<List<AssetItem>> = assetRepository.assetItems()
+
     suspend fun transfer(
         assetId: String,
         userId: String,
@@ -590,4 +592,23 @@ class BottomSheetViewModel @Inject internal constructor(
     }
 
     suspend fun findSameConversations(selfId: String, userId: String) = conversationRepo.findSameConversations(selfId, userId)
+
+    suspend fun fuzzySearchAssets(query: String?): List<AssetItem>? =
+        if (query.isNullOrBlank()) {
+            null
+        } else {
+            val escapedQuery = query.trim().escapeSql()
+            assetRepository.fuzzySearchAssetIgnoreAmount(escapedQuery)
+        }
+
+    suspend fun queryAsset(query: String): List<AssetItem> =
+        withContext(viewModelScope.coroutineContext + Dispatchers.IO) {
+            return@withContext assetRepository.queryAsset(query)
+        }
+
+    suspend fun findOrSyncAsset(assetId: String): AssetItem? {
+        return withContext(Dispatchers.IO) {
+            assetRepository.findOrSyncAsset(assetId)
+        }
+    }
 }

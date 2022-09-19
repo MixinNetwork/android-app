@@ -25,22 +25,18 @@ import one.mixin.android.databinding.FragmentTransactionsBinding
 import one.mixin.android.databinding.ViewBadgeCircleImageBinding
 import one.mixin.android.databinding.ViewTransactionsFragmentHeaderBinding
 import one.mixin.android.databinding.ViewWalletTransactionsBottomBinding
-import one.mixin.android.databinding.ViewWalletTransactionsSendBottomBinding
 import one.mixin.android.extension.buildAmountSymbol
 import one.mixin.android.extension.colorFromAttribute
-import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.mainThreadDelayed
 import one.mixin.android.extension.navigate
 import one.mixin.android.extension.numberFormat
 import one.mixin.android.extension.numberFormat2
-import one.mixin.android.extension.putString
 import one.mixin.android.extension.screenHeight
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.ui.common.NonMessengerUserBottomSheetDialogFragment
 import one.mixin.android.ui.common.UserBottomSheetDialogFragment
-import one.mixin.android.ui.conversation.TransferFragment
 import one.mixin.android.ui.wallet.adapter.OnSnapshotListener
 import one.mixin.android.ui.wallet.adapter.TransactionsAdapter
 import one.mixin.android.vo.AssetItem
@@ -66,8 +62,7 @@ class TransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>>()
     private val headBinding get() = requireNotNull(_headBinding)
     private var _bottomBinding: ViewWalletTransactionsBottomBinding? = null
     private val bottomBinding get() = requireNotNull(_bottomBinding)
-    private var _bottomSendBinding: ViewWalletTransactionsSendBottomBinding? = null
-    private val bottomSendBinding get() = requireNotNull(_bottomSendBinding)
+    private val sendBottomSheet = SendBottomSheet(this, R.id.action_transactions_to_single_friend_select, R.id.action_transactions_to_address_management)
 
     private val adapter = TransactionsAdapter()
     lateinit var asset: AssetItem
@@ -102,10 +97,10 @@ class TransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>>()
                     .showNow(parentFragmentManager, AssetKeyBottomSheetDialogFragment.TAG)
             }
             updateHeader(asset)
-            sendTv.setOnClickListener {
-                showSendBottom()
+            sendReceiveView.send.setOnClickListener {
+                sendBottomSheet.show(asset)
             }
-            receiveTv.setOnClickListener {
+            sendReceiveView.receive.setOnClickListener {
                 asset.differentProcess(
                     {
                         view.navigate(
@@ -179,7 +174,7 @@ class TransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>>()
         _binding = null
         _headBinding = null
         _bottomBinding = null
-        _bottomSendBinding = null
+        sendBottomSheet.release()
         super.onDestroyView()
     }
 
@@ -219,15 +214,15 @@ class TransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>>()
                 walletViewModel.refreshAsset(asset.assetId)
                 walletViewModel.refreshPendingDeposits(asset)
             } else {
-                headBinding.apply {
-                    receiveTv.visibility = GONE
+                headBinding.sendReceiveView.apply {
+                    receive.visibility = GONE
                     receiveProgress.visibility = VISIBLE
                     handleMixinResponse(
                         invokeNetwork = {
                             walletViewModel.getAsset(asset.assetId)
                         },
                         successBlock = { response ->
-                            receiveTv.visibility = VISIBLE
+                            receive.visibility = VISIBLE
                             receiveProgress.visibility = GONE
                             response.data?.let { asset ->
                                 walletViewModel.upsetAsset(asset)
@@ -259,32 +254,6 @@ class TransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>>()
                 mainThreadDelayed({ activity?.onBackPressedDispatcher?.onBackPressed() }, 200)
             }
             cancel.setOnClickListener { bottomSheet.dismiss() }
-        }
-
-        bottomSheet.show()
-    }
-
-    private fun showSendBottom() {
-        val builder = BottomSheet.Builder(requireActivity())
-        _bottomSendBinding = ViewWalletTransactionsSendBottomBinding.bind(View.inflate(ContextThemeWrapper(requireActivity(), R.style.Custom), R.layout.view_wallet_transactions_send_bottom, null))
-        builder.setCustomView(bottomSendBinding.root)
-        val bottomSheet = builder.create()
-        bottomSendBinding.apply {
-            contact.setOnClickListener {
-                bottomSheet.dismiss()
-                defaultSharedPreferences.putString(TransferFragment.ASSET_PREFERENCE, asset.assetId)
-                this@TransactionsFragment.view?.navigate(R.id.action_transactions_to_single_friend_select)
-            }
-            address.setOnClickListener {
-                bottomSheet.dismiss()
-                this@TransactionsFragment.view?.navigate(
-                    R.id.action_transactions_to_address_management,
-                    Bundle().apply {
-                        putParcelable(ARGS_ASSET, asset)
-                    }
-                )
-            }
-            sendCancel.setOnClickListener { bottomSheet.dismiss() }
         }
 
         bottomSheet.show()
