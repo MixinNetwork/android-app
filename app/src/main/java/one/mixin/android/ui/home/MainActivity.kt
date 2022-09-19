@@ -55,6 +55,7 @@ import one.mixin.android.Constants.DataBase.CURRENT_VERSION
 import one.mixin.android.Constants.DataBase.DB_NAME
 import one.mixin.android.Constants.DataBase.MINI_VERSION
 import one.mixin.android.Constants.INTERVAL_24_HOURS
+import one.mixin.android.Constants.INTERVAL_7_DAYS
 import one.mixin.android.Constants.SAFETY_NET_INTERVAL_KEY
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
@@ -85,6 +86,7 @@ import one.mixin.android.extension.remove
 import one.mixin.android.extension.toast
 import one.mixin.android.job.AttachmentMigrationJob
 import one.mixin.android.job.BackupJob
+import one.mixin.android.job.CleanCacheJob
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.ReduceFts4Job
 import one.mixin.android.job.RefreshAccountJob
@@ -287,6 +289,7 @@ class MainActivity : BlazeBaseActivity() {
         checkStorage()
         refreshStickerAlbum()
         refreshExternalSchemes()
+        cleanCache()
         jobManager.addJobInBackground(RefreshAssetsJob())
         sendSafetyNetRequest()
         checkBatteryOptimization()
@@ -426,6 +429,11 @@ class MainActivity : BlazeBaseActivity() {
     private fun refreshExternalSchemes() =
         runIntervalTask(RefreshExternalSchemeJob.PREF_REFRESH_EXTERNAL_SCHEMES, INTERVAL_24_HOURS) {
             jobManager.addJobInBackground(RefreshExternalSchemeJob())
+        }
+
+    private fun cleanCache() =
+        runIntervalTask(CleanCacheJob.PREF_CLEAN_CACHE_SCHEMES, INTERVAL_7_DAYS) {
+            jobManager.addJobInBackground(CleanCacheJob())
         }
 
     private fun sendSafetyNetRequest() {

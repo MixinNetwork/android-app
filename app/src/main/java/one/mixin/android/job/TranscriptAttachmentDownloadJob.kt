@@ -31,7 +31,7 @@ import java.util.concurrent.TimeUnit
 
 class TranscriptAttachmentDownloadJob(
     val conversationId: String,
-    val transcriptMessage: TranscriptMessage
+    private val transcriptMessage: TranscriptMessage
 ) : MixinJob(
     Params(PRIORITY_RECEIVE_MESSAGE)
         .groupBy("transcript_download").requireNetwork().persist(),
@@ -141,6 +141,7 @@ class TranscriptAttachmentDownloadJob(
         call = client.newCall(request)
         val response = requireNotNull(call).execute()
         if (response.code == 404) {
+            destination.delete()
             return true
         } else if (response.isSuccessful && !isCancelled && response.body != null) {
             val sink = destination.sink().buffer()
@@ -261,8 +262,10 @@ class TranscriptAttachmentDownloadJob(
                     )
                 }
             }
+            destination.delete()
             return true
         } else {
+            destination.delete()
             return false
         }
     }
