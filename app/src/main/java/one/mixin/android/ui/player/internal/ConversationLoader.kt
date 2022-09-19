@@ -63,6 +63,7 @@ class ConversationLoader : MusicMetaLoader() {
         val subtitle = messageItem.mediaSize?.fileSize()
         artist = subtitle
         album = messageItem.conversationId
+        mediaUri = messageItem.absolutePath()
         flag = MediaBrowserCompat.MediaItem.FLAG_PLAYABLE
         messageItem.mediaStatus?.let { s ->
             downloadStatus = getDownloadStatus(s)
