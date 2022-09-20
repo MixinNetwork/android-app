@@ -762,6 +762,7 @@
         <item quantity="other">%1$d 条相关的消息</item>
     </plurals>
     <string name="Searching">搜索中</string>
+    <string name="Secured_by_TIP">由 TIP 提供安全保障</string>
     <string name="Security">安全</string>
     <string name="Select">选择</string>
     <string name="Select_Emergency_Contact">选择紧急联系人</string>
@@ -805,7 +806,8 @@
     <string name="setting_duplicate_transfer_desc">当你在 6 个小时内给相同的人转相同的金额时显示确认弹窗。</string>
     <string name="setting_emergency_change_mobile">立即修改手机号？</string>
     <string name="setting_emergency_content">紧急联系人旨在帮助你在丢失且无法找回手机号的情况下登录你的账号。</string>
-    <string name="setting_emergency_create_success">添加紧急联系人成功</string>
+    <string name="Set_emergency_create_successfully">设置紧急联系人成功</string>
+    <string name="Your_emergency_contact_has_been_changed">紧急联系人已更改</string>
     <string name="setting_emergency_desc">请放心，即使您的手机号丢失无法找回钱包资产也很安全，请牢记您的 PIN，阅读文档**了解更多**。</string>
     <string name="setting_emergency_pin_tip">紧急联系人受 PIN 加密保护</string>
     <string name="setting_emergency_send_code">请输入发送至以下 Mixin ID 的 4 位验证码：%1$s</string>

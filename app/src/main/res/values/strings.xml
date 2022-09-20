@@ -778,6 +778,7 @@
         <item quantity="other">%1$d related messages</item>
     </plurals>
     <string name="Searching">Searching</string>
+    <string name="Secured_by_TIP">Secured by TIP</string>
     <string name="secret_url">https://mixin.one/pages/1000007</string>
     <string name="Security">Security</string>
     <string name="Select">Select</string>
@@ -823,7 +824,8 @@
     <string name="setting_duplicate_transfer_desc">Display confirmation dialog when you transfer the same amount to the same person within 6 hours.</string>
     <string name="setting_emergency_change_mobile">Do you want to change your mobile number now?</string>
     <string name="setting_emergency_content">The emergency contact is designed to help you log in to your account if you are lost and can not retrieve your mobile number.</string>
-    <string name="setting_emergency_create_success">Create emergency contact successfully</string>
+    <string name="Set_emergency_create_successfully">Set emergency contact successfully</string>
+    <string name="Your_emergency_contact_has_been_changed">Your emergency contact has been changed</string>
     <string name="setting_emergency_desc">When your lost your mobile number, please contact your emergency contact by phone or other means to get the Mixin ID and verification code. Read our Emergency Contact to **learn more**.</string>
     <string name="setting_emergency_pin_tip">Your emergency contact is protected by PIN</string>
     <string name="setting_emergency_send_code">Enter the 4-digit code sent to Mixin ID: %1$s</string>

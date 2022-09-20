@@ -120,8 +120,8 @@ class VerificationEmergencyFragment : PinCodeFragment(R.layout.fragment_verifica
                     .setMessage(
                         getString(
                             if (Session.hasEmergencyContact())
-                                R.string.Changed
-                            else R.string.setting_emergency_create_success
+                                R.string.Your_emergency_contact_has_been_changed
+                            else R.string.Set_emergency_create_successfully
                         )
                     )
                     .setPositiveButton(R.string.OK) { dialog, _ ->
