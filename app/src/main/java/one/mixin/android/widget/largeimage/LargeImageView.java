@@ -15,6 +15,7 @@ limitations under the License.
  */
 package one.mixin.android.widget.largeimage;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
@@ -23,7 +24,6 @@ import android.graphics.Paint;
 import android.graphics.Rect;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
-import android.os.Build;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
 import android.view.GestureDetector;
@@ -35,15 +35,13 @@ import android.view.ViewParent;
 import android.view.animation.AccelerateInterpolator;
 import android.view.animation.DecelerateInterpolator;
 import android.widget.OverScroller;
-
 import androidx.annotation.DrawableRes;
 import androidx.core.content.ContextCompat;
 import androidx.core.view.ViewCompat;
+import one.mixin.android.widget.largeimage.factory.BitmapDecoderFactory;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import one.mixin.android.widget.largeimage.factory.BitmapDecoderFactory;
 
 /**
  * Created by LuckyJayce on 2016/11/24.
@@ -67,7 +65,7 @@ public class LargeImageView extends View implements BlockImageLoader.OnImageLoad
     private BlockImageLoader.OnImageLoadListener mOnImageLoadListener;
     private Drawable mDrawable;
     private int mLevel;
-    private ScaleHelper scaleHelper;
+    private final ScaleHelper scaleHelper;
     private AccelerateInterpolator accelerateInterpolator;
     private DecelerateInterpolator decelerateInterpolator;
     private boolean isAttachedWindow;
@@ -86,7 +84,147 @@ public class LargeImageView extends View implements BlockImageLoader.OnImageLoad
         scaleHelper = new ScaleHelper();
         setFocusable(true);
         setWillNotDraw(false);
+        GestureDetector.SimpleOnGestureListener simpleOnGestureListener = new GestureDetector.SimpleOnGestureListener() {
+
+            public long scrollTime = 0;
+
+            @Override
+            public boolean onDown(MotionEvent e) {
+                if (!mScroller.isFinished()) {
+                    mScroller.abortAnimation();
+                }
+
+                if (getParent() != null) {
+                    getParent().requestDisallowInterceptTouchEvent(true);
+                }
+
+                return true;
+            }
+
+            @Override
+            public void onShowPress(MotionEvent e) {
+
+            }
+
+            @Override
+            public boolean onSingleTapConfirmed(MotionEvent e) {
+                if (!isEnabled()) {
+                    return false;
+                }
+                if ((System.currentTimeMillis() - scrollTime) > 200 && onClickListener != null && isClickable()) {
+                    onClickListener.onClick(LargeImageView.this);
+                }
+                return true;
+            }
+
+            @Override
+            public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
+                if (!isEnabled()) {
+                    return false;
+                }
+                scrollTime = System.currentTimeMillis();
+
+                ViewParent parent = getParent();
+                if (parent != null) {
+                    if (!((getScrollX() == 0 && distanceX < 0 && Math.abs(distanceX) > Math.abs(distanceY)) ||
+                            (getScrollX() == getScrollRangeX() && distanceX > 0 && Math.abs(distanceX) > Math.abs(distanceY)) ||
+                            (getScrollY() == 0 && distanceY < 0 && Math.abs(distanceX) < Math.abs(distanceY)) ||
+                            (getScrollY() == getScrollRangeY() && distanceY > 0 && Math.abs(distanceX) < Math.abs(distanceY)))) {
+                        parent.requestDisallowInterceptTouchEvent(true);
+                    } else {
+                        if (!scaleGestureDetector.isInProgress()) {
+                            parent.requestDisallowInterceptTouchEvent(false);
+                        }
+                    }
+                }
+
+                overScrollByCompat((int) distanceX, (int) distanceY, getScrollX(), getScrollY(), getScrollRangeX(), getScrollRangeY());
+                return true;
+            }
+
+            @Override
+            public void onLongPress(MotionEvent e) {
+                if (!isEnabled()) {
+                    return;
+                }
+                if (onLongClickListener != null && isLongClickable()) {
+                    onLongClickListener.onLongClick(LargeImageView.this);
+                }
+            }
+
+            @Override
+            public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
+                if (!isEnabled()) {
+                    return false;
+                }
+                fling((int) -velocityX, (int) -velocityY);
+                return true;
+            }
+
+            @Override
+            public boolean onDoubleTap(MotionEvent e) {
+                if (!isEnabled()) {
+                    return false;
+                }
+                if (onDoubleClickListener != null && onDoubleClickListener.onDoubleClick(LargeImageView.this, e)) {
+                    return true;
+                }
+                if (!hasLoad()) {
+                    return false;
+                }
+                float doubleScale;
+                if (fitScale < 2) {
+                    doubleScale = 2;
+                } else {
+                    if (fitScale > maxScale) {
+                        doubleScale = maxScale;
+                    } else {
+                        doubleScale = fitScale;
+                    }
+                }
+                float newScale;
+                if (mScale < 1) {
+                    newScale = 1;
+                } else if (mScale < doubleScale) {
+                    newScale = doubleScale;
+                } else {
+                    newScale = 1;
+                }
+                smoothScale(newScale, (int) e.getX(), (int) e.getY());
+                return true;
+            }
+        };
         gestureDetector = new GestureDetector(context, simpleOnGestureListener);
+        ScaleGestureDetector.OnScaleGestureListener onScaleGestureListener = new ScaleGestureDetector.OnScaleGestureListener() {
+            @Override
+            public boolean onScale(ScaleGestureDetector detector) {
+                if (!isEnabled()) {
+                    return false;
+                }
+                if (!hasLoad()) {
+                    return false;
+                }
+                float newScale;
+                newScale = mScale * detector.getScaleFactor();
+                if (newScale > maxScale) {
+                    newScale = maxScale;
+                } else if (newScale < minScale) {
+                    newScale = minScale;
+                }
+                setScale(newScale, (int) detector.getFocusX(), (int) detector.getFocusY());
+                getParent().requestDisallowInterceptTouchEvent(true);
+                return true;
+            }
+
+            @Override
+            public boolean onScaleBegin(ScaleGestureDetector detector) {
+                return true;
+            }
+
+            @Override
+            public void onScaleEnd(ScaleGestureDetector detector) {
+            }
+        };
         scaleGestureDetector = new ScaleGestureDetector(context, onScaleGestureListener);
 
         imageBlockImageLoader = new BlockImageLoader(context);
@@ -100,6 +238,7 @@ public class LargeImageView extends View implements BlockImageLoader.OnImageLoad
         paint.setAntiAlias(true);
     }
 
+    @SuppressLint("ClickableViewAccessibility")
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         scaleGestureDetector.onTouchEvent(event);
@@ -121,8 +260,8 @@ public class LargeImageView extends View implements BlockImageLoader.OnImageLoad
             if (oldX != x || oldY != y) {
                 final int rangeY = getScrollRangeY();
                 final int rangeX = getScrollRangeX();
-                overScrollByCompat(x - oldX, y - oldY, oldX, oldY, rangeX, rangeY,
-                        0, 0, false);
+                overScrollByCompat(x - oldX, y - oldY, oldX, oldY, rangeX, rangeY
+                );
             }
             if (!mScroller.isFinished()) {
                 notifyInvalidate();
@@ -228,9 +367,7 @@ public class LargeImageView extends View implements BlockImageLoader.OnImageLoad
 
         if (d != null) {
             d.setCallback(this);
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                d.setLayoutDirection(getLayoutDirection());
-            }
+            d.setLayoutDirection(getLayoutDirection());
             if (d.isStateful()) {
                 d.setState(getDrawableState());
             }
@@ -240,10 +377,6 @@ public class LargeImageView extends View implements BlockImageLoader.OnImageLoad
             d.setLevel(mLevel);
             mDrawableWidth = d.getIntrinsicWidth();
             mDrawableHeight = d.getIntrinsicHeight();
-//            applyImageTint();
-//            applyColorMod();
-//
-//            configureBounds();
         } else {
             mDrawableWidth = mDrawableHeight = -1;
         }
@@ -456,9 +589,9 @@ public class LargeImageView extends View implements BlockImageLoader.OnImageLoad
         }
     }
 
-    private List<BlockImageLoader.DrawData> drawDatas = new ArrayList<>();
+    private final List<BlockImageLoader.DrawData> drawDatas = new ArrayList<>();
 
-    private Rect imageRect = new Rect();
+    private final Rect imageRect = new Rect();
 
     @Override
     public void onBlockImageLoadFinished() {
@@ -506,8 +639,9 @@ public class LargeImageView extends View implements BlockImageLoader.OnImageLoad
     private void initFitImageScale(int imageWidth, int imageHeight) {
         final int layoutWidth = getMeasuredWidth();
         final int layoutHeight = getMeasuredHeight();
+        float v = (1.0f * imageWidth / layoutWidth) * layoutHeight / imageHeight;
         if (imageWidth > imageHeight) {
-            fitScale = (1.0f * imageWidth / layoutWidth) * layoutHeight / imageHeight;
+            fitScale = v;
             maxScale = 1.0f * imageWidth / layoutWidth * 4;
             minScale = 1.0f * imageWidth / layoutWidth / 4;
             if (minScale > 1) {
@@ -517,14 +651,13 @@ public class LargeImageView extends View implements BlockImageLoader.OnImageLoad
             fitScale = 1.0f;
             minScale = 0.25f;
             maxScale = 1.0f * imageWidth / layoutWidth;
-            float a = (1.0f * imageWidth / layoutWidth) * layoutHeight / imageHeight;
             float density = getContext().getResources().getDisplayMetrics().density;
             maxScale = maxScale * density;
             if (maxScale < 4) {
                 maxScale = 4;
             }
-            if (minScale > a) {
-                minScale = a;
+            if (minScale > v) {
+                minScale = v;
             }
         }
         if (criticalScaleValueHook != null) {
@@ -557,11 +690,9 @@ public class LargeImageView extends View implements BlockImageLoader.OnImageLoad
         }
     }
 
-    private boolean overScrollByCompat(int deltaX, int deltaY,
-                                       int scrollX, int scrollY,
-                                       int scrollRangeX, int scrollRangeY,
-                                       int maxOverScrollX, int maxOverScrollY,
-                                       boolean isTouchEvent) {
+    private void overScrollByCompat(int deltaX, int deltaY,
+                                    int scrollX, int scrollY,
+                                    int scrollRangeX, int scrollRangeY) {
         int oldScrollX = getScrollX();
         int oldScrollY = getScrollY();
 
@@ -574,10 +705,10 @@ public class LargeImageView extends View implements BlockImageLoader.OnImageLoad
         newScrollY += deltaY;
 
         // Clamp values if at the limits and record
-        final int left = -maxOverScrollX;
-        final int right = maxOverScrollX + scrollRangeX;
-        final int top = -maxOverScrollY;
-        final int bottom = maxOverScrollY + scrollRangeY;
+        final int left = -0;
+        final int right = 0 + scrollRangeX;
+        final int top = -0;
+        final int bottom = 0 + scrollRangeY;
 
         boolean clampedX = false;
         if (newScrollX > right) {
@@ -604,10 +735,12 @@ public class LargeImageView extends View implements BlockImageLoader.OnImageLoad
             newScrollY = 0;
         }
         onOverScrolled(newScrollX, newScrollY, clampedX, clampedY);
-        return getScrollX() - oldScrollX == deltaX || getScrollY() - oldScrollY == deltaY;
+        if (getScrollX() - oldScrollX != deltaX) {
+            getScrollY();
+        }
     }
 
-    private boolean fling(int velocityX, int velocityY) {
+    private void fling(int velocityX, int velocityY) {
         if (Math.abs(velocityX) < mMinimumVelocity) {
             velocityX = 0;
         }
@@ -631,9 +764,7 @@ public class LargeImageView extends View implements BlockImageLoader.OnImageLoad
             mScroller.fling(getScrollX(), getScrollY(), velocityX, velocityY, 0, Math.max(0, right - width), 0,
                     Math.max(0, bottom - height), width / 2, height / 2);
             notifyInvalidate();
-            return true;
         }
-        return false;
     }
 
     protected void onOverScrolled(int scrollX, int scrollY,
@@ -701,117 +832,6 @@ public class LargeImageView extends View implements BlockImageLoader.OnImageLoad
 
     }
 
-    private GestureDetector.SimpleOnGestureListener simpleOnGestureListener = new GestureDetector.SimpleOnGestureListener() {
-
-        public long scrollTime = 0;
-
-        @Override
-        public boolean onDown(MotionEvent e) {
-            if (!mScroller.isFinished()) {
-                mScroller.abortAnimation();
-            }
-
-            if (getParent() != null) {
-                getParent().requestDisallowInterceptTouchEvent(true);
-            }
-
-            return true;
-        }
-
-        @Override
-        public void onShowPress(MotionEvent e) {
-
-        }
-
-        @Override
-        public boolean onSingleTapConfirmed(MotionEvent e) {
-            if (!isEnabled()) {
-                return false;
-            }
-            if ((System.currentTimeMillis() - scrollTime) > 200 && onClickListener != null && isClickable()) {
-                onClickListener.onClick(LargeImageView.this);
-            }
-            return true;
-        }
-
-        @Override
-        public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
-            if (!isEnabled()) {
-                return false;
-            }
-            scrollTime = System.currentTimeMillis();
-
-            ViewParent parent = getParent();
-            if (parent != null) {
-                if (!((getScrollX() == 0 && distanceX < 0 && Math.abs(distanceX) > Math.abs(distanceY)) ||
-                        (getScrollX() == getScrollRangeX() && distanceX > 0 && Math.abs(distanceX) > Math.abs(distanceY)) ||
-                        (getScrollY() == 0 && distanceY < 0 && Math.abs(distanceX) < Math.abs(distanceY)) ||
-                        (getScrollY() == getScrollRangeY() && distanceY > 0 && Math.abs(distanceX) < Math.abs(distanceY)))) {
-                    parent.requestDisallowInterceptTouchEvent(true);
-                } else {
-                    if (!scaleGestureDetector.isInProgress()) {
-                        parent.requestDisallowInterceptTouchEvent(false);
-                    }
-                }
-            }
-
-            overScrollByCompat((int) distanceX, (int) distanceY, getScrollX(), getScrollY(), getScrollRangeX(), getScrollRangeY(), 0, 0, false);
-            return true;
-        }
-
-        @Override
-        public void onLongPress(MotionEvent e) {
-            if (!isEnabled()) {
-                return;
-            }
-            if (onLongClickListener != null && isLongClickable()) {
-                onLongClickListener.onLongClick(LargeImageView.this);
-            }
-        }
-
-        @Override
-        public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
-            if (!isEnabled()) {
-                return false;
-            }
-            fling((int) -velocityX, (int) -velocityY);
-            return true;
-        }
-
-        @Override
-        public boolean onDoubleTap(MotionEvent e) {
-            if (!isEnabled()) {
-                return false;
-            }
-            if (onDoubleClickListener != null && onDoubleClickListener.onDoubleClick(LargeImageView.this, e)) {
-                return true;
-            }
-            if (!hasLoad()) {
-                return false;
-            }
-            float doubleScale;
-            if (fitScale < 2) {
-                doubleScale = 2;
-            } else {
-                if (fitScale > maxScale) {
-                    doubleScale = maxScale;
-                } else {
-                    doubleScale = fitScale;
-                }
-            }
-            float newScale;
-            if (mScale < 1) {
-                newScale = 1;
-            } else if (mScale < doubleScale) {
-                newScale = doubleScale;
-            } else {
-                newScale = 1;
-            }
-            smoothScale(newScale, (int) e.getX(), (int) e.getY());
-            return true;
-        }
-    };
-
 
     public void smoothScale(float newScale, int centerX, int centerY) {
         if (mScale > newScale) {
@@ -827,35 +847,6 @@ public class LargeImageView extends View implements BlockImageLoader.OnImageLoad
         }
         notifyInvalidate();
     }
-
-    private ScaleGestureDetector.OnScaleGestureListener onScaleGestureListener = new ScaleGestureDetector.OnScaleGestureListener() {
-        @Override
-        public boolean onScale(ScaleGestureDetector detector) {
-            if (!isEnabled()) {
-                return false;
-            }
-            if (!hasLoad()) {
-                return false;
-            }
-            float newScale;
-            newScale = mScale * detector.getScaleFactor();
-            if (newScale > maxScale) {
-                newScale = maxScale;
-            } else if (newScale < minScale) {
-                newScale = minScale;
-            }
-            setScale(newScale, (int) detector.getFocusX(), (int) detector.getFocusY());
-            getParent().requestDisallowInterceptTouchEvent(true);
-            return true;
-        }
-
-        @Override
-        public boolean onScaleBegin(ScaleGestureDetector detector) { return true; }
-
-        @Override
-        public void onScaleEnd(ScaleGestureDetector detector) {
-        }
-    };
 
 
     @Override
@@ -878,7 +869,7 @@ public class LargeImageView extends View implements BlockImageLoader.OnImageLoad
         int sY = getScrollY();
         int dx = (int) ((sX + centerX) * (scale / preScale - 1));
         int dy = (int) ((sY + centerY) * (scale / preScale - 1));
-        overScrollByCompat(dx, dy, sX, sY, getScrollRangeX(), getScrollRangeY(), 0, 0, false);
+        overScrollByCompat(dx, dy, sX, sY, getScrollRangeX(), getScrollRangeY());
         notifyInvalidate();
     }
 
