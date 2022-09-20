@@ -30,6 +30,7 @@ import one.mixin.android.databinding.FragmentBackupBinding
 import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.getDisplayPath
+import one.mixin.android.extension.getLegacyBackupPath
 import one.mixin.android.extension.getRelativeTimeSpan
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.putString
@@ -45,6 +46,7 @@ import one.mixin.android.util.backup.delete
 import one.mixin.android.util.backup.deleteApi29
 import one.mixin.android.util.backup.findBackup
 import one.mixin.android.util.backup.findBackupApi29
+import one.mixin.android.util.backup.getBackupDirectory
 import one.mixin.android.util.reportException
 import one.mixin.android.util.viewBinding
 import timber.log.Timber
@@ -287,7 +289,32 @@ class BackUpFragment : BaseFragment(R.layout.fragment_backup) {
                 binding.backupInfo.isInvisible = false
                 if (info == null) {
                     backupInfo.text = getString(R.string.backup_external_storage, getString(R.string.Never))
-                    backupPath.isVisible = false
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                        if (canUserAccessBackupDirectory(requireContext())) {
+                            val backupDirectoryUri = getBackupDirectory(requireContext())
+                            if (backupDirectoryUri != null) {
+                                backupPath.text = getString(
+                                    R.string.restore_path,
+                                    requireContext().getDisplayPath(backupDirectoryUri)
+
+                                )
+                                backupPath.isVisible = true
+                            } else {
+                                backupPath.isVisible = false
+                            }
+                        } else {
+                            backupPath.isVisible = false
+                        }
+                    } else {
+                        backupPath.isVisible = true
+                        backupPath.text = getString(
+                            R.string.restore_path,
+                            requireContext().getLegacyBackupPath(
+                                create = false,
+                                legacy = false
+                            )?.absolutePath
+                        )
+                    }
                 } else {
                     val time = info.lastModified.run {
                         this.getRelativeTimeSpan()
