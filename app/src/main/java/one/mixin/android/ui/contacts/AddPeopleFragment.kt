@@ -59,6 +59,7 @@ class AddPeopleFragment : BaseFragment(R.layout.fragment_add_people) {
             searchEt.showSoftInputOnFocus = false
             searchEt.isClickable = true
             searchEt.requestFocus()
+            keyboard.tipTitleEnabled = false
             keyboard.setKeyboardKeys(keys)
             keyboard.setOnClickKeyboardListener(mKeyboardListener)
             keyboard.animate().translationY(0f).start()

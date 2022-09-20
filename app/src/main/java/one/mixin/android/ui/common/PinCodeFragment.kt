@@ -55,6 +55,7 @@ abstract class PinCodeFragment(@LayoutRes contentLayoutId: Int) : FabLoadingFrag
         super.onViewCreated(view, savedInstanceState)
         backIv.setOnClickListener { activity?.onBackPressedDispatcher?.onBackPressed() }
         pinVerificationView.setOnCodeEnteredListener(mPinVerificationListener)
+        verificationKeyboard.tipTitleEnabled = false
         verificationKeyboard.setKeyboardKeys(KEYS)
         verificationKeyboard.setOnClickKeyboardListener(mKeyboardListener)
         verificationCover.isClickable = true

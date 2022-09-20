@@ -6,11 +6,13 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.RelativeLayout
+import androidx.core.view.isVisible
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemGridKeyboardBinding
 import one.mixin.android.databinding.ViewKeyboardBinding
+import one.mixin.android.session.Session
 
 class Keyboard @JvmOverloads constructor(
     context: Context,
@@ -20,6 +22,8 @@ class Keyboard @JvmOverloads constructor(
 
     private var onClickKeyboardListener: OnClickKeyboardListener? = null
     private var key: Array<String>? = null
+
+    var tipTitleEnabled = true
 
     private val keyboardAdapter = object : RecyclerView.Adapter<KeyboardHolder>() {
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): KeyboardHolder {
@@ -71,13 +75,11 @@ class Keyboard @JvmOverloads constructor(
 
     private val binding = ViewKeyboardBinding.inflate(LayoutInflater.from(context), this, true)
 
-    /**
-     * 初始化KeyboardView
-     */
     private fun initKeyboardView() {
         binding.gvKeyboard.adapter = keyboardAdapter
         binding.gvKeyboard.layoutManager = GridLayoutManager(context, 3)
         binding.gvKeyboard.addItemDecoration(SpacesItemDecoration(1))
+        binding.tipFl.isVisible = tipTitleEnabled && Session.getTipPub().isNullOrBlank().not()
     }
 
     interface OnClickKeyboardListener {
@@ -90,11 +92,6 @@ class Keyboard @JvmOverloads constructor(
         this.onClickKeyboardListener = onClickKeyboardListener
     }
 
-    /**
-     * 设置键盘所显示的内容
-     *
-     * @param key
-     */
     fun setKeyboardKeys(key: Array<String>) {
         this.key = key
         initKeyboardView()

@@ -120,6 +120,7 @@ class MobileFragment : BaseFragment(R.layout.fragment_mobile) {
             }
             getUserCountryInfo()
 
+            keyboard.tipTitleEnabled = false
             keyboard.setKeyboardKeys(KEYS)
             keyboard.setOnClickKeyboardListener(mKeyboardListener)
             keyboard.animate().translationY(0f).start()
