@@ -47,6 +47,7 @@ import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_42_43
 import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_43_44
 import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_44_45
 import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_45_46
+import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_46_47
 import one.mixin.android.db.converter.DepositEntryListConverter
 import one.mixin.android.db.converter.MessageStatusConverter
 import one.mixin.android.util.GsonHelper
@@ -60,6 +61,7 @@ import one.mixin.android.vo.AssetsExtra
 import one.mixin.android.vo.Circle
 import one.mixin.android.vo.CircleConversation
 import one.mixin.android.vo.Conversation
+import one.mixin.android.vo.ConversationExt
 import one.mixin.android.vo.ExpiredMessage
 import one.mixin.android.vo.FavoriteApp
 import one.mixin.android.vo.FloodMessage
@@ -125,12 +127,14 @@ import kotlin.math.min
         (Property::class),
         (RemoteMessageStatus::class),
         (ExpiredMessage::class),
+        (ConversationExt::class)
     ],
     version = CURRENT_VERSION
 )
 @TypeConverters(MessageStatusConverter::class, DepositEntryListConverter::class)
 abstract class MixinDatabase : RoomDatabase() {
     abstract fun conversationDao(): ConversationDao
+    abstract fun conversationExtDao(): ConversationExtDao
     abstract fun messageDao(): MessageDao
     abstract fun userDao(): UserDao
     abstract fun participantSessionDao(): ParticipantSessionDao
@@ -190,7 +194,7 @@ abstract class MixinDatabase : RoomDatabase() {
                             MIGRATION_22_23, MIGRATION_23_24, MIGRATION_24_25, MIGRATION_25_26, MIGRATION_26_27, MIGRATION_27_28, MIGRATION_28_29,
                             MIGRATION_29_30, MIGRATION_30_31, MIGRATION_31_32, MIGRATION_32_33, MIGRATION_33_34, MIGRATION_34_35, MIGRATION_35_36,
                             MIGRATION_36_37, MIGRATION_37_38, MIGRATION_38_39, MIGRATION_39_40, MIGRATION_40_41, MIGRATION_41_42, MIGRATION_42_43,
-                            MIGRATION_43_44, MIGRATION_44_45, MIGRATION_45_46
+                            MIGRATION_43_44, MIGRATION_44_45, MIGRATION_45_46, MIGRATION_46_47
                         )
                         .enableMultiInstanceInvalidation()
                         .setQueryExecutor(

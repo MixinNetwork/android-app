@@ -343,6 +343,13 @@ class MixinDatabaseMigrations private constructor() {
                 database.execSQL("ALTER TABLE `addresses` ADD COLUMN fee_asset_id TEXT NOT NULL DEFAULT ''")
             }
         }
+        val MIGRATION_46_47: Migration = object : Migration(46, 47) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                database.execSQL("CREATE TABLE IF NOT EXISTS `conversation_ext` (`conversation_id` TEXT NOT NULL, `count` INTEGER NOT NULL DEFAULT 0, PRIMARY KEY(`conversation_id`))")
+            }
+        }
+
+
 
         // If you add a new table, be sure to add a clear method to the DatabaseUtil
     }

@@ -49,6 +49,7 @@ import one.mixin.android.extension.notificationManager
 import one.mixin.android.extension.supportsOreo
 import one.mixin.android.job.BaseJob.Companion.PRIORITY_ACK_MESSAGE
 import one.mixin.android.job.NotificationGenerator.conversationDao
+import one.mixin.android.job.NotificationGenerator.conversationExtDao
 import one.mixin.android.receiver.ExitBroadcastReceiver
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BatteryOptimizationDialogActivity
@@ -550,6 +551,7 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
             }
             cIds.forEach { id ->
                 conversationDao.refreshLastMessageId(id)
+                conversationExtDao.refreshCountByConversationId(id)
                 InvalidateFlow.emit(id)
             }
             nextExpirationTime = null

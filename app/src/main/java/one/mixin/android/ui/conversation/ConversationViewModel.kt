@@ -20,7 +20,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.Constants
-import one.mixin.android.Constants.FIXED_LOAD_SIZE
 import one.mixin.android.Constants.PAGE_SIZE
 import one.mixin.android.MixinApplication
 import one.mixin.android.api.handleMixinResponse
@@ -131,15 +130,7 @@ internal constructor(
             .build()
 
         return FastLivePagedListBuilder(
-            conversationRepository.getMessages(
-                conversationId,
-                if (firstKeyToLoad > FIXED_LOAD_SIZE) {
-                    // Multiple Page Size, round up
-                    ((firstKeyToLoad + PAGE_SIZE - 1) / PAGE_SIZE) * PAGE_SIZE
-                } else {
-                    FIXED_LOAD_SIZE
-                }
-            ),
+            conversationRepository.getMessages(conversationId),
             pagedListConfig
         ).setInitialLoadKey(firstKeyToLoad).build()
     }

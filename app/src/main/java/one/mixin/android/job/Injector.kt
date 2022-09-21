@@ -20,6 +20,7 @@ import one.mixin.android.db.AssetDao
 import one.mixin.android.db.CircleConversationDao
 import one.mixin.android.db.CircleDao
 import one.mixin.android.db.ConversationDao
+import one.mixin.android.db.ConversationExtDao
 import one.mixin.android.db.ExpiredMessageDao
 import one.mixin.android.db.HyperlinkDao
 import one.mixin.android.db.JobDao
@@ -70,6 +71,8 @@ open class Injector {
     lateinit var jobDao: JobDao
     @Inject
     lateinit var conversationDao: ConversationDao
+    @Inject
+    lateinit var conversationExtDao: ConversationExtDao
     @Inject
     lateinit var participantDao: ParticipantDao
     @Inject
