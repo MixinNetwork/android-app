@@ -2,6 +2,7 @@ package one.mixin.android.ui.landing
 
 import android.os.Bundle
 import android.view.View
+import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
@@ -24,10 +25,12 @@ import one.mixin.android.crypto.PrivacyPreference.getIsSyncSession
 import one.mixin.android.crypto.PrivacyPreference.putIsLoaded
 import one.mixin.android.crypto.PrivacyPreference.putIsSyncSession
 import one.mixin.android.crypto.generateEd25519KeyPair
+import one.mixin.android.databinding.FragmentLoadingBinding
 import one.mixin.android.extension.base64Encode
 import one.mixin.android.extension.decodeBase64
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.putBoolean
+import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.job.InitializeJob
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.session.Session
@@ -37,6 +40,7 @@ import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.ErrorHandler.Companion.FORBIDDEN
 import one.mixin.android.util.reportException
+import one.mixin.android.util.viewBinding
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -52,30 +56,50 @@ class LoadingFragment : BaseFragment(R.layout.fragment_loading) {
     lateinit var jobManager: MixinJobManager
 
     private val loadingViewModel by viewModels<LoadingViewModel>()
+    private val binding by viewBinding(FragmentLoadingBinding::bind)
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         MixinApplication.get().onlining.set(true)
-        lifecycleScope.launch {
+        checkAndLoad()
+    }
+
+    private fun checkAndLoad() = lifecycleScope.launch {
+        showLoading()
+
+        if (Session.shouldUpdateKey()) {
+            updateRsa2EdDsa()
+
             if (Session.shouldUpdateKey()) {
-                updateRsa2EdDsa()
+                showRetry()
+                return@launch
             }
+        }
+
+        if (!getIsLoaded(requireContext(), false)) {
+            load()
 
             if (!getIsLoaded(requireContext(), false)) {
-                load()
+                showRetry()
+                return@launch
             }
+        }
+
+        if (!getIsSyncSession(requireContext(), false)) {
+            syncSession()
 
             if (!getIsSyncSession(requireContext(), false)) {
-                syncSession()
+                showRetry()
+                return@launch
             }
-
-            jobManager.addJobInBackground(InitializeJob(TEAM_MIXIN_USER_ID, TEAM_MIXIN_USER_NAME))
-            if (TEAM_BOT_ID.isNotEmpty()) {
-                jobManager.addJobInBackground(InitializeJob(TEAM_BOT_ID, TEAM_BOT_NAME))
-            }
-            MainActivity.show(requireContext())
-            activity?.finish()
         }
+
+        jobManager.addJobInBackground(InitializeJob(TEAM_MIXIN_USER_ID, TEAM_MIXIN_USER_NAME))
+        if (TEAM_BOT_ID.isNotEmpty()) {
+            jobManager.addJobInBackground(InitializeJob(TEAM_BOT_ID, TEAM_BOT_NAME))
+        }
+        MainActivity.show(requireContext())
+        activity?.finish()
     }
 
     private suspend fun updateRsa2EdDsa() {
@@ -125,6 +149,30 @@ class LoadingFragment : BaseFragment(R.layout.fragment_loading) {
             putIsSyncSession(requireContext(), true)
         } catch (e: Exception) {
             ErrorHandler.handleError(e)
+        }
+    }
+
+    private fun showRetry() {
+        if (viewDestroyed()) return
+
+        count = 2
+        binding.apply {
+            subTitle.isVisible = false
+            pb.isVisible = false
+            retryTv.isVisible = true
+            retryTv.setOnClickListener {
+                checkAndLoad()
+            }
+        }
+    }
+
+    private fun showLoading() {
+        if (viewDestroyed()) return
+
+        binding.apply {
+            subTitle.isVisible = true
+            pb.isVisible = true
+            retryTv.isVisible = false
         }
     }
 
