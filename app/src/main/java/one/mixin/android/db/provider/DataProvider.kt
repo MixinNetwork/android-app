@@ -17,20 +17,24 @@ import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.SearchMessageDetailItem
 import one.mixin.android.vo.SearchMessageItem
 import one.mixin.android.vo.User
-import java.util.concurrent.atomic.AtomicBoolean
+import timber.log.Timber
 
 @SuppressLint("RestrictedApi")
 class DataProvider {
     companion object {
 
-        fun getMessages(database: MixinDatabase, conversationId: String, count: Int?) =
+        fun getMessages(database: MixinDatabase, conversationId: String) =
             object : DataSource.Factory<Int, MessageItem>() {
-                private val firstLoad: AtomicBoolean = AtomicBoolean(true)
-                private val fastCountCallback = fun(): Int? { // Message provider is only called for the first time
-                    return if (count != null && firstLoad.compareAndSet(true, false)) {
-                        count
-                    } else {
-                        null
+                private val fastCountCallback = fun(): Int {
+                    val conversationExtDao = database.conversationExtDao()
+                    val count = conversationExtDao.getMessageCountByConversationId(conversationId)
+                    if (count != null) {
+                        Timber.e("count $count")
+                        return count
+                    }
+                    conversationExtDao.refreshCountByConversationId(conversationId)
+                    return (conversationExtDao.getMessageCountByConversationId(conversationId) ?: 0).apply {
+                        Timber.e("count: $count")
                     }
                 }
                 override fun create(): DataSource<Int, MessageItem> {
@@ -62,16 +66,13 @@ class DataProvider {
                         LEFT JOIN pin_messages pm ON m.id = pm.message_id
                         LEFT JOIN expired_messages em ON m.id = em.message_id
                         """
-                    val countStatement = RoomSQLiteQuery.acquire("SELECT count(1) FROM messages m INNER JOIN users u ON m.user_id = u.user_id WHERE conversation_id = ?", 1).apply {
-                        bindString(1, conversationId)
-                    }
                     val offsetStatement = RoomSQLiteQuery.acquire("SELECT m.id FROM messages m INNER JOIN users u ON m.user_id = u.user_id WHERE conversation_id = ? ORDER BY m.created_at DESC LIMIT ? OFFSET ?", 3).apply {
                         bindString(1, conversationId)
                     }
                     val querySqlGenerator = fun(ids: String): RoomSQLiteQuery {
                         return RoomSQLiteQuery.acquire("$sql WHERE m.id IN ($ids) ORDER BY m.created_at DESC", 0)
                     }
-                    return object : FastLimitOffsetDataSource<MessageItem, String>(database, countStatement, offsetStatement, fastCountCallback, querySqlGenerator) {
+                    return object : FastLimitOffsetDataSource<MessageItem, String>(database, offsetStatement, fastCountCallback, querySqlGenerator) {
                         override fun convertRows(cursor: Cursor?): MutableList<MessageItem> {
                             return convertToMessageItems(cursor)
                         }

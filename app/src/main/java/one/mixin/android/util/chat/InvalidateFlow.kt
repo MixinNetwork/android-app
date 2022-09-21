@@ -6,6 +6,7 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.launch
 import one.mixin.android.MixinApplication
+import timber.log.Timber
 
 object InvalidateFlow {
     private val invalidateFlow by lazy {
@@ -13,6 +14,7 @@ object InvalidateFlow {
     }
 
     fun emit(conversationId: String) {
+        Timber.e("emit $conversationId")
         MixinApplication.appScope.launch {
             invalidateFlow.emit(conversationId)
         }

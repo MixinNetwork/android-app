@@ -148,4 +148,8 @@ internal object BaseDbModule {
     @Singleton
     @Provides
     fun providesExpiredMessageDao(db: MixinDatabase) = db.expiredMessageDao()
+
+    @Singleton
+    @Provides
+    fun providesConversationExtDao(db: MixinDatabase) = db.conversationExtDao()
 }

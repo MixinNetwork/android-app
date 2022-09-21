@@ -16,9 +16,8 @@ import timber.log.Timber
 @RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
 abstract class FastLimitOffsetDataSource<T, S>(
     private val db: RoomDatabase,
-    private val countQuery: RoomSQLiteQuery,
     private val offsetStatement: RoomSQLiteQuery,
-    private val fastCountCallback: () -> Int?,
+    private val fastCountCallback: () -> Int,
     private val querySqlGenerator: (String) -> RoomSQLiteQuery,
     private vararg val tables: String
 ) : PositionalDataSource<T>() {
@@ -36,17 +35,7 @@ abstract class FastLimitOffsetDataSource<T, S>(
     /**
      * Count number of rows query can return
      */
-    private fun countItems(): Int {
-        val cursor = db.query(countQuery)
-        return try {
-            if (cursor.moveToFirst()) {
-                cursor.getInt(0)
-            } else 0
-        } finally {
-            cursor.close()
-            countQuery.release()
-        }
-    }
+    private fun countItems(): Int = fastCountCallback()
 
     override fun isInvalid(): Boolean {
         db.invalidationTracker.refreshVersionsSync()
@@ -58,8 +47,7 @@ abstract class FastLimitOffsetDataSource<T, S>(
         params: LoadInitialParams,
         callback: LoadInitialCallback<T>
     ) {
-        val fastCont = fastCountCallback.invoke()
-        val totalCount = fastCont ?: countItems()
+        val totalCount = countItems()
         if (totalCount == 0) {
             callback.onResult(emptyList(), 0, 0)
             return
@@ -70,17 +58,11 @@ abstract class FastLimitOffsetDataSource<T, S>(
         val list = loadRange(firstLoadPosition, firstLoadSize)
         try {
             callback.onResult(list, firstLoadPosition, totalCount)
-            if (fastCont != null) { // If quick return needs to activate the next query
-                invalidate()
-            }
         } catch (e: IllegalArgumentException) {
             // workaround with paging initial load size NOT to be a multiple of page size
             Timber.w(e)
             try {
                 callback.onResult(list, firstLoadPosition, firstLoadPosition + list.size)
-                if (fastCont != null) {
-                    invalidate()
-                }
             } catch (iae: IllegalArgumentException) {
                 // workaround with paging incorrect tiling
                 val message = (
