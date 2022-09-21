@@ -283,11 +283,7 @@ suspend fun restoreApi29(
     context: Context,
     callback: (Result) -> Unit
 ) = withContext(Dispatchers.IO) {
-    val backupDirectoryUri =
-        context.defaultSharedPreferences.getString(
-            Constants.Account.PREF_BACKUP_DIRECTORY,
-            null
-        )?.toUri()
+    val backupDirectoryUri = getBackupDirectory(context)
     if (backupDirectoryUri == null) {
         withContext(Dispatchers.Main) {
             callback(Result.NOT_FOUND)
@@ -362,11 +358,7 @@ suspend fun delete(
 suspend fun deleteApi29(
     context: Context
 ): Boolean = withContext(Dispatchers.IO) {
-    val backupDirectoryUri =
-        context.defaultSharedPreferences.getString(
-            Constants.Account.PREF_BACKUP_DIRECTORY,
-            null
-        )?.toUri() ?: return@withContext false
+    val backupDirectoryUri = getBackupDirectory(context) ?: return@withContext false
     val backupDirectory =
         DocumentFile.fromTreeUri(context, backupDirectoryUri)?.findFile(BACKUP_DIR_NAME)
             ?: return@withContext false
@@ -400,11 +392,7 @@ suspend fun findBackupApi29(
     context: Context,
     coroutineContext: CoroutineContext
 ): BackupInfo? = withContext(coroutineContext) {
-    val backupDirectoryUri =
-        context.defaultSharedPreferences.getString(
-            Constants.Account.PREF_BACKUP_DIRECTORY,
-            null
-        )?.toUri() ?: return@withContext null
+    val backupDirectoryUri = getBackupDirectory(context) ?: return@withContext null
     val backupDirectory =
         DocumentFile.fromTreeUri(context, backupDirectoryUri) ?: return@withContext null
     if (!internalCheckAccessBackupDirectory(context, backupDirectoryUri)) {
@@ -476,12 +464,11 @@ fun findOldBackupSync(context: Context, legacy: Boolean = false): File? {
 }
 
 fun canUserAccessBackupDirectory(context: Context): Boolean {
-    val backupDirectoryUri =
-        context.defaultSharedPreferences.getString(Constants.Account.PREF_BACKUP_DIRECTORY, null)
-            ?.toUri()
-            ?: return Build.VERSION.SDK_INT < Build.VERSION_CODES.Q
+    val backupDirectoryUri = getBackupDirectory(context) ?: return Build.VERSION.SDK_INT < Build.VERSION_CODES.Q
     return internalCheckAccessBackupDirectory(context, backupDirectoryUri)
 }
+
+fun getBackupDirectory(context: Context) = context.defaultSharedPreferences.getString(Constants.Account.PREF_BACKUP_DIRECTORY, null)?.toUri()
 
 private fun checkDb(path: String): Boolean {
     var db: SQLiteDatabase? = null
