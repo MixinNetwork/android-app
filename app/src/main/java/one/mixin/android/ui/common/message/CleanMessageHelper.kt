@@ -53,6 +53,7 @@ class CleanMessageHelper @Inject internal constructor(private val jobManager: Mi
         if (deleteCount <= 0) {
             if (deleteConversation) {
                 appDatabase.conversationDao().deleteConversationById(conversationId)
+                appDatabase.conversationExtDao().deleteConversationById(conversationId)
                 InvalidateFlow.emit(conversationId)
             }
         } else {
@@ -72,9 +73,11 @@ class CleanMessageHelper @Inject internal constructor(private val jobManager: Mi
                 appDatabase.deleteMessageByIds(ids)
                 if (deleteConversation) {
                     appDatabase.conversationDao().deleteConversationById(conversationId)
+                    appDatabase.conversationExtDao().deleteConversationById(conversationId)
                 } else {
                     appDatabase.remoteMessageStatusDao().countUnread(conversationId)
                     appDatabase.conversationDao().refreshLastMessageId(conversationId)
+                    appDatabase.conversationExtDao().refreshCountByConversationId(conversationId)
                 }
                 InvalidateFlow.emit(conversationId)
             }

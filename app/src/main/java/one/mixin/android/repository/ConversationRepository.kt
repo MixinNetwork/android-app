@@ -38,7 +38,6 @@ import one.mixin.android.db.TranscriptMessageDao
 import one.mixin.android.db.insertMessage
 import one.mixin.android.db.insertNoReplace
 import one.mixin.android.db.provider.DataProvider
-import one.mixin.android.db.runInTransaction
 import one.mixin.android.event.GroupEvent
 import one.mixin.android.extension.joinStar
 import one.mixin.android.extension.putBoolean
@@ -100,7 +99,7 @@ internal constructor(
 ) {
 
     @SuppressLint("RestrictedApi")
-    fun getMessages(conversationId: String, count: Int?) = DataProvider.getMessages(appDatabase, conversationId, count)
+    fun getMessages(conversationId: String) = DataProvider.getMessages(appDatabase, conversationId)
 
     suspend fun getChatMessages(conversationId: String, offset: Int, limit: Int): List<MessageItem> = messageDao.getChatMessages(conversationId, offset, limit)
 
