@@ -17,7 +17,6 @@ import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.SearchMessageDetailItem
 import one.mixin.android.vo.SearchMessageItem
 import one.mixin.android.vo.User
-import timber.log.Timber
 
 @SuppressLint("RestrictedApi")
 class DataProvider {
@@ -29,13 +28,10 @@ class DataProvider {
                     val conversationExtDao = database.conversationExtDao()
                     val count = conversationExtDao.getMessageCountByConversationId(conversationId)
                     if (count != null) {
-                        Timber.e("count $count")
                         return count
                     }
                     conversationExtDao.refreshCountByConversationId(conversationId)
-                    return (conversationExtDao.getMessageCountByConversationId(conversationId) ?: 0).apply {
-                        Timber.e("count: $count")
-                    }
+                    return (conversationExtDao.getMessageCountByConversationId(conversationId) ?: 0)
                 }
                 override fun create(): DataSource<Int, MessageItem> {
 
