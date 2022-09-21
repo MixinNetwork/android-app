@@ -2201,9 +2201,11 @@ class ConversationFragment() :
                     if (p != null) {
                         binding.chatControl.visibility = VISIBLE
                         binding.bottomCantSend.visibility = GONE
+                        binding.tapJoinView.root.isVisible = callState.isPendingGroupCall(conversationId)
                     } else {
                         binding.chatControl.visibility = INVISIBLE
                         binding.bottomCantSend.visibility = VISIBLE
+                        binding.tapJoinView.root.isVisible = false
                         binding.chatControl.chatEt.hideKeyboard()
                     }
 
