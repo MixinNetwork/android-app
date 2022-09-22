@@ -14,7 +14,6 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
-import androidx.recyclerview.widget.SimpleItemAnimator
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
@@ -125,7 +124,7 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
                 }
             }
             assetsAdapter.headerView = _headBinding!!.root
-            (coinsRv.itemAnimator as SimpleItemAnimator).supportsChangeAnimations = false
+            coinsRv.itemAnimator = null
             coinsRv.setHasFixedSize(true)
             ItemTouchHelper(
                 AssetItemCallback(
