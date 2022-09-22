@@ -237,7 +237,7 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
                         processTip()
                     }
                 } else {
-                    showVerifyPin { oldPin ->
+                    showInputPin(getString(R.string.Enter_your_old_PIN)) { oldPin ->
                         tipBundle.oldPin = oldPin
                         showInputPin { pin ->
                             tipBundle.pin = pin
@@ -316,9 +316,14 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
         toast(errMsg)
 
         if (e is TipNodeException) {
-            if ((e is DifferentIdentityException) ||
-                (e is NotAllSignerSuccessException && e.successSignerSize == 0) // all signer failed perhaps means PIN incorrect
-            ) {
+            if (e is DifferentIdentityException) {
+                tipBundle.oldPin = null
+                tipBundle.pin = null
+                updateTipStep(RetryConnect(true))
+                return
+            }
+
+            if (e is NotAllSignerSuccessException && e.successSignerSize == 0) { // all signer failed perhaps means PIN incorrect)
                 tipBundle.pin = null
             }
 
