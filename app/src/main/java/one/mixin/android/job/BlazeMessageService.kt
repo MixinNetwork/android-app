@@ -33,7 +33,6 @@ import one.mixin.android.R
 import one.mixin.android.RxBus
 import one.mixin.android.api.service.MessageService
 import one.mixin.android.db.ExpiredMessageDao
-import one.mixin.android.db.FloodMessageDao
 import one.mixin.android.db.JobDao
 import one.mixin.android.db.MessageDao
 import one.mixin.android.db.MixinDatabase
@@ -51,6 +50,8 @@ import one.mixin.android.extension.supportsOreo
 import one.mixin.android.job.BaseJob.Companion.PRIORITY_ACK_MESSAGE
 import one.mixin.android.job.NotificationGenerator.conversationDao
 import one.mixin.android.job.NotificationGenerator.conversationExtDao
+import one.mixin.android.messenger.Hedwig
+import one.mixin.android.messenger.HedwigImp
 import one.mixin.android.receiver.ExitBroadcastReceiver
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BatteryOptimizationDialogActivity
@@ -67,7 +68,6 @@ import one.mixin.android.vo.createAckJob
 import one.mixin.android.vo.isTranscript
 import one.mixin.android.websocket.ACKNOWLEDGE_MESSAGE_RECEIPTS
 import one.mixin.android.websocket.BlazeAckMessage
-import one.mixin.android.websocket.BlazeMessageData
 import one.mixin.android.websocket.CREATE_MESSAGE
 import one.mixin.android.websocket.ChatWebSocket
 import one.mixin.android.websocket.PlainDataAction
@@ -124,9 +124,6 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
     lateinit var transcriptMessageDao: TranscriptMessageDao
 
     @Inject
-    lateinit var floodMessageDao: FloodMessageDao
-
-    @Inject
     lateinit var remoteMessageStatusDao: RemoteMessageStatusDao
 
     @Inject
@@ -156,6 +153,10 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
     private var disposable: Disposable? = null
     private val destroyScope = scope(Lifecycle.Event.ON_DESTROY)
 
+    private val hedwig: Hedwig by lazy {
+        HedwigImp(cacheDataBase, callState, lifecycleScope)
+    }
+
     override fun onBind(intent: Intent): IBinder? {
         super.onBind(intent)
         return null
@@ -166,7 +167,7 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
         super.onCreate()
         webSocket.setWebSocketObserver(this)
         webSocket.connect()
-        startObserveFlood()
+        hedwig.takeOff()
         startObserveAck()
         startObserveStatus()
         startObserveExpired()
@@ -216,13 +217,12 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
 
     override fun onDestroy() {
         super.onDestroy()
+        hedwig.land()
         stopObserveAck()
-        stopObserveFlood()
         stopObserveStatus()
         stopObserveExpired()
         ackJob?.cancel()
         statusJob?.cancel()
-        floodJob?.cancel()
         expiredJob?.cancel()
         webSocket.disconnect()
         webSocket.setWebSocketObserver(null)
@@ -240,7 +240,6 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
     }
 
     override fun onSocketOpen() {
-        runFloodJob()
         runAckJob()
     }
 
@@ -364,58 +363,6 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
             val bm = createParamBlazeMessage(createPlainJsonParam(participantDao.joinedConversationId(accountId), accountId, encoded, sessionId))
             jobManager.addJobInBackground(SendPlaintextJob(bm, PRIORITY_ACK_MESSAGE))
             jobDao.deleteList(jobs)
-        }
-    }
-
-    private val messageDecrypt by lazy { DecryptMessage(lifecycleScope) }
-    private val callMessageDecrypt by lazy { DecryptCallMessage(callState, lifecycleScope) }
-
-    private fun startObserveFlood() {
-        cacheDataBase.invalidationTracker.addObserver(floodObserver)
-    }
-
-    private fun stopObserveFlood() {
-        cacheDataBase.invalidationTracker.removeObserver(floodObserver)
-    }
-
-    private var floodJob: Job? = null
-    private val floodObserver = object : InvalidationTracker.Observer("flood_messages") {
-        override fun onInvalidated(tables: MutableSet<String>) {
-            runFloodJob()
-        }
-    }
-
-    @Synchronized
-    private fun runFloodJob() {
-        if (floodJob?.isActive == true) {
-            return
-        }
-        floodJob = lifecycleScope.launch(Dispatchers.IO) {
-            try {
-                processFloodMessage()
-            } catch (e: Exception) {
-                Timber.e(e)
-                runFloodJob()
-            }
-        }
-    }
-
-    private tailrec suspend fun processFloodMessage(): Boolean {
-        val messages = floodMessageDao.findFloodMessages()
-        return if (messages.isNotEmpty()) {
-            messages.forEach { message ->
-                val data = gson.fromJson(message.data, BlazeMessageData::class.java)
-                if (data.category.startsWith("WEBRTC_") || data.category.startsWith("KRAKEN_")) {
-                    callMessageDecrypt.onRun(data)
-                } else {
-                    messageDecrypt.onRun(data)
-                }
-                floodMessageDao.delete(message)
-                pendingMessageStatusMap.remove(data.messageId)
-            }
-            processFloodMessage()
-        } else {
-            false
         }
     }
 
