@@ -22,6 +22,7 @@ import one.mixin.android.db.FloodMessageDao
 import one.mixin.android.db.JobDao
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.OffsetDao
+import one.mixin.android.db.cache.CacheDataBase
 import one.mixin.android.db.insertNoReplace
 import one.mixin.android.db.makeMessageStatus
 import one.mixin.android.di.isNeedSwitch
@@ -53,13 +54,14 @@ class ChatWebSocket(
     private val okHttpClient: OkHttpClient,
     private val accountService: AccountService,
     private val mixinDatabase: MixinDatabase,
+    private val cacheDataBase: CacheDataBase,
     private val jobManager: MixinJobManager,
     private val linkState: LinkState,
 ) : WebSocketListener() {
 
     private val offsetDao: OffsetDao = mixinDatabase.offsetDao()
     private val jobDao: JobDao = mixinDatabase.jobDao()
-    private val floodMessageDao: FloodMessageDao = mixinDatabase.floodMessageDao()
+    private val floodMessageDao: FloodMessageDao = cacheDataBase.floodMessageDao()
 
     private val failCode = 1000
     private val quitCode = 1001

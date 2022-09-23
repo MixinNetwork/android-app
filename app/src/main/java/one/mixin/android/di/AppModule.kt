@@ -64,6 +64,7 @@ import one.mixin.android.db.MessageHistoryDao
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.ParticipantDao
 import one.mixin.android.db.ParticipantSessionDao
+import one.mixin.android.db.cache.CacheDataBase
 import one.mixin.android.extension.filterNonAscii
 import one.mixin.android.extension.getDeviceId
 import one.mixin.android.extension.isGooglePlayServicesAvailable
@@ -377,10 +378,11 @@ object AppModule {
         okHttp: OkHttpClient,
         accountService: AccountService,
         mixinDatabase: MixinDatabase,
+        cacheDataBase: CacheDataBase,
         jobManager: MixinJobManager,
         linkState: LinkState,
     ): ChatWebSocket =
-        ChatWebSocket(applicationScope, okHttp, accountService, mixinDatabase, jobManager, linkState)
+        ChatWebSocket(applicationScope, okHttp, accountService, mixinDatabase, cacheDataBase, jobManager, linkState)
 
     @Provides
     @Singleton
