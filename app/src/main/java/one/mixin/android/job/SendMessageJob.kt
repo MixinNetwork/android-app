@@ -56,7 +56,7 @@ open class SendMessageJob(
     private val krakenParam: KrakenParam? = null,
     private val isSilent: Boolean? = null,
     messagePriority: Int = PRIORITY_SEND_MESSAGE
-) : MixinJob(Params(messagePriority).groupBy("send_message_group").requireWebSocketConnected().persist(), message.id) {
+) : MixinJob(Params(messagePriority).groupBy("send_message_group").requireWebSocketConnected().persist(), message.messageId) {
 
     companion object {
         private const val serialVersionUID = 1L
@@ -89,7 +89,7 @@ open class SendMessageJob(
                             message.hyperlink = it
                             parseHyperlink(it, hyperlinkDao)
                         }
-                        parseMentionData(content, message.id, message.conversationId, userDao, messageMentionDao, message.userId)
+                        parseMentionData(content, message.messageId, message.conversationId, userDao, messageMentionDao, message.userId)
                     }
                 }
                 if (!message.isTranscript()) {
@@ -102,7 +102,7 @@ open class SendMessageJob(
                     if (e > 0) {
                         expiredMessageDao.insert(
                             ExpiredMessage(
-                                message.id,
+                                message.messageId,
                                 e,
                                 null
                             )
@@ -118,12 +118,12 @@ open class SendMessageJob(
     private fun recallMessage(conversationId: String) {
         recallMessageId ?: return
         messageDao.findMessageById(recallMessageId)?.let { msg ->
-            RxBus.publish(RecallEvent(msg.id))
-            messageDao.recallFailedMessage(msg.id)
-            messageDao.recallMessage(msg.id)
-            messageDao.recallPinMessage(msg.id, msg.conversationId)
-            pinMessageDao.deleteByMessageId(msg.id)
-            messageMentionDao.deleteMessage(msg.id)
+            RxBus.publish(RecallEvent(msg.messageId))
+            messageDao.recallFailedMessage(msg.messageId)
+            messageDao.recallMessage(msg.messageId)
+            messageDao.recallPinMessage(msg.messageId, msg.conversationId)
+            pinMessageDao.deleteByMessageId(msg.messageId)
+            messageMentionDao.deleteMessage(msg.messageId)
             remoteMessageStatusDao.deleteByMessageId(recallMessageId)
             remoteMessageStatusDao.updateConversationUnseen(msg.conversationId)
             msg.mediaUrl?.getFilePath()?.let {
@@ -134,14 +134,14 @@ open class SendMessageJob(
                 }
             }
 
-            messageDao.findMessageItemById(message.conversationId, msg.id)?.let { quoteMsg ->
+            messageDao.findMessageItemById(message.conversationId, msg.messageId)?.let { quoteMsg ->
                 messageDao.updateQuoteContentByQuoteId(
                     message.conversationId,
-                    msg.id,
+                    msg.messageId,
                     GsonHelper.customGson.toJson(quoteMsg)
                 )
             }
-            jobManager.cancelJobByMixinJobId(msg.id)
+            jobManager.cancelJobByMixinJobId(msg.messageId)
         }
         InvalidateFlow.emit(conversationId)
         messageFts4Dao.deleteByMessageId(recallMessageId)
@@ -163,7 +163,7 @@ open class SendMessageJob(
             expireIn?.let { e -> // Update local expiration time after success
                 if (expireIn > 0) {
                     expiredMessageDao.updateExpiredMessage(
-                        message.id,
+                        message.messageId,
                         currentTimeSeconds() + e
                     )
                 }
@@ -199,11 +199,11 @@ open class SendMessageJob(
         val blazeParam = BlazeMessageParam(
             message.conversationId,
             recipientId,
-            message.id,
+            message.messageId,
             message.category,
             content,
             quote_message_id = message.quoteMessageId,
-            mentions = getMentionData(message.id),
+            mentions = getMentionData(message.messageId),
             recipient_ids = recipientIds,
             silent = isSilent,
             expire_in = expireIn
@@ -236,7 +236,7 @@ open class SendMessageJob(
         // Workaround No session key, can't encrypt message, send PLAIN directly
         if (participantSessionKey?.publicKey == null) {
             message.category = message.category.replace("ENCRYPTED_", "PLAIN_")
-            messageDao.updateCategoryById(message.id, message.category)
+            messageDao.updateCategoryById(message.messageId, message.category)
             sendPlainMessage(conversation, callback)
             return
         }
@@ -262,11 +262,11 @@ open class SendMessageJob(
         val blazeParam = BlazeMessageParam(
             message.conversationId,
             recipientId,
-            message.id,
+            message.messageId,
             message.category,
             encryptContent.base64Encode(),
             quote_message_id = message.quoteMessageId,
-            mentions = getMentionData(message.id),
+            mentions = getMentionData(message.messageId),
             recipient_ids = recipientIds,
             expire_in = expireIn
         )
@@ -316,11 +316,11 @@ open class SendMessageJob(
                 resendData.userId,
                 resendData.messageId,
                 resendData.sessionId,
-                getMentionData(message.id),
+                getMentionData(message.messageId),
                 expireIn
             )
         } else {
-            signalProtocol.encryptGroupMessage(message, getMentionData(message.id), isSilent, expireIn)
+            signalProtocol.encryptGroupMessage(message, getMentionData(message.messageId), isSilent, expireIn)
         }
     }
 

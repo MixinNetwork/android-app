@@ -769,7 +769,7 @@ class ChatHistoryActivity : BaseActivity() {
             conversationRepository.findMessageById(id)?.let {
                 if (it.isVideo() && it.mediaSize != null && it.mediaSize == 0L) {
                     try {
-                        conversationRepository.updateMediaStatus(MediaStatus.PENDING.name, it.id, it.conversationId)
+                        conversationRepository.updateMediaStatus(MediaStatus.PENDING.name, it.messageId, it.conversationId)
                         jobManager.addJobInBackground(
                             ConvertVideoJob(
                                 it.conversationId,
@@ -780,7 +780,7 @@ class ChatHistoryActivity : BaseActivity() {
                                     it.isEncrypted() -> EncryptCategory.ENCRYPTED
                                     else -> EncryptCategory.PLAIN
                                 },
-                                it.id,
+                                it.messageId,
                                 it.createdAt
                             )
                         )
@@ -803,7 +803,7 @@ class ChatHistoryActivity : BaseActivity() {
                                 it.mediaHeight!!,
                                 it.mediaSize,
                                 category,
-                                it.id,
+                                it.messageId,
                                 it.thumbImage ?: "",
                                 it.createdAt
                             )
@@ -812,7 +812,7 @@ class ChatHistoryActivity : BaseActivity() {
                         onError.invoke()
                     }
                 } else {
-                    conversationRepository.updateMediaStatus(MediaStatus.PENDING.name, it.id, it.conversationId)
+                    conversationRepository.updateMediaStatus(MediaStatus.PENDING.name, it.messageId, it.conversationId)
                     jobManager.addJobInBackground(SendAttachmentMessageJob(it))
                 }
             }

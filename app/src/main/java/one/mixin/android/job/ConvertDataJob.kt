@@ -17,7 +17,7 @@ import one.mixin.android.vo.createAttachmentMessage
 
 class ConvertDataJob(
     private val message: Message
-) : MixinJob(Params(PRIORITY_BACKGROUND).groupBy(GROUP_ID), message.id) {
+) : MixinJob(Params(PRIORITY_BACKGROUND).groupBy(GROUP_ID), message.messageId) {
 
     companion object {
         private const val serialVersionUID = 1L
@@ -31,7 +31,7 @@ class ConvertDataJob(
 
     override fun cancel() {
         isCancelled = true
-        messageDao.updateMediaStatus(MediaStatus.CANCELED.name, message.id)
+        messageDao.updateMediaStatus(MediaStatus.CANCELED.name, message.messageId)
         InvalidateFlow.emit(message.conversationId)
         removeJob()
     }
@@ -47,15 +47,15 @@ class ConvertDataJob(
             // Here mediaUrl is the full url.
             val inputStream = MixinApplication.appContext.contentResolver.openInputStream(Uri.parse(message.mediaUrl)) ?: return@let
             val extensionName = message.name?.getExtensionName()
-            val file = MixinApplication.appContext.getDocumentPath().createDocumentTemp(message.conversationId, message.id, extensionName)
+            val file = MixinApplication.appContext.getDocumentPath().createDocumentTemp(message.conversationId, message.messageId, extensionName)
             file.copyFromInputStream(inputStream)
-            messageDao.updateMediaMessageUrl(file.name, message.id)
+            messageDao.updateMediaMessageUrl(file.name, message.messageId)
             InvalidateFlow.emit(message.conversationId)
 
             jobManager.addJobInBackground(
                 SendAttachmentMessageJob(
                     createAttachmentMessage(
-                        message.id, message.conversationId, message.userId, message.category,
+                        message.messageId, message.conversationId, message.userId, message.category,
                         null, message.name, file.name,
                         message.mediaMimeType!!, message.mediaSize!!, message.createdAt, null,
                         null, MediaStatus.PENDING, MessageStatus.SENDING.name, message.quoteMessageId, message.quoteContent

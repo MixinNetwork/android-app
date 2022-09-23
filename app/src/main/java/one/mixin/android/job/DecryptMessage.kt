@@ -333,7 +333,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                                 data.userId,
                                 messageId, // quote pinned message id
                                 PinMessageMinimal(
-                                    message.id,
+                                    message.messageId,
                                     message.category,
                                     if (message.category.endsWith("_TEXT")) {
                                         message.content
@@ -347,7 +347,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                         )
                         InvalidateFlow.emit(data.conversationId)
                         if (message.category.endsWith("_TEXT")) {
-                            messageMentionDao.findMessageMentionById(message.id)?.let { mention ->
+                            messageMentionDao.findMessageMentionById(message.messageId)?.let { mention ->
                                 messageMentionDao.insert(
                                     MessageMention(
                                         mid,
@@ -369,7 +369,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                             MessageStatus.READ.name
                         )
                         messageDao.insert(m)
-                        conversationDao.updateLastMessageId(m.id, m.createdAt, m.conversationId)
+                        conversationDao.updateLastMessageId(m.messageId, m.createdAt, m.conversationId)
                         InvalidateFlow.emit(data.conversationId)
                     }
                     if (index == transferPinData.messageIds.size - 1) {
@@ -389,13 +389,13 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
             val decoded = Base64.decode(data.data)
             val transferRecallData = gson.fromJson(String(decoded), RecallMessagePayload::class.java)
             messageDao.findMessageById(transferRecallData.messageId)?.let { msg ->
-                RxBus.publish(RecallEvent(msg.id))
-                messageDao.recallFailedMessage(msg.id)
-                messageDao.recallMessage(msg.id)
-                messageDao.recallPinMessage(msg.id, msg.conversationId)
-                pinMessageDao.deleteByMessageId(msg.id)
-                messageMentionDao.deleteMessage(msg.id)
-                remoteMessageStatusDao.deleteByMessageId(msg.id)
+                RxBus.publish(RecallEvent(msg.messageId))
+                messageDao.recallFailedMessage(msg.messageId)
+                messageDao.recallMessage(msg.messageId)
+                messageDao.recallPinMessage(msg.messageId, msg.conversationId)
+                pinMessageDao.deleteByMessageId(msg.messageId)
+                messageMentionDao.deleteMessage(msg.messageId)
+                remoteMessageStatusDao.deleteByMessageId(msg.messageId)
                 remoteMessageStatusDao.updateConversationUnseen(msg.conversationId)
                 if (msg.mediaUrl != null && mediaDownloaded(msg.mediaStatus)) {
                     msg.mediaUrl.getFilePath()?.let {
@@ -406,16 +406,16 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                         }
                     }
                 }
-                messageDao.findMessageItemById(data.conversationId, msg.id)?.let { quoteMsg ->
-                    messageDao.updateQuoteContentByQuoteId(data.conversationId, msg.id, gson.toJson(quoteMsg))
+                messageDao.findMessageItemById(data.conversationId, msg.messageId)?.let { quoteMsg ->
+                    messageDao.updateQuoteContentByQuoteId(data.conversationId, msg.messageId, gson.toJson(quoteMsg))
                 }
 
-                jobManager.cancelJobByMixinJobId(msg.id)
-                if (messageDao.findLastMessageId(msg.conversationId) == msg.id) {
+                jobManager.cancelJobByMixinJobId(msg.messageId)
+                if (messageDao.findLastMessageId(msg.conversationId) == msg.messageId) {
                     notificationManager.cancel(msg.conversationId.hashCode())
                 }
                 InvalidateFlow.emit(msg.conversationId)
-                messagesFts4Dao.deleteByMessageId(msg.id)
+                messagesFts4Dao.deleteByMessageId(msg.messageId)
             }
             updateRemoteMessageStatus(data.messageId, MessageStatus.READ)
             messageHistoryDao.insert(MessageHistory(data.messageId))
@@ -523,7 +523,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
             if (pCreatedAt.isAfter(mCreatedAt)) {
                 continue
             }
-            needResendMessage.id = UUID.randomUUID().toString()
+            needResendMessage.messageId = UUID.randomUUID().toString()
             jobManager.addJobInBackground(
                 SendMessageJob(
                     needResendMessage,
@@ -536,7 +536,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
         }
     }
 
-    private fun generateMessage(
+    private fun generateQuoteMessageItem(
         data: BlazeMessageData,
         generator: (QuoteMessageItem?) -> Message
     ): Message {
@@ -556,7 +556,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
             data.category.endsWith("_TEXT") -> {
                 val plain = tryDecodePlain(data.category == MessageCategory.PLAIN_TEXT.name, plainText)
                 var quoteMe = false
-                val message = generateMessage(data) { quoteMessageItem ->
+                val message = generateQuoteMessageItem(data) { quoteMessageItem ->
                     if (quoteMessageItem == null) {
                         createMessage(
                             data.messageId,
@@ -624,7 +624,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                     return
                 }
 
-                val message = generateMessage(data) { quoteMessageItem ->
+                val message = generateQuoteMessageItem(data) { quoteMessageItem ->
                     createMediaMessage(
                         data.messageId, data.conversationId, data.userId, data.category, mediaData.attachmentId, null, mediaData.mimeType, mediaData.size,
                         mediaData.width, mediaData.height, mediaData.thumbnail, mediaData.key, mediaData.digest, data.createdAt, MediaStatus.CANCELED,
@@ -650,7 +650,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                     return
                 }
 
-                val message = generateMessage(data) { quoteMessageItem ->
+                val message = generateQuoteMessageItem(data) { quoteMessageItem ->
                     createVideoMessage(
                         data.messageId, data.conversationId, data.userId,
                         data.category, mediaData.attachmentId, mediaData.name, null, mediaData.duration,
@@ -672,7 +672,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                     encryptedAttachmentContentDecode(data, plainText),
                     AttachmentMessagePayload::class.java
                 )
-                val message = generateMessage(data) { quoteMessageItem ->
+                val message = generateQuoteMessageItem(data) { quoteMessageItem ->
                     createAttachmentMessage(
                         data.messageId, data.conversationId, data.userId,
                         data.category, mediaData.attachmentId, mediaData.name, null,
@@ -695,7 +695,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                     encryptedAttachmentContentDecode(data, plainText),
                     AttachmentMessagePayload::class.java
                 )
-                val message = generateMessage(data) { quoteMessageItem ->
+                val message = generateQuoteMessageItem(data) { quoteMessageItem ->
                     createAudioMessage(
                         data.messageId, data.conversationId, data.userId, mediaData.attachmentId,
                         data.category, mediaData.size, null, mediaData.duration.toString(), data.createdAt, mediaData.waveform,
@@ -733,7 +733,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                 }
                 val contactData = gson.fromJson(decoded, ContactMessagePayload::class.java)
                 val user = syncUser(contactData.userId)
-                val message = generateMessage(data) { quoteMessageItem ->
+                val message = generateQuoteMessageItem(data) { quoteMessageItem ->
                     createContactMessage(
                         data.messageId, data.conversationId, data.userId, data.category,
                         plainText, contactData.userId, data.status, data.createdAt, user?.fullName,
@@ -1344,9 +1344,11 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                 expiredMessageDao.insert(ExpiredMessage(data.messageId, expireIn, null))
             }
         }
-        pendingMessageStatusMap.remove(message.id)?.let { status ->
+        pendingMessageStatusMap.remove(message.messageId)?.let { status ->
             message.status = status
         }
         database.insertAndNotifyConversation(message)
     }
+
+
 }

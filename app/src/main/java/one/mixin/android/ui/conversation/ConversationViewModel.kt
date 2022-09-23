@@ -370,7 +370,7 @@ internal constructor(
             conversationRepository.findMessageById(id)?.let {
                 if (it.isVideo() && it.mediaSize != null && it.mediaSize == 0L) {
                     try {
-                        conversationRepository.updateMediaStatus(MediaStatus.PENDING.name, it.id, it.conversationId)
+                        conversationRepository.updateMediaStatus(MediaStatus.PENDING.name, it.messageId, it.conversationId)
                         jobManager.addJobInBackground(
                             ConvertVideoJob(
                                 it.conversationId,
@@ -381,7 +381,7 @@ internal constructor(
                                     it.isEncrypted() -> EncryptCategory.ENCRYPTED
                                     else -> EncryptCategory.PLAIN
                                 },
-                                it.id,
+                                it.messageId,
                                 it.createdAt
                             )
                         )
@@ -398,14 +398,14 @@ internal constructor(
                         jobManager.addJobInBackground(
                             SendGiphyJob(
                                 it.conversationId, it.userId, it.mediaUrl, it.mediaWidth!!, it.mediaHeight!!,
-                                it.mediaSize ?: 0L, category, it.id, it.thumbImage ?: "", it.createdAt
+                                it.mediaSize ?: 0L, category, it.messageId, it.thumbImage ?: "", it.createdAt
                             )
                         )
                     } catch (e: NullPointerException) {
                         onError.invoke()
                     }
                 } else {
-                    conversationRepository.updateMediaStatus(MediaStatus.PENDING.name, it.id, it.conversationId)
+                    conversationRepository.updateMediaStatus(MediaStatus.PENDING.name, it.messageId, it.conversationId)
                     jobManager.addJobInBackground(SendAttachmentMessageJob(it))
                 }
             }

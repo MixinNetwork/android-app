@@ -419,7 +419,7 @@ class DecryptCallMessage(
         database.conversationDao().findConversationById(message.conversationId)?.let {
             val expiredIn = it.expireIn ?: return@let
             if (it.expireIn > 0) {
-                database.expiredMessageDao().insert(ExpiredMessage(message.id, expiredIn, null))
+                database.expiredMessageDao().insert(ExpiredMessage(message.messageId, expiredIn, null))
             }
         }
     }
