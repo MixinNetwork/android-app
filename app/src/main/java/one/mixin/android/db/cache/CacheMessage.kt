@@ -2,17 +2,13 @@ package one.mixin.android.db.cache
 
 import androidx.room.ColumnInfo
 import androidx.room.Entity
-import androidx.room.Index
 import androidx.room.PrimaryKey
 import com.google.gson.annotations.SerializedName
 
 @Entity(
-    tableName = "messages",
-    indices = [
-        Index(value = arrayOf("conversation_id", "created_at")),
-    ]
+    tableName = "cache_messages"
 )
-class Message(
+class CacheMessage(
     @PrimaryKey
     @SerializedName("id")
     @ColumnInfo(name = "id")
@@ -121,6 +117,10 @@ class Message(
 
     @ColumnInfo(name = "media_waveform", typeAffinity = ColumnInfo.BLOB)
     val mediaWaveform: ByteArray? = null,
+
+    @SerializedName("media_mine_type")
+    @ColumnInfo(name = "media_mine_type")
+    val mediaMineType: String? = null,
 
     @SerializedName("quote_message_id")
     @ColumnInfo(name = "quote_message_id")

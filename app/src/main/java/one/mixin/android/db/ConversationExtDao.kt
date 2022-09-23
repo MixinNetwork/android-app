@@ -20,4 +20,7 @@ interface ConversationExtDao : BaseDao<ConversationExt> {
 
     @Query("UPDATE conversation_ext SET count = count - 1 WHERE conversation_id = :conversationId")
     fun decrement(conversationId: String)
+
+    @Query("UPDATE conversation_ext SET count = count + :increment WHERE conversation_id = :conversationId")
+    fun increment(conversationId: String, increment: Int)
 }

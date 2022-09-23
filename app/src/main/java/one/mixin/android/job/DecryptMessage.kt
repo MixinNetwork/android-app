@@ -17,6 +17,7 @@ import one.mixin.android.crypto.Base64
 import one.mixin.android.crypto.SignalProtocol
 import one.mixin.android.crypto.vo.RatchetSenderKey
 import one.mixin.android.crypto.vo.RatchetStatus
+import one.mixin.android.db.cache.CacheMessage
 import one.mixin.android.db.insertAndNotifyConversation
 import one.mixin.android.db.insertMessage
 import one.mixin.android.db.insertNoReplace
@@ -322,6 +323,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
             val transferPinData = gson.fromJson(String(decoded), PinMessagePayload::class.java)
             if (transferPinData.action == PinAction.PIN.name) {
                 transferPinData.messageIds.forEachIndexed { index, messageId ->
+                    // Todo pin message
                     val message = messageDao.findMessageById(messageId)
                     if (message != null) {
                         pinMessageDao.insert(PinMessage(messageId, message.conversationId, data.createdAt))
@@ -388,6 +390,8 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
         if (data.category == MessageCategory.MESSAGE_RECALL.name) {
             val decoded = Base64.decode(data.data)
             val transferRecallData = gson.fromJson(String(decoded), RecallMessagePayload::class.java)
+            // Todo find and recall
+
             messageDao.findMessageById(transferRecallData.messageId)?.let { msg ->
                 RxBus.publish(RecallEvent(msg.messageId))
                 messageDao.recallFailedMessage(msg.messageId)
@@ -465,6 +469,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                                 }
                             }
                         }
+                        // Todo refresh all remote status and conversation unseen
                         val updateConversationList = messageDao.findConversationsByMessages(updateMessageIds)
                         updateConversationList.forEach { cId ->
                             remoteMessageStatusDao.updateConversationUnseen(cId)
@@ -510,6 +515,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                 continue
             }
             val accountId = accountId ?: return
+            // The messages that need to be resent are local data and do not exist in the cache database
             val needResendMessage = messageDao.findMessageById(id, accountId)
             if (needResendMessage == null || needResendMessage.category == MessageCategory.MESSAGE_RECALL.name) {
                 resendMessageDao.insert(ResendSessionMessage(id, data.userId, data.sessionId, 0, nowInUtc()))
@@ -544,6 +550,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
         if (quoteMessageId.isNullOrBlank()) {
             return generator(null)
         }
+        // Todo generate quote messageItem
         val quoteMessageItem =
             messageDao.findMessageItemById(data.conversationId, quoteMessageId)
                 ?: return generator(null)
@@ -1344,6 +1351,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
         NotificationGenerator.generate(lifecycleScope, message, userMap, force, data.silent ?: false)
     }
 
+    // Todo insert cache message
     private fun insertMessage(message: Message, data: BlazeMessageData) {
         val expireIn = data.expireIn
         if (expireIn != null && expireIn > 0) {
@@ -1363,8 +1371,42 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
         pendingMessageStatusMap.remove(message.messageId)?.let { status ->
             message.status = status
         }
-        database.insertAndNotifyConversation(message)
+
+        cacheMessageDao.insert(
+            CacheMessage(
+                message.messageId,
+                message.conversationId,
+                message.userId,
+                message.category,
+                message.content,
+                message.mediaUrl,
+                message.mediaMimeType,
+                message.mediaSize,
+                message.mediaDuration,
+                message.mediaWidth,
+                message.mediaHeight,
+                message.mediaHash,
+                message.thumbImage,
+                message.thumbUrl,
+                message.mediaKey,
+                message.mediaDigest,
+                message.mediaStatus,
+                message.status,
+                message.createdAt,
+                message.action,
+                message.participantId,
+                message.snapshotId,
+                message.hyperlink,
+                message.name,
+                message.albumId,
+                message.stickerId,
+                message.sharedUserId,
+                message.mediaWaveform,
+                null,
+                message.quoteMessageId,
+                message.quoteContent
+            )
+        )
+        // database.insertAndNotifyConversation(message)
     }
-
-
 }

@@ -49,6 +49,10 @@ internal object BaseDbModule {
 
     @Singleton
     @Provides
+    fun provideCacheMessageDao(cacheDataBase: CacheDataBase) = cacheDataBase.cacheMessageDao()
+
+    @Singleton
+    @Provides
     fun provideParticipantDao(db: MixinDatabase) = db.participantDao()
 
     @Singleton
