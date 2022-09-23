@@ -154,7 +154,7 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
     private val destroyScope = scope(Lifecycle.Event.ON_DESTROY)
 
     private val hedwig: Hedwig by lazy {
-        HedwigImp(cacheDataBase, callState, lifecycleScope)
+        HedwigImp(database, cacheDataBase, callState, lifecycleScope)
     }
 
     override fun onBind(intent: Intent): IBinder? {

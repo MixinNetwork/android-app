@@ -13,12 +13,13 @@ import one.mixin.android.vo.FloodMessage
 @Database(
     entities = [
         (FloodMessage::class),
-        (Message::class)
+        (CacheMessage::class)
     ],
     version = 1
 )
 abstract class CacheDataBase : RoomDatabase() {
     abstract fun floodMessageDao(): FloodMessageDao
+    abstract fun cacheMessageDao(): CacheMessageDao
 
     companion object {
         private var INSTANCE: CacheDataBase? = null
