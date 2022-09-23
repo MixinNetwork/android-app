@@ -40,6 +40,7 @@ import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.ParticipantDao
 import one.mixin.android.db.RemoteMessageStatusDao
 import one.mixin.android.db.TranscriptMessageDao
+import one.mixin.android.db.cache.CacheDataBase
 import one.mixin.android.db.deleteMessageById
 import one.mixin.android.event.ExpiredEvent
 import one.mixin.android.extension.base64Encode
@@ -109,6 +110,9 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
 
     @Inject
     lateinit var database: MixinDatabase
+
+    @Inject
+    lateinit var cacheDataBase: CacheDataBase
 
     @Inject
     lateinit var webSocket: ChatWebSocket
@@ -367,11 +371,11 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
     private val callMessageDecrypt by lazy { DecryptCallMessage(callState, lifecycleScope) }
 
     private fun startObserveFlood() {
-        database.invalidationTracker.addObserver(floodObserver)
+        cacheDataBase.invalidationTracker.addObserver(floodObserver)
     }
 
     private fun stopObserveFlood() {
-        database.invalidationTracker.removeObserver(floodObserver)
+        cacheDataBase.invalidationTracker.removeObserver(floodObserver)
     }
 
     private var floodJob: Job? = null

@@ -7,6 +7,7 @@ import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import one.mixin.android.crypto.db.SignalDatabase
 import one.mixin.android.db.MixinDatabase
+import one.mixin.android.db.cache.CacheDataBase
 import javax.inject.Singleton
 
 @InstallIn(SingletonComponent::class)
@@ -24,6 +25,11 @@ internal object BaseDbModule {
     @Singleton
     @Provides
     fun provideDb(app: Application) = MixinDatabase.getDatabase(app)
+
+    @Singleton
+    @Provides
+    fun provideCacheDb(app: Application, mixinDatabase: MixinDatabase) =
+        CacheDataBase.getDatabase(app.applicationContext, mixinDatabase.floodMessageDao())
 
     @Singleton
     @Provides
@@ -83,7 +89,7 @@ internal object BaseDbModule {
 
     @Singleton
     @Provides
-    fun providesFloodMessageDao(db: MixinDatabase) = db.floodMessageDao()
+    fun providesFloodMessageDao(db: CacheDataBase) = db.floodMessageDao()
 
     @Singleton
     @Provides
