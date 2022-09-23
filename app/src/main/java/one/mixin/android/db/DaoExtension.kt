@@ -226,9 +226,9 @@ fun MixinDatabase.insertAndNotifyConversation(message: Message) {
         messageDao().insert(message)
         conversationExtDao().increment(message.conversationId)
         if (!message.isMine() && message.status != MessageStatus.READ.name) {
-            remoteMessageStatusDao().insert(RemoteMessageStatus(message.id, message.conversationId, MessageStatus.DELIVERED.name))
+            remoteMessageStatusDao().insert(RemoteMessageStatus(message.messageId, message.conversationId, MessageStatus.DELIVERED.name))
         }
-        conversationDao().updateLastMessageId(message.id, message.createdAt, message.conversationId)
+        conversationDao().updateLastMessageId(message.messageId, message.createdAt, message.conversationId)
         remoteMessageStatusDao().updateConversationUnseen(message.conversationId)
         InvalidateFlow.emit(message.conversationId)
     }
@@ -237,5 +237,5 @@ fun MixinDatabase.insertAndNotifyConversation(message: Message) {
 fun MixinDatabase.insertMessage(message: Message) {
     messageDao().insert(message)
     conversationExtDao().increment(message.conversationId)
-    conversationDao().updateLastMessageId(message.id, message.createdAt, message.conversationId)
+    conversationDao().updateLastMessageId(message.messageId, message.createdAt, message.conversationId)
 }

@@ -118,7 +118,7 @@ object NotificationGenerator : Injector() {
         notificationBuilder.setContentIntent(
             PendingIntent.getActivities(
                 context,
-                message.id.hashCode(),
+                message.messageId.hashCode(),
                 arrayOf(mainIntent, conversationIntent),
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
                     PendingIntent.FLAG_MUTABLE

@@ -82,7 +82,7 @@ object MessageFts4Helper {
     fun insertOrReplaceMessageFts4(message: Message, extraContent: String? = null) {
         if (!message.isFtsMessage()) {
             if (message.isContact() && !extraContent.isNullOrBlank()) {
-                insertContact(message.id, extraContent)
+                insertContact(message.messageId, extraContent)
             }
             return
         }
@@ -90,7 +90,7 @@ object MessageFts4Helper {
         val messageFts4Dao = MixinDatabase.getDatabase(MixinApplication.appContext).messageFts4Dao()
         val name = message.name.joinWhiteSpace()
         val content = message.content.joinWhiteSpace()
-        messageFts4Dao.insert(MessageFts4(message.id, name + content))
+        messageFts4Dao.insert(MessageFts4(message.messageId, name + content))
     }
 
     @WorkerThread

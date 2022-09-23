@@ -437,7 +437,7 @@ class VoiceCallService : CallService() {
             }
             MessageCategory.WEBRTC_AUDIO_CANCEL.name -> {
                 val msg = createCallMessage(
-                    m.id, m.conversationId, uId, m.category, m.content,
+                    m.messageId, m.conversationId, uId, m.category, m.content,
                     m.createdAt, MessageStatus.READ.name, m.quoteMessageId, m.mediaDuration
                 )
                 insertCallMessage(msg)
@@ -454,7 +454,7 @@ class VoiceCallService : CallService() {
         database.conversationDao().findConversationById(message.conversationId)?.let {
             val expiredIn = it.expireIn ?: return@let
             if (it.expireIn > 0) {
-                database.expiredMessageDao().insert(ExpiredMessage(message.id, expiredIn, null))
+                database.expiredMessageDao().insert(ExpiredMessage(message.messageId, expiredIn, null))
             }
         }
     }

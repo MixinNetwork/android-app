@@ -36,7 +36,7 @@ class Message(
     @PrimaryKey
     @SerializedName("id")
     @ColumnInfo(name = "id")
-    var id: String,
+    var messageId: String,
 
     @SerializedName("conversation_id")
     @ColumnInfo(name = "conversation_id")
