@@ -369,6 +369,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                             MessageStatus.READ.name
                         )
                         messageDao.insert(m)
+                        conversationExtDao.increment(m.conversationId)
                         conversationDao.updateLastMessageId(m.id, m.createdAt, m.conversationId)
                         InvalidateFlow.emit(data.conversationId)
                     }

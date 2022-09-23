@@ -168,7 +168,7 @@ fun JobDao.insertNoReplace(job: Job) {
     }
 }
 
-// Delete SQL, Please use FtsDeleteJob to delete fts
+// Delete SQL, Please use FtsDeleteJob to delete fts, refresh ConversationExt
 fun MixinDatabase.deleteMessageById(messageId: String) {
     runInTransaction {
         pinMessageDao().deleteByMessageId(messageId)
@@ -191,6 +191,7 @@ fun MixinDatabase.deleteMessageById(messageId: String, conversationId: String) {
     }
 }
 
+// Please refresh ConversationExt
 fun MixinDatabase.deleteMessageByIds(messageIds: List<String>) {
     runInTransaction {
         pinMessageDao().deleteByIds(messageIds)
