@@ -31,7 +31,7 @@ abstract class CacheDataBase : RoomDatabase() {
                 if (INSTANCE == null) {
                     val builder = Room.databaseBuilder(
                         context, CacheDataBase::class.java,
-                        "Cache.db"
+                        "cache.db"
                     ).enableMultiInstanceInvalidation().addCallback(
                         object : Callback() {
                             override fun onCreate(db: SupportSQLiteDatabase) {
