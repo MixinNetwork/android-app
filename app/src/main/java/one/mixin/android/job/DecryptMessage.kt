@@ -327,7 +327,6 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
             val transferPinData = gson.fromJson(String(decoded), PinMessagePayload::class.java)
             if (transferPinData.action == PinAction.PIN.name) {
                 transferPinData.messageIds.forEachIndexed { index, messageId ->
-                    // Todo pin message
                     val message = findMessage(messageId)
                     if (message != null) {
                         pinMessageDao.insert(PinMessage(messageId, message.conversationId, data.createdAt))
@@ -394,8 +393,10 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
         if (data.category == MessageCategory.MESSAGE_RECALL.name) {
             val decoded = Base64.decode(data.data)
             val transferRecallData = gson.fromJson(String(decoded), RecallMessagePayload::class.java)
-            // Todo find and recall
-
+            // If the message is still in the cache but is called, insert the message table in advance
+            cacheMessageDao.findMessageById(transferRecallData.messageId)?.let {
+                messageDao.insert(it)
+            }
             messageDao.findMessageById(transferRecallData.messageId)?.let { msg ->
                 RxBus.publish(RecallEvent(msg.messageId))
                 messageDao.recallFailedMessage(msg.messageId)
@@ -1377,7 +1378,6 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
         NotificationGenerator.generate(lifecycleScope, message, userMap, force, data.silent ?: false)
     }
 
-    // Todo insert cache message
     private fun insertMessage(message: Message, data: BlazeMessageData) {
         val expireIn = data.expireIn
         if (expireIn != null && expireIn > 0) {
