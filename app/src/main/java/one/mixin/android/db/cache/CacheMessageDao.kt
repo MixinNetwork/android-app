@@ -14,6 +14,62 @@ interface CacheMessageDao : BaseDao<CacheMessage> {
     @Query("SELECT * FROM cache_messages WHERE id = :messageId")
     fun findMessageById(messageId: String): Message?
 
+    @Query("SELECT id FROM cache_messages WHERE id = :messageId")
+    fun findMessageIdById(messageId: String): String?
+
+    @Query("SELECT id FROM cache_messages WHERE conversation_id = :conversationId AND user_id = :userId AND status = 'FAILED' ORDER BY created_at DESC LIMIT 1000")
+    fun findFailedMessages(conversationId: String, userId: String): List<String>
+
+    @Query("SELECT count(id) FROM cache_messages WHERE conversation_id = :conversationId AND quote_message_id = :messageId AND quote_content IS NULL")
+    fun countMessageByQuoteId(conversationId: String, messageId: String): Int
+
+    @Query(
+        """
+        SELECT m.id FROM cache_messages m
+        WHERE m.conversation_id = :conversationId AND m.id = :messageId AND m.status != 'FAILED'
+        """
+    )
+    fun findMessageItemById(conversationId: String, messageId: String): String?
+
+    @Query("UPDATE cache_messages SET quote_content = :content WHERE conversation_id = :conversationId AND quote_message_id = :messageId")
+    fun updateQuoteContentByQuoteId(conversationId: String, messageId: String, content: String)
+
+    @Query("UPDATE cache_messages SET content = :content, status = :status WHERE id = :id AND category != 'MESSAGE_RECALL'")
+    fun updateMessageContentAndStatus(content: String, status: String, id: String)
+
+    @Query(
+        """
+        UPDATE cache_messages SET content = :content, media_mime_type = :mediaMimeType, 
+        media_size = :mediaSize, media_width = :mediaWidth, media_height = :mediaHeight, 
+        thumb_image = :thumbImage, media_key = :mediaKey, media_digest = :mediaDigest, media_duration = :mediaDuration, 
+        media_status = :mediaStatus, status = :status, name = :name, media_waveform = :mediaWaveform WHERE id = :messageId 
+        AND category != 'MESSAGE_RECALL'
+        """
+    )
+    fun updateAttachmentMessage(messageId: String, content: String, mediaMimeType: String, mediaSize: Long, mediaWidth: Int?, mediaHeight: Int?, thumbImage: String?, name: String?, mediaWaveform: ByteArray?, mediaDuration: String?, mediaKey: ByteArray?, mediaDigest: ByteArray?, mediaStatus: String, status: String)
+
+    @Query("UPDATE cache_messages SET sticker_id = :stickerId, status = :status WHERE id = :messageId AND category != 'MESSAGE_RECALL'")
+    fun updateStickerMessage(stickerId: String, status: String, messageId: String)
+
+    @Query("UPDATE cache_messages SET shared_user_id = :sharedUserId, status = :status WHERE id = :messageId AND category != 'MESSAGE_RECALL'")
+    fun updateContactMessage(sharedUserId: String, status: String, messageId: String)
+
+    @Query(
+        """
+        UPDATE cache_messages SET media_width = :width, media_height = :height, media_url=:url, thumb_url = :thumbUrl, status = :status 
+        WHERE id = :messageId AND category != 'MESSAGE_RECALL'
+    """
+    )
+    fun updateLiveMessage(width: Int, height: Int, url: String, thumbUrl: String, status: String, messageId: String)
+
+    @Query(
+        """
+        UPDATE cache_messages SET content = :content, media_size = :mediaSize, media_status = :mediaStatus, status = :status 
+        WHERE id = :messageId AND category != 'MESSAGE_RECALL'
+        """
+    )
+    fun updateTranscriptMessage(content: String?, mediaSize: Long?, mediaStatus: String?, status: String, messageId: String)
+
     @Query("UPDATE cache_messages SET status = 'SENT' WHERE id = :id AND status = 'FAILED'")
     fun recallFailedMessage(id: String)
 

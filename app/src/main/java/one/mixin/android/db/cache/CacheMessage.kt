@@ -4,6 +4,7 @@ import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.google.gson.annotations.SerializedName
+import one.mixin.android.vo.Message
 
 @Entity(
     tableName = "cache_messages"
@@ -133,4 +134,74 @@ class CacheMessage(
     @SerializedName("caption")
     @ColumnInfo(name = "caption")
     var caption: String? = null,
+) {
+    constructor(message: Message) : this(
+        message.messageId,
+        message.conversationId,
+        message.userId,
+        message.category,
+        message.content,
+        message.mediaUrl,
+        message.mediaMimeType,
+        message.mediaSize,
+        message.mediaDuration,
+        message.mediaWidth,
+        message.mediaHeight,
+        message.mediaHash,
+        message.thumbImage,
+        message.thumbUrl,
+        message.mediaKey,
+        message.mediaDigest,
+        message.mediaStatus,
+        message.status,
+        message.createdAt,
+        message.action,
+        message.participantId,
+        message.snapshotId,
+        message.hyperlink,
+        message.name,
+        message.albumId,
+        message.stickerId,
+        message.sharedUserId,
+        message.mediaWaveform,
+        null,
+        message.quoteMessageId,
+        message.quoteContent,
+        message.caption
+    )
+}
+
+fun CacheMessage.toMessage() = Message(
+    messageId,
+    conversationId,
+    userId,
+    category,
+    content,
+    mediaUrl,
+    mediaMimeType,
+    mediaSize,
+    mediaDuration,
+    mediaWidth,
+    mediaHeight,
+    mediaHash,
+    thumbImage,
+    thumbUrl,
+    mediaKey,
+    mediaDigest,
+    mediaStatus,
+    status,
+    createdAt,
+    action,
+    participantId,
+    snapshotId,
+    hyperlink,
+    name,
+    albumId,
+    stickerId,
+    sharedUserId,
+    mediaWaveform,
+    null,
+    quoteMessageId,
+    quoteContent,
+    caption
 )
