@@ -40,6 +40,7 @@ import one.mixin.android.db.ParticipantDao
 import one.mixin.android.db.RemoteMessageStatusDao
 import one.mixin.android.db.TranscriptMessageDao
 import one.mixin.android.db.cache.CacheDataBase
+import one.mixin.android.db.cache.CacheMessageDao
 import one.mixin.android.db.deleteMessageById
 import one.mixin.android.event.ExpiredEvent
 import one.mixin.android.extension.base64Encode
@@ -119,6 +120,9 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
 
     @Inject
     lateinit var messageDao: MessageDao
+
+    @Inject
+    lateinit var cacheMessageDao: CacheMessageDao
 
     @Inject
     lateinit var transcriptMessageDao: TranscriptMessageDao
@@ -486,7 +490,7 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
             val ids = messages.map { it.messageId }
             val cIds = messageDao.findConversationsByMessages(ids)
             ids.forEach { messageId ->
-                val messageMedia = messageDao.findMessageMediaById(messageId)
+                val messageMedia = cacheMessageDao.findMessageMediaById(messageId) ?: messageDao.findMessageMediaById(messageId)
                 Timber.e("Expired job: delete messages ${messageMedia?.type} - ${messageMedia?.messageId}")
                 messageMedia?.absolutePath(
                     MixinApplication.appContext,
@@ -498,6 +502,7 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
                 if (messageMedia?.isTranscript() == true) {
                     jobManager.addJobInBackground(TranscriptDeleteJob(listOf(messageId)))
                 }
+                cacheMessageDao.deleteById(messageId)
                 database.deleteMessageById(messageId)
             }
             cIds.forEach { id ->

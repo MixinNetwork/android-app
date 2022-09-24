@@ -4,6 +4,7 @@ import androidx.room.Dao
 import androidx.room.Query
 import one.mixin.android.db.BaseDao
 import one.mixin.android.vo.Message
+import one.mixin.android.vo.MessageMedia
 
 @Dao
 interface CacheMessageDao : BaseDao<CacheMessage> {
@@ -30,6 +31,9 @@ interface CacheMessageDao : BaseDao<CacheMessage> {
         """
     )
     fun findMessageItemById(conversationId: String, messageId: String): String?
+
+    @Query("SELECT * FROM cache_messages WHERE id = :messageId")
+    fun findMessageMediaById(messageId: String): MessageMedia?
 
     @Query("UPDATE cache_messages SET quote_content = :content WHERE conversation_id = :conversationId AND quote_message_id = :messageId")
     fun updateQuoteContentByQuoteId(conversationId: String, messageId: String, content: String)
@@ -86,6 +90,10 @@ interface CacheMessageDao : BaseDao<CacheMessage> {
     @Query("UPDATE cache_messages SET content = NULL WHERE category = 'MESSAGE_PIN' AND quote_message_id = :id AND conversation_id = :conversationId")
     fun recallPinMessage(id: String, conversationId: String)
 
-    @Query("DELETE FROm cache_messages WHERE id in (:ids)")
+    @Query("DELETE FROM cache_messages WHERE id = :id")
+    fun deleteById(id: String)
+
+    @Query("DELETE FROM cache_messages WHERE id in (:ids)")
     fun deleteByIds(ids: List<String>)
+
 }
