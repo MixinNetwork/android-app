@@ -1272,8 +1272,8 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
             InvalidateFlow.emit(data.conversationId)
         } else if (data.category == MessageCategory.SIGNAL_TRANSCRIPT.name) {
             val decoded = Base64.decode(plainText)
-            // Todo
             processTranscriptMessage(data, String(decoded))?.let { message ->
+                cacheMessageDao.updateTranscriptMessage(message.content, message.mediaSize, message.mediaStatus, message.status, messageId)
                 messageDao.updateTranscriptMessage(message.content, message.mediaSize, message.mediaStatus, message.status, messageId)
                 InvalidateFlow.emit(data.conversationId)
             }
