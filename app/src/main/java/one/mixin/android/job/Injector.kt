@@ -193,7 +193,7 @@ open class Injector {
         }
     }
 
-    protected fun isExistMessage(messageId: String): Boolean =
+    protected open fun isExistMessage(messageId: String): Boolean =
         messageDao.findMessageIdById(messageId) != null || messageHistoryDao.findMessageHistoryById(messageId) != null
 
     private fun refreshConversation(conversationId: String): Int {
