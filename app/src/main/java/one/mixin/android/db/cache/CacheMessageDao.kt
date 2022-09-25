@@ -95,5 +95,4 @@ interface CacheMessageDao : BaseDao<CacheMessage> {
 
     @Query("DELETE FROM cache_messages WHERE id in (:ids)")
     fun deleteByIds(ids: List<String>)
-
 }
