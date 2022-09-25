@@ -1279,14 +1279,13 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                 InvalidateFlow.emit(data.conversationId)
             }
         }
-        if (cacheMessageDao.countMessageByQuoteId(data.conversationId, messageId) > 0 ||messageDao.countMessageByQuoteId(data.conversationId, messageId) > 0) {
-            findQuoteMessageItemById(data.conversationId,messageId)?.let {
+        if (cacheMessageDao.countMessageByQuoteId(data.conversationId, messageId) > 0 || messageDao.countMessageByQuoteId(data.conversationId, messageId) > 0) {
+            findQuoteMessageItemById(data.conversationId, messageId)?.let {
                 val quoteContent = gson.toJson(it)
                 messageDao.updateQuoteContentByQuoteId(data.conversationId, messageId, quoteContent)
                 cacheMessageDao.updateQuoteContentByQuoteId(data.conversationId, messageId, quoteContent)
                 InvalidateFlow.emit(data.conversationId)
             }
-
         }
     }
 
