@@ -209,7 +209,7 @@ abstract class MixinDatabase : RoomDatabase() {
                     if (BuildConfig.DEBUG) {
                         builder.setQueryCallback(
                             { sqlQuery, bindArgs ->
-                                // Timber.e("${Thread.currentThread().name} - $sqlQuery")
+                                DatabaseMonitor.monitor(sqlQuery)
                             },
                             ArchTaskExecutor.getIOThreadExecutor()
                         )
