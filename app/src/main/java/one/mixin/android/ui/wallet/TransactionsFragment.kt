@@ -33,7 +33,6 @@ import one.mixin.android.extension.navigate
 import one.mixin.android.extension.numberFormat
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.screenHeight
-import one.mixin.android.extension.toast
 import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.ui.common.NonMessengerUserBottomSheetDialogFragment
 import one.mixin.android.ui.common.UserBottomSheetDialogFragment
@@ -43,7 +42,6 @@ import one.mixin.android.vo.AssetItem
 import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.SnapshotItem
 import one.mixin.android.vo.SnapshotType
-import one.mixin.android.vo.differentProcess
 import one.mixin.android.vo.notMessengerUser
 import one.mixin.android.vo.toAssetItem
 import one.mixin.android.widget.BottomSheet
@@ -101,22 +99,9 @@ class TransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>>()
                 sendBottomSheet.show(asset)
             }
             sendReceiveView.receive.setOnClickListener {
-                asset.differentProcess(
-                    {
-                        view.navigate(
-                            R.id.action_transactions_to_deposit_public_key,
-                            Bundle().apply { putParcelable(ARGS_ASSET, asset) }
-                        )
-                    },
-                    {
-                        view.navigate(
-                            R.id.action_transactions_to_deposit_account,
-                            Bundle().apply { putParcelable(ARGS_ASSET, asset) }
-                        )
-                    },
-                    {
-                        toast(getString(R.string.error_bad_data))
-                    }
+                view.navigate(
+                    R.id.action_transactions_to_deposit,
+                    Bundle().apply { putParcelable(ARGS_ASSET, asset) }
                 )
             }
 
