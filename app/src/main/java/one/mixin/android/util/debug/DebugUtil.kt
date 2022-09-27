@@ -51,9 +51,15 @@ inline fun <T> timeoutEarlyWarning(block: () -> T, timeout: Long = 50L): T {
     val time = System.currentTimeMillis() - start
     if (time >= timeout) {
         Timber.e("It takes $time milliseconds")
-        reportException(Exception("It takes $time milliseconds"))
+        reportException("It takes $time milliseconds", LogExtension())
     }
     return result
+}
+
+class LogExtension : Exception() {
+    companion object {
+        private const val serialVersionUID: Long = 1L
+    }
 }
 
 fun Cursor.getContent(columnIndex: Int): String {
