@@ -29,14 +29,8 @@
             app:popExitAnim="@anim/slide_out_right"/>
 
         <action
-            android:id="@+id/action_wallet_to_deposit_public_key"
-            app:destination="@id/deposit_public_key_fragment"
-            app:enterAnim="@anim/slide_in_right"
-            app:popExitAnim="@anim/slide_out_right"/>
-
-        <action
-            android:id="@+id/action_wallet_to_deposit_account"
-            app:destination="@id/deposit_account_fragment"
+            android:id="@+id/action_wallet_to_deposit"
+            app:destination="@id/deposit_fragment"
             app:enterAnim="@anim/slide_in_right"
             app:popExitAnim="@anim/slide_out_right"/>
 
@@ -74,14 +68,8 @@
             app:popExitAnim="@anim/slide_out_right"/>
 
         <action
-            android:id="@+id/action_transactions_to_deposit_public_key"
-            app:destination="@id/deposit_public_key_fragment"
-            app:enterAnim="@anim/slide_in_right"
-            app:popExitAnim="@anim/slide_out_right"/>
-
-        <action
-            android:id="@+id/action_transactions_to_deposit_account"
-            app:destination="@id/deposit_account_fragment"
+            android:id="@+id/action_transactions_to_deposit"
+            app:destination="@id/deposit_fragment"
             app:enterAnim="@anim/slide_in_right"
             app:popExitAnim="@anim/slide_out_right"/>
 
@@ -161,25 +149,9 @@
     </fragment>
 
     <fragment
-        android:id="@+id/deposit_public_key_fragment"
-        android:name="one.mixin.android.ui.wallet.DepositPublicKeyFragment"
-        tools:layout="@layout/fragment_deposit_key">
-
-        <argument
-            android:name="args_asset"
-            app:argType="one.mixin.android.vo.AssetItem"/>
-
-        <action
-            android:id="@+id/action_wallet_fragment_to_all_transactions_fragment"
-            app:destination="@id/all_transactions_fragment"
-            app:enterAnim="@anim/slide_in_right"
-            app:popExitAnim="@anim/slide_out_right"/>
-    </fragment>
-
-    <fragment
-        android:id="@+id/deposit_account_fragment"
-        android:name="one.mixin.android.ui.wallet.DepositAccountFragment"
-        tools:layout="@layout/fragment_deposit_account">
+        android:id="@+id/deposit_fragment"
+        android:name="one.mixin.android.ui.wallet.DepositFragment"
+        tools:layout="@layout/fragment_deposit">
 
         <argument
             android:name="args_asset"

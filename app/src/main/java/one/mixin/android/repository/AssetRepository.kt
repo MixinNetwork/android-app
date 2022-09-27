@@ -68,7 +68,7 @@ constructor(
 
     suspend fun findOrSyncAsset(assetId: String): AssetItem? {
         var assetItem = assetDao.findAssetItemById(assetId)
-        if (assetItem != null) return assetItem
+        if (assetItem != null && assetItem.getDestination().isNotBlank()) return assetItem
 
         assetItem = syncAsset(assetId)
         if (assetItem != null && assetItem.chainId != assetItem.assetId && simpleAsset(assetItem.chainId) == null) {

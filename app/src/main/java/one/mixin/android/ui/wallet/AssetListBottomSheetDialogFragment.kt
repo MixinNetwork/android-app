@@ -25,7 +25,6 @@ import one.mixin.android.extension.containsIgnoreCase
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.equalsIgnoreCase
 import one.mixin.android.extension.hideKeyboard
-import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.numberFormat
 import one.mixin.android.extension.statusBarHeight
@@ -55,27 +54,8 @@ class AssetListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
 
     private val adapter = AssetAdapter { assetItem ->
         binding.searchEt.hideKeyboard()
-
-        if (!forSend && assetItem.getDestination().isEmpty()) {
-            lifecycleScope.launch {
-                val dialog = indeterminateProgressDialog(
-                    message = R.string.Please_wait_a_bit,
-                ).apply {
-                    setCancelable(false)
-                }
-                dialog.show()
-                val asset = bottomViewModel.findOrSyncAsset(assetItem.assetId)
-                dialog.dismiss()
-
-                if (asset == null) return@launch
-
-                callback?.invoke(asset)
-                dismiss()
-            }
-        } else {
-            callback?.invoke(assetItem)
-            dismiss()
-        }
+        callback?.invoke(assetItem)
+        dismiss()
     }
 
     private val forSend: Boolean by lazy {

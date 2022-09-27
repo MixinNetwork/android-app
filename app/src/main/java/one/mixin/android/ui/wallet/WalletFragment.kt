@@ -33,7 +33,6 @@ import one.mixin.android.extension.mainThread
 import one.mixin.android.extension.navigate
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.numberFormat8
-import one.mixin.android.extension.toast
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshAssetsJob
 import one.mixin.android.session.Session
@@ -45,7 +44,6 @@ import one.mixin.android.ui.wallet.adapter.WalletAssetAdapter
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.AssetItem
 import one.mixin.android.vo.Fiats
-import one.mixin.android.vo.differentProcess
 import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.PercentItemView
 import one.mixin.android.widget.PercentView
@@ -103,22 +101,9 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
                 sendReceiveView.receive.setOnClickListener {
                     AssetListBottomSheetDialogFragment.newInstance(false)
                         .setCallback { asset ->
-                            asset.differentProcess(
-                                {
-                                    view.navigate(
-                                        R.id.action_wallet_to_deposit_public_key,
-                                        Bundle().apply { putParcelable(ARGS_ASSET, asset) }
-                                    )
-                                },
-                                {
-                                    view.navigate(
-                                        R.id.action_wallet_to_deposit_account,
-                                        Bundle().apply { putParcelable(ARGS_ASSET, asset) }
-                                    )
-                                },
-                                {
-                                    toast(getString(R.string.error_bad_data))
-                                }
+                            view.navigate(
+                                R.id.action_wallet_to_deposit,
+                                Bundle().apply { putParcelable(ARGS_ASSET, asset) }
                             )
                         }.showNow(parentFragmentManager, AssetListBottomSheetDialogFragment.TAG)
                 }
