@@ -452,15 +452,17 @@ object NotificationGenerator : Injector() {
                 return@launch
             }
         }
+        val time = System.currentTimeMillis()
         notificationBuilder.setContentText(contentText)
-        notificationBuilder.setSmallIcon(R.drawable.ic_msg_default)
-        notificationBuilder.color = ContextCompat.getColor(context, R.color.colorLightBlue)
-        notificationBuilder.setWhen(System.currentTimeMillis())
+            .setSmallIcon(R.drawable.ic_msg_default)
+            .setColor(ContextCompat.getColor(context, R.color.colorLightBlue))
+            .setAutoCancel(true)
+            .setWhen(time)
+            .setSortKey((Long.MAX_VALUE - time).toString())
 
         if (!isSilent && Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
             notificationBuilder.setSound(Uri.parse("android.resource://" + context.packageName + "/" + R.raw.mixin))
         }
-        notificationBuilder.setAutoCancel(true)
         notificationBuilder.priority = if (isSilent) {
             NotificationCompat.PRIORITY_MIN
         } else {
