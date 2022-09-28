@@ -27,7 +27,7 @@ data class Job(
     var action: String,
     @SerializedName("created_at")
     @ColumnInfo(name = "created_at")
-    var created_at: String,
+    var createdAt: String,
     @SerializedName("order_id")
     @ColumnInfo(name = "order_id")
     var orderId: Int?,

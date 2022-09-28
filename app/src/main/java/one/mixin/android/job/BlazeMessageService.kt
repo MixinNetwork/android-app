@@ -291,11 +291,11 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
     }
 
     private fun startObserveAck() {
-        database.invalidationTracker.addObserver(ackObserver)
+        cacheDataBase.invalidationTracker.addObserver(ackObserver)
     }
 
     private fun stopObserveAck() {
-        database.invalidationTracker.removeObserver(ackObserver)
+        cacheDataBase.invalidationTracker.removeObserver(ackObserver)
     }
 
     private var ackJob: Job? = null
@@ -425,14 +425,14 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
                 BlazeAckMessage(msg.messageId, MessageStatus.READ.name, msg.expireAt)
             )
         }.apply {
-            database.jobDao().insertList(this)
+            cacheDataBase.jobDao().insertList(this)
         }
         Session.getExtensionSessionId()?.let { _ ->
             val conversationId = list.first().conversationId
             list.map { msg ->
                 createAckJob(CREATE_MESSAGE, BlazeAckMessage(msg.messageId, MessageStatus.READ.name), conversationId)
             }.let { jobs ->
-                database.jobDao().insertList(jobs)
+                cacheDataBase.jobDao().insertList(jobs)
             }
         }
         remoteMessageStatusDao.deleteByMessageIds(list.map { it.messageId })

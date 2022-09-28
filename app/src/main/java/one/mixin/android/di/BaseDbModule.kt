@@ -29,7 +29,7 @@ internal object BaseDbModule {
     @Singleton
     @Provides
     fun provideCacheDb(app: Application, mixinDatabase: MixinDatabase) =
-        CacheDataBase.getDatabase(app.applicationContext, mixinDatabase.floodMessageDao())
+        CacheDataBase.getDatabase(app.applicationContext, mixinDatabase.floodMessageDao(), mixinDatabase.jobDao())
 
     @Singleton
     @Provides
@@ -97,7 +97,7 @@ internal object BaseDbModule {
 
     @Singleton
     @Provides
-    fun providesJobDao(db: MixinDatabase) = db.jobDao()
+    fun providesJobDao(db: CacheDataBase) = db.jobDao()
 
     @Singleton
     @Provides

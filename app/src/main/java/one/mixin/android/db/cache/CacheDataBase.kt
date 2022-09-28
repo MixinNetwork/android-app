@@ -8,12 +8,15 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.sqlite.db.SupportSQLiteDatabase
 import one.mixin.android.db.FloodMessageDao
+import one.mixin.android.db.JobDao
 import one.mixin.android.vo.FloodMessage
+import one.mixin.android.vo.Job
 
 @Database(
     entities = [
         (FloodMessage::class),
-        (CacheMessage::class)
+        (CacheMessage::class),
+        (Job::class)
     ],
     version = 1
 )
@@ -21,12 +24,14 @@ abstract class CacheDataBase : RoomDatabase() {
     abstract fun floodMessageDao(): FloodMessageDao
     abstract fun cacheMessageDao(): CacheMessageDao
 
+    abstract fun jobDao(): JobDao
+
     companion object {
         private var INSTANCE: CacheDataBase? = null
 
         private val lock = Any()
 
-        fun getDatabase(context: Context, floodMessageDao: FloodMessageDao): CacheDataBase {
+        fun getDatabase(context: Context, floodMessageDao: FloodMessageDao, jobDao: JobDao): CacheDataBase {
             synchronized(lock) {
                 if (INSTANCE == null) {
                     val builder = Room.databaseBuilder(
@@ -45,6 +50,27 @@ abstract class CacheDataBase : RoomDatabase() {
                                         db.insert("flood_messages", SQLiteDatabase.CONFLICT_REPLACE, values)
                                     }
                                     floodMessageDao.deleteList(list)
+                                    if (list.size < 100) {
+                                        break
+                                    }
+                                }
+                                while (true) {
+                                    val list = jobDao.limit100()
+                                    list.forEach { job ->
+                                        val values = ContentValues()
+                                        values.put("job_id", job.jobId)
+                                        values.put("action", job.action)
+                                        values.put("created_at", job.createdAt)
+                                        values.put("order_id", job.orderId)
+                                        values.put("user_id", job.userId)
+                                        values.put("priority", job.priority)
+                                        values.put("blaze_message", job.blazeMessage)
+                                        values.put("conversation_id", job.conversationId)
+                                        values.put("resend_message_id", job.resendMessageId)
+                                        values.put("run_count", job.runCount)
+                                        db.insert("jobs", SQLiteDatabase.CONFLICT_REPLACE, values)
+                                    }
+                                    jobDao.deleteList(list)
                                     if (list.size < 100) {
                                         break
                                     }

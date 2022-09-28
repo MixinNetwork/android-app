@@ -59,7 +59,7 @@ class ChatWebSocket(
 ) : WebSocketListener() {
 
     private val offsetDao: OffsetDao = mixinDatabase.offsetDao()
-    private val jobDao: JobDao = mixinDatabase.jobDao()
+    private val jobDao: JobDao = cacheDataBase.jobDao()
     private val floodMessageDao: FloodMessageDao = cacheDataBase.floodMessageDao()
 
     private val failCode = 1000
