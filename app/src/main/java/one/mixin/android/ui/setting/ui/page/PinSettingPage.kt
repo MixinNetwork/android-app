@@ -34,6 +34,7 @@ import one.mixin.android.extension.putLong
 import one.mixin.android.ui.common.biometric.BiometricBottomSheetDialogFragment
 import one.mixin.android.ui.setting.BiometricTimeFragment
 import one.mixin.android.ui.setting.LocalSettingNav
+import one.mixin.android.ui.setting.SettingActivity
 import one.mixin.android.ui.setting.SettingDestination
 import one.mixin.android.ui.setting.ui.compose.HighlightStarLinkText
 import one.mixin.android.ui.setting.ui.compose.MixinBottomSheetDialog
@@ -42,6 +43,8 @@ import one.mixin.android.ui.setting.ui.compose.SettingTile
 import one.mixin.android.ui.setting.ui.compose.booleanValueAsState
 import one.mixin.android.ui.setting.ui.compose.longValueAsState
 import one.mixin.android.ui.setting.ui.theme.MixinAppTheme
+import one.mixin.android.ui.tip.TipActivity
+import one.mixin.android.ui.tip.TipType
 import one.mixin.android.ui.wallet.PinBiometricsBottomSheetDialogFragment
 import one.mixin.android.util.BiometricUtil
 
@@ -201,7 +204,7 @@ fun PinSettingPage() {
         Box(modifier = Modifier.height(16.dp))
 
         SettingTile(title = stringResource(R.string.Change_PIN)) {
-            navController.navigation(SettingDestination.ChangePin)
+            TipActivity.show(context as SettingActivity, TipType.Change)
         }
     }
 }
