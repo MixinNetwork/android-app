@@ -29,10 +29,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
-import one.mixin.android.extension.areBubblesAllowedCompat
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.mainThread
-import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.notificationManager
 import one.mixin.android.extension.supportsNougat
 import one.mixin.android.extension.supportsR
@@ -458,6 +456,7 @@ object NotificationGenerator : Injector() {
             .setColor(ContextCompat.getColor(context, R.color.colorLightBlue))
             .setAutoCancel(true)
             .setWhen(time)
+            .setShowWhen(true)
             .setSortKey((Long.MAX_VALUE - time).toString())
 
         if (!isSilent && Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
@@ -477,7 +476,7 @@ object NotificationGenerator : Injector() {
                 .build()
 
             val messagingStyle = NotificationCompat.MessagingStyle(requireNotNull(person) { "Required person was null." }).also { style ->
-                style.addMessage(NotificationCompat.MessagingStyle.Message(contentText, System.currentTimeMillis(), person))
+                style.addMessage(NotificationCompat.MessagingStyle.Message(contentText, time, person))
                 style.isGroupConversation = false
             }
 
@@ -487,27 +486,14 @@ object NotificationGenerator : Injector() {
                 .setStyle(messagingStyle)
         })
 
-        val canBubble = Build.VERSION.SDK_INT >= Build.VERSION_CODES.R && notificationManager.areBubblesAllowedCompat()
-        if (canBubble) {
-            loadBitmap(context, conversation.iconUrl()) { bitmap ->
-                val resource = bitmap ?: BitmapFactory.decodeResource(context.resources, R.drawable.ic_group_place_holder)
-                notificationBuilder.setLargeIcon(resource)
-                buildBubble(context, conversation, notificationBuilder, message, resource, person)
-                notificationManager.notify(message.conversationId.hashCode(), notificationBuilder.build())
-            }
-        } else {
-            user.notNullWithElse(
-                {
-                    loadBitmap(context, it.avatarUrl) { bitmap ->
-                        val resource = bitmap ?: BitmapFactory.decodeResource(context.resources, R.drawable.default_avatar)
-                        notificationBuilder.setLargeIcon(resource)
-                        notificationManager.notify(message.conversationId.hashCode(), notificationBuilder.build())
-                    }
-                },
-                {
-                    notificationManager.notify(message.conversationId.hashCode(), notificationBuilder.build())
-                }
+        loadBitmap(context, conversation.iconUrl()) { bitmap ->
+            val resource = bitmap ?: BitmapFactory.decodeResource(
+                context.resources,
+                if (conversation.isGroupConversation()) R.drawable.ic_group_place_holder else R.drawable.default_avatar
             )
+            notificationBuilder.setLargeIcon(resource)
+            buildBubble(context, conversation, notificationBuilder, message, resource, person)
+            notificationManager.notify(message.conversationId.hashCode(), notificationBuilder.build())
         }
     }
 
