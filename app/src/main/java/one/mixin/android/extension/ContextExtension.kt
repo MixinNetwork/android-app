@@ -1074,12 +1074,13 @@ inline fun <reified T> Fragment.findListener(): T? {
 val Context.notificationManager: NotificationManager
     get() = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
-@RequiresApi(Build.VERSION_CODES.Q)
+@RequiresApi(Build.VERSION_CODES.R)
 fun NotificationManager.areBubblesAllowedCompat(): Boolean {
     return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
         bubblePreference != BUBBLE_PREFERENCE_NONE
     } else {
-        areBubblesAllowed()
+        @Suppress("DEPRECATION")
+        areBubblesAllowed() || notificationChannels.any { it.canBubble() }
     }
 }
 
