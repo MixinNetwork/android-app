@@ -23,9 +23,7 @@ import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.biometric.BiometricBottomSheetDialogFragment
 import one.mixin.android.ui.setting.BiometricTimeFragment.Companion.X_HOUR
 import one.mixin.android.ui.tip.TipActivity
-import one.mixin.android.ui.tip.TipBundle
 import one.mixin.android.ui.tip.TipType
-import one.mixin.android.ui.tip.TryConnecting
 import one.mixin.android.ui.wallet.PinBiometricsBottomSheetDialogFragment
 import one.mixin.android.util.BiometricUtil
 import one.mixin.android.util.viewBinding
@@ -47,8 +45,7 @@ class PinSettingFragment : BaseFragment(R.layout.fragment_pin_setting) {
                 leftIb.setOnClickListener { activity?.onBackPressedDispatcher?.onBackPressed() }
             }
             changeTv.setOnClickListener {
-                val deviceId = requireNotNull(defaultSharedPreferences.getString(Constants.DEVICE_ID, null)) { "required deviceId can not be null" }
-                TipActivity.show(requireContext(), TipBundle(TipType.Change, deviceId, TryConnecting))
+                TipActivity.show(requireActivity(), TipType.Change)
             }
             timeRl.setOnClickListener {
                 navTo(BiometricTimeFragment.newInstance(), BiometricTimeFragment.TAG)

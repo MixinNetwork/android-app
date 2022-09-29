@@ -52,8 +52,6 @@ import one.mixin.android.ui.setting.ui.page.SecurityPage
 import one.mixin.android.ui.setting.ui.page.SettingPage
 import one.mixin.android.ui.setting.ui.page.ViewEmergencyContactPage
 import one.mixin.android.ui.setting.ui.theme.MixinAppTheme
-import one.mixin.android.ui.tip.TipActivity
-import one.mixin.android.ui.tip.TipType
 import one.mixin.android.vo.User
 import timber.log.Timber
 
@@ -76,14 +74,12 @@ enum class SettingDestination {
     AppAuthSetting,
     UserBottomSheet,
     PinSetting,
-    WalletPassword,
     EmergencyContact,
     ViewEmergencyContact,
     Authentications,
     AuthenticationPermissions,
     PinLogs,
     BiometricTime,
-    ChangePin,
 }
 
 open class SettingNavigationController {
@@ -390,10 +386,6 @@ class SettingComposeFragment : BaseFragment() {
                                 MixinSettingFragment(DeleteAccountFragment.TAG) {
                                     DeleteAccountFragment.newInstance()
                                 }
-                            }
-
-                            composable(SettingDestination.ChangePin.name) {
-                                TipActivity.show(requireActivity(), TipType.Change)
                             }
 
                             composable(SettingDestination.DatabaseDebug.name) {

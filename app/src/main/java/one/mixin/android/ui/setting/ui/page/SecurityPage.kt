@@ -4,21 +4,26 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.height
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import one.mixin.android.R
 import one.mixin.android.session.Session
 import one.mixin.android.ui.setting.LocalSettingNav
+import one.mixin.android.ui.setting.SettingActivity
 import one.mixin.android.ui.setting.SettingDestination
 import one.mixin.android.ui.setting.ui.compose.SettingPageScaffold
 import one.mixin.android.ui.setting.ui.compose.SettingTile
 import one.mixin.android.ui.setting.ui.theme.MixinAppTheme
+import one.mixin.android.ui.tip.TipActivity
+import one.mixin.android.ui.tip.TipType
 
 @Composable
 fun SecurityPage() {
 
     val navController = LocalSettingNav.current
+    val context = LocalContext.current
 
     SettingPageScaffold(title = stringResource(id = R.string.Security)) {
 
@@ -26,7 +31,7 @@ fun SecurityPage() {
             if (Session.getAccount()?.hasPin == true) {
                 navController.navigation(SettingDestination.PinSetting)
             } else {
-                navController.navigation(SettingDestination.WalletPassword)
+                TipActivity.show(context as SettingActivity, TipType.Create)
             }
         }
 
