@@ -64,6 +64,7 @@ import one.mixin.android.vo.AppCap
 import one.mixin.android.vo.AppItem
 import one.mixin.android.vo.AssetItem
 import one.mixin.android.vo.ConversationCategory
+import one.mixin.android.vo.ConversationMinimal
 import one.mixin.android.vo.ConversationStatus
 import one.mixin.android.vo.EncryptCategory
 import one.mixin.android.vo.ForwardMessage
@@ -441,7 +442,8 @@ internal constructor(
 
     suspend fun findFriendsNotBot() = userRepository.findFriendsNotBot()
 
-    suspend fun successConversationList() = conversationRepository.successConversationList()
+    suspend fun successConversationList(): List<ConversationMinimal> =
+        conversationRepository.successConversationList()
 
     fun findContactUsers() = userRepository.findContactUsers()
 

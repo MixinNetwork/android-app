@@ -32,6 +32,7 @@ import one.mixin.android.vo.CircleOrder
 import one.mixin.android.vo.Conversation
 import one.mixin.android.vo.ConversationCategory
 import one.mixin.android.vo.ConversationItem
+import one.mixin.android.vo.ConversationMinimal
 import one.mixin.android.vo.ConversationStatus
 import one.mixin.android.vo.Participant
 import one.mixin.android.vo.User
@@ -165,10 +166,10 @@ internal constructor(
 
     suspend fun getFriends(): List<User> = userRepository.getFriends()
 
-    suspend fun successConversationList() = conversationRepository.successConversationList()
+    suspend fun successConversationList(): List<ConversationMinimal> =
+        conversationRepository.successConversationList()
 
-    suspend fun findConversationItemByCircleId(circleId: String) =
-        userRepository.findConversationItemByCircleId(circleId)
+    suspend fun findConversationItemByCircleId(circleId: String) = userRepository.findConversationItemByCircleId(circleId)
 
     suspend fun updateCircleConversations(id: String, circleConversationRequests: List<CircleConversationRequest>) = withContext(Dispatchers.IO) {
         userRepository.updateCircleConversations(id, circleConversationRequests)

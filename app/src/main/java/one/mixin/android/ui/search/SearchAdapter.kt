@@ -8,6 +8,7 @@ import com.google.i18n.phonenumbers.PhoneNumberUtil
 import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersAdapter
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemSearchAssetBinding
+import one.mixin.android.databinding.ItemSearchChatBinding
 import one.mixin.android.databinding.ItemSearchContactBinding
 import one.mixin.android.databinding.ItemSearchHeaderBinding
 import one.mixin.android.databinding.ItemSearchMessageBinding
@@ -181,7 +182,7 @@ class SearchAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>(), StickyRec
                 ContactHolder(ItemSearchContactBinding.inflate(LayoutInflater.from(parent.context), parent, false))
             }
             TypeChat.index -> {
-                ChatHolder(ItemSearchContactBinding.inflate(LayoutInflater.from(parent.context), parent, false))
+                ChatHolder(ItemSearchChatBinding.inflate(LayoutInflater.from(parent.context), parent, false))
             }
             TypeMessage.index -> {
                 MessageHolder(ItemSearchMessageBinding.inflate(LayoutInflater.from(parent.context), parent, false))

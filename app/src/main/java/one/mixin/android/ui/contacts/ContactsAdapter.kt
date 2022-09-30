@@ -9,8 +9,8 @@ import androidx.recyclerview.widget.RecyclerView
 import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersAdapter
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemContactContactBinding
-import one.mixin.android.databinding.ItemContactFriendBinding
 import one.mixin.android.databinding.ItemContactHeaderBinding
+import one.mixin.android.databinding.ItemContactNormalBinding
 import one.mixin.android.databinding.ViewContactHeaderBinding
 import one.mixin.android.databinding.ViewContactListEmptyBinding
 import one.mixin.android.session.Session
@@ -112,7 +112,7 @@ class ContactsAdapter(val context: Context, var users: List<User>, var friendSiz
         } else if (viewType == TYPE_CONTACT) {
             ContactViewHolder(ItemContactContactBinding.inflate(LayoutInflater.from(parent.context), parent, false))
         } else {
-            FriendViewHolder(ItemContactFriendBinding.inflate(LayoutInflater.from(parent.context), parent, false))
+            FriendViewHolder(ItemContactNormalBinding.inflate(LayoutInflater.from(parent.context), parent, false))
         }
     }
 
@@ -229,13 +229,16 @@ class ContactsAdapter(val context: Context, var users: List<User>, var friendSiz
         }
     }
 
-    class FriendViewHolder(val binding: ItemContactFriendBinding) : ViewHolder(binding.root) {
+    class FriendViewHolder(val binding: ItemContactNormalBinding) : ViewHolder(binding.root) {
         fun bind(user: User, listener: ContactListener?) {
-            binding.root.normal.text = user.fullName
-            binding.root.avatar.setInfo(user.fullName, user.avatarUrl, user.userId)
-            user.showVerifiedOrBot(binding.root.verifiedIv, binding.root.botIv)
-            if (listener != null) {
-                itemView.setOnClickListener { listener.onFriendItem(user) }
+            binding.apply {
+                normal.text = user.fullName
+                mixinIdTv.text = user.identityNumber
+                avatar.setInfo(user.fullName, user.avatarUrl, user.userId)
+                user.showVerifiedOrBot(verifiedIv, botIv)
+                if (listener != null) {
+                    itemView.setOnClickListener { listener.onFriendItem(user) }
+                }
             }
         }
     }

@@ -119,27 +119,29 @@ class NewGroupFragment : BaseFragment() {
         )
         val liveData = groupViewModel.getConversationStatusById(conversation.conversationId)
         liveData.observe(
-            viewLifecycleOwner,
-            { c ->
-                if (c != null) {
-                    when (c.status) {
-                        ConversationStatus.SUCCESS.ordinal -> {
-                            liveData.removeObservers(viewLifecycleOwner)
-                            binding.nameDescEt.hideKeyboard()
-                            dialog?.dismiss()
-                            activity?.finish()
-                            ConversationActivity.showAndClear(requireContext(), conversation.conversationId)
-                        }
-                        ConversationStatus.FAILURE.ordinal -> {
-                            liveData.removeObservers(viewLifecycleOwner)
-                            binding.nameDescEt.hideKeyboard()
-                            dialog?.dismiss()
-                            MainActivity.reopen(requireContext())
-                        }
+            viewLifecycleOwner
+        ) { c ->
+            if (c != null) {
+                when (c.status) {
+                    ConversationStatus.SUCCESS.ordinal -> {
+                        liveData.removeObservers(viewLifecycleOwner)
+                        binding.nameDescEt.hideKeyboard()
+                        dialog?.dismiss()
+                        activity?.finish()
+                        ConversationActivity.showAndClear(
+                            requireContext(),
+                            conversation.conversationId
+                        )
+                    }
+                    ConversationStatus.FAILURE.ordinal -> {
+                        liveData.removeObservers(viewLifecycleOwner)
+                        binding.nameDescEt.hideKeyboard()
+                        dialog?.dismiss()
+                        MainActivity.reopen(requireContext())
                     }
                 }
             }
-        )
+        }
     }
 
     private fun enableCreate(enable: Boolean) {
@@ -173,6 +175,7 @@ class NewGroupFragment : BaseFragment() {
         fun bind(user: User) {
             binding.avatar.setInfo(user.fullName, user.avatarUrl, user.userId)
             binding.normal.text = user.fullName
+            binding.mixinIdTv.text = user.identityNumber
         }
     }
 

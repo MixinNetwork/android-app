@@ -21,6 +21,8 @@ class FriendsViewHolder(val binding: ItemContactNormalBinding) : BaseFriendsView
         binding.apply {
             normal.text = item.fullName
             normal.highLight(filter)
+            mixinIdTv.text = item.identityNumber
+            mixinIdTv.highLight(filter)
             avatar.setInfo(item.fullName, item.avatarUrl, item.userId)
             item.showVerifiedOrBot(verifiedIv, botIv)
         }
