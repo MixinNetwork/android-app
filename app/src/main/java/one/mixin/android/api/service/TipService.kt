@@ -2,6 +2,7 @@ package one.mixin.android.api.service
 
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.request.TipRequest
+import one.mixin.android.api.request.TipSecretReadRequest
 import one.mixin.android.api.request.TipSecretRequest
 import one.mixin.android.api.response.TipEphemeral
 import one.mixin.android.api.response.TipIdentity
@@ -21,7 +22,7 @@ interface TipService {
     suspend fun tipEphemeral(@Body request: TipRequest): MixinResponse<Unit>
 
     @POST("tip/secret")
-    suspend fun readTipSecret(@Body request: TipSecretRequest): MixinResponse<TipSecretResponse>
+    suspend fun readTipSecret(@Body request: TipSecretReadRequest): MixinResponse<TipSecretResponse>
 
     @POST("tip/secret")
     suspend fun updateTipSecret(@Body request: TipSecretRequest): MixinResponse<Unit>

@@ -10,6 +10,7 @@ import one.mixin.android.Constants
 import one.mixin.android.RxBus
 import one.mixin.android.api.request.PinRequest
 import one.mixin.android.api.request.TipSecretAction
+import one.mixin.android.api.request.TipSecretReadRequest
 import one.mixin.android.api.request.TipSecretRequest
 import one.mixin.android.api.response.TipSigner
 import one.mixin.android.api.service.AccountService
@@ -323,12 +324,11 @@ class Tip @Inject internal constructor(
 
         val sigBase64 = signTimestamp(stPriv, timestamp)
 
-        val tipSecretRequest = TipSecretRequest(
-            action = TipSecretAction.READ.name,
+        val tipSecretReadRequest = TipSecretReadRequest(
             signatureBase64 = sigBase64,
             timestamp = timestamp,
         )
-        val response = tipNetwork { tipService.readTipSecret(tipSecretRequest) }.getOrThrow()
+        val response = tipNetwork { tipService.readTipSecret(tipSecretReadRequest) }.getOrThrow()
         val cipher = response.seedBase64?.base64RawUrlDecode() ?: throw TipNullException("Not get tip secret")
 
         val pinToken =
