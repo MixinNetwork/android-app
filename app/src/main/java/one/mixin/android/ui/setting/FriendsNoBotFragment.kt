@@ -17,14 +17,16 @@ import one.mixin.android.extension.withArgs
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.friends.BaseFriendsFragment
 import one.mixin.android.ui.common.friends.FriendsListener
+import one.mixin.android.ui.conversation.adapter.FriendsAdapter
+import one.mixin.android.ui.conversation.adapter.FriendsViewHolder
 import one.mixin.android.ui.landing.LandingActivity
 import one.mixin.android.ui.setting.VerificationEmergencyFragment.Companion.FROM_CONTACT
 import one.mixin.android.vo.User
 
 @AndroidEntryPoint
-class FriendsNoBotFragment : BaseFriendsFragment<FriendsNoBotViewHolder>(), FriendsListener {
+class FriendsNoBotFragment : BaseFriendsFragment<FriendsViewHolder>(), FriendsListener {
     init {
-        adapter = FriendsNoBotAdapter(userCallback).apply {
+        adapter = FriendsAdapter(userCallback).apply {
             listener = this@FriendsNoBotFragment
         }
     }

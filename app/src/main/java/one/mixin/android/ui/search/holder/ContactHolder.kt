@@ -11,12 +11,15 @@ class ContactHolder constructor(
     val binding: ItemSearchContactBinding
 ) : NormalHolder(binding.root) {
     fun bind(user: User, target: String, onItemClickListener: SearchFragment.OnSearchClickListener?) {
-        binding.searchName.text = user.fullName
-        binding.searchName.highLight(target)
-        binding.searchAvatarIv.setInfo(user.fullName, user.avatarUrl, user.userId)
-        user.showVerifiedOrBot(binding.verifiedIv, binding.botIv)
-        binding.root.setOnClickListener {
-            onItemClickListener?.onUserClick(user)
+        binding.apply {
+            normal.text = user.fullName
+            normal.highLight(target)
+            mixinIdTv.text = user.identityNumber
+            avatar.setInfo(user.fullName, user.avatarUrl, user.userId)
+            user.showVerifiedOrBot(verifiedIv, botIv)
+            root.setOnClickListener {
+                onItemClickListener?.onUserClick(user)
+            }
         }
     }
 }

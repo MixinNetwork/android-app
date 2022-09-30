@@ -39,7 +39,8 @@ class GroupUserViewHolder(val binding: ItemGroupFriendBinding) : RecyclerView.Vi
         checkedMap: HashMap<String, Boolean>,
         alreadyUserIds: List<String>?
     ) {
-        binding.name.text = user.fullName
+        binding.normal.text = user.fullName
+        binding.mixinIdTv.text = user.identityNumber
         binding.avatar.setInfo(user.fullName, user.avatarUrl, user.userId)
         alreadyUserIds?.let {
             if (it.contains(user.userId)) {
@@ -56,7 +57,7 @@ class GroupUserViewHolder(val binding: ItemGroupFriendBinding) : RecyclerView.Vi
         user.showVerifiedOrBot(binding.verifiedIv, binding.botIv)
         binding.cb.isClickable = false
         binding.root.setOnClickListener {
-            if (alreadyUserIds?.size ?: 0 + checkedMap.size >= GROUP_VOICE_MAX_COUNT) {
+            if ((alreadyUserIds?.size ?: (0 + checkedMap.size)) >= GROUP_VOICE_MAX_COUNT) {
                 listener?.onFull()
                 return@setOnClickListener
             }

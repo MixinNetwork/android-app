@@ -6,6 +6,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.widget.Checkable
 import android.widget.LinearLayout
+import androidx.core.view.isVisible
 import one.mixin.android.R
 import one.mixin.android.databinding.ViewConversationCheckBinding
 import one.mixin.android.extension.colorFromAttribute
@@ -76,27 +77,34 @@ class ConversationCheckView : LinearLayout, Checkable {
     private var checkEnabled: Boolean = true
 
     fun bind(item: ConversationMinimal, listener: ForwardAdapter.ForwardListener?) {
-        if (item.isGroupConversation()) {
-            binding.normal.text = item.groupName
-            binding.avatar.setGroup(item.iconUrl())
-        } else {
-            binding.normal.text = item.name
-            binding.avatar.setInfo(item.getConversationName(), item.iconUrl(), item.ownerId)
-        }
-        binding.botIv.visibility = if (item.isBot()) View.VISIBLE else View.GONE
-        setOnClickListener {
-            toggle()
-            listener?.onConversationClick(item)
+        binding.apply {
+            if (item.isGroupConversation()) {
+                normal.text = item.groupName
+                mixinIdTv.text = item.content
+                avatar.setGroup(item.iconUrl())
+            } else {
+                normal.text = item.name
+                mixinIdTv.text = item.ownerIdentityNumber
+                avatar.setInfo(item.getConversationName(), item.iconUrl(), item.ownerId)
+            }
+            botIv.isVisible = item.isBot()
+            setOnClickListener {
+                toggle()
+                listener?.onConversationClick(item)
+            }
         }
     }
 
     fun bind(item: User, listener: ForwardAdapter.ForwardListener?) {
-        binding.normal.text = item.fullName
-        binding.avatar.setInfo(item.fullName, item.avatarUrl, item.userId)
-        setOnClickListener {
-            toggle()
-            listener?.onUserItemClick(item)
+        binding.apply {
+            normal.text = item.fullName
+            mixinIdTv.text = item.identityNumber
+            avatar.setInfo(item.fullName, item.avatarUrl, item.userId)
+            setOnClickListener {
+                toggle()
+                listener?.onUserItemClick(item)
+            }
+            item.showVerifiedOrBot(verifiedIv, botIv)
         }
-        item.showVerifiedOrBot(binding.verifiedIv, binding.botIv)
     }
 }

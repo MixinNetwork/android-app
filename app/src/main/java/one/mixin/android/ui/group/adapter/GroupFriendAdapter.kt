@@ -93,7 +93,8 @@ class GroupFriendAdapter :
             alreadyUserIds: List<String>?,
             isAdd: Boolean
         ) {
-            binding.name.text = user.fullName
+            binding.normal.text = user.fullName
+            binding.mixinIdTv.text = user.identityNumber
             binding.avatar.setInfo(user.fullName, user.avatarUrl, user.userId)
             if (isAdd) {
                 alreadyUserIds?.let {

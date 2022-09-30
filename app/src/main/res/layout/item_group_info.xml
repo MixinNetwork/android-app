@@ -11,48 +11,62 @@
         android:layout_width="40dp"
         android:layout_height="40dp"
         android:layout_centerVertical="true"
+        android:layout_marginEnd="@dimen/margin16"
         android:layout_marginStart="@dimen/activity_horizontal_margin" />
 
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_centerVertical="true"
+    <Space
+        android:id="@+id/center"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerVertical="true" />
+
+    <TextView
+        android:id="@+id/normal"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:layout_toEndOf="@id/avatar"
-        android:layout_toStartOf="@id/desc"
-        tools:ignore="UseCompoundDrawables">
+        android:layout_above="@id/center"
+        android:layout_marginBottom="2dp"
+        android:maxWidth="240dp"
+        android:singleLine="true"
+        android:textColor="?attr/text_primary"
+        tools:text="name"/>
 
-        <TextView
-            android:id="@+id/normal"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_vertical"
-            android:layout_marginEnd="8dp"
-            android:layout_marginStart="@dimen/activity_horizontal_margin"
-            android:ellipsize="end"
-            android:singleLine="true"
-            android:text="@string/app_name"
-            android:textColor="?attr/text_primary" />
+    <ImageView
+        android:id="@+id/verified_iv"
+        android:layout_width="12dp"
+        android:layout_height="12dp"
+        android:layout_toEndOf="@id/normal"
+        android:layout_above="@id/center"
+        android:layout_marginBottom="4dp"
+        android:layout_marginStart="8dp"
+        android:src="@drawable/ic_user_verified"
+        android:visibility="gone"
+        tools:ignore="ContentDescription"/>
 
-        <ImageView
-            android:id="@+id/verify_iv"
-            android:layout_width="12dp"
-            android:layout_height="12dp"
-            android:layout_gravity="center_vertical"
-            android:layout_marginEnd="8dp"
-            android:src="@drawable/ic_user_verified"
-            android:visibility="gone"
-            tools:ignore="ContentDescription" />
+    <ImageView
+        android:id="@+id/bot_iv"
+        android:layout_width="12dp"
+        android:layout_height="12dp"
+        android:layout_toEndOf="@id/verified_iv"
+        android:layout_above="@id/center"
+        android:layout_marginBottom="4dp"
+        android:layout_marginStart="8dp"
+        android:contentDescription="@null"
+        android:src="@drawable/ic_bot"
+        android:visibility="gone"/>
 
-        <ImageView
-            android:id="@+id/bot_iv"
-            android:layout_width="12dp"
-            android:layout_height="12dp"
-            android:layout_gravity="center_vertical"
-            android:layout_marginEnd="8dp"
-            android:src="@drawable/ic_bot"
-            android:visibility="gone"
-            tools:ignore="ContentDescription" />
-    </LinearLayout>
+    <TextView
+        android:id="@+id/mixin_id_tv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="2dp"
+        android:layout_below="@id/center"
+        android:layout_toEndOf="@id/avatar"
+        android:ellipsize="end"
+        android:singleLine="true"
+        android:textSize="12sp"
+        android:textColor="?attr/text_minor" />
 
     <TextView
         android:id="@+id/desc"

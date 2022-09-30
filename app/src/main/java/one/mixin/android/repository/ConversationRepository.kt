@@ -38,7 +38,6 @@ import one.mixin.android.db.TranscriptMessageDao
 import one.mixin.android.db.insertMessage
 import one.mixin.android.db.insertNoReplace
 import one.mixin.android.db.provider.DataProvider
-import one.mixin.android.db.runInTransaction
 import one.mixin.android.event.GroupEvent
 import one.mixin.android.extension.joinStar
 import one.mixin.android.extension.putBoolean
@@ -110,7 +109,8 @@ internal constructor(
         DataProvider.observeConversationsByCircleId(circleId, appDatabase)
     }
 
-    suspend fun successConversationList(): List<ConversationMinimal> = conversationDao.successConversationList()
+    suspend fun successConversationList(): List<ConversationMinimal> =
+        conversationDao.successConversationList()
 
     suspend fun insertConversation(conversation: Conversation, participants: List<Participant>) =
         withContext(SINGLE_DB_THREAD) {

@@ -1,7 +1,7 @@
 package one.mixin.android.ui.search.holder
 
 import android.view.View
-import one.mixin.android.databinding.ItemSearchContactBinding
+import one.mixin.android.databinding.ItemSearchChatBinding
 import one.mixin.android.extension.highLight
 import one.mixin.android.ui.common.recyclerview.NormalHolder
 import one.mixin.android.ui.search.SearchFragment
@@ -9,7 +9,7 @@ import one.mixin.android.vo.ChatMinimal
 import one.mixin.android.vo.ConversationCategory
 import one.mixin.android.vo.showVerifiedOrBot
 
-class ChatHolder constructor(val binding: ItemSearchContactBinding) : NormalHolder(binding.root) {
+class ChatHolder constructor(val binding: ItemSearchChatBinding) : NormalHolder(binding.root) {
     init {
         binding.botIv.visibility = View.GONE
         binding.verifiedIv.visibility = View.GONE
