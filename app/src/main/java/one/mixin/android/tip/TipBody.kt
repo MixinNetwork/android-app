@@ -25,15 +25,15 @@ object TipBody {
     fun forRawTransactionCreate(assetId: String, opponentKey: String, opponentReceivers: List<String>, opponentThreshold: Int, amount: String, traceId: String?, memo: String?): ByteArray {
         var body = assetId + opponentKey // TODO fix opponentKey usage
         opponentReceivers.forEach { o -> body += o }
-        body = body + opponentThreshold + amount + traceId + memo
+        body = body + opponentThreshold + amount + (traceId ?: "") + (memo ?: "")
         return (TIPRawTransactionCreate + body).hashToBody()
     }
 
     fun forWithdrawalCreate(addressId: String, amount: String, fee: String?, traceId: String, memo: String?): ByteArray =
-        (TIPWithdrawalCreate + addressId + amount + fee + traceId + memo).hashToBody()
+        (TIPWithdrawalCreate + addressId + amount + (fee ?: "") + traceId + (memo ?: "")).hashToBody()
 
     fun forTransfer(assetId: String, counterUserId: String, amount: String, traceId: String?, memo: String?): ByteArray =
-        (TIPTransferCreate + assetId + counterUserId + amount + traceId + memo).hashToBody()
+        (TIPTransferCreate + assetId + counterUserId + amount + (traceId ?: "") + (memo ?: "")).hashToBody()
 
     fun forPhoneNumberUpdate(verificationId: String, code: String): ByteArray =
         (TIPPhoneNumberUpdate + verificationId + code).hashToBody()
@@ -42,7 +42,7 @@ object TipBody {
         (TIPEmergencyContactCreate + verificationId + code).hashToBody()
 
     fun forAddressAdd(assetId: String, publicKey: String?, keyTag: String?, name: String?): ByteArray =
-        (TIPAddressAdd + assetId + publicKey + keyTag + name).hashToBody()
+        (TIPAddressAdd + assetId + (publicKey ?: "") + (keyTag ?: "") + (name ?: "")).hashToBody()
 
     fun forAddressRemove(addressId: String): ByteArray =
         (TIPAddressRemove + addressId).hashToBody()
