@@ -215,9 +215,9 @@ class PreconditionBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     }
 
     private fun shouldShowWithdrawalTip(t: WithdrawBiometricItem): Boolean {
-        val price = t.asset.priceUsd.toDoubleOrNull() ?: return false
-        val amount = BigDecimal(t.amount).toDouble() * price
-        if (amount <= 10) {
+        val price = t.asset.priceUsd.toBigDecimalOrNull() ?: return false
+        val amount = BigDecimal(t.amount).multiply(price)
+        if (amount <= BigDecimal(10)) {
             return false
         }
         val hasWithdrawalAddressSet = defaultSharedPreferences.getStringSet(Constants.Account.PREF_HAS_WITHDRAWAL_ADDRESS_SET, null)

@@ -32,7 +32,6 @@ data class TipSecretReadRequest(
     val action: String = TipSecretAction.READ.name
 }
 
-
 enum class TipSecretAction {
     READ, UPDATE,
 }

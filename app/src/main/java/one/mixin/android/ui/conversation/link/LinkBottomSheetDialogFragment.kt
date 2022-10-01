@@ -545,9 +545,8 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                                 showError(R.string.error_address_not_sync)
                             }
                             else -> {
-                                val dust = address.dust?.toDoubleOrNull()
-                                val amountDouble = amount.toDoubleOrNull()
-                                if (dust != null && amountDouble != null && amountDouble < dust) {
+                                val dust = address.dust?.toBigDecimal()
+                                if (dust != null && amount.toBigDecimal().compareTo(dust) == -1) {
                                     val errorString = getString(R.string.withdrawal_minimum_amount, address.dust, asset.symbol)
                                     showError(errorString)
                                     toast(errorString)
@@ -561,7 +560,6 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                                     },
                                     successBlock = { r ->
                                         val response = r.data ?: return@handleMixinResponse false
-
                                         showWithdrawalBottom(address, amount, asset, traceId, response.status, memo)
                                     },
                                     failureBlock = {
@@ -699,7 +697,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
     private suspend fun showTransfer(text: String): Boolean {
         val uri = text.toUri()
         val amount = uri.getQueryParameter("amount") ?: return false
-        if (amount.toDoubleOrNull() == null) return false
+        if (amount.toBigDecimalOrNull() == null) return false
         val userId = uri.getQueryParameter("recipient")
         if (userId == null || !userId.isUUID()) {
             return false
