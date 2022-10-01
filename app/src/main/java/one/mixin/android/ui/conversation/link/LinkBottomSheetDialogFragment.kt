@@ -41,6 +41,7 @@ import one.mixin.android.extension.isDonateUrl
 import one.mixin.android.extension.isExternalScheme
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.isUUID
+import one.mixin.android.extension.numberFormat
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.withArgs
 import one.mixin.android.job.getIconUrlName
@@ -520,7 +521,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
 
             val uri = Uri.parse(url)
             val assetId = uri.getQueryParameter("asset")
-            val amount = uri.getQueryParameter("amount")
+            val amount = uri.getQueryParameter("amount")?.numberFormat()
             val memo = uri.getQueryParameter("memo")?.run {
                 Uri.decode(this)
             }
@@ -698,7 +699,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
 
     private suspend fun showTransfer(text: String): Boolean {
         val uri = text.toUri()
-        val amount = uri.getQueryParameter("amount") ?: return false
+        val amount = uri.getQueryParameter("amount")?.numberFormat() ?: return false
         if (amount.toDoubleOrNull() == null) return false
         val userId = uri.getQueryParameter("recipient")
         if (userId == null || !userId.isUUID()) {
