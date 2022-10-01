@@ -31,7 +31,7 @@ object TipBody {
     }
 
     fun forWithdrawalCreate(addressId: String, amount: String, fee: String?, traceId: String, memo: String?): ByteArray =
-        (TIPWithdrawalCreate + addressId + amount.stripAmountZero() + (fee ?: "") + traceId + (memo ?: "")).hashToBody()
+        (TIPWithdrawalCreate + addressId + amount.stripAmountZero() + (fee?.stripAmountZero() ?: "") + traceId + (memo ?: "")).hashToBody()
 
     fun forTransfer(assetId: String, counterUserId: String, amount: String, traceId: String?, memo: String?): ByteArray {
         return (TIPTransferCreate + assetId + counterUserId + amount.stripAmountZero() + (traceId ?: "") + (memo ?: "")).hashToBody()
