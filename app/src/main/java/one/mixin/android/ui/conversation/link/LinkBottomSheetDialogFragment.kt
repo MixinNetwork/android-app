@@ -552,7 +552,6 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                                     toast(errorString)
                                     return@launch
                                 }
-
                                 val transferRequest = TransferRequest(assetId, null, amount, null, traceId, memo, addressId)
                                 handleMixinResponse(
                                     invokeNetwork = {

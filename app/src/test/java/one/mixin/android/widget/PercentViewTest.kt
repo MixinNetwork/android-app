@@ -5,6 +5,19 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 
 class PercentViewTest {
+
+    @Test
+    fun testBigDecimal() {
+        var amount = BigDecimal("100.000")
+        var a = amount.stripTrailingZeros().toPlainString()
+        assertEquals("100", a)
+        amount = BigDecimal("100.00100")
+        a = amount.stripTrailingZeros().toPlainString()
+        assertEquals("100.001", a)
+        amount = BigDecimal("1.1E-4")
+        a = amount.stripTrailingZeros().toPlainString()
+        assertEquals("0.00011", a)
+    }
     @Test
     fun testCalcPercent() {
         val totalUSD1 = BigDecimal("100")

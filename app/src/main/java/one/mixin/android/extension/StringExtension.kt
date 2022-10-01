@@ -371,6 +371,10 @@ fun BigDecimal.priceFormat2(): String {
     }
 }
 
+fun String.stripAmountZero(): String {
+    return BigDecimal(this).stripTrailingZeros().toPlainString()
+}
+
 fun BigDecimal.numberFormat2(): String {
     return try {
         DecimalFormat(",###.##").format(this)
