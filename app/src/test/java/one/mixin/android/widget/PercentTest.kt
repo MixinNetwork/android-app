@@ -4,7 +4,7 @@ import java.math.BigDecimal
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
-class PercentViewTest {
+class PercentTest {
 
     @Test
     fun testBigDecimal() {
@@ -17,6 +17,9 @@ class PercentViewTest {
         amount = BigDecimal("1.1E-4")
         a = amount.stripTrailingZeros().toPlainString()
         assertEquals("0.00011", a)
+        amount = BigDecimal("-1.100E-5")
+        a = amount.stripTrailingZeros().toPlainString()
+        assertEquals("-0.000011", a)
     }
     @Test
     fun testCalcPercent() {
