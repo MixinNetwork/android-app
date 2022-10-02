@@ -152,7 +152,7 @@ class TransferFragment() : MixinBottomSheetDialogFragment() {
     private var user: User? = null
 
     private var swapped = false
-    private var bottomValue = 0.0
+    private var bottomValue = BigDecimal(0)
 
     private var transferBottomOpened = false
 
@@ -497,6 +497,7 @@ class TransferFragment() : MixinBottomSheetDialogFragment() {
             } else {
                 s
             }.trim()
+
         }
     }
 
@@ -520,7 +521,7 @@ class TransferFragment() : MixinBottomSheetDialogFragment() {
         } catch (e: NumberFormatException) {
             BigDecimal(0)
         }
-        bottomValue = value.toDouble()
+        bottomValue = value
         return "${if (swapped) {
             value.numberFormat8()
         } else value.numberFormat2()} $rightSymbol"
