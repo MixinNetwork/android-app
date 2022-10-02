@@ -248,6 +248,8 @@
     <string name="content_transfer">[Transfer]</string>
     <string name="content_video">[Video]</string>
     <string name="content_voice">[Voice call]</string>
+    <string name="content_pin">[Pin Message]</string>
+    <string name="content_system">[System Message]</string>
     <string name="Continue">Continue</string>
     <string name="Continue_Open_URL">Continue Open URL</string>
     <string name="Conversation">Conversation</string>

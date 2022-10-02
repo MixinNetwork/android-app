@@ -243,6 +243,8 @@
     <string name="content_transfer">[转账]</string>
     <string name="content_video">[视频]</string>
     <string name="content_voice">[语音电话]</string>
+    <string name="content_pin">[置顶消息]</string>
+    <string name="content_system">[系统消息]</string>
     <string name="Continue">继续</string>
     <string name="Continue_Open_URL">继续访问</string>
     <string name="Conversation">会话</string>
