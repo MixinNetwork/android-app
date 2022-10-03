@@ -64,6 +64,7 @@ import one.mixin.android.extension.putString
 import one.mixin.android.extension.showKeyboard
 import one.mixin.android.extension.sp
 import one.mixin.android.extension.statusBarHeight
+import one.mixin.android.extension.stripAmountZero
 import one.mixin.android.extension.textColor
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.withArgs
@@ -509,16 +510,16 @@ class TransferFragment() : MixinBottomSheetDialogFragment() {
         val rightSymbol = if (swapped) currentAsset!!.symbol else Fiats.getAccountCurrencyAppearance()
         val value = try {
             if (currentAsset == null || currentAsset!!.priceFiat().toDouble() == 0.0) {
-                BigDecimal(0)
+                BigDecimal.ZERO
             } else if (swapped) {
                 BigDecimal(amount).divide(currentAsset!!.priceFiat(), 8, RoundingMode.HALF_UP)
             } else {
                 BigDecimal(amount) * currentAsset!!.priceFiat()
             }
         } catch (e: ArithmeticException) {
-            BigDecimal(0)
+            BigDecimal.ZERO
         } catch (e: NumberFormatException) {
-            BigDecimal(0)
+            BigDecimal.ZERO
         }
         bottomValue = value
         return "${if (swapped) {
@@ -541,9 +542,9 @@ class TransferFragment() : MixinBottomSheetDialogFragment() {
         if (currentAsset == null || (user == null && address == null)) {
             return@launch
         }
-        val amount = getAmount()
+        var amount = getAmount()
         try {
-            BigDecimal(amount)
+            amount = amount.stripAmountZero()
         } catch (e: NumberFormatException) {
             return@launch
         }

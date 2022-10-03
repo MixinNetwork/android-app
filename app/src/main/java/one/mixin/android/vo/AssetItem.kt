@@ -38,15 +38,21 @@ data class AssetItem(
 
     fun priceFiat(): BigDecimal = if (priceUsd == "0") {
         BigDecimal.ZERO
-    } else BigDecimal(priceUsd).multiply(BigDecimal(Fiats.getRate()))
+    } else {
+        BigDecimal(priceUsd).multiply(BigDecimal(Fiats.getRate()))
+    }
 
     fun chainPriceFiat(): BigDecimal = if (chainPriceUsd == null || chainPriceUsd == "0") {
         BigDecimal.ZERO
-    } else BigDecimal(chainPriceUsd).multiply(BigDecimal(Fiats.getRate()))
+    } else {
+        BigDecimal(chainPriceUsd).multiply(BigDecimal(Fiats.getRate()))
+    }
 
     fun btc(): BigDecimal = if (priceBtc == "0") {
         BigDecimal.ZERO
-    } else BigDecimal(balance).multiply(BigDecimal(priceBtc))
+    } else {
+        BigDecimal(balance).multiply(BigDecimal(priceBtc))
+    }
 
     fun getDestination(): String {
         return if (assetId == BITCOIN_CHAIN_ID) {

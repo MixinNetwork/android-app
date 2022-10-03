@@ -229,9 +229,9 @@ class PreconditionBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     }
 
     private fun shouldShowTransferTip(t: TransferBiometricItem): Boolean {
-        val price = t.asset.priceUsd.toDoubleOrNull() ?: return false
-        val amount = BigDecimal(t.amount).toDouble() * price
-        return amount > 0 && amount >= (Session.getAccount()!!.transferConfirmationThreshold)
+        val price = t.asset.priceUsd.toBigDecimalOrNull() ?: return false
+        val amount = BigDecimal(t.amount).multiply(price)
+        return amount > BigDecimal.ZERO && amount >= BigDecimal(Session.getAccount()!!.transferConfirmationThreshold)
     }
 
     private suspend fun shouldShowStrangerTransferTip(t: TransferBiometricItem): Boolean {

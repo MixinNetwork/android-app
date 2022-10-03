@@ -20,6 +20,9 @@ class PercentTest {
         amount = BigDecimal("-1.100E-5")
         a = amount.stripTrailingZeros().toPlainString()
         assertEquals("-0.000011", a)
+        amount = BigDecimal("01.010")
+        a = amount.stripTrailingZeros().toPlainString()
+        assertEquals("1.01", a)
     }
     @Test
     fun testCalcPercent() {

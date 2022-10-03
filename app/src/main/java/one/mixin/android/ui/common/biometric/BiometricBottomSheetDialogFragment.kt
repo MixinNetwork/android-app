@@ -148,15 +148,19 @@ abstract class BiometricBottomSheetDialogFragment : MixinBottomSheetDialogFragme
                 invokeNetwork(pin)
             }
         } catch (t: Throwable) {
-            if (t is TipNetworkException) {
-                handleWithErrorCodeAndDesc(pin, t.error)
-            } else if (t is TipCounterNotSyncedException) {
-                dialog?.window?.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
-                biometricLayout.showPin(true)
-            } else {
-                dialog?.window?.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
-                biometricLayout.showPin(true)
-                ErrorHandler.handleError(t)
+            when (t) {
+                is TipNetworkException -> {
+                    handleWithErrorCodeAndDesc(pin, t.error)
+                }
+                is TipCounterNotSyncedException -> {
+                    dialog?.window?.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
+                    biometricLayout.showPin(true)
+                }
+                else -> {
+                    dialog?.window?.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
+                    biometricLayout.showPin(true)
+                    ErrorHandler.handleError(t)
+                }
             }
             return@launch
         }
