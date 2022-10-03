@@ -152,7 +152,7 @@ class TransferFragment() : MixinBottomSheetDialogFragment() {
     private var user: User? = null
 
     private var swapped = false
-    private var bottomValue = BigDecimal(0)
+    private var bottomValue = BigDecimal.ZERO
 
     private var transferBottomOpened = false
 
@@ -293,8 +293,8 @@ class TransferFragment() : MixinBottomSheetDialogFragment() {
             binding.memoRl.isVisible = isInnerTransfer()
 
             binding.feeTv.visibility = VISIBLE
-            val reserveDouble = it.reserve.toDoubleOrNull()
-            val dustDouble = it.dust?.toDoubleOrNull()
+            val reserveDouble = it.reserve.toBigDecimalOrNull()
+            val dustDouble = it.dust?.toBigDecimalOrNull()
             val color = requireContext().colorFromAttribute(R.attr.text_primary)
 
             val networkSpan =
@@ -306,7 +306,7 @@ class TransferFragment() : MixinBottomSheetDialogFragment() {
                         }
                     }
                 }
-            val dustSpan = if (dustDouble != null && dustDouble > 0) {
+            val dustSpan = if (dustDouble != null && dustDouble > BigDecimal.ZERO) {
                 SpannableStringBuilder().apply {
                     append(getString(R.string.withdrawal_minimum_withdrawal))
                     color(color) {
@@ -316,7 +316,7 @@ class TransferFragment() : MixinBottomSheetDialogFragment() {
                     }
                 }
             } else SpannableStringBuilder()
-            val reserveSpan = if (reserveDouble != null && reserveDouble > 0) {
+            val reserveSpan = if (reserveDouble != null && reserveDouble > BigDecimal.ZERO) {
                 SpannableStringBuilder().apply {
                     append(getString(R.string.withdrawal_minimum_reserve))
                     color(color) {
@@ -336,7 +336,7 @@ class TransferFragment() : MixinBottomSheetDialogFragment() {
             binding.assetRl.setOnClickListener {
                 operateKeyboard(false)
                 context?.let {
-                    if (assets.isNullOrEmpty()) {
+                    if (assets.isEmpty()) {
                         assetsViewBinding.emptyTv.isVisible = true
                         assetsViewBinding.typeRv.isVisible = false
                     } else {
@@ -550,8 +550,8 @@ class TransferFragment() : MixinBottomSheetDialogFragment() {
         }
 
         if (user == null) {
-            val dust = address!!.dust?.toDoubleOrNull()
-            val amountDouble = amount.toDoubleOrNull()
+            val dust = address!!.dust?.toBigDecimalOrNull()
+            val amountDouble = amount.toBigDecimalOrNull()
             if (dust != null && amountDouble != null && amountDouble < dust) {
                 toast(getString(R.string.withdrawal_minimum_amount, address!!.dust, currentAsset!!.symbol))
                 return@launch
