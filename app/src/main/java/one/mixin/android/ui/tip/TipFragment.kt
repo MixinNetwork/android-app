@@ -32,7 +32,6 @@ import one.mixin.android.tip.getTipExceptionMsg
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.PinInputBottomSheetDialogFragment
 import one.mixin.android.ui.common.VerifyBottomSheetDialogFragment
-import one.mixin.android.ui.setting.OldPasswordFragment
 import one.mixin.android.ui.setting.WalletPasswordFragment
 import one.mixin.android.util.BiometricUtil
 import one.mixin.android.util.viewBinding
@@ -267,16 +266,8 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
             Timber.w("Tip start in error state ${tipBundle.tipType}")
             return
         }
-        when (tipBundle.tipType) {
-            TipType.Change -> {
-                val oldPasswordFragment = OldPasswordFragment.newInstance(tipBundle)
-                navTo(oldPasswordFragment, OldPasswordFragment.TAG)
-            }
-            else -> {
-                val passwordFragment = WalletPasswordFragment.newInstance(tipBundle)
-                navTo(passwordFragment, WalletPasswordFragment.TAG)
-            }
-        }
+        val passwordFragment = WalletPasswordFragment.newInstance(tipBundle)
+        navTo(passwordFragment, WalletPasswordFragment.TAG)
     }
 
     private fun processTip() = lifecycleScope.launch {

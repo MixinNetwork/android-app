@@ -497,7 +497,6 @@ class TransferFragment() : MixinBottomSheetDialogFragment() {
             } else {
                 s
             }.trim()
-
         }
     }
 
