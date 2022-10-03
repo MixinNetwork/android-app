@@ -16,7 +16,9 @@ data class ConversationMinimal(
     val ownerVerified: Boolean?,
     val appId: String?,
     val content: String?,
-) : IConversationCategory {
+    val contentType: String?,
+    val messageStatus: String?,
+) : IConversationCategory, ICategory {
     companion object {
         val DIFF_CALLBACK = object : DiffUtil.ItemCallback<ConversationMinimal>() {
             override fun areItemsTheSame(oldItem: ConversationMinimal, newItem: ConversationMinimal) =
@@ -26,6 +28,9 @@ data class ConversationMinimal(
                 oldItem == newItem
         }
     }
+
+    override val type: String?
+        get() = contentType
 
     override val conversationCategory: String?
         get() = category
