@@ -6,8 +6,10 @@ import android.view.LayoutInflater
 import android.view.View
 import android.widget.RelativeLayout
 import androidx.core.content.ContextCompat
+import androidx.core.view.isVisible
 import one.mixin.android.R
 import one.mixin.android.databinding.ViewTitleBinding
+import one.mixin.android.extension.dp
 
 class TitleView(context: Context, attrs: AttributeSet) : RelativeLayout(context, attrs) {
 
@@ -85,7 +87,19 @@ class TitleView(context: Context, attrs: AttributeSet) : RelativeLayout(context,
         }
     }
 
+    fun initProgress(max: Int, progress: Int) {
+        binding.pb.max = max
+        binding.pb.indicatorSize = 24.dp
+        binding.pb.progress = progress
+        binding.rightAnimator.isVisible = true
+        binding.rightAnimator.displayedChild = POS_PROGRESS
+    }
+    fun setProgress(index: Int) {
+        binding.pb.setProgress(index, true)
+    }
+
     companion object {
-        val POS_TEXT = 1
+        const val POS_TEXT = 1
+        const val POS_PROGRESS = 2
     }
 }

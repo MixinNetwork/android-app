@@ -24,7 +24,7 @@ import one.mixin.android.widget.Keyboard
 import one.mixin.android.widget.PinView
 
 @AndroidEntryPoint
-class WalletPasswordFragment : BaseFragment(R.layout.fragment_wallet_password), PinView.OnPinListener {
+class WalletPasswordFragment : BaseFragment(R.layout.fragment_wallet_password), PinView.OnPinListener, PinView.onPinFinishListener {
 
     companion object {
         const val TAG = "WalletPasswordFragment"
@@ -70,7 +70,9 @@ class WalletPasswordFragment : BaseFragment(R.layout.fragment_wallet_password), 
             }
             disableTitleRight()
             titleView.rightAnimator.setOnClickListener { createPin() }
+            titleView.initProgress(5, 1)
             pin.setListener(this@WalletPasswordFragment)
+            pin.setOnPinFinishListener(this@WalletPasswordFragment)
             keyboard.setKeyboardKeys(Constants.KEYS)
             keyboard.setOnClickKeyboardListener(keyboardListener)
             keyboard.animate().translationY(0f).start()
@@ -89,6 +91,10 @@ class WalletPasswordFragment : BaseFragment(R.layout.fragment_wallet_password), 
         } else {
             disableTitleRight()
         }
+    }
+
+    override fun onPinFinish() {
+        createPin()
     }
 
     override fun onBackPressed(): Boolean {
@@ -121,6 +127,7 @@ class WalletPasswordFragment : BaseFragment(R.layout.fragment_wallet_password), 
         step = STEP1
         lastPassword = null
         binding.pin.clear()
+        binding.titleView.setProgress(1)
         binding.titleView.setSubTitle(
             getString(if (tipBundle.forChange()) R.string.Set_new_PIN else R.string.Set_PIN),
             getSubTitle()
@@ -140,6 +147,7 @@ class WalletPasswordFragment : BaseFragment(R.layout.fragment_wallet_password), 
         }
 
         step = STEP2
+        binding.titleView.setProgress(2)
         lastPassword = binding.pin.code()
         binding.apply {
             pin.clear()
@@ -153,6 +161,7 @@ class WalletPasswordFragment : BaseFragment(R.layout.fragment_wallet_password), 
         if (check && checkEqual()) return
 
         step = STEP3
+        binding.titleView.setProgress(3)
         binding.apply {
             pin.clear()
             titleView.setSubTitle(getString(R.string.Confirm_PIN), getSubTitle())
@@ -164,6 +173,7 @@ class WalletPasswordFragment : BaseFragment(R.layout.fragment_wallet_password), 
         if (check && checkEqual()) return
 
         step = STEP4
+        binding.titleView.setProgress(4)
         binding.apply {
             pin.clear()
             titleView.setSubTitle(getString(R.string.Confirm_PIN), getSubTitle())
@@ -210,6 +220,7 @@ class WalletPasswordFragment : BaseFragment(R.layout.fragment_wallet_password), 
             STEP3 -> toStep4(true)
             STEP4 -> {
                 if (checkEqual()) return
+                binding.titleView.setProgress(5)
 
                 val pin = binding.pin.code()
                 tipBundle.pin = pin

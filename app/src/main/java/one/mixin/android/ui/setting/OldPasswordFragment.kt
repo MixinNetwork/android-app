@@ -32,7 +32,7 @@ import one.mixin.android.widget.Keyboard
 import one.mixin.android.widget.PinView
 
 @AndroidEntryPoint
-class OldPasswordFragment : BaseFragment(R.layout.fragment_old_password), PinView.OnPinListener {
+class OldPasswordFragment : BaseFragment(R.layout.fragment_old_password), PinView.OnPinListener, PinView.onPinFinishListener {
 
     companion object {
         const val TAG = "OldPasswordFragment"
@@ -50,10 +50,10 @@ class OldPasswordFragment : BaseFragment(R.layout.fragment_old_password), PinVie
         activity?.window?.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
         binding.apply {
             titleView.leftIb.setOnClickListener { activity?.onBackPressedDispatcher?.onBackPressed() }
-            titleView.rightAnimator.setOnClickListener { verify(binding.pin.code()) }
             titleView.setSubTitle(getString(R.string.Old_PIN), "1/5")
             disableTitleRight()
             pin.setListener(this@OldPasswordFragment)
+            pin.setOnPinFinishListener(this@OldPasswordFragment)
             keyboard.setKeyboardKeys(KEYS)
             keyboard.setOnClickKeyboardListener(keyboardListener)
             keyboard.animate().translationY(0f).start()
@@ -74,6 +74,10 @@ class OldPasswordFragment : BaseFragment(R.layout.fragment_old_password), PinVie
         } else {
             disableTitleRight()
         }
+    }
+
+    override fun onPinFinish() {
+        verify(binding.pin.code())
     }
 
     private fun disableTitleRight() {
@@ -104,6 +108,7 @@ class OldPasswordFragment : BaseFragment(R.layout.fragment_old_password), PinVie
                         WalletPasswordFragment.newInstance(tipBundle),
                         WalletPasswordFragment.TAG
                     )
+                    binding.pin.clear()
                 }
             },
             exceptionBlock = {
