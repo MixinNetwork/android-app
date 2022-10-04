@@ -33,6 +33,7 @@ env:
   # Release tag associated with version of Detekt to be installed
   # SARIF support (required for this workflow) was introduced in Detekt v1.15.0
   DETEKT_RELEASE_TAG: v1.21.0
+  EXPECTED_DETEKT_RELEASE_SHA: 32f6e22d9524804ebbb51d31e53cd28a84864ed6
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
@@ -71,8 +72,8 @@ jobs:
         ' 1> gh_response.json
         
         DETEKT_RELEASE_SHA=$(jq --raw-output '.data.repository.release.releaseAssets.tagCommit.oid' gh_response.json)
-        if [ $DETEKT_RELEASE_SHA != "32f6e22d9524804ebbb51d31e53cd28a84864ed6" ]; then
-          echo "Release tag doesn't match expected commit SHA $DETEKT_RELEASE_SHA"
+        if [ $DETEKT_RELEASE_SHA != $EXPECTED_DETEKT_RELEASE_SHA ]; then
+          echo "Release tag doesn't match expected $EXPECTED_DETEKT_RELEASE_SHA commit SHA but got $DETEKT_RELEASE_SHA"
           exit 1
         fi
         
