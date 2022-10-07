@@ -24,8 +24,8 @@ object TipBody {
         "$TIPVerify${String.format("%032d", timestamp)}".toByteArray()
 
     fun forRawTransactionCreate(assetId: String, opponentKey: String, opponentReceivers: List<String>, opponentThreshold: Int, amount: String, traceId: String?, memo: String?): ByteArray {
-        var body = assetId + opponentKey // TODO fix opponentKey usage
-        opponentReceivers.forEach { o -> body += o }
+        var body = assetId + opponentKey
+        body += opponentReceivers.joinToString(separator = "")
         body = body + opponentThreshold + amount.stripAmountZero() + (traceId ?: "") + (memo ?: "")
         return (TIPRawTransactionCreate + body).hashToBody()
     }
