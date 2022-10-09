@@ -151,7 +151,7 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
             })
         }
 
-        walletViewModel.assetItems().observe(viewLifecycleOwner) {
+        walletViewModel.assetItemsNotHidden().observe(viewLifecycleOwner) {
             if (it.isEmpty()) {
                 setEmpty()
             } else {
