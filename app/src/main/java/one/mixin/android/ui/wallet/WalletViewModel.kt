@@ -46,7 +46,7 @@ internal constructor(
         userRepository.upsert(user)
     }
 
-    fun assetItems(): LiveData<List<AssetItem>> = assetRepository.assetItems()
+    fun assetItems(): LiveData<List<AssetItem>> = assetRepository.assetItemsNotHidden()
 
     fun snapshotsFromDb(
         id: String,

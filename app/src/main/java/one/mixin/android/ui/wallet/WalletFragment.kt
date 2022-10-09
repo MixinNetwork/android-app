@@ -94,18 +94,15 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
             _headBinding = ViewWalletFragmentHeaderBinding.bind(layoutInflater.inflate(R.layout.view_wallet_fragment_header, coinsRv, false)).apply {
                 sendReceiveView.send.setOnClickListener {
                     AssetListBottomSheetDialogFragment.newInstance(true)
-                        .setCallback {
+                        .setOnAssetClick {
                             sendBottomSheet.show(it)
-                        }.showNow(parentFragmentManager, AssetListBottomSheetDialogFragment.TAG)
+                        }.setOnDepositClick {
+                            showReceiveAssetList(view)
+                        }
+                        .showNow(parentFragmentManager, AssetListBottomSheetDialogFragment.TAG)
                 }
                 sendReceiveView.receive.setOnClickListener {
-                    AssetListBottomSheetDialogFragment.newInstance(false)
-                        .setCallback { asset ->
-                            view.navigate(
-                                R.id.action_wallet_to_deposit,
-                                Bundle().apply { putParcelable(ARGS_ASSET, asset) }
-                            )
-                        }.showNow(parentFragmentManager, AssetListBottomSheetDialogFragment.TAG)
+                    showReceiveAssetList(view)
                 }
             }
             assetsAdapter.headerView = _headBinding!!.root
@@ -343,6 +340,16 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
         }
 
         bottomSheet.show()
+    }
+
+    private fun showReceiveAssetList(view: View) {
+        AssetListBottomSheetDialogFragment.newInstance(false)
+            .setOnAssetClick { asset ->
+                view.navigate(
+                    R.id.action_wallet_to_deposit,
+                    Bundle().apply { putParcelable(ARGS_ASSET, asset) }
+                )
+            }.showNow(parentFragmentManager, AssetListBottomSheetDialogFragment.TAG)
     }
 
     override fun <T> onNormalItemClick(item: T) {

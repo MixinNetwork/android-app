@@ -78,7 +78,6 @@
             app:layoutManager="LinearLayoutManager" />
 
         <LinearLayout
-            android:id="@+id/empty_ll"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:background="?attr/bg_white"
@@ -101,5 +100,30 @@
                 android:text="@string/NO_RESULTS"
                 android:textColor="?attr/text_minor" />
         </LinearLayout>
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="?attr/bg_white" >
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/Dont_have_assets"
+                android:layout_centerHorizontal="true"
+                android:layout_marginBottom="@dimen/margin12"
+                android:layout_above="@id/deposit_tv"
+                android:textSize="16sp"
+                android:textColor="?attr/text_primary" />
+
+            <TextView
+                android:id="@+id/deposit_tv"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerInParent="true"
+                android:text="@string/Deposit"
+                android:textSize="16sp"
+                android:textColor="?attr/text_blue" />
+        </RelativeLayout>
     </ViewAnimator>
 </RelativeLayout>
