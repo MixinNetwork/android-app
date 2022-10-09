@@ -66,20 +66,19 @@ class AddressManagementFragment : BaseFragment(R.layout.fragment_address_managem
             )
         }
         addressViewModel.addresses(asset.assetId).observe(
-            viewLifecycleOwner,
-            {
-                val list = it?.toMutableList()
-                if (list.isNullOrEmpty()) {
-                    binding.emptyTv.isVisible = true
-                    binding.contentLl.isGone = true
-                } else {
-                    binding.emptyTv.isVisible = false
-                    binding.contentLl.isGone = false
-                }
-                addresses = list
-                adapter.addresses = list
+            viewLifecycleOwner
+        ) {
+            val list = it?.toMutableList()
+            if (list.isNullOrEmpty()) {
+                binding.emptyTv.isVisible = true
+                binding.contentLl.isGone = true
+            } else {
+                binding.emptyTv.isVisible = false
+                binding.contentLl.isGone = false
             }
-        )
+            addresses = list
+            adapter.addresses = list
+        }
         val addrListener = object : AddressAdapter.SimpleAddressListener() {
             override fun onAddrLongClick(view: View, addr: Address) {
                 val popMenu = PopupMenu(requireActivity(), ItemAddressBinding.bind(view).addrTv)

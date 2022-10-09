@@ -137,6 +137,8 @@ constructor(
 
     fun observeAddress(addressId: String) = addressDao.observeById(addressId)
 
+    fun observeAddressExt(addressId: String) = addressDao.observeAddressExt(addressId)
+
     suspend fun withdrawal(withdrawalRequest: WithdrawalRequest) = assetService.withdrawals(withdrawalRequest)
 
     fun saveAddr(addr: Address) = addressDao.insert(addr)

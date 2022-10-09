@@ -570,6 +570,8 @@ internal constructor(
 
     fun observeAddress(addressId: String) = assetRepository.observeAddress(addressId)
 
+    fun observeAddressExt(addressId: String) = assetRepository.observeAddressExt(addressId)
+
     fun updateRecentUsedBots(
         defaultSharedPreferences: SharedPreferences,
         userId: String

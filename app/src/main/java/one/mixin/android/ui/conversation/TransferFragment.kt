@@ -89,6 +89,8 @@ import one.mixin.android.vo.AssetItem
 import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.User
 import one.mixin.android.vo.displayAddress
+import one.mixin.android.vo.feeSymbol
+import one.mixin.android.vo.toAddress
 import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.SearchView
 import one.mixin.android.widget.getMaxCustomViewHeight
@@ -283,10 +285,10 @@ class TransferFragment() : MixinBottomSheetDialogFragment() {
         address = requireArguments().getParcelable(ARGS_ADDRESS)
         if (address == null || currentAsset == null) return
 
-        chatViewModel.observeAddress(address!!.addressId).observe(
+        chatViewModel.observeAddressExt(address!!.addressId).observe(
             this
         ) {
-            address = it
+            address = it.toAddress()
             binding.titleView.setSubTitle(
                 getString(R.string.send_to, it.label),
                 it.displayAddress().formatPublicKey()
@@ -303,7 +305,7 @@ class TransferFragment() : MixinBottomSheetDialogFragment() {
                     bold {
                         append(' ')
                         color(color) {
-                            append(it.fee + " " + currentAsset!!.chainSymbol)
+                            append(it.fee + " " + it.feeSymbol(requireNotNull(currentAsset?.chainSymbol)))
                         }
                     }
                 }
