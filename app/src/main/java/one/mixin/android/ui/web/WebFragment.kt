@@ -766,14 +766,10 @@ class WebFragment : BaseFragment() {
     }
 
     private fun showPlaylist(playlist: Array<String>) {
-        if (viewDestroyed()) return
-
-        if (!checkFloatingPermission()) {
-            return
-        }
-
         lifecycleScope.launch {
             if (viewDestroyed()) return@launch
+
+            if (!checkFloatingPermission()) return@launch
 
             MusicService.playUrls(requireContext(), playlist)
             if (checkFloatingPermission()) {
