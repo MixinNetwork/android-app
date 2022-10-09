@@ -86,7 +86,7 @@ class DisappearingFragment : BaseFragment(R.layout.fragment_disappearing) {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         val info = getString(R.string.disappearing_message_hint)
-        val learnUrl = requireContext().getString(R.string.disappearing_message_url)
+        val learnUrl = getString(R.string.disappearing_message_url)
         binding.tipTv.highlightStarTag(info, arrayOf(learnUrl))
 
         lifecycleScope.launch {

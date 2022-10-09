@@ -15,12 +15,16 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants
+import one.mixin.android.Constants.AssetId.BYTOM_CLASSIC_ASSET_ID
+import one.mixin.android.Constants.AssetId.MGD_ASSET_ID
+import one.mixin.android.Constants.AssetId.OMNI_USDT_ASSET_ID
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentDepositBinding
 import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.buildBulletLines
 import one.mixin.android.extension.getTipsByAsset
 import one.mixin.android.extension.highLight
+import one.mixin.android.extension.highlightStarTag
 import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.ui.common.BaseFragment
@@ -33,6 +37,8 @@ class DepositFragment : BaseFragment() {
     companion object {
         const val TAG = "DepositFragment"
     }
+
+    private val notSupportDepositAssets = arrayOf(OMNI_USDT_ASSET_ID, BYTOM_CLASSIC_ASSET_ID, MGD_ASSET_ID)
 
     private var _binding: FragmentDepositBinding? = null
     private val binding get() = requireNotNull(_binding)
@@ -50,38 +56,60 @@ class DepositFragment : BaseFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         val asset = requireArguments().getAsset()
+        val notSupport = notSupportDepositAssets.any { it == asset.assetId }
         binding.apply {
             title.apply {
                 leftIb.setOnClickListener { activity?.onBackPressedDispatcher?.onBackPressed() }
                 rightAnimator.setOnClickListener { context?.openUrl(Constants.HelpLink.DEPOSIT) }
             }
             title.setSubTitle(getString(R.string.Deposit), asset.symbol)
-            val reserveTip = if (asset.needShowReserve()) {
-                getString(R.string.deposit_reserve, "${asset.reserve} ${asset.symbol}")
-                    .highLight(requireContext(), "${asset.reserve} ${asset.symbol}")
-            } else SpannableStringBuilder()
-            val confirmation = requireContext().resources.getQuantityString(R.plurals.deposit_confirmation, asset.confirmations, asset.confirmations)
-                .highLight(requireContext(), asset.confirmations.toString())
-            tipTv.text = buildBulletLines(requireContext(), SpannableStringBuilder(getTipsByAsset(asset)), confirmation, reserveTip)
+            if (notSupport) {
+                notSupportLl.isVisible = true
+                sv.isVisible = false
+                val info = getString(R.string.not_supported_deposit, asset.symbol, asset.symbol)
+                val url = ""
+                notSupportTv.highlightStarTag(info, arrayOf(url))
+            } else {
+                notSupportLl.isVisible = false
+                sv.isVisible = true
+                val reserveTip = if (asset.needShowReserve()) {
+                    getString(R.string.deposit_reserve, "${asset.reserve} ${asset.symbol}")
+                        .highLight(requireContext(), "${asset.reserve} ${asset.symbol}")
+                } else SpannableStringBuilder()
+                val confirmation = requireContext().resources.getQuantityString(
+                    R.plurals.deposit_confirmation,
+                    asset.confirmations,
+                    asset.confirmations
+                )
+                    .highLight(requireContext(), asset.confirmations.toString())
+                tipTv.text = buildBulletLines(
+                    requireContext(),
+                    SpannableStringBuilder(getTipsByAsset(asset)),
+                    confirmation,
+                    reserveTip
+                )
+            }
         }
-        updateUI(asset)
-        refreshAsset(asset)
-        DepositChooseNetworkBottomSheetDialogFragment.newInstance(asset = asset)
-            .apply {
-                this.callback = {
-                    val noTag = asset.getTag().isNullOrBlank()
-                    if (noTag.not()) {
-                        alertDialogBuilder()
-                            .setTitle(R.string.Notice)
-                            .setCancelable(false)
-                            .setMessage(getString(R.string.deposit_notice, asset.symbol))
-                            .setPositiveButton(R.string.OK) { dialog, _ ->
-                                dialog.dismiss()
-                            }.show()
+        if (!notSupport) {
+            updateUI(asset)
+            refreshAsset(asset)
+            DepositChooseNetworkBottomSheetDialogFragment.newInstance(asset = asset)
+                .apply {
+                    this.callback = {
+                        val noTag = asset.getTag().isNullOrBlank()
+                        if (noTag.not()) {
+                            alertDialogBuilder()
+                                .setTitle(R.string.Notice)
+                                .setCancelable(false)
+                                .setMessage(getString(R.string.deposit_notice, asset.symbol))
+                                .setPositiveButton(R.string.OK) { dialog, _ ->
+                                    dialog.dismiss()
+                                }.show()
+                        }
                     }
                 }
-            }
-            .showNow(childFragmentManager, TAG)
+                .showNow(childFragmentManager, TAG)
+        }
     }
 
     override fun onDestroyView() {

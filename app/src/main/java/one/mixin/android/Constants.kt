@@ -148,6 +148,12 @@ object Constants {
         const val TRON_CHAIN_ID = "25dabac5-056a-48ff-b9f9-f67395dc407c"
     }
 
+    object AssetId {
+        const val MGD_ASSET_ID = "b207bce9-c248-4b8e-b6e3-e357146f3f4c"
+        const val BYTOM_CLASSIC_ASSET_ID = "443e1ef5-bc9b-47d3-be77-07f328876c50"
+        const val OMNI_USDT_ASSET_ID = ""
+    }
+
     object Mute {
         const val MUTE_1_HOUR = 1 * 60 * 60
         const val MUTE_8_HOURS = 8 * 60 * 60
