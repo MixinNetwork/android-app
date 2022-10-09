@@ -28,6 +28,7 @@ import android.net.ConnectivityManager
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.os.Environment
 import android.os.Handler
 import android.os.Looper
 import android.os.VibrationEffect
@@ -1165,6 +1166,110 @@ fun Context.findFragmentActivityOrNull(): FragmentActivity? {
         ctx = ctx.baseContext
     }
     return null
+}
+
+fun Context.detectEmulator(): Boolean {
+    if(isTestLabDevice()){
+        return true
+    }
+    var rating = 0
+
+    if (Build.PRODUCT.contains("sdk") ||
+        Build.PRODUCT.contains("Andy") ||
+        Build.PRODUCT.contains("ttVM_Hdragon") ||
+        Build.PRODUCT.contains("google_sdk") ||
+        Build.PRODUCT.contains("Droid4X") ||
+        Build.PRODUCT.contains("nox") ||
+        Build.PRODUCT.contains("sdk_x86") ||
+        Build.PRODUCT.contains("sdk_google") ||
+        Build.PRODUCT.contains("vbox86p")
+    ) {
+        rating++
+    }
+
+    if (Build.MANUFACTURER == "unknown" || Build.MANUFACTURER == "Genymotion" ||
+        Build.MANUFACTURER.contains("Andy") ||
+        Build.MANUFACTURER.contains("MIT") ||
+        Build.MANUFACTURER.contains("nox") ||
+        Build.MANUFACTURER.contains("TiantianVM")
+    ) {
+        rating++
+    }
+
+    if (Build.BRAND == "generic" || Build.BRAND == "generic_x86" || Build.BRAND == "TTVM" ||
+        Build.BRAND.contains("Andy")
+    ) {
+        rating++
+    }
+
+    if (Build.DEVICE.contains("generic") ||
+        Build.DEVICE.contains("generic_x86") ||
+        Build.DEVICE.contains("Andy") ||
+        Build.DEVICE.contains("ttVM_Hdragon") ||
+        Build.DEVICE.contains("Droid4X") ||
+        Build.DEVICE.contains("nox") ||
+        Build.DEVICE.contains("generic_x86_64") ||
+        Build.DEVICE.contains("vbox86p")
+    ) {
+        rating++
+    }
+
+    if (Build.MODEL == "sdk" || Build.MODEL == "google_sdk" ||
+        Build.MODEL.contains("Droid4X") ||
+        Build.MODEL.contains("TiantianVM") ||
+        Build.MODEL.contains("Andy") || Build.MODEL == "Android SDK built for x86_64" || Build.MODEL == "Android SDK built for x86"
+    ) {
+        rating++
+    }
+
+    if (Build.HARDWARE == "goldfish" || Build.HARDWARE == "vbox86" ||
+        Build.HARDWARE.contains("nox") ||
+        Build.HARDWARE.contains("ttVM_x86")
+    ) {
+        rating++
+    }
+
+    if (Build.FINGERPRINT.contains("generic/sdk/generic") ||
+        Build.FINGERPRINT.contains("generic_x86/sdk_x86/generic_x86") ||
+        Build.FINGERPRINT.contains("Andy") ||
+        Build.FINGERPRINT.contains("ttVM_Hdragon") ||
+        Build.FINGERPRINT.contains("generic_x86_64") ||
+        Build.FINGERPRINT.contains("generic/google_sdk/generic") ||
+        Build.FINGERPRINT.contains("vbox86p") ||
+        Build.FINGERPRINT.contains("generic/vbox86p/vbox86p")
+    ) {
+        rating++
+    }
+
+    if (rating > 3) {
+        return true
+    }
+
+    try {
+        val sharedFolder = File(
+            Environment
+                .getExternalStorageDirectory().toString()
+                + File.separatorChar
+                + "windows"
+                + File.separatorChar
+                + "BstSharedFolder"
+        )
+        if (sharedFolder.exists()) {
+            return true
+        }
+    } catch (t: Throwable) {
+        t.printStackTrace()
+    }
+    return false
+}
+
+fun Context.isTestLabDevice(): Boolean {
+    return try {
+        val testLabSetting = Settings.System.getString(contentResolver, "firebase.test.lab")
+        "true" == testLabSetting
+    } catch (ignored: Exception) {
+        false
+    }
 }
 
 @SuppressWarnings("deprecation")
