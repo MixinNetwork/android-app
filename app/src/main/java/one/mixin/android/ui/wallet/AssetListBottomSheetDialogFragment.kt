@@ -43,7 +43,8 @@ class AssetListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         const val ARGS_FOR_SEND = "args_for_send"
 
         const val POS_RV = 0
-        const val POS_EMPTY = 1
+        const val POS_EMPTY_RECEIVE = 1
+        const val POS_EMPTY_SEND = 2
 
         fun newInstance(forSend: Boolean) = AssetListBottomSheetDialogFragment().withArgs {
             putBoolean(ARGS_FOR_SEND, forSend)
@@ -54,7 +55,7 @@ class AssetListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
 
     private val adapter = AssetAdapter { assetItem ->
         binding.searchEt.hideKeyboard()
-        callback?.invoke(assetItem)
+        onAsset?.invoke(assetItem)
         dismiss()
     }
 
@@ -86,6 +87,11 @@ class AssetListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             assetRv.adapter = adapter
             searchEt.setHint(getString(R.string.search_placeholder_asset))
             if (forSend) {
+                depositTv.setOnClickListener {
+                    onDeposit?.invoke()
+                    dismiss()
+                }
+
                 searchEt.listener = object : SearchView.OnSearchViewListener {
                     override fun afterTextChanged(s: Editable?) {
                         filter(s.toString())
@@ -113,10 +119,24 @@ class AssetListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                     )
             }
         }
-        bottomViewModel.assetItems().observe(this) {
+
+        if (forSend) {
+            bottomViewModel.assetItemsWithBalance()
+        } else {
+            bottomViewModel.assetItems()
+        }.observe(this) {
             defaultAssets = it
-            if (binding.searchEt.et.text.isNullOrBlank()) {
+            if (forSend) {
                 adapter.submitList(it)
+                if (it.isNullOrEmpty()) {
+                    binding.rvVa.displayedChild = POS_EMPTY_SEND
+                } else {
+                    binding.rvVa.displayedChild = POS_RV
+                }
+            } else {
+                if (binding.searchEt.et.text.isNullOrBlank()) {
+                    adapter.submitList(it)
+                }
             }
         }
     }
@@ -146,17 +166,22 @@ class AssetListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             binding.pb.isVisible = false
 
             if (localAssets.isNullOrEmpty() && remoteAssets.isEmpty()) {
-                binding.rvVa.displayedChild = POS_EMPTY
+                binding.rvVa.displayedChild = POS_EMPTY_RECEIVE
             }
         }
     }
 
-    fun setCallback(callback: (AssetItem) -> Unit): AssetListBottomSheetDialogFragment {
-        this.callback = callback
+    fun setOnAssetClick(callback: (AssetItem) -> Unit): AssetListBottomSheetDialogFragment {
+        this.onAsset = callback
+        return this
+    }
+    fun setOnDepositClick(callback: () -> Unit): AssetListBottomSheetDialogFragment {
+        this.onDeposit = callback
         return this
     }
 
-    private var callback: ((AssetItem) -> Unit)? = null
+    private var onAsset: ((AssetItem) -> Unit)? = null
+    private var onDeposit: (() -> Unit)? = null
 
     class AssetAdapter(private val onItemClick: (AssetItem) -> Unit) : ListAdapter<AssetItem, ItemHolder>(AssetItem.DIFF_CALLBACK) {
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ItemHolder =

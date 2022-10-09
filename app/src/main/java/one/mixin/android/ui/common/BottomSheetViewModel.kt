@@ -86,6 +86,8 @@ class BottomSheetViewModel @Inject internal constructor(
 
     fun assetItems(): LiveData<List<AssetItem>> = assetRepository.assetItems()
 
+    fun assetItemsWithBalance(): LiveData<List<AssetItem>> = assetRepository.assetItemsWithBalance()
+
     suspend fun transfer(
         assetId: String,
         userId: String,

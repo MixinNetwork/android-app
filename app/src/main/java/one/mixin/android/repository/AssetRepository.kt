@@ -147,7 +147,9 @@ constructor(
 
     suspend fun deleteLocalAddr(id: String) = addressDao.deleteById(id)
 
-    fun assetItems() = assetDao.assetItemsNotHidden()
+    fun assetItemsNotHidden() = assetDao.assetItemsNotHidden()
+
+    fun assetItems() = assetDao.assetItems()
 
     suspend fun fuzzySearchAsset(query: String, cancellationSignal: CancellationSignal) =
         DataProvider.fuzzySearchAsset(query, query, appDatabase, cancellationSignal)
