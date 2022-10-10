@@ -44,29 +44,30 @@ private fun getKeyByAlias(
     var key: SecretKey? = null
     try {
         key = ks.getKey(alias, null) as? SecretKey
+        if (key != null) {
+            return key
+        }
     } catch (e: Exception) {
         reportException("getKeyByAlias", e)
     }
     try {
-        if (key == null) {
-            val keyGenerator = KeyGenerator.getInstance(KeyProperties.KEY_ALGORITHM_AES, "AndroidKeyStore")
-            val builder = KeyGenParameterSpec.Builder(alias, KeyProperties.PURPOSE_ENCRYPT or KeyProperties.PURPOSE_DECRYPT)
-                .setBlockModes(
-                    KeyProperties.BLOCK_MODE_CBC,
-                    KeyProperties.BLOCK_MODE_CTR,
-                    KeyProperties.BLOCK_MODE_GCM
-                )
-                .setEncryptionPaddings(
-                    KeyProperties.ENCRYPTION_PADDING_PKCS7,
-                    KeyProperties.ENCRYPTION_PADDING_NONE
-                )
-            if (userAuthenticationRequired) {
-                builder.setUserAuthenticationRequired(true)
-                    .setUserAuthenticationValidityDurationSeconds(2 * 60 * 60)
-            }
-            keyGenerator.init(builder.build())
-            key = keyGenerator.generateKey()
+        val keyGenerator = KeyGenerator.getInstance(KeyProperties.KEY_ALGORITHM_AES, "AndroidKeyStore")
+        val builder = KeyGenParameterSpec.Builder(alias, KeyProperties.PURPOSE_ENCRYPT or KeyProperties.PURPOSE_DECRYPT)
+            .setBlockModes(
+                KeyProperties.BLOCK_MODE_CBC,
+                KeyProperties.BLOCK_MODE_CTR,
+                KeyProperties.BLOCK_MODE_GCM
+            )
+            .setEncryptionPaddings(
+                KeyProperties.ENCRYPTION_PADDING_PKCS7,
+                KeyProperties.ENCRYPTION_PADDING_NONE
+            )
+        if (userAuthenticationRequired) {
+            builder.setUserAuthenticationRequired(true)
+                .setUserAuthenticationValidityDurationSeconds(2 * 60 * 60)
         }
+        keyGenerator.init(builder.build())
+        key = keyGenerator.generateKey()
     } catch (e: Exception) {
         reportException("getKeyByAlias", e)
     }
