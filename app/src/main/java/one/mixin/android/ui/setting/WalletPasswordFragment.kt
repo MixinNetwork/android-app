@@ -3,8 +3,13 @@ package one.mixin.android.ui.setting
 import android.annotation.SuppressLint
 import android.app.Dialog
 import android.os.Bundle
+import android.view.Gravity
 import android.view.View
+import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
 import android.view.WindowManager
+import android.view.animation.AnimationUtils
+import android.widget.FrameLayout
+import android.widget.TextView
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
@@ -15,6 +20,7 @@ import one.mixin.android.api.ResponseError
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.databinding.FragmentWalletPasswordBinding
 import one.mixin.android.extension.clickVibrate
+import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.replaceFragment
 import one.mixin.android.extension.tickVibrate
@@ -35,7 +41,10 @@ import one.mixin.android.widget.Keyboard
 import one.mixin.android.widget.PinView
 
 @AndroidEntryPoint
-class WalletPasswordFragment : BaseFragment(R.layout.fragment_wallet_password), PinView.OnPinListener, PinView.onPinFinishListener {
+class WalletPasswordFragment :
+    BaseFragment(R.layout.fragment_wallet_password),
+    PinView.OnPinListener,
+    PinView.onPinFinishListener {
 
     companion object {
         const val TAG = "WalletPasswordFragment"
@@ -63,20 +72,67 @@ class WalletPasswordFragment : BaseFragment(R.layout.fragment_wallet_password), 
 
     private val walletViewModel by viewModels<WalletViewModel>()
 
+    private val rightInAnim by lazy {
+        AnimationUtils.loadAnimation(
+            requireContext(),
+            R.anim.slide_in_right
+        ).apply {
+            duration = 200
+        }
+    }
+
+    private val leftOutAnim by lazy {
+        AnimationUtils.loadAnimation(
+            requireContext(),
+            R.anim.slide_out_left
+        ).apply {
+            duration = 200
+        }
+    }
+
+    private val leftInAnim by lazy {
+        AnimationUtils.loadAnimation(
+            requireContext(),
+            R.anim.slide_in_left
+        ).apply {
+            duration = 200
+        }
+    }
+
+    private val rightOutAnim by lazy {
+        AnimationUtils.loadAnimation(
+            requireContext(),
+            R.anim.slide_out_right
+        ).apply {
+            duration = 200
+        }
+    }
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         activity?.window?.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
         binding.apply {
+            tipTv.inAnimation = rightInAnim
+            tipTv.outAnimation = leftOutAnim
+            tipTv.setFactory {
+                TextView(requireContext()).apply {
+                    setTextColor(requireContext().colorFromAttribute(R.attr.text_primary))
+                    gravity = Gravity.CENTER_HORIZONTAL
+                    layoutParams = FrameLayout.LayoutParams(WRAP_CONTENT, WRAP_CONTENT).apply {
+                        gravity = Gravity.CENTER_HORIZONTAL
+                    }
+                }
+            }
             if (tipBundle.forChange()) {
                 step = STEP0
                 titleView.setSubTitle(getString(R.string.Old_PIN), "1/5")
-                tipTv.text = getString(R.string.wallet_password_change_tip)
+                tipTv.setText(getString(R.string.wallet_password_change_tip))
                 max = 5
                 titleView.initProgress(max, 0)
             } else {
                 step = STEP1
                 titleView.setSubTitle(getString(R.string.Set_PIN), "1/4")
-                tipTv.text = getString(R.string.tip_create_pin_title)
+                tipTv.setText(getString(R.string.tip_create_pin_title))
                 max = 4
                 titleView.initProgress(max, 0)
             }
@@ -151,31 +207,31 @@ class WalletPasswordFragment : BaseFragment(R.layout.fragment_wallet_password), 
     }
 
     private fun toStep0() {
-        step = STEP0
         lastPassword = null
         binding.pin.clear()
         binding.titleView.setProgress(max - 5)
+        changeContent(getString(R.string.wallet_password_change_tip), STEP0)
+        step = STEP0
         binding.titleView.setSubTitle(
             getString(R.string.Old_PIN),
             getSubTitle()
         )
-        binding.tipTv.text = getString(R.string.wallet_password_change_tip)
     }
 
     private fun toStep1() {
-        step = STEP1
         lastPassword = null
         binding.pin.clear()
         binding.titleView.setProgress(max - 4)
+        if (tipBundle.forChange()) {
+            changeContent(getString(R.string.wallet_password_set_new_pin_desc), STEP1)
+        } else {
+            changeContent(getString(R.string.tip_create_pin_title), STEP1)
+        }
+        step = STEP1
         binding.titleView.setSubTitle(
             getString(if (tipBundle.forChange()) R.string.Set_new_PIN else R.string.Set_PIN),
             getSubTitle()
         )
-        if (tipBundle.forChange()) {
-            binding.tipTv.text = getString(R.string.wallet_password_set_new_pin_desc)
-        } else {
-            binding.tipTv.text = getString(R.string.tip_create_pin_title)
-        }
     }
 
     @SuppressLint("SetTextI18n")
@@ -185,13 +241,13 @@ class WalletPasswordFragment : BaseFragment(R.layout.fragment_wallet_password), 
             return
         }
 
-        step = STEP2
         binding.titleView.setProgress(max - 3)
         lastPassword = binding.pin.code()
         binding.apply {
             pin.clear()
+            changeContent("${getString(R.string.pin_confirm_hint)}\n${getString(R.string.pin_lost_hint)}", STEP2)
+            step = STEP2
             titleView.setSubTitle(getString(R.string.Confirm_PIN), getSubTitle())
-            tipTv.text = "${getString(R.string.pin_confirm_hint)}\n${getString(R.string.pin_lost_hint)}"
         }
     }
 
@@ -199,25 +255,35 @@ class WalletPasswordFragment : BaseFragment(R.layout.fragment_wallet_password), 
     private fun toStep3(check: Boolean = false) {
         if (check && checkEqual()) return
 
-        step = STEP3
         binding.titleView.setProgress(max - 2)
         binding.apply {
             pin.clear()
+            changeContent("${getString(R.string.pin_confirm_again_hint)}\n${getString(R.string.third_pin_confirm_hint)}", STEP3)
+            step = STEP3
             titleView.setSubTitle(getString(R.string.Confirm_PIN), getSubTitle())
-            tipTv.text = "${getString(R.string.pin_confirm_again_hint)}\n${getString(R.string.third_pin_confirm_hint)}"
         }
     }
 
     private fun toStep4(check: Boolean = false) {
         if (check && checkEqual()) return
-
-        step = STEP4
         binding.titleView.setProgress(max - 1)
         binding.apply {
             pin.clear()
+            changeContent(getString(R.string.fourth_pin_confirm_hint), STEP4)
+            step = STEP4
             titleView.setSubTitle(getString(R.string.Confirm_PIN), getSubTitle())
-            tipTv.text = getString(R.string.fourth_pin_confirm_hint)
         }
+    }
+
+    private fun changeContent(content: String, target: Int) {
+        if (target > step) {
+            binding.tipTv.inAnimation = rightInAnim
+            binding.tipTv.outAnimation = leftOutAnim
+        } else {
+            binding.tipTv.inAnimation = leftInAnim
+            binding.tipTv.outAnimation = rightOutAnim
+        }
+        binding.tipTv.setText(content)
     }
 
     private fun getSubTitle(): String {
