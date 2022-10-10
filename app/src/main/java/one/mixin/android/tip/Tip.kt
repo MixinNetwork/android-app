@@ -172,7 +172,7 @@ class Tip @Inject internal constructor(
     @Throws(TipException::class, TipNodeException::class)
     private suspend fun createPriv(context: Context, identityPriv: ByteArray, ephemeral: ByteArray, watcher: ByteArray, pin: String, failedSigners: List<TipSigner>? = null, legacyPin: String? = null, forRecover: Boolean = false): ByteArray {
         val aggSig = tipNode.sign(
-            identityPriv, ephemeral, watcher, null, failedSigners,
+            identityPriv, ephemeral, watcher, null, failedSigners, forRecover,
             callback = object : TipNode.Callback {
                 override fun onNodeComplete(step: Int, total: Int) {
                     observers.forEach { it.onSyncing(step, total) }
