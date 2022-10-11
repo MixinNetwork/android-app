@@ -151,7 +151,7 @@ object Constants {
     object AssetId {
         const val MGD_ASSET_ID = "b207bce9-c248-4b8e-b6e3-e357146f3f4c"
         const val BYTOM_CLASSIC_ASSET_ID = "443e1ef5-bc9b-47d3-be77-07f328876c50"
-        const val OMNI_USDT_ASSET_ID = ""
+        const val OMNI_USDT_ASSET_ID = "815b0b1a-2764-3736-8faa-42d694fa620a"
     }
 
     object Mute {
