@@ -4,7 +4,6 @@ import androidx.lifecycle.LiveData
 import androidx.room.Dao
 import androidx.room.Query
 import one.mixin.android.vo.Address
-import one.mixin.android.vo.AddressExt
 
 @Dao
 interface AddressDao : BaseDao<Address> {
@@ -20,9 +19,6 @@ interface AddressDao : BaseDao<Address> {
 
     @Query("SELECT * FROM addresses WHERE address_id = :id")
     fun observeById(id: String): LiveData<Address>
-
-    @Query("SELECT * FROM addresses a LEFT JOIN assets a1 ON a1.asset_id = IFNULL(a.fee_asset_id, a.asset_id) WHERE a.address_id = :id")
-    fun observeAddressExt(id: String): LiveData<AddressExt>
 
     @Query("SELECT * FROM addresses WHERE address_id = :addressId AND asset_id = :assetId")
     suspend fun findAddressById(addressId: String, assetId: String): Address?

@@ -89,8 +89,6 @@ import one.mixin.android.vo.AssetItem
 import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.User
 import one.mixin.android.vo.displayAddress
-import one.mixin.android.vo.feeSymbol
-import one.mixin.android.vo.toAddress
 import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.SearchView
 import one.mixin.android.widget.getMaxCustomViewHeight
@@ -285,19 +283,38 @@ class TransferFragment() : MixinBottomSheetDialogFragment() {
         address = requireArguments().getParcelable(ARGS_ADDRESS)
         if (address == null || currentAsset == null) return
 
-        chatViewModel.observeAddressExt(address!!.addressId).observe(
+        chatViewModel.observeAddress(address!!.addressId).observe(
             this
         ) {
-            address = it.toAddress()
+            address = it
             binding.titleView.setSubTitle(
                 getString(R.string.send_to, it.label),
                 it.displayAddress().formatPublicKey()
             )
-            binding.memoRl.isVisible = isInnerTransfer()
 
-            binding.feeTv.visibility = VISIBLE
-            val reserveDouble = it.reserve.toBigDecimalOrNull()
-            val dustDouble = it.dust?.toBigDecimalOrNull()
+            updateFeeUI(it)
+        }
+    }
+
+    private fun updateFeeUI(address: Address) = lifecycleScope.launch {
+        if (address.feeAssetId == null) {
+            binding.memoRl.isVisible = false
+            binding.feeTv.isVisible = false
+            binding.continueVa.displayedChild = POST_PB
+            binding.continueVa.setBackgroundResource(R.drawable.selector_round_bn_gray)
+        } else {
+            binding.continueVa.displayedChild = POST_TEXT
+            val feeAsset = chatViewModel.refreshAsset(address.feeAssetId)
+            if (feeAsset == null) {
+                jobManager.addJobInBackground(RefreshAssetsJob(address.feeAssetId))
+                return@launch
+            }
+            binding.memoRl.isVisible = isInnerTransfer()
+            binding.feeTv.isVisible = true
+            binding.continueVa.setBackgroundResource(R.drawable.bg_round_blue_btn)
+
+            val reserveDouble = address.reserve.toBigDecimalOrNull()
+            val dustDouble = address.dust?.toBigDecimalOrNull()
             val color = requireContext().colorFromAttribute(R.attr.text_primary)
 
             val networkSpan =
@@ -305,7 +322,7 @@ class TransferFragment() : MixinBottomSheetDialogFragment() {
                     bold {
                         append(' ')
                         color(color) {
-                            append(it.fee + " " + it.feeSymbol(requireNotNull(currentAsset?.chainSymbol)))
+                            append(address.fee + " " + feeAsset.symbol)
                         }
                     }
                 }
@@ -314,7 +331,7 @@ class TransferFragment() : MixinBottomSheetDialogFragment() {
                     append(getString(R.string.withdrawal_minimum_withdrawal))
                     color(color) {
                         bold {
-                            append(" ${it.dust} ${currentAsset!!.symbol}")
+                            append(" ${address.dust} ${currentAsset!!.symbol}")
                         }
                     }
                 }
@@ -324,7 +341,7 @@ class TransferFragment() : MixinBottomSheetDialogFragment() {
                     append(getString(R.string.withdrawal_minimum_reserve))
                     color(color) {
                         bold {
-                            append(" ${it.reserve} ${currentAsset!!.symbol}")
+                            append(" ${address.reserve} ${currentAsset!!.symbol}")
                         }
                     }
                 }

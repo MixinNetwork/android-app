@@ -570,7 +570,11 @@ internal constructor(
 
     fun observeAddress(addressId: String) = assetRepository.observeAddress(addressId)
 
-    fun observeAddressExt(addressId: String) = assetRepository.observeAddressExt(addressId)
+    suspend fun refreshAsset(assetId: String): AssetItem? {
+        return withContext(Dispatchers.IO) {
+            assetRepository.findOrSyncAsset(assetId)
+        }
+    }
 
     fun updateRecentUsedBots(
         defaultSharedPreferences: SharedPreferences,
