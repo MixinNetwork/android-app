@@ -26,12 +26,12 @@
                 android:id="@+id/title"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="64dp"
-                android:layout_marginEnd="64dp"
+                android:layout_marginStart="12dp"
+                android:layout_marginEnd="12dp"
                 android:gravity="center"
                 android:singleLine="true"
                 android:textColor="?attr/text_primary"
-                android:textSize="@dimen/wallet_balance_text" />
+                android:textSize="@dimen/bottom_name_text_size" />
 
             <TextView
                 android:id="@+id/sub_title"
