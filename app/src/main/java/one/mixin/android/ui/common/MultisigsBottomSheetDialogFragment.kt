@@ -58,7 +58,7 @@ class MultisigsBottomSheetDialogFragment :
         val t = this.t
         binding.apply {
             if (t is Multi2MultiBiometricItem) {
-                if (t.action == SignatureAction.cancel.name) {
+                if (t.action == SignatureAction.unlock.name) {
                     title.text = getString(R.string.Revoke_multisig_transaction)
                     arrowIv.setImageResource(R.drawable.ic_multisigs_arrow_ban)
                 } else {
@@ -126,7 +126,7 @@ class MultisigsBottomSheetDialogFragment :
         return BiometricInfo(
             requireContext().getString(
                 if (t is Multi2MultiBiometricItem) {
-                    if (t.action == SignatureAction.cancel.name) {
+                    if (t.action == SignatureAction.unlock.name) {
                         R.string.Revoke_multisig_transaction
                     } else {
                         R.string.Multisig_Transaction
