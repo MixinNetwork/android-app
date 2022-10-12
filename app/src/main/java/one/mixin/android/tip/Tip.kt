@@ -5,7 +5,6 @@ import net.i2p.crypto.eddsa.EdDSAEngine
 import net.i2p.crypto.eddsa.EdDSAPrivateKey
 import net.i2p.crypto.eddsa.EdDSAPublicKey
 import net.i2p.crypto.eddsa.spec.EdDSAPrivateKeySpec
-import net.i2p.crypto.eddsa.spec.EdDSAPublicKeySpec
 import one.mixin.android.Constants
 import one.mixin.android.RxBus
 import one.mixin.android.api.request.PinRequest
@@ -20,6 +19,8 @@ import one.mixin.android.crypto.aesDecrypt
 import one.mixin.android.crypto.aesEncrypt
 import one.mixin.android.crypto.ed25519
 import one.mixin.android.crypto.generateAesKey
+import one.mixin.android.crypto.getPrivateKey
+import one.mixin.android.crypto.getPublicKey
 import one.mixin.android.crypto.sha3Sum256
 import one.mixin.android.event.TipEvent
 import one.mixin.android.extension.base64RawEncode
@@ -184,7 +185,7 @@ class Tip @Inject internal constructor(
         Timber.e("createPriv after sign")
 
         val privateSpec = EdDSAPrivateKeySpec(aggSig.copyOf(), ed25519)
-        val pub = EdDSAPublicKey(EdDSAPublicKeySpec(privateSpec.a, ed25519))
+        val pub = privateSpec.getPublicKey()
 
         val localPub = Session.getTipPub()
         if (!localPub.isNullOrBlank() && !localPub.base64RawUrlDecode().contentEquals(pub.abyte)) {
@@ -259,7 +260,7 @@ class Tip @Inject internal constructor(
     @Throws(IOException::class, TipNetworkException::class)
     private suspend fun replaceEncryptedPin(aggSig: ByteArray) {
         val privateSpec = EdDSAPrivateKeySpec(aggSig.copyOf(), ed25519)
-        val pub = EdDSAPublicKey(EdDSAPublicKeySpec(privateSpec.a, ed25519))
+        val pub = privateSpec.getPublicKey()
         val pinToken = requireNotNull(Session.getPinToken()?.decodeBase64() ?: throw TipNullException("No pin token"))
         val counter = requireNotNull(Session.getTipCounter()).toLong()
         val timestamp = TipBody.forVerify(counter)
@@ -291,8 +292,8 @@ class Tip @Inject internal constructor(
 
         val stSeed = (sessionPriv + pin.toByteArray()).sha3Sum256()
         val privateSpec = EdDSAPrivateKeySpec(stSeed, ed25519)
-        val stPriv = EdDSAPrivateKey(privateSpec)
-        val stPub = EdDSAPublicKey(EdDSAPublicKeySpec(privateSpec.a, ed25519))
+        val stPriv = privateSpec.getPrivateKey()
+        val stPub = privateSpec.getPublicKey()
         val aesKey = generateAesKey(32)
 
         val seedBase64 = aesEncrypt(pinToken, aesKey).base64RawEncode()
@@ -319,7 +320,7 @@ class Tip @Inject internal constructor(
 
         val stSeed = (sessionPriv + pin.toByteArray()).sha3Sum256()
         val privateSpec = EdDSAPrivateKeySpec(stSeed, ed25519)
-        val stPriv = EdDSAPrivateKey(privateSpec)
+        val stPriv = privateSpec.getPrivateKey()
         val timestamp = nowInUtcNano()
 
         val sigBase64 = signTimestamp(stPriv, timestamp)
