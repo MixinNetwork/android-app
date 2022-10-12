@@ -297,7 +297,7 @@ class TransferFragment() : MixinBottomSheetDialogFragment() {
     }
 
     private fun updateFeeUI(address: Address) = lifecycleScope.launch {
-        if (address.feeAssetId == null) {
+        if (address.feeAssetId.isBlank()) {
             binding.memoRl.isVisible = false
             binding.feeTv.isVisible = false
             binding.continueVa.displayedChild = POST_PB

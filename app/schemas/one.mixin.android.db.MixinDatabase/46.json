@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 46,
-    "identityHash": "d48db4b2dceaa82c60beacc1409947c1",
+    "identityHash": "9086f5d485621f2e27a9ff94522664fa",
     "entities": [
       {
         "tableName": "users",
@@ -1243,7 +1243,7 @@
       },
       {
         "tableName": "addresses",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`address_id` TEXT NOT NULL, `type` TEXT NOT NULL, `asset_id` TEXT NOT NULL, `destination` TEXT NOT NULL, `label` TEXT NOT NULL, `updated_at` TEXT NOT NULL, `reserve` TEXT NOT NULL, `fee` TEXT NOT NULL, `tag` TEXT, `dust` TEXT, `fee_asset_id` TEXT, PRIMARY KEY(`address_id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`address_id` TEXT NOT NULL, `type` TEXT NOT NULL, `asset_id` TEXT NOT NULL, `destination` TEXT NOT NULL, `label` TEXT NOT NULL, `updated_at` TEXT NOT NULL, `reserve` TEXT NOT NULL, `fee` TEXT NOT NULL, `tag` TEXT, `dust` TEXT, `fee_asset_id` TEXT NOT NULL, PRIMARY KEY(`address_id`))",
         "fields": [
           {
             "fieldPath": "addressId",
@@ -1309,7 +1309,7 @@
             "fieldPath": "feeAssetId",
             "columnName": "fee_asset_id",
             "affinity": "TEXT",
-            "notNull": false
+            "notNull": true
           }
         ],
         "primaryKey": {
@@ -2203,7 +2203,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'd48db4b2dceaa82c60beacc1409947c1')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '9086f5d485621f2e27a9ff94522664fa')"
     ]
   }
 }
