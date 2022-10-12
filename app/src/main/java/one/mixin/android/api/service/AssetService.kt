@@ -1,8 +1,6 @@
 package one.mixin.android.api.service
 
-import io.reactivex.Observable
 import one.mixin.android.api.MixinResponse
-import one.mixin.android.api.request.AssetFee
 import one.mixin.android.api.request.TransferRequest
 import one.mixin.android.api.request.WithdrawalRequest
 import one.mixin.android.api.response.PaymentResponse
@@ -59,9 +57,6 @@ interface AssetService {
 
     @POST("payments")
     suspend fun paySuspend(@Body request: TransferRequest): MixinResponse<PaymentResponse>
-
-    @GET("assets/{id}/fee")
-    fun assetsFee(@Path("id") id: String): Observable<MixinResponse<AssetFee>>
 
     @POST("withdrawals")
     suspend fun withdrawals(@Body request: WithdrawalRequest): MixinResponse<Snapshot>

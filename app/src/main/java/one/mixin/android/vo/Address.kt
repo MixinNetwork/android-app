@@ -38,7 +38,10 @@ data class Address(
     val tag: String?,
     @ColumnInfo(name = "dust")
     @SerializedName("dust")
-    val dust: String?
+    val dust: String?,
+    @ColumnInfo(name = "fee_asset_id")
+    @SerializedName("fee_asset_id")
+    val feeAssetId: String,
 ) : Parcelable
 
 fun Address.displayAddress(): String {
