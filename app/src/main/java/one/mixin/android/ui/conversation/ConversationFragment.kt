@@ -1225,7 +1225,9 @@ class ConversationFragment() :
         markRead()
         AudioPlayer.pause()
         val draftText = binding.chatControl.chatEt.text?.toString() ?: ""
+        Timber.e("Save draft compare $conversationId $draftText $conversationDraft")
         if (draftText != conversationDraft) {
+            Timber.e("Save draft begin $conversationId $draftText")
             MixinApplication.get().saveDraft(conversationId, draftText)
         }
         if (OpusAudioRecorder.state != STATE_NOT_INIT) {
@@ -1461,6 +1463,7 @@ class ConversationFragment() :
         }
         lifecycleScope.launch(SINGLE_DB_THREAD) {
             conversationDraft = chatViewModel.getConversationDraftById(this.coroutineContext, conversationId)
+            Timber.e("Save draft init $conversationId $conversationDraft")
             if (isAdded && !conversationDraft.isNullOrBlank()) {
                 binding.chatControl.chatEt.setText(conversationDraft)
             }

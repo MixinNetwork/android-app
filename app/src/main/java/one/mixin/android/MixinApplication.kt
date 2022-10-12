@@ -337,9 +337,11 @@ open class MixinApplication :
 
     fun saveDraft(conversationId: String, draft: String) =
         appScope.launch(SINGLE_DB_THREAD) {
+            Timber.e("Save draft in scope $conversationId $draft")
             timeoutEarlyWarning({
                 db.conversationDao()
                     .saveDraft(conversationId, draft)
+                Timber.e("Save draft end $conversationId $draft")
             })
         }
 
