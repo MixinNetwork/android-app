@@ -26,6 +26,8 @@ class PermissionBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         private const val PERMISSION_CAMERA = 0
         const val PERMISSION_VIDEO = 1
         const val PERMISSION_AUDIO = 2
+        private const val PERMISSION_GEO_LOCATION = 3
+
         private fun newInstance(title: String, appName: String? = null, number: String? = null, vararg permissions: Int) =
             PermissionBottomSheetDialogFragment().withArgs {
                 putIntArray(ARGS_PERMISSION, permissions)
@@ -40,6 +42,10 @@ class PermissionBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
 
         fun requestVideo(title: String, appName: String? = null, number: String? = null): PermissionBottomSheetDialogFragment {
             return newInstance(title, appName, number, PERMISSION_VIDEO)
+        }
+
+        fun requestLocation(title: String, appName: String? = null, number: String? = null): PermissionBottomSheetDialogFragment {
+            return newInstance(title, appName, number, PERMISSION_GEO_LOCATION)
         }
 
         fun request(title: String, appName: String? = null, number: String? = null, vararg permissions: Int): PermissionBottomSheetDialogFragment {
@@ -105,11 +111,14 @@ class PermissionBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 PERMISSION_CAMERA -> {
                     content.append(getString(R.string.permission_camera))
                 }
-                else -> {
+                PERMISSION_VIDEO -> {
                     content.append(getString(R.string.permission_video))
                 }
+                else -> {
+                    content.append(getString(R.string.permission_geo_location))
+                }
             }
-            if (index != permissions?.size?.minus(1) ?: 0) {
+            if (index != (permissions?.size?.minus(1) ?: 0)) {
                 content.append("\n")
             }
         }
@@ -117,6 +126,8 @@ class PermissionBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         binding.logo.setImageResource(
             if (permissions?.any { it == PERMISSION_AUDIO } == true) {
                 R.drawable.ic_permission_audio
+            } else if (permissions?.any { it == PERMISSION_GEO_LOCATION } == true) {
+                R.drawable.ic_permission_location
             } else {
                 R.drawable.ic_permission_camera
             }

@@ -30,6 +30,7 @@ import android.view.View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
 import android.view.View.VISIBLE
 import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
+import android.webkit.GeolocationPermissions
 import android.webkit.JavascriptInterface
 import android.webkit.PermissionRequest
 import android.webkit.ValueCallback
@@ -596,6 +597,52 @@ class WebFragment : BaseFragment() {
                                 )
                         }.show(parentFragmentManager, PermissionBottomSheetDialogFragment.TAG)
                 }
+            }
+
+            private var permissionDialog: PermissionBottomSheetDialogFragment? = null
+            override fun onGeolocationPermissionsShowPrompt(
+                origin: String?,
+                callback: GeolocationPermissions.Callback?
+            ) {
+                val permission = mutableListOf(Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION)
+                if (lastGrantedUri == origin) {
+                    callback?.invoke(origin, true, false)
+                    return
+                }
+
+                permissionDialog = PermissionBottomSheetDialogFragment.requestLocation(
+                    binding.titleTv.text.toString(),
+                    app?.name,
+                    app?.appNumber
+                )
+                    .setCancelAction {
+                        lastGrantedUri = null
+                        callback?.invoke(origin, false, false)
+                    }.setGrantedAction {
+                        RxPermissions(requireActivity())
+                            .request(*permission.toTypedArray())
+                            .autoDispose(stopScope)
+                            .subscribe(
+                                { granted ->
+                                    if (granted) {
+                                        lastGrantedUri = origin
+                                        callback?.invoke(origin, true, false)
+                                    } else {
+                                        lastGrantedUri = null
+                                        context?.openPermissionSetting()
+                                    }
+                                },
+                                {
+                                    lastGrantedUri = null
+                                }
+                            )
+                    }
+                    permissionDialog?.show(parentFragmentManager, PermissionBottomSheetDialogFragment.TAG)
+            }
+
+            override fun onGeolocationPermissionsHidePrompt() {
+                permissionDialog?.dismiss()
+                permissionDialog = null
             }
 
             override fun onShowFileChooser(
