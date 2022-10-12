@@ -31,7 +31,6 @@ import one.mixin.android.crypto.MixinSignalProtocolLogger
 import one.mixin.android.crypto.PrivacyPreference.clearPrivacyPreferences
 import one.mixin.android.crypto.db.SignalDatabase
 import one.mixin.android.db.MixinDatabase
-import one.mixin.android.db.runInTransaction
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.notificationManager
@@ -55,9 +54,7 @@ import one.mixin.android.ui.web.WebActivity
 import one.mixin.android.ui.web.refresh
 import one.mixin.android.ui.web.releaseAll
 import one.mixin.android.util.MemoryCallback
-import one.mixin.android.util.SINGLE_THREAD
 import one.mixin.android.util.debug.FileLogTree
-import one.mixin.android.util.debug.timeoutEarlyWarning
 import one.mixin.android.util.initNativeLibs
 import one.mixin.android.util.language.Lingver
 import one.mixin.android.util.reportException
@@ -332,18 +329,6 @@ open class MixinApplication :
 
     private val db by lazy {
         MixinDatabase.getDatabase(this)
-    }
-
-    fun markMessageRead(conversationId: String) {
-        appScope.launch(SINGLE_THREAD) {
-            val remoteMessageDao = db.remoteMessageStatusDao()
-            timeoutEarlyWarning({
-                runInTransaction {
-                    remoteMessageDao.markReadByConversationId(conversationId)
-                    remoteMessageDao.zeroConversationUnseen(conversationId)
-                }
-            })
-        }
     }
 
     fun checkAndShowAppAuth(activity: Activity): Boolean {
