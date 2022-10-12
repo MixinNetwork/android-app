@@ -332,8 +332,6 @@ class ConversationFragment() :
         requireArguments().getParcelable(TRANSCRIPT_DATA)
     }
 
-    private var conversationDraft: String? = null
-
     private var unreadTipCount: Int = 0
     private val conversationAdapter: ConversationAdapter by lazy {
         ConversationAdapter(requireActivity(), keyword, onItemListener, isGroup, encryptCategory() != EncryptCategory.PLAIN, isBot).apply {
@@ -1225,9 +1223,14 @@ class ConversationFragment() :
         markRead()
         AudioPlayer.pause()
         val draftText = binding.chatControl.chatEt.text?.toString() ?: ""
-        if (draftText != conversationDraft) {
-            MixinApplication.get().saveDraft(conversationId, draftText)
+        lifecycleScope.launch(SINGLE_DB_THREAD) {
+            val conversationDraft =
+                chatViewModel.getConversationDraftById(conversationId) ?: ""
+            if (draftText != conversationDraft) {
+                chatViewModel.saveDraft(conversationId, draftText)
+            }
         }
+
         if (OpusAudioRecorder.state != STATE_NOT_INIT) {
             OpusAudioRecorder.get(conversationId).stop()
         }
@@ -1460,8 +1463,9 @@ class ConversationFragment() :
             }
         }
         lifecycleScope.launch(SINGLE_DB_THREAD) {
-            conversationDraft = chatViewModel.getConversationDraftById(this.coroutineContext, conversationId)
-            if (isAdded && !conversationDraft.isNullOrBlank()) {
+            val conversationDraft =
+                chatViewModel.getConversationDraftById(conversationId) ?: ""
+            if (isAdded && conversationDraft.isNotEmpty()) {
                 binding.chatControl.chatEt.setText(conversationDraft)
             }
         }

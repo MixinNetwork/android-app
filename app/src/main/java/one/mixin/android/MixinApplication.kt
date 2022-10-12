@@ -55,7 +55,6 @@ import one.mixin.android.ui.web.WebActivity
 import one.mixin.android.ui.web.refresh
 import one.mixin.android.ui.web.releaseAll
 import one.mixin.android.util.MemoryCallback
-import one.mixin.android.util.SINGLE_DB_THREAD
 import one.mixin.android.util.SINGLE_THREAD
 import one.mixin.android.util.debug.FileLogTree
 import one.mixin.android.util.debug.timeoutEarlyWarning
@@ -334,14 +333,6 @@ open class MixinApplication :
     private val db by lazy {
         MixinDatabase.getDatabase(this)
     }
-
-    fun saveDraft(conversationId: String, draft: String) =
-        appScope.launch(SINGLE_DB_THREAD) {
-            timeoutEarlyWarning({
-                db.conversationDao()
-                    .saveDraft(conversationId, draft)
-            })
-        }
 
     fun markMessageRead(conversationId: String) {
         appScope.launch(SINGLE_THREAD) {
