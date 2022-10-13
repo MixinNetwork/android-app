@@ -3,7 +3,10 @@ package one.mixin.android.db
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 import one.mixin.android.Constants.DataBase.MINI_VERSION
+import one.mixin.android.MixinApplication
 import one.mixin.android.session.Session
+import timber.log.Timber
+import java.io.File
 
 class MixinDatabaseMigrations private constructor() {
 
@@ -341,6 +344,21 @@ class MixinDatabaseMigrations private constructor() {
         val MIGRATION_45_46: Migration = object : Migration(45, 46) {
             override fun migrate(database: SupportSQLiteDatabase) {
                 database.execSQL("ALTER TABLE `addresses` ADD COLUMN fee_asset_id TEXT NOT NULL DEFAULT ''")
+            }
+        }
+
+        val MIGRATION_47_46: Migration = object : Migration(47, 46) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                database.execSQL("DROP TABLE IF EXISTS `conversation_ext`")
+                try {
+                    MixinApplication.appContext.getDatabasePath("pending.db").apply {
+                        File(this.parent, "pending.db-shm").delete()
+                        File(this.parent, "pending.db-wal").delete()
+                        delete()
+                    }
+                } catch (e: Exception) {
+                    Timber.e(e)
+                }
             }
         }
 
