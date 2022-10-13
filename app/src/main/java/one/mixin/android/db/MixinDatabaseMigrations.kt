@@ -350,8 +350,6 @@ class MixinDatabaseMigrations private constructor() {
             }
         }
 
-
-
         // If you add a new table, be sure to add a clear method to the DatabaseUtil
     }
 }
