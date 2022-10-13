@@ -78,7 +78,6 @@ class Tip @Inject internal constructor(
                 Timber.e("updateTipPriv after getIdentityPrivAndWatcher")
                 updatePriv(context, identityPair.priKey, ephemeralSeed, identityPair.watcher, newPin, null)
             } else {
-                Timber.e("updateTipPriv oldPin is not null")
                 val identityPair = identity.getIdentityPrivAndWatcher(oldPin)
                 Timber.e("updateTipPriv after getIdentityPrivAndWatcher")
                 val assigneePriv = identity.getIdentityPrivAndWatcher(newPin).priKey
@@ -182,7 +181,6 @@ class Tip @Inject internal constructor(
         ).sha3Sum256() // use sha3-256(recover-signature) as priv
 
         observers.forEach { it.onSyncingComplete() }
-        Timber.e("createPriv after sign")
 
         val privateSpec = EdDSAPrivateKeySpec(aggSig.copyOf(), ed25519)
         val pub = privateSpec.getPublicKey()
@@ -194,7 +192,7 @@ class Tip @Inject internal constructor(
         }
         Timber.e("createPriv after compare local pub and remote pub")
 
-        val aesKey = generateAesKey(pin)
+        val aesKey = generateAesKeyByPin(pin)
         Timber.e("createPriv after generateAesKey, forRecover: $forRecover")
         if (forRecover) {
             encryptAndSaveTipPriv(context, pin, aggSig, aesKey)
@@ -205,8 +203,6 @@ class Tip @Inject internal constructor(
         // If the process crashes after updating PIN and before saving to local,
         // the local priv does not match the remote, and this cannot be detected by checkCounter.
         clearTipPriv(context)
-        Timber.e("createPriv after clear tip priv")
-
         replaceOldEncryptedPin(pub, legacyPin)
         Timber.e("createPriv after replaceOldEncryptedPin")
         encryptAndSaveTipPriv(context, pin, aggSig, aesKey)
@@ -228,7 +224,7 @@ class Tip @Inject internal constructor(
         observers.forEach { it.onSyncingComplete() }
         Timber.e("updatePriv after sign")
 
-        val aesKey = generateAesKey(newPin)
+        val aesKey = generateAesKeyByPin(newPin)
 
         // Clearing local priv before update remote PIN.
         // If the process crashes after updating PIN and before saving to local,
@@ -284,7 +280,7 @@ class Tip @Inject internal constructor(
     }
 
     @Throws(TipException::class)
-    private suspend fun generateAesKey(pin: String): ByteArray {
+    private suspend fun generateAesKeyByPin(pin: String): ByteArray {
         val sessionPriv =
             Session.getEd25519Seed()?.decodeBase64() ?: throw TipNullException("No ed25519 key")
         val pinToken =
@@ -378,10 +374,9 @@ class Tip @Inject internal constructor(
 
     private fun storeTipPriv(context: Context, tipPriv: ByteArray): Boolean {
         val cipher = getEncryptCipher(Constants.Tip.ALIAS_TIP_PRIV)
-        val iv = cipher.iv
         val edit = context.defaultSharedPreferences.edit()
         val ciphertext = cipher.doFinal(tipPriv)
-        edit.putString(Constants.Tip.TIP_PRIV, (iv + ciphertext).toHex())
+        edit.putString(Constants.Tip.TIP_PRIV, (cipher.iv + ciphertext).toHex())
         return edit.commit()
     }
 
