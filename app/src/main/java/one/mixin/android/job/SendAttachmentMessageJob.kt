@@ -150,7 +150,7 @@ class SendAttachmentMessageJob(
         val inputStream = try {
             MixinApplication.appContext.contentResolver.openInputStream(Uri.parse(message.absolutePath()))
         } catch (e: FileNotFoundException) {
-            MixinApplication.appScope.launch(Dispatchers.Main) {
+            applicationScope.launch(Dispatchers.Main) {
                 toast(R.string.File_does_not_exist)
             }
             null
@@ -184,7 +184,7 @@ class SendAttachmentMessageJob(
         } catch (e: Exception) {
             Timber.e(e)
             if (e is SocketTimeoutException) {
-                MixinApplication.appScope.launch(Dispatchers.Main) {
+                applicationScope.launch(Dispatchers.Main) {
                     toast(R.string.Upload_timeout)
                 }
             }

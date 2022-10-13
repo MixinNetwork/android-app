@@ -172,7 +172,7 @@ class NftBottomSheetDialogFragment : BiometricBottomSheetDialogFragment() {
             t.state != SignatureState.signed.name &&
             t.state != SignatureState.unlocked.name
         ) {
-            MixinApplication.appScope.launch {
+            MixinApplication.get().applicationScope.launch {
                 bottomViewModel.cancelCollectibleTransfer(t.requestId)
             }
         }

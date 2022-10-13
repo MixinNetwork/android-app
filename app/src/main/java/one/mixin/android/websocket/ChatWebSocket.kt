@@ -5,6 +5,7 @@ import com.google.firebase.crashlytics.FirebaseCrashlytics
 import com.google.gson.Gson
 import io.reactivex.Observable
 import io.reactivex.disposables.Disposable
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -48,6 +49,7 @@ import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 
 class ChatWebSocket(
+    private var applicationScope: CoroutineScope,
     private val okHttpClient: OkHttpClient,
     private val accountService: AccountService,
     private val mixinDatabase: MixinDatabase,
@@ -169,7 +171,7 @@ class ChatWebSocket(
     }
 
     override fun onMessage(webSocket: WebSocket, bytes: ByteString) {
-        MixinApplication.appScope.launch(SINGLE_DB_THREAD) {
+        applicationScope.launch(SINGLE_DB_THREAD) {
             try {
                 val json = bytes.ungzip()
                 val blazeMessage = gson.fromJson(json, BlazeMessage::class.java)

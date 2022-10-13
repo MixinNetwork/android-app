@@ -1,6 +1,7 @@
 package one.mixin.android.job
 
 import com.birbit.android.jobqueue.Params
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -12,6 +13,7 @@ import one.mixin.android.api.request.ConversationRequest
 import one.mixin.android.api.request.ParticipantAction
 import one.mixin.android.api.request.ParticipantRequest
 import one.mixin.android.api.response.ConversationResponse
+import one.mixin.android.di.ApplicationScope
 import one.mixin.android.event.ConversationEvent
 import one.mixin.android.extension.networkConnected
 import one.mixin.android.util.ErrorHandler
@@ -20,6 +22,7 @@ import one.mixin.android.vo.ConversationStatus
 import one.mixin.android.vo.Participant
 import timber.log.Timber
 import java.util.UUID
+import javax.inject.Inject
 
 class ConversationJob(
     private val request: ConversationRequest? = null,
@@ -55,7 +58,7 @@ class ConversationJob(
                 updateConversationStatusFailure()
                 return
             }
-            createCheckRunJob = MixinApplication.appScope.launch(Dispatchers.IO) {
+            createCheckRunJob = applicationScope.launch(Dispatchers.IO) {
                 delay(CREATE_TIMEOUT_MILLIS)
                 updateConversationStatusFailure()
             }

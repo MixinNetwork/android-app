@@ -121,7 +121,7 @@ fun holdClip(webClip: WebClip) {
 }
 
 private fun initClips() {
-    MixinApplication.appScope.launch(SINGLE_THREAD) {
+    MixinApplication.get().applicationScope.launch(SINGLE_THREAD) {
         val content = MixinApplication.appContext.defaultSharedPreferences.getString(PREF_FLOATING, null) ?: return@launch
         val type = object : TypeToken<List<WebClip>>() {}.type
         val list = GsonHelper.customGson.fromJson<List<WebClip>>(content, type)
@@ -164,7 +164,7 @@ fun releaseClip(index: Int) {
 var saveJob: Job? = null
 fun saveClips() {
     saveJob?.cancel()
-    saveJob = MixinApplication.appScope.launch(SINGLE_THREAD) {
+    saveJob = MixinApplication.get().applicationScope.launch(SINGLE_THREAD) {
         val localClips = mutableListOf<WebClip>().apply {
             addAll(clips)
         }

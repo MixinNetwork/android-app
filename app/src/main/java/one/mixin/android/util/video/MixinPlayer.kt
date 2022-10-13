@@ -173,7 +173,7 @@ class MixinPlayer(val isAudio: Boolean = false) : Player.Listener {
         }
         this.mId = id
         this.url = url
-        MixinApplication.appScope.launch(Dispatchers.IO) {
+        MixinApplication.get().applicationScope.launch(Dispatchers.IO) {
             var contentType = "application/x-mpegURL"
             try {
                 val client = OkHttpClient.Builder().build()

@@ -302,7 +302,7 @@ class AudioPlayer private constructor() {
     private fun checkNext() {
         messageItem?.let { item ->
             if (!item.isAudio()) return
-            MixinApplication.appScope.launch(Dispatchers.IO) {
+            MixinApplication.get().applicationScope.launch(Dispatchers.IO) {
                 val nextMessage = MixinDatabase.getDatabase(MixinApplication.appContext)
                     .messageDao()
                     .findNextAudioMessageItem(item.conversationId, item.createdAt, item.messageId)
@@ -326,7 +326,7 @@ class AudioPlayer private constructor() {
     private fun markAudioReadAndCheckNextAudioAvailable(
         currentMessage: MessageItem,
         whenPlayNewAction: ((Message) -> Unit)? = null
-    ) = MixinApplication.appScope.launch(Dispatchers.IO) {
+    ) = MixinApplication.get().applicationScope.launch(Dispatchers.IO) {
         val messageDao = MixinDatabase.getDatabase(MixinApplication.appContext).messageDao()
         if (currentMessage.mediaStatus == MediaStatus.DONE.name) {
             messageDao.updateMediaStatus(MediaStatus.READ.name, currentMessage.messageId)

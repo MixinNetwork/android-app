@@ -44,7 +44,7 @@ class UpgradeFragment : BaseFragment(R.layout.fragment_upgrade) {
     @SuppressLint("SetTextI18n")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        MixinApplication.get().onlining.set(true)
+        MixinApplication.get().isOnline.set(true)
         if (type == TYPE_FTS) {
             lifecycleScope.launch {
                 val done = MessageFts4Helper.syncMessageFts4(preProcess = true) { progress ->
