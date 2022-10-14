@@ -37,7 +37,7 @@ class TipNode @Inject internal constructor(private val tipNodeService: TipNodeSe
 
     private val gson = GsonHelper.customGson
 
-    private val maxRequestCount = 1
+    private val maxRequestCount = 3
 
     val nodeCount: Int
         get() {
@@ -117,7 +117,7 @@ class TipNode @Inject internal constructor(private val tipNodeService: TipNodeSe
 
                     while (retryCount < maxRequestCount) {
                         val (counter, code) = watchTipNode(signer, watcher)
-                        if (code == 500) {
+                        if (code == 429) {
                             Timber.e("watch tip node $index meet $code")
                             return@async
                         }
@@ -154,8 +154,8 @@ class TipNode @Inject internal constructor(private val tipNodeService: TipNodeSe
                 async(Dispatchers.IO) {
                     var retryCount = 0
                     while (retryCount < maxRequestCount) {
-                        val (sign, code) = signTipNode(userSk, signer, ephemeral, watcher, nonce, grace, assignee)
-                        if (code == 429 || code == 500) {
+                        val (sign, code) = signTipNode(userSk, signer, ephemeral, watcher, nonce + retryCount, grace, assignee)
+                        if (code == 429) {
                             Timber.e("fetch tip node $index meet $code")
                             return@async
                         }
