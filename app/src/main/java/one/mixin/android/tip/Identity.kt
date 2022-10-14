@@ -16,13 +16,14 @@ import javax.inject.Inject
 
 class Identity @Inject internal constructor(private val tipService: TipService) {
 
-    suspend fun getIdentityPrivAndWatcher(pin: String): PriKeyAndWatcher {
+    // The two returns are private key and watcher
+    suspend fun getIdentityPrivAndWatcher(pin: String): Pair<ByteArray, ByteArray> {
         val plain = getIdentitySeed()
         val argon2Kt = withContext(Dispatchers.Main) {
             Argon2Kt()
         }
         val hashResult: Argon2KtResult = argon2Kt.argon2IdHash(pin, plain)
-        return PriKeyAndWatcher(hashResult.rawHashAsByteArray(), plain.sha3Sum256())
+        return Pair(hashResult.rawHashAsByteArray(), plain.sha3Sum256())
     }
 
     suspend fun getWatcher(): ByteArray = getIdentitySeed().sha3Sum256()
@@ -33,8 +34,3 @@ class Identity @Inject internal constructor(private val tipService: TipService) 
         return aesDecrypt(pinToken, tipIdentity)
     }
 }
-
-class PriKeyAndWatcher(
-    val priKey: ByteArray,
-    val watcher: ByteArray
-)

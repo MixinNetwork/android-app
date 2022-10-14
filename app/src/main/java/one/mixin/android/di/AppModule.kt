@@ -34,6 +34,7 @@ import one.mixin.android.api.ExpiredTokenException
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.NetworkException
 import one.mixin.android.api.ServerErrorException
+import one.mixin.android.api.response.TipConfig
 import one.mixin.android.api.service.AccountService
 import one.mixin.android.api.service.AddressService
 import one.mixin.android.api.service.AssetService
@@ -71,6 +72,7 @@ import one.mixin.android.session.Session
 import one.mixin.android.tip.Ephemeral
 import one.mixin.android.tip.Identity
 import one.mixin.android.tip.Tip
+import one.mixin.android.tip.TipConstants
 import one.mixin.android.tip.TipNode
 import one.mixin.android.util.ErrorHandler.Companion.AUTHENTICATION
 import one.mixin.android.util.ErrorHandler.Companion.OLD_VERSION
@@ -452,7 +454,11 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideTipNode(TipNodeService: TipNodeService) = TipNode(TipNodeService)
+    fun provideTipNode(tipNodeService: TipNodeService, tipConfig: TipConfig) = TipNode(tipNodeService, tipConfig)
+
+    @Provides
+    @Singleton
+    fun provideTipConfig() = TipConstants.tipConfig
 
     @Provides
     @Singleton

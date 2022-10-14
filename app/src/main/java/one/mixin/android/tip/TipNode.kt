@@ -32,12 +32,17 @@ import java.util.concurrent.atomic.AtomicInteger
 import javax.inject.Inject
 import kotlin.time.Duration.Companion.days
 
-class TipNode @Inject internal constructor(private val tipNodeService: TipNodeService) {
+class TipNode @Inject internal constructor(private val tipNodeService: TipNodeService, private val tipConfig: TipConfig) {
     private val ephemeralGrace = 128.days.inWholeNanoseconds
 
     private val gson = GsonHelper.customGson
 
     private val maxRetryCount = 2
+
+    val nodeCount: Int
+        get() {
+            return tipConfig.signers.size
+        }
 
     @Throws(TipNodeException::class)
     suspend fun sign(
@@ -81,7 +86,7 @@ class TipNode @Inject internal constructor(private val tipNodeService: TipNodeSe
             getNodeSigs(userSk, tipConfig.signers, ephemeral, watcher, assignee, callback)
         }
 
-        if (!forRecover && data.size < tipConfig.signers.size) {
+        if (!forRecover && data.size < nodeCount) {
             Timber.e("not all signer success ${data.size}")
             throw NotAllSignerSuccessException(data.size)
         }
@@ -96,13 +101,13 @@ class TipNode @Inject internal constructor(private val tipNodeService: TipNodeSe
 
         val hexSigs = partials.joinToString(",") { it.toHex() }
         val commitments = tipConfig.commitments.joinToString(",")
-        return Crypto.recoverSignature(hexSigs, commitments, assignor, tipConfig.signers.size.toLong())
+        return Crypto.recoverSignature(hexSigs, commitments, assignor, nodeCount.toLong())
     }
 
     suspend fun watch(watcher: ByteArray, callback: Callback? = null): List<TipNodeCounter> {
         val result = CopyOnWriteArrayList<TipNodeCounter>()
 
-        val total = tipConfig.signers.size
+        val total = nodeCount
         val completeCount = AtomicInteger(0)
 
         coroutineScope {
@@ -287,12 +292,6 @@ class TipNode @Inject internal constructor(private val tipNodeService: TipNodeSe
     private data class TipSignRespData(val partial: ByteArray, val assignor: String, val counter: Long)
 
     data class TipNodeCounter(val counter: Int, val tipSigner: TipSigner)
-
-    val tipConfig: TipConfig = gson.fromJson(
-        TipConstants.tipConfig,
-        TipConfig::class.java
-    )
-    val nodeCount = tipConfig.signers.size
 
     interface Callback {
         fun onNodeComplete(step: Int, total: Int)
