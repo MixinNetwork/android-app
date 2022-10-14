@@ -1,5 +1,6 @@
 package one.mixin.android.tip
 
+import com.google.gson.Gson
 import crypto.Crypto
 import crypto.Scalar
 import kotlinx.coroutines.Dispatchers
@@ -24,7 +25,6 @@ import one.mixin.android.tip.exception.DifferentIdentityException
 import one.mixin.android.tip.exception.NotAllSignerSuccessException
 import one.mixin.android.tip.exception.NotEnoughPartialsException
 import one.mixin.android.tip.exception.TipNodeException
-import one.mixin.android.util.GsonHelper
 import retrofit2.HttpException
 import timber.log.Timber
 import java.util.concurrent.CopyOnWriteArrayList
@@ -32,10 +32,8 @@ import java.util.concurrent.atomic.AtomicInteger
 import javax.inject.Inject
 import kotlin.time.Duration.Companion.days
 
-class TipNode @Inject internal constructor(private val tipNodeService: TipNodeService, private val tipConfig: TipConfig) {
+class TipNode @Inject internal constructor(private val tipNodeService: TipNodeService, private val tipConfig: TipConfig, private val gson: Gson) {
     private val ephemeralGrace = 128.days.inWholeNanoseconds
-
-    private val gson = GsonHelper.customGson
 
     private val maxRequestCount = 3
 

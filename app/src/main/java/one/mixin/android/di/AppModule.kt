@@ -6,6 +6,7 @@ import android.content.ContentResolver
 import com.birbit.android.jobqueue.config.Configuration
 import com.birbit.android.jobqueue.scheduling.FrameworkJobSchedulerService
 import com.google.android.gms.net.CronetProviderInstaller
+import com.google.gson.Gson
 import com.google.gson.JsonSyntaxException
 import com.google.net.cronet.okhttptransport.MixinCronetInterceptor
 import com.jakewharton.retrofit2.adapter.kotlin.coroutines.CoroutineCallAdapterFactory
@@ -454,7 +455,7 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideTipNode(tipNodeService: TipNodeService, tipConfig: TipConfig) = TipNode(tipNodeService, tipConfig)
+    fun provideTipNode(tipNodeService: TipNodeService, tipConfig: TipConfig, gson: Gson) = TipNode(tipNodeService, tipConfig, gson)
 
     @Provides
     @Singleton
@@ -472,4 +473,8 @@ object AppModule {
     @Provides
     @Singleton
     fun provideTipCounterSynced() = TipCounterSyncedLiveData()
+
+    @Provides
+    @Singleton
+    fun provideGson() = GsonHelper.customGson
 }
