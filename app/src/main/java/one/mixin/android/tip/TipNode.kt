@@ -170,7 +170,7 @@ class TipNode @Inject internal constructor(private val tipNodeService: TipNodeSe
                             return@async
                         }
 
-                        retryCount++
+                        retryCount += 1
                         Timber.e("fetch tip node $index failed, retry $retryCount")
                     }
                 }
