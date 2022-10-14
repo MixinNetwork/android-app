@@ -6,8 +6,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
+import one.mixin.android.api.response.TipConfig
 import one.mixin.android.api.service.TipNodeService
-import one.mixin.android.tip.TipNode
 import java.util.concurrent.atomic.AtomicInteger
 import javax.inject.Inject
 
@@ -16,11 +16,11 @@ class TipViewModel
 @Inject
 internal constructor(
     private val tipNodeService: TipNodeService,
-    private val tipNode: TipNode,
+    private val tipConfig: TipConfig
 ) : ViewModel() {
 
     suspend fun checkTipNodeConnect(): Boolean {
-        val signers = tipNode.tipConfig.signers
+        val signers = tipConfig.signers
         val successSum = AtomicInteger(0)
         coroutineScope {
             signers.map { signer ->

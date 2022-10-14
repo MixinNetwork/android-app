@@ -62,9 +62,9 @@ class Tip @Inject internal constructor(
         kotlin.runCatching {
             val ephemeralSeed = ephemeral.getEphemeralSeed(context, deviceId)
             Timber.e("createTipPriv after getEphemeralSeed")
-            val identityPair = identity.getIdentityPrivAndWatcher(pin)
+            val (priKey, watcher) = identity.getIdentityPrivAndWatcher(pin)
             Timber.e("createTipPriv after getIdentityPrivAndWatcher")
-            createPriv(context, identityPair.priKey, ephemeralSeed, identityPair.watcher, pin, failedSigners, legacyPin, forRecover)
+            createPriv(context, priKey, ephemeralSeed, watcher, pin, failedSigners, legacyPin, forRecover)
         }
 
     suspend fun updateTipPriv(context: Context, deviceId: String, newPin: String, oldPin: String?, failedSigners: List<TipSigner>? = null): Result<ByteArray> =
@@ -74,15 +74,15 @@ class Tip @Inject internal constructor(
 
             if (oldPin.isNullOrBlank()) { // node success
                 Timber.e("updateTipPriv oldPin isNullOrBlank")
-                val identityPair = identity.getIdentityPrivAndWatcher(newPin)
+                val (priKey, watcher) = identity.getIdentityPrivAndWatcher(newPin)
                 Timber.e("updateTipPriv after getIdentityPrivAndWatcher")
-                updatePriv(context, identityPair.priKey, ephemeralSeed, identityPair.watcher, newPin, null)
+                updatePriv(context, priKey, ephemeralSeed, watcher, newPin, null)
             } else {
-                val identityPair = identity.getIdentityPrivAndWatcher(oldPin)
+                val (priKey, watcher) = identity.getIdentityPrivAndWatcher(oldPin)
                 Timber.e("updateTipPriv after getIdentityPrivAndWatcher")
-                val assigneePriv = identity.getIdentityPrivAndWatcher(newPin).priKey
+                val (assigneePriv, _) = identity.getIdentityPrivAndWatcher(newPin)
                 Timber.e("updateTipPriv after get assignee priv")
-                updatePriv(context, identityPair.priKey, ephemeralSeed, identityPair.watcher, newPin, assigneePriv, failedSigners)
+                updatePriv(context, priKey, ephemeralSeed, watcher, newPin, assigneePriv, failedSigners)
             }
         }
 
