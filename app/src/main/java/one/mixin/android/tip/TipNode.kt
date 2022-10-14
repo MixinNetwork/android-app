@@ -115,7 +115,7 @@ class TipNode @Inject internal constructor(private val tipNodeService: TipNodeSe
                 async(Dispatchers.IO) {
                     var retryCount = 0
 
-                    while (retryCount <= maxRetryCount) {
+                    while (retryCount < maxRetryCount) {
                         val (counter, code) = watchTipNode(signer, watcher)
                         if (code == 500) {
                             Timber.e("watch tip node $index meet $code")
@@ -153,7 +153,7 @@ class TipNode @Inject internal constructor(private val tipNodeService: TipNodeSe
             tipSigners.mapIndexed { index, signer ->
                 async(Dispatchers.IO) {
                     var retryCount = 0
-                    while (retryCount <= maxRetryCount) {
+                    while (retryCount < maxRetryCount) {
                         val (sign, code) = signTipNode(userSk, signer, ephemeral, watcher, nonce, grace, assignee)
                         if (code == 429 || code == 500) {
                             Timber.e("fetch tip node $index meet $code")
@@ -198,7 +198,9 @@ class TipNode @Inject internal constructor(private val tipNodeService: TipNodeSe
         return try {
             val tipSignRequest = genTipSignRequest(userSk, tipSigner, ephemeral, watcher, nonce, grace, assignee)
             val tipSignResponse = tipNodeService.sign(tipSignRequest, tipSigner.api)
-
+            if (tipSignResponse.error != null) {
+                return Pair(null, tipSignResponse.error!!.code)
+            }
             val signerPk = Crypto.pubKeyFromBase58(tipSigner.identity)
             val msg = gson.toJson(tipSignResponse.data).toByteArray()
             try {
