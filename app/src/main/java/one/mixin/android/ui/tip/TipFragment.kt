@@ -8,10 +8,13 @@ import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants
 import one.mixin.android.Constants.INTERVAL_10_MINS
 import one.mixin.android.R
+import one.mixin.android.api.handleMixinResponse
+import one.mixin.android.api.service.AccountService
 import one.mixin.android.crypto.PrivacyPreference.putPrefPinInterval
 import one.mixin.android.databinding.FragmentTipBinding
 import one.mixin.android.extension.buildBulletLines
@@ -54,6 +57,8 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
 
     @Inject
     lateinit var tip: Tip
+    @Inject
+    lateinit var accountService: AccountService
 
     private val tipBundle: TipBundle by lazy { requireArguments().getTipBundle() }
 
@@ -290,7 +295,7 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
                 tip.updateTipPriv(requireContext(), deviceId, pin, requireNotNull(oldPin), failedSigners)
         }.onFailure { e ->
             tip.removeObserver(tipObserver)
-            onTipProcessFailure(e, tipCounter)
+            onTipProcessFailure(e, pin, tipCounter, nodeCounter)
         }.onSuccess {
             tip.removeObserver(tipObserver)
             onTipProcessSuccess(pin)
@@ -299,7 +304,9 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
 
     private suspend fun onTipProcessFailure(
         e: Throwable,
+        pin: String,
         tipCounter: Int,
+        nodeCounterBeforeRequest: Int,
     ) {
         val errMsg = e.getTipExceptionMsg(requireContext())
         toast(errMsg)
@@ -326,9 +333,24 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
             return
         }
 
-        // all signer failed perhaps means PIN incorrect
+        // all signer failed perhaps means PIN incorrect, clear PIN and let user re-input.
         if (e is NotAllSignerSuccessException && e.allFailure()) {
             tipBundle.pin = null
+        }
+
+        val newNodeCounter = tipBundle.tipEvent!!.nodeCounter
+        if (newNodeCounter > nodeCounterBeforeRequest && newNodeCounter > tipCounter) {
+            // If new node counter greater than session counter and old node counter,
+            // we should refresh session counter to prevent failure in cases where
+            // pin/update completes but local session account update fails.
+            refreshAccount()
+            val newSessionCounter = Session.getTipCounter()
+            // If new session counter equals new node counter,
+            // we consider this case as PIN update success.
+            if (newNodeCounter == newSessionCounter) {
+                onTipProcessSuccess(pin)
+                return
+            }
         }
 
         updateTipStep(RetryProcess(errMsg))
@@ -350,7 +372,6 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
             TipType.Upgrade -> toast(R.string.Upgrade_TIP_successfully)
         }
 
-        // TODO go somewhere after set PIN
         activity?.finish()
     }
 
@@ -386,6 +407,16 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
                 }
             }
         }
+    }
+
+    private suspend fun refreshAccount() {
+        handleMixinResponse(
+            invokeNetwork = { accountService.getMeSuspend() },
+            switchContext = Dispatchers.IO,
+            successBlock = { r ->
+                r.data?.let { Session.storeAccount(it) }
+            }
+        )
     }
 
     private val tipObserver = object : Tip.Observer {
