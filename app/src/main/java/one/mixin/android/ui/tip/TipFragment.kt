@@ -27,7 +27,6 @@ import one.mixin.android.session.Session
 import one.mixin.android.tip.Tip
 import one.mixin.android.tip.exception.DifferentIdentityException
 import one.mixin.android.tip.exception.NotAllSignerSuccessException
-import one.mixin.android.tip.exception.TipNodeException
 import one.mixin.android.tip.getTipExceptionMsg
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.PinInputBottomSheetDialogFragment
@@ -291,7 +290,7 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
                 tip.updateTipPriv(requireContext(), deviceId, pin, requireNotNull(oldPin), failedSigners)
         }.onFailure { e ->
             tip.removeObserver(tipObserver)
-            onTipProcessFailure(e, tipCounter, nodeCounter)
+            onTipProcessFailure(e, tipCounter)
         }.onSuccess {
             tip.removeObserver(tipObserver)
             onTipProcessSuccess(pin)
@@ -301,45 +300,38 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
     private suspend fun onTipProcessFailure(
         e: Throwable,
         tipCounter: Int,
-        nodeCounter: Int
     ) {
         val errMsg = e.getTipExceptionMsg(requireContext())
         toast(errMsg)
 
-        if (e is TipNodeException) {
-            if (e is DifferentIdentityException) {
-                tipBundle.oldPin = null
-                tipBundle.pin = null
-                updateTipStep(RetryConnect(true))
-                return
-            }
-
-            if (e is NotAllSignerSuccessException && e.successSignerSize == 0) { // all signer failed perhaps means PIN incorrect)
-                tipBundle.pin = null
-            }
-
-            tip.checkCounter(
-                tipCounter,
-                onNodeCounterGreaterThanServer = { tipBundle.updateTipEvent(null, it) },
-                onNodeCounterInconsistency = { nodeMaxCounter, nodeFailedSigners ->
-                    tipBundle.updateTipEvent(nodeFailedSigners, nodeMaxCounter)
-                }
-            ).onFailure {
-                // Generally, check-counter should NOT meet exceptions, if this happens,
-                // we should go to the RetryConnect step to check network and other steps.
-                tipBundle.pin = null
-                tipBundle.oldPin = null
-                updateTipStep(RetryConnect(true))
-                return
-            }
-
-            updateTipStep(RetryProcess(errMsg))
-        } else {
-            // NOT TipNodeException means the nodes part must success,
-            // clear failed node list to prepare for a new try to communicate with API server.
-            tipBundle.updateTipEvent(null, nodeCounter)
-            updateTipStep(RetryProcess(errMsg))
+        if (e is DifferentIdentityException) {
+            tipBundle.oldPin = null
+            tipBundle.pin = null
+            updateTipStep(RetryConnect(true))
+            return
         }
+
+        tip.checkCounter(
+            tipCounter,
+            onNodeCounterGreaterThanServer = { tipBundle.updateTipEvent(null, it) },
+            onNodeCounterInconsistency = { nodeMaxCounter, nodeFailedSigners ->
+                tipBundle.updateTipEvent(nodeFailedSigners, nodeMaxCounter)
+            }
+        ).onFailure {
+            // Generally, check-counter should NOT meet exceptions, if this happens,
+            // we should go to the RetryConnect step to check network and other steps.
+            tipBundle.pin = null
+            tipBundle.oldPin = null
+            updateTipStep(RetryConnect(true))
+            return
+        }
+
+        // all signer failed perhaps means PIN incorrect
+        if (e is NotAllSignerSuccessException && e.allFailure()) {
+            tipBundle.pin = null
+        }
+
+        updateTipStep(RetryProcess(errMsg))
     }
 
     private fun onTipProcessSuccess(pin: String) {
