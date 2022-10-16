@@ -44,9 +44,9 @@ import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.ui.wallet.WalletActivity
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.viewBinding
-import one.mixin.android.vo.App
 import one.mixin.android.vo.AssetItem
 import one.mixin.android.vo.ChatMinimal
+import one.mixin.android.vo.RecentUsedApp
 import one.mixin.android.vo.SearchMessageItem
 import one.mixin.android.vo.User
 
@@ -141,7 +141,7 @@ class SearchFragment : BaseFragment(R.layout.fragment_search) {
 
         binding.appRv.layoutManager = GridLayoutManager(requireContext(), 4)
         appAdapter.appListener = object : AppListener {
-            override fun onItemClick(app: App) {
+            override fun onItemClick(app: RecentUsedApp) {
                 (requireActivity() as MainActivity).closeSearch()
                 ConversationActivity.show(requireContext(), null, app.appId)
             }
@@ -230,9 +230,9 @@ class SearchFragment : BaseFragment(R.layout.fragment_search) {
                     botsList = it
                 }
             }
-            if (botsList.isNullOrEmpty()) return@withContext null
+            if (botsList.isEmpty()) return@withContext null
             val result = searchViewModel.findAppsByIds(botsList.take(8))
-            if (result.isNullOrEmpty()) return@withContext null
+            if (result.isEmpty()) return@withContext null
             result.sortedBy {
                 botsList.indexOf(it.appId)
             }
@@ -272,7 +272,7 @@ class SearchFragment : BaseFragment(R.layout.fragment_search) {
         val newItems = withContext(Dispatchers.IO) {
             searchViewModel.queryAssets(assetItems.map { it.assetId })
         }
-        if (newItems.isNullOrEmpty()) return
+        if (newItems.isEmpty()) return
 
         val t = if (newItems.size == assetItems.size) {
             newItems
@@ -333,7 +333,7 @@ class SearchFragment : BaseFragment(R.layout.fragment_search) {
         (requireActivity() as MainActivity).hideSearchLoading()
     }
 
-    internal class AppAdapter : ListAdapter<App, AppHolder>(App.DIFF_CALLBACK) {
+    internal class AppAdapter : ListAdapter<RecentUsedApp, AppHolder>(RecentUsedApp.DIFF_CALLBACK) {
         var appListener: AppListener? = null
 
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) =
@@ -347,9 +347,9 @@ class SearchFragment : BaseFragment(R.layout.fragment_search) {
     }
 
     internal class AppHolder(val binding: ItemSearchAppBinding) : RecyclerView.ViewHolder(binding.root) {
-        fun bind(app: App, listener: AppListener?) {
-            binding.iconIv.setInfo(app.name, app.iconUrl, app.appId)
-            binding.nameTv.text = app.name
+        fun bind(app: RecentUsedApp, listener: AppListener?) {
+            binding.iconIv.setInfo(app.fullName, app.iconUrl, app.appId)
+            binding.nameTv.text = app.fullName
             binding.root.setOnClickListener {
                 listener?.onItemClick(app)
             }
@@ -357,7 +357,7 @@ class SearchFragment : BaseFragment(R.layout.fragment_search) {
     }
 
     interface AppListener {
-        fun onItemClick(app: App)
+        fun onItemClick(app: RecentUsedApp)
     }
 
     interface OnSearchClickListener {
