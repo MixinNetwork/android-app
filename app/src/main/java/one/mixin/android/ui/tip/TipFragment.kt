@@ -338,7 +338,7 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
             tipBundle.pin = null
         }
 
-        val newNodeCounter = tipBundle.tipEvent!!.nodeCounter
+        val newNodeCounter = tipBundle.tipEvent?.nodeCounter ?: nodeCounterBeforeRequest
         if (newNodeCounter > nodeCounterBeforeRequest && newNodeCounter > tipCounter) {
             // If new node counter greater than session counter and old node counter,
             // we should refresh session counter to prevent failure in cases where
