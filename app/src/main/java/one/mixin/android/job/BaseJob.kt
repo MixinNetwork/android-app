@@ -7,6 +7,7 @@ import com.birbit.android.jobqueue.RetryConstraint
 import dagger.hilt.EntryPoint
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
+import kotlinx.coroutines.CoroutineScope
 import one.mixin.android.api.ClientErrorException
 import one.mixin.android.api.ExpiredTokenException
 import one.mixin.android.api.LocalJobException
@@ -52,6 +53,7 @@ import one.mixin.android.db.StickerRelationshipDao
 import one.mixin.android.db.TopAssetDao
 import one.mixin.android.db.TranscriptMessageDao
 import one.mixin.android.db.UserDao
+import one.mixin.android.di.ApplicationScope
 import one.mixin.android.repository.AssetRepository
 import one.mixin.android.repository.ConversationRepository
 import one.mixin.android.repository.UserRepository
@@ -215,6 +217,11 @@ abstract class BaseJob(params: Params) : Job(params) {
     @Transient
     @Inject
     lateinit var tipCounterSynced: TipCounterSyncedLiveData
+    @ApplicationScope
+    @Transient
+    @Inject
+    lateinit var applicationScope: CoroutineScope
+
 
     open fun shouldRetry(throwable: Throwable): Boolean {
         if (throwable is SocketTimeoutException) {

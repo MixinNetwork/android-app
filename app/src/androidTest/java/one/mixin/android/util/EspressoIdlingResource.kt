@@ -35,7 +35,7 @@ inline fun <T> wrapEspressoIdlingResource(function: () -> T): T {
 
 fun waitMillis(millis: Long) {
     EspressoIdlingResource.increment()
-    val job = MixinApplication.appScope.launch {
+    val job = MixinApplication.get().applicationScope.launch {
         delay(millis)
     }
     job.invokeOnCompletion {

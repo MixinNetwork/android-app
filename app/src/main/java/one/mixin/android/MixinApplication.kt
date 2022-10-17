@@ -31,7 +31,7 @@ import one.mixin.android.crypto.MixinSignalProtocolLogger
 import one.mixin.android.crypto.PrivacyPreference.clearPrivacyPreferences
 import one.mixin.android.crypto.db.SignalDatabase
 import one.mixin.android.db.MixinDatabase
-import one.mixin.android.db.runInTransaction
+import one.mixin.android.di.ApplicationScope
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.notificationManager
@@ -55,9 +55,7 @@ import one.mixin.android.ui.web.WebActivity
 import one.mixin.android.ui.web.refresh
 import one.mixin.android.ui.web.releaseAll
 import one.mixin.android.util.MemoryCallback
-import one.mixin.android.util.SINGLE_THREAD
 import one.mixin.android.util.debug.FileLogTree
-import one.mixin.android.util.debug.timeoutEarlyWarning
 import one.mixin.android.util.initNativeLibs
 import one.mixin.android.util.language.Lingver
 import one.mixin.android.util.reportException
@@ -68,8 +66,7 @@ import one.mixin.android.webrtc.disconnect
 import org.whispersystems.libsignal.logging.SignalProtocolLoggerProvider
 import timber.log.Timber
 import java.util.concurrent.atomic.AtomicBoolean
-import kotlin.coroutines.CoroutineContext
-import kotlin.coroutines.EmptyCoroutineContext
+import javax.inject.Inject
 import kotlin.system.exitProcess
 
 open class MixinApplication :
@@ -116,14 +113,14 @@ open class MixinApplication :
 
         fun get(): MixinApplication = appContext as MixinApplication
 
-        val appScope: CoroutineScope
-            get() {
-                return get().appScope
-            }
     }
 
     private var activityReferences: Int = 0
     private var isActivityChangingConfigurations = false
+
+    @Inject
+    @ApplicationScope
+    lateinit var applicationScope: CoroutineScope
 
     override fun onCreate() {
         super.onCreate()
@@ -170,10 +167,10 @@ open class MixinApplication :
 
     override fun getCameraXConfig() = Camera2Config.defaultConfig()
 
-    var onlining = AtomicBoolean(false)
+    var isOnline = AtomicBoolean(false)
 
     fun gotoTimeWrong(serverTime: Long) {
-        if (onlining.compareAndSet(true, false)) {
+        if (isOnline.compareAndSet(true, false)) {
             val ise =
                 IllegalStateException("Time error: Server-Time $serverTime - Local-Time ${System.currentTimeMillis()}")
             reportException(ise)
@@ -191,7 +188,7 @@ open class MixinApplication :
     }
 
     fun gotoOldVersionAlert() {
-        if (onlining.compareAndSet(true, false)) {
+        if (isOnline.compareAndSet(true, false)) {
             BlazeMessageService.stopService(this)
             val callState = getCallState()
             if (callState.isGroupCall()) {
@@ -205,7 +202,7 @@ open class MixinApplication :
     }
 
     fun closeAndClear(force: Boolean = false) {
-        if (force || onlining.compareAndSet(true, false)) {
+        if (force || isOnline.compareAndSet(true, false)) {
             val sessionId = Session.getSessionId()
             BlazeMessageService.stopService(this)
             val callState = getCallState()
@@ -221,7 +218,7 @@ open class MixinApplication :
             WebStorage.getInstance().deleteAllData()
             releaseAll()
             PipVideoView.release()
-            get().appScope.launch {
+            applicationScope.launch {
                 clearData(sessionId)
 
                 withContext(Dispatchers.Main) {
@@ -278,7 +275,7 @@ open class MixinApplication :
             FloatingPlayer.getInstance(activity.isNightMode()).hide()
         } else if (activity !is LandingActivity && activity !is InitializeActivity) {
             currentActivity = activity
-            appScope.launch(Dispatchers.Main) {
+            applicationScope.launch(Dispatchers.Main) {
                 refresh()
 
                 if (MusicService.isRunning(activity)) {
@@ -290,7 +287,7 @@ open class MixinApplication :
 
     override fun onActivityPaused(activity: Activity) {
         activityInForeground = false
-        get().appScope.launch {
+        applicationScope.launch {
             delay(200)
             if (!activityInForeground) {
                 FloatingWebClip.getInstance(activity.isNightMode()).hide()
@@ -321,29 +318,6 @@ open class MixinApplication :
 
     override fun onActivityDestroyed(activity: Activity) {
         if (activity == currentActivity) currentActivity = null
-    }
-
-    private val appScope by lazy {
-        object : CoroutineScope {
-            override val coroutineContext: CoroutineContext
-                get() = EmptyCoroutineContext
-        }
-    }
-
-    private val db by lazy {
-        MixinDatabase.getDatabase(this)
-    }
-
-    fun markMessageRead(conversationId: String) {
-        appScope.launch(SINGLE_THREAD) {
-            val remoteMessageDao = db.remoteMessageStatusDao()
-            timeoutEarlyWarning({
-                runInTransaction {
-                    remoteMessageDao.markReadByConversationId(conversationId)
-                    remoteMessageDao.zeroConversationUnseen(conversationId)
-                }
-            })
-        }
     }
 
     fun checkAndShowAppAuth(activity: Activity): Boolean {

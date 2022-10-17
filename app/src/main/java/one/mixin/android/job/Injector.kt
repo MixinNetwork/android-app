@@ -6,6 +6,7 @@ import dagger.hilt.EntryPoint
 import dagger.hilt.InstallIn
 import dagger.hilt.android.EntryPointAccessors
 import dagger.hilt.components.SingletonComponent
+import kotlinx.coroutines.CoroutineScope
 import one.mixin.android.Constants.SLEEP_MILLIS
 import one.mixin.android.MixinApplication
 import one.mixin.android.api.service.CircleService
@@ -38,6 +39,7 @@ import one.mixin.android.db.TraceDao
 import one.mixin.android.db.TranscriptMessageDao
 import one.mixin.android.db.UserDao
 import one.mixin.android.db.insertUpdate
+import one.mixin.android.di.ApplicationScope
 import one.mixin.android.session.Session
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.vo.ConversationCategory
@@ -116,6 +118,10 @@ open class Injector {
     lateinit var expiredMessageDao: ExpiredMessageDao
     @Inject
     lateinit var database: MixinDatabase
+    @ApplicationScope
+    @Transient
+    @Inject
+    lateinit var applicationScope: CoroutineScope
 
     @InstallIn(SingletonComponent::class)
     @EntryPoint

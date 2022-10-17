@@ -13,7 +13,7 @@ object InvalidateFlow {
     }
 
     fun emit(conversationId: String) {
-        MixinApplication.appScope.launch {
+        MixinApplication.get().applicationScope.launch {
             invalidateFlow.emit(conversationId)
         }
     }

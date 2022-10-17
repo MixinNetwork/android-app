@@ -152,9 +152,6 @@ internal constructor(
 
     suspend fun getConversationDraftById(id: String): String? = conversationRepository.getConversationDraftById(id)
 
-    suspend fun saveDraft(conversationId: String, draft: String) =
-        conversationRepository.saveDraft(conversationId, draft)
-
     fun getConversationById(id: String) = conversationRepository.getConversationById(id)
 
     suspend fun getConversation(id: String) = withContext(Dispatchers.IO) {
@@ -437,7 +434,6 @@ internal constructor(
         if (isBubbled.not()) {
             notificationManager.cancel(conversationId.hashCode())
         }
-        MixinApplication.get().markMessageRead(conversationId)
     }
 
     suspend fun getFriends(): List<User> = userRepository.getFriends()

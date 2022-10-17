@@ -226,7 +226,7 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
     }
 
     override fun onNetworkChange(networkStatus: Int) {
-        if (networkStatus != NetworkUtil.DISCONNECTED && MixinApplication.get().onlining.get()) {
+        if (networkStatus != NetworkUtil.DISCONNECTED && MixinApplication.get().isOnline.get()) {
             webSocket.connect()
         }
     }

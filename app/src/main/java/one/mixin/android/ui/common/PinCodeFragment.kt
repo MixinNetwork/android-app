@@ -109,7 +109,7 @@ abstract class PinCodeFragment(@LayoutRes contentLayoutId: Int) : FabLoadingFrag
         defaultSharedPreferences.putString(DEVICE_ID, requireContext().getDeviceId())
 
         verificationKeyboard.animate().translationY(300f).start()
-        MixinApplication.get().onlining.set(true)
+        MixinApplication.get().isOnline.set(true)
 
         hideLoading()
         action.invoke()

@@ -60,7 +60,7 @@ class LoadingFragment : BaseFragment(R.layout.fragment_loading) {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        MixinApplication.get().onlining.set(true)
+        MixinApplication.get().isOnline.set(true)
         checkAndLoad()
     }
 

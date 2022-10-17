@@ -135,7 +135,7 @@ class SendTranscriptAttachmentMessageJob(
         val inputStream = try {
             MixinApplication.appContext.contentResolver.openInputStream(Uri.fromFile(file))
         } catch (e: FileNotFoundException) {
-            MixinApplication.appScope.launch(Dispatchers.Main) {
+            applicationScope.launch(Dispatchers.Main) {
                 toast(R.string.File_does_not_exist)
             }
             return false
@@ -168,7 +168,7 @@ class SendTranscriptAttachmentMessageJob(
         } catch (e: Exception) {
             Timber.e(e)
             if (e is SocketTimeoutException) {
-                MixinApplication.appScope.launch(Dispatchers.Main) {
+                applicationScope.launch(Dispatchers.Main) {
                     toast(R.string.Upload_timeout)
                 }
             }

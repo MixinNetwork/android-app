@@ -251,7 +251,7 @@ class OpusAudioRecorder private constructor(private val ctx: Context) {
                     stopRecord()
                     val duration = recordTimeCount
                     val waveForm = getWaveform2(recordSamples, recordSamples.size)
-                    MixinApplication.appScope.launch(Dispatchers.Main) {
+                    MixinApplication.get().applicationScope.launch(Dispatchers.Main) {
                         if (recordingAudioFile != null) {
                             if (endStatus == AudioEndStatus.SEND) {
                                 callback?.sendAudio(messageId!!, recordingAudioFile!!, duration, waveForm)

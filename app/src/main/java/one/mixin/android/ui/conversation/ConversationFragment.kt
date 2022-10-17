@@ -151,6 +151,7 @@ import one.mixin.android.ui.call.GroupUsersBottomSheetDialogFragment.Companion.G
 import one.mixin.android.ui.common.GroupBottomSheetDialogFragment
 import one.mixin.android.ui.common.LinkFragment
 import one.mixin.android.ui.common.UserBottomSheetDialogFragment
+import one.mixin.android.ui.common.message.ChatRoomHelper
 import one.mixin.android.ui.common.profile.ProfileBottomSheetDialogFragment
 import one.mixin.android.ui.common.showUserBottom
 import one.mixin.android.ui.conversation.adapter.ConversationAdapter
@@ -322,6 +323,9 @@ class ConversationFragment() :
 
     @Inject
     lateinit var callState: CallStateLiveData
+
+    @Inject
+    lateinit var chatRoomHelper: ChatRoomHelper
 
     @Inject
     lateinit var audioSwitch: AudioSwitch
@@ -1223,13 +1227,7 @@ class ConversationFragment() :
         markRead()
         AudioPlayer.pause()
         val draftText = binding.chatControl.chatEt.text?.toString() ?: ""
-        lifecycleScope.launch(SINGLE_DB_THREAD) {
-            val conversationDraft =
-                chatViewModel.getConversationDraftById(conversationId) ?: ""
-            if (draftText != conversationDraft) {
-                chatViewModel.saveDraft(conversationId, draftText)
-            }
-        }
+        chatRoomHelper.saveDraft(conversationId, draftText)
 
         if (OpusAudioRecorder.state != STATE_NOT_INIT) {
             OpusAudioRecorder.get(conversationId).stop()
@@ -1893,6 +1891,7 @@ class ConversationFragment() :
                 }
                 conversationAdapter.submitList(list)
                 chatViewModel.markMessageRead(conversationId, (activity as? BubbleActivity)?.isBubbled == true)
+                chatRoomHelper.markMessageRead(conversationId)
             }
     }
 

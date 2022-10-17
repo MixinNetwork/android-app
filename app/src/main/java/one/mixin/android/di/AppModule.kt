@@ -17,6 +17,10 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.EntryPointAccessors
 import dagger.hilt.components.SingletonComponent
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 import okhttp3.OkHttpClient
 import okhttp3.ResponseBody.Companion.toResponseBody
 import okhttp3.logging.HttpLoggingInterceptor
@@ -223,7 +227,7 @@ object AppModule {
                     }
                 }
 
-                if (MixinApplication.get().onlining.get()) {
+                if (MixinApplication.get().isOnline.get()) {
                     response.header(xServerTime)?.toLong()?.let { serverTime ->
                         val currentTime = System.currentTimeMillis()
                         if (abs(serverTime / 1000000 - System.currentTimeMillis()) >= ALLOW_INTERVAL) {
@@ -365,13 +369,14 @@ object AppModule {
     @Provides
     @Singleton
     fun provideChatWebSocket(
+        @ApplicationScope applicationScope: CoroutineScope,
         okHttp: OkHttpClient,
         accountService: AccountService,
         mixinDatabase: MixinDatabase,
         jobManager: MixinJobManager,
         linkState: LinkState,
     ): ChatWebSocket =
-        ChatWebSocket(okHttp, accountService, mixinDatabase, jobManager, linkState)
+        ChatWebSocket(applicationScope,okHttp, accountService, mixinDatabase, jobManager, linkState)
 
     @Provides
     @Singleton
@@ -474,7 +479,19 @@ object AppModule {
     @Singleton
     fun provideTipCounterSynced() = TipCounterSyncedLiveData()
 
+    @DefaultDispatcher
+    @Provides
+    fun providesDefaultDispatcher(): CoroutineDispatcher = Dispatchers.Default
+
+    @ApplicationScope
+    @Singleton
+    @Provides
+    fun providesApplicationScope(
+        @DefaultDispatcher defaultDispatcher: CoroutineDispatcher
+    ): CoroutineScope = CoroutineScope(SupervisorJob() + defaultDispatcher)
+
     @Provides
     @Singleton
     fun provideGson() = GsonHelper.customGson
+
 }
