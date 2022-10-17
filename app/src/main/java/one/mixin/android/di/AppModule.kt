@@ -376,7 +376,7 @@ object AppModule {
         jobManager: MixinJobManager,
         linkState: LinkState,
     ): ChatWebSocket =
-        ChatWebSocket(applicationScope,okHttp, accountService, mixinDatabase, jobManager, linkState)
+        ChatWebSocket(applicationScope, okHttp, accountService, mixinDatabase, jobManager, linkState)
 
     @Provides
     @Singleton
@@ -493,5 +493,4 @@ object AppModule {
     @Provides
     @Singleton
     fun provideGson() = GsonHelper.customGson
-
 }

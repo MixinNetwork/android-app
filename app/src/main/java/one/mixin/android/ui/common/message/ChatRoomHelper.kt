@@ -9,7 +9,7 @@ import one.mixin.android.util.SINGLE_THREAD
 import one.mixin.android.util.debug.timeoutEarlyWarning
 import javax.inject.Inject
 
-class ChatRoomHelper @Inject internal constructor(@ApplicationScope private val applicationScope: CoroutineScope,private val appDatabase: MixinDatabase) {
+class ChatRoomHelper @Inject internal constructor(@ApplicationScope private val applicationScope: CoroutineScope, private val appDatabase: MixinDatabase) {
     fun saveDraft(conversationId: String, draft: String) = applicationScope.launch {
         timeoutEarlyWarning({
             val localDraft = appDatabase.conversationDao().getConversationDraftById(conversationId)

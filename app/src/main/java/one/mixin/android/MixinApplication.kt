@@ -112,7 +112,6 @@ open class MixinApplication :
         var conversationId: String? = null
 
         fun get(): MixinApplication = appContext as MixinApplication
-
     }
 
     private var activityReferences: Int = 0

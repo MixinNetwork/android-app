@@ -222,7 +222,6 @@ abstract class BaseJob(params: Params) : Job(params) {
     @Inject
     lateinit var applicationScope: CoroutineScope
 
-
     open fun shouldRetry(throwable: Throwable): Boolean {
         if (throwable is SocketTimeoutException) {
             return true

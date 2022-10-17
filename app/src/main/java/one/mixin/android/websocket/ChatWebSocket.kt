@@ -55,7 +55,6 @@ class ChatWebSocket(
     private val mixinDatabase: MixinDatabase,
     private val jobManager: MixinJobManager,
     private val linkState: LinkState,
-
 ) : WebSocketListener() {
 
     private val offsetDao: OffsetDao = mixinDatabase.offsetDao()
