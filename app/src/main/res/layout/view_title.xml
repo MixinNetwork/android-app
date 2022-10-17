@@ -24,22 +24,23 @@
         android:layout_height="wrap_content"
         android:layout_alignParentEnd="true"
         android:layout_centerVertical="true"
-        android:layout_marginEnd="8dp"
+        android:layout_marginEnd="6dp"
         tools:ignore="RelativeOverlap">
 
         <ImageView
             android:id="@+id/right_ib"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="center_vertical"
+            android:layout_gravity="center"
+            android:padding="8dp"
             android:background="@drawable/mixin_ripple"
-            android:padding="6dp"
             tools:ignore="ContentDescription" />
 
         <TextView
             android:id="@+id/right_tv"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_gravity="center"
             android:padding="8dp"
             android:textColor="?attr/text_subtitle"
             android:textSize="16sp" />
