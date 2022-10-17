@@ -62,6 +62,9 @@ interface AccountService {
     @GET("me")
     fun getMe(): Call<MixinResponse<Account>>
 
+    @GET("me")
+    suspend fun getMeSuspend(): MixinResponse<Account>
+
     @POST("me/deactivate")
     suspend fun deactivate(@Body request: DeactivateRequest): MixinResponse<Account>
 

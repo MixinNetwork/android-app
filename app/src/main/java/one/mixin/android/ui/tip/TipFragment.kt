@@ -8,10 +8,13 @@ import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants
 import one.mixin.android.Constants.INTERVAL_10_MINS
 import one.mixin.android.R
+import one.mixin.android.api.handleMixinResponse
+import one.mixin.android.api.service.AccountService
 import one.mixin.android.crypto.PrivacyPreference.putPrefPinInterval
 import one.mixin.android.databinding.FragmentTipBinding
 import one.mixin.android.extension.buildBulletLines
@@ -27,7 +30,6 @@ import one.mixin.android.session.Session
 import one.mixin.android.tip.Tip
 import one.mixin.android.tip.exception.DifferentIdentityException
 import one.mixin.android.tip.exception.NotAllSignerSuccessException
-import one.mixin.android.tip.exception.TipNodeException
 import one.mixin.android.tip.getTipExceptionMsg
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.PinInputBottomSheetDialogFragment
@@ -55,6 +57,8 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
 
     @Inject
     lateinit var tip: Tip
+    @Inject
+    lateinit var accountService: AccountService
 
     private val tipBundle: TipBundle by lazy { requireArguments().getTipBundle() }
 
@@ -291,7 +295,7 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
                 tip.updateTipPriv(requireContext(), deviceId, pin, requireNotNull(oldPin), failedSigners)
         }.onFailure { e ->
             tip.removeObserver(tipObserver)
-            onTipProcessFailure(e, tipCounter, nodeCounter)
+            onTipProcessFailure(e, pin, tipCounter, nodeCounter)
         }.onSuccess {
             tip.removeObserver(tipObserver)
             onTipProcessSuccess(pin)
@@ -300,46 +304,56 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
 
     private suspend fun onTipProcessFailure(
         e: Throwable,
+        pin: String,
         tipCounter: Int,
-        nodeCounter: Int
+        nodeCounterBeforeRequest: Int,
     ) {
         val errMsg = e.getTipExceptionMsg(requireContext())
         toast(errMsg)
 
-        if (e is TipNodeException) {
-            if (e is DifferentIdentityException) {
-                tipBundle.oldPin = null
-                tipBundle.pin = null
-                updateTipStep(RetryConnect(true))
-                return
-            }
-
-            if (e is NotAllSignerSuccessException && e.successSignerSize == 0) { // all signer failed perhaps means PIN incorrect)
-                tipBundle.pin = null
-            }
-
-            tip.checkCounter(
-                tipCounter,
-                onNodeCounterGreaterThanServer = { tipBundle.updateTipEvent(null, it) },
-                onNodeCounterInconsistency = { nodeMaxCounter, nodeFailedSigners ->
-                    tipBundle.updateTipEvent(nodeFailedSigners, nodeMaxCounter)
-                }
-            ).onFailure {
-                // Generally, check-counter should NOT meet exceptions, if this happens,
-                // we should go to the RetryConnect step to check network and other steps.
-                tipBundle.pin = null
-                tipBundle.oldPin = null
-                updateTipStep(RetryConnect(true))
-                return
-            }
-
-            updateTipStep(RetryProcess(errMsg))
-        } else {
-            // NOT TipNodeException means the nodes part must success,
-            // clear failed node list to prepare for a new try to communicate with API server.
-            tipBundle.updateTipEvent(null, nodeCounter)
-            updateTipStep(RetryProcess(errMsg))
+        if (e is DifferentIdentityException) {
+            tipBundle.oldPin = null
+            tipBundle.pin = null
+            updateTipStep(RetryConnect(true))
+            return
         }
+
+        tip.checkCounter(
+            tipCounter,
+            onNodeCounterGreaterThanServer = { tipBundle.updateTipEvent(null, it) },
+            onNodeCounterInconsistency = { nodeMaxCounter, nodeFailedSigners ->
+                tipBundle.updateTipEvent(nodeFailedSigners, nodeMaxCounter)
+            }
+        ).onFailure {
+            // Generally, check-counter should NOT meet exceptions, if this happens,
+            // we should go to the RetryConnect step to check network and other steps.
+            tipBundle.pin = null
+            tipBundle.oldPin = null
+            updateTipStep(RetryConnect(true))
+            return
+        }
+
+        // all signer failed perhaps means PIN incorrect, clear PIN and let user re-input.
+        if (e is NotAllSignerSuccessException && e.allFailure()) {
+            tipBundle.pin = null
+        }
+
+        val newNodeCounter = tipBundle.tipEvent?.nodeCounter ?: nodeCounterBeforeRequest
+        if (newNodeCounter > nodeCounterBeforeRequest && newNodeCounter > tipCounter) {
+            // If new node counter greater than session counter and old node counter,
+            // we should refresh session counter to prevent failure in cases where
+            // pin/update completes but local session account update fails.
+            refreshAccount()
+            val newSessionCounter = Session.getTipCounter()
+            // If new session counter equals new node counter,
+            // we consider this case as PIN update success.
+            if (newNodeCounter == newSessionCounter) {
+                onTipProcessSuccess(pin)
+                return
+            }
+        }
+
+        updateTipStep(RetryProcess(errMsg))
     }
 
     private fun onTipProcessSuccess(pin: String) {
@@ -358,7 +372,6 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
             TipType.Upgrade -> toast(R.string.Upgrade_TIP_successfully)
         }
 
-        // TODO go somewhere after set PIN
         activity?.finish()
     }
 
@@ -394,6 +407,16 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
                 }
             }
         }
+    }
+
+    private suspend fun refreshAccount() {
+        handleMixinResponse(
+            invokeNetwork = { accountService.getMeSuspend() },
+            switchContext = Dispatchers.IO,
+            successBlock = { r ->
+                r.data?.let { Session.storeAccount(it) }
+            }
+        )
     }
 
     private val tipObserver = object : Tip.Observer {
