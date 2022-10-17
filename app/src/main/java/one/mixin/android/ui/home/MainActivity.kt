@@ -186,6 +186,7 @@ class MainActivity : BlazeBaseActivity() {
 
     private val appUpdateManager by lazy { AppUpdateManagerFactory.create(this) }
     private val updatedListener = InstallStateUpdatedListener { state ->
+        if(isFinishing) return@InstallStateUpdatedListener
         if (state.installStatus() == InstallStatus.DOWNLOADED) {
             popupSnackbarForCompleteUpdate()
         }
