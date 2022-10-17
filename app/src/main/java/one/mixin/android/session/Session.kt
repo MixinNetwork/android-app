@@ -8,13 +8,14 @@ import io.jsonwebtoken.Jwts
 import net.i2p.crypto.eddsa.EdDSAPrivateKey
 import net.i2p.crypto.eddsa.EdDSAPublicKey
 import net.i2p.crypto.eddsa.spec.EdDSAPrivateKeySpec
-import net.i2p.crypto.eddsa.spec.EdDSAPublicKeySpec
 import okhttp3.Request
 import okio.ByteString.Companion.encode
 import one.mixin.android.Constants.Account.PREF_TRIED_UPDATE_KEY
 import one.mixin.android.MixinApplication
 import one.mixin.android.crypto.calculateAgreement
 import one.mixin.android.crypto.ed25519
+import one.mixin.android.crypto.getPrivateKey
+import one.mixin.android.crypto.getPublicKey
 import one.mixin.android.crypto.getRSAPrivateKeyFromString
 import one.mixin.android.crypto.privateKeyToCurve25519
 import one.mixin.android.extension.bodyToString
@@ -119,8 +120,8 @@ object Session {
 
     private fun initEdKeypair(seed: String) {
         val privateSpec = EdDSAPrivateKeySpec(seed.decodeBase64(), ed25519)
-        edPrivateKey = EdDSAPrivateKey(privateSpec)
-        edPublicKey = EdDSAPublicKey(EdDSAPublicKeySpec(privateSpec.a, ed25519))
+        edPrivateKey = privateSpec.getPrivateKey()
+        edPublicKey = privateSpec.getPublicKey()
     }
 
     fun storeToken(token: String) {

@@ -8,7 +8,7 @@
         android:id="@+id/badge_circle_iv"
         android:layout_width="42dp"
         android:layout_height="42dp"
-        android:layout_marginStart="@dimen/margin10"
+        android:layout_marginStart="@dimen/margin16"
         android:layout_marginEnd="@dimen/margin16"
         android:layout_centerVertical="true"/>
 

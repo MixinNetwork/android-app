@@ -7,6 +7,7 @@ import androidx.room.RoomWarnings
 import one.mixin.android.db.BaseDao.Companion.ESCAPE_SUFFIX
 import one.mixin.android.vo.App
 import one.mixin.android.vo.AppItem
+import one.mixin.android.vo.RecentUsedApp
 
 @Dao
 interface AppDao : BaseDao<App> {
@@ -43,8 +44,8 @@ interface AppDao : BaseDao<App> {
     @Query("SELECT * FROM apps WHERE app_id = :id")
     suspend fun findAppById(id: String): App?
 
-    @Query("SELECT * FROM apps WHERE app_id IN(:appIds)")
-    fun findAppsByIds(appIds: List<String>): List<App>
+    @Query("SELECT a.app_id, a.icon_url, u.full_name FROM apps a LEFT JOIN users u ON a.app_id = u.user_id WHERE a.app_id IN(:appIds)")
+    fun findAppsByIds(appIds: List<String>): List<RecentUsedApp>
 
     @Query(" SELECT a.* FROM apps a WHERE a.home_uri LIKE :query $ESCAPE_SUFFIX")
     suspend fun searchAppByHost(query: String): List<App>

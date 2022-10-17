@@ -3,15 +3,10 @@ package one.mixin.android.ui.wallet
 import android.annotation.SuppressLint
 import android.app.Dialog
 import android.text.Editable
-import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
-import android.view.ViewGroup.MarginLayoutParams
 import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
 import androidx.lifecycle.lifecycleScope
-import androidx.recyclerview.widget.ListAdapter
-import androidx.recyclerview.widget.RecyclerView
 import com.jakewharton.rxbinding3.widget.textChanges
 import dagger.hilt.android.AndroidEntryPoint
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -20,16 +15,15 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentAssetListBottomSheetBinding
-import one.mixin.android.databinding.ItemAssetBinding
 import one.mixin.android.extension.containsIgnoreCase
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.equalsIgnoreCase
 import one.mixin.android.extension.hideKeyboard
-import one.mixin.android.extension.loadImage
-import one.mixin.android.extension.numberFormat
 import one.mixin.android.extension.statusBarHeight
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
+import one.mixin.android.ui.wallet.adapter.SearchAdapter
+import one.mixin.android.ui.wallet.adapter.WalletSearchCallback
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.AssetItem
 import one.mixin.android.widget.BottomSheet
@@ -53,11 +47,7 @@ class AssetListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
 
     private val binding by viewBinding(FragmentAssetListBottomSheetBinding::inflate)
 
-    private val adapter = AssetAdapter { assetItem ->
-        binding.searchEt.hideKeyboard()
-        onAsset?.invoke(assetItem)
-        dismiss()
-    }
+    private val adapter = SearchAdapter()
 
     private val forSend: Boolean by lazy {
         requireArguments().getBoolean(ARGS_FOR_SEND)
@@ -85,6 +75,13 @@ class AssetListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 dismiss()
             }
             assetRv.adapter = adapter
+            adapter.callback = object : WalletSearchCallback {
+                override fun onAssetClick(assetId: String, assetItem: AssetItem?) {
+                    binding.searchEt.hideKeyboard()
+                    assetItem?.let { onAsset?.invoke(it) }
+                    dismiss()
+                }
+            }
             searchEt.setHint(getString(R.string.search_placeholder_asset))
             if (forSend) {
                 depositTv.setOnClickListener {
@@ -182,30 +179,4 @@ class AssetListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
 
     private var onAsset: ((AssetItem) -> Unit)? = null
     private var onDeposit: (() -> Unit)? = null
-
-    class AssetAdapter(private val onItemClick: (AssetItem) -> Unit) : ListAdapter<AssetItem, ItemHolder>(AssetItem.DIFF_CALLBACK) {
-        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ItemHolder =
-            ItemHolder(
-                LayoutInflater.from(parent.context)
-                    .inflate(R.layout.item_asset, parent, false)
-            )
-
-        override fun onBindViewHolder(holder: ItemHolder, position: Int) {
-            val itemAssert = getItem(position)
-            val binding = ItemAssetBinding.bind(holder.itemView)
-            binding.typeAvatar.updateLayoutParams<MarginLayoutParams> {
-                marginStart = 20.dp
-            }
-            binding.typeAvatar.bg.loadImage(itemAssert.iconUrl, R.drawable.ic_avatar_place_holder)
-            binding.typeAvatar.badge.loadImage(itemAssert.chainIconUrl, R.drawable.ic_avatar_place_holder)
-            binding.name.text = itemAssert.name
-            binding.value.text = itemAssert.balance.numberFormat()
-            binding.valueEnd.text = itemAssert.symbol
-            holder.itemView.setOnClickListener {
-                onItemClick(itemAssert)
-            }
-        }
-    }
-
-    class ItemHolder(itemView: View) : RecyclerView.ViewHolder(itemView)
 }

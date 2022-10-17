@@ -5,7 +5,6 @@ import net.i2p.crypto.eddsa.EdDSAEngine
 import net.i2p.crypto.eddsa.EdDSAPrivateKey
 import net.i2p.crypto.eddsa.EdDSAPublicKey
 import net.i2p.crypto.eddsa.spec.EdDSAPrivateKeySpec
-import net.i2p.crypto.eddsa.spec.EdDSAPublicKeySpec
 import one.mixin.android.Constants
 import one.mixin.android.RxBus
 import one.mixin.android.api.request.PinRequest
@@ -20,6 +19,8 @@ import one.mixin.android.crypto.aesDecrypt
 import one.mixin.android.crypto.aesEncrypt
 import one.mixin.android.crypto.ed25519
 import one.mixin.android.crypto.generateAesKey
+import one.mixin.android.crypto.getPrivateKey
+import one.mixin.android.crypto.getPublicKey
 import one.mixin.android.crypto.sha3Sum256
 import one.mixin.android.event.TipEvent
 import one.mixin.android.extension.base64RawEncode
@@ -61,9 +62,9 @@ class Tip @Inject internal constructor(
         kotlin.runCatching {
             val ephemeralSeed = ephemeral.getEphemeralSeed(context, deviceId)
             Timber.e("createTipPriv after getEphemeralSeed")
-            val identityPair = identity.getIdentityPrivAndWatcher(pin)
+            val (priKey, watcher) = identity.getIdentityPrivAndWatcher(pin)
             Timber.e("createTipPriv after getIdentityPrivAndWatcher")
-            createPriv(context, identityPair.priKey, ephemeralSeed, identityPair.watcher, pin, failedSigners, legacyPin, forRecover)
+            createPriv(context, priKey, ephemeralSeed, watcher, pin, failedSigners, legacyPin, forRecover)
         }
 
     suspend fun updateTipPriv(context: Context, deviceId: String, newPin: String, oldPin: String?, failedSigners: List<TipSigner>? = null): Result<ByteArray> =
@@ -73,16 +74,15 @@ class Tip @Inject internal constructor(
 
             if (oldPin.isNullOrBlank()) { // node success
                 Timber.e("updateTipPriv oldPin isNullOrBlank")
-                val identityPair = identity.getIdentityPrivAndWatcher(newPin)
+                val (priKey, watcher) = identity.getIdentityPrivAndWatcher(newPin)
                 Timber.e("updateTipPriv after getIdentityPrivAndWatcher")
-                updatePriv(context, identityPair.priKey, ephemeralSeed, identityPair.watcher, newPin, null)
+                updatePriv(context, priKey, ephemeralSeed, watcher, newPin, null)
             } else {
-                Timber.e("updateTipPriv oldPin is not null")
-                val identityPair = identity.getIdentityPrivAndWatcher(oldPin)
+                val (priKey, watcher) = identity.getIdentityPrivAndWatcher(oldPin)
                 Timber.e("updateTipPriv after getIdentityPrivAndWatcher")
-                val assigneePriv = identity.getIdentityPrivAndWatcher(newPin).priKey
+                val (assigneePriv, _) = identity.getIdentityPrivAndWatcher(newPin)
                 Timber.e("updateTipPriv after get assignee priv")
-                updatePriv(context, identityPair.priKey, ephemeralSeed, identityPair.watcher, newPin, assigneePriv, failedSigners)
+                updatePriv(context, priKey, ephemeralSeed, watcher, newPin, assigneePriv, failedSigners)
             }
         }
 
@@ -181,10 +181,9 @@ class Tip @Inject internal constructor(
         ).sha3Sum256() // use sha3-256(recover-signature) as priv
 
         observers.forEach { it.onSyncingComplete() }
-        Timber.e("createPriv after sign")
 
         val privateSpec = EdDSAPrivateKeySpec(aggSig.copyOf(), ed25519)
-        val pub = EdDSAPublicKey(EdDSAPublicKeySpec(privateSpec.a, ed25519))
+        val pub = privateSpec.getPublicKey()
 
         val localPub = Session.getTipPub()
         if (!localPub.isNullOrBlank() && !localPub.base64RawUrlDecode().contentEquals(pub.abyte)) {
@@ -193,7 +192,7 @@ class Tip @Inject internal constructor(
         }
         Timber.e("createPriv after compare local pub and remote pub")
 
-        val aesKey = generateAesKey(pin)
+        val aesKey = generateAesKeyByPin(pin)
         Timber.e("createPriv after generateAesKey, forRecover: $forRecover")
         if (forRecover) {
             encryptAndSaveTipPriv(context, pin, aggSig, aesKey)
@@ -204,8 +203,6 @@ class Tip @Inject internal constructor(
         // If the process crashes after updating PIN and before saving to local,
         // the local priv does not match the remote, and this cannot be detected by checkCounter.
         clearTipPriv(context)
-        Timber.e("createPriv after clear tip priv")
-
         replaceOldEncryptedPin(pub, legacyPin)
         Timber.e("createPriv after replaceOldEncryptedPin")
         encryptAndSaveTipPriv(context, pin, aggSig, aesKey)
@@ -227,7 +224,7 @@ class Tip @Inject internal constructor(
         observers.forEach { it.onSyncingComplete() }
         Timber.e("updatePriv after sign")
 
-        val aesKey = generateAesKey(newPin)
+        val aesKey = generateAesKeyByPin(newPin)
 
         // Clearing local priv before update remote PIN.
         // If the process crashes after updating PIN and before saving to local,
@@ -259,7 +256,7 @@ class Tip @Inject internal constructor(
     @Throws(IOException::class, TipNetworkException::class)
     private suspend fun replaceEncryptedPin(aggSig: ByteArray) {
         val privateSpec = EdDSAPrivateKeySpec(aggSig.copyOf(), ed25519)
-        val pub = EdDSAPublicKey(EdDSAPublicKeySpec(privateSpec.a, ed25519))
+        val pub = privateSpec.getPublicKey()
         val pinToken = requireNotNull(Session.getPinToken()?.decodeBase64() ?: throw TipNullException("No pin token"))
         val counter = requireNotNull(Session.getTipCounter()).toLong()
         val timestamp = TipBody.forVerify(counter)
@@ -283,7 +280,7 @@ class Tip @Inject internal constructor(
     }
 
     @Throws(TipException::class)
-    private suspend fun generateAesKey(pin: String): ByteArray {
+    private suspend fun generateAesKeyByPin(pin: String): ByteArray {
         val sessionPriv =
             Session.getEd25519Seed()?.decodeBase64() ?: throw TipNullException("No ed25519 key")
         val pinToken =
@@ -291,8 +288,8 @@ class Tip @Inject internal constructor(
 
         val stSeed = (sessionPriv + pin.toByteArray()).sha3Sum256()
         val privateSpec = EdDSAPrivateKeySpec(stSeed, ed25519)
-        val stPriv = EdDSAPrivateKey(privateSpec)
-        val stPub = EdDSAPublicKey(EdDSAPublicKeySpec(privateSpec.a, ed25519))
+        val stPriv = privateSpec.getPrivateKey()
+        val stPub = privateSpec.getPublicKey()
         val aesKey = generateAesKey(32)
 
         val seedBase64 = aesEncrypt(pinToken, aesKey).base64RawEncode()
@@ -319,7 +316,7 @@ class Tip @Inject internal constructor(
 
         val stSeed = (sessionPriv + pin.toByteArray()).sha3Sum256()
         val privateSpec = EdDSAPrivateKeySpec(stSeed, ed25519)
-        val stPriv = EdDSAPrivateKey(privateSpec)
+        val stPriv = privateSpec.getPrivateKey()
         val timestamp = nowInUtcNano()
 
         val sigBase64 = signTimestamp(stPriv, timestamp)
@@ -377,10 +374,9 @@ class Tip @Inject internal constructor(
 
     private fun storeTipPriv(context: Context, tipPriv: ByteArray): Boolean {
         val cipher = getEncryptCipher(Constants.Tip.ALIAS_TIP_PRIV)
-        val iv = cipher.iv
         val edit = context.defaultSharedPreferences.edit()
         val ciphertext = cipher.doFinal(tipPriv)
-        edit.putString(Constants.Tip.TIP_PRIV, (iv + ciphertext).toHex())
+        edit.putString(Constants.Tip.TIP_PRIV, (cipher.iv + ciphertext).toHex())
         return edit.commit()
     }
 

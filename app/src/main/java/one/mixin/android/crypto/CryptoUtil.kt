@@ -73,6 +73,14 @@ fun privateKeyToCurve25519(edSeed: ByteArray): ByteArray {
     return h
 }
 
+fun EdDSAPrivateKeySpec.getPublicKey(): EdDSAPublicKey {
+    return EdDSAPublicKey(EdDSAPublicKeySpec(this.a, ed25519))
+}
+
+fun EdDSAPrivateKeySpec.getPrivateKey(): EdDSAPrivateKey {
+    return EdDSAPrivateKey(this)
+}
+
 fun ByteArray.sha3Sum256(): ByteArray {
     return digestKeccak(KeccakParameter.SHA3_256)
 }

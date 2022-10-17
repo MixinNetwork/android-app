@@ -1,5 +1,6 @@
 package one.mixin.android.tip
 
+import com.google.gson.Gson
 import crypto.Crypto
 import crypto.Scalar
 import kotlinx.coroutines.Dispatchers
@@ -24,7 +25,6 @@ import one.mixin.android.tip.exception.DifferentIdentityException
 import one.mixin.android.tip.exception.NotAllSignerSuccessException
 import one.mixin.android.tip.exception.NotEnoughPartialsException
 import one.mixin.android.tip.exception.TipNodeException
-import one.mixin.android.util.GsonHelper
 import retrofit2.HttpException
 import timber.log.Timber
 import java.util.concurrent.CopyOnWriteArrayList
@@ -32,12 +32,15 @@ import java.util.concurrent.atomic.AtomicInteger
 import javax.inject.Inject
 import kotlin.time.Duration.Companion.days
 
-class TipNode @Inject internal constructor(private val tipNodeService: TipNodeService) {
+class TipNode @Inject internal constructor(private val tipNodeService: TipNodeService, private val tipConfig: TipConfig, private val gson: Gson) {
     private val ephemeralGrace = 128.days.inWholeNanoseconds
 
-    private val gson = GsonHelper.customGson
+    private val maxRequestCount = 3
 
-    private val maxRetryCount = 2
+    val nodeCount: Int
+        get() {
+            return tipConfig.signers.size
+        }
 
     @Throws(TipNodeException::class)
     suspend fun sign(
@@ -81,7 +84,7 @@ class TipNode @Inject internal constructor(private val tipNodeService: TipNodeSe
             getNodeSigs(userSk, tipConfig.signers, ephemeral, watcher, assignee, callback)
         }
 
-        if (!forRecover && data.size < tipConfig.signers.size) {
+        if (!forRecover && data.size < nodeCount) {
             Timber.e("not all signer success ${data.size}")
             throw NotAllSignerSuccessException(data.size)
         }
@@ -96,13 +99,13 @@ class TipNode @Inject internal constructor(private val tipNodeService: TipNodeSe
 
         val hexSigs = partials.joinToString(",") { it.toHex() }
         val commitments = tipConfig.commitments.joinToString(",")
-        return Crypto.recoverSignature(hexSigs, commitments, assignor, tipConfig.signers.size.toLong())
+        return Crypto.recoverSignature(hexSigs, commitments, assignor, nodeCount.toLong())
     }
 
     suspend fun watch(watcher: ByteArray, callback: Callback? = null): List<TipNodeCounter> {
         val result = CopyOnWriteArrayList<TipNodeCounter>()
 
-        val total = tipConfig.signers.size
+        val total = nodeCount
         val completeCount = AtomicInteger(0)
 
         coroutineScope {
@@ -110,9 +113,9 @@ class TipNode @Inject internal constructor(private val tipNodeService: TipNodeSe
                 async(Dispatchers.IO) {
                     var retryCount = 0
 
-                    while (retryCount <= maxRetryCount) {
+                    while (retryCount < maxRequestCount) {
                         val (counter, code) = watchTipNode(signer, watcher)
-                        if (code == 500) {
+                        if (code == 429) {
                             Timber.e("watch tip node $index meet $code")
                             return@async
                         }
@@ -148,9 +151,9 @@ class TipNode @Inject internal constructor(private val tipNodeService: TipNodeSe
             tipSigners.mapIndexed { index, signer ->
                 async(Dispatchers.IO) {
                     var retryCount = 0
-                    while (retryCount <= maxRetryCount) {
-                        val (sign, code) = signTipNode(userSk, signer, ephemeral, watcher, nonce, grace, assignee)
-                        if (code == 429 || code == 500) {
+                    while (retryCount < maxRequestCount) {
+                        val (sign, code) = signTipNode(userSk, signer, ephemeral, watcher, nonce + retryCount, grace, assignee)
+                        if (code == 429) {
                             Timber.e("fetch tip node $index meet $code")
                             return@async
                         }
@@ -165,7 +168,7 @@ class TipNode @Inject internal constructor(private val tipNodeService: TipNodeSe
                             return@async
                         }
 
-                        retryCount++
+                        retryCount += 1
                         Timber.e("fetch tip node $index failed, retry $retryCount")
                     }
                 }
@@ -193,7 +196,9 @@ class TipNode @Inject internal constructor(private val tipNodeService: TipNodeSe
         return try {
             val tipSignRequest = genTipSignRequest(userSk, tipSigner, ephemeral, watcher, nonce, grace, assignee)
             val tipSignResponse = tipNodeService.sign(tipSignRequest, tipSigner.api)
-
+            if (tipSignResponse.error != null) {
+                return Pair(null, tipSignResponse.error!!.code)
+            }
             val signerPk = Crypto.pubKeyFromBase58(tipSigner.identity)
             val msg = gson.toJson(tipSignResponse.data).toByteArray()
             try {
@@ -287,12 +292,6 @@ class TipNode @Inject internal constructor(private val tipNodeService: TipNodeSe
     private data class TipSignRespData(val partial: ByteArray, val assignor: String, val counter: Long)
 
     data class TipNodeCounter(val counter: Int, val tipSigner: TipSigner)
-
-    val tipConfig: TipConfig = gson.fromJson(
-        TipConstants.tipConfig,
-        TipConfig::class.java
-    )
-    val nodeCount = tipConfig.signers.size
 
     interface Callback {
         fun onNodeComplete(step: Int, total: Int)
