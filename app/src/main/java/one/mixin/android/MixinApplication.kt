@@ -158,11 +158,11 @@ open class MixinApplication :
             Timber.plant(Timber.DebugTree(), FileLogTree())
             // ignore known leaks
             val delegate = ReachabilityWatcher { watchedObject, description ->
-                if (watchedObject is JobInfoSchedulerService){
-                    AppWatcher.objectWatcher.expectWeaklyReachable(watchedObject,description)
+                if (watchedObject !is JobInfoSchedulerService) {
+                    AppWatcher.objectWatcher.expectWeaklyReachable(watchedObject, description)
                 }
             }
-            val watchersToInstall = AppWatcher.appDefaultWatchers(this,delegate)
+            val watchersToInstall = AppWatcher.appDefaultWatchers(this, delegate)
             AppWatcher.manualInstall(application = this, watchersToInstall = watchersToInstall)
         } else {
             Timber.plant(FileLogTree())
