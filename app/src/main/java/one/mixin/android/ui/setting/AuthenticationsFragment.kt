@@ -117,7 +117,7 @@ class AuthenticationsFragment : BaseFragment(R.layout.fragment_authentications) 
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        binding.titleView.leftIb.setOnClickListener { activity?.onBackPressedDispatcher?.onBackPressed() }
+        binding.titleView.leftIb.setOnClickListener { if (isAdded) { requireActivity().onBackPressedDispatcher.onBackPressed() } }
 
         binding.apply {
             searchEt.addTextChangedListener(

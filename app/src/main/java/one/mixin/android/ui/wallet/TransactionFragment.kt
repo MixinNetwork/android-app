@@ -45,7 +45,7 @@ class TransactionFragment : BaseFragment(R.layout.fragment_transaction), Transac
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        binding.titleView.leftIb.setOnClickListener { activity?.onBackPressedDispatcher?.onBackPressed() }
+        binding.titleView.leftIb.setOnClickListener { if (isAdded) { requireActivity().onBackPressedDispatcher.onBackPressed() } }
         binding.root.isClickable = true
         initView(this, binding, lifecycleScope, walletViewModel, assetId, snapshotId, asset, snapshot)
     }

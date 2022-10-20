@@ -53,7 +53,7 @@ abstract class PinCodeFragment(@LayoutRes contentLayoutId: Int) : FabLoadingFrag
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        backIv.setOnClickListener { activity?.onBackPressedDispatcher?.onBackPressed() }
+        backIv.setOnClickListener { if (isAdded) { requireActivity().onBackPressedDispatcher.onBackPressed() } }
         pinVerificationView.setOnCodeEnteredListener(mPinVerificationListener)
         verificationKeyboard.tipTitleEnabled = false
         verificationKeyboard.setKeyboardKeys(KEYS)

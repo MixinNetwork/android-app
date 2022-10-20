@@ -39,7 +39,7 @@ class AboutFragment : BaseFragment(R.layout.fragment_about) {
                 getString(R.string.app_name),
                 getString(R.string.about_version, versionName)
             )
-            titleView.leftIb.setOnClickListener { activity?.onBackPressedDispatcher?.onBackPressed() }
+            titleView.leftIb.setOnClickListener { if (isAdded) { requireActivity().onBackPressedDispatcher.onBackPressed() } }
             imageView.setOnClickListener(object : DebugClickListener() {
                 override fun onDebugClick() {
                     if (defaultSharedPreferences.getBoolean(Constants.Debug.WEB_DEBUG, false)) {

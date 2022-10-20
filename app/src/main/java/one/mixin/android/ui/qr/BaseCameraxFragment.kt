@@ -148,7 +148,7 @@ abstract class BaseCameraxFragment : VisionFragment() {
     @SuppressLint("RestrictedApi", "ClickableViewAccessibility")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        close.setOnClickListener { activity?.onBackPressedDispatcher?.onBackPressed() }
+        close.setOnClickListener { if (isAdded) { requireActivity().onBackPressedDispatcher.onBackPressed() } }
         flash.setOnClickListener {
             onFlashClick()
             flash.bounce()

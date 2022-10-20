@@ -81,8 +81,10 @@ class WalletSearchFragment : BaseFragment() {
     private fun initViews() {
         binding.apply {
             backIb.setOnClickListener {
-                searchEt.hideKeyboard()
-                activity?.onBackPressedDispatcher?.onBackPressed()
+                if (isAdded) {
+                    searchEt.hideKeyboard()
+                    requireActivity().onBackPressedDispatcher.onBackPressed()
+                }
             }
             searchEt.setHint(getString(R.string.search_placeholder_asset))
             searchEt.post {

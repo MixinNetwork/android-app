@@ -39,7 +39,7 @@ class MobileContactFragment : BaseFragment(R.layout.fragment_setting_mobile_cont
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        binding.titleView.leftIb.setOnClickListener { activity?.onBackPressedDispatcher?.onBackPressed() }
+        binding.titleView.leftIb.setOnClickListener { if (isAdded) { requireActivity().onBackPressedDispatcher.onBackPressed() } }
 
         lifecycleScope.launch {
             if (viewDestroyed()) return@launch

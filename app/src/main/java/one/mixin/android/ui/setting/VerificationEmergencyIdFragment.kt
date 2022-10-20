@@ -49,7 +49,7 @@ class VerificationEmergencyIdFragment : FabLoadingFragment(R.layout.fragment_ver
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        binding.backIv.setOnClickListener { activity?.onBackPressedDispatcher?.onBackPressed() }
+        binding.backIv.setOnClickListener { if (isAdded) { requireActivity().onBackPressedDispatcher.onBackPressed() } }
         binding.verificationNextFab.setOnClickListener {
             sendCode(binding.idEt.text.toString())
         }

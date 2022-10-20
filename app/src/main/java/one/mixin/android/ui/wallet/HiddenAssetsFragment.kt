@@ -49,7 +49,7 @@ class HiddenAssetsFragment : BaseFragment(R.layout.fragment_hidden_assets), Head
         super.onViewCreated(view, savedInstanceState)
         assetsAdapter.onItemListener = this
         binding.apply {
-            titleView.leftIb.setOnClickListener { activity?.onBackPressedDispatcher?.onBackPressed() }
+            titleView.leftIb.setOnClickListener { if (isAdded) { requireActivity().onBackPressedDispatcher.onBackPressed() } }
             ItemTouchHelper(
                 AssetItemCallback(
                     object : AssetItemCallback.ItemCallbackListener {

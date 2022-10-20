@@ -36,7 +36,7 @@ class StickerAlbumManagementFragment : BaseFragment(R.layout.fragment_sticker_al
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         binding.apply {
-            title.leftIb.setOnClickListener { activity?.onBackPressedDispatcher?.onBackPressed() }
+            title.leftIb.setOnClickListener { if (isAdded) { requireActivity().onBackPressedDispatcher.onBackPressed() } }
             val callback: ItemTouchHelper.Callback = SimpleItemTouchHelperCallback(albumAdapter)
             itemTouchHelper = ItemTouchHelper(callback)
             itemTouchHelper.attachToRecyclerView(albumsRv)

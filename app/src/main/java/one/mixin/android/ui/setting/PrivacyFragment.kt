@@ -30,7 +30,7 @@ class PrivacyFragment : BaseFragment(R.layout.fragment_privacy) {
         super.onViewCreated(view, savedInstanceState)
         binding.apply {
             titleView.leftIb.setOnClickListener {
-                activity?.onBackPressedDispatcher?.onBackPressed()
+                if (isAdded) { requireActivity().onBackPressedDispatcher.onBackPressed() }
             }
             viewModel.countBlockingUsers().observe(
                 viewLifecycleOwner,

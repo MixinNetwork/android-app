@@ -42,7 +42,7 @@ class PinSettingFragment : BaseFragment(R.layout.fragment_pin_setting) {
         super.onViewCreated(view, savedInstanceState)
         binding.apply {
             title.apply {
-                leftIb.setOnClickListener { activity?.onBackPressedDispatcher?.onBackPressed() }
+                leftIb.setOnClickListener { if (isAdded) { requireActivity().onBackPressedDispatcher.onBackPressed() } }
             }
             changeTv.setOnClickListener {
                 TipActivity.show(requireActivity(), TipType.Change)

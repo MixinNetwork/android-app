@@ -66,7 +66,7 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
         super.onViewCreated(view, savedInstanceState)
         binding.apply {
             closeIv.setOnClickListener {
-                activity?.onBackPressedDispatcher?.onBackPressed()
+                if (isAdded) { requireActivity().onBackPressedDispatcher.onBackPressed() }
             }
 
             val tip1 = SpannableStringBuilder(getString(R.string.Please_use_when_network_is_connected))

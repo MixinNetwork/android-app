@@ -83,7 +83,7 @@ class PinLogsFragment : BaseFragment(R.layout.fragment_pin_logs) {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         binding.apply {
-            title.leftIb.setOnClickListener { activity?.onBackPressedDispatcher?.onBackPressed() }
+            title.leftIb.setOnClickListener { if (isAdded) { requireActivity().onBackPressedDispatcher.onBackPressed() } }
             list.adapter = adapter
             list.setOnScrollChangeListener { _, _, _, _, _ ->
                 if (isAdded) {

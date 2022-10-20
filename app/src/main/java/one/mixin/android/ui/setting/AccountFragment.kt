@@ -32,7 +32,7 @@ class AccountFragment : BaseFragment(R.layout.fragment_account) {
         super.onViewCreated(view, savedInstanceState)
         binding.apply {
             titleView.leftIb.setOnClickListener {
-                activity?.onBackPressedDispatcher?.onBackPressed()
+                if (isAdded) { requireActivity().onBackPressedDispatcher.onBackPressed() }
             }
             privacyRl.setOnClickListener {
                 navTo(PrivacyFragment.newInstance(), PrivacyFragment.TAG)

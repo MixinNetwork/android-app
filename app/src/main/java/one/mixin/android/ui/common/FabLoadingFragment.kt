@@ -32,7 +32,7 @@ abstract class FabLoadingFragment : BaseFragment {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        backIv.setOnClickListener { activity?.onBackPressedDispatcher?.onBackPressed() }
+        backIv.setOnClickListener { if (isAdded) { requireActivity().onBackPressedDispatcher.onBackPressed() } }
         verificationKeyboard.setKeyboardKeys(Constants.KEYS)
         verificationCover.isClickable = true
     }

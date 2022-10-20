@@ -84,7 +84,7 @@ class GroupInfoFragment : BaseFragment(R.layout.fragment_group_info) {
         super.onViewCreated(view, savedInstanceState)
         binding.titleView.leftIb.setOnClickListener {
             binding.searchEt.hideKeyboard()
-            activity?.onBackPressedDispatcher?.onBackPressed()
+            if (isAdded) { requireActivity().onBackPressedDispatcher.onBackPressed() }
         }
         headerBinding = ViewGroupInfoHeaderBinding.inflate(LayoutInflater.from(context), binding.groupInfoRv, false)
         adapter.headerView = headerBinding.root

@@ -39,7 +39,7 @@ class DiagnosisFragment : BaseFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         binding.titleView.titleTv.setText(R.string.Net_Diagnosis)
-        binding.titleView.leftIb.setOnClickListener { activity?.onBackPressedDispatcher?.onBackPressed() }
+        binding.titleView.leftIb.setOnClickListener { if (isAdded) { requireActivity().onBackPressedDispatcher.onBackPressed() } }
         binding.titleView.rightIb.setOnClickListener {
             context?.getClipboardManager()
                 ?.setPrimaryClip(ClipData.newPlainText(null, binding.resultTv.text))

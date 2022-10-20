@@ -52,7 +52,7 @@ class DepositFragment : BaseFragment() {
         val asset = requireArguments().getAsset()
         binding.apply {
             title.apply {
-                leftIb.setOnClickListener { activity?.onBackPressedDispatcher?.onBackPressed() }
+                leftIb.setOnClickListener { if (isAdded) { requireActivity().onBackPressedDispatcher.onBackPressed() } }
                 rightAnimator.setOnClickListener { context?.openUrl(Constants.HelpLink.DEPOSIT) }
             }
             title.setSubTitle(getString(R.string.Deposit), asset.symbol)

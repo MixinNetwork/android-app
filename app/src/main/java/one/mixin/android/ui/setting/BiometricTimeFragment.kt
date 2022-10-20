@@ -52,7 +52,7 @@ class BiometricTimeFragment : BaseFragment(R.layout.fragment_biometric_time) {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         binding.apply {
-            title.leftIb.setOnClickListener { activity?.onBackPressedDispatcher?.onBackPressed() }
+            title.leftIb.setOnClickListener { if (isAdded) { requireActivity().onBackPressedDispatcher.onBackPressed() } }
             lv.adapter = adapter
             val footer = layoutInflater.inflate(R.layout.view_biometric_footer, lv, false)
             lv.addFooterView(footer)
@@ -69,7 +69,7 @@ class BiometricTimeFragment : BaseFragment(R.layout.fragment_biometric_time) {
 
                         val pinSettingFragment = parentFragmentManager.findFragmentByTag(PinSettingFragment.TAG)
                         (pinSettingFragment as? PinSettingFragment)?.setTimeDesc()
-                        activity?.onBackPressedDispatcher?.onBackPressed()
+                        if (isAdded) { requireActivity().onBackPressedDispatcher.onBackPressed() }
                     }
                 }
                 bottomSheet.showNow(parentFragmentManager, PinBiometricsBottomSheetDialogFragment.TAG)

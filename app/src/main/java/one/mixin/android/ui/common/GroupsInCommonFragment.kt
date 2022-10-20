@@ -44,7 +44,7 @@ class GroupsInCommonFragment : BaseFragment(R.layout.fragment_groups_in_common) 
         super.onViewCreated(view, savedInstanceState)
         userId = requireNotNull(requireArguments().getString(ARGS_USER_ID))
         binding.apply {
-            titleView.leftIb.setOnClickListener { activity?.onBackPressedDispatcher?.onBackPressed() }
+            titleView.leftIb.setOnClickListener { if (isAdded) { requireActivity().onBackPressedDispatcher.onBackPressed() } }
             groupRv.adapter = groupAdapter
         }
 

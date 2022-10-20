@@ -218,7 +218,7 @@ class ForwardFragment : BaseFragment(R.layout.fragment_forward) {
         }
         binding.titleView.setOnClickListener {
             binding.searchEt.hideKeyboard()
-            activity?.onBackPressedDispatcher?.onBackPressed()
+            if (isAdded) { requireActivity().onBackPressedDispatcher.onBackPressed() }
         }
         binding.forwardRv.adapter = adapter
         binding.forwardRv.addItemDecoration(StickyRecyclerHeadersDecoration(adapter))

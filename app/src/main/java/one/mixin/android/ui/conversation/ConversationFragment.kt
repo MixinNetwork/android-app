@@ -1426,7 +1426,7 @@ class ConversationFragment() :
         initTouchHelper()
 
         binding.actionBar.leftIb.setOnClickListener {
-            activity?.onBackPressedDispatcher?.onBackPressed()
+            if (isAdded) { requireActivity().onBackPressedDispatcher.onBackPressed() }
         }
 
         if (isGroup) {
@@ -1471,7 +1471,7 @@ class ConversationFragment() :
             if (binding.toolView.isVisible) {
                 closeTool()
             } else {
-                activity?.onBackPressedDispatcher?.onBackPressed()
+                if (isAdded) { requireActivity().onBackPressedDispatcher.onBackPressed() }
             }
         }
         binding.toolView.deleteIv.setOnClickListener {

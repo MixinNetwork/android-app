@@ -90,7 +90,7 @@ class MobileFragment : BaseFragment(R.layout.fragment_mobile) {
             if (pin != null) {
                 mobileTitleTv.setText(R.string.Enter_new_phone_number)
             }
-            backIv.setOnClickListener { activity?.onBackPressedDispatcher?.onBackPressed() }
+            backIv.setOnClickListener { if (isAdded) { requireActivity().onBackPressedDispatcher.onBackPressed() } }
             countryIconIv.setOnClickListener { showCountry() }
             countryCodeEt.addTextChangedListener(countryCodeWatcher)
             countryCodeEt.showSoftInputOnFocus = false

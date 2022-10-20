@@ -46,7 +46,7 @@ abstract class BaseFriendsFragment<VH : BaseFriendsViewHolder> : BaseFragment() 
             titleView.titleTv.text = getString(getTitleResId())
             titleView.leftIb.setOnClickListener {
                 binding.searchEt.hideKeyboard()
-                activity?.onBackPressedDispatcher?.onBackPressed()
+                if (isAdded) { requireActivity().onBackPressedDispatcher.onBackPressed() }
             }
             friendsRv.adapter = adapter
             lifecycleScope.launch {

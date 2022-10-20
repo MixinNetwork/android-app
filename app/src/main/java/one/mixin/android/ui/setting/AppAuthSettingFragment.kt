@@ -31,7 +31,7 @@ class AppAuthSettingFragment : BaseFragment(R.layout.fragment_app_auth_setting) 
         super.onViewCreated(view, savedInstanceState)
         binding.apply {
             titleView.leftIb.setOnClickListener {
-                activity?.onBackPressedDispatcher?.onBackPressed()
+                if (isAdded) { requireActivity().onBackPressedDispatcher.onBackPressed() }
             }
             unlockSwitch.isClickable = false
             unlockRl.setOnClickListener {

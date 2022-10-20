@@ -71,7 +71,7 @@ class SettingStorageFragment : BaseFragment(R.layout.fragment_storage) {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         binding.apply {
-            titleView.leftIb.setOnClickListener { activity?.onBackPressedDispatcher?.onBackPressed() }
+            titleView.leftIb.setOnClickListener { if (isAdded) { requireActivity().onBackPressedDispatcher.onBackPressed() } }
             bRv.adapter = adapter
             menuView.adapter = menuAdapter
             titleView.rightIb.setOnClickListener {

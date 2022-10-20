@@ -75,7 +75,7 @@ class NewGroupFragment : BaseFragment() {
         val users: List<User> = requireArguments().getParcelableArrayList(ARGS_USERS)!!
         binding.titleView.leftIb.setOnClickListener {
             binding.nameDescEt.hideKeyboard()
-            activity?.onBackPressedDispatcher?.onBackPressed()
+            if (isAdded) { requireActivity().onBackPressedDispatcher.onBackPressed() }
         }
         binding.titleView.rightAnimator.setOnClickListener {
             createGroup()

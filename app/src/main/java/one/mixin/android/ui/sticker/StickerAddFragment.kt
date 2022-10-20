@@ -96,7 +96,7 @@ class StickerAddFragment : BaseFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         binding.titleView.rightTv.textColor = requireContext().colorFromAttribute(R.attr.text_primary)
-        binding.titleView.leftIb.setOnClickListener { activity?.onBackPressedDispatcher?.onBackPressed() }
+        binding.titleView.leftIb.setOnClickListener { if (isAdded) { requireActivity().onBackPressedDispatcher.onBackPressed() } }
         binding.titleView.rightAnimator.setOnClickListener {
             if (dialog == null) {
                 dialog = indeterminateProgressDialog(

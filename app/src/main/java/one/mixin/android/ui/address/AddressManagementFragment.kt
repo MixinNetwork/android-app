@@ -48,7 +48,7 @@ class AddressManagementFragment : BaseFragment(R.layout.fragment_address_managem
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        binding.titleView.leftIb.setOnClickListener { activity?.onBackPressedDispatcher?.onBackPressed() }
+        binding.titleView.leftIb.setOnClickListener { if (isAdded) { requireActivity().onBackPressedDispatcher.onBackPressed() } }
         binding.titleView.rightAnimator.setOnClickListener {
             view.navigate(
                 R.id.action_address_management_to_address_add,
@@ -98,7 +98,7 @@ class AddressManagementFragment : BaseFragment(R.layout.fragment_address_managem
                     transferFragment.showNow(parentFragmentManager, TransferFragment.TAG)
                     transferFragment.callback = object : TransferFragment.Callback {
                         override fun onSuccess() {
-                            activity?.onBackPressedDispatcher?.onBackPressed()
+                            if (isAdded) { requireActivity().onBackPressedDispatcher.onBackPressed() }
                         }
                     }
                 } else {

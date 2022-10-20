@@ -107,7 +107,7 @@ class GroupFragment : BaseFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         binding.titleView.leftIb.setOnClickListener {
-            activity?.onBackPressedDispatcher?.onBackPressed()
+            if (isAdded) { requireActivity().onBackPressedDispatcher.onBackPressed() }
         }
         if (from == TYPE_ADD || from == TYPE_REMOVE) {
             binding.titleView.rightTv.text = getString(R.string.Done)

@@ -43,7 +43,7 @@ class SettingBlockedFragment : BaseFragment(R.layout.fragment_blocked) {
         }
         binding.apply {
             blockedRv.adapter = adapter
-            titleView.leftIb.setOnClickListener { activity?.onBackPressedDispatcher?.onBackPressed() }
+            titleView.leftIb.setOnClickListener { if (isAdded) { requireActivity().onBackPressedDispatcher.onBackPressed() } }
             viewModel.blockingUsers(stopScope).observe(
                 viewLifecycleOwner
             ) {

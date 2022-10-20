@@ -43,7 +43,7 @@ class StickerStoreFragment : BaseFragment(R.layout.fragment_sticker_store) {
         binding.apply {
             titleView.apply {
                 leftIb.setOnClickListener {
-                    activity?.onBackPressedDispatcher?.onBackPressed()
+                    if (isAdded) { requireActivity().onBackPressedDispatcher.onBackPressed() }
                 }
                 rightAnimator.setOnClickListener {
                     navTo(StickerAlbumManagementFragment.newInstance(), StickerAlbumManagementFragment.TAG)

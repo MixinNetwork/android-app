@@ -32,7 +32,7 @@ class PhoneNumberSettingFragment : BaseFragment(R.layout.fragment_setting_phone_
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         binding.titleView.leftIb.setOnClickListener {
-            activity?.onBackPressedDispatcher?.onBackPressed()
+            if (isAdded) { requireActivity().onBackPressedDispatcher.onBackPressed() }
         }
         viewModel.initSearchPreference(requireContext())
             .observe(

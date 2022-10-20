@@ -56,7 +56,7 @@ class UserTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem
         super.onViewCreated(view, savedInstanceState)
         binding.transactionsRv.addItemDecoration(StickyRecyclerHeadersDecoration(adapter))
         binding.titleView.rightAnimator.visibility = View.GONE
-        binding.titleView.leftIb.setOnClickListener { activity?.onBackPressedDispatcher?.onBackPressed() }
+        binding.titleView.leftIb.setOnClickListener { if (isAdded) { requireActivity().onBackPressedDispatcher.onBackPressed() } }
         adapter.listener = this
         binding.transactionsRv.adapter = adapter
         dataObserver = Observer {

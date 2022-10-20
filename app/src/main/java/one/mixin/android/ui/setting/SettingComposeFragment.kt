@@ -210,7 +210,7 @@ class SettingComposeFragment : BaseFragment() {
                     val navController = rememberAnimatedNavController()
                     val navigationController = remember {
                         SettingNavControllerImpl(navController, closeActivity = {
-                            activity?.onBackPressedDispatcher?.onBackPressed()
+                            if (isAdded) { requireActivity().onBackPressedDispatcher.onBackPressed() }
                         })
                     }
 

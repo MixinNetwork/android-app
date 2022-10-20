@@ -138,7 +138,7 @@ class WalletPasswordFragment :
             }
             titleView.leftIb.setOnClickListener {
                 when (step) {
-                    STEP1 -> activity?.onBackPressedDispatcher?.onBackPressed()
+                    STEP1 -> if (isAdded) { requireActivity().onBackPressedDispatcher.onBackPressed() }
                     STEP2 -> toStep1()
                     STEP3 -> toStep2()
                     STEP4 -> toStep3()
