@@ -689,23 +689,11 @@ class ConversationFragment() :
                             true
                         )
                 ) {
-                    RxPermissions(requireActivity())
-                        .request(Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                        .autoDispose(stopScope)
-                        .subscribe(
-                            { granted ->
-                                if (granted) {
-                                    lifecycleScope.launch{
-                                        messageItem.saveToLocal(requireContext())
-                                    }
-                                } else {
-                                    requireContext().openPermissionSetting()
-                                }
-                            },
-                            {
-                                toast(R.string.Save_failure)
-                            }
-                        )
+                    if (requireContext().packageManager.canRequestPackageInstalls()) {
+                        requireContext().openMedia(messageItem)
+                    } else {
+                        startActivity(Intent(Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES))
+                    }
                 } else if (MimeTypes.isAudio(messageItem.mediaMimeType)) {
                     showBottomSheet(messageItem)
                 } else {
