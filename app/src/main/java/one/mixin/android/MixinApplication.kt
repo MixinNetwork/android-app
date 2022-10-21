@@ -29,6 +29,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import leakcanary.AppWatcher
+import leakcanary.LeakCanaryProcess
 import leakcanary.ReachabilityWatcher
 import one.mixin.android.crypto.MixinSignalProtocolLogger
 import one.mixin.android.crypto.PrivacyPreference.clearPrivacyPreferences
@@ -164,6 +165,9 @@ open class MixinApplication :
             }
             val watchersToInstall = AppWatcher.appDefaultWatchers(this, delegate)
             AppWatcher.manualInstall(application = this, watchersToInstall = watchersToInstall)
+            if (LeakCanaryProcess.isInAnalyzerProcess(this)) {
+                return
+            }
         } else {
             Timber.plant(FileLogTree())
         }
