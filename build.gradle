@@ -15,7 +15,7 @@ buildscript {
         ext.recyclerViewVersion = '1.3.0-rc01'
         ext.browserVersion = '1.4.0'
         ext.biometricVersion = '1.1.0'
-        ext.mdcVersion = '1.6.1'
+        ext.mdcVersion = '1.7.0'
         ext.exifinterfaceVersion = '1.3.4'
         ext.preferenceVersion = '1.2.0'
         ext.hiltVersion = '2.44'
