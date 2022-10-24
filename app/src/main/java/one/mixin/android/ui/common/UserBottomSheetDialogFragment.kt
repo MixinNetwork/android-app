@@ -236,7 +236,7 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
         setDetailsTv(binding.detailTv, binding.scrollView, conversationId)
         bottomViewModel.refreshUser(user.userId, true)
         bottomViewModel.loadFavoriteApps(user.userId)
-        bottomViewModel.observerFavoriteApps(user.userId).observe(viewLifecycleOwner) { apps ->
+        bottomViewModel.observerFavoriteApps(user.userId).observe(this@UserBottomSheetDialogFragment) { apps ->
             binding.avatarLl.isVisible = !apps.isNullOrEmpty()
             binding.avatarLl.setOnClickListener {
                 if (!apps.isNullOrEmpty()) {

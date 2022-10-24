@@ -126,7 +126,7 @@ class ProfileBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragmen
 
             bottomViewModel.loadFavoriteApps(account.userId)
             bottomViewModel.observerFavoriteApps(account.userId)
-                .observe(viewLifecycleOwner) { apps ->
+                .observe(this@ProfileBottomSheetDialogFragment) { apps ->
                     initMenu(account, apps)
                 }
         }
