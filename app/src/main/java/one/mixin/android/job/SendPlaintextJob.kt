@@ -17,7 +17,7 @@ class SendPlaintextJob(
     }
 
     override fun onRun() {
-        deliverNoThrow(blazeMessage)
+        jobSenderKey.deliverNoThrow(blazeMessage)
     }
 
     override fun cancel() {

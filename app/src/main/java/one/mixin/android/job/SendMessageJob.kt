@@ -230,7 +230,7 @@ open class SendMessageJob(
         val accountId = Session.getAccountId()!!
         var participantSessionKey = getBotSessionKey(accountId)
         if (participantSessionKey == null || participantSessionKey.publicKey.isNullOrBlank()) {
-            syncConversation(message.conversationId)
+            jobSenderKey.syncConversation(message.conversationId)
             participantSessionKey = getBotSessionKey(accountId)
         }
         // Workaround No session key, can't encrypt message, send PLAIN directly
@@ -301,7 +301,7 @@ open class SendMessageJob(
         if (!signalProtocol.isExistSenderKey(message.conversationId, message.userId)) {
             checkConversation(message.conversationId)
         }
-        checkSessionSenderKey(message.conversationId)
+        jobSenderKey.checkSessionSenderKey(message.conversationId)
         deliver(encryptNormalMessage(expireIn))
         callback(expireIn)
     }
