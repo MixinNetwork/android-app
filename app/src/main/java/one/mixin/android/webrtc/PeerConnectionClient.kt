@@ -70,38 +70,41 @@ class PeerConnectionClient(context: Context, private val events: PeerConnectionE
             if (!callPipShown.invoke()) {
                 requireNotNull(peerConnection).getStats { report ->
                     val map = report.statsMap
-                    map.entries.forEach { (k, v) ->
-                        if (k.startsWith("RTCMediaStreamTrack_receive")) {
-                            val trackIdentifier = v.members["trackIdentifier"]
-                            val audioLevel = v.members["audioLevel"] as? Double?
-                            var userId = receiverIdUserIdMap[trackIdentifier]
-                            if (callDebugState.reportEnable()) {
-                                Timber.d("$TAG_CALL userId: $userId, trackIdentifier: $trackIdentifier, audioLevel: $audioLevel")
-                            }
-                            if (userId != null) {
-                                RxBus.publish(VoiceEvent(userId, audioLevel ?: 0.0))
-                            } else {
-                                userId = receiverIdUserIdNoKeyMap[trackIdentifier]
+                    map.entries.forEach { (_, v) ->
+                        when (v.type) {
+                            "inbound-rtp" -> {
+                                val trackIdentifier = v.members["trackIdentifier"]
+                                val audioLevel = v.members["audioLevel"] as? Double?
+                                var userId = receiverIdUserIdMap[trackIdentifier]
+                                if (callDebugState.reportEnable()) {
+                                    Timber.d("$TAG_CALL userId: $userId, trackIdentifier: $trackIdentifier, audioLevel: $audioLevel")
+                                }
                                 if (userId != null) {
-                                    RxBus.publish(FrameKeyEvent(userId, false))
+                                    RxBus.publish(VoiceEvent(userId, audioLevel ?: 0.0))
+                                } else {
+                                    userId = receiverIdUserIdNoKeyMap[trackIdentifier]
+                                    if (userId != null) {
+                                        RxBus.publish(FrameKeyEvent(userId, false))
+                                    }
                                 }
                             }
-                        } else if (k.startsWith("RTCAudioSource")) {
-                            if (audioTrack?.enabled() == true) {
-                                val audioLevel = v.members["audioLevel"] as? Double?
-                                RxBus.publish(
-                                    VoiceEvent(
-                                        requireNotNull(Session.getAccountId()),
-                                        audioLevel ?: 0.0
+                            "media-source" -> {
+                                if (audioTrack?.enabled() == true) {
+                                    val audioLevel = v.members["audioLevel"] as? Double?
+                                    RxBus.publish(
+                                        VoiceEvent(
+                                            requireNotNull(Session.getAccountId()),
+                                            audioLevel ?: 0.0
+                                        )
                                     )
-                                )
-                            } else {
-                                RxBus.publish(
-                                    VoiceEvent(
-                                        requireNotNull(Session.getAccountId()),
-                                        0.0
+                                } else {
+                                    RxBus.publish(
+                                        VoiceEvent(
+                                            requireNotNull(Session.getAccountId()),
+                                            0.0
+                                        )
                                     )
-                                )
+                                }
                             }
                         }
                     }
