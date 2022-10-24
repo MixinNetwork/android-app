@@ -229,8 +229,8 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
                 if (MixinApplication.conversationId == null || conversationId != MixinApplication.conversationId) {
                     RxBus.publish(BotCloseEvent())
                     ConversationActivity.showAndClear(ctx, null, user.userId)
-                    dismiss()
                 }
+                dismiss()
             }
         }
         setDetailsTv(binding.detailTv, binding.scrollView, conversationId)
