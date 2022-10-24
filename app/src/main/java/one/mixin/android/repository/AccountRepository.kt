@@ -319,7 +319,7 @@ constructor(
 
     suspend fun getUserFavoriteApps(userId: String) = userService.getUserFavoriteApps(userId)
 
-    suspend fun getFavoriteAppsByUserId(userId: String) = appDao.getFavoriteAppsByUserId(userId)
+    fun observerFavoriteApps(userId: String) = appDao.observerFavoriteApps(userId)
 
     suspend fun getUnfavoriteApps() = appDao.getUnfavoriteApps(Session.getAccountId()!!)
 

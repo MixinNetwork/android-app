@@ -19,7 +19,6 @@ import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.autoDispose
 import com.yalantis.ucrop.UCrop
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.launch
 import one.mixin.android.Constants.Colors.LINK_COLOR
 import one.mixin.android.R
 import one.mixin.android.api.MixinResponse
@@ -125,15 +124,11 @@ class ProfileBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragmen
 
             createdTv.text = getString(R.string.Joined_in, account.createdAt.dayTime())
 
-            lifecycleScope.launch {
-                try {
-                    bottomViewModel.loadFavoriteApps((account.userId)) {
-                        initMenu(account, it)
-                    }
-                } catch (e: Exception) {
-                    ErrorHandler.handleError(e)
+            bottomViewModel.loadFavoriteApps(account.userId)
+            bottomViewModel.observerFavoriteApps(account.userId)
+                .observe(viewLifecycleOwner) { apps ->
+                    initMenu(account, apps)
                 }
-            }
         }
 
         bottomViewModel.observeSelf().observe(this@ProfileBottomSheetDialogFragment) {

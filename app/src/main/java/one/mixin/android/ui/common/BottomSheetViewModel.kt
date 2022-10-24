@@ -494,24 +494,15 @@ class BottomSheetViewModel @Inject internal constructor(
 
     fun observeSelf(): LiveData<User?> = userRepository.findSelf()
 
-    suspend fun loadFavoriteApps(userId: String, loadAction: (List<App>?) -> Unit) {
+    fun observerFavoriteApps(userId: String) = accountRepository.observerFavoriteApps(userId)
+    fun loadFavoriteApps(userId: String) {
         viewModelScope.launch(Dispatchers.IO) {
-            withContext(Dispatchers.Main) {
-                loadAction(
-                    accountRepository.getFavoriteAppsByUserId(
-                        userId
-                    )
-                )
-            }
             handleMixinResponse(
                 invokeNetwork = { accountRepository.getUserFavoriteApps(userId) },
                 successBlock = {
                     it.data?.let { data ->
                         accountRepository.insertFavoriteApps(userId, data)
                         refreshAppNotExist(data.map { app -> app.appId })
-                        withContext(Dispatchers.Main) {
-                            loadAction(accountRepository.getFavoriteAppsByUserId(userId))
-                        }
                     }
                 },
                 exceptionBlock = {
