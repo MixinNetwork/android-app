@@ -175,10 +175,6 @@ android {
         }
     }
 
-    lintOptions {
-        abortOnError false
-        ignore 'Overdraw'
-    }
     configurations {
         ktlint
     }
@@ -191,6 +187,10 @@ android {
 
     composeOptions {
         kotlinCompilerExtensionVersion '1.2.0'
+    }
+    lint {
+        abortOnError false
+        ignore 'Overdraw'
     }
 
     configurations.all {
