@@ -1087,4 +1087,6 @@
     <string name="Changing_PIN_terminated_unexpectedly">Changing PIN terminated unexpectedly, click \"Continue\" to complete the change</string>
     <string name="Syncing_and_verifying_TIP">Please keep the app in the foreground while verifying and synchronizing shard keys to the TIP network; do not force quit the app during the setup process.
 </string>
+    <string name="choose_network">Choose Network</string>
+    <string name="choose_network_content">Please select the network supported by Mixin to recharge, otherwise your recharge will not be received.</string>
 </resources>

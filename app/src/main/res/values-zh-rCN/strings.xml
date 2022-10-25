@@ -1064,4 +1064,6 @@
     <string name="Upgrading_TIP_terminated_unexpectedly">升级 TIP 意外中止，点继续完成 TIP 升级</string>
     <string name="Changing_PIN_terminated_unexpectedly">更新 PIN 意外中止，点继续完成 PIN 修改</string>
     <string name="Syncing_and_verifying_TIP">正在验证并同步密钥分片到 TIP 网络，请保持应用在前台，设置过程中不要强制关闭应用</string>
+    <string name="choose_network">选择网络</string>
+    <string name="choose_network_content">请选择 Mixin 支持的网络进行充值，否则您的充值将不会到账。</string>
 </resources>
