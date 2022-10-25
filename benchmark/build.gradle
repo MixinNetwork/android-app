@@ -4,7 +4,7 @@ plugins {
 }
 
 android {
-    namespace 'one.mixin.benchmark'
+    namespace 'one.mixin.messenger.benchmark'
     compileSdk 32
 
     compileOptions {
