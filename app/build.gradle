@@ -173,6 +173,11 @@ android {
             initWith debug
             applicationIdSuffix ".test"
         }
+        benchmark {
+            signingConfig signingConfigs.debug
+            matchingFallbacks = ['debug']
+            debuggable false
+        }
     }
 
     configurations {
