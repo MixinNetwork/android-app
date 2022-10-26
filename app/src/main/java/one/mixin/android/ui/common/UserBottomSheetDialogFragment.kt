@@ -235,37 +235,35 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
         }
         setDetailsTv(binding.detailTv, binding.scrollView, conversationId)
         bottomViewModel.refreshUser(user.userId, true)
-        lifecycleScope.launch {
-            if (!isAdded) return@launch
-
-            bottomViewModel.loadFavoriteApps(user.userId) { apps ->
-                binding.avatarLl.isVisible = !apps.isNullOrEmpty()
-                binding.avatarLl.setOnClickListener {
-                    if (!apps.isNullOrEmpty()) {
-                        AppListBottomSheetDialogFragment.newInstance(
-                            apps,
-                            getString(R.string.contact_share_bots_title, user.fullName)
-                        ).showNow(parentFragmentManager, AppListBottomSheetDialogFragment.TAG)
-                    }
+        bottomViewModel.loadFavoriteApps(user.userId)
+        bottomViewModel.observerFavoriteApps(user.userId).observe(this@UserBottomSheetDialogFragment) { apps ->
+            binding.avatarLl.isVisible = !apps.isNullOrEmpty()
+            binding.avatarLl.setOnClickListener {
+                if (!apps.isNullOrEmpty()) {
+                    AppListBottomSheetDialogFragment.newInstance(
+                        apps,
+                        getString(R.string.contact_share_bots_title, user.fullName)
+                    ).showNow(parentFragmentManager, AppListBottomSheetDialogFragment.TAG)
                 }
-                debugLongClick(
-                    binding.avatar,
-                    {
-                        context?.getClipboardManager()?.setPrimaryClip(
-                            ClipData.newPlainText(
-                                null,
-                                "mixin://users/${user.userId}"
-                            )
+            }
+            debugLongClick(
+                binding.avatar,
+                {
+                    context?.getClipboardManager()?.setPrimaryClip(
+                        ClipData.newPlainText(
+                            null,
+                            "mixin://users/${user.userId}"
                         )
-                    }
-                )
-                apps?.let {
-                    binding.avatarGroup.setApps(it)
-                    contentView.doOnPreDraw {
-                        behavior?.peekHeight =
-                            binding.title.height + binding.scrollContent.height -
-                            (menuListLayout?.height ?: 0) - if (menuListLayout != null) 38.dp else 8.dp
-                    }
+                    )
+                }
+            )
+            apps?.let {
+                binding.avatarGroup.setApps(it)
+                contentView.doOnPreDraw {
+                    behavior?.peekHeight =
+                        binding.title.height + binding.scrollContent.height -
+                            (menuListLayout?.height
+                                ?: 0) - if (menuListLayout != null) 38.dp else 8.dp
                 }
             }
         }

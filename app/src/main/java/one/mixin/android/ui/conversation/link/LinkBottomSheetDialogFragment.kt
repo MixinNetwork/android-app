@@ -689,7 +689,9 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 }
             }
             if (realFragmentCount <= 0) {
-                activity?.finish()
+                if (isAdded) {
+                    activity?.finish()
+                }
             }
         }
     }
