@@ -11,6 +11,25 @@ import one.mixin.android.R
 @SuppressLint("ParcelCreator")
 @Parcelize
 data class Scope(val name: String, val desc: String) : Parcelable {
+
+    constructor(ctx: Context, scope: String) : this(
+        scope,
+        when (scope) {
+            Scope.SCOPES[0] -> ctx.getString(R.string.auth_profile_content)
+            Scope.SCOPES[1] -> ctx.getString(R.string.auth_profile_content) //  Todo relpace
+            Scope.SCOPES[2] -> ctx.getString(R.string.auth_messages_represent_description)
+            Scope.SCOPES[3] -> ctx.getString(R.string.access_your_contacts_list)
+            Scope.SCOPES[4] -> ctx.getString(R.string.auth_assets_more) //  Todo relpace
+            Scope.SCOPES[5] -> ctx.getString(R.string.access_your_snapshots)
+            Scope.SCOPES[6] -> ctx.getString(R.string.access_your_bots_list)
+            Scope.SCOPES[7] -> ctx.getString(R.string.manage_all_your_bots)
+            Scope.SCOPES[8] -> ctx.getString(R.string.access_your_circle_list)
+            Scope.SCOPES[9] -> ctx.getString(R.string.manage_all_your_circles)
+            Scope.SCOPES[10] -> ctx.getString(R.string.access_your_collectibles)
+            else -> ctx.getString(R.string.OTHER)
+        }
+    )
+
     companion object {
         val DIFF_CALLBACK = object : DiffUtil.ItemCallback<Scope>() {
             override fun areItemsTheSame(oldItem: Scope, newItem: Scope) = oldItem == newItem

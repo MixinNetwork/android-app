@@ -311,7 +311,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                         val authorization = result.second as AuthorizationResponse
                         val assets = linkViewModel.simpleAssetsWithBalance()
                         activity?.let {
-                            val scopes = authorization.getScopes(it, assets)
+                            val scopes = authorization.getScopes(it)
                             AuthBottomSheetDialogFragment.newInstance(scopes, authorization)
                                 .showNow(
                                     parentFragmentManager,
