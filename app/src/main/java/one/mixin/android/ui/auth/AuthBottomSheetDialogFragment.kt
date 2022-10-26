@@ -16,7 +16,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.api.handleMixinResponse
-import one.mixin.android.api.request.AuthorizeRequest
 import one.mixin.android.api.response.AuthorizationResponse
 import one.mixin.android.databinding.FragmentAuthBinding
 import one.mixin.android.databinding.ItemThirdLoginScopeBinding
@@ -24,6 +23,7 @@ import one.mixin.android.extension.isWebUrl
 import one.mixin.android.extension.loadCircleImage
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
+import one.mixin.android.ui.common.PinInputBottomSheetDialogFragment
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.Scope
 import one.mixin.android.vo.Scope.Companion.SCOPES
@@ -88,43 +88,47 @@ class AuthBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 }
             }
             confirmAnim.setOnClickListener {
-                confirmAnim.displayedChild = POS_PB
-                confirmAnim.isEnabled = false
-                val request = AuthorizeRequest(auth.authorizationId, scopeAdapter.checkedScopes.toList())
-                lifecycleScope.launch {
-                    bottomViewModel // init on main thread
-                    handleMixinResponse(
-                        invokeNetwork = { bottomViewModel.authorize(request) },
-                        switchContext = Dispatchers.IO,
-                        successBlock = {
-                            val data = it.data ?: return@handleMixinResponse
-                            val redirectUri = data.app.redirectUri
-                            redirect(redirectUri, data.authorization_code)
-                            success = true
-                            dismiss()
-                        },
-                        doAfterNetworkSuccess = {
-                            confirmAnim.displayedChild = POS_TEXT
-                            confirmAnim.isEnabled = true
-                        },
-                        exceptionBlock = {
-                            confirmAnim.displayedChild = POS_TEXT
-                            confirmAnim.isEnabled = true
-                            return@handleMixinResponse false
-                        }
-                    )
-                }
+                PinInputBottomSheetDialogFragment.newInstance().setOnPinComplete { pin ->
+                    confirmAnim.displayedChild = POS_PB
+                    confirmAnim.isEnabled = false
+                    lifecycleScope.launch {
+                        bottomViewModel // init on main thread
+                        handleMixinResponse(
+                            invokeNetwork = {
+                                bottomViewModel.authorize(auth.authorizationId, scopeAdapter.checkedScopes.toList(), pin)
+                            },
+                            switchContext = Dispatchers.IO,
+                            successBlock = {
+                                val data = it.data ?: return@handleMixinResponse
+                                val redirectUri = data.app.redirectUri
+                                redirect(redirectUri, data.authorization_code)
+                                success = true
+                                dismiss()
+                            },
+                            doAfterNetworkSuccess = {
+                                confirmAnim.displayedChild = POS_TEXT
+                                confirmAnim.isEnabled = true
+                            },
+                            exceptionBlock = {
+                                confirmAnim.displayedChild = POS_TEXT
+                                confirmAnim.isEnabled = true
+                                return@handleMixinResponse false
+                            }
+                        )
+                    }
+                }.showNow(parentFragmentManager, PinInputBottomSheetDialogFragment.TAG)
             }
         }
     }
 
     override fun onDismiss(dialog: DialogInterface) {
         if (!success && isAdded) {
-            val request = AuthorizeRequest(auth.authorizationId, listOf())
             lifecycleScope.launch {
                 bottomViewModel // init on main thread
                 handleMixinResponse(
-                    invokeNetwork = { bottomViewModel.authorize(request) },
+                    invokeNetwork = {
+                        bottomViewModel.authorize(auth.authorizationId, listOf(), null)
+                    },
                     switchContext = Dispatchers.IO,
                     successBlock = {
                         val data = it.data ?: return@handleMixinResponse
