@@ -10,7 +10,7 @@
 
     <TextView
         android:id="@+id/choose_network"
-        android:text="@string/choose_network"
+        android:text="@string/Choose_Network"
         android:layout_width="wrap_content"
         android:padding="@dimen/margin16"
         android:textColor="?attr/text_primary"

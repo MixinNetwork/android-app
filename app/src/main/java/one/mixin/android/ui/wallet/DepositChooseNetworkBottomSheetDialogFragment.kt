@@ -10,8 +10,8 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.R
-import one.mixin.android.databinding.FragmentDepositChainBottomSheetBinding
-import one.mixin.android.databinding.ItemDepositChainBinding
+import one.mixin.android.databinding.FragmentDepositChooseNetworkBottomSheetBinding
+import one.mixin.android.databinding.ItemChooseNetworkBinding
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
@@ -20,11 +20,11 @@ import one.mixin.android.vo.AssetItem
 import one.mixin.android.widget.BottomSheet
 
 @AndroidEntryPoint
-class DepositChainBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
+class DepositChooseNetworkBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     companion object {
-        const val TAG = "DepositChainBottomSheetDialogFragment"
+        const val TAG = "DepositChooseNetworkBottomSheetDialogFragment"
         private const val ASSET = "asset"
-        fun newInstance(asset: AssetItem) = DepositChainBottomSheetDialogFragment().withArgs {
+        fun newInstance(asset: AssetItem) = DepositChooseNetworkBottomSheetDialogFragment().withArgs {
             putParcelable(ASSET, asset)
         }
     }
@@ -33,7 +33,7 @@ class DepositChainBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         requireArguments().getParcelable<AssetItem>(ASSET)
     }
 
-    private val binding by viewBinding(FragmentDepositChainBottomSheetBinding::inflate)
+    private val binding by viewBinding(FragmentDepositChooseNetworkBottomSheetBinding::inflate)
 
     private val adapter = AssetAdapter()
 
@@ -63,7 +63,7 @@ class DepositChainBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
 
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ItemHolder {
             return ItemHolder(
-                ItemDepositChainBinding.inflate(
+                ItemChooseNetworkBinding.inflate(
                     LayoutInflater.from(parent.context),
                     parent,
                     false
@@ -84,12 +84,12 @@ class DepositChainBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         }
     }
 
-    class ItemHolder(val binding: ItemDepositChainBinding) : RecyclerView.ViewHolder(binding.root) {
+    class ItemHolder(val binding: ItemChooseNetworkBinding) : RecyclerView.ViewHolder(binding.root) {
         fun bind(assetItem: AssetItem?, callback: (() -> Unit)? = null) {
             if (assetItem == null) {
                 binding.icon.isVisible = true
                 binding.assetIcon.isVisible = false
-                binding.content.setText(R.string.choose_network_content)
+                binding.content.setText(R.string.Choose_network_tip)
                 binding.root.setBackgroundResource(R.drawable.bg_round_chain_yellow)
                 binding.content.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14f)
             } else {

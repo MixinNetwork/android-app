@@ -66,7 +66,7 @@ class DepositFragment : BaseFragment() {
         }
         updateUI(asset)
         refreshAsset(asset)
-        DepositChainBottomSheetDialogFragment.newInstance(asset = asset)
+        DepositChooseNetworkBottomSheetDialogFragment.newInstance(asset = asset)
             .apply {
                 this.callback = {
                     val noTag = asset.getTag().isNullOrBlank()
