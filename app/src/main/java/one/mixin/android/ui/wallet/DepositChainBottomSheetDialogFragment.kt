@@ -50,10 +50,13 @@ class DepositChainBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             assetRv.adapter = adapter
             adapter.submitList(mutableListOf(asset))
             adapter.callback = {
+                callback?.invoke()
                 dismiss()
             }
         }
     }
+
+    var callback: (() -> Unit)? = null
 
     class AssetAdapter : ListAdapter<AssetItem, ItemHolder>(AssetItem.DIFF_CALLBACK) {
         var callback: (() -> Unit)? = null

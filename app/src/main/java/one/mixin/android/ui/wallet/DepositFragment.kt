@@ -67,6 +67,20 @@ class DepositFragment : BaseFragment() {
         updateUI(asset)
         refreshAsset(asset)
         DepositChainBottomSheetDialogFragment.newInstance(asset = asset)
+            .apply {
+                this.callback = {
+                    val noTag = asset.getTag().isNullOrBlank()
+                    if (noTag.not()) {
+                        alertDialogBuilder()
+                            .setTitle(R.string.Notice)
+                            .setCancelable(false)
+                            .setMessage(getString(R.string.deposit_notice, asset.symbol))
+                            .setPositiveButton(R.string.OK) { dialog, _ ->
+                                dialog.dismiss()
+                            }.show()
+                    }
+                }
+            }
             .showNow(childFragmentManager, TAG)
     }
 
@@ -125,16 +139,6 @@ class DepositFragment : BaseFragment() {
                 false,
                 if (noTag) null else getString(R.string.deposit_notice, asset.symbol)
             )
-        }
-
-        if (noTag.not()) {
-            alertDialogBuilder()
-                .setTitle(R.string.Notice)
-                .setCancelable(false)
-                .setMessage(getString(R.string.deposit_notice, asset.symbol))
-                .setPositiveButton(R.string.OK) { dialog, _ ->
-                    dialog.dismiss()
-                }.show()
         }
     }
 }
