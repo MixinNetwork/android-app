@@ -171,7 +171,17 @@ constructor(
         )
     }
 
-    suspend fun authorize(request: AuthorizeRequest) = authService.authorize(request)
+    suspend fun authorize(authorizationId: String, scopes: List<String>, pin: String?): MixinResponse<AuthorizationResponse> = withContext(Dispatchers.IO) {
+        authService.authorize(
+            AuthorizeRequest(
+                authorizationId,
+                scopes,
+                if (pin != null) {
+                    pinCipher.encryptPin(pin, TipBody.forOAuthApprove(authorizationId))
+                } else null
+            )
+        )
+    }
 
     fun deAuthorize(deauthorRequest: DeauthorRequest) = authService.deAuthorize(deauthorRequest)
 
