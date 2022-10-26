@@ -39,8 +39,7 @@ import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.ParticipantDao
 import one.mixin.android.db.RemoteMessageStatusDao
 import one.mixin.android.db.TranscriptMessageDao
-import one.mixin.android.db.cache.CacheDataBase
-import one.mixin.android.db.cache.CacheMessageDao
+import one.mixin.android.db.pending.PendingDatabase
 import one.mixin.android.db.deleteMessageById
 import one.mixin.android.event.ExpiredEvent
 import one.mixin.android.extension.base64Encode
@@ -113,16 +112,13 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
     lateinit var database: MixinDatabase
 
     @Inject
-    lateinit var cacheDataBase: CacheDataBase
+    lateinit var pendingDataBase: PendingDatabase
 
     @Inject
     lateinit var webSocket: ChatWebSocket
 
     @Inject
     lateinit var messageDao: MessageDao
-
-    @Inject
-    lateinit var cacheMessageDao: CacheMessageDao
 
     @Inject
     lateinit var transcriptMessageDao: TranscriptMessageDao
@@ -158,7 +154,7 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
     private val destroyScope = scope(Lifecycle.Event.ON_DESTROY)
 
     private val hedwig: Hedwig by lazy {
-        HedwigImp(database, cacheDataBase, callState, lifecycleScope)
+        HedwigImp(database, pendingDataBase, callState, lifecycleScope)
     }
 
     override fun onBind(intent: Intent): IBinder? {
@@ -291,11 +287,11 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
     }
 
     private fun startObserveAck() {
-        cacheDataBase.invalidationTracker.addObserver(ackObserver)
+        pendingDataBase.addObserver(ackObserver)
     }
 
     private fun stopObserveAck() {
-        cacheDataBase.invalidationTracker.removeObserver(ackObserver)
+        pendingDataBase.removeObserver(ackObserver)
     }
 
     private var ackJob: Job? = null
@@ -425,14 +421,14 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
                 BlazeAckMessage(msg.messageId, MessageStatus.READ.name, msg.expireAt)
             )
         }.apply {
-            cacheDataBase.jobDao().insertList(this)
+            pendingDataBase.insertJobs(this)
         }
         Session.getExtensionSessionId()?.let { _ ->
             val conversationId = list.first().conversationId
             list.map { msg ->
                 createAckJob(CREATE_MESSAGE, BlazeAckMessage(msg.messageId, MessageStatus.READ.name), conversationId)
             }.let { jobs ->
-                cacheDataBase.jobDao().insertList(jobs)
+                pendingDataBase.insertJobs(jobs)
             }
         }
         remoteMessageStatusDao.deleteByMessageIds(list.map { it.messageId })
@@ -490,7 +486,7 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
             val ids = messages.map { it.messageId }
             val cIds = messageDao.findConversationsByMessages(ids)
             ids.forEach { messageId ->
-                val messageMedia = cacheMessageDao.findMessageMediaById(messageId) ?: messageDao.findMessageMediaById(messageId)
+                val messageMedia = pendingDataBase.findMessageMediaById(messageId) ?: messageDao.findMessageMediaById(messageId)
                 Timber.e("Expired job: delete messages ${messageMedia?.type} - ${messageMedia?.messageId}")
                 messageMedia?.absolutePath(
                     MixinApplication.appContext,
@@ -502,7 +498,7 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
                 if (messageMedia?.isTranscript() == true) {
                     jobManager.addJobInBackground(TranscriptDeleteJob(listOf(messageId)))
                 }
-                cacheMessageDao.deleteById(messageId)
+                pendingDataBase.deletePendingMessageById(messageId)
                 database.deleteMessageById(messageId)
             }
             cIds.forEach { id ->

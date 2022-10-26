@@ -17,7 +17,7 @@ import one.mixin.android.crypto.Base64
 import one.mixin.android.crypto.SignalProtocol
 import one.mixin.android.crypto.requestResendKey
 import one.mixin.android.crypto.vo.RatchetStatus
-import one.mixin.android.db.cache.CacheMessage
+import one.mixin.android.db.pending.PendingMessage
 import one.mixin.android.db.insertAndNotifyConversation
 import one.mixin.android.db.insertMessage
 import one.mixin.android.db.insertNoReplace
@@ -1381,7 +1381,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
             message.status = status
         }
 
-        cacheMessageDao.insert(CacheMessage(message))
+        cacheMessageDao.insert(PendingMessage(message))
     }
     private fun findMessage(messageId: String): Message? {
         cacheMessageDao.findMessageById(messageId).let { msg ->

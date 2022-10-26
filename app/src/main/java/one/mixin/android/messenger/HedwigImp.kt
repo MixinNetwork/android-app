@@ -6,7 +6,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import one.mixin.android.db.MixinDatabase
-import one.mixin.android.db.cache.CacheDataBase
+import one.mixin.android.db.pending.PendingDatabase
 import one.mixin.android.job.DecryptCallMessage
 import one.mixin.android.job.DecryptMessage
 import one.mixin.android.job.pendingMessageStatusMap
@@ -21,29 +21,21 @@ import timber.log.Timber
 
 class HedwigImp(
     private val mixinDatabase: MixinDatabase,
-    private val cacheDataBase: CacheDataBase,
+    private val pendingDatabase: PendingDatabase,
     private val callState: CallStateLiveData,
     private val lifecycleScope: CoroutineScope
 ) : Hedwig {
 
     override fun takeOff() {
         startObserveFlood()
-        startObserveCache()
+        startObservePending()
     }
 
     override fun land() {
         stopObserveFlood()
-        stopObserveCache()
+        stopObservePending()
         floodJob?.cancel()
-        cacheJob?.cancel()
-    }
-
-    private val floodMessageDao by lazy {
-        cacheDataBase.floodMessageDao()
-    }
-
-    private val cacheMessageDao by lazy {
-        cacheDataBase.cacheMessageDao()
+        pendingJob?.cancel()
     }
 
     private val messageDao by lazy {
@@ -70,11 +62,11 @@ class HedwigImp(
     }
 
     private fun startObserveFlood() {
-        cacheDataBase.invalidationTracker.addObserver(floodObserver)
+        pendingDatabase.addObserver(floodObserver)
     }
 
     private fun stopObserveFlood() {
-        cacheDataBase.invalidationTracker.removeObserver(floodObserver)
+        pendingDatabase.removeObserver(floodObserver)
     }
 
     @Synchronized
@@ -100,7 +92,7 @@ class HedwigImp(
     private val callMessageDecrypt by lazy { DecryptCallMessage(callState, lifecycleScope) }
 
     private tailrec suspend fun processFloodMessage(): Boolean {
-        val messages = floodMessageDao.findFloodMessages()
+        val messages = pendingDatabase.findFloodMessages()
         return if (messages.isNotEmpty()) {
             messages.forEach { message ->
                 val data = gson.fromJson(message.data, BlazeMessageData::class.java)
@@ -109,7 +101,7 @@ class HedwigImp(
                 } else {
                     messageDecrypt.onRun(data)
                 }
-                floodMessageDao.delete(message)
+                pendingDatabase.deleteFloodMessage(message)
                 pendingMessageStatusMap.remove(data.messageId)
             }
             processFloodMessage()
@@ -118,31 +110,31 @@ class HedwigImp(
         }
     }
 
-    private var cacheJob: Job? = null
-    private val cacheObserver = object : InvalidationTracker.Observer("cache_messages") {
+    private var pendingJob: Job? = null
+    private val pendingObserver = object : InvalidationTracker.Observer("pending_messages") {
         override fun onInvalidated(tables: MutableSet<String>) {
-            runCacheJob()
+            runPendingJob()
         }
     }
 
-    private fun startObserveCache() {
-        cacheDataBase.invalidationTracker.addObserver(cacheObserver)
+    private fun startObservePending() {
+        pendingDatabase.addObserver(pendingObserver)
     }
 
-    private fun stopObserveCache() {
-        cacheDataBase.invalidationTracker.removeObserver(cacheObserver)
+    private fun stopObservePending() {
+        pendingDatabase.removeObserver(pendingObserver)
     }
 
     @Synchronized
-    private fun runCacheJob() {
-        if (cacheJob?.isActive == true) {
+    private fun runPendingJob() {
+        if (pendingJob?.isActive == true) {
             return
         }
-        cacheJob = lifecycleScope.launch(Dispatchers.IO) {
+        pendingJob = lifecycleScope.launch(Dispatchers.IO) {
             try {
-                val list = cacheMessageDao.getMessages()
+                val list = pendingDatabase.getPendingMessages()
                 messageDao.insertList(list)
-                cacheMessageDao.deleteByIds(list.map { it.messageId })
+                pendingDatabase.deletePendingMessageByIds(list.map { it.messageId })
                 list.groupBy { it.conversationId }.forEach { (conversationId, messages) ->
                     conversationExtDao.increment(conversationId, messages.size)
                     messages.filter { message ->
@@ -164,11 +156,11 @@ class HedwigImp(
                 }
 
                 if (list.size == 100) {
-                    runCacheJob()
+                    runPendingJob()
                 }
             } catch (e: Exception) {
                 Timber.e(e)
-                runCacheJob()
+                runPendingJob()
             }
         }
     }

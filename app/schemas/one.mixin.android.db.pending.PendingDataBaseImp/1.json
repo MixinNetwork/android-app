@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "b580a71677154635b40a94080bf9794c",
+    "identityHash": "16bac394d67f08c706d789aba47251b3",
     "entities": [
       {
         "tableName": "flood_messages",
@@ -37,7 +37,7 @@
         "foreignKeys": []
       },
       {
-        "tableName": "cache_messages",
+        "tableName": "pending_messages",
         "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `conversation_id` TEXT NOT NULL, `user_id` TEXT NOT NULL, `category` TEXT NOT NULL, `content` TEXT, `media_url` TEXT, `media_mime_type` TEXT, `media_size` INTEGER, `media_duration` TEXT, `media_width` INTEGER, `media_height` INTEGER, `media_hash` TEXT, `thumb_image` TEXT, `thumb_url` TEXT, `media_key` BLOB, `media_digest` BLOB, `media_status` TEXT, `status` TEXT NOT NULL, `created_at` TEXT NOT NULL, `action` TEXT, `participant_id` TEXT, `snapshot_id` TEXT, `hyperlink` TEXT, `name` TEXT, `album_id` TEXT, `sticker_id` TEXT, `shared_user_id` TEXT, `media_waveform` BLOB, `media_mine_type` TEXT, `quote_message_id` TEXT, `quote_content` TEXT, `caption` TEXT, PRIMARY KEY(`id`))",
         "fields": [
           {
@@ -330,7 +330,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'b580a71677154635b40a94080bf9794c')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '16bac394d67f08c706d789aba47251b3')"
     ]
   }
 }

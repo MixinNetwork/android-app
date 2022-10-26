@@ -1,4 +1,4 @@
-package one.mixin.android.db.cache
+package one.mixin.android.db.pending
 
 import androidx.room.ColumnInfo
 import androidx.room.Entity
@@ -7,9 +7,9 @@ import com.google.gson.annotations.SerializedName
 import one.mixin.android.vo.Message
 
 @Entity(
-    tableName = "cache_messages"
+    tableName = "pending_messages"
 )
-class CacheMessage(
+class PendingMessage(
     @PrimaryKey
     @SerializedName("id")
     @ColumnInfo(name = "id")
@@ -171,7 +171,7 @@ class CacheMessage(
     )
 }
 
-fun CacheMessage.toMessage() = Message(
+fun PendingMessage.toMessage() = Message(
     messageId,
     conversationId,
     userId,

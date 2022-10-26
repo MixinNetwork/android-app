@@ -7,7 +7,8 @@ import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import one.mixin.android.crypto.db.SignalDatabase
 import one.mixin.android.db.MixinDatabase
-import one.mixin.android.db.cache.CacheDataBase
+import one.mixin.android.db.pending.PendingDataBaseImp
+import one.mixin.android.db.pending.PendingDatabase
 import javax.inject.Singleton
 
 @InstallIn(SingletonComponent::class)
@@ -28,8 +29,7 @@ internal object BaseDbModule {
 
     @Singleton
     @Provides
-    fun provideCacheDb(app: Application, mixinDatabase: MixinDatabase) =
-        CacheDataBase.getDatabase(app.applicationContext, mixinDatabase.floodMessageDao(), mixinDatabase.jobDao())
+    fun providePendingDatabase(app: Application, mixinDatabase: MixinDatabase): PendingDatabase = PendingDataBaseImp.getDatabase(app.applicationContext, mixinDatabase.floodMessageDao(), mixinDatabase.jobDao())
 
     @Singleton
     @Provides
@@ -49,7 +49,8 @@ internal object BaseDbModule {
 
     @Singleton
     @Provides
-    fun provideCacheMessageDao(cacheDataBase: CacheDataBase) = cacheDataBase.cacheMessageDao()
+    fun provideCacheMessageDao(pendingDataBase: PendingDatabase) =
+        pendingDataBase.pendingMessageDao()
 
     @Singleton
     @Provides
@@ -93,11 +94,11 @@ internal object BaseDbModule {
 
     @Singleton
     @Provides
-    fun providesFloodMessageDao(db: CacheDataBase) = db.floodMessageDao()
+    fun providesFloodMessageDao(db: PendingDatabase) = db.floodMessageDao()
 
     @Singleton
     @Provides
-    fun providesJobDao(db: CacheDataBase) = db.jobDao()
+    fun providesJobDao(db: PendingDatabase) = db.jobDao()
 
     @Singleton
     @Provides
