@@ -55,8 +55,7 @@ fun PermissionListPage(
         }
 
         LaunchedEffect(auth) {
-            val assets = viewModel.simpleAssetsWithBalance()
-            scopes.value = auth.getScopes(context, assets)
+            scopes.value = auth.getScopes(context)
         }
 
         LazyColumn {
