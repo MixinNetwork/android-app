@@ -41,6 +41,7 @@ class DepositChainBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     override fun setupDialog(dialog: Dialog, style: Int) {
         super.setupDialog(dialog, style)
         contentView = binding.root
+        dialog.setCancelable(false)
         (dialog as BottomSheet).apply {
             setCustomView(contentView)
         }

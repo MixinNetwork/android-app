@@ -66,6 +66,8 @@ class DepositFragment : BaseFragment() {
         }
         updateUI(asset)
         refreshAsset(asset)
+        DepositChainBottomSheetDialogFragment.newInstance(asset = asset)
+            .showNow(childFragmentManager, TAG)
     }
 
     override fun onDestroyView() {
