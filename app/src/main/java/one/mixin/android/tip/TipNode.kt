@@ -27,7 +27,6 @@ import one.mixin.android.tip.exception.NotEnoughPartialsException
 import one.mixin.android.tip.exception.TipNodeException
 import retrofit2.HttpException
 import timber.log.Timber
-import java.util.Timer
 import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.atomic.AtomicInteger
 import javax.inject.Inject
@@ -149,13 +148,13 @@ class TipNode @Inject internal constructor(private val tipNodeService: TipNodeSe
         val completeCount = AtomicInteger(0)
 
         coroutineScope {
-            tipSigners.mapIndexed { index, signer ->
+            tipSigners.mapIndexed { _, signer ->
                 async(Dispatchers.IO) {
                     var retryCount = 0
                     while (retryCount < maxRequestCount) {
                         val (sign, code) = signTipNode(userSk, signer, ephemeral, watcher, nonce + retryCount, grace, assignee)
                         if (code == 429) {
-                            val errorMessage = "fetch tip node $index sign success"
+                            val errorMessage = "fetch tip node $signer.index sign success"
                             Timber.e(errorMessage)
                             callback?.onNodeFailed(signer.api, errorMessage)
                             return@async
@@ -164,11 +163,11 @@ class TipNode @Inject internal constructor(private val tipNodeService: TipNodeSe
                             signResult.add(sign)
                             val step = completeCount.incrementAndGet()
                             callback?.onNodeComplete(step, total)
-                            Timber.e("fetch tip node $index sign success")
+                            Timber.e("fetch tip node $signer.index sign success")
                             return@async
                         }
                         retryCount += 1
-                        Timber.e("fetch tip node $index failed, retry $retryCount")
+                        Timber.e("fetch tip node $signer.index failed, retry $retryCount")
                     }
                 }
             }.awaitAll()
