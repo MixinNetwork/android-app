@@ -36,7 +36,7 @@ class ChatRoomHelper @Inject internal constructor(@ApplicationScope private val 
         }
     }
 
-    fun markMentionRead(messageId:String,conversationId: String){
+    fun markMentionRead(messageId: String, conversationId: String) {
         applicationScope.launch {
             appDatabase.mentionMessageDao().suspendMarkMentionRead(messageId)
             appDatabase.jobDao().insertNoReplace(createAckJob(CREATE_MESSAGE, BlazeAckMessage(messageId, MessageMentionStatus.MENTION_READ.name), conversationId))
