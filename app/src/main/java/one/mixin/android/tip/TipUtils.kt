@@ -5,11 +5,13 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import one.mixin.android.R
 import one.mixin.android.api.MixinResponse
+import one.mixin.android.extension.getStackTraceString
 import one.mixin.android.tip.exception.DifferentIdentityException
 import one.mixin.android.tip.exception.NotAllSignerSuccessException
 import one.mixin.android.tip.exception.NotEnoughPartialsException
 import one.mixin.android.tip.exception.PinIncorrectException
 import one.mixin.android.tip.exception.TipNetworkException
+import one.mixin.android.util.reportException
 
 suspend fun <T> tipNetwork(network: suspend () -> MixinResponse<T>): Result<T> {
     return withContext(Dispatchers.IO) {
@@ -45,7 +47,8 @@ fun Throwable.getTipExceptionMsg(context: Context): String =
         is NotAllSignerSuccessException -> if (allFailure()) {
             context.getString(R.string.All_signer_failure)
         } else {
-            context.getString(R.string.Not_all_signer_success)
+            reportException(this)
+            context.getString(R.string.Not_all_signer_success) + this.getStackTraceString()
         }
         is DifferentIdentityException -> context.getString(R.string.PIN_not_same_as_last_time)
         else -> "${context.getString(R.string.Set_or_update_PIN_failed)}\n$localizedMessage"
