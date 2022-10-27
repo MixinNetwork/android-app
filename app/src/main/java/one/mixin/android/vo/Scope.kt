@@ -4,6 +4,8 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.os.Parcelable
 import androidx.annotation.DrawableRes
+import androidx.collection.ArrayMap
+import androidx.collection.arrayMapOf
 import androidx.recyclerview.widget.DiffUtil
 import kotlinx.parcelize.Parcelize
 import one.mixin.android.R
@@ -71,10 +73,10 @@ fun Scope.convertName(ctx: Context): String {
     return ctx.getString(id)
 }
 
-fun group(scopes: List<Scope>): Map<Int, List<Scope>> {
-    return scopes.groupBy(
-        { it.groupId() }, { it }
-    )
+fun groupScope(scopes: List<Scope>): ArrayMap<Int, MutableList<Scope>> {
+    return scopes.groupByTo(
+        arrayMapOf()
+    ) { it.groupId() }
 }
 
 @DrawableRes
@@ -83,6 +85,13 @@ fun Scope.groupId(): Int = when (name) {
     Scope.SCOPES[6], Scope.SCOPES[7] -> R.drawable.ic_auth_apps
     Scope.SCOPES[8], Scope.SCOPES[9] -> R.drawable.ic_auth_circles
     else -> R.drawable.ic_auth_others
+}
+
+fun getScopeGroupName(@DrawableRes id: Int) = when (id) {
+    R.drawable.ic_auth_wallet -> "Wallet"
+    R.drawable.ic_auth_apps -> "Apps"
+    R.drawable.ic_auth_circles -> "Circles"
+    else -> "Others"
 }
 
 fun scopeGroupName(id: Int) = when (id) {
