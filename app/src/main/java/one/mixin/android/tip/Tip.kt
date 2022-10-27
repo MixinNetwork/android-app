@@ -43,6 +43,7 @@ import one.mixin.android.tip.exception.TipNetworkException
 import one.mixin.android.tip.exception.TipNodeException
 import one.mixin.android.tip.exception.TipNullException
 import one.mixin.android.util.ErrorHandler
+import one.mixin.android.util.reportException
 import timber.log.Timber
 import java.io.IOException
 import java.security.MessageDigest
@@ -177,6 +178,9 @@ class Tip @Inject internal constructor(
                 override fun onNodeComplete(step: Int, total: Int) {
                     observers.forEach { it.onSyncing(step, total) }
                 }
+                override fun onNodeFailed(node: String, message: String) {
+                    reportException("$node $message", TipException())
+                }
             }
         ).sha3Sum256() // use sha3-256(recover-signature) as priv
 
@@ -216,6 +220,10 @@ class Tip @Inject internal constructor(
         val callback = object : TipNode.Callback {
             override fun onNodeComplete(step: Int, total: Int) {
                 observers.forEach { it.onSyncing(step, total) }
+            }
+
+            override fun onNodeFailed(node: String, message: String) {
+                reportException("$node $message", TipException())
             }
         }
         val aggSig = tipNode.sign(identityPriv, ephemeral, watcher, assigneePriv, failedSigners, callback = callback)

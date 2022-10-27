@@ -86,7 +86,7 @@ class TipNode @Inject internal constructor(private val tipNodeService: TipNodeSe
 
         if (!forRecover && data.size < nodeCount) {
             Timber.e("not all signer success ${data.size}")
-            throw NotAllSignerSuccessException(data.size)
+            throw NotAllSignerSuccessException("", data.size)
         }
 
         val (assignor, partials) = parseAssignorAndPartials(data)
@@ -154,20 +154,16 @@ class TipNode @Inject internal constructor(private val tipNodeService: TipNodeSe
                     while (retryCount < maxRequestCount) {
                         val (sign, code) = signTipNode(userSk, signer, ephemeral, watcher, nonce + retryCount, grace, assignee)
                         if (code == 429) {
-                            Timber.e("fetch tip node $index meet $code")
+                            callback?.onNodeFailed(signer.api, "fetch tip node $index meet $code")
                             return@async
                         }
-
                         if (sign != null) {
                             signResult.add(sign)
-
                             val step = completeCount.incrementAndGet()
                             callback?.onNodeComplete(step, total)
-
                             Timber.e("fetch tip node $index sign success")
                             return@async
                         }
-
                         retryCount += 1
                         Timber.e("fetch tip node $index failed, retry $retryCount")
                     }
@@ -295,5 +291,6 @@ class TipNode @Inject internal constructor(private val tipNodeService: TipNodeSe
 
     interface Callback {
         fun onNodeComplete(step: Int, total: Int)
+        fun onNodeFailed(node: String, message: String)
     }
 }

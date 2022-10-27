@@ -262,8 +262,10 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
                 contentView.doOnPreDraw {
                     behavior?.peekHeight =
                         binding.title.height + binding.scrollContent.height -
-                            (menuListLayout?.height
-                                ?: 0) - if (menuListLayout != null) 38.dp else 8.dp
+                        (
+                            menuListLayout?.height
+                                ?: 0
+                            ) - if (menuListLayout != null) 38.dp else 8.dp
                 }
             }
         }

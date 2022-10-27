@@ -1,6 +1,7 @@
 package one.mixin.android.tip.exception
 
 class NotAllSignerSuccessException(
+    val node: String,
     val successSignerSize: Int,
 ) : TipNodeException() {
     companion object {
