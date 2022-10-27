@@ -90,7 +90,7 @@ class DepositChooseNetworkBottomSheetDialogFragment : MixinBottomSheetDialogFrag
                 binding.icon.isVisible = true
                 binding.assetIcon.isVisible = false
                 binding.content.setText(R.string.Choose_network_tip)
-                binding.root.setBackgroundResource(R.drawable.bg_round_chain_yellow)
+                binding.root.setBackgroundResource(R.drawable.bg_round_choose_network_yellow)
                 binding.content.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14f)
             } else {
                 binding.icon.isVisible = false
@@ -100,7 +100,7 @@ class DepositChooseNetworkBottomSheetDialogFragment : MixinBottomSheetDialogFrag
                     R.drawable.ic_avatar_place_holder
                 )
                 binding.content.text = assetItem.chainName
-                binding.root.setBackgroundResource(R.drawable.bg_round_chain)
+                binding.root.setBackgroundResource(R.drawable.bg_round_choose_network)
                 binding.content.setTextSize(TypedValue.COMPLEX_UNIT_SP, 18f)
                 binding.root.setOnClickListener {
                     callback?.invoke()

@@ -6,13 +6,17 @@
     android:layout_height="wrap_content"
     android:background="@drawable/bg_upper_round"
     android:orientation="vertical"
-    android:paddingBottom="48dp">
+    android:paddingBottom="40dp">
 
     <TextView
         android:id="@+id/choose_network"
         android:text="@string/Choose_Network"
         android:layout_width="wrap_content"
-        android:padding="@dimen/margin16"
+        android:textStyle="bold"
+        android:layout_marginTop="@dimen/margin20"
+        android:layout_marginStart="@dimen/margin16"
+        android:layout_marginEnd="@dimen/margin16"
+        android:layout_marginBottom="@dimen/padding8"
         android:textColor="?attr/text_primary"
         android:textSize="18sp"
         android:layout_height="wrap_content" />
@@ -24,6 +28,6 @@
         android:background="?attr/bg_white"
         android:padding="@dimen/padding8"
         app:layoutManager="LinearLayoutManager"
-        tools:itemCount="3"
-        tools:listitem="@layout/item_deposit_chain" />
+        tools:itemCount="2"
+        tools:listitem="@layout/item_choose_network" />
 </LinearLayout>

@@ -54,6 +54,7 @@
         <item name="bg_post">@color/bgPost</item>
         <item name="bg_bubble">@color/bgBubble</item>
         <item name="bg_bubble_yellow">@color/bgBubbleYellow</item>
+        <item name="bg_choose_network">@color/bgChooseNetwork</item>
         <item name="bg_bot">@color/bgBot</item>
         <item name="bg_divider">@color/divider</item>
         <item name="bg_translucence">@color/bgTranslucence</item>
