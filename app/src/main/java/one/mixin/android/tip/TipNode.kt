@@ -27,6 +27,7 @@ import one.mixin.android.tip.exception.NotEnoughPartialsException
 import one.mixin.android.tip.exception.TipNodeException
 import retrofit2.HttpException
 import timber.log.Timber
+import java.util.Timer
 import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.atomic.AtomicInteger
 import javax.inject.Inject
@@ -154,7 +155,9 @@ class TipNode @Inject internal constructor(private val tipNodeService: TipNodeSe
                     while (retryCount < maxRequestCount) {
                         val (sign, code) = signTipNode(userSk, signer, ephemeral, watcher, nonce + retryCount, grace, assignee)
                         if (code == 429) {
-                            callback?.onNodeFailed(signer.api, "fetch tip node $index meet $code")
+                            val errorMessage = "fetch tip node $index sign success"
+                            Timber.e(errorMessage)
+                            callback?.onNodeFailed(signer.api, errorMessage)
                             return@async
                         }
                         if (sign != null) {
