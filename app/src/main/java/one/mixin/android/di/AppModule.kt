@@ -64,7 +64,6 @@ import one.mixin.android.db.MessageHistoryDao
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.ParticipantDao
 import one.mixin.android.db.ParticipantSessionDao
-import one.mixin.android.db.cache.CacheDataBase
 import one.mixin.android.db.pending.PendingDatabase
 import one.mixin.android.extension.filterNonAscii
 import one.mixin.android.extension.getDeviceId

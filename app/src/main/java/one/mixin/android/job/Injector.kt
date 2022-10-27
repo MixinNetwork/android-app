@@ -39,8 +39,8 @@ import one.mixin.android.db.StickerDao
 import one.mixin.android.db.TraceDao
 import one.mixin.android.db.TranscriptMessageDao
 import one.mixin.android.db.UserDao
-import one.mixin.android.db.pending.PendingMessageDao
 import one.mixin.android.db.insertUpdate
+import one.mixin.android.db.pending.PendingMessageDao
 import one.mixin.android.di.ApplicationScope
 import one.mixin.android.session.Session
 import one.mixin.android.util.ErrorHandler
@@ -63,7 +63,7 @@ open class Injector {
     @Inject
     lateinit var messageDao: MessageDao
     @Inject
-    lateinit var cacheMessageDao: PendingMessageDao
+    lateinit var pendingMessagesDao: PendingMessageDao
     @Inject
     lateinit var messageHistoryDao: MessageHistoryDao
     @Inject

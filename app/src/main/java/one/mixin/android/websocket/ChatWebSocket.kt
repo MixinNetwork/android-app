@@ -20,8 +20,8 @@ import one.mixin.android.api.ClientErrorException
 import one.mixin.android.api.service.AccountService
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.OffsetDao
-import one.mixin.android.db.pending.PendingDatabase
 import one.mixin.android.db.makeMessageStatus
+import one.mixin.android.db.pending.PendingDatabase
 import one.mixin.android.di.isNeedSwitch
 import one.mixin.android.extension.gzip
 import one.mixin.android.extension.networkConnected
