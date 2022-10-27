@@ -43,7 +43,6 @@ import one.mixin.android.tip.exception.TipNetworkException
 import one.mixin.android.tip.exception.TipNodeException
 import one.mixin.android.tip.exception.TipNullException
 import one.mixin.android.util.ErrorHandler
-import one.mixin.android.util.reportException
 import timber.log.Timber
 import java.io.IOException
 import java.security.MessageDigest

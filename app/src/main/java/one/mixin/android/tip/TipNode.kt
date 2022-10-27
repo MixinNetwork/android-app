@@ -159,7 +159,7 @@ class TipNode @Inject internal constructor(private val tipNodeService: TipNodeSe
                         val (sign, code) = signTipNode(userSk, signer, ephemeral, watcher, nonce + retryCount, grace, assignee)
                         if (code == 429 || code == 500) {
                             val errorMessage = "sign tip node failed, ${signer.index} ${signer.api} meet $code"
-                            nodeFailedInfo.append(errorMessage).appendLine()
+                            nodeFailedInfo.append("[${signer.index}, $code] ")
                             Timber.e(errorMessage)
 
                             if (code == 429) {
