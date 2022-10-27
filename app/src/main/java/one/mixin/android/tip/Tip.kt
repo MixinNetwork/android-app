@@ -178,8 +178,8 @@ class Tip @Inject internal constructor(
                 override fun onNodeComplete(step: Int, total: Int) {
                     observers.forEach { it.onSyncing(step, total) }
                 }
-                override fun onNodeFailed(node: String, message: String) {
-                    reportException("$node $message", TipException())
+                override fun onNodeFailed(info: String) {
+                    observers.forEach { it.onNodeFailed(info) }
                 }
             }
         ).sha3Sum256() // use sha3-256(recover-signature) as priv
@@ -222,8 +222,8 @@ class Tip @Inject internal constructor(
                 observers.forEach { it.onSyncing(step, total) }
             }
 
-            override fun onNodeFailed(node: String, message: String) {
-                reportException("$node $message", TipException())
+            override fun onNodeFailed(info: String) {
+                observers.forEach { it.onNodeFailed(info) }
             }
         }
         val aggSig = tipNode.sign(identityPriv, ephemeral, watcher, assigneePriv, failedSigners, callback = callback)
@@ -404,5 +404,7 @@ class Tip @Inject internal constructor(
     interface Observer {
         fun onSyncing(step: Int, total: Int)
         fun onSyncingComplete()
+
+        fun onNodeFailed(info: String)
     }
 }

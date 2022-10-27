@@ -115,9 +115,12 @@ class TipNode @Inject internal constructor(private val tipNodeService: TipNodeSe
 
                     while (retryCount < maxRequestCount) {
                         val (counter, code) = watchTipNode(signer, watcher)
-                        if (code == 429) {
-                            Timber.e("watch tip node $index meet $code")
-                            return@async
+                        if (code == 429 || code == 500) {
+                            Timber.e("watch tip node failed, $index ${signer.api} meet $code")
+
+                            if (code == 429) {
+                                return@async
+                            }
                         }
 
                         if (counter >= 0) {
@@ -141,6 +144,7 @@ class TipNode @Inject internal constructor(private val tipNodeService: TipNodeSe
 
     private suspend fun getNodeSigs(userSk: Scalar, tipSigners: List<TipSigner>, ephemeral: ByteArray, watcher: ByteArray, assignee: ByteArray?, callback: Callback?): List<TipSignRespData> {
         val signResult = CopyOnWriteArrayList<TipSignRespData>()
+        val nodeFailedInfo = StringBuffer()
         val nonce = currentTimeSeconds()
         val grace = ephemeralGrace
 
@@ -153,25 +157,32 @@ class TipNode @Inject internal constructor(private val tipNodeService: TipNodeSe
                     var retryCount = 0
                     while (retryCount < maxRequestCount) {
                         val (sign, code) = signTipNode(userSk, signer, ephemeral, watcher, nonce + retryCount, grace, assignee)
-                        if (code == 429) {
-                            val errorMessage = "fetch tip node $signer.index sign success"
+                        if (code == 429 || code == 500) {
+                            val errorMessage = "sign tip node failed, ${signer.index} ${signer.api} meet $code"
+                            nodeFailedInfo.append(errorMessage).appendLine()
                             Timber.e(errorMessage)
-                            callback?.onNodeFailed(signer.api, errorMessage)
-                            return@async
+
+                            if (code == 429) {
+                                return@async
+                            }
                         }
+
                         if (sign != null) {
                             signResult.add(sign)
                             val step = completeCount.incrementAndGet()
                             callback?.onNodeComplete(step, total)
-                            Timber.e("fetch tip node $signer.index sign success")
+                            Timber.e("sign tip node ${signer.index} sign success")
                             return@async
                         }
                         retryCount += 1
-                        Timber.e("fetch tip node $signer.index failed, retry $retryCount")
+                        Timber.e("sign tip node ${signer.index} failed, retry $retryCount")
                     }
                 }
             }.awaitAll()
         }
+
+        callback?.onNodeFailed(nodeFailedInfo.toString())
+
         return signResult
     }
 
@@ -293,6 +304,6 @@ class TipNode @Inject internal constructor(private val tipNodeService: TipNodeSe
 
     interface Callback {
         fun onNodeComplete(step: Int, total: Int)
-        fun onNodeFailed(node: String, message: String)
+        fun onNodeFailed(info: String)
     }
 }

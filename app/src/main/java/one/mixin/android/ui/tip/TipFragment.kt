@@ -30,12 +30,14 @@ import one.mixin.android.session.Session
 import one.mixin.android.tip.Tip
 import one.mixin.android.tip.exception.DifferentIdentityException
 import one.mixin.android.tip.exception.NotAllSignerSuccessException
+import one.mixin.android.tip.exception.TipException
 import one.mixin.android.tip.getTipExceptionMsg
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.PinInputBottomSheetDialogFragment
 import one.mixin.android.ui.common.VerifyBottomSheetDialogFragment
 import one.mixin.android.ui.setting.WalletPasswordFragment
 import one.mixin.android.util.BiometricUtil
+import one.mixin.android.util.reportException
 import one.mixin.android.util.viewBinding
 import timber.log.Timber
 import javax.inject.Inject
@@ -61,6 +63,8 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
     lateinit var accountService: AccountService
 
     private val tipBundle: TipBundle by lazy { requireArguments().getTipBundle() }
+
+    private var nodeFailedInfo = ""
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -276,6 +280,7 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
 
     private fun processTip() = lifecycleScope.launch {
         updateTipStep(Processing.Creating)
+        nodeFailedInfo = ""
 
         val tipCounter = Session.getTipCounter()
         val deviceId = tipBundle.deviceId
@@ -308,8 +313,9 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
         tipCounter: Int,
         nodeCounterBeforeRequest: Int,
     ) {
-        val errMsg = e.getTipExceptionMsg(requireContext())
+        val errMsg = e.getTipExceptionMsg(requireContext()) + "\n" + nodeFailedInfo
         toast(errMsg)
+        reportException(TipException(errMsg))
 
         if (e is DifferentIdentityException) {
             tipBundle.oldPin = null
@@ -430,6 +436,10 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
             lifecycleScope.launch {
                 updateTipStep(Processing.Updating)
             }
+        }
+
+        override fun onNodeFailed(info: String) {
+            nodeFailedInfo = info
         }
     }
 }
