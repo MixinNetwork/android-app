@@ -2,6 +2,7 @@ package one.mixin.android.ui.tip
 
 import android.os.Bundle
 import android.text.SpannableStringBuilder
+import android.text.method.ScrollingMovementMethod
 import android.view.View
 import androidx.core.text.color
 import androidx.core.view.isVisible
@@ -80,6 +81,8 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
                     append(getString(R.string.Process_can_not_be_stop))
                 }
             tipsTv.text = buildBulletLines(requireContext(), tip1, tip2, tip3)
+            bottomHintTv.movementMethod = ScrollingMovementMethod()
+            bottomHintTv.setTextIsSelectable(true)
 
             when (tipBundle.tipType) {
                 TipType.Create -> titleTv.setText(R.string.Create_PIN)
@@ -313,7 +316,11 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
         tipCounter: Int,
         nodeCounterBeforeRequest: Int,
     ) {
-        val errMsg = e.getTipExceptionMsg(requireContext()) + "\n" + nodeFailedInfo
+        val errMsg = if (nodeFailedInfo.isNotBlank()) {
+            nodeFailedInfo + "\n"
+        } else {
+            ""
+        } + e.getTipExceptionMsg(requireContext())
         toast(errMsg)
         reportException(TipException(errMsg))
 
