@@ -6,7 +6,6 @@ import android.animation.AnimatorSet
 import android.animation.ObjectAnimator
 import android.animation.ValueAnimator
 import android.annotation.SuppressLint
-import android.app.Dialog
 import android.content.Context
 import android.graphics.Point
 import android.graphics.drawable.ColorDrawable
@@ -30,9 +29,11 @@ import android.view.animation.DecelerateInterpolator
 import android.view.animation.LinearInterpolator
 import android.widget.FrameLayout
 import android.widget.TextView
+import androidx.appcompat.app.AppCompatDialog
 import androidx.appcompat.widget.LinearLayoutCompat
 import androidx.core.content.ContextCompat
 import androidx.core.view.doOnPreDraw
+import androidx.lifecycle.ViewTreeLifecycleOwner
 import one.mixin.android.R
 import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.displayMetrics
@@ -53,7 +54,7 @@ class BottomSheet(
     context: Context,
     private val focusable: Boolean,
     private val softInputResize: Boolean
-) : Dialog(context, R.style.TransparentDialog) {
+) : AppCompatDialog(context, R.style.TransparentDialog) {
 
     private var startAnimationRunnable: Runnable? = null
     private var curSheetAnimation: AnimatorSet? = null
@@ -88,7 +89,6 @@ class BottomSheet(
         }
 
     private inner class ContainerView(context: Context) : FrameLayout(context) {
-
         @SuppressLint("ClickableViewAccessibility")
         override fun onTouchEvent(ev: MotionEvent?): Boolean {
             if (ev != null && (ev.action == MotionEvent.ACTION_DOWN || ev.action == MotionEvent.ACTION_MOVE)) {
@@ -168,6 +168,7 @@ class BottomSheet(
                 or WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN
                 or WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS
         )
+        ViewTreeLifecycleOwner.set(container, this)
         container.background = backDrawable
         container.fitsSystemWindows = true
         container.setOnApplyWindowInsetsListener { v, insets ->

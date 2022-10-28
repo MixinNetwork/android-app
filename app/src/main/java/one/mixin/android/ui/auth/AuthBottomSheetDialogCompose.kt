@@ -2,6 +2,7 @@
 
 package one.mixin.android.ui.auth
 
+import GlideImage
 import androidx.collection.ArrayMap
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -10,13 +11,13 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
@@ -33,6 +34,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.google.accompanist.pager.ExperimentalPagerApi
@@ -40,32 +42,37 @@ import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.HorizontalPagerIndicator
 import com.google.accompanist.pager.rememberPagerState
 import kotlinx.coroutines.launch
+import one.mixin.android.MixinApplication
 import one.mixin.android.R
-import one.mixin.android.ui.setting.ui.compose.AppAvatarImage
 import one.mixin.android.ui.setting.ui.theme.MixinAppTheme
-import one.mixin.android.vo.App
 import one.mixin.android.vo.Scope
 import one.mixin.android.vo.getScopeGroupName
 import one.mixin.android.vo.groupScope
 import timber.log.Timber
 
 @Composable
-fun AuthBottomSheetDialogCompose(app: App, scopes: List<Scope>) {
+fun AuthBottomSheetDialogCompose(
+    name: String, iconUrl: String?, scopes: List<Scope>, onDismissRequest: () -> Unit,
+    onConfirmed: () -> Unit
+) {
     val scopeGroup = groupScope(scopes)
-
     MixinAppTheme {
-
         Column(
             modifier = Modifier
                 .clip(shape = RoundedCornerShape(topStart = 8.dp, topEnd = 8.dp))
                 .fillMaxWidth()
-                .fillMaxHeight()
+                .height(560.dp)
                 .background(MixinAppTheme.colors.background)
                 .padding(16.dp)
         ) {
             Image(
                 painter = painterResource(R.drawable.ic_circle_close),
-                modifier = Modifier.align(alignment = Alignment.End),
+                modifier = Modifier
+                    .align(alignment = Alignment.End)
+                    .clip(CircleShape)
+                    .clickable {
+                        // Todo
+                    },
                 contentDescription = null
             )
             Text(
@@ -78,22 +85,27 @@ fun AuthBottomSheetDialogCompose(app: App, scopes: List<Scope>) {
                 modifier = Modifier.align(alignment = CenterHorizontally),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                AppAvatarImage(
-                    app = app,
-                    size = 16.dp
-                )
+                if (iconUrl != null) {
+                    GlideImage(
+                        data = iconUrl,
+                        modifier = Modifier
+                            .size(16.dp)
+                            .clip(CircleShape),
+                        placeHolderPainter = painterResource(id = R.drawable.ic_avatar_place_holder)
+                    )
+                }
                 Text(
-                    app.name, color = MixinAppTheme.colors.textPrimary,
+                    name, color = MixinAppTheme.colors.textPrimary,
                 )
             }
-            ScopeWidget(scopeGroup)
+            ScopesContent(scopeGroup)
         }
     }
 }
 
 @OptIn(ExperimentalPagerApi::class)
 @Composable
-fun ScopeWidget(scopeGroup: ArrayMap<Int, MutableList<Scope>>) {
+fun ScopesContent(scopeGroup: ArrayMap<Int, MutableList<Scope>>) {
     val pagerState = rememberPagerState(initialPage = 0)
     val scope = rememberCoroutineScope()
     Column {
@@ -131,18 +143,20 @@ fun ScopeWidget(scopeGroup: ArrayMap<Int, MutableList<Scope>>) {
                         .background(MixinAppTheme.colors.backgroundWindow)
                 ) {
                     items(scopes) { scope ->
-                        CheckAuthorizationLayout(scope)
+                        ScopeCheckLayout(scope)
                     }
                 }
             }
         }
-        HorizontalPagerIndicator(
-            pagerState = pagerState,
-            modifier = Modifier
-                .align(CenterHorizontally),
-            activeColor = MixinAppTheme.colors.accent
-        )
-        Spacer(modifier = Modifier.height(16.dp))
+        if (scopeGroup.size > 1) {
+            HorizontalPagerIndicator(
+                pagerState = pagerState,
+                modifier = Modifier
+                    .align(CenterHorizontally),
+                activeColor = MixinAppTheme.colors.accent
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+        }
         Button(
             modifier = Modifier
                 .align(CenterHorizontally),
@@ -168,7 +182,7 @@ fun ScopeWidget(scopeGroup: ArrayMap<Int, MutableList<Scope>>) {
 }
 
 @Composable
-fun CheckAuthorizationLayout(scope: Scope) {
+fun ScopeCheckLayout(scope: Scope) {
     val checkedState = remember { mutableStateOf(true) }
     Row(
         modifier = Modifier
@@ -180,7 +194,9 @@ fun CheckAuthorizationLayout(scope: Scope) {
 
     ) {
         Image(
-            modifier = Modifier.padding(vertical = 3.dp).padding(end = 8.dp),
+            modifier = Modifier
+                .padding(vertical = 3.dp)
+                .padding(end = 8.dp),
             painter = painterResource(
                 id = if (checkedState.value) {
                     R.drawable.ic_selected
@@ -204,4 +220,26 @@ fun CheckAuthorizationLayout(scope: Scope) {
             )
         }
     }
+}
+
+@Composable
+@Preview
+fun AuthBottomSheetDialogComposePreview() {
+    AuthBottomSheetDialogCompose(
+        name = "Team Mixin",
+        iconUrl = "https://mixin-images.zeromesh.net/E2y0BnTopFK9qey0YI-8xV3M82kudNnTaGw0U5SU065864SsewNUo6fe9kDF1HIzVYhXqzws4lBZnLj1lPsjk-0=s256",
+        scopes = listOf(
+            Scope(MixinApplication.appContext, "PROFILE:READ"),
+            Scope(MixinApplication.appContext, "PHONE:READ"),
+            Scope(MixinApplication.appContext, "MESSAGES:REPRESENT"),
+            Scope(MixinApplication.appContext, "CONTACTS:READ"),
+            Scope(MixinApplication.appContext, "ASSETS:READ"),
+            Scope(MixinApplication.appContext, "SNAPSHOTS:READ"),
+            Scope(MixinApplication.appContext, "APPS:READ"),
+            Scope(MixinApplication.appContext, "APPS:WRITE"),
+            Scope(MixinApplication.appContext, "CIRCLES:READ"),
+            Scope(MixinApplication.appContext, "CIRCLES:WRITE"),
+            Scope(MixinApplication.appContext, "COLLECTIBLES:READ")
+        ), {}, {}
+    )
 }
