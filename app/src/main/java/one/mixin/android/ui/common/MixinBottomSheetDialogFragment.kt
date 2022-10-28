@@ -13,12 +13,12 @@ import one.mixin.android.R
 import one.mixin.android.ui.url.UrlInterpreterActivity
 import one.mixin.android.widget.BottomSheet
 import timber.log.Timber
-import java.lang.Exception
 
 abstract class MixinBottomSheetDialogFragment : DialogFragment() {
 
     protected lateinit var contentView: View
     protected val stopScope = scope(Lifecycle.Event.ON_STOP)
+    protected val destroyScope = scope(Lifecycle.Event.ON_DESTROY)
 
     protected val bottomViewModel by viewModels<BottomSheetViewModel>()
 
