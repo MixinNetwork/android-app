@@ -88,6 +88,11 @@ class TipNode @Inject internal constructor(private val tipNodeService: TipNodeSe
             Timber.e("not all signer success ${data.size}")
             throw NotAllSignerSuccessException("", data.size)
         }
+        
+        if (data.size < tipConfig.commitments.size) {
+            Timber.e("not all signer success ${data.size}")
+            throw NotAllSignerSuccessException("", data.size)
+        }
 
         val (assignor, partials) = parseAssignorAndPartials(data)
         Timber.e("after parseAssignorAndPartials")
