@@ -18,6 +18,7 @@ import one.mixin.android.api.service.TipNodeService
 import one.mixin.android.crypto.sha3Sum256
 import one.mixin.android.extension.base64RawEncode
 import one.mixin.android.extension.currentTimeSeconds
+import one.mixin.android.extension.getStackTraceString
 import one.mixin.android.extension.hexStringToByteArray
 import one.mixin.android.extension.toBeByteArray
 import one.mixin.android.extension.toHex
@@ -67,31 +68,37 @@ class TipNode @Inject internal constructor(private val tipNodeService: TipNodeSe
         }
 
         Timber.e("tip get node sig failedSigners size ${failedSigners?.size}, assigneeSk != null: ${assigneeSk != null}")
-        val data = if (!failedSigners.isNullOrEmpty() && assigneeSk != null) {
+        val pair = if (!failedSigners.isNullOrEmpty() && assigneeSk != null) {
             // should sign successful signers before failed signers,
             // prevent signing failed signers with different identities.
             val successfulSigners = tipConfig.signers - failedSigners
-            val successfulData = getNodeSigs(assigneeSk, successfulSigners, ephemeral, watcher, null, callback)
+            val successfulPair = getNodeSigs(assigneeSk, successfulSigners, ephemeral, watcher, null, callback)
+            val successfulData = successfulPair.first
             if (successfulData.isEmpty() || successfulData.any { it.counter <= 1 }) {
                 Timber.e("previously successful signers use different identities")
                 throw DifferentIdentityException()
             }
 
-            val failedData = getNodeSigs(userSk, failedSigners, ephemeral, watcher, assignee, callback)
+            val failedPair = getNodeSigs(userSk, failedSigners, ephemeral, watcher, assignee, callback)
+            val failedData = failedPair.first
             Timber.e("tip successful data size ${successfulData.size}, failed data size ${failedData.size}")
-            failedData + successfulData
+            val compositionError = listOfNotNull(successfulPair.second, failedPair.second).getRepresentative()
+            Pair(failedData + successfulData, compositionError)
         } else {
             getNodeSigs(userSk, tipConfig.signers, ephemeral, watcher, assignee, callback)
         }
 
+        val data = pair.first
+        val tipNodeError = pair.second
+
         if (!forRecover && data.size < nodeCount) {
             Timber.e("not all signer success ${data.size}")
-            throw NotAllSignerSuccessException("", data.size)
+            throw NotAllSignerSuccessException("", data.size, tipNodeError)
         }
-        
+
         if (data.size < tipConfig.commitments.size) {
             Timber.e("not all signer success ${data.size}")
-            throw NotAllSignerSuccessException("", data.size)
+            throw NotAllSignerSuccessException("", data.size, tipNodeError)
         }
 
         val (assignor, partials) = parseAssignorAndPartials(data)
@@ -99,7 +106,7 @@ class TipNode @Inject internal constructor(private val tipNodeService: TipNodeSe
 
         if (partials.size < tipConfig.commitments.size) {
             Timber.e("not enough partials ${partials.size} ${tipConfig.commitments.size}")
-            throw NotEnoughPartialsException(partials.size)
+            throw NotEnoughPartialsException(partials.size, tipNodeError)
         }
 
         val hexSigs = partials.joinToString(",") { it.toHex() }
@@ -147,8 +154,9 @@ class TipNode @Inject internal constructor(private val tipNodeService: TipNodeSe
         return result
     }
 
-    private suspend fun getNodeSigs(userSk: Scalar, tipSigners: List<TipSigner>, ephemeral: ByteArray, watcher: ByteArray, assignee: ByteArray?, callback: Callback?): List<TipSignRespData> {
+    private suspend fun getNodeSigs(userSk: Scalar, tipSigners: List<TipSigner>, ephemeral: ByteArray, watcher: ByteArray, assignee: ByteArray?, callback: Callback?): Pair<List<TipSignRespData>, TipNodeError?> {
         val signResult = CopyOnWriteArrayList<TipSignRespData>()
+        val nodeErrorList = CopyOnWriteArrayList<TipNodeError>()
         val nodeFailedInfo = StringBuffer()
         val nonce = currentTimeSeconds()
         val grace = ephemeralGrace
@@ -161,13 +169,14 @@ class TipNode @Inject internal constructor(private val tipNodeService: TipNodeSe
                 async(Dispatchers.IO) {
                     var retryCount = 0
                     while (retryCount < maxRequestCount) {
-                        val (sign, code) = signTipNode(userSk, signer, ephemeral, watcher, nonce + retryCount, grace, assignee)
-                        if (code == 429 || code == 500) {
-                            val errorMessage = "sign tip node failed, ${signer.index} ${signer.api} meet $code"
-                            nodeFailedInfo.append("[${signer.index}, $code] ")
+                        val (sign, tipNodeError) = signTipNode(userSk, signer, ephemeral, watcher, nonce + retryCount, grace, assignee)
+                        if (tipNodeError != null) {
+                            val errorMessage = "sign tip node failed, ${signer.index} ${signer.api} meet $tipNodeError"
+                            nodeFailedInfo.append("[${signer.index}, ${tipNodeError.code}] ")
+                            nodeErrorList.add(tipNodeError)
                             Timber.e(errorMessage)
 
-                            if (code == 429) {
+                            if (tipNodeError.notRetry()) {
                                 return@async
                             }
                         }
@@ -188,7 +197,7 @@ class TipNode @Inject internal constructor(private val tipNodeService: TipNodeSe
 
         callback?.onNodeFailed(nodeFailedInfo.toString())
 
-        return signResult
+        return Pair(signResult, nodeErrorList.getRepresentative())
     }
 
     private suspend fun watchTipNode(tipSigner: TipSigner, watcher: ByteArray): Pair<Int, Int> {
@@ -206,30 +215,38 @@ class TipNode @Inject internal constructor(private val tipNodeService: TipNodeSe
         }
     }
 
-    private suspend fun signTipNode(userSk: Scalar, tipSigner: TipSigner, ephemeral: ByteArray, watcher: ByteArray, nonce: Long, grace: Long, assignee: ByteArray?): Pair<TipSignRespData?, Int> {
+    private suspend fun signTipNode(userSk: Scalar, tipSigner: TipSigner, ephemeral: ByteArray, watcher: ByteArray, nonce: Long, grace: Long, assignee: ByteArray?): Pair<TipSignRespData?, TipNodeError?> {
         return try {
             val tipSignRequest = genTipSignRequest(userSk, tipSigner, ephemeral, watcher, nonce, grace, assignee)
-            val tipSignResponse = tipNodeService.sign(tipSignRequest, tipSigner.api)
-            if (tipSignResponse.error != null) {
-                return Pair(null, tipSignResponse.error!!.code)
+            val response = tipNodeService.sign(tipSignRequest, tipSigner.api)
+            val requestId = response.headers()["x-request-id"] ?: ""
+            if (response.isSuccessful.not()) {
+                return Pair(null, response.code().toTipNodeError(tipSigner.index, requestId, response.message()))
+            }
+            val tipSignResponse = requireNotNull(response.body()) {
+                "sign tipNode response success but body is null"
+            }
+            val resError = tipSignResponse.error
+            if (resError != null) {
+                return Pair(null, resError.code.toTipNodeError(tipSigner.index, requestId, resError.description))
             }
             val signerPk = Crypto.pubKeyFromBase58(tipSigner.identity)
             val msg = gson.toJson(tipSignResponse.data).toByteArray()
             try {
                 signerPk.verify(msg, tipSignResponse.signature.hexStringToByteArray())
             } catch (e: Exception) {
-                Timber.e("verify node response meet ${e.localizedMessage}")
-                return Pair(null, -1)
+                Timber.e("verify node response meet ${e.getStackTraceString()}")
+                return Pair(null, null)
             }
 
             val data = parseNodeSigResp(userSk, tipSigner, tipSignResponse)
-            Pair(data, -1)
+            Pair(data, null)
         } catch (e: Exception) {
             Timber.d(e)
             if (e is HttpException) {
-                Pair(null, e.code())
+                Pair(null, e.code().toTipNodeError(tipSigner.index, "", e.message))
             } else {
-                Pair(null, -1)
+                Pair(null, null)
             }
         }
     }

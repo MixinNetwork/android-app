@@ -31,14 +31,12 @@ import one.mixin.android.session.Session
 import one.mixin.android.tip.Tip
 import one.mixin.android.tip.exception.DifferentIdentityException
 import one.mixin.android.tip.exception.NotAllSignerSuccessException
-import one.mixin.android.tip.exception.TipException
 import one.mixin.android.tip.getTipExceptionMsg
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.PinInputBottomSheetDialogFragment
 import one.mixin.android.ui.common.VerifyBottomSheetDialogFragment
 import one.mixin.android.ui.setting.WalletPasswordFragment
 import one.mixin.android.util.BiometricUtil
-import one.mixin.android.util.reportException
 import one.mixin.android.util.viewBinding
 import timber.log.Timber
 import javax.inject.Inject
@@ -316,13 +314,8 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
         tipCounter: Int,
         nodeCounterBeforeRequest: Int,
     ) {
-        val errMsg = if (nodeFailedInfo.isNotBlank()) {
-            nodeFailedInfo + "\n"
-        } else {
-            ""
-        } + e.getTipExceptionMsg(requireContext())
+        val errMsg = e.getTipExceptionMsg(requireContext(), nodeFailedInfo)
         toast(errMsg)
-        reportException(TipException(errMsg))
 
         if (e is DifferentIdentityException) {
             tipBundle.oldPin = null

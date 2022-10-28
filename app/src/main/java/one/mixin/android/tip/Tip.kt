@@ -403,7 +403,6 @@ class Tip @Inject internal constructor(
     interface Observer {
         fun onSyncing(step: Int, total: Int)
         fun onSyncingComplete()
-
         fun onNodeFailed(info: String)
     }
 }
