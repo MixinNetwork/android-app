@@ -109,14 +109,14 @@ class TipNode @Inject internal constructor(private val tipNodeService: TipNodeSe
         val completeCount = AtomicInteger(0)
 
         coroutineScope {
-            tipConfig.signers.mapIndexed { index, signer ->
+            tipConfig.signers.mapIndexed { _, signer ->
                 async(Dispatchers.IO) {
                     var retryCount = 0
 
                     while (retryCount < maxRequestCount) {
                         val (counter, code) = watchTipNode(signer, watcher)
                         if (code == 429 || code == 500) {
-                            Timber.e("watch tip node failed, $index ${signer.api} meet $code")
+                            Timber.e("watch tip node failed, $signer.index ${signer.api} meet $code")
 
                             if (code == 429) {
                                 return@async
@@ -129,12 +129,12 @@ class TipNode @Inject internal constructor(private val tipNodeService: TipNodeSe
                             val step = completeCount.incrementAndGet()
                             callback?.onNodeComplete(step, total)
 
-                            Timber.e("watch tip node $index success")
+                            Timber.e("watch tip node $signer.index success")
                             return@async
                         }
 
                         retryCount++
-                        Timber.e("watch tip node $index failed, retry $retryCount")
+                        Timber.e("watch tip node $signer.index failed, retry $retryCount")
                     }
                 }
             }.awaitAll()
