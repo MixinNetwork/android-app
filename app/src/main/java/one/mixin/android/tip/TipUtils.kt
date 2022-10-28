@@ -48,11 +48,11 @@ fun Throwable.getTipExceptionMsg(context: Context): String =
             context.getString(R.string.All_signer_failure)
         } else {
             reportException(this)
-            context.getString(R.string.Not_all_signer_success) + this.getStackTraceString()
+            "${context.getString(R.string.Not_all_signer_success)}\n${this.getStackTraceString()}"
         }
         is DifferentIdentityException -> context.getString(R.string.PIN_not_same_as_last_time)
         else -> {
             reportException(this)
-            "${context.getString(R.string.Set_or_update_PIN_failed)}\n$localizedMessage"
+            "${context.getString(R.string.Set_or_update_PIN_failed)}\n${this.getStackTraceString()}"
         }
     }
