@@ -5,6 +5,7 @@ package one.mixin.android.ui.auth
 import androidx.collection.ArrayMap
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -21,6 +22,8 @@ import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Alignment.Companion.CenterHorizontally
@@ -111,14 +114,14 @@ fun ScopeWidget(scopeGroup: ArrayMap<Int, MutableList<Scope>>) {
                         .size(80.dp),
                     contentDescription = null
                 )
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(8.dp))
                 Text(
                     getScopeGroupName(groupId),
                     modifier = Modifier.align(alignment = CenterHorizontally),
                     color = MixinAppTheme.colors.textPrimary,
                     fontWeight = FontWeight.SemiBold, fontSize = 18.sp
                 )
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(8.dp))
 
                 LazyColumn(
                     modifier = Modifier
@@ -126,21 +129,9 @@ fun ScopeWidget(scopeGroup: ArrayMap<Int, MutableList<Scope>>) {
                         .fillMaxWidth()
                         .clip(shape = RoundedCornerShape(8.dp))
                         .background(MixinAppTheme.colors.backgroundWindow)
-                        .padding(16.dp)
                 ) {
                     items(scopes) { scope ->
-                        Column {
-                            Text(
-                                scope.name,
-                                fontSize = 14.sp,
-                                color = MixinAppTheme.colors.textPrimary
-                            )
-                            Text(
-                                scope.desc,
-                                fontSize = 14.sp,
-                                color = MixinAppTheme.colors.textSubtitle
-                            )
-                        }
+                        CheckAuthorizationLayout(scope)
                     }
                 }
             }
@@ -173,5 +164,44 @@ fun ScopeWidget(scopeGroup: ArrayMap<Int, MutableList<Scope>>) {
             )
         }
         Spacer(modifier = Modifier.height(30.dp))
+    }
+}
+
+@Composable
+fun CheckAuthorizationLayout(scope: Scope) {
+    val checkedState = remember { mutableStateOf(true) }
+    Row(
+        modifier = Modifier
+            .clickable {
+                checkedState.value = !checkedState.value
+            }
+            .padding(horizontal = 16.dp, vertical = 8.dp)
+            .fillMaxWidth()
+
+    ) {
+        Image(
+            modifier = Modifier.padding(vertical = 3.dp).padding(end = 8.dp),
+            painter = painterResource(
+                id = if (checkedState.value) {
+                    R.drawable.ic_selected
+                } else {
+                    R.drawable.ic_not_selected
+                }
+            ), contentDescription = null
+        )
+        Column(
+            modifier = Modifier.align(alignment = Alignment.Top)
+        ) {
+            Text(
+                scope.name,
+                fontSize = 14.sp,
+                color = MixinAppTheme.colors.textPrimary
+            )
+            Text(
+                scope.desc,
+                fontSize = 14.sp,
+                color = MixinAppTheme.colors.textSubtitle
+            )
+        }
     }
 }
