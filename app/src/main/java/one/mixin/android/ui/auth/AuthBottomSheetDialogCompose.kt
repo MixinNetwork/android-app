@@ -52,7 +52,10 @@ import timber.log.Timber
 
 @Composable
 fun AuthBottomSheetDialogCompose(
-    name: String, iconUrl: String?, scopes: List<Scope>, onDismissRequest: () -> Unit,
+    name: String,
+    iconUrl: String?,
+    scopes: List<Scope>,
+    onDismissRequest: () -> Unit,
     onConfirmed: () -> Unit
 ) {
     val scopeGroup = groupScope(scopes)
@@ -112,7 +115,8 @@ fun ScopesContent(scopeGroup: ArrayMap<Int, MutableList<Scope>>) {
         HorizontalPager(
             modifier = Modifier
                 .weight(1f)
-                .padding(16.dp), state = pagerState, count = scopeGroup.size,
+                .padding(16.dp),
+            state = pagerState, count = scopeGroup.size,
             verticalAlignment = Alignment.Top
         ) { page ->
             val groupId = scopeGroup.keyAt(page)
@@ -171,7 +175,8 @@ fun ScopesContent(scopeGroup: ArrayMap<Int, MutableList<Scope>>) {
                 } else {
                     Timber.e("Done")
                 }
-            }) {
+            }
+        ) {
             Text(
                 stringResource(id = R.string.Next),
                 color = Color.White
@@ -203,7 +208,8 @@ fun ScopeCheckLayout(scope: Scope) {
                 } else {
                     R.drawable.ic_not_selected
                 }
-            ), contentDescription = null
+            ),
+            contentDescription = null
         )
         Column(
             modifier = Modifier.align(alignment = Alignment.Top)
@@ -229,17 +235,18 @@ fun AuthBottomSheetDialogComposePreview() {
         name = "Team Mixin",
         iconUrl = "https://mixin-images.zeromesh.net/E2y0BnTopFK9qey0YI-8xV3M82kudNnTaGw0U5SU065864SsewNUo6fe9kDF1HIzVYhXqzws4lBZnLj1lPsjk-0=s256",
         scopes = listOf(
-            Scope(MixinApplication.appContext, "PROFILE:READ"),
-            Scope(MixinApplication.appContext, "PHONE:READ"),
-            Scope(MixinApplication.appContext, "MESSAGES:REPRESENT"),
-            Scope(MixinApplication.appContext, "CONTACTS:READ"),
-            Scope(MixinApplication.appContext, "ASSETS:READ"),
-            Scope(MixinApplication.appContext, "SNAPSHOTS:READ"),
-            Scope(MixinApplication.appContext, "APPS:READ"),
-            Scope(MixinApplication.appContext, "APPS:WRITE"),
-            Scope(MixinApplication.appContext, "CIRCLES:READ"),
-            Scope(MixinApplication.appContext, "CIRCLES:WRITE"),
-            Scope(MixinApplication.appContext, "COLLECTIBLES:READ")
-        ), {}, {}
+            Scope.generateScopeFromString(MixinApplication.appContext, "PROFILE:READ"),
+            Scope.generateScopeFromString(MixinApplication.appContext, "PHONE:READ"),
+            Scope.generateScopeFromString(MixinApplication.appContext, "MESSAGES:REPRESENT"),
+            Scope.generateScopeFromString(MixinApplication.appContext, "CONTACTS:READ"),
+            Scope.generateScopeFromString(MixinApplication.appContext, "ASSETS:READ"),
+            Scope.generateScopeFromString(MixinApplication.appContext, "SNAPSHOTS:READ"),
+            Scope.generateScopeFromString(MixinApplication.appContext, "APPS:READ"),
+            Scope.generateScopeFromString(MixinApplication.appContext, "APPS:WRITE"),
+            Scope.generateScopeFromString(MixinApplication.appContext, "CIRCLES:READ"),
+            Scope.generateScopeFromString(MixinApplication.appContext, "CIRCLES:WRITE"),
+            Scope.generateScopeFromString(MixinApplication.appContext, "COLLECTIBLES:READ")
+        ),
+        {}, {}
     )
 }

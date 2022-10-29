@@ -30,7 +30,7 @@ fun AuthorizationResponse.getScopes(
     val scopes = arrayListOf<Scope>()
     scopes.addAll(
         this.scopes.map {
-            Scope(ctx, it)
+            Scope.generateScopeFromString(ctx, it)
         }
     )
     return scopes

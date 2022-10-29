@@ -38,7 +38,6 @@ import one.mixin.android.ui.setting.ui.compose.SettingTile
 import one.mixin.android.ui.setting.ui.compose.rememberComposeScope
 import one.mixin.android.ui.setting.ui.theme.MixinAppTheme
 import one.mixin.android.vo.Scope
-import one.mixin.android.vo.convertName
 
 @Composable
 fun PermissionListPage(
@@ -84,7 +83,7 @@ private fun PermissionScopeItem(scope: Scope) {
     ) {
         val context = LocalContext.current
         Text(
-            text = scope.convertName(context),
+            text = scope.name,
             overflow = TextOverflow.Ellipsis,
             color = MixinAppTheme.colors.textPrimary,
             fontSize = 14.sp,

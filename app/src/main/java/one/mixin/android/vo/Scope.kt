@@ -12,26 +12,7 @@ import one.mixin.android.R
 
 @SuppressLint("ParcelCreator")
 @Parcelize
-data class Scope(val name: String, val desc: String) : Parcelable {
-
-    constructor(ctx: Context, scope: String) : this(
-        scope,
-        when (scope) {
-            Scope.SCOPES[0] -> ctx.getString(R.string.auth_profile_content)
-            Scope.SCOPES[1] -> ctx.getString(R.string.auth_profile_content) //  Todo relpace
-            Scope.SCOPES[2] -> ctx.getString(R.string.auth_messages_represent_description)
-            Scope.SCOPES[3] -> ctx.getString(R.string.access_your_contacts_list)
-            Scope.SCOPES[4] -> ctx.getString(R.string.auth_assets_more) //  Todo relpace
-            Scope.SCOPES[5] -> ctx.getString(R.string.access_your_snapshots)
-            Scope.SCOPES[6] -> ctx.getString(R.string.access_your_bots_list)
-            Scope.SCOPES[7] -> ctx.getString(R.string.manage_all_your_bots)
-            Scope.SCOPES[8] -> ctx.getString(R.string.access_your_circle_list)
-            Scope.SCOPES[9] -> ctx.getString(R.string.manage_all_your_circles)
-            Scope.SCOPES[10] -> ctx.getString(R.string.access_your_collectibles)
-            else -> ctx.getString(R.string.OTHER)
-        }
-    )
-
+data class Scope(val source: String, val name: String, val desc: String) : Parcelable {
     companion object {
         val DIFF_CALLBACK = object : DiffUtil.ItemCallback<Scope>() {
             override fun areItemsTheSame(oldItem: Scope, newItem: Scope) = oldItem == newItem
@@ -52,25 +33,58 @@ data class Scope(val name: String, val desc: String) : Parcelable {
             "CIRCLES:WRITE",
             "COLLECTIBLES:READ"
         )
-    }
-}
 
-fun Scope.convertName(ctx: Context): String {
-    val id = when (name) {
-        Scope.SCOPES[0] -> R.string.Public_profile
-        Scope.SCOPES[1] -> R.string.Phone_Number
-        Scope.SCOPES[2] -> R.string.Represent_Messages
-        Scope.SCOPES[3] -> R.string.Read_Contacts
-        Scope.SCOPES[4] -> R.string.Read_Assets
-        Scope.SCOPES[5] -> R.string.Read_Snapshots
-        Scope.SCOPES[6] -> R.string.Read_Bots
-        Scope.SCOPES[7] -> R.string.Manage_Bots
-        Scope.SCOPES[8] -> R.string.Read_Circles
-        Scope.SCOPES[9] -> R.string.Write_Circles
-        Scope.SCOPES[10] -> R.string.Read_Collectibles
-        else -> R.string.Public_profile
+        fun generateScopeFromString(ctx: Context, scope: String): Scope {
+            val (name, desc) = when (scope) {
+                SCOPES[0] -> Pair(
+                    ctx.getString(R.string.Read_your_public_profile),
+                    ctx.getString(R.string.Read_your_public_profile_desc)
+                )
+                SCOPES[1] -> Pair(
+                    ctx.getString(R.string.Read_your_phone_number),
+                    ctx.getString(R.string.Read_your_phone_number_desc)
+                )
+                SCOPES[2] -> Pair(
+                    ctx.getString(R.string.Represent_send_messages),
+                    ctx.getString(R.string.Represent_send_messages_desc)
+                )
+                SCOPES[3] -> Pair(
+                    ctx.getString(R.string.Read_your_contacts),
+                    ctx.getString(R.string.Read_your_contacts_desc)
+                )
+                SCOPES [4] -> Pair(
+                    ctx.getString(R.string.Read_your_asset),
+                    ctx.getString(R.string.Read_your_asset_desc)
+                )
+                SCOPES [5] -> Pair(
+                    ctx.getString(R.string.Read_your_snapshots),
+                    ctx.getString(R.string.Read_your_snapshots_desc)
+                )
+                SCOPES [6] -> Pair(
+                    ctx.getString(R.string.Read_your_apps),
+                    ctx.getString(R.string.Read_your_apps_desc)
+                )
+                SCOPES [7] -> Pair(
+                    ctx.getString(R.string.Manage_your_apps),
+                    ctx.getString(R.string.Manage_your_apps_desc)
+                )
+                SCOPES [8] -> Pair(
+                    ctx.getString(R.string.Read_your_circles),
+                    ctx.getString(R.string.Read_your_circles_desc)
+                )
+                SCOPES [9] -> Pair(
+                    ctx.getString(R.string.Manage_your_circles),
+                    ctx.getString(R.string.Manage_your_circles_desc)
+                )
+                SCOPES [10] -> Pair(
+                    ctx.getString(R.string.Read_your_NFTs),
+                    ctx.getString(R.string.Read_your_NFTs_desc)
+                )
+                else -> Pair(ctx.getString(R.string.OTHER), ctx.getString(R.string.OTHER))
+            }
+            return Scope(scope, name, desc)
+        }
     }
-    return ctx.getString(id)
 }
 
 fun groupScope(scopes: List<Scope>): ArrayMap<Int, MutableList<Scope>> {
@@ -80,7 +94,7 @@ fun groupScope(scopes: List<Scope>): ArrayMap<Int, MutableList<Scope>> {
 }
 
 @DrawableRes
-fun Scope.groupId(): Int = when (name) {
+fun Scope.groupId(): Int = when (source) {
     Scope.SCOPES[4], Scope.SCOPES[5], Scope.SCOPES[10] -> R.drawable.ic_auth_wallet
     Scope.SCOPES[6], Scope.SCOPES[7] -> R.drawable.ic_auth_apps
     Scope.SCOPES[8], Scope.SCOPES[9] -> R.drawable.ic_auth_circles
