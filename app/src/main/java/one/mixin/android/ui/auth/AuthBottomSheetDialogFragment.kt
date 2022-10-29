@@ -70,19 +70,16 @@ class AuthBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 iconUrl = "https://mixin-images.zeromesh.net/wRNZyklATas2I_f7QqoZzzi3MQd8GhaEG9guYh3tfFL5xRNoPuVjSo9yDwqlRMv_2PSPPdIEI3Iqya6U2d_0HsY=s256",
                 scopes,
                 {
-
                 }, {
-
-                }
+            }
             )
         }
-        doOnPreDraw{
+        doOnPreDraw {
             val params = (it.parent as View).layoutParams as? CoordinatorLayout.LayoutParams
             behavior = params?.behavior as? BottomSheetBehavior<*>
             behavior?.peekHeight = 560.dp
             behavior?.isDraggable = false
             behavior?.addBottomSheetCallback(bottomSheetBehaviorCallback)
-
         }
     }
 

@@ -36,7 +36,6 @@ import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.App
 import one.mixin.android.vo.Scope
-import one.mixin.android.vo.convertName
 
 @AndroidEntryPoint
 class PermissionListFragment : BaseFragment(R.layout.fragment_permission_list) {
@@ -150,7 +149,7 @@ class PermissionListFragment : BaseFragment(R.layout.fragment_permission_list) {
     class ItemHolder(private val itemBinding: ItemPermissionListBinding) : NormalHolder(itemBinding.root) {
         fun bindTo(scope: Scope) {
             itemBinding.apply {
-                nameTv.text = scope.convertName(itemView.context)
+                nameTv.text = scope.name
                 numberTv.text = scope.desc
             }
         }
