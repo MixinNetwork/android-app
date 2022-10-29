@@ -36,6 +36,7 @@ import one.mixin.android.db.PinMessageDao
 import one.mixin.android.db.RemoteMessageStatusDao
 import one.mixin.android.db.TranscriptMessageDao
 import one.mixin.android.db.insertMessage
+import one.mixin.android.db.insertNoReplace
 import one.mixin.android.db.provider.DataProvider
 import one.mixin.android.event.GroupEvent
 import one.mixin.android.extension.joinStar
@@ -63,12 +64,16 @@ import one.mixin.android.vo.Job
 import one.mixin.android.vo.Message
 import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.MessageMention
+import one.mixin.android.vo.MessageMentionStatus
 import one.mixin.android.vo.MessageMinimal
 import one.mixin.android.vo.Participant
 import one.mixin.android.vo.ParticipantRole
 import one.mixin.android.vo.ParticipantSession
 import one.mixin.android.vo.PinMessage
 import one.mixin.android.vo.SearchMessageItem
+import one.mixin.android.vo.createAckJob
+import one.mixin.android.websocket.BlazeAckMessage
+import one.mixin.android.websocket.CREATE_MESSAGE
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -368,6 +373,13 @@ internal constructor(
     suspend fun getAnnouncementByConversationId(conversationId: String) = conversationDao.getAnnouncementByConversationId(conversationId)
 
     fun getUnreadMentionMessageByConversationId(conversationId: String) = messageMentionDao.getUnreadMentionMessageByConversationId(conversationId)
+
+    suspend fun markMentionRead(messageId: String, conversationId: String) {
+        messageMentionDao.suspendMarkMentionRead(messageId)
+        withContext(Dispatchers.IO) {
+            jobDao.insertNoReplace(createAckJob(CREATE_MESSAGE, BlazeAckMessage(messageId, MessageMentionStatus.MENTION_READ.name), conversationId))
+        }
+    }
 
     suspend fun updateCircles(conversationId: String?, userId: String?, requests: List<ConversationCircleRequest>): MixinResponse<List<CircleConversation>> {
         return if (userId != null) {

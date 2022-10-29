@@ -8,7 +8,6 @@ import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
 import androidx.lifecycle.lifecycleScope
 import com.jakewharton.rxbinding3.widget.textChanges
-import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
@@ -101,7 +100,6 @@ class AssetListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 @SuppressLint("AutoDispose")
                 disposable = searchEt.et.textChanges().debounce(500L, TimeUnit.MILLISECONDS)
                     .observeOn(AndroidSchedulers.mainThread())
-                    .autoDispose(destroyScope)
                     .subscribe(
                         {
                             if (it.isNullOrBlank()) {

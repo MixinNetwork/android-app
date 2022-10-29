@@ -26,7 +26,6 @@ import androidx.core.view.isInvisible
 import androidx.core.view.isVisible
 import com.jakewharton.rxbinding3.view.clicks
 import com.jakewharton.rxbinding3.widget.textChanges
-import com.uber.autodispose.android.autoDispose
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
 import one.mixin.android.R
@@ -172,7 +171,6 @@ class MaterialSearchView : FrameLayout {
 
         disposable = binding.searchEt.textChanges().debounce(SEARCH_DEBOUNCE, TimeUnit.MILLISECONDS)
             .observeOn(AndroidSchedulers.mainThread())
-            .autoDispose(this)
             .subscribe(
                 {
                     this@MaterialSearchView.onTextChanged(it)

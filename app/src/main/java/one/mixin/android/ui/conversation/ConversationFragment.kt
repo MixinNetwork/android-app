@@ -1083,7 +1083,9 @@ class ConversationFragment() :
             .observeOn(AndroidSchedulers.mainThread())
             .autoDispose(destroyScope)
             .subscribe { event ->
-                chatRoomHelper.markMentionRead(event.messageId, event.conversationId)
+                lifecycleScope.launch {
+                    chatViewModel.markMentionRead(event.messageId, event.conversationId)
+                }
             }
         RxBus.listen(CallEvent::class.java)
             .observeOn(AndroidSchedulers.mainThread())
@@ -1909,7 +1911,9 @@ class ConversationFragment() :
                     }
                     val messageId = mentionMessages.first().messageId
                     scrollToMessage(messageId) {
-                        chatRoomHelper.markMentionRead(messageId, conversationId)
+                        lifecycleScope.launch {
+                            chatViewModel.markMentionRead(messageId, conversationId)
+                        }
                     }
                 }
             }

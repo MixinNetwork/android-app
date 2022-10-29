@@ -704,6 +704,10 @@ internal constructor(
 
     fun getUnreadMentionMessageByConversationId(conversationId: String) = conversationRepository.getUnreadMentionMessageByConversationId(conversationId)
 
+    suspend fun markMentionRead(messageId: String, conversationId: String) {
+        conversationRepository.markMentionRead(messageId, conversationId)
+    }
+
     suspend fun findLatestTrace(opponentId: String?, destination: String?, tag: String?, amount: String, assetId: String) =
         assetRepository.findLatestTrace(opponentId, destination, tag, amount, assetId)
 
