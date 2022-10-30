@@ -42,10 +42,10 @@
     <attr name="bg_block" format="color|reference" />
     <attr name="bg_post" format="color|reference" />
     <attr name="bg_bubble" format="color|reference" />
-    <attr name="bg_bubble_yellow" format="color|reference" />
     <attr name="bg_translucence" format="color|reference" />
     <attr name="bg_bot" format="color|reference" />
     <attr name="bg_choose_network" format="color|reference" />
+    <attr name="bg_choose_network_yellow" format="color|reference" />
     <attr name="bg_pin_content" format="reference" />
     <attr name="bg_flag" format="color|reference" />
 

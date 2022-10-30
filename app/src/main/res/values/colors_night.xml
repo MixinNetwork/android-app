@@ -30,7 +30,7 @@
     <color name="bgGrayNight">#3B3F44</color>
     <color name="bgBotNight">#4C5053</color>
     <color name="bgBubbleNight">#3B3F44</color>
-    <color name="bgBubbleYellowNight">#2EFFF7AD</color>
+    <color name="bgChooseNetworkYellowNight">#2EFFF7AD</color>
     <color name="bgChooseNetworkNight">#3B3F44</color>
     <color name="bgFlagNight">#3E4148</color>
     <color name="bgTranslucenceNight">#EE2c3136</color>
