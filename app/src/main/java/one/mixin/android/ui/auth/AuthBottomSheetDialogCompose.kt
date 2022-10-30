@@ -26,6 +26,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Alignment.Companion.CenterHorizontally
 import androidx.compose.ui.Modifier
@@ -48,7 +49,6 @@ import one.mixin.android.ui.setting.ui.theme.MixinAppTheme
 import one.mixin.android.vo.Scope
 import one.mixin.android.vo.getScopeGroupName
 import one.mixin.android.vo.groupScope
-import timber.log.Timber
 
 @Composable
 fun AuthBottomSheetDialogCompose(
@@ -56,7 +56,7 @@ fun AuthBottomSheetDialogCompose(
     iconUrl: String?,
     scopes: List<Scope>,
     onDismissRequest: () -> Unit,
-    onConfirmed: () -> Unit
+    onConfirmed: (Set<Scope>) -> Unit
 ) {
     val scopeGroup = groupScope(scopes)
     MixinAppTheme {
@@ -64,9 +64,9 @@ fun AuthBottomSheetDialogCompose(
             modifier = Modifier
                 .clip(shape = RoundedCornerShape(topStart = 8.dp, topEnd = 8.dp))
                 .fillMaxWidth()
-                .height(560.dp)
+                .height(690.dp)
                 .background(MixinAppTheme.colors.background)
-                .padding(16.dp)
+                .padding(horizontal = 8.dp, vertical = 16.dp)
         ) {
             Image(
                 painter = painterResource(R.drawable.ic_circle_close),
@@ -74,7 +74,7 @@ fun AuthBottomSheetDialogCompose(
                     .align(alignment = Alignment.End)
                     .clip(CircleShape)
                     .clickable {
-                        // Todo
+                        onDismissRequest()
                     },
                 contentDescription = null
             )
@@ -101,28 +101,33 @@ fun AuthBottomSheetDialogCompose(
                     name, color = MixinAppTheme.colors.textPrimary,
                 )
             }
-            ScopesContent(scopeGroup)
+            ScopesContent(scopeGroup, scopes, onConfirmed)
         }
     }
 }
 
 @OptIn(ExperimentalPagerApi::class)
 @Composable
-fun ScopesContent(scopeGroup: ArrayMap<Int, MutableList<Scope>>) {
+fun ScopesContent(
+    scopeGroup: ArrayMap<Int, MutableList<Scope>>,
+    scopes: List<Scope>,
+    onConfirmed: (Set<Scope>) -> Unit
+) {
     val pagerState = rememberPagerState(initialPage = 0)
     val scope = rememberCoroutineScope()
+    val savedScopes = rememberSaveable { scopes.toMutableSet() }
+
     Column {
         HorizontalPager(
             modifier = Modifier
                 .weight(1f)
-                .padding(16.dp),
+                .padding(vertical = 16.dp, horizontal = 12.dp),
             state = pagerState, count = scopeGroup.size,
             verticalAlignment = Alignment.Top
         ) { page ->
             val groupId = scopeGroup.keyAt(page)
-            val scopes = requireNotNull(scopeGroup[groupId])
+            val scopeItems = requireNotNull(scopeGroup[groupId])
             Column {
-                Spacer(modifier = Modifier.height(16.dp))
                 Image(
                     painter = painterResource(groupId),
                     modifier = Modifier
@@ -146,8 +151,14 @@ fun ScopesContent(scopeGroup: ArrayMap<Int, MutableList<Scope>>) {
                         .clip(shape = RoundedCornerShape(8.dp))
                         .background(MixinAppTheme.colors.backgroundWindow)
                 ) {
-                    items(scopes) { scope ->
-                        ScopeCheckLayout(scope)
+                    items(scopeItems) { scope ->
+                        ScopeCheckLayout(scope, savedScopes.contains(scope)) { checked ->
+                            if (checked) {
+                                savedScopes.add(scope)
+                            } else {
+                                savedScopes.remove(scope)
+                            }
+                        }
                     }
                 }
             }
@@ -166,14 +177,14 @@ fun ScopesContent(scopeGroup: ArrayMap<Int, MutableList<Scope>>) {
                 .align(CenterHorizontally),
             shape = RoundedCornerShape(20.dp),
             colors = ButtonDefaults.buttonColors(backgroundColor = MixinAppTheme.colors.accent),
-            contentPadding = PaddingValues(vertical = 12.dp, horizontal = 24.dp),
+            contentPadding = PaddingValues(vertical = 8.dp, horizontal = 28.dp),
             onClick = {
-                if (pagerState.currentPage < scopeGroup.keys.size) {
+                if (pagerState.currentPage < scopeGroup.keys.size - 1) {
                     scope.launch {
                         pagerState.animateScrollToPage(page = pagerState.currentPage + 1)
                     }
                 } else {
-                    Timber.e("Done")
+                    onConfirmed(savedScopes)
                 }
             }
         ) {
@@ -182,17 +193,18 @@ fun ScopesContent(scopeGroup: ArrayMap<Int, MutableList<Scope>>) {
                 color = Color.White
             )
         }
-        Spacer(modifier = Modifier.height(30.dp))
+        Spacer(modifier = Modifier.height(16.dp))
     }
 }
 
 @Composable
-fun ScopeCheckLayout(scope: Scope) {
-    val checkedState = remember { mutableStateOf(true) }
+fun ScopeCheckLayout(scope: Scope, state: Boolean, onCheckedChange: (checked: Boolean) -> Unit) {
+    val checkedState = remember { mutableStateOf(state) }
     Row(
         modifier = Modifier
             .clickable {
                 checkedState.value = !checkedState.value
+                onCheckedChange(checkedState.value)
             }
             .padding(horizontal = 16.dp, vertical = 8.dp)
             .fillMaxWidth()
@@ -216,7 +228,7 @@ fun ScopeCheckLayout(scope: Scope) {
         ) {
             Text(
                 scope.name,
-                fontSize = 14.sp,
+                fontSize = 16.sp,
                 color = MixinAppTheme.colors.textPrimary
             )
             Text(
