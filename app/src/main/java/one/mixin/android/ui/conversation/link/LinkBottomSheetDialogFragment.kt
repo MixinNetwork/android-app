@@ -312,7 +312,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                         val assets = linkViewModel.simpleAssetsWithBalance()
                         activity?.let {
                             val scopes = authorization.getScopes(it)
-                            AuthBottomSheetDialogFragment.newInstance(scopes, authorization)
+                            AuthBottomSheetDialogFragment.newInstance(scopes, authorization.authorizationId)
                                 .showNow(
                                     parentFragmentManager,
                                     AuthBottomSheetDialogFragment.TAG

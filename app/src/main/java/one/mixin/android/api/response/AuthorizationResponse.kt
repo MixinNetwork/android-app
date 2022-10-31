@@ -13,7 +13,8 @@ import one.mixin.android.vo.Scope
 class AuthorizationResponse(
     @SerializedName("authorization_id")
     val authorizationId: String,
-    val authorization_code: String,
+    @SerializedName("authorization_code")
+    val authorizationCode: String,
     val scopes: List<String>,
     @SerializedName("code_id")
     val codeId: String,

@@ -246,6 +246,15 @@ fun Context.dpToPx(dp: Float): Int {
     }
 }
 
+fun Context.pxToDp(px: Float): Float {
+    return if (px == 0f) {
+        0f
+    } else {
+        val scale = resources.displayMetrics.density
+        px / scale
+    }
+}
+
 fun Context.spToPx(sp: Float): Int {
     return TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, sp, resources.displayMetrics).toInt()
 }

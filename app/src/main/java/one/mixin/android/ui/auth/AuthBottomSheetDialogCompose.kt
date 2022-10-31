@@ -45,6 +45,7 @@ import com.google.accompanist.pager.rememberPagerState
 import kotlinx.coroutines.launch
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
+import one.mixin.android.extension.toast
 import one.mixin.android.ui.setting.ui.theme.MixinAppTheme
 import one.mixin.android.vo.Scope
 import one.mixin.android.vo.getScopeGroupName
@@ -203,8 +204,12 @@ fun ScopeCheckLayout(scope: Scope, state: Boolean, onCheckedChange: (checked: Bo
     Row(
         modifier = Modifier
             .clickable {
-                checkedState.value = !checkedState.value
-                onCheckedChange(checkedState.value)
+                if (scope.source == Scope.SCOPES[0]) {
+                    toast("R.string.require") // todo
+                } else {
+                    checkedState.value = !checkedState.value
+                    onCheckedChange(checkedState.value)
+                }
             }
             .padding(horizontal = 16.dp, vertical = 8.dp)
             .fillMaxWidth()

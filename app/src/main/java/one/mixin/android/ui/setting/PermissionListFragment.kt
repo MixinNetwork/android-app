@@ -27,7 +27,6 @@ import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.fullDate
 import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.withArgs
-import one.mixin.android.ui.auth.AuthBottomSheetDialogFragment.Companion.ARGS_AUTHORIZATION
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.recyclerview.FooterListAdapter
 import one.mixin.android.ui.common.recyclerview.NormalHolder
@@ -41,6 +40,7 @@ import one.mixin.android.vo.Scope
 class PermissionListFragment : BaseFragment(R.layout.fragment_permission_list) {
     companion object {
         const val TAG = "PermissionListFragment"
+        const val ARGS_AUTHORIZATION = "args_authorization_id"
         const val ARGS_APP = "args_app"
 
         fun newInstance(
