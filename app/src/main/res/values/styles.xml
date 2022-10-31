@@ -53,6 +53,8 @@
         <item name="bg_block">@color/bgBlock</item>
         <item name="bg_post">@color/bgPost</item>
         <item name="bg_bubble">@color/bgBubble</item>
+        <item name="bg_choose_network_yellow">@color/bgChooseNetworkYellow</item>
+        <item name="bg_choose_network">@color/bgChooseNetwork</item>
         <item name="bg_bot">@color/bgBot</item>
         <item name="bg_divider">@color/divider</item>
         <item name="bg_translucence">@color/bgTranslucence</item>
@@ -241,7 +243,7 @@
         <item name="android:windowIsFloating">false</item>
         <item name="android:windowContentOverlay">@null</item>
         <item name="android:windowIsTranslucent">true</item>
-        <item name="android:backgroundDimAmount">0.3</item>
+        <item name="android:backgroundDimAmount">0.6</item>
         <item name="android:windowAnimationStyle">@style/BottomSheet.Animation</item>
         <item name="android:colorBackgroundCacheHint">@null</item>
         <item name="bottomSheetStyle">@style/BottomSheetModal</item>

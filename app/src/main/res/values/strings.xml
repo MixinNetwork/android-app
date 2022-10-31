@@ -197,6 +197,8 @@
     <string name="Checking_payment_info">Checking payment info</string>
     <string name="Choose">Choose</string>
     <string name="Choose_folder">Choose folder</string>
+    <string name="Choose_Network">Choose Network</string>
+    <string name="Choose_network_tip">Please ensure the network you choose to deposit that Mixin supports. Otherwise, your deposit will not be credited.</string>
     <string name="circle_bottom">Create circle for different groups of chats and quickly switch between them</string>
     <string name="circle_delete_tip">Delete \"%1$s\" ?</string>
     <string name="circle_info">Create circles for different groups of chats and quickly switch between them</string>

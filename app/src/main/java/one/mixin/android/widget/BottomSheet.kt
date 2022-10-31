@@ -258,7 +258,7 @@ class BottomSheet(
         val animatorSet = AnimatorSet()
         animatorSet.playTogether(
             ObjectAnimator.ofFloat(sheetContainer, "translationY", 0f),
-            ObjectAnimator.ofInt(backDrawable, "alpha", 51)
+            ObjectAnimator.ofInt(backDrawable, "alpha", 153)
         )
         animatorSet.duration = 200
         animatorSet.startDelay = 20

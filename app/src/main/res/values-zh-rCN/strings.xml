@@ -192,6 +192,8 @@
     <string name="Checking_payment_info">请检查支付信息</string>
     <string name="Choose">选择</string>
     <string name="Choose_folder">选择文件夹</string>
+    <string name="Choose_Network">选择充值网络</string>
+    <string name="Choose_network_tip">请选择 Mixin 支持的网络进行充值，否则您的充值将不会到账。</string>
     <string name="circle_bottom">为不同对话创建圈子然后在它们之间快速切换</string>
     <string name="circle_delete_tip">确认删除 \"%1$s\"？</string>
     <string name="circle_info">新建一个圈子可以过滤会话</string>
