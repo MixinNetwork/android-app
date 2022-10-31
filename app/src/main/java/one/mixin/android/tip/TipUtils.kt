@@ -10,6 +10,7 @@ import one.mixin.android.tip.exception.DifferentIdentityException
 import one.mixin.android.tip.exception.NotAllSignerSuccessException
 import one.mixin.android.tip.exception.NotEnoughPartialsException
 import one.mixin.android.tip.exception.PinIncorrectException
+import one.mixin.android.tip.exception.TipException
 import one.mixin.android.tip.exception.TipNetworkException
 import one.mixin.android.util.reportException
 
@@ -40,19 +41,43 @@ suspend fun <T> tipNetworkNullable(network: suspend () -> MixinResponse<T>): Res
     }
 }
 
-fun Throwable.getTipExceptionMsg(context: Context): String =
-    when (this) {
+fun Throwable.getTipExceptionMsg(context: Context, nodeFailedInfo: String? = null): String {
+    var msg = when (this) {
         is PinIncorrectException -> context.getString(R.string.PIN_incorrect)
-        is NotEnoughPartialsException -> context.getString(R.string.Not_enough_partials)
-        is NotAllSignerSuccessException -> if (allFailure()) {
-            context.getString(R.string.All_signer_failure)
-        } else {
-            reportException(this)
-            "${context.getString(R.string.Not_all_signer_success)}\n${this.getStackTraceString()}"
-        }
+        is NotEnoughPartialsException -> this.getMsg(context)
+        is NotAllSignerSuccessException -> this.getMsg(context)
         is DifferentIdentityException -> context.getString(R.string.PIN_not_same_as_last_time)
         else -> {
-            reportException(this)
             "${context.getString(R.string.Set_or_update_PIN_failed)}\n${this.getStackTraceString()}"
+        }
+    }
+    msg = if (nodeFailedInfo.isNullOrBlank().not()) {
+        nodeFailedInfo + "\n"
+    } else {
+        ""
+    } + msg
+
+    reportException(TipException(msg))
+
+    return msg
+}
+
+fun NotEnoughPartialsException.getMsg(context: Context): String =
+    when (tipNodeError) {
+        is TooManyRequestError -> context.getString(R.string.error_too_many_request)
+        is IncorrectPinError -> context.getString(R.string.PIN_incorrect)
+        else -> context.getString(R.string.Not_enough_partials)
+    }
+
+fun NotAllSignerSuccessException.getMsg(context: Context): String =
+    if (tipNodeError is TooManyRequestError) {
+        context.getString(R.string.error_too_many_request)
+    } else if (tipNodeError is IncorrectPinError) {
+        context.getString(R.string.PIN_incorrect)
+    } else {
+        if (allFailure()) {
+            context.getString(R.string.All_signer_failure)
+        } else {
+            "${context.getString(R.string.Not_all_signer_success)}\n${this.getStackTraceString()}"
         }
     }
