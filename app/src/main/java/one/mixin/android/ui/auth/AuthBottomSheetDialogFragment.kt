@@ -2,6 +2,7 @@ package one.mixin.android.ui.auth
 
 import android.annotation.SuppressLint
 import android.app.Dialog
+import android.content.DialogInterface
 import android.content.Intent
 import android.net.Uri
 import android.os.Build
@@ -14,16 +15,22 @@ import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.view.doOnPreDraw
+import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import one.mixin.android.R
-import one.mixin.android.api.response.AuthorizationResponse
+import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.extension.booleanFromAttribute
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.isWebUrl
 import one.mixin.android.extension.withArgs
+import one.mixin.android.ui.common.BottomSheetViewModel
+import one.mixin.android.ui.common.PinInputBottomSheetDialogFragment
 import one.mixin.android.util.SystemUIManager
 import one.mixin.android.vo.Scope
 import timber.log.Timber
@@ -35,12 +42,12 @@ class AuthBottomSheetDialogFragment : BottomSheetDialogFragment() {
         const val TAG = "AuthBottomSheetDialogFragment"
 
         const val ARGS_SCOPES = "args_scopes"
-        const val ARGS_AUTHORIZATION = "args_authorization"
+        const val ARGS_AUTHORIZATION_ID = "args_authorization_id"
 
-        fun newInstance(scopes: ArrayList<Scope>, auth: AuthorizationResponse?) =
+        fun newInstance(scopes: ArrayList<Scope>, auth: String) =
             AuthBottomSheetDialogFragment().withArgs {
                 putParcelableArrayList(ARGS_SCOPES, scopes)
-                putParcelable(ARGS_AUTHORIZATION, auth)
+                putString(ARGS_AUTHORIZATION_ID, auth)
             }
     }
 
@@ -48,14 +55,16 @@ class AuthBottomSheetDialogFragment : BottomSheetDialogFragment() {
         requireArguments().getParcelableArrayList(ARGS_SCOPES)!!
     }
 
-    private val auth: AuthorizationResponse by lazy {
-        requireArguments().getParcelable(ARGS_AUTHORIZATION)!!
+    private val authorizationId: String by lazy {
+        requireArguments().getString(ARGS_AUTHORIZATION_ID)!!
     }
 
     private var success = false
 
     private var behavior: BottomSheetBehavior<*>? = null
     override fun getTheme() = R.style.AppTheme_Dialog
+
+    private val bottomViewModel by viewModels<BottomSheetViewModel>()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -66,15 +75,41 @@ class AuthBottomSheetDialogFragment : BottomSheetDialogFragment() {
         setContent {
             AuthBottomSheetDialogCompose(
                 name =
-                "Hacker News",
+                "Team Mixin",
                 iconUrl = "https://mixin-images.zeromesh.net/wRNZyklATas2I_f7QqoZzzi3MQd8GhaEG9guYh3tfFL5xRNoPuVjSo9yDwqlRMv_2PSPPdIEI3Iqya6U2d_0HsY=s256",
                 scopes,
                 {
                     dismiss()
                 }, { scopes ->
-                // Todo request permissions
-                Timber.e("${scopes.size} $scopes")
-            }
+                    PinInputBottomSheetDialogFragment.newInstance().setOnPinComplete { pin ->
+                        lifecycleScope.launch {
+                            bottomViewModel // init on main thread
+                            handleMixinResponse(
+                                invokeNetwork = {
+                                    bottomViewModel.authorize(
+                                        authorizationId,
+                                        scopes.map { it.source },
+                                        pin
+                                    )
+                                },
+                                switchContext = Dispatchers.IO,
+                                successBlock = {
+                                    val data = it.data ?: return@handleMixinResponse
+                                    val redirectUri = data.app.redirectUri
+                                    redirect(redirectUri, data.authorizationCode)
+                                    success = true
+                                    dismiss()
+                                },
+                                doAfterNetworkSuccess = {
+
+                                },
+                                exceptionBlock = {
+                                    return@handleMixinResponse false
+                                }
+                            )
+                        }
+                    }.showNow(parentFragmentManager, PinInputBottomSheetDialogFragment.TAG)
+                }
             )
         }
         doOnPreDraw {
@@ -126,24 +161,24 @@ class AuthBottomSheetDialogFragment : BottomSheetDialogFragment() {
         }
     }
 
-    // override fun onDismiss(dialog: DialogInterface) {
-    //     if (!success && isAdded) {
-    //         lifecycleScope.launch {
-    //             bottomViewModel // init on main thread
-    //             handleMixinResponse(
-    //                 invokeNetwork = {
-    //                     bottomViewModel.authorize(auth.authorizationId, listOf(), null)
-    //                 },
-    //                 switchContext = Dispatchers.IO,
-    //                 successBlock = {
-    //                     val data = it.data ?: return@handleMixinResponse
-    //                     redirect(data.app.redirectUri, data.authorization_code)
-    //                 }
-    //             )
-    //         }
-    //     }
-    //     super.onDismiss(dialog)
-    // }
+    override fun onDismiss(dialog: DialogInterface) {
+        if (!success && isAdded) {
+            lifecycleScope.launch {
+                bottomViewModel // init on main thread
+                handleMixinResponse(
+                    invokeNetwork = {
+                        bottomViewModel.authorize(authorizationId, listOf(), null)
+                    },
+                    switchContext = Dispatchers.IO,
+                    successBlock = {
+                        val data = it.data ?: return@handleMixinResponse
+                        redirect(data.app.redirectUri, data.authorizationCode)
+                    }
+                )
+            }
+        }
+        super.onDismiss(dialog)
+    }
 
     private fun redirect(uri: String, code: String?) {
         if (!uri.isWebUrl()) {

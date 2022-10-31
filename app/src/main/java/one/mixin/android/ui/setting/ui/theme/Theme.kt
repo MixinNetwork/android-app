@@ -16,12 +16,14 @@ class AppColors(
     val accent: Color,
     val textPrimary: Color,
     val textSubtitle: Color,
+    val textMinor: Color,
 
     val icon: Color,
     val iconGray: Color,
 
     val backgroundWindow: Color,
     val background: Color,
+    val backgroundGray: Color,
     val red: Color = Color(0xFFE55541),
 
     val unchecked: Color
@@ -49,10 +51,12 @@ private val LightColorPalette = AppColors(
     accent = Color(0xFF3D75E3),
     textPrimary = Color(0xFF333333),
     textSubtitle = Color(0xFFBBBEC3),
+    textMinor = Color(0xFFBBBBBB),
     icon = Color(0xFF000000),
     iconGray = Color(0xFFD2D4DA),
     backgroundWindow = Color(0xFFF6F7FA),
     background = Color(0xFFFFFFFF),
+    backgroundGray = Color(0xFFF5F7FA),
     unchecked = Color(0xFFECECEC),
 )
 
@@ -61,10 +65,12 @@ private val DarkColorPalette = AppColors(
     accent = Color(0xFF3D75E3),
     textPrimary = Color(0xE6FFFFFF),
     textSubtitle = Color(0x66FFFFFF),
+    textMinor = Color(0xAAD8D8D8),
     icon = Color(0xFFEAEAEB),
     iconGray = Color(0xFF808691),
     backgroundWindow = Color(0xFF23272B),
     background = Color(0xFF2c3136),
+    backgroundGray = Color(0xFF3B3F44),
     unchecked = Color(0xFFECECEC),
 )
 
