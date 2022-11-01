@@ -44,10 +44,15 @@ class AuthBottomSheetDialogFragment : BottomSheetDialogFragment() {
         const val ARGS_SCOPES = "args_scopes"
         const val ARGS_AUTHORIZATION_ID = "args_authorization_id"
 
-        fun newInstance(scopes: ArrayList<Scope>, auth: String) =
+        private const val ARGS_NAME = "args_name"
+        private const val ARGS_ICON_URL = "args_icon_url"
+
+        fun newInstance(scopes: ArrayList<Scope>, name: String, iconUrl: String?, authId: String) =
             AuthBottomSheetDialogFragment().withArgs {
                 putParcelableArrayList(ARGS_SCOPES, scopes)
-                putString(ARGS_AUTHORIZATION_ID, auth)
+                putString(ARGS_NAME, name)
+                putString(ARGS_ICON_URL, iconUrl)
+                putString(ARGS_AUTHORIZATION_ID, authId)
             }
     }
 
@@ -57,6 +62,13 @@ class AuthBottomSheetDialogFragment : BottomSheetDialogFragment() {
 
     private val authorizationId: String by lazy {
         requireArguments().getString(ARGS_AUTHORIZATION_ID)!!
+    }
+
+    private val appIconUrl: String? by lazy {
+        requireArguments().getString(ARGS_ICON_URL)
+    }
+    private val appName: String by lazy {
+        requireArguments().getString(ARGS_NAME)!!
     }
 
     private var success = false
@@ -74,42 +86,45 @@ class AuthBottomSheetDialogFragment : BottomSheetDialogFragment() {
         setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
         setContent {
             AuthBottomSheetDialogCompose(
-                name =
-                "Team Mixin",
-                iconUrl = "https://mixin-images.zeromesh.net/wRNZyklATas2I_f7QqoZzzi3MQd8GhaEG9guYh3tfFL5xRNoPuVjSo9yDwqlRMv_2PSPPdIEI3Iqya6U2d_0HsY=s256",
+                name = appName,
+                iconUrl = appIconUrl,
                 scopes,
                 {
                     dismiss()
                 }, { scopes ->
-                    PinInputBottomSheetDialogFragment.newInstance().setOnPinComplete { pin ->
-                        lifecycleScope.launch {
-                            bottomViewModel // init on main thread
-                            handleMixinResponse(
-                                invokeNetwork = {
-                                    bottomViewModel.authorize(
-                                        authorizationId,
-                                        scopes.map { it.source },
-                                        pin
-                                    )
-                                },
-                                switchContext = Dispatchers.IO,
-                                successBlock = {
-                                    val data = it.data ?: return@handleMixinResponse
-                                    val redirectUri = data.app.redirectUri
-                                    redirect(redirectUri, data.authorizationCode)
-                                    success = true
-                                    dismiss()
-                                },
-                                doAfterNetworkSuccess = {
-
-                                },
-                                exceptionBlock = {
-                                    return@handleMixinResponse false
-                                }
-                            )
+                PinInputBottomSheetDialogFragment.newInstance(disableBiometric = false)
+                    .let { pinInput ->
+                        pinInput.setOnPinComplete { pin ->
+                            lifecycleScope.launch {
+                                bottomViewModel // init on main thread
+                                handleMixinResponse(
+                                    invokeNetwork = {
+                                        bottomViewModel.authorize(
+                                            authorizationId,
+                                            scopes.map { it.source },
+                                            pin
+                                        )
+                                    },
+                                    switchContext = Dispatchers.IO,
+                                    successBlock = {
+                                        val data = it.data ?: return@handleMixinResponse
+                                        val redirectUri = data.app.redirectUri
+                                        redirect(redirectUri, data.authorizationCode)
+                                        success = true
+                                        pinInput.dismiss()
+                                        dismiss()
+                                    },
+                                    doAfterNetworkSuccess = {
+                                    },
+                                    exceptionBlock = {
+                                        pinInput.dismiss()
+                                        return@handleMixinResponse false
+                                    }
+                                )
+                            }
                         }
                     }.showNow(parentFragmentManager, PinInputBottomSheetDialogFragment.TAG)
-                }
+            }
             )
         }
         doOnPreDraw {

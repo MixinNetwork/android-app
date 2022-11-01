@@ -309,10 +309,15 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                     }
                     QrCodeType.authorization.name -> {
                         val authorization = result.second as AuthorizationResponse
-                        val assets = linkViewModel.simpleAssetsWithBalance()
+
                         activity?.let {
                             val scopes = authorization.getScopes(it)
-                            AuthBottomSheetDialogFragment.newInstance(scopes, authorization.authorizationId)
+                            AuthBottomSheetDialogFragment.newInstance(
+                                scopes,
+                                authorization.app.name,
+                                authorization.app.iconUrl,
+                                authorization.authorizationId
+                            )
                                 .showNow(
                                     parentFragmentManager,
                                     AuthBottomSheetDialogFragment.TAG
