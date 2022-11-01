@@ -123,7 +123,7 @@ fun ScopesContent(
         HorizontalPager(
             modifier = Modifier
                 .weight(1f)
-                .padding(vertical = 16.dp, horizontal = 12.dp),
+                .padding(vertical = 16.dp, horizontal = 4.dp),
             state = pagerState, count = scopeGroup.size,
             verticalAlignment = Alignment.Top
         ) { page ->
@@ -170,7 +170,8 @@ fun ScopesContent(
                 pagerState = pagerState,
                 modifier = Modifier
                     .align(CenterHorizontally),
-                activeColor = MixinAppTheme.colors.accent
+                activeColor = MixinAppTheme.colors.accent,
+                inactiveColor = MixinAppTheme.colors.backgroundGray
             )
             Spacer(modifier = Modifier.height(16.dp))
         }
@@ -221,7 +222,7 @@ fun ScopeCheckLayout(scope: Scope, state: Boolean, onCheckedChange: (checked: Bo
     ) {
         Image(
             modifier = Modifier
-                .padding(vertical = 3.dp)
+                .padding(vertical = 4.dp)
                 .padding(end = 8.dp),
             painter = painterResource(
                 id = when {
