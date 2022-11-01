@@ -12,7 +12,6 @@ import one.mixin.android.databinding.LayoutMenuBinding
 import one.mixin.android.extension.colorAttr
 import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.dpToPx
-import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.roundTopOrBottom
 import one.mixin.android.vo.App
 import one.mixin.android.widget.FlowLayout
@@ -119,33 +118,27 @@ fun MenuList.createMenuLayout(
                     }
                 }
             )
-            menu.icon.notNullWithElse(
-                {
-                    menuBinding.icon.isVisible = true
-                    menuBinding.icon.setImageResource(it)
-                },
-                {
-                    menuBinding.icon.isVisible = false
-                }
-            )
-            menu.apps.notNullWithElse(
-                {
-                    menuBinding.avatarGroup.isVisible = true
-                    menuBinding.avatarGroup.setApps(it)
-                },
-                {
-                    menuBinding.avatarGroup.isVisible = false
-                }
-            )
-            menu.circleNames.notNullWithElse(
-                {
-                    menuBinding.flowLayout.isVisible = true
-                    addCirclesLayout(context, it, menuBinding.flowLayout)
-                },
-                {
-                    menuBinding.flowLayout.isVisible = false
-                }
-            )
+            val icon = menu.icon
+            if (icon != null) {
+                menuBinding.icon.isVisible = true
+                menuBinding.icon.setImageResource(icon)
+            } else {
+                menuBinding.icon.isVisible = false
+            }
+            val apps = menu.apps
+            if (apps != null) {
+                menuBinding.avatarGroup.isVisible = true
+                menuBinding.avatarGroup.setApps(apps)
+            } else {
+                menuBinding.avatarGroup.isVisible = false
+            }
+            val circleNames = menu.circleNames
+            if (circleNames != null) {
+                menuBinding.flowLayout.isVisible = true
+                addCirclesLayout(context, circleNames, menuBinding.flowLayout)
+            } else {
+                menuBinding.flowLayout.isVisible = false
+            }
             val top = index == 0
             val bottom = index == group.menus.size - 1
             menuBinding.root.roundTopOrBottom(dp13.toFloat(), top, bottom)

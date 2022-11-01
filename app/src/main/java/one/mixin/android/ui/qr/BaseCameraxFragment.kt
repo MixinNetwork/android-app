@@ -53,7 +53,6 @@ import one.mixin.android.extension.heavyClickVibrate
 import one.mixin.android.extension.inTransaction
 import one.mixin.android.extension.isDonateUrl
 import one.mixin.android.extension.matchResourcePattern
-import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.openGallery
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.putBoolean
@@ -385,18 +384,16 @@ abstract class BaseCameraxFragment : VisionFragment() {
 
     @SuppressLint("RestrictedApi")
     private fun focusAndMeter(v: PreviewView): Boolean {
-        var x = 0f
-        var y = 0f
-        upEvent.notNullWithElse(
-            {
-                x = it.x
-                y = it.y
-            },
-            {
-                x = v.x + v.width / 2f
-                y = v.y + v.height / 2f
-            }
-        )
+        val x: Float
+        val y: Float
+        val ue = upEvent
+        if (ue != null) {
+            x = ue.x
+            y = ue.y
+        } else {
+            x = v.x + v.width / 2f
+            y = v.y + v.height / 2f
+        }
         upEvent = null
         focusView.focusAndMeter(x, y)
 

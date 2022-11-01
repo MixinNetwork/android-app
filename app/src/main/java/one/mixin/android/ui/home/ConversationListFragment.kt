@@ -332,14 +332,12 @@ class ConversationListFragment : LinkFragment() {
                 }
             }
         binding.emptyView.startBn.setOnClickListener {
-            circleId.notNullWithElse(
-                { circleId ->
-                    (requireActivity() as MainActivity).openCircleEdit(circleId)
-                },
-                {
-                    navigationController.pushContacts()
-                }
-            )
+            val cid = circleId
+            if (cid != null) {
+                (requireActivity() as MainActivity).openCircleEdit(cid)
+            } else {
+                navigationController.pushContacts()
+            }
         }
         val circleId = defaultSharedPreferences.getString(CIRCLE_ID, null)
         if (circleId == null) {
@@ -576,18 +574,16 @@ class ConversationListFragment : LinkFragment() {
                             }
                         }
                         else -> {
-                            conversationListViewModel.findAppById(id)?.notNullWithElse(
-                                { app ->
-                                    view.isVisible = true
-                                    view.setImageResource(app.getCategoryIcon())
-                                    view.setOnClickListener {
-                                        WebActivity.show(requireContext(), app.homeUri, null, app)
-                                    }
-                                },
-                                {
-                                    view.isInvisible = true
+                            val app = conversationListViewModel.findAppById(id)
+                            if (app != null) {
+                                view.isVisible = true
+                                view.setImageResource(app.getCategoryIcon())
+                                view.setOnClickListener {
+                                    WebActivity.show(requireContext(), app.homeUri, null, app)
                                 }
-                            )
+                            } else {
+                                view.isInvisible = true
+                            }
                         }
                     }
                 }
@@ -944,22 +940,19 @@ class ConversationListFragment : LinkFragment() {
                     binding.msgTv.text = ""
                     null
                 }
-            }.also {
-                it.notNullWithElse(
-                    { drawable ->
-                        drawable.setBounds(
-                            0,
-                            0,
-                            itemView.context.dpToPx(12f),
-                            itemView.context.dpToPx(12f)
-                        )
-                        binding.msgType.setImageDrawable(drawable)
-                        binding.msgType.isVisible = true
-                    },
-                    {
-                        binding.msgType.isVisible = false
-                    }
-                )
+            }.also { drawable ->
+                if (drawable != null) {
+                    drawable.setBounds(
+                        0,
+                        0,
+                        itemView.context.dpToPx(12f),
+                        itemView.context.dpToPx(12f)
+                    )
+                    binding.msgType.setImageDrawable(drawable)
+                    binding.msgType.isVisible = true
+                } else {
+                    binding.msgType.isVisible = false
+                }
             }
 
             if (conversationItem.senderId == Session.getAccountId() &&

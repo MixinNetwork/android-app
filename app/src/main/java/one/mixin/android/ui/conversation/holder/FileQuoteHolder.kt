@@ -16,7 +16,6 @@ import one.mixin.android.databinding.ItemChatFileQuoteBinding
 import one.mixin.android.event.ExpiredEvent
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.fileSize
-import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.textResource
 import one.mixin.android.job.MixinJobManager.Companion.getAttachmentProcess
 import one.mixin.android.ui.conversation.adapter.ConversationAdapter
@@ -108,28 +107,25 @@ class FileQuoteHolder constructor(val binding: ItemChatFileQuoteBinding) : Media
             isSecret = messageItem.isSecret(),
         )
 
-        keyword.notNullWithElse(
-            { k ->
-                messageItem.mediaName?.let { str ->
-                    val start = str.indexOf(k, 0, true)
-                    if (start >= 0) {
-                        val sp = SpannableString(str)
-                        sp.setSpan(
-                            BackgroundColorSpan(HIGHLIGHTED),
-                            start,
-                            start + k.length,
-                            Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
-                        )
-                        binding.fileNameTv.text = sp
-                    } else {
-                        binding.fileNameTv.text = messageItem.mediaName
-                    }
+        if (keyword != null) {
+            messageItem.mediaName?.let { str ->
+                val start = str.indexOf(keyword, 0, true)
+                if (start >= 0) {
+                    val sp = SpannableString(str)
+                    sp.setSpan(
+                        BackgroundColorSpan(HIGHLIGHTED),
+                        start,
+                        start + keyword.length,
+                        Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+                    )
+                    binding.fileNameTv.text = sp
+                } else {
+                    binding.fileNameTv.text = messageItem.mediaName
                 }
-            },
-            {
-                binding.fileNameTv.text = messageItem.mediaName
             }
-        )
+        } else {
+            binding.fileNameTv.text = messageItem.mediaName
+        }
         if (messageItem.mediaStatus == MediaStatus.EXPIRED.name) {
             binding.bottomLayout.fileSizeTv.textResource = R.string.Expired
         } else {

@@ -17,7 +17,6 @@ import one.mixin.android.extension.fileSize
 import one.mixin.android.extension.formatMillis
 import one.mixin.android.extension.loadImageMark
 import one.mixin.android.extension.loadVideoMark
-import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.round
 import one.mixin.android.job.MixinJobManager.Companion.getAttachmentProcess
 import one.mixin.android.ui.conversation.adapter.ConversationAdapter
@@ -119,47 +118,41 @@ class VideoHolder constructor(val binding: ItemChatVideoBinding) :
             when (messageItem.mediaStatus) {
                 MediaStatus.DONE.name -> {
                     binding.durationTv.bindId(null)
-                    messageItem.mediaDuration.notNullWithElse(
-                        {
-                            binding.durationTv.visibility = VISIBLE
-                            binding.durationTv.text = it.toLongOrNull()?.formatMillis() ?: ""
-                        },
-                        {
-                            binding.durationTv.visibility = GONE
-                        }
-                    )
+                    val mediaDuration = messageItem.mediaDuration
+                    if (mediaDuration != null) {
+                        binding.durationTv.visibility = VISIBLE
+                        binding.durationTv.text = mediaDuration.toLongOrNull()?.formatMillis() ?: ""
+                    } else {
+                        binding.durationTv.visibility = GONE
+                    }
                 }
                 MediaStatus.PENDING.name -> {
-                    messageItem.mediaSize.notNullWithElse(
-                        {
-                            binding.durationTv.visibility = VISIBLE
-                            if (it == 0L) {
-                                binding.durationTv.bindId(messageItem.messageId)
-                            } else {
-                                binding.durationTv.text = it.fileSize()
-                                binding.durationTv.bindId(null)
-                            }
-                        },
-                        {
+                    val mediaSize = messageItem.mediaSize
+                    if (mediaSize != null) {
+                        binding.durationTv.visibility = VISIBLE
+                        if (mediaSize == 0L) {
+                            binding.durationTv.bindId(messageItem.messageId)
+                        } else {
+                            binding.durationTv.text = mediaSize.fileSize()
                             binding.durationTv.bindId(null)
-                            binding.durationTv.visibility = GONE
                         }
-                    )
+                    } else {
+                        binding.durationTv.bindId(null)
+                        binding.durationTv.visibility = GONE
+                    }
                 }
                 else -> {
-                    messageItem.mediaSize.notNullWithElse(
-                        {
-                            if (it == 0L) {
-                                binding.durationTv.visibility = GONE
-                            } else {
-                                binding.durationTv.visibility = VISIBLE
-                                binding.durationTv.text = it.fileSize()
-                            }
-                        },
-                        {
+                    val mediaSize = messageItem.mediaSize
+                    if (mediaSize != null) {
+                        if (mediaSize == 0L) {
                             binding.durationTv.visibility = GONE
+                        } else {
+                            binding.durationTv.visibility = VISIBLE
+                            binding.durationTv.text = mediaSize.fileSize()
                         }
-                    )
+                    } else {
+                        binding.durationTv.visibility = GONE
+                    }
                     binding.durationTv.bindId(null)
                 }
             }

@@ -14,7 +14,6 @@ import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.blurBitmap
 import one.mixin.android.extension.isDarkColor
 import one.mixin.android.extension.isNightMode
-import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.supportsS
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseActivity
@@ -137,21 +136,19 @@ class WebActivity : BaseActivity() {
 
     override fun onBackPressed() {
         if (!isExpand) {
-            supportFragmentManager.findFragmentByTag(WebFragment.TAG).notNullWithElse(
-                {
-                    showClip()
-                    isExpand = true
-                    supportFragmentManager.beginTransaction().show(it).commit()
-                    if (it is WebFragment) {
-                        val dark = isDarkColor(it.titleColor)
-                        window.statusBarColor = it.titleColor
-                        SystemUIManager.lightUI(window, !dark)
-                    }
-                },
-                {
-                    onBackPressedDispatcher.onBackPressed()
+            val f = supportFragmentManager.findFragmentByTag(WebFragment.TAG)
+            if (f != null) {
+                showClip()
+                isExpand = true
+                supportFragmentManager.beginTransaction().show(f).commit()
+                if (f is WebFragment) {
+                    val dark = isDarkColor(f.titleColor)
+                    window.statusBarColor = f.titleColor
+                    SystemUIManager.lightUI(window, !dark)
                 }
-            )
+            } else {
+                onBackPressedDispatcher.onBackPressed()
+            }
         } else {
             onBackPressedDispatcher.onBackPressed()
         }
@@ -198,23 +195,21 @@ class WebActivity : BaseActivity() {
 
     private fun handleExtras(intent: Intent) {
         binding.six.loadData(clips, loadViewAction)
-        intent.extras.notNullWithElse(
-            { extras ->
-                isExpand = true
-                releaseWeb()
-                supportFragmentManager.beginTransaction().add(
-                    R.id.container,
-                    WebFragment.newInstance(extras),
-                    WebFragment.TAG
-                ).commit()
-            },
-            {
-                isExpand = false
-                FloatingWebClip.getInstance(this.isNightMode()).hide()
-                SystemUIManager.lightUI(window, !isNightMode())
-                hideWeb()
-            }
-        )
+        val extras = intent.extras
+        if (extras != null) {
+            isExpand = true
+            releaseWeb()
+            supportFragmentManager.beginTransaction().add(
+                R.id.container,
+                WebFragment.newInstance(extras),
+                WebFragment.TAG
+            ).commit()
+        } else {
+            isExpand = false
+            FloatingWebClip.getInstance(this.isNightMode()).hide()
+            SystemUIManager.lightUI(window, !isNightMode())
+            hideWeb()
+        }
     }
 
     override fun onNewIntent(intent: Intent) {

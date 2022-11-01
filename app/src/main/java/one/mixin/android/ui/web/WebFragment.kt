@@ -25,9 +25,7 @@ import android.view.ContextMenu
 import android.view.LayoutInflater
 import android.view.MenuItem
 import android.view.View
-import android.view.View.INVISIBLE
 import android.view.View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
-import android.view.View.VISIBLE
 import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.webkit.JavascriptInterface
@@ -88,7 +86,6 @@ import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.isWebUrl
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.matchResourcePattern
-import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.openAsUrl
 import one.mixin.android.extension.openAsUrlOrQrScan
 import one.mixin.android.extension.openCamera
@@ -330,14 +327,13 @@ class WebFragment : BaseFragment() {
 
         initView()
 
-        appCard.notNullWithElse(
-            {
-                checkAppCard(it)
-            },
-            {
-                loadWebView()
-            }
-        )
+        val card = appCard
+        if (card != null) {
+            checkAppCard(card)
+        } else {
+            loadWebView()
+        }
+
         if (requireContext().checkInlinePermissions()) {
             showClip()
         }
@@ -384,14 +380,7 @@ class WebFragment : BaseFragment() {
                 controlSuspiciousView(false)
             }
         }
-        app.notNullWithElse(
-            {
-                binding.failLoadView.contactTv.visibility = VISIBLE
-            },
-            {
-                binding.failLoadView.contactTv.visibility = INVISIBLE
-            }
-        )
+        binding.failLoadView.contactTv.isVisible = app != null
         binding.failLoadView.listener = object : FailLoadView.FailLoadListener {
             override fun onReloadClick() {
                 refresh()

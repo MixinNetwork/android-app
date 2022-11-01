@@ -22,7 +22,6 @@ import one.mixin.android.extension.getImagePath
 import one.mixin.android.extension.getMediaPath
 import one.mixin.android.extension.getVideoPath
 import one.mixin.android.extension.loadImageCenterCrop
-import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.renderMessage
 import one.mixin.android.extension.round
 import one.mixin.android.session.Session
@@ -141,14 +140,12 @@ class QuoteView constructor(context: Context, attrs: AttributeSet) :
                     16.dp
             }
             quoteMessageItem.type.endsWith("_DATA") -> {
-                quoteMessageItem.mediaName.notNullWithElse(
-                    {
-                        binding.replyContentTv.text = it
-                    },
-                    {
-                        binding.replyContentTv.setText(R.string.File)
-                    }
-                )
+                val mediaName = quoteMessageItem.mediaName
+                if (mediaName != null) {
+                    binding.replyContentTv.text = mediaName
+                } else {
+                    binding.replyContentTv.setText(R.string.File)
+                }
                 setIcon(R.drawable.ic_type_file)
                 binding.replyIv.visibility = View.GONE
                 binding.replyAvatar.visibility = View.GONE
@@ -188,14 +185,12 @@ class QuoteView constructor(context: Context, attrs: AttributeSet) :
                     8.dp
             }
             quoteMessageItem.type.endsWith("_AUDIO") -> {
-                quoteMessageItem.mediaDuration.notNullWithElse(
-                    {
-                        binding.replyContentTv.text = it.toLong().formatMillis()
-                    },
-                    {
-                        binding.replyContentTv.setText(R.string.Audio)
-                    }
-                )
+                val mediaDuration = quoteMessageItem.mediaDuration
+                if (mediaDuration != null) {
+                    binding.replyContentTv.text = mediaDuration.toLong().formatMillis()
+                } else {
+                    binding.replyContentTv.setText(R.string.Audio)
+                }
                 setIcon(R.drawable.ic_type_audio)
                 binding.replyIv.visibility = View.GONE
                 binding.replyAvatar.visibility = View.GONE
@@ -259,29 +254,26 @@ class QuoteView constructor(context: Context, attrs: AttributeSet) :
     }
 
     private fun setIcon(@DrawableRes icon: Int? = null) {
-        icon.notNullWithElse(
-            { drawable ->
-                AppCompatResources.getDrawable(context, drawable).let {
-                    it?.setBounds(0, 0, context.dpToPx(10f), context.dpToPx(10f))
-                    TextViewCompat.setCompoundDrawablesRelative(
-                        binding.replyContentTv,
-                        it,
-                        null,
-                        null,
-                        null
-                    )
-                }
-            },
-            {
+        if (icon != null) {
+            AppCompatResources.getDrawable(context, icon).let {
+                it?.setBounds(0, 0, context.dpToPx(10f), context.dpToPx(10f))
                 TextViewCompat.setCompoundDrawablesRelative(
                     binding.replyContentTv,
-                    null,
+                    it,
                     null,
                     null,
                     null
                 )
             }
-        )
+        } else {
+            TextViewCompat.setCompoundDrawablesRelative(
+                binding.replyContentTv,
+                null,
+                null,
+                null,
+                null
+            )
+        }
     }
 
     fun absolutePath(

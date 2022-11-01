@@ -5,7 +5,6 @@ import android.text.SpannableString
 import android.text.SpannableStringBuilder
 import android.util.AttributeSet
 import androidx.appcompat.widget.AppCompatTextView
-import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.util.markdown.MarkwonUtil.Companion.simpleMarkwon
 import org.commonmark.node.Node
 
@@ -20,10 +19,12 @@ class MentionTextView(context: Context, attrs: AttributeSet?) :
         } else {
             val sp = SpannableStringBuilder()
             sp.append(SpannableString(text))
-            mentionRenderContext.notNullWithElse(
-                { super.setText(renderMention(sp), type) },
-                { super.setText(sp, type) }
-            )
+            val ctx = mentionRenderContext
+            if (ctx != null) {
+                super.setText(renderMention(sp), type)
+            } else {
+                super.setText(sp, type)
+            }
         }
     }
 

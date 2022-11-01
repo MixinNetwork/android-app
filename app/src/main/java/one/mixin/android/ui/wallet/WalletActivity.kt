@@ -8,7 +8,6 @@ import androidx.navigation.NavArgument
 import androidx.navigation.fragment.NavHostFragment
 import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.R
-import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BlazeBaseActivity
@@ -37,15 +36,13 @@ class WalletActivity : BlazeBaseActivity() {
         val navController = navHostFragment?.navController
         val navGraph = navController?.navInflater?.inflate(R.navigation.nav_wallet)
         navGraph?.apply {
-            asset.notNullWithElse(
-                {
-                    setStartDestination(R.id.transactions_fragment)
-                    addArgument(ARGS_ASSET, NavArgument.Builder().setDefaultValue(it).build())
-                },
-                {
-                    setStartDestination(R.id.wallet_fragment)
-                }
-            )
+            val currentAsset = asset
+            if (currentAsset != null) {
+                setStartDestination(R.id.transactions_fragment)
+                addArgument(ARGS_ASSET, NavArgument.Builder().setDefaultValue(currentAsset).build())
+            } else {
+                setStartDestination(R.id.wallet_fragment)
+            }
         }
         if (navController != null && navGraph != null) {
             navController.graph = navGraph

@@ -15,7 +15,6 @@ import one.mixin.android.databinding.ViewSixBinding
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.isDarkColor
 import one.mixin.android.extension.loadImage
-import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.round
 import one.mixin.android.ui.web.WebClip
 
@@ -104,14 +103,12 @@ class SixLayout : ConstraintLayout {
     fun loadData(clips: List<WebClip>, expandAction: (Int) -> Unit) {
         repeat(6) { index ->
             if (index < clips.size) {
-                clips[index].app.notNullWithElse(
-                    { app ->
-                        avatars[index].loadImage(app.iconUrl, R.drawable.ic_link_place_holder, true)
-                    },
-                    {
-                        avatars[index].setImageResource(R.drawable.ic_link_place_holder)
-                    }
-                )
+                val app = clips[index].app
+                if (app != null) {
+                    avatars[index].loadImage(app.iconUrl, R.drawable.ic_link_place_holder, true)
+                } else {
+                    avatars[index].setImageResource(R.drawable.ic_link_place_holder)
+                }
                 titles[index].text = clips[index].name
                 if (isDarkColor(clips[index].titleColor)) {
                     titles[index].setTextColor(Color.WHITE)

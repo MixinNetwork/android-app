@@ -55,7 +55,6 @@ import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.notEmptyWithElse
-import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.showKeyboard
 import one.mixin.android.extension.toast
@@ -212,50 +211,46 @@ class LocationActivity : BaseActivity(), OnMapReadyCallback {
             }
         )
 
-        location.notNullWithElse(
-            { location ->
-                binding.locationTitle.text = location.name ?: getString(R.string.Unnamed_location)
-                location.address?.let { address ->
-                    binding.locationSubTitle.text = address
+        val currentLocation = location
+        if (currentLocation != null) {
+            binding.locationTitle.text = currentLocation.name ?: getString(R.string.Unnamed_location)
+            currentLocation.address?.let { address ->
+                binding.locationSubTitle.text = address
+            }
+            val image = currentLocation.getImageUrl()
+            if (image != null) {
+                binding.locationIcon.loadImage(image)
+            } else {
+                binding.locationIcon.setBackgroundResource(R.drawable.ic_current_location)
+            }
+            binding.icLocationShared.setOnClickListener {
+                try {
+                    startActivity(
+                        Intent(Intent.ACTION_VIEW, Uri.parse("geo:${currentLocation.latitude},${currentLocation.longitude}?q=${currentLocation.latitude},${currentLocation.longitude}"))
+                    )
+                } catch (e: ActivityNotFoundException) {
+                    toast(R.string.error_open_location)
                 }
-                location.getImageUrl().notNullWithElse(
-                    {
-                        binding.locationIcon.loadImage(it)
-                    },
-                    {
-                        binding.locationIcon.setBackgroundResource(R.drawable.ic_current_location)
-                    }
-                )
-                binding.icLocationShared.setOnClickListener {
+            }
+            binding.locationGoIv.setOnClickListener {
+                selfPosition?.let { selfPosition ->
                     try {
                         startActivity(
-                            Intent(Intent.ACTION_VIEW, Uri.parse("geo:${location.latitude},${location.longitude}?q=${location.latitude},${location.longitude}"))
+                            Intent(
+                                Intent.ACTION_VIEW,
+                                Uri.parse(
+                                    "http://maps.google.com/maps?saddr=${selfPosition.latitude},${selfPosition.longitude}&daddr=${currentLocation.latitude},${currentLocation.longitude}"
+                                )
+                            )
                         )
                     } catch (e: ActivityNotFoundException) {
                         toast(R.string.error_open_location)
                     }
                 }
-                binding.locationGoIv.setOnClickListener {
-                    selfPosition?.let { selfPosition ->
-                        try {
-                            startActivity(
-                                Intent(
-                                    Intent.ACTION_VIEW,
-                                    Uri.parse(
-                                        "http://maps.google.com/maps?saddr=${selfPosition.latitude},${selfPosition.longitude}&daddr=${location.latitude},${location.longitude}"
-                                    )
-                                )
-                            )
-                        } catch (e: ActivityNotFoundException) {
-                            toast(R.string.error_open_location)
-                        }
-                    }
-                }
-            },
-            {
-                binding.mentionLocation.locationRecycler.adapter = locationAdapter
             }
-        )
+        } else {
+            binding.mentionLocation.locationRecycler.adapter = locationAdapter
+        }
     }
 
     override fun onBackPressed() {

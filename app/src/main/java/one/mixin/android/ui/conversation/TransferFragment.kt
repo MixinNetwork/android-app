@@ -55,7 +55,6 @@ import one.mixin.android.extension.equalsIgnoreCase
 import one.mixin.android.extension.formatPublicKey
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.loadImage
-import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.numberFormat
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.numberFormat8
@@ -411,20 +410,18 @@ class TransferFragment() : MixinBottomSheetDialogFragment() {
                 if (r != null && r.isNotEmpty()) {
                     assets = r
                     adapter.submitList(r)
-
                     r.find {
                         it.assetId == activity?.defaultSharedPreferences!!.getString(ASSET_PREFERENCE, "")
-                    }.notNullWithElse(
-                        { a ->
-                            updateAssetUI(a)
-                            currentAsset = a
-                        },
-                        {
+                    }.let { asset ->
+                        currentAsset = if (asset != null) {
+                            updateAssetUI(asset)
+                            asset
+                        } else {
                             val a = assets[0]
                             updateAssetUI(a)
-                            currentAsset = a
+                            a
                         }
-                    )
+                    }
                 }
             }
         )
