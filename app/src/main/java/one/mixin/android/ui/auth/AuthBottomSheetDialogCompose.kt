@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
@@ -32,6 +33,7 @@ import androidx.compose.ui.Alignment.Companion.CenterHorizontally
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -43,9 +45,7 @@ import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.HorizontalPagerIndicator
 import com.google.accompanist.pager.rememberPagerState
 import kotlinx.coroutines.launch
-import one.mixin.android.MixinApplication
 import one.mixin.android.R
-import one.mixin.android.extension.toast
 import one.mixin.android.ui.setting.ui.theme.MixinAppTheme
 import one.mixin.android.vo.Scope
 import one.mixin.android.vo.getScopeGroupName
@@ -97,6 +97,7 @@ fun AuthBottomSheetDialogCompose(
                             .clip(CircleShape),
                         placeHolderPainter = painterResource(id = R.drawable.ic_avatar_place_holder)
                     )
+                    Spacer(modifier = Modifier.width(3.dp))
                 }
                 Text(
                     name, color = MixinAppTheme.colors.textPrimary,
@@ -201,14 +202,17 @@ fun ScopesContent(
 @Composable
 fun ScopeCheckLayout(scope: Scope, state: Boolean, onCheckedChange: (checked: Boolean) -> Unit) {
     val checkedState = remember { mutableStateOf(state) }
+    val isProfileScope = scope.source == Scope.SCOPES[0]
     Row(
         modifier = Modifier
-            .clickable {
-                if (scope.source == Scope.SCOPES[0]) {
-                    toast("R.string.require") // todo
+            .run {
+                if (!isProfileScope) {
+                    clickable {
+                        checkedState.value = !checkedState.value
+                        onCheckedChange(checkedState.value)
+                    }
                 } else {
-                    checkedState.value = !checkedState.value
-                    onCheckedChange(checkedState.value)
+                    this
                 }
             }
             .padding(horizontal = 16.dp, vertical = 8.dp)
@@ -220,10 +224,13 @@ fun ScopeCheckLayout(scope: Scope, state: Boolean, onCheckedChange: (checked: Bo
                 .padding(vertical = 3.dp)
                 .padding(end = 8.dp),
             painter = painterResource(
-                id = if (checkedState.value) {
-                    R.drawable.ic_selected
-                } else {
-                    R.drawable.ic_not_selected
+                id = when {
+                    isProfileScope ->
+                        R.drawable.ic_selected_disable
+                    checkedState.value ->
+                        R.drawable.ic_selected
+                    else ->
+                        R.drawable.ic_not_selected
                 }
             ),
             contentDescription = null
@@ -248,21 +255,23 @@ fun ScopeCheckLayout(scope: Scope, state: Boolean, onCheckedChange: (checked: Bo
 @Composable
 @Preview
 fun AuthBottomSheetDialogComposePreview() {
+    val context = LocalContext.current
+
     AuthBottomSheetDialogCompose(
         name = "Team Mixin",
         iconUrl = "https://mixin-images.zeromesh.net/E2y0BnTopFK9qey0YI-8xV3M82kudNnTaGw0U5SU065864SsewNUo6fe9kDF1HIzVYhXqzws4lBZnLj1lPsjk-0=s256",
         scopes = listOf(
-            Scope.generateScopeFromString(MixinApplication.appContext, "PROFILE:READ"),
-            Scope.generateScopeFromString(MixinApplication.appContext, "PHONE:READ"),
-            Scope.generateScopeFromString(MixinApplication.appContext, "MESSAGES:REPRESENT"),
-            Scope.generateScopeFromString(MixinApplication.appContext, "CONTACTS:READ"),
-            Scope.generateScopeFromString(MixinApplication.appContext, "ASSETS:READ"),
-            Scope.generateScopeFromString(MixinApplication.appContext, "SNAPSHOTS:READ"),
-            Scope.generateScopeFromString(MixinApplication.appContext, "APPS:READ"),
-            Scope.generateScopeFromString(MixinApplication.appContext, "APPS:WRITE"),
-            Scope.generateScopeFromString(MixinApplication.appContext, "CIRCLES:READ"),
-            Scope.generateScopeFromString(MixinApplication.appContext, "CIRCLES:WRITE"),
-            Scope.generateScopeFromString(MixinApplication.appContext, "COLLECTIBLES:READ")
+            Scope.generateScopeFromString(context, "PROFILE:READ"),
+            Scope.generateScopeFromString(context, "PHONE:READ"),
+            Scope.generateScopeFromString(context, "MESSAGES:REPRESENT"),
+            Scope.generateScopeFromString(context, "CONTACTS:READ"),
+            Scope.generateScopeFromString(context, "ASSETS:READ"),
+            Scope.generateScopeFromString(context, "SNAPSHOTS:READ"),
+            Scope.generateScopeFromString(context, "APPS:READ"),
+            Scope.generateScopeFromString(context, "APPS:WRITE"),
+            Scope.generateScopeFromString(context, "CIRCLES:READ"),
+            Scope.generateScopeFromString(context, "CIRCLES:WRITE"),
+            Scope.generateScopeFromString(context, "COLLECTIBLES:READ")
         ),
         {}, {}
     )

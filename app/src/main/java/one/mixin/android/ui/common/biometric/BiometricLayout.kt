@@ -28,7 +28,7 @@ class BiometricLayout(context: Context, attributeSet: AttributeSet) : ViewAnimat
     val payTv get() = binding.payTv
     val pin get() = binding.pin
     val errorBtn get() = binding.errorBtn
-    val enableBiometricTv get() = binding.enableBiometricTv
+    private val enableBiometricTv get() = binding.enableBiometricTv
 
     var callback: Callback? = null
 
