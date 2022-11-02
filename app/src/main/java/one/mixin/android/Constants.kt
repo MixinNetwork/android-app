@@ -160,10 +160,12 @@ object Constants {
             const val Language = "ru"
             const val Country = ""
         }
+
         object Indonesian {
             const val Language = "id"
             const val Country = "ID"
         }
+
         object Malay {
             const val Language = "ms"
             const val Country = ""
@@ -248,4 +250,17 @@ object Constants {
     // Only for third-party messenger user
     const val TEAM_BOT_ID = ""
     const val TEAM_BOT_NAME = ""
+
+    val CHAINS by lazy {
+        mapOf(
+            "43d61dcd-e413-450d-80b8-101d5e903357" to "Ethereum (ERC20)",
+            "cbc77539-0a20-4666-8c8a-4ded62b36f0a" to "AVAX C-Chain",
+            "17f78d7c-ed96-40ff-980c-5dc62fecbc85" to "BNB Beacon Chain (BEP2)",
+            "25dabac5-056a-48ff-b9f9-f67395dc407c" to "Tron (TRC20)",
+            "05891083-63d2-4f3d-bfbe-d14d7fb9b25a" to "BitShares",
+            "d6ac94f7-c932-4e11-97dd-617867f0669e" to "NEAR Protocol",
+            "d243386e-6d84-42e6-be03-175be17bf275" to "Nervos Network",
+            "56e63c06-b506-4ec5-885a-4a5ac17b83c1" to "Stellar Network",
+        )
+    }
 }
