@@ -27,7 +27,7 @@ class AppColors(
     val backgroundDark: Color,
     val backgroundGray: Color,
     val red: Color = Color(0xFFE55541),
-    val tipError:Color = Color(0xFFF67070),
+    val tipError: Color = Color(0xFFF67070),
 
     val unchecked: Color
 )

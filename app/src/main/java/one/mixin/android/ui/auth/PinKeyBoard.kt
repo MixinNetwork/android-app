@@ -17,6 +17,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -32,6 +33,7 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Button
+import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
@@ -102,9 +104,12 @@ fun PinKeyBoard() {
                 )
                 Text(text = stringResource(R.string.Done), color = MixinAppTheme.colors.textMinor)
                 Spacer(modifier = Modifier.height(12.dp))
-                Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.clickable {
-                    // Todo
-                }) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.clickable {
+                        // Todo
+                    }
+                ) {
                     Image(
                         painter = painterResource(id = R.drawable.ic_biometric_enable),
                         contentDescription = null
@@ -136,10 +141,17 @@ fun PinKeyBoard() {
                     textAlign = TextAlign.Center,
                     fontSize = 14.sp
                 )
-                Button(onClick = {
-                    // TODO
-                    status = Status.DEFAULT
-                }) {
+                Button(
+                    onClick = {
+                        // TODO
+                        status = Status.DEFAULT
+                    },
+                    colors = ButtonDefaults.buttonColors(
+                        backgroundColor = MixinAppTheme.colors.accent
+                    ),
+                    contentPadding = PaddingValues(horizontal = 20.dp),
+                    shape = RoundedCornerShape(20.dp),
+                ) {
                     Text(
                         text = stringResource(id = R.string.Continue),
                         color = Color.White
@@ -166,7 +178,10 @@ fun PinKeyBoard() {
                         .fillMaxWidth(),
                     contentAlignment = Alignment.Center
                 ) {
-                    LazyRow(modifier = Modifier.height(20.dp),verticalAlignment = Alignment.CenterVertically) {
+                    LazyRow(
+                        modifier = Modifier.height(20.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
                         items(6) { index ->
                             val hasContent = index < pinCode.length
                             AnimatedContent(
@@ -201,57 +216,68 @@ fun PinKeyBoard() {
             enter = slideInVertically(initialOffsetY = { it }),
             exit = slideOutVertically(targetOffsetY = { it }),
         ) {
-            Box(
-                modifier = Modifier
-                    .background(MixinAppTheme.colors.backgroundGray)
-                    .height(36.dp)
-                    .fillMaxWidth(),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    color = MixinAppTheme.colors.textMinor,
-                    text = stringResource(id = R.string.Secured_by_TIP),
-                    fontSize = 12.sp
-                )
-            }
+            Column {
+                Box(
+                    modifier = Modifier
+                        .background(MixinAppTheme.colors.backgroundGray)
+                        .height(36.dp)
+                        .fillMaxWidth(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        color = MixinAppTheme.colors.textMinor,
+                        text = stringResource(id = R.string.Secured_by_TIP),
+                        fontSize = 12.sp
+                    )
+                }
 
-            Box(
-                modifier = Modifier
-                    .wrapContentHeight()
-                    .heightIn(150.dp, 200.dp)
-                    .onSizeChanged {
-                        size = it
-                    }
-            ) {
-                LazyVerticalGrid(
-                    modifier = Modifier.fillMaxHeight(),
-                    verticalArrangement = Arrangement.spacedBy(1.dp),
-                    horizontalArrangement = Arrangement.spacedBy(1.dp),
-                    columns = GridCells.Fixed(3),
-                    content = {
-                        items(list.size) { index ->
-                            Box(
-                                contentAlignment = Alignment.Center,
-                                modifier = Modifier
-                                    .height(context.pxToDp(size.toSize().height / 4).dp - 1.dp)
-                                    .background(
-                                        if (index == 11) MixinAppTheme.colors.backgroundDark else MixinAppTheme.colors.background
-                                    )
-                                    .run {
-                                        if (status == Status.DEFAULT && index != 9) {
-                                            clickable {
-                                                context.tickVibrate()
-                                                if (index == 11) {
-                                                    if (pinCode.isNotEmpty()) {
-                                                        pinCode =
-                                                            pinCode.substring(
-                                                                0,
-                                                                pinCode.length - 1
-                                                            )
-                                                    }
-                                                } else if (pinCode.length < 6) {
-                                                    pinCode += list[index]
-                                                    if (pinCode.length == 6) {
+                Box(
+                    modifier = Modifier
+                        .wrapContentHeight()
+                        .heightIn(150.dp, 200.dp)
+                        .onSizeChanged {
+                            size = it
+                        }
+                ) {
+                    LazyVerticalGrid(
+                        modifier = Modifier.fillMaxHeight(),
+                        verticalArrangement = Arrangement.spacedBy(1.dp),
+                        horizontalArrangement = Arrangement.spacedBy(1.dp),
+                        columns = GridCells.Fixed(3),
+                        content = {
+                            items(list.size) { index ->
+                                Box(
+                                    contentAlignment = Alignment.Center,
+                                    modifier = Modifier
+                                        .height(context.pxToDp(size.toSize().height / 4).dp - 1.dp)
+                                        .background(
+                                            if (index == 11) MixinAppTheme.colors.backgroundDark else MixinAppTheme.colors.background
+                                        )
+                                        .run {
+                                            if (status == Status.DEFAULT && index != 9) {
+                                                clickable {
+                                                    context.tickVibrate()
+                                                    if (index == 11) {
+                                                        if (pinCode.isNotEmpty()) {
+                                                            pinCode =
+                                                                pinCode.substring(
+                                                                    0,
+                                                                    pinCode.length - 1
+                                                                )
+                                                        }
+                                                    } else if (pinCode.length < 6) {
+                                                        pinCode += list[index]
+                                                        if (pinCode.length == 6) {
+                                                            status = Status.LOADING
+                                                            pinCode = ""
+                                                            coroutineScope.launch {
+                                                                delay(2000)
+                                                                status = Status.DONE
+                                                                delay(2000)
+                                                                status = Status.ERROR
+                                                            }
+                                                        }
+                                                    } else {
                                                         status = Status.LOADING
                                                         pinCode = ""
                                                         coroutineScope.launch {
@@ -261,39 +287,30 @@ fun PinKeyBoard() {
                                                             status = Status.ERROR
                                                         }
                                                     }
-                                                } else {
-                                                    status = Status.LOADING
-                                                    pinCode = ""
-                                                    coroutineScope.launch {
-                                                        delay(2000)
-                                                        status = Status.DONE
-                                                        delay(2000)
-                                                        status = Status.ERROR
-                                                    }
                                                 }
+                                            } else {
+                                                this
                                             }
-                                        } else {
-                                            this
                                         }
+                                ) {
+                                    if (index == 11) {
+                                        Image(
+                                            painter = painterResource(R.drawable.ic_delete),
+                                            contentDescription = null
+                                        )
+                                    } else {
+                                        Text(
+                                            text = list[index],
+                                            fontSize = 25.sp,
+                                            color = MixinAppTheme.colors.textPrimary,
+                                            textAlign = TextAlign.Center,
+                                        )
                                     }
-                            ) {
-                                if (index == 11) {
-                                    Image(
-                                        painter = painterResource(R.drawable.ic_delete),
-                                        contentDescription = null
-                                    )
-                                } else {
-                                    Text(
-                                        text = list[index],
-                                        fontSize = 25.sp,
-                                        color = MixinAppTheme.colors.textPrimary,
-                                        textAlign = TextAlign.Center,
-                                    )
                                 }
                             }
                         }
-                    }
-                )
+                    )
+                }
             }
         }
     }
