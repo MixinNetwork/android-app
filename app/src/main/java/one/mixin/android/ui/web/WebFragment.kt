@@ -1277,7 +1277,16 @@ class WebFragment : BaseFragment() {
                     if (context !is Activity) {
                         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                     }
-                    context.startActivity(intent)
+                    try {
+                        context.startActivity(intent)
+                    } catch (e: ActivityNotFoundException) {
+                        val fallbackUrl = intent.extras?.getString("browser_fallback_url")
+                        if (fallbackUrl != null) {
+                            view.loadUrl(fallbackUrl, extraHeaders)
+                        } else {
+                            throw e
+                        }
+                    }
                 } catch (e: Exception) {
                     if (e is ActivityNotFoundException) {
                         toast(context.getString(R.string.error_unable_to_open_link, url))
