@@ -488,7 +488,7 @@ class MainActivity : BlazeBaseActivity() {
 
     private fun validateSafetyNet(nonce: ByteArray) {
         val client = SafetyNet.getClient(this)
-        val task = client.attest(nonce, BuildConfig.SafetyNet_API_KEY)
+        val task = client.attest(nonce, BuildConfig.SAFETYNET_API_KEY)
         task.addOnSuccessListener { safetyResp ->
             accountRepo.updateSession(SessionRequest(deviceCheckToken = safetyResp.jwsResult))
                 .subscribeOn(Schedulers.io())
