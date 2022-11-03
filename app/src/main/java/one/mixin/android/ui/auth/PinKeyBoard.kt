@@ -61,7 +61,9 @@ import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.extension.pxToDp
 import one.mixin.android.extension.tickVibrate
+import one.mixin.android.session.Session
 import one.mixin.android.ui.setting.ui.theme.MixinAppTheme
+import java.util.Random
 
 private enum class Status {
     DEFAULT,
@@ -72,11 +74,14 @@ private enum class Status {
 
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
-fun PinKeyBoard() {
+fun PinKeyBoard(
+    verifyCallback: (suspend (String)->Pair<Boolean, String?>)?
+) {
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
     var size by remember { mutableStateOf(IntSize.Zero) }
     var pinCode by remember { mutableStateOf("") }
+    var errorContent by remember { mutableStateOf("") }
     val list = listOf(
         "1", "2", "3",
         "4", "5", "6",
@@ -136,7 +141,7 @@ fun PinKeyBoard() {
                             shape = RoundedCornerShape(8.dp)
                         )
                         .padding(horizontal = 20.dp, vertical = 10.dp),
-                    text = stringResource(id = R.string.pay_paid), // Todo replace
+                    text = errorContent,
                     color = MixinAppTheme.colors.tipError,
                     textAlign = TextAlign.Center,
                     fontSize = 14.sp
@@ -217,20 +222,21 @@ fun PinKeyBoard() {
             exit = slideOutVertically(targetOffsetY = { it }),
         ) {
             Column {
-                Box(
-                    modifier = Modifier
-                        .background(MixinAppTheme.colors.backgroundGray)
-                        .height(36.dp)
-                        .fillMaxWidth(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        color = MixinAppTheme.colors.textMinor,
-                        text = stringResource(id = R.string.Secured_by_TIP),
-                        fontSize = 12.sp
-                    )
+                if (Session.getTipPub() != null) {
+                    Box(
+                        modifier = Modifier
+                            .background(MixinAppTheme.colors.backgroundGray)
+                            .height(36.dp)
+                            .fillMaxWidth(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            color = MixinAppTheme.colors.textMinor,
+                            text = stringResource(id = R.string.Secured_by_TIP),
+                            fontSize = 12.sp
+                        )
+                    }
                 }
-
                 Box(
                     modifier = Modifier
                         .wrapContentHeight()
@@ -268,23 +274,19 @@ fun PinKeyBoard() {
                                                     } else if (pinCode.length < 6) {
                                                         pinCode += list[index]
                                                         if (pinCode.length == 6) {
-                                                            status = Status.LOADING
-                                                            pinCode = ""
                                                             coroutineScope.launch {
-                                                                delay(2000)
-                                                                status = Status.DONE
-                                                                delay(2000)
-                                                                status = Status.ERROR
+                                                                status = Status.LOADING
+                                                                val (result, errorInfo) = verifyCallback?.invoke(
+                                                                    pinCode
+                                                                ) ?: return@launch
+                                                                if (result) {
+                                                                    status = Status.DONE
+                                                                } else {
+                                                                    pinCode = ""
+                                                                    status = Status.ERROR
+                                                                    errorContent = errorInfo ?: ""
+                                                                }
                                                             }
-                                                        }
-                                                    } else {
-                                                        status = Status.LOADING
-                                                        pinCode = ""
-                                                        coroutineScope.launch {
-                                                            delay(2000)
-                                                            status = Status.DONE
-                                                            delay(2000)
-                                                            status = Status.ERROR
                                                         }
                                                     }
                                                 }
@@ -319,5 +321,13 @@ fun PinKeyBoard() {
 @Preview
 @Composable
 fun PinKeyBoardPreview() {
-    PinKeyBoard()
+    val b: (suspend (String) -> Pair<Boolean, String?>) = { pin ->
+        delay(2000)
+        if (Random().nextInt(2) == 0) {
+            Pair(true, null)
+        } else {
+            Pair(false, "Error: $pin")
+        }
+    }
+    PinKeyBoard(verifyCallback = b)
 }

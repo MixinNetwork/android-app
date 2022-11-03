@@ -69,7 +69,7 @@ fun AuthBottomSheetDialogCompose(
     iconUrl: String?,
     scopes: List<Scope>,
     onDismissRequest: () -> Unit,
-    onConfirmed: (Set<Scope>) -> Unit
+    verifyCallback: (suspend (String)->Pair<Boolean, String?>)?
 ) {
     val scopeGroup = groupScope(scopes)
     val pinAuth = remember {
@@ -91,8 +91,7 @@ fun AuthBottomSheetDialogCompose(
                     .padding(8.dp)
                     .clip(CircleShape)
                     .clickable {
-                        pinAuth.value = false
-                        // onDismissRequest() todo
+                        onDismissRequest()
                     },
                 contentDescription = null
             )
@@ -154,7 +153,7 @@ fun AuthBottomSheetDialogCompose(
                 enter = slideInVertically(initialOffsetY = { it }),
                 exit = slideOutVertically(targetOffsetY = { it }),
             ) {
-                PinKeyBoard()
+                PinKeyBoard(verifyCallback)
             }
         }
     }
@@ -332,6 +331,6 @@ fun AuthBottomSheetDialogComposePreview() {
             Scope.generateScopeFromString(context, "CIRCLES:WRITE"),
             Scope.generateScopeFromString(context, "COLLECTIBLES:READ")
         ),
-        {}, {}
+        {}, null
     )
 }

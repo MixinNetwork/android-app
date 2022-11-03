@@ -21,6 +21,7 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.api.handleMixinResponse
@@ -30,7 +31,6 @@ import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.isWebUrl
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.BottomSheetViewModel
-import one.mixin.android.ui.common.PinInputBottomSheetDialogFragment
 import one.mixin.android.util.SystemUIManager
 import one.mixin.android.vo.Scope
 import timber.log.Timber
@@ -91,40 +91,7 @@ class AuthBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 scopes,
                 {
                     dismiss()
-                }, { scopes ->
-                PinInputBottomSheetDialogFragment.newInstance(disableBiometric = false)
-                    .let { pinInput ->
-                        pinInput.setOnPinComplete { pin ->
-                            lifecycleScope.launch {
-                                bottomViewModel // init on main thread
-                                handleMixinResponse(
-                                    invokeNetwork = {
-                                        bottomViewModel.authorize(
-                                            authorizationId,
-                                            scopes.map { it.source },
-                                            pin
-                                        )
-                                    },
-                                    switchContext = Dispatchers.IO,
-                                    successBlock = {
-                                        val data = it.data ?: return@handleMixinResponse
-                                        val redirectUri = data.app.redirectUri
-                                        redirect(redirectUri, data.authorizationCode)
-                                        success = true
-                                        pinInput.dismiss()
-                                        dismiss()
-                                    },
-                                    doAfterNetworkSuccess = {
-                                    },
-                                    exceptionBlock = {
-                                        pinInput.dismiss()
-                                        return@handleMixinResponse false
-                                    }
-                                )
-                            }
-                        }
-                    }.showNow(parentFragmentManager, PinInputBottomSheetDialogFragment.TAG)
-            }
+                }, authCallback
             )
         }
         doOnPreDraw {
@@ -133,6 +100,20 @@ class AuthBottomSheetDialogFragment : BottomSheetDialogFragment() {
             behavior?.peekHeight = 690.dp
             behavior?.isDraggable = false
             behavior?.addBottomSheetCallback(bottomSheetBehaviorCallback)
+        }
+    }
+
+    private val authCallback: (suspend (String) -> Pair<Boolean, String?>) = { pin ->
+        delay(2000)
+       val response =  bottomViewModel.authorize(
+            authorizationId,
+            scopes.map { it.source },
+            pin
+        )
+        if (response.isSuccess) {
+            Pair(true, null)
+        } else {
+            Pair(false, "")
         }
     }
 
