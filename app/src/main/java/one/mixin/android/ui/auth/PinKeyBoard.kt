@@ -75,7 +75,7 @@ private enum class Status {
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
 fun PinKeyBoard(
-    verifyCallback: (suspend (String)->Pair<Boolean, String?>)?
+    verifyCallback: (suspend (String) -> Pair<Boolean, String?>)?
 ) {
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
@@ -93,7 +93,7 @@ fun PinKeyBoard(
         verticalArrangement = Arrangement.Bottom,
         modifier = Modifier
             .wrapContentHeight(Alignment.Bottom)
-            .background(MixinAppTheme.colors.backgroundWindow)
+            .background(MixinAppTheme.colors.background)
     ) {
         when (status) {
             Status.DONE -> Column(

@@ -21,19 +21,27 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import one.mixin.android.R
+import one.mixin.android.api.DataErrorException
+import one.mixin.android.api.NetworkException
+import one.mixin.android.api.ServerErrorException
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.extension.booleanFromAttribute
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.isWebUrl
 import one.mixin.android.extension.withArgs
+import one.mixin.android.tip.exception.TipException
+import one.mixin.android.tip.getTipExceptionMsg
 import one.mixin.android.ui.common.BottomSheetViewModel
+import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.SystemUIManager
+import one.mixin.android.util.getMixinErrorStringByCode
 import one.mixin.android.vo.Scope
 import timber.log.Timber
+import java.net.SocketTimeoutException
+import java.net.UnknownHostException
 
 @AndroidEntryPoint
 class AuthBottomSheetDialogFragment : BottomSheetDialogFragment() {
@@ -104,16 +112,50 @@ class AuthBottomSheetDialogFragment : BottomSheetDialogFragment() {
     }
 
     private val authCallback: (suspend (String) -> Pair<Boolean, String?>) = { pin ->
-        delay(2000)
-       val response =  bottomViewModel.authorize(
-            authorizationId,
-            scopes.map { it.source },
-            pin
-        )
-        if (response.isSuccess) {
-            Pair(true, null)
-        } else {
-            Pair(false, "")
+        try {
+            val response = bottomViewModel.authorize(
+                authorizationId,
+                scopes.map { it.source },
+                pin
+            )
+            if (response.isSuccess) {
+                Pair(true, null)
+            } else {
+                val errorInfo =
+                    if (response.errorCode == ErrorHandler.PIN_INCORRECT || response.errorCode == ErrorHandler.TOO_MANY_REQUEST) {
+                        val errorCount = bottomViewModel.errorCount()
+                        requireContext().resources.getQuantityString(
+                            R.plurals.error_pin_incorrect_with_times,
+                            errorCount,
+                            errorCount
+                        )
+                    } else {
+                        requireContext().getMixinErrorStringByCode(
+                            response.errorCode,
+                            response.errorDescription
+                        )
+                    }
+                Pair(false, errorInfo)
+            }
+        } catch (e: Exception) {
+            Pair(
+                false,
+                when (e) {
+                    is TipException -> e.getTipExceptionMsg(requireContext())
+                    is SocketTimeoutException -> requireContext().getString(R.string.error_connection_timeout)
+                    is UnknownHostException -> requireContext().getString(R.string.No_network_connection)
+                    is ServerErrorException -> requireContext().getString(
+                        R.string.error_server_5xx_code,
+                        e.code
+                    )
+                    is NetworkException -> requireContext().getString(R.string.No_network_connection)
+                    is DataErrorException -> requireContext().getString(R.string.Data_error)
+                    else -> requireContext().getString(
+                        R.string.error_unknown_with_message,
+                        e.message
+                    )
+                }
+            )
         }
     }
 

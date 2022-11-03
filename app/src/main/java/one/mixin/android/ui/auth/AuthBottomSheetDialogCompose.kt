@@ -28,6 +28,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
@@ -69,7 +70,7 @@ fun AuthBottomSheetDialogCompose(
     iconUrl: String?,
     scopes: List<Scope>,
     onDismissRequest: () -> Unit,
-    verifyCallback: (suspend (String)->Pair<Boolean, String?>)?
+    verifyCallback: (suspend (String) -> Pair<Boolean, String?>)?
 ) {
     val scopeGroup = groupScope(scopes)
     val pinAuth = remember {
@@ -135,6 +136,7 @@ fun AuthBottomSheetDialogCompose(
                         modifier = Modifier
                             .padding(16.dp)
                             .fillMaxWidth()
+                            .wrapContentHeight(Alignment.Top)
                             .clip(shape = RoundedCornerShape(8.dp))
                             .background(MixinAppTheme.colors.backgroundWindow)
                     ) {
@@ -174,7 +176,7 @@ fun ScopesContent(
         HorizontalPager(
             modifier = Modifier
                 .weight(1f)
-                .padding(vertical = 16.dp, horizontal = 4.dp),
+                .padding(vertical = 24.dp, horizontal = 4.dp),
             state = pagerState, count = scopeGroup.size,
             verticalAlignment = Alignment.Top
         ) { page ->
@@ -314,7 +316,6 @@ fun ScopeCheckLayout(
 @Preview
 fun AuthBottomSheetDialogComposePreview() {
     val context = LocalContext.current
-
     AuthBottomSheetDialogCompose(
         name = "Team Mixin",
         iconUrl = "https://mixin-images.zeromesh.net/E2y0BnTopFK9qey0YI-8xV3M82kudNnTaGw0U5SU065864SsewNUo6fe9kDF1HIzVYhXqzws4lBZnLj1lPsjk-0=s256",
