@@ -1,9 +1,21 @@
-@file:OptIn(ExperimentalPagerApi::class, ExperimentalPagerApi::class)
+@file:OptIn(
+    ExperimentalPagerApi::class, ExperimentalPagerApi::class,
+    ExperimentalAnimationApi::class
+)
 
 package one.mixin.android.ui.auth
 
 import GlideImage
 import androidx.collection.ArrayMap
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.animation.SizeTransform
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.slideOutVertically
+import androidx.compose.animation.with
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -79,7 +91,8 @@ fun AuthBottomSheetDialogCompose(
                     .padding(8.dp)
                     .clip(CircleShape)
                     .clickable {
-                        onDismissRequest()
+                        pinAuth.value = false
+                        // onDismissRequest() todo
                     },
                 contentDescription = null
             )
@@ -109,24 +122,39 @@ fun AuthBottomSheetDialogCompose(
                     name, color = MixinAppTheme.colors.textPrimary,
                 )
             }
-            if (pinAuth.value) {
-                LazyColumn(
-                    modifier = Modifier
-                        .padding(16.dp)
-                        .fillMaxWidth()
-                        .weight(1f)
-                        .clip(shape = RoundedCornerShape(8.dp))
-                        .background(MixinAppTheme.colors.backgroundWindow)
-                ) {
-                    items(scopes) { scope ->
-                        ScopeCheckLayout(scope)
+            AnimatedContent(
+                modifier = Modifier.weight(1f),
+                targetState = pinAuth.value,
+                transitionSpec = {
+                    (slideInHorizontally { it } with slideOutHorizontally { -it }).apply {
+                        SizeTransform(clip = false)
                     }
                 }
+            ) { b ->
+                if (b) {
+                    LazyColumn(
+                        modifier = Modifier
+                            .padding(16.dp)
+                            .fillMaxWidth()
+                            .clip(shape = RoundedCornerShape(8.dp))
+                            .background(MixinAppTheme.colors.backgroundWindow)
+                    ) {
+                        items(scopes) { scope ->
+                            ScopeCheckLayout(scope)
+                        }
+                    }
+                } else {
+                    ScopesContent(scopeGroup, scopes, onConfirmed = {
+                        pinAuth.value = true
+                    })
+                }
+            }
+            AnimatedVisibility(
+                visible = pinAuth.value,
+                enter = slideInVertically(initialOffsetY = { it }),
+                exit = slideOutVertically(targetOffsetY = { it }),
+            ) {
                 PinKeyBoard()
-            } else {
-                ScopesContent(scopeGroup, scopes, onConfirmed = {
-                    pinAuth.value = true
-                })
             }
         }
     }
