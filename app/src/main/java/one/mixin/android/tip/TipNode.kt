@@ -114,8 +114,9 @@ class TipNode @Inject internal constructor(private val tipNodeService: TipNodeSe
         return Crypto.recoverSignature(hexSigs, commitments, assignor, nodeCount.toLong())
     }
 
-    suspend fun watch(watcher: ByteArray, callback: Callback? = null): List<TipNodeCounter> {
+    suspend fun watch(watcher: ByteArray, callback: Callback? = null): Pair<List<TipNodeCounter>, String> {
         val result = CopyOnWriteArrayList<TipNodeCounter>()
+        val nodeFailedInfo = StringBuffer()
 
         val total = nodeCount
         val completeCount = AtomicInteger(0)
@@ -129,6 +130,7 @@ class TipNode @Inject internal constructor(private val tipNodeService: TipNodeSe
                         val (counter, code) = watchTipNode(signer, watcher)
                         if (code == 429 || code == 500) {
                             Timber.e("watch tip node failed, ${signer.index} ${signer.api} meet $code")
+                            nodeFailedInfo.append("[${signer.index}, $code] ")
 
                             if (code == 429) {
                                 return@async
@@ -151,7 +153,7 @@ class TipNode @Inject internal constructor(private val tipNodeService: TipNodeSe
                 }
             }.awaitAll()
         }
-        return result
+        return Pair(result, nodeFailedInfo.toString())
     }
 
     private suspend fun getNodeSigs(userSk: Scalar, tipSigners: List<TipSigner>, ephemeral: ByteArray, watcher: ByteArray, assignee: ByteArray?, callback: Callback?): Pair<List<TipSignRespData>, TipNodeError?> {

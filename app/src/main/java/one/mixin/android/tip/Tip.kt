@@ -27,6 +27,7 @@ import one.mixin.android.extension.base64RawEncode
 import one.mixin.android.extension.base64RawUrlDecode
 import one.mixin.android.extension.decodeBase64
 import one.mixin.android.extension.defaultSharedPreferences
+import one.mixin.android.extension.getStackTraceString
 import one.mixin.android.extension.hexStringToByteArray
 import one.mixin.android.extension.nowInUtcNano
 import one.mixin.android.extension.remove
@@ -41,6 +42,7 @@ import one.mixin.android.tip.exception.TipException
 import one.mixin.android.tip.exception.TipInvalidCounterGroups
 import one.mixin.android.tip.exception.TipNetworkException
 import one.mixin.android.tip.exception.TipNodeException
+import one.mixin.android.tip.exception.TipNotAllWatcherSuccessException
 import one.mixin.android.tip.exception.TipNullException
 import one.mixin.android.util.ErrorHandler
 import timber.log.Timber
@@ -122,7 +124,7 @@ class Tip @Inject internal constructor(
         onNodeCounterGreaterThanServer: suspend (Int) -> Unit,
         onNodeCounterInconsistency: suspend (Int, List<TipSigner>?) -> Unit,
     ) = kotlin.runCatching {
-        val counters = watchTipNodeCounters()
+        val (counters, nodeErrorInfo) = watchTipNodeCounters()
         if (counters.isEmpty()) {
             Timber.e("watch tip node counters but counters is empty")
             throw TipNullException("watch tip node counters but counters is empty")
@@ -130,7 +132,7 @@ class Tip @Inject internal constructor(
 
         if (counters.size != tipNodeCount()) {
             Timber.e("watch tip node result size is ${counters.size} is not equals to node count ${tipNodeCount()}")
-            // TODO should we consider this case as an incomplete state?
+            throw TipNotAllWatcherSuccessException(nodeErrorInfo)
         }
         val group = counters.groupBy { it.counter }
         if (group.size <= 1) {
@@ -162,7 +164,7 @@ class Tip @Inject internal constructor(
     }
 
     @Throws(IOException::class)
-    private suspend fun watchTipNodeCounters(): List<TipNode.TipNodeCounter> {
+    private suspend fun watchTipNodeCounters(): Pair<List<TipNode.TipNodeCounter>, String> {
         val watcher = identity.getWatcher()
         return tipNode.watch(watcher)
     }
@@ -363,7 +365,7 @@ class Tip @Inject internal constructor(
                 }
             ).onSuccess { tipCounterSynced.synced = true }
                 .onFailure {
-                    Timber.e("checkAndPublishTipCounterSynced meet ${it.localizedMessage}")
+                    Timber.e("checkAndPublishTipCounterSynced meet ${it.getStackTraceString()}")
                     ErrorHandler.handleError(it)
                     throw TipCounterNotSyncedException()
                 }
