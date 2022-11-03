@@ -1,5 +1,6 @@
 package one.mixin.android.ui.tip
 
+import android.annotation.SuppressLint
 import android.os.Bundle
 import android.text.SpannableStringBuilder
 import android.text.method.ScrollingMovementMethod
@@ -31,6 +32,7 @@ import one.mixin.android.session.Session
 import one.mixin.android.tip.Tip
 import one.mixin.android.tip.exception.DifferentIdentityException
 import one.mixin.android.tip.exception.NotAllSignerSuccessException
+import one.mixin.android.tip.exception.TipNotAllWatcherSuccessException
 import one.mixin.android.tip.getTipExceptionMsg
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.PinInputBottomSheetDialogFragment
@@ -100,6 +102,7 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
         updateUI(newVal)
     }
 
+    @SuppressLint("SetTextI18n")
     private fun updateUI(tipStep: TipStep) {
         if (viewDestroyed()) return
 
@@ -123,7 +126,8 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
                     innerVa.displayedChild = 0
                     innerTv.text = getString(R.string.Retry)
                     innerTv.setOnClickListener { tryConnect(tipStep.shouldWatch) }
-                    bottomHintTv.text = getString(R.string.Connect_to_TIP_network_failed)
+                    bottomHintTv.text = (if (tipStep.reason.isBlank()) "" else "${tipStep.reason}\n") +
+                        getString(R.string.Connect_to_TIP_network_failed)
                     bottomHintTv.setTextColor(requireContext().getColor(R.color.colorRed))
                 }
                 is ReadyStart -> {
@@ -207,6 +211,7 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
         updateTipStep(TryConnecting)
         lifecycleScope.launch {
             var available = false
+            var info = ""
             if (shouldWatch) {
                 val tipCounter = Session.getTipCounter()
                 tip.checkCounter(
@@ -219,15 +224,20 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
                     .onFailure {
                         Timber.d("try connect tip watch failure $it")
                         available = false
+                        if (it is TipNotAllWatcherSuccessException) {
+                            info = it.info
+                        }
                     }
             } else {
-                available = viewModel.checkTipNodeConnect()
+                val pair = viewModel.checkTipNodeConnect()
+                available = pair.first
+                info = pair.second
             }
 
             if (available) {
                 updateTipStep(ReadyStart)
             } else {
-                updateTipStep(RetryConnect(shouldWatch))
+                updateTipStep(RetryConnect(shouldWatch, info))
             }
         }
     }
@@ -320,7 +330,7 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
         if (e is DifferentIdentityException) {
             tipBundle.oldPin = null
             tipBundle.pin = null
-            updateTipStep(RetryConnect(true))
+            updateTipStep(RetryConnect(true, ""))
             return
         }
 
@@ -335,7 +345,8 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
             // we should go to the RetryConnect step to check network and other steps.
             tipBundle.pin = null
             tipBundle.oldPin = null
-            updateTipStep(RetryConnect(true))
+            val errorInfo = if (it is TipNotAllWatcherSuccessException) it.info else ""
+            updateTipStep(RetryConnect(true, errorInfo))
             return
         }
 

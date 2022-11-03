@@ -8,6 +8,7 @@ import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
 import one.mixin.android.api.response.TipConfig
 import one.mixin.android.api.service.TipNodeService
+import retrofit2.HttpException
 import java.util.concurrent.atomic.AtomicInteger
 import javax.inject.Inject
 
@@ -19,8 +20,9 @@ internal constructor(
     private val tipConfig: TipConfig
 ) : ViewModel() {
 
-    suspend fun checkTipNodeConnect(): Boolean {
+    suspend fun checkTipNodeConnect(): Pair<Boolean, String> {
         val signers = tipConfig.signers
+        val nodeFailedInfo = StringBuffer()
         val successSum = AtomicInteger(0)
         coroutineScope {
             signers.map { signer ->
@@ -28,10 +30,14 @@ internal constructor(
                     kotlin.runCatching {
                         tipNodeService.get(signer.api)
                         successSum.incrementAndGet()
+                    }.onFailure {
+                        if (it is HttpException) {
+                            nodeFailedInfo.append("[${signer.index}, ${it.code()}] ")
+                        }
                     }
                 }
             }.awaitAll()
         }
-        return successSum.get() == signers.size
+        return Pair(successSum.get() == signers.size, nodeFailedInfo.toString())
     }
 }
