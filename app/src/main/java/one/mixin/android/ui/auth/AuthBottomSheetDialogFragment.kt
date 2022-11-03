@@ -25,6 +25,7 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.api.DataErrorException
@@ -152,6 +153,8 @@ class AuthBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 val redirectUri = data.app.redirectUri
                 redirect(redirectUri, data.authorizationCode)
                 success = true
+                delay(1000)
+                dismiss()
             } else {
                 val errorInfo =
                     if (response.errorCode == ErrorHandler.PIN_INCORRECT || response.errorCode == ErrorHandler.TOO_MANY_REQUEST) {
