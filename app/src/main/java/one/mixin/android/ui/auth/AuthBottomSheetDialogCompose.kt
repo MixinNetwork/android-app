@@ -60,6 +60,9 @@ fun AuthBottomSheetDialogCompose(
     onConfirmed: (Set<Scope>) -> Unit
 ) {
     val scopeGroup = groupScope(scopes)
+    val pinAuth = remember {
+        mutableStateOf(false)
+    }
     MixinAppTheme {
         Column(
             modifier = Modifier
@@ -67,12 +70,13 @@ fun AuthBottomSheetDialogCompose(
                 .fillMaxWidth()
                 .height(690.dp)
                 .background(MixinAppTheme.colors.background)
-                .padding(horizontal = 8.dp, vertical = 16.dp)
+                .padding(vertical = 16.dp)
         ) {
             Image(
                 painter = painterResource(R.drawable.ic_circle_close),
                 modifier = Modifier
                     .align(alignment = Alignment.End)
+                    .padding(8.dp)
                     .clip(CircleShape)
                     .clickable {
                         onDismissRequest()
@@ -86,7 +90,9 @@ fun AuthBottomSheetDialogCompose(
                 fontWeight = FontWeight.SemiBold, fontSize = 18.sp
             )
             Row(
-                modifier = Modifier.align(alignment = CenterHorizontally),
+                modifier = Modifier
+                    .align(alignment = CenterHorizontally)
+                    .padding(horizontal = 8.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 if (iconUrl != null) {
@@ -103,7 +109,25 @@ fun AuthBottomSheetDialogCompose(
                     name, color = MixinAppTheme.colors.textPrimary,
                 )
             }
-            ScopesContent(scopeGroup, scopes, onConfirmed)
+            if (pinAuth.value) {
+                LazyColumn(
+                    modifier = Modifier
+                        .padding(16.dp)
+                        .fillMaxWidth()
+                        .weight(1f)
+                        .clip(shape = RoundedCornerShape(8.dp))
+                        .background(MixinAppTheme.colors.backgroundWindow)
+                ) {
+                    items(scopes) { scope ->
+                        ScopeCheckLayout(scope)
+                    }
+                }
+                PinKeyBoard()
+            } else {
+                ScopesContent(scopeGroup, scopes, onConfirmed = {
+                    pinAuth.value = true
+                })
+            }
         }
     }
 }
@@ -201,7 +225,11 @@ fun ScopesContent(
 }
 
 @Composable
-fun ScopeCheckLayout(scope: Scope, state: Boolean, onCheckedChange: (checked: Boolean) -> Unit) {
+fun ScopeCheckLayout(
+    scope: Scope,
+    state: Boolean = true,
+    onCheckedChange: ((checked: Boolean) -> Unit)? = null
+) {
     val checkedState = remember { mutableStateOf(state) }
     val isProfileScope = scope.source == Scope.SCOPES[0]
     Row(
@@ -210,7 +238,7 @@ fun ScopeCheckLayout(scope: Scope, state: Boolean, onCheckedChange: (checked: Bo
                 if (!isProfileScope) {
                     clickable {
                         checkedState.value = !checkedState.value
-                        onCheckedChange(checkedState.value)
+                        onCheckedChange?.invoke(checkedState.value)
                     }
                 } else {
                     this
@@ -220,22 +248,24 @@ fun ScopeCheckLayout(scope: Scope, state: Boolean, onCheckedChange: (checked: Bo
             .fillMaxWidth()
 
     ) {
-        Image(
-            modifier = Modifier
-                .padding(vertical = 4.dp)
-                .padding(end = 8.dp),
-            painter = painterResource(
-                id = when {
-                    isProfileScope ->
-                        R.drawable.ic_selected_disable
-                    checkedState.value ->
-                        R.drawable.ic_selected
-                    else ->
-                        R.drawable.ic_not_selected
-                }
-            ),
-            contentDescription = null
-        )
+        if (onCheckedChange != null) {
+            Image(
+                modifier = Modifier
+                    .padding(vertical = 4.dp)
+                    .padding(end = 8.dp),
+                painter = painterResource(
+                    id = when {
+                        isProfileScope ->
+                            R.drawable.ic_selected_disable
+                        checkedState.value ->
+                            R.drawable.ic_selected
+                        else ->
+                            R.drawable.ic_not_selected
+                    }
+                ),
+                contentDescription = null
+            )
+        }
         Column(
             modifier = Modifier.align(alignment = Alignment.Top)
         ) {
