@@ -6,6 +6,8 @@ import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.SizeTransform
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.animation.with
@@ -15,15 +17,21 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.Button
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
@@ -34,6 +42,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -52,15 +61,19 @@ import one.mixin.android.extension.pxToDp
 import one.mixin.android.extension.tickVibrate
 import one.mixin.android.ui.setting.ui.theme.MixinAppTheme
 
+private enum class Status {
+    DEFAULT,
+    LOADING,
+    DONE,
+    ERROR
+}
+
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
-fun PinKeyBoard(
-    callback: (String) -> Unit
-) {
+fun PinKeyBoard() {
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
     var size by remember { mutableStateOf(IntSize.Zero) }
-    var loading by remember { mutableStateOf(false) }
     var pinCode by remember { mutableStateOf("") }
     val list = listOf(
         "1", "2", "3",
@@ -68,49 +81,125 @@ fun PinKeyBoard(
         "7", "8", "9",
         "", "0", "<"
     )
+    var status by remember { mutableStateOf(Status.DEFAULT) }
     Column(
         verticalArrangement = Arrangement.Bottom,
         modifier = Modifier
             .wrapContentHeight(Alignment.Bottom)
-            .background(MixinAppTheme.colors.backgroundWindow),
+            .background(MixinAppTheme.colors.backgroundWindow)
     ) {
-        Box(
-            modifier = Modifier
-                .padding(16.dp)
-                .fillMaxWidth(),
-            contentAlignment = Alignment.Center
-        ) {
-            LazyRow {
-                items(6) { index ->
-                    val hasContent = index < pinCode.length
-                    AnimatedContent(
-                        targetState = hasContent,
-                        transitionSpec = {
-                            if (targetState > initialState) {
-                                slideInVertically { height -> height } + fadeIn() with
-                                    slideOutVertically { height -> -height } + fadeOut()
-                            } else {
-                                slideInVertically { height -> -height } + fadeIn() with
-                                    slideOutVertically { height -> height } + fadeOut()
-                            }.using(
-                                SizeTransform(clip = false)
-                            )
-                        }
-                    ) { b ->
-                        Text(
-                            "*",
-                            modifier = Modifier.size(20.dp),
-                            fontWeight = FontWeight.Black,
-                            color = if (b) MixinAppTheme.colors.textPrimary else MixinAppTheme.colors.textMinor,
-                            fontSize = if (b) 18.sp else 12.sp,
-                            textAlign = TextAlign.Center
+        when (status) {
+            Status.DONE -> Column(
+                modifier = Modifier
+                    .height(150.dp)
+                    .fillMaxWidth(),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
+            ) {
+                Image(
+                    painter = painterResource(id = R.drawable.ic_transfer_done),
+                    contentDescription = null
+                )
+                Text(text = stringResource(R.string.Done), color = MixinAppTheme.colors.textMinor)
+                Spacer(modifier = Modifier.height(12.dp))
+                Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.clickable {
+                    // Todo
+                }) {
+                    Image(
+                        painter = painterResource(id = R.drawable.ic_biometric_enable),
+                        contentDescription = null
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text(
+                        text = stringResource(R.string.setting_enable_biometric_pay),
+                        color = MixinAppTheme.colors.textBlue
+                    )
+                }
+            }
+            Status.ERROR -> Column(
+                modifier = Modifier
+                    .height(150.dp)
+                    .fillMaxWidth(),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
+            ) {
+                Text(
+                    modifier = Modifier
+                        .padding(start = 24.dp, end = 24.dp, top = 24.dp, bottom = 10.dp)
+                        .background(
+                            color = MixinAppTheme.colors.backgroundGray,
+                            shape = RoundedCornerShape(8.dp)
                         )
+                        .padding(horizontal = 20.dp, vertical = 10.dp),
+                    text = stringResource(id = R.string.pay_paid), // Todo replace
+                    color = MixinAppTheme.colors.tipError,
+                    textAlign = TextAlign.Center,
+                    fontSize = 14.sp
+                )
+                Button(onClick = {
+                    // TODO
+                    status = Status.DEFAULT
+                }) {
+                    Text(
+                        text = stringResource(id = R.string.Continue),
+                        color = Color.White
+                    )
+                }
+            }
+            Status.LOADING -> Box(
+                contentAlignment = Alignment.Center,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(150.dp)
+            ) {
+                CircularProgressIndicator(
+                    modifier = Modifier
+                        .size(48.dp)
+                        .padding(8.dp),
+                    color = MixinAppTheme.colors.accent
+                )
+            }
+            else -> Column {
+                Box(
+                    modifier = Modifier
+                        .padding(16.dp)
+                        .fillMaxWidth(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    LazyRow(modifier = Modifier.height(20.dp),verticalAlignment = Alignment.CenterVertically) {
+                        items(6) { index ->
+                            val hasContent = index < pinCode.length
+                            AnimatedContent(
+                                targetState = hasContent,
+                                transitionSpec = {
+                                    if (targetState > initialState) {
+                                        scaleIn() + fadeIn() with scaleOut() + fadeOut()
+                                    } else {
+                                        scaleIn() + fadeIn() with scaleOut() + fadeOut()
+                                    }.using(
+                                        SizeTransform(clip = false)
+                                    )
+                                }
+                            ) { b ->
+                                Text(
+                                    "*",
+                                    modifier = Modifier
+                                        .width(24.dp),
+                                    fontWeight = FontWeight.Bold,
+                                    color = if (b) MixinAppTheme.colors.textPrimary else MixinAppTheme.colors.textMinor,
+                                    fontSize = if (b) 18.sp else 12.sp,
+                                    textAlign = TextAlign.Center
+                                )
+                            }
+                        }
                     }
                 }
             }
         }
         AnimatedVisibility(
-            visible = !loading,
+            visible = status == Status.DEFAULT,
+            enter = slideInVertically(initialOffsetY = { it }),
+            exit = slideOutVertically(targetOffsetY = { it }),
         ) {
             Box(
                 modifier = Modifier
@@ -128,7 +217,8 @@ fun PinKeyBoard(
 
             Box(
                 modifier = Modifier
-                    .weight(1f)
+                    .wrapContentHeight()
+                    .heightIn(150.dp, 200.dp)
                     .onSizeChanged {
                         size = it
                     }
@@ -148,7 +238,7 @@ fun PinKeyBoard(
                                         if (index == 11) MixinAppTheme.colors.backgroundDark else MixinAppTheme.colors.background
                                     )
                                     .run {
-                                        if (index != 9) {
+                                        if (status == Status.DEFAULT && index != 9) {
                                             clickable {
                                                 context.tickVibrate()
                                                 if (index == 11) {
@@ -162,21 +252,23 @@ fun PinKeyBoard(
                                                 } else if (pinCode.length < 6) {
                                                     pinCode += list[index]
                                                     if (pinCode.length == 6) {
-                                                        loading = true
-                                                        callback(pinCode)
+                                                        status = Status.LOADING
+                                                        pinCode = ""
                                                         coroutineScope.launch {
-                                                            delay(5000)
-                                                            loading = false
-                                                            pinCode = ""
+                                                            delay(2000)
+                                                            status = Status.DONE
+                                                            delay(2000)
+                                                            status = Status.ERROR
                                                         }
                                                     }
                                                 } else {
-                                                    loading = true
-                                                    callback(pinCode)
+                                                    status = Status.LOADING
+                                                    pinCode = ""
                                                     coroutineScope.launch {
-                                                        delay(5000)
-                                                        loading = false
-                                                        pinCode = ""
+                                                        delay(2000)
+                                                        status = Status.DONE
+                                                        delay(2000)
+                                                        status = Status.ERROR
                                                     }
                                                 }
                                             }
@@ -203,19 +295,6 @@ fun PinKeyBoard(
                     }
                 )
             }
-
-        }
-        AnimatedVisibility(
-            visible = loading,
-        ) {
-            Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxWidth()) {
-                CircularProgressIndicator(
-                    modifier = Modifier
-                        .size(32.dp)
-                        .padding(8.dp),
-                    color = MixinAppTheme.colors.accent
-                )
-            }
         }
     }
 }
@@ -223,7 +302,5 @@ fun PinKeyBoard(
 @Preview
 @Composable
 fun PinKeyBoardPreview() {
-    PinKeyBoard {
-        println(it)
-    }
+    PinKeyBoard()
 }

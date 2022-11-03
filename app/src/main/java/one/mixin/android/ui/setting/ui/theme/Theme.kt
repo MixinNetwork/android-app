@@ -17,6 +17,7 @@ class AppColors(
     val textPrimary: Color,
     val textSubtitle: Color,
     val textMinor: Color,
+    val textBlue: Color = Color(0xFF3D75E3),
 
     val icon: Color,
     val iconGray: Color,
@@ -26,6 +27,7 @@ class AppColors(
     val backgroundDark: Color,
     val backgroundGray: Color,
     val red: Color = Color(0xFFE55541),
+    val tipError:Color = Color(0xFFF67070),
 
     val unchecked: Color
 )
