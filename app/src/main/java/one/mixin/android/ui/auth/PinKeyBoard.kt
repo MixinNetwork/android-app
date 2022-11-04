@@ -44,6 +44,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.onSizeChanged
@@ -83,19 +84,19 @@ fun PinKeyBoard(
     verifyCallback: (suspend (String) -> Pair<Boolean, String?>)?
 ) {
     val context = LocalContext.current
-    val coroutineScope = rememberCoroutineScope()
-    var size by remember { mutableStateOf(IntSize.Zero) }
-    var pinCode by remember { mutableStateOf("") }
-    var errorContent by remember { mutableStateOf("") }
+    val open = context.defaultSharedPreferences.getBoolean(Constants.Account.PREF_BIOMETRICS, false)
+    val enable = !open && BiometricUtil.isSupport(context)
     val list = listOf(
         "1", "2", "3",
         "4", "5", "6",
         "7", "8", "9",
         "", "0", "<"
     )
+    val coroutineScope = rememberCoroutineScope()
+    var size by remember { mutableStateOf(IntSize.Zero) }
+    var pinCode by remember { mutableStateOf("") }
+    var errorContent by remember { mutableStateOf("") }
     var status by remember { mutableStateOf(Status.DEFAULT) }
-    val open = context.defaultSharedPreferences.getBoolean(Constants.Account.PREF_BIOMETRICS, false)
-    val enable = !open && BiometricUtil.isSupport(context)
     Column(
         verticalArrangement = Arrangement.Bottom,
         modifier = Modifier
@@ -118,9 +119,10 @@ fun PinKeyBoard(
                 Spacer(modifier = Modifier.height(12.dp))
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.clickable {
-                        // Todo
-                    }
+                    modifier = Modifier
+                        .clickable {
+                        }
+                        .alpha(0f)// Todo
                 ) {
                     Image(
                         painter = painterResource(id = R.drawable.ic_biometric_enable),
