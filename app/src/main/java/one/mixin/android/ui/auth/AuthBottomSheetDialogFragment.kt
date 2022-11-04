@@ -29,8 +29,12 @@ import one.mixin.android.extension.dp
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.isWebUrl
 import one.mixin.android.extension.withArgs
+import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BottomSheetViewModel
 import one.mixin.android.ui.common.PinInputBottomSheetDialogFragment
+import one.mixin.android.ui.setting.SettingActivity
+import one.mixin.android.ui.tip.TipActivity
+import one.mixin.android.ui.tip.TipType
 import one.mixin.android.util.SystemUIManager
 import one.mixin.android.vo.Scope
 import timber.log.Timber
@@ -92,38 +96,42 @@ class AuthBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 {
                     dismiss()
                 }, { scopes ->
-                PinInputBottomSheetDialogFragment.newInstance(disableBiometric = false)
-                    .let { pinInput ->
-                        pinInput.setOnPinComplete { pin ->
-                            lifecycleScope.launch {
-                                bottomViewModel // init on main thread
-                                handleMixinResponse(
-                                    invokeNetwork = {
-                                        bottomViewModel.authorize(
-                                            authorizationId,
-                                            scopes.map { it.source },
-                                            pin
+                    if (Session.getAccount()?.hasPin != true) {
+                        TipActivity.show(context as SettingActivity, TipType.Create)
+                    } else {
+                        PinInputBottomSheetDialogFragment.newInstance(disableBiometric = false)
+                            .let { pinInput ->
+                                pinInput.setOnPinComplete { pin ->
+                                    lifecycleScope.launch {
+                                        bottomViewModel // init on main thread
+                                        handleMixinResponse(
+                                            invokeNetwork = {
+                                                bottomViewModel.authorize(
+                                                    authorizationId,
+                                                    scopes.map { it.source },
+                                                    pin
+                                                )
+                                            },
+                                            switchContext = Dispatchers.IO,
+                                            successBlock = {
+                                                val data = it.data ?: return@handleMixinResponse
+                                                val redirectUri = data.app.redirectUri
+                                                redirect(redirectUri, data.authorizationCode)
+                                                success = true
+                                                pinInput.dismiss()
+                                                dismiss()
+                                            },
+                                            doAfterNetworkSuccess = {
+                                            },
+                                            exceptionBlock = {
+                                                pinInput.dismiss()
+                                                return@handleMixinResponse false
+                                            }
                                         )
-                                    },
-                                    switchContext = Dispatchers.IO,
-                                    successBlock = {
-                                        val data = it.data ?: return@handleMixinResponse
-                                        val redirectUri = data.app.redirectUri
-                                        redirect(redirectUri, data.authorizationCode)
-                                        success = true
-                                        pinInput.dismiss()
-                                        dismiss()
-                                    },
-                                    doAfterNetworkSuccess = {
-                                    },
-                                    exceptionBlock = {
-                                        pinInput.dismiss()
-                                        return@handleMixinResponse false
                                     }
-                                )
-                            }
-                        }
-                    }.showNow(parentFragmentManager, PinInputBottomSheetDialogFragment.TAG)
+                                }
+                            }.showNow(parentFragmentManager, PinInputBottomSheetDialogFragment.TAG)
+                    }
             }
             )
         }
