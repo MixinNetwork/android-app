@@ -146,6 +146,10 @@ class AuthBottomSheetDialogFragment : BottomSheetDialogFragment() {
             )
             if (response.isSuccess) {
                 status = Status.DONE
+                val data = response.data ?:   return@launch
+                val redirectUri = data.app.redirectUri
+                redirect(redirectUri, data.authorizationCode)
+                success = true
             } else {
                 val errorInfo =
                     if (response.errorCode == ErrorHandler.PIN_INCORRECT || response.errorCode == ErrorHandler.TOO_MANY_REQUEST) {
