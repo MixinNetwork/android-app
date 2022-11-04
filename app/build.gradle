@@ -1,16 +1,18 @@
+plugins {
+    id 'com.android.application'
+    id 'org.jetbrains.kotlin.android'
+    id "org.jetbrains.kotlin.kapt"
+    id 'com.google.dagger.hilt.android'
+    id "org.jetbrains.kotlin.plugin.parcelize"
+    id 'com.google.firebase.firebase-perf'
+    id "de.undercouch.download"
+    id 'com.google.android.libraries.mapsplatform.secrets-gradle-plugin'
+}
+
 def versionMajor = 0
 def versionMinor = 37
 def versionPatch = 1
 def versionBuild = 4
-
-apply plugin: 'com.android.application'
-apply plugin: 'kotlin-android'
-apply plugin: 'org.jetbrains.kotlin.android'
-apply plugin: 'kotlin-kapt'
-apply plugin: 'dagger.hilt.android.plugin'
-apply plugin: 'kotlin-parcelize'
-apply plugin: 'com.google.firebase.firebase-perf'
-apply plugin: 'de.undercouch.download'
 
 android {
     compileSdkVersion 33
@@ -34,17 +36,6 @@ android {
                         "room.expandProjection":"true"]
             }
         }
-
-        buildConfigField 'String', 'APPCENTER_API_KEY', "\"${propOrEmpty('MIXIN_APPCENTER_API_KEY')}\""
-        buildConfigField 'String', 'RECAPTCHA_KEY', "\"${propOrEmpty('MIXIN_RECAPTCHA_KEY')}\""
-        buildConfigField 'String', 'HCAPTCHA_KEY', "\"${propOrEmpty('MIXIN_HCAPTCHA_KEY')}\""
-        buildConfigField 'String', 'GIPHY_KEY', "\"${propOrEmpty('MIXIN_GIPHY_KEY')}\""
-        buildConfigField 'String', 'SafetyNet_API_KEY', "\"${propOrEmpty('MIXIN_SAFETYNET_API_KEY')}\""
-        buildConfigField 'String', 'FS_CLIENT_ID', "\"${propOrEmpty('MIXIN_FS_CLIENT_ID')}\""
-        buildConfigField 'String', 'FS_SECRET', "\"${propOrEmpty('MIXIN_FS_SECRET')}\""
-        buildConfigField 'String', 'GOOGLE_MAP_KEY', "\"${propOrEmpty('MIXIN_GOOGLE_MAP_KEY')}\""
-        resValue "string", "google_maps_key", propOrEmpty('MIXIN_GOOGLE_MAP_KEY')
-        buildConfigField 'String', 'MAPBOX_PUBLIC_TOKEN', "\"${propOrEmpty('MAPBOX_PUBLIC_TOKEN')}\""
 
         packagingOptions {
             exclude 'kotlin/**'
@@ -408,6 +399,10 @@ dependencies {
     kaptAndroidTest "androidx.hilt:hilt-compiler:$hiltAndroidxVersion"
 
     debugImplementation "com.squareup.leakcanary:leakcanary-android:$leakcanaryVerison"
+}
+
+secrets {
+    defaultPropertiesFileName = 'local.defaults.properties'
 }
 
 task ktlint(type: JavaExec, group: "verification") {
