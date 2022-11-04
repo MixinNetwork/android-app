@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalAnimationApi::class)
+
 package one.mixin.android.ui.auth
 
 import androidx.compose.animation.AnimatedContent
@@ -43,7 +45,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.onSizeChanged
@@ -65,6 +66,7 @@ import one.mixin.android.extension.tickVibrate
 import one.mixin.android.session.Session
 import one.mixin.android.ui.setting.ui.theme.MixinAppTheme
 import one.mixin.android.util.BiometricUtil
+import timber.log.Timber
 
 enum class Status {
     DEFAULT,
@@ -73,18 +75,18 @@ enum class Status {
     ERROR
 }
 
-@OptIn(ExperimentalAnimationApi::class)
 @Composable
 fun PinKeyBoard(
     status: Status,
     errorContent: String,
-    resetClick: (() -> Unit)?,
-    onBiometricClicks: (() -> Unit)?,
-    verifyCallback: ((String) -> Unit)?
+    onResetClick: (() -> Unit)?,
+    onBiometricClick: (() -> Unit)?,
+    onVerifyRequest: ((String) -> Unit)?
 ) {
     val context = LocalContext.current
     val open = context.defaultSharedPreferences.getBoolean(Constants.Account.PREF_BIOMETRICS, false)
-    val enable = !open && BiometricUtil.isSupport(context)
+    val biometricEnable = !open && BiometricUtil.isSupport(context)
+    val showBiometric = BiometricUtil.shouldShowBiometric(context)
     val list = listOf(
         "1", "2", "3",
         "4", "5", "6",
@@ -94,13 +96,17 @@ fun PinKeyBoard(
     var size by remember { mutableStateOf(IntSize.Zero) }
     var pinCode by remember { mutableStateOf("") }
 
-    Column(
-        verticalArrangement = Arrangement.Bottom,
-        modifier = Modifier
-            .wrapContentHeight(Alignment.Bottom)
-            .background(MixinAppTheme.colors.background)
-    ) {
-        when (status) {
+    AnimatedContent(targetState = status, transitionSpec = {
+        Timber.e("$targetState $initialState")
+        if (targetState == Status.DEFAULT) {
+            (slideInVertically(initialOffsetY = { it }) with scaleOut() + fadeOut())
+        } else if (initialState == Status.DEFAULT) {
+            (scaleIn() + fadeIn() with fadeOut())
+        } else {
+            (scaleIn() + fadeIn() with scaleOut() + fadeOut())
+        }
+    }) { s ->
+        when (s) {
             Status.DONE -> Column(
                 modifier = Modifier
                     .height(150.dp)
@@ -113,24 +119,27 @@ fun PinKeyBoard(
                     contentDescription = null
                 )
                 Text(text = stringResource(R.string.Done), color = MixinAppTheme.colors.textMinor)
-                Spacer(modifier = Modifier.height(12.dp))
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier
-                        .clickable {
-                        }
-                        .alpha(0f) // Todo
-                ) {
-                    Image(
-                        painter = painterResource(id = R.drawable.ic_biometric_enable),
-                        contentDescription = null
-                    )
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Text(
-                        text = stringResource(R.string.setting_enable_biometric_pay),
-                        color = MixinAppTheme.colors.textBlue
-                    )
-                }
+                // Todo hide biometric
+                // if (biometricEnable) {
+                //     Spacer(modifier = Modifier.height(12.dp))
+                //     Row(
+                //         verticalAlignment = Alignment.CenterVertically,
+                //         modifier = Modifier
+                //             .clickable {
+                //             }
+                //             .alpha(0f)
+                //     ) {
+                //         Image(
+                //             painter = painterResource(id = R.drawable.ic_biometric_enable),
+                //             contentDescription = null
+                //         )
+                //         Spacer(modifier = Modifier.width(4.dp))
+                //         Text(
+                //             text = stringResource(R.string.setting_enable_biometric_pay),
+                //             color = MixinAppTheme.colors.textBlue
+                //         )
+                //     }
+                // }
             }
             Status.ERROR -> Column(
                 modifier = Modifier
@@ -154,7 +163,7 @@ fun PinKeyBoard(
                 )
                 Button(
                     onClick = {
-                        resetClick?.invoke()
+                        onResetClick?.invoke()
                     },
                     colors = ButtonDefaults.buttonColors(
                         backgroundColor = MixinAppTheme.colors.accent
@@ -176,8 +185,7 @@ fun PinKeyBoard(
             ) {
                 CircularProgressIndicator(
                     modifier = Modifier
-                        .size(32.dp)
-                        .padding(8.dp),
+                        .size(32.dp),
                     color = MixinAppTheme.colors.accent
                 )
             }
@@ -220,7 +228,7 @@ fun PinKeyBoard(
                     }
                 }
                 Text(stringResource(R.string.Auth_with_PIN), color = MixinAppTheme.colors.textMinor)
-                if (enable) {
+                if (showBiometric) {
                     Spacer(modifier = Modifier.height(16.dp))
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
@@ -229,7 +237,7 @@ fun PinKeyBoard(
                             .clip(
                                 shape = RoundedCornerShape(4.dp)
                             )
-                            .clickable { onBiometricClicks?.invoke() }
+                            .clickable { onBiometricClick?.invoke() }
                     ) {
                         Image(
                             painter = painterResource(R.drawable.ic_biometric),
@@ -243,93 +251,93 @@ fun PinKeyBoard(
                     }
                 }
                 Spacer(modifier = Modifier.height(16.dp))
-            }
-        }
-        AnimatedVisibility(
-            visible = status == Status.DEFAULT,
-            enter = slideInVertically(initialOffsetY = { it }),
-            exit = slideOutVertically(targetOffsetY = { it }),
-        ) {
-            Column {
-                if (Session.getTipPub() != null) {
-                    Box(
-                        modifier = Modifier
-                            .background(MixinAppTheme.colors.backgroundGray)
-                            .height(36.dp)
-                            .fillMaxWidth(),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            color = MixinAppTheme.colors.textMinor,
-                            text = stringResource(id = R.string.Secured_by_TIP),
-                            fontSize = 12.sp
-                        )
-                    }
-                }
-                Box(
-                    modifier = Modifier
-                        .wrapContentHeight()
-                        .heightIn(120.dp, 180.dp)
-                        .onSizeChanged {
-                            size = it
-                        }
+                AnimatedVisibility(
+                    visible = status == Status.DEFAULT,
+                    enter = slideInVertically(initialOffsetY = { it }),
+                    exit = slideOutVertically(targetOffsetY = { it }),
                 ) {
-                    LazyVerticalGrid(
-                        modifier = Modifier.fillMaxHeight(),
-                        verticalArrangement = Arrangement.spacedBy(1.dp),
-                        horizontalArrangement = Arrangement.spacedBy(1.dp),
-                        columns = GridCells.Fixed(3),
-                        content = {
-                            items(list.size) { index ->
-                                Box(
-                                    contentAlignment = Alignment.Center,
-                                    modifier = Modifier
-                                        .height(context.pxToDp(size.toSize().height / 4).dp - 1.dp)
-                                        .background(
-                                            if (index == 11) MixinAppTheme.colors.backgroundDark else MixinAppTheme.colors.background
-                                        )
-                                        .run {
-                                            if (status == Status.DEFAULT && index != 9) {
-                                                clickable {
-                                                    context.tickVibrate()
-                                                    if (index == 11) {
-                                                        if (pinCode.isNotEmpty()) {
-                                                            pinCode =
-                                                                pinCode.substring(
-                                                                    0,
-                                                                    pinCode.length - 1
-                                                                )
-                                                        }
-                                                    } else if (pinCode.length < 6) {
-                                                        pinCode += list[index]
-                                                        if (pinCode.length == 6) {
-                                                            verifyCallback?.invoke(pinCode)
-                                                            pinCode = ""
-                                                        }
-                                                    }
-                                                }
-                                            } else {
-                                                this
-                                            }
-                                        }
-                                ) {
-                                    if (index == 11) {
-                                        Image(
-                                            painter = painterResource(R.drawable.ic_delete),
-                                            contentDescription = null
-                                        )
-                                    } else {
-                                        Text(
-                                            text = list[index],
-                                            fontSize = 25.sp,
-                                            color = MixinAppTheme.colors.textPrimary,
-                                            textAlign = TextAlign.Center,
-                                        )
-                                    }
-                                }
+                    Column {
+                        if (Session.getTipPub() != null) {
+                            Box(
+                                modifier = Modifier
+                                    .background(MixinAppTheme.colors.backgroundGray)
+                                    .height(36.dp)
+                                    .fillMaxWidth(),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    color = MixinAppTheme.colors.textMinor,
+                                    text = stringResource(id = R.string.Secured_by_TIP),
+                                    fontSize = 12.sp
+                                )
                             }
                         }
-                    )
+                        Box(
+                            modifier = Modifier
+                                .wrapContentHeight()
+                                .heightIn(120.dp, 180.dp)
+                                .onSizeChanged {
+                                    size = it
+                                }
+                        ) {
+                            LazyVerticalGrid(
+                                modifier = Modifier.fillMaxHeight(),
+                                verticalArrangement = Arrangement.spacedBy(1.dp),
+                                horizontalArrangement = Arrangement.spacedBy(1.dp),
+                                columns = GridCells.Fixed(3),
+                                content = {
+                                    items(list.size) { index ->
+                                        Box(
+                                            contentAlignment = Alignment.Center,
+                                            modifier = Modifier
+                                                .height(context.pxToDp(size.toSize().height / 4).dp - 1.dp)
+                                                .background(
+                                                    if (index == 11) MixinAppTheme.colors.backgroundDark else MixinAppTheme.colors.background
+                                                )
+                                                .run {
+                                                    if (status == Status.DEFAULT && index != 9) {
+                                                        clickable {
+                                                            context.tickVibrate()
+                                                            if (index == 11) {
+                                                                if (pinCode.isNotEmpty()) {
+                                                                    pinCode =
+                                                                        pinCode.substring(
+                                                                            0,
+                                                                            pinCode.length - 1
+                                                                        )
+                                                                }
+                                                            } else if (pinCode.length < 6) {
+                                                                pinCode += list[index]
+                                                                if (pinCode.length == 6) {
+                                                                    onVerifyRequest?.invoke(pinCode)
+                                                                    pinCode = ""
+                                                                }
+                                                            }
+                                                        }
+                                                    } else {
+                                                        this
+                                                    }
+                                                }
+                                        ) {
+                                            if (index == 11) {
+                                                Image(
+                                                    painter = painterResource(R.drawable.ic_delete),
+                                                    contentDescription = null
+                                                )
+                                            } else {
+                                                Text(
+                                                    text = list[index],
+                                                    fontSize = 25.sp,
+                                                    color = MixinAppTheme.colors.textPrimary,
+                                                    textAlign = TextAlign.Center,
+                                                )
+                                            }
+                                        }
+                                    }
+                                }
+                            )
+                        }
+                    }
                 }
             }
         }

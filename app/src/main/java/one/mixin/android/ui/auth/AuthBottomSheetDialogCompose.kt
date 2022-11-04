@@ -72,9 +72,9 @@ fun AuthBottomSheetDialogCompose(
     onDismissRequest: (() -> Unit),
     status: Status,
     errorContent: String,
-    resetClick: (() -> Unit)?,
+    onResetClick: (() -> Unit)?,
     onBiometricClick: ((List<String>) -> Unit),
-    verifyCallback: ((List<String>, String) -> Unit)?
+    onVerifyRequest: ((List<String>, String) -> Unit)?
 ) {
     val scopeGroup = groupScope(scopes)
     val pinAuth = remember {
@@ -161,10 +161,10 @@ fun AuthBottomSheetDialogCompose(
                 enter = slideInVertically(initialOffsetY = { it }),
                 exit = slideOutVertically(targetOffsetY = { it }),
             ) {
-                PinKeyBoard(status, errorContent, {
+                PinKeyBoard(status, errorContent, onResetClick = onResetClick, onBiometricClick = {
                     onBiometricClick(savedScopes.map { it.source })
-                }, resetClick) { pin ->
-                    verifyCallback?.invoke(savedScopes.map { it.source }, pin)
+                }) { pin ->
+                    onVerifyRequest?.invoke(savedScopes.map { it.source }, pin)
                 }
             }
         }

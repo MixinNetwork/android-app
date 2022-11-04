@@ -109,17 +109,18 @@ class AuthBottomSheetDialogFragment : BottomSheetDialogFragment() {
             AuthBottomSheetDialogCompose(
                 name = appName,
                 iconUrl = appIconUrl,
-                scopes,
-                {
+                scopes = scopes,
+                onDismissRequest = {
                     dismiss()
-                }, status,
-                errorContent, {
-                status = Status.DEFAULT
-            }, {
-                savedScopes = it
-                showBiometricPrompt()
-            },
-                { scopes, pin ->
+                },
+                status = status,
+                errorContent = errorContent,
+                onResetClick = {
+                    status = Status.DEFAULT
+                }, onBiometricClick = {
+                    savedScopes = it
+                    showBiometricPrompt()
+                }, onVerifyRequest = { scopes, pin ->
                     authVerify(scopes, pin)
                 }
             )
@@ -138,6 +139,7 @@ class AuthBottomSheetDialogFragment : BottomSheetDialogFragment() {
             TipActivity.show(requireActivity(), TipType.Create)
             return@launch
         }
+
         try {
             val response = bottomViewModel.authorize(
                 authorizationId,
@@ -146,7 +148,7 @@ class AuthBottomSheetDialogFragment : BottomSheetDialogFragment() {
             )
             if (response.isSuccess) {
                 status = Status.DONE
-                val data = response.data ?:   return@launch
+                val data = response.data ?: return@launch
                 val redirectUri = data.app.redirectUri
                 redirect(redirectUri, data.authorizationCode)
                 success = true
