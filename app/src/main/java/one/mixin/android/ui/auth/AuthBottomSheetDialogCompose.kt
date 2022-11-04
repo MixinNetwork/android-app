@@ -69,14 +69,19 @@ fun AuthBottomSheetDialogCompose(
     name: String,
     iconUrl: String?,
     scopes: List<Scope>,
-    onDismissRequest: () -> Unit,
-    onBiometricClicks: (() -> Unit)? = null,
-    verifyCallback: (suspend (String) -> Pair<Boolean, String?>)? = null
+    onDismissRequest: (() -> Unit),
+    status: Status,
+    errorContent: String,
+    resetClick: (() -> Unit)?,
+    onBiometricClick: ((List<String>) -> Unit),
+    verifyCallback: ((List<String>, String) -> Unit)?
 ) {
     val scopeGroup = groupScope(scopes)
     val pinAuth = remember {
         mutableStateOf(false)
     }
+    val savedScopes = rememberSaveable { scopes.toMutableSet() }
+
     MixinAppTheme {
         Column(
             modifier = Modifier
@@ -146,7 +151,7 @@ fun AuthBottomSheetDialogCompose(
                         }
                     }
                 } else {
-                    ScopesContent(scopeGroup, scopes, onConfirmed = {
+                    ScopesContent(scopeGroup, savedScopes, onConfirmed = {
                         pinAuth.value = true
                     })
                 }
@@ -156,7 +161,11 @@ fun AuthBottomSheetDialogCompose(
                 enter = slideInVertically(initialOffsetY = { it }),
                 exit = slideOutVertically(targetOffsetY = { it }),
             ) {
-                PinKeyBoard(onBiometricClicks, verifyCallback)
+                PinKeyBoard(status, errorContent, {
+                    onBiometricClick(savedScopes.map { it.source })
+                }, resetClick) { pin ->
+                    verifyCallback?.invoke(savedScopes.map { it.source }, pin)
+                }
             }
         }
     }
@@ -166,13 +175,11 @@ fun AuthBottomSheetDialogCompose(
 @Composable
 fun ScopesContent(
     scopeGroup: ArrayMap<Int, MutableList<Scope>>,
-    scopes: List<Scope>,
-    onConfirmed: (Set<Scope>) -> Unit
+    scopes: MutableSet<Scope>,
+    onConfirmed: () -> Unit
 ) {
     val pagerState = rememberPagerState(initialPage = 0)
     val scope = rememberCoroutineScope()
-    val savedScopes = rememberSaveable { scopes.toMutableSet() }
-
     Column {
         HorizontalPager(
             modifier = Modifier
@@ -208,11 +215,11 @@ fun ScopesContent(
                         .background(MixinAppTheme.colors.backgroundWindow)
                 ) {
                     items(scopeItems) { scope ->
-                        ScopeCheckLayout(scope, savedScopes.contains(scope)) { checked ->
+                        ScopeCheckLayout(scope, scopes.contains(scope)) { checked ->
                             if (checked) {
-                                savedScopes.add(scope)
+                                scopes.add(scope)
                             } else {
-                                savedScopes.remove(scope)
+                                scopes.remove(scope)
                             }
                         }
                     }
@@ -241,7 +248,7 @@ fun ScopesContent(
                         pagerState.animateScrollToPage(page = pagerState.currentPage + 1)
                     }
                 } else {
-                    onConfirmed(savedScopes)
+                    onConfirmed()
                 }
             }
         ) {
@@ -333,6 +340,11 @@ fun AuthBottomSheetDialogComposePreview() {
             Scope.generateScopeFromString(context, "CIRCLES:WRITE"),
             Scope.generateScopeFromString(context, "COLLECTIBLES:READ")
         ),
-        {}, null
+        {},
+        Status.DEFAULT,
+        "",
+        { },
+        {},
+        null
     )
 }

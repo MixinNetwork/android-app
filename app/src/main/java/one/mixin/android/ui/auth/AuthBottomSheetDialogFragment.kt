@@ -12,6 +12,9 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.coordinatorlayout.widget.CoordinatorLayout
@@ -33,11 +36,14 @@ import one.mixin.android.extension.dp
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.isWebUrl
 import one.mixin.android.extension.withArgs
+import one.mixin.android.session.Session
 import one.mixin.android.tip.exception.TipException
 import one.mixin.android.tip.getTipExceptionMsg
 import one.mixin.android.ui.common.BottomSheetViewModel
 import one.mixin.android.ui.common.biometric.BiometricDialog
 import one.mixin.android.ui.common.biometric.BiometricInfo
+import one.mixin.android.ui.tip.TipActivity
+import one.mixin.android.ui.tip.TipType
 import one.mixin.android.util.BiometricUtil
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.SystemUIManager
@@ -90,6 +96,9 @@ class AuthBottomSheetDialogFragment : BottomSheetDialogFragment() {
 
     private val bottomViewModel by viewModels<BottomSheetViewModel>()
 
+    private var status by mutableStateOf(Status.DEFAULT)
+    private var errorContent by mutableStateOf("")
+    private var savedScopes: List<String>? = null
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -103,10 +112,16 @@ class AuthBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 scopes,
                 {
                     dismiss()
-                }, {
+                }, status,
+                errorContent, {
+                status = Status.DEFAULT
+            }, {
+                savedScopes = it
                 showBiometricPrompt()
             },
-                authCallback
+                { scopes, pin ->
+                    authVerify(scopes, pin)
+                }
             )
         }
         doOnPreDraw {
@@ -118,15 +133,19 @@ class AuthBottomSheetDialogFragment : BottomSheetDialogFragment() {
         }
     }
 
-    private val authCallback: (suspend (String) -> Pair<Boolean, String?>) = { pin ->
+    private fun authVerify(scopes: List<String>, pin: String) = lifecycleScope.launch {
+        if (Session.getAccount()?.hasPin != true) {
+            TipActivity.show(requireActivity(), TipType.Create)
+            return@launch
+        }
         try {
             val response = bottomViewModel.authorize(
                 authorizationId,
-                scopes.map { it.source },
+                scopes,
                 pin
             )
             if (response.isSuccess) {
-                Pair(true, null)
+                status = Status.DONE
             } else {
                 val errorInfo =
                     if (response.errorCode == ErrorHandler.PIN_INCORRECT || response.errorCode == ErrorHandler.TOO_MANY_REQUEST) {
@@ -142,11 +161,12 @@ class AuthBottomSheetDialogFragment : BottomSheetDialogFragment() {
                             response.errorDescription
                         )
                     }
-                Pair(false, errorInfo)
+                status = Status.ERROR
+                errorContent = errorInfo
             }
         } catch (e: Exception) {
-            Pair(
-                false,
+            status = Status.ERROR
+            errorContent =
                 when (e) {
                     is TipException -> e.getTipExceptionMsg(requireContext())
                     is SocketTimeoutException -> requireContext().getString(R.string.error_connection_timeout)
@@ -162,7 +182,6 @@ class AuthBottomSheetDialogFragment : BottomSheetDialogFragment() {
                         e.message
                     )
                 }
-            )
         }
     }
 
@@ -266,8 +285,10 @@ class AuthBottomSheetDialogFragment : BottomSheetDialogFragment() {
 
     private val biometricDialogCallback = object : BiometricDialog.Callback {
         override fun onPinComplete(pin: String) {
-            // Todo
-            Timber.e("pin $pin")
+            authVerify(
+                requireNotNull(savedScopes),
+                pin
+            )
         }
 
         override fun showPin() {

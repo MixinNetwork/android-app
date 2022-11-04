@@ -40,7 +40,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -58,8 +57,6 @@ import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.unit.toSize
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.extension.defaultSharedPreferences
@@ -68,9 +65,8 @@ import one.mixin.android.extension.tickVibrate
 import one.mixin.android.session.Session
 import one.mixin.android.ui.setting.ui.theme.MixinAppTheme
 import one.mixin.android.util.BiometricUtil
-import java.util.Random
 
-private enum class Status {
+enum class Status {
     DEFAULT,
     LOADING,
     DONE,
@@ -80,8 +76,11 @@ private enum class Status {
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
 fun PinKeyBoard(
+    status: Status,
+    errorContent: String,
+    resetClick: (() -> Unit)?,
     onBiometricClicks: (() -> Unit)?,
-    verifyCallback: (suspend (String) -> Pair<Boolean, String?>)?
+    verifyCallback: ((String) -> Unit)?
 ) {
     val context = LocalContext.current
     val open = context.defaultSharedPreferences.getBoolean(Constants.Account.PREF_BIOMETRICS, false)
@@ -92,11 +91,9 @@ fun PinKeyBoard(
         "7", "8", "9",
         "", "0", "<"
     )
-    val coroutineScope = rememberCoroutineScope()
     var size by remember { mutableStateOf(IntSize.Zero) }
     var pinCode by remember { mutableStateOf("") }
-    var errorContent by remember { mutableStateOf("") }
-    var status by remember { mutableStateOf(Status.DEFAULT) }
+
     Column(
         verticalArrangement = Arrangement.Bottom,
         modifier = Modifier
@@ -122,7 +119,7 @@ fun PinKeyBoard(
                     modifier = Modifier
                         .clickable {
                         }
-                        .alpha(0f)// Todo
+                        .alpha(0f) // Todo
                 ) {
                     Image(
                         painter = painterResource(id = R.drawable.ic_biometric_enable),
@@ -157,7 +154,7 @@ fun PinKeyBoard(
                 )
                 Button(
                     onClick = {
-                        status = Status.DEFAULT
+                        resetClick?.invoke()
                     },
                     colors = ButtonDefaults.buttonColors(
                         backgroundColor = MixinAppTheme.colors.accent
@@ -229,7 +226,6 @@ fun PinKeyBoard(
                         verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier
                             .padding(horizontal = 12.dp, vertical = 3.dp)
-                            .background(color = Color.Red)
                             .clip(
                                 shape = RoundedCornerShape(4.dp)
                             )
@@ -307,19 +303,8 @@ fun PinKeyBoard(
                                                     } else if (pinCode.length < 6) {
                                                         pinCode += list[index]
                                                         if (pinCode.length == 6) {
-                                                            coroutineScope.launch {
-                                                                status = Status.LOADING
-                                                                val (result, errorInfo) = verifyCallback?.invoke(
-                                                                    pinCode
-                                                                ) ?: return@launch
-                                                                if (result) {
-                                                                    status = Status.DONE
-                                                                } else {
-                                                                    pinCode = ""
-                                                                    status = Status.ERROR
-                                                                    errorContent = errorInfo ?: ""
-                                                                }
-                                                            }
+                                                            verifyCallback?.invoke(pinCode)
+                                                            pinCode = ""
                                                         }
                                                     }
                                                 }
@@ -354,13 +339,5 @@ fun PinKeyBoard(
 @Preview
 @Composable
 fun PinKeyBoardPreview() {
-    val b: (suspend (String) -> Pair<Boolean, String?>) = { pin ->
-        delay(2000)
-        if (Random().nextInt(2) == 0) {
-            Pair(true, null)
-        } else {
-            Pair(false, "Error: $pin")
-        }
-    }
-    PinKeyBoard(null, verifyCallback = b)
+    PinKeyBoard(Status.DEFAULT, "", {}, null, null)
 }
