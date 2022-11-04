@@ -32,7 +32,6 @@ import one.mixin.android.extension.withArgs
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BottomSheetViewModel
 import one.mixin.android.ui.common.PinInputBottomSheetDialogFragment
-import one.mixin.android.ui.setting.SettingActivity
 import one.mixin.android.ui.tip.TipActivity
 import one.mixin.android.ui.tip.TipType
 import one.mixin.android.util.SystemUIManager
@@ -97,7 +96,7 @@ class AuthBottomSheetDialogFragment : BottomSheetDialogFragment() {
                     dismiss()
                 }, { scopes ->
                     if (Session.getAccount()?.hasPin != true) {
-                        TipActivity.show(context as SettingActivity, TipType.Create)
+                        TipActivity.show(requireActivity(), TipType.Create)
                     } else {
                         PinInputBottomSheetDialogFragment.newInstance(disableBiometric = false)
                             .let { pinInput ->
