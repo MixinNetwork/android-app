@@ -33,13 +33,12 @@ class PrivacyFragment : BaseFragment(R.layout.fragment_privacy) {
                 activity?.onBackPressedDispatcher?.onBackPressed()
             }
             viewModel.countBlockingUsers().observe(
-                viewLifecycleOwner,
-                {
-                    it?.let { users ->
-                        blockingTv.text = "${users.size}"
-                    }
+                viewLifecycleOwner
+            ) {
+                it?.let { users ->
+                    blockingTv.text = "${users.size}"
                 }
-            )
+            }
 
             blockedRl.setOnClickListener {
                 navTo(SettingBlockedFragment.newInstance(), SettingBlockedFragment.TAG)
