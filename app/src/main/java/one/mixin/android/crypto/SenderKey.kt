@@ -310,10 +310,14 @@ internal fun requestResendKey(
     ratchetSenderKeyDao: RatchetSenderKeyDao,
     conversationId: String,
     recipientId: String,
+    messageId: String?,
     sessionId: String?,
 ) {
     val plainText = gson.toJson(
-        PlainJsonMessagePayload(action = PlainDataAction.RESEND_KEY.name)
+        PlainJsonMessagePayload(
+            action = PlainDataAction.RESEND_KEY.name,
+            messageId = messageId,
+        )
     )
     val encoded = plainText.toByteArray().base64Encode()
     val bm = createParamBlazeMessage(createPlainJsonParam(conversationId, recipientId, encoded, sessionId))

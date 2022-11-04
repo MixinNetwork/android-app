@@ -10,6 +10,8 @@ data class PlainJsonMessagePayload(
     val messages: List<String>? = null,
     @SerializedName("user_id")
     val userId: String? = null,
+    @SerializedName("message_id")
+    val messageId: String? = null,
     @SerializedName("session_id")
     val session_id: String? = null,
     @SerializedName("ack_messages")

@@ -1126,7 +1126,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                 val address = SignalProtocolAddress(data.userId, deviceId)
                 val status = ratchetSenderKeyDao.getRatchetSenderKey(data.conversationId, address.toString())?.status
                 if (status == null) {
-                    requestResendKey(gson, jobManager, ratchetSenderKeyDao, data.conversationId, data.userId, data.sessionId)
+                    requestResendKey(gson, jobManager, ratchetSenderKeyDao, data.conversationId, data.userId, data.messageId, data.sessionId)
                 }
             }
         }

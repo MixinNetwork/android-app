@@ -698,6 +698,7 @@ class GroupCallService : CallService() {
                     ratchetSenderKeyDao,
                     cid,
                     userId,
+                    null,
                     sessionId
                 )
             }
