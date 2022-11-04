@@ -70,7 +70,8 @@ fun AuthBottomSheetDialogCompose(
     iconUrl: String?,
     scopes: List<Scope>,
     onDismissRequest: () -> Unit,
-    verifyCallback: (suspend (String) -> Pair<Boolean, String?>)?
+    onBiometricClicks: (() -> Unit)? = null,
+    verifyCallback: (suspend (String) -> Pair<Boolean, String?>)? = null
 ) {
     val scopeGroup = groupScope(scopes)
     val pinAuth = remember {
@@ -155,7 +156,7 @@ fun AuthBottomSheetDialogCompose(
                 enter = slideInVertically(initialOffsetY = { it }),
                 exit = slideOutVertically(targetOffsetY = { it }),
             ) {
-                PinKeyBoard(verifyCallback)
+                PinKeyBoard(onBiometricClicks, verifyCallback)
             }
         }
     }

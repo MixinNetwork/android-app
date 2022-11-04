@@ -44,6 +44,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalContext
@@ -58,11 +59,14 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.unit.toSize
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import one.mixin.android.Constants
 import one.mixin.android.R
+import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.pxToDp
 import one.mixin.android.extension.tickVibrate
 import one.mixin.android.session.Session
 import one.mixin.android.ui.setting.ui.theme.MixinAppTheme
+import one.mixin.android.util.BiometricUtil
 import java.util.Random
 
 private enum class Status {
@@ -75,6 +79,7 @@ private enum class Status {
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
 fun PinKeyBoard(
+    onBiometricClicks: (() -> Unit)?,
     verifyCallback: (suspend (String) -> Pair<Boolean, String?>)?
 ) {
     val context = LocalContext.current
@@ -89,6 +94,8 @@ fun PinKeyBoard(
         "", "0", "<"
     )
     var status by remember { mutableStateOf(Status.DEFAULT) }
+    val open = context.defaultSharedPreferences.getBoolean(Constants.Account.PREF_BIOMETRICS, false)
+    val enable = !open && BiometricUtil.isSupport(context)
     Column(
         verticalArrangement = Arrangement.Bottom,
         modifier = Modifier
@@ -148,7 +155,6 @@ fun PinKeyBoard(
                 )
                 Button(
                     onClick = {
-                        // TODO
                         status = Status.DEFAULT
                     },
                     colors = ButtonDefaults.buttonColors(
@@ -171,15 +177,15 @@ fun PinKeyBoard(
             ) {
                 CircularProgressIndicator(
                     modifier = Modifier
-                        .size(48.dp)
+                        .size(32.dp)
                         .padding(8.dp),
                     color = MixinAppTheme.colors.accent
                 )
             }
-            else -> Column {
+            else -> Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Box(
                     modifier = Modifier
-                        .padding(16.dp)
+                        .padding(8.dp)
                         .fillMaxWidth(),
                     contentAlignment = Alignment.Center
                 ) {
@@ -214,6 +220,31 @@ fun PinKeyBoard(
                         }
                     }
                 }
+                Text(stringResource(R.string.Auth_with_PIN), color = MixinAppTheme.colors.textMinor)
+                if (enable) {
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier
+                            .padding(horizontal = 12.dp, vertical = 3.dp)
+                            .background(color = Color.Red)
+                            .clip(
+                                shape = RoundedCornerShape(4.dp)
+                            )
+                            .clickable { onBiometricClicks?.invoke() }
+                    ) {
+                        Image(
+                            painter = painterResource(R.drawable.ic_biometric),
+                            contentDescription = null
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text(
+                            text = stringResource(R.string.Use_Biometric_Multisig),
+                            color = MixinAppTheme.colors.textBlue
+                        )
+                    }
+                }
+                Spacer(modifier = Modifier.height(16.dp))
             }
         }
         AnimatedVisibility(
@@ -240,7 +271,7 @@ fun PinKeyBoard(
                 Box(
                     modifier = Modifier
                         .wrapContentHeight()
-                        .heightIn(150.dp, 200.dp)
+                        .heightIn(120.dp, 180.dp)
                         .onSizeChanged {
                             size = it
                         }
@@ -329,5 +360,5 @@ fun PinKeyBoardPreview() {
             Pair(false, "Error: $pin")
         }
     }
-    PinKeyBoard(verifyCallback = b)
+    PinKeyBoard(null, verifyCallback = b)
 }

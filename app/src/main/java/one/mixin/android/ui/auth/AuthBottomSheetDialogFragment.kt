@@ -11,6 +11,7 @@ import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.WindowManager
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.coordinatorlayout.widget.CoordinatorLayout
@@ -35,6 +36,9 @@ import one.mixin.android.extension.withArgs
 import one.mixin.android.tip.exception.TipException
 import one.mixin.android.tip.getTipExceptionMsg
 import one.mixin.android.ui.common.BottomSheetViewModel
+import one.mixin.android.ui.common.biometric.BiometricDialog
+import one.mixin.android.ui.common.biometric.BiometricInfo
+import one.mixin.android.util.BiometricUtil
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.SystemUIManager
 import one.mixin.android.util.getMixinErrorStringByCode
@@ -99,7 +103,10 @@ class AuthBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 scopes,
                 {
                     dismiss()
-                }, authCallback
+                }, {
+                showBiometricPrompt()
+            },
+                authCallback
             )
         }
         doOnPreDraw {
@@ -238,5 +245,39 @@ class AuthBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 Timber.e(e)
             }
         }
+    }
+
+    private var biometricDialog: BiometricDialog? = null
+    private fun showBiometricPrompt() {
+        biometricDialog = BiometricDialog(
+            requireActivity(),
+            getBiometricInfo()
+        )
+        biometricDialog?.callback = biometricDialogCallback
+        biometricDialog?.show()
+    }
+
+    fun getBiometricInfo() = BiometricInfo(
+        getString(R.string.Verify_by_Biometric),
+        "",
+        "",
+        getString(R.string.Verify_PIN)
+    )
+
+    private val biometricDialogCallback = object : BiometricDialog.Callback {
+        override fun onPinComplete(pin: String) {
+            // Todo
+            Timber.e("pin $pin")
+        }
+
+        override fun showPin() {
+            dialog?.window?.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
+        }
+
+        override fun showAuthenticationScreen() {
+            BiometricUtil.showAuthenticationScreen(this@AuthBottomSheetDialogFragment.requireActivity())
+        }
+
+        override fun onCancel() {}
     }
 }
