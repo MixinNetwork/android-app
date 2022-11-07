@@ -95,7 +95,7 @@ fun AuthBottomSheetDialogCompose(
                 painter = painterResource(R.drawable.ic_circle_close),
                 modifier = Modifier
                     .align(alignment = Alignment.End)
-                    .padding(8.dp)
+                    .padding(horizontal = 8.dp)
                     .clip(CircleShape)
                     .clickable {
                         onDismissRequest()
@@ -184,7 +184,7 @@ fun ScopesContent(
         HorizontalPager(
             modifier = Modifier
                 .weight(1f)
-                .padding(vertical = 24.dp, horizontal = 4.dp),
+                .padding(vertical = 16.dp, horizontal = 4.dp),
             state = pagerState, count = scopeGroup.size,
             verticalAlignment = Alignment.Top
         ) { page ->
@@ -343,7 +343,7 @@ fun AuthBottomSheetDialogComposePreview() {
         {},
         Status.DEFAULT,
         "",
-        { },
+        {},
         {},
         null
     )
