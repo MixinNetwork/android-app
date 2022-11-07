@@ -90,7 +90,7 @@ fun AuthBottomSheetDialogCompose(
                 .fillMaxWidth()
                 .height(690.dp)
                 .background(MixinAppTheme.colors.background)
-                .padding(vertical = 16.dp)
+                .padding(top = 16.dp)
         ) {
             Image(
                 painter = painterResource(R.drawable.ic_circle_close),
