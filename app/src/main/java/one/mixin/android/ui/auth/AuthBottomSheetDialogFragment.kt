@@ -64,12 +64,14 @@ class AuthBottomSheetDialogFragment : BottomSheetDialogFragment() {
         const val ARGS_AUTHORIZATION_ID = "args_authorization_id"
 
         private const val ARGS_NAME = "args_name"
+        private const val ARGS_NUMBER = "args_number"
         private const val ARGS_ICON_URL = "args_icon_url"
 
-        fun newInstance(scopes: ArrayList<Scope>, name: String, iconUrl: String?, authId: String) =
+        fun newInstance(scopes: ArrayList<Scope>, name: String, number: String, iconUrl: String?, authId: String) =
             AuthBottomSheetDialogFragment().withArgs {
                 putParcelableArrayList(ARGS_SCOPES, scopes)
                 putString(ARGS_NAME, name)
+                putString(ARGS_NUMBER, number)
                 putString(ARGS_ICON_URL, iconUrl)
                 putString(ARGS_AUTHORIZATION_ID, authId)
             }
@@ -88,6 +90,9 @@ class AuthBottomSheetDialogFragment : BottomSheetDialogFragment() {
     }
     private val appName: String by lazy {
         requireArguments().getString(ARGS_NAME)!!
+    }
+    private val appNumber: String by lazy {
+        requireArguments().getString(ARGS_NUMBER)!!
     }
 
     private var success = false
@@ -108,7 +113,7 @@ class AuthBottomSheetDialogFragment : BottomSheetDialogFragment() {
         setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
         setContent {
             AuthBottomSheetDialogCompose(
-                name = appName,
+                name = "$appName($appNumber)",
                 iconUrl = appIconUrl,
                 scopes = scopes,
                 onDismissRequest = {

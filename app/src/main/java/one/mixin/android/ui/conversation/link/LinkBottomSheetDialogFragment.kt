@@ -315,6 +315,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                             AuthBottomSheetDialogFragment.newInstance(
                                 scopes,
                                 authorization.app.name,
+                                authorization.app.appNumber,
                                 authorization.app.iconUrl,
                                 authorization.authorizationId
                             )
