@@ -147,6 +147,7 @@ class AuthBottomSheetDialogFragment : BottomSheetDialogFragment() {
         }
 
         try {
+            status = Status.LOADING
             val response = bottomViewModel.authorize(
                 authorizationId,
                 scopes,
