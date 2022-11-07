@@ -440,7 +440,7 @@ task syncStrings {
     doLast {
         ['en', 'zh', 'zh-TW', 'ja', 'ru', 'in', 'ms'].forEach { i ->
             def lang = i
-            download {
+            download.run {
                 src "https://raw.githubusercontent.com/Tougee/sync-google-sheet/master/generated/output/Android/value-$lang/strings.xml"
 
                 if (lang == 'en') {

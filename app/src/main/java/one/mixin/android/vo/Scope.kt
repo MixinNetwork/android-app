@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.os.Parcelable
 import androidx.annotation.DrawableRes
+import androidx.annotation.StringRes
 import androidx.collection.ArrayMap
 import androidx.collection.arrayMapOf
 import androidx.recyclerview.widget.DiffUtil
@@ -38,47 +39,47 @@ data class Scope(val source: String, val name: String, val desc: String) : Parce
             val (name, desc) = when (scope) {
                 SCOPES[0] -> Pair(
                     ctx.getString(R.string.Read_your_public_profile),
-                    ctx.getString(R.string.Read_your_public_profile_desc)
+                    ctx.getString(R.string.Allow_bot_access_profile)
                 )
                 SCOPES[1] -> Pair(
                     ctx.getString(R.string.Read_your_phone_number),
-                    ctx.getString(R.string.Read_your_phone_number_desc)
+                    ctx.getString(R.string.Allow_bot_access_number)
                 )
                 SCOPES[2] -> Pair(
                     ctx.getString(R.string.Represent_send_messages),
-                    ctx.getString(R.string.Represent_send_messages_desc)
+                    ctx.getString(R.string.Allow_bot_send_messages)
                 )
                 SCOPES[3] -> Pair(
                     ctx.getString(R.string.Read_your_contacts),
-                    ctx.getString(R.string.Read_your_contacts_desc)
+                    ctx.getString(R.string.Read_your_contacts)
                 )
                 SCOPES [4] -> Pair(
-                    ctx.getString(R.string.Read_your_asset),
-                    ctx.getString(R.string.Read_your_asset_desc)
+                    ctx.getString(R.string.Read_your_assets),
+                    ctx.getString(R.string.Allow_bot_access_asset)
                 )
                 SCOPES [5] -> Pair(
                     ctx.getString(R.string.Read_your_snapshots),
-                    ctx.getString(R.string.Read_your_snapshots_desc)
+                    ctx.getString(R.string.Allow_bot_access_snapshots)
                 )
                 SCOPES [6] -> Pair(
                     ctx.getString(R.string.Read_your_apps),
-                    ctx.getString(R.string.Read_your_apps_desc)
+                    ctx.getString(R.string.Allow_bot_access_bots)
                 )
                 SCOPES [7] -> Pair(
                     ctx.getString(R.string.Manage_your_apps),
-                    ctx.getString(R.string.Manage_your_apps_desc)
+                    ctx.getString(R.string.Allow_bot_manage_bots)
                 )
                 SCOPES [8] -> Pair(
                     ctx.getString(R.string.Read_your_circles),
-                    ctx.getString(R.string.Read_your_circles_desc)
+                    ctx.getString(R.string.Allow_bot_access_circles)
                 )
                 SCOPES [9] -> Pair(
                     ctx.getString(R.string.Manage_your_circles),
-                    ctx.getString(R.string.Manage_your_circles_desc)
+                    ctx.getString(R.string.Allow_bot_manage_circles)
                 )
                 SCOPES [10] -> Pair(
                     ctx.getString(R.string.Read_your_NFTs),
-                    ctx.getString(R.string.Read_your_NFTs_desc)
+                    ctx.getString(R.string.Allow_bot_access_nfts)
                 )
                 else -> Pair(ctx.getString(R.string.OTHER), ctx.getString(R.string.OTHER))
             }
@@ -101,16 +102,10 @@ fun Scope.groupId(): Int = when (source) {
     else -> R.drawable.ic_auth_others
 }
 
+@StringRes
 fun getScopeGroupName(@DrawableRes id: Int) = when (id) {
-    R.drawable.ic_auth_wallet -> "Wallet"
-    R.drawable.ic_auth_apps -> "Apps"
-    R.drawable.ic_auth_circles -> "Circles"
-    else -> "Others"
-}
-
-fun scopeGroupName(id: Int) = when (id) {
     R.drawable.ic_auth_wallet -> R.string.Wallet
-    R.drawable.ic_auth_apps -> R.string.Apps
+    R.drawable.ic_auth_apps -> R.string.bots_title
     R.drawable.ic_auth_circles -> R.string.Circles
-    else -> R.string.OTHER
+    else -> R.string.Others
 }

@@ -200,7 +200,7 @@ fun ScopesContent(
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
-                    getScopeGroupName(groupId),
+                    stringResource(id = getScopeGroupName(groupId)),
                     modifier = Modifier.align(alignment = CenterHorizontally),
                     color = MixinAppTheme.colors.textPrimary,
                     fontWeight = FontWeight.SemiBold, fontSize = 18.sp
