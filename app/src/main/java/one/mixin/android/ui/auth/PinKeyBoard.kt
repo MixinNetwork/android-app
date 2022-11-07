@@ -67,7 +67,6 @@ import one.mixin.android.extension.tickVibrate
 import one.mixin.android.session.Session
 import one.mixin.android.ui.setting.ui.theme.MixinAppTheme
 import one.mixin.android.util.BiometricUtil
-import timber.log.Timber
 
 enum class Status {
     DEFAULT,
@@ -86,7 +85,7 @@ fun PinKeyBoard(
 ) {
     val context = LocalContext.current
     val open = context.defaultSharedPreferences.getBoolean(Constants.Account.PREF_BIOMETRICS, false)
-    val biometricEnable = !open && BiometricUtil.isSupport(context)
+    // val biometricEnable = !open && BiometricUtil.isSupport(context)
     val showBiometric = BiometricUtil.shouldShowBiometric(context)
     val list = listOf(
         "1", "2", "3",
@@ -98,7 +97,6 @@ fun PinKeyBoard(
     var pinCode by remember { mutableStateOf("") }
 
     AnimatedContent(targetState = status, transitionSpec = {
-        Timber.e("$targetState $initialState")
         if (targetState == Status.DEFAULT) {
             (slideInVertically(initialOffsetY = { it }) with scaleOut() + fadeOut())
         } else if (initialState == Status.DEFAULT) {
@@ -228,7 +226,6 @@ fun PinKeyBoard(
                         }
                     }
                 }
-                Text(stringResource(R.string.Auth_with_PIN), color = MixinAppTheme.colors.textMinor)
                 if (showBiometric) {
                     Spacer(modifier = Modifier.height(16.dp))
                     Row(
@@ -257,7 +254,7 @@ fun PinKeyBoard(
                     enter = slideInVertically(initialOffsetY = { it }),
                     exit = slideOutVertically(targetOffsetY = { it }),
                 ) {
-                    Column {
+                    Column(modifier = Modifier.background(MixinAppTheme.colors.backgroundWindow)) {
                         if (Session.getTipPub() != null) {
                             Row(
                                 modifier = Modifier
