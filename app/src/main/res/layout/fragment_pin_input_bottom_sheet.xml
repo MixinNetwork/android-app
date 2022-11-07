@@ -22,10 +22,14 @@
         android:text="@string/Enter_your_PIN_to_continue"
         android:textSize="16sp" />
 
-    <one.mixin.android.ui.common.biometric.BiometricLayout
-        android:id="@+id/biometric_layout"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
+    <one.mixin.android.widget.PinView
+        android:id="@+id/pin"
+        android:layout_width="180dp"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="16dp"
+        android:layout_marginBottom="16dp"
+        app:pin_tipVisible="false" />
 
     <one.mixin.android.widget.Keyboard
         android:id="@+id/keyboard"
