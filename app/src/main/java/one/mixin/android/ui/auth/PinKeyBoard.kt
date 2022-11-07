@@ -37,6 +37,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.CircularProgressIndicator
+import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -258,13 +259,18 @@ fun PinKeyBoard(
                 ) {
                     Column {
                         if (Session.getTipPub() != null) {
-                            Box(
+                            Row(
                                 modifier = Modifier
                                     .background(MixinAppTheme.colors.backgroundGray)
                                     .height(36.dp)
                                     .fillMaxWidth(),
-                                contentAlignment = Alignment.Center
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.Center
                             ) {
+                                Icon(
+                                    painter = painterResource(id = R.drawable.ic_secret_tip),
+                                    contentDescription = null
+                                )
                                 Text(
                                     color = MixinAppTheme.colors.textMinor,
                                     text = stringResource(id = R.string.Secured_by_TIP),
