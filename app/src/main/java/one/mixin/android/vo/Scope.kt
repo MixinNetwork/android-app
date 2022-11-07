@@ -53,31 +53,31 @@ data class Scope(val source: String, val name: String, val desc: String) : Parce
                     ctx.getString(R.string.Read_your_contacts),
                     ctx.getString(R.string.Read_your_contacts)
                 )
-                SCOPES [4] -> Pair(
+                SCOPES[4] -> Pair(
                     ctx.getString(R.string.Read_your_assets),
                     ctx.getString(R.string.Allow_bot_access_asset)
                 )
-                SCOPES [5] -> Pair(
+                SCOPES[5] -> Pair(
                     ctx.getString(R.string.Read_your_snapshots),
                     ctx.getString(R.string.Allow_bot_access_snapshots)
                 )
-                SCOPES [6] -> Pair(
+                SCOPES[6] -> Pair(
                     ctx.getString(R.string.Read_your_apps),
                     ctx.getString(R.string.Allow_bot_access_bots)
                 )
-                SCOPES [7] -> Pair(
+                SCOPES[7] -> Pair(
                     ctx.getString(R.string.Manage_your_apps),
                     ctx.getString(R.string.Allow_bot_manage_bots)
                 )
-                SCOPES [8] -> Pair(
+                SCOPES[8] -> Pair(
                     ctx.getString(R.string.Read_your_circles),
                     ctx.getString(R.string.Allow_bot_access_circles)
                 )
-                SCOPES [9] -> Pair(
+                SCOPES[9] -> Pair(
                     ctx.getString(R.string.Manage_your_circles),
                     ctx.getString(R.string.Allow_bot_manage_circles)
                 )
-                SCOPES [10] -> Pair(
+                SCOPES[10] -> Pair(
                     ctx.getString(R.string.Read_your_NFTs),
                     ctx.getString(R.string.Allow_bot_access_nfts)
                 )
@@ -94,18 +94,25 @@ fun groupScope(scopes: List<Scope>): ArrayMap<Int, MutableList<Scope>> {
     ) { it.groupId() }
 }
 
-@DrawableRes
-fun Scope.groupId(): Int = when (source) {
-    Scope.SCOPES[4], Scope.SCOPES[5], Scope.SCOPES[10] -> R.drawable.ic_auth_wallet
-    Scope.SCOPES[6], Scope.SCOPES[7] -> R.drawable.ic_auth_apps
-    Scope.SCOPES[8], Scope.SCOPES[9] -> R.drawable.ic_auth_circles
-    else -> R.drawable.ic_auth_others
+private fun Scope.groupId(): Int = when (source) {
+    Scope.SCOPES[4], Scope.SCOPES[5], Scope.SCOPES[10] -> 1
+    Scope.SCOPES[6], Scope.SCOPES[7] -> 2
+    Scope.SCOPES[8], Scope.SCOPES[9] -> 3
+    else -> 0
 }
 
 @StringRes
-fun getScopeGroupName(@DrawableRes id: Int) = when (id) {
-    R.drawable.ic_auth_wallet -> R.string.Wallet
-    R.drawable.ic_auth_apps -> R.string.bots_title
-    R.drawable.ic_auth_circles -> R.string.Circles
+fun getScopeGroupName(id: Int) = when (id) {
+    1 -> R.string.Wallet
+    2 -> R.string.bots_title
+    3 -> R.string.Circles
     else -> R.string.Others
+}
+
+@DrawableRes
+fun getScopeGroupIcon(id: Int): Int = when (id) {
+    1 -> R.drawable.ic_auth_wallet
+    2 -> R.drawable.ic_auth_apps
+    3 -> R.drawable.ic_auth_circles
+    else -> R.drawable.ic_auth_others
 }

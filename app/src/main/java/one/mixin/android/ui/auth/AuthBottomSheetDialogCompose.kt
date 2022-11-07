@@ -61,6 +61,7 @@ import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.ui.setting.ui.theme.MixinAppTheme
 import one.mixin.android.vo.Scope
+import one.mixin.android.vo.getScopeGroupIcon
 import one.mixin.android.vo.getScopeGroupName
 import one.mixin.android.vo.groupScope
 
@@ -192,7 +193,7 @@ fun ScopesContent(
             val scopeItems = requireNotNull(scopeGroup[groupId])
             Column {
                 Image(
-                    painter = painterResource(groupId),
+                    painter = painterResource(getScopeGroupIcon(groupId)),
                     modifier = Modifier
                         .align(alignment = CenterHorizontally)
                         .size(80.dp),
