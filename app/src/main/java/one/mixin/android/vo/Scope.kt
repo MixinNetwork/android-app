@@ -98,6 +98,7 @@ private fun Scope.groupId(): Int = when (source) {
     Scope.SCOPES[4], Scope.SCOPES[5], Scope.SCOPES[10] -> 1
     Scope.SCOPES[6], Scope.SCOPES[7] -> 2
     Scope.SCOPES[8], Scope.SCOPES[9] -> 3
+    Scope.SCOPES[2] -> 4
     else -> 0
 }
 
@@ -106,7 +107,8 @@ fun getScopeGroupName(id: Int) = when (id) {
     1 -> R.string.Wallet
     2 -> R.string.bots_title
     3 -> R.string.Circles
-    else -> R.string.Others
+    4 -> R.string.Circles // Todo replace
+    else -> R.string.Profile
 }
 
 @DrawableRes
@@ -114,5 +116,6 @@ fun getScopeGroupIcon(id: Int): Int = when (id) {
     1 -> R.drawable.ic_auth_wallet
     2 -> R.drawable.ic_auth_apps
     3 -> R.drawable.ic_auth_circles
-    else -> R.drawable.ic_auth_others
+    4 -> R.drawable.ic_auth_circles // todo replace
+    else -> R.drawable.ic_auth_profile
 }

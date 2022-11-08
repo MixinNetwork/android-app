@@ -728,6 +728,7 @@
     <string name="Privacy">Privacy</string>
     <string name="Privacy_Policy">Privacy Policy</string>
     <string name="Process_can_not_be_stop">The process cannot be canceled when it begins. Please remember the 6-digit PIN and reenter it if the process is aborted unexpectedly.</string>
+    <string name="Profile">Profile</string>
     <string name="profile_modify_number">Do you want to change your phone number?</string>
     <string name="Profile_photo">Profile Photo</string>
     <string name="profile_share_bot_hint">If you want to share a bot, add it to your contacts first</string>

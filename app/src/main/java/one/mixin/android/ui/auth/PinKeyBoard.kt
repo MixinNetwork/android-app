@@ -62,6 +62,7 @@ import androidx.compose.ui.unit.toSize
 import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.extension.defaultSharedPreferences
+import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.pxToDp
 import one.mixin.android.extension.tickVibrate
 import one.mixin.android.session.Session
@@ -266,7 +267,8 @@ fun PinKeyBoard(
                             ) {
                                 Icon(
                                     painter = painterResource(id = R.drawable.ic_secret_tip),
-                                    contentDescription = null
+                                    contentDescription = null,
+                                    tint = MixinAppTheme.colors.textMinor
                                 )
                                 Text(
                                     color = MixinAppTheme.colors.textMinor,
@@ -278,24 +280,31 @@ fun PinKeyBoard(
                         Box(
                             modifier = Modifier
                                 .wrapContentHeight()
-                                .heightIn(120.dp, 180.dp)
+                                .heightIn(120.dp, 250.dp)
                                 .onSizeChanged {
                                     size = it
                                 }
                         ) {
                             LazyVerticalGrid(
-                                modifier = Modifier.fillMaxHeight(),
-                                verticalArrangement = Arrangement.spacedBy(1.dp),
-                                horizontalArrangement = Arrangement.spacedBy(1.dp),
+                                modifier = Modifier
+                                    .fillMaxHeight()
+                                    .padding(horizontal = 8.dp, vertical = 8.dp),
+                                verticalArrangement = Arrangement.spacedBy(8.dp),
+                                horizontalArrangement = Arrangement.spacedBy(8.dp),
                                 columns = GridCells.Fixed(3),
                                 content = {
                                     items(list.size) { index ->
                                         Box(
                                             contentAlignment = Alignment.Center,
                                             modifier = Modifier
-                                                .height(context.pxToDp(size.toSize().height / 4).dp - 1.dp)
+                                                .height(context.pxToDp((size.toSize().height - context.dpToPx(40f)) / 4).dp)
+                                                .clip(shape = RoundedCornerShape(8.dp))
                                                 .background(
-                                                    if (index == 11) MixinAppTheme.colors.backgroundDark else MixinAppTheme.colors.background
+                                                    when (index) {
+                                                        11 -> MixinAppTheme.colors.backgroundDark
+                                                        9 -> Color.Transparent
+                                                        else -> MixinAppTheme.colors.background
+                                                    }
                                                 )
                                                 .run {
                                                     if (status == Status.DEFAULT && index != 9) {
@@ -327,7 +336,7 @@ fun PinKeyBoard(
                                                     painter = painterResource(R.drawable.ic_delete),
                                                     contentDescription = null
                                                 )
-                                            } else {
+                                            } else if (index != 9) {
                                                 Text(
                                                     text = list[index],
                                                     fontSize = 25.sp,

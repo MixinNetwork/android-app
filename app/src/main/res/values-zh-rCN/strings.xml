@@ -712,6 +712,7 @@
     <string name="Privacy">隐私</string>
     <string name="Privacy_Policy">隐私政策</string>
     <string name="Process_can_not_be_stop">流程一旦开始无法取消，请牢记 6 位数字 PIN，意外中止流程需要再次输入</string>
+    <string name="Profile">个人资料</string>
     <string name="profile_modify_number">你想要修改手机号码么？</string>
     <string name="Profile_photo">个人头像</string>
     <string name="profile_share_bot_hint">如果您希望分享机器人，请先添加联系人。</string>

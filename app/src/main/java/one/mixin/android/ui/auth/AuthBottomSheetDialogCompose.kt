@@ -104,7 +104,7 @@ fun AuthBottomSheetDialogCompose(
                 contentDescription = null
             )
             Text(
-                stringResource(R.string.Authorizations),
+                stringResource(R.string.Request_Authorization),
                 modifier = Modifier.align(alignment = CenterHorizontally),
                 color = MixinAppTheme.colors.textPrimary,
                 fontWeight = FontWeight.SemiBold, fontSize = 18.sp
@@ -273,10 +273,10 @@ fun ScopeCheckLayout(
     Row(
         modifier = Modifier
             .run {
-                if (!isProfileScope) {
+                if (!isProfileScope && onCheckedChange!=null) {
                     clickable {
                         checkedState.value = !checkedState.value
-                        onCheckedChange?.invoke(checkedState.value)
+                        onCheckedChange.invoke(checkedState.value)
                     }
                 } else {
                     this
@@ -286,24 +286,22 @@ fun ScopeCheckLayout(
             .fillMaxWidth()
 
     ) {
-        if (onCheckedChange != null) {
-            Image(
-                modifier = Modifier
-                    .padding(vertical = 4.dp)
-                    .padding(end = 8.dp),
-                painter = painterResource(
-                    id = when {
-                        isProfileScope ->
-                            R.drawable.ic_selected_disable
-                        checkedState.value ->
-                            R.drawable.ic_selected
-                        else ->
-                            R.drawable.ic_not_selected
-                    }
-                ),
-                contentDescription = null
-            )
-        }
+        Image(
+            modifier = Modifier
+                .padding(vertical = 4.dp)
+                .padding(end = 8.dp),
+            painter = painterResource(
+                id = when {
+                    isProfileScope ->
+                        R.drawable.ic_selected_disable
+                    checkedState.value ->
+                        R.drawable.ic_selected
+                    else ->
+                        R.drawable.ic_not_selected
+                }
+            ),
+            contentDescription = null
+        )
         Column(
             modifier = Modifier.align(alignment = Alignment.Top)
         ) {
