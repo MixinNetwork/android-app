@@ -15,7 +15,7 @@ import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.response.SignalKeyCount
 import one.mixin.android.crypto.Base64
 import one.mixin.android.crypto.SignalProtocol
-import one.mixin.android.crypto.vo.RatchetSenderKey
+import one.mixin.android.crypto.requestResendKey
 import one.mixin.android.crypto.vo.RatchetStatus
 import one.mixin.android.db.insertAndNotifyConversation
 import one.mixin.android.db.insertMessage
@@ -1126,7 +1126,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                 val address = SignalProtocolAddress(data.userId, deviceId)
                 val status = ratchetSenderKeyDao.getRatchetSenderKey(data.conversationId, address.toString())?.status
                 if (status == null) {
-                    requestResendKey(data.conversationId, data.userId, data.messageId, data.sessionId)
+                    requestResendKey(gson, jobManager, ratchetSenderKeyDao, data.conversationId, data.userId, data.messageId, data.sessionId)
                 }
             }
         }
@@ -1254,22 +1254,6 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                 InvalidateFlow.emit(data.conversationId)
             }
         }
-    }
-
-    private fun requestResendKey(conversationId: String, recipientId: String, messageId: String, sessionId: String?) {
-        val plainText = gson.toJson(
-            PlainJsonMessagePayload(
-                action = PlainDataAction.RESEND_KEY.name,
-                messageId = messageId
-            )
-        )
-        val encoded = plainText.toByteArray().base64Encode()
-        val bm = createParamBlazeMessage(createPlainJsonParam(conversationId, recipientId, encoded, sessionId))
-        jobManager.addJobInBackground(SendPlaintextJob(bm))
-
-        val address = SignalProtocolAddress(recipientId, sessionId.getDeviceId())
-        val ratchet = RatchetSenderKey(conversationId, address.toString(), RatchetStatus.REQUESTING.name, bm.params?.message_id, nowInUtc())
-        ratchetSenderKeyDao.insert(ratchet)
     }
 
     private fun requestResendMessage(conversationId: String, userId: String, sessionId: String?) {

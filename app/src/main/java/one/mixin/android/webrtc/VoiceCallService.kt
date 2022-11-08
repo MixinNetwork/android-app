@@ -339,6 +339,8 @@ class VoiceCallService : CallService() {
         return null
     }
 
+    override fun requestResendKey(userId: String, sessionId: String) {}
+
     private fun sendCallMessage(category: String, content: String? = null) {
         val quoteMessageId = callState.trackId
         val message = if (callState.isOffer) {

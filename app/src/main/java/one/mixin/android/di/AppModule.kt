@@ -57,9 +57,13 @@ import one.mixin.android.api.service.TipNodeService
 import one.mixin.android.api.service.TipService
 import one.mixin.android.api.service.UserService
 import one.mixin.android.crypto.EncryptedProtocol
+import one.mixin.android.crypto.JobSenderKey
 import one.mixin.android.crypto.PinCipher
 import one.mixin.android.crypto.SignalProtocol
+import one.mixin.android.db.MessageHistoryDao
 import one.mixin.android.db.MixinDatabase
+import one.mixin.android.db.ParticipantDao
+import one.mixin.android.db.ParticipantSessionDao
 import one.mixin.android.extension.filterNonAscii
 import one.mixin.android.extension.getDeviceId
 import one.mixin.android.extension.isGooglePlayServicesAvailable
@@ -493,4 +497,18 @@ object AppModule {
     @Provides
     @Singleton
     fun provideGson() = GsonHelper.customGson
+
+    @Provides
+    @Singleton
+    fun provideJobSenderKey(
+        participantSessionDao: ParticipantSessionDao,
+        signalProtocol: SignalProtocol,
+        conversationApi: ConversationService,
+        participantDao: ParticipantDao,
+        chatWebSocket: ChatWebSocket,
+        linkState: LinkState,
+        messageHistoryDao: MessageHistoryDao,
+    ) = JobSenderKey(
+        participantSessionDao, signalProtocol, conversationApi, participantDao, chatWebSocket, linkState, messageHistoryDao
+    )
 }
