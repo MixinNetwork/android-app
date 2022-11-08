@@ -12,6 +12,7 @@ import one.mixin.android.tip.exception.NotEnoughPartialsException
 import one.mixin.android.tip.exception.PinIncorrectException
 import one.mixin.android.tip.exception.TipException
 import one.mixin.android.tip.exception.TipNetworkException
+import one.mixin.android.util.getMixinErrorStringByCode
 import one.mixin.android.util.reportException
 
 suspend fun <T> tipNetwork(network: suspend () -> MixinResponse<T>): Result<T> {
@@ -47,6 +48,9 @@ fun Throwable.getTipExceptionMsg(context: Context, nodeFailedInfo: String? = nul
         is NotEnoughPartialsException -> this.getMsg(context)
         is NotAllSignerSuccessException -> this.getMsg(context)
         is DifferentIdentityException -> context.getString(R.string.PIN_not_same_as_last_time)
+        is TipNetworkException -> this.error.run {
+            context.getMixinErrorStringByCode(this.code, this.description)
+        }
         else -> {
             "${context.getString(R.string.Set_or_update_PIN_failed)}\n${this.getStackTraceString()}"
         }
