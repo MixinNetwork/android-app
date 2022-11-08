@@ -4,6 +4,8 @@ package one.mixin.android.ui.auth
 
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.SizeTransform
 import androidx.compose.animation.fadeIn
@@ -59,9 +61,7 @@ import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.unit.toSize
-import one.mixin.android.Constants
 import one.mixin.android.R
-import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.pxToDp
 import one.mixin.android.extension.tickVibrate
@@ -85,7 +85,7 @@ fun PinKeyBoard(
     onVerifyRequest: ((String) -> Unit)?
 ) {
     val context = LocalContext.current
-    val open = context.defaultSharedPreferences.getBoolean(Constants.Account.PREF_BIOMETRICS, false)
+    // val open = context.defaultSharedPreferences.getBoolean(Constants.Account.PREF_BIOMETRICS, false)
     // val biometricEnable = !open && BiometricUtil.isSupport(context)
     val showBiometric = BiometricUtil.shouldShowBiometric(context)
     val list = listOf(
@@ -101,7 +101,11 @@ fun PinKeyBoard(
         if (targetState == Status.DEFAULT) {
             (slideInVertically(initialOffsetY = { it }) with scaleOut() + fadeOut())
         } else if (initialState == Status.DEFAULT) {
-            (scaleIn() + fadeIn() with fadeOut())
+            if (targetState == Status.LOADING) {
+                (EnterTransition.None with ExitTransition.None)
+            } else {
+                (scaleIn() + fadeIn() with fadeOut())
+            }
         } else {
             (scaleIn() + fadeIn() with scaleOut() + fadeOut())
         }
@@ -177,81 +181,95 @@ fun PinKeyBoard(
                     )
                 }
             }
-            Status.LOADING -> Box(
-                contentAlignment = Alignment.Center,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(150.dp)
-            ) {
-                CircularProgressIndicator(
-                    modifier = Modifier
-                        .size(32.dp),
-                    color = MixinAppTheme.colors.accent
-                )
-            }
             else -> Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Box(
-                    modifier = Modifier
-                        .padding(8.dp)
-                        .fillMaxWidth(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    LazyRow(
-                        modifier = Modifier.height(20.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        items(6) { index ->
-                            val hasContent = index < pinCode.length
-                            AnimatedContent(
-                                targetState = hasContent,
-                                transitionSpec = {
-                                    if (targetState > initialState) {
-                                        scaleIn() + fadeIn() with scaleOut() + fadeOut()
-                                    } else {
-                                        scaleIn() + fadeIn() with scaleOut() + fadeOut()
-                                    }.using(
-                                        SizeTransform(clip = false)
+                AnimatedContent(targetState = status, transitionSpec = {
+                    (fadeIn() with fadeOut())
+                }) {
+                    if (status == Status.DEFAULT) {
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(94.dp)
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .padding(8.dp)
+                                    .fillMaxWidth(),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                LazyRow(
+                                    modifier = Modifier.height(20.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    items(6) { index ->
+                                        val hasContent = index < pinCode.length
+                                        AnimatedContent(
+                                            targetState = hasContent,
+                                            transitionSpec = {
+                                                if (targetState > initialState) {
+                                                    scaleIn() + fadeIn() with scaleOut() + fadeOut()
+                                                } else {
+                                                    scaleIn() + fadeIn() with scaleOut() + fadeOut()
+                                                }.using(
+                                                    SizeTransform(clip = false)
+                                                )
+                                            }
+                                        ) { b ->
+                                            Text(
+                                                "*",
+                                                modifier = Modifier
+                                                    .width(24.dp),
+                                                fontWeight = FontWeight.Bold,
+                                                color = if (b) MixinAppTheme.colors.textPrimary else MixinAppTheme.colors.textMinor,
+                                                fontSize = if (b) 18.sp else 12.sp,
+                                                textAlign = TextAlign.Center
+                                            )
+                                        }
+                                    }
+                                }
+                            }
+                            if (showBiometric) {
+                                Spacer(modifier = Modifier.height(16.dp))
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    modifier = Modifier
+                                        .padding(horizontal = 12.dp, vertical = 3.dp)
+                                        .clip(
+                                            shape = RoundedCornerShape(4.dp)
+                                        )
+                                        .clickable { onBiometricClick?.invoke() }
+                                ) {
+                                    Image(
+                                        painter = painterResource(R.drawable.ic_biometric),
+                                        contentDescription = null
+                                    )
+                                    Spacer(modifier = Modifier.width(4.dp))
+                                    Text(
+                                        text = stringResource(R.string.Use_Biometric_Multisig),
+                                        color = MixinAppTheme.colors.textBlue
                                     )
                                 }
-                            ) { b ->
-                                Text(
-                                    "*",
-                                    modifier = Modifier
-                                        .width(24.dp),
-                                    fontWeight = FontWeight.Bold,
-                                    color = if (b) MixinAppTheme.colors.textPrimary else MixinAppTheme.colors.textMinor,
-                                    fontSize = if (b) 18.sp else 12.sp,
-                                    textAlign = TextAlign.Center
-                                )
                             }
+                            Spacer(modifier = Modifier.height(16.dp))
+                        }
+                    } else {
+                        Box(
+                            contentAlignment = Alignment.Center,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(94.dp)
+                        ) {
+                            CircularProgressIndicator(
+                                modifier = Modifier
+                                    .size(32.dp),
+                                color = MixinAppTheme.colors.accent
+                            )
                         }
                     }
                 }
-                if (showBiometric) {
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier
-                            .padding(horizontal = 12.dp, vertical = 3.dp)
-                            .clip(
-                                shape = RoundedCornerShape(4.dp)
-                            )
-                            .clickable { onBiometricClick?.invoke() }
-                    ) {
-                        Image(
-                            painter = painterResource(R.drawable.ic_biometric),
-                            contentDescription = null
-                        )
-                        Spacer(modifier = Modifier.width(4.dp))
-                        Text(
-                            text = stringResource(R.string.Use_Biometric_Multisig),
-                            color = MixinAppTheme.colors.textBlue
-                        )
-                    }
-                }
-                Spacer(modifier = Modifier.height(16.dp))
                 AnimatedVisibility(
-                    visible = status == Status.DEFAULT,
+                    visible = status == Status.DEFAULT || status == Status.LOADING,
                     enter = slideInVertically(initialOffsetY = { it }),
                     exit = slideOutVertically(targetOffsetY = { it }),
                 ) {
@@ -297,7 +315,15 @@ fun PinKeyBoard(
                                         Box(
                                             contentAlignment = Alignment.Center,
                                             modifier = Modifier
-                                                .height(context.pxToDp((size.toSize().height - context.dpToPx(40f)) / 4).dp)
+                                                .height(
+                                                    context.pxToDp(
+                                                        (
+                                                            size.toSize().height - context.dpToPx(
+                                                                40f
+                                                            )
+                                                            ) / 4
+                                                    ).dp
+                                                )
                                                 .clip(shape = RoundedCornerShape(8.dp))
                                                 .background(
                                                     when (index) {

@@ -273,7 +273,7 @@ fun ScopeCheckLayout(
     Row(
         modifier = Modifier
             .run {
-                if (!isProfileScope && onCheckedChange!=null) {
+                if (!isProfileScope && onCheckedChange != null) {
                     clickable {
                         checkedState.value = !checkedState.value
                         onCheckedChange.invoke(checkedState.value)
