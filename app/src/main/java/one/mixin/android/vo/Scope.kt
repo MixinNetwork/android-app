@@ -107,7 +107,7 @@ fun getScopeGroupName(id: Int) = when (id) {
     1 -> R.string.Wallet
     2 -> R.string.bots_title
     3 -> R.string.Circles
-    4 -> R.string.Circles // Todo replace
+    4 -> R.string.Messages
     else -> R.string.Profile
 }
 
@@ -116,6 +116,6 @@ fun getScopeGroupIcon(id: Int): Int = when (id) {
     1 -> R.drawable.ic_auth_wallet
     2 -> R.drawable.ic_auth_apps
     3 -> R.drawable.ic_auth_circles
-    4 -> R.drawable.ic_auth_circles // todo replace
+    4 -> R.drawable.ic_auth_message
     else -> R.drawable.ic_auth_profile
 }
