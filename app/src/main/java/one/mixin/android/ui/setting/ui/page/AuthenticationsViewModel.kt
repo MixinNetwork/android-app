@@ -3,6 +3,7 @@ package one.mixin.android.ui.setting.ui.page
 import android.annotation.SuppressLint
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import dagger.hilt.android.lifecycle.HiltViewModel
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -16,6 +17,7 @@ import one.mixin.android.util.ErrorHandler
 import javax.inject.Inject
 
 @SuppressLint("CheckResult")
+@HiltViewModel
 class AuthenticationsViewModel @Inject constructor(
     authorizationService: AuthorizationService,
 ) : ViewModel() {
