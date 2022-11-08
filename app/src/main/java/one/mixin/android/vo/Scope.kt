@@ -10,11 +10,14 @@ import androidx.collection.arrayMapOf
 import androidx.recyclerview.widget.DiffUtil
 import kotlinx.parcelize.Parcelize
 import one.mixin.android.R
+import java.io.Serializable
 
 @SuppressLint("ParcelCreator")
 @Parcelize
-data class Scope(val source: String, val name: String, val desc: String) : Parcelable {
+data class Scope(val source: String, val name: String, val desc: String) : Parcelable,
+    Serializable {
     companion object {
+        private const val serialVersionUID: Long = 1L
         val DIFF_CALLBACK = object : DiffUtil.ItemCallback<Scope>() {
             override fun areItemsTheSame(oldItem: Scope, newItem: Scope) = oldItem == newItem
 
