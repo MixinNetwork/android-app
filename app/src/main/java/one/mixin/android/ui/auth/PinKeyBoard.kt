@@ -188,6 +188,7 @@ fun PinKeyBoard(
                     if (status == Status.DEFAULT) {
                         Column(
                             horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.Center,
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .height(94.dp)
