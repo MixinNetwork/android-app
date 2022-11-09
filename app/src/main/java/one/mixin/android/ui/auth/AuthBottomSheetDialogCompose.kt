@@ -348,7 +348,11 @@ fun Modifier.verticalScrollbar(
 
         val firstVisibleElementInfo = state.layoutInfo.visibleItemsInfo.firstOrNull()
 
-        if (firstVisibleElementInfo?.index == 0 && state.layoutInfo.visibleItemsInfo.lastOrNull()?.index == state.layoutInfo.totalItemsCount - 1) {
+        val visibleSize = state.layoutInfo.visibleItemsInfo.sumOf {
+            it.size
+        }.toFloat()
+
+        if (visibleSize == this.size.height) {
             // Do nothing.
         } else if (firstVisibleElementInfo != null) {
             val elementHeight = this.size.height / state.layoutInfo.totalItemsCount
