@@ -15,6 +15,7 @@ import android.view.WindowManager
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.coordinatorlayout.widget.CoordinatorLayout
@@ -108,6 +109,18 @@ class AuthBottomSheetDialogFragment : BottomSheetDialogFragment() {
 
     private var step by mutableStateOf(AuthStep.DEFAULT)
 
+    init {
+        lifecycleScope.launchWhenCreated {
+            snapshotFlow { step }.collect { value ->
+                if (value == AuthStep.INPUT) {
+                    dialog?.window?.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
+                } else {
+                    dialog?.window?.clearFlags(WindowManager.LayoutParams.FLAG_SECURE)
+                }
+            }
+        }
+    }
+
     private var errorContent by mutableStateOf("")
     private var savedScopes: List<String>? = null
     override fun onCreateView(
@@ -128,11 +141,9 @@ class AuthBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 errorContent = errorContent,
                 onConfirmed = {
                     step = AuthStep.INPUT
-                    checkStep()
                 },
                 onResetClick = {
                     step = AuthStep.INPUT
-                    checkStep()
                 }, onBiometricClick = {
                     savedScopes = it
                     showBiometricPrompt()
@@ -158,7 +169,6 @@ class AuthBottomSheetDialogFragment : BottomSheetDialogFragment() {
 
         try {
             step = AuthStep.LOADING
-            checkStep()
             val response = bottomViewModel.authorize(
                 authorizationId,
                 scopes,
@@ -166,7 +176,6 @@ class AuthBottomSheetDialogFragment : BottomSheetDialogFragment() {
             )
             if (response.isSuccess) {
                 step = AuthStep.DONE
-                checkStep()
                 val data = response.data ?: return@launch
                 val redirectUri = data.app.redirectUri
                 redirect(redirectUri, data.authorizationCode)
@@ -176,12 +185,10 @@ class AuthBottomSheetDialogFragment : BottomSheetDialogFragment() {
             } else {
                 val errorInfo = getMixinErrorInfo(requireNotNull(response.error))
                 step = AuthStep.ERROR
-                checkStep()
                 errorContent = errorInfo
             }
         } catch (e: Exception) {
             step = AuthStep.ERROR
-            checkStep()
             errorContent =
                 when (e) {
                     is TipNetworkException -> getMixinErrorInfo(e.error)
@@ -335,13 +342,5 @@ class AuthBottomSheetDialogFragment : BottomSheetDialogFragment() {
         }
 
         override fun onCancel() {}
-    }
-
-    private fun checkStep() {
-        if (step == AuthStep.INPUT) {
-            dialog?.window?.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
-        } else {
-            dialog?.window?.clearFlags(WindowManager.LayoutParams.FLAG_SECURE)
-        }
     }
 }
