@@ -41,7 +41,6 @@ import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.isNotchScreen
 import one.mixin.android.extension.isTablet
-import one.mixin.android.extension.isWideScreen
 import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.realSize
 import one.mixin.android.extension.statusBarHeight
