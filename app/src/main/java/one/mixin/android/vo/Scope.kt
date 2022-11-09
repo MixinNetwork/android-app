@@ -14,7 +14,8 @@ import java.io.Serializable
 
 @SuppressLint("ParcelCreator")
 @Parcelize
-data class Scope(val source: String, val name: String, val desc: String) : Parcelable,
+data class Scope(val source: String, val name: String, val desc: String) :
+    Parcelable,
     Serializable {
     companion object {
         private const val serialVersionUID: Long = 1L

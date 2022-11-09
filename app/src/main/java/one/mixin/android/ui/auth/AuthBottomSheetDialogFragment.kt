@@ -30,6 +30,7 @@ import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.api.DataErrorException
 import one.mixin.android.api.NetworkException
+import one.mixin.android.api.ResponseError
 import one.mixin.android.api.ServerErrorException
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.extension.booleanFromAttribute
@@ -39,6 +40,7 @@ import one.mixin.android.extension.isWebUrl
 import one.mixin.android.extension.withArgs
 import one.mixin.android.session.Session
 import one.mixin.android.tip.exception.TipException
+import one.mixin.android.tip.exception.TipNetworkException
 import one.mixin.android.tip.getTipExceptionMsg
 import one.mixin.android.ui.common.BottomSheetViewModel
 import one.mixin.android.ui.common.biometric.BiometricDialog
@@ -162,20 +164,7 @@ class AuthBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 delay(1000)
                 dismiss()
             } else {
-                val errorInfo =
-                    if (response.errorCode == ErrorHandler.PIN_INCORRECT || response.errorCode == ErrorHandler.TOO_MANY_REQUEST) {
-                        val errorCount = bottomViewModel.errorCount()
-                        requireContext().resources.getQuantityString(
-                            R.plurals.error_pin_incorrect_with_times,
-                            errorCount,
-                            errorCount
-                        )
-                    } else {
-                        requireContext().getMixinErrorStringByCode(
-                            response.errorCode,
-                            response.errorDescription
-                        )
-                    }
+                val errorInfo = getMixinErrorInfo(requireNotNull(response.error))
                 status = Status.ERROR
                 errorContent = errorInfo
             }
@@ -183,6 +172,7 @@ class AuthBottomSheetDialogFragment : BottomSheetDialogFragment() {
             status = Status.ERROR
             errorContent =
                 when (e) {
+                    is TipNetworkException -> getMixinErrorInfo(e.error)
                     is TipException -> e.getTipExceptionMsg(requireContext())
                     is SocketTimeoutException -> requireContext().getString(R.string.error_connection_timeout)
                     is UnknownHostException -> requireContext().getString(R.string.No_network_connection)
@@ -225,6 +215,24 @@ class AuthBottomSheetDialogFragment : BottomSheetDialogFragment() {
 
     override fun dismiss() {
         dismissAllowingStateLoss()
+    }
+
+    private suspend fun getMixinErrorInfo(error: ResponseError): String {
+        val errorCode = error.code
+        val errorDescription = error.description
+        return if (errorCode == ErrorHandler.PIN_INCORRECT || errorCode == ErrorHandler.TOO_MANY_REQUEST) {
+            val errorCount = bottomViewModel.errorCount()
+            requireContext().resources.getQuantityString(
+                R.plurals.error_pin_incorrect_with_times,
+                errorCount,
+                errorCount
+            )
+        } else {
+            requireContext().getMixinErrorStringByCode(
+                errorCode,
+                errorDescription
+            )
+        }
     }
 
     private val bottomSheetBehaviorCallback = object : BottomSheetBehavior.BottomSheetCallback() {
