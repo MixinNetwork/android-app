@@ -147,8 +147,14 @@ fun AuthBottomSheetDialogCompose(
                             .clip(shape = RoundedCornerShape(8.dp))
                             .background(MixinAppTheme.colors.backgroundWindow)
                     ) {
-                        items(savedScopes.toList()) { scope ->
-                            ScopeCheckLayout(scope)
+                        items(scopes) { scope ->
+                            ScopeCheckLayout(scope, savedScopes.contains(scope)) { checked ->
+                                if (checked) {
+                                    savedScopes.add(scope)
+                                } else {
+                                    savedScopes.remove(scope)
+                                }
+                            }
                         }
                     }
                 } else {
