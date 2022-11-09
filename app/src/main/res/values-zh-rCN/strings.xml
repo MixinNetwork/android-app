@@ -551,8 +551,8 @@
     <string name="manage_all_your_bots">管理你所有的机器人</string>
     <string name="manage_all_your_circles">管理你所有的圈子</string>
     <string name="Manage_Bots">管理机器人</string>
-    <string name="Manage_your_apps">管理你的所有的机器人</string>
-    <string name="Manage_your_circles">管理你的所有的圈子</string>
+    <string name="Manage_your_apps">管理你所有的机器人</string>
+    <string name="Manage_your_circles">管理你所有的圈子</string>
     <string name="Manager_Sticker">管理贴纸</string>
     <string name="Manufacturer">生产商</string>
     <string name="Mark_as_read">标记为已读</string>

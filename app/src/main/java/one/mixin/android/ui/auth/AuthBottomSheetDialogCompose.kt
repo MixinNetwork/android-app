@@ -1,11 +1,12 @@
 @file:OptIn(
-    ExperimentalPagerApi::class, ExperimentalPagerApi::class,
+    ExperimentalPagerApi::class,
     ExperimentalAnimationApi::class
 )
 
 package one.mixin.android.ui.auth
 
 import GlideImage
+import android.annotation.SuppressLint
 import androidx.collection.ArrayMap
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
@@ -30,11 +31,14 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
+import androidx.compose.material.ContentAlpha
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
@@ -44,12 +48,17 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Alignment.Companion.CenterHorizontally
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.google.accompanist.pager.ExperimentalPagerApi
@@ -63,6 +72,7 @@ import one.mixin.android.vo.Scope
 import one.mixin.android.vo.getScopeGroupIcon
 import one.mixin.android.vo.getScopeGroupName
 import one.mixin.android.vo.groupScope
+import kotlin.math.abs
 
 @Composable
 fun AuthBottomSheetDialogCompose(
@@ -138,13 +148,16 @@ fun AuthBottomSheetDialogCompose(
                 }
             ) { b ->
                 if (b) {
+                    val state: LazyListState = rememberLazyListState()
                     LazyColumn(
+                        state = state,
                         modifier = Modifier
                             .padding(16.dp)
                             .fillMaxWidth()
                             .wrapContentHeight(Alignment.Top)
                             .clip(shape = RoundedCornerShape(8.dp))
                             .background(MixinAppTheme.colors.backgroundWindow)
+                            .verticalScrollbar(state)
                     ) {
                         items(scopes) { scope ->
                             ScopeCheckLayout(scope, savedScopes.contains(scope)) { checked ->
@@ -212,7 +225,6 @@ fun ScopesContent(
                     fontWeight = FontWeight.SemiBold, fontSize = 18.sp
                 )
                 Spacer(modifier = Modifier.height(8.dp))
-
                 LazyColumn(
                     modifier = Modifier
                         .padding(16.dp)
@@ -319,6 +331,36 @@ fun ScopeCheckLayout(
                 scope.desc,
                 fontSize = 14.sp,
                 color = MixinAppTheme.colors.textSubtitle
+            )
+        }
+    }
+}
+
+@SuppressLint("ComposableModifierFactory")
+@Composable
+fun Modifier.verticalScrollbar(
+    state: LazyListState,
+    width: Dp = 4.dp,
+    color: Color = MixinAppTheme.colors.accent.copy(ContentAlpha.disabled)
+): Modifier {
+    return drawWithContent {
+        drawContent()
+
+        val firstVisibleElementInfo = state.layoutInfo.visibleItemsInfo.firstOrNull()
+
+        if (firstVisibleElementInfo?.index == 0 && state.layoutInfo.visibleItemsInfo.lastOrNull()?.index == state.layoutInfo.totalItemsCount - 1) {
+            // Do nothing.
+        } else if (firstVisibleElementInfo != null) {
+            val elementHeight = this.size.height / state.layoutInfo.totalItemsCount
+            val scrollbarOffsetY =
+                (firstVisibleElementInfo.index + (abs(firstVisibleElementInfo.offset).toFloat() / firstVisibleElementInfo.size)) * elementHeight
+            val scrollbarHeight = state.layoutInfo.visibleItemsInfo.size * elementHeight
+
+            drawRoundRect(
+                color = color,
+                cornerRadius = CornerRadius(8f, 8f),
+                topLeft = Offset(this.size.width - width.toPx(), scrollbarOffsetY),
+                size = Size(width.toPx(), scrollbarHeight),
             )
         }
     }
