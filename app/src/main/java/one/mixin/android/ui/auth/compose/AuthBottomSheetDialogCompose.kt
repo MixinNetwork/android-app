@@ -3,7 +3,7 @@
     ExperimentalAnimationApi::class
 )
 
-package one.mixin.android.ui.auth
+package one.mixin.android.ui.auth.compose
 
 import GlideImage
 import android.annotation.SuppressLint
@@ -41,7 +41,6 @@ import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.ContentAlpha
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
@@ -80,16 +79,14 @@ fun AuthBottomSheetDialogCompose(
     iconUrl: String?,
     scopes: List<Scope>,
     onDismissRequest: (() -> Unit),
-    status: Status,
+    step: AuthStep,
     errorContent: String,
     onResetClick: (() -> Unit)?,
+    onConfirmed: (() -> Unit)?,
     onBiometricClick: ((List<String>) -> Unit),
     onVerifyRequest: ((List<String>, String) -> Unit)?
 ) {
     val scopeGroup = groupScope(scopes)
-    val pinAuth = remember {
-        mutableStateOf(false)
-    }
     val savedScopes = remember { scopes.toMutableSet() }
 
     MixinAppTheme {
@@ -140,7 +137,7 @@ fun AuthBottomSheetDialogCompose(
             }
             AnimatedContent(
                 modifier = Modifier.weight(1f),
-                targetState = pinAuth.value,
+                targetState = step != AuthStep.DEFAULT,
                 transitionSpec = {
                     (slideInHorizontally { it } with slideOutHorizontally { -it }).apply {
                         SizeTransform(clip = false)
@@ -170,17 +167,15 @@ fun AuthBottomSheetDialogCompose(
                         }
                     }
                 } else {
-                    ScopesContent(scopeGroup, savedScopes, onConfirmed = {
-                        pinAuth.value = true
-                    })
+                    ScopesContent(scopeGroup, savedScopes, onConfirmed = onConfirmed)
                 }
             }
             AnimatedVisibility(
-                visible = pinAuth.value,
+                visible = step != AuthStep.DEFAULT,
                 enter = slideInVertically(initialOffsetY = { it }),
                 exit = slideOutVertically(targetOffsetY = { it }),
             ) {
-                PinKeyBoard(status, errorContent, onResetClick = onResetClick, onBiometricClick = {
+                PinKeyBoard(step, errorContent, onResetClick = onResetClick, onBiometricClick = {
                     onBiometricClick(savedScopes.map { it.source })
                 }) { pin ->
                     onVerifyRequest?.invoke(savedScopes.map { it.source }, pin)
@@ -195,7 +190,7 @@ fun AuthBottomSheetDialogCompose(
 fun ScopesContent(
     scopeGroup: ArrayMap<Int, MutableList<Scope>>,
     scopes: MutableSet<Scope>,
-    onConfirmed: () -> Unit
+    onConfirmed: (() -> Unit)?
 ) {
     val pagerState = rememberPagerState(initialPage = 0)
     val scope = rememberCoroutineScope()
@@ -266,7 +261,7 @@ fun ScopesContent(
                         pagerState.animateScrollToPage(page = pagerState.currentPage + 1)
                     }
                 } else {
-                    onConfirmed()
+                    onConfirmed?.invoke()
                 }
             }
         ) {
@@ -276,63 +271,6 @@ fun ScopesContent(
             )
         }
         Spacer(modifier = Modifier.height(16.dp))
-    }
-}
-
-@Composable
-fun ScopeCheckLayout(
-    scope: Scope,
-    state: Boolean = true,
-    onCheckedChange: ((checked: Boolean) -> Unit)? = null
-) {
-    val checkedState = remember { mutableStateOf(state) }
-    val isProfileScope = scope.source == Scope.SCOPES[0]
-    Row(
-        modifier = Modifier
-            .run {
-                if (!isProfileScope && onCheckedChange != null) {
-                    clickable {
-                        checkedState.value = !checkedState.value
-                        onCheckedChange.invoke(checkedState.value)
-                    }
-                } else {
-                    this
-                }
-            }
-            .padding(horizontal = 16.dp, vertical = 8.dp)
-            .fillMaxWidth()
-
-    ) {
-        Image(
-            modifier = Modifier
-                .padding(vertical = 4.dp)
-                .padding(end = 8.dp),
-            painter = painterResource(
-                id = when {
-                    isProfileScope ->
-                        R.drawable.ic_selected_disable
-                    checkedState.value ->
-                        R.drawable.ic_selected
-                    else ->
-                        R.drawable.ic_not_selected
-                }
-            ),
-            contentDescription = null
-        )
-        Column(
-            modifier = Modifier.align(alignment = Alignment.Top)
-        ) {
-            Text(
-                scope.name,
-                fontSize = 16.sp,
-                color = MixinAppTheme.colors.textPrimary
-            )
-            Text(
-                scope.desc,
-                fontSize = 14.sp,
-                color = MixinAppTheme.colors.textSubtitle
-            )
-        }
     }
 }
 
@@ -391,8 +329,9 @@ fun AuthBottomSheetDialogComposePreview() {
             Scope.generateScopeFromString(context, "COLLECTIBLES:READ")
         ),
         {},
-        Status.DEFAULT,
+        AuthStep.INPUT,
         "",
+        {},
         {},
         {},
         null

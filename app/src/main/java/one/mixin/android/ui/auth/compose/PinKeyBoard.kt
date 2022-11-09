@@ -1,6 +1,6 @@
 @file:OptIn(ExperimentalAnimationApi::class)
 
-package one.mixin.android.ui.auth
+package one.mixin.android.ui.auth.compose
 
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
@@ -69,16 +69,9 @@ import one.mixin.android.session.Session
 import one.mixin.android.ui.setting.ui.theme.MixinAppTheme
 import one.mixin.android.util.BiometricUtil
 
-enum class Status {
-    DEFAULT,
-    LOADING,
-    DONE,
-    ERROR
-}
-
 @Composable
 fun PinKeyBoard(
-    status: Status,
+    step: AuthStep,
     errorContent: String,
     onResetClick: (() -> Unit)?,
     onBiometricClick: (() -> Unit)?,
@@ -97,11 +90,11 @@ fun PinKeyBoard(
     var size by remember { mutableStateOf(IntSize.Zero) }
     var pinCode by remember { mutableStateOf("") }
 
-    AnimatedContent(targetState = status, transitionSpec = {
-        if (targetState == Status.DEFAULT) {
+    AnimatedContent(targetState = step, transitionSpec = {
+        if (targetState == AuthStep.INPUT) {
             (slideInVertically(initialOffsetY = { it }) with scaleOut() + fadeOut())
-        } else if (initialState == Status.DEFAULT) {
-            if (targetState == Status.LOADING) {
+        } else if (initialState == AuthStep.INPUT) {
+            if (targetState == AuthStep.LOADING) {
                 (EnterTransition.None with ExitTransition.None)
             } else {
                 (scaleIn() + fadeIn() with fadeOut())
@@ -111,7 +104,7 @@ fun PinKeyBoard(
         }
     }) { s ->
         when (s) {
-            Status.DONE -> Column(
+            AuthStep.DONE -> Column(
                 modifier = Modifier
                     .height(150.dp)
                     .fillMaxWidth(),
@@ -145,7 +138,7 @@ fun PinKeyBoard(
                 //     }
                 // }
             }
-            Status.ERROR -> Column(
+            AuthStep.ERROR -> Column(
                 modifier = Modifier
                     .height(150.dp)
                     .fillMaxWidth(),
@@ -182,10 +175,10 @@ fun PinKeyBoard(
                 }
             }
             else -> Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                AnimatedContent(targetState = status, transitionSpec = {
+                AnimatedContent(targetState = step, transitionSpec = {
                     (fadeIn() with fadeOut())
                 }) {
-                    if (status == Status.DEFAULT) {
+                    if (step == AuthStep.INPUT) {
                         Column(
                             horizontalAlignment = Alignment.CenterHorizontally,
                             verticalArrangement = Arrangement.Center,
@@ -270,7 +263,7 @@ fun PinKeyBoard(
                     }
                 }
                 AnimatedVisibility(
-                    visible = status == Status.DEFAULT || status == Status.LOADING,
+                    visible = step == AuthStep.INPUT || step == AuthStep.LOADING,
                     enter = slideInVertically(initialOffsetY = { it }),
                     exit = slideOutVertically(targetOffsetY = { it }),
                 ) {
@@ -334,7 +327,7 @@ fun PinKeyBoard(
                                                     }
                                                 )
                                                 .run {
-                                                    if (status == Status.DEFAULT && index != 9) {
+                                                    if (step == AuthStep.INPUT && index != 9) {
                                                         clickable {
                                                             context.tickVibrate()
                                                             if (index == 11) {
@@ -386,5 +379,5 @@ fun PinKeyBoard(
 @Preview
 @Composable
 fun PinKeyBoardPreview() {
-    PinKeyBoard(Status.DEFAULT, "", {}, null, null)
+    PinKeyBoard(AuthStep.INPUT, "", {}, null, null)
 }
