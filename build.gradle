@@ -102,7 +102,7 @@ buildscript {
 
         ext.bcVersion = '1.70'
         ext.jsonVersion = '20220924'
-        ext.composeVersion = '1.4.0-alpha01'
+        ext.composeVersion = '1.4.0-alpha02'
         ext.accompanistVersion = '0.27.0'
     }
 
