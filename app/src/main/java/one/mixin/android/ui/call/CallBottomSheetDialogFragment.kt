@@ -3,6 +3,7 @@ package one.mixin.android.ui.call
 import android.Manifest
 import android.annotation.SuppressLint
 import android.app.Dialog
+import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Build
@@ -105,6 +106,7 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
 
     @Inject
     lateinit var callState: CallStateLiveData
+
     @Inject
     lateinit var callDebugState: CallDebugLiveData
     lateinit var self: CallUser
@@ -128,10 +130,6 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
     }
 
     private var translationOffset by Delegates.notNull<Float>()
-
-    private val pipCallView by lazy {
-        PipCallView.get()
-    }
 
     private var groupName: String? = null
 
@@ -178,11 +176,23 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
             val cid = callState.conversationId
             val account = Session.getAccount()!!
             self = if (cid == null) {
-                CallUser(account.userId, account.identityNumber, account.fullName, account.avatarUrl, "")
+                CallUser(
+                    account.userId,
+                    account.identityNumber,
+                    account.fullName,
+                    account.avatarUrl,
+                    ""
+                )
             } else {
                 var callUser = viewModel.findSelfCallUser(cid, account.userId)
                 if (callUser == null) {
-                    callUser = CallUser(account.userId, account.identityNumber, account.fullName, account.avatarUrl, "")
+                    callUser = CallUser(
+                        account.userId,
+                        account.identityNumber,
+                        account.fullName,
+                        account.avatarUrl,
+                        ""
+                    )
                     viewModel.refreshConversation(cid)
                 }
                 callUser
@@ -233,11 +243,11 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 hangup()
             }
             binding.minimizeIb.setOnClickListener {
-                if (!pipCallView.shown) {
-                    if (!checkPipPermission()) {
+                if (!PipCallView.get().shown) {
+                    if (!checkPipPermission(requireActivity())) {
                         return@setOnClickListener
                     }
-                    pipCallView.show(callState.connectedTime, callState)
+                    PipCallView.get().show(callState.connectedTime, callState)
                 }
                 dismiss()
             }
@@ -299,9 +309,9 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
                         refreshUsers()
 
                         if ((
-                            state == CallService.CallState.STATE_IDLE ||
-                                state == CallService.CallState.STATE_RINGING
-                            ) &&
+                                state == CallService.CallState.STATE_IDLE ||
+                                    state == CallService.CallState.STATE_RINGING
+                                ) &&
                             callState.needMuteWhenJoin(requireNotNull(cid))
                         ) {
                             updateTitle(getString(R.string.chat_group_call_mute))
@@ -313,7 +323,7 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
                         } else {
                             cid?.let {
                                 val groupCallState = callState.getGroupCallStateOrNull(cid)
-                                if (groupCallState == null || groupCallState.users?.isNullOrEmpty() == true) {
+                                if (groupCallState == null || groupCallState.users?.isEmpty() == true) {
                                     toast(R.string.chat_group_call_end)
                                     dismiss()
                                 }
@@ -546,12 +556,14 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
         }
         if (calls.isNullOrEmpty()) {
             userAdapter?.submitList(null)
-            binding.participants.text = requireContext().resources.getQuantityString(R.plurals.title_participants, 0, 0)
+            binding.participants.text =
+                requireContext().resources.getQuantityString(R.plurals.title_participants, 0, 0)
         } else {
             val last = calls.lastOrNull()
             if (calls.size == 1 && last == self.userId) {
                 userAdapter?.submitList(listOf(self))
-                binding.participants.text = requireContext().resources.getQuantityString(R.plurals.title_participants, 1, 1)
+                binding.participants.text =
+                    requireContext().resources.getQuantityString(R.plurals.title_participants, 1, 1)
                 binding.participants.translationY = binding.bottomLayout.translationY
                 return@launch
             }
@@ -583,7 +595,11 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
                     binding.participants.translationY = binding.bottomLayout.translationY
                 }
             }
-            binding.participants.text = requireContext().resources.getQuantityString(R.plurals.title_participants, users.size, users.size)
+            binding.participants.text = requireContext().resources.getQuantityString(
+                R.plurals.title_participants,
+                users.size,
+                users.size
+            )
         }
         val currentGuestsNotConnected = userAdapter?.guestsNotConnected
         val newGuestsNotConnected = callState.getPendingUsers(cid)
@@ -619,8 +635,8 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 !requireContext().booleanFromAttribute(R.attr.flag_night)
             )
         }
-        if (pipCallView.shown) {
-            pipCallView.close()
+        if (PipCallView.get().shown) {
+            PipCallView.get().close()
         }
     }
 
@@ -644,7 +660,6 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
     }
 
     override fun onStop() {
-        super.onStop()
         if (callState.isNotIdle()) {
             if (!requireActivity().checkInlinePermissions()) {
                 if (!setClicked) {
@@ -653,12 +668,11 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
                         getString(R.string.call_pip_permission)
                     )
                 }
-                return
-            }
-            if (callState.isInUse() && checkPipPermission()) {
-                pipCallView.show(callState.connectedTime, callState)
+            } else if (callState.isInUse() && checkPipPermission(requireContext())) {
+                PipCallView.get().show(callState.connectedTime, callState)
             }
         }
+        super.onStop()
     }
 
     override fun onDetach() {
@@ -696,8 +710,8 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
     private var permissionAlert: AlertDialog? = null
     private var setClicked = false
 
-    private fun checkPipPermission() =
-        requireActivity().checkInlinePermissions {
+    private fun checkPipPermission(context: Context): Boolean =
+        context.checkInlinePermissions {
             if (setClicked) {
                 setClicked = false
                 return@checkInlinePermissions
