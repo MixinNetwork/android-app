@@ -139,10 +139,7 @@ internal constructor(
         jobManager.addJobInBackground(RefreshAssetsJob(assetId))
     }
 
-    suspend fun queryAsset(query: String): List<AssetItem> =
-        withContext(viewModelScope.coroutineContext + Dispatchers.IO) {
-            return@withContext assetRepository.queryAsset(query)
-        }
+    suspend fun queryAsset(query: String): List<AssetItem> = assetRepository.queryAsset(query)
 
     fun saveAssets(hotAssetList: List<TopAssetItem>) {
         hotAssetList.forEach {

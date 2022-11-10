@@ -590,10 +590,7 @@ class BottomSheetViewModel @Inject internal constructor(
             assetRepository.fuzzySearchAssetIgnoreAmount(escapedQuery)
         }
 
-    suspend fun queryAsset(query: String): List<AssetItem> =
-        withContext(viewModelScope.coroutineContext + Dispatchers.IO) {
-            return@withContext assetRepository.queryAsset(query)
-        }
+    suspend fun queryAsset(query: String): List<AssetItem> = assetRepository.queryAsset(query)
 
     suspend fun findOrSyncAsset(assetId: String): AssetItem? {
         return withContext(Dispatchers.IO) {
