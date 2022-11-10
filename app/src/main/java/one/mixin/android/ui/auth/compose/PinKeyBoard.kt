@@ -184,7 +184,7 @@ fun PinKeyBoard(
                             verticalArrangement = Arrangement.Center,
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .height(94.dp)
+                                .wrapContentHeight()
                         ) {
                             Box(
                                 modifier = Modifier
