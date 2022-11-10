@@ -104,14 +104,18 @@ class Tip @Inject internal constructor(
                 val deviceId = context.defaultSharedPreferences.getString(Constants.DEVICE_ID, null) ?: throw TipNullException("Device id is null")
                 createTipPriv(context, pin, deviceId, forRecover = true).getOrThrow()
             } else {
-                val aesKey = getAesKey(pin)
+                val aesKeyCipher = getAesKey(pin)
                 Timber.e("getOrRecoverTipPriv after getAesKey")
-                val privTipKey = (aesKey + pin.toByteArray()).sha3Sum256()
+                val pinToken = Session.getPinToken()?.decodeBase64() ?: throw TipNullException("No pin token")
                 try {
+                    val aesKey = aesDecrypt(pinToken, aesKeyCipher)
+                    Timber.e("getOrRecoverTipPriv after decrypt AES cipher")
+                    val privTipKey = (aesKey + pin.toByteArray()).sha3Sum256()
                     aesDecrypt(privTipKey, privTip)
                 } catch (e: Exception) {
-                    // AES decrypt failure means the local priv is not match the AES key,
-                    // clearing the local priv and it can be recovered on the next try.
+                    // AES decrypt failure means the local priv does not match
+                    // the AES key or the cipher AES key is invalid, clearing
+                    // the local priv so it can be recovered on the next try.
                     Timber.e("aes decrypt local priv meet $e")
                     clearTipPriv(context)
                     throw e
@@ -335,11 +339,7 @@ class Tip @Inject internal constructor(
             timestamp = timestamp,
         )
         val response = tipNetwork { tipService.readTipSecret(tipSecretReadRequest) }.getOrThrow()
-        val cipher = response.seedBase64?.base64RawUrlDecode() ?: throw TipNullException("Not get tip secret")
-
-        val pinToken =
-            Session.getPinToken()?.decodeBase64() ?: throw TipNullException("No pin token")
-        return aesDecrypt(pinToken, cipher)
+        return response.seedBase64?.base64RawUrlDecode() ?: throw TipNullException("Not get tip secret")
     }
 
     private fun signTimestamp(stPriv: EdDSAPrivateKey, timestamp: Long): String {
