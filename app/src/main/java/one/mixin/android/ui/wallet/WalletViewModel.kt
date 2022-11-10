@@ -12,7 +12,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.Constants
 import one.mixin.android.Constants.PAGE_SIZE
-import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.extension.escapeSql
 import one.mixin.android.extension.putString
 import one.mixin.android.job.MixinJobManager
@@ -25,11 +24,10 @@ import one.mixin.android.repository.AssetRepository
 import one.mixin.android.repository.UserRepository
 import one.mixin.android.vo.Asset
 import one.mixin.android.vo.AssetItem
-import one.mixin.android.vo.PendingDeposit
+import one.mixin.android.vo.Snapshot
 import one.mixin.android.vo.SnapshotItem
 import one.mixin.android.vo.TopAssetItem
 import one.mixin.android.vo.User
-import one.mixin.android.vo.toSnapshot
 import javax.inject.Inject
 
 @HiltViewModel
@@ -121,35 +119,13 @@ internal constructor(
             .setInitialLoadKey(initialLoadKey)
             .build()
 
-    suspend fun refreshPendingDeposits(asset: AssetItem) {
-        handleMixinResponse(
-            invokeNetwork = {
-                assetRepository.pendingDeposits(asset.assetId, asset.getDestination(), asset.getTag())
-            },
-            successBlock = { list ->
-                assetRepository.clearPendingDepositsByAssetId(asset.assetId)
-                val pendingDeposits = list.data ?: return@handleMixinResponse
+    suspend fun refreshPendingDeposits(asset: AssetItem) = assetRepository.pendingDeposits(asset.assetId, asset.getDestination(), asset.getTag())
 
-                pendingDeposits.chunked(100) { trunk ->
-                    viewModelScope.launch(Dispatchers.IO) {
-                        processPendingDepositTrunk(asset.assetId, trunk)
-                    }
-                }
-            }
-        )
-    }
+    suspend fun clearPendingDepositsByAssetId(assetId: String) = assetRepository.clearPendingDepositsByAssetId(assetId)
 
-    private suspend fun processPendingDepositTrunk(assetId: String, trunk: List<PendingDeposit>) {
-        val hashList = trunk.map { it.transactionHash }
-        val existHashList = assetRepository.findSnapshotByTransactionHashList(assetId, hashList)
-        trunk.filter {
-            it.transactionHash !in existHashList
-        }.map {
-            it.toSnapshot(assetId)
-        }.let {
-            assetRepository.insertPendingDeposit(it)
-        }
-    }
+    suspend fun findSnapshotByTransactionHashList(assetId: String, hashList: List<String>) = assetRepository.findSnapshotByTransactionHashList(assetId, hashList)
+
+    suspend fun insertPendingDeposit(snapshot: List<Snapshot>) = assetRepository.insertPendingDeposit(snapshot)
 
     suspend fun getAsset(assetId: String) = withContext(Dispatchers.IO) {
         assetRepository.asset(assetId)
