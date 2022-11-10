@@ -176,23 +176,11 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
             val cid = callState.conversationId
             val account = Session.getAccount()!!
             self = if (cid == null) {
-                CallUser(
-                    account.userId,
-                    account.identityNumber,
-                    account.fullName,
-                    account.avatarUrl,
-                    ""
-                )
+                CallUser(account.userId, account.identityNumber, account.fullName, account.avatarUrl, "")
             } else {
                 var callUser = viewModel.findSelfCallUser(cid, account.userId)
                 if (callUser == null) {
-                    callUser = CallUser(
-                        account.userId,
-                        account.identityNumber,
-                        account.fullName,
-                        account.avatarUrl,
-                        ""
-                    )
+                    callUser = CallUser(account.userId, account.identityNumber, account.fullName, account.avatarUrl, "")
                     viewModel.refreshConversation(cid)
                 }
                 callUser
@@ -309,9 +297,9 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
                         refreshUsers()
 
                         if ((
-                                state == CallService.CallState.STATE_IDLE ||
-                                    state == CallService.CallState.STATE_RINGING
-                                ) &&
+                            state == CallService.CallState.STATE_IDLE ||
+                                state == CallService.CallState.STATE_RINGING
+                            ) &&
                             callState.needMuteWhenJoin(requireNotNull(cid))
                         ) {
                             updateTitle(getString(R.string.chat_group_call_mute))
@@ -556,14 +544,12 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
         }
         if (calls.isNullOrEmpty()) {
             userAdapter?.submitList(null)
-            binding.participants.text =
-                requireContext().resources.getQuantityString(R.plurals.title_participants, 0, 0)
+            binding.participants.text = requireContext().resources.getQuantityString(R.plurals.title_participants, 0, 0)
         } else {
             val last = calls.lastOrNull()
             if (calls.size == 1 && last == self.userId) {
                 userAdapter?.submitList(listOf(self))
-                binding.participants.text =
-                    requireContext().resources.getQuantityString(R.plurals.title_participants, 1, 1)
+                binding.participants.text = requireContext().resources.getQuantityString(R.plurals.title_participants, 1, 1)
                 binding.participants.translationY = binding.bottomLayout.translationY
                 return@launch
             }
