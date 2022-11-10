@@ -575,6 +575,7 @@ class PeerConnectionClient(context: Context, private val events: PeerConnectionE
                 } else {
                     receiverIdUserIdNoKeyMap[receiver.id()] = userSession[0]
                     hasAllMediaStreamKey = false
+                    events.requestResendKey(userSession[0], userSession[1])
                 }
             }
             Timber.d("$TAG_CALL onAddTrack id: ${receiver.id()}, hasAllMediaStreamKey: $hasAllMediaStreamKey")
@@ -655,6 +656,8 @@ class PeerConnectionClient(context: Context, private val events: PeerConnectionE
         fun onPeerConnectionError(errorMsg: String)
 
         fun getSenderPublicKey(userId: String, sessionId: String): ByteArray?
+
+        fun requestResendKey(userId: String, sessionId: String)
     }
 
     companion object {
