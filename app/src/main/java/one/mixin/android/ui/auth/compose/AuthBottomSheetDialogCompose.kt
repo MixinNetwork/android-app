@@ -118,7 +118,7 @@ fun AuthBottomSheetDialogCompose(
             Row(
                 modifier = Modifier
                     .align(alignment = CenterHorizontally)
-                    .padding(horizontal = 8.dp),
+                    .padding(horizontal = 8.dp, vertical = 6.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 if (iconUrl != null) {
@@ -209,7 +209,7 @@ fun ScopesContent(
                     painter = painterResource(getScopeGroupIcon(groupId)),
                     modifier = Modifier
                         .align(alignment = CenterHorizontally)
-                        .size(80.dp),
+                        .size(60.dp),
                     contentDescription = null
                 )
                 Spacer(modifier = Modifier.height(8.dp))
