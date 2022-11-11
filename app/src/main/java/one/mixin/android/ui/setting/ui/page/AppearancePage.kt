@@ -29,6 +29,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.os.LocaleListCompat
 import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.extension.defaultSharedPreferences
@@ -45,7 +46,7 @@ import one.mixin.android.ui.setting.ui.compose.MixinBackButton
 import one.mixin.android.ui.setting.ui.compose.MixinTopAppBar
 import one.mixin.android.ui.setting.ui.theme.MixinAppTheme
 import one.mixin.android.util.TimeCache
-import one.mixin.android.util.language.Lingver
+import one.mixin.android.util.isFollowSystem
 import one.mixin.android.vo.Fiats
 import java.util.*
 
@@ -140,7 +141,7 @@ private fun LanguageItem() {
     val showLanguageDialog = remember { mutableStateOf(false) }
 
     val currentLanguage = remember {
-        val index = if (Lingver.getInstance().isFollowingSystemLocale()) {
+        val index = if (isFollowSystem()) {
             AppearanceFragment.POS_FOLLOW_SYSTEM
         } else {
             getLanguagePos()
@@ -199,7 +200,7 @@ private fun LanguageItem() {
                 if (currentLanguage.value != newSelected) {
                     currentLanguage.value = newSelected
                     if (newSelected == AppearanceFragment.POS_FOLLOW_SYSTEM) {
-                        Lingver.getInstance().setFollowSystemLocale(context)
+                        AppCompatDelegate.setApplicationLocales(LocaleListCompat.getEmptyLocaleList())
                     } else {
                         val selectedLang = when (newSelected) {
                             AppearanceFragment.POS_SIMPLIFY_CHINESE -> Locale.SIMPLIFIED_CHINESE.language
@@ -220,7 +221,7 @@ private fun LanguageItem() {
                             else -> Locale.US.country
                         }
                         val newLocale = Locale(selectedLang, selectedCountry)
-                        Lingver.getInstance().setLocale(context, newLocale)
+                        AppCompatDelegate.setApplicationLocales(LocaleListCompat.create(newLocale))
                     }
 
                     TimeCache.singleton.evictAll()

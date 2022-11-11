@@ -115,7 +115,8 @@ import one.mixin.android.ui.qr.QRCodeProcessor
 import one.mixin.android.ui.setting.SettingActivity
 import one.mixin.android.ui.setting.SettingActivity.Companion.ARGS_SUCCESS
 import one.mixin.android.util.GsonHelper
-import one.mixin.android.util.language.Lingver
+import one.mixin.android.util.getCountry
+import one.mixin.android.util.getLanguage
 import one.mixin.android.vo.App
 import one.mixin.android.vo.AppCap
 import one.mixin.android.vo.AppCardData
@@ -1359,8 +1360,6 @@ class WebFragment : BaseFragment() {
         @SerializedName("currency")
         val currency: String = Session.getFiatCurrency(),
         @SerializedName("locale")
-        val locale: String = "${Lingver.getInstance().getLocale().language}-${
-        Lingver.getInstance().getLocale().country
-        }"
+        val locale: String = "${getLanguage()}-${getCountry()}"
     )
 }

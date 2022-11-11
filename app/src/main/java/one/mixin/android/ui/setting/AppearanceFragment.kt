@@ -4,6 +4,7 @@ import android.os.Build
 import android.os.Bundle
 import android.view.View
 import androidx.appcompat.app.AppCompatDelegate
+import androidx.core.os.LocaleListCompat
 import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.Constants
 import one.mixin.android.R
@@ -15,7 +16,9 @@ import one.mixin.android.extension.singleChoice
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.util.TimeCache
-import one.mixin.android.util.language.Lingver
+import one.mixin.android.util.getLanguage
+import one.mixin.android.util.getLocaleString
+import one.mixin.android.util.isFollowSystem
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.Fiats
 import java.util.Locale
@@ -83,7 +86,7 @@ class AppearanceFragment : BaseFragment(R.layout.fragment_appearance) {
                 }
             }
             val languageNames = resources.getStringArray(R.array.language_names)
-            languageDescTv.text = if (Lingver.getInstance().isFollowingSystemLocale()) {
+            languageDescTv.text = if (isFollowSystem()) {
                 getString(R.string.Follow_system)
             } else {
                 languageNames[getLanguagePos()]
@@ -115,7 +118,7 @@ class AppearanceFragment : BaseFragment(R.layout.fragment_appearance) {
             .setPositiveButton(R.string.OK) { dialog, _ ->
                 if (newSelectItem != selectItem) {
                     if (newSelectItem == POS_FOLLOW_SYSTEM) {
-                        Lingver.getInstance().setFollowSystemLocale(requireContext())
+                        AppCompatDelegate.setApplicationLocales(LocaleListCompat.getEmptyLocaleList())
                     } else {
                         val selectedLang = when (newSelectItem) {
                             POS_SIMPLIFY_CHINESE -> Locale.SIMPLIFIED_CHINESE.language
@@ -136,7 +139,7 @@ class AppearanceFragment : BaseFragment(R.layout.fragment_appearance) {
                             else -> Locale.US.country
                         }
                         val newLocale = Locale(selectedLang, selectedCountry)
-                        Lingver.getInstance().setLocale(requireContext(), newLocale)
+                        AppCompatDelegate.setApplicationLocales(LocaleListCompat.create(newLocale))
                     }
                     TimeCache.singleton.evictAll()
                     requireActivity().onBackPressed()
@@ -151,9 +154,13 @@ class AppearanceFragment : BaseFragment(R.layout.fragment_appearance) {
     }
 }
 
-fun getLanguagePos() = when (Lingver.getInstance().getLanguage()) {
-    Locale.SIMPLIFIED_CHINESE.language, Locale.TRADITIONAL_CHINESE.language -> {
-        if (Lingver.getInstance().getLocale().country == "CN") AppearanceFragment.POS_SIMPLIFY_CHINESE else AppearanceFragment.POS_TRADITIONAL_CHINESE
+fun getLanguagePos() = when (getLanguage()) {
+    "zh" -> {
+        if (getLocaleString() in Constants.Locale.TraditionalChinese.localeStrings) {
+            AppearanceFragment.POS_TRADITIONAL_CHINESE
+        } else {
+            AppearanceFragment.POS_SIMPLIFY_CHINESE
+        }
     }
     Locale.JAPANESE.language -> {
         AppearanceFragment.POS_SIMPLIFY_JAPANESE

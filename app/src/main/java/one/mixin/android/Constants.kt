@@ -156,6 +156,14 @@ object Constants {
     }
 
     object Locale {
+        object SimplifiedChinese {
+            val localeStrings = arrayOf("zh_CN", "zh_CN_#Hans", "zh_MO_#Hans", "zh_HK_#Hans", "zh_SG_#Hans")
+        }
+
+        object TraditionalChinese {
+            val localeStrings = arrayOf("zh_TW", "zh_TW_#Hant", "zh_HK_#Hant", "zh_MO_#Hant")
+        }
+
         object Russian {
             const val Language = "ru"
             const val Country = ""
