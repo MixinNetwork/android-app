@@ -113,7 +113,7 @@ fun AuthBottomSheetDialogCompose(
                 stringResource(R.string.Request_Authorization),
                 modifier = Modifier.align(alignment = CenterHorizontally),
                 color = MixinAppTheme.colors.textPrimary,
-                fontWeight = FontWeight.SemiBold, fontSize = 18.sp
+                fontWeight = FontWeight.Medium, fontSize = 16.sp
             )
             Row(
                 modifier = Modifier
@@ -217,7 +217,7 @@ fun ScopesContent(
                     stringResource(id = getScopeGroupName(groupId)),
                     modifier = Modifier.align(alignment = CenterHorizontally),
                     color = MixinAppTheme.colors.textPrimary,
-                    fontWeight = FontWeight.SemiBold, fontSize = 18.sp
+                    fontWeight = FontWeight.Medium, fontSize = 16.sp
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 LazyColumn(
