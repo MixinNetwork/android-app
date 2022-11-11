@@ -170,8 +170,8 @@ object Constants {
         }
 
         object Indonesian {
-            const val Language = "id"
-            const val Country = "ID"
+            const val Language = "in"
+            const val Country = ""
         }
 
         object Malay {
