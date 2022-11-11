@@ -82,7 +82,7 @@ fun AuthBottomSheetDialogCompose(
     step: AuthStep,
     errorContent: String,
     onResetClick: (() -> Unit)?,
-    onConfirmed: (() -> Unit)?,
+    onConfirmed: ((List<String>) -> Unit)?,
     onBiometricClick: ((List<String>) -> Unit),
     onVerifyRequest: ((List<String>, String) -> Unit)?
 ) {
@@ -190,7 +190,7 @@ fun AuthBottomSheetDialogCompose(
 fun ScopesContent(
     scopeGroup: ArrayMap<Int, MutableList<Scope>>,
     scopes: MutableSet<Scope>,
-    onConfirmed: (() -> Unit)?
+    onConfirmed: ((List<String>) -> Unit)?
 ) {
     val pagerState = rememberPagerState(initialPage = 0)
     val scope = rememberCoroutineScope()
@@ -261,7 +261,7 @@ fun ScopesContent(
                         pagerState.animateScrollToPage(page = pagerState.currentPage + 1)
                     }
                 } else {
-                    onConfirmed?.invoke()
+                    onConfirmed?.invoke(scopes.map { it.source })
                 }
             }
         ) {

@@ -140,7 +140,7 @@ fun PinKeyBoard(
             }
             AuthStep.ERROR -> Column(
                 modifier = Modifier
-                    .height(150.dp)
+                    .heightIn(min = 150.dp)
                     .fillMaxWidth(),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center

@@ -95,8 +95,8 @@ class PermissionListFragment : BaseFragment(R.layout.fragment_permission_list) {
     }
 
     private fun loadData(adapter: PermissionListAdapter) = lifecycleScope.launch {
-        val assets = viewModel.simpleAssetsWithBalance()
         val scopes = auth.getScopes(requireContext())
+        scopes.sortBy { Scope.SCOPES.indexOf(it.source) }
         adapter.submitList(scopes)
     }
 

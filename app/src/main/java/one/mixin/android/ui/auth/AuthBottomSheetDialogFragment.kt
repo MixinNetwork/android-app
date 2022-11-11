@@ -140,7 +140,11 @@ class AuthBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 step = step,
                 errorContent = errorContent,
                 onConfirmed = {
-                    step = AuthStep.INPUT
+                    if (Session.getAccount()?.hasPin != true) {
+                        TipActivity.show(requireActivity(), TipType.Create)
+                    } else {
+                        step = AuthStep.INPUT
+                    }
                 },
                 onResetClick = {
                     step = AuthStep.INPUT
@@ -162,11 +166,6 @@ class AuthBottomSheetDialogFragment : BottomSheetDialogFragment() {
     }
 
     private fun authVerify(scopes: List<String>, pin: String) = lifecycleScope.launch {
-        if (Session.getAccount()?.hasPin != true) {
-            TipActivity.show(requireActivity(), TipType.Create)
-            return@launch
-        }
-
         try {
             step = AuthStep.LOADING
             val response = bottomViewModel.authorize(
