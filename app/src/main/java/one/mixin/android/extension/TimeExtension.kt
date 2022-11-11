@@ -4,7 +4,7 @@ import android.content.Context
 import android.text.format.DateUtils
 import one.mixin.android.R
 import one.mixin.android.util.TimeCache
-import one.mixin.android.util.language.Lingver
+import one.mixin.android.util.isCurrChinese
 import one.mixin.android.util.reportException
 import org.threeten.bp.DayOfWeek
 import org.threeten.bp.Instant
@@ -110,7 +110,7 @@ fun String.timeAgoDate(context: Context): String {
             (today.year == date.year) -> {
                 date.format(
                     DateTimeFormatter.ofPattern(
-                        if (Lingver.getInstance().isCurrChinese()) {
+                        if (isCurrChinese()) {
                             weekPatternCn
                         } else {
                             weekPatternEn
@@ -121,7 +121,7 @@ fun String.timeAgoDate(context: Context): String {
             else -> {
                 date.format(
                     DateTimeFormatter.ofPattern(
-                        if (Lingver.getInstance().isCurrChinese()) {
+                        if (isCurrChinese()) {
                             yearPatternCn
                         } else {
                             yearPatternEn

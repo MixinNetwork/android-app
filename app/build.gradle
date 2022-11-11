@@ -27,6 +27,7 @@ android {
         versionName "${versionMajor}.${versionMinor}.${versionPatch}"
         multiDexEnabled true
         testInstrumentationRunner "one.mixin.android.CustomTestRunner"
+        resConfigs "en", "in", "ja", "ms", "ru", "zh-rCN", "zh-rTW"
 
         javaCompileOptions {
             annotationProcessorOptions {

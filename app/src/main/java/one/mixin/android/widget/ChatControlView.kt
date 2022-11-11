@@ -54,7 +54,7 @@ import one.mixin.android.extension.formatMillis
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.media.AudioEndStatus
 import one.mixin.android.util.AudioPlayer
-import one.mixin.android.util.language.Lingver
+import one.mixin.android.util.getLanguage
 import one.mixin.android.util.reportException
 import one.mixin.android.vo.EncryptCategory
 import one.mixin.android.vo.isEncrypt
@@ -333,19 +333,19 @@ class ChatControlView : LinearLayout, ActionMode.Callback {
         }
     }
 
-    private fun getEncryptedHint(): String = if (Lingver.getInstance().getLanguage() == Locale.JAPANESE.language) {
+    private fun getEncryptedHint(): String = if (getLanguage() == Locale.JAPANESE.language) {
         "Encrypted"
     } else {
         context.getString(R.string.Encrypted)
     }
 
-    private fun getSignalHint(): String = if (Lingver.getInstance().getLanguage() == Locale.JAPANESE.language) {
+    private fun getSignalHint(): String = if (getLanguage() == Locale.JAPANESE.language) {
         "End-to-end Encrypted"
     } else {
         context.getString(R.string.End_to_End_Encryption)
     }
 
-    private fun getHint(): String = if (Lingver.getInstance().getLanguage() == Locale.JAPANESE.language) {
+    private fun getHint(): String = if (getLanguage() == Locale.JAPANESE.language) {
         "Type message"
     } else {
         context.getString(R.string.Type_message)
