@@ -1,7 +1,6 @@
 package one.mixin.android.ui.setting.ui.theme
 
 import androidx.annotation.DrawableRes
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.darkColors
 import androidx.compose.material.lightColors
@@ -9,7 +8,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.ui.graphics.Color
+import one.mixin.android.MixinApplication
 import one.mixin.android.R
+import one.mixin.android.extension.isNightMode
 
 class AppColors(
     val primary: Color,
@@ -92,7 +93,7 @@ private val LocalColors = compositionLocalOf { LightColorPalette }
 private val LocalDrawables = compositionLocalOf { LightDrawablePalette }
 
 @Composable
-fun MixinAppTheme(darkTheme: Boolean = isSystemInDarkTheme(), content: @Composable () -> Unit) {
+fun MixinAppTheme(darkTheme: Boolean = MixinApplication.get().isNightMode(), content: @Composable () -> Unit) {
     val colors = if (darkTheme) {
         DarkColorPalette
     } else {

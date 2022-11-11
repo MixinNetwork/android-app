@@ -32,6 +32,7 @@ import android.webkit.JavascriptInterface
 import android.webkit.PermissionRequest
 import android.webkit.ValueCallback
 import android.webkit.WebChromeClient
+import android.webkit.WebResourceRequest
 import android.webkit.WebSettings
 import android.webkit.WebView
 import android.webkit.WebViewClient
@@ -1241,10 +1242,14 @@ class WebFragment : BaseFragment() {
             onPageFinishedListener.onPageFinished()
         }
 
-        override fun shouldOverrideUrlLoading(view: WebView?, url: String?): Boolean {
-            if (view == null || url == null) {
-                return super.shouldOverrideUrlLoading(view, url)
+        override fun shouldOverrideUrlLoading(
+            view: WebView?,
+            request: WebResourceRequest?
+        ): Boolean {
+            if (view == null || request == null) {
+                return super.shouldOverrideUrlLoading(view, request)
             }
+            val url = request.url.toString()
             if (url.isMixinUrl()) {
                 val host = view.url?.run { Uri.parse(this).host }
                 url.openAsUrl(
