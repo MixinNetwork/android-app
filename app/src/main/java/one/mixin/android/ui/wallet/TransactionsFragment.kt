@@ -44,6 +44,7 @@ import one.mixin.android.vo.SnapshotItem
 import one.mixin.android.vo.SnapshotType
 import one.mixin.android.vo.notMessengerUser
 import one.mixin.android.vo.toAssetItem
+import one.mixin.android.vo.toSnapshot
 import one.mixin.android.widget.BottomSheet
 
 @AndroidEntryPoint
@@ -197,7 +198,32 @@ class TransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>>()
         lifecycleScope.launch {
             if (asset.getDestination().isNotEmpty()) {
                 walletViewModel.refreshAsset(asset.assetId)
-                walletViewModel.refreshPendingDeposits(asset)
+                handleMixinResponse(
+                    invokeNetwork = {
+                        walletViewModel.refreshPendingDeposits(asset)
+                    },
+                    successBlock = { list ->
+                        withContext(Dispatchers.IO) {
+                            walletViewModel.clearPendingDepositsByAssetId(asset.assetId)
+                            val pendingDeposits = list.data ?: return@withContext
+
+                            pendingDeposits.chunked(100) { trunk ->
+                                lifecycleScope.launch(Dispatchers.IO) {
+                                    val hashList = trunk.map { it.transactionHash }
+                                    val existHashList =
+                                        walletViewModel.findSnapshotByTransactionHashList(asset.assetId, hashList)
+                                    trunk.filter {
+                                        it.transactionHash !in existHashList
+                                    }.map {
+                                        it.toSnapshot(asset.assetId)
+                                    }.let {
+                                        walletViewModel.insertPendingDeposit(it)
+                                    }
+                                }
+                            }
+                        }
+                    }
+                )
             } else {
                 headBinding.sendReceiveView.apply {
                     receive.visibility = GONE

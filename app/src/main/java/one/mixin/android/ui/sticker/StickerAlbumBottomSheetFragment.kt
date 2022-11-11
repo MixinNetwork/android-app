@@ -122,6 +122,11 @@ class StickerAlbumBottomSheetFragment : BottomSheetDialogFragment() {
         }
     }
 
+    override fun onDetach() {
+        super.onDetach()
+        instant = null
+    }
+
     private fun updateAction(album: StickerAlbum) {
         binding.actionTv.apply {
             if (album.added) {
