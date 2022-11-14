@@ -399,7 +399,11 @@ dependencies {
     kaptAndroidTest "com.google.dagger:hilt-android-compiler:$hiltVersion"
     kaptAndroidTest "androidx.hilt:hilt-compiler:$hiltAndroidxVersion"
 
+    // Leak Canary
     debugImplementation "com.squareup.leakcanary:leakcanary-android:$leakcanaryVerison"
+    implementation "com.squareup.leakcanary:leakcanary-android-process:$leakcanaryVerison"
+    releaseImplementation "com.squareup.leakcanary:leakcanary-android-release:$leakcanaryVerison"
+    releaseImplementation "com.squareup.leakcanary:leakcanary-object-watcher-android:$leakcanaryVerison"
 }
 
 secrets {

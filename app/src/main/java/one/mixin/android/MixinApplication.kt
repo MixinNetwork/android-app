@@ -12,6 +12,7 @@ import androidx.camera.core.CameraXConfig
 import androidx.hilt.work.HiltWorkerFactory
 import androidx.startup.AppInitializer
 import androidx.work.Configuration
+import com.google.android.datatransport.runtime.scheduling.jobscheduling.JobInfoSchedulerService
 import com.google.android.gms.net.CronetProviderInstaller
 import com.mapbox.maps.loader.MapboxMapsInitializer
 import com.microsoft.appcenter.AppCenter
@@ -27,6 +28,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import leakcanary.AppWatcher
+import leakcanary.LeakCanaryProcess
+import leakcanary.ReachabilityWatcher
 import one.mixin.android.crypto.MixinSignalProtocolLogger
 import one.mixin.android.crypto.PrivacyPreference.clearPrivacyPreferences
 import one.mixin.android.crypto.db.SignalDatabase
@@ -151,6 +155,17 @@ open class MixinApplication :
         CronetProviderInstaller.installProvider(this)
         if (BuildConfig.DEBUG) {
             Timber.plant(Timber.DebugTree(), FileLogTree())
+            // ignore known leaks
+            val delegate = ReachabilityWatcher { watchedObject, description ->
+                if (watchedObject !is JobInfoSchedulerService) {
+                    AppWatcher.objectWatcher.expectWeaklyReachable(watchedObject, description)
+                }
+            }
+            val watchersToInstall = AppWatcher.appDefaultWatchers(this, delegate)
+            AppWatcher.manualInstall(application = this, watchersToInstall = watchersToInstall)
+            if (LeakCanaryProcess.isInAnalyzerProcess(this)) {
+                return
+            }
         } else {
             Timber.plant(FileLogTree())
         }
