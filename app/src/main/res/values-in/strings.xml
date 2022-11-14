@@ -579,7 +579,7 @@
     <string name="setting_desktop_logout_failed">Gagal keluar dari desktop.</string>
     <string name="setting_emergency_change_mobile">Ingin mengubah nomor ponsel Anda sekarang?</string>
     <string name="setting_emergency_content">Kontak darurat ditujukan untuk membantu Anda masuk ke akun Anda jika Anda lupa akun dan tidak dapat mengambil kembali nomor ponsel Anda.</string>
-    <string name="Set_emergency_create_successfully">Berhasil membuat kontak darurat</string>
+    <string name="setting_emergency_create_success">Berhasil membuat kontak darurat</string>
     <string name="setting_emergency_desc">Saat nomor ponsel Anda hilang, hubungi kontak darurat Anda melalui telepon atau cara lain untuk mendapatkan ID Mixin dan kode verifikasi. Baca Kontak Darurat kami untuk **mempelajari selengkapnya**.</string>
     <string name="setting_emergency_pin_tip">Kontak darurat Anda dilindungi dengan PIN</string>
     <string name="setting_emergency_send_code">Masukkan kode 4 digit yang dikirim ke ID Mixin: %1$s</string>
@@ -633,6 +633,7 @@
     <string name="This_message_was_deleted">Pesan ini telah dihapus</string>
     <string name="Thursday">Kamis</string>
     <string name="Time">Waktu</string>
+    <string name="tip_create_pin_title">Siapkan PIN dompet 6 digit untuk membuat dompet digital pertama Anda</string>
     <plurals name="title_participants" tools:ignore="UnusedQuantity">
         <item quantity="other">%1$d peserta</item>
     </plurals>
@@ -684,7 +685,6 @@
     <string name="wallet_password_change_tip">Harap masukkan PIN 6 digit untuk memverifikasi.</string>
     <string name="wallet_password_not_equal">PIN tidak cocok dengan PIN yang diketik ulang, harap coba lagi.</string>
     <string name="wallet_password_set_new_pin_desc">Harap buat PIN 6 digit baru.</string>
-    <string name="tip_create_pin_title">Siapkan PIN dompet 6 digit untuk membuat dompet digital pertama Anda</string>
     <string name="wallet_password_unsafe">PIN-nya terlalu sederhana dan tidak aman.</string>
     <string name="wallet_pin_modify_biometrics">Harap masukkan PIN untuk Mengubah Pembayaran dengan interval PIN</string>
     <string name="wallet_pin_open_biometrics">Harap masukkan PIN untuk membuka Biometrik</string>

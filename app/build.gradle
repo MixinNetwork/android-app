@@ -361,6 +361,8 @@ dependencies {
     implementation "androidx.compose.runtime:runtime-rxjava2:${composeVersion}"
     implementation 'androidx.activity:activity-compose:1.6.1'
     androidTestImplementation "androidx.compose.ui:ui-test-junit4:${composeVersion}"
+    implementation "com.google.accompanist:accompanist-pager:0.27.0"
+    implementation "com.google.accompanist:accompanist-pager-indicators:0.27.0"
 
     // accompanist
     implementation "com.google.accompanist:accompanist-navigation-animation:${accompanistVersion}"
@@ -443,7 +445,7 @@ task syncStrings {
     doLast {
         ['en', 'zh', 'zh-TW', 'ja', 'ru', 'in', 'ms'].forEach { i ->
             def lang = i
-            download {
+            download.run {
                 src "https://raw.githubusercontent.com/Tougee/sync-google-sheet/master/generated/output/Android/value-$lang/strings.xml"
 
                 if (lang == 'en') {

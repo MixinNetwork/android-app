@@ -14,7 +14,6 @@ import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.AccountUpdateRequest
 import one.mixin.android.api.request.AddressRequest
-import one.mixin.android.api.request.AuthorizeRequest
 import one.mixin.android.api.request.CollectibleRequest
 import one.mixin.android.api.request.ConversationCircleRequest
 import one.mixin.android.api.request.ConversationRequest
@@ -106,8 +105,8 @@ class BottomSheetViewModel @Inject internal constructor(
         )
     )
 
-    suspend fun authorize(request: AuthorizeRequest): MixinResponse<AuthorizationResponse> =
-        accountRepository.authorize(request)
+    suspend fun authorize(authorizationId: String, scopes: List<String>, pin: String?): MixinResponse<AuthorizationResponse> =
+        accountRepository.authorize(authorizationId, scopes, pin)
 
     suspend fun paySuspend(request: TransferRequest) = withContext(Dispatchers.IO) {
         assetRepository.paySuspend(request)

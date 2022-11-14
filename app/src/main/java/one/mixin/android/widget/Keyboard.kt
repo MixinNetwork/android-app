@@ -12,6 +12,7 @@ import androidx.recyclerview.widget.RecyclerView
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemGridKeyboardBinding
 import one.mixin.android.databinding.ViewKeyboardBinding
+import one.mixin.android.extension.dpToPx
 import one.mixin.android.session.Session
 
 class Keyboard @JvmOverloads constructor(
@@ -68,6 +69,7 @@ class Keyboard @JvmOverloads constructor(
 
     class NormalKeyboardHolder(val binding: ItemGridKeyboardBinding) : KeyboardHolder(binding.root) {
         fun bind(text: String?) {
+            binding.root.isVisible = text != ""
             binding.tvKeyboardKeys.text = text
             itemView.isEnabled = !text.isNullOrEmpty()
         }
@@ -78,7 +80,7 @@ class Keyboard @JvmOverloads constructor(
     private fun initKeyboardView() {
         binding.gvKeyboard.adapter = keyboardAdapter
         binding.gvKeyboard.layoutManager = GridLayoutManager(context, 3)
-        binding.gvKeyboard.addItemDecoration(SpacesItemDecoration(1))
+        binding.gvKeyboard.addItemDecoration(SpacesItemDecoration(context.dpToPx(8f)))
         binding.tipFl.isVisible = tipTitleEnabled && Session.getTipPub().isNullOrBlank().not()
     }
 

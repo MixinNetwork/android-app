@@ -27,7 +27,6 @@ import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.fullDate
 import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.withArgs
-import one.mixin.android.ui.auth.AuthBottomSheetDialogFragment.Companion.ARGS_AUTHORIZATION
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.recyclerview.FooterListAdapter
 import one.mixin.android.ui.common.recyclerview.NormalHolder
@@ -36,12 +35,12 @@ import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.App
 import one.mixin.android.vo.Scope
-import one.mixin.android.vo.convertName
 
 @AndroidEntryPoint
 class PermissionListFragment : BaseFragment(R.layout.fragment_permission_list) {
     companion object {
         const val TAG = "PermissionListFragment"
+        const val ARGS_AUTHORIZATION = "args_authorization_id"
         const val ARGS_APP = "args_app"
 
         fun newInstance(
@@ -96,8 +95,8 @@ class PermissionListFragment : BaseFragment(R.layout.fragment_permission_list) {
     }
 
     private fun loadData(adapter: PermissionListAdapter) = lifecycleScope.launch {
-        val assets = viewModel.simpleAssetsWithBalance()
-        val scopes = auth.getScopes(requireContext(), assets)
+        val scopes = auth.getScopes(requireContext())
+        scopes.sortBy { Scope.SCOPES.indexOf(it.source) }
         adapter.submitList(scopes)
     }
 
@@ -150,7 +149,7 @@ class PermissionListFragment : BaseFragment(R.layout.fragment_permission_list) {
     class ItemHolder(private val itemBinding: ItemPermissionListBinding) : NormalHolder(itemBinding.root) {
         fun bindTo(scope: Scope) {
             itemBinding.apply {
-                nameTv.text = scope.convertName(itemView.context)
+                nameTv.text = scope.name
                 numberTv.text = scope.desc
             }
         }

@@ -1,5 +1,6 @@
 package one.mixin.android.ui.setting.ui.page
 
+import android.annotation.SuppressLint
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -15,6 +16,7 @@ import one.mixin.android.api.service.AuthorizationService
 import one.mixin.android.util.ErrorHandler
 import javax.inject.Inject
 
+@SuppressLint("CheckResult")
 @HiltViewModel
 class AuthenticationsViewModel @Inject constructor(
     authorizationService: AuthorizationService,
