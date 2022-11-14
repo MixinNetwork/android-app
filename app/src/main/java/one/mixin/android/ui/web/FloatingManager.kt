@@ -26,6 +26,7 @@ import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.SINGLE_THREAD
 import one.mixin.android.vo.App
 import one.mixin.android.widget.MixinWebView
+import java.lang.ref.SoftReference
 
 private const val PREF_FLOATING = "floating"
 private var screenshot: Bitmap? = null
@@ -89,16 +90,18 @@ data class WebClip(
     val icon: Bitmap?,
     val conversationId: String?,
     val shareable: Boolean?,
-    @Transient val webView: MixinWebView?,
+    @Transient val webView: SoftReference<MixinWebView>?,
     @Transient val isFinished: Boolean = false
-)
+) {
+    fun getWebView() = webView?.get()
+}
 
 fun updateClip(index: Int, webClip: WebClip) {
     if (index < clips.size) {
-        if (clips[index].webView != webClip.webView) {
-            clips[index].webView?.destroy()
-            clips[index].webView?.webViewClient = object : WebViewClient() {}
-            clips[index].webView?.webChromeClient = null
+        if (clips[index].getWebView() != webClip.getWebView()) {
+            clips[index].getWebView()?.destroy()
+            clips[index].getWebView()?.webViewClient = object : WebViewClient() {}
+            clips[index].getWebView()?.webChromeClient = null
         }
         clips.removeAt(index)
         clips.add(index, webClip)
@@ -146,9 +149,9 @@ fun refresh() {
 
 fun releaseClip(index: Int) {
     if (index < clips.size && index >= 0) {
-        clips[index].webView?.destroy()
-        clips[index].webView?.webViewClient = object : WebViewClient() {}
-        clips[index].webView?.webChromeClient = null
+        clips[index].getWebView()?.destroy()
+        clips[index].getWebView()?.webViewClient = object : WebViewClient() {}
+        clips[index].getWebView()?.webChromeClient = null
         clips.removeAt(index)
         if (clips.isEmpty()) {
             saveJob?.cancel()
@@ -192,9 +195,9 @@ fun replaceApp(app: App) {
 
 fun releaseAll() {
     clips.forEach { clip ->
-        clip.webView?.destroy()
-        clip.webView?.webViewClient = object : WebViewClient() {}
-        clip.webView?.webChromeClient = null
+        clip.getWebView()?.destroy()
+        clip.getWebView()?.webViewClient = object : WebViewClient() {}
+        clip.getWebView()?.webChromeClient = null
     }
     clips.clear()
     saveJob?.cancel()

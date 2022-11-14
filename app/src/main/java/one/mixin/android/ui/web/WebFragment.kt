@@ -131,6 +131,7 @@ import one.mixin.android.widget.WebControlView
 import timber.log.Timber
 import java.io.ByteArrayInputStream
 import java.io.FileInputStream
+import java.lang.ref.SoftReference
 import java.util.concurrent.TimeUnit
 
 @AndroidEntryPoint
@@ -303,7 +304,7 @@ class WebFragment : BaseFragment() {
                     binding.iconIv.setImageBitmap(icon)
                 }
                 isFinished = clip.isFinished
-                clip.webView ?: MixinWebView(MixinApplication.get().contextWrapper)
+                clip.webView?.get() ?: MixinWebView(MixinApplication.get().contextWrapper)
             }
         } else {
             MixinWebView(MixinApplication.get().contextWrapper)
@@ -819,7 +820,7 @@ class WebFragment : BaseFragment() {
             icon,
             conversationId,
             appCard?.shareable ?: shareable,
-            webView,
+            SoftReference(webView),
             isFinished
         )
     }
