@@ -20,6 +20,9 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
 import android.util.Log;
+
+import androidx.annotation.NonNull;
+
 import com.google.net.cronet.okhttptransport.RequestResponseConverter.CronetRequestAndOkHttpResponse;
 import java.io.IOException;
 import java.util.Iterator;
@@ -93,6 +96,7 @@ public final class MixinCronetInterceptor implements Interceptor, AutoCloseable 
             MILLISECONDS);
   }
 
+  @NonNull
   @Override
   public Response intercept(Chain chain) throws IOException {
     if (chain.call().isCanceled()) {
@@ -116,7 +120,11 @@ public final class MixinCronetInterceptor implements Interceptor, AutoCloseable 
       // If the response is retrieved successfully the caller is responsible for closing
       // the response, which will remove it from the active calls map.
       activeCalls.remove(chain.call());
-      throw e;
+      if (e instanceof IOException) {
+        throw e;
+      } else {
+        throw new IOException(e);
+      }
     }
   }
 
