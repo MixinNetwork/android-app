@@ -12,6 +12,7 @@ import one.mixin.android.R
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.AccountUpdateRequest
 import one.mixin.android.databinding.FragmentSettingPhoneNumberBinding
+import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.util.viewBinding
@@ -123,6 +124,8 @@ class PhoneNumberSettingFragment : BaseFragment(R.layout.fragment_setting_phone_
     }
 
     private fun resetPb(pref: String) {
+        if (viewDestroyed()) return
+
         binding.apply {
             when (pref) {
                 SearchSource.EVERYBODY.name -> {
