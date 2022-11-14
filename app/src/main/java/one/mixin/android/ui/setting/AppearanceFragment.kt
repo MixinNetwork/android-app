@@ -162,6 +162,9 @@ fun getLanguagePos() = when (getLanguage()) {
             AppearanceFragment.POS_SIMPLIFY_CHINESE
         }
     }
+    Locale.ENGLISH.language -> {
+        AppearanceFragment.POS_ENGLISH
+    }
     Locale.JAPANESE.language -> {
         AppearanceFragment.POS_SIMPLIFY_JAPANESE
     }
@@ -175,6 +178,6 @@ fun getLanguagePos() = when (getLanguage()) {
         AppearanceFragment.POS_Malay
     }
     else -> {
-        AppearanceFragment.POS_ENGLISH
+        AppearanceFragment.POS_FOLLOW_SYSTEM
     }
 }
