@@ -292,7 +292,7 @@ fun PinKeyBoard(
                         Box(
                             modifier = Modifier
                                 .wrapContentHeight()
-                                .heightIn(120.dp, 250.dp)
+                                .heightIn(120.dp, 240.dp)
                                 .onSizeChanged {
                                     size = it
                                 }
@@ -359,7 +359,7 @@ fun PinKeyBoard(
                                             } else if (index != 9) {
                                                 Text(
                                                     text = list[index],
-                                                    fontSize = 25.sp,
+                                                    fontSize = 24.sp,
                                                     color = MixinAppTheme.colors.textPrimary,
                                                     textAlign = TextAlign.Center,
                                                 )
