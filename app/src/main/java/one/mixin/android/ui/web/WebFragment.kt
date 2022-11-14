@@ -1242,6 +1242,7 @@ class WebFragment : BaseFragment() {
             onPageFinishedListener.onPageFinished()
         }
 
+        private var lastHandleUrl: Pair<String, Long>? = null
         override fun shouldOverrideUrlLoading(
             view: WebView?,
             request: WebResourceRequest?
@@ -1251,6 +1252,10 @@ class WebFragment : BaseFragment() {
             }
             val url = request.url.toString()
             if (url.isMixinUrl()) {
+                if (url == lastHandleUrl?.first && System.currentTimeMillis() - (lastHandleUrl?.second ?: 0) <= 1000L) {
+                    return true
+                }
+                lastHandleUrl = Pair<String, Long>(url, System.currentTimeMillis())
                 val host = view.url?.run { Uri.parse(this).host }
                 url.openAsUrl(
                     context,

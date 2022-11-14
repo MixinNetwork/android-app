@@ -311,6 +311,9 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                         val authorization = result.second as AuthorizationResponse
 
                         activity?.let {
+                            it.supportFragmentManager.findFragmentByTag(AuthBottomSheetDialogFragment.TAG)?.let { f ->
+                                (f as? AuthBottomSheetDialogFragment)?.dismiss()
+                            }
                             val scopes = authorization.getScopes(it)
                             AuthBottomSheetDialogFragment.newInstance(
                                 scopes,
