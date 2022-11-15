@@ -59,7 +59,7 @@ class AddPeopleFragment : BaseFragment(R.layout.fragment_add_people) {
             searchEt.isClickable = true
             searchEt.requestFocus()
             keyboard.tipTitleEnabled = false
-            keyboard.initPinKeys()
+            keyboard.initPinKeys(key = listOf("1", "2", "3", "4", "5", "6", "7", "8", "9", "+", "0", ""))
             keyboard.setOnClickKeyboardListener(mKeyboardListener)
             keyboard.animate().translationY(0f).start()
 
