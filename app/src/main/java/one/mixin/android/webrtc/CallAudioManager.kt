@@ -90,8 +90,9 @@ class CallAudioManager(
         hasStarted = true
         this.playRingtone = playRingtone
         this.isInitiator = isInitiator
+        val ringerMode = audioManager?.ringerMode ?: AudioManager.RINGER_MODE_NORMAL
 
-        if (playRingtone && !isInitiator && vibrator != null && audioManager?.ringerMode != AudioManager.RINGER_MODE_SILENT) {
+        if (playRingtone && !isInitiator && vibrator != null && ringerMode != AudioManager.RINGER_MODE_SILENT) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 val vibrationEffect = VibrationEffect.createWaveform(longArrayOf(0, 1000, 1000), 1)
                 vibrator.vibrate(vibrationEffect)
@@ -103,7 +104,7 @@ class CallAudioManager(
 
         setSpeaker(!isInitiator)
 
-        if (playRingtone) {
+        if (playRingtone && (isInitiator || ringerMode == AudioManager.RINGER_MODE_NORMAL)) {
             updateMediaPlayer()
         }
     }
