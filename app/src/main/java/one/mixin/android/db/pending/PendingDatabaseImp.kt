@@ -23,22 +23,22 @@ import one.mixin.android.vo.MessageMedia
     ],
     version = 1
 )
-abstract class PendingDataBaseImp : RoomDatabase(), PendingDatabase {
+abstract class PendingDatabaseImp : RoomDatabase(), PendingDatabase {
     abstract override fun floodMessageDao(): FloodMessageDao
     abstract override fun pendingMessageDao(): PendingMessageDao
 
     abstract override fun jobDao(): JobDao
 
     companion object {
-        private var INSTANCE: PendingDataBaseImp? = null
+        private var INSTANCE: PendingDatabaseImp? = null
 
         private val lock = Any()
 
-        fun getDatabase(context: Context, floodMessageDao: FloodMessageDao, jobDao: JobDao): PendingDataBaseImp {
+        fun getDatabase(context: Context, floodMessageDao: FloodMessageDao, jobDao: JobDao): PendingDatabaseImp {
             synchronized(lock) {
                 if (INSTANCE == null) {
                     val builder = Room.databaseBuilder(
-                        context, PendingDataBaseImp::class.java,
+                        context, PendingDatabaseImp::class.java,
                         "pending.db"
                     ).enableMultiInstanceInvalidation().addCallback(
                         object : Callback() {
@@ -84,7 +84,7 @@ abstract class PendingDataBaseImp : RoomDatabase(), PendingDatabase {
                     INSTANCE = builder.build()
                 }
             }
-            return INSTANCE as PendingDataBaseImp
+            return INSTANCE as PendingDatabaseImp
         }
     }
     override suspend fun getPendingMessages() = pendingMessageDao().getMessages()

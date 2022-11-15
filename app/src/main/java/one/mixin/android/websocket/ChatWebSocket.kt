@@ -51,7 +51,7 @@ class ChatWebSocket(
     private val okHttpClient: OkHttpClient,
     private val accountService: AccountService,
     private val mixinDatabase: MixinDatabase,
-    private val cacheDataBase: PendingDatabase,
+    private val pendingDatabase: PendingDatabase,
     private val jobManager: MixinJobManager,
     private val linkState: LinkState,
 ) : WebSocketListener() {
@@ -133,7 +133,7 @@ class ChatWebSocket(
     }
 
     private fun sendPendingMessage() {
-        val blazeMessage = createListPendingMessage(cacheDataBase.getLastBlazeMessageCreatedAt())
+        val blazeMessage = createListPendingMessage(pendingDatabase.getLastBlazeMessageCreatedAt())
         val transaction = WebSocketTransaction(
             blazeMessage.id,
             object : TransactionCallbackSuccess {
@@ -274,10 +274,10 @@ class ChatWebSocket(
             if (data.userId == accountId && data.category.isEmpty()) { // Ack of the create message
                 mixinDatabase.makeMessageStatus(data.status, data.messageId)
             } else {
-                cacheDataBase.insertFloodMessage(FloodMessage(data.messageId, gson.toJson(data), data.createdAt))
+                pendingDatabase.insertFloodMessage(FloodMessage(data.messageId, gson.toJson(data), data.createdAt))
             }
         } else {
-            cacheDataBase.insertJob(createAckJob(ACKNOWLEDGE_MESSAGE_RECEIPTS, BlazeAckMessage(data.messageId, MessageStatus.READ.name)))
+            pendingDatabase.insertJob(createAckJob(ACKNOWLEDGE_MESSAGE_RECEIPTS, BlazeAckMessage(data.messageId, MessageStatus.READ.name)))
         }
     }
 

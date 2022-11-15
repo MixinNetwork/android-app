@@ -112,7 +112,7 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
     lateinit var database: MixinDatabase
 
     @Inject
-    lateinit var pendingDataBase: PendingDatabase
+    lateinit var pendingDatabase: PendingDatabase
 
     @Inject
     lateinit var webSocket: ChatWebSocket
@@ -154,7 +154,7 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
     private val destroyScope = scope(Lifecycle.Event.ON_DESTROY)
 
     private val hedwig: Hedwig by lazy {
-        HedwigImp(database, pendingDataBase, callState, lifecycleScope)
+        HedwigImp(database, pendingDatabase, callState, lifecycleScope)
     }
 
     override fun onBind(intent: Intent): IBinder? {
@@ -287,11 +287,11 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
     }
 
     private fun startObserveAck() {
-        pendingDataBase.addObserver(ackObserver)
+        pendingDatabase.addObserver(ackObserver)
     }
 
     private fun stopObserveAck() {
-        pendingDataBase.removeObserver(ackObserver)
+        pendingDatabase.removeObserver(ackObserver)
     }
 
     private var ackJob: Job? = null
@@ -421,14 +421,14 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
                 BlazeAckMessage(msg.messageId, MessageStatus.READ.name, msg.expireAt)
             )
         }.apply {
-            pendingDataBase.insertJobs(this)
+            pendingDatabase.insertJobs(this)
         }
         Session.getExtensionSessionId()?.let { _ ->
             val conversationId = list.first().conversationId
             list.map { msg ->
                 createAckJob(CREATE_MESSAGE, BlazeAckMessage(msg.messageId, MessageStatus.READ.name), conversationId)
             }.let { jobs ->
-                pendingDataBase.insertJobs(jobs)
+                pendingDatabase.insertJobs(jobs)
             }
         }
         remoteMessageStatusDao.deleteByMessageIds(list.map { it.messageId })
@@ -486,7 +486,7 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
             val ids = messages.map { it.messageId }
             val cIds = messageDao.findConversationsByMessages(ids)
             ids.forEach { messageId ->
-                val messageMedia = pendingDataBase.findMessageMediaById(messageId) ?: messageDao.findMessageMediaById(messageId)
+                val messageMedia = pendingDatabase.findMessageMediaById(messageId) ?: messageDao.findMessageMediaById(messageId)
                 Timber.e("Expired job: delete messages ${messageMedia?.type} - ${messageMedia?.messageId}")
                 messageMedia?.absolutePath(
                     MixinApplication.appContext,
@@ -498,7 +498,7 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
                 if (messageMedia?.isTranscript() == true) {
                     jobManager.addJobInBackground(TranscriptDeleteJob(listOf(messageId)))
                 }
-                pendingDataBase.deletePendingMessageById(messageId)
+                pendingDatabase.deletePendingMessageById(messageId)
                 database.deleteMessageById(messageId)
             }
             cIds.forEach { id ->
