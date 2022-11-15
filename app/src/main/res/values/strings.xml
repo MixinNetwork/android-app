@@ -737,6 +737,7 @@
     <string name="qr_code_camera_code">Use the built-in Camera to scan any QR Code. When a code is detected, tap the notification to view more information.</string>
     <string name="QR_Code_not_found">QR Code not found</string>
     <string name="quote">quote</string>
+    <string name="Random_keyboard">Random keyboard</string>
     <string name="Raw">Raw</string>
     <string name="Raw_Transfer">Raw Transfer</string>
     <string name="Read_Assets">Read Assets</string>
@@ -1114,5 +1115,4 @@
     <string name="You_have_left_the_group">You have left the group</string>
     <string name="Your_emergency_contact_has_been_changed">Your emergency contact has been changed</string>
     <string name="your_pin_has_been_created">Your PIN has been created</string>
-    <string name="Random_keyboard">Random keyboard</string>
 </resources>
