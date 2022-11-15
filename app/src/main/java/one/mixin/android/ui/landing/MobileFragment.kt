@@ -20,7 +20,6 @@ import com.mukesh.countrypicker.Country
 import com.mukesh.countrypicker.CountryPicker
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
-import one.mixin.android.Constants.KEYS
 import one.mixin.android.R
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.request.VerificationPurpose
@@ -121,7 +120,7 @@ class MobileFragment : BaseFragment(R.layout.fragment_mobile) {
             getUserCountryInfo()
 
             keyboard.tipTitleEnabled = false
-            keyboard.setKeyboardKeys(KEYS)
+            keyboard.initPinKeys(key = listOf("1", "2", "3", "4", "5", "6", "7", "8", "9", "+", "0", ""))
             keyboard.setOnClickKeyboardListener(mKeyboardListener)
             keyboard.animate().translationY(0f).start()
         }

@@ -105,7 +105,6 @@ fun PinSettingPage() {
             mutableStateOf<Pair<Boolean, String?>?>(null)
         }
 
-
         var randomKeyboardEnabled by LocalContext.current.defaultSharedPreferences
             .booleanValueAsState(
                 key = Constants.Account.PREF_RANDOM,

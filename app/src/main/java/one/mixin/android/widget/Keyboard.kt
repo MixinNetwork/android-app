@@ -96,25 +96,17 @@ class Keyboard @JvmOverloads constructor(
         this.onClickKeyboardListener = onClickKeyboardListener
     }
 
-    fun setKeyboardKeys(key: Array<String>) {
-        this.key = key.toList()
-        initKeyboardView()
-    }
-
-    fun initPinKeys(context: Context) {
-        if (context.defaultSharedPreferences.getBoolean(Constants.Account.PREF_RANDOM, false)) {
-            randomKeys()
+    fun initPinKeys(context: Context? = null, key: List<String>? = null) {
+        if (context?.defaultSharedPreferences?.getBoolean(Constants.Account.PREF_RANDOM, false) == true) {
+            val list = mutableListOf("1", "2", "3", "4", "5", "6", "7", "8", "9", "0")
+            list.shuffle()
+            list.add(9, "")
+            list.add("<<")
+            this.key = list
+            initKeyboardView()
         } else {
-            setKeyboardKeys(Constants.KEYS)
+            this.key = key ?: listOf("1", "2", "3", "4", "5", "6", "7", "8", "9", "", "0", "<<")
+            initKeyboardView()
         }
-    }
-
-    private fun randomKeys() {
-        val list = mutableListOf("1", "2", "3", "4", "5", "6", "7", "8", "9", "0")
-        list.shuffle()
-        list.add(9, "")
-        list.add("<<")
-        key = list
-        initKeyboardView()
     }
 }

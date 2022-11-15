@@ -216,7 +216,6 @@ object Constants {
     const val MY_QR = "my_qr"
 
     const val Mixin_Conversation_ID_HEADER = "Mixin-Conversation-ID"
-    val KEYS = arrayOf("1", "2", "3", "4", "5", "6", "7", "8", "9", "", "0", "<<")
 
     const val BATCH_SIZE = 700
     const val MARK_REMOTE_LIMIT = 500
