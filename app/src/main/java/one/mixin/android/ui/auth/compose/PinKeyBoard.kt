@@ -61,11 +61,14 @@ import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.unit.toSize
+import one.mixin.android.Constants
 import one.mixin.android.R
+import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.pxToDp
 import one.mixin.android.extension.tickVibrate
 import one.mixin.android.session.Session
+import one.mixin.android.ui.setting.ui.compose.booleanValueAsState
 import one.mixin.android.ui.setting.ui.theme.MixinAppTheme
 import one.mixin.android.util.BiometricUtil
 
@@ -81,12 +84,25 @@ fun PinKeyBoard(
     // val open = context.defaultSharedPreferences.getBoolean(Constants.Account.PREF_BIOMETRICS, false)
     // val biometricEnable = !open && BiometricUtil.isSupport(context)
     val showBiometric = BiometricUtil.shouldShowBiometric(context)
-    val list = listOf(
-        "1", "2", "3",
-        "4", "5", "6",
-        "7", "8", "9",
-        "", "0", "<"
-    )
+    val randomKeyboardEnabled by LocalContext.current.defaultSharedPreferences
+        .booleanValueAsState(
+            key = Constants.Account.PREF_RANDOM,
+            defaultValue = false
+        )
+    val list = if (randomKeyboardEnabled) {
+        mutableListOf("1", "2", "3", "4", "5", "6", "7", "8", "9", "0").apply {
+            shuffle()
+            add(9, "")
+            add("<<")
+        }
+    } else {
+        listOf(
+            "1", "2", "3",
+            "4", "5", "6",
+            "7", "8", "9",
+            "", "0", "<<"
+        )
+    }
     var size by remember { mutableStateOf(IntSize.Zero) }
     var pinCode by remember { mutableStateOf("") }
 
