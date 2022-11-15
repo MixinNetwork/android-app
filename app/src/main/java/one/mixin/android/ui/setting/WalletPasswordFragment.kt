@@ -14,7 +14,6 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
-import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.api.ResponseError
 import one.mixin.android.api.handleMixinResponse
@@ -148,7 +147,7 @@ class WalletPasswordFragment :
             titleView.rightAnimator.setOnClickListener { createPin() }
             pin.setListener(this@WalletPasswordFragment)
             pin.setOnPinFinishListener(this@WalletPasswordFragment)
-            keyboard.setKeyboardKeys(Constants.KEYS)
+            keyboard.initPinKeys(requireContext())
             keyboard.setOnClickKeyboardListener(keyboardListener)
             keyboard.animate().translationY(0f).start()
         }

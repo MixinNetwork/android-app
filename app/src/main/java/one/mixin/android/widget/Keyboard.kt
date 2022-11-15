@@ -9,9 +9,11 @@ import android.widget.RelativeLayout
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemGridKeyboardBinding
 import one.mixin.android.databinding.ViewKeyboardBinding
+import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.session.Session
 
@@ -22,7 +24,7 @@ class Keyboard @JvmOverloads constructor(
 ) : RelativeLayout(context, attrs, defStyleAttr) {
 
     private var onClickKeyboardListener: OnClickKeyboardListener? = null
-    private var key: Array<String>? = null
+    private var key: List<String>? = null
 
     var tipTitleEnabled = true
 
@@ -95,7 +97,24 @@ class Keyboard @JvmOverloads constructor(
     }
 
     fun setKeyboardKeys(key: Array<String>) {
-        this.key = key
+        this.key = key.toList()
+        initKeyboardView()
+    }
+
+    fun initPinKeys(context: Context) {
+        if (context.defaultSharedPreferences.getBoolean(Constants.Account.PREF_RANDOM, false)) {
+            randomKeys()
+        } else {
+            setKeyboardKeys(Constants.KEYS)
+        }
+    }
+
+    private fun randomKeys() {
+        val list = mutableListOf("1", "2", "3", "4", "5", "6", "7", "8", "9", "0")
+        list.shuffle()
+        list.add(9, "")
+        list.add("<<")
+        key = list
         initKeyboardView()
     }
 }

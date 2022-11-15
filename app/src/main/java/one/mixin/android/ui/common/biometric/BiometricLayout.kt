@@ -59,7 +59,7 @@ class BiometricLayout(context: Context, attributeSet: AttributeSet) : ViewAnimat
 
     fun setKeyboard(keyboard: Keyboard) {
         this.keyboard = keyboard
-        keyboard.setKeyboardKeys(Constants.KEYS)
+        keyboard.initPinKeys(context)
         keyboard.setOnClickKeyboardListener(
             object : Keyboard.OnClickKeyboardListener {
                 override fun onKeyClick(position: Int, value: String) {

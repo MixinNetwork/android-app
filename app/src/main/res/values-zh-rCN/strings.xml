@@ -1091,4 +1091,5 @@
     <string name="You_have_left_the_group">你不在此群组</string>
     <string name="Your_emergency_contact_has_been_changed">紧急联系人已更改</string>
     <string name="your_pin_has_been_created">PIN 已创建</string>
+    <string name="Random_keyboard">随机键盘</string>
 </resources>

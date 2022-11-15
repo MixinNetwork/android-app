@@ -12,7 +12,6 @@ import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import io.reactivex.disposables.CompositeDisposable
 import kotlinx.coroutines.launch
-import one.mixin.android.Constants.KEYS
 import one.mixin.android.R
 import one.mixin.android.api.ResponseError
 import one.mixin.android.api.handleMixinResponse
@@ -64,7 +63,7 @@ class PinCheckDialogFragment : DialogFragment() {
             )
             gotItTv.setOnClickListener { activity?.finish() }
             keyboard.apply {
-                setKeyboardKeys(KEYS)
+                initPinKeys(requireContext())
                 setOnClickKeyboardListener(mKeyboardListener)
                 animate().translationY(0f).start()
             }
