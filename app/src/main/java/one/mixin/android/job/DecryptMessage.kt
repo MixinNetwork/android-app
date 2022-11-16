@@ -457,6 +457,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
 
                     if (updateExpiredMessageList.isNotEmpty()) {
                         val updateMessageIds = updateExpiredMessageList.map { it.first }
+                        Timber.i("update $updateMessageIds $ackMessages")
                         remoteMessageStatusDao.deleteByMessageIds(updateMessageIds)
                         pendingMessagesDao.markReadIds(updateMessageIds)
                         updateExpiredMessageList.forEach { expiredMessage ->
@@ -475,6 +476,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                         }
                         // Data that does not enter the message table will not enter the remote status table, do not consider
                         val updateConversationList = messageDao.findConversationsByMessages(updateMessageIds)
+                        Timber.i("update conversation $updateConversationList")
                         updateConversationList.forEach { cId ->
                             remoteMessageStatusDao.updateConversationUnseen(cId)
                             InvalidateFlow.emit(cId)
@@ -1395,6 +1397,8 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
         }
 
         pendingMessagesDao.insert(PendingMessage(message))
+        database.insertAndNotifyConversation(message)
+        Timber.i("insert ${message.conversationId} - ${message.messageId}")
     }
     private fun findMessage(messageId: String): Message? {
         pendingMessagesDao.findMessageById(messageId).let { msg ->
