@@ -11,7 +11,7 @@ import java.io.IOException
 class FileLogTree : Timber.Tree() {
 
     override fun log(priority: Int, tag: String?, message: String, t: Throwable?) {
-        if (priority >= Log.ERROR) {
+        if (priority == Log.ERROR) {
             try {
                 val directory = MixinApplication.appContext.cacheDir
 
@@ -33,18 +33,40 @@ class FileLogTree : Timber.Tree() {
             } catch (e: IOException) {
                 Log.println(Log.ERROR, "FileLogTree", "Error while logging into file: $e")
             }
+        } else if (priority == Log.ASSERT) {
+            try {
+                val directory = MixinApplication.appContext.cacheDir
+
+                if (!directory.exists()) {
+                    directory.mkdirs()
+                }
+
+                val file = File("${directory.absolutePath}${File.separator}message")
+                file.createNewFile()
+                if (file.exists()) {
+                    if (file.length() >= MAX_SIZE) {
+                        file.delete()
+                        file.createNewFile()
+                    }
+                    val fos = FileOutputStream(file, true)
+                    fos.write("${nowInUtc()} $message\n".toByteArray(Charsets.UTF_8))
+                    fos.close()
+                }
+            } catch (e: IOException) {
+                Log.println(Log.ERROR, "FileLogTree", "Error while logging into file: $e")
+            }
         }
     }
 
     companion object {
         private const val LOG_LOCAL_FILE_NAME = "mixin"
         private const val LOG_FILE_NAME = "mixin.log"
-        private const val MAX_SIZE = 5 * 1024 * 1024
+        private const val MAX_SIZE = 512 * 1024 * 1024
         fun getLogFile(): File? {
             val directory = MixinApplication.appContext.cacheDir
-            val file = File("${directory.absolutePath}${File.separator}$LOG_LOCAL_FILE_NAME")
+            val file = File("${directory.absolutePath}${File.separator}message")
             return if (file.exists()) {
-                val result = File("${directory.absolutePath}${File.separator}$LOG_FILE_NAME")
+                val result = File("${directory.absolutePath}${File.separator}message.log")
                 file.copyTo(result, true)
                 result
             } else {
