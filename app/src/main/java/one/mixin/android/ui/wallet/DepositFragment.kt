@@ -67,7 +67,7 @@ class DepositFragment : BaseFragment() {
                 notSupportLl.isVisible = true
                 sv.isVisible = false
                 val info = getString(R.string.not_supported_deposit, asset.symbol, asset.symbol)
-                val url = ""
+                val url = Constants.HelpLink.DEPOSIT_NOT_SUPPORT
                 notSupportTv.highlightStarTag(info, arrayOf(url))
             } else {
                 notSupportLl.isVisible = false

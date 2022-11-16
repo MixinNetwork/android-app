@@ -23,6 +23,7 @@ object Constants {
         const val CENTER = "https://mixinmessenger.zendesk.com"
         const val EMERGENCY = "https://mixinmessenger.zendesk.com/hc/articles/360029154692"
         const val DEPOSIT = "https://mixinmessenger.zendesk.com/hc/articles/360018789931"
+        const val DEPOSIT_NOT_SUPPORT = "https://mixinmessenger.zendesk.com/hc/en-us/articles/9954148870676"
         const val TIP = "https://tip.id"
     }
 
