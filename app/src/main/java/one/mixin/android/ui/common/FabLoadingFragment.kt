@@ -4,7 +4,6 @@ import android.os.Bundle
 import android.view.View
 import androidx.annotation.LayoutRes
 import com.github.jorgecastilloprz.FABProgressCircle
-import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.util.ErrorHandler
@@ -33,7 +32,7 @@ abstract class FabLoadingFragment : BaseFragment {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         backIv.setOnClickListener { activity?.onBackPressedDispatcher?.onBackPressed() }
-        verificationKeyboard.setKeyboardKeys(Constants.KEYS)
+        verificationKeyboard.initPinKeys()
         verificationCover.isClickable = true
     }
 

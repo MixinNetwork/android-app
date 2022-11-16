@@ -8,7 +8,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import net.i2p.crypto.eddsa.EdDSAPrivateKey
 import one.mixin.android.Constants.DEVICE_ID
-import one.mixin.android.Constants.KEYS
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.api.MixinResponse
@@ -56,7 +55,7 @@ abstract class PinCodeFragment(@LayoutRes contentLayoutId: Int) : FabLoadingFrag
         backIv.setOnClickListener { activity?.onBackPressedDispatcher?.onBackPressed() }
         pinVerificationView.setOnCodeEnteredListener(mPinVerificationListener)
         verificationKeyboard.tipTitleEnabled = false
-        verificationKeyboard.setKeyboardKeys(KEYS)
+        verificationKeyboard.initPinKeys(requireContext())
         verificationKeyboard.setOnClickKeyboardListener(mKeyboardListener)
         verificationCover.isClickable = true
         verificationNextFab.setOnClickListener { clickNextFab() }

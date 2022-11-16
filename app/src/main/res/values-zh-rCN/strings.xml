@@ -721,6 +721,7 @@
     <string name="qr_code_camera_code">打开相机会默认开启二维码识别，当二维码被检测到时会显示一个通知，点击通知识别二维码。</string>
     <string name="QR_Code_not_found">未发现二维码</string>
     <string name="quote">引用</string>
+    <string name="Random_keyboard">随机键盘</string>
     <string name="Raw">其他</string>
     <string name="Read_Assets">查看资产</string>
     <string name="Read_Bots">查看应用</string>

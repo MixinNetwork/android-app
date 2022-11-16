@@ -105,8 +105,33 @@ fun PinSettingPage() {
             mutableStateOf<Pair<Boolean, String?>?>(null)
         }
 
+        var randomKeyboardEnabled by LocalContext.current.defaultSharedPreferences
+            .booleanValueAsState(
+                key = Constants.Account.PREF_RANDOM,
+                defaultValue = false
+            )
+        Box(modifier = Modifier.height(16.dp))
+        SettingTile(
+            title = stringResource(R.string.Random_keyboard),
+            trailing = {
+                Switch(
+                    checked = randomKeyboardEnabled,
+                    colors = SwitchDefaults.colors(
+                        checkedThumbColor = MixinAppTheme.colors.accent,
+                        uncheckedThumbColor = MixinAppTheme.colors.unchecked,
+                        checkedTrackColor = MixinAppTheme.colors.accent,
+                        uncheckedTrackColor = MixinAppTheme.colors.unchecked,
+                    ),
+                    onCheckedChange = null
+                )
+            }
+        ) {
+            randomKeyboardEnabled = !randomKeyboardEnabled
+        }
+
         var showBiometricsDialog by remember { mutableStateOf(false) }
 
+        Box(modifier = Modifier.height(16.dp))
         SettingTile(
             title = stringResource(R.string.Pay_with_Biometrics),
             trailing = {

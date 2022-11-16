@@ -8,7 +8,6 @@ import android.view.WindowManager
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
-import one.mixin.android.Constants.KEYS
 import one.mixin.android.R
 import one.mixin.android.api.ResponseError
 import one.mixin.android.api.handleMixinResponse
@@ -62,7 +61,7 @@ class VerifyFragment : BaseFragment(R.layout.fragment_verify_pin), PinView.OnPin
         binding.apply {
             closeIv.setOnClickListener { activity?.onBackPressedDispatcher?.onBackPressed() }
             pin.setListener(this@VerifyFragment)
-            keyboard.setKeyboardKeys(KEYS)
+            keyboard.initPinKeys(requireContext())
             keyboard.setOnClickKeyboardListener(keyboardListener)
             keyboard.animate().translationY(0f).start()
         }

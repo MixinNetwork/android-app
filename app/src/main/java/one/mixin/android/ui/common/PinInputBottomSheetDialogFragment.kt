@@ -6,7 +6,6 @@ import android.os.Bundle
 import android.view.WindowManager
 import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.Constants.ARGS_TITLE
-import one.mixin.android.Constants.KEYS
 import one.mixin.android.databinding.FragmentPinInputBottomSheetBinding
 import one.mixin.android.extension.clickVibrate
 import one.mixin.android.extension.tickVibrate
@@ -58,7 +57,7 @@ class PinInputBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                     }
                 }
             })
-            keyboard.setKeyboardKeys(KEYS)
+            keyboard.initPinKeys(requireContext())
             keyboard.setOnClickKeyboardListener(keyboardListener)
         }
     }

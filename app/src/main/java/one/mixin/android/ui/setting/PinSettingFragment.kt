@@ -50,6 +50,12 @@ class PinSettingFragment : BaseFragment(R.layout.fragment_pin_setting) {
             timeRl.setOnClickListener {
                 navTo(BiometricTimeFragment.newInstance(), BiometricTimeFragment.TAG)
             }
+
+            randomSc.isClickable = false
+            randomRl.setOnClickListener(randomClickListener)
+            val randomKeyboardEnabled = defaultSharedPreferences.getBoolean(Constants.Account.PREF_RANDOM, false)
+            randomSc.isChecked = randomKeyboardEnabled
+
             biometricsSc.isClickable = false
             biometricsRl.setOnClickListener(biometricsClickListener)
             val open = defaultSharedPreferences.getBoolean(Constants.Account.PREF_BIOMETRICS, false)
@@ -82,6 +88,11 @@ class PinSettingFragment : BaseFragment(R.layout.fragment_pin_setting) {
         } else {
             requireContext().resources.getQuantityString(R.plurals.Hour, hour.toInt(), hour.toInt())
         }
+    }
+
+    private val randomClickListener = View.OnClickListener {
+        binding.randomSc.isChecked = !binding.randomSc.isChecked
+        defaultSharedPreferences.putBoolean(Constants.Account.PREF_RANDOM, binding.randomSc.isChecked)
     }
 
     private val biometricsClickListener = View.OnClickListener {

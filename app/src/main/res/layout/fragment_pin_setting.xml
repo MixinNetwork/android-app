@@ -48,6 +48,33 @@
     </LinearLayout>
 
     <RelativeLayout
+        android:id="@+id/random_rl"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/item_contact_height"
+        android:layout_marginTop="@dimen/item_divider"
+        android:foreground="?android:attr/selectableItemBackground"
+        android:background="?attr/bg_white">
+
+        <TextView
+            style="@style/NormalTextStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:layout_marginStart="@dimen/activity_horizontal_margin"
+            android:text="@string/Random_keyboard"
+            tools:ignore="RelativeOverlap" />
+
+        <androidx.appcompat.widget.SwitchCompat
+            android:id="@+id/random_sc"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"
+            android:layout_marginEnd="@dimen/activity_horizontal_margin"
+            tools:ignore="RelativeOverlap" />
+    </RelativeLayout>
+
+    <RelativeLayout
         android:id="@+id/biometrics_rl"
         android:layout_width="match_parent"
         android:layout_height="@dimen/item_contact_height"

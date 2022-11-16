@@ -737,6 +737,7 @@
     <string name="qr_code_camera_code">Use the built-in Camera to scan any QR Code. When a code is detected, tap the notification to view more information.</string>
     <string name="QR_Code_not_found">QR Code not found</string>
     <string name="quote">quote</string>
+    <string name="Random_keyboard">Random keyboard</string>
     <string name="Raw">Raw</string>
     <string name="Raw_Transfer">Raw Transfer</string>
     <string name="Read_Assets">Read Assets</string>

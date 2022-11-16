@@ -38,6 +38,7 @@ object Constants {
     object Account {
         const val PREF_PIN_CHECK = "pref_pin_check"
         const val PREF_BIOMETRICS = "pref_biometrics"
+        const val PREF_RANDOM = "pref_random"
         const val PREF_WRONG_TIME = "pref_wrong_time"
         const val PREF_FTS4_UPGRADE = "pref_fts4_upgrade"
         const val PREF_SYNC_FTS4_OFFSET = "sync_fts4_offset"
@@ -222,7 +223,6 @@ object Constants {
     const val MY_QR = "my_qr"
 
     const val Mixin_Conversation_ID_HEADER = "Mixin-Conversation-ID"
-    val KEYS = arrayOf("1", "2", "3", "4", "5", "6", "7", "8", "9", "", "0", "<<")
 
     const val BATCH_SIZE = 700
     const val MARK_REMOTE_LIMIT = 500
