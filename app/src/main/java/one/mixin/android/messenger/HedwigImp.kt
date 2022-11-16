@@ -62,6 +62,7 @@ class HedwigImp(
     }
 
     private fun startObserveFlood() {
+        runFloodJob()
         pendingDatabase.addObserver(floodObserver)
     }
 
@@ -118,6 +119,7 @@ class HedwigImp(
     }
 
     private fun startObservePending() {
+        runPendingJob()
         pendingDatabase.addObserver(pendingObserver)
     }
 
