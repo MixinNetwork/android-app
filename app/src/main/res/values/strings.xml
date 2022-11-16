@@ -279,6 +279,7 @@
     <string name="Copy_invite">Copy Invite Link</string>
     <string name="Copy_link">Copy Link</string>
     <string name="Create">Create</string>
+    <string name="Created">Created %1$s</string>
     <string name="Create_PIN">Create PIN</string>
     <string name="created_this_group">%1$s created this group</string>
     <string name="Creating">Creating…</string>

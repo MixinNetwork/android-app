@@ -2,6 +2,8 @@ package one.mixin.android.ui.common.info
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.util.TypedValue
+import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import android.widget.LinearLayout
@@ -13,6 +15,7 @@ import one.mixin.android.extension.colorAttr
 import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.roundTopOrBottom
+import one.mixin.android.extension.textColor
 import one.mixin.android.vo.App
 import one.mixin.android.widget.FlowLayout
 
@@ -88,7 +91,8 @@ enum class MenuStyle {
 
 @SuppressLint("InflateParams")
 fun MenuList.createMenuLayout(
-    context: Context
+    context: Context,
+    createdAt: String? = null
 ): ViewGroup {
     val listLayout = LinearLayout(context).apply {
         orientation = LinearLayout.VERTICAL
@@ -148,6 +152,7 @@ fun MenuList.createMenuLayout(
                 LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp56)
             )
         }
+
         listLayout.addView(
             groupLayout,
             LinearLayout.LayoutParams(
@@ -158,6 +163,22 @@ fun MenuList.createMenuLayout(
                 marginEnd = dp16
                 topMargin = dp5
                 bottomMargin = dp5
+            }
+        )
+    }
+    if (createdAt != null) {
+        listLayout.addView(
+            TextView(context).apply {
+                text = createdAt
+                textColor = context.colorFromAttribute(R.attr.text_minor)
+                setTextSize(TypedValue.COMPLEX_UNIT_SP, 12f)
+                gravity = Gravity.CENTER
+            },
+            LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+            ).apply {
+                topMargin = dp5
             }
         )
     }
