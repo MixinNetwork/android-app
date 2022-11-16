@@ -23,6 +23,7 @@ object Constants {
         const val CENTER = "https://mixinmessenger.zendesk.com"
         const val EMERGENCY = "https://mixinmessenger.zendesk.com/hc/articles/360029154692"
         const val DEPOSIT = "https://mixinmessenger.zendesk.com/hc/articles/360018789931"
+        const val DEPOSIT_NOT_SUPPORT = "https://mixinmessenger.zendesk.com/hc/en-us/articles/9954148870676"
         const val TIP = "https://tip.id"
     }
 
@@ -146,6 +147,12 @@ object Constants {
         const val ETHEREUM_CHAIN_ID = "43d61dcd-e413-450d-80b8-101d5e903357"
         const val EOS_CHAIN_ID = "6cfe566e-4aad-470b-8c9a-2fd35b49c68d"
         const val TRON_CHAIN_ID = "25dabac5-056a-48ff-b9f9-f67395dc407c"
+    }
+
+    object AssetId {
+        const val MGD_ASSET_ID = "b207bce9-c248-4b8e-b6e3-e357146f3f4c"
+        const val BYTOM_CLASSIC_ASSET_ID = "443e1ef5-bc9b-47d3-be77-07f328876c50"
+        const val OMNI_USDT_ASSET_ID = "815b0b1a-2764-3736-8faa-42d694fa620a"
     }
 
     object Mute {
