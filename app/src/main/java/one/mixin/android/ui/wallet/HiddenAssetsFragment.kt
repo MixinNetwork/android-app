@@ -59,21 +59,22 @@ class HiddenAssetsFragment : BaseFragment(R.layout.fragment_hidden_assets), Head
                             val deleteItem = assetsAdapter.removeItem(hiddenPos)!!
                             lifecycleScope.launch {
                                 walletViewModel.updateAssetHidden(asset.assetId, false)
-                                val anchorView = assetsRv
-
-                                snackbar = Snackbar.make(anchorView, getString(R.string.wallet_already_shown, asset.symbol), Snackbar.LENGTH_LONG)
-                                    .setAction(R.string.UNDO) {
-                                        assetsAdapter.restoreItem(deleteItem, hiddenPos)
-                                        lifecycleScope.launch(Dispatchers.IO) {
-                                            walletViewModel.updateAssetHidden(asset.assetId, true)
+                                if (isAdded) {
+                                    val anchorView = assetsRv
+                                    snackbar = Snackbar.make(anchorView, getString(R.string.wallet_already_shown, asset.symbol), Snackbar.LENGTH_LONG)
+                                        .setAction(R.string.UNDO) {
+                                            assetsAdapter.restoreItem(deleteItem, hiddenPos)
+                                            lifecycleScope.launch(Dispatchers.IO) {
+                                                walletViewModel.updateAssetHidden(asset.assetId, true)
+                                            }
+                                        }.setActionTextColor(ContextCompat.getColor(requireContext(), R.color.wallet_blue)).apply {
+                                            (this.view.findViewById(R.id.snackbar_text) as TextView)
+                                                .setTextColor(ContextCompat.getColor(requireContext(), R.color.white))
+                                        }.apply {
+                                            snackbar?.config(anchorView.context)
                                         }
-                                    }.setActionTextColor(ContextCompat.getColor(requireContext(), R.color.wallet_blue)).apply {
-                                        (this.view.findViewById(R.id.snackbar_text) as TextView)
-                                            .setTextColor(ContextCompat.getColor(requireContext(), R.color.white))
-                                    }.apply {
-                                        snackbar?.config(anchorView.context)
-                                    }
-                                snackbar?.show()
+                                    snackbar?.show()
+                                }
                                 distance = 0
                             }
                         }
