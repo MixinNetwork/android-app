@@ -1,15 +1,33 @@
 package one.mixin.android.db
 
+import kotlinx.coroutines.launch
 import one.mixin.android.BuildConfig
+import one.mixin.android.Constants
+import one.mixin.android.MixinApplication
+import one.mixin.android.util.PropertyHelper
+import one.mixin.android.util.reportException
 import timber.log.Timber
 
 object DatabaseMonitor {
 
     private val logSet = HashMap<String, Long>()
     private var str = StringBuffer()
+    var enable = true
+        private set
 
-    fun monitor(sqlQuery: String) {
-        if (!BuildConfig.DEBUG) return
+    fun reset() {
+        MixinApplication.get().applicationScope.launch {
+            enable = PropertyHelper.findValueByKey(Constants.Debug.DB_DEBUG_LOGS)
+                ?.toBoolean() ?: true
+        }
+    }
+
+    init {
+        reset()
+    }
+
+    fun monitor(sqlQuery: String, args: List<Any?>) {
+        if (!BuildConfig.DEBUG || !enable) return
         val sql = sqlQuery.trim()
         val currentThreadName = Thread.currentThread().name
         if (sql.startsWith("BEGIN")) {
@@ -20,14 +38,14 @@ object DatabaseMonitor {
             // Timber.e("$currentThreadName $sql")
         } else if (sql.startsWith("END TRANSACTION") || sql.startsWith("TRANSACTION SUCCESSFUL")) {
             logSet[currentThreadName]?.let {
-                val time = System.currentTimeMillis() - it
-                if (time > 50) {
-                    Timber.e("$currentThreadName It takes $time milliseconds")
-                    str.append("$sql\n")
-                    str.append("It takes $time milliseconds\n")
+                val timeDiff = System.currentTimeMillis() - it
+                if (timeDiff > 500) {
+                    Timber.e("$currentThreadName It takes $timeDiff milliseconds")
+                    str.append("$sql $args \n")
+                    str.append("It takes $timeDiff milliseconds\n")
                     str.append("--------<END>--------($currentThreadName)\n\n")
                     Timber.e(str.toString())
-                    // reportException("It takes $time milliseconds\n $str", LogExtension())
+                    reportException("It takes $timeDiff milliseconds\n $str", SlowSqlExtension())
                     str = StringBuffer()
                 }
                 logSet.remove(currentThreadName)
@@ -37,5 +55,16 @@ object DatabaseMonitor {
         } else {
             // Timber.w("$currentThreadName[$sql]")
         }
+    }
+
+    fun log(log: String) {
+        if (!BuildConfig.DEBUG || !enable) return
+        Timber.wtf(log)
+    }
+}
+
+class SlowSqlExtension : Exception() {
+    companion object {
+        private const val serialVersionUID: Long = 1L
     }
 }

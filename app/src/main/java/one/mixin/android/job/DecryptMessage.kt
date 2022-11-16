@@ -17,6 +17,7 @@ import one.mixin.android.crypto.Base64
 import one.mixin.android.crypto.SignalProtocol
 import one.mixin.android.crypto.requestResendKey
 import one.mixin.android.crypto.vo.RatchetStatus
+import one.mixin.android.db.DatabaseMonitor
 import one.mixin.android.db.deleteFtsByMessageId
 import one.mixin.android.db.insertMessage
 import one.mixin.android.db.insertNoReplace
@@ -403,6 +404,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                 RxBus.publish(RecallEvent(msg.messageId))
                 messageDao.recallFailedMessage(msg.messageId)
                 messageDao.recallMessage(msg.messageId)
+                messagesFts4Dao.deleteFtsByMessageId(msg.messageId)
                 messageDao.recallPinMessage(msg.messageId, msg.conversationId)
                 pinMessageDao.deleteByMessageId(msg.messageId)
                 messageMentionDao.deleteMessage(msg.messageId)
@@ -429,7 +431,6 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                     msg.createdAt,
                     msg.conversationId,
                 )
-                deleteFtsByMessageId(msg.messageId)
             }
             updateRemoteMessageStatus(data.messageId, MessageStatus.READ)
             messageHistoryDao.insert(MessageHistory(data.messageId))
@@ -465,7 +466,9 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                     if (updateExpiredMessageList.isNotEmpty()) {
                         val updateMessageIds = updateExpiredMessageList.map { it.first }
                         lifecycleScope.launch(PENDING_DB_THREAD) {
+                            DatabaseMonitor.log("remote mark read $updateMessageIds")
                             remoteMessageStatusDao.deleteByMessageIds(updateMessageIds)
+                            DatabaseMonitor.log("${Thread.currentThread().name} Mark read $updateMessageIds")
                             pendingMessagesDao.markReadIds(updateMessageIds)
                             // Data that does not enter the message table will not enter the remote status table, do not consider
                             val updateConversationList = messageDao.findConversationsByMessages(updateMessageIds)
@@ -474,6 +477,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                                 InvalidateFlow.emit(cId)
                                 notificationManager.cancel(cId.hashCode())
                             }
+                            DatabaseMonitor.log("remote mark read end $updateMessageIds")
                         }
 
                         // expired message

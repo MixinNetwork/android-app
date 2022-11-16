@@ -5,6 +5,7 @@ import android.app.Activity
 import android.app.ActivityManager
 import android.app.Dialog
 import android.app.NotificationManager
+import android.content.ContentValues
 import android.content.Context
 import android.content.Intent
 import android.content.IntentSender
@@ -86,6 +87,7 @@ import one.mixin.android.extension.putLong
 import one.mixin.android.extension.putString
 import one.mixin.android.extension.remove
 import one.mixin.android.extension.toast
+import one.mixin.android.fts5.FtsDbHelper
 import one.mixin.android.job.AttachmentMigrationJob
 import one.mixin.android.job.BackupJob
 import one.mixin.android.job.CleanCacheJob
@@ -150,7 +152,10 @@ import one.mixin.android.vo.Participant
 import one.mixin.android.vo.ParticipantRole
 import one.mixin.android.vo.isGroupConversation
 import one.mixin.android.widget.MaterialSearchView
+import timber.log.Timber
+import java.util.UUID
 import javax.inject.Inject
+
 
 @AndroidEntryPoint
 class MainActivity : BlazeBaseActivity() {
@@ -296,6 +301,32 @@ class MainActivity : BlazeBaseActivity() {
             }
             checkUpdate()
         }
+        // Todo remove test code
+        lifecycleScope.launch(Dispatchers.IO) {
+            val ftsDbHelper = FtsDbHelper(this@MainActivity)
+            ftsDbHelper.writableDatabase.use { db ->
+                repeat(100) {
+                    db.beginTransaction()
+                    val values = ContentValues()
+                    values.put("content", UUID.randomUUID().toString())
+                    val lastRowId =  db.insert("messages_fts", null, values).apply {
+                        Timber.e("insert return $this")
+                    }
+                    if (lastRowId<=0) return@repeat
+                    db.execSQL("INSERT INTO metas(doc_id, message_id, conversation_id, user_id) VALUES ($lastRowId, random(), random(), random())")
+                    db.setTransactionSuccessful()
+                    db.endTransaction()
+                }
+                Timber.e("Over!")
+            }
+            ftsDbHelper.readableDatabase.use { db ->
+                db.rawQuery(
+                    "SELECT * FROM messages_fts", null
+                ).use { cursor ->
+                    Timber.e("find ${cursor.count}")
+                }
+            }
+        }
     }
 
     override fun onStart() {
@@ -329,7 +360,10 @@ class MainActivity : BlazeBaseActivity() {
         }
 
         jobManager.addJobInBackground(RefreshOneTimePreKeysJob())
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q && PropertyHelper.findValueByKey(PREF_BACKUP)?.toBooleanStrictOrNull() == true) {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q && PropertyHelper.findValueByKey(
+                PREF_BACKUP
+            )?.toBooleanStrictOrNull() == true
+        ) {
             jobManager.addJobInBackground(BackupJob())
         }
 
@@ -383,7 +417,8 @@ class MainActivity : BlazeBaseActivity() {
     private fun handleTipEvent(e: TipEvent, deviceId: String) {
         val nodeCounter = e.nodeCounter
         if (nodeCounter == 1) {
-            val tipType = if (Session.getAccount()?.hasPin == true) TipType.Upgrade else TipType.Create
+            val tipType =
+                if (Session.getAccount()?.hasPin == true) TipType.Upgrade else TipType.Create
             TipActivity.show(this, TipBundle(tipType, deviceId, TryConnecting, tipEvent = e))
         } else if (nodeCounter > 1) {
             TipActivity.show(this, TipBundle(TipType.Change, deviceId, TryConnecting, tipEvent = e))
@@ -476,7 +511,11 @@ class MainActivity : BlazeBaseActivity() {
         }
 
     private fun sendSafetyNetRequest() {
-        if (GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(applicationContext, 13000000) != ConnectionResult.SUCCESS) {
+        if (GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(
+                applicationContext,
+                13000000
+            ) != ConnectionResult.SUCCESS
+        ) {
             return
         }
         runIntervalTask(SAFETY_NET_INTERVAL_KEY, INTERVAL_24_HOURS) {
@@ -585,11 +624,12 @@ class MainActivity : BlazeBaseActivity() {
         getScanResult.launch(Pair(ARGS_SHOW_SCAN, scan))
     }
 
-    private val getScanResult = registerForActivityResult(CaptureActivity.CaptureContract()) { data ->
-        if (data != null) {
-            handlerCode(data)
+    private val getScanResult =
+        registerForActivityResult(CaptureActivity.CaptureContract()) { data ->
+            if (data != null) {
+                handlerCode(data)
+            }
         }
-    }
 
     private var bottomSheet: DialogFragment? = null
     private var alertDialog: Dialog? = null
@@ -600,7 +640,10 @@ class MainActivity : BlazeBaseActivity() {
             bottomSheet?.dismiss()
             showScanBottom(scan)
             clearCodeAfterConsume(intent, SCAN)
-        } else if (intent.hasExtra(URL) || (intent.action == Intent.ACTION_VIEW && intent.categories.contains(Intent.CATEGORY_BROWSABLE))) {
+        } else if (intent.hasExtra(URL) || (intent.action == Intent.ACTION_VIEW && intent.categories.contains(
+                Intent.CATEGORY_BROWSABLE
+            ))
+        ) {
             val url = intent.getStringExtra(URL) ?: intent.data?.toString() ?: return
             bottomSheet?.dismiss()
             bottomSheet = LinkBottomSheetDialogFragment.newInstance(url)
@@ -618,7 +661,11 @@ class MainActivity : BlazeBaseActivity() {
                 toast(R.string.transfer_without_pin)
             }
             clearCodeAfterConsume(intent, TRANSFER)
-        } else if (intent.extras != null && intent.extras!!.getString("conversation_id", null) != null) {
+        } else if (intent.extras != null && intent.extras!!.getString(
+                "conversation_id",
+                null
+            ) != null
+        ) {
             alertDialog?.dismiss()
             alertDialog = alert(getString(R.string.Please_wait_a_bit)).show()
             val conversationId = intent.extras!!.getString("conversation_id")!!
@@ -794,7 +841,8 @@ class MainActivity : BlazeBaseActivity() {
                 false
             }
         }
-        supportFragmentManager.beginTransaction().add(R.id.container_circle, circlesFragment, CirclesFragment.TAG).commit()
+        supportFragmentManager.beginTransaction()
+            .add(R.id.container_circle, circlesFragment, CirclesFragment.TAG).commit()
         observeOtherCircleUnread(defaultSharedPreferences.getString(CIRCLE_ID, null))
     }
 
@@ -831,7 +879,8 @@ class MainActivity : BlazeBaseActivity() {
         defaultSharedPreferences.putString(CIRCLE_NAME, name)
         defaultSharedPreferences.putString(CIRCLE_ID, circleId)
         binding.searchBar.hideContainer()
-        (supportFragmentManager.findFragmentByTag(ConversationListFragment.TAG) as? ConversationListFragment)?.circleId = circleId
+        (supportFragmentManager.findFragmentByTag(ConversationListFragment.TAG) as? ConversationListFragment)?.circleId =
+            circleId
         observeOtherCircleUnread(circleId)
     }
 
@@ -933,6 +982,7 @@ class MainActivity : BlazeBaseActivity() {
                     binding.searchBar.actionVa.showPrevious()
                 }
             }
+
             else -> {
                 // https://issuetracker.google.com/issues/139738913
                 if (Build.VERSION.SDK_INT == Build.VERSION_CODES.Q && isTaskRoot) {

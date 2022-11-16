@@ -204,6 +204,7 @@ object Constants {
     object Debug {
         const val WEB_DEBUG = "web_debug"
         const val DB_DEBUG = "db_debug"
+        const val DB_DEBUG_LOGS = "db_debug_logs"
         const val DB_DEBUG_WARNING = "db_debug_warning"
     }
 

@@ -1,9 +1,12 @@
 package one.mixin.android.db
 
+import androidx.room.util.appendPlaceholders
+import androidx.room.util.newStringBuilder
 import one.mixin.android.db.MixinDatabase.Companion.rawDelete
 import one.mixin.android.db.pending.PendingDatabase
 import one.mixin.android.session.Session
 import one.mixin.android.util.chat.InvalidateFlow
+import one.mixin.android.util.debug.measureTimeMillis
 import one.mixin.android.vo.App
 import one.mixin.android.vo.Circle
 import one.mixin.android.vo.CircleConversation
@@ -259,10 +262,19 @@ fun MixinDatabase.insertMessage(message: Message) {
     conversationDao().updateLastMessageId(message.messageId, message.createdAt, message.conversationId)
 }
 
-fun deleteFtsByMessageId(messageId: String) {
-    rawDelete("messages_fts4", "message_id = ?", arrayOf(messageId))
+fun MessagesFts4Dao.deleteFtsByMessageId(messageId: String) {
+    measureTimeMillis("FTS4_DELETE_MESSAGE") {
+        rawDelete("messages_fts4", "message_id = ?", arrayOf(messageId))
+    }
 }
 
-fun deleteFtsByMessageIds(messageIds: List<String>) {
-    rawDelete("messages_fts4", "message_id IN (?)", arrayOf(messageIds.joinToString { it }))
+fun MessagesFts4Dao.deleteFtsByMessageIds(messageIds: List<String>) {
+    measureTimeMillis("FTS4_DELETE_MESSAGES") {
+        val inputSize = messageIds.size
+        val stringBuilder = newStringBuilder()
+        stringBuilder.append("message_id IN(")
+        appendPlaceholders(stringBuilder, inputSize)
+        stringBuilder.append(")")
+        rawDelete("messages_fts4", stringBuilder.toString(), messageIds.toTypedArray())
+    }
 }

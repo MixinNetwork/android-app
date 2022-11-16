@@ -51,6 +51,7 @@ import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_46_47
 import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_47_48
 import one.mixin.android.db.converter.DepositEntryListConverter
 import one.mixin.android.db.converter.MessageStatusConverter
+import one.mixin.android.db.monitor.DatabaseMonitor
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.SINGLE_DB_EXECUTOR
 import one.mixin.android.util.debug.getContent
@@ -215,7 +216,7 @@ abstract class MixinDatabase : RoomDatabase() {
                         builder.setQueryCallback(
                             object : QueryCallback {
                                 override fun onQuery(sqlQuery: String, bindArgs: List<Any?>) {
-                                    // DatabaseMonitor.monitor(sqlQuery)
+                                    DatabaseMonitor.monitor(sqlQuery, bindArgs)
                                 }
                             },
                             ArchTaskExecutor.getIOThreadExecutor(),
@@ -250,12 +251,12 @@ abstract class MixinDatabase : RoomDatabase() {
             }
         }
 
+        internal fun rawDelete(table: String, whereClause: String, whereArgs: Array<Any>): Int? =
+            supportSQLiteDatabase?.delete(table, whereClause, whereArgs)
+
         fun checkPoint() {
             supportSQLiteDatabase?.query("PRAGMA wal_checkpoint(FULL)")?.close()
         }
-
-        internal fun rawDelete(table: String, whereClause: String, whereArgs: Array<Any>): Int? =
-            supportSQLiteDatabase?.delete(table, whereClause, whereArgs)
 
         private val CALLBACK = object : RoomDatabase.Callback() {
             override fun onOpen(db: SupportSQLiteDatabase) {
