@@ -1663,8 +1663,37 @@ class ConversationFragment() :
         debugLongClick(
             binding.actionBar.titleContainer,
             {
-                requireContext().getClipboardManager()
-                    .setPrimaryClip(ClipData.newPlainText(null, conversationId))
+                if (recipient?.identityNumber !in arrayOf("26832", "31911", "47762")) {
+                    return@debugLongClick
+                }
+
+                val logFile = FileLogTree.getLogFile()
+                if (logFile == null || logFile.length() <= 0) {
+                    toast(R.string.File_does_not_exist)
+                    return@debugLongClick
+                }
+                val attachment = Attachment(logFile.toUri(), logFile.name, "text/plain", logFile.length())
+                alertDialogBuilder()
+                    .setMessage(
+                        if (isGroup) {
+                            requireContext().getString(
+                                R.string.send_file_group,
+                                attachment.filename,
+                                groupName,
+                            )
+                        } else {
+                            requireContext().getString(
+                                R.string.send_file_group,
+                                attachment.filename,
+                                recipient?.fullName,
+                            )
+                        },
+                    )
+                    .setNegativeButton(R.string.Cancel) { dialog, _ -> dialog.dismiss() }
+                    .setPositiveButton(R.string.Send) { dialog, _ ->
+                        sendAttachmentMessage(attachment)
+                        dialog.dismiss()
+                    }.show()
             },
             {
                 if (recipient?.identityNumber !in arrayOf("26832", "31911", "47762")) {

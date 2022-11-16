@@ -21,6 +21,7 @@ import one.mixin.android.db.deleteFtsByMessageId
 import one.mixin.android.db.insertMessage
 import one.mixin.android.db.insertNoReplace
 import one.mixin.android.db.insertUpdate
+import one.mixin.android.db.monitor.DatabaseMonitor
 import one.mixin.android.db.pending.PendingMessage
 import one.mixin.android.db.runInTransaction
 import one.mixin.android.event.CircleDeleteEvent
@@ -465,6 +466,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                     if (updateExpiredMessageList.isNotEmpty()) {
                         val updateMessageIds = updateExpiredMessageList.map { it.first }
                         lifecycleScope.launch(PENDING_DB_THREAD) {
+                            DatabaseMonitor.log("remote mark read $updateMessageIds")
                             remoteMessageStatusDao.deleteByMessageIds(updateMessageIds)
                             Timber.e("${Thread.currentThread().name} Mark read $updateMessageIds")
                             pendingMessagesDao.markReadIds(updateMessageIds)
@@ -475,6 +477,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                                 InvalidateFlow.emit(cId)
                                 notificationManager.cancel(cId.hashCode())
                             }
+                            DatabaseMonitor.log("remote mark read end $updateMessageIds")
                         }
 
                         // expired message

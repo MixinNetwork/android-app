@@ -212,7 +212,7 @@ abstract class MixinDatabase : RoomDatabase() {
                         builder.setQueryCallback(
                             object : QueryCallback {
                                 override fun onQuery(sqlQuery: String, bindArgs: List<Any?>) {
-                                     DatabaseMonitor.monitor(sqlQuery, bindArgs)
+                                    DatabaseMonitor.monitor(sqlQuery, bindArgs)
                                 }
                             },
                             ArchTaskExecutor.getIOThreadExecutor(),
