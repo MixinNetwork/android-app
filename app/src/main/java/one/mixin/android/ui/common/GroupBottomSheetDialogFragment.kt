@@ -28,6 +28,7 @@ import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.databinding.FragmentGroupBottomSheetBinding
 import one.mixin.android.extension.addFragment
 import one.mixin.android.extension.alertDialogBuilder
+import one.mixin.android.extension.dayTime
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.getClipboardManager
@@ -359,7 +360,10 @@ class GroupBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment(
 
         menuListLayout?.removeAllViews()
         binding.scrollContent.removeView(menuListLayout)
-        list.createMenuLayout(requireContext())
+        list.createMenuLayout(
+            requireContext(),
+            getString(R.string.Created, conversation.createdAt.dayTime())
+        )
             .let { layout ->
                 menuListLayout = layout
                 binding.scrollContent.addView(layout)
