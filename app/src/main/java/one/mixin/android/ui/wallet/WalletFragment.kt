@@ -52,6 +52,7 @@ import one.mixin.android.widget.PercentItemView
 import one.mixin.android.widget.PercentView
 import one.mixin.android.widget.calcPercent
 import java.math.BigDecimal
+import java.math.RoundingMode
 import javax.inject.Inject
 import kotlin.math.abs
 
@@ -198,8 +199,8 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
             }
         }
         if (bitcoin != null) {
-            totalBTC = totalFiat.divide(BigDecimal(Fiats.getRate()), 16, BigDecimal.ROUND_HALF_UP)
-                .divide(BigDecimal(bitcoin.priceUsd), 16, BigDecimal.ROUND_HALF_UP)
+            totalBTC = totalFiat.divide(BigDecimal(Fiats.getRate()), 16, RoundingMode.HALF_UP)
+                .divide(BigDecimal(bitcoin.priceUsd), 16, RoundingMode.HALF_UP)
         }
         _headBinding?.apply {
             totalAsTv.text = try {
