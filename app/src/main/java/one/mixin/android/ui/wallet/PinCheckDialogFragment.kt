@@ -45,12 +45,22 @@ class PinCheckDialogFragment : DialogFragment() {
 
     private val disposable = CompositeDisposable()
 
+    private var dialogCallback:((Boolean)->Unit)? = null
+    fun setDialogCallback(dialogCallback: ((Boolean) -> Unit)?) {
+        this.dialogCallback = dialogCallback
+    }
+
     @SuppressLint("RestrictedApi")
     override fun setupDialog(dialog: Dialog, style: Int) {
         super.setupDialog(dialog, style)
         dialog.window?.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
         dialog.setContentView(binding.root)
-
+        dialog.setOnShowListener {
+            dialogCallback?.invoke(true)
+        }
+        dialog.setOnDismissListener {
+            dialogCallback?.invoke(true)
+        }
         binding.apply {
             pin.setListener(
                 object : PinView.OnPinListener {
