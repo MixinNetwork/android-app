@@ -59,7 +59,7 @@ class PinCheckDialogFragment : DialogFragment() {
             dialogCallback?.invoke(true)
         }
         dialog.setOnDismissListener {
-            dialogCallback?.invoke(true)
+            dialogCallback?.invoke(false)
         }
         binding.apply {
             pin.setListener(
