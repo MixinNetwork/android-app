@@ -1,6 +1,8 @@
 package one.mixin.android.ui.wallet
 
 import android.annotation.SuppressLint
+import android.graphics.RenderEffect
+import android.graphics.Shader
 import android.os.Bundle
 import android.view.View
 import android.view.View.GONE
@@ -33,6 +35,7 @@ import one.mixin.android.extension.mainThread
 import one.mixin.android.extension.navigate
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.numberFormat8
+import one.mixin.android.extension.supportsS
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshAssetsJob
 import one.mixin.android.session.Session
@@ -312,7 +315,19 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
             putPrefPinInterval(requireContext(), Constants.INTERVAL_24_HOURS)
         }
         if (cur - last > interval) {
-            val pinCheckDialog = PinCheckDialogFragment.newInstance()
+            val pinCheckDialog = PinCheckDialogFragment.newInstance().apply {
+                supportsS({
+                    setDialogCallback { showed ->
+                        binding.container.setRenderEffect(
+                            if (showed) {
+                                RenderEffect.createBlurEffect(25f, 25f, Shader.TileMode.MIRROR)
+                            } else {
+                                null
+                            }
+                        )
+                    }
+                })
+            }
             pinCheckDialog.show(parentFragmentManager, PinCheckDialogFragment.TAG)
         }
     }
