@@ -54,13 +54,8 @@ class PinCheckDialogFragment : DialogFragment() {
     override fun setupDialog(dialog: Dialog, style: Int) {
         super.setupDialog(dialog, style)
         dialog.window?.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
+        dialogCallback?.invoke(true)
         dialog.setContentView(binding.root)
-        dialog.setOnShowListener {
-            dialogCallback?.invoke(true)
-        }
-        dialog.setOnDismissListener {
-            dialogCallback?.invoke(false)
-        }
         binding.apply {
             pin.setListener(
                 object : PinView.OnPinListener {
@@ -82,6 +77,7 @@ class PinCheckDialogFragment : DialogFragment() {
 
     override fun onDestroy() {
         super.onDestroy()
+        dialogCallback?.invoke(false)
         dialog?.window?.clearFlags(WindowManager.LayoutParams.FLAG_SECURE)
     }
 

@@ -320,7 +320,7 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
                     setDialogCallback { showed ->
                         binding.container.setRenderEffect(
                             if (showed) {
-                                RenderEffect.createBlurEffect(10f, 10f, Shader.TileMode.MIRROR)
+                                RenderEffect.createBlurEffect(25f, 25f, Shader.TileMode.MIRROR)
                             } else {
                                 null
                             }
