@@ -7,8 +7,8 @@ import one.mixin.android.api.service.TipService
 import one.mixin.android.crypto.aesDecrypt
 import one.mixin.android.crypto.aesEncrypt
 import one.mixin.android.crypto.generateEphemeralSeed
-import one.mixin.android.extension.base64RawEncode
-import one.mixin.android.extension.base64RawUrlDecode
+import one.mixin.android.extension.base64RawURLDecode
+import one.mixin.android.extension.base64RawURLEncode
 import one.mixin.android.extension.decodeBase64
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.hexStringToByteArray
@@ -47,13 +47,13 @@ class Ephemeral @Inject internal constructor(private val tipService: TipService)
         val pinToken = Session.getPinToken()?.decodeBase64() ?: throw TipNullException("No pin token")
         val seed = generateEphemeralSeed()
         val cipher = aesEncrypt(pinToken, seed)
-        return updateEphemeralSeed(context, deviceId, cipher.base64RawEncode())
+        return updateEphemeralSeed(context, deviceId, cipher.base64RawURLEncode())
     }
 
     private suspend fun updateEphemeralSeed(context: Context, deviceId: String, seedBase64: String): ByteArray {
         tipNetworkNullable { tipService.tipEphemeral(TipRequest(deviceId, seedBase64)) }.getOrThrow()
         val pinToken = Session.getPinToken()?.decodeBase64() ?: throw TipNullException("No pin token")
-        val cipherText = seedBase64.base64RawUrlDecode()
+        val cipherText = seedBase64.base64RawURLDecode()
         val plain = aesDecrypt(pinToken, cipherText)
         if (!storeEphemeralSeed(context, plain)) {
             throw TipException("Store ephemeral error")

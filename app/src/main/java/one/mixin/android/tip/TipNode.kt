@@ -16,7 +16,7 @@ import one.mixin.android.api.response.TipSignResponse
 import one.mixin.android.api.response.TipSigner
 import one.mixin.android.api.service.TipNodeService
 import one.mixin.android.crypto.sha3Sum256
-import one.mixin.android.extension.base64RawEncode
+import one.mixin.android.extension.base64RawURLEncode
 import one.mixin.android.extension.currentTimeSeconds
 import one.mixin.android.extension.getStackTraceString
 import one.mixin.android.extension.hexStringToByteArray
@@ -318,7 +318,7 @@ class TipNode @Inject internal constructor(private val tipNodeService: TipNodeSe
         )
         val dataJson = gson.toJson(data).toByteArray()
         val cipher = Crypto.encrypt(signerPk, userSk, dataJson)
-        return TipSignRequest(sig, userPkStr, cipher.base64RawEncode(), watcherHex)
+        return TipSignRequest(sig, userPkStr, cipher.base64RawURLEncode(), watcherHex)
     }
 
     @Suppress("ArrayInDataClass")
