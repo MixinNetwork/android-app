@@ -8,7 +8,7 @@ import one.mixin.android.api.service.TipService
 import one.mixin.android.crypto.aesDecrypt
 import one.mixin.android.crypto.argon2IdHash
 import one.mixin.android.crypto.sha3Sum256
-import one.mixin.android.extension.base64RawUrlDecode
+import one.mixin.android.extension.base64RawURLDecode
 import one.mixin.android.extension.decodeBase64
 import one.mixin.android.session.Session
 import one.mixin.android.tip.exception.TipNullException
@@ -29,7 +29,7 @@ class Identity @Inject internal constructor(private val tipService: TipService) 
     suspend fun getWatcher(): ByteArray = getIdentitySeed().sha3Sum256()
 
     private suspend fun getIdentitySeed(): ByteArray {
-        val tipIdentity = tipNetwork { tipService.tipIdentity() }.getOrThrow().seedBase64.base64RawUrlDecode()
+        val tipIdentity = tipNetwork { tipService.tipIdentity() }.getOrThrow().seedBase64.base64RawURLDecode()
         val pinToken = Session.getPinToken()?.decodeBase64() ?: throw TipNullException("No pin token")
         return aesDecrypt(pinToken, tipIdentity)
     }

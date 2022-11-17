@@ -5,7 +5,7 @@ import one.mixin.android.RxBus
 import one.mixin.android.db.insertMessage
 import one.mixin.android.event.RecallEvent
 import one.mixin.android.extension.base64Encode
-import one.mixin.android.extension.base64RawUrlDecode
+import one.mixin.android.extension.base64RawURLDecode
 import one.mixin.android.extension.currentTimeSeconds
 import one.mixin.android.extension.decodeBase64
 import one.mixin.android.extension.findLastUrl
@@ -253,9 +253,9 @@ open class SendMessageJob(
         val encryptContent = encryptedProtocol.encryptMessage(
             privateKey,
             plaintext,
-            participantSessionKey.publicKey!!.base64RawUrlDecode(),
+            participantSessionKey.publicKey!!.base64RawURLDecode(),
             participantSessionKey.sessionId,
-            extensionSessionKey?.publicKey?.base64RawUrlDecode(),
+            extensionSessionKey?.publicKey?.base64RawURLDecode(),
             extensionSessionKey?.sessionId
         )
 

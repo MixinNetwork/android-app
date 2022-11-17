@@ -23,8 +23,8 @@ import one.mixin.android.crypto.getPrivateKey
 import one.mixin.android.crypto.getPublicKey
 import one.mixin.android.crypto.sha3Sum256
 import one.mixin.android.event.TipEvent
-import one.mixin.android.extension.base64RawEncode
-import one.mixin.android.extension.base64RawUrlDecode
+import one.mixin.android.extension.base64RawURLDecode
+import one.mixin.android.extension.base64RawURLEncode
 import one.mixin.android.extension.decodeBase64
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.getStackTraceString
@@ -195,7 +195,7 @@ class Tip @Inject internal constructor(
         val pub = privateSpec.getPublicKey()
 
         val localPub = Session.getTipPub()
-        if (!localPub.isNullOrBlank() && !localPub.base64RawUrlDecode().contentEquals(pub.abyte)) {
+        if (!localPub.isNullOrBlank() && !localPub.base64RawURLDecode().contentEquals(pub.abyte)) {
             Timber.e("local pub not equals to new generated, PIN incorrect")
             throw PinIncorrectException()
         }
@@ -305,8 +305,8 @@ class Tip @Inject internal constructor(
         val stPub = privateSpec.getPublicKey()
         val aesKey = generateAesKey(32)
 
-        val seedBase64 = aesEncrypt(pinToken, aesKey).base64RawEncode()
-        val secretBase64 = aesEncrypt(pinToken, stPub.abyte).base64RawEncode()
+        val seedBase64 = aesEncrypt(pinToken, aesKey).base64RawURLEncode()
+        val secretBase64 = aesEncrypt(pinToken, stPub.abyte).base64RawURLEncode()
         val timestamp = nowInUtcNano()
 
         val sigBase64 = signTimestamp(stPriv, timestamp)
@@ -339,14 +339,14 @@ class Tip @Inject internal constructor(
             timestamp = timestamp,
         )
         val response = tipNetwork { tipService.readTipSecret(tipSecretReadRequest) }.getOrThrow()
-        return response.seedBase64?.base64RawUrlDecode() ?: throw TipNullException("Not get tip secret")
+        return response.seedBase64?.base64RawURLDecode() ?: throw TipNullException("Not get tip secret")
     }
 
     private fun signTimestamp(stPriv: EdDSAPrivateKey, timestamp: Long): String {
         val engine = EdDSAEngine(MessageDigest.getInstance(ed25519.hashAlgorithm))
         engine.initSign(stPriv)
         engine.update(TipBody.forVerify(timestamp))
-        return engine.sign().base64RawEncode()
+        return engine.sign().base64RawURLEncode()
     }
 
     @Throws(TipCounterNotSyncedException::class)
