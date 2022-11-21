@@ -1458,13 +1458,12 @@ class ConversationFragment() :
                 binding.flagLayout.bottomCountFlag = false
             }
         }
-        lifecycleScope.launch(SINGLE_DB_THREAD) {
-            val conversationDraft =
-                chatViewModel.getConversationDraftById(conversationId) ?: ""
+        lifecycleScope.launch {
+            val conversationDraft = withContext(SINGLE_DB_THREAD) {
+                chatViewModel.getConversationDraftById(conversationId)
+            } ?: ""
             if (isAdded && conversationDraft.isNotEmpty()) {
-                withContext(Dispatchers.Main) {
-                    binding.chatControl.chatEt.setText(conversationDraft)
-                }
+                binding.chatControl.chatEt.setText(conversationDraft)
             }
         }
         binding.toolView.closeIv.setOnClickListener {
