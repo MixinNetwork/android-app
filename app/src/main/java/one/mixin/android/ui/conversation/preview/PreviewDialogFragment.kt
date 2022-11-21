@@ -105,7 +105,7 @@ class PreviewDialogFragment : DialogFragment(), VideoTimelineView.VideoTimelineV
                     setOnVideoPlayerListener(videoListener)
                     loadVideo(uri.toString())
                     setVideoTextureView(videoBinding.dialogVideoTexture)
-                    videoBinding.time.setVideoPath(uri.getFilePath(requireContext()))
+                    uri.getFilePath(requireContext())?.let { videoBinding.time.setVideoPath(it) }
                     Observable.interval(0, 100, TimeUnit.MILLISECONDS)
                         .observeOn(AndroidSchedulers.mainThread())
                         .autoDispose(this@PreviewDialogFragment).subscribe {
