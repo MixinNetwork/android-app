@@ -45,7 +45,7 @@ class PinCheckDialogFragment : DialogFragment() {
 
     private val disposable = CompositeDisposable()
 
-    private var dialogCallback:((Boolean)->Unit)? = null
+    private var dialogCallback: ((Boolean) -> Unit)? = null
     fun setDialogCallback(dialogCallback: ((Boolean) -> Unit)?) {
         this.dialogCallback = dialogCallback
     }
