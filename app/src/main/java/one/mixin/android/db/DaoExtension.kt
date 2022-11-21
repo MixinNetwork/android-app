@@ -12,6 +12,7 @@ import one.mixin.android.vo.RemoteMessageStatus
 import one.mixin.android.vo.Sticker
 import one.mixin.android.vo.StickerAlbum
 import one.mixin.android.vo.User
+import one.mixin.android.vo.isKraken
 import one.mixin.android.vo.isMine
 
 fun UserDao.insertUpdate(
@@ -225,7 +226,7 @@ fun MixinDatabase.insertAndNotifyConversation(message: Message) {
     runInTransaction {
         messageDao().insert(message)
         conversationExtDao().increment(message.conversationId)
-        if (!message.isMine() && message.status != MessageStatus.READ.name) {
+        if (!message.isMine() && message.status != MessageStatus.READ.name && !message.isKraken()) {
             remoteMessageStatusDao().insert(RemoteMessageStatus(message.messageId, message.conversationId, MessageStatus.DELIVERED.name))
         }
         conversationDao().updateLastMessageId(message.messageId, message.createdAt, message.conversationId)

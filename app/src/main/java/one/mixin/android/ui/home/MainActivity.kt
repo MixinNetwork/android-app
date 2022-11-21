@@ -532,14 +532,16 @@ class MainActivity : BlazeBaseActivity() {
             defaultSharedPreferences.putLong(PREF_CHECK_STORAGE, System.currentTimeMillis())
             checkStorageNotLow(
                 {
-                    alertDialogBuilder()
-                        .setTitle(R.string.storage_low_title)
-                        .setMessage(R.string.storage_low_message)
-                        .setCancelable(false)
-                        .setNegativeButton(getString(R.string.I_know)) { dialog, _ ->
-                            dialog.dismiss()
-                        }
-                        .show()
+                    lifecycleScope.launch {
+                        alertDialogBuilder()
+                            .setTitle(R.string.storage_low_title)
+                            .setMessage(R.string.storage_low_message)
+                            .setCancelable(false)
+                            .setNegativeButton(getString(R.string.I_know)) { dialog, _ ->
+                                dialog.dismiss()
+                            }
+                            .show()
+                    }
                 },
                 {
                 }

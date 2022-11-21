@@ -11,7 +11,7 @@ plugins {
 
 def versionMajor = 0
 def versionMinor = 37
-def versionPatch = 2
+def versionPatch = 3
 def versionBuild = 1
 
 android {
@@ -192,7 +192,7 @@ android {
 
 dependencies {
     coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:1.2.2'
-    implementation platform("com.google.firebase:firebase-bom:31.0.3")
+    implementation platform("com.google.firebase:firebase-bom:31.1.0")
     implementation fileTree(include: ['*.aar'], dir: 'libs')
     implementation "androidx.fragment:fragment-ktx:${fragmentVersion}"
     implementation "androidx.appcompat:appcompat:${appcompatVersion}"
@@ -361,8 +361,8 @@ dependencies {
     implementation "androidx.compose.runtime:runtime-rxjava2:${composeVersion}"
     implementation 'androidx.activity:activity-compose:1.6.1'
     androidTestImplementation "androidx.compose.ui:ui-test-junit4:${composeVersion}"
-    implementation "com.google.accompanist:accompanist-pager:0.27.0"
-    implementation "com.google.accompanist:accompanist-pager-indicators:0.27.0"
+    implementation "com.google.accompanist:accompanist-pager:0.27.1"
+    implementation "com.google.accompanist:accompanist-pager-indicators:0.27.1"
 
     // accompanist
     implementation "com.google.accompanist:accompanist-navigation-animation:${accompanistVersion}"
