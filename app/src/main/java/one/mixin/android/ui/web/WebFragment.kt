@@ -47,6 +47,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.view.ContextThemeWrapper
 import androidx.core.app.ShareCompat
 import androidx.core.view.isGone
+import androidx.core.view.isInvisible
 import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
 import androidx.fragment.app.FragmentManager
@@ -382,7 +383,7 @@ class WebFragment : BaseFragment() {
                 controlSuspiciousView(false)
             }
         }
-        binding.failLoadView.contactTv.isVisible = app != null
+        binding.failLoadView.contactTv.isInvisible = app == null
         binding.failLoadView.listener = object : FailLoadView.FailLoadListener {
             override fun onReloadClick() {
                 refresh()
