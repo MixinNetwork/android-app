@@ -1462,7 +1462,9 @@ class ConversationFragment() :
             val conversationDraft =
                 chatViewModel.getConversationDraftById(conversationId) ?: ""
             if (isAdded && conversationDraft.isNotEmpty()) {
-                binding.chatControl.chatEt.setText(conversationDraft)
+                withContext(Dispatchers.Main) {
+                    binding.chatControl.chatEt.setText(conversationDraft)
+                }
             }
         }
         binding.toolView.closeIv.setOnClickListener {
