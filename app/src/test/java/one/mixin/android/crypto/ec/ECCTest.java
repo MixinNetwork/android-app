@@ -2,8 +2,12 @@ package one.mixin.android.crypto.ec;
 
 import org.bouncycastle.util.encoders.Hex;
 import org.junit.Test;
+import org.web3j.crypto.ECKeyPair;
+import org.web3j.crypto.Hash;
+import org.web3j.crypto.Sign;
 
 import java.math.BigInteger;
+import java.nio.ByteBuffer;
 import java.security.SignatureException;
 
 public class ECCTest {
@@ -30,8 +34,8 @@ public class ECCTest {
         Sign.SignatureData signature = Sign.signMessage(msgHash, keyPair, false);
         System.out.println("Msg: " + msg);
         System.out.println("Msg hash: " + Hex.toHexString(msgHash));
-        System.out.printf("Signature: [v = %s, r = %s, s = %s]\n",
-                Hex.toHexString(signature.getV()),
+        System.out.printf("Signature: [v = %d, r = %s, s = %s]\n",
+                (signature.getV()[0] & 0xFF) - 27,
                 Hex.toHexString(signature.getR()),
                 Hex.toHexString(signature.getS()));
 

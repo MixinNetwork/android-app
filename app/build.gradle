@@ -363,6 +363,7 @@ dependencies {
     androidTestImplementation "androidx.compose.ui:ui-test-junit4:${composeVersion}"
     implementation "com.google.accompanist:accompanist-pager:0.28.0"
     implementation "com.google.accompanist:accompanist-pager-indicators:0.28.0"
+    implementation "org.web3j:crypto:4.8.7-android"
 
     // accompanist
     implementation "com.google.accompanist:accompanist-navigation-animation:${accompanistVersion}"
