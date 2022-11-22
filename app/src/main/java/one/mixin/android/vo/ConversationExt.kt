@@ -9,6 +9,8 @@ class ConversationExt(
     @PrimaryKey
     @ColumnInfo(name = "conversation_id")
     val conversationId: String,
+    @ColumnInfo(name = "created_at")
+    val createdAt: String,
     @ColumnInfo(name = "count", defaultValue = "0")
     val count: Int
 )
