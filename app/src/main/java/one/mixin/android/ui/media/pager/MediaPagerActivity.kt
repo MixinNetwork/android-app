@@ -241,11 +241,13 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
 
     @SuppressLint("RestrictedApi")
     private fun loadData() = lifecycleScope.launch {
+        val start = System.currentTimeMillis()
         val messageItem = if (initialItem != null) {
             initialItem!!
         } else {
             viewModel.getMediaMessage(conversationId, messageId) ?: return@launch
         }
+        Timber.d("@@@ find one cost: ${System.currentTimeMillis() - start}")
         val pagedConfig = PagedList.Config.Builder()
             .setInitialLoadSizeHint(1)
             .setPageSize(1)
@@ -269,12 +271,17 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
     }
 
     private fun observeAllDataSource() = lifecycleScope.launch {
+        var start = System.currentTimeMillis()
         val excludeLive = mediaSource == MediaSource.SharedMedia
         initialIndex = viewModel.indexMediaMessages(conversationId, messageId, excludeLive)
+        val i = System.currentTimeMillis()
+        Timber.d("@@@ index cost: ${i - start}")
+        start = i
         viewModel.getMediaMessages(conversationId, initialIndex, excludeLive)
             .observe(
                 this@MediaPagerActivity
             ) {
+                Timber.d("@@@ find all cost: ${System.currentTimeMillis() - start}")
                 adapter.submitList(it) {
                     if (firstLoad) {
                         adapter.initialPos = initialIndex

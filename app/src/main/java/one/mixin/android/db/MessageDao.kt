@@ -76,7 +76,6 @@ interface MessageDao : BaseDao<Message> {
         m.media_width AS mediaWidth, m.media_height AS mediaHeight, m.thumb_image AS thumbImage, m.thumb_url AS thumbUrl,
         m.media_url AS mediaUrl, m.media_mime_type AS mediaMimeType, m.media_duration AS mediaDuration
         FROM messages m
-        INDEXED BY index_messages_conversation_id_category
         INNER JOIN users u ON m.user_id = u.user_id 
         WHERE m.conversation_id = :conversationId
         AND m.category IN ($IMAGES, $VIDEOS, $LIVES) 
@@ -103,7 +102,6 @@ interface MessageDao : BaseDao<Message> {
     @Query(
         """
         SELECT count(1) FROM messages 
-        INDEXED BY index_messages_conversation_id_category
         WHERE conversation_id = :conversationId
         AND category IN ($IMAGES, $VIDEOS, $LIVES) 
         AND created_at < (SELECT created_at FROM messages WHERE id = :messageId)    
@@ -121,7 +119,6 @@ interface MessageDao : BaseDao<Message> {
         m.media_width AS mediaWidth, m.media_height AS mediaHeight, m.thumb_image AS thumbImage, m.thumb_url AS thumbUrl,
         m.media_url AS mediaUrl, m.media_mime_type AS mediaMimeType, m.media_duration AS mediaDuration
         FROM messages m
-        INDEXED BY index_messages_conversation_id_category
         INNER JOIN users u ON m.user_id = u.user_id
         WHERE m.conversation_id = :conversationId
         AND m.category IN ($IMAGES, $VIDEOS)
@@ -133,7 +130,6 @@ interface MessageDao : BaseDao<Message> {
     @Query(
         """
         SELECT count(1) FROM messages
-        INDEXED BY index_messages_conversation_id_category 
         WHERE conversation_id = :conversationId 
         AND category IN ($IMAGES, $VIDEOS)
         AND created_at > (SELECT created_at FROM messages WHERE id = :messageId)
@@ -416,7 +412,6 @@ interface MessageDao : BaseDao<Message> {
     @Query(
         """
         SELECT count(1) FROM messages
-        INDEXED BY index_messages_conversation_id_category 
         WHERE conversation_id = :conversationId 
         AND category IN ($DATA) 
         AND media_mime_type LIKE 'audio%'
