@@ -29,9 +29,11 @@ import timber.log.Timber
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 
-class PeerConnectionClient(context: Context, private val events: PeerConnectionEvents) {
+class PeerConnectionClient(context: Context) {
     private var factory: PeerConnectionFactory? = null
     private var isError = false
+    
+    var events: PeerConnectionEvents? = null
 
     var callDebugState = CallDebugLiveData.Type.None
         set(value) {
@@ -377,11 +379,12 @@ class PeerConnectionClient(context: Context, private val events: PeerConnectionE
         isError = false
         rtpSender = null
         rtpReceivers.clear()
-        events.onPeerConnectionClosed()
+        events?.onPeerConnectionClosed()
     }
 
     fun release() {
         dispose()
+        events = null
         factory?.dispose()
         factory = null
     }
@@ -414,7 +417,7 @@ class PeerConnectionClient(context: Context, private val events: PeerConnectionE
     private fun reportError(error: String) {
         val msg = getPCMessage(error)
         if (!isError) {
-            events.onPeerConnectionError(msg)
+            events?.onPeerConnectionError(msg)
             isError = true
         }
     }
@@ -499,7 +502,7 @@ class PeerConnectionClient(context: Context, private val events: PeerConnectionE
     private inner class PCObserver : PeerConnection.Observer {
 
         override fun onIceCandidate(candidate: IceCandidate) {
-            events.onIceCandidate(candidate)
+            events?.onIceCandidate(candidate)
         }
 
         override fun onDataChannel(dataChannel: DataChannel?) {
@@ -511,20 +514,20 @@ class PeerConnectionClient(context: Context, private val events: PeerConnectionE
         override fun onIceConnectionChange(newState: PeerConnection.IceConnectionState) {
             Timber.d("$TAG_CALL onIceConnectionChange: $newState")
             if (newState == PeerConnection.IceConnectionState.DISCONNECTED) {
-                events.onIceDisconnected()
+                events?.onIceDisconnected()
             } else if (newState == PeerConnection.IceConnectionState.FAILED) {
-                events.onIceFailed()
+                events?.onIceFailed()
             }
         }
 
         override fun onConnectionChange(newState: PeerConnection.PeerConnectionState?) {
             Timber.d("$TAG_CALL onConnectionChange: $newState")
             if (newState == PeerConnection.PeerConnectionState.CONNECTED) {
-                events.onConnected()
+                events?.onConnected()
             } else if (newState == PeerConnection.PeerConnectionState.DISCONNECTED) {
-                events.onDisconnected()
+                events?.onDisconnected()
             } else if (newState == PeerConnection.PeerConnectionState.CLOSED) {
-                events.onClosed()
+                events?.onClosed()
             }
         }
 
@@ -538,7 +541,7 @@ class PeerConnectionClient(context: Context, private val events: PeerConnectionE
 
         override fun onIceCandidatesRemoved(candidates: Array<IceCandidate>) {
             Timber.d("$TAG_CALL onIceCandidatesRemoved")
-            events.onIceCandidatesRemoved(candidates)
+            events?.onIceCandidatesRemoved(candidates)
         }
 
         override fun onAddStream(stream: MediaStream) {
@@ -566,7 +569,7 @@ class PeerConnectionClient(context: Context, private val events: PeerConnectionE
                 if (userSession[0] == Session.getAccountId()) {
                     continue
                 }
-                val frameKey = events.getSenderPublicKey(userSession[0], userSession[1])
+                val frameKey = events?.getSenderPublicKey(userSession[0], userSession[1])
                 Timber.d("$TAG_CALL getSenderPublicKey userId: ${userSession[0]}, sessionId: ${userSession[1]}, frameKey: $frameKey")
                 rtpReceivers[m.id] = receiver
                 if (frameKey != null) {
@@ -575,7 +578,7 @@ class PeerConnectionClient(context: Context, private val events: PeerConnectionE
                 } else {
                     receiverIdUserIdNoKeyMap[receiver.id()] = userSession[0]
                     hasAllMediaStreamKey = false
-                    events.requestResendKey(userSession[0], userSession[1])
+                    events?.requestResendKey(userSession[0], userSession[1])
                 }
             }
             Timber.d("$TAG_CALL onAddTrack id: ${receiver.id()}, hasAllMediaStreamKey: $hasAllMediaStreamKey")
