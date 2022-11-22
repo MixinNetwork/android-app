@@ -26,6 +26,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import one.mixin.android.Constants.DB_EXPIRED_LIMIT
 import one.mixin.android.Constants.MARK_REMOTE_LIMIT
 import one.mixin.android.MixinApplication
@@ -175,14 +176,18 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
                     if (expiredIn != null) {
                         val currentTime = currentTimeSeconds()
                         if (database.expiredMessageDao().markRead(event.messageId, currentTime) > 0) {
-                            lifecycleScope.launch(Dispatchers.IO) {
-                                startExpiredJob(currentTime + expiredIn)
+                            lifecycleScope.launch {
+                                withContext(Dispatchers.IO) {
+                                    startExpiredJob(currentTime + expiredIn)
+                                }
                             }
                         }
                     } else {
                         val expiredAt = requireNotNull(event.expireAt)
-                        lifecycleScope.launch(Dispatchers.IO) {
-                            startExpiredJob(expiredAt)
+                        lifecycleScope.launch {
+                            withContext(Dispatchers.IO) {
+                                startExpiredJob(expiredAt)
+                            }
                         }
                     }
                 }
@@ -303,10 +308,12 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
             if (ackJob?.isActive == true || !networkConnected()) {
                 return
             }
-            ackJob = lifecycleScope.launch(Dispatchers.IO) {
-                processAck()
-                Session.getExtensionSessionId()?.let {
-                    syncMessageStatusToExtension(it)
+            ackJob = lifecycleScope.launch {
+                withContext(Dispatchers.IO) {
+                    processAck()
+                    Session.getExtensionSessionId()?.let {
+                        syncMessageStatusToExtension(it)
+                    }
                 }
             }
         } catch (e: Exception) {
@@ -450,8 +457,10 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
             if (statusJob?.isActive == true) {
                 return
             }
-            statusJob = lifecycleScope.launch(Dispatchers.IO) {
-                processStatus()
+            statusJob = lifecycleScope.launch {
+                withContext(Dispatchers.IO) {
+                    processStatus()
+                }
             }
         } catch (e: Exception) {
             Timber.e(e)
@@ -491,9 +500,11 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
         if (expiredJob?.isActive == true) {
             return
         }
-        expiredJob = lifecycleScope.launch(Dispatchers.IO) {
+        expiredJob = lifecycleScope.launch {
             try {
-                processExpiredMessage()
+                withContext(Dispatchers.IO) {
+                    processExpiredMessage()
+                }
             } catch (e: Exception) {
                 Timber.e(e)
                 runExpiredJob()

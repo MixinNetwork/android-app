@@ -504,8 +504,7 @@ class MainActivity : BlazeBaseActivity() {
 
     private fun checkUpdate() {
         appUpdateManager.registerListener(updatedListener)
-        val appUpdateInfoTask = appUpdateManager.appUpdateInfo
-        appUpdateInfoTask.addOnSuccessListener { appUpdateInfo ->
+        appUpdateManager.appUpdateInfo.addOnSuccessListener { appUpdateInfo ->
             if (appUpdateInfo.updateAvailability() == UpdateAvailability.UPDATE_AVAILABLE &&
                 appUpdateInfo.isUpdateTypeAllowed(AppUpdateType.FLEXIBLE)
             ) {
@@ -550,6 +549,7 @@ class MainActivity : BlazeBaseActivity() {
     }
 
     private fun popupSnackbarForCompleteUpdate() {
+        if (isFinishing) return
         Snackbar.make(
             binding.rootView,
             getString(R.string.update_downloaded),
