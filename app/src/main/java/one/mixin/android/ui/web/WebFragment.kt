@@ -45,7 +45,6 @@ import androidx.activity.result.ActivityResultRegistry
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.view.ContextThemeWrapper
 import androidx.core.app.ShareCompat
-import androidx.core.view.WindowCompat
 import androidx.core.view.isGone
 import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
@@ -116,6 +115,7 @@ import one.mixin.android.ui.qr.QRCodeProcessor
 import one.mixin.android.ui.setting.SettingActivity
 import one.mixin.android.ui.setting.SettingActivity.Companion.ARGS_SUCCESS
 import one.mixin.android.util.GsonHelper
+import one.mixin.android.util.SystemUIManager
 import one.mixin.android.util.getCountry
 import one.mixin.android.util.getLanguage
 import one.mixin.android.vo.App
@@ -1197,7 +1197,7 @@ class WebFragment : BaseFragment() {
 
         requireActivity().window.statusBarColor = color
         requireActivity().window?.let {
-            WindowCompat.getInsetsController(it, it.decorView).isAppearanceLightStatusBars = !dark
+            SystemUIManager.setAppearanceLightStatusBars(it, !dark)
         }
         titleColor = color
         binding.titleTv.setTextColor(if (dark) Color.WHITE else Color.BLACK)
