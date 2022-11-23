@@ -21,6 +21,7 @@ import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.launch
+import one.mixin.android.Constants
 import one.mixin.android.Constants.Scheme
 import one.mixin.android.R
 import one.mixin.android.api.handleMixinResponse
@@ -841,18 +842,23 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 lifecycleScope.launch(errorHandler) {
                     tip.getOrRecoverTipPriv(requireContext(), pin)
                         .onSuccess { priv ->
-                            when (signAction) {
+                            val res: String = when (signAction) {
                                 is TipSignAction.Public -> {
                                     val pub = signAction(priv)
                                     Timber.d("@@@ pub: ${pub.base64RawURLDecode().toHex()}")
+                                    pub
                                 }
                                 is TipSignAction.Signature -> {
                                     val sig = signAction(priv, requireNotNull(data) { "Signature action data can not be null" })
                                     Timber.d("@@@ sig: ${sig.base64RawURLDecode().toHex()}")
+                                    sig
                                 }
                             }
+                            val endpoint = uri.getQueryParameter("notify") ?: Constants.API.DEFAULT_TIP_SIGN_ENDPOINT
+                            val notifyUrl = "$endpoint?id=$id&res=$res"
+                            Timber.d("@@@ notify url: $notifyUrl")
                         }.onFailure {
-                            showError()
+                            Timber.d("@@@ ${it.stackTraceToString()}")
                         }
                 }
             }.showNow(parentFragmentManager, PinInputBottomSheetDialogFragment.TAG)
@@ -945,6 +951,8 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
 
     @SuppressLint("SetTextI18n")
     private fun showError(@StringRes errorRes: Int = R.string.Invalid_Link) {
+        if (!isAdded) return
+
         binding.apply {
             if (errorRes == R.string.Invalid_Link) {
                 linkErrorInfo.text = "${getString(R.string.Invalid_Link)}\n\n$url"
@@ -958,6 +966,8 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
     }
 
     private fun showError(error: String) {
+        if (!isAdded) return
+
         binding.apply {
             linkErrorInfo.text = error
             linkLoading.visibility = GONE
