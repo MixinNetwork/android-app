@@ -73,14 +73,14 @@ class TransferBottomSheetDialogFragment : ValuableBiometricBottomSheetDialogFrag
                             getString(R.string.transfer_to, it.user.fullName ?: "")
                         subTitle.text = if (it.user.identityNumber == "0") it.user.userId else "Mixin ID: ${it.user.identityNumber}"
                     }
-                    biometricLayout.biometricTv.setText(R.string.Biometric_Payment)
+                    biometricLayout.biometricTv.setText(R.string.Verify_by_Biometric)
                 }
                 is WithdrawBiometricItem -> {
                     (t as WithdrawBiometricItem).let {
                         title.text = getString(R.string.withdrawal_to, it.label)
                         subTitle.text = it.displayAddress()
                     }
-                    biometricLayout.biometricTv.setText(R.string.withdrawal_with_biometric)
+                    biometricLayout.biometricTv.setText(R.string.Verify_by_Biometric)
                 }
             }
             if (!TextUtils.isEmpty(t.memo)) {

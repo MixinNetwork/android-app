@@ -256,7 +256,7 @@ fun PinKeyBoard(
                                     )
                                     Spacer(modifier = Modifier.width(4.dp))
                                     Text(
-                                        text = stringResource(R.string.Use_Biometric_Multisig),
+                                        text = stringResource(R.string.Verify_by_Biometric),
                                         color = MixinAppTheme.colors.textBlue
                                     )
                                 }

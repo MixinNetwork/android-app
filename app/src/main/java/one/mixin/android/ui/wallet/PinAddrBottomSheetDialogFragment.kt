@@ -102,7 +102,7 @@ class PinAddrBottomSheetDialogFragment : BiometricBottomSheetDialogFragment() {
             assetIcon.badge.loadImage(chainIconUrl, R.drawable.ic_avatar_place_holder)
             assetName.text = label
             assetAddress.text = if (addressTag.isNullOrBlank()) destination else "$destination:$addressTag"
-            biometricLayout.biometricTv.text = getBiometricText()
+            biometricLayout.biometricTv.setText(R.string.Verify_by_Biometric)
         }
     }
 
@@ -168,12 +168,5 @@ class PinAddrBottomSheetDialogFragment : BiometricBottomSheetDialogFragment() {
         }
     )
 
-    private fun getBiometricText() = getString(
-        when (type) {
-            ADD -> R.string.withdrawal_addr_biometric_add
-            DELETE -> R.string.withdrawal_addr_biometric_delete
-            MODIFY -> R.string.withdrawal_addr_biometric_modify
-            else -> R.string.withdrawal_addr_biometric_add
-        }
-    )
+
 }

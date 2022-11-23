@@ -60,7 +60,7 @@ class NftBottomSheetDialogFragment : BiometricBottomSheetDialogFragment() {
         binding.apply {
             title.text = getString(R.string.Transfer)
             arrowIv.setImageResource(R.drawable.ic_multisigs_arrow_right)
-            biometricLayout.biometricTv.setText(R.string.Use_Biometric_Multisig)
+            biometricLayout.biometricTv.setText(R.string.Verify_by_Biometric)
             nftIv.round(4.dp)
         }
 

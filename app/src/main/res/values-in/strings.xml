@@ -76,7 +76,6 @@
     <string name="backup_notification_content">Menyiapkan pencadangan…</string>
     <string name="backup_notification_title">Pencadangan sedang berlangsung</string>
     <string name="Backup_success">Pencadangan berhasil</string>
-    <string name="Biometric_Payment">Pembayaran Biometrik</string>
     <string name="Block">Blokir</string>
     <string name="block_tip">Pengguna yang diblokir tidak dapat mengirimi Anda pesan atau menambahkan Anda ke grup.</string>
     <string name="Blocked">Diblokir</string>
@@ -663,7 +662,6 @@
     <string name="Upgrade_Database">Tingkatkan Database</string>
     <string name="Upgrading">Meningkatkan</string>
     <string name="Upload_timeout">Batas waktu unggah</string>
-    <string name="Use_Biometric_Multisig">Gunakan Multisig Biometrik</string>
     <string name="User_not_found">Pengguna tidak ditemukan</string>
     <string name="Verify">Verifikasikan</string>
     <string name="Verify_by_Biometric">Verifikasi dengan Biometrik</string>
@@ -702,9 +700,6 @@
     <string name="When_roaming">Saat roaming</string>
     <string name="withdraw_Address">Alamat</string>
     <string name="Withdrawal">Penarikan</string>
-    <string name="withdrawal_addr_biometric_add">Gunakan Biometrik untuk menyimpan alamat</string>
-    <string name="withdrawal_addr_biometric_delete">Gunakan Biometrik untuk menghapus alamat</string>
-    <string name="withdrawal_addr_biometric_modify">Gunakan Biometrik untuk mengubah alamat</string>
     <string name="withdrawal_addr_memo">Tag Tujuan atau Nomor ID atau catatan. Jika tidak, Anda dapat mengaturnya Tanpa Memo.</string>
     <string name="withdrawal_addr_new">Alamat %1$s Baru</string>
     <string name="withdrawal_addr_no_memo">Jika Anda diharuskan untuk mengisi Tag Tujuan atau Nomor ID atau catatan, Anda dapat Menambahkan Memo.</string>
@@ -719,7 +714,6 @@
     <string name="withdrawal_minimum_amount">Jumlah penarikan minimum adalah %1$s %2$s</string>
     <string name="withdrawal_no_memo">Tanpa Memo</string>
     <string name="withdrawal_to">Penarikan ke %1$s</string>
-    <string name="withdrawal_with_biometric">Penarikan dengan Biometrik</string>
     <string name="You">Anda</string>
     <string name="You_deleted_this_message">Anda menghapus pesan ini</string>
 </resources>

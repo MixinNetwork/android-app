@@ -70,7 +70,7 @@ class MultisigsBottomSheetDialogFragment :
                 arrowIv.setImageResource(R.drawable.ic_multisigs_arrow_right)
             }
             subTitle.text = t.memo
-            biometricLayout.biometricTv.setText(R.string.Use_Biometric_Multisig)
+            biometricLayout.biometricTv.setText(R.string.Verify_by_Biometric)
         }
 
         lifecycleScope.launch {

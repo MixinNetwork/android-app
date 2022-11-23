@@ -122,7 +122,6 @@
     <string name="backup_notification_content">正在准备备份…</string>
     <string name="backup_notification_title">备份正在进行中</string>
     <string name="Backup_success">备份成功</string>
-    <string name="Biometric_Payment">生物识别支付</string>
     <string name="Block">屏蔽用户</string>
     <string name="block_tip">被屏蔽的用户不能给你发送消息或者邀请你加入群聊</string>
     <string name="Blocked">已屏蔽</string>
@@ -1010,7 +1009,6 @@
     <string name="Upgrading_TIP_terminated_unexpectedly">升级 TIP 意外中止，点继续完成 TIP 升级</string>
     <string name="Upload_Mobile_Contacts">上传通讯录找好友</string>
     <string name="Upload_timeout">上传超时</string>
-    <string name="Use_Biometric_Multisig">使用生物识别签名</string>
     <string name="User_not_found">找不到这个用户</string>
     <string name="value_now">价值 %1$s</string>
     <string name="value_then">当时价值 %1$s</string>
@@ -1062,9 +1060,6 @@
     <string name="When_roaming">当漫游时</string>
     <string name="withdraw_Address">提现地址</string>
     <string name="Withdrawal">提现</string>
-    <string name="withdrawal_addr_biometric_add">使用生物识别来完成添加</string>
-    <string name="withdrawal_addr_biometric_delete">使用生物识别来完成删除</string>
-    <string name="withdrawal_addr_biometric_modify">使用生物识别来完成修改</string>
     <string name="withdrawal_addr_memo">地址标签、数字 ID 或备注。如果没有，点击不使用 Memo（备注）。</string>
     <string name="withdrawal_addr_new">新 %1$s 地址</string>
     <string name="withdrawal_addr_no_memo">如果你需要填写地址标签、数字 ID 或备注，点击添加 Memo（备注）。</string>
@@ -1082,7 +1077,6 @@
     <string name="withdrawal_network_fee">网络手续费：</string>
     <string name="withdrawal_no_memo">点击不使用 Memo（备注）</string>
     <string name="withdrawal_to">提现到 %1$s</string>
-    <string name="withdrawal_with_biometric">用生物识别提现</string>
     <string name="Write_Circles">管理圈子</string>
     <string name="you">你</string>
     <string name="You">你</string>
