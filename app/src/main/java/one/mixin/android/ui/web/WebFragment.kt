@@ -25,7 +25,6 @@ import android.view.ContextMenu
 import android.view.LayoutInflater
 import android.view.MenuItem
 import android.view.View
-import android.view.View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
 import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.webkit.JavascriptInterface
@@ -117,6 +116,7 @@ import one.mixin.android.ui.qr.QRCodeProcessor
 import one.mixin.android.ui.setting.SettingActivity
 import one.mixin.android.ui.setting.SettingActivity.Companion.ARGS_SUCCESS
 import one.mixin.android.util.GsonHelper
+import one.mixin.android.util.SystemUIManager
 import one.mixin.android.util.getCountry
 import one.mixin.android.util.getLanguage
 import one.mixin.android.vo.App
@@ -1197,17 +1197,11 @@ class WebFragment : BaseFragment() {
         if (viewDestroyed()) return
 
         requireActivity().window.statusBarColor = color
-        requireActivity().window.decorView.let {
-            if (dark) {
-                binding.titleTv.setTextColor(Color.WHITE)
-                it.systemUiVisibility =
-                    it.systemUiVisibility and SYSTEM_UI_FLAG_LIGHT_STATUS_BAR.inv()
-            } else {
-                binding.titleTv.setTextColor(Color.BLACK)
-                it.systemUiVisibility = it.systemUiVisibility or SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
-            }
+        requireActivity().window?.let {
+            SystemUIManager.setAppearanceLightStatusBars(it, !dark)
         }
         titleColor = color
+        binding.titleTv.setTextColor(if (dark) Color.WHITE else Color.BLACK)
         binding.titleLl.setBackgroundColor(color)
         binding.webControl.mode = dark
     }

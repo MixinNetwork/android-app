@@ -67,4 +67,8 @@ object SystemUIManager {
         }
         return false
     }
+
+    fun setAppearanceLightStatusBars(window: Window, isLight: Boolean) {
+        WindowCompat.getInsetsController(window, window.decorView).isAppearanceLightStatusBars = isLight
+    }
 }
