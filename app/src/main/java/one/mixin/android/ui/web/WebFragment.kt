@@ -25,7 +25,6 @@ import android.view.ContextMenu
 import android.view.LayoutInflater
 import android.view.MenuItem
 import android.view.View
-import android.view.View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
 import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.webkit.JavascriptInterface
@@ -46,6 +45,7 @@ import androidx.activity.result.ActivityResultRegistry
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.view.ContextThemeWrapper
 import androidx.core.app.ShareCompat
+import androidx.core.view.WindowCompat
 import androidx.core.view.isGone
 import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
@@ -1196,17 +1196,11 @@ class WebFragment : BaseFragment() {
         if (viewDestroyed()) return
 
         requireActivity().window.statusBarColor = color
-        requireActivity().window.decorView.let {
-            if (dark) {
-                binding.titleTv.setTextColor(Color.WHITE)
-                it.systemUiVisibility =
-                    it.systemUiVisibility and SYSTEM_UI_FLAG_LIGHT_STATUS_BAR.inv()
-            } else {
-                binding.titleTv.setTextColor(Color.BLACK)
-                it.systemUiVisibility = it.systemUiVisibility or SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
-            }
+        requireActivity().window?.let {
+            WindowCompat.getInsetsController(it, it.decorView).isAppearanceLightStatusBars = !dark
         }
         titleColor = color
+        binding.titleTv.setTextColor(if (dark) Color.WHITE else Color.BLACK)
         binding.titleLl.setBackgroundColor(color)
         binding.webControl.mode = dark
     }
