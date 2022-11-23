@@ -33,6 +33,7 @@ import one.mixin.android.api.response.PaymentCodeResponse
 import one.mixin.android.api.response.getScopes
 import one.mixin.android.databinding.FragmentBottomSheetBinding
 import one.mixin.android.extension.appendQueryParamsFromOtherUri
+import one.mixin.android.extension.base64RawURLDecode
 import one.mixin.android.extension.booleanFromAttribute
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.getGroupAvatarPath
@@ -43,6 +44,7 @@ import one.mixin.android.extension.isExternalTransferUrl
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.isUUID
 import one.mixin.android.extension.stripAmountZero
+import one.mixin.android.extension.toHex
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.withArgs
 import one.mixin.android.job.getIconUrlName
@@ -50,6 +52,9 @@ import one.mixin.android.pay.addSlashesIfNeeded
 import one.mixin.android.pay.parseExternalTransferUri
 import one.mixin.android.repository.QrCodeType
 import one.mixin.android.session.Session
+import one.mixin.android.tip.Tip
+import one.mixin.android.tip.TipSignAction
+import one.mixin.android.tip.matchTipSignAction
 import one.mixin.android.ui.auth.AuthBottomSheetDialogFragment
 import one.mixin.android.ui.common.BottomSheetViewModel
 import one.mixin.android.ui.common.JoinGroupBottomSheetDialogFragment
@@ -57,6 +62,7 @@ import one.mixin.android.ui.common.JoinGroupConversation
 import one.mixin.android.ui.common.MultisigsBottomSheetDialogFragment
 import one.mixin.android.ui.common.NftBottomSheetDialogFragment
 import one.mixin.android.ui.common.OutputBottomSheetDialogFragment
+import one.mixin.android.ui.common.PinInputBottomSheetDialogFragment
 import one.mixin.android.ui.common.QrScanBottomSheetDialogFragment
 import one.mixin.android.ui.common.biometric.AssetBiometricItem
 import one.mixin.android.ui.common.biometric.Multi2MultiBiometricItem
@@ -89,6 +95,7 @@ import java.net.URLDecoder
 import java.net.UnknownHostException
 import java.nio.charset.StandardCharsets.UTF_8
 import java.util.UUID
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
@@ -101,6 +108,9 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
             putString(CODE, code)
         }
     }
+
+    @Inject
+    lateinit var tip: Tip
 
     private var authOrPay = false
 
@@ -657,6 +667,9 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 ConfirmBottomFragment.show(requireContext(), parentFragmentManager, url)
                 dismiss()
             }
+        } else if (url.startsWith(Scheme.TIP, true)) {
+            val uri = Uri.parse(url)
+            handleTipScheme(uri)
         } else {
             val isDonateUrl = url.isDonateUrl()
             val isExternalTransferUrl = url.isExternalTransferUrl()
@@ -782,7 +795,18 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 },
                 successBlock = { r ->
                     val response = r.data ?: return@handleMixinResponse false
-                    showWithdrawalBottom(null, destination, null, null, result.fee?.toPlainString() ?: "0", amount, asset, traceId, response.status, result.memo)
+                    showWithdrawalBottom(
+                        null,
+                        destination,
+                        null,
+                        null,
+                        result.fee?.toPlainString() ?: "0",
+                        amount,
+                        asset,
+                        traceId,
+                        response.status,
+                        result.memo
+                    )
                 },
                 failureBlock = {
                     showError(R.string.Invalid_payment_link)
@@ -795,6 +819,62 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
             )
         }
         dismiss()
+    }
+    private fun handleTipScheme(uri: Uri) {
+        val segments = uri.pathSegments
+        if (segments.isEmpty()) return
+
+        val action = segments[0]
+        if (action.isBlank()) {
+            showError()
+            return
+        }
+        val id = uri.getQueryParameter("id")
+        if (id.isNullOrBlank() || !id.isUUID()) {
+            showError()
+            return
+        }
+        val alg = uri.getQueryParameter("alg")
+        val crv = uri.getQueryParameter("crv")
+        if (alg.isNullOrBlank() || crv.isNullOrBlank()) {
+            showError()
+            return
+        }
+        val signAction = matchTipSignAction(action, alg, crv)
+        if (signAction == null) {
+            showError()
+            return
+        }
+        val data: ByteArray? = if (signAction is TipSignAction.Signature) {
+            val d = uri.getQueryParameter("data")
+            if (d.isNullOrBlank()) {
+                showError()
+                return
+            } else d.base64RawURLDecode()
+        } else null
+
+        contentView.post {
+            PinInputBottomSheetDialogFragment.newInstance().setOnPinComplete { pin ->
+                lifecycleScope.launch(errorHandler) {
+                    tip.getOrRecoverTipPriv(requireContext(), pin)
+                        .onSuccess { priv ->
+                            when (signAction) {
+                                is TipSignAction.Public -> {
+                                    val pub = signAction(priv)
+                                    Timber.d("@@@ pub: ${pub.base64RawURLDecode().toHex()}")
+                                }
+                                is TipSignAction.Signature -> {
+                                    val sig = signAction(priv, requireNotNull(data) { "Signature action data can not be null" })
+                                    Timber.d("@@@ sig: ${sig.base64RawURLDecode().toHex()}")
+                                }
+                            }
+                        }.onFailure {
+                            showError()
+                        }
+                }
+            }.showNow(parentFragmentManager, PinInputBottomSheetDialogFragment.TAG)
+            dismiss()
+        }
     }
 
     private suspend fun showTransfer(text: String): Boolean {
