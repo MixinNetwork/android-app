@@ -531,7 +531,6 @@
     <string name="Log_in">ログイン</string>
     <string name="log_out_from_desktop">デスクトップ版からログアウト</string>
     <string name="login_and_abort_account_deletion">そのままログインし、アカウント削除をキャンセルします</string>
-    <string name="Login_with_PIN">PINコードでMixinにログインする</string>
     <string name="Logout">ログアウト中…</string>
     <string name="Logs">ログ</string>
     <string name="Lost_your_mobile_number">電話番号をお忘れですか？</string>
@@ -651,7 +650,6 @@
     <string name="Pause">一時停止</string>
     <string name="pay_paid">この支払いリンクはすでに使用済みです。重複して支払いを行うことはできません。</string>
     <string name="Pay_with_Biometrics">生体認証で支払う</string>
-    <string name="Pay_with_PIN">PINコードで支払う</string>
     <string name="Pay_with_PIN_interval">PINコードの再確認間隔</string>
     <plurals name="pending_confirmation" tools:ignore="UnusedQuantity">
         <item quantity="one">%1$d/%2$d 承認</item>
@@ -1043,7 +1041,6 @@
     <string name="withdrawal_no_memo">メモなし</string>
     <string name="withdrawal_to">%1$sへ出金</string>
     <string name="withdrawal_with_biometric">生体認証を使用して出金</string>
-    <string name="withdrawal_with_PIN">PINコードを使用して出金</string>
     <string name="Write_Circles">グループリストの変更</string>
     <string name="you">自分</string>
     <string name="You">自分</string>

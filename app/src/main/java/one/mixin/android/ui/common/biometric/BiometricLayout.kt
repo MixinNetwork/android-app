@@ -25,7 +25,6 @@ import one.mixin.android.widget.PinView
 class BiometricLayout(context: Context, attributeSet: AttributeSet) : ViewAnimator(context, attributeSet) {
     private val binding: LayoutPinBiometricBinding = LayoutPinBiometricBinding.inflate(LayoutInflater.from(context), this)
     val biometricTv get() = binding.biometricTv
-    val payTv get() = binding.payTv
     val pin get() = binding.pin
     val errorBtn get() = binding.errorBtn
     private val enableBiometricTv get() = binding.enableBiometricTv

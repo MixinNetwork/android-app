@@ -102,7 +102,6 @@
     <string name="auth_assets_more">%1$s and more</string>
     <string name="auth_messages_represent_description">allow bot to send messages represent of you</string>
     <string name="auth_profile_content">%1$s, %2$s, profile photo</string>
-    <string name="Auth_with_PIN">Authorize with PIN</string>
     <string name="authorization">authorization</string>
     <string name="Authorizations">Authorizations</string>
     <string name="auto_download_hint">Change auto-download settings for medias. Voice messages are always automatically downloaded.</string>
@@ -559,7 +558,6 @@
     <string name="Log_in">Log in</string>
     <string name="log_out_from_desktop">Log out from desktop</string>
     <string name="login_and_abort_account_deletion">Continue to log in and abort account deletion</string>
-    <string name="Login_with_PIN">Login with PIN</string>
     <string name="Logout">Logout…</string>
     <string name="Logs">Logs</string>
     <string name="Lost_your_mobile_number">Lost your mobile number?</string>
@@ -685,7 +683,6 @@
     <string name="Pause">Pause</string>
     <string name="pay_paid">This payment link has already been paid by someone, you can not make a duplicate payment.</string>
     <string name="Pay_with_Biometrics">Pay with Biometrics</string>
-    <string name="Pay_with_PIN">Pay with PIN</string>
     <string name="Pay_with_PIN_interval">Pay with PIN interval</string>
     <plurals name="pending_confirmation">
         <item quantity="one">%1$d/%2$d confirmation</item>
@@ -1108,7 +1105,6 @@
     <string name="withdrawal_no_memo">No Memo</string>
     <string name="withdrawal_to">Withdraw to %1$s</string>
     <string name="withdrawal_with_biometric">Withdrawal with Biometric</string>
-    <string name="withdrawal_with_PIN">Withdrawal with PIN</string>
     <string name="Write_Circles">Write Circles</string>
     <string name="you">you</string>
     <string name="You">You</string>

@@ -60,6 +60,5 @@ class DeleteAccountPinBottomSheetDialogFragment : BiometricBottomSheetDialogFrag
         getString(R.string.Verify_by_Biometric),
         "",
         "",
-        getString(R.string.Verify_PIN)
     )
 }

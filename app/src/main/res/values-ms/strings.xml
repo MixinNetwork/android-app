@@ -493,7 +493,6 @@
     <string name="Pause">Jeda sebentar</string>
     <string name="pay_paid">Pautan pembayaran ini telah dibayar oleh seseorang, anda tidak boleh membuat pembayaran pendua.</string>
     <string name="Pay_with_Biometrics">Bayar dengan Biometrik</string>
-    <string name="Pay_with_PIN">Bayar dengan PIN</string>
     <string name="Pay_with_PIN_interval">Bayar dengan selang PIN</string>
     <plurals name="pending_confirmation" tools:ignore="UnusedQuantity">
         <item quantity="other">%1$d/%2$d pengesahan</item>
@@ -785,7 +784,6 @@
     <string name="withdrawal_no_memo">Tiada Memo</string>
     <string name="withdrawal_to">Pengeluaran ke %1$s</string>
     <string name="withdrawal_with_biometric">Pengeluaran dengan Biometrik</string>
-    <string name="withdrawal_with_PIN">Pengeluaran dengan PIN</string>
     <string name="Write_Circles">Tulis Lingkaran</string>
     <string name="You">Anda</string>
     <string name="You_deleted_this_message">Anda memadamkan mesej ini</string>

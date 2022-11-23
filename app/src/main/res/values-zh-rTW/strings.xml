@@ -89,7 +89,6 @@
     <string name="auth_assets_more">%1$s等</string>
     <string name="auth_messages_represent_description">允許機器人代表你發訊息</string>
     <string name="auth_profile_content">%1$s, %2$s, 頭像</string>
-    <string name="Auth_with_PIN">用 PIN 授权</string>
     <string name="authorization">授權</string>
     <string name="Authorizations">授權</string>
     <string name="auto_download_hint">媒體自動下載設定，所有語音訊息將自動下載。</string>

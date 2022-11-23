@@ -70,7 +70,6 @@ class MultisigsBottomSheetDialogFragment :
                 arrowIv.setImageResource(R.drawable.ic_multisigs_arrow_right)
             }
             subTitle.text = t.memo
-            biometricLayout.payTv.setText(R.string.Multisig_by_PIN)
             biometricLayout.biometricTv.setText(R.string.Use_Biometric_Multisig)
         }
 
@@ -136,8 +135,7 @@ class MultisigsBottomSheetDialogFragment :
                 }
             ),
             t.memo ?: "",
-            getDescription(),
-            getString(R.string.Multisig_by_PIN)
+            getDescription()
         )
     }
 

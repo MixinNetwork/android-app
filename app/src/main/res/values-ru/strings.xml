@@ -545,7 +545,6 @@
     <string name="Log_in">Авторизоваться</string>
     <string name="log_out_from_desktop">Выйти с рабочего стола</string>
     <string name="login_and_abort_account_deletion">Продолжить вход и отменить удаление учетной записи</string>
-    <string name="Login_with_PIN">Войти с PIN-кодом</string>
     <string name="Logout">Выйти…</string>
     <string name="Logs">Журналы</string>
     <string name="Lost_your_mobile_number">Потеряли номер мобильного?</string>
@@ -667,7 +666,6 @@
     <string name="Pause">Пауза</string>
     <string name="pay_paid">Эта платежная ссылка уже кем-то оплачена, повторный платеж сделать нельзя.</string>
     <string name="Pay_with_Biometrics">Оплата с помощью биометрии</string>
-    <string name="Pay_with_PIN">Оплатить PIN-кодом</string>
     <string name="Pay_with_PIN_interval">Оплата с интервалом PIN</string>
     <plurals name="pending_confirmation" tools:ignore="UnusedQuantity">
         <item quantity="one">%1$d/%2$d подтверждение</item>
@@ -1049,7 +1047,6 @@
     <string name="withdrawal_no_memo">Нет памятки</string>
     <string name="withdrawal_to">Вывод на %1$s</string>
     <string name="withdrawal_with_biometric">Вывод через биометрию</string>
-    <string name="withdrawal_with_PIN">Вывод через PIN-код</string>
     <string name="Write_Circles">Написать круги</string>
     <string name="you">вы</string>
     <string name="You">Вы</string>

@@ -544,7 +544,6 @@
     <string name="Log_in">登录</string>
     <string name="log_out_from_desktop">从桌面版退出</string>
     <string name="login_and_abort_account_deletion">继续登录并放弃删除账户</string>
-    <string name="Login_with_PIN">用 PIN 来登录</string>
     <string name="Logout">退出中…</string>
     <string name="Logs">日志</string>
     <string name="Lost_your_mobile_number">手机丢失？</string>
@@ -669,7 +668,6 @@
     <string name="Pause">暂停</string>
     <string name="pay_paid">此付款链接已由某人支付，您无法进行重复付款。</string>
     <string name="Pay_with_Biometrics">用生物识别支付</string>
-    <string name="Pay_with_PIN">用 PIN 支付</string>
     <string name="Pay_with_PIN_interval">PIN 使用间隔</string>
     <plurals name="pending_confirmation" tools:ignore="UnusedQuantity">
         <item quantity="one">%1$d/%2$d 区块确认数</item>
@@ -1085,7 +1083,6 @@
     <string name="withdrawal_no_memo">点击不使用 Memo（备注）</string>
     <string name="withdrawal_to">提现到 %1$s</string>
     <string name="withdrawal_with_biometric">用生物识别提现</string>
-    <string name="withdrawal_with_PIN">用 PIN 提现</string>
     <string name="Write_Circles">管理圈子</string>
     <string name="you">你</string>
     <string name="You">你</string>

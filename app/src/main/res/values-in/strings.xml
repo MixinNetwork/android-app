@@ -464,7 +464,6 @@
     <string name="Participants">Peserta</string>
     <string name="pay_paid">Tautan pembayaran ini telah dibayar oleh seseorang, Anda tidak dapat melakukan pembayaran ganda.</string>
     <string name="Pay_with_Biometrics">Bayar dengan Biometrik</string>
-    <string name="Pay_with_PIN">Bayar dengan PIN</string>
     <string name="Pay_with_PIN_interval">Bayar dengan interval PIN</string>
     <plurals name="pending_confirmation" tools:ignore="UnusedQuantity">
         <item quantity="other">%1$d/%2$d konfirmasi</item>
@@ -721,7 +720,6 @@
     <string name="withdrawal_no_memo">Tanpa Memo</string>
     <string name="withdrawal_to">Penarikan ke %1$s</string>
     <string name="withdrawal_with_biometric">Penarikan dengan Biometrik</string>
-    <string name="withdrawal_with_PIN">Penarikan dengan PIN</string>
     <string name="You">Anda</string>
     <string name="You_deleted_this_message">Anda menghapus pesan ini</string>
 </resources>
