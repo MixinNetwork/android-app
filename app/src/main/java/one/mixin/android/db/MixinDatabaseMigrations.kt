@@ -347,7 +347,7 @@ class MixinDatabaseMigrations private constructor() {
         val MIGRATION_46_47: Migration = object : Migration(46, 47) {
             override fun migrate(database: SupportSQLiteDatabase) {
                 database.execSQL("CREATE TABLE IF NOT EXISTS `conversation_ext` (`conversation_id` TEXT NOT NULL, `created_at` TEXT NOT NULL, `count` INTEGER NOT NULL DEFAULT 0, PRIMARY KEY(`conversation_id`))")
-                database.execSQL("INSERT OR REPLACE INTO `conversation_ext` (`conversation_id`, `created_at` ,`count`) SELECT conversation_id, \'${nowInUtc()}\', count(1)  FROM messages m INNER JOIN users u ON m.user_id = u.user_id GROUP BY conversation_id")
+                database.execSQL("INSERT OR REPLACE INTO `conversation_ext` (`conversation_id`, `created_at` ,`count`) SELECT conversation_id, '${nowInUtc()}', count(1)  FROM messages m INNER JOIN users u ON m.user_id = u.user_id GROUP BY conversation_id LIMIT 50")
             }
         }
 
