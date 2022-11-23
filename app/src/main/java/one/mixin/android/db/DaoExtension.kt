@@ -185,6 +185,7 @@ fun MixinDatabase.deleteMessageById(messageId: String, conversationId: String) {
         pinMessageDao().deleteByMessageId(messageId)
         mentionMessageDao().deleteMessage(messageId)
         messageDao().deleteMessageById(messageId)
+        conversationExtDao().decrement(conversationId)
         remoteMessageStatusDao().deleteByMessageId(messageId)
         expiredMessageDao().deleteByMessageId(messageId)
         conversationDao().refreshLastMessageId(conversationId, messageId)
@@ -224,10 +225,11 @@ fun MixinDatabase.makeMessageStatus(status: String, messageId: String, noExistCa
 fun MixinDatabase.insertAndNotifyConversation(message: Message) {
     runInTransaction {
         messageDao().insert(message)
+        conversationExtDao().increment(message.conversationId)
         if (!message.isMine() && message.status != MessageStatus.READ.name && !message.isKraken()) {
-            remoteMessageStatusDao().insert(RemoteMessageStatus(message.id, message.conversationId, MessageStatus.DELIVERED.name))
+            remoteMessageStatusDao().insert(RemoteMessageStatus(message.messageId, message.conversationId, MessageStatus.DELIVERED.name))
         }
-        conversationDao().updateLastMessageId(message.id, message.createdAt, message.conversationId)
+        conversationDao().updateLastMessageId(message.messageId, message.createdAt, message.conversationId)
         remoteMessageStatusDao().updateConversationUnseen(message.conversationId)
         InvalidateFlow.emit(message.conversationId)
     }
@@ -235,5 +237,6 @@ fun MixinDatabase.insertAndNotifyConversation(message: Message) {
 
 fun MixinDatabase.insertMessage(message: Message) {
     messageDao().insert(message)
-    conversationDao().updateLastMessageId(message.id, message.createdAt, message.conversationId)
+    conversationExtDao().increment(message.conversationId)
+    conversationDao().updateLastMessageId(message.messageId, message.createdAt, message.conversationId)
 }

@@ -20,7 +20,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.Constants
-import one.mixin.android.Constants.FIXED_LOAD_SIZE
 import one.mixin.android.Constants.PAGE_SIZE
 import one.mixin.android.MixinApplication
 import one.mixin.android.api.handleMixinResponse
@@ -131,15 +130,7 @@ internal constructor(
             .build()
 
         return FastLivePagedListBuilder(
-            conversationRepository.getMessages(
-                conversationId,
-                if (firstKeyToLoad > FIXED_LOAD_SIZE) {
-                    // Multiple Page Size, round up
-                    ((firstKeyToLoad + PAGE_SIZE - 1) / PAGE_SIZE) * PAGE_SIZE
-                } else {
-                    FIXED_LOAD_SIZE
-                }
-            ),
+            conversationRepository.getMessages(conversationId),
             pagedListConfig
         ).setInitialLoadKey(firstKeyToLoad).build()
     }
@@ -379,7 +370,7 @@ internal constructor(
             conversationRepository.findMessageById(id)?.let {
                 if (it.isVideo() && it.mediaSize != null && it.mediaSize == 0L) {
                     try {
-                        conversationRepository.updateMediaStatus(MediaStatus.PENDING.name, it.id, it.conversationId)
+                        conversationRepository.updateMediaStatus(MediaStatus.PENDING.name, it.messageId, it.conversationId)
                         jobManager.addJobInBackground(
                             ConvertVideoJob(
                                 it.conversationId,
@@ -390,7 +381,7 @@ internal constructor(
                                     it.isEncrypted() -> EncryptCategory.ENCRYPTED
                                     else -> EncryptCategory.PLAIN
                                 },
-                                it.id,
+                                it.messageId,
                                 it.createdAt
                             )
                         )
@@ -407,14 +398,14 @@ internal constructor(
                         jobManager.addJobInBackground(
                             SendGiphyJob(
                                 it.conversationId, it.userId, it.mediaUrl, it.mediaWidth!!, it.mediaHeight!!,
-                                it.mediaSize ?: 0L, category, it.id, it.thumbImage ?: "", it.createdAt
+                                it.mediaSize ?: 0L, category, it.messageId, it.thumbImage ?: "", it.createdAt
                             )
                         )
                     } catch (e: NullPointerException) {
                         onError.invoke()
                     }
                 } else {
-                    conversationRepository.updateMediaStatus(MediaStatus.PENDING.name, it.id, it.conversationId)
+                    conversationRepository.updateMediaStatus(MediaStatus.PENDING.name, it.messageId, it.conversationId)
                     jobManager.addJobInBackground(SendAttachmentMessageJob(it))
                 }
             }

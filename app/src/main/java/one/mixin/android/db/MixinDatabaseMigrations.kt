@@ -3,6 +3,7 @@ package one.mixin.android.db
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 import one.mixin.android.Constants.DataBase.MINI_VERSION
+import one.mixin.android.extension.nowInUtc
 import one.mixin.android.session.Session
 
 class MixinDatabaseMigrations private constructor() {
@@ -341,6 +342,12 @@ class MixinDatabaseMigrations private constructor() {
         val MIGRATION_45_46: Migration = object : Migration(45, 46) {
             override fun migrate(database: SupportSQLiteDatabase) {
                 database.execSQL("ALTER TABLE `addresses` ADD COLUMN fee_asset_id TEXT NOT NULL DEFAULT ''")
+            }
+        }
+        val MIGRATION_46_47: Migration = object : Migration(46, 47) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                database.execSQL("CREATE TABLE IF NOT EXISTS `conversation_ext` (`conversation_id` TEXT NOT NULL, `count` INTEGER NOT NULL DEFAULT 0, `created_at` TEXT NOT NULL, PRIMARY KEY(`conversation_id`))")
+                database.execSQL("INSERT OR REPLACE INTO `conversation_ext` (`conversation_id`, `count`, `created_at`) SELECT conversation_id, count(1), '${nowInUtc()}' FROM messages m INNER JOIN users u ON m.user_id = u.user_id GROUP BY conversation_id LIMIT 100")
             }
         }
 

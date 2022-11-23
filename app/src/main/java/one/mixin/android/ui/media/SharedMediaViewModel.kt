@@ -139,7 +139,7 @@ class SharedMediaViewModel @Inject constructor(
                                 it.isEncrypted() -> EncryptCategory.ENCRYPTED
                                 else -> EncryptCategory.PLAIN
                             },
-                            it.id,
+                            it.messageId,
                             it.createdAt
                         )
                     )
@@ -156,7 +156,7 @@ class SharedMediaViewModel @Inject constructor(
                     jobManager.addJobInBackground(
                         SendGiphyJob(
                             it.conversationId, it.userId, it.mediaUrl!!, it.mediaWidth!!, it.mediaHeight!!,
-                            it.mediaSize, category, it.id, it.thumbImage ?: "", it.createdAt
+                            it.mediaSize, category, it.messageId, it.thumbImage ?: "", it.createdAt
                         )
                     )
                 } catch (e: NullPointerException) {

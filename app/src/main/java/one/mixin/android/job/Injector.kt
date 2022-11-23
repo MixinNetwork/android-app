@@ -20,6 +20,7 @@ import one.mixin.android.db.AssetDao
 import one.mixin.android.db.CircleConversationDao
 import one.mixin.android.db.CircleDao
 import one.mixin.android.db.ConversationDao
+import one.mixin.android.db.ConversationExtDao
 import one.mixin.android.db.ExpiredMessageDao
 import one.mixin.android.db.HyperlinkDao
 import one.mixin.android.db.JobDao
@@ -39,6 +40,7 @@ import one.mixin.android.db.TraceDao
 import one.mixin.android.db.TranscriptMessageDao
 import one.mixin.android.db.UserDao
 import one.mixin.android.db.insertUpdate
+import one.mixin.android.db.pending.PendingMessageDao
 import one.mixin.android.di.ApplicationScope
 import one.mixin.android.session.Session
 import one.mixin.android.util.ErrorHandler
@@ -61,6 +63,8 @@ open class Injector {
     @Inject
     lateinit var messageDao: MessageDao
     @Inject
+    lateinit var pendingMessagesDao: PendingMessageDao
+    @Inject
     lateinit var messageHistoryDao: MessageHistoryDao
     @Inject
     lateinit var userDao: UserDao
@@ -70,6 +74,8 @@ open class Injector {
     lateinit var jobDao: JobDao
     @Inject
     lateinit var conversationDao: ConversationDao
+    @Inject
+    lateinit var conversationExtDao: ConversationExtDao
     @Inject
     lateinit var participantDao: ParticipantDao
     @Inject
@@ -187,7 +193,7 @@ open class Injector {
         }
     }
 
-    protected fun isExistMessage(messageId: String): Boolean =
+    protected open fun isExistMessage(messageId: String): Boolean =
         messageDao.findMessageIdById(messageId) != null || messageHistoryDao.findMessageHistoryById(messageId) != null
 
     private fun refreshConversation(conversationId: String): Int {

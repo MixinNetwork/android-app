@@ -893,7 +893,7 @@ class GroupCallService : CallService() {
         database.conversationDao().findConversationById(cid)?.let {
             val expiredIn = it.expireIn ?: return@let
             if (it.expireIn > 0) {
-                database.expiredMessageDao().insert(ExpiredMessage(message.id, expiredIn, null))
+                database.expiredMessageDao().insert(ExpiredMessage(message.messageId, expiredIn, null))
             }
         }
         database.insertAndNotifyConversation(message)

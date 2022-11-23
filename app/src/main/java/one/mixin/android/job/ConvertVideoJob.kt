@@ -68,7 +68,7 @@ class ConvertVideoJob(
         )
         // insert message with mediaSize 0L
         // for show video place holder in chat list before convert video
-        val mId = messageDao.findMessageIdById(message.id)
+        val mId = messageDao.findMessageIdById(message.messageId)
         if (mId == null) {
             database.insertMessage(message)
             InvalidateFlow.emit(message.conversationId)

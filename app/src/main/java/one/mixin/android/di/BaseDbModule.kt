@@ -7,6 +7,8 @@ import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import one.mixin.android.crypto.db.SignalDatabase
 import one.mixin.android.db.MixinDatabase
+import one.mixin.android.db.pending.PendingDatabase
+import one.mixin.android.db.pending.PendingDatabaseImp
 import javax.inject.Singleton
 
 @InstallIn(SingletonComponent::class)
@@ -27,6 +29,10 @@ internal object BaseDbModule {
 
     @Singleton
     @Provides
+    fun providePendingDatabase(app: Application, mixinDatabase: MixinDatabase): PendingDatabase = PendingDatabaseImp.getDatabase(app.applicationContext, mixinDatabase.floodMessageDao(), mixinDatabase.jobDao())
+
+    @Singleton
+    @Provides
     fun provideUserDao(db: MixinDatabase) = db.userDao()
 
     @Singleton
@@ -40,6 +46,11 @@ internal object BaseDbModule {
     @Singleton
     @Provides
     fun provideMessageDao(db: MixinDatabase) = db.messageDao()
+
+    @Singleton
+    @Provides
+    fun providePendingMessageDao(pendingDatabase: PendingDatabase) =
+        pendingDatabase.pendingMessageDao()
 
     @Singleton
     @Provides
@@ -83,11 +94,11 @@ internal object BaseDbModule {
 
     @Singleton
     @Provides
-    fun providesFloodMessageDao(db: MixinDatabase) = db.floodMessageDao()
+    fun providesFloodMessageDao(db: PendingDatabase) = db.floodMessageDao()
 
     @Singleton
     @Provides
-    fun providesJobDao(db: MixinDatabase) = db.jobDao()
+    fun providesJobDao(db: PendingDatabase) = db.jobDao()
 
     @Singleton
     @Provides
@@ -148,4 +159,8 @@ internal object BaseDbModule {
     @Singleton
     @Provides
     fun providesExpiredMessageDao(db: MixinDatabase) = db.expiredMessageDao()
+
+    @Singleton
+    @Provides
+    fun providesConversationExtDao(db: MixinDatabase) = db.conversationExtDao()
 }

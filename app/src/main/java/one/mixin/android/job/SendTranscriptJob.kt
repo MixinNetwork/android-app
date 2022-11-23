@@ -32,7 +32,7 @@ class SendTranscriptJob(
     val message: Message,
     private val transcriptMessages: List<TranscriptMessage>,
     messagePriority: Int = PRIORITY_SEND_MESSAGE
-) : MixinJob(Params(messagePriority).groupBy("send_message_group").persist(), message.id) {
+) : MixinJob(Params(messagePriority).groupBy("send_message_group").persist(), message.messageId) {
 
     companion object {
         private const val serialVersionUID = 1L
@@ -57,7 +57,7 @@ class SendTranscriptJob(
                     stringBuffer.append(it)
                 }
             }
-            MessageFts4Helper.insertMessageFts4(message.id, stringBuffer.toString())
+            MessageFts4Helper.insertMessageFts4(message.messageId, stringBuffer.toString())
             appDatabase.insertMessage(message)
             InvalidateFlow.emit(message.conversationId)
             transcriptMessages.forEach { transcript ->
@@ -96,11 +96,11 @@ class SendTranscriptJob(
 
     override fun onRun() {
         val transcripts = mutableSetOf<TranscriptMessage>()
-        getTranscripts(message.id, transcripts)
+        getTranscripts(message.messageId, transcripts)
 
         if (transcripts.any { t -> t.isAttachment() }) {
             val mediaSize = transcripts.sumOf { t -> t.mediaSize ?: 0 }
-            messageDao.updateMediaSize(mediaSize, message.id)
+            messageDao.updateMediaSize(mediaSize, message.messageId)
             InvalidateFlow.emit(message.conversationId)
             transcripts.filter { t ->
                 t.isAttachment()
@@ -110,10 +110,10 @@ class SendTranscriptJob(
                     message.isSignal() -> EncryptCategory.SIGNAL
                     else -> EncryptCategory.PLAIN
                 }
-                jobManager.addJob(SendTranscriptAttachmentMessageJob(t, encryptCategory, message.id))
+                jobManager.addJob(SendTranscriptAttachmentMessageJob(t, encryptCategory, message.messageId))
             }
         } else {
-            messageDao.updateMediaStatus(MediaStatus.DONE.name, message.id)
+            messageDao.updateMediaStatus(MediaStatus.DONE.name, message.messageId)
             InvalidateFlow.emit(message.conversationId)
             message.mediaStatus = MediaStatus.DONE.name
             message.content = GsonHelper.customGson.toJson(transcripts)

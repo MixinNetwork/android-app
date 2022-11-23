@@ -33,7 +33,6 @@ import one.mixin.android.R
 import one.mixin.android.RxBus
 import one.mixin.android.api.service.MessageService
 import one.mixin.android.db.ExpiredMessageDao
-import one.mixin.android.db.FloodMessageDao
 import one.mixin.android.db.JobDao
 import one.mixin.android.db.MessageDao
 import one.mixin.android.db.MixinDatabase
@@ -41,6 +40,7 @@ import one.mixin.android.db.ParticipantDao
 import one.mixin.android.db.RemoteMessageStatusDao
 import one.mixin.android.db.TranscriptMessageDao
 import one.mixin.android.db.deleteMessageById
+import one.mixin.android.db.pending.PendingDatabase
 import one.mixin.android.event.ExpiredEvent
 import one.mixin.android.extension.base64Encode
 import one.mixin.android.extension.currentTimeSeconds
@@ -49,6 +49,9 @@ import one.mixin.android.extension.notificationManager
 import one.mixin.android.extension.supportsOreo
 import one.mixin.android.job.BaseJob.Companion.PRIORITY_ACK_MESSAGE
 import one.mixin.android.job.NotificationGenerator.conversationDao
+import one.mixin.android.job.NotificationGenerator.conversationExtDao
+import one.mixin.android.messenger.Hedwig
+import one.mixin.android.messenger.HedwigImp
 import one.mixin.android.receiver.ExitBroadcastReceiver
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BatteryOptimizationDialogActivity
@@ -65,7 +68,6 @@ import one.mixin.android.vo.createAckJob
 import one.mixin.android.vo.isTranscript
 import one.mixin.android.websocket.ACKNOWLEDGE_MESSAGE_RECEIPTS
 import one.mixin.android.websocket.BlazeAckMessage
-import one.mixin.android.websocket.BlazeMessageData
 import one.mixin.android.websocket.CREATE_MESSAGE
 import one.mixin.android.websocket.ChatWebSocket
 import one.mixin.android.websocket.PlainDataAction
@@ -110,6 +112,9 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
     lateinit var database: MixinDatabase
 
     @Inject
+    lateinit var pendingDatabase: PendingDatabase
+
+    @Inject
     lateinit var webSocket: ChatWebSocket
 
     @Inject
@@ -117,9 +122,6 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
 
     @Inject
     lateinit var transcriptMessageDao: TranscriptMessageDao
-
-    @Inject
-    lateinit var floodMessageDao: FloodMessageDao
 
     @Inject
     lateinit var remoteMessageStatusDao: RemoteMessageStatusDao
@@ -151,6 +153,10 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
     private var disposable: Disposable? = null
     private val destroyScope = scope(Lifecycle.Event.ON_DESTROY)
 
+    private val hedwig: Hedwig by lazy {
+        HedwigImp(database, pendingDatabase, callState, lifecycleScope)
+    }
+
     override fun onBind(intent: Intent): IBinder? {
         super.onBind(intent)
         return null
@@ -161,7 +167,7 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
         super.onCreate()
         webSocket.setWebSocketObserver(this)
         webSocket.connect()
-        startObserveFlood()
+        hedwig.takeOff()
         startObserveAck()
         startObserveStatus()
         startObserveExpired()
@@ -211,13 +217,12 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
 
     override fun onDestroy() {
         super.onDestroy()
+        hedwig.land()
         stopObserveAck()
-        stopObserveFlood()
         stopObserveStatus()
         stopObserveExpired()
         ackJob?.cancel()
         statusJob?.cancel()
-        floodJob?.cancel()
         expiredJob?.cancel()
         webSocket.disconnect()
         webSocket.setWebSocketObserver(null)
@@ -235,7 +240,6 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
     }
 
     override fun onSocketOpen() {
-        runFloodJob()
         runAckJob()
     }
 
@@ -283,11 +287,11 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
     }
 
     private fun startObserveAck() {
-        database.invalidationTracker.addObserver(ackObserver)
+        pendingDatabase.addObserver(ackObserver)
     }
 
     private fun stopObserveAck() {
-        database.invalidationTracker.removeObserver(ackObserver)
+        pendingDatabase.removeObserver(ackObserver)
     }
 
     private var ackJob: Job? = null
@@ -362,58 +366,6 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
         }
     }
 
-    private val messageDecrypt by lazy { DecryptMessage(lifecycleScope) }
-    private val callMessageDecrypt by lazy { DecryptCallMessage(callState, lifecycleScope) }
-
-    private fun startObserveFlood() {
-        database.invalidationTracker.addObserver(floodObserver)
-    }
-
-    private fun stopObserveFlood() {
-        database.invalidationTracker.removeObserver(floodObserver)
-    }
-
-    private var floodJob: Job? = null
-    private val floodObserver = object : InvalidationTracker.Observer("flood_messages") {
-        override fun onInvalidated(tables: MutableSet<String>) {
-            runFloodJob()
-        }
-    }
-
-    @Synchronized
-    private fun runFloodJob() {
-        if (floodJob?.isActive == true) {
-            return
-        }
-        floodJob = lifecycleScope.launch(Dispatchers.IO) {
-            try {
-                processFloodMessage()
-            } catch (e: Exception) {
-                Timber.e(e)
-                runFloodJob()
-            }
-        }
-    }
-
-    private tailrec suspend fun processFloodMessage(): Boolean {
-        val messages = floodMessageDao.findFloodMessages()
-        return if (messages.isNotEmpty()) {
-            messages.forEach { message ->
-                val data = gson.fromJson(message.data, BlazeMessageData::class.java)
-                if (data.category.startsWith("WEBRTC_") || data.category.startsWith("KRAKEN_")) {
-                    callMessageDecrypt.onRun(data)
-                } else {
-                    messageDecrypt.onRun(data)
-                }
-                floodMessageDao.delete(message)
-                pendingMessageStatusMap.remove(data.messageId)
-            }
-            processFloodMessage()
-        } else {
-            false
-        }
-    }
-
     private fun startObserveStatus() {
         database.invalidationTracker.addObserver(statusObserver)
     }
@@ -469,14 +421,14 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
                 BlazeAckMessage(msg.messageId, MessageStatus.READ.name, msg.expireAt)
             )
         }.apply {
-            database.jobDao().insertList(this)
+            pendingDatabase.insertJobs(this)
         }
         Session.getExtensionSessionId()?.let { _ ->
             val conversationId = list.first().conversationId
             list.map { msg ->
                 createAckJob(CREATE_MESSAGE, BlazeAckMessage(msg.messageId, MessageStatus.READ.name), conversationId)
             }.let { jobs ->
-                database.jobDao().insertList(jobs)
+                pendingDatabase.insertJobs(jobs)
             }
         }
         remoteMessageStatusDao.deleteByMessageIds(list.map { it.messageId })
@@ -534,7 +486,7 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
             val ids = messages.map { it.messageId }
             val cIds = messageDao.findConversationsByMessages(ids)
             ids.forEach { messageId ->
-                val messageMedia = messageDao.findMessageMediaById(messageId)
+                val messageMedia = pendingDatabase.findMessageMediaById(messageId) ?: messageDao.findMessageMediaById(messageId)
                 Timber.e("Expired job: delete messages ${messageMedia?.type} - ${messageMedia?.messageId}")
                 messageMedia?.absolutePath(
                     MixinApplication.appContext,
@@ -546,10 +498,12 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
                 if (messageMedia?.isTranscript() == true) {
                     jobManager.addJobInBackground(TranscriptDeleteJob(listOf(messageId)))
                 }
+                pendingDatabase.deletePendingMessageById(messageId)
                 database.deleteMessageById(messageId)
             }
             cIds.forEach { id ->
                 conversationDao.refreshLastMessageId(id)
+                conversationExtDao.refreshCountByConversationId(id)
                 InvalidateFlow.emit(id)
             }
             nextExpirationTime = null

@@ -18,12 +18,10 @@ import one.mixin.android.Constants.API.WS_URL
 import one.mixin.android.MixinApplication
 import one.mixin.android.api.ClientErrorException
 import one.mixin.android.api.service.AccountService
-import one.mixin.android.db.FloodMessageDao
-import one.mixin.android.db.JobDao
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.OffsetDao
-import one.mixin.android.db.insertNoReplace
 import one.mixin.android.db.makeMessageStatus
+import one.mixin.android.db.pending.PendingDatabase
 import one.mixin.android.di.isNeedSwitch
 import one.mixin.android.extension.gzip
 import one.mixin.android.extension.networkConnected
@@ -53,13 +51,12 @@ class ChatWebSocket(
     private val okHttpClient: OkHttpClient,
     private val accountService: AccountService,
     private val mixinDatabase: MixinDatabase,
+    private val pendingDatabase: PendingDatabase,
     private val jobManager: MixinJobManager,
     private val linkState: LinkState,
 ) : WebSocketListener() {
 
     private val offsetDao: OffsetDao = mixinDatabase.offsetDao()
-    private val jobDao: JobDao = mixinDatabase.jobDao()
-    private val floodMessageDao: FloodMessageDao = mixinDatabase.floodMessageDao()
 
     private val failCode = 1000
     private val quitCode = 1001
@@ -136,7 +133,7 @@ class ChatWebSocket(
     }
 
     private fun sendPendingMessage() {
-        val blazeMessage = createListPendingMessage(floodMessageDao.getLastBlazeMessageCreatedAt())
+        val blazeMessage = createListPendingMessage(pendingDatabase.getLastBlazeMessageCreatedAt())
         val transaction = WebSocketTransaction(
             blazeMessage.id,
             object : TransactionCallbackSuccess {
@@ -277,10 +274,10 @@ class ChatWebSocket(
             if (data.userId == accountId && data.category.isEmpty()) { // Ack of the create message
                 mixinDatabase.makeMessageStatus(data.status, data.messageId)
             } else {
-                floodMessageDao.insert(FloodMessage(data.messageId, gson.toJson(data), data.createdAt))
+                pendingDatabase.insertFloodMessage(FloodMessage(data.messageId, gson.toJson(data), data.createdAt))
             }
         } else {
-            jobDao.insertNoReplace(createAckJob(ACKNOWLEDGE_MESSAGE_RECEIPTS, BlazeAckMessage(data.messageId, MessageStatus.READ.name)))
+            pendingDatabase.insertJob(createAckJob(ACKNOWLEDGE_MESSAGE_RECEIPTS, BlazeAckMessage(data.messageId, MessageStatus.READ.name)))
         }
     }
 

@@ -10,6 +10,9 @@ interface JobDao : BaseDao<Job> {
     @Query("SELECT * FROM jobs WHERE `action` = 'ACKNOWLEDGE_MESSAGE_RECEIPTS' ORDER BY rowid ASC LIMIT $ACK_LIMIT")
     suspend fun findAckJobs(): List<Job>
 
+    @Query("SELECT * FROM jobs ORDER BY rowid ASC LIMIT $ACK_LIMIT")
+    fun limit100(): List<Job>
+
     @Query("SELECT count(1) FROM jobs WHERE `action` = 'ACKNOWLEDGE_MESSAGE_RECEIPTS'")
     suspend fun findAckJobsCount(): Int
 
