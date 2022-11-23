@@ -28,7 +28,7 @@ sealed class TipSignSpec(
                 val privKey = BigInteger(priv)
                 val pub = Sign.publicKeyFromPrivate(privKey)
                 val keyPair = ECKeyPair(privKey, pub)
-                val signature = Sign.signMessage(data, keyPair, false)
+                val signature = Sign.signPrefixedMessage(data, keyPair)
                 val b = ByteArray(65)
                 System.arraycopy(signature.r, 0, b, 0, 32)
                 System.arraycopy(signature.s, 0, b, 32, 32)

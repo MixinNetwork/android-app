@@ -16,6 +16,8 @@ object Constants {
 
         const val GIPHY_URL = "https://api.giphy.com/v1/"
         const val FOURSQUARE_URL = "https://api.foursquare.com/v2/"
+
+        const val DEFAULT_TIP_SIGN_ENDPOINT = "https://api.mixin.one/tip/notify"
     }
 
     object HelpLink {
