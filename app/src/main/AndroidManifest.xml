@@ -84,6 +84,7 @@
                 <data android:host="address" />
                 <data android:host="snapshots" />
                 <data android:host="conversations" />
+                <data android:host="tip"/>
             </intent-filter>
 
             <intent-filter android:autoVerify="true">
@@ -162,6 +163,28 @@
                         android:scheme="https"
                         android:host="mixin.one"
                         android:pathPrefix="/apps" />
+            </intent-filter>
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data
+                    android:scheme="https"
+                    android:host="mixin.one"
+                    android:pathPrefix="/conversations" />
+            </intent-filter>
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data
+                    android:scheme="https"
+                    android:host="mixin.one"
+                    android:pathPrefix="/tip" />
             </intent-filter>
         </activity>
         <activity

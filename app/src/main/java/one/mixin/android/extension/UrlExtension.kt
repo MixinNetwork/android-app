@@ -66,7 +66,8 @@ fun String.isMixinUrl(): Boolean {
         startsWith(Constants.Scheme.WITHDRAWAL, true) ||
         startsWith(Constants.Scheme.APPS, true) ||
         startsWith(Constants.Scheme.SNAPSHOTS, true) ||
-        startsWith(Constants.Scheme.CONVERSATIONS, true)
+        startsWith(Constants.Scheme.CONVERSATIONS, true) ||
+        startsWith(Constants.Scheme.TIP, true)
     ) {
         true
     } else {
