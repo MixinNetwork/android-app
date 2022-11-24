@@ -53,7 +53,9 @@ abstract class VisionFragment : BaseFragment() {
     protected fun handleResult(content: String) {
         val result = if (fromShortcut) {
             Intent(requireContext(), MainActivity::class.java)
-        } else Intent()
+        } else {
+            Intent()
+        }
         if (content.isDonateUrl() || content.isExternalScheme(requireContext())) {
             result.putExtra(MainActivity.URL, content)
         } else if (!content.isMixinUrl()) {

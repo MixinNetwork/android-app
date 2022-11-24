@@ -21,12 +21,10 @@ import one.mixin.android.ui.tip.TipType
 
 @Composable
 fun SecurityPage() {
-
     val navController = LocalSettingNav.current
     val context = LocalContext.current
 
     SettingPageScaffold(title = stringResource(id = R.string.Security)) {
-
         SettingTile(title = stringResource(R.string.PIN)) {
             if (Session.getAccount()?.hasPin == true) {
                 navController.navigation(SettingDestination.PinSetting)

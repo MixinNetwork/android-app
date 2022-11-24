@@ -210,7 +210,7 @@ class SendAttachmentMessageJob(
         val waveform = message.mediaWaveform
         val transferMediaData = AttachmentMessagePayload(
             key, digest, attachmentId, mimeType, size, name, width, height,
-            thumbnail, duration, waveform, createdAt = attachResponse.created_at,
+            thumbnail, duration, waveform, createdAt = attachResponse.created_at
         )
         val plainText = GsonHelper.customGson.toJson(transferMediaData)
         val encoded = plainText.base64Encode()

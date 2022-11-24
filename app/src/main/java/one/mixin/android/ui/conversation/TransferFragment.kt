@@ -185,7 +185,7 @@ class TransferFragment() : MixinBottomSheetDialogFragment() {
     // testing constructor
     @VisibleForTesting(otherwise = VisibleForTesting.NONE)
     constructor(
-        testRegistry: ActivityResultRegistry,
+        testRegistry: ActivityResultRegistry
     ) : this() {
         resultRegistry = testRegistry
     }
@@ -334,7 +334,9 @@ class TransferFragment() : MixinBottomSheetDialogFragment() {
                         }
                     }
                 }
-            } else SpannableStringBuilder()
+            } else {
+                SpannableStringBuilder()
+            }
             val reserveSpan = if (reserveDouble != null && reserveDouble > BigDecimal.ZERO) {
                 SpannableStringBuilder().apply {
                     append(getString(R.string.withdrawal_minimum_reserve))
@@ -344,7 +346,9 @@ class TransferFragment() : MixinBottomSheetDialogFragment() {
                         }
                     }
                 }
-            } else SpannableStringBuilder()
+            } else {
+                SpannableStringBuilder()
+            }
             binding.feeTv.text =
                 buildBulletLines(requireContext(), networkSpan, dustSpan, reserveSpan)
         }
@@ -540,7 +544,9 @@ class TransferFragment() : MixinBottomSheetDialogFragment() {
         bottomValue = value
         return "${if (swapped) {
             value.numberFormat8()
-        } else value.numberFormat2()} $rightSymbol"
+        } else {
+            value.numberFormat2()
+        }} $rightSymbol"
     }
 
     private fun operateKeyboard(show: Boolean) {

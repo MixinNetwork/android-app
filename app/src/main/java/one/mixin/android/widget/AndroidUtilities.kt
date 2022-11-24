@@ -19,7 +19,9 @@ object AndroidUtilities {
     fun dpf2(value: Float): Float {
         return if (value == 0f) {
             0f
-        } else value
+        } else {
+            value
+        }
     }
 }
 

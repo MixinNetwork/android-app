@@ -61,18 +61,25 @@ abstract class CallService : LifecycleService(), PeerConnectionClient.PeerConnec
 
     @Inject
     lateinit var audioSwitch: AudioSwitch
+
     @Inject
     lateinit var jobManager: MixinJobManager
+
     @Inject
     lateinit var database: MixinDatabase
+
     @Inject
     lateinit var accountService: AccountService
+
     @Inject
     lateinit var callState: CallStateLiveData
+
     @Inject
     lateinit var callDebugState: CallDebugLiveData
+
     @Inject
     lateinit var conversationRepo: ConversationRepository
+
     @Inject
     lateinit var signalProtocol: SignalProtocol
 
@@ -174,7 +181,8 @@ abstract class CallService : LifecycleService(), PeerConnectionClient.PeerConnec
             peerConnectionClient.createPeerConnectionFactory(PeerConnectionFactory.Options())
         }
         audioManager = CallAudioManager(
-            this, audioSwitch,
+            this,
+            audioSwitch,
             object : CallAudioManager.Callback {
                 override fun customAudioDeviceAvailable(available: Boolean) {
                     callState.customAudioDeviceAvailable = available

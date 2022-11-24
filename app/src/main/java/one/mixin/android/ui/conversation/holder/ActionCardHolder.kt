@@ -56,7 +56,7 @@ class ActionCardHolder constructor(val binding: ItemChatActionCardBinding) :
             messageItem.status,
             messageItem.isPin ?: false,
             isRepresentative = isRepresentative,
-            isSecret = messageItem.isSecret(),
+            isSecret = messageItem.isSecret()
         )
 
         if (isFirst && !isMe) {

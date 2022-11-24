@@ -29,6 +29,7 @@ class AvatarView : ViewAnimator {
     val avatarSimple get() = binding.avatarSimple
 
     constructor(context: Context) : this(context, null)
+
     @SuppressLint("CustomViewStyleable")
     constructor(context: Context, attrs: AttributeSet?) : super(context, attrs) {
         val ta = context.obtainStyledAttributes(attrs, R.styleable.CircleImageView)

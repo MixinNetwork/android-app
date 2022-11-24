@@ -8,5 +8,5 @@ class AttachmentExtra(
     @SerializedName("message_id")
     var messageId: String?,
     @SerializedName("created_at")
-    var createdAt: String? = null,
+    var createdAt: String? = null
 )

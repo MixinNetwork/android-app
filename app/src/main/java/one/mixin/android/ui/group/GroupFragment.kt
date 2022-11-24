@@ -222,8 +222,11 @@ class GroupFragment : BaseFragment() {
             }
             val existCount = if (alreadyUsers == null) 0 else alreadyUsers!!.size
             updateTitle(
-                if (from == TYPE_ADD || from == TYPE_CREATE)
-                    checkedUsers.size + existCount else existCount - checkedUsers.size
+                if (from == TYPE_ADD || from == TYPE_CREATE) {
+                    checkedUsers.size + existCount
+                } else {
+                    existCount - checkedUsers.size
+                }
             )
             groupAdapter.notifyDataSetChanged()
             binding.selectRv.layoutManager?.scrollToPosition(checkedUsers.size - 1)

@@ -53,14 +53,15 @@ object SensorOrientationChangeNotifier {
             val x = event.values[0]
             val y = event.values[1]
             var newOrientation = orientation
-            if (x < 5 && x > -5 && y > 5)
+            if (x < 5 && x > -5 && y > 5) {
                 newOrientation = 0
-            else if (x < -5 && y < 5 && y > -5)
+            } else if (x < -5 && y < 5 && y > -5) {
                 newOrientation = 90
-            else if (x < 5 && x > -5 && y < -5)
+            } else if (x < 5 && x > -5 && y < -5) {
                 newOrientation = 180
-            else if (x > 5 && y < 5 && y > -5)
+            } else if (x > 5 && y < 5 && y > -5) {
                 newOrientation = 270
+            }
 
             if (orientation != newOrientation &&
                 System.currentTimeMillis() - lastOrientationChangeTime >= ORIENTATION_CHANGE_INTERVAL

@@ -7,5 +7,5 @@ class AuthorizeRequest(
     val authorizationId: String,
     val scopes: List<String>,
     @SerializedName("pin_base64")
-    val pin: String?,
+    val pin: String?
 )

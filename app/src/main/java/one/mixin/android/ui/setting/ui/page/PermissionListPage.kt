@@ -42,7 +42,7 @@ import one.mixin.android.vo.Scope
 @Composable
 fun PermissionListPage(
     auth: AuthorizationResponse,
-    authViewModel: AuthenticationsViewModel?,
+    authViewModel: AuthenticationsViewModel?
 ) {
     SettingPageScaffold(title = stringResource(id = R.string.Permissions)) {
         val viewModel = hiltViewModel<SettingViewModel>()
@@ -64,7 +64,7 @@ fun PermissionListPage(
             item {
                 Footer(
                     auth = auth,
-                    authViewModel = authViewModel,
+                    authViewModel = authViewModel
                 )
             }
         }
@@ -79,21 +79,21 @@ private fun PermissionScopeItem(scope: Scope) {
             .fillMaxWidth()
             .background(MixinAppTheme.colors.background)
             .padding(horizontal = 20.dp),
-        verticalArrangement = Arrangement.Center,
+        verticalArrangement = Arrangement.Center
     ) {
         val context = LocalContext.current
         Text(
             text = scope.name,
             overflow = TextOverflow.Ellipsis,
             color = MixinAppTheme.colors.textPrimary,
-            fontSize = 14.sp,
+            fontSize = 14.sp
         )
         Box(modifier = Modifier.height(4.dp))
         Text(
             text = scope.desc,
             overflow = TextOverflow.Ellipsis,
             color = MixinAppTheme.colors.textSubtitle,
-            fontSize = 12.sp,
+            fontSize = 12.sp
         )
     }
 }
@@ -101,7 +101,7 @@ private fun PermissionScopeItem(scope: Scope) {
 @Composable
 private fun Footer(
     auth: AuthorizationResponse,
-    authViewModel: AuthenticationsViewModel?,
+    authViewModel: AuthenticationsViewModel?
 ) {
     Column {
         Box(modifier = Modifier.height(8.dp))
@@ -109,7 +109,7 @@ private fun Footer(
             modifier = Modifier.padding(horizontal = 16.dp),
             text = stringResource(R.string.setting_auth_access, auth.createAt.fullDate(), auth.accessedAt.fullDate()),
             fontSize = 12.sp,
-            color = MixinAppTheme.colors.textSubtitle,
+            color = MixinAppTheme.colors.textSubtitle
         )
         Box(modifier = Modifier.height(16.dp))
 
@@ -117,7 +117,7 @@ private fun Footer(
 
         SettingTile(
             title = stringResource(R.string.Revoke_access),
-            titleColor = MixinAppTheme.colors.red,
+            titleColor = MixinAppTheme.colors.red
         ) {
             showRevokeAlert = true
         }
@@ -128,7 +128,7 @@ private fun Footer(
                     showRevokeAlert = false
                 },
                 auth = auth,
-                authViewModel = authViewModel,
+                authViewModel = authViewModel
             )
         }
     }
@@ -138,7 +138,7 @@ private fun Footer(
 private fun RevokeAlertDialog(
     onRequestDismiss: () -> Unit,
     auth: AuthorizationResponse,
-    authViewModel: AuthenticationsViewModel?,
+    authViewModel: AuthenticationsViewModel?
 ) {
     val scope = rememberComposeScope()
     val settingViewModel = hiltViewModel<SettingViewModel>()
@@ -169,13 +169,13 @@ private fun RevokeAlertDialog(
                 onRequestDismiss()
             })
         },
-        dismissText = stringResource(id = R.string.Cancel),
+        dismissText = stringResource(id = R.string.Cancel)
     )
 
     if (showLoading) {
         IndeterminateProgressDialog(
             message = stringResource(R.string.Please_wait_a_bit),
-            cancelable = false,
+            cancelable = false
         )
     }
 }

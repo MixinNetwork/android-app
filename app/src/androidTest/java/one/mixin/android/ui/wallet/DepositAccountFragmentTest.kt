@@ -61,7 +61,9 @@ class DepositAccountFragmentTest : DepositFragmentTest() {
 
             val reserveTip = if (asset.needShowReserve()) {
                 ctx.getString(R.string.deposit_reserve, "${asset.reserve} ${asset.symbol}")
-            } else ""
+            } else {
+                ""
+            }
             val warningText = "${ctx.getString(R.string.deposit_account_attention, asset.symbol)} $reserveTip"
             onView(withId(R.id.warning_tv))
                 .check(matches(withText(warningText)))

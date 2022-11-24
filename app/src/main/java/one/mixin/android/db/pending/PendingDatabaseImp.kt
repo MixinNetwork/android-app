@@ -38,7 +38,8 @@ abstract class PendingDatabaseImp : RoomDatabase(), PendingDatabase {
             synchronized(lock) {
                 if (INSTANCE == null) {
                     val builder = Room.databaseBuilder(
-                        context, PendingDatabaseImp::class.java,
+                        context,
+                        PendingDatabaseImp::class.java,
                         "pending.db"
                     ).enableMultiInstanceInvalidation().addCallback(
                         object : Callback() {

@@ -35,7 +35,6 @@ import one.mixin.android.vo.MessageSource
 
 @Composable
 fun ConversationSettingPage() {
-
     val viewModel = hiltViewModel<SettingConversationViewModel>()
 
     SettingPageScaffold(title = stringResource(id = R.string.Conversation)) {
@@ -62,9 +61,8 @@ fun ConversationSettingPage() {
 @Composable
 private fun SettingGroup(
     initMessageSourcePreferences: () -> SettingConversationViewModel.BaseMessageSourcePreferences,
-    doUpdate: suspend (source: MessageSource) -> MixinResponse<Account>,
+    doUpdate: suspend (source: MessageSource) -> MixinResponse<Account>
 ) {
-
     val scope = rememberCoroutineScope()
 
     val preferences = remember {
@@ -113,7 +111,7 @@ private fun SettingGroup(
                 },
                 doAfterNetworkSuccess = {
                     processing = false
-                },
+                }
             )
         }
     }
@@ -121,14 +119,14 @@ private fun SettingGroup(
     MessageSettingItem(
         title = stringResource(R.string.Everybody),
         selected = currentSelected == MessageSource.EVERYBODY.ordinal,
-        processing = processing,
+        processing = processing
     ) {
         requestRemoteChange(MessageSource.EVERYBODY)
     }
     MessageSettingItem(
         title = stringResource(R.string.My_Contacts),
         selected = currentSelected == MessageSource.CONTACTS.ordinal,
-        processing = processing,
+        processing = processing
     ) {
         requestRemoteChange(MessageSource.CONTACTS)
     }
@@ -149,7 +147,7 @@ fun MessageSettingItem(
                     Icon(
                         painter = painterResource(id = R.drawable.ic_check_black_24dp),
                         contentDescription = null,
-                        tint = MixinAppTheme.colors.icon,
+                        tint = MixinAppTheme.colors.icon
                     )
                 } else {
                     CircularProgressIndicator(
@@ -157,7 +155,7 @@ fun MessageSettingItem(
                             .size(24.dp)
                             .padding(4.dp),
                         color = MixinAppTheme.colors.accent,
-                        strokeWidth = 2.dp,
+                        strokeWidth = 2.dp
                     )
                 }
             }
@@ -177,8 +175,10 @@ fun MessageSettingTips(title: String) {
         fontSize = 12.sp,
         color = MixinAppTheme.colors.textSubtitle,
         modifier = Modifier.padding(
-            start = 16.dp, top = 16.dp,
-            end = 16.dp, bottom = 8.dp
+            start = 16.dp,
+            top = 16.dp,
+            end = 16.dp,
+            bottom = 8.dp
         )
     )
 }
@@ -192,19 +192,19 @@ fun PreviewConversationSettingPage() {
             MessageSettingItem(
                 title = stringResource(R.string.Everybody),
                 selected = false,
-                processing = false,
+                processing = false
             ) {
             }
             MessageSettingItem(
                 title = stringResource(R.string.Everybody),
                 selected = true,
-                processing = true,
+                processing = true
             ) {
             }
             MessageSettingItem(
                 title = stringResource(R.string.Everybody),
                 selected = true,
-                processing = false,
+                processing = false
             ) {
             }
         }

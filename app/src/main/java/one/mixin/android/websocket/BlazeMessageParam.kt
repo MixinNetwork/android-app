@@ -46,7 +46,7 @@ data class KrakenParam(
 
 data class BlazeMessageParamSession(
     val user_id: String,
-    val session_id: String? = null,
+    val session_id: String? = null
 )
 
 fun createAckParam(message_id: String, status: String) =

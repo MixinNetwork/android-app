@@ -69,7 +69,7 @@ data class PriceAndChange(
     @ColumnInfo(name = "change_usd")
     val changeUsd: String,
     @ColumnInfo(name = "change_btc")
-    val changeBtc: String,
+    val changeBtc: String
 )
 
 fun Asset.toPriceAndChange(): PriceAndChange {

@@ -195,7 +195,7 @@ class TextQuoteHolder constructor(val binding: ItemChatTextQuoteBinding) : BaseV
 
     private class TextQuoteGestureListener(
         var messageItem: ChatHistoryMessageItem,
-        var onItemListener: ChatHistoryAdapter.OnItemListener,
+        var onItemListener: ChatHistoryAdapter.OnItemListener
     ) : GestureDetector.SimpleOnGestureListener() {
         override fun onDoubleTap(e: MotionEvent): Boolean {
             onItemListener.onTextDoubleClick(messageItem)

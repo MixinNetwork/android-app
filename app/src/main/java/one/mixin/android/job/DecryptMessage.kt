@@ -560,7 +560,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
 
     private fun findQuoteMessageItemById(
         conversationId: String,
-        quoteMessageId: String,
+        quoteMessageId: String
     ): QuoteMessageItem? {
         // If the message is still in the cache but is quoted, insert the message table in advance
         pendingMessagesDao.findMessageById(quoteMessageId)?.let {
@@ -738,8 +738,14 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                     jobManager.addJobInBackground(RefreshStickerJob(mediaData.stickerId))
                 }
                 val message = createStickerMessage(
-                    data.messageId, data.conversationId, data.userId, data.category, null,
-                    mediaData.stickerId, data.status, data.createdAt
+                    data.messageId,
+                    data.conversationId,
+                    data.userId,
+                    data.category,
+                    null,
+                    mediaData.stickerId,
+                    data.status,
+                    data.createdAt
                 )
                 insertMessage(message, data)
                 generateNotification(message, data)
@@ -785,9 +791,13 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                 generateNotification(message, data)
             }
             data.category.endsWith("_TRANSCRIPT") -> {
-                val plain = if (data.category == MessageCategory.PLAIN_TRANSCRIPT.name) String(
-                    Base64.decode(plainText)
-                ) else plainText
+                val plain = if (data.category == MessageCategory.PLAIN_TRANSCRIPT.name) {
+                    String(
+                        Base64.decode(plainText)
+                    )
+                } else {
+                    plainText
+                }
                 val message = processTranscriptMessage(data, plain) ?: return
                 insertMessage(message, data)
                 generateNotification(message, data)
@@ -826,12 +836,14 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
             .forEach { transcript ->
                 if (transcript.isData()) {
                     transcript.mediaName
-                } else if (transcript.isContact()) {
-                    transcript.sharedUserId?.let { userId -> userDao.findUser(userId) }?.fullName
                 } else {
-                    transcript.content
-                }?.joinWhiteSpace()?.let {
-                    stringBuilder.append(it)
+                    if (transcript.isContact()) {
+                        transcript.sharedUserId?.let { userId -> userDao.findUser(userId) }?.fullName
+                    } else {
+                        transcript.content
+                    }?.joinWhiteSpace()?.let {
+                        stringBuilder.append(it)
+                    }
                 }
             }
         MessageFts4Helper.insertMessageFts4(data.messageId, stringBuilder.toString())
@@ -952,7 +964,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
     private fun processSystemSnapshotMessage(data: BlazeMessageData, snapshot: Snapshot) {
         val message = createMessage(
             data.messageId, data.conversationId, data.userId, data.category, data.expireIn?.toString() ?: "",
-            data.createdAt, data.status, snapshot.type, null, snapshot.snapshotId,
+            data.createdAt, data.status, snapshot.type, null, snapshot.snapshotId
         )
         snapshot.transactionHash?.let {
             snapshotDao.deletePendingSnapshotByHash(it)
@@ -1346,7 +1358,9 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
             } catch (e: IOException) {
                 plainText
             }
-        } else plainText
+        } else {
+            plainText
+        }
 
     private fun generateNotification(message: Message, data: BlazeMessageData, userMap: Map<String, String>? = null, force: Boolean = false) {
         if (data.source == LIST_PENDING_MESSAGES) {

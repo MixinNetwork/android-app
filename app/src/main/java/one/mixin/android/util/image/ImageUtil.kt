@@ -63,7 +63,6 @@ internal object ImageUtil {
     }
 
     private fun calculateInScale(width: Int, height: Int, reqWidth: Int, reqHeight: Int): Float {
-
         if (width == 0 || height == 0 || height / width >= 3 || width / height >= 3) {
             return 1f
         }

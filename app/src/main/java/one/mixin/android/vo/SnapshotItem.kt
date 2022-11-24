@@ -61,7 +61,7 @@ data class SnapshotItem(
     val assetConfirmations: Int,
     @SerializedName("trace_id")
     @ColumnInfo(name = "trace_id")
-    val traceId: String?,
+    val traceId: String?
 ) : Parcelable {
     companion object {
         val DIFF_CALLBACK = object : DiffUtil.ItemCallback<SnapshotItem>() {

@@ -58,9 +58,8 @@ import one.mixin.android.vo.App
 fun AuthenticationsPage() {
     SettingPageScaffold(
         title = stringResource(id = R.string.Authorizations),
-        verticalScrollable = false,
+        verticalScrollable = false
     ) {
-
         val viewModel = hiltViewModel<AuthenticationsViewModel>()
 
         val text = rememberSaveable {
@@ -88,7 +87,7 @@ fun AuthenticationsPage() {
 @Composable
 private fun AuthorizationsList(
     data: List<AuthorizationResponse>,
-    keyword: String,
+    keyword: String
 ) {
     val filteredData = remember(data, keyword) {
         if (keyword.isEmpty()) {
@@ -123,7 +122,7 @@ private fun Loading() {
     ) {
         CircularProgressIndicator(
             modifier = Modifier.size(48.dp),
-            color = MixinAppTheme.colors.accent,
+            color = MixinAppTheme.colors.accent
         )
     }
 }
@@ -132,7 +131,6 @@ private fun Loading() {
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
 private fun SearchTextFiled(text: MutableState<String>) {
-
     val focusRequester = remember {
         FocusRequester()
     }
@@ -157,28 +155,29 @@ private fun SearchTextFiled(text: MutableState<String>) {
         interactionSource = interactionSource,
         textStyle = TextStyle(
             fontSize = 14.sp,
-            color = MixinAppTheme.colors.textPrimary,
+            color = MixinAppTheme.colors.textPrimary
         ),
-        cursorBrush = SolidColor(MixinAppTheme.colors.accent),
+        cursorBrush = SolidColor(MixinAppTheme.colors.accent)
     ) { innerTextField ->
         Row(
-            verticalAlignment = Alignment.CenterVertically,
+            verticalAlignment = Alignment.CenterVertically
         ) {
             Box(modifier = Modifier.width(16.dp))
             Icon(
                 painter = painterResource(id = R.drawable.ic_search),
                 tint = MixinAppTheme.colors.textSubtitle,
-                contentDescription = null,
+                contentDescription = null
             )
             Box(modifier = Modifier.width(8.dp))
             Box(contentAlignment = Alignment.CenterStart) {
                 innerTextField()
-                if (text.value.isEmpty())
+                if (text.value.isEmpty()) {
                     Text(
                         text = stringResource(id = R.string.setting_auth_search_hint),
                         fontSize = 14.sp,
-                        color = MixinAppTheme.colors.textSubtitle,
+                        color = MixinAppTheme.colors.textSubtitle
                     )
+                }
             }
             Box(modifier = Modifier.width(16.dp))
         }
@@ -201,13 +200,13 @@ private fun EmptyLayout() {
                 modifier = Modifier.size(42.dp),
                 painter = painterResource(id = R.drawable.ic_authentication),
                 contentDescription = null,
-                colorFilter = ColorFilter.tint(MixinAppTheme.colors.textSubtitle),
+                colorFilter = ColorFilter.tint(MixinAppTheme.colors.textSubtitle)
             )
             Box(modifier = Modifier.height(8.dp))
             Text(
                 text = stringResource(id = R.string.NO_AUTHORIZATIONS),
                 fontSize = 16.sp,
-                color = MixinAppTheme.colors.textSubtitle,
+                color = MixinAppTheme.colors.textSubtitle
             )
         }
     }
@@ -225,33 +224,33 @@ private fun AuthenticationItem(
             .height(80.dp)
             .background(MixinAppTheme.colors.background)
             .clickable(onClick = onClick),
-        verticalAlignment = Alignment.CenterVertically,
+        verticalAlignment = Alignment.CenterVertically
     ) {
         Box(modifier = Modifier.width(30.dp))
         AppAvatarImage(app = app, size = 50.dp)
         Box(modifier = Modifier.width(16.dp))
         Column(
             modifier = Modifier.weight(1f),
-            horizontalAlignment = Alignment.Start,
+            horizontalAlignment = Alignment.Start
         ) {
             HighlightText(
                 text = app.name,
                 textStyle = TextStyle(
                     fontSize = 14.sp,
-                    color = MixinAppTheme.colors.textPrimary,
+                    color = MixinAppTheme.colors.textPrimary
                 ),
                 overflow = TextOverflow.Ellipsis,
-                target = highlight,
+                target = highlight
             )
             Box(modifier = Modifier.height(4.dp))
             HighlightText(
                 text = app.appNumber,
                 textStyle = TextStyle(
                     fontSize = 12.sp,
-                    color = MixinAppTheme.colors.textSubtitle,
+                    color = MixinAppTheme.colors.textSubtitle
                 ),
                 overflow = TextOverflow.Ellipsis,
-                target = highlight,
+                target = highlight
             )
         }
         Box(modifier = Modifier.width(16.dp))
@@ -300,9 +299,9 @@ fun PreviewAuthorizationItem() {
                 creatorId = "",
                 resourcePatterns = null,
                 updatedAt = null,
-                appId = "124124124",
+                appId = "124124124"
             ),
-            "123",
+            "123"
         ) {
         }
     }

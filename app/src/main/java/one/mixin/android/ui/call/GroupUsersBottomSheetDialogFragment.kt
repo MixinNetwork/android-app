@@ -52,6 +52,7 @@ class GroupUsersBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
 
     @Inject
     lateinit var jobManager: MixinJobManager
+
     @Inject
     lateinit var callState: CallStateLiveData
 

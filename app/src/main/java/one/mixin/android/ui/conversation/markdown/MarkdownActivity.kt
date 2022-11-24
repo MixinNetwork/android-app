@@ -59,6 +59,7 @@ import java.nio.charset.Charset
 @AndroidEntryPoint
 class MarkdownActivity : BaseActivity() {
     private lateinit var binding: ActivityMarkdownBinding
+
     @SuppressLint("NotifyDataSetChanged")
     public override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -233,7 +234,9 @@ class MarkdownActivity : BaseActivity() {
         }
 
         printPdf(
-            this@MarkdownActivity, pdfHtml, pdfFile,
+            this@MarkdownActivity,
+            pdfHtml,
+            pdfFile,
             object : PrintPdfCallback {
                 override fun onSuccess() {
                     this@MarkdownActivity.shareFile(pdfFile)
@@ -283,7 +286,9 @@ class MarkdownActivity : BaseActivity() {
         override fun printHtml(html: CharSequence): CharSequence {
             return if (html == "<details>") {
                 "<details open>"
-            } else html
+            } else {
+                html
+            }
         }
     }
 

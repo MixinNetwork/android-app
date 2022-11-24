@@ -410,7 +410,8 @@ class TranscriptMediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismis
         resInfoList.forEach {
             val packageName = it.activityInfo.packageName
             grantUriPermission(
-                packageName, uri,
+                packageName,
+                uri,
                 Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
             )
         }
@@ -751,7 +752,7 @@ class TranscriptMediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismis
             activity: Activity,
             imageView: View,
             transcriptId: String,
-            messageId: String,
+            messageId: String
         ) {
             val intent = Intent(activity, TranscriptMediaPagerActivity::class.java).apply {
                 putExtra(TRANSCRIPT_ID, transcriptId)

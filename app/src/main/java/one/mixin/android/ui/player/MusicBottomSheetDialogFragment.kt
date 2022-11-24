@@ -158,7 +158,9 @@ class MusicBottomSheetDialogFragment : BottomSheetDialogFragment() {
                     val mediaId = MusicPlayer.get().currentPlayMediaId()
                     val index = if (mediaId != null) {
                         viewModel.indexAudioByConversationId(conversationId, mediaId)
-                    } else 0
+                    } else {
+                        0
+                    }
                     viewModel.conversationLiveData(conversationId, index)
                         .observe(this@MusicBottomSheetDialogFragment) { list ->
                             listAdapter.submitList(list)

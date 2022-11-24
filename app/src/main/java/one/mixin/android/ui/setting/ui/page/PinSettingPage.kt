@@ -55,7 +55,7 @@ fun PinSettingPage() {
             Modifier
                 .fillMaxWidth()
                 .background(MixinAppTheme.colors.background),
-            horizontalAlignment = Alignment.CenterHorizontally,
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Box(modifier = Modifier.height(36.dp))
             Image(
@@ -63,7 +63,7 @@ fun PinSettingPage() {
                 contentDescription = null,
                 modifier = Modifier
                     .height(83.dp)
-                    .width(92.dp),
+                    .width(92.dp)
             )
             Box(modifier = Modifier.height(20.dp))
 
@@ -75,12 +75,12 @@ fun PinSettingPage() {
                 textStyle = TextStyle(
                     fontSize = 12.sp,
                     color = MixinAppTheme.colors.textSubtitle,
-                    textAlign = TextAlign.Center,
+                    textAlign = TextAlign.Center
                 ),
                 onClick = {
                     context.openUrl(it)
                 },
-                modifier = Modifier.padding(horizontal = 16.dp),
+                modifier = Modifier.padding(horizontal = 16.dp)
             )
 
             Box(modifier = Modifier.height(24.dp))
@@ -120,7 +120,7 @@ fun PinSettingPage() {
                         checkedThumbColor = MixinAppTheme.colors.accent,
                         uncheckedThumbColor = MixinAppTheme.colors.unchecked,
                         checkedTrackColor = MixinAppTheme.colors.accent,
-                        uncheckedTrackColor = MixinAppTheme.colors.unchecked,
+                        uncheckedTrackColor = MixinAppTheme.colors.unchecked
                     ),
                     onCheckedChange = null
                 )
@@ -141,11 +141,11 @@ fun PinSettingPage() {
                         checkedThumbColor = MixinAppTheme.colors.accent,
                         uncheckedThumbColor = MixinAppTheme.colors.unchecked,
                         checkedTrackColor = MixinAppTheme.colors.accent,
-                        uncheckedTrackColor = MixinAppTheme.colors.unchecked,
+                        uncheckedTrackColor = MixinAppTheme.colors.unchecked
                     ),
                     onCheckedChange = null
                 )
-            },
+            }
         ) {
             isSupportWithErrorInfo = BiometricUtil.isSupportWithErrorInfo(
                 context,
@@ -197,7 +197,7 @@ fun PinSettingPage() {
                             text = context.resources.getQuantityString(
                                 R.plurals.Minute,
                                 (hour * 60).toInt(),
-                                (hour * 60).toInt(),
+                                (hour * 60).toInt()
                             )
                         )
                     } else {
@@ -209,7 +209,7 @@ fun PinSettingPage() {
                             )
                         )
                     }
-                },
+                }
             ) {
                 navController.navigation(SettingDestination.BiometricTime)
             }

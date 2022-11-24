@@ -27,6 +27,7 @@ class PinView : LinearLayout {
 
     private var color = context.colorFromAttribute(R.attr.text_primary)
     private var count = DEFAULT_COUNT
+
     // control tip_tv and line visibility
     private var tipVisible = true
 

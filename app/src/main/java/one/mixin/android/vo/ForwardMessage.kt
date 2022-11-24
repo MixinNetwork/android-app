@@ -144,7 +144,7 @@ fun ForwardMessage.addTo(list: MutableList<ForwardMessage>) {
 inline fun <reified T : ForwardCategory> Uri.systemMediaToMessage(
     category: T,
     name: String? = null,
-    mimeType: String? = null,
+    mimeType: String? = null
 ): ForwardMessage =
     ForwardMessage(
         category,
@@ -221,7 +221,7 @@ fun generateForwardMessage(m: Message): ForwardMessage? {
                 m.name,
                 m.mediaMimeType,
                 m.mediaSize,
-                m.content,
+                m.content
             )
             ForwardMessage(
                 ForwardCategory.Data,
@@ -237,7 +237,7 @@ fun generateForwardMessage(m: Message): ForwardMessage? {
                 requireNotNull(m.absolutePath()),
                 UUID.randomUUID().toString(),
                 nowInUtc(),
-                m.content,
+                m.content
             )
             ForwardMessage(ForwardCategory.Video, GsonHelper.customGson.toJson(videoData), m.messageId)
         }
@@ -260,7 +260,7 @@ fun generateForwardMessage(m: Message): ForwardMessage? {
                 requireNotNull(m.absolutePath()),
                 duration,
                 waveForm,
-                m.content,
+                m.content
             )
             ForwardMessage(ForwardCategory.Audio, GsonHelper.customGson.toJson(audioData), m.messageId)
         }

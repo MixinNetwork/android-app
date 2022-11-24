@@ -72,7 +72,6 @@ class TextHolder constructor(val binding: ItemChatTextBinding) : BaseViewHolder(
         isFirst: Boolean = false,
         onItemListener: ChatHistoryAdapter.OnItemListener
     ) {
-
         if (messageItem.mentions?.isNotBlank() == true) {
             val mentionRenderContext = MentionRenderCache.singleton.getMentionRenderContext(
                 messageItem.mentions

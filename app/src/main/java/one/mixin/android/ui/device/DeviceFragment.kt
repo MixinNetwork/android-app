@@ -70,7 +70,7 @@ class DeviceFragment() : MixinBottomSheetDialogFragment() {
     // testing constructor
     @VisibleForTesting(otherwise = VisibleForTesting.NONE)
     constructor(
-        testRegistry: ActivityResultRegistry,
+        testRegistry: ActivityResultRegistry
     ) : this() {
         resultRegistry = testRegistry
     }

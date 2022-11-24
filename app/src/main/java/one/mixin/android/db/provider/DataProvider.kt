@@ -34,7 +34,6 @@ class DataProvider {
                     return (conversationExtDao.getMessageCountByConversationId(conversationId) ?: 0)
                 }
                 override fun create(): DataSource<Int, MessageItem> {
-
                     val sql =
                         """
                         SELECT m.id AS messageId, m.conversation_id AS conversationId, u.user_id AS userId,
@@ -196,7 +195,7 @@ class DataProvider {
             name: String?,
             symbol: String?,
             db: MixinDatabase,
-            cancellationSignal: CancellationSignal,
+            cancellationSignal: CancellationSignal
         ): List<AssetItem> {
             val _sql =
                 """SELECT a1.asset_id AS assetId, a1.symbol, a1.name, a1.icon_url AS iconUrl, a1.balance, a1.destination AS destination, a1.tag AS tag, a1.price_btc AS priceBtc, a1.price_usd AS priceUsd, a1.chain_id AS chainId, a1.change_usd AS changeUsd, a1.change_btc AS changeBtc, ae.hidden, a2.price_usd as chainPriceUsd,a1.confirmations, a1.reserve as reserve, a2.icon_url AS chainIconUrl, a2.symbol as chainSymbol, a2.name as chainName, a1.asset_key AS assetKey, a1.deposit_entries AS depositEntries  
@@ -235,7 +234,9 @@ class DataProvider {
                 _statement.bindString(_argIndex, name)
             }
             return CoroutinesRoom.execute(
-                db, false, cancellationSignal,
+                db,
+                false,
+                cancellationSignal,
                 callableAssetItem(db, _statement, cancellationSignal)
             )
         }
@@ -247,7 +248,7 @@ class DataProvider {
             phone: String?,
             id: String?,
             db: MixinDatabase,
-            cancellationSignal: CancellationSignal,
+            cancellationSignal: CancellationSignal
         ): List<User> {
             val _sql = """
         SELECT * FROM users 
@@ -296,7 +297,9 @@ class DataProvider {
                 _statement.bindString(_argIndex, identityNumber)
             }
             return CoroutinesRoom.execute(
-                db, false, cancellationSignal,
+                db,
+                false,
+                cancellationSignal,
                 callableUser(db, _statement, cancellationSignal)
             )
         }
@@ -365,7 +368,9 @@ class DataProvider {
                 _statement.bindString(_argIndex, query)
             }
             return CoroutinesRoom.execute(
-                db, false, cancellationSignal,
+                db,
+                false,
+                cancellationSignal,
                 callableChatMinimal(db, _statement, cancellationSignal)
             )
         }
@@ -375,7 +380,7 @@ class DataProvider {
             query: String?,
             limit: Int,
             db: MixinDatabase,
-            cancellationSignal: CancellationSignal,
+            cancellationSignal: CancellationSignal
         ): List<SearchMessageItem> {
             val _sql =
                 """
@@ -400,7 +405,9 @@ class DataProvider {
             _argIndex = 2
             _statement.bindLong(_argIndex, limit.toLong())
             return CoroutinesRoom.execute(
-                db, false, cancellationSignal,
+                db,
+                false,
+                cancellationSignal,
                 callableSearchMessageItem(db, _statement, cancellationSignal)
             )
         }
@@ -451,7 +458,7 @@ class DataProvider {
         database: MixinDatabase,
         statement: RoomSQLiteQuery,
         countStatement: RoomSQLiteQuery,
-        cancellationSignal: CancellationSignal,
+        cancellationSignal: CancellationSignal
     ) : CancellationLimitOffsetDataSource<SearchMessageDetailItem>(database, statement, countStatement, cancellationSignal, true, "messages", "users", "snapshots", "assets", "stickers", "hyperlinks", "conversations", "message_mentions") {
         override fun convertRows(cursor: Cursor?): MutableList<SearchMessageDetailItem> {
             return convertToSearchMessageDetailItem(cursor)

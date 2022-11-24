@@ -38,7 +38,9 @@ class CallNotificationBuilder {
             callIntent.flags = Intent.FLAG_ACTIVITY_SINGLE_TOP
             val user = callState.user
             val pendingCallIntent = PendingIntent.getActivity(
-                context, 0, callIntent,
+                context,
+                0,
+                callIntent,
                 PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
             )
 
@@ -59,7 +61,9 @@ class CallNotificationBuilder {
                     builder.setContentText(context.getString(R.string.Calling))
                     val action = if (isGroupCall) {
                         ACTION_KRAKEN_CANCEL
-                    } else ACTION_CALL_CANCEL
+                    } else {
+                        ACTION_CALL_CANCEL
+                    }
                     builder.addAction(
                         getAction(
                             context,
@@ -75,10 +79,14 @@ class CallNotificationBuilder {
                     builder.setContentText(context.getString(R.string.Incoming_voice_call))
                     val answerAction = if (isGroupCall) {
                         ACTION_KRAKEN_ACCEPT_INVITE
-                    } else ACTION_CALL_ANSWER
+                    } else {
+                        ACTION_CALL_ANSWER
+                    }
                     val declineAction = if (isGroupCall) {
                         ACTION_KRAKEN_DECLINE
-                    } else ACTION_CALL_DECLINE
+                    } else {
+                        ACTION_CALL_DECLINE
+                    }
                     builder.addAction(
                         getAction(
                             context,
@@ -104,7 +112,9 @@ class CallNotificationBuilder {
                     builder.setContentText(context.getString(R.string.Ongoing_voice_call))
                     val action = if (isGroupCall) {
                         ACTION_KRAKEN_END
-                    } else ACTION_CALL_LOCAL_END
+                    } else {
+                        ACTION_CALL_LOCAL_END
+                    }
                     builder.addAction(
                         getAction(
                             context,
@@ -150,7 +160,9 @@ class CallNotificationBuilder {
             intent.action = action
             putExtra?.invoke(intent)
             val pendingIntent = PendingIntent.getService(
-                context, 0, intent,
+                context,
+                0,
+                intent,
                 PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
             )
             return NotificationCompat.Action(iconResId, context.getString(titleResId), pendingIntent)

@@ -66,7 +66,6 @@ fun AppearancePage() {
         }
     ) {
         Column(Modifier.padding(it)) {
-
             ThemeItem()
 
             Box(modifier = Modifier.height(20.dp))
@@ -99,7 +98,7 @@ private fun ThemeItem() {
 
     AppearanceItem(
         label = stringResource(id = R.string.Theme),
-        value = context.resources.getStringArray(R.array.setting_night_array_oreo)[currentThemeId.value],
+        value = context.resources.getStringArray(R.array.setting_night_array_oreo)[currentThemeId.value]
     ) {
         context.singleChoice(
             context.getString(R.string.Theme),
@@ -108,7 +107,7 @@ private fun ThemeItem() {
             } else {
                 R.array.setting_night_array_oreo
             },
-            currentThemeId.value,
+            currentThemeId.value
         ) { _, index ->
             val changed = index != currentThemeId.value
             currentThemeId.value = index
@@ -133,7 +132,6 @@ private fun ThemeItem() {
 
 @Composable
 private fun LanguageItem() {
-
     val languageNames = stringArrayResource(R.array.language_names).apply {
         this[0] = stringResource(R.string.Follow_system)
     }
@@ -151,7 +149,7 @@ private fun LanguageItem() {
 
     AppearanceItem(
         label = stringResource(R.string.Language),
-        value = languageNames[currentLanguage.value],
+        value = languageNames[currentLanguage.value]
     ) {
         showLanguageDialog.value = true
     }
@@ -168,7 +166,6 @@ private fun LanguageItem() {
             },
             text = {
                 Column {
-
                     Box(modifier = Modifier.height(8.dp))
 
                     listOf(
@@ -179,7 +176,7 @@ private fun LanguageItem() {
                         AppearanceFragment.POS_SIMPLIFY_JAPANESE,
                         AppearanceFragment.POS_RUSSIAN,
                         AppearanceFragment.POS_INDONESIA,
-                        AppearanceFragment.POS_Malay,
+                        AppearanceFragment.POS_Malay
                     ).forEach { index ->
                         LanguageRadioItem(
                             name = languageNames[index],
@@ -230,7 +227,7 @@ private fun LanguageItem() {
                         recreate()
                     }
                 }
-            },
+            }
         )
     }
 }
@@ -239,7 +236,7 @@ private fun LanguageItem() {
 private fun LanguageRadioItem(
     name: String,
     selected: Boolean,
-    onOptionSelected: () -> Unit,
+    onOptionSelected: () -> Unit
 ) {
     Row(
         Modifier
@@ -263,7 +260,7 @@ private fun LanguageRadioItem(
             text = name,
             modifier = Modifier.padding(start = 16.dp),
             fontSize = 14.sp,
-            color = MixinAppTheme.colors.textPrimary,
+            color = MixinAppTheme.colors.textPrimary
         )
     }
 }
@@ -285,7 +282,6 @@ private fun AppearanceItem(
             .padding(horizontal = 16.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-
         Text(
             text = label,
             style = TextStyle(
@@ -299,7 +295,7 @@ private fun AppearanceItem(
         Text(
             text = value,
             style = TextStyle(
-                color = MixinAppTheme.colors.textSubtitle,
+                color = MixinAppTheme.colors.textSubtitle
             )
         )
     }
@@ -307,7 +303,6 @@ private fun AppearanceItem(
 
 @Composable
 private fun CurrencyItem() {
-
     val currentCurrency = remember {
         mutableStateOf(Session.getFiatCurrency())
     }
@@ -318,8 +313,9 @@ private fun CurrencyItem() {
         label = stringResource(id = R.string.Currency),
         value = stringResource(
             R.string.wallet_setting_currency_desc,
-            currentCurrency.value, Fiats.getSymbol(currentCurrency.value)
-        ),
+            currentCurrency.value,
+            Fiats.getSymbol(currentCurrency.value)
+        )
     ) {
         val activity = context.findFragmentActivityOrNull() ?: return@AppearanceItem
         val currencyBottom = CurrencyBottomSheetDialogFragment.newInstance()

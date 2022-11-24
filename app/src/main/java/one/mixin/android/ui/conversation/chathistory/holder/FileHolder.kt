@@ -119,7 +119,6 @@ class FileHolder constructor(val binding: ItemChatFileBinding) : BaseViewHolder(
                         handleClick(messageItem, onItemListener)
                     }
                     binding.chatLayout.setOnClickListener {
-
                         handleClick(messageItem, onItemListener)
                     }
                 }

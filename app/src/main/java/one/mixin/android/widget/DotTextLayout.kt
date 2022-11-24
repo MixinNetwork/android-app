@@ -52,7 +52,7 @@ open class DotTextLayout : ViewGroup {
             paddingLeft,
             paddingTop + offset,
             paddingLeft + firstView.measuredWidth,
-            paddingTop + offset + firstView.measuredHeight,
+            paddingTop + offset + firstView.measuredHeight
         )
         secondView.layout(
             paddingLeft + firstView.measuredWidth,

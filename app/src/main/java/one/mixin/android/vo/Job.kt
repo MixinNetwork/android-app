@@ -14,7 +14,7 @@ import java.util.UUID
 @Entity(
     tableName = "jobs",
     indices = [
-        Index(value = arrayOf("action")),
+        Index(value = arrayOf("action"))
     ]
 )
 data class Job(

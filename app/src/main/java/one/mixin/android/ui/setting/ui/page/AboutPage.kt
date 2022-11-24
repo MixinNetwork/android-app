@@ -59,7 +59,7 @@ private fun Modifier.debugClickable(
         clickable(
             interactionSource = remember { MutableInteractionSource() },
             indication = null,
-            onClick = clickListener::onClick,
+            onClick = clickListener::onClick
         )
     }
 )
@@ -102,19 +102,19 @@ fun AboutPage() {
                 title = {
                     Column(
                         modifier = Modifier.fillMaxWidth(),
-                        horizontalAlignment = Alignment.CenterHorizontally,
+                        horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         Text(text = stringResource(id = R.string.About))
                         VersionName()
                     }
-                },
+                }
             )
         }
     ) {
         Column(
             modifier = Modifier
                 .padding(it)
-                .verticalScroll(rememberScrollState()),
+                .verticalScroll(rememberScrollState())
         ) {
             val navController = LocalSettingNav.current
             val context = LocalContext.current
@@ -130,50 +130,51 @@ fun AboutPage() {
                         }
                     }
                     .align(Alignment.CenterHorizontally),
-                painter = painterResource(id = R.drawable.ic_logo), contentDescription = null
+                painter = painterResource(id = R.drawable.ic_logo),
+                contentDescription = null
             )
             AboutTile(
                 text = stringResource(id = R.string.Follow_us_on_twitter),
                 onClick = {
                     context.openUrl("https://twitter.com/MixinMessenger")
-                },
+                }
             )
             AboutTile(
                 text = stringResource(id = R.string.Follow_us_on_facebook),
                 onClick = {
                     context.openUrl("https://fb.com/MixinMessenger")
-                },
+                }
             )
             AboutTile(
                 text = stringResource(id = R.string.Help_center),
                 onClick = {
                     context.openUrl(Constants.HelpLink.CENTER)
-                },
+                }
             )
             AboutTile(
                 text = stringResource(id = R.string.Terms_of_Service),
                 onClick = {
                     context.openUrl(context.getString(R.string.landing_terms_url))
-                },
+                }
             )
             AboutTile(
                 text = stringResource(id = R.string.Privacy_Policy),
                 onClick = {
                     context.openUrl(context.getString(R.string.landing_privacy_policy_url))
-                },
+                }
             )
             AboutTile(
                 text = stringResource(id = R.string.Version_Update),
                 onClick = {
                     context.openMarket()
-                },
+                }
             )
             if (showDatabase.value) {
                 AboutTile(
                     text = stringResource(id = R.string.Debug_database),
                     onClick = {
                         navController.navigation(SettingDestination.DatabaseDebug)
-                    },
+                    }
                 )
             }
         }
@@ -191,7 +192,7 @@ private fun AboutTile(
             .clickable { onClick() }
             .padding(horizontal = 16.dp)
             .fillMaxWidth(),
-        contentAlignment = Alignment.CenterStart,
+        contentAlignment = Alignment.CenterStart
     ) {
         Text(text = text, color = MixinAppTheme.colors.accent)
     }

@@ -49,12 +49,14 @@ class SendTranscriptJob(
             transcriptMessages.filter { it.isText() || it.isPost() || it.isData() || it.isContact() }.forEach { transcript ->
                 if (transcript.isData()) {
                     transcript.mediaName
-                } else if (transcript.isContact()) {
-                    transcript.sharedUserId?.let { userId -> userDao.findUser(userId) }?.fullName
                 } else {
-                    transcript.content
-                }?.joinWhiteSpace()?.let {
-                    stringBuffer.append(it)
+                    if (transcript.isContact()) {
+                        transcript.sharedUserId?.let { userId -> userDao.findUser(userId) }?.fullName
+                    } else {
+                        transcript.content
+                    }?.joinWhiteSpace()?.let {
+                        stringBuffer.append(it)
+                    }
                 }
             }
             MessageFts4Helper.insertMessageFts4(message.messageId, stringBuffer.toString())
@@ -71,7 +73,7 @@ class SendTranscriptJob(
                         if (file.exists()) {
                             val outFile = MixinApplication.appContext.getTranscriptFile(
                                 transcript.messageId,
-                                file.name.getExtensionName().notNullWithElse({ ".$it" }, ""),
+                                file.name.getExtensionName().notNullWithElse({ ".$it" }, "")
                             )
                             if (!outFile.exists() || outFile.length() <= 0) {
                                 file.copy(outFile)

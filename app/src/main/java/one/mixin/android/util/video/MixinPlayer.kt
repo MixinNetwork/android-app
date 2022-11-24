@@ -110,9 +110,11 @@ class MixinPlayer(val isAudio: Boolean = false) : Player.Listener {
 
     fun seekTo(timeMillis: Int) {
         val seekPos = (
-            if (player.duration == C.TIME_UNSET)
+            if (player.duration == C.TIME_UNSET) {
                 0
-            else min(max(0, timeMillis), duration())
+            } else {
+                min(max(0, timeMillis), duration())
+            }
             ).toLong()
         seekTo(seekPos)
     }

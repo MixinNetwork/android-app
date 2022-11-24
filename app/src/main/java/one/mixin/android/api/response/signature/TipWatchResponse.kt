@@ -6,5 +6,5 @@ data class TipWatchResponse(
     @SerializedName("counter")
     val counter: Int,
     @SerializedName("genesis")
-    val genesis: String,
+    val genesis: String
 )

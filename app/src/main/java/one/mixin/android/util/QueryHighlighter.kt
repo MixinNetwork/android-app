@@ -25,7 +25,9 @@ class QueryHighlighter(
             val CASE: QueryNormalizer = QueryNormalizer { source ->
                 if (TextUtils.isEmpty(source)) {
                     source
-                } else source.toString().uppercase()
+                } else {
+                    source.toString().uppercase()
+                }
             }
 
             private val PATTERN_DIACRITICS = Pattern.compile("\\p{InCombiningDiacriticalMarks}")

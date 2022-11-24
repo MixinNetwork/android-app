@@ -56,7 +56,9 @@ open class ErrorHandler {
             ctx.runOnUiThread {
                 val extra = if (!extraMgs.isNullOrBlank()) {
                     "$extraMgs\n"
-                } else ""
+                } else {
+                    ""
+                }
                 toast("$extra${getMixinErrorStringByCode(code, message)}")
             }
         }

@@ -19,14 +19,14 @@ data class TipSecretRequest(
     @SerializedName("signature_base64")
     val signatureBase64: String,
     @SerializedName("timestamp")
-    val timestamp: Long,
+    val timestamp: Long
 )
 
 data class TipSecretReadRequest(
     @SerializedName("signature_base64")
     val signatureBase64: String,
     @SerializedName("timestamp")
-    val timestamp: Long,
+    val timestamp: Long
 ) {
     @SerializedName("action")
     val action: String = TipSecretAction.READ.name

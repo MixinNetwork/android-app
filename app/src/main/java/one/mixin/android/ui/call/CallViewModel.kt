@@ -13,7 +13,7 @@ class CallViewModel @Inject
 internal constructor(
     private val userRepository: UserRepository,
     private val conversationRepo: ConversationRepository,
-    private val jobManager: MixinJobManager,
+    private val jobManager: MixinJobManager
 ) : ViewModel() {
 
     suspend fun findMultiCallUsersByIds(conversationId: String, ids: Set<String>) =

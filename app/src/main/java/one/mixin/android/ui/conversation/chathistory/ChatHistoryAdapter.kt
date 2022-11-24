@@ -163,7 +163,8 @@ class ChatHistoryAdapter(
                     LayoutInflater.from(
                         parent.context
                     ),
-                    parent, false
+                    parent,
+                    false
                 )
             )
             7 -> StickerHolder(

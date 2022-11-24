@@ -14,7 +14,7 @@ class LottieDrawableTranscoder : ResourceTranscoder<RLottie, RLottieDrawable> {
             rLottie.w,
             rLottie.h,
             false,
-            true,
+            true
         )
         return SimpleResource(lottieDrawable)
     }

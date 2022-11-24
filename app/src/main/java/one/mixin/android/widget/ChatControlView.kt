@@ -793,7 +793,9 @@ class ChatControlView : LinearLayout, ActionMode.Callback {
                     val dif = moveY - downY
                     dragging = if (!dragging) {
                         abs(moveY - startY) > touchSlop
-                    } else dragging
+                    } else {
+                        dragging
+                    }
                     if (dif != 0f) {
                         triggeredCancel = true
                         removeRecordRunnable()
@@ -841,7 +843,9 @@ class ChatControlView : LinearLayout, ActionMode.Callback {
                     val dif = moveY - downY
                     dragging = if (!dragging) {
                         abs(dif) > touchSlop
-                    } else dragging
+                    } else {
+                        dragging
+                    }
                     if (dif != 0f) {
                         triggeredCancel = true
                         removeRecordRunnable()

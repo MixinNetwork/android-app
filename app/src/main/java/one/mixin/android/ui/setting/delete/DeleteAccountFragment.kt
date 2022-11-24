@@ -132,7 +132,7 @@ class DeleteAccountFragment : BaseFragment(R.layout.fragment_delete_account) {
 
     private suspend fun verify(
         phone: String = requireNotNull(Session.getAccount()).phone,
-        captchaResponse: Pair<CaptchaView.CaptchaType, String>? = null,
+        captchaResponse: Pair<CaptchaView.CaptchaType, String>? = null
     ) {
         val verificationRequest = VerificationRequest(
             phone,

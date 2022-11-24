@@ -211,8 +211,10 @@ class ChatHistoryActivity : BaseActivity() {
                                         conversationRepository.deletePinMessageByIds(list.map { it.messageId })
                                         Timber.e((list.map { it.messageId }.toString()))
                                         messenger.sendPinMessage(
-                                            conversationId, requireNotNull(Session.getAccount()).toUser(),
-                                            PinAction.UNPIN, list
+                                            conversationId,
+                                            requireNotNull(Session.getAccount()).toUser(),
+                                            PinAction.UNPIN,
+                                            list
                                         )
                                     }
                             }
@@ -350,7 +352,7 @@ class ChatHistoryActivity : BaseActivity() {
                         messageItem.conversationId!!,
                         messageItem.messageId,
                         messageItem.toMessageItem(),
-                        MediaPagerActivity.MediaSource.ChatHistory,
+                        MediaPagerActivity.MediaSource.ChatHistory
                     )
                 }
             }

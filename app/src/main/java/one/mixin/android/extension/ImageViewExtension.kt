@@ -55,7 +55,9 @@ fun ImageView.loadImageCenterCrop(uri: String?, holder: String? = null) {
             RequestOptions().dontAnimate().dontTransform().centerCrop().run {
                 return@run if (holder != null) {
                     placeholder(holder.toDrawable(this@loadImageCenterCrop.width, this@loadImageCenterCrop.height))
-                } else this
+                } else {
+                    this
+                }
             }
         ).into(this)
 }
@@ -67,7 +69,9 @@ fun ImageView.loadImageCenterCrop(uri: String?, @DrawableRes holder: Int? = null
             RequestOptions().dontAnimate().dontTransform().centerCrop().run {
                 return@run if (holder != null) {
                     this.placeholder(holder)
-                } else this
+                } else {
+                    this
+                }
             }
         ).into(this)
 }
@@ -79,7 +83,9 @@ fun ImageView.loadImageCenterCrop(uri: Uri?, @DrawableRes holder: Int? = null) {
             RequestOptions().dontAnimate().dontTransform().centerCrop().run {
                 return@run if (holder != null) {
                     this.placeholder(holder)
-                } else this
+                } else {
+                    this
+                }
             }
         ).into(this)
 }
@@ -157,7 +163,9 @@ fun ImageView.loadImageMark(uri: String?, holder: String?, mark: Int) {
             .signature(StringSignature("$uri$mark")).run {
                 return@run if (holder != null) {
                     this.placeholder(holder.toDrawable(layoutParams.width, layoutParams.height))
-                } else this
+                } else {
+                    this
+                }
             }
     ).into(this)
 }
@@ -169,7 +177,9 @@ fun ImageView.loadImageMark(uri: String?, @DrawableRes holder: Int?, mark: Int) 
             .signature(StringSignature("$uri$mark")).run {
                 return@run if (holder != null) {
                     this.placeholder(holder)
-                } else this
+                } else {
+                    this
+                }
             }
     ).into(this)
 }
@@ -222,7 +232,9 @@ fun ImageView.loadLongImageMark(uri: String?, holder: String?, mark: Int) {
             .signature(StringSignature("$uri$mark")).run {
                 return@run if (holder != null) {
                     this.placeholder(holder.toDrawable(width, layoutParams.height))
-                } else this
+                } else {
+                    this
+                }
             }
     ).into(this)
 }
@@ -240,7 +252,9 @@ fun ImageView.loadLongImageMark(uri: String?, mark: Int?) {
             .dontAnimate().run {
                 return@run if (mark != null) {
                     signature(StringSignature("$uri$mark"))
-                } else this
+                } else {
+                    this
+                }
             }
 
     ).listener(
@@ -283,7 +297,9 @@ fun ImageView.loadVideoMark(
                 .centerCrop().dontAnimate().run {
                     return@run if (holder != null) {
                         this.placeholder(holder.toDrawable(layoutParams.width, layoutParams.height))
-                    } else this
+                    } else {
+                        this
+                    }
                 }
         ).listener(
             object : RequestListener<Drawable> {

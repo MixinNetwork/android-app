@@ -8,5 +8,5 @@ data class PinRequest(
     @SerializedName("old_pin")
     val oldPin: String? = null,
     @SerializedName("timestamp")
-    val timestamp: Long? = null,
+    val timestamp: Long? = null
 )

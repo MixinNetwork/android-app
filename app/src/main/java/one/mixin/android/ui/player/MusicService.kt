@@ -168,7 +168,9 @@ class MusicService : LifecycleService() {
         conversationObserver = ConversationObserver(mediaId)
         val initialLoadKey = if (mediaId != null) {
             db.messageDao().indexAudioByConversationId(mediaId, albumId)
-        } else 0
+        } else {
+            0
+        }
         conversationLiveData = conversationLoader.conversationLiveData(albumId, db, initialLoadKey = initialLoadKey)
         conversationLiveData?.observe(this, conversationObserver)
     }

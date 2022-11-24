@@ -83,10 +83,14 @@ class GalleryAlbumFragment : Fragment(R.layout.fragment_gallery_album), AlbumCol
         albumCollection.loadAlbums()
 
         requireContext().contentResolver.registerContentObserver(
-            android.provider.MediaStore.Images.Media.INTERNAL_CONTENT_URI, true, internalObserver
+            android.provider.MediaStore.Images.Media.INTERNAL_CONTENT_URI,
+            true,
+            internalObserver
         )
         requireContext().contentResolver.registerContentObserver(
-            android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI, true, externalObserver
+            android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
+            true,
+            externalObserver
         )
     }
 

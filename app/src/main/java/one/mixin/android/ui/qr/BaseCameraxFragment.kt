@@ -270,7 +270,7 @@ abstract class BaseCameraxFragment : VisionFragment() {
             camera = cameraProvider?.bindToLifecycle(
                 this as LifecycleOwner,
                 cameraSelector!!,
-                *useCases,
+                *useCases
             )
         } catch (e: Exception) {
             reportException("$CRASHLYTICS_CAMERAX-bindUseCases", e)
@@ -306,7 +306,7 @@ abstract class BaseCameraxFragment : VisionFragment() {
             camera = cameraProvider?.bindToLifecycle(
                 this as LifecycleOwner,
                 cameraSelector!!,
-                localImageAnalysis,
+                localImageAnalysis
             )
         } catch (e: Exception) {
             reportException("$CRASHLYTICS_CAMERAX-startImageAnalysis", e)
@@ -463,8 +463,12 @@ abstract class BaseCameraxFragment : VisionFragment() {
                 val index = analysisResult.indexOf("?")
                 if (index != -1) {
                     analysisResult.take(index)
-                } else analysisResult
-            } else analysisResult
+                } else {
+                    analysisResult
+                }
+            } else {
+                analysisResult
+            }
             val result = Intent().apply {
                 putExtra(CaptureActivity.ARGS_FOR_SCAN_RESULT, scanResult)
             }

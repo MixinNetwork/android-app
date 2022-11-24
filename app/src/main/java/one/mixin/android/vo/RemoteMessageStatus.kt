@@ -16,5 +16,5 @@ class RemoteMessageStatus(
     @ColumnInfo(name = "conversation_id")
     val conversationId: String,
     @ColumnInfo(name = "status")
-    val status: String,
+    val status: String
 )

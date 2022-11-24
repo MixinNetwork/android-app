@@ -275,7 +275,8 @@ internal constructor(
                 conversationRepository.insertPinMessages(
                     list.map {
                         PinMessage(
-                            it.messageId, it.conversationId,
+                            it.messageId,
+                            it.conversationId,
                             nowInUtc()
                         )
                     }
@@ -284,7 +285,9 @@ internal constructor(
                 conversationRepository.deletePinMessageByIds(list.map { it.messageId })
             }
             messenger.sendPinMessage(
-                conversationId, sender, action,
+                conversationId,
+                sender,
+                action,
                 list.map {
                     PinMessageMinimal(it.messageId, it.type, it.content)
                 }
@@ -322,7 +325,7 @@ internal constructor(
         encryptCategory: EncryptCategory,
         mime: String? = null,
         replyMessage: MessageItem? = null,
-        fromInput: Boolean = false,
+        fromInput: Boolean = false
     ): Int {
         return messenger.sendImageMessage(conversationId, sender, uri, encryptCategory, mime, replyMessage, fromInput)
     }

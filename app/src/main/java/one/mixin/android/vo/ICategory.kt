@@ -140,8 +140,11 @@ fun ICategory.absolutePath(context: Context, conversationId: String, mediaUrl: S
         return File(context.getTranscriptDirPath(), mediaUrl).toUri().toString()
     }
     return generatePath(context, false, this, conversationId, mediaUrl)?.run {
-        if (this.exists()) return@run this
-        else return@run generatePath(context, true, this@absolutePath, conversationId, mediaUrl)
+        if (this.exists()) {
+            return@run this
+        } else {
+            return@run generatePath(context, true, this@absolutePath, conversationId, mediaUrl)
+        }
     }?.toUri().toString()
 }
 
@@ -154,13 +157,16 @@ private fun generatePath(
 ): File? {
     return when {
         iCategory.isImage() -> File(
-            context.getImagePath(legacy).generateConversationPath(conversationId), mediaUrl
+            context.getImagePath(legacy).generateConversationPath(conversationId),
+            mediaUrl
         )
         iCategory.isVideo() -> File(
-            context.getVideoPath(legacy).generateConversationPath(conversationId), mediaUrl
+            context.getVideoPath(legacy).generateConversationPath(conversationId),
+            mediaUrl
         )
         iCategory.isAudio() -> File(
-            context.getAudioPath(legacy).generateConversationPath(conversationId), mediaUrl
+            context.getAudioPath(legacy).generateConversationPath(conversationId),
+            mediaUrl
         )
         iCategory.isData() -> File(
             context.getDocumentPath(legacy).generateConversationPath(conversationId),

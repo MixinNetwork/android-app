@@ -68,7 +68,7 @@ class ContactCardHolder(val binding: ItemChatContactCardBinding) : BaseViewHolde
             messageItem.status,
             messageItem.isPin ?: false,
             isRepresentative = isRepresentative,
-            isSecret = messageItem.isSecret(),
+            isSecret = messageItem.isSecret()
         )
 
         chatLayout(isMe, isLast)

@@ -170,7 +170,7 @@ class EditFragment : VisionFragment() {
                     arrayListOf(
                         ForwardMessage(
                             ShareCategory.Image,
-                            GsonHelper.customGson.toJson(ShareImageData(File(path).toUri().toString())),
+                            GsonHelper.customGson.toJson(ShareImageData(File(path).toUri().toString()))
                         )
                     ),
                     ForwardAction.System(name = getString(R.string.Send), needEdit = false)

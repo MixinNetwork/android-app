@@ -4,7 +4,7 @@ sealed class TipNodeError(
     open val signerIndex: Int,
     open val requestId: String,
     open val code: Int,
-    val level: Int,
+    val level: Int
 ) {
     fun notRetry() = this is TooManyRequestError || this is IncorrectPinError
 }

@@ -273,6 +273,7 @@ class PipCallView {
     }
 
     private var decelerateInterpolator: DecelerateInterpolator? = null
+
     @SuppressLint("Recycle")
     private fun animateToBoundsMaybe() {
         val realSize = appContext.realSize()

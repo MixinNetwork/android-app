@@ -178,7 +178,7 @@ class HyperlinkHolder constructor(val binding: ItemChatHyperlinkBinding) : BaseV
             messageItem.status,
             messageItem.isPin ?: false,
             isRepresentative = isRepresentative,
-            isSecret = messageItem.isSecret(),
+            isSecret = messageItem.isSecret()
         )
 
         itemView.setOnClickListener {

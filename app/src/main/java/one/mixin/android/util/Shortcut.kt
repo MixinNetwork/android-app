@@ -19,8 +19,11 @@ private const val dynamicShortcutCount = 4
 private const val staticShortcutCount = 2 // wallet and scan
 
 val shareCategories = setOf(
-    categoryTextShareTarget, categoryImageShareTarget,
-    categoryVideoShareTarget, categoryAudioShareTarget, categoryApplicationShareTarget
+    categoryTextShareTarget,
+    categoryImageShareTarget,
+    categoryVideoShareTarget,
+    categoryAudioShareTarget,
+    categoryApplicationShareTarget
 )
 
 val maxDynamicShortcutCount by lazy {

@@ -161,7 +161,7 @@ class Message(
 
     @SerializedName("caption")
     @ColumnInfo(name = "caption")
-    var caption: String? = null,
+    var caption: String? = null
 ) : Serializable, ICategory {
     companion object {
         private const val serialVersionUID: Long = 1L
@@ -448,7 +448,7 @@ fun createMediaMessage(
     mediaStatus: MediaStatus,
     status: String,
     quoteMessageId: String? = null,
-    quoteContent: String? = null,
+    quoteContent: String? = null
 ) = MessageBuilder(messageId, conversationId, userId, category, status, createdAt)
     .setContent(content)
     .setMediaUrl(mediaUrl)
@@ -569,7 +569,7 @@ fun createTranscriptMessage(
     content: String?,
     mediaSize: Long,
     createdAt: String,
-    status: String,
+    status: String
 ) = MessageBuilder(messageId, conversationId, userId, category, status, createdAt)
     .setContent(content)
     .setMediaSize(mediaSize)

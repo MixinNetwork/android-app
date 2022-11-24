@@ -51,7 +51,8 @@ fun HighlightStarLinkText(
                     val (highlightStart, highlightEnd) = targets[i]
                     addStyle(
                         highlightStyle,
-                        highlightStart, highlightEnd
+                        highlightStart,
+                        highlightEnd
                     )
                     addStringAnnotation(TAG_URL, annotation = links[i], highlightStart, highlightEnd)
                 }
@@ -69,7 +70,7 @@ fun HighlightStarLinkText(
                 }
             }
         },
-        style = textStyle,
+        style = textStyle
     )
 }
 
@@ -96,7 +97,7 @@ fun HighlightText(
     ignoreCase: Boolean = true,
     highlightStyle: SpanStyle = SpanStyle(color = MixinAppTheme.colors.accent),
     textStyle: TextStyle = TextStyle(color = MixinAppTheme.colors.textPrimary, fontSize = 14.sp),
-    overflow: TextOverflow = TextOverflow.Clip,
+    overflow: TextOverflow = TextOverflow.Clip
 ) {
     val annotatedString = remember {
         buildAnnotatedString {
@@ -118,7 +119,7 @@ fun HighlightText(
     Text(
         text = annotatedString,
         style = textStyle,
-        overflow = overflow,
+        overflow = overflow
     )
 }
 
@@ -129,11 +130,11 @@ fun HighlightTextPreview() {
         Column {
             HighlightText(
                 text = "Test Mixin Test mixin",
-                target = "Mixin",
+                target = "Mixin"
             )
             HighlightText(
                 text = "7000100212",
-                target = "212",
+                target = "212"
             )
         }
     }

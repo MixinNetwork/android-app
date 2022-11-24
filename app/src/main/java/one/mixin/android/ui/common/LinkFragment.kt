@@ -20,6 +20,7 @@ abstract class LinkFragment : BaseFragment(), Observer<Int> {
 
     @Inject
     lateinit var linkState: LinkState
+
     @Inject
     lateinit var floodMessageDao: FloodMessageDao
 

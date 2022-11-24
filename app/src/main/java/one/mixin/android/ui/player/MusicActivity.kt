@@ -27,7 +27,10 @@ class MusicActivity : BaseActivity() {
                 putExtra(EXTRA_CONVERSATION_ID, conversationId)
             }
             val pendingIntent = PendingIntent.getActivity(
-                context, 0, intent, PendingIntent.FLAG_IMMUTABLE
+                context,
+                0,
+                intent,
+                PendingIntent.FLAG_IMMUTABLE
             )
             try {
                 pendingIntent.send()

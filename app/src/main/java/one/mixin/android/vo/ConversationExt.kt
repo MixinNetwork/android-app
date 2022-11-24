@@ -12,5 +12,5 @@ class ConversationExt(
     @ColumnInfo(name = "count", defaultValue = "0")
     val count: Int,
     @ColumnInfo(name = "created_at")
-    val createdAt: String,
+    val createdAt: String
 )

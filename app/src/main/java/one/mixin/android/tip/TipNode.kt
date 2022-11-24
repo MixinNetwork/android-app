@@ -51,7 +51,7 @@ class TipNode @Inject internal constructor(private val tipNodeService: TipNodeSe
         assigneePriv: ByteArray?,
         failedSigners: List<TipSigner>? = null,
         forRecover: Boolean = false,
-        callback: Callback? = null,
+        callback: Callback? = null
     ): ByteArray {
         val suite = Crypto.newSuiteBn256()
         val userSk = suite.scalar()
@@ -287,9 +287,11 @@ class TipNode @Inject internal constructor(private val tipNodeService: TipNodeSe
 
         val buffer = Buffer()
         buffer.write(nonceBytes)
-        @Suppress("UNUSED_VARIABLE") val nonce = buffer.readLong()
+        @Suppress("UNUSED_VARIABLE")
+        val nonce = buffer.readLong()
         buffer.write(timeBytes)
-        @Suppress("UNUSED_VARIABLE") val time = buffer.readLong()
+        @Suppress("UNUSED_VARIABLE")
+        val time = buffer.readLong()
         buffer.write(counterBytes)
         val counter = buffer.readLong()
         Timber.d("tip sign node ${signer.index} counter $counter")
@@ -314,7 +316,7 @@ class TipNode @Inject internal constructor(private val tipNodeService: TipNodeSe
             ephemeral = esum.toHex(),
             watcher = watcherHex,
             nonce = nonce,
-            grace = grace,
+            grace = grace
         )
         val dataJson = gson.toJson(data).toByteArray()
         val cipher = Crypto.encrypt(signerPk, userSk, dataJson)

@@ -133,7 +133,7 @@ class PendingMessage(
 
     @SerializedName("caption")
     @ColumnInfo(name = "caption")
-    var caption: String? = null,
+    var caption: String? = null
 ) {
     constructor(message: Message) : this(
         message.messageId,

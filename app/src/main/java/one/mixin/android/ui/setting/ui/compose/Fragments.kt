@@ -15,7 +15,7 @@ import timber.log.Timber
 @Composable
 fun MixinSettingFragment(
     tag: String? = null,
-    createFragment: () -> Fragment,
+    createFragment: () -> Fragment
 ) {
     val context = LocalContext.current
 
@@ -49,7 +49,7 @@ fun MixinSettingFragment(
                 R.anim.slide_in_right,
                 R.anim.slide_out_right,
                 R.anim.slide_in_left,
-                R.anim.slide_out_right,
+                R.anim.slide_out_right
             )
             add(R.id.container, fragment, tag)
             addToBackStack(null)

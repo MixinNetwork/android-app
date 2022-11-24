@@ -109,12 +109,14 @@ class CircleManagerFragment : BaseFragment() {
         lifecycleScope.launch {
             val includeCircleItem = bottomViewModel.getIncludeCircleItem(
                 conversationId ?: generateConversationId(
-                    Session.getAccountId()!!, userId!!
+                    Session.getAccountId()!!,
+                    userId!!
                 )
             )
             val otherCircleItem = bottomViewModel.getOtherCircleItem(
                 conversationId ?: generateConversationId(
-                    Session.getAccountId()!!, userId!!
+                    Session.getAccountId()!!,
+                    userId!!
                 )
             )
             binding.circleManagerRv.isVisible = includeCircleItem.isNotEmpty() || otherCircleItem.isNotEmpty()
@@ -174,7 +176,8 @@ class CircleManagerFragment : BaseFragment() {
                 successBlock = {
                     bottomViewModel.deleteCircleConversation(
                         conversationId ?: generateConversationId(
-                            Session.getAccountId()!!, userId!!
+                            Session.getAccountId()!!,
+                            userId!!
                         ),
                         item.circleId
                     )

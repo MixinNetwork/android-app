@@ -104,7 +104,8 @@ class ConversationCircleEditFragment : BaseFragment() {
                         } else {
                             val count = chatViewModel.getCircleConversationCount(
                                 generateConversationId(
-                                    Session.getAccountId()!!, user.userId
+                                    Session.getAccountId()!!,
+                                    user.userId
                                 )
                             )
                             if (count >= CIRCLE_CONVERSATION_LIMIT) {

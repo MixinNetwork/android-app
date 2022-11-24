@@ -19,7 +19,7 @@ import javax.inject.Inject
 @SuppressLint("CheckResult")
 @HiltViewModel
 class AuthenticationsViewModel @Inject constructor(
-    authorizationService: AuthorizationService,
+    authorizationService: AuthorizationService
 ) : ViewModel() {
 
     private val authenticationsState = MutableStateFlow<Result<List<AuthorizationResponse>>?>(null)
@@ -45,7 +45,7 @@ class AuthenticationsViewModel @Inject constructor(
                         authenticationsState.emit(Result.failure(it))
                     }
                     ErrorHandler.handleError(it)
-                },
+                }
             )
     }
 

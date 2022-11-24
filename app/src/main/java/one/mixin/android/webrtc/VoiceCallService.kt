@@ -153,7 +153,9 @@ class VoiceCallService : CallService() {
     private fun handleAnswerCall(intent: Intent) {
         if (callState.state == CallState.STATE_ANSWERING ||
             callState.isIdle()
-        ) return
+        ) {
+            return
+        }
 
         if (!callState.isConnected()) {
             callState.state = CallState.STATE_ANSWERING

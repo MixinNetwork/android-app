@@ -47,6 +47,7 @@ class NonMessengerUserBottomSheetDialogFragment : MixinBottomSheetDialogFragment
     private val binding by viewBinding(FragmentNonMessengerUserBottomSheetBinding::inflate)
 
     private lateinit var user: User
+
     // bot need conversation id
     private var conversationId: String? = null
 

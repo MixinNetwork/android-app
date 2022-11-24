@@ -32,6 +32,7 @@ class FloatingAvatarsView : ViewGroup {
     private val overRatio = 1f / 6
 
     constructor(context: Context) : this(context, null)
+
     @SuppressLint("CustomViewStyleable")
     constructor(context: Context, attrs: AttributeSet?) : super(context, attrs) {
         val ta = context.obtainStyledAttributes(attrs, R.styleable.AvatarsView)

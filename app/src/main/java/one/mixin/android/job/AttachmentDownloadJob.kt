@@ -58,6 +58,7 @@ class AttachmentDownloadJob(
 
     @Transient
     private var call: Call? = null
+
     @Transient
     private var attachmentCall: retrofit2.Call<MixinResponse<AttachmentResponse>>? = null
 

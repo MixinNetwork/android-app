@@ -48,12 +48,11 @@ fun ViewEmergencyContactPage(user: User) {
             }
         }
     ) {
-
         Column(
             modifier = Modifier
                 .background(MixinAppTheme.colors.background)
                 .fillMaxWidth(),
-            horizontalAlignment = Alignment.CenterHorizontally,
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Box(modifier = Modifier.height(42.dp))
             UserAvatarImage(user = user, size = 92.dp)
@@ -64,7 +63,7 @@ fun ViewEmergencyContactPage(user: User) {
                 overflow = TextOverflow.Ellipsis,
                 fontSize = 18.sp,
                 color = MixinAppTheme.colors.textPrimary,
-                maxLines = 1,
+                maxLines = 1
             )
             Box(modifier = Modifier.height(8.dp))
             Text(
@@ -72,7 +71,7 @@ fun ViewEmergencyContactPage(user: User) {
                 overflow = TextOverflow.Ellipsis,
                 fontSize = 14.sp,
                 color = MixinAppTheme.colors.textSubtitle,
-                maxLines = 1,
+                maxLines = 1
             )
             Box(modifier = Modifier.height(42.dp))
         }
@@ -86,8 +85,8 @@ fun ViewEmergencyContactPage(user: User) {
             links = arrayOf(Constants.HelpLink.EMERGENCY),
             textStyle = TextStyle(
                 fontSize = 12.sp,
-                color = MixinAppTheme.colors.textSubtitle,
-            ),
+                color = MixinAppTheme.colors.textSubtitle
+            )
         ) {
             context.openUrl(Constants.HelpLink.EMERGENCY)
         }

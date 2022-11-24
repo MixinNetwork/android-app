@@ -13,6 +13,7 @@ class MentionHolder constructor(containerView: View) : RecyclerView.ViewHolder(c
     private val binding by lazy {
         ItemChatMentionBinding.bind(containerView)
     }
+
     @SuppressLint("SetTextI18n")
     fun bind(user: User, keyword: String?, queryHighlighter: QueryHighlighter, listener: MentionAdapter.OnUserClickListener) {
         queryHighlighter.apply(binding.name, user.fullName, keyword)

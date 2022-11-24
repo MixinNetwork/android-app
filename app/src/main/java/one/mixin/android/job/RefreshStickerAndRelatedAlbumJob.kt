@@ -55,7 +55,9 @@ class RefreshStickerAndRelatedAlbumJob(private val stickerId: String) : BaseJob(
             val stickers = stickersResponse.data as List<Sticker>
             val relationships: MutableList<StickerRelationship>? = if (album.category == "SYSTEM") {
                 arrayListOf()
-            } else null
+            } else {
+                null
+            }
             mixinDatabase.runInTransaction {
                 for (s in stickers) {
                     stickerDao.insertUpdate(s)

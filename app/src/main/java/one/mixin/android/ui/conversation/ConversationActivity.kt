@@ -196,7 +196,7 @@ class ConversationActivity : BlazeBaseActivity() {
                         conversationId,
                         recipientId,
                         messageId,
-                        keyword,
+                        keyword
                     )
                 )
             }

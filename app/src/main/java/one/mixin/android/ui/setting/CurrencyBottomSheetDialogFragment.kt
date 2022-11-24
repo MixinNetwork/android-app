@@ -134,7 +134,9 @@ class CurrencyBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 currencies.filter {
                     it.name.containsIgnoreCase(s)
                 }.sortedByDescending { it.name.equalsIgnoreCase(s) }
-            } else currencies
+            } else {
+                currencies
+            }
         )
     }
 

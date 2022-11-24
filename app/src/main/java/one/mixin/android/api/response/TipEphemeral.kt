@@ -12,5 +12,5 @@ class TipEphemeral(
     @SerializedName("seed_base64")
     val seedBase64: String,
     @SerializedName("created_at")
-    val createdAt: String,
+    val createdAt: String
 )

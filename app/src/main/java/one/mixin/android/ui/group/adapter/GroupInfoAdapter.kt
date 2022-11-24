@@ -42,7 +42,7 @@ class GroupInfoAdapter(private val self: User) : PagedHeaderAdapter<ParticipantI
         fun bind(
             participant: ParticipantItem,
             listener: GroupInfoListener?,
-            self: User?,
+            self: User?
         ) {
             binding.avatar.setInfo(participant.fullName, participant.avatarUrl, participant.userId)
             binding.normal.text = participant.fullName

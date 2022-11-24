@@ -38,7 +38,7 @@ fun SettingPageScaffold(
     title: String,
     verticalScrollable: Boolean = true,
     titleBarActions: @Composable RowScope.() -> Unit = {},
-    body: @Composable ColumnScope.() -> Unit,
+    body: @Composable ColumnScope.() -> Unit
 ) {
     Scaffold(
         backgroundColor = MixinAppTheme.colors.backgroundWindow,
@@ -50,9 +50,9 @@ fun SettingPageScaffold(
                 navigationIcon = {
                     MixinBackButton()
                 },
-                actions = titleBarActions,
+                actions = titleBarActions
             )
-        },
+        }
     ) {
         Column(
             Modifier
@@ -75,7 +75,7 @@ fun SettingTile(
     title: String,
     titleColor: Color? = null,
     description: String? = null,
-    onClick: () -> Unit,
+    onClick: () -> Unit
 ) {
     Column {
         Row(
@@ -94,7 +94,7 @@ fun SettingTile(
                 ) {
                     Icon(
                         painter = painterResource(icon),
-                        contentDescription = null,
+                        contentDescription = null
                     )
                     Box(modifier = Modifier.width(16.dp))
                 }
@@ -108,7 +108,7 @@ fun SettingTile(
             ProvideTextStyle(
                 value = TextStyle(
                     color = MixinAppTheme.colors.textSubtitle,
-                    fontSize = 13.sp,
+                    fontSize = 13.sp
                 )
             ) {
                 trailing()
@@ -150,7 +150,7 @@ fun SettingScaffoldPreview() {
 
             SettingTile(
                 onClick = {},
-                title = "Title",
+                title = "Title"
             )
 
             SettingTile(
@@ -166,7 +166,7 @@ fun SettingScaffoldPreview() {
             SettingTile(
                 onClick = {},
                 title = "Title With Icon",
-                icon = R.drawable.ic_setting_about,
+                icon = R.drawable.ic_setting_about
             )
         }
     }

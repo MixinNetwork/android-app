@@ -60,6 +60,7 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
 
     @Inject
     lateinit var tip: Tip
+
     @Inject
     lateinit var accountService: AccountService
 
@@ -322,7 +323,7 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
         e: Throwable,
         pin: String,
         tipCounter: Int,
-        nodeCounterBeforeRequest: Int,
+        nodeCounterBeforeRequest: Int
     ) {
         val errMsg = e.getTipExceptionMsg(requireContext(), nodeFailedInfo)
         toast(errMsg)

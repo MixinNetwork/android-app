@@ -56,7 +56,7 @@ class InitializeActivity : BaseActivity() {
             wrongTime: Boolean = false,
             ftsUpgrade: Boolean = false,
             oldVersion: Boolean = false,
-            dbUpgrade: Boolean = false,
+            dbUpgrade: Boolean = false
         ): Intent {
             return Intent(context, InitializeActivity::class.java).apply {
                 this.putExtra(SET_NAME, setName)

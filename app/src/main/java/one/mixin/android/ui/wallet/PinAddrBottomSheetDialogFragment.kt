@@ -147,7 +147,9 @@ class PinAddrBottomSheetDialogFragment : BiometricBottomSheetDialogFragment() {
                 },
                 assetSymbol
             )
-        } else null
+        } else {
+            null
+        }
     }
 
     private fun getTitle() = getString(

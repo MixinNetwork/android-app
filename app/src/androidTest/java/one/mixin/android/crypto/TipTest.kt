@@ -53,7 +53,7 @@ class TipTest {
             identity = uPk.publicKeyString(),
             ephemeral = eBytes.toHex(),
             nonce = nonce,
-            grace = grace,
+            grace = grace
         )
         println("data: ${Gson().toJson(data)}")
         val json = Gson().toJson(data).toByteArray()

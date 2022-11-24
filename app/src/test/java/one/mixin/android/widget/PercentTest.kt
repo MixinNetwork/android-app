@@ -24,6 +24,7 @@ class PercentTest {
         a = amount.stripTrailingZeros().toPlainString()
         assertEquals("1.01", a)
     }
+
     @Test
     fun testCalcPercent() {
         val totalUSD1 = BigDecimal("100")

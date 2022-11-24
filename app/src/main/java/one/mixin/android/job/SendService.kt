@@ -26,12 +26,16 @@ class SendService : IntentService("SendService") {
 
     @Inject
     lateinit var jobManager: MixinJobManager
+
     @Inject
     lateinit var messageDao: MessageDao
+
     @Inject
     lateinit var remoteMessageStatusDao: RemoteMessageStatusDao
+
     @Inject
     lateinit var messageMentionDao: MessageMentionDao
+
     @Inject
     lateinit var jobDao: JobDao
 
@@ -46,7 +50,7 @@ class SendService : IntentService("SendService") {
             val category = encryptCategory.toCategory(
                 MessageCategory.PLAIN_TEXT,
                 MessageCategory.SIGNAL_TEXT,
-                MessageCategory.ENCRYPTED_TEXT,
+                MessageCategory.ENCRYPTED_TEXT
             )
 
             val message = createMessage(

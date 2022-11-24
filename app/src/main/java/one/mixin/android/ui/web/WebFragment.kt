@@ -494,8 +494,9 @@ class WebFragment : BaseFragment() {
 
             @SuppressLint("SourceLockedOrientationActivity")
             override fun onHideCustomView() {
-                if (customView == null)
+                if (customView == null) {
                     return
+                }
                 _binding?.apply {
                     customViewContainer.isVisible = false
                     webLl.isVisible = true
@@ -732,7 +733,7 @@ class WebFragment : BaseFragment() {
                     lifecycleScope.launch {
                         closeSelf()
                     }
-                },
+                }
             )
             webAppInterface?.let { webView.addJavascriptInterface(it, "MixinContext") }
             val extraHeaders = HashMap<String, String>()
@@ -927,7 +928,7 @@ class WebFragment : BaseFragment() {
                                         app.name,
                                         currentUrl,
                                         app.updatedAt,
-                                        null,
+                                        null
                                     )
                                     ForwardActivity.show(
                                         requireContext(),
@@ -1160,12 +1161,14 @@ class WebFragment : BaseFragment() {
                             }
                             MediaScannerConnection.scanFile(requireContext(), arrayOf(outFile.toString()), null, null)
                             withContext(Dispatchers.Main) {
-                                if (isAdded) toast(
-                                    getString(
-                                        R.string.Save_to,
-                                        outFile.absolutePath
+                                if (isAdded) {
+                                    toast(
+                                        getString(
+                                            R.string.Save_to,
+                                            outFile.absolutePath
+                                        )
                                     )
-                                )
+                                }
                             }
                         } catch (e: Exception) {
                             withContext(Dispatchers.Main) { if (isAdded) toast(R.string.Save_failure) }
@@ -1315,7 +1318,7 @@ class WebFragment : BaseFragment() {
         val immersive: Boolean,
         var reloadThemeAction: (() -> Unit)? = null,
         var playlistAction: ((Array<String>) -> Unit)? = null,
-        var closeAction: (() -> Unit)? = null,
+        var closeAction: (() -> Unit)? = null
     ) {
         @JavascriptInterface
         fun showToast(toast: String) {

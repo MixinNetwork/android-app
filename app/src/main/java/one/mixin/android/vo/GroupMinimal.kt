@@ -11,7 +11,7 @@ data class GroupMinimal(
     val conversationId: String,
     val groupIconUrl: String?,
     val groupName: String?,
-    val memberCount: Int,
+    val memberCount: Int
 ) : Parcelable {
     companion object {
         val DIFF_CALLBACK = object : DiffUtil.ItemCallback<GroupMinimal>() {

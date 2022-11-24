@@ -91,7 +91,7 @@ internal constructor(
     fun observeFuzzySearchMessageDetail(
         query: String,
         conversationId: String,
-        cancellationSignal: CancellationSignal,
+        cancellationSignal: CancellationSignal
     ): LiveData<PagedList<SearchMessageDetailItem>> {
         val escapedQuery = query.trim().escapeSql()
         return conversationRepository.fuzzySearchMessageDetail(
@@ -102,7 +102,7 @@ internal constructor(
             config = Config(
                 pageSize = PAGE_SIZE,
                 prefetchDistance = PAGE_SIZE * 2,
-                enablePlaceholders = false,
+                enablePlaceholders = false
             )
         )
     }

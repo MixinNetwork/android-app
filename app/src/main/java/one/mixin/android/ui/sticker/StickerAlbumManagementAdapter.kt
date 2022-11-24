@@ -50,7 +50,7 @@ class AlbumManagementHolder(
 ) : RecyclerView.ViewHolder(itemBinding.root),
     ItemTouchHelperViewHolder {
     @SuppressLint("ClickableViewAccessibility")
-    fun bind(album: StickerAlbum,) {
+    fun bind(album: StickerAlbum) {
         itemBinding.apply {
             nameTv.text = album.name
             descTv.text = album.description

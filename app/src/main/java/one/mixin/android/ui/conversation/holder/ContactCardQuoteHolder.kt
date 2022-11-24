@@ -152,7 +152,7 @@ class ContactCardQuoteHolder constructor(val binding: ItemChatContactCardQuoteBi
             messageItem.status,
             messageItem.isPin ?: false,
             isRepresentative = isRepresentative,
-            isSecret = messageItem.isSecret(),
+            isSecret = messageItem.isSecret()
         )
         chatJumpLayout(binding.chatJump, isMe, messageItem.expireIn, R.id.chat_msg_layout)
     }

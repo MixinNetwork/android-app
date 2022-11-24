@@ -64,7 +64,7 @@ class SixLayout : ConstraintLayout {
             binding.title3,
             binding.title4,
             binding.title5,
-            binding.title6,
+            binding.title6
         )
         titlesLayouts = listOf(
             binding.titleLayout1,

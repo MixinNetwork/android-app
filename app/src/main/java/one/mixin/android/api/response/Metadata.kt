@@ -13,5 +13,5 @@ class Metadata(
     @SerializedName("media_url")
     val mediaUrl: String,
     val mime: String,
-    val hash: String,
+    val hash: String
 )
