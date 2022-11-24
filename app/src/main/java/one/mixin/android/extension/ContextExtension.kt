@@ -261,6 +261,7 @@ fun Context.spToPx(sp: Float): Int {
 
 var Context.displayMetrics: DisplayMetrics
     get() = resources.displayMetrics
+
     @Deprecated("Property does not have a setter")
     private set(value) = error("Property does not have a setter")
 
@@ -1130,7 +1131,8 @@ fun Context.shareMedia(isVideo: Boolean, url: String) {
     resInfoList.forEach {
         val packageName = it.activityInfo.packageName
         grantUriPermission(
-            packageName, uri,
+            packageName,
+            uri,
             Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
         )
     }

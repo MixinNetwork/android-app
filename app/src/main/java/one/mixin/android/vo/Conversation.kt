@@ -11,7 +11,7 @@ import java.util.UUID
     tableName = "conversations",
     indices = [
         Index(value = arrayOf("pin_time", "last_message_created_at"))
-    ],
+    ]
 )
 open class Conversation(
     @PrimaryKey

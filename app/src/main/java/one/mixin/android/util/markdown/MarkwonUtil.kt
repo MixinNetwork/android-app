@@ -54,7 +54,9 @@ class MarkwonUtil {
             val prism4j = Prism4j(LanguageGrammerLocator())
             val prism4jTheme = if (isNightMode) {
                 Prism4jThemeDarkula.create()
-            } else Prism4jThemeDefault.create()
+            } else {
+                Prism4jThemeDefault.create()
+            }
             return Markwon.builder(context)
                 .usePlugin(CorePlugin.create())
                 .usePlugin(HtmlPlugin.create())
@@ -131,7 +133,9 @@ class MarkwonUtil {
             val prism4j = Prism4j(LanguageGrammerLocator())
             val prism4jTheme = if (isNightMode) {
                 Prism4jThemeDarkula.create()
-            } else Prism4jThemeDefault.create()
+            } else {
+                Prism4jThemeDefault.create()
+            }
             return Markwon.builder(context)
                 .usePlugin(CorePlugin.create())
                 .usePlugin(HtmlPlugin.create())

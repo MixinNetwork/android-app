@@ -60,70 +60,103 @@ import javax.inject.Inject
 open class Injector {
     @Inject
     lateinit var jobManager: MixinJobManager
+
     @Inject
     lateinit var messageDao: MessageDao
+
     @Inject
     lateinit var pendingMessagesDao: PendingMessageDao
+
     @Inject
     lateinit var messageHistoryDao: MessageHistoryDao
+
     @Inject
     lateinit var userDao: UserDao
+
     @Inject
     lateinit var appDao: AppDao
+
     @Inject
     lateinit var jobDao: JobDao
+
     @Inject
     lateinit var conversationDao: ConversationDao
+
     @Inject
     lateinit var conversationExtDao: ConversationExtDao
+
     @Inject
     lateinit var participantDao: ParticipantDao
+
     @Inject
     lateinit var participantSessionDao: ParticipantSessionDao
+
     @Inject
     lateinit var snapshotDao: SnapshotDao
+
     @Inject
     lateinit var assetDao: AssetDao
+
     @Inject
     lateinit var circleDao: CircleDao
+
     @Inject
     lateinit var circleConversationDao: CircleConversationDao
+
     @Inject
     lateinit var traceDao: TraceDao
+
     @Inject
     lateinit var circleService: CircleService
+
     @Inject
     lateinit var chatWebSocket: ChatWebSocket
+
     @Inject
     lateinit var stickerDao: StickerDao
+
     @Inject
     lateinit var messageMentionDao: MessageMentionDao
+
     @Inject
     lateinit var signalProtocol: SignalProtocol
+
     @Inject
     lateinit var encryptedProtocol: EncryptedProtocol
+
     @Inject
     lateinit var ratchetSenderKeyDao: RatchetSenderKeyDao
+
     @Inject
     lateinit var resendMessageDao: ResendSessionMessageDao
+
     @Inject
     lateinit var hyperlinkDao: HyperlinkDao
+
     @Inject
     lateinit var userApi: UserService
+
     @Inject
     lateinit var conversationService: ConversationService
+
     @Inject
     lateinit var transcriptMessageDao: TranscriptMessageDao
+
     @Inject
     lateinit var messagesFts4Dao: MessagesFts4Dao
+
     @Inject
     lateinit var pinMessageDao: PinMessageDao
+
     @Inject
     lateinit var remoteMessageStatusDao: RemoteMessageStatusDao
+
     @Inject
     lateinit var expiredMessageDao: ExpiredMessageDao
+
     @Inject
     lateinit var database: MixinDatabase
+
     @ApplicationScope
     @Transient
     @Inject

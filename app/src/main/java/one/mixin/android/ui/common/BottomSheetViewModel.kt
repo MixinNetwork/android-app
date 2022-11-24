@@ -66,7 +66,7 @@ class BottomSheetViewModel @Inject internal constructor(
     private val assetRepository: AssetRepository,
     private val conversationRepo: ConversationRepository,
     private val cleanMessageHelper: CleanMessageHelper,
-    private val pinCipher: PinCipher,
+    private val pinCipher: PinCipher
 ) : ViewModel() {
     suspend fun searchCode(code: String) = withContext(Dispatchers.IO) {
         accountRepository.searchCode(code)
@@ -118,7 +118,7 @@ class BottomSheetViewModel @Inject internal constructor(
         code: String,
         traceId: String,
         memo: String?,
-        fee: String?,
+        fee: String?
     ) = assetRepository.withdrawal(
         WithdrawalRequest(
             addressId,
@@ -126,7 +126,7 @@ class BottomSheetViewModel @Inject internal constructor(
             pinCipher.encryptPin(code, TipBody.forWithdrawalCreate(addressId, amount, fee, traceId, memo)),
             traceId,
             memo,
-            fee,
+            fee
         )
     )
 

@@ -380,7 +380,7 @@ object AppModule {
         mixinDatabase: MixinDatabase,
         pendingDatabase: PendingDatabase,
         jobManager: MixinJobManager,
-        linkState: LinkState,
+        linkState: LinkState
     ): ChatWebSocket =
         ChatWebSocket(applicationScope, okHttp, accountService, mixinDatabase, pendingDatabase, jobManager, linkState)
 
@@ -447,7 +447,8 @@ object AppModule {
     @Singleton
     fun provideAudioSwitch(app: Application): AudioSwitch =
         AudioSwitch(
-            app.applicationContext, BuildConfig.DEBUG,
+            app.applicationContext,
+            BuildConfig.DEBUG,
             preferredDeviceList = listOf(
                 AudioDevice.BluetoothHeadset::class.java,
                 AudioDevice.WiredHeadset::class.java,
@@ -509,8 +510,14 @@ object AppModule {
         participantDao: ParticipantDao,
         chatWebSocket: ChatWebSocket,
         linkState: LinkState,
-        messageHistoryDao: MessageHistoryDao,
+        messageHistoryDao: MessageHistoryDao
     ) = JobSenderKey(
-        participantSessionDao, signalProtocol, conversationApi, participantDao, chatWebSocket, linkState, messageHistoryDao
+        participantSessionDao,
+        signalProtocol,
+        conversationApi,
+        participantDao,
+        chatWebSocket,
+        linkState,
+        messageHistoryDao
     )
 }

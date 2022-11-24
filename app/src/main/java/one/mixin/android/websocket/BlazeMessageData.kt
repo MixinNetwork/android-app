@@ -31,7 +31,7 @@ data class BlazeMessageData(
     @SerializedName("silent")
     val silent: Boolean? = null,
     @SerializedName("expire_in")
-    val expireIn: Long? = null,
+    val expireIn: Long? = null
 ) : Serializable {
     companion object {
         private const val serialVersionUID: Long = 5L

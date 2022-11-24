@@ -61,13 +61,14 @@ class ChannelManager {
         private fun initChannelGroup(context: Context) {
             val notificationManager = context.notificationManager
             val notificationChannelGroups = notificationManager.notificationChannelGroups
-            if (notificationChannelGroups.isEmpty() || !notificationChannelGroups.any { channelGroup -> channelGroup.id == CHANNEL_MESSAGE_GROUP })
+            if (notificationChannelGroups.isEmpty() || !notificationChannelGroups.any { channelGroup -> channelGroup.id == CHANNEL_MESSAGE_GROUP }) {
                 notificationManager.createNotificationChannelGroup(
                     NotificationChannelGroup(
                         CHANNEL_MESSAGE_GROUP,
                         context.getString(R.string.Messages)
                     )
                 )
+            }
         }
 
         fun create(context: Context) {

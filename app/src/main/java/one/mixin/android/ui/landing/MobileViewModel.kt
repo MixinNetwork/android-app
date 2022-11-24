@@ -32,7 +32,7 @@ constructor(
     private val accountRepository: AccountRepository,
     private val userRepository: UserRepository,
     private val jobManager: MixinJobManager,
-    private val pinCipher: PinCipher,
+    private val pinCipher: PinCipher
 ) : ViewModel() {
 
     fun loginVerification(request: VerificationRequest): Observable<MixinResponse<VerificationResponse>> =
@@ -57,7 +57,8 @@ constructor(
 
     fun deactiveVerification(id: String, code: String): Observable<MixinResponse<VerificationResponse>> =
         accountRepository.deactiveVerification(
-            id, DeactivateVerificationRequest(VerificationPurpose.DEACTIVATED.name, code)
+            id,
+            DeactivateVerificationRequest(VerificationPurpose.DEACTIVATED.name, code)
         ).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
 
     fun update(request: AccountUpdateRequest): Observable<MixinResponse<Account>> =

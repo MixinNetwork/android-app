@@ -58,8 +58,11 @@ open class SnapshotHolder(itemView: View) : NormalHolder(itemView) {
             }
         }
 
-        binding.value.text = if (isPositive) "+${snapshot.amount.numberFormat()}"
-        else snapshot.amount.numberFormat()
+        binding.value.text = if (isPositive) {
+            "+${snapshot.amount.numberFormat()}"
+        } else {
+            snapshot.amount.numberFormat()
+        }
         binding.value.textColorResource = when {
             snapshot.type == SnapshotType.pending.name -> R.color.wallet_pending_text_color
             isPositive -> R.color.wallet_green

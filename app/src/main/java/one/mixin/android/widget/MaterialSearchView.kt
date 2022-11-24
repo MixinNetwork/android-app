@@ -84,7 +84,9 @@ class MaterialSearchView : FrameLayout {
     val currentQuery: String
         get() = if (!TextUtils.isEmpty(mCurrentQuery)) {
             mCurrentQuery.toString()
-        } else ""
+        } else {
+            ""
+        }
 
     private fun initStyle(attributeSet: AttributeSet?, defStyleAttribute: Int) {
         AppCompatDelegate.setCompatVectorFromResourcesEnabled(true)

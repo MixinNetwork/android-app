@@ -86,7 +86,9 @@ fun String.isMixinUrl(): Boolean {
             segments.size >= 2 && segments[1].isUUID()
         } else if (startsWith(Constants.Scheme.HTTPS_ADDRESS, true)) {
             true
-        } else startsWith(Constants.Scheme.HTTPS_WITHDRAWAL, true)
+        } else {
+            startsWith(Constants.Scheme.HTTPS_WITHDRAWAL, true)
+        }
     }
 }
 
@@ -98,12 +100,16 @@ fun String.openAsUrl(
     currentConversation: String? = null,
     app: App? = null,
     host: String? = null,
-    extraAction: () -> Unit,
+    extraAction: () -> Unit
 ) {
     if (startsWith(Constants.Scheme.SEND, true)) {
         val uri = Uri.parse(this)
         uri.handleSchemeSend(
-            context, supportFragmentManager, currentConversation, app, host,
+            context,
+            supportFragmentManager,
+            currentConversation,
+            app,
+            host,
             onError = { err ->
                 Timber.e(IllegalStateException(err))
             }
@@ -235,7 +241,7 @@ fun Uri.handleSchemeSend(
     showNow: Boolean = true,
     afterShareText: (() -> Unit)? = null,
     afterShareData: (() -> Unit)? = null,
-    onError: ((String) -> Unit)? = null,
+    onError: ((String) -> Unit)? = null
 ) {
     val text = this.getQueryParameter("text")
     if (text != null) {
@@ -261,7 +267,9 @@ fun Uri.handleSchemeSend(
                 afterShareData?.invoke()
                 val fragment = ShareMessageBottomSheetDialogFragment.newInstance(
                     ForwardMessage(shareCategory, String(Base64.decode(data))),
-                    conversationId, app, host
+                    conversationId,
+                    app,
+                    host
                 )
                 if (showNow) {
                     fragment.showNow(supportFragmentManager, ShareMessageBottomSheetDialogFragment.TAG)

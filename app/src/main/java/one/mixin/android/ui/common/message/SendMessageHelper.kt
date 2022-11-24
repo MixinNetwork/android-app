@@ -285,7 +285,7 @@ class SendMessageHelper @Inject internal constructor(private val jobManager: Mix
         duration: Long,
         waveForm: ByteArray,
         encryptCategory: EncryptCategory,
-        replyMessage: MessageItem? = null,
+        replyMessage: MessageItem? = null
     ) {
         val category = encryptCategory.toCategory(
             MessageCategory.PLAIN_AUDIO,
@@ -355,7 +355,7 @@ class SendMessageHelper @Inject internal constructor(private val jobManager: Mix
         encryptCategory: EncryptCategory,
         messageId: String? = null,
         createdAt: String? = null,
-        replyMessage: MessageItem? = null,
+        replyMessage: MessageItem? = null
     ) {
         val mid = messageId ?: UUID.randomUUID().toString()
         jobManager.addJobInBackground(ConvertVideoJob(conversationId, senderId, uri, encryptCategory, mid, createdAt, replyMessage))
@@ -541,7 +541,7 @@ class SendMessageHelper @Inject internal constructor(private val jobManager: Mix
         encryptCategory: EncryptCategory,
         mime: String? = null,
         replyMessage: MessageItem? = null,
-        fromInput: Boolean = false,
+        fromInput: Boolean = false
     ): Int {
         val category = encryptCategory.toCategory(
             MessageCategory.PLAIN_IMAGE,
@@ -588,7 +588,8 @@ class SendMessageHelper @Inject internal constructor(private val jobManager: Mix
         }
         val newMimeType = if (fromInput) MimeType.WEBP else MimeType.JPG
         val temp = MixinApplication.get().getImagePath().createImageTemp(
-            conversationId, messageId,
+            conversationId,
+            messageId,
             type = if (fromInput) {
                 ".webp"
             } else {

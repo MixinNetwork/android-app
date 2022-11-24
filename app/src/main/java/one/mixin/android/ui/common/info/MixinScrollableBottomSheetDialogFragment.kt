@@ -69,7 +69,9 @@ abstract class MixinScrollableBottomSheetDialogFragment : BottomSheetDialogFragm
                     ViewGroup.LayoutParams.WRAP_CONTENT
                 )
                 scrollContent.measuredHeight + titleView.measuredHeight
-            } else defaultPeekHeight
+            } else {
+                defaultPeekHeight
+            }
             behavior?.addBottomSheetCallback(bottomSheetBehaviorCallback)
             dialog.window?.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
             dialog.window?.setGravity(Gravity.BOTTOM)

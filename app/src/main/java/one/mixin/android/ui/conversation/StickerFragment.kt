@@ -179,7 +179,7 @@ class StickerFragment : BaseFragment(R.layout.fragment_sticker) {
     private class StickerAdapter(
         private val stickers: List<Sticker>,
         private val needAdd: Boolean,
-        private val type: Int,
+        private val type: Int
     ) : RecyclerView.Adapter<StickerViewHolder>() {
         private var listener: StickerListener? = null
         var size: Int = 0

@@ -123,7 +123,8 @@ class BottomSheet(
                 }
                 else -> {
                     MeasureSpec.makeMeasureSpec(
-                        if (isPortrait) width else max((width * 0.6f).toInt(), min(dp(480f), width)), MeasureSpec.EXACTLY
+                        if (isPortrait) width else max((width * 0.6f).toInt(), min(dp(480f), width)),
+                        MeasureSpec.EXACTLY
                     )
                 }
             }

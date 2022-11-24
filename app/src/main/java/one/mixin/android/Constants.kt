@@ -272,7 +272,7 @@ object Constants {
             "cbc77539-0a20-4666-8c8a-4ded62b36f0a" to "Avalanche X-Chain",
             "17f78d7c-ed96-40ff-980c-5dc62fecbc85" to "BNB Beacon Chain (BEP-2)",
             "25dabac5-056a-48ff-b9f9-f67395dc407c" to "Tron (TRC-20)",
-            "05891083-63d2-4f3d-bfbe-d14d7fb9b25a" to "BitShares",
+            "05891083-63d2-4f3d-bfbe-d14d7fb9b25a" to "BitShares"
         )
     }
 }

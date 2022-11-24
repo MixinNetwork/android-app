@@ -58,7 +58,7 @@ class MediaHolder(itemView: View) : NormalHolder(itemView) {
                 imageView.loadGif(
                     item.absolutePath(),
                     holder = R.drawable.ic_giphy_place_holder,
-                    base64Holder = item.thumbImage,
+                    base64Holder = item.thumbImage
                 )
                 binding.gifTv.isVisible = true
             } else {

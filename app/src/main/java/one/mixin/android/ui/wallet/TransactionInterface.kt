@@ -125,7 +125,7 @@ interface TransactionInterface {
         walletViewModel: WalletViewModel,
         contentBinding: FragmentTransactionBinding,
         assetId: String,
-        snapshot: SnapshotItem,
+        snapshot: SnapshotItem
     ) = lifecycleScope.launch {
         if (checkDestroyed(fragment)) return@launch
 
@@ -222,7 +222,7 @@ interface TransactionInterface {
         walletViewModel: WalletViewModel,
         contentBinding: FragmentTransactionBinding,
         assetId: String,
-        snapshot: SnapshotItem,
+        snapshot: SnapshotItem
     ) {
         if (checkDestroyed(fragment)) return
 
@@ -262,8 +262,11 @@ interface TransactionInterface {
                 badge.loadImage(asset.chainIconUrl, R.drawable.ic_avatar_place_holder)
             }
 
-            val amountText = if (isPositive) "+${snapshot.amount.numberFormat()}"
-            else snapshot.amount.numberFormat()
+            val amountText = if (isPositive) {
+                "+${snapshot.amount.numberFormat()}"
+            } else {
+                snapshot.amount.numberFormat()
+            }
             val amountColor = fragment.resources.getColor(
                 when {
                     snapshot.type == SnapshotType.pending.name -> {
@@ -343,7 +346,7 @@ interface TransactionInterface {
         lifecycleScope: CoroutineScope,
         walletViewModel: WalletViewModel,
         snapshot: SnapshotItem,
-        asset: AssetItem,
+        asset: AssetItem
     ) {
         if (snapshot.type == SnapshotType.withdrawal.name && snapshot.transactionHash.isNullOrBlank()) {
             lifecycleScope.launch {

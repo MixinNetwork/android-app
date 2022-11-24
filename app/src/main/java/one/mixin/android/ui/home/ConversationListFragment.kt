@@ -312,14 +312,18 @@ class ConversationListFragment : LinkFragment() {
                         enterJob = lifecycleScope.launch {
                             val user = if (item.isContactConversation()) {
                                 conversationListViewModel.suspendFindUserById(item.ownerId)
-                            } else null
+                            } else {
+                                null
+                            }
                             val messageId =
                                 if (item.unseenMessageCount != null && item.unseenMessageCount > 0) {
                                     conversationListViewModel.findFirstUnreadMessageId(
                                         item.conversationId,
                                         item.unseenMessageCount - 1
                                     )
-                                } else null
+                                } else {
+                                    null
+                                }
                             ConversationActivity.fastShow(
                                 requireContext(),
                                 conversationId = item.conversationId,
@@ -525,7 +529,9 @@ class ConversationListFragment : LinkFragment() {
     private fun onClose(type: BulletinView.Type) {
         val shown = if (type.ordinal < BulletinView.Type.values().size - 1) {
             bulletinBoard.post()
-        } else false
+        } else {
+            false
+        }
         messageAdapter.setShowHeader(shown, binding.messageRv)
     }
 
@@ -913,12 +919,14 @@ class ConversationListFragment : LinkFragment() {
                                 when {
                                     timeInterval == null -> {
                                         String.format(
-                                            getText(R.string.changed_disappearing_message_settings), name
+                                            getText(R.string.changed_disappearing_message_settings),
+                                            name
                                         )
                                     }
                                     timeInterval <= 0 -> {
                                         String.format(
-                                            getText(R.string.disable_disappearing_message), name
+                                            getText(R.string.disable_disappearing_message),
+                                            name
                                         )
                                     }
                                     else -> {

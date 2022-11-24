@@ -52,6 +52,7 @@ class AudioAdapter(private val onClickListener: (messageItem: MessageItem) -> Un
 
 class AudioHolder(itemView: View) : NormalHolder(itemView) {
     private val binding = ItemAudioBinding.bind(itemView)
+
     @SuppressLint("SetTextI18n")
     fun bind(item: MessageItem, onClickListener: (messageItem: MessageItem) -> Unit, onLongClickListener: (messageId: String) -> Unit) {
         val isMe = item.userId == Session.getAccountId()

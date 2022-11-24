@@ -71,7 +71,7 @@ class WalletActivity : BlazeBaseActivity() {
         fun show(
             activity: Activity,
             assetItem: AssetItem? = null,
-            bottomAnim: Boolean = true,
+            bottomAnim: Boolean = true
         ) {
             val myIntent = Intent(activity, WalletActivity::class.java)
             val bundle = Bundle()

@@ -14,5 +14,5 @@ data class TipSignResponse(
 
 data class TipSignData(
     @SerializedName("cipher")
-    val cipher: String,
+    val cipher: String
 )

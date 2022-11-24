@@ -58,6 +58,7 @@ class AvatarActivity : BaseActivity() {
     private val url: String by lazy { intent.getStringExtra(ARGS_URL) as String }
 
     private lateinit var binding: ActivityAvatarBinding
+
     @SuppressLint("SourceLockedOrientationActivity")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

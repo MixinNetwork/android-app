@@ -18,7 +18,9 @@ class ExpandLayout @JvmOverloads constructor(
     attrs: AttributeSet? = null,
     defStyle: Int = 0
 ) : ConstraintLayout(
-    context, attrs, defStyle
+    context,
+    attrs,
+    defStyle
 ) {
     private val expandPath: Path = Path()
     private var mRunning = false

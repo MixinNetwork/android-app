@@ -10,5 +10,5 @@ data class AudioMessagePayload(
     @SerializedName("wave_form")
     val waveForm: ByteArray,
     @SerializedName("attachment_extra")
-    val attachmentExtra: String? = null,
+    val attachmentExtra: String? = null
 )

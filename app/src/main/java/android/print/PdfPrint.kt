@@ -17,7 +17,9 @@ fun printPdf(context: Context, html: String, outputFile: File, callback: PrintPd
         override fun onPageFinished(view: WebView, url: String) {
             val documentAdapter = view.createPrintDocumentAdapter(outputFile.name)
             documentAdapter.onLayout(
-                null, attr, null,
+                null,
+                attr,
+                null,
                 object : PrintDocumentAdapter.LayoutResultCallback() {
                     override fun onLayoutFinished(info: PrintDocumentInfo?, changed: Boolean) {
                         try {
@@ -27,7 +29,9 @@ fun printPdf(context: Context, html: String, outputFile: File, callback: PrintPd
                         }
                         val fileDescriptor = ParcelFileDescriptor.open(outputFile, ParcelFileDescriptor.MODE_TRUNCATE or ParcelFileDescriptor.MODE_READ_WRITE)
                         documentAdapter.onWrite(
-                            arrayOf(PageRange.ALL_PAGES), fileDescriptor, null,
+                            arrayOf(PageRange.ALL_PAGES),
+                            fileDescriptor,
+                            null,
                             object : PrintDocumentAdapter.WriteResultCallback() {
                                 override fun onWriteFinished(pages: Array<out PageRange>?) {
                                     callback.onSuccess()

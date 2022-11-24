@@ -35,9 +35,7 @@ private const val X_HOUR = 1000 * 60 * 60
 
 @Composable
 fun BiometricTimePage() {
-
     SettingPageScaffold(title = stringResource(id = R.string.Pay_with_PIN_interval)) {
-
         Box(modifier = Modifier.height(32.dp))
 
         val context = LocalContext.current
@@ -87,7 +85,7 @@ fun BiometricTimePage() {
                             contentDescription = null,
                             modifier = Modifier
                                 .size(28.dp)
-                                .padding(4.dp),
+                                .padding(4.dp)
                         )
                     }
                 }
@@ -115,7 +113,7 @@ fun BiometricTimePage() {
                             }
                         }
                     },
-                    tag = PinBiometricsBottomSheetDialogFragment.TAG,
+                    tag = PinBiometricsBottomSheetDialogFragment.TAG
                 )
             }
         }

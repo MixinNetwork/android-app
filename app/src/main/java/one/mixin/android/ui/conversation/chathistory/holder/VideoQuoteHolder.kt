@@ -82,7 +82,6 @@ class VideoQuoteHolder constructor(val binding: ItemChatVideoQuoteBinding) : Bas
 
         when (messageItem.mediaStatus) {
             MediaStatus.DONE.name -> {
-
                 binding.durationTv.bindId(null)
                 val mediaDuration = messageItem.mediaDuration
                 if (mediaDuration != null) {

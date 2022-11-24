@@ -173,7 +173,9 @@ private fun has(input: ByteMatrix, imageBlockX: Int, imageBloks: Int, sideQuadSi
     }
     return if (x < sideQuadSize && y >= input.height - sideQuadSize) {
         false
-    } else x >= 0 && y >= 0 && x < input.width && y < input.height && input[x, y].toInt() == 1
+    } else {
+        x >= 0 && y >= 0 && x < input.width && y < input.height && input[x, y].toInt() == 1
+    }
 }
 
 fun String.getEpochNano(): Long {
@@ -392,11 +394,13 @@ fun String.getPattern(count: Int = 8): String {
     if (index == -1) return ",###"
     if (index >= count) return ",###"
 
-    val bit = if (index == 1 && this[0] == '0')
+    val bit = if (index == 1 && this[0] == '0') {
         count + 1
-    else if (index == 2 && this[0] == '-' && this[1] == '0')
+    } else if (index == 2 && this[0] == '-' && this[1] == '0') {
         count + 2
-    else count
+    } else {
+        count
+    }
 
     val sb = StringBuilder(",###.")
     for (i in 0 until (bit - index)) {
@@ -415,11 +419,13 @@ fun Long.formatMillis(): String {
 fun Editable.maxDecimal(bit: Int = 8) {
     val index = this.indexOf('.')
     if (index > -1) {
-        val max = if (index == 1 && this[0] == '0')
+        val max = if (index == 1 && this[0] == '0') {
             bit
-        else if (index == 2 && this[0] == '-' && this[1] == '0')
+        } else if (index == 2 && this[0] == '-' && this[1] == '0') {
             bit + 1
-        else bit - 1
+        } else {
+            bit - 1
+        }
         if (this.length - 1 - index > max) {
             this.delete(this.length - 1, this.length)
         }

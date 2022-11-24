@@ -14,13 +14,20 @@ enum class TipType : Parcelable {
 }
 
 sealed class TipStep : Parcelable
+
 @Parcelize internal object TryConnecting : TipStep()
+
 @Parcelize internal data class RetryConnect(val shouldWatch: Boolean, val reason: String) : TipStep()
+
 @Parcelize internal object ReadyStart : TipStep()
+
 @Parcelize internal data class RetryProcess(val reason: String) : TipStep()
+
 @Parcelize internal sealed class Processing : TipStep() {
     @Parcelize internal object Creating : Processing()
+
     @Parcelize internal data class SyncingNode(val step: Int, val total: Int) : Processing()
+
     @Parcelize internal object Updating : Processing()
 }
 
@@ -31,7 +38,7 @@ data class TipBundle(
     var tipStep: TipStep,
     var pin: String? = null,
     var oldPin: String? = null,
-    var tipEvent: TipEvent? = null,
+    var tipEvent: TipEvent? = null
 ) : Parcelable {
     fun forChange() = tipType == TipType.Change
 

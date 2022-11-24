@@ -343,7 +343,9 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
                     }
                 }
             }
-        } else null
+        } else {
+            null
+        }
         val developerMenu = menu {
             title = getString(R.string.Developer)
             action = {
@@ -937,8 +939,11 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
         updateUserStatus(relationship)
         val request = RelationshipRequest(
             user.userId,
-            if (relationship == UserRelationship.FRIEND.name)
-                RelationshipAction.ADD.name else RelationshipAction.REMOVE.name,
+            if (relationship == UserRelationship.FRIEND.name) {
+                RelationshipAction.ADD.name
+            } else {
+                RelationshipAction.REMOVE.name
+            },
             user.fullName
         )
         bottomViewModel.updateRelationship(request)
@@ -998,7 +1003,6 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
                         target: Target<Bitmap>?,
                         isFirstResource: Boolean
                     ): Boolean {
-
                         return false
                     }
                 }

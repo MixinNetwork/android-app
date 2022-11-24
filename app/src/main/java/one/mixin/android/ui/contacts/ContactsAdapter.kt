@@ -184,7 +184,11 @@ class ContactsAdapter(val context: Context, var users: List<User>, var friendSiz
         fun bind(user: User) {
             binding.header.text = if (user.fullName != null &&
                 user.fullName.isNotEmpty()
-            ) user.fullName[0].toString() else ""
+            ) {
+                user.fullName[0].toString()
+            } else {
+                ""
+            }
         }
     }
 
@@ -245,8 +249,11 @@ class ContactsAdapter(val context: Context, var users: List<User>, var friendSiz
 
     class ContactViewHolder(val binding: ItemContactContactBinding) : ViewHolder(binding.root) {
         fun bind(user: User, listener: ContactListener?) {
-            binding.index.text = if (user.fullName != null && user.fullName.isNotEmpty())
-                user.fullName[0].toString() else ""
+            binding.index.text = if (user.fullName != null && user.fullName.isNotEmpty()) {
+                user.fullName[0].toString()
+            } else {
+                ""
+            }
             binding.contactFriend.text = user.fullName
             if (listener != null) {
                 itemView.setOnClickListener { listener.onContactItem(user) }

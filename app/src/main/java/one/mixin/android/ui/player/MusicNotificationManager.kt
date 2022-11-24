@@ -79,7 +79,6 @@ class MusicNotificationManager(
         ): Bitmap? {
             val iconUri = controller.metadata.description.iconUri
             return if (currentIconUri != iconUri || currentBitmap == null) {
-
                 // Cache the bitmap for the current song so that successive calls to
                 // `getCurrentLargeIcon` don't cause the bitmap to be recreated.
                 currentIconUri = iconUri

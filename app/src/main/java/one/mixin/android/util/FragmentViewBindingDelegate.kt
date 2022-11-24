@@ -16,7 +16,7 @@ import kotlin.reflect.KProperty
 class FragmentViewBindingDelegate<T : ViewBinding>(
     val fragment: Fragment,
     val viewBindingFactory: (View) -> T,
-    val destroyTask: ((T) -> Unit)? = null,
+    val destroyTask: ((T) -> Unit)? = null
 ) : ReadOnlyProperty<Fragment, T> {
     private var binding: T? = null
 
@@ -61,7 +61,7 @@ class FragmentViewBindingDelegate<T : ViewBinding>(
 
 fun <T : ViewBinding> Fragment.viewBinding(
     viewBindingFactory: (View) -> T,
-    destroyTask: ((T) -> Unit)? = null,
+    destroyTask: ((T) -> Unit)? = null
 ) = FragmentViewBindingDelegate(this, viewBindingFactory, destroyTask)
 
 inline fun <T : ViewBinding> AppCompatActivity.viewBinding(

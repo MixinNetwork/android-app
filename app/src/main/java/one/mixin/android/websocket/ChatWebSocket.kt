@@ -53,7 +53,7 @@ class ChatWebSocket(
     private val mixinDatabase: MixinDatabase,
     private val pendingDatabase: PendingDatabase,
     private val jobManager: MixinJobManager,
-    private val linkState: LinkState,
+    private val linkState: LinkState
 ) : WebSocketListener() {
 
     private val offsetDao: OffsetDao = mixinDatabase.offsetDao()

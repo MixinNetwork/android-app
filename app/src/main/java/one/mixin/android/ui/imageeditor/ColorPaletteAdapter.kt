@@ -16,7 +16,7 @@ import one.mixin.android.extension.dp
 
 class ColorPaletteAdapter(
     @ColorInt checked: Int,
-    private val onColorChanged: (color: Int) -> Unit,
+    private val onColorChanged: (color: Int) -> Unit
 ) : ListAdapter<Int, ColorPaletteAdapter.ColorHolder>(
     object : DiffUtil.ItemCallback<Int>() {
         override fun areItemsTheSame(oldItem: Int, newItem: Int) = oldItem == newItem
@@ -88,7 +88,7 @@ class ColorPaletteAdapter(
             Color.parseColor("#198039"),
             Color.parseColor("#D7AEFC"),
             Color.parseColor("#A142F4"),
-            Color.parseColor("#B430CE"),
+            Color.parseColor("#B430CE")
         )
     }
 }

@@ -799,7 +799,7 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
         val conversationId: String,
         val messageId: String,
         val messageItem: MessageItem?,
-        val mediaSource: MediaSource,
+        val mediaSource: MediaSource
     )
 
     enum class MediaSource {
@@ -824,7 +824,7 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
             conversationId: String,
             messageId: String,
             messageItem: MessageItem?,
-            mediaSource: MediaSource,
+            mediaSource: MediaSource
         ) {
             val intent = getMediaIntent(activity, MediaParam(conversationId, messageId, messageItem, mediaSource))
             activity.startActivity(intent, getOptions(activity, imageView).toBundle())
@@ -835,7 +835,7 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
             conversationId: String,
             messageId: String,
             ratio: Float,
-            mediaSource: MediaSource,
+            mediaSource: MediaSource
         ) {
             val intent = Intent(context, MediaPagerActivity::class.java).apply {
                 addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
@@ -850,7 +850,7 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
 
         fun getMediaIntent(
             context: Context,
-            mediaParam: MediaParam,
+            mediaParam: MediaParam
         ) = Intent(context, MediaPagerActivity::class.java).apply {
             putExtra(CONVERSATION_ID, mediaParam.conversationId)
             putExtra(MESSAGE_ID, mediaParam.messageId)

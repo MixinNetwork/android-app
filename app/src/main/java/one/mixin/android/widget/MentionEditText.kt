@@ -30,7 +30,8 @@ class MentionEditText : ContentEditText {
         if (text.isNullOrBlank()) return
         val matcher = mentionNumberPattern.matcher(text)
         val spansToRemove: Array<Any> = text?.getSpans(
-            0, text?.length ?: 0,
+            0,
+            text?.length ?: 0,
             Any::class.java
         ) as Array<Any>
         for (span in spansToRemove) {

@@ -105,7 +105,9 @@ abstract class MusicMetaLoader {
         }
         val artist = if (artistList.isNotEmpty()) {
             artistList.joinToString { it }
-        } else null
+        } else {
+            null
+        }
         return MusicMeta(title, album, albumArt, artist)
     }
 
@@ -113,7 +115,7 @@ abstract class MusicMetaLoader {
         val title: String?,
         val album: String?,
         val albumArt: String?,
-        val artist: String?,
+        val artist: String?
     )
 
     @Suppress("PropertyName")

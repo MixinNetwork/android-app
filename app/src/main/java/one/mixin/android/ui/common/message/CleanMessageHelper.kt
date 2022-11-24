@@ -29,7 +29,8 @@ class CleanMessageHelper @Inject internal constructor(private val jobManager: Mi
         do {
             messageList = appDatabase.messageDao().getMediaMessageMinimalByConversationId(
                 conversationId,
-                DB_DELETE_MEDIA_LIMIT, DB_DELETE_MEDIA_LIMIT * repeatTimes++
+                DB_DELETE_MEDIA_LIMIT,
+                DB_DELETE_MEDIA_LIMIT * repeatTimes++
             )
             messageList.mapNotNull {
                 it.absolutePath(MixinApplication.appContext, conversationId, it.mediaUrl)
@@ -43,7 +44,8 @@ class CleanMessageHelper @Inject internal constructor(private val jobManager: Mi
         do {
             messageIds = appDatabase.messageDao().getTranscriptMessageIdByConversationId(
                 conversationId,
-                DB_DELETE_LIMIT, DB_DELETE_LIMIT * repeatTimes++
+                DB_DELETE_LIMIT,
+                DB_DELETE_LIMIT * repeatTimes++
             )
             jobManager.addJobInBackground(TranscriptDeleteJob(messageIds))
         } while (messageIds.size > DB_DELETE_LIMIT)

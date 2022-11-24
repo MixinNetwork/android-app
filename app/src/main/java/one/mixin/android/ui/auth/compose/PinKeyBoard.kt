@@ -182,7 +182,7 @@ fun PinKeyBoard(
                         backgroundColor = MixinAppTheme.colors.accent
                     ),
                     contentPadding = PaddingValues(horizontal = 20.dp),
-                    shape = RoundedCornerShape(20.dp),
+                    shape = RoundedCornerShape(20.dp)
                 ) {
                     Text(
                         text = stringResource(id = R.string.Continue),
@@ -281,7 +281,7 @@ fun PinKeyBoard(
                 AnimatedVisibility(
                     visible = step == AuthStep.INPUT || step == AuthStep.LOADING,
                     enter = slideInVertically(initialOffsetY = { it }),
-                    exit = slideOutVertically(targetOffsetY = { it }),
+                    exit = slideOutVertically(targetOffsetY = { it })
                 ) {
                     Column(modifier = Modifier.background(MixinAppTheme.colors.backgroundWindow)) {
                         if (Session.getTipPub() != null) {
@@ -377,7 +377,7 @@ fun PinKeyBoard(
                                                     text = list[index],
                                                     fontSize = 24.sp,
                                                     color = MixinAppTheme.colors.textPrimary,
-                                                    textAlign = TextAlign.Center,
+                                                    textAlign = TextAlign.Center
                                                 )
                                             }
                                         }

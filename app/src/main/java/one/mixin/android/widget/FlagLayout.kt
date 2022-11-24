@@ -97,12 +97,14 @@ class FlagLayout @JvmOverloads constructor(
     }
 
     private fun show() {
-        if (this.translationY != 0f)
+        if (this.translationY != 0f) {
             translationY(0f, 100)
+        }
     }
 
     private fun hide() {
-        if (this.translationY == 0f)
+        if (this.translationY == 0f) {
             translationY(130.dp.toFloat(), 100)
+        }
     }
 }

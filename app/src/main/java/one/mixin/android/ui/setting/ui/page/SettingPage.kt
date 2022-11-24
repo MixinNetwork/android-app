@@ -49,7 +49,7 @@ fun SettingPage() {
                     },
                     title = {
                         Text(text = stringResource(id = R.string.Settings))
-                    },
+                    }
                 )
             }
         ) {

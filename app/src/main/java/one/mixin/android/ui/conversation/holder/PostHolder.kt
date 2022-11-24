@@ -177,7 +177,8 @@ class PostHolder constructor(val binding: ItemChatPostBinding) : BaseViewHolder(
             messageItem.status,
             messageItem.isPin ?: false,
             isRepresentative = isRepresentative,
-            isSecret = messageItem.isSecret(), isWhite = true
+            isSecret = messageItem.isSecret(),
+            isWhite = true
         )
         chatJumpLayout(binding.chatJump, isMe, messageItem.expireIn, R.id.chat_layout)
         chatLayout(isMe, isLast)

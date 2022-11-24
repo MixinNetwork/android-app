@@ -122,6 +122,7 @@ class PinLogsFragment : BaseFragment(R.layout.fragment_pin_logs) {
 
     private var hasMore = false
     private var isLoading = false
+
     @SuppressLint("NotifyDataSetChanged")
     private fun loadMore() {
         if (isLoading || !hasMore) {

@@ -22,7 +22,7 @@ data class ChatMinimal(
     val appId: String?,
     val ownerMuteUntil: String?,
     val muteUntil: String?,
-    val pinTime: String?,
+    val pinTime: String?
 ) : Parcelable, IConversationCategory {
     override val conversationCategory: String
         get() = category

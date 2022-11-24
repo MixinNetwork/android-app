@@ -14,7 +14,8 @@ class SegmentationItemDecoration(val offset: Int = 8.dp) : ItemDecoration() {
         state: RecyclerView.State
     ) {
         super.getItemOffsets(outRect, view, parent, state)
-        if (view.tag != null && view.tag as Boolean)
+        if (view.tag != null && view.tag as Boolean) {
             outRect.top = offset
+        }
     }
 }

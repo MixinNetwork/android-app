@@ -31,7 +31,9 @@ object AlbumArtCache {
         val file = File(parentDir(), filenameForId(id))
         return if (file.exists()) {
             file
-        } else null
+        } else {
+            null
+        }
     }
 
     private fun parentDir(): File {

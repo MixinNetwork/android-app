@@ -10,5 +10,5 @@ data class UserSession(
     @SerializedName("platform")
     val platform: String?,
     @SerializedName("public_key")
-    val publicKey: String?,
+    val publicKey: String?
 )

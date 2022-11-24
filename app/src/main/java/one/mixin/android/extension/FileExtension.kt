@@ -249,7 +249,8 @@ fun Context.getAudioPath(legacy: Boolean = false): File {
 
 fun Context.getTranscriptFile(name: String, type: String, legacy: Boolean = false): File {
     return getTranscriptDirPath(legacy).newTempFile(
-        name, type,
+        name,
+        type,
         true
     )
 }
@@ -438,7 +439,8 @@ private fun File.createDocumentFile(
 ): File {
     val defaultName = "FILE_${
     SimpleDateFormat(
-        "yyyyMMdd_HHmmss_SSS", Locale.US
+        "yyyyMMdd_HHmmss_SSS",
+        Locale.US
     ).format(Date())
     }${
     if (extensionName == null) {
@@ -529,7 +531,9 @@ fun Uri.getFilePath(context: Context = MixinApplication.appContext): String? {
                     if (cursor != null && cursor.moveToFirst()) {
                         val index = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME)
                         cursor.getString(index)
-                    } else null
+                    } else {
+                        null
+                    }
                 } catch (e: Exception) {
                     null
                 }
@@ -894,7 +898,6 @@ fun Bitmap.fastBlur(scale: Float, radius: Int): Bitmap? {
 
         x = 0
         while (x < w) {
-
             r[yi] = dv[rsum]
             g[yi] = dv[gsum]
             b[yi] = dv[bsum]

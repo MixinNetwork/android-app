@@ -1,4 +1,5 @@
 @file:Suppress("NOTHING_TO_INLINE")
+
 package one.mixin.android.crypto
 
 import android.os.Build

@@ -9,5 +9,5 @@ data class VideoMessagePayload(
     @SerializedName("created_at")
     val createdAt: String? = null,
     @SerializedName("attachment_extra")
-    val attachmentExtra: String? = null,
+    val attachmentExtra: String? = null
 )

@@ -77,151 +77,200 @@ abstract class BaseJob(params: Params) : Job(params) {
     @Inject
     @Transient
     lateinit var jobManager: MixinJobManager
+
     @Inject
     @Transient
     lateinit var mixinDatabase: MixinDatabase
+
     @Inject
     @Transient
     lateinit var conversationApi: ConversationService
+
     @Inject
     @Transient
     lateinit var userService: UserService
+
     @Inject
     @Transient
     lateinit var contactService: ContactService
+
     @Inject
     @Transient
     lateinit var signalKeyService: SignalKeyService
+
     @Inject
     @Transient
     lateinit var messageService: MessageService
+
     @Inject
     @Transient
     lateinit var assetService: AssetService
+
     @Inject
     @Transient
     lateinit var accountService: AccountService
+
     @Inject
     @Transient
     lateinit var addressService: AddressService
+
     @Inject
     @Transient
     lateinit var circleService: CircleService
+
     @Inject
     @Transient
     lateinit var messageDao: MessageDao
+
     @Inject
     @Transient
     lateinit var messageHistoryDao: MessageHistoryDao
+
     @Inject
     @Transient
     lateinit var userDao: UserDao
+
     @Inject
     @Transient
     lateinit var conversationDao: ConversationDao
+
     @Inject
     @Transient
     lateinit var participantDao: ParticipantDao
+
     @Inject
     @Transient
     lateinit var participantSessionDao: ParticipantSessionDao
+
     @Inject
     @Transient
     lateinit var offsetDao: OffsetDao
+
     @Inject
     @Transient
     lateinit var assetDao: AssetDao
+
     @Inject
     @Transient
     lateinit var snapshotDao: SnapshotDao
+
     @Inject
     @Transient
     lateinit var chatWebSocket: ChatWebSocket
+
     @Inject
     @Transient
     lateinit var conversationRepo: ConversationRepository
+
     @Inject
     @Transient
     lateinit var userRepo: UserRepository
+
     @Inject
     @Transient
     lateinit var assetRepo: AssetRepository
+
     @Inject
     @Transient
     lateinit var stickerDao: StickerDao
+
     @Inject
     @Transient
     lateinit var hyperlinkDao: HyperlinkDao
+
     @Inject
     @Transient
     lateinit var stickerAlbumDao: StickerAlbumDao
+
     @Inject
     @Transient
     lateinit var stickerRelationshipDao: StickerRelationshipDao
+
     @Inject
     @Transient
     lateinit var addressDao: AddressDao
+
     @Inject
     @Transient
     lateinit var topAssetDao: TopAssetDao
+
     @Inject
     @Transient
     lateinit var jobDao: JobDao
+
     @Inject
     @Transient
     lateinit var favoriteAppDao: FavoriteAppDao
+
     @Inject
     @Transient
     lateinit var messageMentionDao: MessageMentionDao
+
     @Inject
     @Transient
     lateinit var messageFts4Dao: MessagesFts4Dao
+
     @Inject
     @Transient
     lateinit var appDao: AppDao
+
     @Inject
     @Transient
     lateinit var circleDao: CircleDao
+
     @Inject
     @Transient
     lateinit var circleConversationDao: CircleConversationDao
+
     @Inject
     @Transient
     lateinit var transcriptMessageDao: TranscriptMessageDao
+
     @Inject
     @Transient
     lateinit var pinMessageDao: PinMessageDao
+
     @Inject
     @Transient
     lateinit var propertyDao: PropertyDao
+
     @Inject
     @Transient
     lateinit var remoteMessageStatusDao: RemoteMessageStatusDao
+
     @Inject
     @Transient
     lateinit var expiredMessageDao: ExpiredMessageDao
+
     @Inject
     @Transient
     lateinit var signalProtocol: SignalProtocol
+
     @Inject
     @Transient
     lateinit var encryptedProtocol: EncryptedProtocol
+
     @Transient
     @Inject
     lateinit var appDatabase: MixinDatabase
+
     @Transient
     @Inject
     lateinit var linkState: LinkState
+
     @Transient
     @Inject
     lateinit var tip: Tip
+
     @Transient
     @Inject
     lateinit var tipCounterSynced: TipCounterSyncedLiveData
+
     @ApplicationScope
     @Transient
     @Inject
     lateinit var applicationScope: CoroutineScope
+
     @Transient
     @Inject
     lateinit var jobSenderKey: JobSenderKey

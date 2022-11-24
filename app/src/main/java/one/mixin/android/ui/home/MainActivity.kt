@@ -217,10 +217,12 @@ class MainActivity : BlazeBaseActivity() {
             return
         }
 
-        if (!Session.checkToken()) run {
-            startActivity(Intent(this, LandingActivity::class.java))
-            finish()
-            return
+        if (!Session.checkToken()) {
+            run {
+                startActivity(Intent(this, LandingActivity::class.java))
+                finish()
+                return
+            }
         }
 
         if (Session.getAccount()?.fullName.isNullOrBlank()) {

@@ -257,7 +257,9 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
             action = ACTION_TO_BACKGROUND
         }
         val exitPendingIntent = PendingIntent.getBroadcast(
-            this, 0, exitIntent,
+            this,
+            0,
+            exitIntent,
             PendingIntent.FLAG_IMMUTABLE
         )
 
@@ -274,7 +276,9 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
             .setSmallIcon(R.drawable.ic_msg_default)
             .addAction(R.drawable.ic_close_black, getString(R.string.Exit), exitPendingIntent)
         val pendingIntent = PendingIntent.getActivity(
-            this, 0, MainActivity.getWakeUpIntent(this),
+            this,
+            0,
+            MainActivity.getWakeUpIntent(this),
             PendingIntent.FLAG_IMMUTABLE
         )
 

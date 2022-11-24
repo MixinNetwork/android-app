@@ -56,7 +56,7 @@ class Tip @Inject internal constructor(
     private val tipService: TipService,
     private val accountService: AccountService,
     private val tipNode: TipNode,
-    private val tipCounterSynced: TipCounterSyncedLiveData,
+    private val tipCounterSynced: TipCounterSyncedLiveData
 ) : BasePinCipher() {
     private val observers = mutableListOf<Observer>()
 
@@ -126,7 +126,7 @@ class Tip @Inject internal constructor(
     suspend fun checkCounter(
         tipCounter: Int,
         onNodeCounterGreaterThanServer: suspend (Int) -> Unit,
-        onNodeCounterInconsistency: suspend (Int, List<TipSigner>?) -> Unit,
+        onNodeCounterInconsistency: suspend (Int, List<TipSigner>?) -> Unit
     ) = kotlin.runCatching {
         val (counters, nodeErrorInfo) = watchTipNodeCounters()
         if (counters.isEmpty()) {
@@ -162,7 +162,9 @@ class Tip @Inject internal constructor(
         val failedSigners = if (failedNodes != null) {
             val signers = mutableListOf<TipSigner>()
             failedNodes.mapTo(signers) { it.tipSigner }
-        } else null
+        } else {
+            null
+        }
         Timber.e("watch tip node counter maxCounter $maxCounter, need update nodes: $failedSigners")
         onNodeCounterInconsistency(maxCounter, failedSigners)
     }
@@ -178,7 +180,12 @@ class Tip @Inject internal constructor(
     @Throws(TipException::class, TipNodeException::class)
     private suspend fun createPriv(context: Context, identityPriv: ByteArray, ephemeral: ByteArray, watcher: ByteArray, pin: String, failedSigners: List<TipSigner>? = null, legacyPin: String? = null, forRecover: Boolean = false): ByteArray {
         val aggSig = tipNode.sign(
-            identityPriv, ephemeral, watcher, null, failedSigners, forRecover,
+            identityPriv,
+            ephemeral,
+            watcher,
+            null,
+            failedSigners,
+            forRecover,
             callback = object : TipNode.Callback {
                 override fun onNodeComplete(step: Int, total: Int) {
                     observers.forEach { it.onSyncing(step, total) }
@@ -316,7 +323,7 @@ class Tip @Inject internal constructor(
             seedBase64 = seedBase64,
             secretBase64 = secretBase64,
             signatureBase64 = sigBase64,
-            timestamp = timestamp,
+            timestamp = timestamp
         )
         tipNetworkNullable { tipService.updateTipSecret(tipSecretRequest) }.getOrThrow()
         return aesKey
@@ -336,7 +343,7 @@ class Tip @Inject internal constructor(
 
         val tipSecretReadRequest = TipSecretReadRequest(
             signatureBase64 = sigBase64,
-            timestamp = timestamp,
+            timestamp = timestamp
         )
         val response = tipNetwork { tipService.readTipSecret(tipSecretReadRequest) }.getOrThrow()
         return response.seedBase64?.base64RawURLDecode() ?: throw TipNullException("Not get tip secret")

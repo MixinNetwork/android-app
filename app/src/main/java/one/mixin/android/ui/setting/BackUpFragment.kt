@@ -69,8 +69,10 @@ class BackUpFragment : BaseFragment(R.layout.fragment_backup) {
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
-        if (!::resultRegistry.isInitialized) resultRegistry =
-            requireActivity().activityResultRegistry
+        if (!::resultRegistry.isInitialized) {
+            resultRegistry =
+                requireActivity().activityResultRegistry
+        }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             chooseFolderResult = registerForActivityResult(
                 ChooseFolderContract(),
@@ -215,7 +217,8 @@ class BackUpFragment : BaseFragment(R.layout.fragment_backup) {
         var checked = PropertyHelper.findValueByKey(BACKUP_MEDIA)?.toBooleanStrictOrNull() ?: true
         val checkedItems = booleanArrayOf(checked)
         builder.setMultiChoiceItems(
-            animals, checkedItems
+            animals,
+            checkedItems
         ) { _, _, isChecked ->
             checked = isChecked
             lifecycleScope.launch {

@@ -31,7 +31,7 @@ fun UserAvatarImage(user: User, size: Dp) {
         name = user.fullName ?: "",
         imageUrl = user.avatarUrl,
         identityNumber = user.identityNumber,
-        size = size,
+        size = size
     )
 }
 
@@ -41,7 +41,7 @@ fun AppAvatarImage(app: App, size: Dp) {
         name = app.name,
         imageUrl = app.iconUrl,
         identityNumber = app.appNumber,
-        size = size,
+        size = size
     )
 }
 
@@ -50,7 +50,7 @@ private fun AvatarImage(
     name: String,
     imageUrl: String?,
     identityNumber: String,
-    size: Dp,
+    size: Dp
 ) {
     if (imageUrl != null && imageUrl.isNotEmpty()) {
         GlideImage(

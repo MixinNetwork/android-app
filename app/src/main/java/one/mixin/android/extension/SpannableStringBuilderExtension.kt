@@ -28,7 +28,7 @@ internal fun buildAmountSymbol(
     amount: String,
     symbol: String,
     @ColorInt amountColor: Int,
-    @ColorInt symbolColor: Int,
+    @ColorInt symbolColor: Int
 ) = buildSpannedString {
     scale(3f) {
         font(

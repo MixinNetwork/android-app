@@ -28,6 +28,7 @@ class CameraOpView : View, GestureDetector.OnGestureListener {
     private var ringColor = Color.WHITE
     private var circleColor = context.getColor(R.color.colorDarkBlue)
     private var ringStrokeWidth = 5.dp.toFloat()
+
     @Suppress("unused")
     private var progressStrokeWidth = 5f.dp.toFloat()
     private var circleWidth = -10f // initial value less than 0 for delay

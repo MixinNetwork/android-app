@@ -116,14 +116,17 @@ class ForwardActivity : BlazeBaseActivity() {
             val forwardMessageList = ShareHelper.get().generateForwardMessageList(intent)
             val conversationId = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q && intent.hasExtra(Intent.EXTRA_SHORTCUT_ID)) {
                 intent.getStringExtra(Intent.EXTRA_SHORTCUT_ID)
-            } else null
+            } else {
+                null
+            }
             if (!forwardMessageList.isNullOrEmpty()) {
                 replaceFragment(
                     ForwardFragment.newInstance(
                         forwardMessageList,
                         ForwardAction.System(conversationId, getString(R.string.Share))
                     ),
-                    R.id.container, ForwardFragment.TAG
+                    R.id.container,
+                    ForwardFragment.TAG
                 )
             } else {
                 toast(R.string.Share_error)

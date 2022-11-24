@@ -50,6 +50,7 @@ class EditDialog : MixinBottomSheetDialogFragment() {
     var editText: String? = null
 
     var editInputType: Int? = null
+
     @IntRange(from = 1, to = MAX_LINE)
     var editMaxLines: Int = 1
     var maxTextCount: Int = -1
@@ -58,6 +59,7 @@ class EditDialog : MixinBottomSheetDialogFragment() {
 
     @StringRes var leftText: Int = R.string.Cancel
     var leftAction: (() -> Unit)? = null
+
     @StringRes var rightText: Int = R.string.Save
     var rightAction: ((editContent: String) -> Unit)? = null
 
@@ -75,7 +77,9 @@ class EditDialog : MixinBottomSheetDialogFragment() {
         }
         val maxLines = if (editMaxLines > MAX_LINE) {
             MAX_LINE.toInt()
-        } else editMaxLines
+        } else {
+            editMaxLines
+        }
         if (maxLines == 1) {
             binding.editEt.isSingleLine = true
         }

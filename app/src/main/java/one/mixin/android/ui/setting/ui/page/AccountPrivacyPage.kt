@@ -43,14 +43,14 @@ fun AccountPrivacyPage() {
                 } else {
                     Text(text = "${blockedUsers!!.size}")
                 }
-            },
+            }
         ) {
             navController.navigation(SettingDestination.Blocked)
         }
 
         SettingTile(
             title = stringResource(R.string.Conversation),
-            description = stringResource(R.string.setting_privacy_tip),
+            description = stringResource(R.string.setting_privacy_tip)
         ) {
             navController.navigation(SettingDestination.Conversation)
         }
@@ -58,13 +58,13 @@ fun AccountPrivacyPage() {
         Box(modifier = Modifier.height(16.dp))
 
         SettingTile(
-            title = stringResource(R.string.Phone_Number),
+            title = stringResource(R.string.Phone_Number)
         ) {
             navController.navigation(SettingDestination.PhoneNumber)
         }
 
         SettingTile(
-            title = stringResource(R.string.Phone_Contact),
+            title = stringResource(R.string.Phone_Contact)
         ) {
             navController.navigation(SettingDestination.MobileContact)
         }
@@ -86,7 +86,7 @@ fun AccountPrivacyPage() {
                             checkedThumbColor = MixinAppTheme.colors.accent,
                             uncheckedThumbColor = MixinAppTheme.colors.unchecked,
                             checkedTrackColor = MixinAppTheme.colors.accent,
-                            uncheckedTrackColor = MixinAppTheme.colors.unchecked,
+                            uncheckedTrackColor = MixinAppTheme.colors.unchecked
                         ),
                         onCheckedChange = null
                     )

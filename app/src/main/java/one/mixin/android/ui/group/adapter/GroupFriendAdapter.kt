@@ -123,8 +123,11 @@ class GroupFriendAdapter :
     }
     class HeaderViewHolder(val binding: ItemContactHeaderBinding) : RecyclerView.ViewHolder(binding.root) {
         fun bind(user: User) {
-            binding.header.text = if (user.fullName != null && user.fullName.isNotEmpty())
-                user.fullName[0].toString() else ""
+            binding.header.text = if (user.fullName != null && user.fullName.isNotEmpty()) {
+                user.fullName[0].toString()
+            } else {
+                ""
+            }
         }
     }
 

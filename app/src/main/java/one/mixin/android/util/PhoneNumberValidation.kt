@@ -28,7 +28,9 @@ private val prefixList = listOf("07", "05", "01", "25")
 private fun addPrefixAndTry(phoneUtil: PhoneNumberUtil, phoneNumber: String, countryCode: String, countryDialCode: String? = null): Boolean {
     val num = if (countryDialCode != null) {
         phoneNumber.removePrefix(countryDialCode)
-    } else phoneNumber
+    } else {
+        phoneNumber
+    }
     prefixList.forEach { p ->
         val phone = phoneUtil.parse("${countryDialCode ?: ""}$p$num", countryCode)
         if (phoneUtil.isValidNumber(phone)) {

@@ -104,7 +104,7 @@ class FileQuoteHolder constructor(val binding: ItemChatFileQuoteBinding) : Media
             messageItem.status,
             messageItem.isPin ?: false,
             isRepresentative = isRepresentative,
-            isSecret = messageItem.isSecret(),
+            isSecret = messageItem.isSecret()
         )
 
         if (keyword != null) {

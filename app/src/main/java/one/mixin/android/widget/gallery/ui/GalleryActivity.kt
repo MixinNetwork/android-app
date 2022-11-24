@@ -86,8 +86,9 @@ class GalleryActivity :
 
         if (mSpec.capture) {
             mMediaStoreCompat = MediaStoreCompat(this)
-            if (mSpec.captureStrategy == null)
+            if (mSpec.captureStrategy == null) {
                 throw RuntimeException("Don't forget to set CaptureStrategy.")
+            }
             mMediaStoreCompat.setCaptureStrategy(mSpec.captureStrategy)
         }
 

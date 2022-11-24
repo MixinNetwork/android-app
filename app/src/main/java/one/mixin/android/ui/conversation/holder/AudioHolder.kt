@@ -91,7 +91,7 @@ class AudioHolder constructor(val binding: ItemChatAudioBinding) : BaseViewHolde
             messageItem.status,
             messageItem.isPin ?: false,
             isRepresentative = isRepresentative,
-            isSecret = messageItem.isSecret(),
+            isSecret = messageItem.isSecret()
         )
 
         messageItem.mediaWaveform?.let {

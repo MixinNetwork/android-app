@@ -17,7 +17,7 @@ data class ConversationMinimal(
     val appId: String?,
     val content: String?,
     val contentType: String?,
-    val messageStatus: String?,
+    val messageStatus: String?
 ) : IConversationCategory, ICategory {
     companion object {
         val DIFF_CALLBACK = object : DiffUtil.ItemCallback<ConversationMinimal>() {

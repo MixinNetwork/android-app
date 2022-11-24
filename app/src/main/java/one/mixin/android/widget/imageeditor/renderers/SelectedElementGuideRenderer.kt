@@ -15,10 +15,14 @@ class SelectedElementGuideRenderer : Renderer {
 
     private val allPointsOnScreen = FloatArray(8)
     private val allPointsInLocalCords = floatArrayOf(
-        Bounds.LEFT, Bounds.TOP,
-        Bounds.RIGHT, Bounds.TOP,
-        Bounds.RIGHT, Bounds.BOTTOM,
-        Bounds.LEFT, Bounds.BOTTOM
+        Bounds.LEFT,
+        Bounds.TOP,
+        Bounds.RIGHT,
+        Bounds.TOP,
+        Bounds.RIGHT,
+        Bounds.BOTTOM,
+        Bounds.LEFT,
+        Bounds.BOTTOM
     )
 
     private val circleRadius = DimensionUnit.DP.toPixels(5f)

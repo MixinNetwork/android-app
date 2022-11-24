@@ -155,7 +155,7 @@ class ForwardFragment : BaseFragment(R.layout.fragment_forward) {
 
     internal class EditorPreserver(
         val forwardMessage: ForwardMessage,
-        val selectItems: List<SelectItem>,
+        val selectItems: List<SelectItem>
     )
 
     private var editorPreserver: EditorPreserver? = null
@@ -404,7 +404,10 @@ class ForwardFragment : BaseFragment(R.layout.fragment_forward) {
                     ShareCategory.Image -> {
                         val shareImageData = GsonHelper.customGson.fromJson(content, ShareImageData::class.java) ?: return@checkData
                         sendAttachmentMessage(
-                            conversationId, sender, shareImageData.url, shareImageData.attachmentExtra,
+                            conversationId,
+                            sender,
+                            shareImageData.url,
+                            shareImageData.attachmentExtra,
                             {
                                 encryptCategory.toCategory(
                                     MessageCategory.PLAIN_IMAGE,
@@ -455,7 +458,10 @@ class ForwardFragment : BaseFragment(R.layout.fragment_forward) {
                         val videoData = GsonHelper.customGson.fromJson(content, VideoMessagePayload::class.java) ?: return@checkData
                         showPb()
                         sendAttachmentMessage(
-                            conversationId, sender, videoData.url, videoData.attachmentExtra,
+                            conversationId,
+                            sender,
+                            videoData.url,
+                            videoData.attachmentExtra,
                             {
                                 encryptCategory.toCategory(
                                     MessageCategory.PLAIN_VIDEO,
@@ -472,7 +478,10 @@ class ForwardFragment : BaseFragment(R.layout.fragment_forward) {
                         val dataMessagePayload = GsonHelper.customGson.fromJson(content, DataMessagePayload::class.java) ?: return@checkData
                         showPb()
                         sendAttachmentMessage(
-                            conversationId, sender, dataMessagePayload.url, dataMessagePayload.attachmentExtra,
+                            conversationId,
+                            sender,
+                            dataMessagePayload.url,
+                            dataMessagePayload.attachmentExtra,
                             {
                                 encryptCategory.toCategory(
                                     MessageCategory.PLAIN_DATA,
@@ -488,7 +497,10 @@ class ForwardFragment : BaseFragment(R.layout.fragment_forward) {
                     ForwardCategory.Audio -> {
                         val audioData = GsonHelper.customGson.fromJson(content, AudioMessagePayload::class.java) ?: return@checkData
                         sendAttachmentMessage(
-                            conversationId, sender, audioData.url, audioData.attachmentExtra,
+                            conversationId,
+                            sender,
+                            audioData.url,
+                            audioData.attachmentExtra,
                             {
                                 encryptCategory.toCategory(
                                     MessageCategory.PLAIN_AUDIO,
@@ -612,7 +624,7 @@ class ForwardFragment : BaseFragment(R.layout.fragment_forward) {
                 messageId, conversationId, sender.userId, category, GsonHelper.customGson.toJson(payload).base64Encode(), outfile.name,
                 payload.mimeType, payload.size, payload.duration?.toString(), payload.width, payload.height, null, payload.thumbnail, null,
                 payload.key, payload.digest, MediaStatus.DONE.name, MessageStatus.SENDING.name, nowInUtc(), name = payload.name, mediaWaveform = payload.waveform,
-                caption = payload.caption,
+                caption = payload.caption
             )
             chatViewModel.sendMessage(message)
         } catch (e: Exception) {
@@ -626,7 +638,7 @@ class ForwardFragment : BaseFragment(R.layout.fragment_forward) {
             val messageId = UUID.randomUUID().toString()
             val attachmentMessagePayload = AttachmentMessagePayload(
                 message.mediaKey, message.mediaDigest, attachmentExtra.attachmentId, message.mediaMimeType!!, message.mediaSize ?: 0, message.name, message.mediaWidth,
-                message.mediaHeight, message.thumbImage, message.mediaDuration?.toLongOrNull(), message.mediaWaveform, createdAt = attachmentExtra.createdAt,
+                message.mediaHeight, message.thumbImage, message.mediaDuration?.toLongOrNull(), message.mediaWaveform, createdAt = attachmentExtra.createdAt
             )
             val file = Uri.parse(message.absolutePath()).toFile()
             val outfile = File(file.parentFile?.parentFile, "$conversationId${File.separator}$messageId${file.name.getExtensionName().notNullWithElse({ ".$it" }, "")}")
@@ -637,7 +649,7 @@ class ForwardFragment : BaseFragment(R.layout.fragment_forward) {
                 message.mediaSize ?: 0L, message.mediaDuration, message.mediaWidth,
                 message.mediaHeight, message.mediaHash, message.thumbImage, message.thumbUrl,
                 message.mediaKey, message.mediaDigest, MediaStatus.DONE.name, MessageStatus.SENDING.name,
-                nowInUtc(), name = message.name, mediaWaveform = message.mediaWaveform,
+                nowInUtc(), name = message.name, mediaWaveform = message.mediaWaveform
             )
         } catch (e: Exception) {
             return null

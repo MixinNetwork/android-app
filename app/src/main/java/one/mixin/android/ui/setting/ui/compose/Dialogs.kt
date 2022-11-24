@@ -23,9 +23,8 @@ import one.mixin.android.ui.setting.ui.theme.MixinAppTheme
 fun IndeterminateProgressDialog(
     message: String = "",
     title: String = "",
-    cancelable: Boolean? = null,
+    cancelable: Boolean? = null
 ) {
-
     val context = LocalContext.current
 
     val activity = context.findFragmentActivityOrNull()
@@ -60,7 +59,7 @@ fun MixinAlertDialog(
     confirmText: String,
     dismissText: String? = null,
     title: @Composable (() -> Unit)? = null,
-    text: @Composable (() -> Unit)? = null,
+    text: @Composable (() -> Unit)? = null
 ) {
     AlertDialog(
         modifier = modifier,
@@ -72,8 +71,8 @@ fun MixinAlertDialog(
             TextButton(
                 onClick = onConfirmClick,
                 colors = ButtonDefaults.textButtonColors(
-                    contentColor = MixinAppTheme.colors.accent,
-                ),
+                    contentColor = MixinAppTheme.colors.accent
+                )
             ) {
                 Text(
                     text = confirmText,
@@ -88,8 +87,8 @@ fun MixinAlertDialog(
                 TextButton(
                     onClick = onDismissClick,
                     colors = ButtonDefaults.textButtonColors(
-                        contentColor = MixinAppTheme.colors.textPrimary,
-                    ),
+                        contentColor = MixinAppTheme.colors.textPrimary
+                    )
                 ) {
                     Text(
                         text = it,
@@ -99,7 +98,7 @@ fun MixinAlertDialog(
             }
         },
         backgroundColor = MixinAppTheme.colors.background,
-        contentColor = MixinAppTheme.colors.textPrimary,
+        contentColor = MixinAppTheme.colors.textPrimary
     )
 }
 
@@ -119,7 +118,7 @@ fun PreviewMixinAlertDialog() {
                 Text("Text")
             },
             confirmText = "Confirm",
-            dismissText = "Dismiss",
+            dismissText = "Dismiss"
         )
     }
 }

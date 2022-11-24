@@ -75,7 +75,6 @@ class SearchFragment : BaseFragment(R.layout.fragment_search) {
 
     fun setQueryText(text: String) {
         if (isAdded && text != keyword) {
-
             if (text.isNotBlank()) {
                 showSearch()
             } else {

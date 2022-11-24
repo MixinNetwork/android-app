@@ -19,7 +19,7 @@ class SearchChatPopupMenu(
     private val context: Context,
     private val lifecycleScope: CoroutineScope,
     private val searchViewModel: SearchViewModel,
-    private val afterAction: () -> Unit,
+    private val afterAction: () -> Unit
 ) {
     fun showPopupMenu(chatMinimal: ChatMinimal, anchor: View) {
         val popupMenu = PopupMenu(context, anchor)
@@ -46,7 +46,7 @@ class SearchChatPopupMenu(
                             chatMinimal.conversationId,
                             null,
                             null,
-                            afterAction,
+                            afterAction
                         )
                         toast(R.string.Chat_unpinned)
                     } else {
@@ -192,7 +192,7 @@ class SearchChatPopupMenu(
                             searchViewModel.mute(
                                 0,
                                 senderId = it.userId,
-                                recipientId = chatMinimal.userId,
+                                recipientId = chatMinimal.userId
                             )
                         },
                         successBlock = { response ->

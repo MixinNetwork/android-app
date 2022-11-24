@@ -57,7 +57,7 @@ class JobSenderKey(
     participantDao: ParticipantDao,
     private val chatWebSocket: ChatWebSocket,
     private val linkState: LinkState,
-    private val messageHistoryDao: MessageHistoryDao,
+    private val messageHistoryDao: MessageHistoryDao
 ) : SenderKey(participantSessionDao, signalProtocol, conversationApi, participantDao, chatWebSocket) {
     override fun getJsonElement(blazeMessage: BlazeMessage): JsonElement? {
         return signalKeysChannel(blazeMessage)
@@ -97,7 +97,7 @@ class GroupCallSenderKey(
     conversationApi: ConversationService,
     participantDao: ParticipantDao,
     chatWebSocket: ChatWebSocket,
-    private val webSocketChannel: (blazeMessage: BlazeMessage) -> BlazeMessage?,
+    private val webSocketChannel: (blazeMessage: BlazeMessage) -> BlazeMessage?
 ) : SenderKey(participantSessionDao, signalProtocol, conversationApi, participantDao, chatWebSocket) {
     override fun getJsonElement(blazeMessage: BlazeMessage): JsonElement? {
         return webSocketChannel(blazeMessage)?.data
@@ -109,7 +109,7 @@ open class SenderKey(
     private val signalProtocol: SignalProtocol,
     private val conversationApi: ConversationService,
     private val participantDao: ParticipantDao,
-    private val chatWebSocket: ChatWebSocket,
+    private val chatWebSocket: ChatWebSocket
 ) {
     fun checkSessionSenderKey(conversationId: String) {
         val participants = participantSessionDao.getNotSendSessionParticipants(
@@ -311,12 +311,12 @@ internal fun requestResendKey(
     conversationId: String,
     recipientId: String,
     messageId: String?,
-    sessionId: String?,
+    sessionId: String?
 ) {
     val plainText = gson.toJson(
         PlainJsonMessagePayload(
             action = PlainDataAction.RESEND_KEY.name,
-            messageId = messageId,
+            messageId = messageId
         )
     )
     val encoded = plainText.toByteArray().base64Encode()

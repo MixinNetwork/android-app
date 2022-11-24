@@ -20,7 +20,8 @@ internal class LinkTouchMovementMethod : LinkMovementMethod() {
                 pressedSpan?.let { pressedSpan ->
                     pressedSpan.setPressed(true)
                     Selection.setSelection(
-                        spannable, spannable.getSpanStart(pressedSpan),
+                        spannable,
+                        spannable.getSpanStart(pressedSpan),
                         spannable.getSpanEnd(pressedSpan)
                     )
                     if (pressedSpan is LongTouchableSpan) {

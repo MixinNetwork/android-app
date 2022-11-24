@@ -47,5 +47,5 @@ interface BannerListener {
 
 data class Banner(
     val albumId: String,
-    val img: String,
+    val img: String
 )

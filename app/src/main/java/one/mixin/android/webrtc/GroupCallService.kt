@@ -68,12 +68,16 @@ class GroupCallService : CallService() {
 
     @Inject
     lateinit var chatWebSocket: ChatWebSocket
+
     @Inject
     lateinit var participantSessionDao: ParticipantSessionDao
+
     @Inject
     lateinit var participantDao: ParticipantDao
+
     @Inject
     lateinit var ratchetSenderKeyDao: RatchetSenderKeyDao
+
     @Inject
     lateinit var conversationApi: ConversationService
 
@@ -86,7 +90,11 @@ class GroupCallService : CallService() {
     override fun onCreate() {
         super.onCreate()
         callSenderKey = GroupCallSenderKey(
-            participantSessionDao, signalProtocol, conversationApi, participantDao, chatWebSocket
+            participantSessionDao,
+            signalProtocol,
+            conversationApi,
+            participantDao,
+            chatWebSocket
         ) {
             return@GroupCallSenderKey webSocketChannel(it)
         }
@@ -354,7 +362,9 @@ class GroupCallService : CallService() {
                 )
                 val bm = createKrakenMessage(blazeMessageParam)
                 val bmData = getBlazeMessageData(bm) ?: return
-                @Suppress("UNUSED_VARIABLE") val krakenData = gson.fromJson(String(bmData.data.decodeBase64()), KrakenData::class.java)
+
+                @Suppress("UNUSED_VARIABLE")
+                val krakenData = gson.fromJson(String(bmData.data.decodeBase64()), KrakenData::class.java)
             }
             return
         }
@@ -474,7 +484,9 @@ class GroupCallService : CallService() {
 
         saveMessage(cid, self.userId, MessageCategory.KRAKEN_END.name, duration.toString())
         val bm = createKrakenMessage(blazeMessageParam)
-        @Suppress("UNUSED_VARIABLE") val bmData = getBlazeMessageData(bm)
+
+        @Suppress("UNUSED_VARIABLE")
+        val bmData = getBlazeMessageData(bm)
 
         checkConversationUserCount(cid)
     }
@@ -501,7 +513,9 @@ class GroupCallService : CallService() {
 
         saveMessage(cid, self.userId, MessageCategory.KRAKEN_CANCEL.name)
         val bm = createKrakenMessage(blazeMessageParam)
-        @Suppress("UNUSED_VARIABLE") val bmData = getBlazeMessageData(bm)
+
+        @Suppress("UNUSED_VARIABLE")
+        val bmData = getBlazeMessageData(bm)
 
         checkConversationUserCount(cid)
     }
@@ -532,7 +546,9 @@ class GroupCallService : CallService() {
             )
             val bm = createKrakenMessage(blazeMessageParam)
             val bmData = getBlazeMessageData(bm) ?: return
-            @Suppress("UNUSED_VARIABLE") val krakenData = gson.fromJson(String(bmData.data.decodeBase64()), KrakenData::class.java)
+
+            @Suppress("UNUSED_VARIABLE")
+            val krakenData = gson.fromJson(String(bmData.data.decodeBase64()), KrakenData::class.java)
         } else {
             Timber.w("$TAG_CALL try send kraken decline message but inviter is null, conversationId: $cid")
         }
@@ -734,7 +750,9 @@ class GroupCallService : CallService() {
                 track_id = trackId
             )
             val bm = createKrakenMessage(blazeMessageParam)
-            @Suppress("UNUSED_VARIABLE") val data = webSocketChannel(bm)
+
+            @Suppress("UNUSED_VARIABLE")
+            val data = webSocketChannel(bm)
         }
     }
 
@@ -761,7 +779,9 @@ class GroupCallService : CallService() {
         val bm = webSocketChannel(blazeMessage)
         return if (bm != null) {
             gson.fromJson(bm.data, BlazeMessageData::class.java)
-        } else null
+        } else {
+            null
+        }
     }
 
     private fun getJsonElement(blazeMessage: BlazeMessage): JsonElement? =

@@ -51,7 +51,7 @@ fun BlockedPage() {
                     MixinBackButton()
                 }
             )
-        },
+        }
     ) {
         Box(
             Modifier
@@ -80,7 +80,7 @@ private fun BlockedList(users: List<User>) {
                 modifier = Modifier.padding(16.dp),
                 text = stringResource(id = R.string.block_tip),
                 fontSize = 12.sp,
-                color = MixinAppTheme.colors.textSubtitle,
+                color = MixinAppTheme.colors.textSubtitle
             )
         }
     }
@@ -93,7 +93,7 @@ private fun EmptyBlockedView() {
         contentAlignment = Alignment.Center
     ) {
         Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Image(
                 painter = painterResource(id = R.drawable.ic_blocked_users),
@@ -133,7 +133,7 @@ private fun BlockedUserItem(user: User) {
         Box(modifier = Modifier.width(16.dp))
         Text(
             text = user.fullName ?: "",
-            color = MixinAppTheme.colors.textPrimary,
+            color = MixinAppTheme.colors.textPrimary
         )
     }
 }

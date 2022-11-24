@@ -88,7 +88,7 @@ class CaptureFragment() : BaseCameraxFragment() {
     // testing constructor
     @VisibleForTesting(otherwise = VisibleForTesting.NONE)
     constructor(
-        testRegistry: ActivityResultRegistry,
+        testRegistry: ActivityResultRegistry
     ) : this() {
         resultRegistry = testRegistry
     }
@@ -364,7 +364,7 @@ class CaptureFragment() : BaseCameraxFragment() {
                 arrayListOf(
                     ForwardMessage(
                         ShareCategory.Image,
-                        GsonHelper.customGson.toJson(ShareImageData(uri.toString())),
+                        GsonHelper.customGson.toJson(ShareImageData(uri.toString()))
                     )
                 ),
                 ForwardAction.System(name = getString(R.string.Send), needEdit = false)

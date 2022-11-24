@@ -671,7 +671,7 @@ fun callableAssetItem(
                     tmpChainName,
                     tmpChainPriceUsd,
                     tmpAssetKey,
-                    tmpReserve,
+                    tmpReserve
                 )
                 result.add(item)
             }
@@ -684,7 +684,6 @@ fun callableAssetItem(
 }
 
 @SuppressLint("RestrictedApi")
-
 fun callableSearchMessageItem(
     db: MixinDatabase,
     statement: RoomSQLiteQuery,

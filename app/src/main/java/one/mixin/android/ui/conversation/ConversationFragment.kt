@@ -653,7 +653,7 @@ class ConversationFragment() :
                             messageItem.conversationId,
                             messageItem.messageId,
                             messageItem,
-                            MediaPagerActivity.MediaSource.Chat,
+                            MediaPagerActivity.MediaSource.Chat
                         ),
                         MediaPagerActivity.getOptions(requireActivity(), view)
                     )
@@ -665,7 +665,7 @@ class ConversationFragment() :
                             messageItem.conversationId,
                             messageItem.messageId,
                             messageItem,
-                            MediaPagerActivity.MediaSource.Chat,
+                            MediaPagerActivity.MediaSource.Chat
                         ),
                         MediaPagerActivity.getOptions(requireActivity(), view)
                     )
@@ -725,7 +725,9 @@ class ConversationFragment() :
                     {
                         it?.let {
                             showUserBottom(
-                                parentFragmentManager, it, conversationId,
+                                parentFragmentManager,
+                                it,
+                                conversationId,
                                 if (it.userId == recipient?.userId) {
                                     { getShareMediaResult.launch(Pair(conversationId, true)) }
                                 } else {
@@ -781,7 +783,9 @@ class ConversationFragment() :
                                 .showNow(parentFragmentManager, ProfileBottomSheetDialogFragment.TAG)
                         } else {
                             showUserBottom(
-                                parentFragmentManager, user, conversationId,
+                                parentFragmentManager,
+                                user,
+                                conversationId,
                                 if (user.userId == recipient?.userId) {
                                     { getShareMediaResult.launch(Pair(conversationId, true)) }
                                 } else {
@@ -863,7 +867,9 @@ class ConversationFragment() :
                     {
                         it?.let {
                             showUserBottom(
-                                parentFragmentManager, it, conversationId,
+                                parentFragmentManager,
+                                it,
+                                conversationId,
                                 if (it.userId == recipient?.userId) {
                                     { getShareMediaResult.launch(Pair(conversationId, true)) }
                                 } else {
@@ -1021,13 +1027,14 @@ class ConversationFragment() :
     // testing constructor
     @VisibleForTesting(otherwise = VisibleForTesting.NONE)
     constructor(
-        testRegistry: ActivityResultRegistry,
+        testRegistry: ActivityResultRegistry
     ) : this() {
         resultRegistry = testRegistry
     }
 
     // for testing
     var selectItem: SelectItem? = null
+
     // for testing
     lateinit var getForwardResult: ActivityResultLauncher<Pair<ArrayList<ForwardMessage>, String?>>
     private lateinit var getCombineForwardResult: ActivityResultLauncher<ArrayList<TranscriptMessage>>
@@ -1989,7 +1996,7 @@ class ConversationFragment() :
                         encryptCategory(),
                         mimeType,
                         getRelyMessage(),
-                        fromInput,
+                        fromInput
                     )
                 }
                 when (code) {
@@ -2180,7 +2187,8 @@ class ConversationFragment() :
             it?.let {
                 groupName = it.name
                 binding.actionBar.setSubTitle(
-                    groupName ?: "", requireContext().resources.getQuantityString(R.plurals.title_participants, groupNumber, groupNumber)
+                    groupName ?: "",
+                    requireContext().resources.getQuantityString(R.plurals.title_participants, groupNumber, groupNumber)
                 )
                 binding.actionBar.avatarIv.setGroup(it.iconUrl)
             }
@@ -2191,7 +2199,8 @@ class ConversationFragment() :
             ) { count ->
                 groupNumber = count
                 binding.actionBar.setSubTitle(
-                    groupName ?: "", requireContext().resources.getQuantityString(R.plurals.title_participants, groupNumber, groupNumber)
+                    groupName ?: "",
+                    requireContext().resources.getQuantityString(R.plurals.title_participants, groupNumber, groupNumber)
                 )
 
                 lifecycleScope.launch {
@@ -2261,7 +2270,9 @@ class ConversationFragment() :
         binding.actionBar.avatarIv.setOnClickListener {
             hideIfShowBottomSheet()
             showUserBottom(
-                parentFragmentManager, user, conversationId,
+                parentFragmentManager,
+                user,
+                conversationId,
                 if (user.userId == recipient?.userId) {
                     { getShareMediaResult.launch(Pair(conversationId, true)) }
                 } else {

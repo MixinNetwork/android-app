@@ -88,7 +88,7 @@ fun MobileContactPage() {
                     invokeNetwork = { viewModel.getContacts() },
                     successBlock = { response ->
                         showUploadButton = response.data.isNullOrEmpty()
-                    },
+                    }
                 )
                 loading = false
             }
@@ -122,7 +122,6 @@ private fun UploadButton(
     viewModel: SettingViewModel,
     onUploaded: () -> Unit
 ) {
-
     val context = LocalContext.current
 
     val scope = rememberComposeScope()
@@ -133,7 +132,6 @@ private fun UploadButton(
     }
 
     fun uploadContacts(contacts: List<Contact>) = coroutineScope.launch {
-
         val mutableList = createContactsRequests(contacts)
 
         if (mutableList.isEmpty()) {
@@ -147,7 +145,7 @@ private fun UploadButton(
             successBlock = {
                 context.defaultSharedPreferences.putBoolean(Constants.Account.PREF_DELETE_MOBILE_CONTACTS, false)
                 onUploaded()
-            },
+            }
         )
         processing = false
     }
@@ -162,7 +160,7 @@ private fun UploadButton(
                         .size(24.dp)
                         .padding(4.dp),
                     color = MixinAppTheme.colors.accent,
-                    strokeWidth = 2.dp,
+                    strokeWidth = 2.dp
                 )
             }
         }
@@ -187,9 +185,10 @@ private fun UploadButton(
                     .subscribe(
                         { contacts ->
                             uploadContacts(contacts)
-                        }, {
-                        processing = false
-                    }
+                        },
+                        {
+                            processing = false
+                        }
                     )
             }
     }
@@ -221,7 +220,7 @@ private fun DeleteButton(
                         .size(24.dp)
                         .padding(4.dp),
                     color = MixinAppTheme.colors.accent,
-                    strokeWidth = 2.dp,
+                    strokeWidth = 2.dp
                 )
             }
         }
@@ -260,7 +259,7 @@ private fun DeleteButton(
                 showAlert = false
                 deleteContacts()
             },
-            dismissText = stringResource(id = R.string.Cancel),
+            dismissText = stringResource(id = R.string.Cancel)
         )
     }
 }

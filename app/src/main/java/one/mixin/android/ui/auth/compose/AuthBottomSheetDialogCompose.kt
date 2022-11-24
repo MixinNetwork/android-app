@@ -113,7 +113,8 @@ fun AuthBottomSheetDialogCompose(
                 stringResource(R.string.Request_Authorization),
                 modifier = Modifier.align(alignment = CenterHorizontally),
                 color = MixinAppTheme.colors.textPrimary,
-                fontWeight = FontWeight.Medium, fontSize = 16.sp
+                fontWeight = FontWeight.Medium,
+                fontSize = 16.sp
             )
             Row(
                 modifier = Modifier
@@ -132,7 +133,8 @@ fun AuthBottomSheetDialogCompose(
                     Spacer(modifier = Modifier.width(3.dp))
                 }
                 Text(
-                    name, color = MixinAppTheme.colors.textPrimary,
+                    name,
+                    color = MixinAppTheme.colors.textPrimary
                 )
             }
             AnimatedContent(
@@ -173,7 +175,7 @@ fun AuthBottomSheetDialogCompose(
             AnimatedVisibility(
                 visible = step != AuthStep.DEFAULT,
                 enter = slideInVertically(initialOffsetY = { it }),
-                exit = slideOutVertically(targetOffsetY = { it }),
+                exit = slideOutVertically(targetOffsetY = { it })
             ) {
                 PinKeyBoard(step, errorContent, onResetClick = onResetClick, onBiometricClick = {
                     onBiometricClick(savedScopes.map { it.source })
@@ -199,7 +201,8 @@ fun ScopesContent(
             modifier = Modifier
                 .weight(1f)
                 .padding(vertical = 16.dp, horizontal = 4.dp),
-            state = pagerState, count = scopeGroup.size,
+            state = pagerState,
+            count = scopeGroup.size,
             verticalAlignment = Alignment.Top
         ) { page ->
             val groupId = scopeGroup.keyAt(page)
@@ -217,7 +220,8 @@ fun ScopesContent(
                     stringResource(id = getScopeGroupName(groupId)),
                     modifier = Modifier.align(alignment = CenterHorizontally),
                     color = MixinAppTheme.colors.textPrimary,
-                    fontWeight = FontWeight.Medium, fontSize = 16.sp
+                    fontWeight = FontWeight.Medium,
+                    fontSize = 16.sp
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 LazyColumn(
@@ -302,7 +306,7 @@ fun Modifier.verticalScrollbar(
                 color = color,
                 cornerRadius = CornerRadius(8f, 8f),
                 topLeft = Offset(this.size.width - width.toPx(), scrollbarOffsetY),
-                size = Size(width.toPx(), scrollbarHeight),
+                size = Size(width.toPx(), scrollbarHeight)
             )
         }
     }

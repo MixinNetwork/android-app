@@ -274,7 +274,7 @@ class PipVideoView {
                     conversationId,
                     messageId,
                     aspectRatio,
-                    mediaSource,
+                    mediaSource
                 )
             }
         }

@@ -27,7 +27,7 @@ import timber.log.Timber
 class CallAudioManager(
     private val context: Context,
     private val audioSwitch: AudioSwitch,
-    private val callback: Callback,
+    private val callback: Callback
 ) {
 
     private val audioManager: AudioManager? = context.getSystemService()
@@ -179,7 +179,9 @@ class CallAudioManager(
 
         val sound = if (isInitiator) {
             R.raw.call_outgoing
-        } else R.raw.call_incoming
+        } else {
+            R.raw.call_incoming
+        }
         val uri = Uri.parse("android.resource://${context.packageName}/$sound")
         try {
             mediaPlayer?.setDataSource(context, uri)

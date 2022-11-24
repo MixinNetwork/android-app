@@ -49,7 +49,7 @@ fun AccountPage() {
                     MixinBackButton()
                 }
             )
-        },
+        }
     ) {
         Column(
             Modifier
@@ -78,7 +78,6 @@ private fun ChangeNumberButton() {
         mutableStateOf(false)
     }
     if (openDialog.value) {
-
         val context = LocalContext.current
 
         MixinAlertDialog(
@@ -112,7 +111,7 @@ private fun ChangeNumberButton() {
             dismissText = stringResource(android.R.string.cancel),
             onDismissRequest = {
                 openDialog.value = false
-            },
+            }
         )
     }
     AccountTile(stringResource(R.string.Change_Phone_Number)) {
@@ -123,7 +122,7 @@ private fun ChangeNumberButton() {
 @Composable
 private fun AccountTile(
     title: String,
-    onClick: () -> Unit,
+    onClick: () -> Unit
 ) {
     Row(
         modifier = Modifier

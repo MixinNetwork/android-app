@@ -75,7 +75,9 @@ class DepositFragment : BaseFragment() {
                 val reserveTip = if (asset.needShowReserve()) {
                     getString(R.string.deposit_reserve, "${asset.reserve} ${asset.symbol}")
                         .highLight(requireContext(), "${asset.reserve} ${asset.symbol}")
-                } else SpannableStringBuilder()
+                } else {
+                    SpannableStringBuilder()
+                }
                 val confirmation = requireContext().resources.getQuantityString(
                     R.plurals.deposit_confirmation,
                     asset.confirmations,

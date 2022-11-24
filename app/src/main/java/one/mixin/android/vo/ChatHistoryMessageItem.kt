@@ -62,7 +62,7 @@ class ChatHistoryMessageItem(
     val sharedUserAppId: String? = null,
     val quoteId: String? = null,
     val quoteContent: String? = null,
-    val mentions: String? = null,
+    val mentions: String? = null
 ) : ICategory
 
 fun ChatHistoryMessageItem.isLottie() = assetType?.equals(Sticker.STICKER_TYPE_JSON, true) == true

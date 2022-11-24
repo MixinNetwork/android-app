@@ -29,7 +29,9 @@ abstract class MixinLimitOffsetDataSource<T> protected constructor(
         return try {
             if (cursor.moveToFirst()) {
                 cursor.getInt(0)
-            } else 0
+            } else {
+                0
+            }
         } finally {
             cursor.close()
             countQuery.release()

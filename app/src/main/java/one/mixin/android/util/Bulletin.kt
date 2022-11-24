@@ -33,7 +33,7 @@ fun interface Bulletin {
 
     class Chain(
         private val bulletins: List<Bulletin>,
-        private val index: Int,
+        private val index: Int
     ) {
 
         fun proceed(): Boolean {
@@ -49,7 +49,7 @@ fun interface Bulletin {
 class NewWalletBulletin(
     private val bulletinView: BulletinView,
     private val activity: MainActivity,
-    private val onClose: (BulletinView.Type) -> Unit,
+    private val onClose: (BulletinView.Type) -> Unit
 ) : Bulletin {
     companion object {
         const val PREF_NEW_WALLET = "pref_new_wallet"
@@ -84,7 +84,7 @@ class NewWalletBulletin(
 
 class NotificationBulletin(
     private val bulletinView: BulletinView,
-    private val onClose: (BulletinView.Type) -> Unit,
+    private val onClose: (BulletinView.Type) -> Unit
 ) : Bulletin {
     companion object {
         private const val PREF_NOTIFICATION_ON = "pref_notification_on"
@@ -120,7 +120,7 @@ class NotificationBulletin(
 class EmergencyContactBulletin(
     private val bulletinView: BulletinView,
     private val extraCondition: Boolean,
-    private val onClose: (BulletinView.Type) -> Unit,
+    private val onClose: (BulletinView.Type) -> Unit
 ) : Bulletin {
     companion object {
         private const val PREF_EMERGENCY_CONTACT = "pref_emergency_contact"
@@ -156,7 +156,7 @@ class EmergencyContactBulletin(
 
 class UpgradeTipBulletin(
     private val activity: Activity,
-    private val bulletinView: BulletinView,
+    private val bulletinView: BulletinView
 ) : Bulletin {
     override fun show(chain: Bulletin.Chain): Boolean {
         val tipPub = Session.getTipPub()

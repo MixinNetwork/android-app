@@ -9,7 +9,7 @@ fun showAppAuthPrompt(
     context: FragmentActivity,
     title: String,
     negativeBtnText: String,
-    callback: BiometricPrompt.AuthenticationCallback,
+    callback: BiometricPrompt.AuthenticationCallback
 ) {
     val biometricPromptInfo = BiometricPrompt.PromptInfo.Builder()
         .setTitle(title)

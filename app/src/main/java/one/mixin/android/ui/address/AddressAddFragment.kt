@@ -60,7 +60,7 @@ class AddressAddFragment() : BaseFragment(R.layout.fragment_address_add) {
     // testing constructor
     @VisibleForTesting(otherwise = VisibleForTesting.NONE)
     constructor(
-        testRegistry: ActivityResultRegistry,
+        testRegistry: ActivityResultRegistry
     ) : this() {
         resultRegistry = testRegistry
     }
@@ -70,8 +70,10 @@ class AddressAddFragment() : BaseFragment(R.layout.fragment_address_add) {
     private val binding by viewBinding(FragmentAddressAddBinding::bind)
     override fun onAttach(context: Context) {
         super.onAttach(context)
-        if (!::resultRegistry.isInitialized) resultRegistry =
-            requireActivity().activityResultRegistry
+        if (!::resultRegistry.isInitialized) {
+            resultRegistry =
+                requireActivity().activityResultRegistry
+        }
 
         getScanResult = registerForActivityResult(
             CaptureActivity.CaptureContract(),

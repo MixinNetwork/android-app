@@ -20,7 +20,7 @@ class MusicViewModel
 internal constructor(
     private val conversationRepo: ConversationRepository,
     private val jobManager: MixinJobManager,
-    private val mixinDatabase: MixinDatabase,
+    private val mixinDatabase: MixinDatabase
 ) : ViewModel() {
 
     private val conversationLoader = ConversationLoader()

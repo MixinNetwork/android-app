@@ -45,9 +45,7 @@ private const val FINGERPRINT_ENABLED_AFTER_30_MINUTES = 2
 
 @Composable
 fun AppAuthSettingPage() {
-
     SettingPageScaffold(title = stringResource(id = R.string.fingerprint_lock)) {
-
         var isSupportWithErrorInfo by remember {
             mutableStateOf<Pair<Boolean, String?>?>(null)
         }
@@ -58,7 +56,7 @@ fun AppAuthSettingPage() {
             context.defaultSharedPreferences
         }.intValueAsState(
             key = Constants.Account.PREF_APP_AUTH,
-            defaultValue = FINGERPRINT_DISABLED,
+            defaultValue = FINGERPRINT_DISABLED
         )
 
         val authCallback = remember {
@@ -94,7 +92,7 @@ fun AppAuthSettingPage() {
                         checkedThumbColor = MixinAppTheme.colors.accent,
                         uncheckedThumbColor = MixinAppTheme.colors.unchecked,
                         checkedTrackColor = MixinAppTheme.colors.accent,
-                        uncheckedTrackColor = MixinAppTheme.colors.unchecked,
+                        uncheckedTrackColor = MixinAppTheme.colors.unchecked
                     ),
                     onCheckedChange = null
                 )
@@ -112,7 +110,8 @@ fun AppAuthSettingPage() {
             } else {
                 val activity = context.findFragmentActivityOrNull() ?: return@SettingTile
                 showAppAuthPrompt(
-                    activity, context.getString(R.string.Confirm_fingerprint),
+                    activity,
+                    context.getString(R.string.Confirm_fingerprint),
                     context.getString(R.string.Cancel),
                     authCallback
                 )
@@ -146,24 +145,23 @@ fun AppAuthSettingPage() {
 
 @Composable
 private fun FingerprintRadioGroup(index: Int, onCheckedChange: (Int) -> Unit) {
-
     FingerprintRadioButton(
         checked = index == FINGERPRINT_ENABLED_IMMEDIATELY,
-        title = stringResource(id = R.string.Immediately),
+        title = stringResource(id = R.string.Immediately)
     ) {
         onCheckedChange(FINGERPRINT_ENABLED_IMMEDIATELY)
     }
 
     FingerprintRadioButton(
         checked = index == FINGERPRINT_ENABLED_AFTER_1_MINUTES,
-        title = stringResource(id = R.string.After_1_minute),
+        title = stringResource(id = R.string.After_1_minute)
     ) {
         onCheckedChange(FINGERPRINT_ENABLED_AFTER_1_MINUTES)
     }
 
     FingerprintRadioButton(
         checked = index == FINGERPRINT_ENABLED_AFTER_30_MINUTES,
-        title = stringResource(id = R.string.After_30_minutes),
+        title = stringResource(id = R.string.After_30_minutes)
     ) {
         onCheckedChange(FINGERPRINT_ENABLED_AFTER_30_MINUTES)
     }
@@ -191,7 +189,7 @@ private fun FingerprintRadioButton(
             selected = checked,
             onClick = null,
             colors = RadioButtonDefaults.colors(
-                selectedColor = MixinAppTheme.colors.accent,
+                selectedColor = MixinAppTheme.colors.accent
             )
         )
         Box(modifier = Modifier.width(16.dp))
@@ -205,11 +203,11 @@ private fun FingerprintRadioButton(
 fun FingerprintRadioButtonPreview() {
     MixinAppTheme {
         Surface(
-            color = MixinAppTheme.colors.backgroundWindow,
+            color = MixinAppTheme.colors.backgroundWindow
         ) {
             FingerprintRadioButton(
                 checked = true,
-                title = "Fingerprint",
+                title = "Fingerprint"
             ) {
             }
         }

@@ -10,7 +10,7 @@ data class ForwardUser(
     @ColumnInfo(name = "app_id")
     val appId: String?,
     @ColumnInfo(name = "capabilities")
-    val capabilities: List<String>?,
+    val capabilities: List<String>?
 )
 
 fun ForwardUser.encryptedCategory(): EncryptCategory = if (appId != null && capabilities?.contains(AppCap.ENCRYPTED.name) == true) {

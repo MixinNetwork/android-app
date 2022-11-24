@@ -79,7 +79,7 @@ enum class SettingDestination {
     Authentications,
     AuthenticationPermissions,
     PinLogs,
-    BiometricTime,
+    BiometricTime
 }
 
 open class SettingNavigationController {
@@ -205,7 +205,7 @@ class SettingComposeFragment : BaseFragment() {
         return ComposeView(inflater.context).apply {
             setContent {
                 MixinAppTheme(
-                    darkTheme = context.isNightMode(),
+                    darkTheme = context.isNightMode()
                 ) {
                     val navController = rememberAnimatedNavController()
                     val navigationController = remember {
