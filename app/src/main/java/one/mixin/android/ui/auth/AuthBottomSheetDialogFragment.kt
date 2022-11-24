@@ -324,7 +324,7 @@ class AuthBottomSheetDialogFragment : BottomSheetDialogFragment() {
     fun getBiometricInfo() = BiometricInfo(
         getString(R.string.Verify_by_Biometric),
         "",
-        "",
+        ""
     )
 
     private val biometricDialogCallback = object : BiometricDialog.Callback {

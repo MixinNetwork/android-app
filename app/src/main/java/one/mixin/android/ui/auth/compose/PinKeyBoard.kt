@@ -242,7 +242,7 @@ fun PinKeyBoard(
                             Spacer(modifier = Modifier.height(8.dp))
                             Text(
                                 text = stringResource(R.string.Confirm_with_PIN),
-                                color = MixinAppTheme.colors.textMinor,
+                                color = MixinAppTheme.colors.textMinor
                             )
                             if (showBiometric) {
                                 Spacer(modifier = Modifier.height(12.dp))
