@@ -1,3 +1,5 @@
+@file:Suppress("ktlint:enum-entry-name-case", "EnumEntryName")
+
 package one.mixin.android.repository
 
 enum class QrCodeType {

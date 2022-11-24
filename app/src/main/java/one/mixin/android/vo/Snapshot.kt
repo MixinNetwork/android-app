@@ -46,5 +46,5 @@ data class Snapshot(
     val confirmations: Int?
 )
 
-@Suppress("EnumEntryName")
+@Suppress("ktlint:enum-entry-name-case", "EnumEntryName")
 enum class SnapshotType { transfer, deposit, withdrawal, fee, rebate, raw, pending }
