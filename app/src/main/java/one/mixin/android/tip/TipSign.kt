@@ -6,9 +6,9 @@ import one.mixin.android.crypto.ed25519
 import one.mixin.android.crypto.getPrivateKey
 import one.mixin.android.crypto.getPublicKey
 import one.mixin.android.extension.base64RawURLEncode
+import one.mixin.android.extension.toHex
 import org.web3j.crypto.ECKeyPair
 import org.web3j.crypto.Sign
-import java.math.BigInteger
 import java.security.MessageDigest
 
 sealed class TipSignSpec(
@@ -21,19 +21,17 @@ sealed class TipSignSpec(
     sealed class Ecdsa(override val curve: String) : TipSignSpec("ecdsa", curve) {
         object Secp256k1 : Ecdsa("secp256k1") {
             override fun public(priv: ByteArray): String {
-                return Sign.publicKeyFromPrivate(BigInteger(priv)).toByteArray().base64RawURLEncode()
+                return ECKeyPair.create(priv).publicKey.toByteArray().toHex()
             }
 
             override fun sign(priv: ByteArray, data: ByteArray): String {
-                val privKey = BigInteger(priv)
-                val pub = Sign.publicKeyFromPrivate(privKey)
-                val keyPair = ECKeyPair(privKey, pub)
+                val keyPair = ECKeyPair.create(priv)
                 val signature = Sign.signPrefixedMessage(data, keyPair)
                 val b = ByteArray(65)
                 System.arraycopy(signature.r, 0, b, 0, 32)
                 System.arraycopy(signature.s, 0, b, 32, 32)
                 System.arraycopy(signature.v, 0, b, 64, 1)
-                return b.base64RawURLEncode()
+                return b.toHex()
             }
         }
     }

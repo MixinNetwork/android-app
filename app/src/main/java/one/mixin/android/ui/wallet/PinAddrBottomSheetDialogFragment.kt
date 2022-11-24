@@ -116,7 +116,7 @@ class PinAddrBottomSheetDialogFragment : BiometricBottomSheetDialogFragment() {
         return BiometricInfo(
             getTitle(),
             label ?: "",
-            destination ?: "",
+            destination ?: ""
         )
     }
 

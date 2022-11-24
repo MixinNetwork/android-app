@@ -851,8 +851,12 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
             if (d.isNullOrBlank()) {
                 showError()
                 return
-            } else d.base64RawURLDecode()
-        } else null
+            } else {
+                d.base64RawURLDecode()
+            }
+        } else {
+            null
+        }
 
         contentView.post {
             PinInputBottomSheetDialogFragment.newInstance().setOnPinComplete { pin ->
