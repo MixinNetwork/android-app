@@ -27,7 +27,7 @@ import one.mixin.android.widget.largeimage.LargeImageView
 class MediaPagerAdapter(
     private val context: Context,
     private val onDismissListener: DismissFrameLayout.OnDismissListener,
-    private val onMediaPagerAdapterListener: MediaPagerAdapterListener
+    private val onMediaPagerAdapterListener: MediaPagerAdapterListener,
 ) : SafePagedListAdapter<MessageItem, MediaPagerHolder>(MessageItem.DIFF_CALLBACK) {
 
     var initialPos: Int = 0

@@ -14,5 +14,5 @@ data class SearchMessageItem(
     val userId: String,
     val userFullName: String?,
     val userAvatarUrl: String?,
-    val conversationAvatarUrl: String?
+    val conversationAvatarUrl: String?,
 ) : Parcelable

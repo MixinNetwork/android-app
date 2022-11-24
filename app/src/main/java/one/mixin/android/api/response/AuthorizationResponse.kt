@@ -22,11 +22,11 @@ class AuthorizationResponse(
     @SerializedName("created_at")
     val createAt: String,
     @SerializedName("accessed_at")
-    val accessedAt: String
+    val accessedAt: String,
 ) : Parcelable
 
 fun AuthorizationResponse.getScopes(
-    ctx: Context
+    ctx: Context,
 ): ArrayList<Scope> {
     val scopes = arrayListOf<Scope>()
     scopes.addAll(

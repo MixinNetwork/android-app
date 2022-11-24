@@ -89,17 +89,17 @@ class ChatControlView : LinearLayout, ActionMode.Callback {
         EXPANDED_MENU, // x ☺ i
         EXPANDED_STICKER, // + k i
         EXPANDED_GALLERY, // + ☺ i[√]
-        COLLAPSED // + ☺ i
+        COLLAPSED, // + ☺ i
     }
 
     private enum class STICKER_STATUS {
         STICKER,
-        KEYBOARD
+        KEYBOARD,
     }
 
     private enum class MENU_STATUS {
         EXPANDED,
-        COLLAPSED
+        COLLAPSED,
     }
 
     lateinit var callback: Callback
@@ -605,7 +605,7 @@ class ChatControlView : LinearLayout, ActionMode.Callback {
 
     private fun getLayoutTransition(
         scaleUp: ObjectAnimator,
-        scaleDown: ObjectAnimator
+        scaleDown: ObjectAnimator,
     ): LayoutTransition {
         val layoutTransition = LayoutTransition()
         layoutTransition.setAnimator(LayoutTransition.APPEARING, scaleUp)

@@ -24,7 +24,7 @@ object GsonHelper {
         override fun serialize(
             src: Bitmap,
             typeOfSrc: Type,
-            context: JsonSerializationContext
+            context: JsonSerializationContext,
         ): JsonElement {
             return JsonPrimitive(src.base64Encode(Bitmap.CompressFormat.PNG))
         }
@@ -32,7 +32,7 @@ object GsonHelper {
         override fun deserialize(
             json: JsonElement,
             typeOfT: Type,
-            context: JsonDeserializationContext
+            context: JsonDeserializationContext,
         ): Bitmap {
             return decodeBitmapFromBase64(json.asString)
         }
@@ -44,7 +44,7 @@ object GsonHelper {
         override fun deserialize(
             json: JsonElement,
             typeOfT: Type,
-            context: JsonDeserializationContext
+            context: JsonDeserializationContext,
         ): ByteArray {
             return Base64.decode(json.asString)
         }
@@ -52,7 +52,7 @@ object GsonHelper {
         override fun serialize(
             src: ByteArray,
             typeOfSrc: Type,
-            context: JsonSerializationContext
+            context: JsonSerializationContext,
         ): JsonElement {
             return JsonPrimitive(src.base64Encode())
         }

@@ -87,7 +87,7 @@ class BiometricLayout(context: Context, attributeSet: AttributeSet) : ViewAnimat
         content: String,
         animate: Boolean = false,
         tickMillis: Long = 0L,
-        errorAction: ErrorAction? = null
+        errorAction: ErrorAction? = null,
     ) {
         displayedChild = POS_ERROR
         binding.errorInfo.text = content
@@ -150,7 +150,7 @@ class BiometricLayout(context: Context, attributeSet: AttributeSet) : ViewAnimat
     }
 
     fun setErrorButton(
-        errorAction: ErrorAction
+        errorAction: ErrorAction,
     ) {
         binding.apply {
             when (errorAction) {

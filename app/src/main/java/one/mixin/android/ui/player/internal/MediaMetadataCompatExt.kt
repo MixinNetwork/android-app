@@ -271,7 +271,7 @@ const val METADATA_KEY_MIXIN_FLAGS = "one.mixin.messenger.player.METADATA_KEY_MI
 internal val diffCallback = object : DiffUtil.ItemCallback<MediaMetadataCompat>() {
     override fun areItemsTheSame(
         oldItem: MediaMetadataCompat,
-        newItem: MediaMetadataCompat
+        newItem: MediaMetadataCompat,
     ): Boolean =
         oldItem.id == newItem.id
 

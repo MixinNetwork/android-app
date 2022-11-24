@@ -51,7 +51,7 @@ class TransferOutViewFragment : MixinBottomSheetDialogFragment(), OnSnapshotList
             userId: String? = null,
             userAvatarUrl: String? = null,
             symbol: String? = null,
-            address: Address? = null
+            address: Address? = null,
         ) = TransferOutViewFragment().withArgs {
             putString(Constants.ARGS_ASSET_ID, assetId)
             userId?.let { putString(Constants.ARGS_USER_ID, it) }

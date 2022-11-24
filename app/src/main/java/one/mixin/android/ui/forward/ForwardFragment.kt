@@ -104,7 +104,7 @@ class ForwardFragment : BaseFragment(R.layout.fragment_forward) {
 
         fun newInstance(
             messages: ArrayList<ForwardMessage>,
-            action: ForwardAction
+            action: ForwardAction,
         ): ForwardFragment {
             val fragment = ForwardFragment()
             val b = bundleOf(
@@ -117,7 +117,7 @@ class ForwardFragment : BaseFragment(R.layout.fragment_forward) {
 
         fun newCombineInstance(
             messages: ArrayList<TranscriptMessage>,
-            action: ForwardAction
+            action: ForwardAction,
         ): ForwardFragment {
             val fragment = ForwardFragment()
             val b = bundleOf(
@@ -155,7 +155,7 @@ class ForwardFragment : BaseFragment(R.layout.fragment_forward) {
 
     internal class EditorPreserver(
         val forwardMessage: ForwardMessage,
-        val selectItems: List<SelectItem>
+        val selectItems: List<SelectItem>,
     )
 
     private var editorPreserver: EditorPreserver? = null
@@ -545,7 +545,7 @@ class ForwardFragment : BaseFragment(R.layout.fragment_forward) {
         mediaUrl: String?,
         attachmentExtraString: String?,
         getCategory: () -> String,
-        fallbackAction: suspend () -> Unit
+        fallbackAction: suspend () -> Unit,
     ) = withContext(Dispatchers.IO) {
         if (attachmentExtraString != null) {
             val attachmentExtra: AttachmentExtra = try {
@@ -583,7 +583,7 @@ class ForwardFragment : BaseFragment(R.layout.fragment_forward) {
         conversationId: String,
         category: String,
         mediaUrl: String?,
-        fallbackAction: suspend () -> Unit
+        fallbackAction: suspend () -> Unit,
     ) {
         val payload: AttachmentMessagePayload = try {
             GsonHelper.customGson.fromJson(String(Base64.decode(attachmentExtraString)), AttachmentMessagePayload::class.java)

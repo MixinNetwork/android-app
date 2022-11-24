@@ -12,7 +12,7 @@ import one.mixin.android.vo.User
 import one.mixin.android.vo.isGroupConversation
 
 class ConversationCircleSelectAdapter(
-    val removeItem: (Any) -> Unit
+    val removeItem: (Any) -> Unit,
 ) : RecyclerView.Adapter<ConversationCircleSelectAdapter.SelectViewHolder>() {
 
     var checkedItems = mutableListOf<Any>()

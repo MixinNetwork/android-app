@@ -10,5 +10,5 @@ data class VerificationResponse(
     @SerializedName("contact_id")
     val contactId: String? = null,
     @SerializedName("deactivated_at")
-    val deactivatedAt: String?
+    val deactivatedAt: String?,
 )

@@ -100,7 +100,7 @@ open class AutoLinkTextView(context: Context, attrs: AttributeSet?) :
 
     private fun renderMention(
         text: SpannableStringBuilder,
-        autoLinkItems: LinkedList<AutoLinkItem>
+        autoLinkItems: LinkedList<AutoLinkItem>,
     ): CharSequence {
         val mentionRenderContext = this.mentionRenderContext ?: return text
         val matcher = mentionNumberPattern.matcher(text)
@@ -144,7 +144,7 @@ open class AutoLinkTextView(context: Context, attrs: AttributeSet?) :
 
     private fun makeSpannableString(
         text: CharSequence,
-        autoLinkItems: List<AutoLinkItem>
+        autoLinkItems: List<AutoLinkItem>,
     ): SpannableString {
         val spannableString = if (text is SpannableString) {
             text
@@ -231,7 +231,7 @@ open class AutoLinkTextView(context: Context, attrs: AttributeSet?) :
 
     private fun matchedRanges(
         text: CharSequence,
-        autoLinkItems: MutableList<AutoLinkItem>
+        autoLinkItems: MutableList<AutoLinkItem>,
     ): List<AutoLinkItem> {
         for (anAutoLinkMode in requireNotNull(autoLinkModes)) {
             val pattern = Utils.getPatternByAutoLinkMode(anAutoLinkMode, customRegex)

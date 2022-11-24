@@ -104,7 +104,7 @@ class AudioPlayer private constructor() {
             messageItem: MessageItem,
             autoPlayNext: Boolean = true,
             continuePlayOnlyToday: Boolean = false,
-            whenPlayNewAudioMessage: ((Message) -> Unit)? = null
+            whenPlayNewAudioMessage: ((Message) -> Unit)? = null,
         ) {
             get().play(messageItem, autoPlayNext, continuePlayOnlyToday, whenPlayNewAudioMessage)
         }
@@ -218,7 +218,7 @@ class AudioPlayer private constructor() {
         messageItem: MessageItem,
         autoPlayNext: Boolean = true,
         continuePlayOnlyToday: Boolean = false,
-        whenPlayNewAudioMessage: ((Message) -> Unit)? = null
+        whenPlayNewAudioMessage: ((Message) -> Unit)? = null,
     ) {
         this.autoPlayNext = autoPlayNext
         this.continuePlayOnlyToday = continuePlayOnlyToday
@@ -325,7 +325,7 @@ class AudioPlayer private constructor() {
 
     private fun markAudioReadAndCheckNextAudioAvailable(
         currentMessage: MessageItem,
-        whenPlayNewAction: ((Message) -> Unit)? = null
+        whenPlayNewAction: ((Message) -> Unit)? = null,
     ) = MixinApplication.get().applicationScope.launch(Dispatchers.IO) {
         val messageDao = MixinDatabase.getDatabase(MixinApplication.appContext).messageDao()
         if (currentMessage.mediaStatus == MediaStatus.DONE.name) {

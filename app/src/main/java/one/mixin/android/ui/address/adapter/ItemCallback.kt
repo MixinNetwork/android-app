@@ -29,7 +29,7 @@ class ItemCallback(private val listener: ItemCallbackListener) :
         dX: Float,
         dY: Float,
         actionState: Int,
-        isCurrentlyActive: Boolean
+        isCurrentlyActive: Boolean,
     ) {
         viewHolder?.let {
             ItemTouchHelper.Callback.getDefaultUIUtil()
@@ -52,7 +52,7 @@ class ItemCallback(private val listener: ItemCallbackListener) :
         dX: Float,
         dY: Float,
         actionState: Int,
-        isCurrentlyActive: Boolean
+        isCurrentlyActive: Boolean,
     ) {
         if (dX > 0 && direction != ItemTouchHelper.START) {
             direction = ItemTouchHelper.START

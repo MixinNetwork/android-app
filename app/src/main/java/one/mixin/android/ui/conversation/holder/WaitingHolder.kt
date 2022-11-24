@@ -15,7 +15,7 @@ import one.mixin.android.vo.isSignal
 
 class WaitingHolder constructor(
     val binding: ItemChatWaitingBinding,
-    private val onItemListener: ConversationAdapter.OnItemListener
+    private val onItemListener: ConversationAdapter.OnItemListener,
 ) : BaseViewHolder(binding.root) {
 
     override fun chatLayout(isMe: Boolean, isLast: Boolean, isBlink: Boolean) {
@@ -57,7 +57,7 @@ class WaitingHolder constructor(
         messageItem: MessageItem,
         isLast: Boolean,
         isFirst: Boolean,
-        onItemListener: ConversationAdapter.OnItemListener
+        onItemListener: ConversationAdapter.OnItemListener,
     ) {
         val isMe = meId == messageItem.userId
         if (messageItem.isSignal()) {

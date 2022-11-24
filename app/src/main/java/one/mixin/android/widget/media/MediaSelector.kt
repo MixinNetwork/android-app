@@ -28,7 +28,7 @@ class MediaSelector(
     context: Context,
     loaderManager: LoaderManager,
     private var listener: MediaSelectorListener?,
-    onDismissListener: OnDismissListener
+    onDismissListener: OnDismissListener,
 ) : PopupWindow(context) {
 
     private var currentAnchor: View? = null

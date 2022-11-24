@@ -18,7 +18,7 @@ class MessageMention(
     @ColumnInfo(name = "mentions")
     val mentions: String,
     @ColumnInfo(name = "has_read")
-    val hasRead: Boolean
+    val hasRead: Boolean,
 )
 
 enum class MessageMentionStatus { MENTION_READ }

@@ -102,7 +102,7 @@ abstract class BiometricBottomSheetDialogFragment : MixinBottomSheetDialogFragme
         content: String,
         animate: Boolean = false,
         tickMillis: Long = 0L,
-        errorAction: BiometricLayout.ErrorAction? = null
+        errorAction: BiometricLayout.ErrorAction? = null,
     ) {
         if (!isAdded) return
         biometricLayout.showErrorInfo(content, animate, tickMillis, errorAction)

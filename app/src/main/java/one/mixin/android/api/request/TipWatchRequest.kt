@@ -6,5 +6,5 @@ class TipWatchRequest(
     @SerializedName("watcher")
     val watcher: String? = null,
     @SerializedName("action")
-    val action: String = "WATCH"
+    val action: String = "WATCH",
 )

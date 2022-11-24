@@ -153,7 +153,7 @@ private fun generatePath(
     legacy: Boolean,
     iCategory: ICategory,
     conversationId: String,
-    mediaUrl: String
+    mediaUrl: String,
 ): File? {
     return when {
         iCategory.isImage() -> File(

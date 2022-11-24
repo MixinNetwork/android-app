@@ -50,7 +50,7 @@ open class Conversation(
     @ColumnInfo(name = "last_message_created_at")
     val lastMessageCreatedAt: String? = null,
     @ColumnInfo(name = "expire_in")
-    val expireIn: Long? = null
+    val expireIn: Long? = null,
 ) : IConversationCategory {
     override val conversationCategory: String
         get() = category ?: ConversationCategory.CONTACT.name

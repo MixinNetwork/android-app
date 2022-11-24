@@ -165,7 +165,7 @@ class StickerAlbumFragment : BaseFragment(R.layout.fragment_sticker_album) {
         override fun onPageScrolled(
             position: Int,
             positionOffset: Float,
-            positionOffsetPixels: Int
+            positionOffsetPixels: Int,
         ) {
             if (position == 0 && positionOffset > 0) {
                 binding.viewPager.setCurrentItem(TYPE_RECENT, false)

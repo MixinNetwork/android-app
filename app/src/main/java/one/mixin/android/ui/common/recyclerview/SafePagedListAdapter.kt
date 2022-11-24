@@ -12,7 +12,7 @@ import java.lang.reflect.InvocationTargetException
 import java.util.concurrent.Executor
 
 abstract class SafePagedListAdapter<T, VH : RecyclerView.ViewHolder>(
-    diffCallback: DiffUtil.ItemCallback<T>
+    diffCallback: DiffUtil.ItemCallback<T>,
 ) : PagedListAdapter<T, VH>(diffCallback) {
 
     init {

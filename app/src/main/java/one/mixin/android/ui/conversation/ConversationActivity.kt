@@ -128,7 +128,7 @@ class ConversationActivity : BlazeBaseActivity() {
             conversationId: String,
             recipient: User?,
             initialPositionMessageId: String?,
-            unreadCount: Int
+            unreadCount: Int,
         ) {
             Intent(context, ConversationActivity::class.java).apply {
                 putExtras(
@@ -161,7 +161,7 @@ class ConversationActivity : BlazeBaseActivity() {
             messageId: String? = null,
             keyword: String? = null,
             unreadCount: Int? = null,
-            transcriptData: TranscriptData? = null
+            transcriptData: TranscriptData? = null,
         ) {
             require(!(conversationId == null && recipientId == null)) { "lose data" }
             require(recipientId != Session.getAccountId()) { "error data $conversationId" }
@@ -186,7 +186,7 @@ class ConversationActivity : BlazeBaseActivity() {
             conversationId: String? = null,
             recipientId: String? = null,
             messageId: String? = null,
-            keyword: String? = null
+            keyword: String? = null,
         ): Intent {
             require(!(conversationId == null && recipientId == null)) { "lose data" }
             require(recipientId != Session.getAccountId()) { "error data $conversationId" }
@@ -207,7 +207,7 @@ class ConversationActivity : BlazeBaseActivity() {
             conversationId: String? = null,
             recipientId: String? = null,
             messageId: String? = null,
-            keyword: String? = null
+            keyword: String? = null,
         ) {
             val mainIntent = Intent(context, ConversationActivity::class.java)
             mainIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)

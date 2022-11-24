@@ -25,7 +25,7 @@ class PhotoHolder(itemView: View) : MediaPagerHolder(itemView) {
     fun bind(
         messageItem: ChatHistoryMessageItem,
         needPostTransition: Boolean,
-        mediaPagerAdapterListener: MediaPagerAdapterListener
+        mediaPagerAdapterListener: MediaPagerAdapterListener,
     ) {
         val imageView = (itemView as ViewGroup).getChildAt(0) as PhotoView
         val photoViewAttacher = imageView.attacher
@@ -39,7 +39,7 @@ class PhotoHolder(itemView: View) : MediaPagerHolder(itemView) {
                         model: Any?,
                         target: Target<Drawable?>?,
                         dataSource: DataSource?,
-                        isFirstResource: Boolean
+                        isFirstResource: Boolean,
                     ): Boolean {
                         photoViewAttacher.isZoomable = true
                         if (needPostTransition) {
@@ -53,7 +53,7 @@ class PhotoHolder(itemView: View) : MediaPagerHolder(itemView) {
                         e: GlideException?,
                         model: Any?,
                         target: Target<Drawable?>?,
-                        isFirstResource: Boolean
+                        isFirstResource: Boolean,
                     ): Boolean {
                         return false
                     }
@@ -72,7 +72,7 @@ class PhotoHolder(itemView: View) : MediaPagerHolder(itemView) {
                         model: Any?,
                         target: Target<Drawable?>?,
                         dataSource: DataSource?,
-                        isFirstResource: Boolean
+                        isFirstResource: Boolean,
                     ): Boolean {
                         photoViewAttacher.isZoomable = true
                         if (needPostTransition) {
@@ -86,7 +86,7 @@ class PhotoHolder(itemView: View) : MediaPagerHolder(itemView) {
                         e: GlideException?,
                         model: Any?,
                         target: Target<Drawable?>?,
-                        isFirstResource: Boolean
+                        isFirstResource: Boolean,
                     ): Boolean {
                         return false
                     }

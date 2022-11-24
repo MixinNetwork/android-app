@@ -30,7 +30,7 @@ import one.mixin.android.widget.CircleProgress
 
 class VideoHolder(
     itemView: View,
-    private val mediaPagerAdapterListener: MediaPagerAdapterListener
+    private val mediaPagerAdapterListener: MediaPagerAdapterListener,
 ) : MediaPagerHolder(itemView) {
     val binding = ItemPagerVideoLayoutBinding.bind(itemView)
     init {
@@ -42,7 +42,7 @@ class VideoHolder(
     fun bind(
         messageItem: MessageItem,
         needPostTransition: Boolean,
-        videoStatusCache: LruCache<String, String>
+        videoStatusCache: LruCache<String, String>,
     ) {
         val context = itemView.context
         val circleProgress = itemView.findViewById<CircleProgress>(R.id.circle_progress)

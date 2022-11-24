@@ -22,7 +22,7 @@ data class SignalKey(
     @SerializedName("user_id")
     val userId: String?,
     @SerializedName("session_id")
-    val sessionId: String?
+    val sessionId: String?,
 ) {
     fun getPreKeyPublic(): ECPublicKey? {
         if (preKey.pubKey.isNullOrEmpty()) {

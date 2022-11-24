@@ -19,7 +19,7 @@ abstract class FastLimitOffsetDataSource<T, S>(
     private val offsetStatement: RoomSQLiteQuery,
     private val fastCountCallback: () -> Int,
     private val querySqlGenerator: (String) -> RoomSQLiteQuery,
-    private vararg val tables: String
+    private vararg val tables: String,
 ) : PositionalDataSource<T>() {
 
     init {
@@ -45,7 +45,7 @@ abstract class FastLimitOffsetDataSource<T, S>(
     protected abstract fun convertRows(cursor: Cursor?): List<T>
     override fun loadInitial(
         params: LoadInitialParams,
-        callback: LoadInitialCallback<T>
+        callback: LoadInitialCallback<T>,
     ) {
         val totalCount = countItems()
         if (totalCount == 0) {
@@ -79,7 +79,7 @@ abstract class FastLimitOffsetDataSource<T, S>(
 
     override fun loadRange(
         params: LoadRangeParams,
-        callback: LoadRangeCallback<T>
+        callback: LoadRangeCallback<T>,
     ) {
         val list = loadRange(params.startPosition, params.loadSize)
         callback.onResult(list)

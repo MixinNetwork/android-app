@@ -42,7 +42,7 @@ class GroupUsersBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         const val GROUP_VOICE_MAX_COUNT = 256
 
         fun newInstance(
-            conversationId: String
+            conversationId: String,
         ) = GroupUsersBottomSheetDialogFragment().apply {
             arguments = Bundle().apply {
                 putString(ARGS_CONVERSATION_ID, conversationId)

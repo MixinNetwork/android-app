@@ -16,7 +16,7 @@ class EncryptedProtocol {
         otherPublicKey: ByteArray,
         otherSessionId: String,
         extensionSessionKey: ByteArray? = null,
-        extensionSessionId: String? = null
+        extensionSessionId: String? = null,
     ): ByteArray {
         val aesGcmKey = generateAesKey()
         val encryptedMessageData = aesGcmEncrypt(plaintext, aesGcmKey)

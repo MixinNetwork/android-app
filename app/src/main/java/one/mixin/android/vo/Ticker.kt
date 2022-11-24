@@ -7,7 +7,7 @@ data class Ticker(
     @SerializedName("price_usd")
     val priceUsd: String,
     @SerializedName("price_btc")
-    val priceBtc: String
+    val priceBtc: String,
 ) {
 
     fun priceFiat(): BigDecimal = if (priceUsd == "0") {

@@ -69,7 +69,7 @@ class ImageQuoteHolder constructor(val binding: ItemChatImageQuoteBinding) : Med
         messageItem: ChatHistoryMessageItem,
         isLast: Boolean,
         isFirst: Boolean = false,
-        onItemListener: ChatHistoryAdapter.OnItemListener
+        onItemListener: ChatHistoryAdapter.OnItemListener,
     ) {
         super.bind(messageItem)
         this.onItemListener = onItemListener

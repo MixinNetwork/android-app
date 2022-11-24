@@ -26,7 +26,7 @@ class ConversationJob(
     private val conversationId: String? = null,
     private val participantRequests: List<ParticipantRequest>? = null,
     private val type: Int,
-    private val recipientId: String? = null
+    private val recipientId: String? = null,
 ) : MixinJob(Params(PRIORITY_UI_HIGH).groupBy(GROUP), UUID.randomUUID().toString()) {
 
     companion object {

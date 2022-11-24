@@ -171,7 +171,7 @@ private fun FingerprintRadioGroup(index: Int, onCheckedChange: (Int) -> Unit) {
 private fun FingerprintRadioButton(
     checked: Boolean,
     title: String,
-    onChecked: () -> Unit
+    onChecked: () -> Unit,
 ) {
     Row(
         Modifier

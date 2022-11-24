@@ -121,7 +121,7 @@ class ConversationAdapter(
     private val onItemListener: OnItemListener,
     private val isGroup: Boolean,
     private val isSecret: Boolean = true,
-    private val isBot: Boolean = false
+    private val isBot: Boolean = false,
 ) : SafePagedListAdapter<MessageItem, RecyclerView.ViewHolder>(diffCallback),
     MixinStickyRecyclerHeadersAdapter<TimeHolder> {
     var selectSet: ArraySet<MessageItem> = ArraySet()
@@ -596,7 +596,7 @@ class ConversationAdapter(
     @SuppressLint("NotifyDataSetChanged")
     override fun onCurrentListChanged(
         previousList: PagedList<MessageItem>?,
-        currentList: PagedList<MessageItem>?
+        currentList: PagedList<MessageItem>?,
     ) {
         super.onCurrentListChanged(previousList, currentList)
         if (currentList != null && previousList != null && previousList.size != 0) {
@@ -691,7 +691,7 @@ class ConversationAdapter(
 
     override fun onCreateViewHolder(
         parent: ViewGroup,
-        viewType: Int
+        viewType: Int,
     ): RecyclerView.ViewHolder =
         when (viewType) {
             TEXT_TYPE -> {
@@ -917,7 +917,7 @@ class ConversationAdapter(
 
             override fun areContentsTheSame(
                 oldItem: MessageItem,
-                newItem: MessageItem
+                newItem: MessageItem,
             ): Boolean {
                 return oldItem.mediaStatus == newItem.mediaStatus &&
                     oldItem.type == newItem.type &&

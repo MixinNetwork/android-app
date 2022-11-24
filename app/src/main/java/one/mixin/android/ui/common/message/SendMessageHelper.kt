@@ -93,7 +93,7 @@ class SendMessageHelper @Inject internal constructor(private val jobManager: Mix
         sender: User,
         content: String,
         encryptCategory: EncryptCategory,
-        isSilentMessage: Boolean? = null
+        isSilentMessage: Boolean? = null,
     ) {
         val category = encryptCategory.toCategory(
             MessageCategory.PLAIN_TEXT,
@@ -210,7 +210,7 @@ class SendMessageHelper @Inject internal constructor(private val jobManager: Mix
         content: String,
         replyMessage: MessageItem,
         encryptCategory: EncryptCategory,
-        isSilentMessage: Boolean? = null
+        isSilentMessage: Boolean? = null,
     ) {
         val category = encryptCategory.toCategory(
             MessageCategory.PLAIN_TEXT,
@@ -285,7 +285,7 @@ class SendMessageHelper @Inject internal constructor(private val jobManager: Mix
         duration: Long,
         waveForm: ByteArray,
         encryptCategory: EncryptCategory,
-        replyMessage: MessageItem? = null
+        replyMessage: MessageItem? = null,
     ) {
         val category = encryptCategory.toCategory(
             MessageCategory.PLAIN_AUDIO,
@@ -304,7 +304,7 @@ class SendMessageHelper @Inject internal constructor(private val jobManager: Mix
         conversationId: String,
         sender: User,
         stickerId: String,
-        encryptCategory: EncryptCategory
+        encryptCategory: EncryptCategory,
     ) {
         val category = encryptCategory.toCategory(
             MessageCategory.PLAIN_STICKER,
@@ -332,7 +332,7 @@ class SendMessageHelper @Inject internal constructor(private val jobManager: Mix
         shareUserId: String,
         shareUserFullName: String? = null,
         encryptCategory: EncryptCategory,
-        replyMessage: MessageItem? = null
+        replyMessage: MessageItem? = null,
     ) {
         val category = encryptCategory.toCategory(
             MessageCategory.PLAIN_CONTACT,
@@ -355,7 +355,7 @@ class SendMessageHelper @Inject internal constructor(private val jobManager: Mix
         encryptCategory: EncryptCategory,
         messageId: String? = null,
         createdAt: String? = null,
-        replyMessage: MessageItem? = null
+        replyMessage: MessageItem? = null,
     ) {
         val mid = messageId ?: UUID.randomUUID().toString()
         jobManager.addJobInBackground(ConvertVideoJob(conversationId, senderId, uri, encryptCategory, mid, createdAt, replyMessage))
@@ -406,7 +406,7 @@ class SendMessageHelper @Inject internal constructor(private val jobManager: Mix
         conversationId: String,
         sender: User,
         action: PinAction,
-        list: Collection<PinMessageMinimal>
+        list: Collection<PinMessageMinimal>,
     ) {
         if (list.isEmpty() || list.size > 128) {
             return
@@ -461,7 +461,7 @@ class SendMessageHelper @Inject internal constructor(private val jobManager: Mix
         conversationId: String,
         sender: User,
         transferLiveData: LiveMessagePayload,
-        encryptCategory: EncryptCategory
+        encryptCategory: EncryptCategory,
     ) {
         val category = encryptCategory.toCategory(
             MessageCategory.PLAIN_LIVE,
@@ -491,7 +491,7 @@ class SendMessageHelper @Inject internal constructor(private val jobManager: Mix
         senderId: String,
         image: Image,
         encryptCategory: EncryptCategory,
-        previewUrl: String
+        previewUrl: String,
     ) {
         val category = encryptCategory.toCategory(
             MessageCategory.PLAIN_IMAGE,
@@ -541,7 +541,7 @@ class SendMessageHelper @Inject internal constructor(private val jobManager: Mix
         encryptCategory: EncryptCategory,
         mime: String? = null,
         replyMessage: MessageItem? = null,
-        fromInput: Boolean = false
+        fromInput: Boolean = false,
     ): Int {
         val category = encryptCategory.toCategory(
             MessageCategory.PLAIN_IMAGE,

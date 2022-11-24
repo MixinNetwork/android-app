@@ -42,7 +42,7 @@ import one.mixin.android.widget.DebugClickHandler
 
 private fun Modifier.debugClickable(
     onClick: (() -> Unit)? = null,
-    onDebugClick: (() -> Unit)? = null
+    onDebugClick: (() -> Unit)? = null,
 ) = composed(
     factory = {
         val clickListener = remember {
@@ -184,7 +184,7 @@ fun AboutPage() {
 @Composable
 private fun AboutTile(
     text: String,
-    onClick: () -> Unit
+    onClick: () -> Unit,
 ) {
     Box(
         modifier = Modifier

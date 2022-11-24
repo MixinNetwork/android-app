@@ -111,7 +111,7 @@ class TransferFragment() : MixinBottomSheetDialogFragment() {
             userId: String? = null,
             asset: AssetItem? = null,
             address: Address? = null,
-            supportSwitchAsset: Boolean = false
+            supportSwitchAsset: Boolean = false,
         ) = TransferFragment().withArgs {
             userId?.let { putString(ARGS_USER_ID, it) }
             asset?.let { putParcelable(ARGS_ASSET, it) }
@@ -185,7 +185,7 @@ class TransferFragment() : MixinBottomSheetDialogFragment() {
     // testing constructor
     @VisibleForTesting(otherwise = VisibleForTesting.NONE)
     constructor(
-        testRegistry: ActivityResultRegistry
+        testRegistry: ActivityResultRegistry,
     ) : this() {
         resultRegistry = testRegistry
     }

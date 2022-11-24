@@ -51,7 +51,7 @@ class VideoHolder constructor(val binding: ItemChatVideoBinding) :
         hasSelect: Boolean,
         isSelect: Boolean,
         isRepresentative: Boolean,
-        onItemListener: ConversationAdapter.OnItemListener
+        onItemListener: ConversationAdapter.OnItemListener,
     ) {
         super.bind(messageItem)
         if (hasSelect && isSelect) {

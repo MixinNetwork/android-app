@@ -13,7 +13,7 @@ class SendProcessSignalKeyJob(
     val data: BlazeMessageData,
     val action: ProcessSignalKeyAction,
     val participantId: String? = null,
-    priority: Int = PRIORITY_SEND_MESSAGE
+    priority: Int = PRIORITY_SEND_MESSAGE,
 ) : MixinJob(
     Params(priority).groupBy("send_message_group").requireWebSocketConnected().persist(),
     UUID.randomUUID().toString()

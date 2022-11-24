@@ -29,7 +29,7 @@ class CodeEditHandler : EditHandler<RoundedBackgroundSpan> {
         input: String,
         span: RoundedBackgroundSpan,
         spanStart: Int,
-        spanTextLength: Int
+        spanTextLength: Int,
     ) {
         val match = MarkwonEditorUtils.findDelimited(input, spanStart, "`")
         if (match != null) {

@@ -19,7 +19,7 @@ class WarningBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
 
         fun newInstance(
             warning: String,
-            seconds: Int = 3
+            seconds: Int = 3,
         ) = WarningBottomSheetDialogFragment().withArgs {
             putString(ARGS_WARNING, warning)
             putInt(ARGS_SECONDS, seconds)

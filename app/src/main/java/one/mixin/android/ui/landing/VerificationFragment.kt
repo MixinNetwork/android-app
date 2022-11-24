@@ -67,7 +67,7 @@ class VerificationFragment : PinCodeFragment(R.layout.fragment_verification) {
             phoneNum: String,
             pin: String? = null,
             hasEmergencyContact: Boolean = false,
-            from: Int = FROM_LANDING
+            from: Int = FROM_LANDING,
         ): VerificationFragment = VerificationFragment().apply {
             arguments = bundleOf(
                 ARGS_ID to id,

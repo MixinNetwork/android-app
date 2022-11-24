@@ -13,7 +13,7 @@ class CallUser(
     @ColumnInfo(name = "avatar_url")
     val avatarUrl: String?,
     @ColumnInfo(name = "role")
-    val role: String
+    val role: String,
 ) {
     companion object {
         val DIFF_CALLBACK = object : DiffUtil.ItemCallback<CallUser>() {

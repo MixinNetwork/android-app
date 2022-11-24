@@ -32,7 +32,7 @@ constructor(
     private val accountRepository: AccountRepository,
     private val userRepository: UserRepository,
     private val jobManager: MixinJobManager,
-    private val pinCipher: PinCipher
+    private val pinCipher: PinCipher,
 ) : ViewModel() {
 
     fun loginVerification(request: VerificationRequest): Observable<MixinResponse<VerificationResponse>> =

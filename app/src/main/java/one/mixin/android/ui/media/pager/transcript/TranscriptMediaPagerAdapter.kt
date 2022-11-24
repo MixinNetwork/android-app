@@ -27,7 +27,7 @@ import one.mixin.android.widget.largeimage.LargeImageView
 class TranscriptMediaPagerAdapter(
     private val context: Context,
     private val onDismissListener: DismissFrameLayout.OnDismissListener,
-    private val onMediaPagerAdapterListener: MediaPagerAdapterListener
+    private val onMediaPagerAdapterListener: MediaPagerAdapterListener,
 ) : RecyclerView.Adapter<MediaPagerHolder>() {
 
     var initialPos: Int = 0

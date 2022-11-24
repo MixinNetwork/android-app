@@ -12,7 +12,7 @@ import java.util.regex.Pattern
 class QueryHighlighter(
     private var highlightStyle: CharacterStyle = StyleSpan(Typeface.BOLD),
     private var queryNormalizer: QueryNormalizer = QueryNormalizer.FOR_SEARCH,
-    private var mode: Mode = Mode.CHARACTERS
+    private var mode: Mode = Mode.CHARACTERS,
 ) {
     enum class Mode { CHARACTERS, WORDS }
 

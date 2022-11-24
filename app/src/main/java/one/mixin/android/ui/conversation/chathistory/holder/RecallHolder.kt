@@ -14,7 +14,7 @@ class RecallHolder constructor(val binding: ItemChatRecallBinding) : BaseViewHol
         messageItem: ChatHistoryMessageItem,
         isFirst: Boolean,
         isLast: Boolean,
-        onItemListener: ChatHistoryAdapter.OnItemListener
+        onItemListener: ChatHistoryAdapter.OnItemListener,
     ) {
         val ctx = itemView.context
         val isMe = meId == messageItem.userId

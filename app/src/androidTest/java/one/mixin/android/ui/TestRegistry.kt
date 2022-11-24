@@ -9,7 +9,7 @@ class TestRegistry<O>(private val expectedResult: O) : ActivityResultRegistry() 
         requestCode: Int,
         contract: ActivityResultContract<I, O>,
         input: I,
-        options: ActivityOptionsCompat?
+        options: ActivityOptionsCompat?,
     ) {
         dispatchResult(requestCode, expectedResult)
     }

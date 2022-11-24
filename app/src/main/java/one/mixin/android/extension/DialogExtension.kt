@@ -16,14 +16,14 @@ fun Fragment.singleChoice(
     title: CharSequence? = null,
     @ArrayRes itemsId: Int,
     checkedItem: Int,
-    onClick: (DialogInterface, Int) -> Unit
+    onClick: (DialogInterface, Int) -> Unit,
 ): Unit = requireActivity().singleChoice(title, itemsId, checkedItem, onClick)
 
 fun Context.singleChoice(
     title: CharSequence? = null,
     @ArrayRes itemsId: Int,
     checkedItem: Int,
-    onClick: (DialogInterface, Int) -> Unit
+    onClick: (DialogInterface, Int) -> Unit,
 ) {
     MaterialAlertDialogBuilder(this, R.style.MixinAlertDialogTheme).apply {
         setTitle(title)
@@ -36,12 +36,12 @@ fun Context.singleChoice(
 
 fun Fragment.alert(
     message: String,
-    title: String? = null
+    title: String? = null,
 ) = requireActivity().alert(message, title)
 
 fun Context.alert(
     message: CharSequence,
-    title: CharSequence? = null
+    title: CharSequence? = null,
 ): MaterialAlertDialogBuilder {
     return MaterialAlertDialogBuilder(this, R.style.MixinAlertDialogTheme).apply {
         if (title != null) {
@@ -75,7 +75,7 @@ fun Activity.indeterminateProgressDialog(message: Int? = null, title: Int? = nul
 fun Context.indeterminateProgressDialog(
     message: CharSequence? = null,
     title: CharSequence? = null,
-    init: (ProgressDialog.() -> Unit)? = null
+    init: (ProgressDialog.() -> Unit)? = null,
 ) = progressDialog(true, message, title, init)
 
 @Deprecated(message = "Android progress dialogs are deprecated")
@@ -83,7 +83,7 @@ private fun Context.progressDialog(
     indeterminate: Boolean,
     message: CharSequence? = null,
     title: CharSequence? = null,
-    init: (ProgressDialog.() -> Unit)? = null
+    init: (ProgressDialog.() -> Unit)? = null,
 ) = ProgressDialog(this, R.style.MixinAlertDialogTheme).apply {
     isIndeterminate = indeterminate
     if (!indeterminate) setProgressStyle(ProgressDialog.STYLE_HORIZONTAL)

@@ -122,7 +122,7 @@ private fun ChangeNumberButton() {
 @Composable
 private fun AccountTile(
     title: String,
-    onClick: () -> Unit
+    onClick: () -> Unit,
 ) {
     Row(
         modifier = Modifier

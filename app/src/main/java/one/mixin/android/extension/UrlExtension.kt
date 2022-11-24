@@ -40,7 +40,7 @@ fun String.openAsUrlOrWeb(
     supportFragmentManager: FragmentManager,
     scope: CoroutineScope,
     app: App? = null,
-    appCard: AppCardData? = null
+    appCard: AppCardData? = null,
 ) = openAsUrl(context, supportFragmentManager, scope, currentConversation = conversationId, app = app) {
     WebActivity.show(context, this, conversationId, app, appCard)
 }
@@ -48,7 +48,7 @@ fun String.openAsUrlOrWeb(
 fun String.openAsUrlOrQrScan(
     context: Context,
     supportFragmentManager: FragmentManager,
-    scope: CoroutineScope
+    scope: CoroutineScope,
 ) = openAsUrl(context, supportFragmentManager, scope) {
     QrScanBottomSheetDialogFragment.newInstance(this)
         .showNow(supportFragmentManager, QrScanBottomSheetDialogFragment.TAG)
@@ -100,7 +100,7 @@ fun String.openAsUrl(
     currentConversation: String? = null,
     app: App? = null,
     host: String? = null,
-    extraAction: () -> Unit
+    extraAction: () -> Unit,
 ) {
     if (startsWith(Constants.Scheme.SEND, true)) {
         val uri = Uri.parse(this)
@@ -161,13 +161,13 @@ fun String.isExternalScheme(context: Context): Boolean {
 fun Uri.checkUserOrApp(
     context: Context,
     supportFragmentManager: FragmentManager,
-    scope: CoroutineScope
+    scope: CoroutineScope,
 ) = this.toString().checkUserOrApp(context, supportFragmentManager, scope)
 
 fun String.checkUserOrApp(
     context: Context,
     supportFragmentManager: FragmentManager,
-    scope: CoroutineScope
+    scope: CoroutineScope,
 ) {
     val isAppScheme = isAppScheme()
     val ctx = MixinApplication.appContext
@@ -241,7 +241,7 @@ fun Uri.handleSchemeSend(
     showNow: Boolean = true,
     afterShareText: (() -> Unit)? = null,
     afterShareData: (() -> Unit)? = null,
-    onError: ((String) -> Unit)? = null
+    onError: ((String) -> Unit)? = null,
 ) {
     val text = this.getQueryParameter("text")
     if (text != null) {

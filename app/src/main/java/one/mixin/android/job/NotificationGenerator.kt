@@ -82,7 +82,7 @@ object NotificationGenerator : Injector() {
         message: Message,
         userMap: Map<String, String>? = null,
         force: Boolean = false,
-        isSilent: Boolean = false
+        isSilent: Boolean = false,
     ) = lifecycleScope.launch(Dispatchers.IO) {
         ChannelManager.updateChannelSound(MixinApplication.appContext)
 
@@ -554,7 +554,7 @@ object NotificationGenerator : Injector() {
                             model: Any?,
                             target: Target<Bitmap>?,
                             dataSource: DataSource?,
-                            isFirstResource: Boolean
+                            isFirstResource: Boolean,
                         ): Boolean {
                             onComplete(resource)
                             return false
@@ -564,7 +564,7 @@ object NotificationGenerator : Injector() {
                             e: GlideException?,
                             model: Any?,
                             target: Target<Bitmap>?,
-                            isFirstResource: Boolean
+                            isFirstResource: Boolean,
                         ): Boolean {
                             onComplete(null)
                             return false

@@ -42,7 +42,7 @@ class VideoHolder constructor(val binding: ItemChatVideoBinding) : MediaHolder(b
         messageItem: ChatHistoryMessageItem,
         isLast: Boolean,
         isFirst: Boolean,
-        onItemListener: ChatHistoryAdapter.OnItemListener
+        onItemListener: ChatHistoryAdapter.OnItemListener,
     ) {
         super.bind(messageItem)
         val isMe = messageItem.userId == Session.getAccountId()

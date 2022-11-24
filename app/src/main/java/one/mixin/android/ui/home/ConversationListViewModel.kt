@@ -48,7 +48,7 @@ internal constructor(
     private val conversationRepository: ConversationRepository,
     private val assetRepository: AssetRepository,
     private val jobManager: MixinJobManager,
-    private val cleanMessageHelper: CleanMessageHelper
+    private val cleanMessageHelper: CleanMessageHelper,
 ) : ViewModel() {
 
     fun observeConversations(circleId: String?): LiveData<PagedList<ConversationItem>> {
@@ -108,7 +108,7 @@ internal constructor(
         duration: Long,
         conversationId: String? = null,
         senderId: String? = null,
-        recipientId: String? = null
+        recipientId: String? = null,
     ): MixinResponse<ConversationResponse> {
         require(conversationId != null || (senderId != null && recipientId != null)) {
             "error data"
@@ -180,7 +180,7 @@ internal constructor(
     suspend fun saveCircle(
         circleId: String,
         addCircleConversation: List<CircleConversation>?,
-        removeCircleConversation: Set<CircleConversationPayload>
+        removeCircleConversation: Set<CircleConversationPayload>,
     ) {
         addCircleConversation?.forEach { circleConversation ->
             userRepository.insertCircleConversation(circleConversation)

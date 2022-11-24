@@ -120,7 +120,7 @@ fun MobileContactPage() {
 @Composable
 private fun UploadButton(
     viewModel: SettingViewModel,
-    onUploaded: () -> Unit
+    onUploaded: () -> Unit,
 ) {
     val context = LocalContext.current
 
@@ -197,7 +197,7 @@ private fun UploadButton(
 @Composable
 private fun DeleteButton(
     viewModel: SettingViewModel,
-    onDeleted: () -> Unit
+    onDeleted: () -> Unit,
 ) {
     var showAlert by remember {
         mutableStateOf(false)

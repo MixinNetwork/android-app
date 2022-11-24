@@ -128,7 +128,7 @@ abstract class BaseViewHolder constructor(containerView: View) :
         chatJump: ImageView,
         isMe: Boolean,
         expireIn: Long?,
-        @IdRes id: Int
+        @IdRes id: Int,
     ) {
         chatJump.isVisible = expireIn != null
         if (expireIn != null) {

@@ -35,7 +35,7 @@ class GroupViewModel
 internal constructor(
     private val userRepository: UserRepository,
     private val conversationRepository: ConversationRepository,
-    private val jobManager: MixinJobManager
+    private val jobManager: MixinJobManager,
 ) : ViewModel() {
 
     fun getFriends() = userRepository.findFriends()
@@ -45,7 +45,7 @@ internal constructor(
         announcement: String,
         icon: String?,
         users: List<User>,
-        sender: User
+        sender: User,
     ): Conversation = withContext(Dispatchers.IO) {
         val conversationId = UUID.randomUUID().toString()
         val createdAt = nowInUtc()

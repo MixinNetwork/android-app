@@ -24,7 +24,7 @@ data class CircleConversation(
     val createdAt: String,
     @Expose
     @ColumnInfo(name = "pin_time")
-    val pinTime: String?
+    val pinTime: String?,
 )
 
 enum class CircleConversationAction { ADD, REMOVE }

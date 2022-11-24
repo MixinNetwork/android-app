@@ -5,7 +5,7 @@ import androidx.recyclerview.widget.RecyclerView
 
 class OffsetListUpdateCallback(
     private val adapter: RecyclerView.Adapter<out RecyclerView.ViewHolder>,
-    private val offset: Int
+    private val offset: Int,
 ) : ListUpdateCallback {
     override fun onChanged(position: Int, count: Int, payload: Any?) {
         adapter.notifyItemRangeChanged(position + offset, count, payload)

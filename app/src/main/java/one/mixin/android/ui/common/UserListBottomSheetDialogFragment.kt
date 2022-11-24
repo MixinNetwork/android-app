@@ -24,7 +24,7 @@ class UserListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
 
         fun newInstance(
             userList: ArrayList<User>,
-            title: String
+            title: String,
         ) = UserListBottomSheetDialogFragment().withArgs {
             putParcelableArrayList(ARGS_USER_LIST, userList)
             putString(ARGS_TITLE, title)

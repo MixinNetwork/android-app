@@ -17,7 +17,7 @@ import one.mixin.android.widget.BottomSheet
 class SendBottomSheet(
     private val fragment: Fragment,
     @IdRes private val navContactAction: Int,
-    @IdRes private val navAddressAction: Int
+    @IdRes private val navAddressAction: Int,
 ) {
     private var _bottomSendBinding: ViewWalletTransactionsSendBottomBinding? = null
     private val bottomSendBinding get() = requireNotNull(_bottomSendBinding)

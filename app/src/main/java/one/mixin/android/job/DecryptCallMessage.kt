@@ -49,7 +49,7 @@ import java.util.concurrent.Executors
 
 class DecryptCallMessage(
     private val callState: CallStateLiveData,
-    private val lifecycleScope: CoroutineScope
+    private val lifecycleScope: CoroutineScope,
 ) : Injector() {
     companion object {
         const val LIST_PENDING_CALL_DELAY = 2000L
@@ -389,7 +389,7 @@ class DecryptCallMessage(
         category: String? = null,
         duration: String? = null,
         userId: String = data.userId,
-        status: String? = null
+        status: String? = null,
     ) {
         val accountId = Session.getAccountId() ?: return
         val mId = data.quoteMessageId

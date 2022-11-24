@@ -29,7 +29,7 @@ import one.mixin.android.widget.BottomSheet
 @Composable
 fun MixinBottomSheetDialog(
     createDialog: () -> MixinBottomSheetDialogFragment,
-    tag: String? = null
+    tag: String? = null,
 ) {
     val dialog = remember {
         createDialog().apply {
@@ -51,7 +51,7 @@ fun MixinBottomSheetDialog(
 @Composable
 fun MixinBottomSheetDialog(
     onDismissRequest: () -> Unit,
-    content: @Composable () -> Unit
+    content: @Composable () -> Unit,
 ) {
     val view = LocalView.current
 
@@ -89,7 +89,7 @@ private class MixinBottomSheetDialogWrapper(
     composeView: View,
     content: @Composable () -> Unit,
     parent: CompositionContext,
-    private var onDismissRequest: () -> Unit
+    private var onDismissRequest: () -> Unit,
 ) {
 
     private val dialog =

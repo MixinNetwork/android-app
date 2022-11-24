@@ -44,7 +44,7 @@ class SearchSingleFragment : BaseFragment(R.layout.fragment_search_single) {
 
         fun newInstance(
             list: ArrayList<Parcelable>,
-            query: String
+            query: String,
         ) = SearchSingleFragment().withArgs {
             putParcelableArrayList(ARGS_LIST, list)
             putString(ARGS_QUERY, query)

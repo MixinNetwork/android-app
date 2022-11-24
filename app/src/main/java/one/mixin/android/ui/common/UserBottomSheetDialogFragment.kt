@@ -978,7 +978,7 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
                         model: Any?,
                         target: Target<Bitmap>?,
                         dataSource: DataSource?,
-                        isFirstResource: Boolean
+                        isFirstResource: Boolean,
                     ): Boolean {
                         user.fullName?.let {
                             val conversationId = conversationId
@@ -1001,7 +1001,7 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
                         e: GlideException?,
                         model: Any?,
                         target: Target<Bitmap>?,
-                        isFirstResource: Boolean
+                        isFirstResource: Boolean,
                     ): Boolean {
                         return false
                     }

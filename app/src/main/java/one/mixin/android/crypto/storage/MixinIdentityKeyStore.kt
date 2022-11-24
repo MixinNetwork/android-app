@@ -36,7 +36,7 @@ class MixinIdentityKeyStore(private val context: Context) : IdentityKeyStore {
     override fun isTrustedIdentity(
         address: SignalProtocolAddress,
         identityKey: IdentityKey,
-        direction: IdentityKeyStore.Direction
+        direction: IdentityKeyStore.Direction,
     ): Boolean {
         synchronized(LOCK) {
             val ourNumber = Session.getAccountId()

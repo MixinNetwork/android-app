@@ -56,7 +56,7 @@ class Tip @Inject internal constructor(
     private val tipService: TipService,
     private val accountService: AccountService,
     private val tipNode: TipNode,
-    private val tipCounterSynced: TipCounterSyncedLiveData
+    private val tipCounterSynced: TipCounterSyncedLiveData,
 ) : BasePinCipher() {
     private val observers = mutableListOf<Observer>()
 
@@ -126,7 +126,7 @@ class Tip @Inject internal constructor(
     suspend fun checkCounter(
         tipCounter: Int,
         onNodeCounterGreaterThanServer: suspend (Int) -> Unit,
-        onNodeCounterInconsistency: suspend (Int, List<TipSigner>?) -> Unit
+        onNodeCounterInconsistency: suspend (Int, List<TipSigner>?) -> Unit,
     ) = kotlin.runCatching {
         val (counters, nodeErrorInfo) = watchTipNodeCounters()
         if (counters.isEmpty()) {
@@ -263,7 +263,7 @@ class Tip @Inject internal constructor(
     @Throws(IOException::class, TipNetworkException::class)
     private suspend fun replaceOldEncryptedPin(
         pub: EdDSAPublicKey,
-        legacyPin: String? = null
+        legacyPin: String? = null,
     ) {
         val pinToken = requireNotNull(Session.getPinToken()?.decodeBase64() ?: throw TipNullException("No pin token"))
         val oldEncryptedPin = if (legacyPin != null) { encryptPinInternal(pinToken, legacyPin.toByteArray()) } else null

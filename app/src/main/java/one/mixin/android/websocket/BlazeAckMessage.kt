@@ -9,5 +9,5 @@ data class BlazeAckMessage(
     @SerializedName("status")
     val status: String,
     @SerializedName("expire_at")
-    val expireAt: Long? = null
+    val expireAt: Long? = null,
 ) : Serializable

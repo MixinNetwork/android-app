@@ -31,7 +31,7 @@ class StickerPreviewBottomSheetFragment : MixinBottomSheetDialogFragment() {
         @SuppressLint("StaticFieldLeak")
         private var instant: StickerPreviewBottomSheetFragment? = null
         fun newInstance(
-            stickerId: String
+            stickerId: String,
         ): StickerPreviewBottomSheetFragment {
             try {
                 instant?.dismiss()

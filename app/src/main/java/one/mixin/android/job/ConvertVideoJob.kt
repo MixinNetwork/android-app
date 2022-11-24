@@ -33,7 +33,7 @@ class ConvertVideoJob(
     encryptCategory: EncryptCategory,
     private val messageId: String,
     createdAt: String? = null,
-    private val replyMessage: MessageItem? = null
+    private val replyMessage: MessageItem? = null,
 ) : MixinJob(Params(PRIORITY_BACKGROUND).groupBy(GROUP_ID), messageId) {
 
     companion object {

@@ -22,7 +22,7 @@ class Identity(
     @ColumnInfo(name = "next_prekey_id")
     val nextPreKeyId: Long?,
     @ColumnInfo(name = "timestamp")
-    val timestamp: Long
+    val timestamp: Long,
 ) {
     @PrimaryKey(autoGenerate = true)
     var _id: Int = 0

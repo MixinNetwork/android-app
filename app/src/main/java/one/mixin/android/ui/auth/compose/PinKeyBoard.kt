@@ -78,7 +78,7 @@ fun PinKeyBoard(
     errorContent: String,
     onResetClick: (() -> Unit)?,
     onBiometricClick: (() -> Unit)?,
-    onVerifyRequest: ((String) -> Unit)?
+    onVerifyRequest: ((String) -> Unit)?,
 ) {
     val context = LocalContext.current
     // val open = context.defaultSharedPreferences.getBoolean(Constants.Account.PREF_BIOMETRICS, false)

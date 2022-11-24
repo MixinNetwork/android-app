@@ -25,7 +25,7 @@ class SendGiphyJob(
     private val category: String,
     private val messageId: String,
     private val previewUrl: String,
-    private val time: String
+    private val time: String,
 ) : BaseJob(Params(PRIORITY_BACKGROUND).addTags(TAG)) {
 
     companion object {

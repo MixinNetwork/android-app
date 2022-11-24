@@ -30,7 +30,7 @@ internal constructor(
     private val userRepository: UserRepository,
     private val accountRepository: AccountRepository,
     private val conversationRepository: ConversationRepository,
-    private var jobManager: MixinJobManager
+    private var jobManager: MixinJobManager,
 ) : ViewModel() {
 
     fun getFriends(): LiveData<List<User>> = userRepository.findFriends()

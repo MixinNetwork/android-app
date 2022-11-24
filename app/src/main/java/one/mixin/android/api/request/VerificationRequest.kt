@@ -10,11 +10,11 @@ data class VerificationRequest(
     var gRecaptchaResponse: String? = null,
     @SerializedName("hcaptcha_response")
     var hCaptchaResponse: String? = null,
-    val package_name: String = BuildConfig.APPLICATION_ID
+    val package_name: String = BuildConfig.APPLICATION_ID,
 )
 
 enum class VerificationPurpose {
     SESSION,
     PHONE,
-    DEACTIVATED
+    DEACTIVATED,
 }

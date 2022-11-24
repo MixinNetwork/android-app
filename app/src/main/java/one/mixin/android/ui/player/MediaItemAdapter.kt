@@ -75,7 +75,7 @@ class MediaItemAdapter : PagedListAdapter<MediaMetadataCompat, MediaViewHolder>(
 }
 
 class MediaViewHolder(
-    binding: ItemFragmentMediaBinding
+    binding: ItemFragmentMediaBinding,
 ) : RecyclerView.ViewHolder(binding.root) {
 
     val titleView: TextView = binding.title

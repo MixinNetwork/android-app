@@ -5,5 +5,5 @@ import java.io.File
 data class RLottie(
     val file: File,
     val w: Int,
-    val h: Int
+    val h: Int,
 )

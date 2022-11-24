@@ -24,7 +24,7 @@ import one.mixin.android.ui.setting.ui.theme.MixinAppTheme
 @Composable
 fun EmergencyContactTipBottomSheet(
     onDismissRequest: () -> Unit,
-    onConfirmed: () -> Unit
+    onConfirmed: () -> Unit,
 ) {
     MixinBottomSheetDialog(onDismissRequest = onDismissRequest) {
         Column(

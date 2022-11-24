@@ -118,7 +118,7 @@ class CirclesFragment : BaseFragment(), OnStartDragListener {
         val action: (String?, String?) -> Unit,
         val showMenu: (View, ConversationCircleItem) -> Unit,
         val sortAction: () -> Unit,
-        val updateAction: (List<CircleOrder>?) -> Unit
+        val updateAction: (List<CircleOrder>?) -> Unit,
     ) :
         RecyclerView.Adapter<ConversationCircleHolder>(), ItemTouchHelperAdapter {
         var conversationCircles: MutableList<ConversationCircleItem>? = null

@@ -17,7 +17,7 @@ abstract class BitmapTransformation : Transformation<Bitmap> {
         context: Context,
         resource: Resource<Bitmap>,
         outWidth: Int,
-        outHeight: Int
+        outHeight: Int,
     ): Resource<Bitmap> {
         if (!Util.isValidDimensions(outWidth, outHeight)) {
             throw IllegalArgumentException(
@@ -43,7 +43,7 @@ abstract class BitmapTransformation : Transformation<Bitmap> {
         pool: BitmapPool,
         toTransform: Bitmap,
         outWidth: Int,
-        outHeight: Int
+        outHeight: Int,
     ): Bitmap
 
     abstract override fun updateDiskCacheKey(messageDigest: MessageDigest)

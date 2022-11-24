@@ -280,7 +280,7 @@ class QuoteView constructor(context: Context, attrs: AttributeSet) :
         mediaUrl: String?,
         type: String,
         conversationId: String,
-        context: Context = MixinApplication.appContext
+        context: Context = MixinApplication.appContext,
     ): String? {
         val mediaPath = context.getMediaPath()?.toUri()?.toString() ?: return null
         return when {

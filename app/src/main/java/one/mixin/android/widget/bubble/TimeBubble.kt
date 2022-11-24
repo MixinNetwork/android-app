@@ -41,7 +41,7 @@ class TimeBubble(context: Context, attributeSet: AttributeSet) :
         isPin: Boolean,
         isRepresentative: Boolean,
         isSecret: Boolean,
-        isWhite: Boolean = false
+        isWhite: Boolean = false,
     ) {
         binding.chatTime.timeAgoClock(createdAt)
         binding.chatTime.setTextColor(

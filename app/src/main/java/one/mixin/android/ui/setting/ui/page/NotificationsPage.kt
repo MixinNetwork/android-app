@@ -188,7 +188,7 @@ private fun NotificationItem(
     trailing: @Composable () -> Unit = {},
     onClick: () -> Unit,
     title: String,
-    description: String? = null
+    description: String? = null,
 ) {
     Column {
         Row(
@@ -420,7 +420,7 @@ private fun EditDialog(
     title: String,
     hint: String,
     text: String = "",
-    onConfirm: (String) -> Unit = {}
+    onConfirm: (String) -> Unit = {},
 ) {
     val inputText = remember {
         mutableStateOf(

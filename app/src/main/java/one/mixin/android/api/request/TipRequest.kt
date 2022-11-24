@@ -6,7 +6,7 @@ data class TipRequest(
     @SerializedName("device_id")
     val deviceId: String,
     @SerializedName("seed_base64")
-    val seedBase64: String?
+    val seedBase64: String?,
 )
 
 data class TipSecretRequest(
@@ -19,14 +19,14 @@ data class TipSecretRequest(
     @SerializedName("signature_base64")
     val signatureBase64: String,
     @SerializedName("timestamp")
-    val timestamp: Long
+    val timestamp: Long,
 )
 
 data class TipSecretReadRequest(
     @SerializedName("signature_base64")
     val signatureBase64: String,
     @SerializedName("timestamp")
-    val timestamp: Long
+    val timestamp: Long,
 ) {
     @SerializedName("action")
     val action: String = TipSecretAction.READ.name

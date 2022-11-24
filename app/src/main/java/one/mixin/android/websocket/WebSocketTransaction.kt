@@ -11,5 +11,5 @@ interface TransactionCallbackError {
 class WebSocketTransaction(
     val tid: String,
     val success: TransactionCallbackSuccess,
-    val error: TransactionCallbackError
+    val error: TransactionCallbackError,
 )

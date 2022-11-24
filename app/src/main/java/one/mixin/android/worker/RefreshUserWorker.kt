@@ -19,7 +19,7 @@ class RefreshUserWorker @AssistedInject constructor(
     @Assisted context: Context,
     @Assisted parameters: WorkerParameters,
     private val userService: UserService,
-    private val userRepo: UserRepository
+    private val userRepo: UserRepository,
 ) : BaseWork(context, parameters) {
 
     companion object {

@@ -20,5 +20,5 @@ data class FavoriteApp(
 
     @SerializedName("created_at")
     @ColumnInfo(name = "created_at")
-    val createdAt: String
+    val createdAt: String,
 )

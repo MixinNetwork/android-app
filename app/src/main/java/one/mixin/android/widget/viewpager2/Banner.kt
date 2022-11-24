@@ -31,7 +31,7 @@ import kotlin.math.max
 class Banner @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null,
-    defStyleAttr: Int = 0
+    defStyleAttr: Int = 0,
 ) : RelativeLayout(context, attrs, defStyleAttr) {
 
     private var changeCallback: OnPageChangeCallback? = null
@@ -168,7 +168,7 @@ class Banner @JvmOverloads constructor(
         override fun onPageScrolled(
             position: Int,
             positionOffset: Float,
-            positionOffsetPixels: Int
+            positionOffsetPixels: Int,
         ) {
             val realPosition = toRealPosition(position)
             if (changeCallback != null) {
@@ -304,7 +304,7 @@ class Banner @JvmOverloads constructor(
 
     private inner class ProxyLayoutManger(
         context: Context?,
-        layoutManager: LinearLayoutManager
+        layoutManager: LinearLayoutManager,
     ) :
         LinearLayoutManager(context, layoutManager.orientation, false) {
         private val layoutManager: RecyclerView.LayoutManager
@@ -312,7 +312,7 @@ class Banner @JvmOverloads constructor(
             recycler: Recycler,
             state: RecyclerView.State,
             action: Int,
-            args: Bundle?
+            args: Bundle?,
         ): Boolean {
             return layoutManager.performAccessibilityAction(recycler, state, action, args)
         }
@@ -320,7 +320,7 @@ class Banner @JvmOverloads constructor(
         override fun onInitializeAccessibilityNodeInfo(
             recycler: Recycler,
             state: RecyclerView.State,
-            info: AccessibilityNodeInfoCompat
+            info: AccessibilityNodeInfoCompat,
         ) {
             layoutManager.onInitializeAccessibilityNodeInfo(recycler, state, info)
         }
@@ -330,7 +330,7 @@ class Banner @JvmOverloads constructor(
             child: View,
             rect: Rect,
             immediate: Boolean,
-            focusedChildVisible: Boolean
+            focusedChildVisible: Boolean,
         ): Boolean {
             return layoutManager.requestChildRectangleOnScreen(
                 parent,
@@ -343,7 +343,7 @@ class Banner @JvmOverloads constructor(
 
         override fun calculateExtraLayoutSpace(
             state: RecyclerView.State,
-            extraLayoutSpace: IntArray
+            extraLayoutSpace: IntArray,
         ) {
             try {
                 val method = layoutManager.javaClass.getDeclaredMethod(
@@ -365,7 +365,7 @@ class Banner @JvmOverloads constructor(
         override fun smoothScrollToPosition(
             recyclerView: RecyclerView,
             state: RecyclerView.State,
-            position: Int
+            position: Int,
         ) {
             val linearSmoothScroller: LinearSmoothScroller =
                 object : LinearSmoothScroller(recyclerView.context) {

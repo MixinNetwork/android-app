@@ -72,7 +72,7 @@ class HyperlinkHolder constructor(val binding: ItemChatHyperlinkBinding) : BaseV
         hasSelect: Boolean,
         isSelect: Boolean,
         isRepresentative: Boolean,
-        onItemListener: ConversationAdapter.OnItemListener
+        onItemListener: ConversationAdapter.OnItemListener,
     ) {
         super.bind(messageItem)
         this.onItemListener = onItemListener

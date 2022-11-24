@@ -30,5 +30,5 @@ open class ConversationResponse(
     @SerializedName("mute_until")
     val muteUntil: String,
     @SerializedName("expire_in")
-    val expireIn: Long?
+    val expireIn: Long?,
 )

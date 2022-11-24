@@ -27,7 +27,7 @@ class ScanFragment : BaseCameraxFragment() {
 
         fun newInstance(
             forScanResult: Boolean = false,
-            fromShortcut: Boolean = false
+            fromShortcut: Boolean = false,
         ) = ScanFragment().withArgs {
             putBoolean(ARGS_FOR_SCAN_RESULT, forScanResult)
             putBoolean(ARGS_SHORTCUT, fromShortcut)
@@ -43,7 +43,7 @@ class ScanFragment : BaseCameraxFragment() {
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
-        savedInstanceState: Bundle?
+        savedInstanceState: Bundle?,
     ): View? =
         layoutInflater.inflate(R.layout.fragment_scan, container, false)
 
@@ -83,7 +83,7 @@ class ScanFragment : BaseCameraxFragment() {
     @SuppressLint("RestrictedApi")
     override fun appendOtherUseCases(
         useCases: ArrayList<UseCase>,
-        rotation: Int
+        rotation: Int,
     ) {}
 
     override fun onDisplayChanged(rotation: Int) {

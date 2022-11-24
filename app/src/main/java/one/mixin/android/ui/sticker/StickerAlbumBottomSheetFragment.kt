@@ -38,7 +38,7 @@ class StickerAlbumBottomSheetFragment : BottomSheetDialogFragment() {
         @SuppressLint("StaticFieldLeak")
         private var instant: StickerAlbumBottomSheetFragment? = null
         fun newInstance(
-            albumId: String
+            albumId: String,
         ): StickerAlbumBottomSheetFragment {
             try {
                 instant?.dismiss()

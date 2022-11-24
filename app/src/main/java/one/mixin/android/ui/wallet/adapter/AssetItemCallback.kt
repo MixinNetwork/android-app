@@ -41,7 +41,7 @@ class AssetItemCallback(private val listener: ItemCallbackListener) :
         dX: Float,
         dY: Float,
         actionState: Int,
-        isCurrentlyActive: Boolean
+        isCurrentlyActive: Boolean,
     ) {
         viewHolder?.let {
             ItemTouchHelper.Callback.getDefaultUIUtil()
@@ -60,7 +60,7 @@ class AssetItemCallback(private val listener: ItemCallbackListener) :
         dX: Float,
         dY: Float,
         actionState: Int,
-        isCurrentlyActive: Boolean
+        isCurrentlyActive: Boolean,
     ) {
         ItemTouchHelper.Callback.getDefaultUIUtil()
             .onDraw(c, recyclerView, findForeground(viewHolder.itemView), dX, dY, actionState, isCurrentlyActive)

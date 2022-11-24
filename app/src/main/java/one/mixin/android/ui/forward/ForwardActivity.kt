@@ -30,7 +30,7 @@ class ForwardActivity : BlazeBaseActivity() {
         inline fun show(
             context: Context,
             messages: ArrayList<ForwardMessage>,
-            action: ForwardAction
+            action: ForwardAction,
         ) {
             val intent = Intent(context, ForwardActivity::class.java).apply {
                 putParcelableArrayListExtra(ARGS_MESSAGES, messages)

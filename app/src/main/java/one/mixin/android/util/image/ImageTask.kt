@@ -11,7 +11,7 @@ import java.util.concurrent.FutureTask
 
 class ImageTask<T>(
     runnable: Callable<ImageResult<T>>,
-    runNow: Boolean = false
+    runNow: Boolean = false,
 ) {
     private val executor = Executors.newCachedThreadPool()
     private val successListeners = LinkedHashSet<ImageListener<T>>(1)
@@ -105,7 +105,7 @@ class ImageTask<T>(
     }
 
     inner class LottieFutureTask(
-        callable: Callable<ImageResult<T>>
+        callable: Callable<ImageResult<T>>,
     ) : FutureTask<ImageResult<T>>(callable) {
         override fun done() {
             if (isCancelled) return

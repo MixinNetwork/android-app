@@ -10,5 +10,5 @@ class StatusMessage(
     @ColumnInfo(name = "status")
     val status: String,
     @ColumnInfo(name = "expire_at")
-    val expireAt: Long?
+    val expireAt: Long?,
 )

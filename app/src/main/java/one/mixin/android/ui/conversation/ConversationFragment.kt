@@ -294,7 +294,7 @@ class ConversationFragment() :
             messageId: String?,
             keyword: String?,
             unreadCount: Int? = null,
-            transcriptData: TranscriptData? = null
+            transcriptData: TranscriptData? = null,
         ): Bundle =
             Bundle().apply {
                 require(!(conversationId == null && recipientId == null)) { "lose data" }
@@ -1027,7 +1027,7 @@ class ConversationFragment() :
     // testing constructor
     @VisibleForTesting(otherwise = VisibleForTesting.NONE)
     constructor(
-        testRegistry: ActivityResultRegistry
+        testRegistry: ActivityResultRegistry,
     ) : this() {
         resultRegistry = testRegistry
     }
@@ -1069,7 +1069,7 @@ class ConversationFragment() :
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
-        savedInstanceState: Bundle?
+        savedInstanceState: Bundle?,
     ): View = inflater.inflate(R.layout.fragment_conversation, container, false)
 
     override fun getContentView(): View = binding.root
@@ -1380,7 +1380,7 @@ class ConversationFragment() :
                 override fun commitContentAsync(
                     inputContentInfo: InputContentInfoCompat?,
                     flags: Int,
-                    opts: Bundle?
+                    opts: Bundle?,
                 ) {
                     lifecycleScope.launch(Dispatchers.IO) {
                         if (inputContentInfo != null) {
@@ -2590,7 +2590,7 @@ class ConversationFragment() :
         position: Int,
         offset: Int = -1,
         delay: Long = 30,
-        action: (() -> Unit)? = null
+        action: (() -> Unit)? = null,
     ) {
         binding.chatRv.postDelayed(
             {
@@ -2630,7 +2630,7 @@ class ConversationFragment() :
 
     private fun scrollToMessage(
         messageId: String,
-        findMessageAction: ((index: Int) -> Unit)? = null
+        findMessageAction: ((index: Int) -> Unit)? = null,
     ) = lifecycleScope.launch {
         if (viewDestroyed()) return@launch
 

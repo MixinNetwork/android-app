@@ -44,7 +44,7 @@ class ConfirmBottomFragment : BiometricBottomSheetDialogFragment() {
 
         private fun newInstance(
             url: String,
-            action: (() -> Unit)? = null
+            action: (() -> Unit)? = null,
         ) = ConfirmBottomFragment().withArgs {
             putString(AvatarActivity.ARGS_URL, url)
         }.apply {
@@ -57,7 +57,7 @@ class ConfirmBottomFragment : BiometricBottomSheetDialogFragment() {
             context: Context,
             fragmentManager: FragmentManager,
             url: String,
-            action: (() -> Unit)? = null
+            action: (() -> Unit)? = null,
         ) {
             val uri = Uri.parse(url)
             val ephemeralId = uri.getQueryParameter("id")
@@ -165,7 +165,7 @@ class ConfirmBottomFragment : BiometricBottomSheetDialogFragment() {
         ctx: Context,
         ephemeralId: String,
         publicKeyEncoded: String,
-        verificationCode: String
+        verificationCode: String,
     ): Boolean {
         val account = Session.getAccount() ?: return false
         if (TextUtils.isEmpty(ephemeralId) || TextUtils.isEmpty(publicKeyEncoded)) {

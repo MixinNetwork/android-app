@@ -43,7 +43,7 @@ inline fun toast(@StringRes resId: Int, duration: ToastDuration = ToastDuration.
 
 enum class ToastDuration {
     Short { override fun value() = Toast.LENGTH_SHORT },
-    Long { override fun value() = Toast.LENGTH_LONG };
+    Long { override fun value() = Toast.LENGTH_LONG }, ;
 
     abstract fun value(): Int
 }

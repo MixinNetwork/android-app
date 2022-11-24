@@ -188,7 +188,7 @@ class ConversationListFragment : LinkFragment() {
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
-        savedInstanceState: Bundle?
+        savedInstanceState: Bundle?,
     ): View {
         _binding = FragmentConversationListBinding.inflate(inflater, container, false)
         return binding.root
@@ -660,7 +660,7 @@ class ConversationListFragment : LinkFragment() {
         @SuppressLint("SetTextI18n")
         fun bind(
             onItemClickListener: PagedHeaderAdapter.OnItemListener<ConversationItem>?,
-            conversationItem: ConversationItem
+            conversationItem: ConversationItem,
         ) {
             val id = Session.getAccountId()
             conversationItem.getConversationName().let {

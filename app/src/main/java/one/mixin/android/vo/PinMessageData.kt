@@ -5,5 +5,5 @@ data class PinMessageData(
     val conversationId: String,
     val type: String,
     val content: String?,
-    val createdAt: String
+    val createdAt: String,
 )

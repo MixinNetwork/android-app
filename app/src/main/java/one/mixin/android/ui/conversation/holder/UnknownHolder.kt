@@ -58,7 +58,7 @@ class UnknownHolder constructor(val binding: ItemChatUnknownBinding) : BaseViewH
         isFirst: Boolean,
         hasSelect: Boolean,
         isSelect: Boolean,
-        onItemListener: ConversationAdapter.OnItemListener
+        onItemListener: ConversationAdapter.OnItemListener,
     ) {
         if (hasSelect && isSelect) {
             itemView.setBackgroundColor(SELECT_COLOR)

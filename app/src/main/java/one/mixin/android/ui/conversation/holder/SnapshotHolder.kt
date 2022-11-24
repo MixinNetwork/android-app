@@ -26,7 +26,7 @@ class SnapshotHolder constructor(val binding: ItemChatSnapshotBinding) : BaseVie
         isLast: Boolean,
         hasSelect: Boolean,
         isSelect: Boolean,
-        onItemListener: ConversationAdapter.OnItemListener
+        onItemListener: ConversationAdapter.OnItemListener,
     ) {
         super.bind(messageItem)
         this.onItemListener = onItemListener

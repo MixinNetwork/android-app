@@ -31,7 +31,7 @@ import java.io.File
 class SendTranscriptJob(
     val message: Message,
     private val transcriptMessages: List<TranscriptMessage>,
-    messagePriority: Int = PRIORITY_SEND_MESSAGE
+    messagePriority: Int = PRIORITY_SEND_MESSAGE,
 ) : MixinJob(Params(messagePriority).groupBy("send_message_group").persist(), message.messageId) {
 
     companion object {

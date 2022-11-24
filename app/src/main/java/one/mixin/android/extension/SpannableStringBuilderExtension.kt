@@ -20,7 +20,7 @@ import one.mixin.android.R
 
 inline fun SpannableStringBuilder.font(
     typeface: Typeface? = null,
-    builderAction: SpannableStringBuilder.() -> Unit
+    builderAction: SpannableStringBuilder.() -> Unit,
 ) = inSpans(CustomTypefaceSpan.create(typeface ?: Typeface.DEFAULT), builderAction = builderAction)
 
 internal fun buildAmountSymbol(
@@ -28,7 +28,7 @@ internal fun buildAmountSymbol(
     amount: String,
     symbol: String,
     @ColorInt amountColor: Int,
-    @ColorInt symbolColor: Int
+    @ColorInt symbolColor: Int,
 ) = buildSpannedString {
     scale(3f) {
         font(
@@ -70,7 +70,7 @@ internal fun String.highLight(
     context: Context,
     target: String,
     ignoreCase: Boolean = true,
-    @ColorInt color: Int = context.colorFromAttribute(R.attr.text_primary)
+    @ColorInt color: Int = context.colorFromAttribute(R.attr.text_primary),
 ): SpannableStringBuilder {
     val spannable = SpannableStringBuilder(this)
     var index = indexOf(target, ignoreCase = ignoreCase)

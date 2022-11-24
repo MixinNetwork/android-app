@@ -23,7 +23,7 @@ class RefreshAccountWorker @AssistedInject constructor(
     @Assisted context: Context,
     @Assisted parameters: WorkerParameters,
     private val accountService: AccountService,
-    private val userRepo: UserRepository
+    private val userRepo: UserRepository,
 ) : BaseWork(context, parameters) {
 
     override suspend fun onRun(): Result {

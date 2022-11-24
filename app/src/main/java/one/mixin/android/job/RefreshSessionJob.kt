@@ -6,7 +6,7 @@ import one.mixin.android.vo.ParticipantSession
 
 class RefreshSessionJob(
     private val conversationId: String,
-    private val userIds: List<String>
+    private val userIds: List<String>,
 ) : BaseJob(Params(PRIORITY_UI_HIGH).addTags(GROUP).requireNetwork().persist()) {
 
     companion object {

@@ -14,7 +14,7 @@ class RefreshTopAssetsWorker @AssistedInject constructor(
     @Assisted context: Context,
     @Assisted parameters: WorkerParameters,
     private val assetService: AssetService,
-    private val topAssetDao: TopAssetDao
+    private val topAssetDao: TopAssetDao,
 ) : BaseWork(context, parameters) {
 
     override suspend fun onRun(): Result {

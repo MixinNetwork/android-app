@@ -12,7 +12,7 @@ import kotlin.math.max
 
 class StickyRecyclerHeadersDecorationForGrid<VH : RecyclerView.ViewHolder>(
     private val adapter: StickyRecyclerHeadersAdapter<VH>,
-    private val spanCount: Int
+    private val spanCount: Int,
 ) : StickyRecyclerHeadersDecoration(adapter) {
 
     private val tempRect = Rect()
@@ -48,7 +48,7 @@ class StickyRecyclerHeadersDecorationForGrid<VH : RecyclerView.ViewHolder>(
         outRect: Rect,
         view: View,
         parent: RecyclerView,
-        state: RecyclerView.State
+        state: RecyclerView.State,
     ) {
         val itemPos = parent.getChildAdapterPosition(view)
         if (itemPos == RecyclerView.NO_POSITION) {

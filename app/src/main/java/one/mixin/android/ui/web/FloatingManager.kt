@@ -90,7 +90,7 @@ data class WebClip(
     val conversationId: String?,
     val shareable: Boolean?,
     @Transient val webView: MixinWebView?,
-    @Transient val isFinished: Boolean = false
+    @Transient val isFinished: Boolean = false,
 )
 
 fun updateClip(index: Int, webClip: WebClip) {

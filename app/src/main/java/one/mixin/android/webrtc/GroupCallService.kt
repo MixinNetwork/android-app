@@ -1000,7 +1000,7 @@ const val ERROR_PEER_CLOSED = 5002002
 const val ERROR_TRACK_NOT_FOUND = 5002003
 
 data class PeerList(
-    val peers: ArrayList<UserSession>?
+    val peers: ArrayList<UserSession>?,
 )
 
 fun publish(ctx: Context, conversationId: String, users: ArrayList<String>? = null) =

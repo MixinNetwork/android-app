@@ -34,7 +34,7 @@ import java.io.FileNotFoundException
 import java.net.SocketTimeoutException
 
 class SendAttachmentMessageJob(
-    val message: Message
+    val message: Message,
 ) : MixinJob(Params(PRIORITY_SEND_ATTACHMENT_MESSAGE).groupBy("send_media_job").requireNetwork().persist(), message.messageId) {
 
     companion object {

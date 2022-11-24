@@ -15,7 +15,7 @@ class Session(
     @ColumnInfo(name = "record", typeAffinity = BLOB)
     val record: ByteArray,
     @ColumnInfo(name = "timestamp")
-    val timestamp: Long
+    val timestamp: Long,
 ) {
     @PrimaryKey(autoGenerate = true)
     var _id: Int = 0

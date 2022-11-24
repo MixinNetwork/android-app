@@ -19,7 +19,7 @@ fun String.base64RawURLDecode(): ByteArray = Base64RFC4648.getUrlDecoder().decod
 fun ByteArray.toIntString(
     separator: CharSequence = " ",
     prefix: CharSequence = "[",
-    postfix: CharSequence = "]"
+    postfix: CharSequence = "]",
 ) =
     this.joinToString(separator, prefix, postfix) {
         String.format("%d", it)

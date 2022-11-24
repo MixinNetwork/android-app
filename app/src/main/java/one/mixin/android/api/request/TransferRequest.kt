@@ -16,5 +16,5 @@ class TransferRequest(
     @SerializedName("memo")
     val memo: String? = null,
     @SerializedName("address_id")
-    val addressId: String? = null
+    val addressId: String? = null,
 )

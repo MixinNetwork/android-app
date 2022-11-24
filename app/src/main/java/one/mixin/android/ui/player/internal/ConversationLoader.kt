@@ -19,7 +19,7 @@ class ConversationLoader : MusicMetaLoader() {
         conversationId: String,
         db: MixinDatabase,
         pageSize: Int = 10,
-        initialLoadKey: Int = 0
+        initialLoadKey: Int = 0,
     ): LiveData<PagedList<MediaMetadataCompat>> =
         db.messageDao().findAudiosByConversationId(conversationId)
             .mapByPage { loadMessageItems(it) }

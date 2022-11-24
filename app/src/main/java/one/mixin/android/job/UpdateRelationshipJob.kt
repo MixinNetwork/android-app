@@ -19,7 +19,7 @@ import one.mixin.android.vo.generateConversationId
 
 class UpdateRelationshipJob(
     private val request: RelationshipRequest,
-    private val report: Boolean = false
+    private val report: Boolean = false,
 ) :
     BaseJob(Params(PRIORITY_UI_HIGH).addTags(GROUP).groupBy("relationship").requireNetwork()) {
 

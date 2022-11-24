@@ -91,7 +91,7 @@ class GroupFriendAdapter :
             listener: GroupFriendListener?,
             checkedMap: HashMap<String, Boolean>,
             alreadyUserIds: List<String>?,
-            isAdd: Boolean
+            isAdd: Boolean,
         ) {
             binding.normal.text = user.fullName
             binding.mixinIdTv.text = user.identityNumber

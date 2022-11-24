@@ -40,7 +40,7 @@ interface TranscriptMessageDao : BaseDao<TranscriptMessage> {
         mediaKey: ByteArray?,
         mediaDigest: ByteArray?,
         mediaStatus: String,
-        mediaCreatedAt: String
+        mediaCreatedAt: String,
     )
 
     @Query("UPDATE transcript_messages SET media_url = :mediaUrl, media_size = :mediaSize, media_status = :mediaStatus WHERE transcript_id = :transcriptId AND message_id = :messageId")
@@ -49,7 +49,7 @@ interface TranscriptMessageDao : BaseDao<TranscriptMessage> {
         mediaSize: Long,
         mediaStatus: String,
         transcriptId: String,
-        messageId: String
+        messageId: String,
     )
 
     @Query("UPDATE transcript_messages SET media_status = :mediaStatus WHERE transcript_id = :transcriptId AND message_id = :messageId")

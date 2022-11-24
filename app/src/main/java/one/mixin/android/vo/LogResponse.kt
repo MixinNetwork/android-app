@@ -10,5 +10,5 @@ class LogResponse(
     @SerializedName("ip_address")
     val ipAddress: String,
     @SerializedName("created_at")
-    val createdAt: String
+    val createdAt: String,
 )

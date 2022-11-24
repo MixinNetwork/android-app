@@ -80,7 +80,7 @@ class PostHolder constructor(val binding: ItemChatPostBinding) : BaseViewHolder(
         isLast: Boolean,
         isFirst: Boolean = false,
         onItemListener: ChatHistoryAdapter.OnItemListener,
-        miniMarkwon: Markwon
+        miniMarkwon: Markwon,
     ) {
         super.bind(messageItem)
         if (binding.chatTv.tag != messageItem.content.hashCode()) {

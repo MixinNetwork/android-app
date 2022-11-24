@@ -76,7 +76,7 @@ import kotlin.math.abs
 
 class ChatHistoryAdapter(
     private val onItemListener: OnItemListener,
-    private val context: Activity
+    private val context: Activity,
 ) :
     RecyclerView.Adapter<BaseViewHolder>(), MixinStickyRecyclerHeadersAdapter<TimeHolder> {
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): BaseViewHolder {

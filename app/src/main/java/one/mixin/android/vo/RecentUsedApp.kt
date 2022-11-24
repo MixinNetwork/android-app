@@ -9,7 +9,7 @@ data class RecentUsedApp(
     @ColumnInfo(name = "app_id")
     val appId: String,
     @ColumnInfo(name = "icon_url")
-    val iconUrl: String
+    val iconUrl: String,
 ) {
     companion object {
         val DIFF_CALLBACK = object : DiffUtil.ItemCallback<RecentUsedApp>() {

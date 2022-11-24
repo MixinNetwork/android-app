@@ -37,7 +37,7 @@ class GroupUserViewHolder(val binding: ItemGroupFriendBinding) : RecyclerView.Vi
         user: User,
         listener: GroupUserListener?,
         checkedMap: HashMap<String, Boolean>,
-        alreadyUserIds: List<String>?
+        alreadyUserIds: List<String>?,
     ) {
         binding.normal.text = user.fullName
         binding.mixinIdTv.text = user.identityNumber

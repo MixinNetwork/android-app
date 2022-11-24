@@ -12,7 +12,7 @@ import one.mixin.android.HiltTestActivity
 inline fun <reified T : Fragment> launchFragmentInHiltContainer(
     fragment: T,
     @StyleRes themeResId: Int,
-    crossinline action: T.() -> Unit = {}
+    crossinline action: T.() -> Unit = {},
 ) {
     val startActivityIntent = Intent.makeMainActivity(
         ComponentName(
@@ -37,7 +37,7 @@ inline fun <reified T : Fragment> launchFragmentInHiltContainer(
 inline fun <reified T : Fragment> launchFragmentInHiltContainer(
     @StyleRes themeResId: Int,
     crossinline initFragmentAction: () -> T,
-    crossinline action: T.() -> Unit = {}
+    crossinline action: T.() -> Unit = {},
 ) {
     val startActivityIntent = Intent.makeMainActivity(
         ComponentName(

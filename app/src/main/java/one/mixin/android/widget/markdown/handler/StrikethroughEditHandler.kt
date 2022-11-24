@@ -18,7 +18,7 @@ class StrikethroughEditHandler : AbstractEditHandler<StrikethroughSpan>() {
         input: String,
         span: StrikethroughSpan,
         spanStart: Int,
-        spanTextLength: Int
+        spanTextLength: Int,
     ) {
         val match = MarkwonEditorUtils.findDelimited(input, spanStart, "~~")
         if (match != null) {

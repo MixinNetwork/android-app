@@ -88,7 +88,7 @@ class CaptureFragment() : BaseCameraxFragment() {
     // testing constructor
     @VisibleForTesting(otherwise = VisibleForTesting.NONE)
     constructor(
-        testRegistry: ActivityResultRegistry
+        testRegistry: ActivityResultRegistry,
     ) : this() {
         resultRegistry = testRegistry
     }
@@ -105,7 +105,7 @@ class CaptureFragment() : BaseCameraxFragment() {
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
-        savedInstanceState: Bundle?
+        savedInstanceState: Bundle?,
     ): View? =
         layoutInflater.inflate(R.layout.fragment_capture, container, false)
 
@@ -156,7 +156,7 @@ class CaptureFragment() : BaseCameraxFragment() {
     @SuppressLint("RestrictedApi")
     override fun appendOtherUseCases(
         useCases: ArrayList<UseCase>,
-        rotation: Int
+        rotation: Int,
     ) {
         imageCapture = ImageCapture.Builder()
             .setCaptureMode(ImageCapture.CAPTURE_MODE_MINIMIZE_LATENCY)

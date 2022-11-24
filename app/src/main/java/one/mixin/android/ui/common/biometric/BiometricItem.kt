@@ -11,7 +11,7 @@ open class BiometricItem(
     open val amount: String,
     open var pin: String?,
     open val memo: String?,
-    open val state: String
+    open val state: String,
 ) : Parcelable
 
 @Parcelize
@@ -21,7 +21,7 @@ open class AssetBiometricItem(
     override val amount: String,
     override var pin: String?,
     override val memo: String?,
-    override val state: String
+    override val state: String,
 ) : BiometricItem(amount, pin, memo, state)
 
 @Parcelize
@@ -33,7 +33,7 @@ class TransferBiometricItem(
     override val traceId: String?,
     override val memo: String?,
     override val state: String,
-    val trace: Trace?
+    val trace: Trace?,
 ) : AssetBiometricItem(asset, traceId, amount, pin, memo, state)
 
 @Parcelize
@@ -49,7 +49,7 @@ class WithdrawBiometricItem(
     override val traceId: String?,
     override val memo: String?,
     override val state: String,
-    val trace: Trace?
+    val trace: Trace?,
 ) : AssetBiometricItem(asset, traceId, amount, pin, memo, state)
 
 fun WithdrawBiometricItem.displayAddress(): String {
@@ -70,7 +70,7 @@ open class MultisigsBiometricItem(
     override var pin: String?,
     override val traceId: String?,
     override val memo: String?,
-    override val state: String
+    override val state: String,
 ) : AssetBiometricItem(asset, traceId, amount, pin, memo, state)
 
 @Parcelize
@@ -85,7 +85,7 @@ class Multi2MultiBiometricItem(
     override var pin: String?,
     override val traceId: String?,
     override val memo: String?,
-    override val state: String
+    override val state: String,
 ) : MultisigsBiometricItem(senders, receivers, threshold, asset, amount, pin, traceId, memo, state)
 
 @Parcelize
@@ -98,7 +98,7 @@ class One2MultiBiometricItem(
     override var pin: String?,
     override val traceId: String?,
     override val memo: String?,
-    override val state: String
+    override val state: String,
 ) : MultisigsBiometricItem(senders, receivers, threshold, asset, amount, pin, traceId, memo, state)
 
 @Parcelize
@@ -114,5 +114,5 @@ class NftBiometricItem(
     override val amount: String,
     override var pin: String?,
     override val memo: String?,
-    override val state: String
+    override val state: String,
 ) : BiometricItem(amount, pin, memo, state)

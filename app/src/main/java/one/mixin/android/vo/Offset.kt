@@ -10,7 +10,7 @@ data class Offset(
     @ColumnInfo(name = "key")
     val key: String,
     @ColumnInfo(name = "timestamp")
-    val timestamp: String
+    val timestamp: String,
 )
 
 const val STATUS_OFFSET = "messages_status_offset"

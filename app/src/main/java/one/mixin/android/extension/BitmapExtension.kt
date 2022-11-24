@@ -161,7 +161,7 @@ fun decodeBitmapFromBase64(base64Data: String): Bitmap {
 }
 
 fun Bitmap.blurBitmap(
-    @IntRange(from = 0, to = 25) radius: Int
+    @IntRange(from = 0, to = 25) radius: Int,
 ): Bitmap {
     val input = Allocation.createFromBitmap(rs, this)
     val output = Allocation.createTyped(rs, input.type)

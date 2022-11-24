@@ -23,7 +23,7 @@ class MenuFragment : BaseFragment(R.layout.fragment_recycler_view) {
         fun newInstance(
             isGroup: Boolean,
             isBot: Boolean,
-            isSelfCreatedBot: Boolean
+            isSelfCreatedBot: Boolean,
         ) = MenuFragment().withArgs {
             putBoolean(ARGS_IS_GROUP, isGroup)
             putBoolean(ARGS_IS_BOT, isBot)

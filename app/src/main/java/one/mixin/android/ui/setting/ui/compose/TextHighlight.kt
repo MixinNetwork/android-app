@@ -24,7 +24,7 @@ fun HighlightStarLinkText(
     links: Array<String>,
     highlightStyle: SpanStyle = SpanStyle(color = MixinAppTheme.colors.accent),
     textStyle: TextStyle = TextStyle(color = MixinAppTheme.colors.textPrimary, fontSize = 14.sp),
-    onClick: (link: String) -> Unit
+    onClick: (link: String) -> Unit,
 ) {
     val annotatedString = remember {
         buildAnnotatedString {
@@ -97,7 +97,7 @@ fun HighlightText(
     ignoreCase: Boolean = true,
     highlightStyle: SpanStyle = SpanStyle(color = MixinAppTheme.colors.accent),
     textStyle: TextStyle = TextStyle(color = MixinAppTheme.colors.textPrimary, fontSize = 14.sp),
-    overflow: TextOverflow = TextOverflow.Clip
+    overflow: TextOverflow = TextOverflow.Clip,
 ) {
     val annotatedString = remember {
         buildAnnotatedString {

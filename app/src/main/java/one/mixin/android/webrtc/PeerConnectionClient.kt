@@ -126,7 +126,7 @@ class PeerConnectionClient(context: Context, private val events: PeerConnectionE
         iceServerList: List<PeerConnection.IceServer>? = null,
         setLocalSuccess: ((sdp: SessionDescription) -> Unit),
         frameKey: ByteArray? = null,
-        doWhenSetFailure: (() -> Unit)? = null
+        doWhenSetFailure: (() -> Unit)? = null,
     ) {
         val sdpConstraint = createMediaConstraint()
         if (iceServerList != null) {
@@ -200,7 +200,7 @@ class PeerConnectionClient(context: Context, private val events: PeerConnectionE
         iceServerList: List<PeerConnection.IceServer>? = null,
         remoteSdp: SessionDescription,
         setLocalSuccess: (sdp: SessionDescription) -> Unit,
-        doWhenSetFailure: (() -> Unit)? = null
+        doWhenSetFailure: (() -> Unit)? = null,
     ) {
         val sdpConstraint = createMediaConstraint()
         if (iceServerList != null) {
@@ -312,7 +312,7 @@ class PeerConnectionClient(context: Context, private val events: PeerConnectionE
 
     fun setAnswerSdp(
         sdp: SessionDescription,
-        doWhenSetFailure: (() -> Unit)? = null
+        doWhenSetFailure: (() -> Unit)? = null,
     ) {
         peerConnection?.setRemoteDescription(
             object : SdpObserverWrapper() {

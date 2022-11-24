@@ -90,7 +90,7 @@ class PostHolder constructor(val binding: ItemChatPostBinding) : BaseViewHolder(
         isSelect: Boolean,
         isRepresentative: Boolean,
         onItemListener: ConversationAdapter.OnItemListener,
-        miniMarkwon: Markwon
+        miniMarkwon: Markwon,
     ) {
         super.bind(messageItem)
         if (hasSelect && isSelect) {

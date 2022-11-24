@@ -11,7 +11,7 @@ import javax.inject.Inject
 class AddressViewModel @Inject
 internal constructor(
     private val assetRepository: AssetRepository,
-    private val jobManager: MixinJobManager
+    private val jobManager: MixinJobManager,
 ) : ViewModel() {
 
     fun addresses(id: String) = assetRepository.addresses(id)

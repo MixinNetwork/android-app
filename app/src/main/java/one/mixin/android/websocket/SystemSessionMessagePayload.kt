@@ -10,7 +10,7 @@ data class SystemSessionMessagePayload(
     @SerializedName("session_id")
     val sessionId: String,
     @SerializedName("public_key")
-    val publicKey: String?
+    val publicKey: String?,
 )
 
 enum class SystemSessionMessageAction { PROVISION, DESTROY }

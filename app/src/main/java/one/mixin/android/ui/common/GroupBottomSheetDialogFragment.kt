@@ -69,7 +69,7 @@ class GroupBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment(
         private var instant: GroupBottomSheetDialogFragment? = null
         fun newInstance(
             conversationId: String,
-            expand: Boolean = false
+            expand: Boolean = false,
         ): GroupBottomSheetDialogFragment {
             try {
                 instant?.dismiss()
@@ -163,7 +163,7 @@ class GroupBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment(
     @SuppressLint("SetTextI18n")
     private fun initParticipant(
         changeMenu: Boolean,
-        conversation: Conversation
+        conversation: Conversation,
     ) = lifecycleScope.launch {
         if (!isAdded) return@launch
 

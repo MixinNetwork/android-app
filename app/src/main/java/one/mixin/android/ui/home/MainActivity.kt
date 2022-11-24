@@ -954,7 +954,7 @@ class MainActivity : BlazeBaseActivity() {
 
         fun showFromShortcut(
             activity: Activity,
-            intent: Intent
+            intent: Intent,
         ) {
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED)
             activity.startActivity(intent)
@@ -997,7 +997,7 @@ class MainActivity : BlazeBaseActivity() {
 fun runIntervalTask(
     spKey: String,
     interval: Long,
-    task: () -> Unit
+    task: () -> Unit,
 ) {
     val defaultSharedPreferences = MixinApplication.appContext.defaultSharedPreferences
     val cur = System.currentTimeMillis()

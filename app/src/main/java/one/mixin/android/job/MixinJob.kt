@@ -42,7 +42,7 @@ import java.util.UUID
 
 abstract class MixinJob(
     params: Params,
-    val mixinJobId: String
+    val mixinJobId: String,
 ) : BaseJob(params.addTags(mixinJobId)) {
     companion object {
         private const val serialVersionUID = 1L

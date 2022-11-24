@@ -9,7 +9,7 @@ class MessageBuilder(
     val userId: String,
     val category: String,
     val status: String,
-    val createdAt: String
+    val createdAt: String,
 ) {
     private var content: String? = null
     private var mediaUrl: String? = null

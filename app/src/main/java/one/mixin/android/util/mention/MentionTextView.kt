@@ -36,7 +36,7 @@ class MentionTextView(context: Context, attrs: AttributeSet?) :
     }
 
     private fun renderMention(
-        text: CharSequence
+        text: CharSequence,
     ): CharSequence {
         val str = SpannableStringBuilder(text)
         val mentionRenderContext = this.mentionRenderContext ?: return text

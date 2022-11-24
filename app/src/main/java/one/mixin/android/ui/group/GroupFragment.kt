@@ -47,7 +47,7 @@ class GroupFragment : BaseFragment() {
         fun newInstance(
             from: Int? = 0,
             alreadyUsers: ArrayList<User>? = null,
-            conversationId: String? = null
+            conversationId: String? = null,
         ): GroupFragment {
             val f = GroupFragment()
             val b = Bundle()
@@ -98,7 +98,7 @@ class GroupFragment : BaseFragment() {
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
-        savedInstanceState: Bundle?
+        savedInstanceState: Bundle?,
     ): View? =
         inflater.inflate(R.layout.fragment_group, container, false)
 

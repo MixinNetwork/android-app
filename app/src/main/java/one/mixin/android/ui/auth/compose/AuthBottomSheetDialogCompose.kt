@@ -84,7 +84,7 @@ fun AuthBottomSheetDialogCompose(
     onResetClick: (() -> Unit)?,
     onConfirmed: ((List<String>) -> Unit)?,
     onBiometricClick: ((List<String>) -> Unit),
-    onVerifyRequest: ((List<String>, String) -> Unit)?
+    onVerifyRequest: ((List<String>, String) -> Unit)?,
 ) {
     val scopeGroup = groupScope(scopes)
     val savedScopes = remember { scopes.toMutableSet() }
@@ -192,7 +192,7 @@ fun AuthBottomSheetDialogCompose(
 fun ScopesContent(
     scopeGroup: ArrayMap<Int, MutableList<Scope>>,
     scopes: MutableSet<Scope>,
-    onConfirmed: ((List<String>) -> Unit)?
+    onConfirmed: ((List<String>) -> Unit)?,
 ) {
     val pagerState = rememberPagerState(initialPage = 0)
     val scope = rememberCoroutineScope()
@@ -283,7 +283,7 @@ fun ScopesContent(
 fun Modifier.verticalScrollbar(
     state: LazyListState,
     width: Dp = 4.dp,
-    color: Color = MixinAppTheme.colors.accent.copy(ContentAlpha.disabled)
+    color: Color = MixinAppTheme.colors.accent.copy(ContentAlpha.disabled),
 ): Modifier {
     return drawWithContent {
         drawContent()

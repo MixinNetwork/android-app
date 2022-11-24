@@ -38,5 +38,5 @@ class NonFungibleOutputResponse(
     @SerializedName("signed_by")
     val signedBy: String,
     @SerializedName("signed_tx")
-    val signedTx: String
+    val signedTx: String,
 ) : Parcelable

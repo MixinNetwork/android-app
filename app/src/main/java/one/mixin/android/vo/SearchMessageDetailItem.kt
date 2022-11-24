@@ -10,7 +10,7 @@ data class SearchMessageDetailItem(
     val mediaName: String?,
     val userId: String,
     val userFullName: String?,
-    val userAvatarUrl: String?
+    val userAvatarUrl: String?,
 ) : ICategory {
     companion object {
         val DIFF_CALLBACK = object : DiffUtil.ItemCallback<SearchMessageDetailItem>() {

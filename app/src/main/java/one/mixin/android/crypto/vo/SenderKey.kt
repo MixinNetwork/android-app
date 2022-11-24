@@ -10,5 +10,5 @@ class SenderKey(
     @ColumnInfo(name = "sender_id")
     val senderId: String,
     @ColumnInfo(name = "record", typeAffinity = ColumnInfo.BLOB)
-    val record: ByteArray
+    val record: ByteArray,
 )

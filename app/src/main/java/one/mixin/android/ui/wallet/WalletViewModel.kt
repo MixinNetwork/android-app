@@ -37,7 +37,7 @@ internal constructor(
     private val userRepository: UserRepository,
     private val accountRepository: AccountRepository,
     private val assetRepository: AssetRepository,
-    private val jobManager: MixinJobManager
+    private val jobManager: MixinJobManager,
 ) : ViewModel() {
 
     fun insertUser(user: User) = viewModelScope.launch(Dispatchers.IO) {
@@ -51,7 +51,7 @@ internal constructor(
         type: String? = null,
         otherType: String? = null,
         initialLoadKey: Int? = 0,
-        orderByAmount: Boolean = false
+        orderByAmount: Boolean = false,
     ): LiveData<PagedList<SnapshotItem>> =
         LivePagedListBuilder(
             assetRepository.snapshotsFromDb(id, type, otherType, orderByAmount),
@@ -66,7 +66,7 @@ internal constructor(
 
     fun snapshotsByUserId(
         opponentId: String,
-        initialLoadKey: Int? = 0
+        initialLoadKey: Int? = 0,
     ): LiveData<PagedList<SnapshotItem>> =
         LivePagedListBuilder(
             assetRepository.snapshotsByUserId(opponentId),
@@ -166,7 +166,7 @@ internal constructor(
     fun refreshSnapshots(
         assetId: String? = null,
         offset: String? = null,
-        opponent: String? = null
+        opponent: String? = null,
     ) {
         jobManager.addJobInBackground(RefreshSnapshotsJob(assetId, offset, opponent))
     }
@@ -197,7 +197,7 @@ internal constructor(
 
     fun updateRecentSearchAssets(
         defaultSharedPreferences: SharedPreferences,
-        assetId: String
+        assetId: String,
     ) = viewModelScope.launch(Dispatchers.IO) {
         val assetsString =
             defaultSharedPreferences.getString(Constants.Account.PREF_RECENT_SEARCH_ASSETS, null)

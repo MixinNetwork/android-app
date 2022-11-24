@@ -42,7 +42,7 @@ data class StickerAlbum(
     var orderedAt: Int = 0,
     @Expose
     @ColumnInfo(name = "added", defaultValue = "0")
-    var added: Boolean = false
+    var added: Boolean = false,
 ) {
     companion object {
         val DIFF_CALLBACK = object : DiffUtil.ItemCallback<StickerAlbum>() {
@@ -59,7 +59,7 @@ data class StickerAlbumOrder(
     @ColumnInfo(name = "album_id")
     val albumId: String,
     @ColumnInfo(name = "ordered_at")
-    val orderedAt: Int
+    val orderedAt: Int,
 )
 
 data class StickerAlbumAdded(
@@ -68,5 +68,5 @@ data class StickerAlbumAdded(
     @ColumnInfo(name = "added")
     val added: Boolean,
     @ColumnInfo(name = "ordered_at")
-    var orderedAt: Int
+    var orderedAt: Int,
 )

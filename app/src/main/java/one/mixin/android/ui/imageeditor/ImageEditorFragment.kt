@@ -93,7 +93,7 @@ class ImageEditorFragment : BaseFragment(), TextEntryDialogFragment.Controller {
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
-        savedInstanceState: Bundle?
+        savedInstanceState: Bundle?,
     ): View {
         _binding = FragmentImageEditorBinding.inflate(inflater, container, false)
         return binding.root

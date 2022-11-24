@@ -13,7 +13,7 @@ import kotlin.math.max
 class FlagLayout @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null,
-    defStyle: Int = 0
+    defStyle: Int = 0,
 ) : ViewGroup(context, attrs, defStyle) {
 
     private val binding = ViewFlagBinding.inflate(LayoutInflater.from(context), this)

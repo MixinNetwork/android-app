@@ -49,7 +49,7 @@ class VerificationEmergencyFragment : PinCodeFragment(R.layout.fragment_verifica
             pin: String? = null,
             verificationId: String? = null,
             from: Int,
-            userIdentityNumber: String? = null
+            userIdentityNumber: String? = null,
         ) = VerificationEmergencyFragment().withArgs {
             putParcelable(ARGS_USER, user)
             putString(ARGS_PIN, pin)

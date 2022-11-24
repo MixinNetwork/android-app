@@ -17,7 +17,7 @@ abstract class MixinLimitOffsetDataSource<T> protected constructor(
     private val countQuery: RoomSQLiteQuery,
     private val offsetStatement: RoomSQLiteQuery,
     private val querySqlGenerator: (String) -> RoomSQLiteQuery,
-    vararg tables: String?
+    vararg tables: String?,
 ) : PositionalDataSource<T>() {
     private val observer: InvalidationTracker.Observer
 
@@ -46,7 +46,7 @@ abstract class MixinLimitOffsetDataSource<T> protected constructor(
     protected abstract fun convertRows(cursor: Cursor?): List<T>
     override fun loadInitial(
         params: LoadInitialParams,
-        callback: LoadInitialCallback<T>
+        callback: LoadInitialCallback<T>,
     ) {
         val totalCount = countItems()
         if (totalCount == 0) {
@@ -81,7 +81,7 @@ abstract class MixinLimitOffsetDataSource<T> protected constructor(
 
     override fun loadRange(
         params: LoadRangeParams,
-        callback: LoadRangeCallback<T>
+        callback: LoadRangeCallback<T>,
     ) {
         val list = loadRange(params.startPosition, params.loadSize)
         callback.onResult(list)

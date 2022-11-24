@@ -15,7 +15,7 @@ import timber.log.Timber
 @Composable
 fun MixinSettingFragment(
     tag: String? = null,
-    createFragment: () -> Fragment
+    createFragment: () -> Fragment,
 ) {
     val context = LocalContext.current
 

@@ -412,7 +412,7 @@ inline fun <reified T : CallService> disconnect(ctx: Context) {
 inline fun <reified T : CallService> startService(
     ctx: Context,
     action: String? = null,
-    putExtra: ((intent: Intent) -> Unit)
+    putExtra: ((intent: Intent) -> Unit),
 ) {
     val intent = Intent(ctx, T::class.java).apply {
         this.action = action

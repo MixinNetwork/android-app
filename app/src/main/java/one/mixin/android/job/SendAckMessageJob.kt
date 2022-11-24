@@ -7,7 +7,7 @@ import java.util.UUID
 
 class SendAckMessageJob(
     private val ack: List<BlazeAckMessage>,
-    priority: Int = PRIORITY_ACK_MESSAGE
+    priority: Int = PRIORITY_ACK_MESSAGE,
 ) : MixinJob(Params(priority).groupBy("send_ack_message").requireWebSocketConnected().persist(), UUID.randomUUID().toString()) {
 
     companion object {

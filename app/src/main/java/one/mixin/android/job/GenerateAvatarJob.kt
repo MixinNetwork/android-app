@@ -33,7 +33,7 @@ import java.util.concurrent.TimeUnit
 
 class GenerateAvatarJob(
     private val groupId: String,
-    val list: List<String>? = null
+    val list: List<String>? = null,
 ) : BaseJob(
     Params(
         PRIORITY_BACKGROUND

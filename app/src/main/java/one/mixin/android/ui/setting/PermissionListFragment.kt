@@ -45,7 +45,7 @@ class PermissionListFragment : BaseFragment(R.layout.fragment_permission_list) {
 
         fun newInstance(
             app: App,
-            authorization: AuthorizationResponse
+            authorization: AuthorizationResponse,
         ) = PermissionListFragment().withArgs {
             putParcelable(ARGS_APP, app)
             putParcelable(ARGS_AUTHORIZATION, authorization)

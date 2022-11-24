@@ -90,7 +90,7 @@ internal constructor(
     private val remoteMessageStatusDao: RemoteMessageStatusDao,
     private val conversationService: ConversationService,
     private val userService: UserService,
-    private val jobManager: MixinJobManager
+    private val jobManager: MixinJobManager,
 ) {
 
     @SuppressLint("RestrictedApi")
@@ -155,7 +155,7 @@ internal constructor(
     suspend fun indexMediaMessages(
         conversationId: String,
         messageId: String,
-        excludeLive: Boolean
+        excludeLive: Boolean,
     ): Int = if (excludeLive) {
         messageDao.indexMediaMessagesExcludeLive(conversationId, messageId)
     } else {
@@ -165,7 +165,7 @@ internal constructor(
     fun getMediaMessages(
         conversationId: String,
         index: Int,
-        excludeLive: Boolean
+        excludeLive: Boolean,
     ): LiveData<PagedList<MessageItem>> {
         val dataSource = if (excludeLive) {
             messageDao.getMediaMessagesExcludeLive(conversationId)
@@ -338,7 +338,7 @@ internal constructor(
     suspend fun findUnreadMessageByMessageId(
         conversationId: String,
         userId: String,
-        messageId: String
+        messageId: String,
     ) = messageDao.findUnreadMessageByMessageId(conversationId, userId, messageId)
 
     suspend fun isSilence(conversationId: String, userId: String): Int =

@@ -6,5 +6,5 @@ data class AssetFee(
     val type: String,
     @SerializedName("asset_id")
     val assetId: String,
-    val amount: String
+    val amount: String,
 )

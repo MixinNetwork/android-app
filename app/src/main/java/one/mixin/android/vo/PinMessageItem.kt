@@ -10,5 +10,5 @@ class PinMessageItem(
     @ColumnInfo(name = "full_name")
     val userFullName: String?,
     @ColumnInfo(name = "mentions")
-    val mentions: String?
+    val mentions: String?,
 )

@@ -20,7 +20,7 @@ class BoldEditHandler : AbstractEditHandler<StrongEmphasisSpan>() {
         input: String,
         span: StrongEmphasisSpan,
         spanStart: Int,
-        spanTextLength: Int
+        spanTextLength: Int,
     ) {
         val match = MarkwonEditorUtils.findDelimited(input, spanStart, "**", "__")
         if (match != null) {

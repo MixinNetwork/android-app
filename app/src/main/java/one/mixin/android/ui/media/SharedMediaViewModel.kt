@@ -31,7 +31,7 @@ import javax.inject.Inject
 @HiltViewModel
 class SharedMediaViewModel @Inject constructor(
     val conversationRepository: ConversationRepository,
-    private val jobManager: MixinJobManager
+    private val jobManager: MixinJobManager,
 ) : ViewModel() {
 
     fun getMediaMessagesExcludeLive(conversationId: String): LiveData<PagedList<MessageItem>> {
@@ -179,13 +179,13 @@ class SharedMediaViewModel @Inject constructor(
     suspend fun indexMediaMessages(
         conversationId: String,
         messageId: String,
-        excludeLive: Boolean
+        excludeLive: Boolean,
     ): Int = conversationRepository.indexMediaMessages(conversationId, messageId, excludeLive)
 
     fun getMediaMessages(
         conversationId: String,
         index: Int,
-        excludeLive: Boolean
+        excludeLive: Boolean,
     ) = conversationRepository.getMediaMessages(conversationId, index, excludeLive)
 
     suspend fun getMediaMessage(conversationId: String, messageId: String) =

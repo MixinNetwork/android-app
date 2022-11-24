@@ -38,7 +38,7 @@ class UserTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
-        savedInstanceState: Bundle?
+        savedInstanceState: Bundle?,
     ): View? =
         layoutInflater.inflate(R.layout.fragment_transactions_user, container, false).apply {
             isClickable = true

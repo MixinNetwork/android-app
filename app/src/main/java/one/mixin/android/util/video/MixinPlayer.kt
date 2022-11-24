@@ -330,7 +330,7 @@ class MixinPlayer(val isAudio: Boolean = false) : Player.Listener {
             width: Int,
             height: Int,
             unappliedRotationDegrees: Int,
-            pixelWidthHeightRatio: Float
+            pixelWidthHeightRatio: Float,
         ) {
         }
 
@@ -378,7 +378,7 @@ class MixinPlayer(val isAudio: Boolean = false) : Player.Listener {
             width: Int,
             height: Int,
             unappliedRotationDegrees: Int,
-            pixelWidthHeightRatio: Float
+            pixelWidthHeightRatio: Float,
         ) {
         }
 

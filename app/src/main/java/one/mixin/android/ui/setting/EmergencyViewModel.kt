@@ -17,7 +17,7 @@ class EmergencyViewModel
 @Inject
 internal constructor(
     private val accountRepository: AccountRepository,
-    private val userRepository: UserRepository
+    private val userRepository: UserRepository,
 ) : ViewModel() {
 
     suspend fun createEmergency(request: EmergencyRequest) = withContext(Dispatchers.IO) {

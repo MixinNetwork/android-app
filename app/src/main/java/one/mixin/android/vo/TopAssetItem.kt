@@ -30,7 +30,7 @@ data class TopAssetItem(
     @ColumnInfo(name = "chain_icon_url")
     val chainIconUrl: String?,
     val priceUsd: String,
-    val changeUsd: String
+    val changeUsd: String,
 ) : Parcelable {
     companion object {
         val DIFF_CALLBACK = object : DiffUtil.ItemCallback<TopAssetItem>() {

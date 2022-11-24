@@ -6,7 +6,7 @@ data class SystemUserMessagePayload(
     @SerializedName("action")
     val action: String,
     @SerializedName("user_id")
-    val userId: String
+    val userId: String,
 )
 
 enum class SystemUserMessageAction { UPDATE }

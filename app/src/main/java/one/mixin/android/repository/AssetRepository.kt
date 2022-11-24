@@ -49,7 +49,7 @@ constructor(
     private val addressDao: AddressDao,
     private val addressService: AddressService,
     private val hotAssetDao: TopAssetDao,
-    private val traceDao: TraceDao
+    private val traceDao: TraceDao,
 ) {
 
     fun assets() = assetService.assets()
@@ -102,7 +102,7 @@ constructor(
         id: String,
         type: String? = null,
         otherType: String? = null,
-        orderByAmount: Boolean = false
+        orderByAmount: Boolean = false,
     ): DataSource.Factory<Int, SnapshotItem> {
         return if (type == null) {
             if (orderByAmount) {
@@ -165,7 +165,7 @@ constructor(
     fun allSnapshots(
         type: String? = null,
         otherType: String? = null,
-        orderByAmount: Boolean = false
+        orderByAmount: Boolean = false,
     ): DataSource.Factory<Int, SnapshotItem> {
         return if (type == null) {
             if (orderByAmount) {

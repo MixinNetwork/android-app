@@ -597,7 +597,7 @@ abstract class BaseCameraxFragment : VisionFragment() {
 
     inner class PinchToZoomGestureDetector(
         context: Context,
-        s: S = S()
+        s: S = S(),
     ) : ScaleGestureDetector(context, s), ScaleGestureDetector.OnScaleGestureListener {
         init {
             s.listener = this

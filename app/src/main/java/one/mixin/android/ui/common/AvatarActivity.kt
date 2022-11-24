@@ -83,7 +83,7 @@ class AvatarActivity : BaseActivity() {
                     e: GlideException?,
                     model: Any?,
                     target: Target<Bitmap>?,
-                    isFirstResource: Boolean
+                    isFirstResource: Boolean,
                 ): Boolean {
                     return false
                 }
@@ -93,7 +93,7 @@ class AvatarActivity : BaseActivity() {
                     model: Any?,
                     target: Target<Bitmap>?,
                     dataSource: DataSource?,
-                    isFirstResource: Boolean
+                    isFirstResource: Boolean,
                 ): Boolean {
                     binding.avatar.doOnPreDraw {
                         val avatarTransform = AvatarTransform(resource).apply { addTarget(binding.avatar) }

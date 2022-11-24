@@ -13,7 +13,7 @@ import one.mixin.android.R
 class DraggableRecyclerView @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null,
-    defStyle: Int = 0
+    defStyle: Int = 0,
 ) : RecyclerView(context, attrs, defStyle) {
 
     var callback: Callback? = null

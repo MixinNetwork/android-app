@@ -117,7 +117,7 @@ class BubbleActivity : BlazeBaseActivity() {
         fun putIntent(
             context: Context,
             conversationId: String? = null,
-            recipientId: String? = null
+            recipientId: String? = null,
         ): Intent {
             require(!(conversationId == null && recipientId == null)) { "lose data" }
             require(recipientId != Session.getAccountId()) { "error data $conversationId" }

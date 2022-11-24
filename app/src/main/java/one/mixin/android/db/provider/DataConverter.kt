@@ -381,7 +381,7 @@ fun convertToSearchMessageDetailItem(cursor: Cursor?): ArrayList<SearchMessageDe
 fun callableUser(
     db: MixinDatabase,
     statement: RoomSQLiteQuery,
-    cancellationSignal: CancellationSignal
+    cancellationSignal: CancellationSignal,
 ): Callable<List<User>> {
     return Callable<List<User>> {
         val cursor = DBUtil.query(db, statement, false, cancellationSignal)
@@ -518,7 +518,7 @@ private val depositEntryListConverter by lazy {
 fun callableAssetItem(
     db: MixinDatabase,
     statement: RoomSQLiteQuery,
-    cancellationSignal: CancellationSignal
+    cancellationSignal: CancellationSignal,
 ): Callable<List<AssetItem>> {
     return Callable<List<AssetItem>> {
         val cursor = DBUtil.query(db, statement, false, cancellationSignal)
@@ -687,7 +687,7 @@ fun callableAssetItem(
 fun callableSearchMessageItem(
     db: MixinDatabase,
     statement: RoomSQLiteQuery,
-    cancellationSignal: CancellationSignal
+    cancellationSignal: CancellationSignal,
 ): Callable<List<SearchMessageItem>> {
     return Callable<List<SearchMessageItem>> {
         val cursor = DBUtil.query(db, statement, false, cancellationSignal)
@@ -767,7 +767,7 @@ fun callableSearchMessageItem(
 fun callableChatMinimal(
     db: MixinDatabase,
     statement: RoomSQLiteQuery,
-    cancellationSignal: CancellationSignal
+    cancellationSignal: CancellationSignal,
 ): Callable<List<ChatMinimal>> {
     return Callable<List<ChatMinimal>> {
         val cursor = DBUtil.query(db, statement, false, cancellationSignal)

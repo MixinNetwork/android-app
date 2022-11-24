@@ -34,7 +34,7 @@ class AudioHolder constructor(val binding: ItemChatAudioBinding) : BaseViewHolde
         messageItem: ChatHistoryMessageItem,
         isLast: Boolean,
         isFirst: Boolean = false,
-        onItemListener: ChatHistoryAdapter.OnItemListener
+        onItemListener: ChatHistoryAdapter.OnItemListener,
     ) {
         super.bind(messageItem)
         val isMe = messageItem.userId == Session.getAccountId()
@@ -165,7 +165,7 @@ class AudioHolder constructor(val binding: ItemChatAudioBinding) : BaseViewHolde
 
     private fun handleClick(
         messageItem: ChatHistoryMessageItem,
-        onItemListener: ChatHistoryAdapter.OnItemListener
+        onItemListener: ChatHistoryAdapter.OnItemListener,
     ) {
         if (messageItem.mediaStatus == MediaStatus.CANCELED.name) {
             if (messageItem.mediaUrl.isNullOrEmpty()) {

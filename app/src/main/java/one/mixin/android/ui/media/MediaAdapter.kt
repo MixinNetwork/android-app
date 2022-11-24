@@ -44,7 +44,7 @@ class MediaHolder(itemView: View) : NormalHolder(itemView) {
         item: MessageItem,
         size: Int,
         onClickListener: (imageView: View, messageItem: MessageItem) -> Unit,
-        onLongClickListener: (messageId: String) -> Unit
+        onLongClickListener: (messageId: String) -> Unit,
     ) {
         val binding = ItemMediaBinding.bind(itemView)
         itemView.updateLayoutParams<ViewGroup.LayoutParams> {

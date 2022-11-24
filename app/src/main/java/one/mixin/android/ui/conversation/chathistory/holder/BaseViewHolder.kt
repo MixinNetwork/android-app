@@ -70,7 +70,7 @@ abstract class BaseViewHolder constructor(containerView: View) :
     protected fun setItemBackgroundResource(
         view: View,
         @DrawableRes defaultBg: Int,
-        @DrawableRes nightBg: Int
+        @DrawableRes nightBg: Int,
     ) {
         view.setBackgroundResource(
             if (!isNightMode) {
@@ -138,7 +138,7 @@ abstract class BaseViewHolder constructor(containerView: View) :
         isMe: Boolean,
         messageId: String,
         @IdRes id: Int,
-        onItemListener: ChatHistoryAdapter.OnItemListener
+        onItemListener: ChatHistoryAdapter.OnItemListener,
     ) {
         chatJump.isVisible = true
         chatJump.setImageResource(

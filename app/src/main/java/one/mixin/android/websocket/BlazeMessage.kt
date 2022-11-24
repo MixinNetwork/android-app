@@ -11,7 +11,7 @@ data class BlazeMessage(
     val action: String,
     val params: BlazeMessageParam?,
     val data: JsonElement? = null,
-    val error: ResponseError? = null
+    val error: ResponseError? = null,
 ) : Serializable {
 
     companion object {

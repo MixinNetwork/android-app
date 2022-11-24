@@ -6,5 +6,5 @@ import androidx.room.Entity
 data class MediaMessageMinimal(
     override val type: String,
     val messageId: String,
-    val mediaUrl: String?
+    val mediaUrl: String?,
 ) : ICategory

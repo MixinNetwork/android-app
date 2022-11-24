@@ -54,7 +54,7 @@ class PinAddrBottomSheetDialogFragment : BiometricBottomSheetDialogFragment() {
             destination: String,
             tag: String? = null,
             addressId: String? = null,
-            type: Int = ADD
+            type: Int = ADD,
         ) = PinAddrBottomSheetDialogFragment().apply {
             val b = bundleOf(
                 ARGS_ASSET_ID to assetId,

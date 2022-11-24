@@ -95,7 +95,7 @@ fun ImageView.loadImage(
     base64Holder: String? = null,
     requestListener: RequestListener<Drawable?>? = null,
     overrideWidth: Int? = null,
-    overrideHeight: Int? = null
+    overrideHeight: Int? = null,
 ) {
     if (!isActivityNotDestroyed()) return
     var requestOptions = RequestOptions().dontTransform()
@@ -120,7 +120,7 @@ fun ImageView.loadGif(
     @DrawableRes holder: Int? = null,
     base64Holder: String? = null,
     overrideWidth: Int? = null,
-    overrideHeight: Int? = null
+    overrideHeight: Int? = null,
 ) {
     if (!isActivityNotDestroyed()) return
     var requestOptions = RequestOptions().dontTransform()
@@ -196,7 +196,7 @@ fun ImageView.loadImageMark(uri: String?, mark: Int) {
                     e: GlideException?,
                     model: Any?,
                     target: Target<Drawable>?,
-                    isFirstResource: Boolean
+                    isFirstResource: Boolean,
                 ): Boolean {
                     return true
                 }
@@ -206,7 +206,7 @@ fun ImageView.loadImageMark(uri: String?, mark: Int) {
                     model: Any?,
                     target: Target<Drawable>?,
                     dataSource: DataSource?,
-                    isFirstResource: Boolean
+                    isFirstResource: Boolean,
                 ): Boolean {
                     this@loadImageMark.context.runOnUiThread {
                         setImageDrawable(resource)
@@ -263,7 +263,7 @@ fun ImageView.loadLongImageMark(uri: String?, mark: Int?) {
                 e: GlideException?,
                 model: Any?,
                 target: Target<Drawable>?,
-                isFirstResource: Boolean
+                isFirstResource: Boolean,
             ): Boolean {
                 return true
             }
@@ -273,7 +273,7 @@ fun ImageView.loadLongImageMark(uri: String?, mark: Int?) {
                 model: Any?,
                 target: Target<Drawable>?,
                 dataSource: DataSource?,
-                isFirstResource: Boolean
+                isFirstResource: Boolean,
             ): Boolean {
                 this@loadLongImageMark.context.runOnUiThread {
                     setImageDrawable(resource)
@@ -287,7 +287,7 @@ fun ImageView.loadLongImageMark(uri: String?, mark: Int?) {
 fun ImageView.loadVideoMark(
     uri: String?,
     holder: String?,
-    mark: Int
+    mark: Int,
 ) {
     if (!isActivityNotDestroyed()) return
     Glide.with(this).load(uri)
@@ -307,7 +307,7 @@ fun ImageView.loadVideoMark(
                     e: GlideException?,
                     model: Any?,
                     target: Target<Drawable>?,
-                    isFirstResource: Boolean
+                    isFirstResource: Boolean,
                 ): Boolean {
                     this@loadVideoMark.context.runOnUiThread {
                         holder?.toDrawable(width, height)?.let {
@@ -322,7 +322,7 @@ fun ImageView.loadVideoMark(
                     model: Any?,
                     target: Target<Drawable>?,
                     dataSource: DataSource?,
-                    isFirstResource: Boolean
+                    isFirstResource: Boolean,
                 ): Boolean {
                     this@loadVideoMark.context.runOnUiThread {
                         setImageDrawable(resource)

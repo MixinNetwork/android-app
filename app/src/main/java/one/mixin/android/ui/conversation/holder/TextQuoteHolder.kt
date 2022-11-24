@@ -86,7 +86,7 @@ class TextQuoteHolder constructor(val binding: ItemChatTextQuoteBinding) :
         hasSelect: Boolean,
         isSelect: Boolean,
         isRepresentative: Boolean,
-        onItemListener: ConversationAdapter.OnItemListener
+        onItemListener: ConversationAdapter.OnItemListener,
     ) {
         super.bind(messageItem)
         this.onItemListener = onItemListener
@@ -251,7 +251,7 @@ class TextQuoteHolder constructor(val binding: ItemChatTextQuoteBinding) :
 
     private class TextQuoteGestureListener(
         var messageItem: MessageItem,
-        var onItemListener: ConversationAdapter.OnItemListener
+        var onItemListener: ConversationAdapter.OnItemListener,
     ) : GestureDetector.SimpleOnGestureListener() {
         override fun onDoubleTap(e: MotionEvent): Boolean {
             onItemListener.onTextDoubleClick(messageItem)

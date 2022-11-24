@@ -50,7 +50,7 @@ fun MixinTopAppBar(
     navigationIcon: @Composable (() -> Unit)? = null,
     actions: @Composable RowScope.() -> Unit = {},
     backgroundColor: Color = MixinAppTheme.colors.background,
-    contentColor: Color = MixinAppTheme.colors.textPrimary
+    contentColor: Color = MixinAppTheme.colors.textPrimary,
 ) {
     Surface(
         color = backgroundColor,

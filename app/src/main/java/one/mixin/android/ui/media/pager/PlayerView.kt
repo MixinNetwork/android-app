@@ -130,7 +130,7 @@ class PlayerView(context: Context, attributeSet: AttributeSet) :
 
     private fun onContentAspectRatioChanged(
         contentAspectRatio: Float,
-        contentFrame: AspectRatioFrameLayout
+        contentFrame: AspectRatioFrameLayout,
     ) {
         contentFrame.setAspectRatio(contentAspectRatio, videoTextureRotation)
     }
@@ -209,7 +209,7 @@ class PlayerView(context: Context, attributeSet: AttributeSet) :
             oldLeft: Int,
             oldTop: Int,
             oldRight: Int,
-            oldBottom: Int
+            oldBottom: Int,
         ) {
             applyTextureViewRotation(v as TextureView, videoTextureRotation)
         }

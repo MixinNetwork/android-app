@@ -51,7 +51,7 @@ class TipNode @Inject internal constructor(private val tipNodeService: TipNodeSe
         assigneePriv: ByteArray?,
         failedSigners: List<TipSigner>? = null,
         forRecover: Boolean = false,
-        callback: Callback? = null
+        callback: Callback? = null,
     ): ByteArray {
         val suite = Crypto.newSuiteBn256()
         val userSk = suite.scalar()

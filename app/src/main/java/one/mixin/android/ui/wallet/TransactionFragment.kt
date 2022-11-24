@@ -26,7 +26,7 @@ class TransactionFragment : BaseFragment(R.layout.fragment_transaction), Transac
             snapshotItem: SnapshotItem? = null,
             asset: AssetItem? = null,
             assetId: String? = null,
-            snapshotId: String? = null
+            snapshotId: String? = null,
         ) = TransactionFragment().withArgs {
             putParcelable(ARGS_SNAPSHOT, snapshotItem)
             putParcelable(ARGS_ASSET, asset)

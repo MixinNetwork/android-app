@@ -52,7 +52,7 @@ class SearchMessageHolder(val binding: ItemSearchMessageBinding) : RecyclerView.
     fun bind(
         message: SearchMessageDetailItem,
         query: String,
-        searchMessageCallback: SearchMessageAdapter.SearchMessageCallback?
+        searchMessageCallback: SearchMessageAdapter.SearchMessageCallback?,
     ) {
         binding.searchNameTv.text = message.userFullName
         if (message.isData()) {

@@ -80,7 +80,7 @@ abstract class PinCodeFragment(@LayoutRes contentLayoutId: Int) : FabLoadingFrag
     protected suspend fun handleAccount(
         response: MixinResponse<Account>,
         sessionKey: KeyPair,
-        action: () -> Unit
+        action: () -> Unit,
     ) = withContext(Dispatchers.Main) {
         if (!response.isSuccess) {
             hideLoading()

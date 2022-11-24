@@ -33,7 +33,7 @@ class VerificationEmergencyIdFragment : FabLoadingFragment(R.layout.fragment_ver
         const val ARGS_PHONE = "args_phone"
 
         fun newInstance(
-            phone: String
+            phone: String,
         ) = VerificationEmergencyIdFragment().withArgs {
             putString(ARGS_PHONE, phone)
         }

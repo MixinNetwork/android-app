@@ -105,7 +105,7 @@ class TextEntryDialogFragment : KeyboardEntryDialogFragment(R.layout.image_edito
             editorElement: EditorElement,
             isIncognitoEnabled: Boolean,
             selectAll: Boolean,
-            color: Int
+            color: Int,
         ) {
             val args = Bundle().apply {
                 putParcelable("element", editorElement)

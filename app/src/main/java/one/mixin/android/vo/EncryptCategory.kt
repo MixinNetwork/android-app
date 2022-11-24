@@ -3,13 +3,13 @@ package one.mixin.android.vo
 enum class EncryptCategory {
     PLAIN,
     SIGNAL,
-    ENCRYPTED
+    ENCRYPTED,
 }
 
 fun EncryptCategory.toCategory(
     plainCategory: MessageCategory,
     signalCategory: MessageCategory,
-    encryptCategory: MessageCategory
+    encryptCategory: MessageCategory,
 ): String =
     when (this) {
         EncryptCategory.SIGNAL -> signalCategory

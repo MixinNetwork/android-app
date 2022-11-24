@@ -15,7 +15,7 @@ import one.mixin.android.api.service.AccountService
 class RefreshFcmWorker @AssistedInject constructor(
     @Assisted context: Context,
     @Assisted parameters: WorkerParameters,
-    val accountService: AccountService
+    val accountService: AccountService,
 ) : BaseWork(context, parameters) {
 
     companion object {

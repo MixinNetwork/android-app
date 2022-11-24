@@ -24,7 +24,7 @@ class FileHolder constructor(val binding: ItemChatFileBinding) : BaseViewHolder(
         messageItem: ChatHistoryMessageItem,
         isLast: Boolean,
         isFirst: Boolean = false,
-        onItemListener: ChatHistoryAdapter.OnItemListener
+        onItemListener: ChatHistoryAdapter.OnItemListener,
     ) {
         super.bind(messageItem)
         val isMe = messageItem.userId == Session.getAccountId()
@@ -158,7 +158,7 @@ class FileHolder constructor(val binding: ItemChatFileBinding) : BaseViewHolder(
 
     private fun handleClick(
         messageItem: ChatHistoryMessageItem,
-        onItemListener: ChatHistoryAdapter.OnItemListener
+        onItemListener: ChatHistoryAdapter.OnItemListener,
     ) {
         if (messageItem.mediaStatus == MediaStatus.CANCELED.name) {
             if (messageItem.mediaUrl.isNullOrEmpty()) {

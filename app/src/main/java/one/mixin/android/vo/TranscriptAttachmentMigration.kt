@@ -8,5 +8,5 @@ class TranscriptAttachmentMigration(
     @ColumnInfo(name = "message_id")
     val messageId: String,
     @ColumnInfo(name = "media_url")
-    val mediaUrl: String?
+    val mediaUrl: String?,
 )

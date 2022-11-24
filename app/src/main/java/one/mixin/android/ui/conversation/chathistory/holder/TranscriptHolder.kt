@@ -96,7 +96,7 @@ class TranscriptHolder constructor(val binding: ItemChatTranscriptBinding) :
         messageItem: ChatHistoryMessageItem,
         isLast: Boolean,
         isFirst: Boolean = false,
-        onItemListener: ChatHistoryAdapter.OnItemListener
+        onItemListener: ChatHistoryAdapter.OnItemListener,
     ) {
         super.bind(messageItem)
         val nightMode = itemView.context.isNightMode()

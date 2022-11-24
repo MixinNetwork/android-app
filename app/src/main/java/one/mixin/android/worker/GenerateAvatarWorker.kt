@@ -33,7 +33,7 @@ import java.util.concurrent.TimeUnit
 @HiltWorker
 class GenerateAvatarWorker @AssistedInject constructor(
     @Assisted context: Context,
-    @Assisted parameters: WorkerParameters
+    @Assisted parameters: WorkerParameters,
 ) : AvatarWorker(context, parameters) {
 
     private lateinit var texts: ArrayMap<Int, String>

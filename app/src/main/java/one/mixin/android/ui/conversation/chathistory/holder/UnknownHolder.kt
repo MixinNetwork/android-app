@@ -53,7 +53,7 @@ class UnknownHolder constructor(val binding: ItemChatUnknownBinding) : BaseViewH
         messageItem: ChatHistoryMessageItem,
         isLast: Boolean,
         isFirst: Boolean,
-        onItemListener: ChatHistoryAdapter.OnItemListener
+        onItemListener: ChatHistoryAdapter.OnItemListener,
     ) {
         val learn: String = MixinApplication.get().getString(R.string.Learn_More)
         val info = MixinApplication.get().getString(R.string.chat_not_support, "**$learn**")

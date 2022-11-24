@@ -16,7 +16,7 @@ data class LocationPayload(
     val name: String?,
     val address: String?,
     @SerializedName("venue_type")
-    val venueType: String? = null
+    val venueType: String? = null,
 ) : Parcelable
 
 fun LocationPayload.getImageUrl(): String? {

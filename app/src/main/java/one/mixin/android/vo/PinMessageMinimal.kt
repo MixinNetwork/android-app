@@ -9,7 +9,7 @@ class PinMessageMinimal(
     val messageId: String,
     @SerializedName("category")
     override val type: String,
-    val content: String?
+    val content: String?,
 ) : ICategory
 
 fun PinMessageMinimal?.explain(context: Context): CharSequence {

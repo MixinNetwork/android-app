@@ -25,7 +25,7 @@ import one.mixin.android.widget.SpacesItemDecoration
 
 class AlbumAdapter(
     private val fragmentManager: FragmentManager,
-    private val addAction: (String) -> Unit
+    private val addAction: (String) -> Unit,
 ) : ListAdapter<StoreAlbum, AlbumHolder>(StoreAlbum.DIFF_CALLBACK) {
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) =
         AlbumHolder(ItemAlbumBinding.inflate(LayoutInflater.from(parent.context), parent, false), fragmentManager, addAction)
@@ -38,7 +38,7 @@ class AlbumAdapter(
 class AlbumHolder(
     val binding: ItemAlbumBinding,
     private val fragmentManager: FragmentManager,
-    private val addAction: (String) -> Unit
+    private val addAction: (String) -> Unit,
 ) : RecyclerView.ViewHolder(binding.root) {
     private val padding: Int = 4.dp
 
@@ -99,7 +99,7 @@ class StickerAdapter : ListAdapter<Sticker, StickerViewHolder>(Sticker.DIFF_CALL
 data class StoreAlbum(
     @Embedded val album: StickerAlbum,
     @Relation(parentColumn = "album_id", entityColumn = "album_id")
-    val stickers: List<Sticker>
+    val stickers: List<Sticker>,
 ) {
     companion object {
         val DIFF_CALLBACK = object : DiffUtil.ItemCallback<StoreAlbum>() {

@@ -48,7 +48,7 @@ data class Job(
     var resendMessageId: String?,
     @SerializedName("run_count")
     @ColumnInfo(name = "run_count")
-    var runCount: Int = 0
+    var runCount: Int = 0,
 )
 
 fun createAckJob(action: String, ackMessage: BlazeAckMessage, conversationId: String? = null) =

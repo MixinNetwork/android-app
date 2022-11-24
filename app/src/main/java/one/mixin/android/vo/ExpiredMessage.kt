@@ -14,5 +14,5 @@ class ExpiredMessage(
     @ColumnInfo(name = "expire_in")
     val expireIn: Long,
     @ColumnInfo(name = "expire_at")
-    val expireAt: Long?
+    val expireAt: Long?,
 )

@@ -160,7 +160,7 @@ class ChatHistoryActivity : BaseActivity() {
         binding.recyclerView.layoutManager = object : LinearLayoutManager(this) {
             override fun onLayoutChildren(
                 recycler: RecyclerView.Recycler,
-                state: RecyclerView.State
+                state: RecyclerView.State,
             ) {
                 if (!isTranscript && firstLoad && state.itemCount > 0) {
                     firstLoad = false
@@ -624,7 +624,7 @@ class ChatHistoryActivity : BaseActivity() {
         position: Int,
         offset: Int = -1,
         delay: Long = 30,
-        action: (() -> Unit)? = null
+        action: (() -> Unit)? = null,
     ) {
         binding.recyclerView.postDelayed(
             {

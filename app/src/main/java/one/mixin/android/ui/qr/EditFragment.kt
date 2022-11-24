@@ -66,7 +66,7 @@ class EditFragment : VisionFragment() {
             path: String,
             isVideo: Boolean = false,
             fromGallery: Boolean = false,
-            fromScan: Boolean = false
+            fromScan: Boolean = false,
         ) = EditFragment().withArgs {
             putString(ARGS_PATH, path)
             putBoolean(IS_VIDEO, isVideo)
@@ -312,7 +312,7 @@ class EditFragment : VisionFragment() {
             e: GlideException?,
             model: Any?,
             target: Target<Drawable?>?,
-            isFirstResource: Boolean
+            isFirstResource: Boolean,
         ): Boolean {
             setBg()
             return false
@@ -323,7 +323,7 @@ class EditFragment : VisionFragment() {
             model: Any?,
             target: Target<Drawable?>?,
             dataSource: DataSource?,
-            isFirstResource: Boolean
+            isFirstResource: Boolean,
         ): Boolean {
             setBg()
             return false

@@ -16,7 +16,7 @@ class RefreshStickerWorker @AssistedInject constructor(
     @Assisted context: Context,
     @Assisted parameters: WorkerParameters,
     private val accountService: AccountService,
-    private val stickerDao: StickerDao
+    private val stickerDao: StickerDao,
 ) : BaseWork(context, parameters) {
 
     companion object {

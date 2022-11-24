@@ -15,7 +15,7 @@ import one.mixin.android.widget.BadgeCircleImageView
 class MenuAdapter(
     private val isGroup: Boolean,
     private val isBot: Boolean,
-    private val isSelfCreatedBot: Boolean
+    private val isSelfCreatedBot: Boolean,
 ) : RecyclerView.Adapter<MenuAdapter.MenuHolder>() {
 
     private val buildInMenus = arrayListOf<Menu>().apply {

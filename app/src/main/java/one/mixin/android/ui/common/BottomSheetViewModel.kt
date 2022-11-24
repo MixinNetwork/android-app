@@ -66,7 +66,7 @@ class BottomSheetViewModel @Inject internal constructor(
     private val assetRepository: AssetRepository,
     private val conversationRepo: ConversationRepository,
     private val cleanMessageHelper: CleanMessageHelper,
-    private val pinCipher: PinCipher
+    private val pinCipher: PinCipher,
 ) : ViewModel() {
     suspend fun searchCode(code: String) = withContext(Dispatchers.IO) {
         accountRepository.searchCode(code)
@@ -93,7 +93,7 @@ class BottomSheetViewModel @Inject internal constructor(
         amount: String,
         code: String,
         trace: String?,
-        memo: String?
+        memo: String?,
     ) = assetRepository.transfer(
         TransferRequest(
             assetId,
@@ -118,7 +118,7 @@ class BottomSheetViewModel @Inject internal constructor(
         code: String,
         traceId: String,
         memo: String?,
-        fee: String?
+        fee: String?,
     ) = assetRepository.withdrawal(
         WithdrawalRequest(
             addressId,
@@ -135,7 +135,7 @@ class BottomSheetViewModel @Inject internal constructor(
         destination: String?,
         label: String?,
         tag: String?,
-        code: String
+        code: String,
     ): MixinResponse<Address> =
         assetRepository.syncAddr(
             AddressRequest(
@@ -181,7 +181,7 @@ class BottomSheetViewModel @Inject internal constructor(
         duration: Long,
         conversationId: String? = null,
         senderId: String? = null,
-        recipientId: String? = null
+        recipientId: String? = null,
     ): MixinResponse<ConversationResponse> {
         require(conversationId != null || (senderId != null && recipientId != null)) {
             "error data"
@@ -253,7 +253,7 @@ class BottomSheetViewModel @Inject internal constructor(
         conversationId: String,
         name: String? = null,
         iconBase64: String? = null,
-        announcement: String? = null
+        announcement: String? = null,
     ) {
         val request = ConversationRequest(
             conversationId,
@@ -401,7 +401,7 @@ class BottomSheetViewModel @Inject internal constructor(
 
     suspend fun findMultiUsers(
         senders: Array<String>,
-        receivers: Array<String>
+        receivers: Array<String>,
     ): Pair<ArrayList<User>, ArrayList<User>>? = withContext(Dispatchers.IO) {
         val userIds = mutableSetOf<String>().apply {
             addAll(senders)
@@ -466,7 +466,7 @@ class BottomSheetViewModel @Inject internal constructor(
 
     suspend fun transactions(
         rawTransactionsRequest: RawTransactionsRequest,
-        pin: String
+        pin: String,
     ): MixinResponse<Void> {
         rawTransactionsRequest.pin = pinCipher.encryptPin(pin, TipBody.forRawTransactionCreate(rawTransactionsRequest.assetId, "", rawTransactionsRequest.opponentMultisig.receivers.toList(), rawTransactionsRequest.opponentMultisig.threshold, rawTransactionsRequest.amount, rawTransactionsRequest.traceId, rawTransactionsRequest.memo))
         return accountRepository.transactions(rawTransactionsRequest)

@@ -12,5 +12,5 @@ data class Property(
     @ColumnInfo(name = "value")
     val value: String,
     @ColumnInfo(name = "updated_at")
-    val updatedAt: String
+    val updatedAt: String,
 )

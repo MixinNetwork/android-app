@@ -37,7 +37,7 @@ enum class BotCategory(@DrawableRes val icon: Int) {
     VIDEO(R.drawable.ic_bot_category_video),
     WALLET(R.drawable.ic_bot_category_wallet),
     PHOTO(R.drawable.ic_bot_category_photo),
-    OTHER(R.drawable.ic_bot_category_other)
+    OTHER(R.drawable.ic_bot_category_other),
 }
 
 @DrawableRes

@@ -12,5 +12,5 @@ class MessageFts4(
     @ColumnInfo(name = "message_id", typeAffinity = TEXT)
     val messageId: String,
     @ColumnInfo(name = "content", typeAffinity = TEXT)
-    val content: String?
+    val content: String?,
 )

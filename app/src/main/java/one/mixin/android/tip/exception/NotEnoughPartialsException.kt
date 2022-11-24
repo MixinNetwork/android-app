@@ -4,7 +4,7 @@ import one.mixin.android.tip.TipNodeError
 
 class NotEnoughPartialsException(
     val partialSize: Int,
-    val tipNodeError: TipNodeError?
+    val tipNodeError: TipNodeError?,
 ) : TipNodeException() {
     companion object {
         private const val serialVersionUID: Long = 1L

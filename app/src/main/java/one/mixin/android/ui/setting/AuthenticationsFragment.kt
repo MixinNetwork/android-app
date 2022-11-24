@@ -79,7 +79,7 @@ class AuthenticationsFragment : BaseFragment(R.layout.fragment_authentications) 
                                     webViewClient = object : WebViewClient() {
                                         override fun onPageFinished(
                                             webView: WebView,
-                                            url: String?
+                                            url: String?,
                                         ) {
                                             super.onPageFinished(webView, url)
                                             webView.loadUrl("javascript:localStorage.clear()")
@@ -89,7 +89,7 @@ class AuthenticationsFragment : BaseFragment(R.layout.fragment_authentications) 
                                         override fun onReceivedError(
                                             view: WebView?,
                                             request: WebResourceRequest?,
-                                            error: WebResourceError?
+                                            error: WebResourceError?,
                                         ) {
                                             super.onReceivedError(view, request, error)
                                             view?.let { endLoading(it) }

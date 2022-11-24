@@ -42,7 +42,7 @@ interface TransactionInterface {
         assetId: String?,
         snapshotId: String?,
         assetItem: AssetItem?,
-        snapshotItem: SnapshotItem?
+        snapshotItem: SnapshotItem?,
     ) {
         contentBinding.titleView.rightAnimator.visibility = View.GONE
         if (snapshotItem == null || assetItem == null) {
@@ -125,7 +125,7 @@ interface TransactionInterface {
         walletViewModel: WalletViewModel,
         contentBinding: FragmentTransactionBinding,
         assetId: String,
-        snapshot: SnapshotItem
+        snapshot: SnapshotItem,
     ) = lifecycleScope.launch {
         if (checkDestroyed(fragment)) return@launch
 
@@ -222,7 +222,7 @@ interface TransactionInterface {
         walletViewModel: WalletViewModel,
         contentBinding: FragmentTransactionBinding,
         assetId: String,
-        snapshot: SnapshotItem
+        snapshot: SnapshotItem,
     ) {
         if (checkDestroyed(fragment)) return
 
@@ -250,7 +250,7 @@ interface TransactionInterface {
         fragment: Fragment,
         contentBinding: FragmentTransactionBinding,
         asset: AssetItem,
-        snapshot: SnapshotItem
+        snapshot: SnapshotItem,
     ) {
         if (checkDestroyed(fragment)) return
 
@@ -346,7 +346,7 @@ interface TransactionInterface {
         lifecycleScope: CoroutineScope,
         walletViewModel: WalletViewModel,
         snapshot: SnapshotItem,
-        asset: AssetItem
+        asset: AssetItem,
     ) {
         if (snapshot.type == SnapshotType.withdrawal.name && snapshot.transactionHash.isNullOrBlank()) {
             lifecycleScope.launch {

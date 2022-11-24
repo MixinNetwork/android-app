@@ -29,7 +29,7 @@ class TransactionBottomSheetDialogFragment : MixinBottomSheetDialogFragment(), T
             snapshotItem: SnapshotItem? = null,
             asset: AssetItem? = null,
             assetId: String? = null,
-            snapshotId: String? = null
+            snapshotId: String? = null,
         ) = TransactionBottomSheetDialogFragment().withArgs {
             putParcelable(ARGS_SNAPSHOT, snapshotItem)
             putParcelable(ARGS_ASSET, asset)

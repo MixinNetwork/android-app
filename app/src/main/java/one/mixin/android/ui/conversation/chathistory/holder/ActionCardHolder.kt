@@ -24,7 +24,7 @@ class ActionCardHolder constructor(val binding: ItemChatActionCardBinding) :
         messageItem: ChatHistoryMessageItem,
         isLast: Boolean,
         isFirst: Boolean = false,
-        onItemListener: ChatHistoryAdapter.OnItemListener
+        onItemListener: ChatHistoryAdapter.OnItemListener,
     ) {
         super.bind(messageItem)
         val isMe = messageItem.userId == Session.getAccountId()

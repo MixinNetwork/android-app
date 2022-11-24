@@ -68,11 +68,11 @@ class MenuBuilder {
 }
 
 data class MenuList(
-    val groups: ArrayList<MenuGroup>
+    val groups: ArrayList<MenuGroup>,
 )
 
 data class MenuGroup(
-    val menus: ArrayList<Menu>
+    val menus: ArrayList<Menu>,
 )
 
 data class Menu(
@@ -82,7 +82,7 @@ data class Menu(
     val action: (() -> Unit)? = null,
     val icon: Int? = null,
     val apps: List<App>? = null,
-    val circleNames: List<String>? = null
+    val circleNames: List<String>? = null,
 )
 
 enum class MenuStyle {
@@ -92,7 +92,7 @@ enum class MenuStyle {
 @SuppressLint("InflateParams")
 fun MenuList.createMenuLayout(
     context: Context,
-    createdAt: String? = null
+    createdAt: String? = null,
 ): ViewGroup {
     val listLayout = LinearLayout(context).apply {
         orientation = LinearLayout.VERTICAL
@@ -188,7 +188,7 @@ fun MenuList.createMenuLayout(
 private fun addCirclesLayout(
     context: Context,
     circles: List<String>,
-    flowLayout: FlowLayout
+    flowLayout: FlowLayout,
 ) {
     val dp12 = context.dpToPx(12f)
     val dp4 = context.dpToPx(4f)

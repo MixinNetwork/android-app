@@ -188,7 +188,7 @@ class StickerAddFragment : BaseFragment() {
                     e: GlideException?,
                     model: Any?,
                     target: Target<Drawable>?,
-                    isFirstResource: Boolean
+                    isFirstResource: Boolean,
                 ): Boolean {
                     handleBack(R.string.Add_success)
                     return true
@@ -199,7 +199,7 @@ class StickerAddFragment : BaseFragment() {
                     model: Any?,
                     target: Target<Drawable>?,
                     dataSource: DataSource?,
-                    isFirstResource: Boolean
+                    isFirstResource: Boolean,
                 ): Boolean {
                     handleBack(R.string.Add_success)
                     return true
@@ -210,7 +210,7 @@ class StickerAddFragment : BaseFragment() {
 
     private suspend fun getStickerAddRequest(
         mimeType: String?,
-        uri: Uri
+        uri: Uri,
     ): StickerAddRequest? = withContext(Dispatchers.IO) {
         return@withContext if (mimeType == MimeType.GIF.toString() || mimeType == MimeType.WEBP.toString()) {
             val path = uri.getFilePath(requireContext())

@@ -43,7 +43,7 @@ class WebActivity : BaseActivity() {
             url: String,
             conversationId: String?,
             app: App? = null,
-            appCard: AppCardData? = null
+            appCard: AppCardData? = null,
         ) {
             context.startActivity(
                 Intent(context, WebActivity::class.java).apply {

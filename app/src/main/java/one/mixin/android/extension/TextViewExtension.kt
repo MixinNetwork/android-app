@@ -28,7 +28,7 @@ fun TextView.highlightStarTag(
     source: String,
     links: Array<String>,
     @ColorInt color: Int = ContextCompat.getColor(context, R.color.colorBlue),
-    onItemListener: ConversationAdapter.OnItemListener? = null
+    onItemListener: ConversationAdapter.OnItemListener? = null,
 ) {
     val spannableStringBuilder = try {
         var start: Int
@@ -64,7 +64,7 @@ fun TextView.highlightLinkText(
     texts: Array<String>,
     links: Array<String>,
     color: Int = ContextCompat.getColor(context, R.color.colorBlue),
-    onItemListener: ConversationAdapter.OnItemListener? = null
+    onItemListener: ConversationAdapter.OnItemListener? = null,
 ) {
     require(texts.size == links.size) { "texts's length should equals with links" }
     val sp = SpannableString(source)
@@ -93,7 +93,7 @@ fun TextView.highlightLinkText(
 fun TextView.highLight(
     target: String?,
     ignoreCase: Boolean = true,
-    @ColorInt color: Int = resources.getColor(R.color.wallet_blue_secondary, null)
+    @ColorInt color: Int = resources.getColor(R.color.wallet_blue_secondary, null),
 ) {
     if (target.isNullOrBlank()) {
         return
@@ -117,7 +117,7 @@ fun TextView.highLightClick(
     target: String?,
     ignoreCase: Boolean = true,
     @ColorInt color: Int = resources.getColor(R.color.wallet_blue_secondary, null),
-    action: () -> Unit
+    action: () -> Unit,
 ) {
     if (target.isNullOrBlank()) {
         return
@@ -170,7 +170,7 @@ fun TextView.timeAgoDay(str: String, pattern: String = "dd/MM/yyyy") {
 
 fun MentionTextView.renderMessage(
     text: CharSequence?,
-    mentionRenderContext: MentionRenderContext?
+    mentionRenderContext: MentionRenderContext?,
 ) {
     if (text == null || mentionRenderContext == null) {
         this.text = text
@@ -183,7 +183,7 @@ fun MentionTextView.renderMessage(
 fun AutoLinkTextView.renderMessage(
     text: CharSequence?,
     keyWord: String? = null,
-    mentionRenderContext: MentionRenderContext? = null
+    mentionRenderContext: MentionRenderContext? = null,
 ) {
     this.mentionRenderContext = mentionRenderContext
     this.keyWord = keyWord

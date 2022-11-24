@@ -25,7 +25,7 @@ class QRCodeProcessor {
         bitmap: Bitmap,
         onSuccess: (String) -> Unit,
         onFailure: (Exception?) -> Unit,
-        onComplete: (() -> Unit)? = null
+        onComplete: (() -> Unit)? = null,
     ) = coroutineScope.launch {
         try {
             var url: String? = null
@@ -55,7 +55,7 @@ class QRCodeProcessor {
         bitmap: Bitmap,
         onSuccess: (String) -> Unit,
         onFailure: (Exception?) -> Unit,
-        onComplete: (() -> Unit)? = null
+        onComplete: (() -> Unit)? = null,
     ) = coroutineScope.launch {
         val url = withContext(Dispatchers.IO) {
             bitmap.decodeQR()

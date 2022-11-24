@@ -33,7 +33,7 @@ class StickerHolder constructor(val binding: ItemChatStickerBinding) : BaseViewH
     fun bind(
         messageItem: ChatHistoryMessageItem,
         isFirst: Boolean,
-        onItemListener: ChatHistoryAdapter.OnItemListener
+        onItemListener: ChatHistoryAdapter.OnItemListener,
     ) {
         super.bind(messageItem)
         val isMe = messageItem.userId == Session.getAccountId()

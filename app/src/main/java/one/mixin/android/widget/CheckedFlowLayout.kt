@@ -9,7 +9,7 @@ import androidx.annotation.IdRes
 class CheckedFlowLayout @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null,
-    defStyle: Int = 0
+    defStyle: Int = 0,
 ) : FlowLayout(context, attrs, defStyle) {
     private val passThroughListener = PassThroughHierarchyChangeListener()
 

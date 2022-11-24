@@ -13,7 +13,7 @@ data class PendingDeposit(
     val confirmations: Int,
     val threshold: Int,
     @SerializedName("created_at")
-    val createdAt: String
+    val createdAt: String,
 )
 
 fun PendingDeposit.toSnapshot(assetId: String): Snapshot =

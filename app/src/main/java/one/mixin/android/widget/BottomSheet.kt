@@ -53,7 +53,7 @@ import kotlin.math.min
 class BottomSheet(
     context: Context,
     private val focusable: Boolean,
-    private val softInputResize: Boolean
+    private val softInputResize: Boolean,
 ) : Dialog(context, R.style.TransparentDialog) {
 
     private var startAnimationRunnable: Runnable? = null
@@ -293,7 +293,7 @@ class BottomSheet(
 
     fun fakeDismiss(
         fake: Boolean = true,
-        doOnEnd: (() -> Unit)? = null
+        doOnEnd: (() -> Unit)? = null,
     ) {
         cancelSheetAnimation()
         val animatorSet = AnimatorSet()
@@ -442,7 +442,7 @@ fun BottomSheet.getMaxCustomViewHeight(): Int {
 
 fun buildBottomSheetView(
     context: Context,
-    items: List<BottomSheetItem>
+    items: List<BottomSheetItem>,
 ): View {
     val linearLayout = LinearLayoutCompat(context).apply {
         orientation = LinearLayoutCompat.VERTICAL
@@ -478,5 +478,5 @@ fun buildBottomSheetView(
 data class BottomSheetItem(
     val text: String,
     val clickAction: () -> Unit,
-    val icon: Drawable? = null
+    val icon: Drawable? = null,
 )

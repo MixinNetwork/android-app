@@ -30,14 +30,14 @@ class AppColors(
     val red: Color = Color(0xFFE55541),
     val tipError: Color = Color(0xFFF67070),
 
-    val unchecked: Color
+    val unchecked: Color,
 )
 
 class AppDrawables(
     @DrawableRes
     val emergencyAvatar: Int,
     @DrawableRes
-    val emergencyContact: Int
+    val emergencyContact: Int,
 )
 
 object MixinAppTheme {

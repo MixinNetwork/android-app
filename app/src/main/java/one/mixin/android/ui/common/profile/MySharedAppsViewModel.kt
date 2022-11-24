@@ -12,7 +12,7 @@ import javax.inject.Inject
 class MySharedAppsViewModel
 @Inject
 internal constructor(
-    private val accountRepository: AccountRepository
+    private val accountRepository: AccountRepository,
 ) : ViewModel() {
     suspend fun addFavoriteApp(appId: String) =
         withContext(Dispatchers.IO) {
