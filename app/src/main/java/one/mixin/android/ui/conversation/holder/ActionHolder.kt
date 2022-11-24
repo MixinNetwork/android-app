@@ -28,7 +28,7 @@ class ActionHolder constructor(val binding: ItemChatActionBinding) : BaseViewHol
         isFirst: Boolean,
         hasSelect: Boolean,
         isSelect: Boolean,
-        onItemListener: ConversationAdapter.OnItemListener
+        onItemListener: ConversationAdapter.OnItemListener,
     ) {
         super.bind(messageItem)
         if (hasSelect && isSelect) {

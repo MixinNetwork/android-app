@@ -32,14 +32,14 @@ interface AssetService {
     suspend fun getSnapshotsByAssetId(
         @Path("id") id: String,
         @Query("offset") offset: String? = null,
-        @Query("limit") limit: Int = LIMIT
+        @Query("limit") limit: Int = LIMIT,
     ): MixinResponse<List<Snapshot>>
 
     @GET("snapshots")
     suspend fun getAllSnapshots(
         @Query("offset") offset: String? = null,
         @Query("limit") limit: Int = LIMIT,
-        @Query("opponent") opponent: String? = null
+        @Query("opponent") opponent: String? = null,
     ): MixinResponse<List<Snapshot>>
 
     @GET("snapshots")
@@ -49,7 +49,7 @@ interface AssetService {
         @Query("limit") limit: Int = LIMIT,
         @Query("opponent") opponent: String? = null,
         @Query("destination") destination: String? = null,
-        @Query("tag") tag: String? = null
+        @Query("tag") tag: String? = null,
     ): MixinResponse<List<Snapshot>>
 
     @POST("transfers")
@@ -68,7 +68,7 @@ interface AssetService {
     suspend fun pendingDeposits(
         @Query("asset") asset: String,
         @Query("destination") key: String? = null,
-        @Query("tag") tag: String? = null
+        @Query("tag") tag: String? = null,
     ): MixinResponse<List<PendingDeposit>>
 
     @GET("network/assets/search/{query}")
@@ -83,6 +83,6 @@ interface AssetService {
     @GET("network/ticker")
     suspend fun ticker(
         @Query("asset") assetId: String,
-        @Query("offset") offset: String? = null
+        @Query("offset") offset: String? = null,
     ): MixinResponse<Ticker>
 }

@@ -42,7 +42,7 @@ fun SharedPreferences.longValueAsState(key: String, defaultValue: Long) =
 @Composable
 private fun <T> value(
     getValue: () -> T,
-    setValue: (T) -> Unit
+    setValue: (T) -> Unit,
 ): MutableState<T> {
     val state = remember {
         mutableStateOf(getValue())

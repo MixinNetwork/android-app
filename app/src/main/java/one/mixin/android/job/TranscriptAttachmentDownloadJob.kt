@@ -31,7 +31,7 @@ import java.util.concurrent.TimeUnit
 
 class TranscriptAttachmentDownloadJob(
     val conversationId: String,
-    private val transcriptMessage: TranscriptMessage
+    private val transcriptMessage: TranscriptMessage,
 ) : MixinJob(
     Params(PRIORITY_RECEIVE_MESSAGE)
         .groupBy("transcript_download").requireNetwork().persist(),

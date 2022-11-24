@@ -85,7 +85,7 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
         @SuppressLint("StaticFieldLeak")
         private var instant: CallBottomSheetDialogFragment? = null
         fun newInstance(
-            join: Boolean
+            join: Boolean,
         ): CallBottomSheetDialogFragment {
             try {
                 instant?.dismiss()

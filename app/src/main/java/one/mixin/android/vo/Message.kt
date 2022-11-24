@@ -161,7 +161,7 @@ class Message(
 
     @SerializedName("caption")
     @ColumnInfo(name = "caption")
-    var caption: String? = null
+    var caption: String? = null,
 ) : Serializable, ICategory {
     companion object {
         private const val serialVersionUID: Long = 1L
@@ -247,7 +247,7 @@ enum class MessageCategory {
     ENCRYPTED_LIVE,
     ENCRYPTED_POST,
     ENCRYPTED_LOCATION,
-    ENCRYPTED_TRANSCRIPT
+    ENCRYPTED_TRANSCRIPT,
 }
 
 fun String.isIllegalMessageCategory(): Boolean {
@@ -275,7 +275,7 @@ fun createMessage(
     participantId: String? = null,
     snapshotId: String? = null,
     quoteMessageId: String? = null,
-    expireIn: Long? = null
+    expireIn: Long? = null,
 ) = MessageBuilder(messageId, conversationId, userId, category, status, createdAt)
     .setContent(content)
     .setAction(action)
@@ -292,7 +292,7 @@ fun createPostMessage(
     content: String,
     thumbImage: String,
     createdAt: String,
-    status: String
+    status: String,
 ) = MessageBuilder(messageId, conversationId, userId, category, status, createdAt)
     .setContent(content)
     .setThumbImage(thumbImage)
@@ -304,7 +304,7 @@ fun createAppCardMessage(
     userId: String,
     content: String,
     createdAt: String,
-    status: String
+    status: String,
 ) = MessageBuilder(messageId, conversationId, userId, MessageCategory.APP_CARD.name, status, createdAt)
     .setContent(content)
     .build()
@@ -315,7 +315,7 @@ fun createAppButtonGroupMessage(
     userId: String,
     content: String,
     createdAt: String,
-    status: String
+    status: String,
 ) = MessageBuilder(messageId, conversationId, userId, MessageCategory.APP_BUTTON_GROUP.name, status, createdAt)
     .setContent(content)
     .build()
@@ -329,7 +329,7 @@ fun createCallMessage(
     createdAt: String,
     status: String,
     quoteMessageId: String? = null,
-    mediaDuration: String? = null
+    mediaDuration: String? = null,
 ): Message {
     val builder = MessageBuilder(messageId, conversationId, userId, category, status, createdAt)
         .setContent(content)
@@ -352,7 +352,7 @@ fun createReplyTextMessage(
     quoteContent: String? = null,
     action: String? = null,
     participantId: String? = null,
-    snapshotId: String? = null
+    snapshotId: String? = null,
 ) = MessageBuilder(messageId, conversationId, userId, category, status, createdAt)
     .setContent(content)
     .setAction(action)
@@ -378,7 +378,7 @@ fun createAttachmentMessage(
     mediaStatus: MediaStatus,
     status: String,
     quoteMessageId: String? = null,
-    quoteContent: String? = null
+    quoteContent: String? = null,
 ) = MessageBuilder(messageId, conversationId, userId, category, status, createdAt)
     .setContent(content)
     .setName(name)
@@ -412,7 +412,7 @@ fun createVideoMessage(
     mediaStatus: MediaStatus,
     status: String,
     quoteMessageId: String? = null,
-    quoteContent: String? = null
+    quoteContent: String? = null,
 ) = MessageBuilder(messageId, conversationId, userId, category, status, createdAt)
     .setContent(content)
     .setName(name)
@@ -448,7 +448,7 @@ fun createMediaMessage(
     mediaStatus: MediaStatus,
     status: String,
     quoteMessageId: String? = null,
-    quoteContent: String? = null
+    quoteContent: String? = null,
 ) = MessageBuilder(messageId, conversationId, userId, category, status, createdAt)
     .setContent(content)
     .setMediaUrl(mediaUrl)
@@ -472,7 +472,7 @@ fun createStickerMessage(
     content: String?,
     stickerId: String,
     status: String,
-    createdAt: String
+    createdAt: String,
 ) = MessageBuilder(messageId, conversationId, userId, category, status, createdAt)
     .setContent(content)
     .setStickerId(stickerId)
@@ -489,7 +489,7 @@ fun createLiveMessage(
     url: String,
     thumbUrl: String,
     status: String,
-    createdAt: String
+    createdAt: String,
 ) = MessageBuilder(messageId, conversationId, userId, category, status, createdAt)
     .setContent(content)
     .setMediaWidth(width)
@@ -505,7 +505,7 @@ fun createLocationMessage(
     category: String,
     content: String?,
     status: String,
-    createdAt: String
+    createdAt: String,
 ) = MessageBuilder(messageId, conversationId, userId, category, status, createdAt)
     .setContent(content)
     .build()
@@ -521,7 +521,7 @@ fun createContactMessage(
     createdAt: String,
     name: String? = null,
     quoteMessageId: String? = null,
-    quoteContent: String? = null
+    quoteContent: String? = null,
 ) = MessageBuilder(messageId, conversationId, userId, category, status, createdAt)
     .setContent(content)
     .setName(name)
@@ -546,7 +546,7 @@ fun createAudioMessage(
     mediaStatus: MediaStatus,
     status: String,
     quoteMessageId: String? = null,
-    quoteContent: String? = null
+    quoteContent: String? = null,
 ) = MessageBuilder(messageId, conversationId, userId, category, status, createdAt)
     .setMediaUrl(mediaUrl)
     .setContent(content)
@@ -569,7 +569,7 @@ fun createTranscriptMessage(
     content: String?,
     mediaSize: Long,
     createdAt: String,
-    status: String
+    status: String,
 ) = MessageBuilder(messageId, conversationId, userId, category, status, createdAt)
     .setContent(content)
     .setMediaSize(mediaSize)
@@ -582,7 +582,7 @@ fun createPinMessage(
     quoteMessageId: String,
     pinMessages: PinMessageMinimal?,
     createdAt: String,
-    status: String
+    status: String,
 ) = MessageBuilder(messageId, conversationId, userId, MessageCategory.MESSAGE_PIN.name, status, createdAt)
     .setContent(GsonHelper.customGson.toJson(pinMessages))
     .setQuoteMessageId(quoteMessageId)

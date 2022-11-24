@@ -76,7 +76,7 @@ constructor(
     private val stickerRelationshipDao: StickerRelationshipDao,
     private val giphyService: GiphyService,
     private val emergencyService: EmergencyService,
-    private val pinCipher: PinCipher
+    private val pinCipher: PinCipher,
 ) {
 
     fun verificationObserver(request: VerificationRequest): Observable<MixinResponse<VerificationResponse>> =

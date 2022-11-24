@@ -12,7 +12,7 @@ data class SystemConversationMessagePayload(
     @SerializedName("role")
     val role: String?,
     @SerializedName("expire_in")
-    val expireIn: Long?
+    val expireIn: Long?,
 )
 
 enum class SystemConversationAction { JOIN, EXIT, ADD, REMOVE, CREATE, UPDATE, ROLE, EXPIRE }

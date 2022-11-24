@@ -253,7 +253,7 @@ class MusicService : LifecycleService() {
     }
 
     private inner class MusicQueueNavigator(
-        mediaSession: MediaSessionCompat
+        mediaSession: MediaSessionCompat,
     ) : TimelineQueueNavigator(mediaSession) {
         override fun getMediaDescription(player: Player, windowIndex: Int): MediaDescriptionCompat {
             return try {
@@ -270,7 +270,7 @@ class MusicService : LifecycleService() {
         override fun onNotificationPosted(
             notificationId: Int,
             notification: Notification,
-            ongoing: Boolean
+            ongoing: Boolean,
         ) {
             ContextCompat.startForegroundService(
                 applicationContext,
@@ -290,7 +290,8 @@ class MusicService : LifecycleService() {
         override fun onPlaybackStateChanged(playbackState: Int) {
             when (playbackState) {
                 Player.STATE_BUFFERING,
-                Player.STATE_READY -> {
+                Player.STATE_READY,
+                -> {
                     val player = MusicPlayer.get().exoPlayer
                     notificationManager.showNotificationForPlayer(player)
                 }
@@ -300,7 +301,7 @@ class MusicService : LifecycleService() {
         override fun onPositionDiscontinuity(
             oldPosition: Player.PositionInfo,
             newPosition: Player.PositionInfo,
-            reason: Int
+            reason: Int,
         ) {
             if (reason == DISCONTINUITY_REASON_SEEK_ADJUSTMENT ||
                 reason == DISCONTINUITY_REASON_REMOVE ||
@@ -340,7 +341,7 @@ class MusicService : LifecycleService() {
         fun startService(
             ctx: Context,
             action: String? = null,
-            putExtra: (Intent.() -> Unit)? = null
+            putExtra: (Intent.() -> Unit)? = null,
         ) {
             val intent = Intent(ctx, MusicService::class.java).apply {
                 this.action = action

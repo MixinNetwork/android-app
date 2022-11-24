@@ -13,7 +13,7 @@ class RefreshAddressWorker @AssistedInject constructor(
     @Assisted context: Context,
     @Assisted parameters: WorkerParameters,
     private val addressService: AddressService,
-    private val addressDao: AddressDao
+    private val addressDao: AddressDao,
 ) : BaseWork(context, parameters) {
 
     companion object {

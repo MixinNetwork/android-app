@@ -27,7 +27,7 @@ import timber.log.Timber
 class CallAudioManager(
     private val context: Context,
     private val audioSwitch: AudioSwitch,
-    private val callback: Callback
+    private val callback: Callback,
 ) {
 
     private val audioManager: AudioManager? = context.getSystemService()

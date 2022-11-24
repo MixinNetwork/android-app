@@ -32,13 +32,13 @@ interface CircleService {
     @POST("circles/{id}/conversations")
     suspend fun updateCircleConversations(
         @Path("id") id: String,
-        @Body conversationCircleRequests: List<CircleConversationRequest>
+        @Body conversationCircleRequests: List<CircleConversationRequest>,
     ): MixinResponse<List<CircleConversation>>
 
     @GET("circles/{id}/conversations")
     fun getCircleConversations(
         @Path("id") id: String,
         @Query("offset") offset: String? = null,
-        @Query("limit") limit: Int = REFRESH_CIRCLE_CONVERSATION_LIMIT
+        @Query("limit") limit: Int = REFRESH_CIRCLE_CONVERSATION_LIMIT,
     ): Call<MixinResponse<List<CircleConversation>>>
 }

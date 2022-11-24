@@ -6,7 +6,7 @@ import one.mixin.android.vo.Circle
 import one.mixin.android.vo.CircleConversation
 
 class RefreshCircleJob(
-    val circleId: String? = null
+    val circleId: String? = null,
 ) : BaseJob(
     Params(PRIORITY_UI_HIGH)
         .groupBy("refresh_circles").requireNetwork().persist()

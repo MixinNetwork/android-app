@@ -8,7 +8,7 @@ import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.vo.User
 
 class UserSelectAdapter(
-    val removeItem: (User) -> Unit
+    val removeItem: (User) -> Unit,
 ) : RecyclerView.Adapter<UserSelectAdapter.SelectViewHolder>() {
 
     var checkedUsers = mutableListOf<User>()

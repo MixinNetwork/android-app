@@ -70,7 +70,7 @@ class TextHolder constructor(val binding: ItemChatTextBinding) : BaseViewHolder(
         messageItem: ChatHistoryMessageItem,
         isLast: Boolean,
         isFirst: Boolean = false,
-        onItemListener: ChatHistoryAdapter.OnItemListener
+        onItemListener: ChatHistoryAdapter.OnItemListener,
     ) {
         if (messageItem.mentions?.isNotBlank() == true) {
             val mentionRenderContext = MentionRenderCache.singleton.getMentionRenderContext(
@@ -193,7 +193,7 @@ class TextHolder constructor(val binding: ItemChatTextBinding) : BaseViewHolder(
         var view: View,
         var messageItem: ChatHistoryMessageItem,
         var onItemListener: ChatHistoryAdapter.OnItemListener,
-        var absoluteAdapterPosition: Int = 0
+        var absoluteAdapterPosition: Int = 0,
     ) : GestureDetector.SimpleOnGestureListener() {
         var longPressed = false
 

@@ -35,7 +35,7 @@ constructor(
     private val signalKeyService: SignalKeyService,
     private val accountService: AccountService,
     private val userService: UserService,
-    private val conversationRepo: ConversationRepository
+    private val conversationRepo: ConversationRepository,
 ) : ViewModel() {
     private val sessionDao: SessionDao =
         SignalDatabase.getDatabase(MixinApplication.appContext).sessionDao()

@@ -549,7 +549,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
 
     private fun generateQuoteMessageItem(
         data: BlazeMessageData,
-        generator: (QuoteMessageItem?) -> Message
+        generator: (QuoteMessageItem?) -> Message,
     ): Message {
         val quoteMessageId = data.quoteMessageId
         if (quoteMessageId.isNullOrBlank()) {
@@ -560,7 +560,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
 
     private fun findQuoteMessageItemById(
         conversationId: String,
-        quoteMessageId: String
+        quoteMessageId: String,
     ): QuoteMessageItem? {
         // If the message is still in the cache but is quoted, insert the message table in advance
         pendingMessagesDao.findMessageById(quoteMessageId)?.let {
@@ -1342,7 +1342,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
 
     private fun encryptedAttachmentContentDecode(
         data: BlazeMessageData,
-        plainText: String
+        plainText: String,
     ): String {
         return if (data.category.startsWith("ENCRYPTED")) {
             plainText

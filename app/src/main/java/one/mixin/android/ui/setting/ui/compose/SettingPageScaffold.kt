@@ -38,7 +38,7 @@ fun SettingPageScaffold(
     title: String,
     verticalScrollable: Boolean = true,
     titleBarActions: @Composable RowScope.() -> Unit = {},
-    body: @Composable ColumnScope.() -> Unit
+    body: @Composable ColumnScope.() -> Unit,
 ) {
     Scaffold(
         backgroundColor = MixinAppTheme.colors.backgroundWindow,
@@ -75,7 +75,7 @@ fun SettingTile(
     title: String,
     titleColor: Color? = null,
     description: String? = null,
-    onClick: () -> Unit
+    onClick: () -> Unit,
 ) {
     Column {
         Row(

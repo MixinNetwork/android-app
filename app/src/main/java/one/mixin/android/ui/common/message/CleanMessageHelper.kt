@@ -104,7 +104,7 @@ class CleanMessageHelper @Inject internal constructor(private val jobManager: Mi
 
     fun deleteMessageMinimals(
         conversationId: String,
-        messageItems: List<MediaMessageMinimal>
+        messageItems: List<MediaMessageMinimal>,
     ) {
         messageItems.forEach { item ->
             deleteMessage(

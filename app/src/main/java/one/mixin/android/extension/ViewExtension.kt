@@ -165,7 +165,7 @@ fun View.animateHeight(
     duration: Long = ANIMATION_DURATION_SHORT,
     interpolator: Interpolator = DecelerateInterpolator(),
     action: ((ValueAnimator) -> Unit)? = null,
-    onEndAction: (() -> Unit)? = null
+    onEndAction: (() -> Unit)? = null,
 ) {
     val anim = ValueAnimator.ofInt(from, to).apply {
         this.duration = duration
@@ -235,7 +235,7 @@ fun EditText.hideCursor() {
 
 fun ViewGroup.inflate(
     @LayoutRes layoutRes: Int,
-    attachToRoot: Boolean = false
+    attachToRoot: Boolean = false,
 ) = LayoutInflater.from(context).inflate(layoutRes, this, attachToRoot)!!
 
 fun View.navigateUp() {
@@ -251,7 +251,7 @@ fun View.navigateUp() {
 fun View.navigate(
     resId: Int,
     bundle: Bundle? = null,
-    navOptions: NavOptions? = null
+    navOptions: NavOptions? = null,
 ) {
     try {
         findNavController().navigate(resId, bundle, navOptions)

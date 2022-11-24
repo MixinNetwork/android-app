@@ -25,7 +25,7 @@ class AudioAdapter(private val onClickListener: (messageItem: MessageItem) -> Un
 
             override fun areContentsTheSame(
                 oldItem: MessageItem,
-                newItem: MessageItem
+                newItem: MessageItem,
             ): Boolean {
                 return oldItem.mediaStatus == newItem.mediaStatus &&
                     oldItem.status == newItem.status

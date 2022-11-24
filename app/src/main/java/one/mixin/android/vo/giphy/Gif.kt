@@ -9,7 +9,7 @@ data class Gif(
     @SerializedName("type")
     val type: String,
     @SerializedName("images")
-    val images: ImageSet
+    val images: ImageSet,
 ) {
     companion object {
         val DIFF_CALLBACK = object : DiffUtil.ItemCallback<Gif>() {

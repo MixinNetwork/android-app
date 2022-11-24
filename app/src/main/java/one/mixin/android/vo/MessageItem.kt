@@ -107,7 +107,7 @@ data class MessageItem(
     val mentions: String? = null,
     val mentionRead: Boolean? = null,
     val isPin: Boolean? = null,
-    val expireIn: Long? = null
+    val expireIn: Long? = null,
 ) : Parcelable, ICategory {
 
     @IgnoredOnParcel
@@ -315,7 +315,7 @@ class FixedMessageDataSource<T>(private val items: List<T>, private val totalCou
 
     override fun loadInitial(
         params: LoadInitialParams,
-        callback: LoadInitialCallback<T>
+        callback: LoadInitialCallback<T>,
     ) {
         callback.onResult(items, 0, totalCount)
     }

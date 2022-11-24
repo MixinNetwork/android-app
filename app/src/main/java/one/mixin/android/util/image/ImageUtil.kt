@@ -22,7 +22,7 @@ internal object ImageUtil {
         reqHeight: Int,
         compressFormat: Bitmap.CompressFormat,
         quality: Int,
-        destinationPath: String
+        destinationPath: String,
     ): File {
         var fileOutputStream: FileOutputStream? = null
         val file = File(destinationPath).parentFile

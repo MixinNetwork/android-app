@@ -162,7 +162,7 @@ class WebFragment : BaseFragment() {
             """
 
         fun newInstance(
-            bundle: Bundle
+            bundle: Bundle,
         ) = WebFragment().apply {
             arguments = bundle
         }
@@ -199,7 +199,7 @@ class WebFragment : BaseFragment() {
     override fun onCreateContextMenu(
         menu: ContextMenu,
         v: View,
-        menuInfo: ContextMenu.ContextMenuInfo?
+        menuInfo: ContextMenu.ContextMenuInfo?,
     ) {
         super.onCreateContextMenu(menu, v, menuInfo)
         webView.hitTestResult.let {
@@ -286,7 +286,7 @@ class WebFragment : BaseFragment() {
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
-        savedInstanceState: Bundle?
+        savedInstanceState: Bundle?,
     ): View {
         _binding = FragmentWebBinding.inflate(layoutInflater, container, false)
         return binding.root
@@ -463,7 +463,7 @@ class WebFragment : BaseFragment() {
             override fun onShowCustomView(
                 view: View,
                 requestedOrientation: Int,
-                callback: CustomViewCallback?
+                callback: CustomViewCallback?,
             ) {
                 onShowCustomView(view, callback)
             }
@@ -594,7 +594,7 @@ class WebFragment : BaseFragment() {
             override fun onShowFileChooser(
                 webView: WebView?,
                 filePathCallback: ValueCallback<Array<Uri>>?,
-                fileChooserParams: FileChooserParams?
+                fileChooserParams: FileChooserParams?,
             ): Boolean {
                 if (viewDestroyed()) return false
                 uploadMessage?.onReceiveValue(null)
@@ -1195,7 +1195,7 @@ class WebFragment : BaseFragment() {
 
     private fun refreshByLuminance(
         dark: Boolean,
-        color: Int
+        color: Int,
     ) {
         if (viewDestroyed()) return
 
@@ -1218,7 +1218,7 @@ class WebFragment : BaseFragment() {
         private val registry: ActivityResultRegistry,
         private val scope: CoroutineScope,
         private val onFinished: (url: String?) -> Unit,
-        private val onReceivedError: (request: Int?, description: String?, failingUrl: String?) -> Unit
+        private val onReceivedError: (request: Int?, description: String?, failingUrl: String?) -> Unit,
     ) : WebViewClient() {
         override fun onPageFinished(view: WebView?, url: String?) {
             super.onPageFinished(view, url)
@@ -1230,7 +1230,7 @@ class WebFragment : BaseFragment() {
             view: WebView?,
             errorCode: Int,
             description: String?,
-            failingUrl: String?
+            failingUrl: String?,
         ) {
             super.onReceivedError(view, errorCode, description, failingUrl)
             onReceivedError(errorCode, description, failingUrl)
@@ -1244,7 +1244,7 @@ class WebFragment : BaseFragment() {
         private var lastHandleUrl: Pair<String, Long>? = null
         override fun shouldOverrideUrlLoading(
             view: WebView?,
-            request: WebResourceRequest?
+            request: WebResourceRequest?,
         ): Boolean {
             if (view == null || request == null) {
                 return super.shouldOverrideUrlLoading(view, request)
@@ -1318,7 +1318,7 @@ class WebFragment : BaseFragment() {
         val immersive: Boolean,
         var reloadThemeAction: (() -> Unit)? = null,
         var playlistAction: ((Array<String>) -> Unit)? = null,
-        var closeAction: (() -> Unit)? = null
+        var closeAction: (() -> Unit)? = null,
     ) {
         @JavascriptInterface
         fun showToast(toast: String) {
@@ -1368,6 +1368,6 @@ class WebFragment : BaseFragment() {
         @SerializedName("currency")
         val currency: String = Session.getFiatCurrency(),
         @SerializedName("locale")
-        val locale: String = "${getLanguage()}-${getCountry()}"
+        val locale: String = "${getLanguage()}-${getCountry()}",
     )
 }

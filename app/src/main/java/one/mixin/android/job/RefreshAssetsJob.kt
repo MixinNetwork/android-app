@@ -6,7 +6,7 @@ import one.mixin.android.vo.Asset
 import one.mixin.android.vo.Fiats
 
 class RefreshAssetsJob(
-    private val assetId: String? = null
+    private val assetId: String? = null,
 ) : MixinJob(
     Params(PRIORITY_UI_HIGH)
         .singleInstanceBy(assetId ?: "all-assets").persist().requireNetwork(),

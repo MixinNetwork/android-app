@@ -34,7 +34,7 @@ data class Sticker(
     @ColumnInfo(name = "created_at")
     var createdAt: String,
     @ColumnInfo(name = "last_use_at")
-    var lastUseAt: String?
+    var lastUseAt: String?,
 ) {
     companion object {
         const val STICKER_TYPE_JSON = "JSON"

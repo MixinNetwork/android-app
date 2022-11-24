@@ -6,5 +6,5 @@ class DeactivateVerificationRequest(
     @SerializedName("purpose")
     val purpose: String,
     @SerializedName("code")
-    val code: String
+    val code: String,
 )

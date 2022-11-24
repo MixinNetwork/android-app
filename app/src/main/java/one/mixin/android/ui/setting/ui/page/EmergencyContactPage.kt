@@ -155,7 +155,7 @@ fun EmergencyContactPage() {
 
 @Composable
 private fun HasEmergencyLayout(
-    onEmergencyAccountRemoved: () -> Unit
+    onEmergencyAccountRemoved: () -> Unit,
 ) {
     ShowEmergencyButton()
 
@@ -185,7 +185,7 @@ private fun HasEmergencyLayout(
 
 @Composable
 private fun RemoveEmergencyButton(
-    onEmergencyAccountRemoved: () -> Unit
+    onEmergencyAccountRemoved: () -> Unit,
 ) {
     var showConfirmDialog by remember {
         mutableStateOf(false)
@@ -325,7 +325,7 @@ private fun ShowEmergencyButton() {
 @Composable
 private fun PinEmergencyBottomSheetDialog(
     onDismissRequest: () -> Unit,
-    onConfirm: (pinCode: String) -> Unit
+    onConfirm: (pinCode: String) -> Unit,
 ) {
     MixinBottomSheetDialog(createDialog = {
         PinEmergencyBottomSheetDialog.newInstance().apply {

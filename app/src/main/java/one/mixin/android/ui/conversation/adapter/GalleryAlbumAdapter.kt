@@ -11,7 +11,7 @@ import one.mixin.android.widget.gallery.internal.entity.Album
 import one.mixin.android.widget.gallery.internal.entity.Item
 
 class GalleryAlbumAdapter(
-    private val fragment: Fragment
+    private val fragment: Fragment,
 ) : FragmentStateAdapter(fragment) {
 
     var callback: GalleryCallback? = null

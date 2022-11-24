@@ -6,10 +6,10 @@ data class PinMessagePayload(
     @SerializedName("action")
     val action: String,
     @SerializedName("message_ids")
-    val messageIds: List<String>
+    val messageIds: List<String>,
 )
 
 enum class PinAction {
     PIN,
-    UNPIN
+    UNPIN,
 }

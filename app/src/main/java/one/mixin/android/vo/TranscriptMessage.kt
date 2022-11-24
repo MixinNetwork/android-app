@@ -96,7 +96,7 @@ class TranscriptMessage(
     var quoteContent: String? = null,
     @SerializedName("caption")
     @ColumnInfo(name = "caption")
-    val caption: String? = null
+    val caption: String? = null,
 ) : ICategory, Serializable, Parcelable {
     companion object {
         private var serialVersionUID: Long = 1L

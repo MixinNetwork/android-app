@@ -23,7 +23,7 @@ import one.mixin.android.ui.setting.ui.theme.MixinAppTheme
 fun IndeterminateProgressDialog(
     message: String = "",
     title: String = "",
-    cancelable: Boolean? = null
+    cancelable: Boolean? = null,
 ) {
     val context = LocalContext.current
 
@@ -59,7 +59,7 @@ fun MixinAlertDialog(
     confirmText: String,
     dismissText: String? = null,
     title: @Composable (() -> Unit)? = null,
-    text: @Composable (() -> Unit)? = null
+    text: @Composable (() -> Unit)? = null,
 ) {
     AlertDialog(
         modifier = modifier,

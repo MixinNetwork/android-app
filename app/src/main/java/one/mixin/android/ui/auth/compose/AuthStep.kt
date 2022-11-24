@@ -5,5 +5,5 @@ enum class AuthStep {
     INPUT,
     LOADING,
     DONE,
-    ERROR
+    ERROR,
 }

@@ -60,7 +60,7 @@ class AddressAddFragment() : BaseFragment(R.layout.fragment_address_add) {
     // testing constructor
     @VisibleForTesting(otherwise = VisibleForTesting.NONE)
     constructor(
-        testRegistry: ActivityResultRegistry
+        testRegistry: ActivityResultRegistry,
     ) : this() {
         resultRegistry = testRegistry
     }

@@ -58,7 +58,7 @@ fun parseMentionData(
     conversationId: String,
     userDao: UserDao,
     messageMentionDao: MessageMentionDao,
-    userId: String
+    userId: String,
 ): Pair<List<MentionUser>?, Boolean> {
     val matcher = mentionNumberPattern.matcher(text)
     val numbers = arraySetOf<String>()
@@ -82,7 +82,7 @@ fun parseMentionData(
 
 fun rendMentionContent(
     text: String?,
-    userMap: Map<String, String>?
+    userMap: Map<String, String>?,
 ): String? {
     if (text == null || userMap == null) return text
     val matcher = mentionNumberPattern.matcher(text)

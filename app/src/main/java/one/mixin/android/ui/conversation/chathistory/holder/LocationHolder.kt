@@ -164,7 +164,7 @@ class LocationHolder constructor(val binding: ItemChatLocationBinding) :
         messageItem: ChatHistoryMessageItem,
         isLast: Boolean,
         isFirst: Boolean = false,
-        onItemListener: ChatHistoryAdapter.OnItemListener
+        onItemListener: ChatHistoryAdapter.OnItemListener,
     ) {
         super.bind(messageItem)
         location = toLocationData(messageItem.content)

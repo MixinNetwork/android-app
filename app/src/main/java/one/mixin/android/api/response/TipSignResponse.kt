@@ -9,10 +9,10 @@ data class TipSignResponse(
     @SerializedName("signature")
     val signature: String,
     @SerializedName("error")
-    var error: ResponseError? = null
+    var error: ResponseError? = null,
 )
 
 data class TipSignData(
     @SerializedName("cipher")
-    val cipher: String
+    val cipher: String,
 )

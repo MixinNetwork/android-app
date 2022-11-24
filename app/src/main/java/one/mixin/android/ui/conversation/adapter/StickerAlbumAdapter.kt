@@ -20,7 +20,7 @@ import one.mixin.android.widget.recyclerview.OffsetListUpdateCallback
 
 class StickerAlbumAdapter(
     activity: FragmentActivity,
-    private val albums: MutableList<StickerAlbum>
+    private val albums: MutableList<StickerAlbum>,
 ) : FragmentStateAdapter(activity) {
     companion object {
         const val TYPE_STORE = 0
@@ -134,7 +134,7 @@ class StickerAlbumAdapter(
 
 class StickerAlbumDiffUtil(
     private val oldList: List<StickerAlbum>,
-    private val newList: List<StickerAlbum>
+    private val newList: List<StickerAlbum>,
 ) : DiffUtil.Callback() {
     override fun getOldListSize() = oldList.size
 

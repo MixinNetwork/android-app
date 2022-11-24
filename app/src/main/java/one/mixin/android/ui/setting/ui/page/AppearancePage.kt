@@ -236,7 +236,7 @@ private fun LanguageItem() {
 private fun LanguageRadioItem(
     name: String,
     selected: Boolean,
-    onOptionSelected: () -> Unit
+    onOptionSelected: () -> Unit,
 ) {
     Row(
         Modifier
@@ -269,7 +269,7 @@ private fun LanguageRadioItem(
 private fun AppearanceItem(
     label: String,
     value: String,
-    onClick: () -> Unit
+    onClick: () -> Unit,
 ) {
     Row(
         modifier = Modifier

@@ -17,7 +17,7 @@ class TipViewModel
 @Inject
 internal constructor(
     private val tipNodeService: TipNodeService,
-    private val tipConfig: TipConfig
+    private val tipConfig: TipConfig,
 ) : ViewModel() {
 
     suspend fun checkTipNodeConnect(): Pair<Boolean, String> {

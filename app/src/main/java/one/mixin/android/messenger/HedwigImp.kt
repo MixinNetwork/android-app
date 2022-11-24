@@ -23,7 +23,7 @@ class HedwigImp(
     private val mixinDatabase: MixinDatabase,
     private val pendingDatabase: PendingDatabase,
     private val callState: CallStateLiveData,
-    private val lifecycleScope: CoroutineScope
+    private val lifecycleScope: CoroutineScope,
 ) : Hedwig {
 
     override fun takeOff() {

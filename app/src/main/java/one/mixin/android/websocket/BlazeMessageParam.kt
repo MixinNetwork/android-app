@@ -27,7 +27,7 @@ data class BlazeMessageParam(
     var recipient_ids: List<String>? = null,
     val offset: String? = null,
     val silent: Boolean? = null,
-    val expire_in: Long? = null
+    val expire_in: Long? = null,
 ) : Serializable {
     companion object {
         private const val serialVersionUID: Long = 6L
@@ -37,7 +37,7 @@ data class BlazeMessageParam(
 data class KrakenParam(
     var jsep: String? = null,
     var candidate: String? = null,
-    var track_id: String? = null
+    var track_id: String? = null,
 ) : Serializable {
     companion object {
         private const val serialVersionUID: Long = 6L
@@ -46,7 +46,7 @@ data class KrakenParam(
 
 data class BlazeMessageParamSession(
     val user_id: String,
-    val session_id: String? = null
+    val session_id: String? = null,
 )
 
 fun createAckParam(message_id: String, status: String) =

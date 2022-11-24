@@ -8,7 +8,7 @@ import one.mixin.android.vo.User
 import one.mixin.android.vo.showVerifiedOrBot
 
 class ContactHolder constructor(
-    val binding: ItemSearchContactBinding
+    val binding: ItemSearchContactBinding,
 ) : NormalHolder(binding.root) {
     fun bind(user: User, target: String, onItemClickListener: SearchFragment.OnSearchClickListener?) {
         binding.apply {

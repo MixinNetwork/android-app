@@ -9,7 +9,7 @@ import java.util.Locale
 data class ContactRequest(
     val phone: String,
     @SerializedName("full_name")
-    val fullName: String
+    val fullName: String,
 )
 
 fun createContactsRequests(contacts: List<Contact>): List<ContactRequest> {

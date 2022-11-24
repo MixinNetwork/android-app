@@ -17,7 +17,7 @@ import one.mixin.android.vo.App
 class AvatarGroup @JvmOverloads constructor(
     context: Context,
     val attrs: AttributeSet? = null,
-    defStyle: Int = 0
+    defStyle: Int = 0,
 ) :
     RelativeLayout(context, attrs, defStyle) {
     private val binding = ViewAvatarGroupBinding.inflate(LayoutInflater.from(context), this)

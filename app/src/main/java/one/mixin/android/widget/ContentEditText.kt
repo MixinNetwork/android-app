@@ -142,7 +142,7 @@ open class ContentEditText : AppCompatEditText {
         fun commitContentAsync(
             inputContentInfo: InputContentInfoCompat?,
             flags: Int,
-            opts: Bundle?
+            opts: Bundle?,
         )
     }
 }

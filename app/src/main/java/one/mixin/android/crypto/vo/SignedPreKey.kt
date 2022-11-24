@@ -12,7 +12,7 @@ class SignedPreKey(
     @ColumnInfo(name = "record", typeAffinity = ColumnInfo.BLOB)
     val record: ByteArray,
     @ColumnInfo(name = "timestamp")
-    val timestamp: Long
+    val timestamp: Long,
 ) {
     @PrimaryKey(autoGenerate = true)
     var _id: Int = 0

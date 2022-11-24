@@ -18,7 +18,7 @@ data class ParticipantItem(
     var muteUntil: String?,
     val hasPin: Boolean? = null,
     var appId: String? = null,
-    var isScam: Boolean? = null
+    var isScam: Boolean? = null,
 ) {
     companion object {
         val DIFF_CALLBACK = object : DiffUtil.ItemCallback<ParticipantItem>() {

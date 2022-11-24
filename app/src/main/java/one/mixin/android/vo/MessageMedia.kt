@@ -10,5 +10,5 @@ class MessageMedia(
     @ColumnInfo(name = "conversation_id")
     val conversationId: String,
     @ColumnInfo(name = "media_url")
-    val mediaUrl: String?
+    val mediaUrl: String?,
 ) : ICategory

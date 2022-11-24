@@ -67,7 +67,7 @@ class WalletSearchFragment : BaseFragment() {
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
-        savedInstanceState: Bundle?
+        savedInstanceState: Bundle?,
     ): View =
         getPersistentView(inflater, container, R.layout.fragment_wallet_search)
 

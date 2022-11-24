@@ -17,7 +17,7 @@ import one.mixin.android.vo.isMine
 
 fun UserDao.insertUpdate(
     user: User,
-    appDao: AppDao
+    appDao: AppDao,
 ) {
     runInTransaction {
         if (user.app != null) {
@@ -35,7 +35,7 @@ fun UserDao.insertUpdate(
 
 fun UserDao.insertUpdateList(
     users: List<User>,
-    appDao: AppDao
+    appDao: AppDao,
 ) {
     runInTransaction {
         val apps = arrayListOf<App>()
@@ -52,7 +52,7 @@ fun UserDao.insertUpdateList(
 
 fun UserDao.updateRelationship(
     user: User,
-    relationship: String
+    relationship: String,
 ) {
     runInTransaction {
         val u = findUser(user.userId)
@@ -79,7 +79,7 @@ fun StickerDao.insertUpdate(s: Sticker) {
 }
 
 fun CircleConversationDao.insertUpdate(
-    circleConversation: CircleConversation
+    circleConversation: CircleConversation,
 ) {
     runInTransaction {
         val c = findCircleConversationByCircleId(
@@ -96,7 +96,7 @@ fun CircleConversationDao.insertUpdate(
 
 fun CircleConversationDao.updateCheckPin(
     oldCircleConversation: CircleConversation,
-    newCircleConversation: CircleConversation
+    newCircleConversation: CircleConversation,
 ) {
     if (oldCircleConversation.pinTime != null) {
         update(
@@ -114,7 +114,7 @@ fun CircleConversationDao.updateCheckPin(
 }
 
 suspend fun CircleDao.insertUpdateSuspend(
-    circle: Circle
+    circle: Circle,
 ) {
     withTransaction {
         val c = findCircleById(circle.circleId)
@@ -127,7 +127,7 @@ suspend fun CircleDao.insertUpdateSuspend(
 }
 
 fun CircleDao.insertUpdate(
-    circle: Circle
+    circle: Circle,
 ) {
     runInTransaction {
         val c = findCircleById(circle.circleId)
@@ -140,7 +140,7 @@ fun CircleDao.insertUpdate(
 }
 
 suspend fun StickerAlbumDao.insertUpdate(
-    album: StickerAlbum
+    album: StickerAlbum,
 ) {
     withTransaction {
         val a = findAlbumById(album.albumId)
@@ -154,7 +154,7 @@ suspend fun StickerAlbumDao.insertUpdate(
 
 fun MixinDatabase.clearParticipant(
     conversationId: String,
-    participantId: String
+    participantId: String,
 ) {
     runInTransaction {
         participantDao().deleteById(conversationId, participantId)

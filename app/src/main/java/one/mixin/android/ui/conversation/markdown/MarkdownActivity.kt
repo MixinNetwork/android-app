@@ -254,13 +254,13 @@ class MarkdownActivity : BaseActivity() {
 
     inner class HtmlTagRenderer(
         private val customizer: AttributesCustomizer,
-        private val includeSrcPositions: Boolean
+        private val includeSrcPositions: Boolean,
     ) : HtmlGenerator.TagRenderer {
         override fun openTag(
             node: ASTNode,
             tagName: CharSequence,
             vararg attributes: CharSequence?,
-            autoClose: Boolean
+            autoClose: Boolean,
         ): CharSequence {
             return buildString {
                 append("<$tagName")

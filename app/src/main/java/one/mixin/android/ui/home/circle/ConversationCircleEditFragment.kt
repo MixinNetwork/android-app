@@ -47,7 +47,7 @@ class ConversationCircleEditFragment : BaseFragment() {
         private const val CIRCLE_CONVERSATION_LIMIT = 5
 
         fun newInstance(
-            circle: ConversationCircleItem
+            circle: ConversationCircleItem,
         ) = ConversationCircleEditFragment().apply {
             arguments = bundleOf(
                 ARGS_CIRCLE to circle

@@ -79,7 +79,7 @@ class TextHolder constructor(val binding: ItemChatTextBinding) : BaseMentionHold
         hasSelect: Boolean,
         isSelect: Boolean,
         isRepresentative: Boolean,
-        onItemListener: ConversationAdapter.OnItemListener
+        onItemListener: ConversationAdapter.OnItemListener,
     ) {
         super.bind(messageItem)
         this.onItemListener = onItemListener
@@ -220,7 +220,7 @@ class TextHolder constructor(val binding: ItemChatTextBinding) : BaseMentionHold
         var hasSelect: Boolean = false,
         var isSelect: Boolean = false,
         var onItemListener: ConversationAdapter.OnItemListener,
-        var absoluteAdapterPosition: Int = 0
+        var absoluteAdapterPosition: Int = 0,
     ) : GestureDetector.SimpleOnGestureListener() {
         var longPressed = false
 

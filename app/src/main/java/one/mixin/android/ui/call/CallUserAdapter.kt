@@ -68,7 +68,7 @@ class CallUserAdapter(private val self: CallUser, private val callClicker: (Stri
     @SuppressLint("NotifyDataSetChanged")
     override fun onCurrentListChanged(
         previousList: MutableList<CallUser>,
-        currentList: MutableList<CallUser>
+        currentList: MutableList<CallUser>,
     ) {
         if (previousList != currentList) {
             notifyDataSetChanged()
@@ -108,7 +108,7 @@ class CallUserHolder(val binding: ItemCallUserBinding) : RecyclerView.ViewHolder
         user: CallUser,
         self: CallUser,
         guestsNotConnected: List<String>?,
-        callClicker: (String?) -> Unit
+        callClicker: (String?) -> Unit,
     ) {
         itemView.apply {
             binding.avatarView.setInfo(user.fullName, user.avatarUrl, user.userId)

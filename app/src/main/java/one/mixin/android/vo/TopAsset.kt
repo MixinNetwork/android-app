@@ -47,7 +47,7 @@ data class TopAsset(
     @ColumnInfo(name = "change_btc")
     val changeBtc: String,
     @ColumnInfo(name = "confirmations")
-    val confirmations: Int
+    val confirmations: Int,
 ) : Parcelable
 
 fun TopAsset.toPriceAndChange(): PriceAndChange {

@@ -14,5 +14,5 @@ data class StickerRelationship(
     val albumId: String,
     @SerializedName("sticker_id")
     @ColumnInfo(name = "sticker_id")
-    val stickerId: String
+    val stickerId: String,
 )

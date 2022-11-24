@@ -113,7 +113,7 @@ class PipCallView {
 
     fun show(
         connectedTime: Long? = null,
-        callState: CallStateLiveData
+        callState: CallStateLiveData,
     ) {
         windowView?.let { windowManager.removeView(it) }
 

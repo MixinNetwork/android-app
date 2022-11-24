@@ -100,7 +100,7 @@ abstract class ItemViewHolder(val binding: ItemWalletSearchBinding) : RecyclerVi
         symbol: String,
         priceUsd: String,
         changeUsd: String,
-        priceFiat: BigDecimal
+        priceFiat: BigDecimal,
     ) {
         binding.badgeCircleIv.bg.loadImage(iconUrl, R.drawable.ic_avatar_place_holder)
         binding.badgeCircleIv.badge.loadImage(chainIconUrl, R.drawable.ic_avatar_place_holder)

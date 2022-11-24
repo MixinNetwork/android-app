@@ -30,7 +30,7 @@ data class AssetItem(
     var chainName: String?,
     var chainPriceUsd: String?,
     val assetKey: String?,
-    val reserve: String?
+    val reserve: String?,
 ) : Parcelable {
     fun fiat(): BigDecimal {
         return BigDecimal(balance).multiply(priceFiat())
@@ -102,7 +102,7 @@ data class AssetItem(
 fun AssetItem.differentProcess(
     keyAction: () -> Unit,
     memoAction: () -> Unit,
-    errorAction: () -> Unit
+    errorAction: () -> Unit,
 ) {
     when {
         getDestination().isNotEmpty() && !getTag().isNullOrEmpty() -> memoAction()

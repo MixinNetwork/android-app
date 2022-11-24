@@ -55,7 +55,7 @@ open class SendMessageJob(
     private val recallMessageId: String? = null,
     private val krakenParam: KrakenParam? = null,
     private val isSilent: Boolean? = null,
-    messagePriority: Int = PRIORITY_SEND_MESSAGE
+    messagePriority: Int = PRIORITY_SEND_MESSAGE,
 ) : MixinJob(Params(messagePriority).groupBy("send_message_group").requireWebSocketConnected().persist(), message.messageId) {
 
     companion object {

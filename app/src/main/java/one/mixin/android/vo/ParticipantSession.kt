@@ -21,7 +21,7 @@ data class ParticipantSession(
     @ColumnInfo(name = "created_at")
     val createdAt: String? = nowInUtc(),
     @ColumnInfo(name = "public_key")
-    val publicKey: String? = null
+    val publicKey: String? = null,
 ) {
     override fun equals(other: Any?): Boolean {
         return when (other) {
@@ -43,7 +43,7 @@ data class ParticipantSessionSent(
     @ColumnInfo(name = "session_id")
     val sessionId: String,
     @ColumnInfo(name = "sent_to_server")
-    val sentToServer: Int? = null
+    val sentToServer: Int? = null,
 )
 
 data class ParticipantSessionKey(
@@ -54,7 +54,7 @@ data class ParticipantSessionKey(
     @ColumnInfo(name = "session_id")
     val sessionId: String,
     @ColumnInfo(name = "public_key")
-    val publicKey: String? = null
+    val publicKey: String? = null,
 )
 
 fun generateConversationChecksum(devices: List<ParticipantSession>): String {

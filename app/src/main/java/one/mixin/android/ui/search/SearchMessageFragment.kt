@@ -43,7 +43,7 @@ class SearchMessageFragment : BaseFragment(R.layout.fragment_search_message) {
 
         fun newInstance(
             searchMessageItem: SearchMessageItem,
-            query: String
+            query: String,
         ) = SearchMessageFragment().withArgs {
             putParcelable(ARGS_SEARCH_MESSAGE, searchMessageItem)
             putString(ARGS_QUERY, query)

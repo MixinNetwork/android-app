@@ -50,7 +50,7 @@ constructor(
     private val conversationDao: ConversationDao,
     private val tipService: TipService,
     private val userDao: UserDao,
-    private val userService: UserService
+    private val userService: UserService,
 ) {
 
     fun findFriends(): LiveData<List<User>> = userDao.findFriends()

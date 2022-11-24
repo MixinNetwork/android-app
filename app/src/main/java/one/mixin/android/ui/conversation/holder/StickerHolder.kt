@@ -44,7 +44,7 @@ class StickerHolder constructor(val binding: ItemChatStickerBinding) :
         hasSelect: Boolean,
         isSelect: Boolean,
         isRepresentative: Boolean,
-        onItemListener: ConversationAdapter.OnItemListener
+        onItemListener: ConversationAdapter.OnItemListener,
     ) {
         super.bind(messageItem)
         val isMe = meId == messageItem.userId

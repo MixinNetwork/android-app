@@ -22,7 +22,7 @@ class MixinHeadersDecoration private constructor(
     private val mOrientationProvider: OrientationProvider,
     private val mDimensionCalculator: DimensionCalculator,
     private val mHeaderProvider: HeaderProvider,
-    private val mHeaderPositionCalculator: HeaderPositionCalculator
+    private val mHeaderPositionCalculator: HeaderPositionCalculator,
 ) : RecyclerView.ItemDecoration() {
     private val mHeaderRects = SparseArray<Rect>()
 
@@ -37,7 +37,7 @@ class MixinHeadersDecoration private constructor(
     private constructor(
         adapter: MixinStickyRecyclerHeadersAdapter<*>,
         orientationProvider: OrientationProvider,
-        dimensionCalculator: DimensionCalculator
+        dimensionCalculator: DimensionCalculator,
     ) : this(
         adapter,
         orientationProvider,
@@ -51,7 +51,7 @@ class MixinHeadersDecoration private constructor(
         orientationProvider: OrientationProvider,
         dimensionCalculator: DimensionCalculator,
         headerRenderer: HeaderRenderer,
-        headerProvider: HeaderProvider
+        headerProvider: HeaderProvider,
     ) : this(
         adapter,
         headerRenderer,

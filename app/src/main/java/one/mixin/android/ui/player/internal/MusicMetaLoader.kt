@@ -115,7 +115,7 @@ abstract class MusicMetaLoader {
         val title: String?,
         val album: String?,
         val albumArt: String?,
-        val artist: String?
+        val artist: String?,
     )
 
     @Suppress("PropertyName")

@@ -9,7 +9,7 @@ import javax.inject.Inject
 class TextPreviewViewModel
 @Inject
 internal constructor(
-    private val userRepository: UserRepository
+    private val userRepository: UserRepository,
 ) : ViewModel() {
     suspend fun findUserByIdentityNumberSuspend(identityNumber: String) =
         userRepository.findUserByIdentityNumberSuspend(identityNumber)

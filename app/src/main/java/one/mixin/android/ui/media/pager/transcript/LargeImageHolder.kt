@@ -23,7 +23,7 @@ class LargeImageHolder(itemView: View) : MediaPagerHolder(itemView) {
     fun bind(
         messageItem: ChatHistoryMessageItem,
         needPostTransition: Boolean,
-        mediaPagerAdapterListener: MediaPagerAdapterListener
+        mediaPagerAdapterListener: MediaPagerAdapterListener,
     ) {
         val imageView = (itemView as ViewGroup).getChildAt(0) as LargeImageView
         val context = itemView.context

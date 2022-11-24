@@ -36,7 +36,7 @@ fun deleteKeyByAlias(alias: String): Boolean {
 
 private fun getKeyByAlias(
     alias: String,
-    userAuthenticationRequired: Boolean = false
+    userAuthenticationRequired: Boolean = false,
 ): SecretKey? {
     val ks: KeyStore = KeyStore.getInstance("AndroidKeyStore").apply {
         load(null)

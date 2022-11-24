@@ -72,7 +72,7 @@ class CircleManagerFragment : BaseFragment() {
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
-        savedInstanceState: Bundle?
+        savedInstanceState: Bundle?,
     ): View {
         _binding = FragmentCircleManagerBinding.inflate(inflater, container, false)
         return binding.root
@@ -234,7 +234,7 @@ class CircleManagerFragment : BaseFragment() {
 
     class CircleAdapter(
         private val onAddCircle: (item: ConversationCircleManagerItem) -> Unit,
-        private val onRemoveCircle: (item: ConversationCircleManagerItem) -> Unit
+        private val onRemoveCircle: (item: ConversationCircleManagerItem) -> Unit,
     ) : RecyclerView.Adapter<CircleHolder>() {
 
         private var includeCircleItem: List<ConversationCircleManagerItem>? = null
@@ -305,7 +305,7 @@ class CircleManagerFragment : BaseFragment() {
         fun bind(
             conversationCircleItem: ConversationCircleManagerItem,
             onAddCircle: ((conversationCircleItem: ConversationCircleManagerItem) -> Unit)? = null,
-            onRemoveCircle: ((conversationCircleItem: ConversationCircleManagerItem) -> Unit)? = null
+            onRemoveCircle: ((conversationCircleItem: ConversationCircleManagerItem) -> Unit)? = null,
         ) {
             if (onAddCircle != null) {
                 binding.actionIv.setImageResource(R.drawable.ic_add_circle)

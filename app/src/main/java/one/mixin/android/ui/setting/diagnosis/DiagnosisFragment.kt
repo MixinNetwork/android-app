@@ -30,7 +30,7 @@ class DiagnosisFragment : BaseFragment() {
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
-        savedInstanceState: Bundle?
+        savedInstanceState: Bundle?,
     ): View =
         layoutInflater.inflate(R.layout.fragment_diagnosis, container, false)
 

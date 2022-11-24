@@ -19,7 +19,7 @@ class SearchChatPopupMenu(
     private val context: Context,
     private val lifecycleScope: CoroutineScope,
     private val searchViewModel: SearchViewModel,
-    private val afterAction: () -> Unit
+    private val afterAction: () -> Unit,
 ) {
     fun showPopupMenu(chatMinimal: ChatMinimal, anchor: View) {
         val popupMenu = PopupMenu(context, anchor)

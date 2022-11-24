@@ -197,7 +197,7 @@ interface ConversationDao : BaseDao<Conversation> {
         muteUntil: String?,
         createdAt: String,
         expireIn: Long?,
-        status: Int
+        status: Int,
     )
 
     @Query("UPDATE conversations SET announcement = :announcement WHERE conversation_id = :conversationId")

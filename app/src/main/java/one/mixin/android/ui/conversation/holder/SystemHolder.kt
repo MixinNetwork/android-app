@@ -22,7 +22,7 @@ class SystemHolder constructor(val binding: ItemChatSystemBinding) : BaseViewHol
         messageItem: MessageItem,
         hasSelect: Boolean,
         isSelect: Boolean,
-        onItemListener: ConversationAdapter.OnItemListener
+        onItemListener: ConversationAdapter.OnItemListener,
     ) {
         val id = meId
         if (hasSelect && isSelect) {

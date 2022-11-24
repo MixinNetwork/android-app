@@ -17,7 +17,7 @@ import one.mixin.android.widget.CircleProgress.Companion.STATUS_PLAY
 class PlayButton @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null,
-    defStyleAttr: Int = 0
+    defStyleAttr: Int = 0,
 ) :
     FrameLayout(context, attrs, defStyleAttr) {
     companion object {

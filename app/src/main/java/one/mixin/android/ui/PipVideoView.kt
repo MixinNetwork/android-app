@@ -167,7 +167,7 @@ class PipVideoView {
         messageId: String,
         isVideo: Boolean,
         mediaSource: MediaPagerActivity.MediaSource,
-        mediaUrl: String?
+        mediaUrl: String?,
     ): TextureView {
         this.mediaUrl = mediaUrl
         val isLandscape = appContext.isLandscape()

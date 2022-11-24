@@ -24,7 +24,7 @@ class GroupCallHolder constructor(val binding: ItemChatSystemBinding) :
         messageItem: MessageItem,
         hasSelect: Boolean,
         isSelect: Boolean,
-        onItemListener: ConversationAdapter.OnItemListener
+        onItemListener: ConversationAdapter.OnItemListener,
     ) {
         super.bind(messageItem)
         if (hasSelect && isSelect) {

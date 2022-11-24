@@ -45,7 +45,7 @@ class SettingStorageViewModel
 internal constructor(
     private val conversationRepository: ConversationRepository,
     private val cleanMessageHelper: CleanMessageHelper,
-    private val jobManager: MixinJobManager
+    private val jobManager: MixinJobManager,
 ) : ViewModel() {
 
     suspend fun getStorageUsage(context: Context, conversationId: String): List<StorageUsage> = withContext(Dispatchers.IO) {

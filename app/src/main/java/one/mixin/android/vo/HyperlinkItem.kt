@@ -17,7 +17,7 @@ data class HyperlinkItem(
     @SerializedName("site_image")
     val siteImage: String?,
     @SerializedName("created_at")
-    val createdAt: String
+    val createdAt: String,
 ) {
     companion object {
         val DIFF_CALLBACK = object : DiffUtil.ItemCallback<HyperlinkItem>() {

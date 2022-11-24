@@ -38,7 +38,7 @@ data class TipBundle(
     var tipStep: TipStep,
     var pin: String? = null,
     var oldPin: String? = null,
-    var tipEvent: TipEvent? = null
+    var tipEvent: TipEvent? = null,
 ) : Parcelable {
     fun forChange() = tipType == TipType.Change
 

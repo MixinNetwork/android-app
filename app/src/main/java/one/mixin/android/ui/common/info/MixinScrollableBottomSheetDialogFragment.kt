@@ -119,7 +119,7 @@ abstract class MixinScrollableBottomSheetDialogFragment : BottomSheetDialogFragm
     protected fun setDetailsTv(
         detailsTv: AutoLinkTextView,
         scrollView: NestedScrollView,
-        conversationId: String?
+        conversationId: String?,
     ) {
         detailsTv.movementMethod = LinkMovementMethod()
         detailsTv.addAutoLinkMode(AutoLinkMode.MODE_URL)

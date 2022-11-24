@@ -130,7 +130,7 @@ fun Context.getCacheMediaPath(): File {
 
 fun getMimeType(
     uri: Uri,
-    isImage: Boolean = false
+    isImage: Boolean = false,
 ): String? {
     var type: String? = null
     if (uri.scheme == ContentResolver.SCHEME_CONTENT) {
@@ -435,7 +435,7 @@ fun File.createDocumentTemp(conversationId: String, messageId: String, type: Str
 private fun File.createDocumentFile(
     noMedia: Boolean = true,
     name: String? = null,
-    extensionName: String? = null
+    extensionName: String? = null,
 ): File {
     val defaultName = "FILE_${
     SimpleDateFormat(

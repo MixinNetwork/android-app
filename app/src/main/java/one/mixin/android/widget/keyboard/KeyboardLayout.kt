@@ -162,7 +162,7 @@ class KeyboardLayout : LinearLayout {
             object : WindowInsetsAnimationCompat.Callback(DISPATCH_MODE_STOP) {
                 override fun onProgress(
                     insets: WindowInsetsCompat,
-                    runningAnimations: MutableList<WindowInsetsAnimationCompat>
+                    runningAnimations: MutableList<WindowInsetsAnimationCompat>,
                 ): WindowInsetsCompat {
                     if (status == STATUS.CLOSED || status == STATUS.KEYBOARD_OPENED) {
                         _inputArea.layoutParams.height = max(
@@ -190,7 +190,7 @@ class KeyboardLayout : LinearLayout {
 
                 override fun onStart(
                     animation: WindowInsetsAnimationCompat,
-                    bounds: WindowInsetsAnimationCompat.BoundsCompat
+                    bounds: WindowInsetsAnimationCompat.BoundsCompat,
                 ): WindowInsetsAnimationCompat.BoundsCompat {
                     keyboardHeight = ViewCompat.getRootWindowInsets(this@KeyboardLayout)?.getInsets(WindowInsetsCompat.Type.ime())?.bottom ?: 0
                     return super.onStart(animation, bounds)

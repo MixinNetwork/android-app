@@ -35,7 +35,7 @@ private const val BACKUP_DIR_NAME = "Backup"
 @RequiresPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)
 suspend fun backup(
     context: Context,
-    callback: (Result) -> Unit
+    callback: (Result) -> Unit,
 ) = coroutineScope {
     val dbFile = context.getDatabasePath(DB_NAME)
     if (dbFile == null) {
@@ -251,7 +251,7 @@ suspend fun backupApi29(context: Context, backupMedia: Boolean, callback: (Resul
 @RequiresPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)
 suspend fun restore(
     context: Context,
-    callback: (Result) -> Unit
+    callback: (Result) -> Unit,
 ) = withContext(Dispatchers.IO) {
     val target = internalFindBackup(context, coroutineContext)
         ?: return@withContext callback(Result.NOT_FOUND)
@@ -281,7 +281,7 @@ suspend fun restore(
 
 suspend fun restoreApi29(
     context: Context,
-    callback: (Result) -> Unit
+    callback: (Result) -> Unit,
 ) = withContext(Dispatchers.IO) {
     val backupDirectoryUri = getBackupDirectory(context)
     if (backupDirectoryUri == null) {
@@ -349,14 +349,14 @@ suspend fun restoreApi29(
 
 @RequiresPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)
 suspend fun delete(
-    context: Context
+    context: Context,
 ): Boolean = withContext(Dispatchers.IO) {
     val backupDir = context.getLegacyBackupPath()
     return@withContext backupDir?.deleteRecursively() ?: return@withContext false
 }
 
 suspend fun deleteApi29(
-    context: Context
+    context: Context,
 ): Boolean = withContext(Dispatchers.IO) {
     val backupDirectoryUri = getBackupDirectory(context) ?: return@withContext false
     val backupDirectory =
@@ -371,7 +371,7 @@ suspend fun deleteApi29(
 @RequiresPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)
 suspend fun findBackup(
     context: Context,
-    coroutineContext: CoroutineContext
+    coroutineContext: CoroutineContext,
 ): BackupInfo? = internalFindBackup(context, coroutineContext)?.run {
     BackupInfo(lastModified(), absolutePath)
 }
@@ -379,7 +379,7 @@ suspend fun findBackup(
 @RequiresPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)
 private suspend fun internalFindBackup(
     context: Context,
-    coroutineContext: CoroutineContext
+    coroutineContext: CoroutineContext,
 ): File? = (
     findNewBackup(context, coroutineContext) ?: findNewBackup(
         context,
@@ -390,7 +390,7 @@ private suspend fun internalFindBackup(
 
 suspend fun findBackupApi29(
     context: Context,
-    coroutineContext: CoroutineContext
+    coroutineContext: CoroutineContext,
 ): BackupInfo? = withContext(coroutineContext) {
     val backupDirectoryUri = getBackupDirectory(context) ?: return@withContext null
     val backupDirectory =
@@ -413,7 +413,7 @@ suspend fun findBackupApi29(
 suspend fun findNewBackup(
     context: Context,
     coroutineContext: CoroutineContext,
-    legacy: Boolean = false
+    legacy: Boolean = false,
 ): File? = withContext(coroutineContext) {
     val backupDir = context.getLegacyBackupPath(legacy = legacy) ?: return@withContext null
     if (!backupDir.exists() || !backupDir.isDirectory) return@withContext null
@@ -426,7 +426,7 @@ suspend fun findNewBackup(
 @RequiresPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)
 suspend fun findOldBackup(
     context: Context,
-    coroutineContext: CoroutineContext
+    coroutineContext: CoroutineContext,
 ) = withContext(coroutineContext) {
     val backupDir = context.getOldBackupPath() ?: return@withContext null
     if (!backupDir.exists() || !backupDir.isDirectory) return@withContext null

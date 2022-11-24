@@ -45,7 +45,7 @@ suspend fun <T, R> handleMixinResponse(
     },
     defaultExceptionHandle: (suspend (t: Throwable) -> Unit) = {
         ErrorHandler.handleError(it)
-    }
+    },
 ): R? {
     val response = if (switchContext != null) {
         try {

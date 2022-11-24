@@ -40,7 +40,7 @@ import java.net.SocketTimeoutException
 class SendTranscriptAttachmentMessageJob(
     val transcriptMessage: TranscriptMessage,
     val encryptCategory: EncryptCategory,
-    val parentId: String? = null
+    val parentId: String? = null,
 ) : MixinJob(
     Params(PRIORITY_SEND_ATTACHMENT_MESSAGE).groupBy("send_transcript_job").requireNetwork().persist(),
     "${transcriptMessage.transcriptId}${transcriptMessage.messageId}"

@@ -20,5 +20,5 @@ data class AccountUpdateRequest(
     @SerializedName("transfer_notification_threshold")
     val transferNotificationThreshold: Double? = null,
     @SerializedName("transfer_confirmation_threshold")
-    val transferConfirmationThreshold: Double? = null
+    val transferConfirmationThreshold: Double? = null,
 )

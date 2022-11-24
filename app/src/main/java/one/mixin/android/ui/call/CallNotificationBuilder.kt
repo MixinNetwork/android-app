@@ -154,7 +154,7 @@ class CallNotificationBuilder {
             action: String,
             iconResId: Int,
             titleResId: Int,
-            putExtra: ((intent: Intent) -> Unit)? = null
+            putExtra: ((intent: Intent) -> Unit)? = null,
         ): NotificationCompat.Action {
             val intent = Intent(context, clazz)
             intent.action = action

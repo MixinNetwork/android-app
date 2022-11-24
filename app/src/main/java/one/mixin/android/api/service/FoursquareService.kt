@@ -17,6 +17,6 @@ interface FoursquareService {
         @Query("limit") limit: Int = 20,
         @Query("v") date: String = SimpleDateFormat("yyyyMMdd", Locale.US).format(Date()),
         @Query("client_id") clientId: String = BuildConfig.FS_CLIENT_ID,
-        @Query("client_secret") clientSecret: String = BuildConfig.FS_SECRET
+        @Query("client_secret") clientSecret: String = BuildConfig.FS_SECRET,
     ): FoursquareResult
 }

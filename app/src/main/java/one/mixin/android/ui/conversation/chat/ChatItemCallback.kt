@@ -31,7 +31,7 @@ class ChatItemCallback(private val context: Context, private val listener: ItemC
 
     override fun getMovementFlags(
         recyclerView: RecyclerView,
-        viewHolder: RecyclerView.ViewHolder
+        viewHolder: RecyclerView.ViewHolder,
     ): Int {
         val swipeFlags = if (viewHolder is BaseViewHolder && !viewHolder.canNotReply) {
             ItemTouchHelper.LEFT
@@ -44,7 +44,7 @@ class ChatItemCallback(private val context: Context, private val listener: ItemC
     override fun onMove(
         recyclerView: RecyclerView,
         viewHolder: RecyclerView.ViewHolder,
-        target: RecyclerView.ViewHolder
+        target: RecyclerView.ViewHolder,
     ): Boolean {
         return false
     }
@@ -66,7 +66,7 @@ class ChatItemCallback(private val context: Context, private val listener: ItemC
         dX: Float,
         dY: Float,
         actionState: Int,
-        isCurrentlyActive: Boolean
+        isCurrentlyActive: Boolean,
     ) {
         if (dX < -TRIGGER) {
             if (hold != viewHolder.absoluteAdapterPosition) {

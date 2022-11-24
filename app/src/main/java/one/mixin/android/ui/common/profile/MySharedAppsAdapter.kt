@@ -16,7 +16,7 @@ import one.mixin.android.vo.App
 
 class MySharedAppsAdapter(
     private val onAddSharedApp: (app: App) -> Unit,
-    private val onRemoveSharedApp: (app: App) -> Unit
+    private val onRemoveSharedApp: (app: App) -> Unit,
 ) : RecyclerView.Adapter<ItemViewHolder>() {
     private var favoriteApps: List<App>? = null
     private var unFavoriteApps: List<App>? = null
@@ -30,7 +30,7 @@ class MySharedAppsAdapter(
 
     override fun onCreateViewHolder(
         parent: ViewGroup,
-        viewType: Int
+        viewType: Int,
     ): ItemViewHolder {
         return when (viewType) {
             0 -> {
@@ -51,7 +51,7 @@ class MySharedAppsAdapter(
     @SuppressLint("ClickableViewAccessibility")
     override fun onBindViewHolder(
         holder: ItemViewHolder,
-        position: Int
+        position: Int,
     ) {
         if (getItemViewType(position) == 0) {
             holder.bind(getItem(position), onRemoveSharedApp)

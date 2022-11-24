@@ -22,7 +22,7 @@ import one.mixin.android.util.image.ImageListener
 import one.mixin.android.widget.gallery.internal.entity.Item
 
 class GalleryItemAdapter(
-    private val needCamera: Boolean
+    private val needCamera: Boolean,
 ) : RecyclerView.Adapter<GalleryItemAdapter.ItemViewHolder>() {
     var items: List<Item>? = null
         @SuppressLint("NotifyDataSetChanged")

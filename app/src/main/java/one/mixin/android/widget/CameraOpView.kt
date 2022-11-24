@@ -22,7 +22,7 @@ class CameraOpView : View, GestureDetector.OnGestureListener {
     private enum class Mode {
         NONE,
         EXPAND,
-        PROGRESS
+        PROGRESS,
     }
 
     private var ringColor = Color.WHITE

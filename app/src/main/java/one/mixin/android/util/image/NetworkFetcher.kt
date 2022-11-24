@@ -11,7 +11,7 @@ import java.net.URL
 
 class NetworkFetcher private constructor(
     context: Context,
-    private val url: String
+    private val url: String,
 ) {
     private val networkCache: NetworkCache = NetworkCache(context)
 

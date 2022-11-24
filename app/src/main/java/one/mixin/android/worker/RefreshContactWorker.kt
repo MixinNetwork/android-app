@@ -17,7 +17,7 @@ class RefreshContactWorker @AssistedInject constructor(
     @Assisted parameters: WorkerParameters,
     private val contactService: ContactService,
     private val userDao: UserDao,
-    private val appDao: AppDao
+    private val appDao: AppDao,
 ) : BaseWork(context, parameters) {
 
     override suspend fun onRun(): Result {

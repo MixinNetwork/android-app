@@ -178,7 +178,7 @@ interface OnCurrencyListener {
 data class Currency(
     val name: String,
     val symbol: String,
-    val flag: Int
+    val flag: Int,
 ) {
     companion object {
         val DIFF_CALLBACK = object : DiffUtil.ItemCallback<Currency>() {

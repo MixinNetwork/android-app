@@ -8,7 +8,7 @@ import androidx.room.PrimaryKey
 class MessageHistory(
     @PrimaryKey
     @ColumnInfo(name = "message_id")
-    val messageId: String
+    val messageId: String,
     // @ColumnInfo(name = "created_at")
     // val createdAt: String,
 )

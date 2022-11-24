@@ -48,7 +48,7 @@ class SignalProtocolStoreImpl(context: Context) : SignalProtocolStore {
     override fun isTrustedIdentity(
         address: SignalProtocolAddress,
         identityKey: IdentityKey,
-        direction: IdentityKeyStore.Direction
+        direction: IdentityKeyStore.Direction,
     ): Boolean {
         return identityKeyStore.isTrustedIdentity(address, identityKey, direction)
     }

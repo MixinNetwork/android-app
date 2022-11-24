@@ -8,5 +8,5 @@ import kotlinx.parcelize.Parcelize
 data class TranscriptData(
     val chatUri: String,
     @SerializedName("document_uris")
-    val documentUris: List<String>
+    val documentUris: List<String>,
 ) : Parcelable

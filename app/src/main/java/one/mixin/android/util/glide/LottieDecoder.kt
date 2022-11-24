@@ -16,7 +16,7 @@ class LottieDecoder : ResourceDecoder<Any, RLottie> {
         source: Any,
         width: Int,
         height: Int,
-        options: Options
+        options: Options,
     ): Resource<RLottie> {
         return try {
             SimpleResource(RLottie(source as File, width, height))

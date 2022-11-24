@@ -13,5 +13,5 @@ class DepositEntry(
     @ColumnInfo(name = "tag")
     val tag: String?,
     @SerializedName("properties")
-    val properties: List<String>?
+    val properties: List<String>?,
 ) : Parcelable

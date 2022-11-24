@@ -24,7 +24,7 @@ import java.util.UUID
 data class ForwardMessage(
     val category: ForwardCategory,
     val content: String,
-    val messageId: String? = null
+    val messageId: String? = null,
 ) : Parcelable
 
 sealed class ForwardCategory : Parcelable {
@@ -104,35 +104,35 @@ sealed class ShareCategory : ForwardCategory() {
 
 sealed class ForwardAction(
     open val conversationId: String? = null,
-    open val name: String? = null
+    open val name: String? = null,
 ) : Parcelable {
     @Parcelize
     data class System(
         override val conversationId: String? = null,
         override val name: String? = null,
-        val needEdit: Boolean = true
+        val needEdit: Boolean = true,
     ) : ForwardAction()
 
     @Parcelize
     data class Combine(
         override val conversationId: String? = null,
-        override val name: String? = null
+        override val name: String? = null,
     ) : ForwardAction()
 
     sealed class App(
         override val conversationId: String? = null,
-        override val name: String? = null
+        override val name: String? = null,
     ) : ForwardAction(conversationId, name) {
         @Parcelize
         data class Resultful(
             override val conversationId: String? = null,
-            override val name: String? = null
+            override val name: String? = null,
         ) : App()
 
         @Parcelize
         data class Resultless(
             override val conversationId: String? = null,
-            override val name: String? = null
+            override val name: String? = null,
         ) : App()
     }
 }
@@ -144,7 +144,7 @@ fun ForwardMessage.addTo(list: MutableList<ForwardMessage>) {
 inline fun <reified T : ForwardCategory> Uri.systemMediaToMessage(
     category: T,
     name: String? = null,
-    mimeType: String? = null
+    mimeType: String? = null,
 ): ForwardMessage =
     ForwardMessage(
         category,

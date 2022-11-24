@@ -35,7 +35,7 @@ data class JoinGroupConversation(
     val name: String,
     val announcement: String,
     val participantsCount: Int,
-    val iconUrl: String?
+    val iconUrl: String?,
 ) : Parcelable
 
 @AndroidEntryPoint
@@ -46,7 +46,7 @@ class JoinGroupBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragm
 
         fun newInstance(
             joinGroupConversation: JoinGroupConversation,
-            code: String
+            code: String,
         ) = JoinGroupBottomSheetDialogFragment().apply {
             arguments = bundleOf(
                 ARGS_JOIN_GROUP_CONVERSATION to joinGroupConversation,

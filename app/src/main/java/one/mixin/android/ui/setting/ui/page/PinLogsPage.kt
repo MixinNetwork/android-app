@@ -112,7 +112,7 @@ fun PinLogsPage() {
 @Composable
 private fun LogsList(
     logs: List<LogResponse>,
-    loadMore: () -> Unit
+    loadMore: () -> Unit,
 ) {
     val state = rememberLazyListState()
 

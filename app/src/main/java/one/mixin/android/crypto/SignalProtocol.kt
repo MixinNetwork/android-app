@@ -41,7 +41,7 @@ class SignalProtocol(ctx: Context) {
     data class ComposeMessageData(
         val keyType: Int,
         val cipher: ByteArray,
-        val resendMessageId: String? = null
+        val resendMessageId: String? = null,
     )
 
     companion object {
@@ -194,7 +194,7 @@ class SignalProtocol(ctx: Context) {
         resendMessageId: String? = null,
         sessionId: String? = null,
         mentionData: List<String>? = null,
-        expireIn: Long? = null
+        expireIn: Long? = null,
     ): BlazeMessage {
         val cipher = encryptSession(message.content!!.toByteArray(), recipientId, sessionId.getDeviceId())
         val data = encodeMessageData(ComposeMessageData(cipher.type, cipher.serialize(), resendMessageId))

@@ -34,7 +34,7 @@ class MySharedAppsFragment : BaseFragment() {
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
-        savedInstanceState: Bundle?
+        savedInstanceState: Bundle?,
     ): View = inflater.inflate(R.layout.fragment_my_shared_apps, container, false)
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {

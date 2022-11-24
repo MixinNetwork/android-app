@@ -48,7 +48,7 @@ class MarkwonUtil {
         fun getMarkwon(
             context: Activity,
             mixinLinkResolver: (String) -> Unit,
-            linkResolver: (String) -> Unit
+            linkResolver: (String) -> Unit,
         ): Markwon {
             val isNightMode = context.isNightMode()
             val prism4j = Prism4j(LanguageGrammerLocator())

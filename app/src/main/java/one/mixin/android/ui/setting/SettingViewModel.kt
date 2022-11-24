@@ -29,7 +29,7 @@ internal constructor(
     private val authorizationService: AuthorizationService,
     private val userRepository: UserRepository,
     private val contactService: ContactService,
-    private val assetRepository: AssetRepository
+    private val assetRepository: AssetRepository,
 ) : ViewModel() {
 
     suspend fun verification(request: VerificationRequest): MixinResponse<VerificationResponse> =

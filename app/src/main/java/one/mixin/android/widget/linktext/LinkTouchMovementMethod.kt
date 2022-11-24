@@ -12,7 +12,7 @@ internal class LinkTouchMovementMethod : LinkMovementMethod() {
     override fun onTouchEvent(
         textView: TextView,
         spannable: Spannable,
-        event: MotionEvent
+        event: MotionEvent,
     ): Boolean {
         when (val action = event.action) {
             MotionEvent.ACTION_DOWN -> {
@@ -66,7 +66,7 @@ internal class LinkTouchMovementMethod : LinkMovementMethod() {
     private fun getPressedSpan(
         textView: TextView,
         spannable: Spannable,
-        event: MotionEvent
+        event: MotionEvent,
     ): TouchableSpan? {
         var x = event.x.toInt()
         var y = event.y.toInt()

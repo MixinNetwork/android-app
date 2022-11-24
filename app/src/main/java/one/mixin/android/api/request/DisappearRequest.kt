@@ -4,5 +4,5 @@ import com.google.gson.annotations.SerializedName
 
 data class DisappearRequest(
     @SerializedName("duration")
-    val duration: Long
+    val duration: Long,
 )

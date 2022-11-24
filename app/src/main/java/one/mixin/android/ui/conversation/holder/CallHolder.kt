@@ -23,7 +23,7 @@ class CallHolder constructor(val binding: ItemChatCallBinding) :
         isLast: Boolean,
         hasSelect: Boolean,
         isSelect: Boolean,
-        onItemListener: ConversationAdapter.OnItemListener
+        onItemListener: ConversationAdapter.OnItemListener,
     ) {
         val ctx = itemView.context
         val isMe = meId == messageItem.userId

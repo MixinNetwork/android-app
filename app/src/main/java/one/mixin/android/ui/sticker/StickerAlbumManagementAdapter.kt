@@ -46,7 +46,7 @@ class StickerAlbumManagementAdapter : RecyclerView.Adapter<AlbumManagementHolder
 
 class AlbumManagementHolder(
     val itemBinding: ItemAlbumManagementBinding,
-    private val albumListener: AlbumListener? = null
+    private val albumListener: AlbumListener? = null,
 ) : RecyclerView.ViewHolder(itemBinding.root),
     ItemTouchHelperViewHolder {
     @SuppressLint("ClickableViewAccessibility")

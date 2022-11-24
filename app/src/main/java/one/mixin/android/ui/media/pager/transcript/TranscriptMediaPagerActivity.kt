@@ -553,7 +553,7 @@ class TranscriptMediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismis
 
     private inline fun findViewPagerChildByTag(
         pos: Int = binding.viewPager.currentItem,
-        crossinline action: (v: ViewGroup) -> Unit
+        crossinline action: (v: ViewGroup) -> Unit,
     ) {
         if (isFinishing) return
         val id = getMessageItemByPosition(pos)?.messageId ?: return
@@ -752,7 +752,7 @@ class TranscriptMediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismis
             activity: Activity,
             imageView: View,
             transcriptId: String,
-            messageId: String
+            messageId: String,
         ) {
             val intent = Intent(activity, TranscriptMediaPagerActivity::class.java).apply {
                 putExtra(TRANSCRIPT_ID, transcriptId)

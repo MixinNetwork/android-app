@@ -8,5 +8,5 @@ class ConversationWithStatus(
     @ColumnInfo(name = "user_id")
     val userId: String,
     @ColumnInfo(name = "status")
-    val status: MessageStatus
+    val status: MessageStatus,
 )

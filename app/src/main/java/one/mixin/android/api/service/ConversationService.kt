@@ -42,7 +42,7 @@ interface ConversationService {
     fun participants(
         @Path("id") id: String,
         @Path("action") action: String,
-        @Body requests: List<ParticipantRequest>
+        @Body requests: List<ParticipantRequest>,
     ): Call<MixinResponse<ConversationResponse>>
 
     @POST("conversations/{id}")

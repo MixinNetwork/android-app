@@ -87,7 +87,7 @@ fun AuthenticationsPage() {
 @Composable
 private fun AuthorizationsList(
     data: List<AuthorizationResponse>,
-    keyword: String
+    keyword: String,
 ) {
     val filteredData = remember(data, keyword) {
         if (keyword.isEmpty()) {
@@ -216,7 +216,7 @@ private fun EmptyLayout() {
 private fun AuthenticationItem(
     app: App,
     highlight: String?,
-    onClick: () -> Unit
+    onClick: () -> Unit,
 ) {
     Row(
         modifier = Modifier

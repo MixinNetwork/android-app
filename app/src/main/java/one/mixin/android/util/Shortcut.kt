@@ -70,5 +70,5 @@ data class ShortcutInfo(
     var conversationId: String,
     var name: String,
     var icon: Bitmap,
-    var intent: Intent
+    var intent: Intent,
 )

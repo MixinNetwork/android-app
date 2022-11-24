@@ -17,7 +17,7 @@ import one.mixin.android.util.viewBinding
 import one.mixin.android.widget.BottomSheet
 
 inline fun FragmentActivity.editDialog(
-    builder: EditDialog.() -> Unit
+    builder: EditDialog.() -> Unit,
 ): EditDialog {
     val dialog = EditDialog.newInstance()
     dialog.apply(builder)
@@ -27,7 +27,7 @@ inline fun FragmentActivity.editDialog(
 }
 
 inline fun Fragment.editDialog(
-    builder: EditDialog.() -> Unit
+    builder: EditDialog.() -> Unit,
 ): EditDialog {
     val dialog = EditDialog.newInstance()
     dialog.apply(builder)

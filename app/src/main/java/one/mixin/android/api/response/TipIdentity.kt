@@ -4,5 +4,5 @@ import com.google.gson.annotations.SerializedName
 
 class TipIdentity(
     @SerializedName("seed_base64")
-    val seedBase64: String
+    val seedBase64: String,
 )

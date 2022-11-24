@@ -79,7 +79,7 @@ enum class SettingDestination {
     Authentications,
     AuthenticationPermissions,
     PinLogs,
-    BiometricTime
+    BiometricTime,
 }
 
 open class SettingNavigationController {
@@ -110,7 +110,7 @@ private const val AUTHORIZATION_KEY = "authorization_key"
 
 private class SettingNavControllerImpl(
     private val navController: NavController,
-    private val closeActivity: () -> Unit
+    private val closeActivity: () -> Unit,
 ) : SettingNavigationController() {
     override fun navigation(destination: SettingDestination, args: Bundle?) {
         navigateTo(destination, args)
@@ -200,7 +200,7 @@ class SettingComposeFragment : BaseFragment() {
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
-        savedInstanceState: Bundle?
+        savedInstanceState: Bundle?,
     ): View {
         return ComposeView(inflater.context).apply {
             setContent {

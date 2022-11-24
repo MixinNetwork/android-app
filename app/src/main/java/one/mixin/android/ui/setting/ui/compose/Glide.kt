@@ -33,7 +33,7 @@ fun GlideImage(
     },
     placeHolderPainter: Painter? = null,
     contentDescription: String? = null,
-    contentScale: ContentScale = ContentScale.Fit
+    contentScale: ContentScale = ContentScale.Fit,
 ) {
     if (LocalInspectionMode.current) {
         Image(

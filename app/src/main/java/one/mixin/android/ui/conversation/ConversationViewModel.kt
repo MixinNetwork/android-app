@@ -119,7 +119,7 @@ internal constructor(
     private val assetRepository: AssetRepository,
     private val accountRepository: AccountRepository,
     private val messenger: SendMessageHelper,
-    private val cleanMessageHelper: CleanMessageHelper
+    private val cleanMessageHelper: CleanMessageHelper,
 ) : ViewModel() {
 
     fun getMessages(conversationId: String, firstKeyToLoad: Int = 0): FastComputableLiveData<PagedList<MessageItem>> {
@@ -175,7 +175,7 @@ internal constructor(
         content: String,
         replyMessage: MessageItem,
         encryptCategory: EncryptCategory,
-        isSilentMessage: Boolean? = null
+        isSilentMessage: Boolean? = null,
     ) {
         messenger.sendReplyTextMessage(conversationId, sender, content, replyMessage, encryptCategory, isSilentMessage)
     }
@@ -192,7 +192,7 @@ internal constructor(
         duration: Long,
         waveForm: ByteArray,
         encryptCategory: EncryptCategory,
-        replyMessage: MessageItem? = null
+        replyMessage: MessageItem? = null,
     ) {
         messenger.sendAudioMessage(conversationId, messageId, sender, file, duration, waveForm, encryptCategory, replyMessage)
     }
@@ -202,7 +202,7 @@ internal constructor(
         sender: User,
         audioMessagePayload: AudioMessagePayload,
         encryptCategory: EncryptCategory,
-        replyMessage: MessageItem? = null
+        replyMessage: MessageItem? = null,
     ) {
         val messageId = audioMessagePayload.messageId
         val duration = audioMessagePayload.duration
@@ -222,7 +222,7 @@ internal constructor(
         conversationId: String,
         sender: User,
         stickerId: String,
-        encryptCategory: EncryptCategory
+        encryptCategory: EncryptCategory,
     ) {
         messenger.sendStickerMessage(conversationId, sender, stickerId, encryptCategory)
     }
@@ -241,7 +241,7 @@ internal constructor(
         encryptCategory: EncryptCategory,
         messageId: String? = null,
         createdAt: String? = null,
-        replyMessage: MessageItem? = null
+        replyMessage: MessageItem? = null,
     ) {
         messenger.sendVideoMessage(conversationId, senderId, uri, encryptCategory, messageId, createdAt, replyMessage)
     }
@@ -251,7 +251,7 @@ internal constructor(
         senderId: String,
         videoMessagePayload: VideoMessagePayload,
         encryptCategory: EncryptCategory,
-        replyMessage: MessageItem? = null
+        replyMessage: MessageItem? = null,
     ) {
         val uri = videoMessagePayload.url.toUri()
         val messageId = videoMessagePayload.messageId
@@ -267,7 +267,7 @@ internal constructor(
         conversationId: String,
         sender: User,
         action: PinAction,
-        list: Collection<PinMessageData>
+        list: Collection<PinMessageData>,
     ) {
         if (list.isEmpty()) return
         withContext(Dispatchers.IO) {
@@ -299,7 +299,7 @@ internal constructor(
         conversationId: String,
         sender: User,
         transferLiveData: LiveMessagePayload,
-        encryptCategory: EncryptCategory
+        encryptCategory: EncryptCategory,
     ) {
         messenger.sendLiveMessage(conversationId, sender, transferLiveData, encryptCategory)
     }
@@ -309,7 +309,7 @@ internal constructor(
         senderId: String,
         image: Image,
         encryptCategory: EncryptCategory,
-        previewUrl: String
+        previewUrl: String,
     ) {
         messenger.sendGiphyMessage(conversationId, senderId, image, encryptCategory, previewUrl)
     }
@@ -325,7 +325,7 @@ internal constructor(
         encryptCategory: EncryptCategory,
         mime: String? = null,
         replyMessage: MessageItem? = null,
-        fromInput: Boolean = false
+        fromInput: Boolean = false,
     ): Int {
         return messenger.sendImageMessage(conversationId, sender, uri, encryptCategory, mime, replyMessage, fromInput)
     }
@@ -570,7 +570,7 @@ internal constructor(
 
     fun updateRecentUsedBots(
         defaultSharedPreferences: SharedPreferences,
-        userId: String
+        userId: String,
     ) = viewModelScope.launch(Dispatchers.IO) {
         val botsString =
             defaultSharedPreferences.getString(Constants.Account.PREF_RECENT_USED_BOTS, null)
@@ -618,7 +618,7 @@ internal constructor(
     suspend fun findUnreadMessageByMessageId(
         conversationId: String,
         userId: String,
-        messageId: String
+        messageId: String,
     ) = conversationRepository.findUnreadMessageByMessageId(conversationId, userId, messageId)
 
     suspend fun isSilence(conversationId: String, userId: String) =

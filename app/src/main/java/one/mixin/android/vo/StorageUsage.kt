@@ -4,5 +4,5 @@ data class StorageUsage(
     val conversationId: String,
     val type: String,
     val count: Int,
-    val mediaSize: Long
+    val mediaSize: Long,
 )

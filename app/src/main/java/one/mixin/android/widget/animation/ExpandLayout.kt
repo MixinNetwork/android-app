@@ -16,7 +16,7 @@ import one.mixin.android.extension.ANIMATION_DURATION_SHORT
 class ExpandLayout @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null,
-    defStyle: Int = 0
+    defStyle: Int = 0,
 ) : ConstraintLayout(
     context,
     attrs,

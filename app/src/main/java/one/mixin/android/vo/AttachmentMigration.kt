@@ -25,7 +25,7 @@ class AttachmentMigration(
     @ColumnInfo(name = "name")
     val name: String?,
     @ColumnInfo(name = "media_mine_type")
-    val mediaMimeType: String?
+    val mediaMimeType: String?,
 ) : ICategory {
     override val type: String
         get() = category

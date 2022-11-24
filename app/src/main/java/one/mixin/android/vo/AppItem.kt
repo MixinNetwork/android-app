@@ -19,7 +19,7 @@ class AppItem(
     val resourcePatterns: ArrayList<String>?,
     val updatedAt: String? = null,
     val userId: String? = null,
-    val avatarUrl: String? = null
+    val avatarUrl: String? = null,
 )
 
 fun AppItem.toApp() = App(

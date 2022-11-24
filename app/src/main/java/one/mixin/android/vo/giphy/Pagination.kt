@@ -10,5 +10,5 @@ class Pagination(
     val count: Int,
 
     @SerializedName("offset")
-    val offset: Int
+    val offset: Int,
 )

@@ -27,7 +27,7 @@ data class Participant(
     @ColumnInfo(name = "role")
     val role: String,
     @ColumnInfo(name = "created_at")
-    val createdAt: String
+    val createdAt: String,
 )
 
 enum class ParticipantRole { OWNER, ADMIN }

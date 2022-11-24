@@ -27,12 +27,12 @@ class BiometricInfo(
     val title: String,
     val subTitle: String,
     val description: String,
-    val negativeBtnText: String
+    val negativeBtnText: String,
 )
 
 class BiometricDialog(
     private val context: FragmentActivity,
-    private val biometricInfo: BiometricInfo
+    private val biometricInfo: BiometricInfo,
 ) {
     var callback: Callback? = null
 

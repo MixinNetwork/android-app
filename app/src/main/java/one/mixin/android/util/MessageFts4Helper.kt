@@ -19,7 +19,7 @@ data class QueryMessage(
     @ColumnInfo(name = "message_id")
     val messageId: String,
     val content: String?,
-    val name: String?
+    val name: String?,
 )
 
 object MessageFts4Helper {
@@ -31,7 +31,7 @@ object MessageFts4Helper {
     suspend fun syncMessageFts4(
         preProcess: Boolean,
         waitMillis: Long? = null,
-        onProgressChanged: ((Int) -> Unit)? = null
+        onProgressChanged: ((Int) -> Unit)? = null,
     ): Boolean {
         val ctx = MixinApplication.appContext
         val messageDao = MixinDatabase.getDatabase(ctx).messageDao()

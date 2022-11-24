@@ -23,7 +23,7 @@ import one.mixin.android.vo.Scope
 fun ScopeCheckLayout(
     scope: Scope,
     state: Boolean = true,
-    onCheckedChange: ((checked: Boolean) -> Unit)? = null
+    onCheckedChange: ((checked: Boolean) -> Unit)? = null,
 ) {
     val checkedState = remember { mutableStateOf(state) }
     val isProfileScope = scope.source == Scope.SCOPES[0]

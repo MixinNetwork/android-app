@@ -50,7 +50,7 @@ private fun AvatarImage(
     name: String,
     imageUrl: String?,
     identityNumber: String,
-    size: Dp
+    size: Dp,
 ) {
     if (imageUrl != null && imageUrl.isNotEmpty()) {
         GlideImage(

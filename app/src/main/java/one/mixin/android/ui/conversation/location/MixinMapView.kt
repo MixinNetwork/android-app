@@ -33,7 +33,7 @@ import one.mixin.android.vo.foursquare.Venue
 class MixinMapView(
     private val context: Context,
     private val googleMapView: MapView,
-    mapboxView: com.mapbox.maps.MapView?
+    mapboxView: com.mapbox.maps.MapView?,
 ) {
     private val p = 64.dp.toDouble()
     private val mapboxBoundsEdgeInsets = EdgeInsets(p, p, p, p)

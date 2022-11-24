@@ -14,7 +14,7 @@ import one.mixin.android.webrtc.localEnd
 
 data class GroupCallUser(
     val id: String,
-    var type: Type
+    var type: Type,
 ) {
     enum class Type {
         Joined, Pending
@@ -22,7 +22,7 @@ data class GroupCallUser(
 }
 
 data class GroupCallState(
-    var conversationId: String
+    var conversationId: String,
 ) {
     var inviter: String? = null
     var users: List<GroupCallUser>? = null

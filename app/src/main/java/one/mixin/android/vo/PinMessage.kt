@@ -18,5 +18,5 @@ data class PinMessage(
     @ColumnInfo(name = "conversation_id")
     val conversationId: String,
     @ColumnInfo(name = "created_at")
-    val createdAt: String
+    val createdAt: String,
 )

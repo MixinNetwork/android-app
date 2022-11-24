@@ -27,7 +27,7 @@ class NonMessengerUserBottomSheetDialogFragment : MixinBottomSheetDialogFragment
         private var instant: NonMessengerUserBottomSheetDialogFragment? = null
         fun newInstance(
             user: User,
-            conversationId: String? = null
+            conversationId: String? = null,
         ): NonMessengerUserBottomSheetDialogFragment {
             try {
                 instant?.dismiss()

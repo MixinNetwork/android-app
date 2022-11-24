@@ -13,7 +13,7 @@ class RemoveStickersWorker @AssistedInject constructor(
     @Assisted context: Context,
     @Assisted parameters: WorkerParameters,
     private val accountService: AccountService,
-    private val stickerRelationshipDao: StickerRelationshipDao
+    private val stickerRelationshipDao: StickerRelationshipDao,
 ) : BaseWork(context, parameters) {
 
     companion object {

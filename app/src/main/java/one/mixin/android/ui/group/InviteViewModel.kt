@@ -16,7 +16,7 @@ import javax.inject.Inject
 @HiltViewModel
 class InviteViewModel @Inject internal constructor(
     private val conversationService: ConversationService,
-    private val conversationRepository: ConversationRepository
+    private val conversationRepository: ConversationRepository,
 ) : ViewModel() {
     fun rotate(conversationId: String): Observable<MixinResponse<ConversationResponse>> =
         conversationService.rotate(conversationId)

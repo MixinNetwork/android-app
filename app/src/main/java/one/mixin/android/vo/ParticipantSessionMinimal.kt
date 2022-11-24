@@ -12,5 +12,5 @@ class ParticipantSessionMinimal(
     val appId: String?,
 
     @ColumnInfo(name = "capabilities")
-    val capabilities: ArrayList<String>?
+    val capabilities: ArrayList<String>?,
 )

@@ -195,7 +195,7 @@ class DataProvider {
             name: String?,
             symbol: String?,
             db: MixinDatabase,
-            cancellationSignal: CancellationSignal
+            cancellationSignal: CancellationSignal,
         ): List<AssetItem> {
             val _sql =
                 """SELECT a1.asset_id AS assetId, a1.symbol, a1.name, a1.icon_url AS iconUrl, a1.balance, a1.destination AS destination, a1.tag AS tag, a1.price_btc AS priceBtc, a1.price_usd AS priceUsd, a1.chain_id AS chainId, a1.change_usd AS changeUsd, a1.change_btc AS changeBtc, ae.hidden, a2.price_usd as chainPriceUsd,a1.confirmations, a1.reserve as reserve, a2.icon_url AS chainIconUrl, a2.symbol as chainSymbol, a2.name as chainName, a1.asset_key AS assetKey, a1.deposit_entries AS depositEntries  
@@ -248,7 +248,7 @@ class DataProvider {
             phone: String?,
             id: String?,
             db: MixinDatabase,
-            cancellationSignal: CancellationSignal
+            cancellationSignal: CancellationSignal,
         ): List<User> {
             val _sql = """
         SELECT * FROM users 
@@ -308,7 +308,7 @@ class DataProvider {
         suspend fun fuzzySearchChat(
             query: String?,
             db: MixinDatabase,
-            cancellationSignal: CancellationSignal
+            cancellationSignal: CancellationSignal,
         ): List<ChatMinimal> {
             val _sql = """
         SELECT c.conversation_id AS conversationId, c.icon_url AS groupIconUrl, c.category AS category, c.name AS groupName,
@@ -380,7 +380,7 @@ class DataProvider {
             query: String?,
             limit: Int,
             db: MixinDatabase,
-            cancellationSignal: CancellationSignal
+            cancellationSignal: CancellationSignal,
         ): List<SearchMessageItem> {
             val _sql =
                 """
@@ -458,7 +458,7 @@ class DataProvider {
         database: MixinDatabase,
         statement: RoomSQLiteQuery,
         countStatement: RoomSQLiteQuery,
-        cancellationSignal: CancellationSignal
+        cancellationSignal: CancellationSignal,
     ) : CancellationLimitOffsetDataSource<SearchMessageDetailItem>(database, statement, countStatement, cancellationSignal, true, "messages", "users", "snapshots", "assets", "stickers", "hyperlinks", "conversations", "message_mentions") {
         override fun convertRows(cursor: Cursor?): MutableList<SearchMessageDetailItem> {
             return convertToSearchMessageDetailItem(cursor)

@@ -380,7 +380,7 @@ object AppModule {
         mixinDatabase: MixinDatabase,
         pendingDatabase: PendingDatabase,
         jobManager: MixinJobManager,
-        linkState: LinkState
+        linkState: LinkState,
     ): ChatWebSocket =
         ChatWebSocket(applicationScope, okHttp, accountService, mixinDatabase, pendingDatabase, jobManager, linkState)
 
@@ -494,7 +494,7 @@ object AppModule {
     @Singleton
     @Provides
     fun providesApplicationScope(
-        @DefaultDispatcher defaultDispatcher: CoroutineDispatcher
+        @DefaultDispatcher defaultDispatcher: CoroutineDispatcher,
     ): CoroutineScope = CoroutineScope(SupervisorJob() + defaultDispatcher)
 
     @Provides
@@ -510,7 +510,7 @@ object AppModule {
         participantDao: ParticipantDao,
         chatWebSocket: ChatWebSocket,
         linkState: LinkState,
-        messageHistoryDao: MessageHistoryDao
+        messageHistoryDao: MessageHistoryDao,
     ) = JobSenderKey(
         participantSessionDao,
         signalProtocol,

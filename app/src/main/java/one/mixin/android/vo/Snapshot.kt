@@ -43,7 +43,7 @@ data class Snapshot(
     val memo: String?,
     @SerializedName("confirmations")
     @ColumnInfo(name = "confirmations")
-    val confirmations: Int?
+    val confirmations: Int?,
 )
 
 @Suppress("ktlint:enum-entry-name-case", "EnumEntryName")

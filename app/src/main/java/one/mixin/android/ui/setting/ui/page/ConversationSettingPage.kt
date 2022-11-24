@@ -61,7 +61,7 @@ fun ConversationSettingPage() {
 @Composable
 private fun SettingGroup(
     initMessageSourcePreferences: () -> SettingConversationViewModel.BaseMessageSourcePreferences,
-    doUpdate: suspend (source: MessageSource) -> MixinResponse<Account>
+    doUpdate: suspend (source: MessageSource) -> MixinResponse<Account>,
 ) {
     val scope = rememberCoroutineScope()
 
@@ -137,7 +137,7 @@ fun MessageSettingItem(
     title: String,
     selected: Boolean,
     processing: Boolean,
-    onSelect: () -> Unit
+    onSelect: () -> Unit,
 ) {
     SettingTile(
         title = title,

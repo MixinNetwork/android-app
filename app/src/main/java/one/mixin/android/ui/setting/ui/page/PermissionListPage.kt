@@ -42,7 +42,7 @@ import one.mixin.android.vo.Scope
 @Composable
 fun PermissionListPage(
     auth: AuthorizationResponse,
-    authViewModel: AuthenticationsViewModel?
+    authViewModel: AuthenticationsViewModel?,
 ) {
     SettingPageScaffold(title = stringResource(id = R.string.Permissions)) {
         val viewModel = hiltViewModel<SettingViewModel>()
@@ -101,7 +101,7 @@ private fun PermissionScopeItem(scope: Scope) {
 @Composable
 private fun Footer(
     auth: AuthorizationResponse,
-    authViewModel: AuthenticationsViewModel?
+    authViewModel: AuthenticationsViewModel?,
 ) {
     Column {
         Box(modifier = Modifier.height(8.dp))
@@ -138,7 +138,7 @@ private fun Footer(
 private fun RevokeAlertDialog(
     onRequestDismiss: () -> Unit,
     auth: AuthorizationResponse,
-    authViewModel: AuthenticationsViewModel?
+    authViewModel: AuthenticationsViewModel?,
 ) {
     val scope = rememberComposeScope()
     val settingViewModel = hiltViewModel<SettingViewModel>()

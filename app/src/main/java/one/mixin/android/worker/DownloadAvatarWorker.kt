@@ -12,7 +12,7 @@ import java.util.concurrent.TimeUnit
 @HiltWorker
 class DownloadAvatarWorker @AssistedInject constructor(
     @Assisted context: Context,
-    @Assisted parameters: WorkerParameters
+    @Assisted parameters: WorkerParameters,
 ) : AvatarWorker(context, parameters) {
 
     override suspend fun onRun(): Result {

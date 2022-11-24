@@ -34,7 +34,7 @@ data class ConversationItem(
     val muteUntil: String?,
     val appId: String?,
     val mentions: String?,
-    val mentionCount: Int?
+    val mentionCount: Int?,
 ) : ICategory, IConversationCategory {
     companion object {
         val DIFF_CALLBACK = object : DiffUtil.ItemCallback<ConversationItem>() {

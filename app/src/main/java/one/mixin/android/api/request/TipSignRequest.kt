@@ -12,7 +12,7 @@ class TipSignRequest(
     @SerializedName("watcher")
     val watcher: String,
     @SerializedName("action")
-    val action: String = "SIGN"
+    val action: String = "SIGN",
 )
 
 class TipSignData(
@@ -29,5 +29,5 @@ class TipSignData(
     @SerializedName("nonce")
     val nonce: Long,
     @SerializedName("rotate")
-    val rotate: String? = null
+    val rotate: String? = null,
 )

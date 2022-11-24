@@ -10,7 +10,7 @@ import one.mixin.android.extension.dp
 class CheckedFlowItem @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null,
-    defStyle: Int = 0
+    defStyle: Int = 0,
 ) : AppCompatCheckedTextView(context, attrs, defStyle) {
     init {
         layoutParams = ViewGroup.MarginLayoutParams(

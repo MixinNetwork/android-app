@@ -48,7 +48,7 @@ internal constructor(
     val assetRepository: AssetRepository,
     val accountRepository: AccountRepository,
     val jobManager: MixinJobManager,
-    val cleanMessageHelper: CleanMessageHelper
+    val cleanMessageHelper: CleanMessageHelper,
 ) : ViewModel() {
 
     val messageControlledRunner = ControlledRunner<List<SearchMessageItem>?>()
@@ -60,7 +60,7 @@ internal constructor(
     suspend inline fun <reified T> fuzzySearch(
         cancellationSignal: CancellationSignal,
         query: String?,
-        limit: Int = -1
+        limit: Int = -1,
     ): List<Parcelable>? =
         if (query.isNullOrBlank()) {
             null
@@ -91,7 +91,7 @@ internal constructor(
     fun observeFuzzySearchMessageDetail(
         query: String,
         conversationId: String,
-        cancellationSignal: CancellationSignal
+        cancellationSignal: CancellationSignal,
     ): LiveData<PagedList<SearchMessageDetailItem>> {
         val escapedQuery = query.trim().escapeSql()
         return conversationRepository.fuzzySearchMessageDetail(
@@ -135,7 +135,7 @@ internal constructor(
         duration: Long,
         conversationId: String? = null,
         senderId: String? = null,
-        recipientId: String? = null
+        recipientId: String? = null,
     ): MixinResponse<ConversationResponse> {
         require(conversationId != null || (senderId != null && recipientId != null)) {
             "error data"

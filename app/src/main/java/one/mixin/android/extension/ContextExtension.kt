@@ -358,7 +358,7 @@ fun FragmentActivity.addFragment(
     @Suppress("UNUSED_PARAMETER") from: Fragment,
     to: Fragment,
     tag: String,
-    id: Int = R.id.container
+    id: Int = R.id.container,
 ) {
     val ft = supportFragmentManager.beginTransaction()
         .setCustomAnimations(R.anim.slide_in_right, 0, 0, R.anim.slide_out_right)
@@ -840,7 +840,7 @@ fun Fragment.getTipsByAsset(asset: AssetItem) =
 
 fun Context.showConfirmDialog(
     message: String,
-    action: () -> Unit
+    action: () -> Unit,
 ) {
     alertDialogBuilder()
         .setMessage(message)

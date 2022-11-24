@@ -6,7 +6,7 @@ import androidx.viewpager2.adapter.FragmentStateAdapter
 class SharedMediaAdapter(
     fragment: Fragment,
     private val conversationId: String,
-    private val onLongClickListener: (String) -> Unit
+    private val onLongClickListener: (String) -> Unit,
 ) : FragmentStateAdapter(fragment) {
     companion object {
         private const val TAB_COUNT = 5
