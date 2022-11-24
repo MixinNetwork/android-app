@@ -36,6 +36,8 @@ import kotlin.experimental.and
 import kotlin.experimental.or
 
 internal val ed25519 by lazy { EdDSANamedCurveTable.getByName(EdDSANamedCurveTable.ED_25519) }
+private val secureRandom: SecureRandom = SecureRandom()
+private const val GCM_IV_LENGTH = 12
 
 fun generateRSAKeyPair(keyLength: Int = 2048): KeyPair {
     val kpg = KeyPairGenerator.getInstance("RSA")
@@ -98,9 +100,6 @@ fun Argon2Kt.argon2IdHash(pin: String, seed: ByteArray): Argon2KtResult {
         hashLengthInBytes = 32
     )
 }
-
-private val secureRandom: SecureRandom = SecureRandom()
-private const val GCM_IV_LENGTH = 12
 
 fun generateEphemeralSeed(): ByteArray {
     val key = ByteArray(32)
