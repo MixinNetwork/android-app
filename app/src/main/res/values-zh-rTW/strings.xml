@@ -211,6 +211,7 @@
     <string name="Confirm">確認</string>
     <string name="Confirm_fingerprint">確認指紋</string>
     <string name="Confirm_PIN">確認 PIN</string>
+    <string name="Confirm_with_PIN">使用 PIN 確認</string>
     <string name="Connecting">正在連線</string>
     <string name="Connection_unstable">當前通話網路不佳</string>
     <string name="Contact">聯絡人</string>
@@ -515,7 +516,6 @@
     <string name="Log_in">登入</string>
     <string name="log_out_from_desktop">從桌面版退出</string>
     <string name="login_and_abort_account_deletion">繼續登入並放棄刪除賬戶</string>
-    <string name="Login_with_PIN">用 PIN 來登入</string>
     <string name="Logout">退出中…</string>
     <string name="Logs">日誌</string>
     <string name="Lost_your_mobile_number">手機丟失？</string>
@@ -634,7 +634,6 @@
     <string name="Pause">暫停</string>
     <string name="pay_paid">此付款連結已由某人支付，您無法進行重複付款。</string>
     <string name="Pay_with_Biometrics">用生物識別支付</string>
-    <string name="Pay_with_PIN">用 PIN 支付</string>
     <string name="Pay_with_PIN_interval">PIN 使用間隔</string>
     <plurals name="pending_confirmation" tools:ignore="UnusedQuantity">
         <item quantity="one">%1$d/%2$d 區塊確認數</item>

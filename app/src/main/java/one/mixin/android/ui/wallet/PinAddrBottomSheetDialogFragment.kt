@@ -167,6 +167,4 @@ class PinAddrBottomSheetDialogFragment : BiometricBottomSheetDialogFragment() {
             else -> R.string.withdrawal_addr_pin_add
         }
     )
-
-
 }

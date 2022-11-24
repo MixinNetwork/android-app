@@ -239,8 +239,13 @@ fun PinKeyBoard(
                                     }
                                 }
                             }
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Text(
+                                text = stringResource(R.string.Confirm_with_PIN),
+                                color = MixinAppTheme.colors.textMinor,
+                            )
                             if (showBiometric) {
-                                Spacer(modifier = Modifier.height(16.dp))
+                                Spacer(modifier = Modifier.height(12.dp))
                                 Row(
                                     verticalAlignment = Alignment.CenterVertically,
                                     modifier = Modifier
@@ -261,7 +266,7 @@ fun PinKeyBoard(
                                     )
                                 }
                             }
-                            Spacer(modifier = Modifier.height(16.dp))
+                            Spacer(modifier = Modifier.height(12.dp))
                         }
                     } else {
                         Box(
