@@ -112,7 +112,6 @@
     <string name="backup_notification_content">バックアップの準備中…</string>
     <string name="backup_notification_title">バックアップが進行中</string>
     <string name="Backup_success">バックアップ成功</string>
-    <string name="Biometric_Payment">生体認証で支払う</string>
     <string name="Block">ブロック</string>
     <string name="block_tip">ブロックされたユーザーはあなたのグループへ追加やメッセージ送信ができません</string>
     <string name="Blocked">ブロック中</string>
@@ -531,7 +530,6 @@
     <string name="Log_in">ログイン</string>
     <string name="log_out_from_desktop">デスクトップ版からログアウト</string>
     <string name="login_and_abort_account_deletion">そのままログインし、アカウント削除をキャンセルします</string>
-    <string name="Login_with_PIN">PINコードでMixinにログインする</string>
     <string name="Logout">ログアウト中…</string>
     <string name="Logs">ログ</string>
     <string name="Lost_your_mobile_number">電話番号をお忘れですか？</string>
@@ -651,7 +649,6 @@
     <string name="Pause">一時停止</string>
     <string name="pay_paid">この支払いリンクはすでに使用済みです。重複して支払いを行うことはできません。</string>
     <string name="Pay_with_Biometrics">生体認証で支払う</string>
-    <string name="Pay_with_PIN">PINコードで支払う</string>
     <string name="Pay_with_PIN_interval">PINコードの再確認間隔</string>
     <plurals name="pending_confirmation" tools:ignore="UnusedQuantity">
         <item quantity="one">%1$d/%2$d 承認</item>
@@ -966,7 +963,6 @@
     <string name="Upgrading">アップデート中</string>
     <string name="Upload_Mobile_Contacts">連絡先をアップロードする</string>
     <string name="Upload_timeout">アップロードタイムアウト</string>
-    <string name="Use_Biometric_Multisig">生体認証マルチシグを使用する</string>
     <string name="User_not_found">ユーザーが見つかりませんでした</string>
     <string name="value_now">現在価格 %1$s</string>
     <string name="value_then">当時の価格 %1$s</string>
@@ -1022,9 +1018,6 @@
     <string name="When_roaming">ローミング時</string>
     <string name="withdraw_Address">アドレス</string>
     <string name="Withdrawal">出金</string>
-    <string name="withdrawal_addr_biometric_add">生体認証を使用してアドレスを保存</string>
-    <string name="withdrawal_addr_biometric_delete">生体認証を使用してアドレスを削除</string>
-    <string name="withdrawal_addr_biometric_modify">生体認証を使用してアドレスを修正</string>
     <string name="withdrawal_addr_memo">宛先タグやID番号やメモがない場合は、「メモなし」に設定することができます。</string>
     <string name="withdrawal_addr_new">新しい%1$sアドレス</string>
     <string name="withdrawal_addr_no_memo">宛先タグ、ID番号、またはメモを入力する必要がある場合は、「メモを追加」に設定することができます。</string>
@@ -1042,8 +1035,6 @@
     <string name="withdrawal_network_fee">ネットワーク手数料：</string>
     <string name="withdrawal_no_memo">メモなし</string>
     <string name="withdrawal_to">%1$sへ出金</string>
-    <string name="withdrawal_with_biometric">生体認証を使用して出金</string>
-    <string name="withdrawal_with_PIN">PINコードを使用して出金</string>
     <string name="Write_Circles">グループリストの変更</string>
     <string name="you">自分</string>
     <string name="You">自分</string>

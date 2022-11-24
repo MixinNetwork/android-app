@@ -77,7 +77,6 @@
     <string name="backup_notification_content">Menyiapkan sandaran …</string>
     <string name="backup_notification_title">Sandaran sedang dijalankan</string>
     <string name="Backup_success">Kejayaan sandaran</string>
-    <string name="Biometric_Payment">Pembayaran Biometrik</string>
     <string name="Block">Sekat</string>
     <string name="block_tip">Pengguna yang disekat tidak dapat mengirim anda pesan atau menambahkan anda ke kumpulan.</string>
     <string name="Blocked">Disekat</string>
@@ -493,7 +492,6 @@
     <string name="Pause">Jeda sebentar</string>
     <string name="pay_paid">Pautan pembayaran ini telah dibayar oleh seseorang, anda tidak boleh membuat pembayaran pendua.</string>
     <string name="Pay_with_Biometrics">Bayar dengan Biometrik</string>
-    <string name="Pay_with_PIN">Bayar dengan PIN</string>
     <string name="Pay_with_PIN_interval">Bayar dengan selang PIN</string>
     <plurals name="pending_confirmation" tools:ignore="UnusedQuantity">
         <item quantity="other">%1$d/%2$d pengesahan</item>
@@ -719,7 +717,6 @@
     <string name="Upgrade_Database">Naik taraf Pangkalan Data</string>
     <string name="Upgrading">Menaik taraf</string>
     <string name="Upload_timeout">Tamat masa muat naik</string>
-    <string name="Use_Biometric_Multisig">Gunakan Biometric Multisig</string>
     <string name="User_not_found">Pengguna tidak ditemui</string>
     <string name="value_now">nilai sekarang %1$s</string>
     <string name="value_then">nilai maka %1$s</string>
@@ -767,9 +764,6 @@
     <string name="When_roaming">Semasa perayauan</string>
     <string name="withdraw_Address">Alamat</string>
     <string name="Withdrawal">Pengeluaran</string>
-    <string name="withdrawal_addr_biometric_add">Gunakan Biometrik untuk menyimpan alamat</string>
-    <string name="withdrawal_addr_biometric_delete">Gunakan Biometrik untuk memadam alamat</string>
-    <string name="withdrawal_addr_biometric_modify">Gunakan Biometrik untuk mengubah alamat</string>
     <string name="withdrawal_addr_memo">Destinasi Tag atau Nombor ID atau nota. Sekiranya tidak, anda boleh menetapkannya Tiada Memo.</string>
     <string name="withdrawal_addr_new">Alamat %1$s Baharu</string>
     <string name="withdrawal_addr_no_memo">Sekiranya anda diminta untuk mengisi Tag Destinasi atau Nombor ID atau nota, anda boleh Menambah Memo.</string>
@@ -784,8 +778,6 @@
     <string name="withdrawal_minimum_amount">Jumlah pengeluaran minimum ialah %1$s %2$s</string>
     <string name="withdrawal_no_memo">Tiada Memo</string>
     <string name="withdrawal_to">Pengeluaran ke %1$s</string>
-    <string name="withdrawal_with_biometric">Pengeluaran dengan Biometrik</string>
-    <string name="withdrawal_with_PIN">Pengeluaran dengan PIN</string>
     <string name="Write_Circles">Tulis Lingkaran</string>
     <string name="You">Anda</string>
     <string name="You_deleted_this_message">Anda memadamkan mesej ini</string>

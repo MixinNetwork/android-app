@@ -102,7 +102,6 @@
     <string name="auth_assets_more">%1$s and more</string>
     <string name="auth_messages_represent_description">allow bot to send messages represent of you</string>
     <string name="auth_profile_content">%1$s, %2$s, profile photo</string>
-    <string name="Auth_with_PIN">Authorize with PIN</string>
     <string name="authorization">authorization</string>
     <string name="Authorizations">Authorizations</string>
     <string name="auto_download_hint">Change auto-download settings for medias. Voice messages are always automatically downloaded.</string>
@@ -125,7 +124,6 @@
     <string name="backup_notification_content">Preparing backup…</string>
     <string name="backup_notification_title">Backup in progress</string>
     <string name="Backup_success">Backup success</string>
-    <string name="Biometric_Payment">Biometric Payment</string>
     <string name="Block">Block</string>
     <string name="block_tip">Blocked users can\'t send you messages or add you to groups.</string>
     <string name="Blocked">Blocked</string>
@@ -234,6 +232,7 @@
     <string name="Confirm">Confirm</string>
     <string name="Confirm_fingerprint">Confirm fingerprint</string>
     <string name="Confirm_PIN">Confirm PIN</string>
+    <string name="Confirm_with_PIN">Confirm with PIN</string>
     <string name="Connect_to_TIP_network_failed">Unable to connect to TIP network. Check your connection and try again.</string>
     <string name="Connecting">Connecting</string>
     <string name="Connection_unstable">Connection unstable</string>
@@ -559,7 +558,6 @@
     <string name="Log_in">Log in</string>
     <string name="log_out_from_desktop">Log out from desktop</string>
     <string name="login_and_abort_account_deletion">Continue to log in and abort account deletion</string>
-    <string name="Login_with_PIN">Login with PIN</string>
     <string name="Logout">Logout…</string>
     <string name="Logs">Logs</string>
     <string name="Lost_your_mobile_number">Lost your mobile number?</string>
@@ -685,7 +683,6 @@
     <string name="Pause">Pause</string>
     <string name="pay_paid">This payment link has already been paid by someone, you can not make a duplicate payment.</string>
     <string name="Pay_with_Biometrics">Pay with Biometrics</string>
-    <string name="Pay_with_PIN">Pay with PIN</string>
     <string name="Pay_with_PIN_interval">Pay with PIN interval</string>
     <plurals name="pending_confirmation">
         <item quantity="one">%1$d/%2$d confirmation</item>
@@ -1032,7 +1029,6 @@
     <string name="Upgrading_TIP_terminated_unexpectedly">Upgrading TIP terminated unexpectedly, click \"Continue\" to complete the upgrade</string>
     <string name="Upload_Mobile_Contacts">Upload Mobile Contacts</string>
     <string name="Upload_timeout">Upload timeout</string>
-    <string name="Use_Biometric_Multisig">Use Biometric Multisig</string>
     <string name="User_not_found">User not found</string>
     <string name="value_now">value now %1$s</string>
     <string name="value_then">value then %1$s</string>
@@ -1087,9 +1083,6 @@
     <string name="When_roaming">When roaming</string>
     <string name="withdraw_Address">Address</string>
     <string name="Withdrawal">Withdraw</string>
-    <string name="withdrawal_addr_biometric_add">Use Biometric to save address</string>
-    <string name="withdrawal_addr_biometric_delete">Use Biometric to delete address</string>
-    <string name="withdrawal_addr_biometric_modify">Use Biometric to modify address</string>
     <string name="withdrawal_addr_memo">Destination Tag or ID Number or notes. If not, you can set it No Memo.</string>
     <string name="withdrawal_addr_new">New %1$s Address</string>
     <string name="withdrawal_addr_no_memo">If you are required to fill in Destination Tag or ID Number or notes, you can Add Memo.</string>
@@ -1107,8 +1100,6 @@
     <string name="withdrawal_network_fee">Network fee: </string>
     <string name="withdrawal_no_memo">No Memo</string>
     <string name="withdrawal_to">Withdraw to %1$s</string>
-    <string name="withdrawal_with_biometric">Withdrawal with Biometric</string>
-    <string name="withdrawal_with_PIN">Withdrawal with PIN</string>
     <string name="Write_Circles">Write Circles</string>
     <string name="you">you</string>
     <string name="You">You</string>

@@ -89,7 +89,6 @@
     <string name="auth_assets_more">%1$s等</string>
     <string name="auth_messages_represent_description">允許機器人代表你發訊息</string>
     <string name="auth_profile_content">%1$s, %2$s, 頭像</string>
-    <string name="Auth_with_PIN">用 PIN 授权</string>
     <string name="authorization">授權</string>
     <string name="Authorizations">授權</string>
     <string name="auto_download_hint">媒體自動下載設定，所有語音訊息將自動下載。</string>
@@ -111,7 +110,6 @@
     <string name="backup_notification_content">正在準備備份…</string>
     <string name="backup_notification_title">備份正在進行中</string>
     <string name="Backup_success">備份成功</string>
-    <string name="Biometric_Payment">生物識別支付</string>
     <string name="Block">封鎖使用者</string>
     <string name="block_tip">被封鎖的使用者不能給你傳送訊息或者邀請你加入群聊</string>
     <string name="Blocked">已封鎖</string>
@@ -213,6 +211,7 @@
     <string name="Confirm">確認</string>
     <string name="Confirm_fingerprint">確認指紋</string>
     <string name="Confirm_PIN">確認 PIN</string>
+    <string name="Confirm_with_PIN">使用 PIN 確認</string>
     <string name="Connecting">正在連線</string>
     <string name="Connection_unstable">當前通話網路不佳</string>
     <string name="Contact">聯絡人</string>
@@ -517,7 +516,6 @@
     <string name="Log_in">登入</string>
     <string name="log_out_from_desktop">從桌面版退出</string>
     <string name="login_and_abort_account_deletion">繼續登入並放棄刪除賬戶</string>
-    <string name="Login_with_PIN">用 PIN 來登入</string>
     <string name="Logout">退出中…</string>
     <string name="Logs">日誌</string>
     <string name="Lost_your_mobile_number">手機丟失？</string>
@@ -636,7 +634,6 @@
     <string name="Pause">暫停</string>
     <string name="pay_paid">此付款連結已由某人支付，您無法進行重複付款。</string>
     <string name="Pay_with_Biometrics">用生物識別支付</string>
-    <string name="Pay_with_PIN">用 PIN 支付</string>
     <string name="Pay_with_PIN_interval">PIN 使用間隔</string>
     <plurals name="pending_confirmation" tools:ignore="UnusedQuantity">
         <item quantity="one">%1$d/%2$d 區塊確認數</item>
@@ -948,7 +945,6 @@
     <string name="Upgrading">升級中…</string>
     <string name="Upload_Mobile_Contacts">上傳通訊錄找好友</string>
     <string name="Upload_timeout">上傳超時</string>
-    <string name="Use_Biometric_Multisig">使用生物識別簽名</string>
     <string name="User_not_found">找不到這個使用者</string>
     <string name="value_now">價值 %1$s</string>
     <string name="value_then">當時價值 %1$s</string>
@@ -1001,9 +997,6 @@
     <string name="When_roaming">當漫遊時</string>
     <string name="withdraw_Address">提現地址</string>
     <string name="Withdrawal">提現</string>
-    <string name="withdrawal_addr_biometric_add">使用生物識別來完成新增</string>
-    <string name="withdrawal_addr_biometric_delete">使用生物識別來完成刪除</string>
-    <string name="withdrawal_addr_biometric_modify">使用生物識別來完成修改</string>
     <string name="withdrawal_addr_memo">地址標籤、數字 ID 或備註。如果沒有，點選不使用 Memo（備註）。</string>
     <string name="withdrawal_addr_new">新 %1$s 地址</string>
     <string name="withdrawal_addr_no_memo">如果你需要填寫地址標籤、數字 ID 或備註，點選新增 Memo（備註）。</string>
@@ -1021,8 +1014,6 @@
     <string name="withdrawal_network_fee">網路手續費：</string>
     <string name="withdrawal_no_memo">點選不使用 Memo（備註）</string>
     <string name="withdrawal_to">提現到 %1$s</string>
-    <string name="withdrawal_with_biometric">用生物識別提現</string>
-    <string name="withdrawal_with_PIN">用 PIN 提現</string>
     <string name="Write_Circles">管理圈子</string>
     <string name="you">你</string>
     <string name="You">你</string>

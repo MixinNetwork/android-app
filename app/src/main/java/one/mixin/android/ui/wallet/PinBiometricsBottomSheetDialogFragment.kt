@@ -64,7 +64,6 @@ class PinBiometricsBottomSheetDialogFragment : BiometricBottomSheetDialogFragmen
         getString(R.string.Verify_by_Biometric),
         "",
         "",
-        getString(R.string.Verify_PIN)
     )
 
     private fun getTipTextRes(): Int =

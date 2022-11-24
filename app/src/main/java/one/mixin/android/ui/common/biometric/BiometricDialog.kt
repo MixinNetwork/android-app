@@ -27,7 +27,6 @@ class BiometricInfo(
     val title: String,
     val subTitle: String,
     val description: String,
-    val negativeBtnText: String,
 )
 
 class BiometricDialog(
@@ -41,7 +40,7 @@ class BiometricDialog(
             .setTitle(biometricInfo.title)
             .setSubtitle(biometricInfo.subTitle)
             .setDescription(biometricInfo.description)
-            .setNegativeButtonText(biometricInfo.negativeBtnText)
+            .setNegativeButtonText(context.getString(R.string.Verify_PIN))
             .setConfirmationRequired(true)
             .setAllowedAuthenticators(BIOMETRIC_STRONG)
             .build()
