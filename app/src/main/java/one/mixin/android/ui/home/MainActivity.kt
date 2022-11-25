@@ -67,6 +67,7 @@ import one.mixin.android.api.service.UserService
 import one.mixin.android.crypto.Base64
 import one.mixin.android.crypto.PrivacyPreference.getIsLoaded
 import one.mixin.android.crypto.PrivacyPreference.getIsSyncSession
+import one.mixin.android.crypto.sha3Sum256
 import one.mixin.android.databinding.ActivityMainBinding
 import one.mixin.android.db.ConversationDao
 import one.mixin.android.db.ParticipantDao
@@ -117,6 +118,7 @@ import one.mixin.android.ui.common.PinCodeFragment.Companion.FROM_LOGIN
 import one.mixin.android.ui.common.PinCodeFragment.Companion.PREF_LOGIN_FROM
 import one.mixin.android.ui.common.QrScanBottomSheetDialogFragment
 import one.mixin.android.ui.common.VerifyFragment
+import one.mixin.android.ui.common.WalletConnectBottomSheetDialogFragment
 import one.mixin.android.ui.common.editDialog
 import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.conversation.TransferFragment
@@ -149,7 +151,13 @@ import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.Participant
 import one.mixin.android.vo.ParticipantRole
 import one.mixin.android.vo.isGroupConversation
+import one.mixin.android.wc.WalletConnect
 import one.mixin.android.widget.MaterialSearchView
+import org.web3j.crypto.ECKeyPair
+import org.web3j.crypto.Keys
+import org.web3j.crypto.Sign
+import org.web3j.utils.Numeric
+import timber.log.Timber
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -183,6 +191,8 @@ class MainActivity : BlazeBaseActivity() {
 
     @Inject
     lateinit var tip: Tip
+
+    private var walletConnect: WalletConnect? = null
 
     private val appUpdateManager by lazy { AppUpdateManagerFactory.create(this) }
     private val updatedListener = InstallStateUpdatedListener { state ->
@@ -729,7 +739,48 @@ class MainActivity : BlazeBaseActivity() {
                         ErrorHandler.handleError(it)
                     },
                 )
+        } else if (intent.hasExtra(WALLET_CONNECT)) {
+            val wcUrl = requireNotNull(intent.getStringExtra(WALLET_CONNECT))
+            if (walletConnect == null) {
+                walletConnect = WalletConnect().also { wc ->
+                    wc.onSessionRequest = { id, peer ->
+                        showWalletConnectBottomSheet("onSessionRequest id: $id, peer: $peer") { priv ->
+                            val pub = ECKeyPair.create(priv).publicKey
+                            val address = Keys.toChecksumAddress(Keys.getAddress(pub))
+                            Timber.d("@@@ address: $address")
+                            wc.wcClient.approveSession(listOf(address), 137)
+                        }
+                    }
+                    wc.onEthSign = { id, message ->
+                        showWalletConnectBottomSheet("onEthSign id: $id, message: $message") { priv ->
+                            val keyPair = ECKeyPair.create(priv)
+                            val signature = Sign.signPrefixedMessage(message.data.toByteArray(), keyPair)
+                            val b = ByteArray(65)
+                            System.arraycopy(signature.r, 0, b, 0, 32)
+                            System.arraycopy(signature.s, 0, b, 32, 32)
+                            System.arraycopy(signature.v, 0, b, 64, 1)
+                            wc.wcClient.approveRequest(id, Numeric.toHexString(b))
+                        }
+                    }
+                }
+            }
+            walletConnect?.connectWallet(wcUrl)
         }
+    }
+
+    private fun showWalletConnectBottomSheet(content: String, callback: (ByteArray) -> Unit) = lifecycleScope.launch {
+        WalletConnectBottomSheetDialogFragment.newInstance(content)
+            .setOnPinComplete { pin ->
+                lifecycleScope.launch(errorHandler) {
+                    tip.getOrRecoverTipPriv(this@MainActivity, pin)
+                        .onSuccess { priv ->
+                            callback(priv.sha3Sum256())
+                        }.onFailure {
+                            Timber.d("@@@ ${it.stackTraceToString()}")
+                        }
+                }
+            }
+            .showNow(supportFragmentManager, WalletConnectBottomSheetDialogFragment.TAG)
     }
 
     private fun clearCodeAfterConsume(intent: Intent, code: String) {
@@ -949,6 +1000,7 @@ class MainActivity : BlazeBaseActivity() {
         const val SCAN = "scan"
         const val TRANSFER = "transfer"
         private const val WALLET = "wallet"
+        const val WALLET_CONNECT = "wallet_connect"
 
         fun showWallet(context: Context) {
             Intent(context, MainActivity::class.java).apply {

@@ -364,6 +364,7 @@ dependencies {
     implementation "com.google.accompanist:accompanist-pager:0.28.0"
     implementation "com.google.accompanist:accompanist-pager-indicators:0.28.0"
     implementation "org.web3j:crypto:4.8.7-android"
+    implementation "com.github.TrustWallet:wallet-connect-kotlin:1.5.6"
 
     // accompanist
     implementation "com.google.accompanist:accompanist-navigation-animation:${accompanistVersion}"
