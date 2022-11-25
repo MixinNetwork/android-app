@@ -13,7 +13,7 @@ interface ConversationExtDao : BaseDao<ConversationExt> {
     @Query("DELETE FROM conversation_ext WHERE conversation_id = :conversationId")
     fun deleteConversationById(conversationId: String)
 
-    @Query("INSERT INTO conversation_ext (`conversation_id`, `count`, `created_at`) VALUES (:conversationId, (SELECT count(1) FROM messages m INNER JOIN users u ON m.user_id = u.user_id WHERE conversation_id = :conversationId), :createdAt)")
+    @Query("INSERT OR REPLACE INTO conversation_ext (`conversation_id`, `count`, `created_at`) VALUES (:conversationId, (SELECT count(1) FROM messages m INNER JOIN users u ON m.user_id = u.user_id WHERE conversation_id = :conversationId), :createdAt)")
     fun refreshCountByConversationId(conversationId: String, createdAt: String = nowInUtc())
 
     @Query("UPDATE conversation_ext SET count = count + 1 WHERE conversation_id = :conversationId")
