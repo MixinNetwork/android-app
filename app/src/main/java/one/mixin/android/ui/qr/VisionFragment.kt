@@ -61,6 +61,8 @@ fun handleResult(activity: FragmentActivity, fromShortcut: Boolean, content: Str
     }
     if (content.isDonateUrl() || content.isExternalScheme(activity) || content.isExternalTransferUrl()) {
         result.putExtra(MainActivity.URL, content)
+    } else if (content.startsWith(Constants.Scheme.WALLET_CONNECT_PREFIX)) {
+        result.putExtra(MainActivity.WALLET_CONNECT, content)
     } else if (!content.isMixinUrl()) {
         result.putExtra(MainActivity.SCAN, content)
     } else if (content.startsWith(Constants.Scheme.TRANSFER, true) ||
