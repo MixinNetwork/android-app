@@ -3154,26 +3154,23 @@ class ConversationFragment() :
             )
             return
         }
-        if (conversationAdapter.selectSet.size == 1) {
+        val forwardDialogLayoutBinding = generateForwardDialogLayout()
+        forwardDialog = alertDialogBuilder()
+            .setMessage(getString(R.string.Forward_message))
+            .setView(forwardDialogLayoutBinding.root)
+            .create()
+        forwardDialogLayoutBinding.forward.setOnClickListener {
             forward()
-        } else {
-            val forwardDialogLayoutBinding = generateForwardDialogLayout()
-            forwardDialog = alertDialogBuilder()
-                .setMessage(getString(R.string.Forward_message))
-                .setView(forwardDialogLayoutBinding.root)
-                .create()
-            forwardDialogLayoutBinding.forward.setOnClickListener {
-                forward()
-                forwardDialog?.dismiss()
-            }
-            // disable combine transcript
-            forwardDialogLayoutBinding.combineForward.isVisible = !conversationAdapter.selectSet.any { it.isTranscript() }
-            forwardDialogLayoutBinding.combineForward.setOnClickListener {
-                combineForward()
-                forwardDialog?.dismiss()
-            }
-            forwardDialog?.show()
+            forwardDialog?.dismiss()
         }
+        // disable combine transcript
+        forwardDialogLayoutBinding.combineForward.isVisible =
+            !conversationAdapter.selectSet.any { it.isTranscript() }
+        forwardDialogLayoutBinding.combineForward.setOnClickListener {
+            combineForward()
+            forwardDialog?.dismiss()
+        }
+        forwardDialog?.show()
     }
 
     private fun forward() {
