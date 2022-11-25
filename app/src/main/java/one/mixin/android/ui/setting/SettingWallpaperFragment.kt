@@ -72,7 +72,7 @@ class SettingWallpaperFragment : BaseFragment(R.layout.fragment_setting_chat) {
         binding.backgroundRv.adapter = object : RecyclerView.Adapter<BackgroundHolder>() {
             override fun onCreateViewHolder(
                 parent: ViewGroup,
-                viewType: Int
+                viewType: Int,
             ): BackgroundHolder {
                 return BackgroundHolder(
                     ItemBackgroudBinding.inflate(
@@ -88,7 +88,7 @@ class SettingWallpaperFragment : BaseFragment(R.layout.fragment_setting_chat) {
             @SuppressLint("NotifyDataSetChanged")
             override fun onBindViewHolder(
                 holder: BackgroundHolder,
-                @SuppressLint("RecyclerView") position: Int
+                @SuppressLint("RecyclerView") position: Int,
             ) {
                 holder.bind(
                     WallpaperManager.getWallpaperByPosition(requireContext(), position),
@@ -100,7 +100,6 @@ class SettingWallpaperFragment : BaseFragment(R.layout.fragment_setting_chat) {
                     if (position == 0) {
                         selectWallpaper()
                     } else {
-
                         notifyDataSetChanged()
                         scrollToPosition(position)
                         switchWallpaper(it)
@@ -115,7 +114,7 @@ class SettingWallpaperFragment : BaseFragment(R.layout.fragment_setting_chat) {
         binding.chatRv.adapter = object : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
             override fun onCreateViewHolder(
                 parent: ViewGroup,
-                viewType: Int
+                viewType: Int,
             ): RecyclerView.ViewHolder {
                 return when (viewType) {
                     0 -> {
@@ -263,7 +262,7 @@ class SettingWallpaperFragment : BaseFragment(R.layout.fragment_setting_chat) {
             drawable: Drawable?,
             iconVisible: Boolean,
             selected: Boolean,
-            center: Boolean = true
+            center: Boolean = true,
         ) {
             binding.image.setImageDrawable(drawable)
             binding.icon.isVisible = iconVisible
@@ -280,7 +279,6 @@ class SettingWallpaperFragment : BaseFragment(R.layout.fragment_setting_chat) {
                 250L,
                 false
             ) {
-
             }
         }
     }
@@ -293,14 +291,22 @@ class SettingWallpaperFragment : BaseFragment(R.layout.fragment_setting_chat) {
     }
 
     private fun getRelativeLeft(myView: View): Int {
-        return if ((myView.parent as View).id == ThemeActivity.ROOT_ID) myView.left else myView.left + getRelativeLeft(
-            myView.parent as View
-        )
+        return if ((myView.parent as View).id == ThemeActivity.ROOT_ID) {
+            myView.left
+        } else {
+            myView.left + getRelativeLeft(
+                myView.parent as View
+            )
+        }
     }
 
     private fun getRelativeTop(myView: View): Int {
-        return if ((myView.parent as View).id == ThemeActivity.ROOT_ID) myView.top else myView.top + getRelativeTop(
-            myView.parent as View
-        )
+        return if ((myView.parent as View).id == ThemeActivity.ROOT_ID) {
+            myView.top
+        } else {
+            myView.top + getRelativeTop(
+                myView.parent as View
+            )
+        }
     }
 }

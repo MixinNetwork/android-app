@@ -80,6 +80,7 @@ enum class SettingDestination {
     AuthenticationPermissions,
     PinLogs,
     BiometricTime,
+    Wallpaper,
 }
 
 open class SettingNavigationController {
@@ -391,6 +392,12 @@ class SettingComposeFragment : BaseFragment() {
                             composable(SettingDestination.DatabaseDebug.name) {
                                 MixinSettingFragment(DatabaseDebugFragment.TAG) {
                                     DatabaseDebugFragment.newInstance()
+                                }
+                            }
+
+                            composable(SettingDestination.Wallpaper.name) {
+                                MixinSettingFragment(SettingWallpaperFragment.TAG) {
+                                    SettingWallpaperFragment.newInstance()
                                 }
                             }
                         }
