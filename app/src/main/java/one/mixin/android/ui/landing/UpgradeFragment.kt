@@ -3,6 +3,7 @@ package one.mixin.android.ui.landing
 import android.annotation.SuppressLint
 import android.os.Bundle
 import android.view.View
+import android.view.WindowManager
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
@@ -44,6 +45,7 @@ class UpgradeFragment : BaseFragment(R.layout.fragment_upgrade) {
     @SuppressLint("SetTextI18n")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        requireActivity().window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         MixinApplication.get().isOnline.set(true)
         if (type == TYPE_FTS) {
             lifecycleScope.launch {
@@ -69,5 +71,10 @@ class UpgradeFragment : BaseFragment(R.layout.fragment_upgrade) {
                 activity?.finish()
             }
         }
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        activity?.window?.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
     }
 }
