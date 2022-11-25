@@ -99,7 +99,7 @@ abstract class ThemeActivity : BlazeBaseActivity() {
         sourceCoordinate: Coordinate,
         animDuration: Long,
         isReverse: Boolean,
-        callback: () -> Unit
+        callback: () -> Unit,
     ) {
         if (frontFakeThemeView.visibility == View.VISIBLE ||
             behindFakeThemeView.visibility == View.VISIBLE ||

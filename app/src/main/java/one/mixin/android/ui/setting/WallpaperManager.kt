@@ -64,7 +64,6 @@ object WallpaperManager {
         if (wallpaperExists && position == 1) {
             context.defaultSharedPreferences.putInt(INDEX_KEY, -1)
         } else {
-
             context.defaultSharedPreferences.putInt(
                 INDEX_KEY,
                 position - if (wallpaperExists) 2 else 1
