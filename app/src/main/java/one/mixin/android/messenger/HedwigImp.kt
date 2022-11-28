@@ -7,7 +7,6 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.pending.PendingDatabase
-import one.mixin.android.extension.nowInUtc
 import one.mixin.android.extension.toMillisecond
 import one.mixin.android.job.DecryptCallMessage
 import one.mixin.android.job.DecryptMessage
@@ -148,7 +147,7 @@ class HedwigImp(
                             message.messageId,
                             message.conversationId,
                             MessageStatus.DELIVERED.name,
-                            nowInUtc().toMillisecond(),
+                            message.createdAt.toMillisecond(),
                         )
                     }.let { remoteMessageStatus ->
                         remoteMessageStatusDao.insertList(remoteMessageStatus)
