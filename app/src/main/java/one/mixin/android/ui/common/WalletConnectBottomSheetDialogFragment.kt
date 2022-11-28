@@ -10,10 +10,12 @@ import one.mixin.android.databinding.FragmentWalletConnectBottomSheetBinding
 import one.mixin.android.extension.clickVibrate
 import one.mixin.android.extension.tickVibrate
 import one.mixin.android.extension.withArgs
+import one.mixin.android.tip.wc.WalletConnect
 import one.mixin.android.util.viewBinding
 import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.Keyboard
 import one.mixin.android.widget.PinView
+import timber.log.Timber
 
 @AndroidEntryPoint
 class WalletConnectBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
@@ -27,6 +29,8 @@ class WalletConnectBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
     }
 
     private val binding by viewBinding(FragmentWalletConnectBottomSheetBinding::inflate)
+
+    private var pinCompleted = false
 
     override fun onCreateDialog(savedInstanceState: Bundle?): BottomSheet {
         val dialog = super.onCreateDialog(savedInstanceState)
@@ -49,10 +53,15 @@ class WalletConnectBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
             content.text = contentText
             content.movementMethod = ScrollingMovementMethod()
             titleView.rightIv.setOnClickListener { dismiss() }
+            rejectTv.setOnClickListener {
+                onReject?.invoke()
+                dismiss()
+            }
             pin.setListener(object : PinView.OnPinListener {
                 override fun onUpdate(index: Int) {
                     if (index == pin.getCount()) {
                         onPinComplete?.invoke(pin.code())
+                        pinCompleted = true
                         dismiss()
                     }
                 }
@@ -60,6 +69,14 @@ class WalletConnectBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
             keyboard.initPinKeys(requireContext())
             keyboard.setOnClickKeyboardListener(keyboardListener)
         }
+    }
+
+    override fun dismiss() {
+        if (!pinCompleted) {
+            Timber.d("${WalletConnect.TAG} dismiss onReject")
+            onReject?.invoke()
+        }
+        super.dismiss()
     }
 
     private val keyboardListener = object : Keyboard.OnClickKeyboardListener {
@@ -87,5 +104,11 @@ class WalletConnectBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
         return this
     }
 
+    fun setOnReject(callback: () -> Unit): WalletConnectBottomSheetDialogFragment {
+        onReject = callback
+        return this
+    }
+
     private var onPinComplete: ((String) -> Unit)? = null
+    private var onReject: (() -> Unit)? = null
 }
