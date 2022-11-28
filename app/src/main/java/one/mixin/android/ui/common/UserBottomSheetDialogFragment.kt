@@ -756,7 +756,7 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
             true
         }
         if (user.biography.isNotEmpty()) {
-            binding.detailTv.text = user.biography
+            binding.detailTv.originalText = user.biography
             binding.detailTv.visibility = VISIBLE
         } else {
             binding.detailTv.visibility = GONE

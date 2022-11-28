@@ -155,7 +155,7 @@ class ProfileBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragmen
             name.text = account.fullName
             avatar.setInfo(account.fullName, account.avatarUrl, account.userId)
             idTv.text = getString(R.string.contact_mixin_id, account.identityNumber)
-            detailTv.text = account.biography
+            detailTv.originalText = account.biography ?: ""
         }
     }
 

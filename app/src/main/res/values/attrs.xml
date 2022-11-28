@@ -162,4 +162,11 @@
         </attr>
         <attr name="wheel_font_path" format="string" />
     </declare-styleable>
+
+    <declare-styleable name="ExpandableTextView">
+        <attr name="limitedMaxLines" format="integer" />
+        <attr name="originalText" format="string" />
+        <attr name="expandAction" format="string" />
+        <attr name="expandActionColor" format="string" />
+    </declare-styleable>
 </resources>
