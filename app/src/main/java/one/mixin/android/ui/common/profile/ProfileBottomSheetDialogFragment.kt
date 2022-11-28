@@ -40,6 +40,7 @@ import one.mixin.android.extension.toBytes
 import one.mixin.android.extension.toast
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.AvatarActivity
+import one.mixin.android.ui.common.EditDialog
 import one.mixin.android.ui.common.QrBottomSheetDialogFragment
 import one.mixin.android.ui.common.VerifyFragment
 import one.mixin.android.ui.common.editDialog
@@ -341,6 +342,7 @@ class ProfileBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragmen
             titleText = this@ProfileBottomSheetDialogFragment.getString(R.string.Edit_Biography)
             editText = Session.getAccount()?.biography
             maxTextCount = 140
+            editMaxLines = EditDialog.MAX_LINE.toInt()
             allowEmpty = true
             rightAction = {
                 update(it, TYPE_BIOGRAPHY)
