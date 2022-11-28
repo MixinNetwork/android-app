@@ -1,4 +1,4 @@
-package one.mixin.android.wc
+package one.mixin.android.tip.wc
 
 import com.google.gson.GsonBuilder
 import com.trustwallet.walletconnect.WCClient
@@ -20,7 +20,7 @@ class WalletConnect {
         const val TAG = "WalletConnect"
     }
 
-    val wcClient = WCClient(GsonBuilder(), OkHttpClient.Builder().build()).also { wcc ->
+    private val wcClient = WCClient(GsonBuilder(), OkHttpClient.Builder().build()).also { wcc ->
         wcc.onSessionRequest = { id, peer ->
             Timber.d("$TAG onSessionRequest id: $id, peer: $peer")
             onSessionRequest(id, peer)
@@ -38,24 +38,21 @@ class WalletConnect {
         }
         wcc.onEthSendTransaction = { id, transaction ->
             Timber.d("$TAG onEthSendTransaction id: $id, transaction: $transaction")
+            onEthSendTransaction(id, transaction)
         }
         wcc.onSignTransaction = { id, transaction ->
             Timber.d("$TAG onSignTransaction id: $id, transaction: $transaction")
         }
         wcc.onDisconnect = { code, reason ->
             Timber.d("$TAG onDisconnect code: $code, reason: $reason")
-            if (wcc.session != null) {
-                wcc.killSession()
-            } else {
-                wcc.disconnect()
-            }
+            disconnect()
         }
         wcc.onFailure = {
             Timber.d("$TAG onFailure ${it.stackTraceToString()}")
         }
     }
 
-    fun connectWallet(url: String): Boolean {
+    fun connect(url: String): Boolean {
         val peerMeta = WCPeerMeta(
             name = "Mixin Messenger",
             url = "https://mixin.one",
@@ -65,6 +62,31 @@ class WalletConnect {
 
         wcClient.connect(wcSession, peerMeta)
         return true
+    }
+
+    fun disconnect() {
+        if (wcClient.session != null) {
+            wcClient.killSession()
+        } else {
+            wcClient.disconnect()
+        }
+    }
+
+    fun approveSession(accounts: List<String>, chainId: Int) {
+        wcClient.approveSession(accounts, chainId)
+    }
+
+    fun rejectSession() {
+        wcClient.rejectSession()
+        wcClient.disconnect()
+    }
+
+    fun <T> approveRequest(id: Long, result: T) {
+        wcClient.approveRequest(id, result)
+    }
+
+    fun rejectRequest(id: Long) {
+        wcClient.rejectRequest(id, "Reject by the user")
     }
 
     var onFailure: (Throwable) -> Unit = { _ -> Unit }

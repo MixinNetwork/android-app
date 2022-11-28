@@ -31,6 +31,7 @@ import com.google.android.play.core.install.model.InstallStatus
 import com.google.android.play.core.install.model.UpdateAvailability
 import com.google.firebase.crashlytics.FirebaseCrashlytics
 import com.microsoft.appcenter.AppCenter
+import com.trustwallet.walletconnect.models.ethereum.WCEthereumTransaction
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import io.reactivex.Maybe
@@ -67,7 +68,6 @@ import one.mixin.android.api.service.UserService
 import one.mixin.android.crypto.Base64
 import one.mixin.android.crypto.PrivacyPreference.getIsLoaded
 import one.mixin.android.crypto.PrivacyPreference.getIsSyncSession
-import one.mixin.android.crypto.sha3Sum256
 import one.mixin.android.databinding.ActivityMainBinding
 import one.mixin.android.db.ConversationDao
 import one.mixin.android.db.ParticipantDao
@@ -108,6 +108,7 @@ import one.mixin.android.repository.AccountRepository
 import one.mixin.android.repository.UserRepository
 import one.mixin.android.session.Session
 import one.mixin.android.tip.Tip
+import one.mixin.android.tip.wc.WalletConnect
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.BatteryOptimizationDialogActivity
 import one.mixin.android.ui.common.BlazeBaseActivity
@@ -151,13 +152,16 @@ import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.Participant
 import one.mixin.android.vo.ParticipantRole
 import one.mixin.android.vo.isGroupConversation
-import one.mixin.android.wc.WalletConnect
 import one.mixin.android.widget.MaterialSearchView
+import org.web3j.crypto.Credentials
 import org.web3j.crypto.ECKeyPair
 import org.web3j.crypto.Keys
+import org.web3j.crypto.RawTransaction
 import org.web3j.crypto.Sign
+import org.web3j.crypto.TransactionEncoder
 import org.web3j.utils.Numeric
 import timber.log.Timber
+import java.math.BigInteger
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -744,42 +748,84 @@ class MainActivity : BlazeBaseActivity() {
             if (walletConnect == null) {
                 walletConnect = WalletConnect().also { wc ->
                     wc.onSessionRequest = { id, peer ->
-                        showWalletConnectBottomSheet("onSessionRequest id: $id, peer: $peer") { priv ->
+                        showWalletConnectBottomSheet("onSessionRequest id: $id, peer: $peer", { wc.rejectSession() }) { priv ->
                             val pub = ECKeyPair.create(priv).publicKey
                             val address = Keys.toChecksumAddress(Keys.getAddress(pub))
-                            Timber.d("@@@ address: $address")
-                            wc.wcClient.approveSession(listOf(address), 137)
+                            Timber.d("${WalletConnect.TAG} address: $address")
+                            wc.approveSession(listOf(address), Constants.WCChainId.Polygon)
                         }
                     }
                     wc.onEthSign = { id, message ->
-                        showWalletConnectBottomSheet("onEthSign id: $id, message: $message") { priv ->
-                            val keyPair = ECKeyPair.create(priv)
-                            val signature = Sign.signPrefixedMessage(message.data.toByteArray(), keyPair)
-                            val b = ByteArray(65)
-                            System.arraycopy(signature.r, 0, b, 0, 32)
-                            System.arraycopy(signature.s, 0, b, 32, 32)
-                            System.arraycopy(signature.v, 0, b, 64, 1)
-                            wc.wcClient.approveRequest(id, Numeric.toHexString(b))
+                        showWalletConnectBottomSheet("${WalletConnect.TAG} onEthSign id: $id, message: $message", { wc.rejectRequest(id) }) { priv ->
+                            approveRequest(wc, priv, id, message.data.toByteArray())
+                        }
+                    }
+                    wc.onEthSignTransaction = { id, transaction ->
+                        showWalletConnectBottomSheet("${WalletConnect.TAG} onEthSignTransaction id: $id, transaction: $transaction", { wc.rejectRequest(id) }) { priv ->
+                        }
+                    }
+                    wc.onEthSendTransaction = { id, transaction ->
+                        showWalletConnectBottomSheet("${WalletConnect.TAG} onEthSendTransaction id: $id, transaction: $transaction", { wc.rejectRequest(id) }) { priv ->
+                            sendTransaction(wc, priv, id, transaction)
                         }
                     }
                 }
             }
-            walletConnect?.connectWallet(wcUrl)
+            walletConnect?.connect(wcUrl)
         }
     }
 
-    private fun showWalletConnectBottomSheet(content: String, callback: (ByteArray) -> Unit) = lifecycleScope.launch {
+    private fun approveRequest(wc: WalletConnect, priv: ByteArray, id: Long, message: ByteArray) {
+        val keyPair = ECKeyPair.create(priv)
+        val signature = Sign.signPrefixedMessage(message, keyPair)
+        val b = ByteArray(65)
+        System.arraycopy(signature.r, 0, b, 0, 32)
+        System.arraycopy(signature.s, 0, b, 32, 32)
+        System.arraycopy(signature.v, 0, b, 64, 1)
+        wc.approveRequest(id, Numeric.toHexString(b))
+    }
+
+    private fun sendTransaction(wc: WalletConnect, priv: ByteArray, id: Long, transaction: WCEthereumTransaction) {
+        val value = transaction.value
+        val gasLimit = transaction.gasLimit
+        val maxFeePerGas = transaction.maxFeePerGas
+        val maxPriorityFeePerGas = transaction.maxPriorityFeePerGas
+        if (value == null || gasLimit == null || maxFeePerGas == null || maxPriorityFeePerGas == null) {
+            Timber.d("${WalletConnect.TAG} value: $value, gasLimit: $gasLimit, maxFeePerGas: $maxFeePerGas, maxPriorityFeePerGas: $maxPriorityFeePerGas")
+            return
+        }
+
+        val keyPair = ECKeyPair.create(priv)
+        val credential = Credentials.create(keyPair)
+        val v = Numeric.toBigInt(value)
+        Timber.d("${WalletConnect.TAG} value $v wei")
+        val rawTransaction = RawTransaction.createEtherTransaction(
+            Constants.WCChainId.Polygon.toLong(),
+            BigInteger.valueOf(0L),
+            Numeric.toBigInt(gasLimit),
+            transaction.to,
+            v,
+            Numeric.toBigInt(maxPriorityFeePerGas),
+            Numeric.toBigInt(maxFeePerGas)
+        )
+        val signedMessage = TransactionEncoder.signMessage(rawTransaction, credential)
+        val hexMessage = Numeric.toHexString(signedMessage)
+        Timber.d("${WalletConnect.TAG} sendTransaction $hexMessage")
+        wc.approveRequest(id, hexMessage)
+    }
+
+    private fun showWalletConnectBottomSheet(content: String, onReject: () -> Unit, callback: (ByteArray) -> Unit) = lifecycleScope.launch {
         WalletConnectBottomSheetDialogFragment.newInstance(content)
             .setOnPinComplete { pin ->
-                lifecycleScope.launch(errorHandler) {
+                lifecycleScope.launch {
                     tip.getOrRecoverTipPriv(this@MainActivity, pin)
                         .onSuccess { priv ->
-                            callback(priv.sha3Sum256())
+                            callback(priv)
                         }.onFailure {
-                            Timber.d("@@@ ${it.stackTraceToString()}")
+                            Timber.d("${WalletConnect.TAG} ${it.stackTraceToString()}")
                         }
                 }
-            }
+            }.setOnReject { onReject() }
             .showNow(supportFragmentManager, WalletConnectBottomSheetDialogFragment.TAG)
     }
 

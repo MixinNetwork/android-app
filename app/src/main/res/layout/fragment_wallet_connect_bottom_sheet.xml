@@ -31,6 +31,17 @@
         android:layout_marginBottom="16dp"
         app:pin_tipVisible="false" />
 
+    <TextView
+        android:id="@+id/reject_tv"
+        android:layout_width="116dp"
+        android:layout_height="40dp"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginBottom="16dp"
+        android:gravity="center"
+        android:background="@drawable/bg_round_blue_btn"
+        android:textColor="@color/white"
+        android:text="Reject" />
+
     <one.mixin.android.widget.Keyboard
         android:id="@+id/keyboard"
         android:layout_width="match_parent"
