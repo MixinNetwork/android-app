@@ -176,7 +176,8 @@ abstract class CallService : LifecycleService(), PeerConnectionClient.PeerConnec
             return
         }
 
-        peerConnectionClient = PeerConnectionClient(MixinApplication.appContext, this)
+        peerConnectionClient = PeerConnectionClient(MixinApplication.appContext)
+        peerConnectionClient.events = this
         callExecutor.execute {
             peerConnectionClient.createPeerConnectionFactory(PeerConnectionFactory.Options())
         }

@@ -675,7 +675,9 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 } catch (e: IllegalStateException) {
                     Timber.w(e)
                 } finally {
-                    activity?.finish()
+                    if (activity?.isFinishing == false) {
+                        activity?.finish()
+                    }
                 }
             }
         } else {
@@ -684,7 +686,9 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
             } catch (e: IllegalStateException) {
                 Timber.w(e)
             } finally {
-                activity?.finish()
+                if (activity?.isFinishing == false) {
+                    activity?.finish()
+                }
             }
         }
     }
