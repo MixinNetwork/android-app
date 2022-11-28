@@ -33,7 +33,7 @@ interface ConversationService {
     suspend fun findConversationSuspend(@Path("id") id: String): MixinResponse<ConversationResponse>
 
     @POST("attachments")
-    fun requestAttachment(): Observable<MixinResponse<AttachmentResponse>>
+    suspend fun requestAttachment(): MixinResponse<AttachmentResponse>
 
     @GET("attachments/{id}")
     fun getAttachment(@Path("id") id: String): Call<MixinResponse<AttachmentResponse>>

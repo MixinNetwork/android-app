@@ -2,13 +2,16 @@ package one.mixin.android.job
 
 import android.net.Uri
 import com.birbit.android.jobqueue.Params
-import io.reactivex.disposables.Disposable
+import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.RxBus
 import one.mixin.android.api.response.AttachmentResponse
+import one.mixin.android.api.worthRetrying
 import one.mixin.android.crypto.Base64
 import one.mixin.android.crypto.Util
 import one.mixin.android.crypto.attachment.AttachmentCipherOutputStream
@@ -51,79 +54,80 @@ class SendTranscriptAttachmentMessageJob(
     }
 
     @Transient
-    private var disposable: Disposable? = null
+    private var sendJob: Job? = null
 
     override fun cancel() {
         isCancelled = true
-        disposable?.let {
-            if (!it.isDisposed) {
-                it.dispose()
-            }
-        }
+        sendJob?.cancel()
         removeJob()
         transcriptMessageDao.updateMediaStatus(transcriptMessage.transcriptId, transcriptMessage.messageId, MediaStatus.CANCELED.name)
     }
 
-    override fun onRun() {
-        if (transcriptMessage.isPlain() == encryptCategory.isPlain()) {
-            if (transcriptMessage.mediaCreatedAt?.within24Hours() == true && transcriptMessage.isValidAttachment()) {
-                transcriptMessageDao.updateMediaStatus(transcriptMessage.transcriptId, transcriptMessage.messageId, MediaStatus.DONE.name)
-                sendMessage()
-                return
-            }
-            val attachmentExtra = try {
-                GsonHelper.customGson.fromJson(transcriptMessage.content, AttachmentExtra::class.java)
-            } catch (e: Exception) {
-                null
-            } ?: try {
-                val payload = GsonHelper.customGson.fromJson(String(Base64.decode(transcriptMessage.content)), AttachmentMessagePayload::class.java)
-                AttachmentExtra(payload.attachmentId, transcriptMessage.messageId, payload.createdAt)
-            } catch (e: Exception) {
-                null
-            }
-            if (attachmentExtra != null && attachmentExtra.createdAt?.within24Hours() == true) {
-                val m = messageDao.findMessageById(transcriptMessage.messageId)
-                if (m != null && transcriptMessage.type == m.category && m.isValidAttachment()) {
-                    transcriptMessageDao.updateTranscript(
-                        transcriptMessage.transcriptId,
-                        transcriptMessage.messageId,
-                        attachmentExtra.attachmentId,
-                        m.mediaKey,
-                        m.mediaDigest,
-                        MediaStatus.DONE.name,
-                        attachmentExtra.createdAt!!
-                    )
-                    sendMessage()
-                    return
-                }
+    override fun onRun() = runBlocking(
+        CoroutineExceptionHandler { _, error ->
+            if (error.worthRetrying()) {
+                throw error
+            } else {
+                Timber.e("upload attachment error, ${error.getStackTraceString()}")
+                reportException(error)
+                updateLocalMessage()
             }
         }
-        transcriptMessageDao.updateMediaStatus(transcriptMessage.transcriptId, transcriptMessage.messageId, MediaStatus.PENDING.name)
-        disposable = conversationApi.requestAttachment().map {
-            val file = File(requireNotNull(Uri.parse(transcriptMessage.absolutePath()).path))
-            if (it.isSuccess && !isCancelled) {
-                val result = it.data!!
-                processAttachment(transcriptMessage, file, result)
-            } else {
-                false
-            }
-        }.subscribe(
-            {
-                if (it) {
+    ) {
+        sendJob = launch {
+            if (transcriptMessage.isPlain() == encryptCategory.isPlain()) {
+                if (transcriptMessage.mediaCreatedAt?.within24Hours() == true && transcriptMessage.isValidAttachment()) {
+                    transcriptMessageDao.updateMediaStatus(transcriptMessage.transcriptId, transcriptMessage.messageId, MediaStatus.DONE.name)
                     sendMessage()
-                    removeJob()
-                } else {
-                    removeJob()
-                    transcriptMessageDao.updateMediaStatus(transcriptMessage.transcriptId, transcriptMessage.messageId, MediaStatus.CANCELED.name)
+                    return@launch
                 }
-            },
-            {
-                Timber.e("upload attachment error, ${it.getStackTraceString()}")
-                reportException(it)
-                removeJob()
-                transcriptMessageDao.updateMediaStatus(transcriptMessage.transcriptId, transcriptMessage.messageId, MediaStatus.CANCELED.name)
+                val attachmentExtra = try {
+                    GsonHelper.customGson.fromJson(transcriptMessage.content, AttachmentExtra::class.java)
+                } catch (e: Exception) {
+                    null
+                } ?: try {
+                    val payload = GsonHelper.customGson.fromJson(String(Base64.decode(transcriptMessage.content)), AttachmentMessagePayload::class.java)
+                    AttachmentExtra(payload.attachmentId, transcriptMessage.messageId, payload.createdAt)
+                } catch (e: Exception) {
+                    null
+                }
+                if (attachmentExtra != null && attachmentExtra.createdAt?.within24Hours() == true) {
+                    val m = messageDao.findMessageById(transcriptMessage.messageId)
+                    if (m != null && transcriptMessage.type == m.category && m.isValidAttachment()) {
+                        transcriptMessageDao.updateTranscript(
+                            transcriptMessage.transcriptId,
+                            transcriptMessage.messageId,
+                            attachmentExtra.attachmentId,
+                            m.mediaKey,
+                            m.mediaDigest,
+                            MediaStatus.DONE.name,
+                            attachmentExtra.createdAt!!
+                        )
+                        sendMessage()
+                        return@launch
+                    }
+                }
             }
-        )
+            transcriptMessageDao.updateMediaStatus(transcriptMessage.transcriptId, transcriptMessage.messageId, MediaStatus.PENDING.name)
+            val response = conversationApi.requestAttachment()
+            if (response.isSuccess) {
+                val attachmentResponse = response.data
+                if (attachmentResponse != null) {
+                    val file = File(requireNotNull(Uri.parse(transcriptMessage.absolutePath()).path))
+                    val result = processAttachment(transcriptMessage, file, attachmentResponse)
+                    if (result) {
+                        sendMessage()
+                        return@launch
+                    }
+                }
+            }
+            updateLocalMessage()
+        }
+    }
+
+    private fun updateLocalMessage() {
+        removeJob()
+        transcriptMessageDao.updateMediaStatus(transcriptMessage.transcriptId, transcriptMessage.messageId, MediaStatus.CANCELED.name)
     }
 
     private fun processAttachment(transcriptMessage: TranscriptMessage, file: File, attachResponse: AttachmentResponse): Boolean {
