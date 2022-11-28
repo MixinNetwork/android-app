@@ -146,6 +146,7 @@ class ExpandableTextView @JvmOverloads constructor(
         val height1 = measuredHeight
         animator?.cancel()
         val dur = (abs(height1 - height0) * 2L).coerceAtMost(300L)
+        heightDifferenceCallback?.invoke(abs(height1 - height0),dur)
         animator = ValueAnimator.ofInt(height0, height1)
             .apply {
                 interpolator = FastOutSlowInInterpolator()
@@ -173,6 +174,8 @@ class ExpandableTextView @JvmOverloads constructor(
                 start()
             }
     }
+
+    var heightDifferenceCallback: ((Int,Long) -> Unit)? = null
 
     private fun resolveDisplayedText(staticLayout: StaticLayout): CharSequence? {
         val truncatedTextWithoutCta = staticLayout.text
