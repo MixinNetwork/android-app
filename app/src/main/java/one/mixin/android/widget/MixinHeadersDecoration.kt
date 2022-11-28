@@ -112,14 +112,18 @@ class MixinHeadersDecoration private constructor(
             if (position == RecyclerView.NO_POSITION) {
                 continue
             }
+            val orientation = mOrientationProvider.getOrientation(parent)
             val hasStickyHeader = mHeaderPositionCalculator.hasStickyHeader(
                 itemView,
-                mOrientationProvider.getOrientation(parent),
+                orientation,
                 position
             )
             if (hasStickyHeader || mHeaderPositionCalculator.hasNewHeader(position, mOrientationProvider.isReverseLayout(parent))) {
                 val header = mHeaderProvider.getHeader(parent, position)
-                val headerOffset: Rect? = mHeaderRects.get(position)
+                val headerOffset: Rect? = mHeaderRects.get(position).apply {
+                    if (top == 0) return@apply // Skip the top decoration
+                    top = (top + itemView.translationY).toInt()
+                }
                 if (headerOffset != null) {
                     mRenderer.drawHeader(parent, canvas, header, headerOffset)
                 }
@@ -129,7 +133,6 @@ class MixinHeadersDecoration private constructor(
 
     override fun onDraw(canvas: Canvas, parent: RecyclerView, state: RecyclerView.State) {
         super.onDraw(canvas, parent, state)
-
         val childCount = parent.childCount
         if (childCount <= 0 || mAdapter.itemCount <= 0) {
             return
@@ -153,9 +156,7 @@ class MixinHeadersDecoration private constructor(
                     headerOffset = Rect()
                     mHeaderRects.put(position, headerOffset)
                 }
-
                 mHeaderPositionCalculator.initHeaderBounds(headerOffset, parent, header, itemView, hasStickyHeader)
-                mRenderer.drawHeader(parent, canvas, header, headerOffset)
                 if (mAdapter.hasAttachView(position)) {
                     getAttachView(parent).let { view ->
                         val top = (headerOffset.top - view.measuredHeight)
