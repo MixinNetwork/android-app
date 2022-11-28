@@ -351,6 +351,17 @@ class MixinDatabaseMigrations private constructor() {
             }
         }
 
+        val MIGRATION_48_47: Migration = object : Migration(48, 47) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                database.execSQL("ALTER TABLE `remote_messages_status` RENAME TO `remote_messages_status_old`");
+                database.execSQL("CREATE TABLE IF NOT EXISTS `remote_messages_status` (`message_id` TEXT NOT NULL, `conversation_id` TEXT NOT NULL, `status` TEXT NOT NULL, PRIMARY KEY(`message_id`))")
+                database.execSQL("DROP INDEX IF EXISTS `index_remote_messages_status_conversation_id_status`")
+                database.execSQL("CREATE INDEX IF NOT EXISTS `index_remote_messages_status_conversation_id_status` ON `remote_messages_status` (`conversation_id`, `status`)")
+                database.execSQL("INSERT INTO remote_messages_status (message_id, conversation_id, status) SELECT message_id, conversation_id, status FROM remote_messages_status_old")
+                database.execSQL("DROP TABLE remote_messages_status_old")
+            }
+        }
+
         // If you add a new table, be sure to add a clear method to the DatabaseUtil
     }
 }
