@@ -120,7 +120,6 @@ import one.mixin.android.ui.common.PinCodeFragment.Companion.FROM_LOGIN
 import one.mixin.android.ui.common.PinCodeFragment.Companion.PREF_LOGIN_FROM
 import one.mixin.android.ui.common.QrScanBottomSheetDialogFragment
 import one.mixin.android.ui.common.VerifyFragment
-import one.mixin.android.ui.common.WalletConnectBottomSheetDialogFragment
 import one.mixin.android.ui.common.editDialog
 import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.conversation.TransferFragment
@@ -139,9 +138,11 @@ import one.mixin.android.ui.tip.TipActivity
 import one.mixin.android.ui.tip.TipBundle
 import one.mixin.android.ui.tip.TipType
 import one.mixin.android.ui.tip.TryConnecting
+import one.mixin.android.ui.tip.wc.WalletConnectBottomSheetDialogFragment
 import one.mixin.android.util.BiometricUtil
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.ErrorHandler.Companion.errorHandler
+import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.PropertyHelper
 import one.mixin.android.util.RomUtil
 import one.mixin.android.util.RootUtil
@@ -198,8 +199,6 @@ class MainActivity : BlazeBaseActivity() {
 
     @Inject
     lateinit var tip: Tip
-
-    private var walletConnect: WalletConnect? = null
 
     private val appUpdateManager by lazy { AppUpdateManagerFactory.create(this) }
     private val updatedListener = InstallStateUpdatedListener { state ->
@@ -748,44 +747,35 @@ class MainActivity : BlazeBaseActivity() {
                 )
         } else if (intent.hasExtra(WALLET_CONNECT)) {
             val wcUrl = requireNotNull(intent.getStringExtra(WALLET_CONNECT))
-            if (walletConnect == null) {
-                walletConnect = WalletConnect().also { wc ->
-                    wc.onSessionRequest = { id, peer ->
-                        showWalletConnectBottomSheet("onSessionRequest id: $id, peer: $peer", { wc.rejectSession() }) { priv ->
-                            val pub = ECKeyPair.create(priv).publicKey
-                            val address = Keys.toChecksumAddress(Keys.getAddress(pub))
-                            Timber.d("${WalletConnect.TAG} address: $address")
-                            wc.approveSession(listOf(address), Chain.Polygon.chainId)
-                        }
+            WalletConnect.also { wc ->
+                wc.onSessionRequest = { _, peer ->
+                    showWalletConnectBottomSheet("Connect with ${peer.name}", "", { wc.rejectSession() }) { priv ->
+                        val pub = ECKeyPair.create(priv).publicKey
+                        val address = Keys.toChecksumAddress(Keys.getAddress(pub))
+                        Timber.d("${WalletConnect.TAG} address: $address")
+                        wc.approveSession(listOf(address), Chain.Polygon.chainId)
                     }
-                    wc.onWalletChangeNetwork = { id, chainId ->
-                        showWalletConnectBottomSheet("${WalletConnect.TAG} onWalletChangeNetwork id: $id, chainId: $chainId", { wc.rejectRequest(id) }) { priv ->
-                        }
+                }
+                wc.onWalletChangeNetwork = { id, chainId ->
+                    showWalletConnectBottomSheet("${WalletConnect.TAG} onWalletChangeNetwork id: $id, chainId: $chainId", "", { wc.rejectRequest(id) }) { priv ->
                     }
-                    wc.onEthSign = { id, message ->
-                        showWalletConnectBottomSheet("${WalletConnect.TAG} onEthSign id: $id, message: $message", { wc.rejectRequest(id) }) { priv ->
-                            val keyPair = ECKeyPair.create(priv)
-                            val credential = Credentials.create(keyPair)
-                            val web3j = Web3j.build(HttpService(Chain.Polygon.rpcServers[0]))
-                            val transactionCount = web3j.ethGetTransactionCount(credential.address, DefaultBlockParameterName.LATEST).sendAsync().get()
-                            val nonce = transactionCount.transactionCount
-                            Timber.d("${WalletConnect.TAG} nonce: $nonce")
-
-                            approveRequest(wc, priv, id, message.data.toByteArray())
-                        }
+                }
+                wc.onEthSign = { id, message ->
+                    showWalletConnectBottomSheet("Sign Message", GsonHelper.customGson.toJson(message), { wc.rejectRequest(id) }) { priv ->
+                        approveRequest(wc, priv, id, message.data.toByteArray())
                     }
-                    wc.onEthSignTransaction = { id, transaction ->
-                        showWalletConnectBottomSheet("${WalletConnect.TAG} onEthSignTransaction id: $id, transaction: $transaction", { wc.rejectRequest(id) }) { priv ->
-                        }
+                }
+                wc.onEthSignTransaction = { id, transaction ->
+                    showWalletConnectBottomSheet("Sign Transaction", GsonHelper.customGson.toJson(transaction), { wc.rejectRequest(id) }) { priv ->
                     }
-                    wc.onEthSendTransaction = { id, transaction ->
-                        showWalletConnectBottomSheet("${WalletConnect.TAG} onEthSendTransaction id: $id, transaction: $transaction", { wc.rejectRequest(id) }) { priv ->
-                            sendTransaction(wc, priv, id, transaction)
-                        }
+                }
+                wc.onEthSendTransaction = { id, transaction ->
+                    showWalletConnectBottomSheet("Send Transaction", GsonHelper.customGson.toJson(transaction), { wc.rejectRequest(id) }) { priv ->
+                        sendTransaction(wc, priv, id, transaction)
                     }
                 }
             }
-            walletConnect?.connect(wcUrl)
+            WalletConnect.connect(wcUrl)
         }
     }
 
@@ -832,17 +822,15 @@ class MainActivity : BlazeBaseActivity() {
         wc.approveRequest(id, hexMessage)
     }
 
-    private fun showWalletConnectBottomSheet(content: String, onReject: () -> Unit, callback: (ByteArray) -> Unit) = lifecycleScope.launch {
-        WalletConnectBottomSheetDialogFragment.newInstance(content)
+    private fun showWalletConnectBottomSheet(action: String, desc: String?, onReject: () -> Unit, callback: (ByteArray) -> Unit) = lifecycleScope.launch {
+        WalletConnectBottomSheetDialogFragment.newInstance(action, desc)
             .setOnPinComplete { pin ->
-                lifecycleScope.launch {
-                    tip.getOrRecoverTipPriv(this@MainActivity, pin)
-                        .onSuccess { priv ->
-                            callback(priv)
-                        }.onFailure {
-                            Timber.d("${WalletConnect.TAG} ${it.stackTraceToString()}")
-                        }
-                }
+                tip.getOrRecoverTipPriv(this@MainActivity, pin)
+                    .onSuccess { priv ->
+                        callback(priv)
+                    }.onFailure {
+                        Timber.d("${WalletConnect.TAG} ${it.stackTraceToString()}")
+                    }
             }.setOnReject { onReject() }
             .showNow(supportFragmentManager, WalletConnectBottomSheetDialogFragment.TAG)
     }
