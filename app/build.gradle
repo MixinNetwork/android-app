@@ -377,6 +377,7 @@ dependencies {
     androidTestImplementation "androidx.compose.ui:ui-test-junit4:${composeVersion}"
     implementation "com.google.accompanist:accompanist-pager:0.30.1"
     implementation "com.google.accompanist:accompanist-pager-indicators:0.30.1"
+    implementation "org.web3j:core:4.8.7-android"
     implementation "org.web3j:crypto:4.8.7-android"
     implementation "com.github.TrustWallet:wallet-connect-kotlin:1.5.6"
 

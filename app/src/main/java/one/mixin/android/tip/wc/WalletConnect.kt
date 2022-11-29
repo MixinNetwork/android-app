@@ -27,6 +27,15 @@ class WalletConnect {
         }
         wcc.onGetAccounts = { id ->
             Timber.d("$TAG onGetAccounts id: $id")
+            onGetAccounts(id)
+        }
+        wcc.onWalletChangeNetwork = { id, chainId ->
+            Timber.d("$TAG onWalletChangeNetwork id: $id")
+            onWalletChangeNetwork(id, chainId)
+        }
+        wcc.onWalletAddNetwork = { id, network ->
+            Timber.d("$TAG onWalletAddNetwork id: $id, network: $network")
+            onWalletAddNetwork(id, network)
         }
         wcc.onEthSign = { id, message ->
             Timber.d("$TAG onEthSign id: $id, message: $message")
@@ -42,6 +51,9 @@ class WalletConnect {
         }
         wcc.onSignTransaction = { id, transaction ->
             Timber.d("$TAG onSignTransaction id: $id, transaction: $transaction")
+        }
+        wcc.onCustomRequest = {  id, payload ->
+            Timber.d("$TAG onCustomRequest id: $id, payload: $payload")
         }
         wcc.onDisconnect = { code, reason ->
             Timber.d("$TAG onDisconnect code: $code, reason: $reason")
@@ -89,8 +101,6 @@ class WalletConnect {
         wcClient.rejectRequest(id, "Reject by the user")
     }
 
-    var onFailure: (Throwable) -> Unit = { _ -> Unit }
-    var onDisconnect: (code: Int, reason: String) -> Unit = { _, _ -> Unit }
     var onSessionRequest: (id: Long, peer: WCPeerMeta) -> Unit = { _, _ -> Unit }
     var onEthSign: (id: Long, message: WCEthereumSignMessage) -> Unit = { _, _ -> Unit }
     var onEthSignTransaction: (id: Long, transaction: WCEthereumTransaction) -> Unit = { _, _ -> Unit }
