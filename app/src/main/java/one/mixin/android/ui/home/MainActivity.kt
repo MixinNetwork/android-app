@@ -108,6 +108,7 @@ import one.mixin.android.repository.AccountRepository
 import one.mixin.android.repository.UserRepository
 import one.mixin.android.session.Session
 import one.mixin.android.tip.Tip
+import one.mixin.android.tip.wc.Chain
 import one.mixin.android.tip.wc.WalletConnect
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.BatteryOptimizationDialogActivity
@@ -159,9 +160,11 @@ import org.web3j.crypto.Keys
 import org.web3j.crypto.RawTransaction
 import org.web3j.crypto.Sign
 import org.web3j.crypto.TransactionEncoder
+import org.web3j.protocol.Web3j
+import org.web3j.protocol.core.DefaultBlockParameterName
+import org.web3j.protocol.http.HttpService
 import org.web3j.utils.Numeric
 import timber.log.Timber
-import java.math.BigInteger
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -752,11 +755,22 @@ class MainActivity : BlazeBaseActivity() {
                             val pub = ECKeyPair.create(priv).publicKey
                             val address = Keys.toChecksumAddress(Keys.getAddress(pub))
                             Timber.d("${WalletConnect.TAG} address: $address")
-                            wc.approveSession(listOf(address), Constants.WCChainId.Polygon)
+                            wc.approveSession(listOf(address), Chain.Polygon.chainId)
+                        }
+                    }
+                    wc.onWalletChangeNetwork = { id, chainId ->
+                        showWalletConnectBottomSheet("${WalletConnect.TAG} onWalletChangeNetwork id: $id, chainId: $chainId", { wc.rejectRequest(id) }) { priv ->
                         }
                     }
                     wc.onEthSign = { id, message ->
                         showWalletConnectBottomSheet("${WalletConnect.TAG} onEthSign id: $id, message: $message", { wc.rejectRequest(id) }) { priv ->
+                            val keyPair = ECKeyPair.create(priv)
+                            val credential = Credentials.create(keyPair)
+                            val web3j = Web3j.build(HttpService(Chain.Polygon.rpcServers[0]))
+                            val transactionCount = web3j.ethGetTransactionCount(credential.address, DefaultBlockParameterName.LATEST).sendAsync().get()
+                            val nonce = transactionCount.transactionCount
+                            Timber.d("${WalletConnect.TAG} nonce: $nonce")
+
                             approveRequest(wc, priv, id, message.data.toByteArray())
                         }
                     }
@@ -797,11 +811,15 @@ class MainActivity : BlazeBaseActivity() {
 
         val keyPair = ECKeyPair.create(priv)
         val credential = Credentials.create(keyPair)
+
+        val web3j = Web3j.build(HttpService(Chain.Polygon.rpcServers[0]))
+        val transactionCount = web3j.ethGetTransactionCount(credential.address, DefaultBlockParameterName.LATEST).sendAsync().get()
+        val nonce = transactionCount.transactionCount
         val v = Numeric.toBigInt(value)
-        Timber.d("${WalletConnect.TAG} value $v wei")
+        Timber.d("${WalletConnect.TAG} nonce: $nonce, value $v wei")
         val rawTransaction = RawTransaction.createEtherTransaction(
-            Constants.WCChainId.Polygon.toLong(),
-            BigInteger.valueOf(0L),
+            Chain.Polygon.chainId.toLong(),
+            nonce,
             Numeric.toBigInt(gasLimit),
             transaction.to,
             v,

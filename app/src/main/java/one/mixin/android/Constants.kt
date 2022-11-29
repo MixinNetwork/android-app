@@ -101,11 +101,6 @@ object Constants {
         const val WALLET_CONNECT_PREFIX = "wc:"
     }
 
-    object WCChainId {
-        const val Ethereum = 1
-        const val Polygon = 137
-    }
-
     object DataBase {
         const val DB_NAME = "mixin.db"
         const val MINI_VERSION = 15
