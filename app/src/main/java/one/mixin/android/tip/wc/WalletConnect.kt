@@ -15,14 +15,13 @@ import com.trustwallet.walletconnect.models.session.WCSession
 import okhttp3.OkHttpClient
 import timber.log.Timber
 
-class WalletConnect {
-    companion object {
-        const val TAG = "WalletConnect"
-    }
+object WalletConnect {
+    const val TAG = "WalletConnect"
 
     private val wcClient = WCClient(GsonBuilder(), OkHttpClient.Builder().build()).also { wcc ->
         wcc.onSessionRequest = { id, peer ->
             Timber.d("$TAG onSessionRequest id: $id, peer: $peer")
+            remotePeerMeta = peer
             onSessionRequest(id, peer)
         }
         wcc.onGetAccounts = { id ->
@@ -52,7 +51,7 @@ class WalletConnect {
         wcc.onSignTransaction = { id, transaction ->
             Timber.d("$TAG onSignTransaction id: $id, transaction: $transaction")
         }
-        wcc.onCustomRequest = {  id, payload ->
+        wcc.onCustomRequest = { id, payload ->
             Timber.d("$TAG onCustomRequest id: $id, payload: $payload")
         }
         wcc.onDisconnect = { code, reason ->
@@ -64,7 +63,11 @@ class WalletConnect {
         }
     }
 
+    var remotePeerMeta: WCPeerMeta? = null
+
     fun connect(url: String): Boolean {
+        disconnect()
+
         val peerMeta = WCPeerMeta(
             name = "Mixin Messenger",
             url = "https://mixin.one",
@@ -77,6 +80,7 @@ class WalletConnect {
     }
 
     fun disconnect() {
+        remotePeerMeta = null
         if (wcClient.session != null) {
             wcClient.killSession()
         } else {
@@ -99,6 +103,16 @@ class WalletConnect {
 
     fun rejectRequest(id: Long) {
         wcClient.rejectRequest(id, "Reject by the user")
+    }
+
+    fun getNetworkName(): String? {
+        val chainId = wcClient.chainId ?: return null
+
+        return when (chainId) {
+            Chain.Ethereum.chainId.toString() -> Chain.Ethereum.name
+            Chain.Polygon.chainId.toString() -> Chain.Polygon.name
+            else -> null
+        }
     }
 
     var onSessionRequest: (id: Long, peer: WCPeerMeta) -> Unit = { _, _ -> Unit }
