@@ -16,6 +16,7 @@ class TitleView(context: Context, attrs: AttributeSet) : RelativeLayout(context,
     private val binding: ViewTitleBinding =
         ViewTitleBinding.inflate(LayoutInflater.from(context), this, true)
 
+    val root = binding.root
     val titleTv = binding.titleTv
     val leftIb = binding.leftIb
     val rightIb = binding.rightIb

@@ -870,7 +870,7 @@ fun Context.isNightMode(): Boolean {
     } else {
         defaultSharedPreferences.getInt(
             Constants.Theme.THEME_CURRENT_ID,
-            Constants.Theme.THEME_DEFAULT_ID
+            Constants.Theme.THEME_LIGHT_ID
         ) == Constants.Theme.THEME_NIGHT_ID
     }
 }
@@ -887,7 +887,7 @@ fun Context.getCurrentThemeId() = defaultSharedPreferences.getInt(
 )
 
 val defaultThemeId = if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
-    Constants.Theme.THEME_DEFAULT_ID
+    Constants.Theme.THEME_LIGHT_ID
 } else {
     Constants.Theme.THEME_AUTO_ID
 }

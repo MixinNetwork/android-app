@@ -48,7 +48,7 @@ import one.mixin.android.ui.setting.ui.theme.MixinAppTheme
 import one.mixin.android.util.TimeCache
 import one.mixin.android.util.isFollowSystem
 import one.mixin.android.vo.Fiats
-import java.util.*
+import java.util.Locale
 
 @Composable
 fun AppearancePage() {
@@ -88,7 +88,7 @@ private fun ThemeItem() {
         val id = preference.getInt(
             Constants.Theme.THEME_CURRENT_ID,
             if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
-                Constants.Theme.THEME_DEFAULT_ID
+                Constants.Theme.THEME_LIGHT_ID
             } else {
                 Constants.Theme.THEME_AUTO_ID
             }
@@ -114,7 +114,7 @@ private fun ThemeItem() {
             preference.putInt(Constants.Theme.THEME_CURRENT_ID, index)
             AppCompatDelegate.setDefaultNightMode(
                 when (index) {
-                    Constants.Theme.THEME_DEFAULT_ID -> AppCompatDelegate.MODE_NIGHT_NO
+                    Constants.Theme.THEME_LIGHT_ID -> AppCompatDelegate.MODE_NIGHT_NO
                     Constants.Theme.THEME_NIGHT_ID -> AppCompatDelegate.MODE_NIGHT_YES
                     Constants.Theme.THEME_AUTO_ID -> AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM
                     else -> AppCompatDelegate.MODE_NIGHT_NO

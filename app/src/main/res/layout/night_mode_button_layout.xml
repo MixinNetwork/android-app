@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<merge xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_gravity="center"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    tools:parentTag="RelativeLayout">
+
+    <androidx.cardview.widget.CardView
+        android:layout_width="75dp"
+        android:layout_height="40dp"
+        app:cardBackgroundColor="#dadada"
+        android:id="@+id/switchRL"
+        app:cardCornerRadius="20dp"
+        app:cardElevation="0dp"
+        android:layout_centerHorizontal="true"
+        android:layout_centerVertical="true">
+
+        <ImageView
+            android:layout_width="35dp"
+            android:layout_height="35dp"
+            android:layout_gravity="center_vertical"
+            android:layout_marginStart="3dp"
+            android:id="@+id/switchIV"
+            android:layout_centerVertical="true"
+            android:src="@drawable/ic_sun"
+            tools:ignore="ContentDescription" />
+    </androidx.cardview.widget.CardView>
+</merge>
