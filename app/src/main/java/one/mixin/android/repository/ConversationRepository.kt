@@ -447,7 +447,6 @@ internal constructor(
             invokeNetwork = {
                 conversationService.findConversationSuspend(conversationId)
             },
-            switchContext = Dispatchers.IO,
             successBlock = { response ->
                 response.data?.let { data ->
                     val participants = mutableListOf<Participant>()

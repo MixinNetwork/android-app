@@ -86,7 +86,6 @@ constructor(
             invokeNetwork = {
                 assetService.getAssetByIdSuspend(assetId)
             },
-            switchContext = Dispatchers.IO,
             successBlock = { chain ->
                 chain.data?.let { c -> insert(c) }
                 return@handleMixinResponse assetDao.findAssetItemById(assetId)

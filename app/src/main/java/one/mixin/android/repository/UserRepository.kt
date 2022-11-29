@@ -91,7 +91,6 @@ constructor(
             invokeNetwork = {
                 userService.getUserByIdSuspend(id)
             },
-            switchContext = Dispatchers.IO,
             successBlock = {
                 it.data?.let { u ->
                     upsert(u)

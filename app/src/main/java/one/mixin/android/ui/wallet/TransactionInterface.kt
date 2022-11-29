@@ -8,7 +8,6 @@ import androidx.fragment.app.Fragment
 import com.skydoves.balloon.BalloonAnimation
 import com.skydoves.balloon.createBalloon
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import one.mixin.android.BuildConfig
 import one.mixin.android.R
@@ -132,7 +131,6 @@ interface TransactionInterface {
         contentBinding.thatVa.displayedChild = POS_PB
         handleMixinResponse(
             invokeNetwork = { walletViewModel.ticker(assetId, snapshot.createdAt) },
-            switchContext = Dispatchers.IO,
             successBlock = {
                 if (checkDestroyed(fragment)) return@handleMixinResponse
 

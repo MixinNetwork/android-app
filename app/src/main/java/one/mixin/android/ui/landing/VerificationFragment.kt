@@ -188,7 +188,6 @@ class VerificationFragment : PinCodeFragment(R.layout.fragment_verification) {
             invokeNetwork = {
                 viewModel.changePhone(requireArguments().getString(ARGS_ID)!!, binding.pinVerificationView.code(), pin = pin!!)
             },
-            switchContext = Dispatchers.IO,
             successBlock = {
                 withContext(Dispatchers.IO) {
                     val a = Session.getAccount()

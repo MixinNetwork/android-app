@@ -10,7 +10,6 @@ import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants
 import one.mixin.android.Constants.INTERVAL_10_MINS
@@ -430,7 +429,6 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
     private suspend fun refreshAccount() {
         handleMixinResponse(
             invokeNetwork = { accountService.getMeSuspend() },
-            switchContext = Dispatchers.IO,
             successBlock = { r ->
                 r.data?.let { Session.storeAccount(it) }
             }

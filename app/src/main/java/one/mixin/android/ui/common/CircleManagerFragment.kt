@@ -11,7 +11,6 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.RecyclerView
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.api.handleMixinResponse
@@ -169,7 +168,6 @@ class CircleManagerFragment : BaseFragment() {
             }
             val requests = listOf(ConversationCircleRequest(item.circleId, CircleConversationAction.REMOVE.name))
             handleMixinResponse(
-                switchContext = Dispatchers.IO,
                 invokeNetwork = {
                     bottomViewModel.updateCircles(conversationId, userId, requests)
                 },
