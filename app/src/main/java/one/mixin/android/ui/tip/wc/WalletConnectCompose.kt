@@ -11,11 +11,14 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -48,6 +51,8 @@ fun WalletConnectCompose(
     onBiometricClick: (() -> Unit),
     onPinComplete: ((String) -> Unit),
 ) {
+    val scroll = rememberScrollState(0)
+
     MixinAppTheme {
         Column(
             modifier = Modifier
@@ -91,7 +96,9 @@ fun WalletConnectCompose(
                 Text(
                     modifier = Modifier
                         .align(alignment = CenterHorizontally)
-                        .padding(horizontal = 32.dp),
+                        .padding(horizontal = 32.dp)
+                        .heightIn(0.dp, 120.dp)
+                        .verticalScroll(scroll),
                     textAlign = TextAlign.Start,
                     text = desc,
                     color = MixinAppTheme.colors.textMinor
@@ -141,10 +148,16 @@ fun PeerMeta(peerMeta: WCPeerMeta) {
 fun NetworkInfo(name: String) {
     Box(modifier = Modifier.fillMaxWidth()) {
         Row(
-            modifier = Modifier.padding(8.dp).align(Center),
+            modifier = Modifier
+                .padding(8.dp)
+                .align(Center),
             verticalAlignment = CenterVertically
         ) {
-            Canvas(modifier = Modifier.padding(start = 8.dp, end = 8.dp).size(6.dp)) {
+            Canvas(
+                modifier = Modifier
+                    .padding(start = 8.dp, end = 8.dp)
+                    .size(6.dp)
+            ) {
                 drawCircle(Color(0xFF3D75E3))
             }
             Text(
