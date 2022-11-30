@@ -5,17 +5,18 @@ import android.view.LayoutInflater
 import android.view.View.GONE
 import android.view.View.VISIBLE
 import android.view.ViewGroup
+import androidx.compose.ui.platform.ViewCompositionStrategy
+import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.RecyclerView
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemChatMenuBinding
-import one.mixin.android.extension.loadImage
 import one.mixin.android.vo.AppItem
-import one.mixin.android.widget.BadgeCircleImageView
 
 class MenuAdapter(
     private val isGroup: Boolean,
     private val isBot: Boolean,
     private val isSelfCreatedBot: Boolean,
+    private val fragment: Fragment,
 ) : RecyclerView.Adapter<MenuAdapter.MenuHolder>() {
 
     private val buildInMenus = arrayListOf<Menu>().apply {
@@ -67,7 +68,9 @@ class MenuAdapter(
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) =
         MenuHolder(ItemChatMenuBinding.inflate(LayoutInflater.from(parent.context), parent, false)).apply {
-            binding.appIcon.pos = BadgeCircleImageView.END_BOTTOM
+            binding.appIcon.setViewCompositionStrategy(
+                ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed
+            )
         }
 
     override fun getItemCount() = menus.size
@@ -85,12 +88,8 @@ class MenuAdapter(
             }
         } else {
             binding.appIcon.visibility = VISIBLE
-            binding.appIcon.bg.loadImage(menu.app?.iconUrl, R.drawable.ic_avatar_place_holder)
-            if (!isGroup) {
-                menu.app?.avatarUrl?.let {
-                    binding.appIcon.badge.loadImage(it, R.drawable.ic_avatar_place_holder)
-                }
-            }
+            binding.appIcon.setContent(menu.app?.iconUrl, menu.app?.avatarUrl, flip = true)
+
             binding.menuIcon.visibility = GONE
             binding.menuTitle.text = menu.app?.name
         }
@@ -99,7 +98,13 @@ class MenuAdapter(
         }
     }
 
-    class MenuHolder(val binding: ItemChatMenuBinding) : RecyclerView.ViewHolder(binding.root)
+    class MenuHolder(val binding: ItemChatMenuBinding) : RecyclerView.ViewHolder(binding.root) {
+        init {
+            binding.appIcon.setViewCompositionStrategy(
+                ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed
+            )
+        }
+    }
 
     interface OnMenuListener {
         fun onMenuClick(menu: Menu)

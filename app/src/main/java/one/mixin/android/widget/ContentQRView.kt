@@ -7,6 +7,7 @@ import android.util.AttributeSet
 import android.view.LayoutInflater
 import android.widget.ViewAnimator
 import androidx.core.view.isVisible
+import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import com.uber.autodispose.ScopeProvider
 import com.uber.autodispose.autoDispose
@@ -17,7 +18,6 @@ import one.mixin.android.R
 import one.mixin.android.databinding.ViewContentQrBinding
 import one.mixin.android.extension.generateQRCode
 import one.mixin.android.extension.getClipboardManager
-import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.toast
 import one.mixin.android.ui.wallet.DepositQrBottomFragment
 import one.mixin.android.vo.AssetItem
@@ -30,7 +30,7 @@ class ContentQRView : ViewAnimator {
 
     private val binding: ViewContentQrBinding
 
-    fun setAsset(parentFragmentManager: FragmentManager, scopeProvider: ScopeProvider, asset: AssetItem, isTag: Boolean, warning: String? = null) {
+    fun setAsset(parentFragmentManager: FragmentManager, fragment: Fragment, scopeProvider: ScopeProvider, asset: AssetItem, isTag: Boolean, warning: String? = null) {
         binding.apply {
             val showPb = if (isTag) {
                 asset.getTag().isNullOrBlank()
@@ -43,9 +43,7 @@ class ContentQRView : ViewAnimator {
             if (showPb) return
 
             qrAvatar.apply {
-                bg.loadImage(asset.iconUrl, R.drawable.ic_avatar_place_holder)
-                badge.loadImage(asset.chainIconUrl, R.drawable.ic_avatar_place_holder)
-                setBorder()
+                setContent(asset.iconUrl, asset.chainIconUrl, 2)
             }
             val content = if (isTag) asset.getTag() else asset.getDestination()
             contentTv.text = content

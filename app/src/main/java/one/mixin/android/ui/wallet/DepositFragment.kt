@@ -156,6 +156,7 @@ class DepositFragment : BaseFragment() {
                 memoTitle.isVisible = true
                 memoView.setAsset(
                     parentFragmentManager,
+                    this@DepositFragment,
                     scopeProvider,
                     asset,
                     true,
@@ -164,6 +165,7 @@ class DepositFragment : BaseFragment() {
             }
             addressView.setAsset(
                 parentFragmentManager,
+                this@DepositFragment,
                 scopeProvider,
                 asset,
                 false,

@@ -8,10 +8,10 @@ import android.view.View
 import android.widget.RelativeLayout
 import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
+import androidx.fragment.app.Fragment
 import one.mixin.android.R
 import one.mixin.android.databinding.ViewRoundTitleBinding
 import one.mixin.android.extension.dpToPx
-import one.mixin.android.extension.loadImage
 import one.mixin.android.vo.AssetItem
 import one.mixin.android.vo.User
 
@@ -63,10 +63,10 @@ class RoundTitleView(context: Context, attrs: AttributeSet) : RelativeLayout(con
         }
     }
 
-    fun showBadgeCircleView(asset: AssetItem) {
+    fun showBadgeCircleView(asset: AssetItem, fragment: Fragment) {
         binding.badgeCircleIv.isVisible = true
-        binding.badgeCircleIv.bg.loadImage(asset.iconUrl, R.drawable.ic_avatar_place_holder)
-        binding.badgeCircleIv.badge.loadImage(asset.chainIconUrl, R.drawable.ic_avatar_place_holder)
+
+        binding.badgeCircleIv.setContent(asset)
         binding.titleLl.updateLayoutParams<LayoutParams> {
             marginStart = 0
         }

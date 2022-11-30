@@ -13,11 +13,9 @@ import one.mixin.android.BuildConfig
 import one.mixin.android.R
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.databinding.FragmentTransactionBinding
-import one.mixin.android.databinding.ViewBadgeCircleImageBinding
 import one.mixin.android.extension.buildAmountSymbol
 import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.fullDate
-import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.navigateUp
 import one.mixin.android.extension.numberFormat
 import one.mixin.android.extension.numberFormat2
@@ -255,10 +253,7 @@ interface TransactionInterface {
         contentBinding.apply {
             val amountVal = snapshot.amount.toFloatOrNull()
             val isPositive = if (amountVal == null) false else amountVal > 0
-            ViewBadgeCircleImageBinding.bind(contentBinding.avatar).apply {
-                bg.loadImage(asset.iconUrl, R.drawable.ic_avatar_place_holder)
-                badge.loadImage(asset.chainIconUrl, R.drawable.ic_avatar_place_holder)
-            }
+            avatar.setContent(asset)
 
             val amountText = if (isPositive) {
                 "+${snapshot.amount.numberFormat()}"

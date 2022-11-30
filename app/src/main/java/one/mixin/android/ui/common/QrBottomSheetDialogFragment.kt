@@ -29,7 +29,7 @@ import one.mixin.android.extension.shareMedia
 import one.mixin.android.extension.toast
 import one.mixin.android.session.Session
 import one.mixin.android.util.viewBinding
-import one.mixin.android.widget.BadgeCircleImageView.Companion.END_BOTTOM
+import one.mixin.android.widget.BadgeAvatarView.Companion.END_BOTTOM
 import one.mixin.android.widget.BottomSheet
 import java.io.File
 

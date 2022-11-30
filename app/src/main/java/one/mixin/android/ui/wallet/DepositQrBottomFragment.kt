@@ -18,7 +18,6 @@ import one.mixin.android.R
 import one.mixin.android.databinding.FragmentDepositQrBottomBinding
 import one.mixin.android.extension.capture
 import one.mixin.android.extension.generateQRCode
-import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.toast
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
@@ -68,10 +67,7 @@ class DepositQrBottomFragment : MixinBottomSheetDialogFragment() {
                     addrTv.text = asset.getDestination()
                 }
             }
-            badgeView.apply {
-                bg.loadImage(asset.iconUrl, R.drawable.ic_avatar_place_holder)
-                badge.loadImage(asset.chainIconUrl, R.drawable.ic_avatar_place_holder)
-            }
+            badgeView.setContent(asset)
 
             saveIv.setOnClickListener {
                 RxPermissions(requireActivity())

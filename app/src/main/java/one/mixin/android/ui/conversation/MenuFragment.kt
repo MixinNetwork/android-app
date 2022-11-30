@@ -35,7 +35,7 @@ class MenuFragment : BaseFragment(R.layout.fragment_recycler_view) {
     private val isBot by lazy { requireArguments().getBoolean(ARGS_IS_BOT) }
     private val isSelfCreatedBot by lazy { requireArguments().getBoolean(ARGS_IS_SELF_CREATED_BOT) }
 
-    private val menuAdapter by lazy { MenuAdapter(isGroup, isBot, isSelfCreatedBot) }
+    private val menuAdapter by lazy { MenuAdapter(isGroup, isBot, isSelfCreatedBot, this@MenuFragment) }
 
     private val binding by viewBinding(FragmentRecyclerViewBinding::bind)
 

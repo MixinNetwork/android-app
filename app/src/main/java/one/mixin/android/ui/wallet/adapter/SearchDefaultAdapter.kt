@@ -9,7 +9,6 @@ import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersAdapter
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemContactHeaderBinding
 import one.mixin.android.databinding.ItemWalletSearchBinding
-import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.priceFormat
 import one.mixin.android.extension.textColorResource
@@ -18,7 +17,7 @@ import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.TopAssetItem
 import java.math.BigDecimal
 
-class SearchDefaultAdapter : RecyclerView.Adapter<ItemViewHolder>(), StickyRecyclerHeadersAdapter<SearchDefaultAdapter.HeaderViewHolder> {
+class SearchDefaultAdapter() : RecyclerView.Adapter<ItemViewHolder>(), StickyRecyclerHeadersAdapter<SearchDefaultAdapter.HeaderViewHolder> {
     companion object {
         const val TYPE_RECENT = 0
         const val TYPE_TOP = 1
@@ -102,8 +101,7 @@ abstract class ItemViewHolder(val binding: ItemWalletSearchBinding) : RecyclerVi
         changeUsd: String,
         priceFiat: BigDecimal,
     ) {
-        binding.badgeCircleIv.bg.loadImage(iconUrl, R.drawable.ic_avatar_place_holder)
-        binding.badgeCircleIv.badge.loadImage(chainIconUrl, R.drawable.ic_avatar_place_holder)
+        binding.badgeCircleIv.setContent(iconUrl, chainIconUrl)
         binding.nameTv.text = name
         binding.symbolTv.text = symbol
         if (priceUsd == "0") {

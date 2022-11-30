@@ -38,7 +38,7 @@ class AssetKeyBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 rightIv.setOnClickListener { dismiss() }
                 titleTv.text = asset.name
             }
-            titleView.showBadgeCircleView(asset)
+            titleView.showBadgeCircleView(asset, this@AssetKeyBottomSheetDialogFragment)
             symbolAsTv.text = asset.symbol
             chainAsTv.text = asset.chainName
             assetKeyAsTv.text = asset.assetKey

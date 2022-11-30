@@ -13,7 +13,6 @@ import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentDeleteAccountTipBottomSheetBinding
 import one.mixin.android.databinding.ItemAssetBinding
-import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.numberFormat
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
 import one.mixin.android.ui.conversation.ConversationViewModel
@@ -88,11 +87,7 @@ class DeleteAccountTipBottomSheetDialogFragment : MixinBottomSheetDialogFragment
         override fun onBindViewHolder(holder: ItemHolder, position: Int) {
             val itemAssert = getItem(position)
             val binding = ItemAssetBinding.bind(holder.itemView)
-            binding.typeAvatar.bg.loadImage(itemAssert.iconUrl, R.drawable.ic_avatar_place_holder)
-            binding.typeAvatar.badge.loadImage(
-                itemAssert.chainIconUrl,
-                R.drawable.ic_avatar_place_holder
-            )
+            binding.typeAvatar.setContent(itemAssert)
             binding.name.text = itemAssert.name
             binding.value.text = itemAssert.balance.numberFormat()
             binding.valueEnd.text = itemAssert.symbol

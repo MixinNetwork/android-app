@@ -5,7 +5,6 @@ import android.view.View
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemSearchAssetBinding
 import one.mixin.android.extension.highLight
-import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.numberFormat8
 import one.mixin.android.extension.priceFormat
@@ -19,8 +18,7 @@ import java.math.BigDecimal
 class AssetHolder constructor(val binding: ItemSearchAssetBinding) : NormalHolder(binding.root) {
     @SuppressLint("SetTextI18n")
     fun bind(asset: AssetItem, target: String, onItemClickListener: SearchFragment.OnSearchClickListener?) {
-        binding.avatar.bg.loadImage(asset.iconUrl, R.drawable.ic_avatar_place_holder)
-        binding.avatar.badge.loadImage(asset.chainIconUrl, R.drawable.ic_avatar_place_holder)
+        binding.avatar.setContent(asset)
         binding.root.setOnClickListener { onItemClickListener?.onAsset(asset) }
 
         binding.balance.text = asset.balance.numberFormat8() + " " + asset.symbol

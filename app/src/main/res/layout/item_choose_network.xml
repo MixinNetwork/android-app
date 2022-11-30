@@ -9,7 +9,7 @@
     android:background="@drawable/bg_round_choose_network_yellow"
     android:padding="@dimen/margin16">
 
-    <one.mixin.android.widget.BadgeCircleImageView
+    <one.mixin.android.widget.CircleImageView
         android:id="@+id/asset_icon"
         android:layout_width="36dp"
         android:layout_height="36dp"

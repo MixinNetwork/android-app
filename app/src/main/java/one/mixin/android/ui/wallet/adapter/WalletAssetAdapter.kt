@@ -7,12 +7,12 @@ import android.view.LayoutInflater
 import android.view.View.GONE
 import android.view.View.VISIBLE
 import android.view.ViewGroup
+import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemWalletAssetBinding
 import one.mixin.android.extension.getClipboardManager
-import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.numberFormat8
 import one.mixin.android.extension.priceFormat
@@ -108,8 +108,7 @@ class WalletAssetAdapter(private val slideShow: Boolean) : HeaderAdapter<AssetIt
             }
             binding.backLeftTv.setText(if (slideShow) R.string.Shown else R.string.Hidden)
             binding.backRightTv.setText(if (slideShow) R.string.Shown else R.string.Hidden)
-            binding.avatar.bg.loadImage(asset.iconUrl, R.drawable.ic_avatar_place_holder)
-            binding.avatar.badge.loadImage(asset.chainIconUrl, R.drawable.ic_avatar_place_holder)
+            binding.avatar.setContent(asset)
             holder.itemView.setOnClickListener { onItemListener?.onNormalItemClick(asset) }
             debugLongClick(
                 holder.itemView,
@@ -122,5 +121,11 @@ class WalletAssetAdapter(private val slideShow: Boolean) : HeaderAdapter<AssetIt
     }
 
     override fun getNormalViewHolder(context: Context, parent: ViewGroup): NormalHolder =
-        NormalHolder(LayoutInflater.from(context).inflate(R.layout.item_wallet_asset, parent, false))
+        NormalHolder(LayoutInflater.from(context).inflate(R.layout.item_wallet_asset, parent, false)).apply {
+            ItemWalletAssetBinding.bind(itemView).apply {
+                avatar.setViewCompositionStrategy(
+                    ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed
+                )
+            }
+        }
 }

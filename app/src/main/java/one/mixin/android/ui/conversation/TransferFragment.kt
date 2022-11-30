@@ -54,7 +54,6 @@ import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.equalsIgnoreCase
 import one.mixin.android.extension.formatPublicKey
 import one.mixin.android.extension.hideKeyboard
-import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.numberFormat
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.numberFormat8
@@ -472,8 +471,7 @@ class TransferFragment() : MixinBottomSheetDialogFragment() {
         binding.assetName.text = asset.name
         binding.assetDesc.text = asset.balance.numberFormat()
         binding.descEnd.text = asset.symbol
-        binding.assetAvatar.bg.loadImage(asset.iconUrl, R.drawable.ic_avatar_place_holder)
-        binding.assetAvatar.badge.loadImage(asset.chainIconUrl, R.drawable.ic_avatar_place_holder)
+        binding.assetAvatar.setContent(asset)
 
         operateKeyboard(true)
         updateAssetAutoComplete(asset)
@@ -705,8 +703,7 @@ class TransferFragment() : MixinBottomSheetDialogFragment() {
         override fun onBindViewHolder(holder: ItemHolder, position: Int) {
             val itemAssert = getItem(position)
             val binding = ItemTransferTypeBinding.bind(holder.itemView)
-            binding.typeAvatar.bg.loadImage(itemAssert.iconUrl, R.drawable.ic_avatar_place_holder)
-            binding.typeAvatar.badge.loadImage(itemAssert.chainIconUrl, R.drawable.ic_avatar_place_holder)
+            binding.typeAvatar.setContent(itemAssert)
             binding.name.text = itemAssert.name
             binding.value.text = itemAssert.balance.numberFormat()
             binding.valueEnd.text = itemAssert.symbol

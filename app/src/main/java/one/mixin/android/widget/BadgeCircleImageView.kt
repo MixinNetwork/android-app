@@ -1,50 +1,38 @@
 package one.mixin.android.widget
 
 import android.content.Context
-import android.graphics.Color
 import android.util.AttributeSet
-import android.view.LayoutInflater
-import android.widget.FrameLayout
-import one.mixin.android.databinding.ViewBadgeCircleImageBinding
-import one.mixin.android.extension.dpToPx
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.platform.AbstractComposeView
+import one.mixin.android.ui.setting.ui.compose.BadgeCircleImage
+import one.mixin.android.vo.AssetItem
 
-open class BadgeCircleImageView(context: Context, attrs: AttributeSet?) :
-    FrameLayout(context, attrs) {
-    private val binding = ViewBadgeCircleImageBinding.inflate(LayoutInflater.from(context), this)
-    val bg get() = binding.bg
-    val badge get() = binding.badge
+class BadgeCircleImageView(context: Context, attrs: AttributeSet?) :
+    AbstractComposeView(context, attrs) {
 
-    var pos: Int = START_BOTTOM
-
-    override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
-        super.onMeasure(widthMeasureSpec, heightMeasureSpec)
-        measureChild(
-            binding.badge,
-            MeasureSpec.makeMeasureSpec(measuredWidth / 3, MeasureSpec.EXACTLY),
-            MeasureSpec.makeMeasureSpec(measuredHeight / 3, MeasureSpec.EXACTLY)
-        )
+    fun setContent(asset: AssetItem) {
+        setContent(asset.iconUrl, asset.chainIconUrl)
     }
 
-    override fun onLayout(changed: Boolean, left: Int, top: Int, right: Int, bottom: Int) {
-        super.onLayout(changed, left, top, right, bottom)
-        val badgeWidth = measuredWidth / 3
-        if (pos == START_BOTTOM) {
-            val positionLeft = (measuredWidth * 0.075f).toInt()
-            val positionTop = (measuredWidth * 2 / 3)
-            binding.badge.layout(positionLeft, positionTop, positionLeft + badgeWidth, positionTop + badgeWidth)
-        } else if (pos == END_BOTTOM) {
-            val position = (measuredWidth * 2 / 3)
-            binding.badge.layout(position, position, position + badgeWidth, position + badgeWidth)
-        }
+    fun setContent(
+        icon: String?,
+        subIcon: String?,
+        iconBorderWidth: Int? = null,
+        flip: Boolean = false,
+    ) {
+        this.icon = icon
+        this.subIcon = subIcon
+        this.iconBorderWidth = iconBorderWidth
+        this.flip = flip
     }
 
-    fun setBorder(width: Float = 2f, color: Int = Color.WHITE) {
-        binding.bg.borderWidth = context.dpToPx(width)
-        binding.bg.borderColor = color
-    }
+    private var icon: String? = null
+    private var subIcon: String? = null
+    private var iconBorderWidth: Int? = null
+    private var flip: Boolean = false
 
-    companion object {
-        const val START_BOTTOM = 0
-        const val END_BOTTOM = 1
+    @Composable
+    override fun Content() {
+        BadgeCircleImage(icon ?: "", subIcon ?: "", iconBorderWidth, flip)
     }
 }

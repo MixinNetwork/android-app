@@ -22,12 +22,10 @@ import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.databinding.FragmentTransactionsBinding
-import one.mixin.android.databinding.ViewBadgeCircleImageBinding
 import one.mixin.android.databinding.ViewTransactionsFragmentHeaderBinding
 import one.mixin.android.databinding.ViewWalletTransactionsBottomBinding
 import one.mixin.android.extension.buildAmountSymbol
 import one.mixin.android.extension.colorFromAttribute
-import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.mainThreadDelayed
 import one.mixin.android.extension.navigate
 import one.mixin.android.extension.numberFormat
@@ -187,10 +185,7 @@ class TransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>>()
             } catch (ignored: NumberFormatException) {
                 "≈ ${Fiats.getSymbol()}${asset.fiat().numberFormat2()}"
             }
-            ViewBadgeCircleImageBinding.bind(avatar).apply {
-                bg.loadImage(asset.iconUrl, R.drawable.ic_avatar_place_holder)
-                badge.loadImage(asset.chainIconUrl, R.drawable.ic_avatar_place_holder)
-            }
+            avatar.setContent(asset)
         }
     }
 

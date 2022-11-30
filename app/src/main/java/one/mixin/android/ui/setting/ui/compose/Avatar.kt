@@ -2,6 +2,7 @@ package one.mixin.android.ui.setting.ui.compose
 
 import GlideImage
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
@@ -11,9 +12,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.res.integerArrayResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -76,6 +79,57 @@ private fun AvatarImage(
                 color = Color.White,
                 fontSize = 22.sp
             )
+        }
+    }
+}
+
+@Composable
+fun BadgeCircleImage(icon: String, subIcon: String, iconBorderWidth: Int? = null, flip: Boolean = false) {
+    Layout(
+        content = {
+            GlideImage(
+                data = icon,
+                modifier = Modifier.apply {
+                    if (iconBorderWidth != null) {
+                        border(
+                            iconBorderWidth.dp,
+                            MixinAppTheme.colors.primary,
+                            shape = CircleShape
+                        )
+                    }
+                }.clip(CircleShape),
+                placeHolderPainter = painterResource(id = R.drawable.ic_avatar_place_holder)
+            )
+            GlideImage(
+                data = subIcon,
+                modifier = Modifier.border(1.dp, MixinAppTheme.colors.primary, shape = CircleShape).clip(CircleShape),
+                placeHolderPainter = painterResource(id = R.drawable.ic_avatar_place_holder)
+            )
+        }
+    ) { measurables, constraints ->
+        val children = measurables.mapIndexed { index, measurable ->
+            if (index == 0) {
+                measurable.measure(constraints)
+            } else {
+                measurable.measure(
+                    Constraints(
+                        maxWidth = constraints.maxWidth / 3,
+                        maxHeight = constraints.maxHeight
+                    )
+                )
+            }
+        }
+        layout(constraints.maxWidth, constraints.maxHeight) {
+            children.forEachIndexed { index, child ->
+                if (index == 0) {
+                    child.placeRelative(x = 0, y = 0)
+                } else {
+                    child.placeRelative(
+                        (if (flip) (constraints.maxWidth * 2 / 3) else (constraints.maxWidth * 0.075f)).toInt(),
+                        constraints.maxWidth * 2 / 3
+                    )
+                }
+            }
         }
     }
 }
