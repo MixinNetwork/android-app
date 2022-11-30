@@ -1,11 +1,12 @@
 package one.mixin.android.ui.tip.wc
 
 import GlideImage
+import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -22,7 +23,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.Alignment.Companion.Center
 import androidx.compose.ui.Alignment.Companion.CenterHorizontally
 import androidx.compose.ui.Alignment.Companion.CenterVertically
 import androidx.compose.ui.Modifier
@@ -51,8 +51,6 @@ fun WalletConnectCompose(
     onBiometricClick: (() -> Unit),
     onPinComplete: ((String) -> Unit),
 ) {
-    val scroll = rememberScrollState(0)
-
     MixinAppTheme {
         Column(
             modifier = Modifier
@@ -97,8 +95,9 @@ fun WalletConnectCompose(
                     modifier = Modifier
                         .align(alignment = CenterHorizontally)
                         .padding(horizontal = 32.dp)
-                        .heightIn(0.dp, 120.dp)
-                        .verticalScroll(scroll),
+                        .animateContentSize()
+                        .heightIn(0.dp, if (step == WCStep.Input) 120.dp else 300.dp)
+                        .verticalScroll(rememberScrollState()),
                     textAlign = TextAlign.Start,
                     text = desc,
                     color = MixinAppTheme.colors.textMinor
@@ -121,51 +120,48 @@ fun WalletConnectCompose(
 
 @Composable
 fun PeerMeta(peerMeta: WCPeerMeta) {
-    Box(modifier = Modifier.fillMaxWidth()) {
-        Row(
+    Row(
+        modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
+        verticalAlignment = CenterVertically,
+        horizontalArrangement = Arrangement.Center,
+    ) {
+        GlideImage(
+            data = peerMeta.icons.last(),
             modifier = Modifier
-                .padding(12.dp)
-                .align(Center)
-        ) {
-            GlideImage(
-                data = peerMeta.icons.last(),
-                modifier = Modifier
-                    .size(32.dp)
-                    .clip(CircleShape)
-            )
-            Spacer(modifier = Modifier.width(8.dp))
-            Text(
-                peerMeta.url,
-                modifier = Modifier.align(CenterVertically),
-                textAlign = TextAlign.Center,
-                color = MixinAppTheme.colors.textPrimary
-            )
-        }
+                .size(32.dp)
+                .clip(CircleShape)
+        )
+        Spacer(modifier = Modifier.width(8.dp))
+        Text(
+            peerMeta.url,
+            textAlign = TextAlign.Center,
+            color = MixinAppTheme.colors.textPrimary
+        )
     }
 }
 
 @Composable
-fun NetworkInfo(name: String) {
-    Box(modifier = Modifier.fillMaxWidth()) {
-        Row(
+fun NetworkInfo(
+    modifier: Modifier = Modifier,
+    name: String
+) {
+    Row(
+        modifier = modifier.fillMaxWidth().padding(vertical = 8.dp),
+        verticalAlignment = CenterVertically,
+        horizontalArrangement = Arrangement.Center
+    ) {
+        Canvas(
             modifier = Modifier
-                .padding(8.dp)
-                .align(Center),
-            verticalAlignment = CenterVertically
+                .padding(start = 8.dp, end = 8.dp)
+                .size(6.dp)
         ) {
-            Canvas(
-                modifier = Modifier
-                    .padding(start = 8.dp, end = 8.dp)
-                    .size(6.dp)
-            ) {
-                drawCircle(Color(0xFF3D75E3))
-            }
-            Text(
-                name,
-                color = MixinAppTheme.colors.textPrimary,
-                textAlign = TextAlign.Center
-            )
+            drawCircle(Color(0xFF3D75E3))
         }
+        Text(
+            name,
+            color = MixinAppTheme.colors.textPrimary,
+            textAlign = TextAlign.Center
+        )
     }
 }
 
