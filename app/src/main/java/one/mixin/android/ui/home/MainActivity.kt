@@ -30,6 +30,7 @@ import com.google.android.play.core.install.model.AppUpdateType
 import com.google.android.play.core.install.model.InstallStatus
 import com.google.android.play.core.install.model.UpdateAvailability
 import com.google.firebase.crashlytics.FirebaseCrashlytics
+import com.google.gson.GsonBuilder
 import com.microsoft.appcenter.AppCenter
 import com.trustwallet.walletconnect.models.ethereum.WCEthereumTransaction
 import com.uber.autodispose.autoDispose
@@ -143,7 +144,6 @@ import one.mixin.android.ui.tip.wc.WalletConnectBottomSheetDialogFragment
 import one.mixin.android.util.BiometricUtil
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.ErrorHandler.Companion.errorHandler
-import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.PropertyHelper
 import one.mixin.android.util.RomUtil
 import one.mixin.android.util.RootUtil
@@ -748,6 +748,7 @@ class MainActivity : BlazeBaseActivity() {
                 )
         } else if (intent.hasExtra(WALLET_CONNECT)) {
             val wcUrl = requireNotNull(intent.getStringExtra(WALLET_CONNECT))
+            val gson = GsonBuilder().setPrettyPrinting().create()
             WalletConnect.also { wc ->
                 wc.onSessionRequest = { _, peer ->
                     showWalletConnectBottomSheet("Connect with ${peer.name}", "", { wc.rejectSession() }) { priv ->
@@ -762,16 +763,16 @@ class MainActivity : BlazeBaseActivity() {
                     }
                 }
                 wc.onEthSign = { id, message ->
-                    showWalletConnectBottomSheet("Sign Message", GsonHelper.customGson.toJson(message), { wc.rejectRequest(id) }) { priv ->
+                    showWalletConnectBottomSheet("Sign Message", gson.toJson(message), { wc.rejectRequest(id) }) { priv ->
                         approveRequest(wc, priv, id, message.data.toByteArray())
                     }
                 }
                 wc.onEthSignTransaction = { id, transaction ->
-                    showWalletConnectBottomSheet("Sign Transaction", GsonHelper.customGson.toJson(transaction), { wc.rejectRequest(id) }) { priv ->
+                    showWalletConnectBottomSheet("Sign Transaction", gson.toJson(transaction), { wc.rejectRequest(id) }) { priv ->
                     }
                 }
                 wc.onEthSendTransaction = { id, transaction ->
-                    showWalletConnectBottomSheet("Send Transaction", GsonHelper.customGson.toJson(transaction), { wc.rejectRequest(id) }) { priv ->
+                    showWalletConnectBottomSheet("Send Transaction", gson.toJson(transaction), { wc.rejectRequest(id) }) { priv ->
                         sendTransaction(wc, priv, id, transaction)
                     }
                 }

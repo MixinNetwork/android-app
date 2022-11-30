@@ -142,9 +142,8 @@ fun WalletConnectPinKeyBoard(
                     modifier = Modifier
                         .height(150.dp)
                         .fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween
+                    horizontalArrangement = Arrangement.SpaceEvenly
                 ) {
-                    Spacer(modifier = Modifier.width(32.dp))
                     OutlinedButton(
                         modifier = Modifier.size(width = 120.dp, height = 48.dp),
                         onClick = { onCancelClick?.invoke() },
@@ -171,7 +170,6 @@ fun WalletConnectPinKeyBoard(
                             color = Color.White
                         )
                     }
-                    Spacer(modifier = Modifier.width(32.dp))
                 }
             }
             else -> Column(horizontalAlignment = Alignment.CenterHorizontally) {
