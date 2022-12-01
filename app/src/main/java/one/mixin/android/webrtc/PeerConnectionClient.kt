@@ -32,7 +32,7 @@ import java.util.concurrent.TimeUnit
 class PeerConnectionClient(context: Context) {
     private var factory: PeerConnectionFactory? = null
     private var isError = false
-    
+
     var events: PeerConnectionEvents? = null
 
     var callDebugState = CallDebugLiveData.Type.None

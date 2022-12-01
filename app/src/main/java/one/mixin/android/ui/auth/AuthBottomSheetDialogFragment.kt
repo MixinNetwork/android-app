@@ -25,7 +25,6 @@ import androidx.lifecycle.lifecycleScope
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import one.mixin.android.R
@@ -274,7 +273,6 @@ class AuthBottomSheetDialogFragment : BottomSheetDialogFragment() {
                     invokeNetwork = {
                         bottomViewModel.authorize(authorizationId, listOf(), null)
                     },
-                    switchContext = Dispatchers.IO,
                     successBlock = {
                         val data = it.data ?: return@handleMixinResponse
                         redirect(data.app.redirectUri, data.authorizationCode)

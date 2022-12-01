@@ -25,6 +25,7 @@ import io.reactivex.schedulers.Schedulers
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.Constants.DB_EXPIRED_LIMIT
@@ -355,6 +356,7 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
         } catch (e: Exception) {
             Timber.e(e, "Send ack exception")
         }
+        ackJob?.ensureActive()
         return processAck()
     }
 
@@ -446,6 +448,7 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
         }
         remoteMessageStatusDao.deleteByMessageIds(list.map { it.messageId })
         return if (list.size >= MARK_REMOTE_LIMIT) {
+            statusJob?.ensureActive()
             processStatus()
         } else {
             true
@@ -495,6 +498,7 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
                 )
                 Timber.e("Expired job: delay $delayTime")
                 delay(delayTime)
+                expiredJob?.ensureActive()
                 processExpiredMessage()
             }
         } else {
@@ -522,6 +526,7 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
                 InvalidateFlow.emit(id)
             }
             nextExpirationTime = null
+            expiredJob?.ensureActive()
             processExpiredMessage()
         }
     }
