@@ -15,6 +15,7 @@ import one.mixin.android.ui.common.BaseActivity
 import one.mixin.android.ui.conversation.TransferFragment
 import one.mixin.android.ui.conversation.link.LinkBottomSheetDialogFragment
 import one.mixin.android.ui.device.ConfirmBottomFragment
+import one.mixin.android.ui.home.MainActivity
 import timber.log.Timber
 
 @AndroidEntryPoint
@@ -31,6 +32,9 @@ class UrlInterpreterActivity : BaseActivity() {
         private const val APPS = "apps"
         private const val SNAPSHOTS = "snapshots"
         private const val CONVERSATIONS = "conversations"
+        private const val TIP = "tip"
+
+        private const val WC = "wc"
 
         fun show(context: Context, data: Uri) {
             Intent(context, UrlInterpreterActivity::class.java).apply {
@@ -60,9 +64,17 @@ class UrlInterpreterActivity : BaseActivity() {
             finish()
             return
         }
+
         if (data.toString().startsWith("https://", true)) {
             val bottomSheet = LinkBottomSheetDialogFragment.newInstance(data.toString())
             bottomSheet.showNow(supportFragmentManager, LinkBottomSheetDialogFragment.TAG)
+        } else if (data.scheme == WC) {
+            startActivity(
+                Intent(this, MainActivity::class.java).apply {
+                    putExtra(MainActivity.WALLET_CONNECT, data.toString())
+                }
+            )
+            finish()
         } else {
             interpretIntent(data)
         }
@@ -76,7 +88,7 @@ class UrlInterpreterActivity : BaseActivity() {
     private fun interpretIntent(uri: Uri) {
         when (uri.host) {
             USER, APPS -> uri.checkUserOrApp(this, supportFragmentManager, lifecycleScope)
-            CODE, PAY, WITHDRAWAL, ADDRESS, SNAPSHOTS, CONVERSATIONS -> {
+            CODE, PAY, WITHDRAWAL, ADDRESS, SNAPSHOTS, CONVERSATIONS, TIP -> {
                 val bottomSheet = LinkBottomSheetDialogFragment.newInstance(uri.toString())
                 bottomSheet.showNow(supportFragmentManager, LinkBottomSheetDialogFragment.TAG)
             }

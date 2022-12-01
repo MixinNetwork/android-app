@@ -33,6 +33,7 @@ import com.google.firebase.crashlytics.FirebaseCrashlytics
 import com.google.gson.GsonBuilder
 import com.microsoft.appcenter.AppCenter
 import com.trustwallet.walletconnect.models.ethereum.WCEthereumTransaction
+import com.trustwallet.walletconnect.models.session.WCSession
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import io.reactivex.Maybe
@@ -751,6 +752,10 @@ class MainActivity : BlazeBaseActivity() {
                 )
         } else if (intent.hasExtra(WALLET_CONNECT)) {
             val wcUrl = requireNotNull(intent.getStringExtra(WALLET_CONNECT))
+            if (WCSession.from(wcUrl) == null) {
+                return
+            }
+
             val gson = GsonBuilder().setPrettyPrinting().create()
             WalletConnect.get().also { wc ->
                 wc.onSessionRequest = { _, peer ->
