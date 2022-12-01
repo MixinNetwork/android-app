@@ -76,7 +76,6 @@
             android:theme="@style/AppTheme.Transparent">
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
-
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
 
@@ -194,6 +193,12 @@
                     android:scheme="https"
                     android:host="mixin.one"
                     android:pathPrefix="/tip" />
+            </intent-filter>
+            <intent-filter>
+                <data android:scheme="wc" />
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
             </intent-filter>
         </activity>
         <activity
