@@ -17,4 +17,6 @@ class RemoteMessageStatus(
     val conversationId: String,
     @ColumnInfo(name = "status")
     val status: String,
+    @ColumnInfo(name = "created_at")
+    val createdAt: Long
 )

@@ -28,4 +28,8 @@ interface RemoteMessageStatusDao : BaseDao<RemoteMessageStatus> {
 
     @Query("DELETE FROM remote_messages_status WHERE message_id IN (:messageIds)")
     fun deleteByMessageIds(messageIds: List<String>)
+
+    // Use this function when only other client mark are allowed
+    @Query("DELETE FROM remote_messages_status WHERE created_at <= (SELECT MAX(created_at) FROM remote_messages_status WHERE message_id IN (:messageIds))")
+    fun deleteLocalRemoteMessageStatus(messageIds: List<String>)
 }

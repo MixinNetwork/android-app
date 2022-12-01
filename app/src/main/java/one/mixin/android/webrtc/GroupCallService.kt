@@ -907,7 +907,7 @@ class GroupCallService : CallService() {
             category,
             "",
             nowInUtc(),
-            MessageStatus.READ.name,
+            MessageStatus.DELIVERED.name,
             mediaDuration = duration
         )
         database.conversationDao().findConversationById(cid)?.let {

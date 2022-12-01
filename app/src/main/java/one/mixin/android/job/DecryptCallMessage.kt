@@ -351,7 +351,7 @@ class DecryptCallMessage(
                     }
 
                     val duration = System.currentTimeMillis() - callState.connectedTime!!
-                    saveCallMessage(data, duration = duration.toString(), userId = getUserId(), status = MessageStatus.READ.name)
+                    saveCallMessage(data, duration = duration.toString(), userId = getUserId(), status = MessageStatus.DELIVERED.name)
                     remoteEnd(ctx)
                 }
                 MessageCategory.WEBRTC_AUDIO_FAILED.name -> {
