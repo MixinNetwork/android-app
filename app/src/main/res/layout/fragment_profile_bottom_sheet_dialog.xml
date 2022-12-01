@@ -12,7 +12,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />
 
-    <one.mixin.android.widget.FixedNestedScrollView
+    <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_below="@id/title"
@@ -80,5 +80,5 @@
                 android:textSize="12sp"
                 android:textColor="?attr/text_minor"/>
         </LinearLayout>
-    </one.mixin.android.widget.FixedNestedScrollView>
+    </androidx.core.widget.NestedScrollView>
 </RelativeLayout>

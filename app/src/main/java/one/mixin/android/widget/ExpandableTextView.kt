@@ -137,6 +137,7 @@ class ExpandableTextView @JvmOverloads constructor(
 
     fun toggle() {
         if (originalText == collapsedDisplayedText) {
+            setOnClickListener { }
             collapsed = !collapsed
             return
         }
@@ -159,6 +160,7 @@ class ExpandableTextView @JvmOverloads constructor(
                 addListener(object : AnimatorListenerAdapter() {
                     override fun onAnimationStart(animation: Animator) {
                         super.onAnimationStart(animation)
+                        setOnClickListener { }
                         collapsed = !collapsed
                         text = originalText
                     }
