@@ -16,7 +16,7 @@ def versionBuild = 0
 
 android {
     compileSdkVersion 33
-    buildToolsVersion "33.0.0"
+    buildToolsVersion "33.0.1"
     ndkVersion "23.1.7779620"
     namespace "one.mixin.android"
     defaultConfig {
