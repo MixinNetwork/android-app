@@ -40,10 +40,12 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
     companion object {
         const val TAG = "WalletConnectBottomSheetDialogFragment"
 
+        const val ARGS_IS_ACCOUNT = "args_is_account"
         const val ARGS_ACTION = "args_action"
         const val ARGS_DESC = "args_desc"
 
-        fun newInstance(action: String, desc: String? = null) = WalletConnectBottomSheetDialogFragment().withArgs {
+        fun newInstance(isAccount: Boolean, action: String, desc: String? = null) = WalletConnectBottomSheetDialogFragment().withArgs {
+            putBoolean(ARGS_IS_ACCOUNT, isAccount)
             putString(ARGS_ACTION, action)
             desc?.let { putString(ARGS_DESC, it) }
         }
@@ -54,7 +56,7 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
 
     private var pinCompleted = false
 
-    private var step by mutableStateOf(WCStep.Choice)
+    private var step by mutableStateOf(WCStep.Account)
 
     init {
         lifecycleScope.launchWhenCreated {
@@ -73,14 +75,20 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?,
     ): View = ComposeView(requireContext()).apply {
+        step = if (requireArguments().getBoolean(ARGS_IS_ACCOUNT)) WCStep.Account else WCStep.Choice
         setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
         setContent {
             WalletConnectCompose(
                 step = step,
-                networkName = WalletConnect.getNetworkName(),
-                peerMeta = WalletConnect.remotePeerMeta,
+                networkName = WalletConnect.get().getNetworkName(),
+                peerMeta = WalletConnect.get().remotePeerMeta,
                 action = requireNotNull(requireArguments().getString(ARGS_ACTION)) { "action can not be null" },
                 desc = requireArguments().getString(ARGS_DESC),
+                balance = WalletConnect.get().getBalanceString(),
+                onDisconnectClick = {
+                    WalletConnect.release()
+                    dismiss()
+                },
                 onDismissClick = {
                     onReject?.invoke()
                     dismiss()

@@ -42,6 +42,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 import one.mixin.android.BuildConfig
 import one.mixin.android.Constants
 import one.mixin.android.Constants.Account.PREF_BACKUP
@@ -80,6 +81,7 @@ import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.areBubblesAllowedCompat
 import one.mixin.android.extension.checkStorageNotLow
 import one.mixin.android.extension.defaultSharedPreferences
+import one.mixin.android.extension.formatPublicKey
 import one.mixin.android.extension.getDeviceId
 import one.mixin.android.extension.inTransaction
 import one.mixin.android.extension.indeterminateProgressDialog
@@ -112,6 +114,7 @@ import one.mixin.android.session.Session
 import one.mixin.android.tip.Tip
 import one.mixin.android.tip.wc.Chain
 import one.mixin.android.tip.wc.WalletConnect
+import one.mixin.android.tip.wc.walletConnectLiveData
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.BatteryOptimizationDialogActivity
 import one.mixin.android.ui.common.BlazeBaseActivity
@@ -749,13 +752,17 @@ class MainActivity : BlazeBaseActivity() {
         } else if (intent.hasExtra(WALLET_CONNECT)) {
             val wcUrl = requireNotNull(intent.getStringExtra(WALLET_CONNECT))
             val gson = GsonBuilder().setPrettyPrinting().create()
-            WalletConnect.also { wc ->
+            WalletConnect.get().also { wc ->
                 wc.onSessionRequest = { _, peer ->
                     showWalletConnectBottomSheet("Connect with ${peer.name}", "", { wc.rejectSession() }) { priv ->
                         val pub = ECKeyPair.create(priv).publicKey
                         val address = Keys.toChecksumAddress(Keys.getAddress(pub))
                         Timber.d("${WalletConnect.TAG} address: $address")
                         wc.approveSession(listOf(address), Chain.Polygon.chainId)
+
+                        val web3j = Web3j.build(HttpService(Chain.Polygon.rpcServers[0]))
+                        wc.balance = web3j.ethGetBalance(address, DefaultBlockParameterName.LATEST).sendAsync().get().balance
+                        wc.address = address
                     }
                 }
                 wc.onWalletChangeNetwork = { id, chainId ->
@@ -777,7 +784,7 @@ class MainActivity : BlazeBaseActivity() {
                     }
                 }
             }
-            WalletConnect.connect(wcUrl)
+            WalletConnect.get().connect(wcUrl)
         }
     }
 
@@ -824,12 +831,14 @@ class MainActivity : BlazeBaseActivity() {
         wc.approveRequest(id, hexMessage)
     }
 
-    private fun showWalletConnectBottomSheet(action: String, desc: String?, onReject: () -> Unit, callback: (ByteArray) -> Unit) = lifecycleScope.launch {
-        WalletConnectBottomSheetDialogFragment.newInstance(action, desc)
+    private fun showWalletConnectBottomSheet(action: String, desc: String?, onReject: () -> Unit, callback: suspend (ByteArray) -> Unit) = lifecycleScope.launch {
+        WalletConnectBottomSheetDialogFragment.newInstance(false, action, desc)
             .setOnPinComplete { pin ->
                 tip.getOrRecoverTipPriv(this@MainActivity, pin)
                     .onSuccess { priv ->
-                        callback(priv.sha3Sum256())
+                        withContext(Dispatchers.IO) {
+                            callback(priv.sha3Sum256())
+                        }
                     }.onFailure {
                         Timber.d("${WalletConnect.TAG} ${it.stackTraceToString()}")
                     }
@@ -862,9 +871,14 @@ class MainActivity : BlazeBaseActivity() {
             circlesFragment.cancelSort()
             binding.searchBar.actionVa.showPrevious()
         }
-
         binding.searchBar.setOnBackClickListener {
             binding.searchBar.closeSearch()
+        }
+        binding.searchBar.wcIv.setOnClickListener {
+            if (!WalletConnect.hasInit()) return@setOnClickListener
+
+            WalletConnectBottomSheetDialogFragment.newInstance(true, WalletConnect.get().address?.formatPublicKey() ?: "")
+                .showNow(supportFragmentManager, WalletConnectBottomSheetDialogFragment.TAG)
         }
 
         binding.searchBar.mOnQueryTextListener = object : MaterialSearchView.OnQueryTextListener {
@@ -901,6 +915,10 @@ class MainActivity : BlazeBaseActivity() {
         }
         supportFragmentManager.beginTransaction().add(R.id.container_circle, circlesFragment, CirclesFragment.TAG).commit()
         observeOtherCircleUnread(defaultSharedPreferences.getString(CIRCLE_ID, null))
+
+        walletConnectLiveData.observe(this) {
+            binding.searchBar.wcConnected = it
+        }
     }
 
     fun openSearch() {
