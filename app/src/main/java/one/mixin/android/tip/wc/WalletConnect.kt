@@ -13,10 +13,35 @@ import com.trustwallet.walletconnect.models.ethereum.WCEthereumTransaction
 import com.trustwallet.walletconnect.models.session.WCAddNetwork
 import com.trustwallet.walletconnect.models.session.WCSession
 import okhttp3.OkHttpClient
+import okhttp3.Response
+import okhttp3.WebSocket
+import okhttp3.WebSocketListener
+import one.mixin.android.MixinApplication
+import one.mixin.android.extension.runOnUiThread
 import timber.log.Timber
+import java.math.BigInteger
 
-object WalletConnect {
-    const val TAG = "WalletConnect"
+class WalletConnect private constructor() {
+    companion object {
+        const val TAG = "WalletConnect"
+
+        @Synchronized
+        fun get(): WalletConnect {
+            if (instance == null) {
+                instance = WalletConnect()
+            }
+            return instance as WalletConnect
+        }
+
+        private var instance: WalletConnect? = null
+
+        fun hasInit() = instance != null
+
+        fun release() {
+            instance?.disconnect()
+            instance = null
+        }
+    }
 
     private val wcClient = WCClient(GsonBuilder(), OkHttpClient.Builder().build()).also { wcc ->
         wcc.onSessionRequest = { id, peer ->
@@ -61,9 +86,31 @@ object WalletConnect {
         wcc.onFailure = {
             Timber.d("$TAG onFailure ${it.stackTraceToString()}")
         }
+
+        wcc.addSocketListener(object : WebSocketListener() {
+            override fun onOpen(webSocket: WebSocket, response: Response) {
+                MixinApplication.appContext.runOnUiThread {
+                    walletConnectLiveData.connected = true
+                }
+            }
+
+            override fun onFailure(webSocket: WebSocket, t: Throwable, response: Response?) {
+                MixinApplication.appContext.runOnUiThread {
+                    walletConnectLiveData.connected = false
+                }
+            }
+
+            override fun onClosing(webSocket: WebSocket, code: Int, reason: String) {
+                MixinApplication.appContext.runOnUiThread {
+                    walletConnectLiveData.connected = false
+                }
+            }
+        })
     }
 
     var remotePeerMeta: WCPeerMeta? = null
+    var balance: BigInteger? = null
+    var address: String? = null
 
     fun connect(url: String): Boolean {
         disconnect()
@@ -81,6 +128,8 @@ object WalletConnect {
 
     fun disconnect() {
         remotePeerMeta = null
+        balance = null
+        address = null
         if (wcClient.session != null) {
             wcClient.killSession()
         } else {
@@ -111,6 +160,17 @@ object WalletConnect {
         return when (chainId) {
             Chain.Ethereum.chainId.toString() -> Chain.Ethereum.name
             Chain.Polygon.chainId.toString() -> Chain.Polygon.name
+            else -> null
+        }
+    }
+
+    fun getBalanceString(): String? {
+        val balance = this.balance ?: return null
+        val chainId = wcClient.chainId ?: return null
+
+        return when (chainId) {
+            Chain.Ethereum.chainId.toString() -> "$balance ${Chain.Ethereum.symbol}"
+            Chain.Polygon.chainId.toString() -> "$balance ${Chain.Polygon.symbol}"
             else -> null
         }
     }

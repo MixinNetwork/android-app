@@ -28,6 +28,7 @@ import androidx.compose.ui.Alignment.Companion.CenterVertically
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -45,11 +46,13 @@ fun WalletConnectCompose(
     peerMeta: WCPeerMeta?,
     action: String,
     desc: String?,
-    onDismissClick: (() -> Unit),
-    onCancelClick: (() -> Unit),
-    onApproveClick: (() -> Unit),
-    onBiometricClick: (() -> Unit),
-    onPinComplete: ((String) -> Unit),
+    balance: String?,
+    onDisconnectClick: (() -> Unit)?,
+    onDismissClick: (() -> Unit)?,
+    onCancelClick: (() -> Unit)?,
+    onApproveClick: (() -> Unit)?,
+    onBiometricClick: (() -> Unit)?,
+    onPinComplete: ((String) -> Unit)?,
 ) {
     MixinAppTheme {
         Column(
@@ -67,7 +70,7 @@ fun WalletConnectCompose(
                     .padding(horizontal = 8.dp)
                     .clip(CircleShape)
                     .clickable {
-                        onDismissClick()
+                        onDismissClick?.invoke()
                     },
                 contentDescription = null
             )
@@ -96,23 +99,36 @@ fun WalletConnectCompose(
                         .align(alignment = CenterHorizontally)
                         .padding(horizontal = 32.dp)
                         .animateContentSize()
-                        .heightIn(0.dp, if (step == WCStep.Input) 120.dp else 300.dp)
+                        .heightIn(0.dp, if (step == WCStep.Input || step == WCStep.Loading) 120.dp else 300.dp)
                         .verticalScroll(rememberScrollState()),
                     textAlign = TextAlign.Start,
                     text = desc,
                     color = MixinAppTheme.colors.textMinor
                 )
             }
+            if (step == WCStep.Account && balance != null) {
+                Spacer(modifier = Modifier.height(16.dp))
+                Text(
+                    modifier = Modifier
+                        .align(alignment = CenterHorizontally)
+                        .padding(horizontal = 32.dp),
+                    text = balance,
+                    textAlign = TextAlign.Center,
+                    color = MixinAppTheme.colors.textPrimary,
+                    fontSize = 18.sp
+                )
+            }
             Spacer(modifier = Modifier.weight(1f))
             WalletConnectPinKeyBoard(
                 step,
+                onDisconnectClick = onDisconnectClick,
                 onCancelClick = onCancelClick,
                 onApproveClick = onApproveClick,
                 onBiometricClick = {
-                    onBiometricClick()
+                    onBiometricClick?.invoke()
                 }
             ) { pin ->
-                onPinComplete.invoke(pin)
+                onPinComplete?.invoke(pin)
             }
         }
     }
@@ -123,7 +139,7 @@ fun PeerMeta(peerMeta: WCPeerMeta) {
     Row(
         modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
         verticalAlignment = CenterVertically,
-        horizontalArrangement = Arrangement.Center,
+        horizontalArrangement = Arrangement.Center
     ) {
         GlideImage(
             data = peerMeta.icons.last(),
@@ -143,7 +159,7 @@ fun PeerMeta(peerMeta: WCPeerMeta) {
 @Composable
 fun NetworkInfo(
     modifier: Modifier = Modifier,
-    name: String
+    name: String,
 ) {
     Row(
         modifier = modifier.fillMaxWidth().padding(vertical = 8.dp),
@@ -155,7 +171,8 @@ fun NetworkInfo(
                 .padding(start = 8.dp, end = 8.dp)
                 .size(6.dp)
         ) {
-            drawCircle(Color(0xFF3D75E3))
+            drawCircle(color = Color(0xFF00B56E), radius = 12f, style = Stroke(1f))
+            drawCircle(color = Color(0xFF00B56E), radius = 6f)
         }
         Text(
             name,
@@ -174,6 +191,7 @@ fun WalletConnectComposePreview() {
         peerMeta = WCPeerMeta("MyCrypto", "https://app.mycrypto.com", "test description", listOf("")),
         action = "Sign Transaction",
         desc = "long descccccccccccccccccccccccccccccccccccccccccccccccccccc",
-        {}, {}, {}, {}, {}
+        balance = "10.02 MATIC",
+        {}, {}, {}, {}, {}, {}
     )
 }
