@@ -108,7 +108,9 @@
                 android:layout_marginBottom="10dp"
                 android:gravity="center"
                 android:textColor="?attr/text_primary"
-                app:limitedMaxLines="3"
+                android:maxLines="12"
+                android:scrollbars="vertical"
+                app:limitedMaxLines="6"
                 app:expandAction="@string/More"
                 app:expandActionColor="?attr/text_blue"/>
 

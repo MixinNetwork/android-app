@@ -63,9 +63,10 @@
                 android:layout_marginEnd="32dp"
                 android:layout_marginBottom="16dp"
                 android:gravity="center"
-                android:scrollbars="vertical"
                 android:textColor="?attr/text_primary"
-                app:limitedMaxLines="3"
+                android:maxLines="12"
+                android:scrollbars="vertical"
+                app:limitedMaxLines="6"
                 app:expandAction="@string/More"
                 app:expandActionColor="?attr/text_blue"/>
 
