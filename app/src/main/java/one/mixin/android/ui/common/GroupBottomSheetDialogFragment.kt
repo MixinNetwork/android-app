@@ -148,7 +148,7 @@ class GroupBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment(
                     binding.detailTv.isVisible = false
                 } else {
                     binding.detailTv.isVisible = true
-                    binding.detailTv.text = c.announcement
+                    binding.detailTv.originalText = c.announcement
                     binding.detailTv.heightDifferenceCallback = { heightDifference, duration ->
                         if (behavior?.state == BottomSheetBehavior.STATE_COLLAPSED) {
                             behavior?.peekHeight?.let { peekHeight ->
