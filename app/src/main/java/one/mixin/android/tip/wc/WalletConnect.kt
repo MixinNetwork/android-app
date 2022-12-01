@@ -18,6 +18,16 @@ import okhttp3.WebSocket
 import okhttp3.WebSocketListener
 import one.mixin.android.MixinApplication
 import one.mixin.android.extension.runOnUiThread
+import org.web3j.crypto.Credentials
+import org.web3j.crypto.ECKeyPair
+import org.web3j.crypto.Keys
+import org.web3j.crypto.RawTransaction
+import org.web3j.crypto.Sign
+import org.web3j.crypto.TransactionEncoder
+import org.web3j.protocol.Web3j
+import org.web3j.protocol.core.DefaultBlockParameterName
+import org.web3j.protocol.http.HttpService
+import org.web3j.utils.Numeric
 import timber.log.Timber
 import java.math.BigInteger
 
@@ -137,17 +147,20 @@ class WalletConnect private constructor() {
         }
     }
 
-    fun approveSession(accounts: List<String>, chainId: Int) {
-        wcClient.approveSession(accounts, chainId)
+    fun approveSession(priv: ByteArray) {
+        val pub = ECKeyPair.create(priv).publicKey
+        val address = Keys.toChecksumAddress(Keys.getAddress(pub))
+        Timber.d("$TAG address: $address")
+        wcClient.approveSession(listOf(address), Chain.Polygon.chainId)
+
+        val web3j = Web3j.build(HttpService(Chain.Polygon.rpcServers[0]))
+        balance = web3j.ethGetBalance(address, DefaultBlockParameterName.LATEST).sendAsync().get().balance
+        this.address = address
     }
 
     fun rejectSession() {
         wcClient.rejectSession()
         wcClient.disconnect()
-    }
-
-    fun <T> approveRequest(id: Long, result: T) {
-        wcClient.approveRequest(id, result)
     }
 
     fun rejectRequest(id: Long) {
@@ -173,6 +186,49 @@ class WalletConnect private constructor() {
             Chain.Polygon.chainId.toString() -> "$balance ${Chain.Polygon.symbol}"
             else -> null
         }
+    }
+
+    fun signMessage(priv: ByteArray, id: Long, message: ByteArray) {
+        val keyPair = ECKeyPair.create(priv)
+        val signature = Sign.signPrefixedMessage(message, keyPair)
+        val b = ByteArray(65)
+        System.arraycopy(signature.r, 0, b, 0, 32)
+        System.arraycopy(signature.s, 0, b, 32, 32)
+        System.arraycopy(signature.v, 0, b, 64, 1)
+        wcClient.approveRequest(id, Numeric.toHexString(b))
+    }
+
+    fun sendTransaction(priv: ByteArray, id: Long, transaction: WCEthereumTransaction) {
+        val value = transaction.value
+        val gasLimit = transaction.gasLimit
+        val maxFeePerGas = transaction.maxFeePerGas
+        val maxPriorityFeePerGas = transaction.maxPriorityFeePerGas
+        if (value == null || gasLimit == null || maxFeePerGas == null || maxPriorityFeePerGas == null) {
+            Timber.d("$TAG value: $value, gasLimit: $gasLimit, maxFeePerGas: $maxFeePerGas, maxPriorityFeePerGas: $maxPriorityFeePerGas")
+            return
+        }
+
+        val keyPair = ECKeyPair.create(priv)
+        val credential = Credentials.create(keyPair)
+
+        val web3j = Web3j.build(HttpService(Chain.Polygon.rpcServers[0]))
+        val transactionCount = web3j.ethGetTransactionCount(credential.address, DefaultBlockParameterName.LATEST).sendAsync().get()
+        val nonce = transactionCount.transactionCount
+        val v = Numeric.toBigInt(value)
+        Timber.d("$TAG nonce: $nonce, value $v wei")
+        val rawTransaction = RawTransaction.createEtherTransaction(
+            Chain.Polygon.chainId.toLong(),
+            nonce,
+            Numeric.toBigInt(gasLimit),
+            transaction.to,
+            v,
+            Numeric.toBigInt(maxPriorityFeePerGas),
+            Numeric.toBigInt(maxFeePerGas)
+        )
+        val signedMessage = TransactionEncoder.signMessage(rawTransaction, credential)
+        val hexMessage = Numeric.toHexString(signedMessage)
+        Timber.d("$TAG sendTransaction $hexMessage")
+        wcClient.approveRequest(id, hexMessage)
     }
 
     var onSessionRequest: (id: Long, peer: WCPeerMeta) -> Unit = { _, _ -> Unit }
