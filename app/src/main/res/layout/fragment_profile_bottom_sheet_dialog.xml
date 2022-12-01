@@ -12,7 +12,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />
 
-    <androidx.core.widget.NestedScrollView
+    <one.mixin.android.widget.FixedNestedScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_below="@id/title"
@@ -65,7 +65,6 @@
                 android:gravity="center"
                 android:scrollbars="vertical"
                 android:textColor="?attr/text_primary"
-                android:textIsSelectable="true"
                 app:limitedMaxLines="3"
                 app:expandAction="@string/More"
                 app:expandActionColor="?attr/text_blue"/>
@@ -81,5 +80,5 @@
                 android:textSize="12sp"
                 android:textColor="?attr/text_minor"/>
         </LinearLayout>
-    </androidx.core.widget.NestedScrollView>
+    </one.mixin.android.widget.FixedNestedScrollView>
 </RelativeLayout>

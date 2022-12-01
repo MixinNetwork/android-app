@@ -146,7 +146,7 @@ class ExpandableTextView @JvmOverloads constructor(
         val height1 = measuredHeight
         animator?.cancel()
         val dur = (abs(height1 - height0) * 2L).coerceAtMost(300L)
-        heightDifferenceCallback?.invoke(abs(height1 - height0),dur)
+        heightDifferenceCallback?.invoke(abs(height1 - height0), dur)
         animator = ValueAnimator.ofInt(height0, height1)
             .apply {
                 interpolator = FastOutSlowInInterpolator()
@@ -175,7 +175,7 @@ class ExpandableTextView @JvmOverloads constructor(
             }
     }
 
-    var heightDifferenceCallback: ((Int,Long) -> Unit)? = null
+    var heightDifferenceCallback: ((Int, Long) -> Unit)? = null
 
     private fun resolveDisplayedText(staticLayout: StaticLayout): CharSequence? {
         val truncatedTextWithoutCta = staticLayout.text
@@ -235,8 +235,9 @@ class ExpandableTextView @JvmOverloads constructor(
     ) {
         if (textWidth <= 0) return
         val collapsedStaticLayout = getStaticLayout(limitedMaxLines, originalText, textWidth)
-        if (ctaChanged)
+        if (ctaChanged) {
             expandActionStaticLayout = getStaticLayout(1, expandActionSpannable, textWidth)
+        }
         collapsedDisplayedText = resolveDisplayedText(collapsedStaticLayout)
         text = if (collapsed) collapsedDisplayedText else originalText
     }
@@ -251,5 +252,4 @@ class ExpandableTextView @JvmOverloads constructor(
             .setLineSpacing(lineSpacingExtra, lineSpacingMultiplier)
             .build()
     }
-
 }

@@ -11,7 +11,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />
 
-    <androidx.core.widget.NestedScrollView
+    <one.mixin.android.widget.FixedNestedScrollView
         android:id="@+id/scroll_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -55,16 +55,13 @@
                 android:textColor="?attr/text_minor"
                 android:textSize="12sp" />
 
-            <one.mixin.android.widget.linktext.AutoLinkTextView
+            <one.mixin.android.widget.ExpandableTextView
                 android:id="@+id/detail_tv"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="32dp"
                 android:layout_marginEnd="32dp"
                 android:gravity="center_horizontal"
-                android:maxHeight="300dp"
-                android:maxLength="1024"
-                android:scrollbars="vertical"
                 android:textColor="?attr/text_primary"
                 android:textIsSelectable="true" />
 
@@ -123,5 +120,5 @@
                 </FrameLayout>
             </LinearLayout>
         </LinearLayout>
-    </androidx.core.widget.NestedScrollView>
+    </one.mixin.android.widget.FixedNestedScrollView>
 </RelativeLayout>

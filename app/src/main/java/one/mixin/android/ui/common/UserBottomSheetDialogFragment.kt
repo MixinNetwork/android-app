@@ -764,15 +764,15 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
                 if (behavior?.state == BottomSheetBehavior.STATE_COLLAPSED) {
                     behavior?.peekHeight?.let { peekHeight ->
                         ValueAnimator.ofInt(peekHeight, peekHeight + heightDifference).apply {
-                                interpolator = FastOutSlowInInterpolator()
-                                setDuration(duration)
-                                addUpdateListener { value ->
-                                    behavior?.peekHeight = value.animatedValue as Int
-                                }
-                                start()
+                            interpolator = FastOutSlowInInterpolator()
+                            setDuration(duration)
+                            addUpdateListener { value ->
+                                behavior?.peekHeight = value.animatedValue as Int
                             }
+                            start()
+                        }
                     }
-                }else if(behavior?.state == BottomSheetBehavior.STATE_EXPANDED){
+                } else if (behavior?.state == BottomSheetBehavior.STATE_EXPANDED) {
                     behavior?.peekHeight?.let { peekHeight ->
                         behavior?.peekHeight = heightDifference + peekHeight
                     }

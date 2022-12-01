@@ -1,5 +1,6 @@
 package one.mixin.android.ui.common
 
+import android.animation.ValueAnimator
 import android.annotation.SuppressLint
 import android.app.Dialog
 import android.content.ClipData
@@ -10,6 +11,7 @@ import android.view.ViewGroup
 import androidx.core.view.doOnPreDraw
 import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
+import androidx.interpolator.view.animation.FastOutSlowInInterpolator
 import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.bottomsheet.BottomSheetBehavior
@@ -34,7 +36,6 @@ import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.getClipboardManager
 import one.mixin.android.extension.localTime
 import one.mixin.android.extension.notNullWithElse
-import one.mixin.android.extension.screenHeight
 import one.mixin.android.extension.showConfirmDialog
 import one.mixin.android.extension.toast
 import one.mixin.android.session.Session
@@ -148,14 +149,28 @@ class GroupBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment(
                 } else {
                     binding.detailTv.isVisible = true
                     binding.detailTv.text = c.announcement
+                    binding.detailTv.heightDifferenceCallback = { heightDifference, duration ->
+                        if (behavior?.state == BottomSheetBehavior.STATE_COLLAPSED) {
+                            behavior?.peekHeight?.let { peekHeight ->
+                                ValueAnimator.ofInt(peekHeight, peekHeight + heightDifference).apply {
+                                    interpolator = FastOutSlowInInterpolator()
+                                    setDuration(duration)
+                                    addUpdateListener { value ->
+                                        behavior?.peekHeight = value.animatedValue as Int
+                                    }
+                                    start()
+                                }
+                            }
+                        } else if (behavior?.state == BottomSheetBehavior.STATE_EXPANDED) {
+                            behavior?.peekHeight?.let { peekHeight ->
+                                behavior?.peekHeight = heightDifference + peekHeight
+                            }
+                        }
+                    }
                 }
                 initParticipant(changeMenu, c)
             }
         )
-
-        contentView.post {
-            binding.detailTv.maxHeight = requireContext().screenHeight() / 3
-        }
 
         bottomViewModel.refreshConversation(conversationId)
     }
