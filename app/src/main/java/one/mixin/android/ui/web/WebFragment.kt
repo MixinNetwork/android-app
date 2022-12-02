@@ -18,7 +18,6 @@ import android.media.MediaScannerConnection
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
-import android.os.Environment
 import android.provider.MediaStore
 import android.provider.Settings
 import android.util.Base64
@@ -78,6 +77,7 @@ import one.mixin.android.extension.copyFromInputStream
 import one.mixin.android.extension.createImageTemp
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.dpToPx
+import one.mixin.android.extension.getCacheMediaPath
 import one.mixin.android.extension.getClipboardManager
 import one.mixin.android.extension.getOtherPath
 import one.mixin.android.extension.getPublicPicturePath
@@ -94,6 +94,7 @@ import one.mixin.android.extension.openAsUrlOrQrScan
 import one.mixin.android.extension.openCamera
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.openUrl
+import one.mixin.android.extension.shareFile
 import one.mixin.android.extension.showPipPermissionNotification
 import one.mixin.android.extension.toUri
 import one.mixin.android.extension.toast
@@ -136,7 +137,9 @@ import timber.log.Timber
 import java.io.ByteArrayInputStream
 import java.io.File
 import java.io.FileInputStream
-import java.io.FileOutputStream
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 import java.util.concurrent.TimeUnit
 
 @AndroidEntryPoint
@@ -682,7 +685,7 @@ class WebFragment : BaseFragment() {
                         javascript: 
                         var xhr = new XMLHttpRequest();
                         xhr.open('GET', '$url', true);
-                        xhr.setRequestHeader('Content-type','application/octet-stream');
+                        xhr.setRequestHeader('Content-type','text/csv');
                         xhr.responseType = 'blob';
                         xhr.onload = function(e) {
                             if (this.status == 200) {
@@ -1357,9 +1360,8 @@ class WebFragment : BaseFragment() {
 
         @JavascriptInterface
         fun getBase64FromBlobData(base64Data: String) {
-            context.getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS)?.let {
-                saveFileToPath(base64Data, it.newTempFile("test", "txt", false))
-            }
+            val name = SimpleDateFormat("yyyyMMdd_HHmmss_SSS", Locale.US).format(Date())
+            saveFileToPath(base64Data, context.getCacheMediaPath().newTempFile(name, ".csv", false))
         }
 
         private fun saveFileToPath(base64: String, file: File) {
@@ -1371,20 +1373,17 @@ class WebFragment : BaseFragment() {
                     ),
                     0
                 )
-                val os = FileOutputStream(file, false)
-                os.write(fileBytes)
-                os.flush()
-                os.close()
-                Toast.makeText(
-                    context,
-                    context.getString(
-                        R.string.Save_to,
-                        file.absolutePath
-                    ),
-                    Toast.LENGTH_SHORT
-                ).show()
+                file.outputStream().use { writer ->
+                    writer.write(fileBytes)
+                }
+                val activity = MixinApplication.get().currentActivity
+                if (activity != null) {
+                    activity.shareFile(file)
+                } else {
+                    Toast.makeText(context, context.getString(R.string.Save_to, file.absolutePath), Toast.LENGTH_SHORT).show()
+                }
             } catch (e: Exception) {
-                e.printStackTrace()
+                Timber.e(e)
             }
         }
 
