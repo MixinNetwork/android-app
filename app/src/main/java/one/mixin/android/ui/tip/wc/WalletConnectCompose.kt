@@ -47,6 +47,7 @@ fun WalletConnectCompose(
     action: String,
     desc: String?,
     balance: String?,
+    errorInfo: String?,
     onDisconnectClick: (() -> Unit)?,
     onDismissClick: (() -> Unit)?,
     onCancelClick: (() -> Unit)?,
@@ -121,6 +122,7 @@ fun WalletConnectCompose(
             Spacer(modifier = Modifier.weight(1f))
             WalletConnectPinKeyBoard(
                 step,
+                errorInfo,
                 onDisconnectClick = onDisconnectClick,
                 onCancelClick = onCancelClick,
                 onApproveClick = onApproveClick,
@@ -192,6 +194,7 @@ fun WalletConnectComposePreview() {
         action = "Sign Transaction",
         desc = "long descccccccccccccccccccccccccccccccccccccccccccccccccccc",
         balance = "10.02 MATIC",
+        errorInfo = null,
         {}, {}, {}, {}, {}, {}
     )
 }
