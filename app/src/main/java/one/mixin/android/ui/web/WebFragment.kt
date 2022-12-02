@@ -18,6 +18,7 @@ import android.media.MediaScannerConnection
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.os.Environment
 import android.provider.MediaStore
 import android.provider.Settings
 import android.util.Base64
@@ -87,6 +88,7 @@ import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.isWebUrl
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.matchResourcePattern
+import one.mixin.android.extension.newTempFile
 import one.mixin.android.extension.openAsUrl
 import one.mixin.android.extension.openAsUrlOrQrScan
 import one.mixin.android.extension.openCamera
@@ -132,7 +134,9 @@ import one.mixin.android.widget.SuspiciousLinkView
 import one.mixin.android.widget.WebControlView
 import timber.log.Timber
 import java.io.ByteArrayInputStream
+import java.io.File
 import java.io.FileInputStream
+import java.io.FileOutputStream
 import java.util.concurrent.TimeUnit
 
 @AndroidEntryPoint
@@ -672,8 +676,34 @@ class WebFragment : BaseFragment() {
 
         webView.setDownloadListener { url, _, _, _, _ ->
             try {
+                if (url.startsWith("blob:https")) {
+                    webView.loadUrl(
+                        """
+                        javascript: 
+                        var xhr = new XMLHttpRequest();
+                        xhr.open('GET', '$url', true);
+                        xhr.setRequestHeader('Content-type','application/octet-stream');
+                        xhr.responseType = 'blob';
+                        xhr.onload = function(e) {
+                            if (this.status == 200) {
+                                var blobFile = this.response;
+                                var reader = new FileReader();
+                                reader.readAsDataURL(blobFile);
+                                reader.onloadend = function() {
+                                    base64data = reader.result;
+                                    MixinContext.getBase64FromBlobData(base64data);
+                                }
+                            } else {
+                                console.log(e);
+                            }
+                        };
+                        xhr.send();
+                        """
+                    )
+                    return@setDownloadListener
+                }
                 startActivity(
-                    Intent(Intent.ACTION_VIEW).apply {
+                    Intent(ACTION_VIEW).apply {
                         data = url.toUri()
                     }
                 )
@@ -1323,6 +1353,39 @@ class WebFragment : BaseFragment() {
         @JavascriptInterface
         fun showToast(toast: String) {
             Toast.makeText(context, toast, Toast.LENGTH_SHORT).show()
+        }
+
+        @JavascriptInterface
+        fun getBase64FromBlobData(base64Data: String) {
+            context.getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS)?.let {
+                saveFileToPath(base64Data, it.newTempFile("test", "txt", false))
+            }
+        }
+
+        private fun saveFileToPath(base64: String, file: File) {
+            try {
+                val fileBytes = Base64.decode(
+                    base64.replaceFirst(
+                        "data:application/octet-stream;base64,".toRegex(),
+                        ""
+                    ),
+                    0
+                )
+                val os = FileOutputStream(file, false)
+                os.write(fileBytes)
+                os.flush()
+                os.close()
+                Toast.makeText(
+                    context,
+                    context.getString(
+                        R.string.Save_to,
+                        file.absolutePath
+                    ),
+                    Toast.LENGTH_SHORT
+                ).show()
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
         }
 
         @JavascriptInterface
