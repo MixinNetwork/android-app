@@ -29,6 +29,7 @@ import one.mixin.android.extension.dp
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.withArgs
 import one.mixin.android.tip.wc.WalletConnect
+import one.mixin.android.tip.wc.WalletConnectException
 import one.mixin.android.ui.common.biometric.BiometricDialog
 import one.mixin.android.ui.common.biometric.BiometricInfo
 import one.mixin.android.util.BiometricUtil
@@ -57,6 +58,7 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
     private var pinCompleted = false
 
     private var step by mutableStateOf(WCStep.Account)
+    private var errorInfo: String? by mutableStateOf(null)
 
     init {
         lifecycleScope.launchWhenCreated {
@@ -85,6 +87,7 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 action = requireNotNull(requireArguments().getString(ARGS_ACTION)) { "action can not be null" },
                 desc = requireArguments().getString(ARGS_DESC),
                 balance = WalletConnect.get().getBalanceString(),
+                errorInfo = errorInfo,
                 onDisconnectClick = {
                     WalletConnect.release()
                     dismiss()
@@ -141,7 +144,7 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
     }
 
     override fun onDismiss(dialog: DialogInterface) {
-        if (!pinCompleted) {
+        if (!pinCompleted && step != WCStep.Account) {
             Timber.d("${WalletConnect.TAG} dismiss onReject")
             onReject?.invoke()
         }
@@ -154,11 +157,20 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
 
     private fun doAfterPinComplete(pin: String) = lifecycleScope.launch {
         step = WCStep.Loading
-        onPinComplete?.invoke(pin)
-        pinCompleted = true
-        step = WCStep.Done
-        delay(1000)
-        dismiss()
+        try {
+            onPinComplete?.invoke(pin)
+            pinCompleted = true
+            step = WCStep.Done
+            delay(1000)
+            dismiss()
+        } catch (e: Exception) {
+            errorInfo = if (e is WalletConnectException) {
+                "code: ${e.code}, message: ${e.message}"
+            } else {
+                e.stackTraceToString()
+            }
+            step = WCStep.Error
+        }
     }
 
     private val bottomSheetBehaviorCallback = object : BottomSheetBehavior.BottomSheetCallback() {

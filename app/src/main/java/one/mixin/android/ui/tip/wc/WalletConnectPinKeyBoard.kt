@@ -75,12 +75,13 @@ import one.mixin.android.ui.setting.ui.theme.MixinAppTheme
 import one.mixin.android.util.BiometricUtil
 
 enum class WCStep {
-    Account, Choice, Input, Loading, Done,
+    Account, Choice, Input, Loading, Done, Error,
 }
 
 @Composable
 fun WalletConnectPinKeyBoard(
     step: WCStep,
+    errorInfo: String?,
     onDisconnectClick: (() -> Unit)?,
     onCancelClick: (() -> Unit)?,
     onApproveClick: (() -> Unit)?,
@@ -145,6 +146,24 @@ fun WalletConnectPinKeyBoard(
                         )
                     }
                 }
+            }
+            WCStep.Error -> Column(
+                modifier = Modifier
+                    .height(150.dp)
+                    .fillMaxWidth(),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(
+                    text = "Error",
+                    color = MixinAppTheme.colors.red,
+                    fontSize = 18.sp
+                )
+                Text(
+                    modifier = Modifier.padding(32.dp, 32.dp),
+                    text = errorInfo ?: "",
+                    textAlign = TextAlign.Center,
+                    color = MixinAppTheme.colors.textPrimary
+                )
             }
             WCStep.Done -> Column(
                 modifier = Modifier
@@ -404,5 +423,5 @@ fun WalletConnectPinKeyBoard(
 @Preview
 @Composable
 fun WalletConnectPinKeyBoardPreview() {
-    WalletConnectPinKeyBoard(WCStep.Input, {}, {}, {}, null, null)
+    WalletConnectPinKeyBoard(WCStep.Input, null, {}, {}, {}, null, null)
 }
