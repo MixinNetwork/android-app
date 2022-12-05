@@ -121,6 +121,7 @@ class WalletConnect private constructor() {
     var address: String? = null
 
     private val chain = Chain.Polygon // hardcode
+    private val defaultGasLimit = "250000"
 
     fun connect(url: String): Boolean {
         disconnect()
@@ -210,15 +211,15 @@ class WalletConnect private constructor() {
 
     fun ethSignTransaction(priv: ByteArray, id: Long, transaction: WCEthereumTransaction, approve: Boolean, web3: Web3j? = null): String {
         val value = transaction.value
-        val gasLimit = transaction.gasLimit
         val maxFeePerGas = transaction.maxFeePerGas
         val maxPriorityFeePerGas = transaction.maxPriorityFeePerGas
-        if (value == null || gasLimit == null || maxFeePerGas == null || maxPriorityFeePerGas == null) {
-            val msg = "value: $value, gasLimit: $gasLimit, maxFeePerGas: $maxFeePerGas, maxPriorityFeePerGas: $maxPriorityFeePerGas"
+        if (value == null || maxFeePerGas == null || maxPriorityFeePerGas == null) {
+            val msg = "value: $value maxFeePerGas: $maxFeePerGas, maxPriorityFeePerGas: $maxPriorityFeePerGas"
             Timber.d("$TAG $msg")
             wcClient.rejectRequest(id, msg)
             throw WalletConnectException(-1, msg)
         }
+        val gasLimit = transaction.gasLimit ?: defaultGasLimit
 
         val keyPair = ECKeyPair.create(priv)
         val credential = Credentials.create(keyPair)
@@ -229,15 +230,17 @@ class WalletConnect private constructor() {
         val nonce = transactionCount.transactionCount
         val v = Numeric.toBigInt(value)
         Timber.d("$TAG nonce: $nonce, value $v wei")
-        val rawTransaction = RawTransaction.createEtherTransaction(
+        val rawTransaction = RawTransaction.createTransaction(
             chain.chainId.toLong(),
             nonce,
             Numeric.toBigInt(gasLimit),
             transaction.to,
             v,
+            transaction.data,
             Numeric.toBigInt(maxPriorityFeePerGas),
             Numeric.toBigInt(maxFeePerGas)
         )
+
         val signedMessage = TransactionEncoder.signMessage(rawTransaction, chain.chainId.toLong(), credential)
         val hexMessage = Numeric.toHexString(signedMessage)
         Timber.d("$TAG signTransaction $hexMessage")

@@ -756,8 +756,7 @@ class MainActivity : BlazeBaseActivity() {
                     }
                 }
                 wc.onEthSign = { id, message ->
-                    showWalletConnectBottomSheet("Sign Message", gson.toJson(message), { wc.rejectRequest(id) }) {
-                            priv ->
+                    showWalletConnectBottomSheet("Sign Message", gson.toJson(message), { wc.rejectRequest(id) }) { priv ->
                         wc.ethSignMessage(priv, id, message.data.toByteArray())
                     }
                 }
