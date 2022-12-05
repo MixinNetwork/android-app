@@ -44,7 +44,9 @@ import androidx.fragment.app.FragmentActivity
 import com.jakewharton.rxbinding3.view.clicks
 import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.android.autoDispose
+import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.disposables.Disposable
 import one.mixin.android.R
 import one.mixin.android.databinding.ViewChatControlBinding
 import one.mixin.android.extension.dp
@@ -623,7 +625,14 @@ class ChatControlView : LinearLayout, ActionMode.Callback {
         when (sendStatus) {
             SEND, REPLY -> {
                 binding.chatEt.text?.let {
-                    callback.onSendClick(it.trim().toString())
+                    disposable = Observable.just(it.trim().toString()).debounce(100L, TimeUnit.MILLISECONDS)
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(
+                            {
+                                callback.onSendClick(it)
+                            },
+                            {}
+                        )
                 }
             }
             AUDIO -> {
@@ -636,6 +645,12 @@ class ChatControlView : LinearLayout, ActionMode.Callback {
                 postDelayed(hideRecordTipRunnable, RECORD_TIP_MILLIS)
             }
         }
+    }
+
+    private var disposable: Disposable? = null
+    override fun onDetachedFromWindow() {
+        super.onDetachedFromWindow()
+        disposable?.dispose()
     }
 
     private fun isEditEmpty() = binding.chatEt.text.toString().trim().isEmpty()
