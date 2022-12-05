@@ -9,7 +9,6 @@ import android.view.LayoutInflater
 import android.widget.LinearLayout
 import androidx.core.text.bold
 import androidx.core.view.isVisible
-import androidx.fragment.app.Fragment
 import one.mixin.android.R
 import one.mixin.android.databinding.LayoutAssetBalanceBinding
 import one.mixin.android.extension.numberFormat
@@ -26,7 +25,7 @@ class AssetBalanceLayout(context: Context, attributeSet: AttributeSet) : LinearL
     }
 
     @SuppressLint("SetTextI18n")
-    fun setInfo(t: AssetBiometricItem, fragment: Fragment) {
+    fun setInfo(t: AssetBiometricItem) {
         val asset = t.asset
         val amount = t.amount
         binding.apply {

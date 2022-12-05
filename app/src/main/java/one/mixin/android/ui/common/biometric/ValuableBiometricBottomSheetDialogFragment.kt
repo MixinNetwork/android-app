@@ -21,7 +21,7 @@ abstract class ValuableBiometricBottomSheetDialogFragment<T : AssetBiometricItem
 
     protected fun setBiometricItem() {
         val t = getBiometricItem()
-        assetBalance.setInfo(t, this)
+        assetBalance.setInfo(t)
         checkState(t)
     }
 

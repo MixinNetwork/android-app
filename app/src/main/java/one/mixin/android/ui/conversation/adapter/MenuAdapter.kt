@@ -6,7 +6,6 @@ import android.view.View.GONE
 import android.view.View.VISIBLE
 import android.view.ViewGroup
 import androidx.compose.ui.platform.ViewCompositionStrategy
-import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.RecyclerView
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemChatMenuBinding
@@ -16,7 +15,6 @@ class MenuAdapter(
     private val isGroup: Boolean,
     private val isBot: Boolean,
     private val isSelfCreatedBot: Boolean,
-    private val fragment: Fragment,
 ) : RecyclerView.Adapter<MenuAdapter.MenuHolder>() {
 
     private val buildInMenus = arrayListOf<Menu>().apply {

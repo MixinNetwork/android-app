@@ -77,7 +77,7 @@ class PreconditionBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         }
 
         val t = this.t
-        binding.assetBalance.setInfo(t, this@PreconditionBottomSheetDialogFragment)
+        binding.assetBalance.setInfo(t)
         if (t.state == PaymentStatus.pending.name) {
             lifecycleScope.launch {
                 if (t is TransferBiometricItem) {
@@ -170,7 +170,7 @@ class PreconditionBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             }
             binding.warningTv.isVisible = true
             binding.warningBottomTv.isVisible = false
-            binding.assetBalance.setInfo(t, this@PreconditionBottomSheetDialogFragment)
+            binding.assetBalance.setInfo(t)
             lifecycleScope.launch {
                 checkTransferTrace(t)
             }
