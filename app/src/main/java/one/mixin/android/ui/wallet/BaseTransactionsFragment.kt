@@ -49,10 +49,9 @@ abstract class BaseTransactionsFragment<C> : BaseFragment() {
     }
 
     protected val filtersSheet: BottomSheet by lazy {
-        val builder = BottomSheet.Builder(requireActivity())
-        val bottomSheet = builder.create()
+        val builder = BottomSheet.Builder(requireActivity()).registryOwner(this)
         builder.setCustomView(filterBinding.root)
-        bottomSheet
+        builder.create()
     }
 
     private var currentLiveData: LiveData<C>? = null

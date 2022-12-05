@@ -33,6 +33,11 @@ import android.widget.TextView
 import androidx.appcompat.widget.LinearLayoutCompat
 import androidx.core.content.ContextCompat
 import androidx.core.view.doOnPreDraw
+import androidx.fragment.app.Fragment
+import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.ViewTreeLifecycleOwner
+import androidx.savedstate.SavedStateRegistryOwner
+import androidx.savedstate.setViewTreeSavedStateRegistryOwner
 import one.mixin.android.R
 import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.displayMetrics
@@ -88,8 +93,12 @@ class BottomSheet(
             }
         }
 
-    private inner class ContainerView(context: Context) : FrameLayout(context) {
+    fun registryOwner(lifecycleOwner:LifecycleOwner,savedStateRegistryOwner:SavedStateRegistryOwner){
+        ViewTreeLifecycleOwner.set(container, lifecycleOwner)
+        container.setViewTreeSavedStateRegistryOwner(savedStateRegistryOwner)
+    }
 
+    private inner class ContainerView(context: Context) : FrameLayout(context) {
         @SuppressLint("ClickableViewAccessibility")
         override fun onTouchEvent(ev: MotionEvent?): Boolean {
             if (ev != null && (ev.action == MotionEvent.ACTION_DOWN || ev.action == MotionEvent.ACTION_MOVE)) {
@@ -411,6 +420,13 @@ class BottomSheet(
             bottomSheet.customView = view
             return this
         }
+
+        private fun registryOwner(lifecycleOwner: LifecycleOwner, savedStateRegistryOwner: SavedStateRegistryOwner): Builder {
+            bottomSheet.registryOwner(lifecycleOwner, savedStateRegistryOwner)
+            return this
+        }
+
+        fun registryOwner(fragment: Fragment) = registryOwner(fragment, fragment)
 
         fun setListener(bottomSheetListener: BottomSheetListener): Builder {
             bottomSheet.bottomSheetListener = bottomSheetListener

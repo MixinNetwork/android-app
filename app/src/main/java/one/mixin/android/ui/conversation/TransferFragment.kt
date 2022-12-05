@@ -166,7 +166,7 @@ class TransferFragment() : MixinBottomSheetDialogFragment() {
     }
 
     private val assetsBottomSheet: BottomSheet by lazy {
-        val builder = BottomSheet.Builder(requireActivity(), needFocus = true, softInputResize = false)
+        val builder = BottomSheet.Builder(requireActivity(), needFocus = true, softInputResize = false).registryOwner(this)
         val bottomSheet = builder.create()
         builder.setCustomView(assetsViewBinding.root)
         bottomSheet.setOnDismissListener {

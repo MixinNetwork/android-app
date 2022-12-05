@@ -26,6 +26,7 @@ abstract class MixinBottomSheetDialogFragment : DialogFragment() {
 
     override fun onCreateDialog(savedInstanceState: Bundle?): BottomSheet {
         return BottomSheet.Builder(requireActivity(), needFocus = true, softInputResize = true)
+            .registryOwner(this)
             .create()
     }
 
