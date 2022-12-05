@@ -4,6 +4,8 @@ import GlideImage
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.Text
@@ -86,23 +88,32 @@ private fun AvatarImage(
 @Composable
 fun BadgeCircleImage(icon: String, subIcon: String, iconBorderWidth: Int? = null, flip: Boolean = false) {
     Layout(
+        modifier = Modifier
+            .fillMaxWidth()
+            .fillMaxHeight(),
         content = {
             GlideImage(
                 data = icon,
-                modifier = Modifier.apply {
-                    if (iconBorderWidth != null) {
-                        border(
-                            iconBorderWidth.dp,
-                            MixinAppTheme.colors.primary,
-                            shape = CircleShape
-                        )
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .fillMaxHeight()
+                    .apply {
+                        if (iconBorderWidth != null) {
+                            border(
+                                iconBorderWidth.dp,
+                                MixinAppTheme.colors.primary,
+                                shape = CircleShape
+                            )
+                        }
                     }
-                }.clip(CircleShape),
+                    .clip(CircleShape),
                 placeHolderPainter = painterResource(id = R.drawable.ic_avatar_place_holder)
             )
             GlideImage(
                 data = subIcon,
-                modifier = Modifier.border(1.dp, MixinAppTheme.colors.primary, shape = CircleShape).clip(CircleShape),
+                modifier = Modifier
+                    .border(1.dp, MixinAppTheme.colors.primary, shape = CircleShape)
+                    .clip(CircleShape),
                 placeHolderPainter = painterResource(id = R.drawable.ic_avatar_place_holder)
             )
         }

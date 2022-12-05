@@ -156,8 +156,6 @@ class DepositFragment : BaseFragment() {
                 memoTitle.isVisible = true
                 memoView.setAsset(
                     parentFragmentManager,
-                    this@DepositFragment,
-                    scopeProvider,
                     asset,
                     true,
                     getString(R.string.deposit_memo_notice)
@@ -165,8 +163,6 @@ class DepositFragment : BaseFragment() {
             }
             addressView.setAsset(
                 parentFragmentManager,
-                this@DepositFragment,
-                scopeProvider,
                 asset,
                 false,
                 if (noTag) null else getString(R.string.deposit_notice, asset.symbol)
