@@ -32,6 +32,7 @@ import com.google.android.play.core.install.model.UpdateAvailability
 import com.google.firebase.crashlytics.FirebaseCrashlytics
 import com.google.gson.GsonBuilder
 import com.microsoft.appcenter.AppCenter
+import com.trustwallet.walletconnect.models.ethereum.WCEthereumTransaction
 import com.trustwallet.walletconnect.models.session.WCSession
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
@@ -761,12 +762,12 @@ class MainActivity : BlazeBaseActivity() {
                     }
                 }
                 wc.onEthSignTransaction = { id, transaction ->
-                    showWalletConnectBottomSheet("Sign Transaction", gson.toJson(transaction), { wc.rejectRequest(id) }) { priv ->
+                    showWalletConnectBottomSheet("Sign Transaction\n${getFromTo(transaction)}", "", { wc.rejectRequest(id) }) { priv ->
                         wc.ethSignTransaction(priv, id, transaction, true)
                     }
                 }
                 wc.onEthSendTransaction = { id, transaction ->
-                    showWalletConnectBottomSheet("Send Transaction", gson.toJson(transaction), { wc.rejectRequest(id) }) { priv ->
+                    showWalletConnectBottomSheet("Send Transaction\n${getFromTo(transaction)}", "", { wc.rejectRequest(id) }) { priv ->
                         wc.ethSendTransaction(priv, id, transaction)
                     }
                 }
@@ -789,6 +790,8 @@ class MainActivity : BlazeBaseActivity() {
             }.setOnReject { onReject() }
             .showNow(supportFragmentManager, WalletConnectBottomSheetDialogFragment.TAG)
     }
+
+    private fun getFromTo(transaction: WCEthereumTransaction): String = "${transaction.from.formatPublicKey()} -> ${transaction.to?.formatPublicKey()}"
 
     private fun clearCodeAfterConsume(intent: Intent, code: String) {
         intent.removeExtra(code)
