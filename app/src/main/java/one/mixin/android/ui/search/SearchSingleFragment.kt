@@ -106,6 +106,9 @@ class SearchSingleFragment : BaseFragment(R.layout.fragment_search_single) {
             override fun onTipClick() {
             }
 
+            override fun onUrlClick(url: String) {
+            }
+
             override fun onAsset(assetItem: AssetItem) {
                 activity?.let { WalletActivity.show(it, assetItem) }
             }

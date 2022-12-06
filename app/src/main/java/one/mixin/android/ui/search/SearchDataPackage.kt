@@ -12,6 +12,7 @@ class SearchDataPackage(
     var userList: List<User>? = null,
     var chatList: List<ChatMinimal>? = null,
     var messageList: List<SearchMessageItem>? = null,
+    var url: String? = null
 ) {
 
     companion object {

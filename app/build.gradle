@@ -401,6 +401,9 @@ dependencies {
     kaptAndroidTest "com.google.dagger:hilt-android-compiler:$hiltVersion"
     kaptAndroidTest "androidx.hilt:hilt-compiler:$hiltAndroidxVersion"
 
+    // ML Kit
+    implementation 'com.google.mlkit:entity-extraction:16.0.0-beta4'
+
     // Leak Canary
     debugImplementation "com.squareup.leakcanary:leakcanary-android:$leakcanaryVerison"
     implementation "com.squareup.leakcanary:leakcanary-android-process:$leakcanaryVerison"

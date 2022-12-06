@@ -32,6 +32,7 @@ import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.deserialize
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.isUUID
+import one.mixin.android.extension.openAsUrlOrWeb
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.session.Session
@@ -49,6 +50,7 @@ import one.mixin.android.vo.ChatMinimal
 import one.mixin.android.vo.RecentUsedApp
 import one.mixin.android.vo.SearchMessageItem
 import one.mixin.android.vo.User
+import timber.log.Timber
 
 @AndroidEntryPoint
 class SearchFragment : BaseFragment(R.layout.fragment_search) {
@@ -179,6 +181,10 @@ class SearchFragment : BaseFragment(R.layout.fragment_search) {
                 )
             }
 
+            override fun onUrlClick(url: String) {
+                url.openAsUrlOrWeb(requireContext(), null, parentFragmentManager, lifecycleScope)
+            }
+
             override fun onAsset(assetItem: AssetItem) {
                 activity?.let { WalletActivity.show(it, assetItem) }
             }
@@ -297,6 +303,12 @@ class SearchFragment : BaseFragment(R.layout.fragment_search) {
 
         val cancellationSignal = CancellationSignal()
         this@SearchFragment.cancellationSignal = cancellationSignal
+
+        searchViewModel.fuzzySearchUrl(keyword).let { url ->
+            searchAdapter.setUrlData(url)
+            Timber.e("url:$url")
+        }
+
         messageSearchJob = launch {
             (searchViewModel.fuzzySearch<SearchMessageItem>(cancellationSignal, keyword, 10) as? List<SearchMessageItem>)?.let { searchMessageItems ->
                 searchAdapter.setMessageData(searchMessageItems)
@@ -365,6 +377,7 @@ class SearchFragment : BaseFragment(R.layout.fragment_search) {
         fun onMessageClick(message: SearchMessageItem)
         fun onAsset(assetItem: AssetItem)
         fun onTipClick()
+        fun onUrlClick(url: String)
         fun onChatLongClick(chatMinimal: ChatMinimal, anchor: View): Boolean
     }
 }

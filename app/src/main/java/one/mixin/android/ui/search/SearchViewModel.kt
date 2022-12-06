@@ -29,6 +29,7 @@ import one.mixin.android.repository.ConversationRepository
 import one.mixin.android.repository.UserRepository
 import one.mixin.android.ui.common.message.CleanMessageHelper
 import one.mixin.android.util.ControlledRunner
+import one.mixin.android.util.mlkit.firstUrl
 import one.mixin.android.vo.AssetItem
 import one.mixin.android.vo.ChatMinimal
 import one.mixin.android.vo.Conversation
@@ -56,6 +57,14 @@ internal constructor(
     fun findConversationById(conversationId: String): Observable<Conversation> =
         conversationRepository.findConversationById(conversationId)
             .subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
+
+    suspend inline fun fuzzySearchUrl(query: String?): String? {
+        return if (query.isNullOrEmpty()) {
+            null
+        } else {
+            firstUrl(query)
+        }
+    }
 
     suspend inline fun <reified T> fuzzySearch(
         cancellationSignal: CancellationSignal,
