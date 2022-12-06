@@ -22,6 +22,9 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.extension.booleanFromAttribute
@@ -35,6 +38,8 @@ import one.mixin.android.ui.common.biometric.BiometricInfo
 import one.mixin.android.util.BiometricUtil
 import one.mixin.android.util.SystemUIManager
 import timber.log.Timber
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.seconds
 
 @AndroidEntryPoint
 class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
@@ -59,6 +64,7 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
 
     private var step by mutableStateOf(WCStep.Account)
     private var errorInfo: String? by mutableStateOf(null)
+    private var desc: String? by mutableStateOf(null)
 
     init {
         lifecycleScope.launchWhenCreated {
@@ -78,6 +84,7 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
         savedInstanceState: Bundle?,
     ): View = ComposeView(requireContext()).apply {
         step = if (requireArguments().getBoolean(ARGS_IS_ACCOUNT)) WCStep.Account else WCStep.Choice
+        desc = requireArguments().getString(ARGS_DESC)
         setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
         setContent {
             WalletConnectCompose(
@@ -85,7 +92,7 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 networkName = WalletConnect.get().getNetworkName(),
                 peerMeta = WalletConnect.get().remotePeerMeta,
                 action = requireNotNull(requireArguments().getString(ARGS_ACTION)) { "action can not be null" },
-                desc = requireArguments().getString(ARGS_DESC),
+                desc = desc,
                 balance = WalletConnect.get().getBalanceString(),
                 errorInfo = errorInfo,
                 onDisconnectClick = {
@@ -118,6 +125,8 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
             behavior?.isDraggable = false
             behavior?.addBottomSheetCallback(bottomSheetBehaviorCallback)
         }
+
+        refreshEstimatedGas()
     }
 
     @SuppressLint("RestrictedApi")
@@ -153,6 +162,22 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
 
     override fun dismiss() {
         dismissAllowingStateLoss()
+    }
+
+    private fun refreshEstimatedGas() {
+        val tx = WalletConnect.get().currentWCEthereumTransaction ?: return
+
+        tickerFlow(15.seconds)
+            .onEach { desc = WalletConnect.get().getHumanReadableTransactionInfo(tx) }
+            .launchIn(lifecycleScope)
+    }
+
+    private fun tickerFlow(period: Duration, initialDelay: Duration = Duration.ZERO) = flow {
+        delay(initialDelay)
+        while (true) {
+            emit(Unit)
+            delay(period)
+        }
     }
 
     private fun doAfterPinComplete(pin: String) = lifecycleScope.launch {
