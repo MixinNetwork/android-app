@@ -1,6 +1,7 @@
 package one.mixin.android.util.mlkit
 
 import com.google.android.gms.tasks.Tasks
+import com.google.mlkit.common.model.DownloadConditions
 import com.google.mlkit.nl.entityextraction.Entity
 import com.google.mlkit.nl.entityextraction.EntityExtraction
 import com.google.mlkit.nl.entityextraction.EntityExtractorOptions
@@ -12,10 +13,14 @@ val mlExtractor by lazy {
         EntityExtractorOptions.Builder(EntityExtractorOptions.ENGLISH).build()
     )
 }
+val conditions =
+    DownloadConditions.Builder()
+        .requireWifi()
+        .build()
 
 suspend fun entityInitialize() {
     withContext(Dispatchers.IO) {
-        Tasks.await(mlExtractor.downloadModelIfNeeded())
+        Tasks.await(mlExtractor.downloadModelIfNeeded(conditions))
     }
 }
 
@@ -24,7 +29,7 @@ suspend fun firstUrl(input: String): String? = withContext(Dispatchers.IO) {
         val annotations = Tasks.await(mlExtractor.annotate(input))
         annotations.firstOrNull { annotation -> annotation.entities.any { entity -> entity.type == Entity.TYPE_URL } }?.annotatedText
     } else {
-        Tasks.await(mlExtractor.downloadModelIfNeeded())
+        Tasks.await(mlExtractor.downloadModelIfNeeded(conditions))
         null
     }
 }
