@@ -19,6 +19,7 @@
         <item>@drawable/ic_flag_myr</item>
         <item>@drawable/ic_flag_php</item>
         <item>@drawable/ic_flag_sgd</item>
+        <item>@drawable/ic_flag_twd</item>
         <item>@drawable/ic_flag_usd</item>
     </integer-array>
     <string-array name="currency_names">
@@ -33,6 +34,7 @@
         <item>MYR</item>
         <item>PHP</item>
         <item>SGD</item>
+        <item>TWD</item>
         <item>USD</item>
     </string-array>
     <string-array name="currency_symbols">
@@ -47,6 +49,7 @@
         <item>RM</item>
         <item>₱</item>
         <item>S$</item>
+        <item>NT$</item>
         <item>$</item>
     </string-array>
 
