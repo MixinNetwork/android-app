@@ -34,7 +34,7 @@
                 android:textColor="?attr/text_primary"
                 android:textSize="@dimen/wallet_balance_text" />
 
-            <one.mixin.android.widget.BadgeCircleImageView
+            <one.mixin.android.widget.OldBadgeCircleImageView
                 android:id="@+id/asset_icon"
                 android:layout_width="64dp"
                 android:layout_height="64dp"

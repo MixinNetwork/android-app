@@ -11,6 +11,7 @@ import one.mixin.android.Constants.ChainId.TRON_CHAIN_ID
 import one.mixin.android.R
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.databinding.FragmentPinBottomSheetAddressBinding
+import one.mixin.android.extension.loadImage
 import one.mixin.android.ui.common.biometric.BiometricBottomSheetDialogFragment
 import one.mixin.android.ui.common.biometric.BiometricInfo
 import one.mixin.android.util.ErrorHandler.Companion.INVALID_ADDRESS
@@ -97,7 +98,8 @@ class PinAddrBottomSheetDialogFragment : BiometricBottomSheetDialogFragment() {
         binding.apply {
             titleView.rightIv.setOnClickListener { dismiss() }
             title.text = getTitle()
-            assetIcon.setContent(assetUrl, chainIconUrl)
+            assetIcon.bg.loadImage(assetUrl, R.drawable.ic_avatar_place_holder)
+            assetIcon.badge.loadImage(chainIconUrl, R.drawable.ic_avatar_place_holder)
             assetName.text = label
             assetAddress.text = if (addressTag.isNullOrBlank()) destination else "$destination:$addressTag"
             biometricLayout.biometricTv.setText(R.string.Verify_by_Biometric)

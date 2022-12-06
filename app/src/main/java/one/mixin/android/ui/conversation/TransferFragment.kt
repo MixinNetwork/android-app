@@ -21,6 +21,7 @@ import android.widget.ArrayAdapter
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.ActivityResultRegistry
 import androidx.annotation.VisibleForTesting
+import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.core.content.res.ResourcesCompat
 import androidx.core.text.bold
 import androidx.core.text.color
@@ -54,6 +55,7 @@ import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.equalsIgnoreCase
 import one.mixin.android.extension.formatPublicKey
 import one.mixin.android.extension.hideKeyboard
+import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.numberFormat
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.numberFormat8
@@ -471,7 +473,8 @@ class TransferFragment() : MixinBottomSheetDialogFragment() {
         binding.assetName.text = asset.name
         binding.assetDesc.text = asset.balance.numberFormat()
         binding.descEnd.text = asset.symbol
-        binding.assetAvatar.setContent(asset)
+        binding.assetAvatar.bg.loadImage(asset.iconUrl, R.drawable.ic_avatar_place_holder)
+        binding.assetAvatar.badge.loadImage(asset.chainIconUrl, R.drawable.ic_avatar_place_holder)
 
         operateKeyboard(true)
         updateAssetAutoComplete(asset)
@@ -698,12 +701,17 @@ class TransferFragment() : MixinBottomSheetDialogFragment() {
         private var typeListener: OnTypeClickListener? = null
 
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ItemHolder =
-            ItemHolder(LayoutInflater.from(parent.context).inflate(R.layout.item_transfer_type, parent, false))
+            ItemHolder(LayoutInflater.from(parent.context).inflate(R.layout.item_transfer_type, parent, false)).apply{
+                // ItemTransferTypeBinding.bind(itemView).typeAvatar.setViewCompositionStrategy(
+                //     ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed
+                // )
+            }
 
         override fun onBindViewHolder(holder: ItemHolder, position: Int) {
             val itemAssert = getItem(position)
             val binding = ItemTransferTypeBinding.bind(holder.itemView)
-            binding.typeAvatar.setContent(itemAssert)
+            binding.typeAvatar.bg.loadImage(itemAssert.iconUrl, R.drawable.ic_avatar_place_holder)
+            binding.typeAvatar.badge.loadImage(itemAssert.chainIconUrl, R.drawable.ic_avatar_place_holder)
             binding.name.text = itemAssert.name
             binding.value.text = itemAssert.balance.numberFormat()
             binding.valueEnd.text = itemAssert.symbol

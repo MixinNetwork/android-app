@@ -57,7 +57,7 @@
                     android:layout_height="1dp"
                     android:layout_centerVertical="true"/>
 
-                <one.mixin.android.widget.BadgeCircleImageView
+                <one.mixin.android.widget.OldBadgeCircleImageView
                     android:id="@+id/asset_avatar"
                     android:layout_width="32dp"
                     android:layout_height="32dp"

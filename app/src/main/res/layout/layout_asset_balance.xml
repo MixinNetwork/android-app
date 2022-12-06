@@ -5,7 +5,7 @@
     android:orientation="vertical"
     xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <one.mixin.android.widget.BadgeCircleImageView
+    <one.mixin.android.widget.OldBadgeCircleImageView
         android:id="@+id/asset_icon"
         android:layout_width="70dp"
         android:layout_height="70dp"
