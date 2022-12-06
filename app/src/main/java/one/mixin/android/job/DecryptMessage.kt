@@ -404,8 +404,6 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                 messageDao.recallPinMessage(msg.messageId, msg.conversationId)
                 pinMessageDao.deleteByMessageId(msg.messageId)
                 messageMentionDao.deleteMessage(msg.messageId)
-                remoteMessageStatusDao.deleteByMessageId(msg.messageId)
-                remoteMessageStatusDao.updateConversationUnseen(msg.conversationId)
                 if (msg.mediaUrl != null && mediaDownloaded(msg.mediaStatus)) {
                     msg.mediaUrl.getFilePath()?.let {
                         File(it).let { file ->
