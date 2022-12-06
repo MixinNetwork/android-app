@@ -114,6 +114,7 @@ import one.mixin.android.repository.UserRepository
 import one.mixin.android.session.Session
 import one.mixin.android.tip.Tip
 import one.mixin.android.tip.wc.WalletConnect
+import one.mixin.android.tip.wc.getChain
 import one.mixin.android.tip.wc.walletConnectLiveData
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.BatteryOptimizationDialogActivity
@@ -753,7 +754,8 @@ class MainActivity : BlazeBaseActivity() {
                     }
                 }
                 wc.onWalletChangeNetwork = { id, chainId ->
-                    showWalletConnectBottomSheet("${WalletConnect.TAG} onWalletChangeNetwork id: $id, chainId: $chainId", "", { wc.rejectRequest(id) }) { priv ->
+                    showWalletConnectBottomSheet("Change Network", "${WalletConnect.get().chain.name} => ${chainId.getChain()?.name}", { wc.rejectRequest(id) }) { priv ->
+                        wc.walletChangeNetwork(priv, id, chainId)
                     }
                 }
                 wc.onEthSign = { id, message ->
@@ -791,7 +793,7 @@ class MainActivity : BlazeBaseActivity() {
             .showNow(supportFragmentManager, WalletConnectBottomSheetDialogFragment.TAG)
     }
 
-    private fun getFromTo(transaction: WCEthereumTransaction): String = "${transaction.from.formatPublicKey()} -> ${transaction.to?.formatPublicKey()}"
+    private fun getFromTo(transaction: WCEthereumTransaction): String = "${transaction.from.formatPublicKey()} => ${transaction.to?.formatPublicKey()}"
 
     private fun clearCodeAfterConsume(intent: Intent, code: String) {
         intent.removeExtra(code)

@@ -66,7 +66,12 @@ class WalletConnect private constructor() {
         }
         wcc.onWalletChangeNetwork = { id, chainId ->
             Timber.d("$TAG onWalletChangeNetwork id: $id")
-            onWalletChangeNetwork(id, chainId)
+            val chain = chainId.getChain()
+            if (chain == null) {
+                rejectRequest(id, "Network not supported")
+            } else {
+                onWalletChangeNetwork(id, chainId)
+            }
         }
         wcc.onWalletAddNetwork = { id, network ->
             Timber.d("$TAG onWalletAddNetwork id: $id, network: $network")
@@ -126,8 +131,9 @@ class WalletConnect private constructor() {
     var address: String? = null
     var currentWCEthereumTransaction: WCEthereumTransaction? = null
 
-    private val chain = Chain.Polygon // hardcode
-    private val web3j = Web3j.build(HttpService(chain.rpcServers[0]))
+    var chain: Chain = Chain.Polygon
+        private set
+    private var web3j = Web3j.build(HttpService(chain.rpcServers[0]))
 
     fun connect(url: String): Boolean {
         disconnect()
@@ -161,6 +167,7 @@ class WalletConnect private constructor() {
         Timber.d("$TAG address: $address")
         wcClient.approveSession(listOf(address), chain.chainId)
 
+        web3j = Web3j.build(HttpService(chain.rpcServers[0]))
         val balanceResp = web3j.ethGetBalance(address, DefaultBlockParameterName.LATEST)
             .sendAsync()
             .get(web3jTimeout, TimeUnit.SECONDS)
@@ -181,30 +188,32 @@ class WalletConnect private constructor() {
         currentWCEthereumTransaction = null
     }
 
-    fun rejectRequest(id: Long) {
-        wcClient.rejectRequest(id, "Reject by the user")
+    fun rejectRequest(id: Long, message: String = "Reject by the user") {
+        wcClient.rejectRequest(id, message)
         currentWCEthereumTransaction = null
+    }
+
+    fun walletChangeNetwork(priv: ByteArray, id: Long, chainId: Int = Chain.Polygon.chainId) {
+        val chain = chainId.getChain()
+        if (chain == null) {
+            rejectRequest(id, "Network not supported")
+            return
+        }
+        this.chain = chain
+        approveSession(priv)
     }
 
     fun getNetworkName(): String? {
         val chainId = wcClient.chainId ?: return null
 
-        return when (chainId) {
-            Chain.Ethereum.chainId.toString() -> Chain.Ethereum.name
-            Chain.Polygon.chainId.toString() -> Chain.Polygon.name
-            else -> null
-        }
+        return chainId.getChainName()
     }
 
     fun getBalanceString(): String? {
         val balance = this.balance ?: return null
         val chainId = wcClient.chainId ?: return null
 
-        return when (chainId) {
-            Chain.Ethereum.chainId.toString() -> "$balance ${Chain.Ethereum.symbol}"
-            Chain.Polygon.chainId.toString() -> "$balance ${Chain.Polygon.symbol}"
-            else -> null
-        }
+        return "$balance ${chainId.getChainSymbol()}"
     }
 
     fun ethSignMessage(priv: ByteArray, id: Long, message: ByteArray) {
