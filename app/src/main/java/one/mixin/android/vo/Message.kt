@@ -34,8 +34,8 @@ import java.io.Serializable
 )
 class Message(
     @PrimaryKey
-    @SerializedName("id")
-    @ColumnInfo(name = "id")
+    @SerializedName("message_id")
+    @ColumnInfo(name = "message_id")
     var messageId: String,
 
     @SerializedName("conversation_id")
@@ -141,15 +141,6 @@ class Message(
 
     @ColumnInfo(name = "media_waveform", typeAffinity = ColumnInfo.BLOB)
     val mediaWaveform: ByteArray? = null,
-
-    @Deprecated(
-        "Replace with mediaMimeType",
-        ReplaceWith("@{link mediaMimeType}", "one.mixin.android.vo.Message.mediaMimeType"),
-        DeprecationLevel.ERROR
-    )
-    @SerializedName("media_mine_type")
-    @ColumnInfo(name = "media_mine_type")
-    val mediaMineType: String? = null,
 
     @SerializedName("quote_message_id")
     @ColumnInfo(name = "quote_message_id")

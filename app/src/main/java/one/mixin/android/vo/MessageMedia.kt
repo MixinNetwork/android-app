@@ -5,7 +5,7 @@ import androidx.room.ColumnInfo
 class MessageMedia(
     @ColumnInfo(name = "category")
     override val type: String,
-    @ColumnInfo(name = "id")
+    @ColumnInfo(name = "message_id")
     val messageId: String,
     @ColumnInfo(name = "conversation_id")
     val conversationId: String,

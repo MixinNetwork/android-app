@@ -3,10 +3,14 @@ package one.mixin.android.db.pending
 import android.content.ContentValues
 import android.content.Context
 import android.database.sqlite.SQLiteDatabase
+import androidx.room.AutoMigration
 import androidx.room.Database
+import androidx.room.DeleteColumn
 import androidx.room.InvalidationTracker
+import androidx.room.RenameColumn
 import androidx.room.Room
 import androidx.room.RoomDatabase
+import androidx.room.migration.AutoMigrationSpec
 import androidx.sqlite.db.SupportSQLiteDatabase
 import one.mixin.android.db.FloodMessageDao
 import one.mixin.android.db.JobDao
@@ -21,7 +25,10 @@ import one.mixin.android.vo.MessageMedia
         (PendingMessage::class),
         (Job::class)
     ],
-    version = 1
+    version = 2,
+    autoMigrations = [
+        AutoMigration(from = 1, to = 2, spec = PendingDatabaseImp.Companion.MIGRATION_1_2::class),
+    ]
 )
 abstract class PendingDatabaseImp : RoomDatabase(), PendingDatabase {
     abstract override fun floodMessageDao(): FloodMessageDao
@@ -33,6 +40,17 @@ abstract class PendingDatabaseImp : RoomDatabase(), PendingDatabase {
         private var INSTANCE: PendingDatabaseImp? = null
 
         private val lock = Any()
+
+        @RenameColumn(
+            tableName = "pending_messages",
+            fromColumnName = "id",
+            toColumnName = "message_id"
+        )
+        @DeleteColumn(
+            tableName = "pending_messages",
+            columnName = "media_mine_type"
+        )
+        internal class MIGRATION_1_2 : AutoMigrationSpec
 
         fun getDatabase(context: Context, floodMessageDao: FloodMessageDao, jobDao: JobDao): PendingDatabaseImp {
             synchronized(lock) {

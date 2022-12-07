@@ -25,8 +25,8 @@ interface PinMessageDao : BaseDao<PinMessage> {
 
     @Query(
         """
-        SELECT m.id AS messageId, m.category AS type, m.content AS content FROM pin_messages pm
-        INNER JOIN messages m ON m.id = pm.message_id
+        SELECT m.message_id AS messageId, m.category AS type, m.content AS content FROM pin_messages pm
+        INNER JOIN messages m ON m.message_id = pm.message_id
         WHERE pm.conversation_id = :conversationId
         """
     )
@@ -35,7 +35,7 @@ interface PinMessageDao : BaseDao<PinMessage> {
     @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
     @Query(
         """
-        SELECT m.id AS messageId, m.conversation_id AS conversationId, u.user_id AS userId,
+        SELECT m.message_id AS messageId, m.conversation_id AS conversationId, u.user_id AS userId,
         u.full_name AS userFullName, u.identity_number AS userIdentityNumber, u.app_id AS appId, m.category AS type,
         m.content AS content, m.created_at AS createdAt, m.status AS status, m.media_status AS mediaStatus, m.media_waveform AS mediaWaveform,
         m.name AS mediaName, m.media_mime_type AS mediaMimeType, m.media_size AS mediaSize, m.media_width AS mediaWidth, m.media_height AS mediaHeight,
@@ -48,7 +48,7 @@ interface PinMessageDao : BaseDao<PinMessage> {
         su.avatar_url AS sharedUserAvatarUrl, su.is_verified AS sharedUserIsVerified, su.app_id AS sharedUserAppId, mm.mentions AS mentions, mm.has_read as mentionRead,
         c.name AS groupName
         FROM pin_messages pm
-        INNER JOIN messages m ON m.id = pm.message_id
+        INNER JOIN messages m ON m.message_id = pm.message_id
         INNER JOIN users u ON m.user_id = u.user_id
         LEFT JOIN users u1 ON m.participant_id = u1.user_id
         LEFT JOIN snapshots s ON m.snapshot_id = s.snapshot_id
@@ -57,12 +57,12 @@ interface PinMessageDao : BaseDao<PinMessage> {
         LEFT JOIN hyperlinks h ON m.hyperlink = h.hyperlink
         LEFT JOIN users su ON m.shared_user_id = su.user_id
         LEFT JOIN conversations c ON m.conversation_id = c.conversation_id
-        LEFT JOIN message_mentions mm ON m.id = mm.message_id  WHERE m.conversation_id = :conversationId ORDER BY m.created_at ASC
+        LEFT JOIN message_mentions mm ON m.message_id = mm.message_id  WHERE m.conversation_id = :conversationId ORDER BY m.created_at ASC
         """
     )
     fun getPinMessages(conversationId: String): LiveData<List<ChatHistoryMessageItem>>
 
-    @Query("SELECT count(1) FROM pin_messages pm INNER JOIN messages m ON m.id = pm.message_id WHERE m.created_at < (SELECT created_at FROM messages WHERE conversation_id = :conversationId AND id = :messageId) AND pm.conversation_id = :conversationId")
+    @Query("SELECT count(1) FROM pin_messages pm INNER JOIN messages m ON m.message_id = pm.message_id WHERE m.created_at < (SELECT created_at FROM messages WHERE conversation_id = :conversationId AND message_id = :messageId) AND pm.conversation_id = :conversationId")
     suspend fun findPinMessageIndex(conversationId: String, messageId: String): Int
 
     @Query(
@@ -70,7 +70,7 @@ interface PinMessageDao : BaseDao<PinMessage> {
         SELECT u.user_id, m.content, mm.mentions, u.full_name FROM pin_messages pm
         INNER JOIN users u ON m.user_id = u.user_id      
         INNER JOIN messages m ON m.quote_message_id = pm.message_id
-        LEFT JOIN message_mentions mm ON m.id = mm.message_id
+        LEFT JOIN message_mentions mm ON m.message_id = mm.message_id
         WHERE m.conversation_id = :conversationId AND m.category = 'MESSAGE_PIN'
         ORDER BY m.created_at DESC
         LIMIT 1
@@ -78,6 +78,6 @@ interface PinMessageDao : BaseDao<PinMessage> {
     )
     fun getLastPinMessages(conversationId: String): LiveData<PinMessageItem?>
 
-    @Query("SELECT count(1) FROM pin_messages pm INNER JOIN messages m ON m.id = pm.message_id WHERE pm.conversation_id = :conversationId")
+    @Query("SELECT count(1) FROM pin_messages pm INNER JOIN messages m ON m.message_id = pm.message_id WHERE pm.conversation_id = :conversationId")
     fun countPinMessages(conversationId: String): LiveData<Int>
 }

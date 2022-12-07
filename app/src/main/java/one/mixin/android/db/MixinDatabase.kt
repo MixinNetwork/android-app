@@ -5,6 +5,7 @@ import android.content.Context
 import android.database.Cursor
 import android.util.ArrayMap
 import androidx.arch.core.executor.ArchTaskExecutor
+import androidx.room.AutoMigration
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
@@ -129,7 +130,8 @@ import kotlin.math.min
         (ExpiredMessage::class),
         (ConversationExt::class)
     ],
-    version = CURRENT_VERSION
+    version = CURRENT_VERSION,
+    autoMigrations = [AutoMigration(from = 47, to = 48, spec = MixinDatabaseMigrations.Companion.MIGRATION_47_48::class)]
 )
 @TypeConverters(MessageStatusConverter::class, DepositEntryListConverter::class)
 abstract class MixinDatabase : RoomDatabase() {

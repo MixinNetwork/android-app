@@ -7,5 +7,6 @@ import androidx.room.Entity
 data class MessageMinimal(
     @ColumnInfo(name = "rowid")
     val rowId: String,
-    val id: String,
+    @ColumnInfo(name = "message_id")
+    val messageId: String,
 )

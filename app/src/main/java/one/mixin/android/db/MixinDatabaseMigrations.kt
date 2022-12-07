@@ -1,5 +1,8 @@
 package one.mixin.android.db
 
+import androidx.room.DeleteColumn
+import androidx.room.RenameColumn
+import androidx.room.migration.AutoMigrationSpec
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 import one.mixin.android.Constants.DataBase.MINI_VERSION
@@ -351,6 +354,18 @@ class MixinDatabaseMigrations private constructor() {
             }
         }
 
+        @RenameColumn(
+            tableName = "messages",
+            fromColumnName = "id",
+            toColumnName = "message_id"
+        )
+        @DeleteColumn(
+            tableName = "messages",
+            columnName = "media_mine_type"
+        )
+        internal class MIGRATION_47_48 : AutoMigrationSpec
         // If you add a new table, be sure to add a clear method to the DatabaseUtil
     }
 }
+
+

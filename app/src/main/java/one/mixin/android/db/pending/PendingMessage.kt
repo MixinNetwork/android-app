@@ -11,8 +11,8 @@ import one.mixin.android.vo.Message
 )
 class PendingMessage(
     @PrimaryKey
-    @SerializedName("id")
-    @ColumnInfo(name = "id")
+    @SerializedName("message_id")
+    @ColumnInfo(name = "message_id")
     var messageId: String,
 
     @SerializedName("conversation_id")
@@ -119,10 +119,6 @@ class PendingMessage(
     @ColumnInfo(name = "media_waveform", typeAffinity = ColumnInfo.BLOB)
     val mediaWaveform: ByteArray? = null,
 
-    @SerializedName("media_mine_type")
-    @ColumnInfo(name = "media_mine_type")
-    val mediaMineType: String? = null,
-
     @SerializedName("quote_message_id")
     @ColumnInfo(name = "quote_message_id")
     val quoteMessageId: String? = null,
@@ -164,7 +160,6 @@ class PendingMessage(
         message.stickerId,
         message.sharedUserId,
         message.mediaWaveform,
-        null,
         message.quoteMessageId,
         message.quoteContent,
         message.caption
@@ -200,7 +195,6 @@ fun PendingMessage.toMessage() = Message(
     stickerId,
     sharedUserId,
     mediaWaveform,
-    null,
     quoteMessageId,
     quoteContent,
     caption

@@ -541,7 +541,7 @@ internal constructor(
             list.map {
                 createAckJob(
                     CREATE_MESSAGE,
-                    BlazeAckMessage(it.id, MessageStatus.READ.name),
+                    BlazeAckMessage(it.messageId, MessageStatus.READ.name),
                     conversationId
                 )
             }.let {
