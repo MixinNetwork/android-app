@@ -420,7 +420,7 @@ class DataProvider {
                             SELECT m.id AS messageId, u.user_id AS userId, u.avatar_url AS userAvatarUrl, u.full_name AS userFullName,
                             m.category AS type, m.content AS content, m.created_at AS createdAt, m.name AS mediaName 
                             FROM messages m INNER JOIN users u ON m.user_id = u.user_id 
-                            WHERE m.id in (SELECT message_id FROM messages_fts4 WHERE messages_fts4 MATCH ?) 
+                            WHERE m.id IN (SELECT message_id FROM messages_fts4 WHERE messages_fts4 MATCH ?) 
                             AND m.conversation_id = ?
                             ORDER BY m.created_at DESC
                         """
@@ -428,7 +428,7 @@ class DataProvider {
                         """
                             SELECT count(1) FROM messages m 
                             INNER JOIN users u ON m.user_id = u.user_id 
-                            WHERE m.id in (SELECT message_id FROM messages_fts4 WHERE messages_fts4 MATCH ?) 
+                            WHERE m.id IN (SELECT message_id FROM messages_fts4 WHERE messages_fts4 MATCH ?) 
                             AND m.conversation_id = ?
                         """
                     val countStatement = RoomSQLiteQuery.acquire(countSql, 2)
