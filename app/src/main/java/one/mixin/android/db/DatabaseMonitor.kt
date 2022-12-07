@@ -11,7 +11,8 @@ object DatabaseMonitor {
 
     private val logSet = HashMap<String, Long>()
     private var str = StringBuffer()
-    private var enable = false
+    var enable = false
+        private set
 
     fun reset() {
         MixinApplication.get().applicationScope.launch {

@@ -2,6 +2,7 @@ package one.mixin.android.ui.home
 
 import android.Manifest
 import android.annotation.SuppressLint
+import android.content.ClipData
 import android.content.Context
 import android.graphics.drawable.Animatable
 import android.os.Bundle
@@ -49,6 +50,7 @@ import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.databinding.FragmentConversationListBinding
 import one.mixin.android.databinding.ItemListConversationBinding
 import one.mixin.android.databinding.ViewConversationBottomBinding
+import one.mixin.android.db.DatabaseMonitor
 import one.mixin.android.event.BotEvent
 import one.mixin.android.event.CircleDeleteEvent
 import one.mixin.android.extension.alertDialogBuilder
@@ -58,6 +60,7 @@ import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.dpToPx
+import one.mixin.android.extension.getClipboardManager
 import one.mixin.android.extension.networkConnected
 import one.mixin.android.extension.notEmptyWithElse
 import one.mixin.android.extension.notNullWithElse
@@ -459,6 +462,7 @@ class ConversationListFragment : LinkFragment() {
                 R.string.Mute
             }
         )
+        viewBinding.debugTv.isVisible = DatabaseMonitor.enable
         val bottomSheet = builder.create()
         viewBinding.muteTv.setOnClickListener {
             if (isMute) {
@@ -506,6 +510,18 @@ class ConversationListFragment : LinkFragment() {
                 )
                 bottomSheet.dismiss()
             }
+        }
+
+        viewBinding.debugTv.isVisible = DatabaseMonitor.enable
+        viewBinding.debugTv.setOnClickListener {
+            lifecycleScope.launch {
+                val ids = conversationListViewModel.getUnreadMessageIds(conversationId)
+                requireContext().getClipboardManager().setPrimaryClip(
+                    ClipData.newPlainText(null, GsonHelper.customGson.toJson(ids))
+                )
+                toast(R.string.copied_to_clipboard)
+            }
+            bottomSheet.dismiss()
         }
 
         bottomSheet.show()
