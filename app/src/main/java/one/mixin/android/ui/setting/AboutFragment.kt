@@ -3,10 +3,13 @@ package one.mixin.android.ui.setting
 import android.os.Bundle
 import android.view.View
 import androidx.core.view.isVisible
+import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
 import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentAboutBinding
+import one.mixin.android.db.DatabaseMonitor
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.navTo
 import one.mixin.android.extension.openMarket
@@ -15,6 +18,8 @@ import one.mixin.android.extension.putBoolean
 import one.mixin.android.extension.toast
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.setting.diagnosis.DiagnosisFragment
+import one.mixin.android.util.PropertyHelper
+import one.mixin.android.util.PropertyHelper.updateKeyValue
 import one.mixin.android.util.viewBinding
 import one.mixin.android.widget.DebugClickListener
 
@@ -84,6 +89,17 @@ class AboutFragment : BaseFragment(R.layout.fragment_about) {
                     DatabaseDebugFragment.newInstance(),
                     DatabaseDebugFragment.TAG
                 )
+            }
+            databaseDebugLogs.isVisible =
+                defaultSharedPreferences.getBoolean(Constants.Debug.DB_DEBUG, false)
+            lifecycleScope.launch {
+                databaseDebugLogsSc.isChecked = PropertyHelper.findValueByKey(Constants.Debug.DB_DEBUG_LOGS)?.toBoolean() ?: true
+            }
+            databaseDebugLogsSc.setOnCheckedChangeListener { _, isChecked ->
+                lifecycleScope.launch {
+                    updateKeyValue(Constants.Debug.DB_DEBUG_LOGS, isChecked.toString())
+                    DatabaseMonitor.reset()
+                }
             }
         }
     }

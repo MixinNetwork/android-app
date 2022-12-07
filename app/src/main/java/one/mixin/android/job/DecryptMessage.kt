@@ -1397,7 +1397,6 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
         }
 
         pendingMessagesDao.insert(PendingMessage(message))
-        database.insertAndNotifyConversation(message)
         Timber.i("insert ${message.conversationId} - ${message.messageId}")
     }
     private fun findMessage(messageId: String): Message? {

@@ -1,15 +1,31 @@
 package one.mixin.android.db
 
+import kotlinx.coroutines.launch
 import one.mixin.android.BuildConfig
+import one.mixin.android.Constants
+import one.mixin.android.MixinApplication
+import one.mixin.android.util.PropertyHelper
 import timber.log.Timber
 
 object DatabaseMonitor {
 
     private val logSet = HashMap<String, Long>()
     private var str = StringBuffer()
+    private var enable = false
+
+    fun reset() {
+        MixinApplication.get().applicationScope.launch {
+            enable = PropertyHelper.findValueByKey(Constants.Debug.DB_DEBUG_LOGS)
+                ?.toBoolean() ?: false
+        }
+    }
+
+    init {
+        reset()
+    }
 
     fun monitor(sqlQuery: String) {
-        if (!BuildConfig.DEBUG) return
+        if (!BuildConfig.DEBUG || !enable) return
         val sql = sqlQuery.trim()
         val currentThreadName = Thread.currentThread().name
         if (sql.startsWith("BEGIN")) {

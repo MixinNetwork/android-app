@@ -210,7 +210,7 @@ abstract class MixinDatabase : RoomDatabase() {
                     if (BuildConfig.DEBUG) {
                         builder.setQueryCallback(
                             { sqlQuery, bindArgs ->
-                                // DatabaseMonitor.monitor(sqlQuery)
+                                DatabaseMonitor.monitor(sqlQuery)
                             },
                             ArchTaskExecutor.getIOThreadExecutor()
                         )
