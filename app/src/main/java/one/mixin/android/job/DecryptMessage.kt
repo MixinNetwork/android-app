@@ -1395,9 +1395,9 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
         pendingMessageStatusMap.remove(message.messageId)?.let { status ->
             message.status = status
         }
-
+        Timber.i("insert ${message.conversationId} - [${message.messageId} ${message.status}]")
         pendingMessagesDao.insert(PendingMessage(message))
-        Timber.i("insert ${message.conversationId} - ${message.messageId}")
+        Timber.i("insert end ${message.conversationId} - [${message.messageId} ${message.status}]")
     }
     private fun findMessage(messageId: String): Message? {
         pendingMessagesDao.findMessageById(messageId).let { msg ->

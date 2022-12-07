@@ -93,7 +93,7 @@ class AboutFragment : BaseFragment(R.layout.fragment_about) {
             databaseDebugLogs.isVisible =
                 defaultSharedPreferences.getBoolean(Constants.Debug.DB_DEBUG, false)
             lifecycleScope.launch {
-                databaseDebugLogsSc.isChecked = PropertyHelper.findValueByKey(Constants.Debug.DB_DEBUG_LOGS)?.toBoolean() ?: true
+                databaseDebugLogsSc.isChecked = PropertyHelper.findValueByKey(Constants.Debug.DB_DEBUG_LOGS)?.toBoolean() ?: false
             }
             databaseDebugLogsSc.setOnCheckedChangeListener { _, isChecked ->
                 lifecycleScope.launch {

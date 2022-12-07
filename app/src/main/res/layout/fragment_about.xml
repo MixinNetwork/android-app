@@ -115,7 +115,8 @@
                 android:foreground="?android:attr/selectableItemBackground">
 
                 <TextView
-                    style="@style/NormalTextStyle"
+                    android:textColor="@color/colorBlue"
+                    android:textSize="16sp"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_centerVertical="true"
