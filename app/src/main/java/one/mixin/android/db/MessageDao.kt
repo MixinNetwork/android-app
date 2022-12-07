@@ -404,7 +404,7 @@ interface MessageDao : BaseDao<Message> {
         m.media_url AS mediaUrl, m.media_mime_type AS mediaMimeType, m.name AS mediaName, m.media_size AS mediaSize
         FROM messages m INNER JOIN users u ON m.user_id = u.user_id 
         WHERE m.conversation_id = :conversationId
-        AND (m.category in ($DATA)) 
+        AND (m.category IN ($DATA)) 
         AND m.media_mime_type LIKE 'audio%'
         AND m.media_status != 'EXPIRED'
         ORDER BY m.created_at ASC, m.rowid ASC
@@ -436,7 +436,7 @@ interface MessageDao : BaseDao<Message> {
         m.media_url AS mediaUrl, m.media_mime_type AS mediaMimeType, m.name AS mediaName, m.media_size AS mediaSize
         FROM messages m INNER JOIN users u ON m.user_id = u.user_id 
         WHERE m.conversation_id = :conversationId
-        AND m.id in (:ids)
+        AND m.id IN (:ids)
         """
     )
     suspend fun suspendFindMessagesByIds(conversationId: String, ids: List<String>): List<MessageItem>
@@ -445,7 +445,7 @@ interface MessageDao : BaseDao<Message> {
     @Query("$PREFIX_MESSAGE_ITEM WHERE m.id = :messageId")
     fun findMessageItemByMessageId(messageId: String): LiveData<MessageItem?>
 
-    @Query("SELECT id FROM messages WHERE conversation_id = :conversationId AND category in ($TRANSCRIPTS)")
+    @Query("SELECT id FROM messages WHERE conversation_id = :conversationId AND category IN ($TRANSCRIPTS)")
     suspend fun findTranscriptIdByConversationId(conversationId: String): List<String>
 
     @Query("SELECT id FROM messages LIMIT 1")

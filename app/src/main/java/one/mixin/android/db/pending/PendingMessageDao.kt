@@ -95,6 +95,9 @@ interface PendingMessageDao : BaseDao<PendingMessage> {
     @Query("DELETE FROM pending_messages WHERE id = :id")
     fun deleteById(id: String)
 
-    @Query("DELETE FROM pending_messages WHERE id in (:ids)")
+    @Query("DELETE FROM pending_messages WHERE id IN (:ids)")
     fun deleteByIds(ids: List<String>)
+
+    @Query("UPDATE pending_messages SET status = 'READ' WHERE id IN (:ids)")
+    fun markReadIds(ids: List<String>)
 }
