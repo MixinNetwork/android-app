@@ -4,8 +4,10 @@ import android.annotation.SuppressLint
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.view.isVisible
 import androidx.recyclerview.widget.RecyclerView
 import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersAdapter
+import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemContactHeaderBinding
 import one.mixin.android.databinding.ItemWalletSearchBinding
@@ -96,6 +98,7 @@ abstract class ItemViewHolder(val binding: ItemWalletSearchBinding) : RecyclerVi
     fun bindView(
         iconUrl: String,
         chainIconUrl: String?,
+        chainId: String,
         name: String,
         symbol: String,
         priceUsd: String,
@@ -106,6 +109,11 @@ abstract class ItemViewHolder(val binding: ItemWalletSearchBinding) : RecyclerVi
         binding.badgeCircleIv.badge.loadImage(chainIconUrl, R.drawable.ic_avatar_place_holder)
         binding.nameTv.text = name
         binding.symbolTv.text = symbol
+        val chainNetwork = Constants.chainNetworks[chainId]
+        binding.networkTv.isVisible = chainNetwork != null
+        if (chainNetwork != null) {
+            binding.networkTv.text = chainNetwork
+        }
         if (priceUsd == "0") {
             binding.priceTv.setText(R.string.NA)
             binding.changeTv.visibility = View.GONE
@@ -127,6 +135,7 @@ class AssetHolder(binding: ItemWalletSearchBinding) : ItemViewHolder(binding) {
         bindView(
             asset.iconUrl,
             asset.chainIconUrl,
+            asset.chainId,
             asset.name,
             asset.symbol,
             asset.priceUsd,
@@ -144,6 +153,7 @@ class TopAssetHolder(binding: ItemWalletSearchBinding) : ItemViewHolder(binding)
         bindView(
             asset.iconUrl,
             asset.chainIconUrl,
+            asset.chainId,
             asset.name,
             asset.symbol,
             asset.priceUsd,
