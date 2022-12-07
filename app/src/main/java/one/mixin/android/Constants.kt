@@ -276,4 +276,14 @@ object Constants {
             "05891083-63d2-4f3d-bfbe-d14d7fb9b25a" to "BitShares"
         )
     }
+
+    val chainNetworks by lazy {
+        mapOf(
+            "43d61dcd-e413-450d-80b8-101d5e903357" to "ERC-20",
+            "17f78d7c-ed96-40ff-980c-5dc62fecbc85" to "BEP-2",
+            "1949e683-6a08-49e2-b087-d6b72398588f" to "BEP-20",
+            "25dabac5-056a-48ff-b9f9-f67395dc407c" to "TRC-20",
+            "6cfe566e-4aad-470b-8c9a-2fd35b49c68d" to "EOS"
+        )
+    }
 }
