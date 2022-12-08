@@ -2,6 +2,7 @@ package one.mixin.android.job
 
 import com.birbit.android.jobqueue.Params
 import one.mixin.android.RxBus
+import one.mixin.android.db.deleteFtsByMessageId
 import one.mixin.android.db.insertMessage
 import one.mixin.android.event.RecallEvent
 import one.mixin.android.extension.base64Encode
@@ -144,7 +145,7 @@ open class SendMessageJob(
             jobManager.cancelJobByMixinJobId(msg.messageId)
         }
         InvalidateFlow.emit(conversationId)
-        messageFts4Dao.deleteByMessageId(recallMessageId)
+        deleteFtsByMessageId(recallMessageId)
     }
 
     override fun onCancel(cancelReason: Int, throwable: Throwable?) {

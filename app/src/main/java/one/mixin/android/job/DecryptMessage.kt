@@ -17,6 +17,7 @@ import one.mixin.android.crypto.Base64
 import one.mixin.android.crypto.SignalProtocol
 import one.mixin.android.crypto.requestResendKey
 import one.mixin.android.crypto.vo.RatchetStatus
+import one.mixin.android.db.deleteFtsByMessageId
 import one.mixin.android.db.insertAndNotifyConversation
 import one.mixin.android.db.insertMessage
 import one.mixin.android.db.insertNoReplace
@@ -422,7 +423,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                     notificationManager.cancel(msg.conversationId.hashCode())
                 }
                 InvalidateFlow.emit(msg.conversationId)
-                messagesFts4Dao.deleteByMessageId(msg.messageId)
+                deleteFtsByMessageId(msg.messageId)
             }
             updateRemoteMessageStatus(data.messageId, MessageStatus.READ)
             messageHistoryDao.insert(MessageHistory(data.messageId))

@@ -78,7 +78,6 @@ class CircleProgress @JvmOverloads constructor(
         callback = this@CircleProgress
         setFirstTimeNotAnimated(true)
     }
-    
 
     init {
         val a = context.obtainStyledAttributes(attrs, R.styleable.CircleProgress, defStyleAttr, 0)
@@ -344,7 +343,7 @@ class CircleProgress @JvmOverloads constructor(
 
     @SuppressLint("Recycle")
     private fun getObjectAnimatorAngle(): ObjectAnimator? {
-        return mObjectAnimatorAngle?: ObjectAnimator.ofFloat(this, "CurrentGlobalAngle", 0f, 360f).apply {
+        return mObjectAnimatorAngle ?: ObjectAnimator.ofFloat(this, "CurrentGlobalAngle", 0f, 360f).apply {
             interpolator = ANGLE_INTERPOLATOR
             duration = ANGLE_ANIMATOR_DURATION.toLong()
             repeatMode = ValueAnimator.RESTART
