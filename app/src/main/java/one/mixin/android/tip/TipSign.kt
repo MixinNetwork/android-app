@@ -10,6 +10,8 @@ import org.web3j.crypto.ECKeyPair
 import org.web3j.crypto.Sign
 import java.security.MessageDigest
 
+const val TAG_TIP_SIGN = "TIP_sign"
+
 sealed class TipSignSpec(
     val algorithm: String,
     open val curve: String,
