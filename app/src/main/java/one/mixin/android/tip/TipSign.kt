@@ -5,7 +5,6 @@ import net.i2p.crypto.eddsa.spec.EdDSAPrivateKeySpec
 import one.mixin.android.crypto.ed25519
 import one.mixin.android.crypto.getPrivateKey
 import one.mixin.android.crypto.getPublicKey
-import one.mixin.android.extension.base64RawURLEncode
 import one.mixin.android.extension.toHex
 import org.web3j.crypto.ECKeyPair
 import org.web3j.crypto.Sign
@@ -41,7 +40,7 @@ sealed class TipSignSpec(
             override fun public(priv: ByteArray): String {
                 val privateSpec = EdDSAPrivateKeySpec(priv, ed25519)
                 val pub = privateSpec.getPublicKey()
-                return pub.abyte.base64RawURLEncode()
+                return pub.abyte.toHex()
             }
 
             override fun sign(priv: ByteArray, data: ByteArray): String {
@@ -50,7 +49,7 @@ sealed class TipSignSpec(
                 val engine = EdDSAEngine(MessageDigest.getInstance(ed25519.hashAlgorithm))
                 engine.initSign(privateKey)
                 engine.update(data)
-                return engine.sign().base64RawURLEncode()
+                return engine.sign().toHex()
             }
         }
     }
