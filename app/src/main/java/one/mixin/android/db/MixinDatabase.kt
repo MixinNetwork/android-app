@@ -248,7 +248,7 @@ abstract class MixinDatabase : RoomDatabase() {
             supportSQLiteDatabase?.query("PRAGMA wal_checkpoint(FULL)")?.close()
         }
 
-        fun rawDelete(table: String, whereClause: String, whereArgs: Array<Any>): Int? =
+        internal fun rawDelete(table: String, whereClause: String, whereArgs: Array<Any>): Int? =
             supportSQLiteDatabase?.delete(table, whereClause, whereArgs)
 
         private val CALLBACK = object : RoomDatabase.Callback() {
