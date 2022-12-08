@@ -114,6 +114,7 @@ import one.mixin.android.repository.AccountRepository
 import one.mixin.android.repository.UserRepository
 import one.mixin.android.session.Session
 import one.mixin.android.tip.Tip
+import one.mixin.android.tip.tipPrivToPrivateKey
 import one.mixin.android.tip.wc.WalletConnect
 import one.mixin.android.tip.wc.getChain
 import one.mixin.android.tip.wc.walletConnectLiveData
@@ -784,7 +785,7 @@ class MainActivity : BlazeBaseActivity() {
                 tip.getOrRecoverTipPriv(this@MainActivity, pin)
                     .onSuccess { priv ->
                         withContext(Dispatchers.IO) {
-                            callback(priv.sha3Sum256())
+                            callback(tipPrivToPrivateKey(priv))
                         }
                     }.onFailure {
                         Timber.d("${WalletConnect.TAG} ${it.stackTraceToString()}")

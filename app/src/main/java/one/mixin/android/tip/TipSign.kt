@@ -5,6 +5,7 @@ import net.i2p.crypto.eddsa.spec.EdDSAPrivateKeySpec
 import one.mixin.android.crypto.ed25519
 import one.mixin.android.crypto.getPrivateKey
 import one.mixin.android.crypto.getPublicKey
+import one.mixin.android.crypto.sha3Sum256
 import one.mixin.android.extension.toHex
 import org.web3j.crypto.ECKeyPair
 import org.web3j.crypto.Sign
@@ -59,10 +60,10 @@ sealed class TipSignSpec(
 
 sealed class TipSignAction(open val spec: TipSignSpec) {
     data class Public(override val spec: TipSignSpec) : TipSignAction(spec) {
-        operator fun invoke(priv: ByteArray) = spec.public(priv)
+        operator fun invoke(priv: ByteArray) = spec.public(tipPrivToPrivateKey(priv))
     }
     data class Signature(override val spec: TipSignSpec) : TipSignAction(spec) {
-        operator fun invoke(priv: ByteArray, data: ByteArray) = spec.sign(priv, data)
+        operator fun invoke(priv: ByteArray, data: ByteArray) = spec.sign(tipPrivToPrivateKey(priv), data)
     }
 }
 
@@ -85,3 +86,5 @@ private fun matchTipSignSpec(alg: String, crv: String): TipSignSpec? {
         null
     }
 }
+
+fun tipPrivToPrivateKey(priv: ByteArray) = priv.sha3Sum256()
