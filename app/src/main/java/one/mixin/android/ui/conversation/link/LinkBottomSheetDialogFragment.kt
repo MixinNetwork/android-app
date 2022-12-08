@@ -45,7 +45,6 @@ import one.mixin.android.extension.isExternalTransferUrl
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.isUUID
 import one.mixin.android.extension.stripAmountZero
-import one.mixin.android.extension.toHex
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.withArgs
 import one.mixin.android.job.getIconUrlName
@@ -53,6 +52,7 @@ import one.mixin.android.pay.addSlashesIfNeeded
 import one.mixin.android.pay.parseExternalTransferUri
 import one.mixin.android.repository.QrCodeType
 import one.mixin.android.session.Session
+import one.mixin.android.tip.TAG_TIP_SIGN
 import one.mixin.android.tip.Tip
 import one.mixin.android.tip.TipSignAction
 import one.mixin.android.tip.matchTipSignAction
@@ -866,20 +866,20 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                             val res: String = when (signAction) {
                                 is TipSignAction.Public -> {
                                     val pub = signAction(priv)
-                                    Timber.d("@@@ pub: ${pub.base64RawURLDecode().toHex()}")
+                                    Timber.d("$TAG_TIP_SIGN pub: $pub")
                                     pub
                                 }
                                 is TipSignAction.Signature -> {
                                     val sig = signAction(priv, requireNotNull(data) { "Signature action data can not be null" })
-                                    Timber.d("@@@ sig: ${sig.base64RawURLDecode().toHex()}")
+                                    Timber.d("$TAG_TIP_SIGN sig: $sig")
                                     sig
                                 }
                             }
                             val endpoint = uri.getQueryParameter("notify") ?: Constants.API.DEFAULT_TIP_SIGN_ENDPOINT
                             val notifyUrl = "$endpoint?id=$id&res=$res"
-                            Timber.d("@@@ notify url: $notifyUrl")
+                            Timber.d("$TAG_TIP_SIGN notify url: $notifyUrl")
                         }.onFailure {
-                            Timber.d("@@@ ${it.stackTraceToString()}")
+                            Timber.d("$TAG_TIP_SIGN ${it.stackTraceToString()}")
                         }
                 }
             }.showNow(parentFragmentManager, PinInputBottomSheetDialogFragment.TAG)
