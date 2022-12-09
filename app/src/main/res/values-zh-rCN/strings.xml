@@ -1040,7 +1040,7 @@
     <string name="wallet_password_unsafe">PIN 过于简单不安全</string>
     <string name="wallet_pin_modify_biometrics">请输入 PIN 来修改支付 PIN 使用间隔</string>
     <string name="wallet_pin_open_biometrics">请输入 PIN 来启用生物识别支付</string>
-    <string name="wallet_pin_pay_interval_tips">为了您的资产安全，距离上次输入支付 PIN 的时间超过以上指定时间时，再次转账时已然需要支付 PIN</string>
+    <string name="wallet_pin_pay_interval_tips">为了您的资产安全，距离上次输入支付 PIN 的时间超过以上指定时间时，再次转账时依然需要支付 PIN</string>
     <string name="wallet_pin_tops_desc">注意 PIN 丢失无法找回，6 位数字 PIN 是基于去中心化密钥派生协议 Throttled Identity Protocol，阅读文档以**了解更多**。</string>
     <string name="wallet_refresh_address_failed">手续费已变更且刷新失败，请重试。</string>
     <string name="wallet_setting_currency_desc">%1$s（%2$s）</string>
