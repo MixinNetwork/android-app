@@ -1,6 +1,7 @@
 package one.mixin.android.db.pending
 
 import androidx.room.InvalidationTracker
+import kotlinx.coroutines.flow.Flow
 import one.mixin.android.db.FloodMessageDao
 import one.mixin.android.db.JobDao
 import one.mixin.android.vo.FloodMessage
@@ -24,7 +25,7 @@ interface PendingDatabase {
 
     fun deleteFloodMessage(floodMessage: FloodMessage)
 
-    suspend fun getPendingMessages(): List<Message>
+    fun getPendingMessages(): Flow<List<Message>>
 
     fun deletePendingMessageByIds(ids: List<String>)
 

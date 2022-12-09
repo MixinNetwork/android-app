@@ -11,6 +11,7 @@ import one.mixin.android.job.DecryptCallMessage
 import one.mixin.android.job.DecryptMessage
 import one.mixin.android.job.pendingMessageStatusMap
 import one.mixin.android.util.GsonHelper
+import one.mixin.android.util.PENDING_DB_THREAD
 import one.mixin.android.util.chat.InvalidateFlow
 import one.mixin.android.vo.CallStateLiveData
 import one.mixin.android.vo.MessageStatus
@@ -112,57 +113,47 @@ class HedwigImp(
     }
 
     private var pendingJob: Job? = null
-    private val pendingObserver = object : InvalidationTracker.Observer("pending_messages") {
-        override fun onInvalidated(tables: MutableSet<String>) {
-            runPendingJob()
-        }
-    }
 
     private fun startObservePending() {
         runPendingJob()
-        pendingDatabase.addObserver(pendingObserver)
     }
 
     private fun stopObservePending() {
-        pendingDatabase.removeObserver(pendingObserver)
+        pendingJob?.cancel()
     }
-
-    @Synchronized
     private fun runPendingJob() {
-        if (pendingJob?.isActive == true) {
-            return
-        }
-        pendingJob = lifecycleScope.launch(Dispatchers.IO) {
-            try {
-                val list = pendingDatabase.getPendingMessages()
-                messageDao.insertList(list)
-                pendingDatabase.deletePendingMessageByIds(list.map { it.messageId })
-                list.groupBy { it.conversationId }.forEach { (conversationId, messages) ->
-                    conversationExtDao.increment(conversationId, messages.size)
-                    messages.filter { message ->
-                        !message.isMine() && message.status != MessageStatus.READ.name
-                    }.map { message ->
-                        RemoteMessageStatus(
-                            message.messageId,
-                            message.conversationId,
-                            MessageStatus.DELIVERED.name,
-                        )
-                    }.let { remoteMessageStatus ->
-                        remoteMessageStatusDao.insertList(remoteMessageStatus)
+        if (pendingJob?.isActive == true) return
+        pendingJob = lifecycleScope.launch(PENDING_DB_THREAD) {
+            pendingDatabase.getPendingMessages().collect { list ->
+                try {
+                    messageDao.insertList(list)
+                    pendingDatabase.deletePendingMessageByIds(list.map { it.messageId })
+                    list.groupBy { it.conversationId }.forEach { (conversationId, messages) ->
+                        conversationExtDao.increment(conversationId, messages.size)
+                        messages.filter { message ->
+                            !message.isMine() && message.status != MessageStatus.READ.name
+                        }.map { message ->
+                            RemoteMessageStatus(
+                                message.messageId,
+                                message.conversationId,
+                                MessageStatus.DELIVERED.name
+                            )
+                        }.let { remoteMessageStatus ->
+                            remoteMessageStatusDao.insertList(remoteMessageStatus)
+                        }
+                        remoteMessageStatusDao.updateConversationUnseen(conversationId)
+                        messages.last().let { message ->
+                            conversationDao.updateLastMessageId(
+                                message.messageId,
+                                message.createdAt,
+                                message.conversationId
+                            )
+                        }
+                        InvalidateFlow.emit(conversationId)
                     }
-                    messages.last().let { message ->
-                        conversationDao.updateLastMessageId(message.messageId, message.createdAt, message.conversationId)
-                    }
-                    remoteMessageStatusDao.updateConversationUnseen(conversationId)
-                    InvalidateFlow.emit(conversationId)
+                } catch (e: Exception) {
+                    Timber.e(e)
                 }
-
-                if (list.size == 100) {
-                    runPendingJob()
-                }
-            } catch (e: Exception) {
-                Timber.e(e)
-                runPendingJob()
             }
         }
     }

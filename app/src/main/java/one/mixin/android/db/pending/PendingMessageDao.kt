@@ -3,6 +3,7 @@ package one.mixin.android.db.pending
 import androidx.room.Dao
 import androidx.room.Query
 import androidx.room.RoomWarnings
+import kotlinx.coroutines.flow.Flow
 import one.mixin.android.db.BaseDao
 import one.mixin.android.vo.Message
 import one.mixin.android.vo.MessageMedia
@@ -11,7 +12,7 @@ import one.mixin.android.vo.MessageMedia
 interface PendingMessageDao : BaseDao<PendingMessage> {
 
     @Query("SELECT * FROM pending_messages ORDER BY created_at ASC limit 100")
-    suspend fun getMessages(): List<Message>
+    fun getMessages(): Flow<List<Message>>
 
     @Query("SELECT * FROM pending_messages WHERE id = :messageId")
     fun findMessageById(messageId: String): Message?
