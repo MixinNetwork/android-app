@@ -304,9 +304,11 @@ class SearchFragment : BaseFragment(R.layout.fragment_search) {
         val cancellationSignal = CancellationSignal()
         this@SearchFragment.cancellationSignal = cancellationSignal
 
-        searchViewModel.fuzzySearchUrl(keyword).let { url ->
-            searchAdapter.setUrlData(url)
-            Timber.e("url:$url")
+        launch {
+            searchViewModel.fuzzySearchUrl(keyword).let { url ->
+                searchAdapter.setUrlData(url)
+                Timber.e("url:$url")
+            }
         }
 
         messageSearchJob = launch {
