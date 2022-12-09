@@ -89,6 +89,7 @@ class SearchFragment : BaseFragment(R.layout.fragment_search) {
     }
 
     private var searchJob: Job? = null
+    private var searchUrlJob: Job? = null
     private var messageSearchJob: Job? = null
     private var refreshAssetsJob: Job? = null
     private var cancellationSignal: CancellationSignal? = null
@@ -97,6 +98,7 @@ class SearchFragment : BaseFragment(R.layout.fragment_search) {
     @Suppress("UNCHECKED_CAST")
     private fun bindData(keyword: String? = this@SearchFragment.keyword) {
         searchJob?.cancel()
+        searchUrlJob?.cancel()
         messageSearchJob?.cancel()
         refreshAssetsJob?.cancel()
         cancellationSignal?.cancel()
@@ -304,9 +306,10 @@ class SearchFragment : BaseFragment(R.layout.fragment_search) {
         val cancellationSignal = CancellationSignal()
         this@SearchFragment.cancellationSignal = cancellationSignal
 
-        searchViewModel.fuzzySearchUrl(keyword).let { url ->
-            searchAdapter.setUrlData(url)
-            Timber.e("url:$url")
+        searchUrlJob = launch {
+            searchViewModel.fuzzySearchUrl(keyword).let { url ->
+                searchAdapter.setUrlData(url)
+            }
         }
 
         messageSearchJob = launch {
