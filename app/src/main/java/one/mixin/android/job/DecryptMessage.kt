@@ -18,6 +18,7 @@ import one.mixin.android.crypto.SignalProtocol
 import one.mixin.android.crypto.requestResendKey
 import one.mixin.android.crypto.vo.RatchetStatus
 import one.mixin.android.db.deleteFtsByMessageId
+import one.mixin.android.db.insertAndNotifyConversation
 import one.mixin.android.db.insertMessage
 import one.mixin.android.db.insertNoReplace
 import one.mixin.android.db.insertUpdate
@@ -423,11 +424,6 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                     notificationManager.cancel(msg.conversationId.hashCode())
                 }
                 InvalidateFlow.emit(msg.conversationId)
-                conversationDao.updateLastMessageId(
-                    msg.messageId,
-                    msg.createdAt,
-                    msg.conversationId,
-                )
                 deleteFtsByMessageId(msg.messageId)
             }
             updateRemoteMessageStatus(data.messageId, MessageStatus.READ)
@@ -474,7 +470,6 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                                 notificationManager.cancel(cId.hashCode())
                             }
                         }
-
                         // expired message
                         updateExpiredMessageList.forEach { expiredMessage ->
                             val messageId = expiredMessage.first
@@ -1042,7 +1037,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
         } else if (systemMessage.action == SystemConversationAction.EXPIRE.name) {
             jobManager.addJobInBackground(RefreshConversationJob(data.conversationId))
         }
-        insertMessage(message, data)
+        database.insertAndNotifyConversation(message)
         generateNotification(message, data)
     }
 
@@ -1216,7 +1211,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
             data.category == MessageCategory.ENCRYPTED_LOCATION.name ||
             data.category == MessageCategory.ENCRYPTED_TRANSCRIPT.name
         ) {
-            insertMessage(
+            database.insertAndNotifyConversation(
                 createMessage(
                     data.messageId,
                     data.conversationId,
@@ -1226,7 +1221,6 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                     data.createdAt,
                     MessageStatus.FAILED.name,
                 ),
-                data,
             )
         }
     }
@@ -1387,7 +1381,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
 
     private fun insertMessage(message: Message, data: BlazeMessageData) {
         val expireIn = data.expireIn
-        if (data.status != MessageStatus.FAILED.name && expireIn != null && expireIn > 0) {
+        if (expireIn != null && expireIn > 0) {
             if (data.userId == accountId) {
                 val expiredAt = data.createdAt.toSeconds() + expireIn
                 if (expiredAt <= currentTimeSeconds()) {

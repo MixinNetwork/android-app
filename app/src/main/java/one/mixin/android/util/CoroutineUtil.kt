@@ -15,10 +15,6 @@ val PENDING_DB_THREAD by lazy {
     Executors.newSingleThreadExecutor().asCoroutineDispatcher()
 }
 
-val FLOOD_THREAD by lazy {
-    Executors.newSingleThreadExecutor().asCoroutineDispatcher()
-}
-
 val SINGLE_THREAD by lazy {
     Executors.newSingleThreadExecutor().asCoroutineDispatcher()
 }

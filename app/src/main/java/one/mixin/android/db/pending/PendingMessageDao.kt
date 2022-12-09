@@ -4,6 +4,7 @@ import androidx.lifecycle.LiveData
 import androidx.room.Dao
 import androidx.room.Query
 import androidx.room.RoomWarnings
+import kotlinx.coroutines.flow.Flow
 import one.mixin.android.db.BaseDao
 import one.mixin.android.vo.Message
 import one.mixin.android.vo.MessageMedia
@@ -12,7 +13,7 @@ import one.mixin.android.vo.MessageMedia
 interface PendingMessageDao : BaseDao<PendingMessage> {
 
     @Query("SELECT * FROM pending_messages ORDER BY created_at ASC limit 100")
-    suspend fun getMessages(): List<Message>
+    fun getMessages(): Flow<List<Message>>
 
     @Query("select count(1) from pending_messages")
     fun getPendingMessageCount(): LiveData<Int>
