@@ -88,7 +88,7 @@ abstract class PendingDatabaseImp : RoomDatabase(), PendingDatabase {
             return INSTANCE as PendingDatabaseImp
         }
     }
-    override suspend fun getPendingMessages() = pendingMessageDao().getMessages()
+    override fun getPendingMessages() = pendingMessageDao().getMessages()
 
     override fun deletePendingMessageByIds(ids: List<String>) {
         pendingMessageDao().deleteByIds(ids)

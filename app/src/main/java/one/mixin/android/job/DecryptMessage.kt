@@ -52,6 +52,7 @@ import one.mixin.android.ui.web.replaceApp
 import one.mixin.android.util.ColorUtil
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.MessageFts4Helper
+import one.mixin.android.util.PENDING_DB_THREAD
 import one.mixin.android.util.chat.InvalidateFlow
 import one.mixin.android.util.hyperlink.parseHyperlink
 import one.mixin.android.util.mention.parseMentionData
@@ -458,8 +459,18 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
 
                     if (updateExpiredMessageList.isNotEmpty()) {
                         val updateMessageIds = updateExpiredMessageList.map { it.first }
-                        remoteMessageStatusDao.deleteByMessageIds(updateMessageIds)
-                        pendingMessagesDao.markReadIds(updateMessageIds)
+                        lifecycleScope.launch(PENDING_DB_THREAD) {
+                            remoteMessageStatusDao.deleteByMessageIds(updateMessageIds)
+                            pendingMessagesDao.markReadIds(updateMessageIds)
+                            // Data that does not enter the message table will not enter the remote status table, do not consider
+                            val updateConversationList = messageDao.findConversationsByMessages(updateMessageIds)
+                            updateConversationList.forEach { cId ->
+                                remoteMessageStatusDao.updateConversationUnseen(cId)
+                                InvalidateFlow.emit(cId)
+                                notificationManager.cancel(cId.hashCode())
+                            }
+                        }
+                        // expired message
                         updateExpiredMessageList.forEach { expiredMessage ->
                             val messageId = expiredMessage.first
                             val expireAt = expiredMessage.second
@@ -473,13 +484,6 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                                     RxBus.publish(ExpiredEvent(messageId, null, currentTimeSeconds() + localExpiredMessage.expireIn))
                                 }
                             }
-                        }
-                        // Data that does not enter the message table will not enter the remote status table, do not consider
-                        val updateConversationList = messageDao.findConversationsByMessages(updateMessageIds)
-                        updateConversationList.forEach { cId ->
-                            remoteMessageStatusDao.updateConversationUnseen(cId)
-                            InvalidateFlow.emit(cId)
-                            notificationManager.cancel(cId.hashCode())
                         }
                     }
                 }
