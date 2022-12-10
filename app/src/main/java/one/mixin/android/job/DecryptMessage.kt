@@ -424,6 +424,11 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                     notificationManager.cancel(msg.conversationId.hashCode())
                 }
                 InvalidateFlow.emit(msg.conversationId)
+                conversationDao.updateLastMessageId(
+                    msg.messageId,
+                    msg.createdAt,
+                    msg.conversationId
+                )
                 deleteFtsByMessageId(msg.messageId)
             }
             updateRemoteMessageStatus(data.messageId, MessageStatus.READ)
