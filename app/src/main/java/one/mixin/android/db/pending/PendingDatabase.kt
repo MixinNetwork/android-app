@@ -15,7 +15,7 @@ interface PendingDatabase {
 
     fun insertJob(job: Job)
 
-    suspend fun findFloodMessages(): List<FloodMessage>
+    fun findFloodMessages(): Flow<List<FloodMessage>>
 
     fun insertFloodMessage(floodMessage: FloodMessage)
 

@@ -1,9 +1,9 @@
 package one.mixin.android.messenger
 
-import androidx.room.InvalidationTracker
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.launch
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.pending.PendingDatabase
@@ -35,8 +35,6 @@ class HedwigImp(
     override fun land() {
         stopObserveFlood()
         stopObservePending()
-        floodJob?.cancel()
-        pendingJob?.cancel()
     }
 
     private val messageDao by lazy {
@@ -56,32 +54,30 @@ class HedwigImp(
     }
 
     private var floodJob: Job? = null
-    private val floodObserver = object : InvalidationTracker.Observer("flood_messages") {
-        override fun onInvalidated(tables: MutableSet<String>) {
-            runFloodJob()
-        }
-    }
 
     private fun startObserveFlood() {
         runFloodJob()
-        pendingDatabase.addObserver(floodObserver)
     }
 
     private fun stopObserveFlood() {
-        pendingDatabase.removeObserver(floodObserver)
+        floodJob?.cancel()
     }
 
     @Synchronized
     private fun runFloodJob() {
-        if (floodJob?.isActive == true) {
-            return
-        }
+        if (floodJob?.isActive == true) return
         floodJob = lifecycleScope.launch(Dispatchers.IO) {
-            try {
-                processFloodMessage()
-            } catch (e: Exception) {
-                Timber.e(e)
-                runFloodJob()
+            pendingDatabase.findFloodMessages().filter { it.isNotEmpty() }.collect { messages ->
+                messages.forEach { message ->
+                    val data = gson.fromJson(message.data, BlazeMessageData::class.java)
+                    if (data.category.startsWith("WEBRTC_") || data.category.startsWith("KRAKEN_")) {
+                        callMessageDecrypt.onRun(data)
+                    } else {
+                        messageDecrypt.onRun(data)
+                    }
+                    pendingDatabase.deleteFloodMessage(message)
+                    pendingMessageStatusMap.remove(data.messageId)
+                }
             }
         }
     }
@@ -92,25 +88,6 @@ class HedwigImp(
 
     private val messageDecrypt by lazy { DecryptMessage(lifecycleScope) }
     private val callMessageDecrypt by lazy { DecryptCallMessage(callState, lifecycleScope) }
-
-    private tailrec suspend fun processFloodMessage(): Boolean {
-        val messages = pendingDatabase.findFloodMessages()
-        return if (messages.isNotEmpty()) {
-            messages.forEach { message ->
-                val data = gson.fromJson(message.data, BlazeMessageData::class.java)
-                if (data.category.startsWith("WEBRTC_") || data.category.startsWith("KRAKEN_")) {
-                    callMessageDecrypt.onRun(data)
-                } else {
-                    messageDecrypt.onRun(data)
-                }
-                pendingDatabase.deleteFloodMessage(message)
-                pendingMessageStatusMap.remove(data.messageId)
-            }
-            processFloodMessage()
-        } else {
-            false
-        }
-    }
 
     private var pendingJob: Job? = null
 
@@ -124,7 +101,7 @@ class HedwigImp(
     private fun runPendingJob() {
         if (pendingJob?.isActive == true) return
         pendingJob = lifecycleScope.launch(PENDING_DB_THREAD) {
-            pendingDatabase.getPendingMessages().collect { list ->
+            pendingDatabase.getPendingMessages().filter { it.isNotEmpty() }.collect { list ->
                 try {
                     messageDao.insertList(list)
                     pendingDatabase.deletePendingMessageByIds(list.map { it.messageId })
