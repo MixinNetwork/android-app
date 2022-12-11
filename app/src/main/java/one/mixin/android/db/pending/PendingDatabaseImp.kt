@@ -8,6 +8,7 @@ import androidx.room.InvalidationTracker
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.sqlite.db.SupportSQLiteDatabase
+import kotlinx.coroutines.flow.Flow
 import one.mixin.android.db.FloodMessageDao
 import one.mixin.android.db.JobDao
 import one.mixin.android.db.insertNoReplace
@@ -98,7 +99,7 @@ abstract class PendingDatabaseImp : RoomDatabase(), PendingDatabase {
 
     override fun insertJob(job: Job) = jobDao().insertNoReplace(job)
 
-    override suspend fun findFloodMessages() = floodMessageDao().findFloodMessages()
+    override fun findFloodMessages(): Flow<List<FloodMessage>> = floodMessageDao().findFloodMessages()
 
     override fun insertFloodMessage(floodMessage: FloodMessage) = floodMessageDao().insert(floodMessage)
 
