@@ -34,6 +34,32 @@ fun Context.singleChoice(
     }.create().show()
 }
 
+fun Fragment.multiChoice(
+    title: CharSequence? = null,
+    @ArrayRes itemsId: Int,
+    checkedItems: BooleanArray,
+    canceledOnTouchOutside: Boolean = true,
+    onClick: (DialogInterface, Int, Boolean) -> Unit,
+): Unit = requireActivity().multiChoice(title, itemsId, checkedItems, canceledOnTouchOutside, onClick)
+
+fun Context.multiChoice(
+    title: CharSequence? = null,
+    @ArrayRes itemsId: Int,
+    checkedItems: BooleanArray,
+    canceledOnTouchOutside: Boolean = true,
+    onClick: (DialogInterface, Int, Boolean) -> Unit,
+) {
+    MaterialAlertDialogBuilder(this, R.style.MixinAlertDialogTheme).apply {
+        setTitle(title)
+        setMultiChoiceItems(itemsId, checkedItems, onClick)
+        setPositiveButton(android.R.string.cancel) { dialog, _ ->
+            dialog.dismiss()
+        }
+    }.create().apply {
+        setCanceledOnTouchOutside(canceledOnTouchOutside)
+    }.show()
+}
+
 fun Fragment.alert(
     message: String,
     title: String? = null,

@@ -13,6 +13,7 @@ import com.google.mlkit.vision.barcode.common.Barcode.FORMAT_QR_CODE
 import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.extension.closeSilently
+import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.isDonateUrl
 import one.mixin.android.extension.isExternalScheme
@@ -61,7 +62,7 @@ fun handleResult(activity: FragmentActivity, fromShortcut: Boolean, content: Str
     }
     if (content.isDonateUrl() || content.isExternalScheme(activity) || content.isExternalTransferUrl()) {
         result.putExtra(MainActivity.URL, content)
-    } else if (content.startsWith(Constants.Scheme.WALLET_CONNECT_PREFIX)) {
+    } else if (content.startsWith(Constants.Scheme.WALLET_CONNECT_PREFIX) && activity.defaultSharedPreferences.getBoolean(Constants.Debug.WALLET_CONNECT_DEBUG, false)) {
         result.putExtra(MainActivity.WALLET_CONNECT, content)
     } else if (!content.isMixinUrl()) {
         result.putExtra(MainActivity.SCAN, content)
