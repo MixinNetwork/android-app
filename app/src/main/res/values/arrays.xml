@@ -42,7 +42,7 @@
     <string-array name="currency_symbols">
         <item>AED&#160;</item>
         <item>A$</item>
-        <item>$</item>
+        <item>C$</item>
         <item>¥</item>
         <item>€</item>
         <item>£</item>
