@@ -8,11 +8,11 @@ import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentAboutBinding
 import one.mixin.android.extension.defaultSharedPreferences
+import one.mixin.android.extension.multiChoice
 import one.mixin.android.extension.navTo
 import one.mixin.android.extension.openMarket
 import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.putBoolean
-import one.mixin.android.extension.toast
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.setting.diagnosis.DiagnosisFragment
 import one.mixin.android.util.viewBinding
@@ -42,36 +42,31 @@ class AboutFragment : BaseFragment(R.layout.fragment_about) {
             titleView.leftIb.setOnClickListener { activity?.onBackPressedDispatcher?.onBackPressed() }
             imageView.setOnClickListener(object : DebugClickListener() {
                 override fun onDebugClick() {
-                    if (defaultSharedPreferences.getBoolean(Constants.Debug.WEB_DEBUG, false)) {
-                        defaultSharedPreferences.putBoolean(Constants.Debug.WEB_DEBUG, false)
-                        toast(R.string.Disable_web_debug)
-                    } else {
-                        defaultSharedPreferences.putBoolean(Constants.Debug.WEB_DEBUG, true)
-                        toast(R.string.Enable_web_debug)
+                    val dbEnable = defaultSharedPreferences.getBoolean(Constants.Debug.DB_DEBUG, false)
+                    val webEnable = defaultSharedPreferences.getBoolean(Constants.Debug.WEB_DEBUG, false)
+                    val wcEnable = defaultSharedPreferences.getBoolean(Constants.Debug.WALLET_CONNECT_DEBUG, false)
+                    multiChoice(
+                        getString(R.string.Debug_Tools),
+                        R.array.debug_menu,
+                        booleanArrayOf(dbEnable, webEnable, wcEnable),
+                        false
+                    ) { _, index, checked ->
+                        when (index) {
+                            0 -> {
+                                defaultSharedPreferences.putBoolean(Constants.Debug.DB_DEBUG, checked)
+                                database.isVisible = checked
+                            }
+                            1 -> defaultSharedPreferences.putBoolean(Constants.Debug.WEB_DEBUG, checked)
+                            2 -> defaultSharedPreferences.putBoolean(Constants.Debug.WALLET_CONNECT_DEBUG, checked)
+                        }
                     }
                 }
 
                 override fun onSingleClick() {}
             })
-
-            titleView.titleContainer.setOnClickListener(object : DebugClickListener() {
-                override fun onDebugClick() {
-                    if (defaultSharedPreferences.getBoolean(Constants.Debug.DB_DEBUG, false)) {
-                        defaultSharedPreferences.putBoolean(Constants.Debug.DB_DEBUG, false)
-                        defaultSharedPreferences.putBoolean(Constants.Debug.DB_DEBUG_WARNING, true)
-                        database.isVisible = false
-                        toast(R.string.Disable_db_debug)
-                    } else {
-                        defaultSharedPreferences.putBoolean(Constants.Debug.DB_DEBUG, true)
-                        database.isVisible = true
-                        toast(R.string.Enable_db_debug)
-                    }
-                }
-
-                override fun onSingleClick() {
-                    navTo(DiagnosisFragment.newInstance(), DiagnosisFragment.TAG)
-                }
-            })
+            titleView.titleContainer.setOnClickListener {
+                navTo(DiagnosisFragment.newInstance(), DiagnosisFragment.TAG)
+            }
             twitter.setOnClickListener { context?.openUrl("https://twitter.com/MixinMessenger") }
             facebook.setOnClickListener { context?.openUrl("https://fb.com/MixinMessenger") }
             helpCenter.setOnClickListener { context?.openUrl(Constants.HelpLink.CENTER) }

@@ -6,8 +6,10 @@ import android.net.Uri
 import android.os.Bundle
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
+import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.extension.checkUserOrApp
+import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.handleSchemeSend
 import one.mixin.android.extension.toast
 import one.mixin.android.session.Session
@@ -68,7 +70,7 @@ class UrlInterpreterActivity : BaseActivity() {
         if (data.toString().startsWith("https://", true)) {
             val bottomSheet = LinkBottomSheetDialogFragment.newInstance(data.toString())
             bottomSheet.showNow(supportFragmentManager, LinkBottomSheetDialogFragment.TAG)
-        } else if (data.scheme == WC) {
+        } else if (data.scheme == WC && defaultSharedPreferences.getBoolean(Constants.Debug.WALLET_CONNECT_DEBUG, false)) {
             startActivity(
                 Intent(this, MainActivity::class.java).apply {
                     putExtra(MainActivity.WALLET_CONNECT, data.toString())

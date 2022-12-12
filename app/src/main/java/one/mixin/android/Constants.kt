@@ -203,6 +203,7 @@ object Constants {
         const val WEB_DEBUG = "web_debug"
         const val DB_DEBUG = "db_debug"
         const val DB_DEBUG_WARNING = "db_debug_warning"
+        const val WALLET_CONNECT_DEBUG = "wallet_connect_debug"
     }
 
     object Colors {

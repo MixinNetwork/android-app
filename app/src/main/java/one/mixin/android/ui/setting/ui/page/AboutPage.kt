@@ -28,10 +28,10 @@ import androidx.compose.ui.unit.sp
 import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.extension.defaultSharedPreferences
+import one.mixin.android.extension.multiChoice
 import one.mixin.android.extension.openMarket
 import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.putBoolean
-import one.mixin.android.extension.toast
 import one.mixin.android.ui.setting.LocalSettingNav
 import one.mixin.android.ui.setting.SettingDestination
 import one.mixin.android.ui.setting.diagnosis.DiagnosisActivity
@@ -83,19 +83,9 @@ fun AboutPage() {
         topBar = {
             val context = LocalContext.current
             MixinTopAppBar(
-                modifier = Modifier.debugClickable(
-                    onDebugClick = {
-                        showDatabase.value = !showDatabase.value
-                        if (showDatabase.value) {
-                            toast(R.string.Enable_db_debug)
-                        } else {
-                            toast(R.string.Disable_db_debug)
-                        }
-                    },
-                    onClick = {
-                        DiagnosisActivity.show(context)
-                    },
-                ),
+                modifier = Modifier.clickable {
+                    DiagnosisActivity.show(context)
+                },
                 navigationIcon = {
                     MixinBackButton()
                 },
@@ -121,12 +111,25 @@ fun AboutPage() {
             Image(
                 modifier = Modifier
                     .debugClickable {
-                        if (preferences.getBoolean(Constants.Debug.WEB_DEBUG, false)) {
-                            preferences.putBoolean(Constants.Debug.WEB_DEBUG, false)
-                            toast(R.string.Disable_web_debug)
-                        } else {
-                            preferences.putBoolean(Constants.Debug.WEB_DEBUG, true)
-                            toast(R.string.Enable_web_debug)
+                        val dbEnable = preferences.getBoolean(Constants.Debug.DB_DEBUG, false)
+                        val webEnable = preferences.getBoolean(Constants.Debug.WEB_DEBUG, false)
+                        val wcEnable = preferences.getBoolean(Constants.Debug.WALLET_CONNECT_DEBUG, false)
+                        context.multiChoice(
+                            context.getString(R.string.Debug_Tools),
+                            R.array.debug_menu,
+                            booleanArrayOf(dbEnable, webEnable, wcEnable),
+                            false
+                        ) { _, index, checked ->
+                            when (index) {
+                                0 -> {
+                                    preferences.putBoolean(Constants.Debug.DB_DEBUG, checked)
+                                    showDatabase.value = checked
+                                }
+                                1 -> {
+                                    preferences.putBoolean(Constants.Debug.WEB_DEBUG, checked)
+                                }
+                                2 -> preferences.putBoolean(Constants.Debug.WALLET_CONNECT_DEBUG, checked)
+                            }
                         }
                     }
                     .align(Alignment.CenterHorizontally),
