@@ -29,6 +29,9 @@ data class TopAssetItem(
     @SerializedName("chain_icon_url")
     @ColumnInfo(name = "chain_icon_url")
     val chainIconUrl: String?,
+    @SerializedName("asset_key")
+    @ColumnInfo(name = "asset_key")
+    val assetKey: String?,
     val priceUsd: String,
     val changeUsd: String,
 ) : Parcelable {
