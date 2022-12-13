@@ -26,6 +26,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.ensureActive
+import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.Constants.DB_EXPIRED_LIMIT
@@ -48,7 +49,6 @@ import one.mixin.android.db.pending.PendingDatabase
 import one.mixin.android.event.ExpiredEvent
 import one.mixin.android.extension.base64Encode
 import one.mixin.android.extension.currentTimeSeconds
-import one.mixin.android.extension.networkConnected
 import one.mixin.android.extension.notificationManager
 import one.mixin.android.extension.supportsOreo
 import one.mixin.android.job.BaseJob.Companion.PRIORITY_ACK_MESSAGE
@@ -251,10 +251,11 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
     }
 
     override fun onSocketClose() {
+        stopObserveAck()
     }
 
     override fun onSocketOpen() {
-        runAckJob()
+        startObserveAck()
     }
 
     private fun updateIgnoringBatteryOptimizations() {
@@ -309,68 +310,35 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
         }
     }
 
+    private var ackJob: Job? = null
+    private var lastAckPendingCount = 0
     private fun startObserveAck() {
-        pendingDatabase.addObserver(ackObserver)
+        if (ackJob?.isActive == true) return
+        ackJob = lifecycleScope.launch(Dispatchers.IO) {
+            jobDao.findAckJobs().filter { it.isNotEmpty() }.collect { list ->
+                if (list.size == 100) {
+                    jobDao.getJobsCount().apply {
+                        if (this >= 10000 && this - lastAckPendingCount >= 10000) {
+                            lastAckPendingCount = this
+                            reportException("ack job count: $this", Exception())
+                        }
+                    }
+                }
+                messageService.acknowledgements(
+                    list.map {
+                        gson.fromJson(
+                            it.blazeMessage,
+                            BlazeAckMessage::class.java
+                        )
+                    }
+                )
+                jobDao.deleteList(list)
+            }
+        }
     }
 
     private fun stopObserveAck() {
-        pendingDatabase.removeObserver(ackObserver)
-    }
-
-    private var ackJob: Job? = null
-    private val ackObserver = object : InvalidationTracker.Observer("jobs") {
-        override fun onInvalidated(tables: MutableSet<String>) {
-            runAckJob()
-        }
-    }
-
-    @Synchronized
-    private fun runAckJob() {
-        try {
-            if (ackJob?.isActive == true || !networkConnected()) {
-                return
-            }
-            ackJob = lifecycleScope.launch {
-                withContext(Dispatchers.IO) {
-                    processAck()
-                    Session.getExtensionSessionId()?.let {
-                        syncMessageStatusToExtension(it)
-                    }
-                }
-            }
-        } catch (e: Exception) {
-            Timber.e(e)
-        }
-    }
-
-    private var lastAckPendingCount = 0
-    private tailrec suspend fun processAck(): Boolean {
-        val ackMessages = jobDao.findAckJobs()
-        if (ackMessages.isEmpty()) {
-            return false
-        } else if (ackMessages.size == 100) {
-            jobDao.getJobsCount().apply {
-                if (this >= 10000 && this - lastAckPendingCount >= 10000) {
-                    lastAckPendingCount = this
-                    reportException("ack job count: $this", Exception())
-                }
-            }
-        }
-        try {
-            messageService.acknowledgements(
-                ackMessages.map {
-                    gson.fromJson(
-                        it.blazeMessage,
-                        BlazeAckMessage::class.java,
-                    )
-                },
-            )
-            jobDao.deleteList(ackMessages)
-        } catch (e: Exception) {
-            Timber.e(e, "Send ack exception")
-        }
-        ackJob?.ensureActive()
-        return processAck()
+        ackJob?.cancel()
     }
 
     private suspend fun syncMessageStatusToExtension(sessionId: String) {

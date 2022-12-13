@@ -2,13 +2,14 @@ package one.mixin.android.db
 
 import androidx.room.Dao
 import androidx.room.Query
+import kotlinx.coroutines.flow.Flow
 import one.mixin.android.Constants.ACK_LIMIT
 import one.mixin.android.vo.Job
 
 @Dao
 interface JobDao : BaseDao<Job> {
     @Query("SELECT * FROM jobs WHERE `action` = 'ACKNOWLEDGE_MESSAGE_RECEIPTS' ORDER BY rowid ASC LIMIT $ACK_LIMIT")
-    suspend fun findAckJobs(): List<Job>
+    fun findAckJobs(): Flow<List<Job>>
 
     @Query("SELECT * FROM jobs ORDER BY rowid ASC LIMIT $ACK_LIMIT")
     fun limit100(): List<Job>
