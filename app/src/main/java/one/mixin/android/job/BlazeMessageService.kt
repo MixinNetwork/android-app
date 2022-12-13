@@ -319,6 +319,11 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
                         )
                     }
                 )
+                launch {
+                    Session.getExtensionSessionId()?.let {
+                        syncMessageStatusToExtension(it)
+                    }
+                }
                 jobDao.deleteList(list)
             }
         }
