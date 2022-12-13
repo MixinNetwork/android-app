@@ -64,7 +64,6 @@ class GroupCallService : CallService() {
     private val scheduledExecutors = Executors.newScheduledThreadPool(1)
     private val scheduledFutures = mutableMapOf<String, ScheduledFuture<*>>()
     private var reconnectingTimeoutFuture: ScheduledFuture<*>? = null
-    private var subscribeFuture: ScheduledFuture<*>? = null
 
     @Inject
     lateinit var chatWebSocket: ChatWebSocket
@@ -497,7 +496,7 @@ class GroupCallService : CallService() {
 
         val cid = callState.conversationId
         if (cid == null) {
-            Timber.e("$TAG_CALL try send kraken cancel message but conversation id is $cid")
+            Timber.e("$TAG_CALL try send kraken cancel message but conversation id is null")
             disconnect()
             return
         }
@@ -526,7 +525,7 @@ class GroupCallService : CallService() {
 
         val cid = callState.conversationId
         if (cid == null) {
-            Timber.e("$TAG_CALL try send kraken decline message but conversation id is $cid")
+            Timber.e("$TAG_CALL try send kraken decline message but conversation id is null")
             disconnect()
             return
         }
@@ -580,16 +579,6 @@ class GroupCallService : CallService() {
         callExecutor.execute {
             reconnectTimeoutCount = 0
             reconnectingTimeoutFuture?.cancel(true)
-
-            if (subscribeFuture != null) {
-                subscribeFuture?.cancel(true)
-            }
-            subscribeFuture = scheduledExecutors.scheduleAtFixedRate(
-                SubscribeRunnable(),
-                SUBSCRIBE_INTERVAL,
-                SUBSCRIBE_INTERVAL,
-                TimeUnit.SECONDS
-            )
 
             if (fromReconnecting) return@execute
             val cid = callState.conversationId ?: return@execute
@@ -722,8 +711,6 @@ class GroupCallService : CallService() {
     }
 
     override fun onCallDisconnected() {
-        subscribeFuture?.cancel(true)
-        subscribeFuture = null
         disposable?.dispose()
         reconnectTimeoutCount = 0
     }
@@ -759,19 +746,6 @@ class GroupCallService : CallService() {
     inner class ListRunnable(private val conversationId: String) : Runnable {
         override fun run() {
             getPeers(conversationId)
-        }
-    }
-
-    inner class SubscribeRunnable : Runnable {
-        override fun run() {
-            if (callState.isIdle() || callState.reconnecting || callState.disconnected) return
-
-            val cid = callState.conversationId
-            val trackId = callState.trackId
-            if (cid == null || trackId == null) return
-
-            Timber.d("$TAG_CALL sendSubscribe by SubscribeRunnable")
-            sendSubscribe(cid, trackId)
         }
     }
 
@@ -974,7 +948,6 @@ class GroupCallService : CallService() {
     companion object {
         private const val KRAKEN_LIST_INTERVAL = 30L
         private const val RECONNECTING_TIMEOUT = 60L
-        private const val SUBSCRIBE_INTERVAL = 3L
     }
 }
 
