@@ -30,7 +30,6 @@ import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.Constants.DB_EXPIRED_LIMIT
-import one.mixin.android.Constants.MARK_REMOTE_LIMIT
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.RxBus
@@ -352,19 +351,42 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
         }
     }
 
+    private var statusJob: Job? = null
+
     private fun startObserveStatus() {
-        database.invalidationTracker.addObserver(statusObserver)
+        if (statusJob?.isActive == true) {
+            return
+        }
+        statusJob = lifecycleScope.launch(Dispatchers.IO) {
+            remoteMessageStatusDao.findRemoteMessageStatus().filter { it.isNotEmpty() }
+                .collect { list ->
+                    list.map { msg ->
+                        createAckJob(
+                            ACKNOWLEDGE_MESSAGE_RECEIPTS,
+                            BlazeAckMessage(msg.messageId, MessageStatus.READ.name, msg.expireAt)
+                        )
+                    }.apply {
+                        pendingDatabase.insertJobs(this)
+                    }
+                    Session.getExtensionSessionId()?.let { _ ->
+                        val conversationId = list.first().conversationId
+                        list.map { msg ->
+                            createAckJob(
+                                CREATE_MESSAGE,
+                                BlazeAckMessage(msg.messageId, MessageStatus.READ.name),
+                                conversationId
+                            )
+                        }.let { jobs ->
+                            pendingDatabase.insertJobs(jobs)
+                        }
+                    }
+                    remoteMessageStatusDao.deleteByMessageIds(list.map { it.messageId })
+                }
+        }
     }
 
     private fun stopObserveStatus() {
-        database.invalidationTracker.removeObserver(statusObserver)
-    }
-
-    private var statusJob: Job? = null
-    private val statusObserver = object : InvalidationTracker.Observer("remote_messages_status") {
-        override fun onInvalidated(tables: MutableSet<String>) {
-            runStatusJob()
-        }
+        statusJob?.cancel()
     }
 
     private fun startObserveExpired() {
@@ -382,51 +404,6 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
         }
     }
 
-    @Synchronized
-    private fun runStatusJob() {
-        try {
-            if (statusJob?.isActive == true) {
-                return
-            }
-            statusJob = lifecycleScope.launch {
-                withContext(Dispatchers.IO) {
-                    processStatus()
-                }
-            }
-        } catch (e: Exception) {
-            Timber.e(e)
-        }
-    }
-
-    private fun processStatus(): Boolean {
-        val list = remoteMessageStatusDao.findRemoteMessageStatus()
-        if (list.isEmpty()) {
-            return false
-        }
-        list.map { msg ->
-            createAckJob(
-                ACKNOWLEDGE_MESSAGE_RECEIPTS,
-                BlazeAckMessage(msg.messageId, MessageStatus.READ.name, msg.expireAt),
-            )
-        }.apply {
-            pendingDatabase.insertJobs(this)
-        }
-        Session.getExtensionSessionId()?.let { _ ->
-            val conversationId = list.first().conversationId
-            list.map { msg ->
-                createAckJob(CREATE_MESSAGE, BlazeAckMessage(msg.messageId, MessageStatus.READ.name), conversationId)
-            }.let { jobs ->
-                pendingDatabase.insertJobs(jobs)
-            }
-        }
-        remoteMessageStatusDao.deleteByMessageIds(list.map { it.messageId })
-        return if (list.size >= MARK_REMOTE_LIMIT) {
-            statusJob?.ensureActive()
-            processStatus()
-        } else {
-            true
-        }
-    }
 
     private fun runExpiredJob() {
         if (expiredJob?.isActive == true) {
