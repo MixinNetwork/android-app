@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.text.isDigitsOnly
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.RecyclerView
 import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersAdapter
@@ -96,11 +97,13 @@ class SearchDefaultAdapter : RecyclerView.Adapter<ItemViewHolder>(), StickyRecyc
 abstract class ItemViewHolder(val binding: ItemWalletSearchBinding) : RecyclerView.ViewHolder(binding.root) {
     @SuppressLint("SetTextI18n")
     fun bindView(
+        assetId: String,
         iconUrl: String,
         chainIconUrl: String?,
         chainId: String,
         name: String,
         symbol: String,
+        assetKey: String?,
         priceUsd: String,
         changeUsd: String,
         priceFiat: BigDecimal,
@@ -109,7 +112,7 @@ abstract class ItemViewHolder(val binding: ItemWalletSearchBinding) : RecyclerVi
         binding.badgeCircleIv.badge.loadImage(chainIconUrl, R.drawable.ic_avatar_place_holder)
         binding.nameTv.text = name
         binding.symbolTv.text = symbol
-        val chainNetwork = Constants.chainNetworks[chainId]
+        val chainNetwork = getChainNetwork(assetId, chainId, assetKey)
         binding.networkTv.isVisible = chainNetwork != null
         if (chainNetwork != null) {
             binding.networkTv.text = chainNetwork
@@ -133,11 +136,13 @@ abstract class ItemViewHolder(val binding: ItemWalletSearchBinding) : RecyclerVi
 class AssetHolder(binding: ItemWalletSearchBinding) : ItemViewHolder(binding) {
     fun bind(asset: AssetItem, callback: WalletSearchCallback? = null) {
         bindView(
+            asset.assetId,
             asset.iconUrl,
             asset.chainIconUrl,
             asset.chainId,
             asset.name,
             asset.symbol,
+            asset.assetKey,
             asset.priceUsd,
             asset.changeUsd,
             asset.priceFiat()
@@ -151,11 +156,13 @@ class AssetHolder(binding: ItemWalletSearchBinding) : ItemViewHolder(binding) {
 class TopAssetHolder(binding: ItemWalletSearchBinding) : ItemViewHolder(binding) {
     fun bind(asset: TopAssetItem, callback: WalletSearchCallback? = null) {
         bindView(
+            asset.assetId,
             asset.iconUrl,
             asset.chainIconUrl,
             asset.chainId,
             asset.name,
             asset.symbol,
+            asset.assetKey,
             asset.priceUsd,
             asset.changeUsd,
             asset.priceFiat()
@@ -164,6 +171,19 @@ class TopAssetHolder(binding: ItemWalletSearchBinding) : ItemViewHolder(binding)
             callback?.onAssetClick(asset.assetId)
         }
     }
+}
+
+fun getChainNetwork(assetId: String, chainId: String, assetKey: String?): String? {
+    if (assetId == chainId) return null
+
+    if (chainId == Constants.ChainId.TRON_CHAIN_ID) {
+        return if (assetKey?.isDigitsOnly() == true) {
+            Constants.TronNetwork.TRC10
+        } else {
+            Constants.TronNetwork.TRC20
+        }
+    }
+    return Constants.chainNetworks[chainId]
 }
 
 interface WalletSearchCallback {
