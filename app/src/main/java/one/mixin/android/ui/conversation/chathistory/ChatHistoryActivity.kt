@@ -12,7 +12,6 @@ import android.os.Bundle
 import android.provider.Settings
 import android.view.ContextThemeWrapper
 import android.view.View
-import androidx.activity.result.ActivityResultLauncher
 import androidx.appcompat.widget.PopupMenu
 import androidx.core.content.ContextCompat
 import androidx.core.view.children
@@ -132,6 +131,9 @@ class ChatHistoryActivity : BaseActivity() {
     private val isGroup by lazy {
         intent.getBooleanExtra(IS_GROUP, false)
     }
+    private val count by lazy {
+        intent.getIntExtra(COUNT, 0)
+    }
     private val isTranscript by lazy {
         intent.getIntExtra(CATEGORY, TRANSCRIPT) == TRANSCRIPT
     }
@@ -180,8 +182,8 @@ class ChatHistoryActivity : BaseActivity() {
         binding.recyclerView.adapter = chatHistoryAdapter
         if (isTranscript) {
             binding.unpinTv.isVisible = false
-            val livePagedList = buildLivePagedList(conversationRepository.findTranscriptMessageItemById(transcriptId))
-            livePagedList.observe(this) { transcripts ->
+            buildLivePagedList(conversationRepository.findTranscriptMessageItemById(transcriptId))
+                .observe(this) { transcripts ->
                     binding.titleView.rightIb.setOnClickListener {
                         showBottomSheet()
                     }
@@ -228,12 +230,12 @@ class ChatHistoryActivity : BaseActivity() {
                     }.show()
             }
             binding.titleView.rightAnimator.isVisible = false
-            val livePagedList = buildLivePagedList(conversationRepository.getPinMessages(conversationId))
-            livePagedList.observe(this) { list ->
-                    binding.titleView.setSubTitle(
-                        this@ChatHistoryActivity.resources.getQuantityString(R.plurals.pinned_message_title, list.size, list.size),
-                        "",
-                    )
+            binding.titleView.setSubTitle(
+                this@ChatHistoryActivity.resources.getQuantityString(R.plurals.pinned_message_title, count, count),
+                ""
+            )
+            buildLivePagedList(conversationRepository.getPinMessages(conversationId, count))
+                .observe(this) { list ->
                     chatHistoryAdapter.submitList(list)
                 }
         }
@@ -585,7 +587,7 @@ class ChatHistoryActivity : BaseActivity() {
                                         ClipData.newPlainText(null, messageItem.content),
                                     )
                                     toast(R.string.copied_to_clipboard)
-                                } catch (e: ArrayIndexOutOfBoundsException) {
+                                } catch (_: ArrayIndexOutOfBoundsException) {
                                 }
                             }
                             R.id.forward -> {
@@ -741,8 +743,6 @@ class ChatHistoryActivity : BaseActivity() {
             )
     }
 
-    lateinit var getCombineForwardContract: ActivityResultLauncher<ArrayList<TranscriptMessage>>
-
     @SuppressLint("AutoDispose")
     private fun showBottomSheet() {
         val builder = BottomSheet.Builder(this)
@@ -852,6 +852,7 @@ class ChatHistoryActivity : BaseActivity() {
         private const val ENCRYPT_CATEGORY = "encryptCategory"
         private const val IS_GROUP = "is_group"
         private const val CATEGORY = "category"
+        private const val COUNT = "count"
         private const val TRANSCRIPT = 0
         private const val CHAT_HISTORY = 1
         fun show(context: Context, messageId: String, conversationId: String, encryptCategory: EncryptCategory) {
@@ -865,11 +866,12 @@ class ChatHistoryActivity : BaseActivity() {
             )
         }
 
-        fun getPinIntent(context: Context, conversationId: String, isGroup: Boolean): Intent {
+        fun getPinIntent(context: Context, conversationId: String, isGroup: Boolean, count: Int): Intent {
             return Intent(context, ChatHistoryActivity::class.java).apply {
                 putExtra(CONVERSATION_ID, conversationId)
                 putExtra(CATEGORY, CHAT_HISTORY)
                 putExtra(IS_GROUP, isGroup)
+                putExtra(COUNT, count)
             }
         }
     }
