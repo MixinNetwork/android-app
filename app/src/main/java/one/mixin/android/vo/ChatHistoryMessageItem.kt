@@ -8,6 +8,7 @@ import android.view.View
 import androidx.core.net.toFile
 import androidx.core.net.toUri
 import androidx.core.view.isVisible
+import androidx.recyclerview.widget.DiffUtil
 import com.google.android.exoplayer2.util.MimeTypes
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
@@ -63,7 +64,21 @@ class ChatHistoryMessageItem(
     val quoteId: String? = null,
     val quoteContent: String? = null,
     val mentions: String? = null,
-) : ICategory
+) : ICategory {
+    companion object {
+        val DIFF_CALLBACK = object : DiffUtil.ItemCallback<ChatHistoryMessageItem>() {
+            override fun areItemsTheSame(
+                oldItem: ChatHistoryMessageItem,
+                newItem: ChatHistoryMessageItem,
+            ): Boolean = oldItem.messageId == newItem.messageId
+
+            override fun areContentsTheSame(
+                oldItem: ChatHistoryMessageItem,
+                newItem: ChatHistoryMessageItem,
+            ): Boolean = oldItem == newItem
+        }
+    }
+}
 
 fun ChatHistoryMessageItem.isLottie() = assetType?.equals(Sticker.STICKER_TYPE_JSON, true) == true
 
