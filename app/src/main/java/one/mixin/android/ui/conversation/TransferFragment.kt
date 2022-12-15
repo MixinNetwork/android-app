@@ -218,7 +218,10 @@ class TransferFragment() : MixinBottomSheetDialogFragment() {
         }
 
         jobManager.addJobInBackground(RefreshAssetsJob())
-        binding.titleView.leftIb.setOnClickListener { dismiss() }
+        binding.titleView.leftIb.setOnClickListener {
+            contentView.hideKeyboard()
+            dismiss()
+        }
         binding.amountEt.addTextChangedListener(mWatcher)
         binding.amountEt.filters = arrayOf(inputFilter)
         binding.amountEt.setAdapter(autoCompleteAdapter)
