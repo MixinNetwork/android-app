@@ -286,11 +286,11 @@ class WalletConnect private constructor() {
         val result = StringBuilder()
         val estimateGas = getEstimateGas(wct)
         val amount = Numeric.toBigInt(wct.value)
-        return result.append("Estimated gas fee: ${Convert.fromWei(estimateGas.toBigDecimal(), Convert.Unit.ETHER).toPlainString()} ${chain.symbol}\n\n")
+        result.append("Estimated gas fee: ${Convert.fromWei(estimateGas.toBigDecimal(), Convert.Unit.ETHER).toPlainString()} ${chain.symbol}\n\n")
             .append("Amount + gas fee: ${Convert.fromWei((estimateGas + amount).toBigDecimal(), Convert.Unit.ETHER).toPlainString()} ${chain.symbol}\n\n")
-            .append("maxFeePerGas: ${Convert.fromWei(Numeric.toBigInt(wct.maxFeePerGas).toBigDecimal(), Convert.Unit.GWEI).toPlainString()} GWEI\n")
-            .append("maxPriorityFeePerGas: ${Convert.fromWei(Numeric.toBigInt(wct.maxPriorityFeePerGas).toBigDecimal(), Convert.Unit.GWEI).toPlainString()} GWEI\n\n")
-            .append("HEX Data\n")
+        wct.maxFeePerGas?.let { result.append("maxFeePerGas: ${Convert.fromWei(Numeric.toBigInt(it).toBigDecimal(), Convert.Unit.GWEI).toPlainString()} GWEI\n") }
+        wct.maxPriorityFeePerGas?.let { result.append("maxPriorityFeePerGas: ${Convert.fromWei(Numeric.toBigInt(it).toBigDecimal(), Convert.Unit.GWEI).toPlainString()} GWEI\n\n") }
+        return result.append("HEX Data\n")
             .append(wct.data)
             .toString()
     }
