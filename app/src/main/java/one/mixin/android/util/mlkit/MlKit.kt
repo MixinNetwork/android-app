@@ -7,29 +7,36 @@ import com.google.mlkit.nl.entityextraction.EntityExtraction
 import com.google.mlkit.nl.entityextraction.EntityExtractorOptions
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import one.mixin.android.util.reportException
 
-val mlExtractor by lazy {
+private val mlExtractor by lazy {
     EntityExtraction.getClient(
         EntityExtractorOptions.Builder(EntityExtractorOptions.ENGLISH).build()
     )
 }
-val conditions =
-    DownloadConditions.Builder()
-        .requireWifi()
-        .build()
+private val conditions = DownloadConditions.Builder().build()
 
 suspend fun entityInitialize() {
     withContext(Dispatchers.IO) {
-        Tasks.await(mlExtractor.downloadModelIfNeeded(conditions))
+        try {
+            Tasks.await(mlExtractor.downloadModelIfNeeded(conditions))
+        } catch (e: Exception) {
+            reportException("MLKit init", e)
+        }
     }
 }
 
 suspend fun firstUrl(input: String): String? = withContext(Dispatchers.IO) {
-    return@withContext if (Tasks.await(mlExtractor.isModelDownloaded)) {
-        val annotations = Tasks.await(mlExtractor.annotate(input))
-        annotations.firstOrNull { annotation -> annotation.entities.any { entity -> entity.type == Entity.TYPE_URL } }?.annotatedText
-    } else {
-        Tasks.await(mlExtractor.downloadModelIfNeeded(conditions))
-        null
+    return@withContext try {
+        if (Tasks.await(mlExtractor.isModelDownloaded)) {
+            val annotations = Tasks.await(mlExtractor.annotate(input))
+            annotations.firstOrNull { annotation -> annotation.entities.any { entity -> entity.type == Entity.TYPE_URL } }?.annotatedText
+        } else {
+            Tasks.await(mlExtractor.downloadModelIfNeeded(conditions))
+            null
+        }
+    } catch (e: Exception) {
+        reportException("MLKit firstUrl", e)
+        return@withContext null
     }
 }
