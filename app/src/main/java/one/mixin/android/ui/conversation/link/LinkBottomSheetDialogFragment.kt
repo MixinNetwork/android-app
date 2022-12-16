@@ -544,7 +544,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 showError()
             } else {
                 lifecycleScope.launch(errorHandler) {
-                    val pair = linkViewModel.findAddressById(addressId, assetId)
+                    val pair = linkViewModel.refreshAndGetAddress(addressId, assetId)
                     val address = pair.first
                     val asset = checkAsset(assetId)
                     if (asset != null) {
