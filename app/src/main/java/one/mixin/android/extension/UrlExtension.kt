@@ -26,6 +26,7 @@ import one.mixin.android.ui.device.ConfirmBottomFragment
 import one.mixin.android.ui.forward.ForwardActivity
 import one.mixin.android.ui.qr.donateSupported
 import one.mixin.android.ui.web.WebActivity
+import one.mixin.android.util.externalTransferAssetIdMap
 import one.mixin.android.vo.App
 import one.mixin.android.vo.AppCardData
 import one.mixin.android.vo.ForwardAction
@@ -213,6 +214,8 @@ fun String.checkUserOrApp(
 }
 
 fun String.isDonateUrl() = donateSupported.any { startsWith(it) }
+
+fun String.isExternalTransferUrl() = externalTransferAssetIdMap.keys.any { startsWith(it) }
 
 private fun String.isUserScheme() = startsWith(Constants.Scheme.USERS, true) ||
     startsWith(Constants.Scheme.HTTPS_USERS, true)

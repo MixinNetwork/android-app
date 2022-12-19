@@ -361,6 +361,9 @@ constructor(
 
     suspend fun getExternalSchemes() = accountService.getExternalSchemes()
 
+    suspend fun getExternalAddressFee(assetId: String, destination: String, tag: String?) =
+        accountService.getExternalAddressFee(assetId, destination, tag)
+
     suspend fun refreshSticker(id: String): Sticker? {
         val sticker = stickerDao.findStickerById(id)
         if (sticker != null) return sticker

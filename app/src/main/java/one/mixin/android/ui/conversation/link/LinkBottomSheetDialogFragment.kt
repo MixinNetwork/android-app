@@ -39,6 +39,7 @@ import one.mixin.android.extension.getGroupAvatarPath
 import one.mixin.android.extension.handleSchemeSend
 import one.mixin.android.extension.isDonateUrl
 import one.mixin.android.extension.isExternalScheme
+import one.mixin.android.extension.isExternalTransferUrl
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.isUUID
 import one.mixin.android.extension.stripAmountZero
@@ -74,6 +75,7 @@ import one.mixin.android.ui.wallet.TransactionBottomSheetDialogFragment
 import one.mixin.android.ui.web.WebActivity
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.SystemUIManager
+import one.mixin.android.util.parseExternalTransferUri
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.Address
 import one.mixin.android.vo.AssetItem
@@ -587,6 +589,31 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                         showError(R.string.Asset_not_found)
                     }
                 }
+            }
+        } else if (url.isExternalTransferUrl()) {
+            if (checkHasPin()) return
+
+            lifecycleScope.launch(errorHandler) {
+                val newUrl = url.replaceFirst(":", "://")
+                val result = parseExternalTransferUri(newUrl.toUri()) { assetId, destination ->
+                    handleMixinResponse(
+                        invokeNetwork = {
+                            linkViewModel.getExternalAddressFee(assetId, destination, null)
+                        },
+                        successBlock = {
+                            return@handleMixinResponse it.data
+                        }
+                    )
+                }
+
+                if (result == null) {
+                    QrScanBottomSheetDialogFragment.newInstance(url)
+                        .show(parentFragmentManager, QrScanBottomSheetDialogFragment.TAG)
+                } else {
+                    Timber.d("parse external transfer result: $result")
+                }
+
+                dismiss()
             }
         } else if (url.isDonateUrl()) {
             if (checkHasPin()) return

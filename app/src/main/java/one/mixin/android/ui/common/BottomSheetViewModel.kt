@@ -600,4 +600,7 @@ class BottomSheetViewModel @Inject internal constructor(
             assetRepository.findOrSyncAsset(assetId)
         }
     }
+
+    suspend fun getExternalAddressFee(assetId: String, destination: String, tag: String?) =
+        accountRepository.getExternalAddressFee(assetId, destination, tag)
 }
