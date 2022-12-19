@@ -54,7 +54,7 @@ class InviteFragment : BaseFragment() {
                     inviteViewModel.updateCodeUrl(conversationId, it.data!!.codeUrl)
                 }
             },
-            { ErrorHandler.handleError(it) }
+            { ErrorHandler.handleError(it) },
         )
     }
 
@@ -63,7 +63,7 @@ class InviteFragment : BaseFragment() {
         binding.titleView.leftIb.setOnClickListener { activity?.onBackPressedDispatcher?.onBackPressed() }
 
         inviteViewModel.getConversation(conversationId).observe(
-            viewLifecycleOwner
+            viewLifecycleOwner,
         ) {
             val c = it
             if (c != null) {
@@ -89,8 +89,8 @@ class InviteFragment : BaseFragment() {
                     startActivity(
                         Intent.createChooser(
                             sendIntent,
-                            resources.getText(R.string.Invite_to_Group_via_Link)
-                        )
+                            resources.getText(R.string.Invite_to_Group_via_Link),
+                        ),
                     )
                 }
             } else {
@@ -109,7 +109,7 @@ class InviteFragment : BaseFragment() {
                 },
                 {
                     ErrorHandler.handleError(it)
-                }
+                },
             )
         }
 

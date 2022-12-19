@@ -26,7 +26,7 @@ class StrikethroughEditHandler : AbstractEditHandler<StrikethroughSpan>() {
                 persistedSpans.get(StrikethroughSpan::class.java),
                 match.start(),
                 match.end(),
-                Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+                Spanned.SPAN_EXCLUSIVE_EXCLUSIVE,
             )
         }
     }

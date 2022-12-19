@@ -40,7 +40,7 @@ class ContactCardHolder(val binding: ItemChatContactCardBinding) : BaseViewHolde
             messageItem.sharedUserFullName,
             messageItem.sharedUserAvatarUrl,
             messageItem.sharedUserId
-                ?: "0"
+                ?: "0",
         )
         binding.nameTv.text = messageItem.sharedUserFullName
         binding.idTv.text = messageItem.sharedUserIdentityNumber
@@ -68,7 +68,7 @@ class ContactCardHolder(val binding: ItemChatContactCardBinding) : BaseViewHolde
             messageItem.status,
             messageItem.isPin ?: false,
             isRepresentative = isRepresentative,
-            isSecret = messageItem.isSecret()
+            isSecret = messageItem.isSecret(),
         )
 
         chatLayout(isMe, isLast)
@@ -111,13 +111,13 @@ class ContactCardHolder(val binding: ItemChatContactCardBinding) : BaseViewHolde
                 setItemBackgroundResource(
                     binding.chatContentLayout,
                     R.drawable.bill_bubble_me_last,
-                    R.drawable.bill_bubble_me_last_night
+                    R.drawable.bill_bubble_me_last_night,
                 )
             } else {
                 setItemBackgroundResource(
                     binding.chatContentLayout,
                     R.drawable.bill_bubble_me,
-                    R.drawable.bill_bubble_me_night
+                    R.drawable.bill_bubble_me_night,
                 )
             }
             (binding.chatLayout.layoutParams as ConstraintLayout.LayoutParams).horizontalBias = 1f
@@ -129,13 +129,13 @@ class ContactCardHolder(val binding: ItemChatContactCardBinding) : BaseViewHolde
                 setItemBackgroundResource(
                     binding.chatContentLayout,
                     R.drawable.chat_bubble_other_last,
-                    R.drawable.chat_bubble_other_last_night
+                    R.drawable.chat_bubble_other_last_night,
                 )
             } else {
                 setItemBackgroundResource(
                     binding.chatContentLayout,
                     R.drawable.chat_bubble_other,
-                    R.drawable.chat_bubble_other_night
+                    R.drawable.chat_bubble_other_night,
                 )
             }
         }

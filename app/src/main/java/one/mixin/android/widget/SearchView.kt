@@ -26,13 +26,13 @@ class SearchView : FrameLayout {
     constructor(context: Context, attrs: AttributeSet?, defStyleAttr: Int) : super(
         context,
         attrs,
-        defStyleAttr
+        defStyleAttr,
     ) {
         val typedArray = context.obtainStyledAttributes(
             attrs,
             R.styleable.SearchView,
             defStyleAttr,
-            0
+            0,
         )
         val circleClearIcon = typedArray.getBoolean(R.styleable.SearchView_circle_clear_icon, false)
         val size = if (circleClearIcon) small else medium

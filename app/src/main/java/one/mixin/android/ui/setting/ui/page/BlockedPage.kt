@@ -49,14 +49,14 @@ fun BlockedPage() {
                 },
                 navigationIcon = {
                     MixinBackButton()
-                }
+                },
             )
-        }
+        },
     ) {
         Box(
             Modifier
                 .padding(it)
-                .fillMaxSize()
+                .fillMaxSize(),
         ) {
             val viewModel = hiltViewModel<SettingBlockedViewModel>()
             val users by viewModel.blockingUsers(rememberComposeScope()).observeAsState()
@@ -80,7 +80,7 @@ private fun BlockedList(users: List<User>) {
                 modifier = Modifier.padding(16.dp),
                 text = stringResource(id = R.string.block_tip),
                 fontSize = 12.sp,
-                color = MixinAppTheme.colors.textSubtitle
+                color = MixinAppTheme.colors.textSubtitle,
             )
         }
     }
@@ -90,23 +90,23 @@ private fun BlockedList(users: List<User>) {
 private fun EmptyBlockedView() {
     Box(
         modifier = Modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center
+        contentAlignment = Alignment.Center,
     ) {
         Column(
-            horizontalAlignment = Alignment.CenterHorizontally
+            horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             Image(
                 painter = painterResource(id = R.drawable.ic_blocked_users),
                 contentDescription = null,
                 modifier = Modifier
                     .height(42.dp)
-                    .width(42.dp)
+                    .width(42.dp),
             )
             Box(modifier = Modifier.height(8.dp))
             Text(
                 text = stringResource(id = R.string.No_blocked_users),
                 fontSize = 16.sp,
-                color = MixinAppTheme.colors.textSubtitle
+                color = MixinAppTheme.colors.textSubtitle,
             )
         }
     }
@@ -126,14 +126,14 @@ private fun BlockedUserItem(user: User) {
                 }
             }
             .background(MixinAppTheme.colors.background),
-        verticalAlignment = Alignment.CenterVertically
+        verticalAlignment = Alignment.CenterVertically,
     ) {
         Box(modifier = Modifier.width(16.dp))
         UserAvatarImage(user = user, size = 40.dp)
         Box(modifier = Modifier.width(16.dp))
         Text(
             text = user.fullName ?: "",
-            color = MixinAppTheme.colors.textPrimary
+            color = MixinAppTheme.colors.textPrimary,
         )
     }
 }

@@ -168,7 +168,7 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
         })
         dialog.window?.setLayout(
             ViewGroup.LayoutParams.MATCH_PARENT,
-            ViewGroup.LayoutParams.MATCH_PARENT
+            ViewGroup.LayoutParams.MATCH_PARENT,
         )
         dialog.window?.setGravity(Gravity.BOTTOM)
         join = requireArguments().getBoolean(EXTRA_JOIN, false)
@@ -262,7 +262,7 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
                             muteAudio<VoiceCallService>(requireContext(), checked)
                         }
                     }
-                }
+                },
             )
             binding.voiceCb.setOnCheckedChangeListener(
                 object : CallButton.OnCheckedChangeListener {
@@ -273,7 +273,7 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
                             speakerPhone<VoiceCallService>(requireContext(), checked)
                         }
                     }
-                }
+                },
             )
             binding.title.setOnLongClickListener {
                 if (callState.isGroupCall()) {
@@ -297,9 +297,9 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
                         refreshUsers()
 
                         if ((
-                            state == CallService.CallState.STATE_IDLE ||
-                                state == CallService.CallState.STATE_RINGING
-                            ) &&
+                                state == CallService.CallState.STATE_IDLE ||
+                                    state == CallService.CallState.STATE_RINGING
+                                ) &&
                             callState.needMuteWhenJoin(requireNotNull(cid))
                         ) {
                             updateTitle(getString(R.string.chat_group_call_mute))
@@ -356,7 +356,7 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
                             // Do nothing
                         }
                     }
-                }
+                },
             )
             if (callState.state == CallService.CallState.STATE_RINGING) {
                 binding.closeIb.isVisible = true
@@ -380,7 +380,7 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
                     GroupUsersBottomSheetDialogFragment.newInstance(callState.conversationId!!)
                         .showNow(
                             parentFragmentManager,
-                            GroupUsersBottomSheetDialogFragment.TAG
+                            GroupUsersBottomSheetDialogFragment.TAG,
                         )
                 }
             }
@@ -526,7 +526,7 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
             "$groupName"
         } else {
             getString(
-                R.string.Call
+                R.string.Call,
             )
         }
         binding.callStatus.text = content
@@ -584,7 +584,7 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
             binding.participants.text = requireContext().resources.getQuantityString(
                 R.plurals.title_participants,
                 users.size,
-                users.size
+                users.size,
             )
         }
         val currentGuestsNotConnected = userAdapter?.guestsNotConnected
@@ -603,7 +603,7 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 WebActivity.show(
                     requireContext(),
                     getString(R.string.secret_url),
-                    callState.conversationId
+                    callState.conversationId,
                 )
                 dialog.dismiss()
             }
@@ -618,7 +618,7 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
         dialog?.window?.let { window ->
             SystemUIManager.lightUI(
                 window,
-                !requireContext().booleanFromAttribute(R.attr.flag_night)
+                !requireContext().booleanFromAttribute(R.attr.flag_night),
             )
         }
         if (PipCallView.get().shown) {
@@ -651,7 +651,7 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 if (!setClicked) {
                     requireActivity().showPipPermissionNotification(
                         CallActivity::class.java,
-                        getString(R.string.call_pip_permission)
+                        getString(R.string.call_pip_permission),
                     )
                 }
             } else if (callState.isInUse() && checkPipPermission(requireContext())) {
@@ -716,8 +716,8 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
                         startActivity(
                             Intent(
                                 Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
-                                Uri.parse("package:${requireContext().packageName}")
-                            )
+                                Uri.parse("package:${requireContext().packageName}"),
+                            ),
                         )
                     } catch (e: Exception) {
                         Timber.e(e)

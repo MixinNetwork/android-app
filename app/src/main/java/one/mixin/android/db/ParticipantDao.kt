@@ -26,7 +26,7 @@ interface ParticipantDao : BaseDao<Participant> {
         """
         SELECT u.user_id, u.identity_number, u.full_name, u.avatar_url, u.relationship, u.biography FROM participants p, users u 
         WHERE p.conversation_id = :conversationId AND p.user_id = u.user_id
-        """
+        """,
     )
     fun getParticipants(conversationId: String): List<User>
 
@@ -39,7 +39,7 @@ interface ParticipantDao : BaseDao<Participant> {
         AND p.user_id = u.user_id
         AND u.app_id IS NULL
         AND u.relationship != 'ME'
-        """
+        """,
     )
     suspend fun getParticipantsWithoutBot(conversationId: String): List<User>
 
@@ -51,7 +51,7 @@ interface ParticipantDao : BaseDao<Participant> {
             WHERE p.conversation_id = :conversationId 
             AND p.user_id = u.user_id 
             ORDER BY p.created_at DESC
-        """
+        """,
     )
     fun observeGroupParticipants(conversationId: String): DataSource.Factory<Int, ParticipantItem>
 
@@ -64,7 +64,7 @@ interface ParticipantDao : BaseDao<Participant> {
             AND p.user_id = u.user_id
             AND (u.full_name LIKE '%' || :username || '%' ${BaseDao.ESCAPE_SUFFIX} OR u.identity_number like '%' || :identityNumber || '%' ${BaseDao.ESCAPE_SUFFIX})
             ORDER BY p.created_at DESC
-        """
+        """,
     )
     fun fuzzySearchGroupParticipants(conversationId: String, username: String, identityNumber: String): DataSource.Factory<Int, ParticipantItem>
 
@@ -90,14 +90,14 @@ interface ParticipantDao : BaseDao<Participant> {
     @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
     @Query(
         "SELECT u.user_id, u.identity_number, u.biography, u.full_name, u.avatar_url, u.relationship FROM participants p, users u " +
-            "WHERE p.conversation_id = :conversationId AND p.user_id = u.user_id ORDER BY p.created_at LIMIT 4"
+            "WHERE p.conversation_id = :conversationId AND p.user_id = u.user_id ORDER BY p.created_at LIMIT 4",
     )
     fun getParticipantsAvatar(conversationId: String): List<User>
 
     @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
     @Query(
         "SELECT u.user_id, u.identity_number, u.biography, u.full_name, u.avatar_url, u.relationship FROM participants p, users u " +
-            "WHERE p.conversation_id = :conversationId AND p.user_id = u.user_id ORDER BY p.created_at DESC LIMIT :limit"
+            "WHERE p.conversation_id = :conversationId AND p.user_id = u.user_id ORDER BY p.created_at DESC LIMIT :limit",
     )
     fun getLimitParticipants(conversationId: String, limit: Int): List<User>
 
@@ -114,7 +114,7 @@ interface ParticipantDao : BaseDao<Participant> {
     suspend fun getAllParticipants(): List<Participant>
 
     @Query(
-        "SELECT p.conversation_id FROM participants p, conversations c WHERE p.user_id = :userId AND p.conversation_id = c.conversation_id AND c.status = 2 LIMIT 1"
+        "SELECT p.conversation_id FROM participants p, conversations c WHERE p.user_id = :userId AND p.conversation_id = c.conversation_id AND c.status = 2 LIMIT 1",
     )
     fun joinedConversationId(userId: String): String
 }

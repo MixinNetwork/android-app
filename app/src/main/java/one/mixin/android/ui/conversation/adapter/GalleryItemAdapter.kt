@@ -90,7 +90,7 @@ class GalleryItemAdapter(
                             override fun onResult(result: Drawable) {
                                 imageView.setImageDrawable(result)
                             }
-                        }
+                        },
                     )
                 } else {
                     imageView.loadImageCenterCrop(item.uri, R.drawable.image_holder)

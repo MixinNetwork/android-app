@@ -99,7 +99,7 @@ class StickerHolder constructor(val binding: ItemChatStickerBinding) : BaseViewH
             MessageStatus.DELIVERED.name,
             false,
             isRepresentative = false,
-            isSecret = false
+            isSecret = false,
         )
 
         chatLayout(isMe, false)

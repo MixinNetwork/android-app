@@ -53,7 +53,7 @@ class AppAuthSettingFragment : BaseFragment(R.layout.fragment_app_auth_setting) 
                         this@AppAuthSettingFragment.requireActivity(),
                         getString(R.string.Confirm_fingerprint),
                         getString(R.string.Cancel),
-                        authCallback
+                        authCallback,
                     )
                 }
             }

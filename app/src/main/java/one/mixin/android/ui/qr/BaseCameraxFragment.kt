@@ -165,7 +165,7 @@ abstract class BaseCameraxFragment : VisionFragment() {
                         }
                     },
                     {
-                    }
+                    },
                 )
         }
         checkFlash()
@@ -230,7 +230,7 @@ abstract class BaseCameraxFragment : VisionFragment() {
                     camera = cameraProvider?.bindToLifecycle(
                         this as LifecycleOwner,
                         cameraSelector!!,
-                        *useCases.toTypedArray()
+                        *useCases.toTypedArray(),
                     )
                     preview?.setSurfaceProvider(viewFinder.surfaceProvider)
                 } catch (e: Exception) {
@@ -238,7 +238,7 @@ abstract class BaseCameraxFragment : VisionFragment() {
                     Timber.w(e)
                 }
             },
-            mainExecutor
+            mainExecutor,
         )
     }
 
@@ -270,7 +270,7 @@ abstract class BaseCameraxFragment : VisionFragment() {
             camera = cameraProvider?.bindToLifecycle(
                 this as LifecycleOwner,
                 cameraSelector!!,
-                *useCases
+                *useCases,
             )
         } catch (e: Exception) {
             reportException("$CRASHLYTICS_CAMERAX-bindUseCases", e)
@@ -306,7 +306,7 @@ abstract class BaseCameraxFragment : VisionFragment() {
             camera = cameraProvider?.bindToLifecycle(
                 this as LifecycleOwner,
                 cameraSelector!!,
-                localImageAnalysis
+                localImageAnalysis,
             )
         } catch (e: Exception) {
             reportException("$CRASHLYTICS_CAMERAX-startImageAnalysis", e)
@@ -377,7 +377,7 @@ abstract class BaseCameraxFragment : VisionFragment() {
                         }
                     }
                 },
-                mainExecutor
+                mainExecutor,
             )
         }
     }
@@ -407,11 +407,11 @@ abstract class BaseCameraxFragment : VisionFragment() {
             val future = c.cameraControl.startFocusAndMetering(
                 FocusMeteringAction.Builder(
                     afPoint,
-                    FocusMeteringAction.FLAG_AF
+                    FocusMeteringAction.FLAG_AF,
                 ).addPoint(
                     aePoint,
-                    FocusMeteringAction.FLAG_AE
-                ).build()
+                    FocusMeteringAction.FLAG_AE,
+                ).build(),
             )
             Futures.addCallback(
                 future,
@@ -431,7 +431,7 @@ abstract class BaseCameraxFragment : VisionFragment() {
                         }
                     }
                 },
-                mainExecutor
+                mainExecutor,
             )
         }
         return true
@@ -627,5 +627,5 @@ abstract class BaseCameraxFragment : VisionFragment() {
 val donateSupported = arrayOf(
     "bitcoin:", "bitcoincash:", "bitcoinsv:", "ethereum:",
     "litecoin:", "dash:", "ripple:", "zcash:", "horizen:", "monero:", "binancecoin:",
-    "stellar:", "dogecoin:", "mobilecoin:"
+    "stellar:", "dogecoin:", "mobilecoin:",
 )

@@ -81,7 +81,7 @@ interface MessageDao : BaseDao<Message> {
         WHERE m.conversation_id = :conversationId
         AND m.category IN ($IMAGES, $VIDEOS, $LIVES) 
         ORDER BY m.created_at ASC, m.rowid ASC
-    """
+    """,
     )
     fun getMediaMessages(conversationId: String): DataSource.Factory<Int, MessageItem>
 
@@ -96,7 +96,7 @@ interface MessageDao : BaseDao<Message> {
         FROM messages m 
         INNER JOIN users u ON m.user_id = u.user_id 
         WHERE m.id = :messageId AND m.conversation_id = :conversationId
-    """
+    """,
     )
     suspend fun getMediaMessage(conversationId: String, messageId: String): MessageItem?
 
@@ -108,7 +108,7 @@ interface MessageDao : BaseDao<Message> {
         AND category IN ($IMAGES, $VIDEOS, $LIVES) 
         AND created_at < (SELECT created_at FROM messages WHERE id = :messageId)    
         ORDER BY created_at ASC, rowid ASC
-    """
+    """,
     )
     suspend fun indexMediaMessages(conversationId: String, messageId: String): Int
 
@@ -126,7 +126,7 @@ interface MessageDao : BaseDao<Message> {
         WHERE m.conversation_id = :conversationId
         AND m.category IN ($IMAGES, $VIDEOS)
         ORDER BY m.created_at DESC, m.rowid DESC
-    """
+    """,
     )
     fun getMediaMessagesExcludeLive(conversationId: String): DataSource.Factory<Int, MessageItem>
 
@@ -138,7 +138,7 @@ interface MessageDao : BaseDao<Message> {
         AND category IN ($IMAGES, $VIDEOS)
         AND created_at > (SELECT created_at FROM messages WHERE id = :messageId)
         ORDER BY created_at DESC, rowid DESC
-        """
+        """,
     )
     suspend fun indexMediaMessagesExcludeLive(conversationId: String, messageId: String): Int
 
@@ -154,7 +154,7 @@ interface MessageDao : BaseDao<Message> {
         WHERE m.conversation_id = :conversationId
         AND m.category IN ($AUDIOS)
         ORDER BY m.created_at DESC
-        """
+        """,
     )
     fun getAudioMessages(conversationId: String): DataSource.Factory<Int, MessageItem>
 
@@ -170,7 +170,7 @@ interface MessageDao : BaseDao<Message> {
         WHERE m.conversation_id = :conversationId
         AND m.category IN ('SIGNAL_POST', 'PLAIN_POST', 'ENCRYPTED_POST')
         ORDER BY m.created_at DESC
-        """
+        """,
     )
     fun getPostMessages(conversationId: String): DataSource.Factory<Int, MessageItem>
 
@@ -182,7 +182,7 @@ interface MessageDao : BaseDao<Message> {
         WHERE m.conversation_id = :conversationId
         AND m.category IN ('SIGNAL_TEXT', 'PLAIN_TEXT', 'ENCRYPTED_TEXT')
         ORDER BY m.created_at DESC
-        """
+        """,
     )
     fun getLinkMessages(conversationId: String): DataSource.Factory<Int, HyperlinkItem>
 
@@ -197,7 +197,7 @@ interface MessageDao : BaseDao<Message> {
         WHERE m.conversation_id = :conversationId
         AND m.category IN ($DATA)
         ORDER BY m.created_at DESC
-        """
+        """,
     )
     fun getFileMessages(conversationId: String): DataSource.Factory<Int, MessageItem>
 
@@ -219,7 +219,7 @@ interface MessageDao : BaseDao<Message> {
         LEFT JOIN users su ON m.shared_user_id = su.user_id 
         LEFT JOIN message_mentions mm ON m.id = mm.message_id 
         WHERE m.conversation_id = :conversationId AND m.id = :messageId AND m.status != 'FAILED'
-        """
+        """,
     )
     fun findMessageItemById(conversationId: String, messageId: String): QuoteMessageItem?
 
@@ -238,7 +238,7 @@ interface MessageDao : BaseDao<Message> {
         GROUP BY m.conversation_id
         ORDER BY max(m.created_at) DESC
         LIMIT :limit
-        """
+        """,
     )
     suspend fun fuzzySearchMessage(query: String, limit: Int): List<SearchMessageItem>
 
@@ -275,7 +275,7 @@ interface MessageDao : BaseDao<Message> {
         """
         SELECT rowid, id FROM messages WHERE conversation_id = :conversationId
         AND user_id != :userId AND status IN ('SENT', 'DELIVERED') ORDER BY rowid ASC
-        """
+        """,
     )
     fun findUnreadMessagesSync(conversationId: String, userId: String): List<MessageMinimal>?
 
@@ -287,7 +287,7 @@ interface MessageDao : BaseDao<Message> {
         SELECT m.category as type, m.id as messageId, m.media_url as mediaUrl FROM messages m 
         WHERE conversation_id = :conversationId AND media_status = 'DONE' 
         AND category IN (:signalCategory, :plainCategory, :encryptedCategory) ORDER BY created_at ASC
-        """
+        """,
     )
     fun getMediaByConversationIdAndCategory(conversationId: String, signalCategory: String, plainCategory: String, encryptedCategory: String): List<MediaMessageMinimal>?
 
@@ -296,7 +296,7 @@ interface MessageDao : BaseDao<Message> {
         """
         $PREFIX_MESSAGE_ITEM WHERE m.conversation_id = :conversationId AND (m.category IN ($AUDIOS)) AND m.created_at >= :createdAt AND 
         m.rowid > (SELECT rowid FROM messages WHERE id = :messageId) LIMIT 1
-        """
+        """,
     )
     suspend fun findNextAudioMessageItem(conversationId: String, createdAt: String, messageId: String): MessageItem?
 
@@ -305,7 +305,7 @@ interface MessageDao : BaseDao<Message> {
         """
         SELECT * FROM messages WHERE conversation_id = :conversationId AND (category IN ($AUDIOS))
         AND created_at >= :createdAt AND rowid > (SELECT rowid FROM messages WHERE id = :messageId) LIMIT 1
-        """
+        """,
     )
     suspend fun findNextAudioMessage(conversationId: String, createdAt: String, messageId: String): Message?
 
@@ -325,7 +325,7 @@ interface MessageDao : BaseDao<Message> {
         """
         SELECT id FROM messages WHERE conversation_id =:conversationId AND user_id !=:userId AND messages.rowid > 
         (SELECT rowid FROM messages WHERE id = :messageId) ORDER BY rowid ASC LIMIT 1
-        """
+        """,
     )
     suspend fun findUnreadMessageByMessageId(conversationId: String, userId: String, messageId: String): String?
 
@@ -336,7 +336,7 @@ interface MessageDao : BaseDao<Message> {
         AND status IN ('SENDING', 'SENT', 'DELIVERED', 'READ')  /* Make use of `index_messages_conversation_id_status_user_id_created_at` */
         AND user_id =:userId
         LIMIT 1
-        """
+        """,
     )
     suspend fun isSilence(conversationId: String, userId: String): Int?
 
@@ -361,7 +361,7 @@ interface MessageDao : BaseDao<Message> {
         WHERE category IN ('SIGNAL_TEXT', 'SIGNAL_DATA', 'SIGNAL_POST')
         AND created_at > :after
         LIMIT :limit OFFSET :offset
-        """
+        """,
     )
     suspend fun batchQueryMessages(limit: Int, offset: Int, after: Long): List<QueryMessage>
 
@@ -370,7 +370,7 @@ interface MessageDao : BaseDao<Message> {
         SELECT id, conversation_id, name, category, media_url, media_mine_type 
         FROM messages WHERE category IN ($IMAGES, $VIDEOS, $DATA, $AUDIOS) 
         AND media_status = 'DONE' AND rowid <= :rowId LIMIT :limit OFFSET :offset
-        """
+        """,
     )
     fun findAttachmentMigration(rowId: Long, limit: Int, offset: Long): List<AttachmentMigration>
 
@@ -388,7 +388,7 @@ interface MessageDao : BaseDao<Message> {
         """
         SELECT count(id) FROM messages 
         WHERE conversation_id = :conversationId AND media_status = 'DONE' AND category IN (:signalCategory, :plainCategory, :encryptedCategory)
-        """
+        """,
     )
     fun countDeleteMediaMessageByConversationAndCategory(conversationId: String, signalCategory: String, plainCategory: String, encryptedCategory: String): Int
 
@@ -408,7 +408,7 @@ interface MessageDao : BaseDao<Message> {
         AND m.media_mime_type LIKE 'audio%'
         AND m.media_status != 'EXPIRED'
         ORDER BY m.created_at ASC, m.rowid ASC
-        """
+        """,
     )
     fun findAudiosByConversationId(conversationId: String): DataSource.Factory<Int, MessageItem>
 
@@ -423,7 +423,7 @@ interface MessageDao : BaseDao<Message> {
         AND media_status != 'EXPIRED'
         AND created_at < (SELECT created_at FROM messages WHERE id = :messageId)
         ORDER BY created_at ASC, rowid ASC
-        """
+        """,
     )
     suspend fun indexAudioByConversationId(messageId: String, conversationId: String): Int
 
@@ -437,7 +437,7 @@ interface MessageDao : BaseDao<Message> {
         FROM messages m INNER JOIN users u ON m.user_id = u.user_id 
         WHERE m.conversation_id = :conversationId
         AND m.id IN (:ids)
-        """
+        """,
     )
     suspend fun suspendFindMessagesByIds(conversationId: String, ids: List<String>): List<MessageItem>
 
@@ -471,7 +471,7 @@ interface MessageDao : BaseDao<Message> {
         media_duration = NULL, media_width = NULL, media_height = NULL, media_hash = NULL, thumb_image = NULL, media_key = NULL, 
         media_digest = NUll, media_status = NULL, `action` = NULL, participant_id = NULL, snapshot_id = NULL, hyperlink = NULL, name = NULL, 
         album_id = NULL, sticker_id = NULL, shared_user_id = NULL, media_waveform = NULL, quote_message_id = NULL, quote_content = NULL WHERE id = :id
-        """
+        """,
     )
     fun recallMessage(id: String)
 
@@ -506,7 +506,7 @@ interface MessageDao : BaseDao<Message> {
         thumb_image = :thumbImage, media_key = :mediaKey, media_digest = :mediaDigest, media_duration = :mediaDuration, 
         media_status = :mediaStatus, status = :status, name = :name, media_waveform = :mediaWaveform WHERE id = :messageId 
         AND category != 'MESSAGE_RECALL'
-        """
+        """,
     )
     fun updateAttachmentMessage(messageId: String, content: String, mediaMimeType: String, mediaSize: Long, mediaWidth: Int?, mediaHeight: Int?, thumbImage: String?, name: String?, mediaWaveform: ByteArray?, mediaDuration: String?, mediaKey: ByteArray?, mediaDigest: ByteArray?, mediaStatus: String, status: String)
 
@@ -520,7 +520,7 @@ interface MessageDao : BaseDao<Message> {
         """
         UPDATE messages SET media_width = :width, media_height = :height, media_url=:url, thumb_url = :thumbUrl, status = :status 
         WHERE id = :messageId AND category != 'MESSAGE_RECALL'
-    """
+    """,
     )
     fun updateLiveMessage(width: Int, height: Int, url: String, thumbUrl: String, status: String, messageId: String)
 
@@ -528,7 +528,7 @@ interface MessageDao : BaseDao<Message> {
         """
         UPDATE messages SET content = :content, media_size = :mediaSize, media_status = :mediaStatus, status = :status 
         WHERE id = :messageId AND category != 'MESSAGE_RECALL'
-        """
+        """,
     )
     fun updateTranscriptMessage(content: String?, mediaSize: Long?, mediaStatus: String?, status: String, messageId: String)
 
@@ -556,7 +556,7 @@ interface MessageDao : BaseDao<Message> {
         DELETE FROM messages WHERE id IN (
         SELECT id FROM messages WHERE  conversation_id = :conversationId AND (media_status = 'DONE' OR media_status ISNULL)
         AND category IN (:signalCategory, :plainCategory, :encryptedCategory) LIMIT :limit)
-        """
+        """,
     )
     fun deleteMediaMessageByConversationAndCategory(conversationId: String, signalCategory: String, plainCategory: String, encryptedCategory: String, limit: Int)
 

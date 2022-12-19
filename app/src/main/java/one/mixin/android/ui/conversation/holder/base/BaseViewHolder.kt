@@ -84,7 +84,7 @@ abstract class BaseViewHolder constructor(containerView: View) :
                 defaultBg
             } else {
                 nightBg
-            }
+            },
         )
     }
 
@@ -157,8 +157,8 @@ abstract class BaseViewHolder constructor(containerView: View) :
                         argbEvaluator.evaluate(
                             valueAnimator.animatedValue as Float,
                             Color.TRANSPARENT,
-                            SELECT_COLOR
-                        ) as Int
+                            SELECT_COLOR,
+                        ) as Int,
                     )
                 }
             }

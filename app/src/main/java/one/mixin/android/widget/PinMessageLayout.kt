@@ -124,11 +124,11 @@ class PinMessageLayout constructor(context: Context, attrs: AttributeSet) :
                     },
                     pinMessage?.let { msg ->
                         " \"${msg.content}\""
-                    } ?: getText(R.string.a_message)
+                    } ?: getText(R.string.a_message),
                 ),
                 MentionRenderCache.singleton.getMentionRenderContext(
-                    message.mentions
-                )
+                    message.mentions,
+                ),
             )
         } else {
             pinContentTv.text =
@@ -139,7 +139,7 @@ class PinMessageLayout constructor(context: Context, attrs: AttributeSet) :
                     } else {
                         message.userFullName
                     },
-                    pinMessage.explain(binding.root.context)
+                    pinMessage.explain(binding.root.context),
                 )
         }
     }

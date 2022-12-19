@@ -119,7 +119,7 @@ fun convertToConversationItems(cursor: Cursor?): List<ConversationItem> {
             tmpMuteUntil,
             tmpAppId,
             tmpMentions,
-            tmpMentionCount
+            tmpMentionCount,
         )
         res.add(item)
     }
@@ -334,7 +334,7 @@ fun convertToMessageItems(cursor: Cursor?): ArrayList<MessageItem> {
             tmpMentions,
             tmpMentionRead,
             tmpPinTop,
-            tempExpireIn
+            tempExpireIn,
         )
         res.add(item)
     }
@@ -370,7 +370,7 @@ fun convertToSearchMessageDetailItem(cursor: Cursor?): ArrayList<SearchMessageDe
             tmpMediaName,
             tmpUserId,
             tmpUserFullName,
-            tmpUserAvatarUrl
+            tmpUserAvatarUrl,
         )
         res.add(item)
     }
@@ -498,7 +498,7 @@ fun callableUser(
                     tmpMuteUntil,
                     tmpHasPin,
                     tmpAppId,
-                    tmpIsScam
+                    tmpIsScam,
                 )
                 result.add(item)
             }
@@ -671,7 +671,7 @@ fun callableAssetItem(
                     tmpChainName,
                     tmpChainPriceUsd,
                     tmpAssetKey,
-                    tmpReserve
+                    tmpReserve,
                 )
                 result.add(item)
             }
@@ -751,7 +751,7 @@ fun callableSearchMessageItem(
                     tmpUserId!!,
                     tmpUserFullName,
                     tmpUserAvatarUrl,
-                    tmpConversationAvatarUrl
+                    tmpConversationAvatarUrl,
                 )
                 result.add(item)
             }
@@ -869,7 +869,7 @@ fun callableChatMinimal(
                     tmpAppId,
                     tmpOwnerMuteUntil,
                     tmpMuteUntil,
-                    tmpPinTime
+                    tmpPinTime,
                 )
                 result.add(item)
             }

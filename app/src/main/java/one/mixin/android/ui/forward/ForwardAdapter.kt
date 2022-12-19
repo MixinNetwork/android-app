@@ -127,7 +127,7 @@ class ForwardAdapter(private val disableCheck: Boolean = false) :
                 R.string.CONTACTS
             } else {
                 R.string.bots_title
-            }
+            },
         )
     }
 
@@ -165,12 +165,12 @@ class ForwardAdapter(private val disableCheck: Boolean = false) :
                     LayoutInflater.from(parent.context).inflate(
                         R.layout.item_forward_conversation,
                         parent,
-                        false
+                        false,
                     ).apply {
                         if (disableCheck) {
                             (this as ConversationCheckView).disableCheck()
                         }
-                    }
+                    },
                 )
             }
             TYPE_FRIEND -> {
@@ -178,12 +178,12 @@ class ForwardAdapter(private val disableCheck: Boolean = false) :
                     LayoutInflater.from(parent.context).inflate(
                         R.layout.item_contact_friend,
                         parent,
-                        false
+                        false,
                     ).apply {
                         if (disableCheck) {
                             (this as ConversationCheckView).disableCheck()
                         }
-                    }
+                    },
                 )
             }
             else -> {
@@ -191,12 +191,12 @@ class ForwardAdapter(private val disableCheck: Boolean = false) :
                     LayoutInflater.from(parent.context).inflate(
                         R.layout.item_contact_friend,
                         parent,
-                        false
+                        false,
                     ).apply {
                         if (disableCheck) {
                             (this as ConversationCheckView).disableCheck()
                         }
-                    }
+                    },
                 )
             }
         }

@@ -49,7 +49,7 @@ class ChannelManager {
             val channel = NotificationChannel(
                 BlazeMessageService.CHANNEL_NODE,
                 MixinApplication.get().getString(R.string.Messaging_Node),
-                NotificationManager.IMPORTANCE_LOW
+                NotificationManager.IMPORTANCE_LOW,
             )
             channel.lockscreenVisibility = Notification.VISIBILITY_SECRET
             channel.setSound(null, null)
@@ -65,8 +65,8 @@ class ChannelManager {
                 notificationManager.createNotificationChannelGroup(
                     NotificationChannelGroup(
                         CHANNEL_MESSAGE_GROUP,
-                        context.getString(R.string.Messages)
-                    )
+                        context.getString(R.string.Messages),
+                    ),
                 )
             }
         }
@@ -78,7 +78,7 @@ class ChannelManager {
                     NotificationChannel(
                         getChannelId(MESSAGES),
                         context.getString(R.string.Message_Notification),
-                        NotificationManager.IMPORTANCE_HIGH
+                        NotificationManager.IMPORTANCE_HIGH,
                     )
 
                 messageChannel.group = CHANNEL_MESSAGE_GROUP
@@ -91,7 +91,7 @@ class ChannelManager {
                     uri,
                     AudioAttributes.Builder().setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
                         .setUsage(AudioAttributes.USAGE_NOTIFICATION)
-                        .build()
+                        .build(),
                 )
                 messageChannel.enableVibration(true)
                 messageChannel.lockscreenVisibility = Notification.VISIBILITY_PRIVATE
@@ -108,7 +108,7 @@ class ChannelManager {
                     silenceChannel.setAllowBubbles(true)
                 }
                 context.notificationManager.createNotificationChannels(
-                    listOf(messageChannel, groupChannel, silenceChannel)
+                    listOf(messageChannel, groupChannel, silenceChannel),
                 )
             }
         }

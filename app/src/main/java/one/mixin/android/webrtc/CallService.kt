@@ -188,7 +188,7 @@ abstract class CallService : LifecycleService(), PeerConnectionClient.PeerConnec
                 override fun customAudioDeviceAvailable(available: Boolean) {
                     callState.customAudioDeviceAvailable = available
                 }
-            }
+            },
         )
     }
 
@@ -302,7 +302,7 @@ abstract class CallService : LifecycleService(), PeerConnectionClient.PeerConnec
             val channel = NotificationChannel(
                 BlazeMessageService.CHANNEL_NODE,
                 MixinApplication.get().getString(R.string.Messaging_Node),
-                NotificationManager.IMPORTANCE_LOW
+                NotificationManager.IMPORTANCE_LOW,
             )
             channel.lockscreenVisibility = Notification.VISIBILITY_SECRET
             channel.setSound(null, null)
@@ -332,7 +332,7 @@ abstract class CallService : LifecycleService(), PeerConnectionClient.PeerConnec
             failureBlock = {
                 handleFetchTurnError(it.error?.toString())
                 return@handleMixinResponse true
-            }
+            },
         )
     }
 
@@ -350,7 +350,7 @@ abstract class CallService : LifecycleService(), PeerConnectionClient.PeerConnec
                 PeerConnection.IceServer.builder(it.url)
                     .setUsername(it.username)
                     .setPassword(it.credential)
-                    .createIceServer()
+                    .createIceServer(),
             )
         }
         return iceServer

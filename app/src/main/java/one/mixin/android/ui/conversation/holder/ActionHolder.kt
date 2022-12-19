@@ -75,7 +75,7 @@ class ActionHolder constructor(val binding: ItemChatActionBinding) : BaseViewHol
                         ColorUtil.parseColor(b.color.trim())
                     } catch (e: Throwable) {
                         Color.BLACK
-                    }
+                    },
                 )
                 button.setTypeface(null, Typeface.BOLD)
                 button.text = b.label

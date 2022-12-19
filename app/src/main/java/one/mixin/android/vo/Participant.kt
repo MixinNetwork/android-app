@@ -13,11 +13,11 @@ import androidx.room.ForeignKey.CASCADE
                 entity = Conversation::class,
                 onDelete = CASCADE,
                 parentColumns = arrayOf("conversation_id"),
-                childColumns = arrayOf("conversation_id")
+                childColumns = arrayOf("conversation_id"),
             )
-            )
+            ),
     ],
-    primaryKeys = ["conversation_id", "user_id"]
+    primaryKeys = ["conversation_id", "user_id"],
 )
 data class Participant(
     @ColumnInfo(name = "conversation_id")

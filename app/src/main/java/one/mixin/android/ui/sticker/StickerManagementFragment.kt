@@ -101,7 +101,7 @@ class StickerManagementFragment : BaseFragment() {
                     RxPermissions(activity!!)
                         .request(
                             Manifest.permission.WRITE_EXTERNAL_STORAGE,
-                            Manifest.permission.READ_EXTERNAL_STORAGE
+                            Manifest.permission.READ_EXTERNAL_STORAGE,
                         )
                         .autoDispose(stopScope)
                         .subscribe(
@@ -114,25 +114,25 @@ class StickerManagementFragment : BaseFragment() {
                             },
                             {
                                 reportException(it)
-                            }
+                            },
                         )
                 }
 
                 override fun onDelete() {
                     binding.titleView.rightTv.text = getString(R.string.Delete)
                 }
-            }
+            },
         )
 
         if (albumId == null) { // not add any personal sticker yet
             stickerViewModel.observePersonalStickers().observe(
-                viewLifecycleOwner
+                viewLifecycleOwner,
             ) {
                 it?.let { updateStickers(it) }
             }
         } else {
             stickerViewModel.observeStickers(albumId!!).observe(
-                viewLifecycleOwner
+                viewLifecycleOwner,
             ) {
                 it?.let { updateStickers(it) }
             }
@@ -159,7 +159,7 @@ class StickerManagementFragment : BaseFragment() {
                 requireActivity().addFragment(
                     this@StickerManagementFragment,
                     StickerAddFragment.newInstance(it.toString(), true),
-                    StickerAddFragment.TAG
+                    StickerAddFragment.TAG,
                 )
             }
         }

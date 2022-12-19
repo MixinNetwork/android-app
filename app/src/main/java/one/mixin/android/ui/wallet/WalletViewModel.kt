@@ -59,7 +59,7 @@ internal constructor(
                 .setPrefetchDistance(PAGE_SIZE)
                 .setPageSize(PAGE_SIZE)
                 .setEnablePlaceholders(true)
-                .build()
+                .build(),
         )
             .setInitialLoadKey(initialLoadKey)
             .build()
@@ -74,7 +74,7 @@ internal constructor(
                 .setPrefetchDistance(PAGE_SIZE)
                 .setPageSize(PAGE_SIZE)
                 .setEnablePlaceholders(true)
-                .build()
+                .build(),
         )
             .setInitialLoadKey(initialLoadKey)
             .build()
@@ -114,7 +114,7 @@ internal constructor(
                 .setPrefetchDistance(PAGE_SIZE * 2)
                 .setPageSize(PAGE_SIZE)
                 .setEnablePlaceholders(true)
-                .build()
+                .build(),
         )
             .setInitialLoadKey(initialLoadKey)
             .build()
@@ -182,7 +182,7 @@ internal constructor(
                 null
             } else {
                 tag
-            }
+            },
         )
 
     suspend fun findAssetsByIds(ids: List<String>) = assetRepository.findAssetsByIds(ids)
@@ -218,7 +218,7 @@ internal constructor(
                 }
             defaultSharedPreferences.putString(
                 Constants.Account.PREF_RECENT_SEARCH_ASSETS,
-                arr.joinToString("=")
+                arr.joinToString("="),
             )
         } else {
             defaultSharedPreferences.putString(Constants.Account.PREF_RECENT_SEARCH_ASSETS, assetId)

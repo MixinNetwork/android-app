@@ -49,7 +49,7 @@ class ShareLiveRenderer(val context: Context) {
             isPin = false,
             isRepresentative = false,
             isSecret = true,
-            isWhite = true
+            isWhite = true,
         )
     }
 }

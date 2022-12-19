@@ -40,7 +40,7 @@ class DepositQrBottomFragment : MixinBottomSheetDialogFragment() {
         fun newInstance(asset: AssetItem, type: Int) = DepositQrBottomFragment().apply {
             arguments = bundleOf(
                 ARGS_ASSET to asset,
-                ARGS_TYPE to type
+                ARGS_TYPE to type,
             )
         }
     }
@@ -97,7 +97,7 @@ class DepositQrBottomFragment : MixinBottomSheetDialogFragment() {
                         },
                         {
                             toast(R.string.Save_failure)
-                        }
+                        },
                     )
             }
 
@@ -121,7 +121,7 @@ class DepositQrBottomFragment : MixinBottomSheetDialogFragment() {
                             qr.setImageBitmap(r.first)
                         },
                         {
-                        }
+                        },
                     )
             }
         }

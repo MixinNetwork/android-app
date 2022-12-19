@@ -11,7 +11,7 @@ import one.mixin.android.util.reportException
 
 private val mlExtractor by lazy {
     EntityExtraction.getClient(
-        EntityExtractorOptions.Builder(EntityExtractorOptions.ENGLISH).build()
+        EntityExtractorOptions.Builder(EntityExtractorOptions.ENGLISH).build(),
     )
 }
 private val conditions = DownloadConditions.Builder().build()

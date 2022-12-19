@@ -48,7 +48,7 @@ class ImageEditorActivity : BaseActivity() {
                 Intent(context, ImageEditorActivity::class.java).apply {
                     putExtra(ARGS_IMAGE_URI, imageUri)
                     nextTitle?.let { putExtra(ARGS_NEXT_TITLE, it) }
-                }
+                },
             )
         }
     }

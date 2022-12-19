@@ -131,7 +131,7 @@ internal constructor(
 
         return FastLivePagedListBuilder(
             conversationRepository.getMessages(conversationId),
-            pagedListConfig
+            pagedListConfig,
         ).setInitialLoadKey(firstKeyToLoad).build()
     }
 
@@ -277,9 +277,9 @@ internal constructor(
                         PinMessage(
                             it.messageId,
                             it.conversationId,
-                            nowInUtc()
+                            nowInUtc(),
                         )
-                    }
+                    },
                 )
             } else if (action == PinAction.UNPIN) {
                 conversationRepository.deletePinMessageByIds(list.map { it.messageId })
@@ -290,7 +290,7 @@ internal constructor(
                 action,
                 list.map {
                     PinMessageMinimal(it.messageId, it.type, it.content)
-                }
+                },
             )
         }
     }
@@ -346,11 +346,11 @@ internal constructor(
             conversationId,
             ConversationCategory.CONTACT.name,
             recipient.userId,
-            ConversationStatus.START.ordinal
+            ConversationStatus.START.ordinal,
         )
         val participants = arrayListOf(
             Participant(conversationId, sender.userId, "", createdAt),
-            Participant(conversationId, recipient.userId, "", createdAt)
+            Participant(conversationId, recipient.userId, "", createdAt),
         )
         conversationRepository.syncInsertConversation(conversation, participants)
     }
@@ -385,8 +385,8 @@ internal constructor(
                                     else -> EncryptCategory.PLAIN
                                 },
                                 it.messageId,
-                                it.createdAt
-                            )
+                                it.createdAt,
+                            ),
                         )
                     } catch (e: NullPointerException) {
                         onError.invoke()
@@ -401,8 +401,8 @@ internal constructor(
                         jobManager.addJobInBackground(
                             SendGiphyJob(
                                 it.conversationId, it.userId, it.mediaUrl, it.mediaWidth!!, it.mediaHeight!!,
-                                it.mediaSize ?: 0L, category, it.messageId, it.thumbImage ?: "", it.createdAt
-                            )
+                                it.mediaSize ?: 0L, category, it.messageId, it.thumbImage ?: "", it.createdAt,
+                            ),
                         )
                     } catch (e: NullPointerException) {
                         onError.invoke()
@@ -502,7 +502,7 @@ internal constructor(
     fun getBottomApps(conversationId: String, guestId: String?): LiveData<List<AppItem>>? {
         return if (guestId == null) {
             Transformations.map(
-                conversationRepository.getGroupAppsByConversationId(conversationId)
+                conversationRepository.getGroupAppsByConversationId(conversationId),
             ) { list ->
                 list.filter {
                     it.capabilities?.contains(AppCap.GROUP.name) == true
@@ -542,7 +542,7 @@ internal constructor(
                 createAckJob(
                     CREATE_MESSAGE,
                     BlazeAckMessage(it.id, MessageStatus.READ.name),
-                    conversationId
+                    conversationId,
                 )
             }.let {
                 conversationRepository.insertList(it)
@@ -596,7 +596,7 @@ internal constructor(
                 }
             defaultSharedPreferences.putString(
                 Constants.Account.PREF_RECENT_USED_BOTS,
-                arr.joinToString("=")
+                arr.joinToString("="),
             )
         } else {
             defaultSharedPreferences.putString(Constants.Account.PREF_RECENT_USED_BOTS, userId)
@@ -606,7 +606,7 @@ internal constructor(
     private fun getPreviousVersionBotsList(defaultSharedPreferences: SharedPreferences): List<String>? {
         defaultSharedPreferences.getString(
             Constants.Account.PREF_RECENT_USED_BOTS,
-            null
+            null,
         )?.let { botsString ->
             return botsString.deserialize<Array<String>>()?.toList()
         } ?: return null
@@ -677,7 +677,7 @@ internal constructor(
                         }
                     }
                     return@handleMixinResponse response.data
-                }
+                },
             )
     }
 
@@ -689,7 +689,7 @@ internal constructor(
                 } else {
                     userRepository.fuzzySearchBotGroupUser(
                         conversationId,
-                        keyword
+                        keyword,
                     )
                 }
             }
@@ -726,16 +726,16 @@ internal constructor(
                         val conversationId = generateConversationId(Session.getAccountId()!!, user.userId)
                         val participants = arrayListOf(
                             Participant(conversationId, Session.getAccountId()!!, "", createdAt),
-                            Participant(conversationId, user.userId, "", createdAt)
+                            Participant(conversationId, user.userId, "", createdAt),
                         )
                         conversationRepository.syncInsertConversation(
                             createConversation(
                                 conversationId,
                                 ConversationCategory.CONTACT.name,
                                 user.userId,
-                                ConversationStatus.START.ordinal
+                                ConversationStatus.START.ordinal,
                             ),
-                            participants
+                            participants,
                         )
                         withContext(Dispatchers.Main) {
                             callback(conversationId, user.encryptedCategory())
@@ -797,7 +797,7 @@ internal constructor(
             val request = ConversationRequest(
                 conversationId = conversationId,
                 category = ConversationCategory.CONTACT.name,
-                participants = listOf(ParticipantRequest(userId, ""))
+                participants = listOf(ParticipantRequest(userId, "")),
             )
             val response = conversationRepository.createSuspend(request)
             if (response.isSuccess) {

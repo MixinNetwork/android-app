@@ -173,7 +173,7 @@ class AudioPlayer private constructor() {
 
                     reportExoPlayerException("AudioPlayer", error)
                 }
-            }
+            },
         )
     }
 
@@ -335,7 +335,7 @@ class AudioPlayer private constructor() {
         val message = messageDao.findNextAudioMessage(
             currentMessage.conversationId,
             currentMessage.createdAt,
-            currentMessage.messageId
+            currentMessage.messageId,
         )
             ?: return@launch
         if (message.userId == Session.getAccountId()) return@launch

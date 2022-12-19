@@ -68,15 +68,15 @@ class VerificationEmergencyIdFragment : FabLoadingFragment(R.layout.fragment_ver
                     VerificationEmergencyFragment.newInstance(
                         verificationId = (response.data as VerificationResponse).id,
                         from = FROM_SESSION,
-                        userIdentityNumber = mixinID
+                        userIdentityNumber = mixinID,
                     ),
-                    VerificationEmergencyFragment.TAG
+                    VerificationEmergencyFragment.TAG,
                 )
             },
             doAfterNetworkSuccess = { hideLoading() },
             defaultExceptionHandle = {
                 handleError(it)
-            }
+            },
         )
     }
 
@@ -89,7 +89,7 @@ class VerificationEmergencyIdFragment : FabLoadingFragment(R.layout.fragment_ver
     private fun buildEmergencyRequest(mixinID: String) = EmergencyRequest(
         phone = phone,
         identityNumber = mixinID,
-        purpose = EmergencyPurpose.SESSION.name
+        purpose = EmergencyPurpose.SESSION.name,
     )
 
     private fun handleEditView(str: String) {

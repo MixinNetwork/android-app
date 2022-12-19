@@ -67,8 +67,8 @@ class DepositChooseNetworkBottomSheetDialogFragment : MixinBottomSheetDialogFrag
                 ItemChooseNetworkBinding.inflate(
                     LayoutInflater.from(parent.context),
                     parent,
-                    false
-                )
+                    false,
+                ),
             )
         }
 
@@ -98,7 +98,7 @@ class DepositChooseNetworkBottomSheetDialogFragment : MixinBottomSheetDialogFrag
                 binding.assetIcon.isVisible = true
                 binding.assetIcon.bg.loadImage(
                     assetItem.chainIconUrl,
-                    R.drawable.ic_avatar_place_holder
+                    R.drawable.ic_avatar_place_holder,
                 )
                 binding.content.text = CHAINS[assetItem.chainId] ?: assetItem.chainName
                 binding.root.setBackgroundResource(R.drawable.bg_round_choose_network)

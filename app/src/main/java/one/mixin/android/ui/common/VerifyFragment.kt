@@ -143,7 +143,7 @@ class VerifyFragment : BaseFragment(R.layout.fragment_verify_pin), PinView.OnPin
                     clearPin()
                     return@handleMixinResponse false
                 }
-            }
+            },
         )
     }
 
@@ -157,7 +157,7 @@ class VerifyFragment : BaseFragment(R.layout.fragment_verify_pin), PinView.OnPin
             val errorCount = accountRepository.errorCount()
             hideLoading()
             toast(
-                requireContext().resources.getQuantityString(R.plurals.error_pin_incorrect_with_times, errorCount, errorCount)
+                requireContext().resources.getQuantityString(R.plurals.error_pin_incorrect_with_times, errorCount, errorCount),
             )
             return true
         }

@@ -107,7 +107,7 @@ class PlayerControlView(context: Context, attributeSet: AttributeSet) :
                         12.dp + systemInserts.left,
                         12.dp,
                         12.dp + systemInserts.right,
-                        24.dp
+                        24.dp,
                     )
                 } else {
                     binding.topFl.setPadding(0, 24.dp + systemInserts.top, 0, 0)
@@ -115,7 +115,7 @@ class PlayerControlView(context: Context, attributeSet: AttributeSet) :
                         12.dp,
                         24.dp,
                         12.dp,
-                        24.dp + systemInserts.bottom
+                        24.dp + systemInserts.bottom,
                     )
                 }
                 WindowInsetsCompat.CONSUMED
@@ -380,14 +380,14 @@ class PlayerControlView(context: Context, attributeSet: AttributeSet) :
             0,
             adGroupTimesMs,
             adGroupCount,
-            extraAdGroupCount
+            extraAdGroupCount,
         )
         System.arraycopy(
             extraPlayedAdGroups,
             0,
             playedAdGroups,
             adGroupCount,
-            extraAdGroupCount
+            extraAdGroupCount,
         )
         timeBar.setAdGroupTimesMs(adGroupTimesMs, playedAdGroups, totalAdGroupCount)
         updateProgress()
@@ -430,7 +430,7 @@ class PlayerControlView(context: Context, attributeSet: AttributeSet) :
             delayMs = Util.constrainValue(
                 delayMs,
                 timeBarMinUpdateIntervalMs.toLong(),
-                MAX_UPDATE_INTERVAL_MS
+                MAX_UPDATE_INTERVAL_MS,
             )
             postDelayed(updateProgressAction, delayMs)
         } else if (playbackState != Player.STATE_ENDED && playbackState != Player.STATE_IDLE) {

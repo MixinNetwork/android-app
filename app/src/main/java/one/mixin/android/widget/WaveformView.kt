@@ -165,7 +165,7 @@ class WaveformView : View {
                         yTop,
                         (x + 2.dp).toFloat(),
                         yBottom,
-                        paintOuter
+                        paintOuter,
                     )
                 } else {
                     canvas.drawRect(
@@ -173,7 +173,7 @@ class WaveformView : View {
                         yTop,
                         (x + 2.dp).toFloat(),
                         yBottom,
-                        paintInner
+                        paintInner,
                     )
                     if (x < thumbX) {
                         canvas.drawRect(x.toFloat(), yTop, thumbX.toFloat(), yBottom, paintOuter)

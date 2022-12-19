@@ -32,7 +32,7 @@ class FriendsFragment : BaseFriendsFragment<FriendsViewHolder>(), FriendsListene
 
         fun newInstance(conversationId: String) = FriendsFragment().apply {
             arguments = bundleOf(
-                CONVERSATION_ID to conversationId
+                CONVERSATION_ID to conversationId,
             )
         }
     }

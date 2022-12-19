@@ -77,7 +77,7 @@ object BiometricUtil {
     fun showAuthenticationScreen(activity: FragmentActivity) {
         val intent = activity.getSystemService<KeyguardManager>()?.createConfirmDeviceCredentialIntent(
             activity.getString(R.string.Screen_Lock),
-            activity.getString(R.string.wallet_biometric_screen_lock_desc)
+            activity.getString(R.string.wallet_biometric_screen_lock_desc),
         )
         if (intent != null) {
             activity.startActivityForResult(intent, REQUEST_CODE_CREDENTIALS)
@@ -159,25 +159,25 @@ object BiometricUtil {
             if (key == null) {
                 val keyGenerator = KeyGenerator.getInstance(
                     KeyProperties.KEY_ALGORITHM_AES,
-                    "AndroidKeyStore"
+                    "AndroidKeyStore",
                 )
                 keyGenerator.init(
                     KeyGenParameterSpec.Builder(
                         BIOMETRICS_ALIAS,
-                        KeyProperties.PURPOSE_ENCRYPT or KeyProperties.PURPOSE_DECRYPT
+                        KeyProperties.PURPOSE_ENCRYPT or KeyProperties.PURPOSE_DECRYPT,
                     )
                         .setBlockModes(
                             KeyProperties.BLOCK_MODE_CBC,
                             KeyProperties.BLOCK_MODE_CTR,
-                            KeyProperties.BLOCK_MODE_GCM
+                            KeyProperties.BLOCK_MODE_GCM,
                         )
                         .setEncryptionPaddings(
                             KeyProperties.ENCRYPTION_PADDING_PKCS7,
-                            KeyProperties.ENCRYPTION_PADDING_NONE
+                            KeyProperties.ENCRYPTION_PADDING_NONE,
                         )
                         .setUserAuthenticationRequired(true)
                         .setUserAuthenticationValidityDurationSeconds(2 * 60 * 60)
-                        .build()
+                        .build(),
                 )
                 key = keyGenerator.generateKey()
             }

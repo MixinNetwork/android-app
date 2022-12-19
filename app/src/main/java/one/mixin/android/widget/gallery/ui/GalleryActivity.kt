@@ -163,7 +163,7 @@ class GalleryActivity :
             cursor.moveToPosition(mAlbumCollection.currentSelection)
             mAlbumsSpinner.setSelection(
                 this@GalleryActivity,
-                mAlbumCollection.currentSelection
+                mAlbumCollection.currentSelection,
             )
             val album = Album.valueOf(cursor)
             if (album.isAll && SelectionSpec.getInstance().capture) {
@@ -196,7 +196,7 @@ class GalleryActivity :
         if (mSpec.onSelectedListener != null) {
             mSpec.onSelectedListener.onSelected(
                 mSelectedCollection.asListOfUri(),
-                mSelectedCollection.asListOfString()
+                mSelectedCollection.asListOfString(),
             )
         }
     }

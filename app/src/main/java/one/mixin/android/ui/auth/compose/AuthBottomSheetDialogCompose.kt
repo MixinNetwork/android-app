@@ -1,6 +1,6 @@
 @file:OptIn(
     ExperimentalPagerApi::class,
-    ExperimentalAnimationApi::class
+    ExperimentalAnimationApi::class,
 )
 
 package one.mixin.android.ui.auth.compose
@@ -96,7 +96,7 @@ fun AuthBottomSheetDialogCompose(
                 .fillMaxWidth()
                 .height(690.dp)
                 .background(MixinAppTheme.colors.background)
-                .padding(top = 16.dp)
+                .padding(top = 16.dp),
         ) {
             Image(
                 painter = painterResource(R.drawable.ic_circle_close),
@@ -107,20 +107,20 @@ fun AuthBottomSheetDialogCompose(
                     .clickable {
                         onDismissRequest()
                     },
-                contentDescription = null
+                contentDescription = null,
             )
             Text(
                 stringResource(R.string.Request_Authorization),
                 modifier = Modifier.align(alignment = CenterHorizontally),
                 color = MixinAppTheme.colors.textPrimary,
                 fontWeight = FontWeight.Medium,
-                fontSize = 16.sp
+                fontSize = 16.sp,
             )
             Row(
                 modifier = Modifier
                     .align(alignment = CenterHorizontally)
                     .padding(horizontal = 8.dp, vertical = 6.dp),
-                verticalAlignment = Alignment.CenterVertically
+                verticalAlignment = Alignment.CenterVertically,
             ) {
                 if (iconUrl != null) {
                     GlideImage(
@@ -128,13 +128,13 @@ fun AuthBottomSheetDialogCompose(
                         modifier = Modifier
                             .size(16.dp)
                             .clip(CircleShape),
-                        placeHolderPainter = painterResource(id = R.drawable.ic_avatar_place_holder)
+                        placeHolderPainter = painterResource(id = R.drawable.ic_avatar_place_holder),
                     )
                     Spacer(modifier = Modifier.width(3.dp))
                 }
                 Text(
                     name,
-                    color = MixinAppTheme.colors.textPrimary
+                    color = MixinAppTheme.colors.textPrimary,
                 )
             }
             AnimatedContent(
@@ -144,7 +144,7 @@ fun AuthBottomSheetDialogCompose(
                     (slideInHorizontally { it } with slideOutHorizontally { -it }).apply {
                         SizeTransform(clip = false)
                     }
-                }
+                },
             ) { b ->
                 if (b) {
                     val state: LazyListState = rememberLazyListState()
@@ -156,7 +156,7 @@ fun AuthBottomSheetDialogCompose(
                             .wrapContentHeight(Alignment.Top)
                             .clip(shape = RoundedCornerShape(8.dp))
                             .background(MixinAppTheme.colors.backgroundWindow)
-                            .verticalScrollbar(state)
+                            .verticalScrollbar(state),
                     ) {
                         items(scopes) { scope ->
                             ScopeCheckLayout(scope, savedScopes.contains(scope)) { checked ->
@@ -175,7 +175,7 @@ fun AuthBottomSheetDialogCompose(
             AnimatedVisibility(
                 visible = step != AuthStep.DEFAULT,
                 enter = slideInVertically(initialOffsetY = { it }),
-                exit = slideOutVertically(targetOffsetY = { it })
+                exit = slideOutVertically(targetOffsetY = { it }),
             ) {
                 PinKeyBoard(step, errorContent, onResetClick = onResetClick, onBiometricClick = {
                     onBiometricClick(savedScopes.map { it.source })
@@ -203,7 +203,7 @@ fun ScopesContent(
                 .padding(vertical = 16.dp, horizontal = 4.dp),
             state = pagerState,
             count = scopeGroup.size,
-            verticalAlignment = Alignment.Top
+            verticalAlignment = Alignment.Top,
         ) { page ->
             val groupId = scopeGroup.keyAt(page)
             val scopeItems = requireNotNull(scopeGroup[groupId])
@@ -213,7 +213,7 @@ fun ScopesContent(
                     modifier = Modifier
                         .align(alignment = CenterHorizontally)
                         .size(60.dp),
-                    contentDescription = null
+                    contentDescription = null,
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
@@ -221,7 +221,7 @@ fun ScopesContent(
                     modifier = Modifier.align(alignment = CenterHorizontally),
                     color = MixinAppTheme.colors.textPrimary,
                     fontWeight = FontWeight.Medium,
-                    fontSize = 16.sp
+                    fontSize = 16.sp,
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 LazyColumn(
@@ -229,7 +229,7 @@ fun ScopesContent(
                         .padding(16.dp)
                         .fillMaxWidth()
                         .clip(shape = RoundedCornerShape(8.dp))
-                        .background(MixinAppTheme.colors.backgroundWindow)
+                        .background(MixinAppTheme.colors.backgroundWindow),
                 ) {
                     items(scopeItems) { scope ->
                         ScopeCheckLayout(scope, scopes.contains(scope)) { checked ->
@@ -249,7 +249,7 @@ fun ScopesContent(
                 modifier = Modifier
                     .align(CenterHorizontally),
                 activeColor = MixinAppTheme.colors.accent,
-                inactiveColor = MixinAppTheme.colors.backgroundGray
+                inactiveColor = MixinAppTheme.colors.backgroundGray,
             )
             Spacer(modifier = Modifier.height(16.dp))
         }
@@ -267,11 +267,11 @@ fun ScopesContent(
                 } else {
                     onConfirmed?.invoke(scopes.map { it.source })
                 }
-            }
+            },
         ) {
             Text(
                 stringResource(id = R.string.Next),
-                color = Color.White
+                color = Color.White,
             )
         }
         Spacer(modifier = Modifier.height(16.dp))
@@ -306,7 +306,7 @@ fun Modifier.verticalScrollbar(
                 color = color,
                 cornerRadius = CornerRadius(8f, 8f),
                 topLeft = Offset(this.size.width - width.toPx(), scrollbarOffsetY),
-                size = Size(width.toPx(), scrollbarHeight)
+                size = Size(width.toPx(), scrollbarHeight),
             )
         }
     }
@@ -330,7 +330,7 @@ fun AuthBottomSheetDialogComposePreview() {
             Scope.generateScopeFromString(context, "APPS:WRITE"),
             Scope.generateScopeFromString(context, "CIRCLES:READ"),
             Scope.generateScopeFromString(context, "CIRCLES:WRITE"),
-            Scope.generateScopeFromString(context, "COLLECTIBLES:READ")
+            Scope.generateScopeFromString(context, "COLLECTIBLES:READ"),
         ),
         {},
         AuthStep.INPUT,
@@ -338,6 +338,6 @@ fun AuthBottomSheetDialogComposePreview() {
         {},
         {},
         {},
-        null
+        null,
     )
 }

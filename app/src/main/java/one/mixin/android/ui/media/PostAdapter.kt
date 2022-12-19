@@ -27,8 +27,8 @@ class PostAdapter(
             LayoutInflater.from(parent.context).inflate(
                 R.layout.item_post,
                 parent,
-                false
-            )
+                false,
+            ),
         )
 
     override fun onBindViewHolder(holder: PostHolder, position: Int) {

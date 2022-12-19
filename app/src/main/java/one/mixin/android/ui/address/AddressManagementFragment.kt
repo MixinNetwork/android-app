@@ -54,7 +54,7 @@ class AddressManagementFragment : BaseFragment(R.layout.fragment_address_managem
                 R.id.action_address_management_to_address_add,
                 Bundle().apply {
                     putParcelable(ARGS_ASSET, asset)
-                }
+                },
             )
         }
         binding.emptyTv.setOnClickListener {
@@ -62,11 +62,11 @@ class AddressManagementFragment : BaseFragment(R.layout.fragment_address_managem
                 R.id.action_address_management_to_address_add,
                 Bundle().apply {
                     putParcelable(ARGS_ASSET, asset)
-                }
+                },
             )
         }
         addressViewModel.addresses(asset.assetId).observe(
-            viewLifecycleOwner
+            viewLifecycleOwner,
         ) {
             val list = it?.toMutableList()
             if (list.isNullOrEmpty()) {
@@ -128,8 +128,8 @@ class AddressManagementFragment : BaseFragment(R.layout.fragment_address_managem
                             }
                         }
                     }
-                }
-            )
+                },
+            ),
         ).apply { attachToRecyclerView(binding.addrRv) }
         binding.addrRv.adapter = adapter
         adapter.setAddrListener(addrListener)
@@ -158,7 +158,7 @@ class AddressManagementFragment : BaseFragment(R.layout.fragment_address_managem
             label = address.label,
             tag = address.tag,
             assetName = asset.name,
-            type = DELETE
+            type = DELETE,
         )
         bottomSheet.showNow(parentFragmentManager, PinAddrBottomSheetDialogFragment.TAG)
         return bottomSheet

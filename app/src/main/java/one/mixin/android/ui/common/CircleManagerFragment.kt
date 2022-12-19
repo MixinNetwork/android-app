@@ -109,14 +109,14 @@ class CircleManagerFragment : BaseFragment() {
             val includeCircleItem = bottomViewModel.getIncludeCircleItem(
                 conversationId ?: generateConversationId(
                     Session.getAccountId()!!,
-                    userId!!
-                )
+                    userId!!,
+                ),
             )
             val otherCircleItem = bottomViewModel.getOtherCircleItem(
                 conversationId ?: generateConversationId(
                     Session.getAccountId()!!,
-                    userId!!
-                )
+                    userId!!,
+                ),
             )
             binding.circleManagerRv.isVisible = includeCircleItem.isNotEmpty() || otherCircleItem.isNotEmpty()
             binding.empty.isVisible = includeCircleItem.isEmpty() && otherCircleItem.isEmpty()
@@ -142,8 +142,8 @@ class CircleManagerFragment : BaseFragment() {
                                 circleConversation.circleId,
                                 userId,
                                 circleConversation.createdAt,
-                                null
-                            )
+                                null,
+                            ),
                         )
                     }
                     dialog.dismiss()
@@ -156,7 +156,7 @@ class CircleManagerFragment : BaseFragment() {
                 failureBlock = {
                     dialog.dismiss()
                     return@handleMixinResponse false
-                }
+                },
             )
         }
     }
@@ -175,9 +175,9 @@ class CircleManagerFragment : BaseFragment() {
                     bottomViewModel.deleteCircleConversation(
                         conversationId ?: generateConversationId(
                             Session.getAccountId()!!,
-                            userId!!
+                            userId!!,
                         ),
-                        item.circleId
+                        item.circleId,
                     )
                     loadData()
                     dialog.dismiss()
@@ -189,7 +189,7 @@ class CircleManagerFragment : BaseFragment() {
                 failureBlock = {
                     dialog.dismiss()
                     return@handleMixinResponse false
-                }
+                },
             )
         }
     }

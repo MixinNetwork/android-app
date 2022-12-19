@@ -53,7 +53,7 @@ class ConversationCheckView : LinearLayout, Checkable {
     constructor(context: Context, attrs: AttributeSet?, defStyleAttr: Int) : super(
         context,
         attrs,
-        defStyleAttr
+        defStyleAttr,
     )
 
     init {
@@ -138,7 +138,7 @@ class ConversationCheckView : LinearLayout, Checkable {
                             R.string.Waiting_for_this_message
                         } else {
                             R.string.chat_decryption_failed
-                        }
+                        },
                     )
                 }
             }

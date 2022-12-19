@@ -23,7 +23,7 @@ suspend fun <T> tipNetwork(network: suspend () -> MixinResponse<T>): Result<T> {
             return@withContext Result.success(data)
         } else {
             return@withContext Result.failure(
-                TipNetworkException(requireNotNull(response.error))
+                TipNetworkException(requireNotNull(response.error)),
             )
         }
     }
@@ -36,7 +36,7 @@ suspend fun <T> tipNetworkNullable(network: suspend () -> MixinResponse<T>): Res
             return@withContext Result.success(response.data)
         } else {
             return@withContext Result.failure(
-                TipNetworkException(requireNotNull(response.error))
+                TipNetworkException(requireNotNull(response.error)),
             )
         }
     }

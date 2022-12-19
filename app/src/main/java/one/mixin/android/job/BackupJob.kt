@@ -34,8 +34,8 @@ class BackupJob(private val force: Boolean = false, private val delete: Boolean 
             PRIORITY_UI_HIGH
         } else {
             PRIORITY_BACKGROUND
-        }
-    ).addTags(GROUP).setSingleId(GROUP).persist()
+        },
+    ).addTags(GROUP).setSingleId(GROUP).persist(),
 ) {
 
     companion object {
@@ -58,11 +58,11 @@ class BackupJob(private val force: Boolean = false, private val delete: Boolean 
                 val lastTime = PropertyHelper.findValueByKey(BACKUP_LAST_TIME)?.toLongOrNull() ?: currentTime
                 val timeDiff = currentTime - lastTime
                 if (timeDiff >= when (option) {
-                    1 -> DAY_IN_MILLIS
-                    2 -> WEEK_IN_MILLIS
-                    3 -> DAY_IN_MILLIS * 30
-                    else -> Long.MAX_VALUE
-                }
+                        1 -> DAY_IN_MILLIS
+                        2 -> WEEK_IN_MILLIS
+                        3 -> DAY_IN_MILLIS * 30
+                        else -> Long.MAX_VALUE
+                    }
                 ) {
                     internalBackup(context)
                 }
@@ -90,7 +90,7 @@ class BackupJob(private val force: Boolean = false, private val delete: Boolean 
                             this.launch {
                                 PropertyHelper.updateKeyValue(
                                     BACKUP_LAST_TIME,
-                                    System.currentTimeMillis().toString()
+                                    System.currentTimeMillis().toString(),
                                 )
                             }
                             toast(R.string.Backup_success)
@@ -108,7 +108,7 @@ class BackupJob(private val force: Boolean = false, private val delete: Boolean 
                             this.launch {
                                 PropertyHelper.updateKeyValue(
                                     BACKUP_LAST_TIME,
-                                    System.currentTimeMillis().toString()
+                                    System.currentTimeMillis().toString(),
                                 )
                             }
                             toast(R.string.Backup_success)

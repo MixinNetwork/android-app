@@ -75,7 +75,7 @@ class StickerPreviewBottomSheetFragment : MixinBottomSheetDialogFragment() {
                     previewIv.loadSticker(
                         sticker.assetUrl,
                         sticker.assetType,
-                        "${sticker.assetUrl}${sticker.albumId}"
+                        "${sticker.assetUrl}${sticker.albumId}",
                     )
                 }
             }
@@ -87,7 +87,7 @@ class StickerPreviewBottomSheetFragment : MixinBottomSheetDialogFragment() {
                 binding.previewIv.loadSticker(
                     sticker.assetUrl,
                     sticker.assetType,
-                    "${sticker.assetUrl}${sticker.albumId}"
+                    "${sticker.assetUrl}${sticker.albumId}",
                 )
 
                 val albumId = sticker.albumId
@@ -126,8 +126,8 @@ class StickerPreviewBottomSheetFragment : MixinBottomSheetDialogFragment() {
                     StickerAlbumAdded(
                         albumId,
                         false,
-                        0
-                    )
+                        0,
+                    ),
                 )
             }
         }, {
@@ -137,8 +137,8 @@ class StickerPreviewBottomSheetFragment : MixinBottomSheetDialogFragment() {
                     StickerAlbumAdded(
                         albumId,
                         true,
-                        maxOrder + 1
-                    )
+                        maxOrder + 1,
+                    ),
                 )
             }
         })

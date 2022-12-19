@@ -207,7 +207,7 @@ class SignalProtocol(ctx: Context) {
             quote_message_id = message.quoteMessageId,
             session_id = sessionId,
             mentions = mentionData,
-            expire_in = expireIn
+            expire_in = expireIn,
         )
         return createParamBlazeMessage(blazeParam)
     }
@@ -233,7 +233,7 @@ class SignalProtocol(ctx: Context) {
             quote_message_id = message.quoteMessageId,
             mentions = mentionData,
             silent = isSilent,
-            expire_in = expireIn
+            expire_in = expireIn,
         )
         return createParamBlazeMessage(blazeParam)
     }

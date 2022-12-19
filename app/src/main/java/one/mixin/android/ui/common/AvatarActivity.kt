@@ -45,7 +45,7 @@ class AvatarActivity : BaseActivity() {
             val options = ActivityOptions.makeSceneTransitionAnimation(
                 activity,
                 view,
-                activity.getString(R.string.avatar_transition_name)
+                activity.getString(R.string.avatar_transition_name),
             )
             activity.startActivity(intent, options.toBundle())
         }
@@ -102,7 +102,7 @@ class AvatarActivity : BaseActivity() {
                     }
                     return false
                 }
-            }
+            },
         ).into(binding.avatar)
 
         binding.rootView.setOnClickListener { finish() }
@@ -117,7 +117,7 @@ class AvatarActivity : BaseActivity() {
             playTogether(
                 ObjectAnimator.ofFloat(binding.avatar, View.SCALE_X, 0f),
                 ObjectAnimator.ofFloat(binding.avatar, View.SCALE_Y, 0f),
-                ObjectAnimator.ofFloat(binding.rootView, View.ALPHA, 0f)
+                ObjectAnimator.ofFloat(binding.rootView, View.ALPHA, 0f),
             )
             duration = 200
             interpolator = DecelerateInterpolator()

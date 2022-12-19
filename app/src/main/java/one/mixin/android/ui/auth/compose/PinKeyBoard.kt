@@ -87,7 +87,7 @@ fun PinKeyBoard(
     val randomKeyboardEnabled by LocalContext.current.defaultSharedPreferences
         .booleanValueAsState(
             key = Constants.Account.PREF_RANDOM,
-            defaultValue = false
+            defaultValue = false,
         )
     val list = if (randomKeyboardEnabled) {
         mutableListOf("1", "2", "3", "4", "5", "6", "7", "8", "9", "0").apply {
@@ -100,7 +100,7 @@ fun PinKeyBoard(
             "1", "2", "3",
             "4", "5", "6",
             "7", "8", "9",
-            "", "0", "<<"
+            "", "0", "<<",
         )
     }
     var size by remember { mutableStateOf(IntSize.Zero) }
@@ -125,11 +125,11 @@ fun PinKeyBoard(
                     .height(150.dp)
                     .fillMaxWidth(),
                 horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center
+                verticalArrangement = Arrangement.Center,
             ) {
                 Image(
                     painter = painterResource(id = R.drawable.ic_transfer_done),
-                    contentDescription = null
+                    contentDescription = null,
                 )
                 Text(text = stringResource(R.string.Done), color = MixinAppTheme.colors.textMinor)
                 // Todo hide biometric
@@ -159,34 +159,34 @@ fun PinKeyBoard(
                     .heightIn(min = 150.dp)
                     .fillMaxWidth(),
                 horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center
+                verticalArrangement = Arrangement.Center,
             ) {
                 Text(
                     modifier = Modifier
                         .padding(start = 24.dp, end = 24.dp, top = 24.dp, bottom = 10.dp)
                         .background(
                             color = MixinAppTheme.colors.backgroundGray,
-                            shape = RoundedCornerShape(8.dp)
+                            shape = RoundedCornerShape(8.dp),
                         )
                         .padding(horizontal = 20.dp, vertical = 10.dp),
                     text = errorContent,
                     color = MixinAppTheme.colors.tipError,
                     textAlign = TextAlign.Center,
-                    fontSize = 14.sp
+                    fontSize = 14.sp,
                 )
                 Button(
                     onClick = {
                         onResetClick?.invoke()
                     },
                     colors = ButtonDefaults.buttonColors(
-                        backgroundColor = MixinAppTheme.colors.accent
+                        backgroundColor = MixinAppTheme.colors.accent,
                     ),
                     contentPadding = PaddingValues(horizontal = 20.dp),
-                    shape = RoundedCornerShape(20.dp)
+                    shape = RoundedCornerShape(20.dp),
                 ) {
                     Text(
                         text = stringResource(id = R.string.Continue),
-                        color = Color.White
+                        color = Color.White,
                     )
                 }
             }
@@ -200,17 +200,17 @@ fun PinKeyBoard(
                             verticalArrangement = Arrangement.Center,
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .wrapContentHeight()
+                                .wrapContentHeight(),
                         ) {
                             Box(
                                 modifier = Modifier
                                     .padding(8.dp)
                                     .fillMaxWidth(),
-                                contentAlignment = Alignment.Center
+                                contentAlignment = Alignment.Center,
                             ) {
                                 LazyRow(
                                     modifier = Modifier.height(20.dp),
-                                    verticalAlignment = Alignment.CenterVertically
+                                    verticalAlignment = Alignment.CenterVertically,
                                 ) {
                                     items(6) { index ->
                                         val hasContent = index < pinCode.length
@@ -222,9 +222,9 @@ fun PinKeyBoard(
                                                 } else {
                                                     scaleIn() + fadeIn() with scaleOut() + fadeOut()
                                                 }.using(
-                                                    SizeTransform(clip = false)
+                                                    SizeTransform(clip = false),
                                                 )
-                                            }
+                                            },
                                         ) { b ->
                                             Text(
                                                 "*",
@@ -233,7 +233,7 @@ fun PinKeyBoard(
                                                 fontWeight = FontWeight.Bold,
                                                 color = if (b) MixinAppTheme.colors.textPrimary else MixinAppTheme.colors.textMinor,
                                                 fontSize = if (b) 18.sp else 12.sp,
-                                                textAlign = TextAlign.Center
+                                                textAlign = TextAlign.Center,
                                             )
                                         }
                                     }
@@ -251,18 +251,18 @@ fun PinKeyBoard(
                                     modifier = Modifier
                                         .padding(horizontal = 12.dp, vertical = 3.dp)
                                         .clip(
-                                            shape = RoundedCornerShape(4.dp)
+                                            shape = RoundedCornerShape(4.dp),
                                         )
-                                        .clickable { onBiometricClick?.invoke() }
+                                        .clickable { onBiometricClick?.invoke() },
                                 ) {
                                     Image(
                                         painter = painterResource(R.drawable.ic_biometric),
-                                        contentDescription = null
+                                        contentDescription = null,
                                     )
                                     Spacer(modifier = Modifier.width(4.dp))
                                     Text(
                                         text = stringResource(R.string.Verify_by_Biometric),
-                                        color = MixinAppTheme.colors.textBlue
+                                        color = MixinAppTheme.colors.textBlue,
                                     )
                                 }
                             }
@@ -273,12 +273,12 @@ fun PinKeyBoard(
                             contentAlignment = Alignment.Center,
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .height(94.dp)
+                                .height(94.dp),
                         ) {
                             CircularProgressIndicator(
                                 modifier = Modifier
                                     .size(32.dp),
-                                color = MixinAppTheme.colors.accent
+                                color = MixinAppTheme.colors.accent,
                             )
                         }
                     }
@@ -286,7 +286,7 @@ fun PinKeyBoard(
                 AnimatedVisibility(
                     visible = step == AuthStep.INPUT || step == AuthStep.LOADING,
                     enter = slideInVertically(initialOffsetY = { it }),
-                    exit = slideOutVertically(targetOffsetY = { it })
+                    exit = slideOutVertically(targetOffsetY = { it }),
                 ) {
                     Column(modifier = Modifier.background(MixinAppTheme.colors.backgroundWindow)) {
                         if (Session.getTipPub() != null) {
@@ -296,17 +296,17 @@ fun PinKeyBoard(
                                     .height(36.dp)
                                     .fillMaxWidth(),
                                 verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.Center
+                                horizontalArrangement = Arrangement.Center,
                             ) {
                                 Icon(
                                     painter = painterResource(id = R.drawable.ic_secret_tip),
                                     contentDescription = null,
-                                    tint = MixinAppTheme.colors.textMinor
+                                    tint = MixinAppTheme.colors.textMinor,
                                 )
                                 Text(
                                     color = MixinAppTheme.colors.textMinor,
                                     text = stringResource(id = R.string.Secured_by_TIP),
-                                    fontSize = 12.sp
+                                    fontSize = 12.sp,
                                 )
                             }
                         }
@@ -316,7 +316,7 @@ fun PinKeyBoard(
                                 .heightIn(120.dp, 240.dp)
                                 .onSizeChanged {
                                     size = it
-                                }
+                                },
                         ) {
                             LazyVerticalGrid(
                                 modifier = Modifier
@@ -334,10 +334,10 @@ fun PinKeyBoard(
                                                     context.pxToDp(
                                                         (
                                                             size.toSize().height - context.dpToPx(
-                                                                40f
+                                                                40f,
                                                             )
-                                                            ) / 4
-                                                    ).dp
+                                                            ) / 4,
+                                                    ).dp,
                                                 )
                                                 .clip(shape = RoundedCornerShape(8.dp))
                                                 .background(
@@ -345,7 +345,7 @@ fun PinKeyBoard(
                                                         11 -> MixinAppTheme.colors.backgroundDark
                                                         9 -> Color.Transparent
                                                         else -> MixinAppTheme.colors.background
-                                                    }
+                                                    },
                                                 )
                                                 .run {
                                                     if (step == AuthStep.INPUT && index != 9) {
@@ -356,7 +356,7 @@ fun PinKeyBoard(
                                                                     pinCode =
                                                                         pinCode.substring(
                                                                             0,
-                                                                            pinCode.length - 1
+                                                                            pinCode.length - 1,
                                                                         )
                                                                 }
                                                             } else if (pinCode.length < 6) {
@@ -370,24 +370,24 @@ fun PinKeyBoard(
                                                     } else {
                                                         this
                                                     }
-                                                }
+                                                },
                                         ) {
                                             if (index == 11) {
                                                 Image(
                                                     painter = painterResource(R.drawable.ic_delete),
-                                                    contentDescription = null
+                                                    contentDescription = null,
                                                 )
                                             } else if (index != 9) {
                                                 Text(
                                                     text = list[index],
                                                     fontSize = 24.sp,
                                                     color = MixinAppTheme.colors.textPrimary,
-                                                    textAlign = TextAlign.Center
+                                                    textAlign = TextAlign.Center,
                                                 )
                                             }
                                         }
                                     }
-                                }
+                                },
                             )
                         }
                     }

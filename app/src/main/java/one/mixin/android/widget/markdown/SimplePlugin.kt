@@ -92,7 +92,7 @@ class SimplePlugin : AbstractMarkwonPlugin() {
             .setFactory(Strikethrough::class.java) { _, _ -> StrikethroughSpan() }
             .setFactory(Code::class.java) { configuration, _ ->
                 RoundedBackgroundSpan(
-                    configuration.theme()
+                    configuration.theme(),
                 )
             }
     }

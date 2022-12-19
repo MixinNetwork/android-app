@@ -29,7 +29,7 @@ abstract class HeaderAdapter<T> : RecyclerView.Adapter<RecyclerView.ViewHolder>(
         {
             if (headerView != null) it.size + 1 else it.size
         },
-        0
+        0,
     )
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {

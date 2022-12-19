@@ -184,7 +184,7 @@ class ImageHolder constructor(val binding: ItemChatImageBinding) : MediaHolder(b
             messageItem.isPin ?: false,
             isRepresentative = isRepresentative,
             isSecret = messageItem.isSecret(),
-            isWhite = true
+            isWhite = true,
         )
 
         dataWidth = messageItem.mediaWidth

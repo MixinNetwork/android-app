@@ -9,7 +9,7 @@ import one.mixin.android.vo.StickerRelationship
 
 class RefreshStickerAndRelatedAlbumJob(private val stickerId: String) : BaseJob(
     Params(PRIORITY_UI_HIGH)
-        .addTags(GROUP).persist().requireNetwork()
+        .addTags(GROUP).persist().requireNetwork(),
 ) {
 
     companion object {

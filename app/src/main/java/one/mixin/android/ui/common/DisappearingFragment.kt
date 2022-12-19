@@ -50,7 +50,7 @@ class DisappearingFragment : BaseFragment(R.layout.fragment_disappearing) {
                 disappearingOption3Iv,
                 disappearingOption4Iv,
                 disappearingOption5Iv,
-                disappearingOption6Iv
+                disappearingOption6Iv,
             )
         }
     }
@@ -64,7 +64,7 @@ class DisappearingFragment : BaseFragment(R.layout.fragment_disappearing) {
                 disappearingOption3Pb,
                 disappearingOption4Pb,
                 disappearingOption5Pb,
-                disappearingOption6Pb
+                disappearingOption6Pb,
             )
         }
     }
@@ -125,10 +125,10 @@ class DisappearingFragment : BaseFragment(R.layout.fragment_disappearing) {
                                     disappearingOption6Interval.text = toTimeInterval(it)
                                     Timber.e(
                                         "Set interval ${toTimeInterval(it)} ${
-                                        toTimeIntervalIndex(
-                                            it
-                                        )
-                                        }"
+                                            toTimeIntervalIndex(
+                                                it,
+                                            )
+                                        }",
                                     )
                                 }
                             }
@@ -183,7 +183,7 @@ class DisappearingFragment : BaseFragment(R.layout.fragment_disappearing) {
                     ErrorHandler.handleError(it)
                     pbGroup[index].isVisible = false
                     updating = false
-                }
+                },
             )
         }
     }

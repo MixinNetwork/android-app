@@ -42,7 +42,7 @@ fun createParamBlazeMessage(param: BlazeMessageParam) =
 fun createListPendingMessage(offset: String?) = BlazeMessage(
     UUID.randomUUID().toString(),
     LIST_PENDING_MESSAGES,
-    offset.notNullWithElse({ BlazeMessageParam(offset = it) }, null)
+    offset.notNullWithElse({ BlazeMessageParam(offset = it) }, null),
 )
 
 fun createCountSignalKeys() =

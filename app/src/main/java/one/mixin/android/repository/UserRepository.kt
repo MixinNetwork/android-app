@@ -96,7 +96,7 @@ constructor(
                     upsert(u)
                     return@handleMixinResponse u
                 }
-            }
+            },
         )
     }
 
@@ -117,7 +117,7 @@ constructor(
                     }
                     return@handleMixinResponse u.app
                 }
-            }
+            },
         )
     }
 

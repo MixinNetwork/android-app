@@ -15,28 +15,28 @@ import one.mixin.android.extension.putString
 fun SharedPreferences.stringValueAsState(key: String, defaultValue: String) =
     value(
         getValue = { getString(key, defaultValue) },
-        setValue = { putString(key, it) }
+        setValue = { putString(key, it) },
     )
 
 @Composable
 fun SharedPreferences.booleanValueAsState(key: String, defaultValue: Boolean) =
     value(
         getValue = { getBoolean(key, defaultValue) },
-        setValue = { putBoolean(key, it) }
+        setValue = { putBoolean(key, it) },
     )
 
 @Composable
 fun SharedPreferences.intValueAsState(key: String, defaultValue: Int) =
     value(
         getValue = { getInt(key, defaultValue) },
-        setValue = { putInt(key, it) }
+        setValue = { putInt(key, it) },
     )
 
 @Composable
 fun SharedPreferences.longValueAsState(key: String, defaultValue: Long) =
     value(
         getValue = { getLong(key, defaultValue) },
-        setValue = { putLong(key, it) }
+        setValue = { putLong(key, it) },
     )
 
 @Composable

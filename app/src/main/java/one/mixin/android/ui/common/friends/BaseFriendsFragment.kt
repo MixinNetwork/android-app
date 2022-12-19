@@ -64,7 +64,7 @@ abstract class BaseFriendsFragment<VH : BaseFriendsViewHolder> : BaseFragment() 
                         adapter.filter = keyWord
                         userCallback.filter = keyWord
                     }
-                }
+                },
             )
         }
     }
@@ -78,7 +78,7 @@ abstract class BaseFriendsFragment<VH : BaseFriendsViewHolder> : BaseFragment() 
                 }.sortedByDescending { it.fullName.equalsIgnoreCase(keyWord) || it.identityNumber.equalsIgnoreCase(keyWord) }
             } else {
                 users
-            }
+            },
         )
     }
 

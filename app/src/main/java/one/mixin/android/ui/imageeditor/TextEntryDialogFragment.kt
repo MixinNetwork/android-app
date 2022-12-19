@@ -76,7 +76,7 @@ class TextEntryDialogFragment : KeyboardEntryDialogFragment(R.layout.image_edito
                 activeColor = c
                 colorIndicator.drawable.colorFilter = SimpleColorFilter(c)
                 controller.onTextColorChange(c)
-            }
+            },
         ).apply {
             submitList(ColorPaletteAdapter.paletteColors)
         }

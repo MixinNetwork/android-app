@@ -27,7 +27,7 @@ interface AppDao : BaseDao<App> {
             $PREFIX_APP_ITEM
             FROM apps a, participants p, users u WHERE p.conversation_id = :conversationId
             AND p.user_id = u.user_id AND a.app_id = u.app_id
-        """
+        """,
     )
     fun getGroupAppsByConversationId(conversationId: String): LiveData<List<AppItem>>
 
@@ -37,7 +37,7 @@ interface AppDao : BaseDao<App> {
         FROM favorite_apps fa INNER JOIN apps a ON a.app_id = fa.app_id INNER JOIN users u ON u.user_id = fa.user_id
         WHERE fa.user_id IN (:guestId, :masterId) 
         AND u.user_id IS NOT NULL ORDER BY CASE  WHEN fa.user_id= :guestId THEN 2 WHEN fa.user_id= :masterId THEN 1 END;
-        """
+        """,
     )
     fun getGroupAppsByConversationId(guestId: String, masterId: String): LiveData<List<AppItem>>
 
@@ -62,12 +62,12 @@ interface AppDao : BaseDao<App> {
     @Query(
         """
         SELECT a.* FROM apps a INNER JOIN users u ON u.user_id = a.app_id WHERE u.relationship = 'FRIEND' AND a.app_id NOT IN (SELECT fa.app_id FROM favorite_apps fa WHERE fa.user_id = :userId)
-        """
+        """,
     )
     suspend fun getUnfavoriteApps(userId: String): List<App>
 
     @Query(
-        "SELECT a.* FROM apps a LEFT JOIN users u ON a.app_id = u.app_id WHERE u.relationship = 'FRIEND' AND  a.app_id NOT IN (:appIds) ORDER BY u.full_name ASC"
+        "SELECT a.* FROM apps a LEFT JOIN users u ON a.app_id = u.app_id WHERE u.relationship = 'FRIEND' AND  a.app_id NOT IN (:appIds) ORDER BY u.full_name ASC",
     )
     suspend fun getNotTopApps(appIds: List<String>): List<App>
 
@@ -75,7 +75,7 @@ interface AppDao : BaseDao<App> {
         """
         SELECT a.* FROM apps a INNER JOIN participants p ON p.user_id = a.app_id
         WHERE p.conversation_id = :conversationId AND a.app_number = :appNumber
-        """
+        """,
     )
     suspend fun findAppByAppNumber(conversationId: String, appNumber: String): App?
 }

@@ -7,7 +7,7 @@ import com.google.gson.annotations.SerializedName
 import one.mixin.android.vo.Message
 
 @Entity(
-    tableName = "pending_messages"
+    tableName = "pending_messages",
 )
 class PendingMessage(
     @PrimaryKey
@@ -167,7 +167,7 @@ class PendingMessage(
         null,
         message.quoteMessageId,
         message.quoteContent,
-        message.caption
+        message.caption,
     )
 }
 
@@ -203,5 +203,5 @@ fun PendingMessage.toMessage() = Message(
     null,
     quoteMessageId,
     quoteContent,
-    caption
+    caption,
 )

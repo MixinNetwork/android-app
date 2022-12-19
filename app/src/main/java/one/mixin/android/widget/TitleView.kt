@@ -40,8 +40,8 @@ class TitleView(context: Context, attrs: AttributeSet) : RelativeLayout(context,
             binding.rightTv.setTextColor(
                 ta.getColor(
                     R.styleable.TitleView_rightTextColor,
-                    ContextCompat.getColor(context, R.color.text_gray)
-                )
+                    ContextCompat.getColor(context, R.color.text_gray),
+                ),
             )
             binding.rightAnimator.displayedChild = POS_TEXT
         }
@@ -52,16 +52,16 @@ class TitleView(context: Context, attrs: AttributeSet) : RelativeLayout(context,
             binding.titleTv.setTextColor(
                 ta.getColor(
                     R.styleable.TitleView_titleColor,
-                    ContextCompat.getColor(context, android.R.color.black)
-                )
+                    ContextCompat.getColor(context, android.R.color.black),
+                ),
             )
         }
         if (ta.hasValue(R.styleable.TitleView_android_background)) {
             setBackgroundResource(
                 ta.getResourceId(
                     R.styleable.TitleView_android_background,
-                    ContextCompat.getColor(context, android.R.color.white)
-                )
+                    ContextCompat.getColor(context, android.R.color.white),
+                ),
             )
         } else {
             setBackgroundResource(android.R.color.white)

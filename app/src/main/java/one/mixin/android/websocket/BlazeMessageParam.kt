@@ -60,7 +60,7 @@ fun createPlainJsonParam(conversationId: String, userId: String, encoded: String
         MessageCategory.PLAIN_JSON.name,
         encoded,
         MessageStatus.SENDING.name,
-        session_id = sessionId
+        session_id = sessionId,
     )
 
 fun createConsumeSignalKeysParam(recipients: ArrayList<BlazeMessageParamSession>?) =

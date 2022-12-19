@@ -31,7 +31,7 @@ open class ContentEditText : AppCompatEditText {
     constructor(context: Context, attrs: AttributeSet, defStyleAttr: Int) : super(
         context,
         attrs,
-        defStyleAttr
+        defStyleAttr,
     )
 
     private val emojiEditTextHelper = EmojiEditTextHelper(this)
@@ -40,7 +40,7 @@ open class ContentEditText : AppCompatEditText {
         supportsOreo {
             val incognitoKeyboardEnabled = context.defaultSharedPreferences.getBoolean(
                 Constants.Account.PREF_INCOGNITO_KEYBOARD,
-                false
+                false,
             )
             imeOptions = if (incognitoKeyboardEnabled) {
                 imeOptions or IME_FLAG_NO_PERSONALIZED_LEARNING
@@ -63,7 +63,7 @@ open class ContentEditText : AppCompatEditText {
         MimeType.JPEG.toString(),
         MimeType.JPG.toString(),
         MimeType.WEBP.toString(),
-        MimeType.HEIC.toString()
+        MimeType.HEIC.toString(),
     )
 
     override fun onTextContextMenuItem(id: Int): Boolean {
@@ -87,7 +87,7 @@ open class ContentEditText : AppCompatEditText {
                 paste = (text as? Spanned)?.toString() ?: text
                 if (paste != null) {
                     clipboard.setPrimaryClip(
-                        ClipData.newPlainText(null, paste)
+                        ClipData.newPlainText(null, paste),
                     )
                 }
             }
@@ -97,7 +97,7 @@ open class ContentEditText : AppCompatEditText {
     override fun onCreateInputConnection(editorInfo: EditorInfo): InputConnection? {
         val ic = emojiEditTextHelper.onCreateInputConnection(
             super.onCreateInputConnection(editorInfo),
-            editorInfo
+            editorInfo,
         )
         if (listener == null || ic == null) {
             return ic

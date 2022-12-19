@@ -34,7 +34,7 @@ class PercentView : View {
         colorFilter = ColorMatrixColorFilter(
             ColorMatrix().apply {
                 setScale(SHADOW_SCALE_RGB, SHADOW_SCALE_RGB, SHADOW_SCALE_RGB, SHADOW_SCALE_ALPHA)
-            }
+            },
         )
     }
     private val strokeHeight = context.dpToPx(4f)
@@ -122,7 +122,7 @@ class PercentView : View {
             blurShadow = Bitmap.createBitmap(
                 shadowBounds.width().toInt(),
                 (shadowBounds.height() * 1.5f).toInt(),
-                Bitmap.Config.ARGB_8888
+                Bitmap.Config.ARGB_8888,
             )
         } else {
             blurShadow?.eraseColor(Color.TRANSPARENT)

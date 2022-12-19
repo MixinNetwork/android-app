@@ -46,7 +46,7 @@ class FloatingLayout @JvmOverloads constructor(
                 override fun onInterceptTouchEvent(rv: RecyclerView, e: MotionEvent): Boolean {
                     return !itemClickEnable
                 }
-            }
+            },
         )
     }
 

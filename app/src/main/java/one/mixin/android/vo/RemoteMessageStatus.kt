@@ -7,7 +7,7 @@ import androidx.room.PrimaryKey
 
 @Entity(
     tableName = "remote_messages_status",
-    indices = [Index(value = arrayOf("conversation_id", "status"))]
+    indices = [Index(value = arrayOf("conversation_id", "status"))],
 )
 class RemoteMessageStatus(
     @PrimaryKey

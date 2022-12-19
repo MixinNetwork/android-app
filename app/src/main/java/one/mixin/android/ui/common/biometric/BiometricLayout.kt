@@ -51,7 +51,7 @@ class BiometricLayout(context: Context, attributeSet: AttributeSet) : ViewAnimat
                             callback?.onPinComplete(pin.code())
                         }
                     }
-                }
+                },
             )
         }
     }
@@ -78,7 +78,7 @@ class BiometricLayout(context: Context, attributeSet: AttributeSet) : ViewAnimat
                         binding.pin.append(value)
                     }
                 }
-            }
+            },
         )
     }
 
@@ -121,7 +121,7 @@ class BiometricLayout(context: Context, attributeSet: AttributeSet) : ViewAnimat
                 if (keyboardHeight == 0) {
                     keyboardHeight = keyboard?.measuredHeight ?: 0
                 }
-            }
+            },
         )
     }
 

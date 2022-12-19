@@ -78,18 +78,18 @@ internal constructor(
             when (T::class) {
                 AssetItem::class -> assetRepository.fuzzySearchAsset(
                     escapedQuery,
-                    cancellationSignal
+                    cancellationSignal,
                 )
                 User::class -> userRepository.fuzzySearchUser(escapedQuery, cancellationSignal)
                 ChatMinimal::class -> conversationRepository.fuzzySearchChat(
                     escapedQuery,
-                    cancellationSignal
+                    cancellationSignal,
                 )
                 else -> messageControlledRunner.cancelPreviousThenRun {
                     conversationRepository.fuzzySearchMessage(
                         escapedQuery,
                         limit,
-                        cancellationSignal
+                        cancellationSignal,
                     )
                 }
             }
@@ -106,13 +106,13 @@ internal constructor(
         return conversationRepository.fuzzySearchMessageDetail(
             escapedQuery,
             conversationId,
-            cancellationSignal
+            cancellationSignal,
         ).toLiveData(
             config = Config(
                 pageSize = PAGE_SIZE,
                 prefetchDistance = PAGE_SIZE * 2,
-                enablePlaceholders = false
-            )
+                enablePlaceholders = false,
+            ),
         )
     }
 
@@ -153,7 +153,7 @@ internal constructor(
             val request = ConversationRequest(
                 conversationId,
                 ConversationCategory.GROUP.name,
-                duration = duration
+                duration = duration,
             )
             return conversationRepository.muteSuspend(conversationId, request)
         } else {
@@ -166,7 +166,7 @@ internal constructor(
                 cid,
                 ConversationCategory.CONTACT.name,
                 duration = duration,
-                participants = listOf(participantRequest)
+                participants = listOf(participantRequest),
             )
             return conversationRepository.muteSuspend(cid, request)
         }

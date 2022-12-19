@@ -124,8 +124,8 @@ object NotificationGenerator : Injector() {
                     PendingIntent.FLAG_MUTABLE
                 } else {
                     PendingIntent.FLAG_UPDATE_CURRENT
-                }
-            )
+                },
+            ),
         ).setCategory(CATEGORY_MESSAGE)
         supportsNougat {
             val remoteInput = RemoteInput.Builder(KEY_REPLY)
@@ -158,12 +158,12 @@ object NotificationGenerator : Injector() {
                     PendingIntent.FLAG_MUTABLE
                 } else {
                     PendingIntent.FLAG_UPDATE_CURRENT
-                }
+                },
             )
             val action = NotificationCompat.Action.Builder(
                 R.mipmap.ic_launcher,
                 context.getString(R.string.Reply),
-                pendingIntent
+                pendingIntent,
             )
                 .addRemoteInput(remoteInput)
                 .setAllowGeneratedReplies(true)
@@ -174,7 +174,7 @@ object NotificationGenerator : Injector() {
             val readAction = NotificationCompat.Action.Builder(
                 R.mipmap.ic_launcher,
                 context.getString(R.string.Mark_as_read),
-                pendingIntent
+                pendingIntent,
             ).setSemanticAction(SEMANTIC_ACTION_MARK_AS_READ)
                 .setShowsUserInterface(false)
                 .build()
@@ -187,7 +187,7 @@ object NotificationGenerator : Injector() {
                 if (conversation.isGroupConversation() || message.isRepresentativeMessage(conversation)) {
                     notificationBuilder.setContentTitle(conversation.getConversationName())
                     notificationBuilder.setTicker(
-                        context.getString(R.string.alert_key_group_text_message, user.fullName)
+                        context.getString(R.string.alert_key_group_text_message, user.fullName),
                     )
                     contentText = "${user.fullName} : ${rendMentionContent(message.content, userMap)}"
                 } else {
@@ -199,7 +199,7 @@ object NotificationGenerator : Injector() {
             message.isImage() -> {
                 if (conversation.isGroupConversation() || message.isRepresentativeMessage(conversation)) {
                     notificationBuilder.setTicker(
-                        context.getString(R.string.alert_key_group_image_message, user.fullName)
+                        context.getString(R.string.alert_key_group_image_message, user.fullName),
                     )
                     notificationBuilder.setContentTitle(conversation.getConversationName())
                     contentText = context.getString(R.string.alert_key_group_image_message, user.fullName)
@@ -212,7 +212,7 @@ object NotificationGenerator : Injector() {
             message.isVideo() -> {
                 if (conversation.isGroupConversation() || message.isRepresentativeMessage(conversation)) {
                     notificationBuilder.setTicker(
-                        context.getString(R.string.alert_key_group_video_message, user.fullName)
+                        context.getString(R.string.alert_key_group_video_message, user.fullName),
                     )
                     notificationBuilder.setContentTitle(conversation.getConversationName())
                     contentText = context.getString(R.string.alert_key_group_video_message, user.fullName)
@@ -225,7 +225,7 @@ object NotificationGenerator : Injector() {
             message.isLive() -> {
                 if (conversation.isGroupConversation() || message.isRepresentativeMessage(conversation)) {
                     notificationBuilder.setTicker(
-                        context.getString(R.string.alert_key_group_live_message, user.fullName)
+                        context.getString(R.string.alert_key_group_live_message, user.fullName),
                     )
                     notificationBuilder.setContentTitle(conversation.getConversationName())
                     contentText = context.getString(R.string.alert_key_group_live_message, user.fullName)
@@ -238,7 +238,7 @@ object NotificationGenerator : Injector() {
             message.isData() -> {
                 if (conversation.isGroupConversation() || message.isRepresentativeMessage(conversation)) {
                     notificationBuilder.setTicker(
-                        context.getString(R.string.alert_key_group_data_message, user.fullName)
+                        context.getString(R.string.alert_key_group_data_message, user.fullName),
                     )
                     notificationBuilder.setContentTitle(conversation.getConversationName())
                     contentText = context.getString(R.string.alert_key_group_data_message, user.fullName)
@@ -251,7 +251,7 @@ object NotificationGenerator : Injector() {
             message.isAudio() -> {
                 if (conversation.isGroupConversation() || message.isRepresentativeMessage(conversation)) {
                     notificationBuilder.setTicker(
-                        context.getString(R.string.alert_key_group_audio_message, user.fullName)
+                        context.getString(R.string.alert_key_group_audio_message, user.fullName),
                     )
                     notificationBuilder.setContentTitle(conversation.getConversationName())
                     contentText = context.getString(R.string.alert_key_group_audio_message, user.fullName)
@@ -264,7 +264,7 @@ object NotificationGenerator : Injector() {
             message.isSticker() -> {
                 if (conversation.isGroupConversation() || message.isRepresentativeMessage(conversation)) {
                     notificationBuilder.setTicker(
-                        context.getString(R.string.alert_key_group_sticker_message, user.fullName)
+                        context.getString(R.string.alert_key_group_sticker_message, user.fullName),
                     )
                     notificationBuilder.setContentTitle(conversation.getConversationName())
                     contentText = context.getString(R.string.alert_key_group_sticker_message, user.fullName)
@@ -277,7 +277,7 @@ object NotificationGenerator : Injector() {
             message.isContact() -> {
                 if (conversation.isGroupConversation() || message.isRepresentativeMessage(conversation)) {
                     notificationBuilder.setTicker(
-                        context.getString(R.string.alert_key_group_contact_message, user.fullName)
+                        context.getString(R.string.alert_key_group_contact_message, user.fullName),
                     )
                     notificationBuilder.setContentTitle(conversation.getConversationName())
                     contentText = context.getString(R.string.alert_key_group_contact_message, user.fullName)
@@ -290,7 +290,7 @@ object NotificationGenerator : Injector() {
             message.isLocation() -> {
                 if (conversation.isGroupConversation() || message.isRepresentativeMessage(conversation)) {
                     notificationBuilder.setTicker(
-                        context.getString(R.string.alert_key_group_location_message, user.fullName)
+                        context.getString(R.string.alert_key_group_location_message, user.fullName),
                     )
                     notificationBuilder.setContentTitle(conversation.getConversationName())
                     contentText = context.getString(R.string.alert_key_group_location_message, user.fullName)
@@ -303,7 +303,7 @@ object NotificationGenerator : Injector() {
             message.isPost() -> {
                 if (conversation.isGroupConversation() || message.isRepresentativeMessage(conversation)) {
                     notificationBuilder.setTicker(
-                        context.getString(R.string.alert_key_group_post_message, user.fullName)
+                        context.getString(R.string.alert_key_group_post_message, user.fullName),
                     )
                     notificationBuilder.setContentTitle(conversation.getConversationName())
                     contentText = "${user.fullName}: ${rendMentionContent(message.content, userMap)}"
@@ -316,7 +316,7 @@ object NotificationGenerator : Injector() {
             message.isTranscript() -> {
                 if (conversation.isGroupConversation() || message.isRepresentativeMessage(conversation)) {
                     notificationBuilder.setTicker(
-                        context.getString(R.string.alert_key_group_transcript_message, user.fullName)
+                        context.getString(R.string.alert_key_group_transcript_message, user.fullName),
                     )
                     notificationBuilder.setContentTitle(conversation.getConversationName())
                     contentText = context.getString(R.string.alert_key_group_transcript_message, user.fullName)
@@ -338,7 +338,7 @@ object NotificationGenerator : Injector() {
                 if (conversation.isGroupConversation() || message.isRepresentativeMessage(conversation)) {
                     notificationBuilder.setContentTitle(conversation.getConversationName())
                     notificationBuilder.setTicker(
-                        context.getString(R.string.alert_key_group_text_message, user.fullName)
+                        context.getString(R.string.alert_key_group_text_message, user.fullName),
                     )
                     contentText = context.getString(R.string.alert_key_contact_text_message)
                 } else {
@@ -359,7 +359,7 @@ object NotificationGenerator : Injector() {
                     SystemConversationAction.CREATE.name -> {
                         String.format(
                             context.getString(R.string.created_this_group),
-                            user.fullName
+                            user.fullName,
                         )
                     }
                     SystemConversationAction.ADD.name -> {
@@ -371,44 +371,44 @@ object NotificationGenerator : Injector() {
                                 context.getString(R.string.you)
                             } else {
                                 participantFullName
-                            }
+                            },
                         )
                     }
                     SystemConversationAction.REMOVE.name -> {
                         String.format(
                             context.getString(
-                                R.string.chat_group_remove
+                                R.string.chat_group_remove,
                             ),
                             user.fullName,
                             if (self == participantId) {
                                 context.getString(R.string.you)
                             } else {
                                 participantFullName
-                            }
+                            },
                         )
                     }
                     SystemConversationAction.JOIN.name -> {
                         String.format(
                             context.getString(
-                                R.string.chat_group_join
+                                R.string.chat_group_join,
                             ),
                             if (self == participantId) {
                                 context.getString(R.string.You)
                             } else {
                                 participantFullName
-                            }
+                            },
                         )
                     }
                     SystemConversationAction.EXIT.name -> {
                         String.format(
                             context.getString(
-                                R.string.chat_group_exit
+                                R.string.chat_group_exit,
                             ),
                             if (self == participantId) {
                                 context.getString(R.string.You)
                             } else {
                                 participantFullName
-                            }
+                            },
                         )
                     }
                     SystemConversationAction.ROLE.name -> {
@@ -420,14 +420,14 @@ object NotificationGenerator : Injector() {
                             timeInterval <= 0 -> {
                                 String.format(
                                     context.getString(R.string.disable_disappearing_message),
-                                    participantFullName
+                                    participantFullName,
                                 )
                             }
                             else -> {
                                 String.format(
                                     context.getString(R.string.set_disappearing_message_time_to),
                                     participantFullName,
-                                    toTimeInterval(timeInterval)
+                                    toTimeInterval(timeInterval),
                                 )
                             }
                         }
@@ -489,7 +489,7 @@ object NotificationGenerator : Injector() {
         loadBitmap(context, conversation.iconUrl()) { bitmap ->
             val resource = bitmap ?: BitmapFactory.decodeResource(
                 context.resources,
-                if (conversation.isGroupConversation()) R.drawable.ic_group_place_holder else R.drawable.default_avatar
+                if (conversation.isGroupConversation()) R.drawable.ic_group_place_holder else R.drawable.default_avatar,
             )
             notificationBuilder.setLargeIcon(resource)
             buildBubble(context, conversation, notificationBuilder, message, resource, person)
@@ -525,7 +525,7 @@ object NotificationGenerator : Injector() {
                     PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_MUTABLE
                 } else {
                     PendingIntent.FLAG_UPDATE_CURRENT
-                }
+                },
             )
             val bubbleMetadata = NotificationCompat.BubbleMetadata.Builder(bubbleIntent, icon)
                 .setDesiredHeight(640.dp)
@@ -569,7 +569,7 @@ object NotificationGenerator : Injector() {
                             onComplete(null)
                             return false
                         }
-                    }
+                    },
                 ).submit(width, height)
         }
     }

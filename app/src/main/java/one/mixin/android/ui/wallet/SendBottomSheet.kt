@@ -28,8 +28,8 @@ class SendBottomSheet(
             View.inflate(
                 ContextThemeWrapper(fragment.requireActivity(), R.style.Custom),
                 R.layout.view_wallet_transactions_send_bottom,
-                null
-            )
+                null,
+            ),
         )
         builder.setCustomView(bottomSendBinding.root)
         val bottomSheet = builder.create()
@@ -45,7 +45,7 @@ class SendBottomSheet(
                     navAddressAction,
                     Bundle().apply {
                         putParcelable(TransactionsFragment.ARGS_ASSET, asset)
-                    }
+                    },
                 )
             }
             sendCancel.setOnClickListener { bottomSheet.dismiss() }

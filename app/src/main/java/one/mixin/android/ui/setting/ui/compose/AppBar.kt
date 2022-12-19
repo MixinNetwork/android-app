@@ -38,7 +38,7 @@ fun MixinBackButton() {
         Icon(
             painter = painterResource(id = R.drawable.ic_back),
             contentDescription = null,
-            tint = MixinAppTheme.colors.icon
+            tint = MixinAppTheme.colors.icon,
         )
     }
 }
@@ -57,7 +57,7 @@ fun MixinTopAppBar(
         contentColor = contentColor,
         elevation = 0.dp,
         shape = RectangleShape,
-        modifier = modifier
+        modifier = modifier,
     ) {
         CompositionLocalProvider(LocalContentAlpha provides ContentAlpha.medium) {
             Box(
@@ -65,13 +65,13 @@ fun MixinTopAppBar(
                     .fillMaxWidth()
                     .padding(AppBarDefaults.ContentPadding)
                     .height(56.dp),
-                contentAlignment = Alignment.CenterStart
+                contentAlignment = Alignment.CenterStart,
             ) {
                 if (navigationIcon != null) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         CompositionLocalProvider(
                             LocalContentAlpha provides ContentAlpha.high,
-                            content = navigationIcon
+                            content = navigationIcon,
                         )
                     }
                 }
@@ -81,14 +81,14 @@ fun MixinTopAppBar(
                         .fillMaxHeight()
                         .fillMaxWidth(),
                     horizontalArrangement = Arrangement.Center,
-                    verticalAlignment = Alignment.CenterVertically
+                    verticalAlignment = Alignment.CenterVertically,
                 ) {
                     ProvideTextStyle(
-                        value = TextStyle(fontSize = 18.sp)
+                        value = TextStyle(fontSize = 18.sp),
                     ) {
                         CompositionLocalProvider(
                             LocalContentAlpha provides ContentAlpha.high,
-                            content = title
+                            content = title,
                         )
                     }
                 }
@@ -99,7 +99,7 @@ fun MixinTopAppBar(
                             .fillMaxWidth(),
                         horizontalArrangement = Arrangement.End,
                         verticalAlignment = Alignment.CenterVertically,
-                        content = actions
+                        content = actions,
                     )
                 }
             }
@@ -122,9 +122,9 @@ fun PreviewMixinAppBar() {
                 Icon(
                     painter = painterResource(id = R.drawable.ic_more),
                     contentDescription = null,
-                    tint = MixinAppTheme.colors.icon
+                    tint = MixinAppTheme.colors.icon,
                 )
             }
-        }
+        },
     )
 }

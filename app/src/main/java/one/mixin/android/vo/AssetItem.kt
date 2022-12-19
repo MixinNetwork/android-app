@@ -60,7 +60,7 @@ data class AssetItem(
                 depositEntry.properties != null && depositEntry.destination.isNotBlank() && depositEntry.properties.any { property ->
                     property.equals(
                         "SegWit",
-                        false
+                        false,
                     )
                 }
             }?.destination ?: destination
@@ -77,7 +77,7 @@ data class AssetItem(
                 depositEntry.properties != null && depositEntry.destination.isNotBlank() && depositEntry.properties.any { property ->
                     property.equals(
                         "SegWit",
-                        false
+                        false,
                     )
                 }
             }?.tag

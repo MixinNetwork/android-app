@@ -76,7 +76,7 @@ class AudioHolder constructor(val binding: ItemChatAudioBinding) : BaseViewHolde
             MessageStatus.DELIVERED.name,
             false,
             isRepresentative = false,
-            isSecret = false
+            isSecret = false,
         )
 
         messageItem.mediaWaveform?.let {
@@ -187,13 +187,13 @@ class AudioHolder constructor(val binding: ItemChatAudioBinding) : BaseViewHolde
                 setItemBackgroundResource(
                     binding.chatLayout,
                     R.drawable.bill_bubble_me_last,
-                    R.drawable.bill_bubble_me_last_night
+                    R.drawable.bill_bubble_me_last_night,
                 )
             } else {
                 setItemBackgroundResource(
                     binding.chatLayout,
                     R.drawable.bill_bubble_me,
-                    R.drawable.bill_bubble_me_night
+                    R.drawable.bill_bubble_me_night,
                 )
             }
             (binding.chatMsgLayout.layoutParams as ConstraintLayout.LayoutParams).horizontalBias = 1f
@@ -203,13 +203,13 @@ class AudioHolder constructor(val binding: ItemChatAudioBinding) : BaseViewHolde
                 setItemBackgroundResource(
                     binding.chatLayout,
                     R.drawable.chat_bubble_other_last,
-                    R.drawable.chat_bubble_other_last_night
+                    R.drawable.chat_bubble_other_last_night,
                 )
             } else {
                 setItemBackgroundResource(
                     binding.chatLayout,
                     R.drawable.chat_bubble_other,
-                    R.drawable.chat_bubble_other_night
+                    R.drawable.chat_bubble_other_night,
                 )
             }
         }

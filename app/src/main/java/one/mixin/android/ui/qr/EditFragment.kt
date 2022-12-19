@@ -159,10 +159,10 @@ class EditFragment : VisionFragment() {
                     arrayListOf(
                         ForwardMessage(
                             ForwardCategory.Video,
-                            GsonHelper.customGson.toJson(VideoMessagePayload(File(path).toUri().toString()))
-                        )
+                            GsonHelper.customGson.toJson(VideoMessagePayload(File(path).toUri().toString())),
+                        ),
                     ),
-                    ForwardAction.System(name = getString(R.string.Send), needEdit = false)
+                    ForwardAction.System(name = getString(R.string.Send), needEdit = false),
                 )
             } else {
                 ForwardActivity.show(
@@ -170,10 +170,10 @@ class EditFragment : VisionFragment() {
                     arrayListOf(
                         ForwardMessage(
                             ShareCategory.Image,
-                            GsonHelper.customGson.toJson(ShareImageData(File(path).toUri().toString()))
-                        )
+                            GsonHelper.customGson.toJson(ShareImageData(File(path).toUri().toString())),
+                        ),
                     ),
-                    ForwardAction.System(name = getString(R.string.Send), needEdit = false)
+                    ForwardAction.System(name = getString(R.string.Send), needEdit = false),
                 )
             }
         }

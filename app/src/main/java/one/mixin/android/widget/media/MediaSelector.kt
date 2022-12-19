@@ -87,7 +87,7 @@ class MediaSelector(
 
                     animateWindowInCircular(anchor, contentView)
                 }
-            }
+            },
         )
         animateButtonIn(menuCamera, ANIMATION_DURATION / 2)
         animateButtonIn(menuGallery, ANIMATION_DURATION / 2)
@@ -109,7 +109,7 @@ class MediaSelector(
             Animation.RELATIVE_TO_SELF,
             0.5f,
             Animation.RELATIVE_TO_SELF,
-            0.0f
+            0.0f,
         )
 
         animation.addAnimation(scale)
@@ -135,7 +135,7 @@ class MediaSelector(
             coordinates.first,
             coordinates.second,
             0f,
-            Math.max(contentView.width, contentView.height).toFloat()
+            Math.max(contentView.width, contentView.height).toFloat(),
         )
         animator.duration = ANIMATION_DURATION.toLong()
         animator.start()
@@ -148,7 +148,7 @@ class MediaSelector(
             coordinates.first,
             coordinates.second,
             Math.max(getContentView().width, getContentView().height).toFloat(),
-            0f
+            0f,
         )
 
         animator.duration = ANIMATION_DURATION.toLong()
@@ -163,7 +163,7 @@ class MediaSelector(
                 override fun onAnimationCancel(animation: Animator) {}
 
                 override fun onAnimationRepeat(animation: Animator) {}
-            }
+            },
         )
 
         animator.start()
@@ -181,7 +181,7 @@ class MediaSelector(
                 }
 
                 override fun onAnimationRepeat(animation: Animation) {}
-            }
+            },
         )
 
         getContentView().startAnimation(animation)

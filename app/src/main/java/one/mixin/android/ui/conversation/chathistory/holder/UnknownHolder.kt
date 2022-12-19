@@ -22,13 +22,13 @@ class UnknownHolder constructor(val binding: ItemChatUnknownBinding) : BaseViewH
                 setItemBackgroundResource(
                     binding.chatLayout,
                     R.drawable.chat_bubble_me_last,
-                    R.drawable.chat_bubble_me_last_night
+                    R.drawable.chat_bubble_me_last_night,
                 )
             } else {
                 setItemBackgroundResource(
                     binding.chatLayout,
                     R.drawable.chat_bubble_me,
-                    R.drawable.chat_bubble_me_night
+                    R.drawable.chat_bubble_me_night,
                 )
             }
         } else {
@@ -37,13 +37,13 @@ class UnknownHolder constructor(val binding: ItemChatUnknownBinding) : BaseViewH
                 setItemBackgroundResource(
                     binding.chatLayout,
                     R.drawable.chat_bubble_other_last,
-                    R.drawable.chat_bubble_other_last_night
+                    R.drawable.chat_bubble_other_last_night,
                 )
             } else {
                 setItemBackgroundResource(
                     binding.chatLayout,
                     R.drawable.chat_bubble_other,
-                    R.drawable.chat_bubble_other_night
+                    R.drawable.chat_bubble_other_night,
                 )
             }
         }
@@ -60,7 +60,7 @@ class UnknownHolder constructor(val binding: ItemChatUnknownBinding) : BaseViewH
         val learnUrl = MixinApplication.get().getString(R.string.chat_not_support_url)
         binding.chatTv.highlightStarTag(
             info,
-            arrayOf(learnUrl)
+            arrayOf(learnUrl),
         )
 
         if (isFirst) {

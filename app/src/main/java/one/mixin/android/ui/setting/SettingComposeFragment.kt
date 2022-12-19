@@ -136,7 +136,7 @@ private class SettingNavControllerImpl(
             Bundle().apply {
                 putParcelable(USER_KEY, user)
                 putString(CONVERSATION_ID_KEY, conversationId)
-            }
+            },
         )
     }
 
@@ -151,7 +151,7 @@ private class SettingNavControllerImpl(
             SettingDestination.ViewEmergencyContact,
             Bundle().apply {
                 putParcelable(USER_KEY, user)
-            }
+            },
         )
     }
 
@@ -160,7 +160,7 @@ private class SettingNavControllerImpl(
             SettingDestination.AuthenticationPermissions,
             Bundle().apply {
                 putParcelable(AUTHORIZATION_KEY, auth)
-            }
+            },
         )
     }
 }
@@ -205,7 +205,7 @@ class SettingComposeFragment : BaseFragment() {
         return ComposeView(inflater.context).apply {
             setContent {
                 MixinAppTheme(
-                    darkTheme = context.isNightMode()
+                    darkTheme = context.isNightMode(),
                 ) {
                     val navController = rememberAnimatedNavController()
                     val navigationController = remember {
@@ -225,7 +225,7 @@ class SettingComposeFragment : BaseFragment() {
                     }
 
                     CompositionLocalProvider(
-                        LocalSettingNav provides navigationController
+                        LocalSettingNav provides navigationController,
                     ) {
                         AnimatedNavHost(
                             navController = navController,
@@ -233,27 +233,27 @@ class SettingComposeFragment : BaseFragment() {
                             enterTransition = {
                                 slideIntoContainer(
                                     AnimatedContentScope.SlideDirection.Left,
-                                    animationSpec = tween(300)
+                                    animationSpec = tween(300),
                                 )
                             },
                             popEnterTransition = {
                                 slideIntoContainer(
                                     AnimatedContentScope.SlideDirection.Right,
-                                    animationSpec = tween(300)
+                                    animationSpec = tween(300),
                                 )
                             },
                             exitTransition = {
                                 slideOutOfContainer(
                                     AnimatedContentScope.SlideDirection.Left,
-                                    animationSpec = tween(300)
+                                    animationSpec = tween(300),
                                 )
                             },
                             popExitTransition = {
                                 slideOutOfContainer(
                                     AnimatedContentScope.SlideDirection.Right,
-                                    animationSpec = tween(300)
+                                    animationSpec = tween(300),
                                 )
-                            }
+                            },
                         ) {
                             composable(SettingDestination.Setting.name) {
                                 SettingPage()
@@ -335,7 +335,7 @@ class SettingComposeFragment : BaseFragment() {
                             composable(SettingDestination.AuthenticationPermissions.name) { backStackEntry ->
                                 val auth =
                                     backStackEntry.arguments?.getParcelable<AuthorizationResponse>(
-                                        AUTHORIZATION_KEY
+                                        AUTHORIZATION_KEY,
                                     )
                                 if (auth == null) {
                                     Timber.e("viewEmergencyContact: no auth")
@@ -367,7 +367,7 @@ class SettingComposeFragment : BaseFragment() {
                                     } else {
                                         UserBottomSheetDialogFragment.newInstance(
                                             user,
-                                            conversationId
+                                            conversationId,
                                         )
                                     }
                                 }

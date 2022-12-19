@@ -82,7 +82,7 @@ class ImageEditorFragment : BaseFragment(), TextEntryDialogFragment.Controller {
         paletteColors[5],
         onColorChanged = { c ->
             onColorChanged(c)
-        }
+        },
     ).apply {
         submitList(paletteColors)
     }
@@ -292,7 +292,7 @@ class ImageEditorFragment : BaseFragment(), TextEntryDialogFragment.Controller {
             textElement,
             defaultSharedPreferences.getBoolean(PREF_INCOGNITO_KEYBOARD, false),
             selectAll,
-            activeColor
+            activeColor,
         )
     }
 

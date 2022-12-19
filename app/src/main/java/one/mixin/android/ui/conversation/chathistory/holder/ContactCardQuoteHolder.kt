@@ -30,13 +30,13 @@ class ContactCardQuoteHolder constructor(val binding: ItemChatContactCardQuoteBi
                 setItemBackgroundResource(
                     binding.chatLayout,
                     R.drawable.chat_bubble_reply_me_last,
-                    R.drawable.chat_bubble_reply_me_last_night
+                    R.drawable.chat_bubble_reply_me_last_night,
                 )
             } else {
                 setItemBackgroundResource(
                     binding.chatLayout,
                     R.drawable.chat_bubble_reply_me,
-                    R.drawable.chat_bubble_reply_me_night
+                    R.drawable.chat_bubble_reply_me_night,
                 )
             }
         } else {
@@ -45,13 +45,13 @@ class ContactCardQuoteHolder constructor(val binding: ItemChatContactCardQuoteBi
                 setItemBackgroundResource(
                     binding.chatLayout,
                     R.drawable.chat_bubble_reply_other_last,
-                    R.drawable.chat_bubble_reply_other_last_night
+                    R.drawable.chat_bubble_reply_other_last_night,
                 )
             } else {
                 setItemBackgroundResource(
                     binding.chatLayout,
                     R.drawable.chat_bubble_reply_other,
-                    R.drawable.chat_bubble_reply_other_night
+                    R.drawable.chat_bubble_reply_other_night,
                 )
             }
         }
@@ -67,7 +67,7 @@ class ContactCardQuoteHolder constructor(val binding: ItemChatContactCardQuoteBi
         binding.avatarIv.setInfo(
             messageItem.sharedUserFullName,
             messageItem.sharedUserAvatarUrl,
-            messageItem.sharedUserId ?: "0"
+            messageItem.sharedUserId ?: "0",
         )
         binding.nameTv.text = messageItem.sharedUserFullName
         binding.idTv.text = messageItem.sharedUserIdentityNumber
@@ -108,7 +108,7 @@ class ContactCardQuoteHolder constructor(val binding: ItemChatContactCardQuoteBi
             MessageStatus.DELIVERED.name,
             false,
             isRepresentative = false,
-            isSecret = false
+            isSecret = false,
         )
 
         if (messageItem.transcriptId == null) {

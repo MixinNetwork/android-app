@@ -73,13 +73,13 @@ class CirclesFragment : BaseFragment(), OnStartDragListener {
                 val list = mutableListOf<ConversationCircleItem>()
                 list.addAll(it)
                 conversationAdapter.conversationCircles = list
-            }
+            },
         )
         conversationViewModel.observeAllConversationUnread().observe(
             viewLifecycleOwner,
             {
                 conversationAdapter.allUnread = it
-            }
+            },
         )
     }
 
@@ -97,7 +97,7 @@ class CirclesFragment : BaseFragment(), OnStartDragListener {
             },
             {
                 conversationViewModel.sortCircleConversations(it)
-            }
+            },
         )
     }
 
@@ -292,7 +292,7 @@ class CirclesFragment : BaseFragment(), OnStartDragListener {
             this@CirclesFragment,
             ConversationCircleEditFragment.newInstance(conversationCircleItem),
             ConversationCircleEditFragment.TAG,
-            R.id.root_view
+            R.id.root_view,
         )
     }
 

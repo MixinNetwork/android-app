@@ -64,7 +64,7 @@ class VoiceCallService : CallService() {
                 getSdp(blazeMessageData.data.decodeBase64()),
                 setLocalSuccess = {
                     sendCallMessage(MessageCategory.WEBRTC_AUDIO_ANSWER.name, gson.toJson(Sdp(it.description, it.type.canonicalForm())))
-                }
+                },
             )
             return
         }
@@ -80,7 +80,7 @@ class VoiceCallService : CallService() {
                 null,
                 nowInUtc(),
                 MessageStatus.SENDING.name,
-                bmd.messageId
+                bmd.messageId,
             )
             jobManager.addJobInBackground(SendMessageJob(m, recipientId = bmd.userId))
 
@@ -92,7 +92,7 @@ class VoiceCallService : CallService() {
                 m.content,
                 m.createdAt,
                 bmd.status,
-                bmd.messageId
+                bmd.messageId,
             )
             if (checkConversation(m)) {
                 insertCallMessage(savedMessage)
@@ -144,7 +144,7 @@ class VoiceCallService : CallService() {
                     turns,
                     setLocalSuccess = {
                         sendCallMessage(MessageCategory.WEBRTC_AUDIO_OFFER.name, gson.toJson(Sdp(it.description, it.type.canonicalForm())))
-                    }
+                    },
                 )
             }
         }
@@ -180,7 +180,7 @@ class VoiceCallService : CallService() {
                     getSdp(bmd.data.decodeBase64()),
                     setLocalSuccess = {
                         sendCallMessage(MessageCategory.WEBRTC_AUDIO_ANSWER.name, gson.toJson(Sdp(it.description, it.type.canonicalForm())))
-                    }
+                    },
                 )
             }
         }
@@ -278,7 +278,7 @@ class VoiceCallService : CallService() {
                 null,
                 nowInUtc(),
                 MessageStatus.READ.name,
-                mId
+                mId,
             )
             insertCallMessage(m)
         } else if (state != CallState.STATE_CONNECTED) {
@@ -332,7 +332,7 @@ class VoiceCallService : CallService() {
                 null,
                 setLocalSuccess = {
                     sendCallMessage(MessageCategory.WEBRTC_AUDIO_OFFER.name, gson.toJson(Sdp(it.description, it.type.canonicalForm())))
-                }
+                },
             )
         }
     }
@@ -367,7 +367,7 @@ class VoiceCallService : CallService() {
                     val duration = System.currentTimeMillis() - connectedTime
                     createCallMessage(
                         messageId, conversationId, self.userId, category, content,
-                        nowInUtc(), MessageStatus.SENDING.name, quoteMessageId, duration.toString()
+                        nowInUtc(), MessageStatus.SENDING.name, quoteMessageId, duration.toString(),
                     )
                 } else {
                     createCallMessage(
@@ -378,7 +378,7 @@ class VoiceCallService : CallService() {
                         content,
                         nowInUtc(),
                         MessageStatus.SENDING.name,
-                        quoteMessageId
+                        quoteMessageId,
                     )
                 }
             }
@@ -399,7 +399,7 @@ class VoiceCallService : CallService() {
                 createCallMessage(
                     UUID.randomUUID().toString(), blazeMessageData.conversationId,
                     self.userId, category, content, nowInUtc(), MessageStatus.SENDING.name, quoteMessageId,
-                    duration.toString()
+                    duration.toString(),
                 )
             } else {
                 createCallMessage(
@@ -410,7 +410,7 @@ class VoiceCallService : CallService() {
                     content,
                     nowInUtc(),
                     MessageStatus.SENDING.name,
-                    quoteMessageId
+                    quoteMessageId,
                 )
             }
         }
@@ -442,7 +442,7 @@ class VoiceCallService : CallService() {
             MessageCategory.WEBRTC_AUDIO_CANCEL.name -> {
                 val msg = createCallMessage(
                     m.messageId, m.conversationId, uId, m.category, m.content,
-                    m.createdAt, MessageStatus.READ.name, m.quoteMessageId, m.mediaDuration
+                    m.createdAt, MessageStatus.READ.name, m.quoteMessageId, m.mediaDuration,
                 )
                 insertCallMessage(msg)
             }

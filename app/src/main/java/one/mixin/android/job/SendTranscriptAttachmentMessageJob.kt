@@ -43,7 +43,7 @@ class SendTranscriptAttachmentMessageJob(
     val parentId: String? = null,
 ) : MixinJob(
     Params(PRIORITY_SEND_ATTACHMENT_MESSAGE).groupBy("send_transcript_job").requireNetwork().persist(),
-    "${transcriptMessage.transcriptId}${transcriptMessage.messageId}"
+    "${transcriptMessage.transcriptId}${transcriptMessage.messageId}",
 ) {
 
     companion object {
@@ -91,7 +91,7 @@ class SendTranscriptAttachmentMessageJob(
                         m.mediaKey,
                         m.mediaDigest,
                         MediaStatus.DONE.name,
-                        attachmentExtra.createdAt!!
+                        attachmentExtra.createdAt!!,
                     )
                     sendMessage()
                     return
@@ -122,7 +122,7 @@ class SendTranscriptAttachmentMessageJob(
                 reportException(it)
                 removeJob()
                 transcriptMessageDao.updateMediaStatus(transcriptMessage.transcriptId, transcriptMessage.messageId, MediaStatus.CANCELED.name)
-            }
+            },
         )
     }
 
@@ -149,7 +149,7 @@ class SendTranscriptAttachmentMessageJob(
                     AttachmentCipherOutputStreamFactory(key, null)
                 } else {
                     null
-                }
+                },
             ) { total, progress ->
                 val pg = try {
                     progress.toFloat() / total.toFloat()
@@ -187,7 +187,7 @@ class SendTranscriptAttachmentMessageJob(
             key,
             digest,
             MediaStatus.DONE.name,
-            attachResponse.created_at
+            attachResponse.created_at,
         )
         return true
     }

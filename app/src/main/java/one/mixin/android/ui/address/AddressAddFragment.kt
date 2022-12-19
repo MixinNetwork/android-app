@@ -78,12 +78,12 @@ class AddressAddFragment() : BaseFragment(R.layout.fragment_address_add) {
         getScanResult = registerForActivityResult(
             CaptureActivity.CaptureContract(),
             resultRegistry,
-            ::callbackScan
+            ::callbackScan,
         )
         getScanMemoResult = registerForActivityResult(
             CaptureActivity.CaptureContract(),
             resultRegistry,
-            ::callbackScanMemo
+            ::callbackScanMemo,
         )
     }
 
@@ -137,7 +137,7 @@ class AddressAddFragment() : BaseFragment(R.layout.fragment_address_add) {
                     } else {
                         ""
                     },
-                    type = ADD
+                    type = ADD,
                 )
 
             bottomSheet.showNow(parentFragmentManager, PinAddrBottomSheetDialogFragment.TAG)
@@ -192,14 +192,14 @@ class AddressAddFragment() : BaseFragment(R.layout.fragment_address_add) {
                     R.string.withdrawal_addr_tag
                 } else {
                     R.string.withdrawal_addr_memo
-                }
+                },
             )
             binding.info.highLight(
                 if (asset.assetId == RIPPLE_CHAIN_ID) {
                     getString(R.string.No_tag)
                 } else {
                     getString(R.string.withdrawal_no_memo)
-                }
+                },
             )
         } else {
             binding.tagEt.isEnabled = memoEnabled
@@ -217,14 +217,14 @@ class AddressAddFragment() : BaseFragment(R.layout.fragment_address_add) {
                     R.string.withdrawal_addr_no_tag
                 } else {
                     R.string.withdrawal_addr_no_memo
-                }
+                },
             )
             binding.info.highLight(
                 if (asset.assetId == RIPPLE_CHAIN_ID) {
                     getString(R.string.Add_Tag)
                 } else {
                     getString(R.string.Add_memo)
-                }
+                },
             )
         }
     }

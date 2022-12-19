@@ -16,7 +16,7 @@ class BackgroundConstraintLayout : ConstraintLayout {
     constructor(context: Context, attrs: AttributeSet?, defStyleAttr: Int) : super(
         context,
         attrs,
-        defStyleAttr
+        defStyleAttr,
     )
 
     init {
@@ -46,7 +46,7 @@ class BackgroundConstraintLayout : ConstraintLayout {
                 0,
                 actionBarHeight,
                 measuredWidth,
-                measuredHeight
+                measuredHeight,
             )
             bg.setBounds(x, y, x + width, y + height)
             bg.draw(canvas)

@@ -139,8 +139,8 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
                                 distance = 0
                             }
                         }
-                    }
-                )
+                    },
+                ),
             ).apply { attachToRecyclerView(coinsRv) }
             assetsAdapter.onItemListener = this@WalletFragment
             coinsRv.adapter = assetsAdapter
@@ -324,7 +324,7 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
                                 RenderEffect.createBlurEffect(25f, 25f, Shader.TileMode.MIRROR)
                             } else {
                                 null
-                            }
+                            },
                         )
                     }
                 })
@@ -363,7 +363,7 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
             .setOnAssetClick { asset ->
                 view.navigate(
                     R.id.action_wallet_to_deposit,
-                    Bundle().apply { putParcelable(ARGS_ASSET, asset) }
+                    Bundle().apply { putParcelable(ARGS_ASSET, asset) },
                 )
             }.showNow(parentFragmentManager, AssetListBottomSheetDialogFragment.TAG)
     }
@@ -372,7 +372,7 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
         item as AssetItem
         view?.navigate(
             R.id.action_wallet_fragment_to_transactions_fragment,
-            Bundle().apply { putParcelable(ARGS_ASSET, item) }
+            Bundle().apply { putParcelable(ARGS_ASSET, item) },
         )
     }
 }

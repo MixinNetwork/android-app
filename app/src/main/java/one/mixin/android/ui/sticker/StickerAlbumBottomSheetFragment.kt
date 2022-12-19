@@ -95,7 +95,7 @@ class StickerAlbumBottomSheetFragment : BottomSheetDialogFragment() {
         })
         dialog.window?.setLayout(
             ViewGroup.LayoutParams.MATCH_PARENT,
-            ViewGroup.LayoutParams.MATCH_PARENT
+            ViewGroup.LayoutParams.MATCH_PARENT,
         )
         dialog.window?.setGravity(Gravity.BOTTOM)
 

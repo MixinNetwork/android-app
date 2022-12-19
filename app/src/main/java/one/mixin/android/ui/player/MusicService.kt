@@ -72,7 +72,7 @@ class MusicService : LifecycleService() {
         notificationManager = MusicNotificationManager(
             this,
             mediaSession.sessionToken,
-            MusicNotificationListener()
+            MusicNotificationListener(),
         )
 
         mediaSessionConnector = MediaSessionConnector(mediaSession)
@@ -274,7 +274,7 @@ class MusicService : LifecycleService() {
         ) {
             ContextCompat.startForegroundService(
                 applicationContext,
-                Intent(applicationContext, this@MusicService.javaClass)
+                Intent(applicationContext, this@MusicService.javaClass),
             )
 
             startForeground(notificationId, notification)

@@ -16,7 +16,7 @@ abstract class HeaderFilterAdapter<T> : HeaderAdapter<T>() {
         {
             if (filtered()) it.size else it.size + 1
         },
-        if (filtered()) 0 else 1
+        if (filtered()) 0 else 1,
     )
 
     abstract fun filtered(): Boolean

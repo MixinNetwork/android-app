@@ -220,7 +220,7 @@ object Session {
                     put("sid", acct.sessionId)
                     put("sig", content.encode().sha256().hex())
                     put("scp", "FULL")
-                }
+                },
             )
             .signWith(key)
             .compact()

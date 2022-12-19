@@ -112,7 +112,7 @@ fun String.openAsUrl(
             host,
             onError = { err ->
                 Timber.e(IllegalStateException(err))
-            }
+            },
         )
     } else if (startsWith(Constants.Scheme.INFO, true)) {
         val content = """
@@ -133,8 +133,8 @@ User-agent: ${WebView(context).settings.userAgentString}
             context.getClipboardManager().setPrimaryClip(
                 ClipData.newPlainText(
                     null,
-                    content
-                )
+                    content,
+                ),
             )
             toast(R.string.copied_to_clipboard)
             dialog.dismiss()
@@ -248,7 +248,7 @@ fun Uri.handleSchemeSend(
         ForwardActivity.show(
             context,
             arrayListOf(ForwardMessage(ShareCategory.Text, text)),
-            ForwardAction.App.Resultless()
+            ForwardAction.App.Resultless(),
         )
         afterShareText?.invoke()
     } else {
@@ -269,7 +269,7 @@ fun Uri.handleSchemeSend(
                     ForwardMessage(shareCategory, String(Base64.decode(data))),
                     conversationId,
                     app,
-                    host
+                    host,
                 )
                 if (showNow) {
                     fragment.showNow(supportFragmentManager, ShareMessageBottomSheetDialogFragment.TAG)

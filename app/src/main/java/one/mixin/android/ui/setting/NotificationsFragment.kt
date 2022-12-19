@@ -97,7 +97,7 @@ class NotificationsFragment : BaseFragment(R.layout.fragment_notifications) {
                 } else {
                     R.string.Large_Amount_Confirmation_with_symbol
                 },
-                accountSymbol
+                accountSymbol,
             )
             editText = amount
             editHint = this@NotificationsFragment.getString(
@@ -105,7 +105,7 @@ class NotificationsFragment : BaseFragment(R.layout.fragment_notifications) {
                     R.string.Transfer_Amount
                 } else {
                     R.string.Large_Amount_Confirmation
-                }
+                },
             )
             editInputType = InputType.TYPE_NUMBER_FLAG_DECIMAL + InputType.TYPE_CLASS_NUMBER
             allowEmpty = false
@@ -123,7 +123,7 @@ class NotificationsFragment : BaseFragment(R.layout.fragment_notifications) {
     private fun savePreference(threshold: Double, isNotification: Boolean) = lifecycleScope.launch {
         val pb = indeterminateProgressDialog(
             message = R.string.Please_wait_a_bit,
-            title = if (isNotification) R.string.Transfer_Notifications else R.string.Large_Amount_Confirmation
+            title = if (isNotification) R.string.Transfer_Notifications else R.string.Large_Amount_Confirmation,
         ).apply {
             setCancelable(false)
         }
@@ -135,14 +135,14 @@ class NotificationsFragment : BaseFragment(R.layout.fragment_notifications) {
                     if (isNotification) {
                         AccountUpdateRequest(
                             fiatCurrency = Session.getFiatCurrency(),
-                            transferNotificationThreshold = threshold
+                            transferNotificationThreshold = threshold,
                         )
                     } else {
                         AccountUpdateRequest(
                             fiatCurrency = Session.getFiatCurrency(),
-                            transferConfirmationThreshold = threshold
+                            transferConfirmationThreshold = threshold,
                         )
-                    }
+                    },
                 )
             },
             successBlock = {
@@ -161,7 +161,7 @@ class NotificationsFragment : BaseFragment(R.layout.fragment_notifications) {
             exceptionBlock = {
                 pb.dismiss()
                 return@handleMixinResponse false
-            }
+            },
         )
     }
 
@@ -172,7 +172,7 @@ class NotificationsFragment : BaseFragment(R.layout.fragment_notifications) {
             transferTv.text = "$accountSymbol$threshold"
             transferDescTv.text = getString(
                 R.string.setting_notification_transfer_summary,
-                "$accountSymbol$threshold"
+                "$accountSymbol$threshold",
             )
         }
     }

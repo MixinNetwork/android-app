@@ -70,7 +70,7 @@ class FileHolder constructor(val binding: ItemChatFileBinding) : BaseViewHolder(
                         BackgroundColorSpan(HIGHLIGHTED),
                         start,
                         start + keyword.length,
-                        Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+                        Spanned.SPAN_EXCLUSIVE_EXCLUSIVE,
                     )
                     binding.fileNameTv.text = sp
                 } else {
@@ -103,7 +103,7 @@ class FileHolder constructor(val binding: ItemChatFileBinding) : BaseViewHolder(
             false,
             isRepresentative = isRepresentative,
             isSecret = messageItem.isSecret(),
-            isWhite = false
+            isWhite = false,
         )
         binding.bottomLayout.seekBar.setOnSeekBarChangeListener(
             object : SeekBar.OnSeekBarChangeListener {
@@ -120,7 +120,7 @@ class FileHolder constructor(val binding: ItemChatFileBinding) : BaseViewHolder(
                         MusicPlayer.seekTo(seekBar.progress)
                     }
                 }
-            }
+            },
         )
         messageItem.mediaStatus?.let {
             when (it) {
@@ -258,13 +258,13 @@ class FileHolder constructor(val binding: ItemChatFileBinding) : BaseViewHolder(
                 setItemBackgroundResource(
                     binding.chatLayout,
                     R.drawable.bill_bubble_me_last,
-                    R.drawable.bill_bubble_me_last_night
+                    R.drawable.bill_bubble_me_last_night,
                 )
             } else {
                 setItemBackgroundResource(
                     binding.chatLayout,
                     R.drawable.bill_bubble_me,
-                    R.drawable.bill_bubble_me_night
+                    R.drawable.bill_bubble_me_night,
                 )
             }
             (binding.chatMsgLayout.layoutParams as ConstraintLayout.LayoutParams).horizontalBias = 1f
@@ -274,13 +274,13 @@ class FileHolder constructor(val binding: ItemChatFileBinding) : BaseViewHolder(
                 setItemBackgroundResource(
                     binding.chatLayout,
                     R.drawable.chat_bubble_other_last,
-                    R.drawable.chat_bubble_other_last_night
+                    R.drawable.chat_bubble_other_last_night,
                 )
             } else {
                 setItemBackgroundResource(
                     binding.chatLayout,
                     R.drawable.chat_bubble_other,
-                    R.drawable.chat_bubble_other_night
+                    R.drawable.chat_bubble_other_night,
                 )
             }
         }

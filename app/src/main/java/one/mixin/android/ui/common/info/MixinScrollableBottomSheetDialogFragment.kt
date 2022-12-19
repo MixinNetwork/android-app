@@ -62,11 +62,11 @@ abstract class MixinScrollableBottomSheetDialogFragment : BottomSheetDialogFragm
                 val titleView = contentView.findViewById<View>(R.id.title)
                 scrollContent.measure(
                     View.MeasureSpec.makeMeasureSpec(contentView.width, View.MeasureSpec.EXACTLY),
-                    ViewGroup.LayoutParams.WRAP_CONTENT
+                    ViewGroup.LayoutParams.WRAP_CONTENT,
                 )
                 titleView.measure(
                     View.MeasureSpec.makeMeasureSpec(contentView.width, View.MeasureSpec.EXACTLY),
-                    ViewGroup.LayoutParams.WRAP_CONTENT
+                    ViewGroup.LayoutParams.WRAP_CONTENT,
                 )
                 scrollContent.measuredHeight + titleView.measuredHeight
             } else {
@@ -83,7 +83,7 @@ abstract class MixinScrollableBottomSheetDialogFragment : BottomSheetDialogFragm
         dialog?.window?.let { window ->
             SystemUIManager.lightUI(
                 window,
-                !requireContext().booleanFromAttribute(R.attr.flag_night)
+                !requireContext().booleanFromAttribute(R.attr.flag_night),
             )
         }
     }

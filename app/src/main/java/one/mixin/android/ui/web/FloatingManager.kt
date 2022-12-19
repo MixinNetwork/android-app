@@ -42,7 +42,7 @@ fun refreshScreenshot(context: Context) {
             screenBitmap,
             screenBitmap.width / 3,
             screenBitmap.height / 3,
-            false
+            false,
         )
 
         val cv = Canvas(resultBitmap)
@@ -58,7 +58,7 @@ fun refreshScreenshot(context: Context) {
                 } else {
                     Color.parseColor("#E6F6F7FA")
                 }
-            }
+            },
         )
         screenshot = resultBitmap
     }
@@ -170,7 +170,7 @@ fun saveClips() {
         }
         MixinApplication.appContext.defaultSharedPreferences.putString(
             PREF_FLOATING,
-            GsonHelper.customGson.toJson(localClips)
+            GsonHelper.customGson.toJson(localClips),
         )
     }
 }

@@ -84,7 +84,7 @@ class PipCallView {
                 getSideCoordinate(true, sideX, px, size, realX, realY),
                 getSideCoordinate(false, sideY, py, size, realX, realY),
                 size,
-                size
+                size,
             )
         }
 
@@ -134,7 +134,7 @@ class PipCallView {
                 } else if (event.action == MotionEvent.ACTION_MOVE) {
                     if (abs(startX - x) >= appContext.getPixelsInCM(
                             0.3f,
-                            true
+                            true,
                         ) || abs(startY - y) >= appContext.getPixelsInCM(0.3f, true)
                     ) {
                         startX = x

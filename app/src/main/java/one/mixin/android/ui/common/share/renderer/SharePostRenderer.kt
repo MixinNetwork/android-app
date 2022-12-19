@@ -48,7 +48,7 @@ open class SharePostRenderer(val context: Activity) {
             isPin = false,
             isRepresentative = false,
             isSecret = true,
-            isWhite = true
+            isWhite = true,
         )
         binding.chatTv.setOnClickListener {
             MarkdownActivity.show(context, content)
@@ -58,7 +58,7 @@ open class SharePostRenderer(val context: Activity) {
                 R.drawable.chat_bubble_post_me_last
             } else {
                 R.drawable.chat_bubble_post_me_last_night
-            }
+            },
         )
     }
 }

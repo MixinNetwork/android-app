@@ -58,7 +58,7 @@ internal constructor(
                 .setPrefetchDistance(CONVERSATION_PAGE_SIZE * 2)
                 .setPageSize(CONVERSATION_PAGE_SIZE)
                 .setEnablePlaceholders(true)
-                .build()
+                .build(),
         ).build()
     }
 
@@ -72,7 +72,7 @@ internal constructor(
             val conversation = Conversation(
                 c.conversationId, c.ownerId, c.category, c.name, c.iconUrl,
                 c.announcement, null, c.payType, createAt, null, null,
-                null, 0, ConversationStatus.START.ordinal, null
+                null, 0, ConversationStatus.START.ordinal, null,
             )
             viewModelScope.launch {
                 messageRepository.insertConversation(conversation, mutableList)
@@ -86,7 +86,7 @@ internal constructor(
                 it.name,
                 it.iconUrl,
                 it.announcement,
-                participantRequestList
+                participantRequestList,
             )
             jobManager.addJobInBackground(ConversationJob(request, type = TYPE_CREATE))
         }
@@ -126,7 +126,7 @@ internal constructor(
                 cid,
                 ConversationCategory.CONTACT.name,
                 duration = duration,
-                participants = listOf(participantRequest)
+                participants = listOf(participantRequest),
             )
             return conversationRepository.muteSuspend(cid, request)
         }

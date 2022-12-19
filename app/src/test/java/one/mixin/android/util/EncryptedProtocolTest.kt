@@ -44,7 +44,7 @@ class EncryptedProtocolTest {
         val decryptedContent = aesDecrypt(
             aesGcmKey,
             encodedContent.slice(IntRange(0, 15)).toByteArray(),
-            encodedContent.slice(IntRange(16, encodedContent.size - 1)).toByteArray()
+            encodedContent.slice(IntRange(16, encodedContent.size - 1)).toByteArray(),
         )
         assertEquals("LA", String(decryptedContent))
     }
@@ -75,7 +75,7 @@ class EncryptedProtocolTest {
                 8/GqWBmd4SpqLWfhhwD/tPhJeFeXG6s9pp+JLYZAN47pio+JzS0fk/XysjN1o51R7/38or/ADt8IHrPT5Q5e8IfBnqbm6EHBKXqnUUjHO9RRiekfKDyKWbpbJGhxw
                 UxxsO7jR0fql/hEb/tBazUUrskOKpupJXPI5q7DYHzR5IWKFEsFrKwfJqmWNhG4pbu+oZKgn1FH7tp18TTyStVWh4kxhCoU7PTl8jaNFWC4yCTOSrc1zkf0X2Gzu
                 B9qsstbt3RH6Q+mmpraIAcgJZu8LTuGAoojTDfBd8g0y5wEWpYWsYBhRRaKKV2p2SM6JPrbe3xeiiixnHyGhbu6BdPIgSHkFFEs4//2Q==
-            """.trimMargin()
+            """.trimMargin(),
         )
         val content = GsonHelper.customGson.toJson(mockAttachmentMessagePayload).toByteArray()
         testEncryptAndDecrypt(content)

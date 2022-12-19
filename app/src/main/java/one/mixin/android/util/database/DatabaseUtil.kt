@@ -22,7 +22,7 @@ suspend fun getLastUserId(context: Context): String? = withContext(Dispatchers.I
         db = SQLiteDatabase.openDatabase(
             dbFile.absolutePath,
             null,
-            SQLiteDatabase.OPEN_READONLY
+            SQLiteDatabase.OPEN_READONLY,
         )
         c = db.rawQuery("SELECT user_id FROM users WHERE relationship = 'ME'", null)
         var userId: String? = null
@@ -50,7 +50,7 @@ suspend fun clearDatabase(context: Context) = withContext(Dispatchers.IO) {
         db = SQLiteDatabase.openDatabase(
             dbFile.absolutePath,
             null,
-            SQLiteDatabase.OPEN_READWRITE
+            SQLiteDatabase.OPEN_READWRITE,
         )
         if (!supportsDeferForeignKeys) {
             db.execSQL("PRAGMA foreign_keys = FALSE")
@@ -118,7 +118,7 @@ suspend fun clearJobs(context: Context) = withContext(Dispatchers.IO) {
         db = SQLiteDatabase.openDatabase(
             dbFile.absolutePath,
             null,
-            SQLiteDatabase.OPEN_READWRITE
+            SQLiteDatabase.OPEN_READWRITE,
         )
         if (!supportsDeferForeignKeys) {
             db.execSQL("PRAGMA foreign_keys = FALSE")

@@ -38,15 +38,15 @@ class AvatarView : ViewAnimator {
                 TypedValue.COMPLEX_UNIT_PX,
                 ta.getDimension(
                     R.styleable.CircleImageView_border_text_size,
-                    20f.sp.toFloat()
-                )
+                    20f.sp.toFloat(),
+                ),
             )
         }
         if (ta.hasValue(R.styleable.CircleImageView_border_width)) {
             avatarSimple.borderWidth = ta.getDimensionPixelSize(R.styleable.CircleImageView_border_width, 0)
             avatarSimple.borderColor = ta.getColor(
                 R.styleable.CircleImageView_border_color,
-                ContextCompat.getColor(context, android.R.color.white)
+                ContextCompat.getColor(context, android.R.color.white),
             )
             binding.avatarTv.setBorderInfo(avatarSimple.borderWidth.toFloat(), avatarSimple.borderColor)
         }

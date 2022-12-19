@@ -28,7 +28,7 @@ class MessageDeleteJob(
             val ids = messageDao.getMessageIdsByConversationId(
                 conversationId,
                 lastRowId,
-                DB_DELETE_LIMIT
+                DB_DELETE_LIMIT,
             )
             jobManager.addJobInBackground(MessageFtsDeleteJob(ids))
             appDatabase.deleteMessageByIds(ids)

@@ -98,7 +98,7 @@ fun Argon2Kt.argon2IdHash(pin: String, seed: ByteArray): Argon2KtResult {
         salt = seed,
         tCostInIterations = 4,
         mCostInKibibyte = 1024,
-        hashLengthInBytes = 32
+        hashLengthInBytes = 32,
     )
 }
 
@@ -193,8 +193,8 @@ fun rsaDecrypt(privateKey: PrivateKey, iv: String, pinToken: String): String {
             "SHA-256",
             "MGF1",
             MGF1ParameterSpec.SHA256,
-            PSource.PSpecified(iv.toByteArray())
-        )
+            PSource.PSpecified(iv.toByteArray()),
+        ),
     )
     return deCipher.doFinal(Base64.decode(pinToken)).base64Encode()
 }

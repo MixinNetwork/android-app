@@ -15,7 +15,7 @@ open class DotTextLayout : ViewGroup {
     constructor(context: Context, attrs: AttributeSet?, defStyleAttr: Int) : super(
         context,
         attrs,
-        defStyleAttr
+        defStyleAttr,
     )
 
     private var offset = 0
@@ -33,14 +33,14 @@ open class DotTextLayout : ViewGroup {
 
         measureChildren(
             MeasureSpec.makeMeasureSpec(MeasureSpec.getSize(widthMeasureSpec), MeasureSpec.getMode(widthMeasureSpec)),
-            heightMeasureSpec
+            heightMeasureSpec,
         )
         val firstView = getChildAt(0)
         val secondView = getChildAt(1) as TextView
         initTextParams(secondView, firstView)
         setMeasuredDimension(
             firstView.measuredWidth + secondView.measuredWidth + paddingWidth,
-            secondView.measuredHeight + paddingHeight
+            secondView.measuredHeight + paddingHeight,
         )
     }
 
@@ -52,13 +52,13 @@ open class DotTextLayout : ViewGroup {
             paddingLeft,
             paddingTop + offset,
             paddingLeft + firstView.measuredWidth,
-            paddingTop + offset + firstView.measuredHeight
+            paddingTop + offset + firstView.measuredHeight,
         )
         secondView.layout(
             paddingLeft + firstView.measuredWidth,
             paddingTop,
             paddingLeft + firstView.measuredWidth + secondView.measuredWidth,
-            paddingTop + secondView.measuredHeight
+            paddingTop + secondView.measuredHeight,
         )
     }
 

@@ -85,7 +85,7 @@ suspend fun backup(
         db = SQLiteDatabase.openDatabase(
             "$backupDir${File.separator}$tmpName",
             null,
-            SQLiteDatabase.OPEN_READWRITE
+            SQLiteDatabase.OPEN_READWRITE,
         )
     } catch (e: Exception) {
         result?.delete()
@@ -135,7 +135,7 @@ suspend fun backupApi29(context: Context, backupMedia: Boolean, callback: (Resul
         val backupDirectoryUri =
             context.defaultSharedPreferences.getString(
                 Constants.Account.PREF_BACKUP_DIRECTORY,
-                null
+                null,
             )?.toUri()
         if (backupDirectoryUri == null) {
             Timber.e("Backup directory uri is null")
@@ -209,7 +209,7 @@ suspend fun backupApi29(context: Context, backupMedia: Boolean, callback: (Resul
                 db = SQLiteDatabase.openDatabase(
                     tmpFile.path,
                     null,
-                    SQLiteDatabase.OPEN_READWRITE
+                    SQLiteDatabase.OPEN_READWRITE,
                 )
             } catch (e: Exception) {
                 db?.close()
@@ -267,7 +267,7 @@ suspend fun restore(
         // Reset BACKUP_LAST_TIME so that the user who restores the backup does not need to backup after login
         PropertyHelper.updateKeyValue(
             Constants.BackUp.BACKUP_LAST_TIME,
-            System.currentTimeMillis().toString()
+            System.currentTimeMillis().toString(),
         )
 
         withContext(Dispatchers.Main) {
@@ -333,7 +333,7 @@ suspend fun restoreApi29(
         // Reset BACKUP_LAST_TIME so that the user who restores the backup does not need to backup after login
         PropertyHelper.updateKeyValue(
             Constants.BackUp.BACKUP_LAST_TIME,
-            System.currentTimeMillis().toString()
+            System.currentTimeMillis().toString(),
         )
 
         withContext(Dispatchers.Main) {
@@ -384,7 +384,7 @@ private suspend fun internalFindBackup(
     findNewBackup(context, coroutineContext) ?: findNewBackup(
         context,
         coroutineContext,
-        legacy = true
+        legacy = true,
     ) ?: findOldBackup(context, coroutineContext)
     )
 
@@ -405,7 +405,7 @@ suspend fun findBackupApi29(
     }
     return@withContext BackupInfo(
         backupDirectory.lastModified(),
-        context.getDisplayPath(backupDirectory.uri)
+        context.getDisplayPath(backupDirectory.uri),
     )
 }
 

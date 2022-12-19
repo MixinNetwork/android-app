@@ -19,7 +19,7 @@ interface CircleDao : BaseDao<Circle> {
         SELECT c.* FROM circle_conversations cc
         INNER JOIN circles c ON c.circle_id = cc.circle_id
         WHERE conversation_id = :conversationId
-        """
+        """,
     )
     fun observeCirclesByConversationId(conversationId: String): LiveData<Circle>
 
@@ -28,7 +28,7 @@ interface CircleDao : BaseDao<Circle> {
         SELECT ci.circle_id, ci.name, ci.created_at, count(c.conversation_id) as count, sum(c.unseen_message_count) as unseen_message_count 
         FROM circles ci LEFT JOIN circle_conversations cc ON ci.circle_id = cc.circle_id LEFT JOIN conversations c ON c.conversation_id = cc.conversation_id
         GROUP BY ci.circle_id ORDER BY ci.ordered_at ASC, ci.created_at ASC
-        """
+        """,
     )
     fun observeAllCircleItem(): LiveData<List<ConversationCircleItem>>
 
@@ -38,7 +38,7 @@ interface CircleDao : BaseDao<Circle> {
         FROM circles ci LEFT JOIN circle_conversations cc ON ci.circle_id = cc.circle_id LEFT JOIN conversations c ON c.conversation_id = cc.conversation_id
         WHERE ci.circle_id = :circleId
         GROUP BY ci.circle_id 
-        """
+        """,
     )
     suspend fun findCircleItemByCircleIdSuspend(circleId: String): ConversationCircleItem?
 
@@ -50,7 +50,7 @@ interface CircleDao : BaseDao<Circle> {
         SELECT cir.circle_id FROM circles cir LEFT JOIN circle_conversations ccr ON cir.circle_id = ccr.circle_id WHERE ccr.conversation_id = :conversationId)
         GROUP BY ci.circle_id
         ORDER BY ci.ordered_at ASC, ci.created_at ASC
-        """
+        """,
     )
     suspend fun getIncludeCircleItem(conversationId: String): List<ConversationCircleManagerItem>
 
@@ -62,7 +62,7 @@ interface CircleDao : BaseDao<Circle> {
         SELECT cir.circle_id FROM circles cir LEFT JOIN circle_conversations ccr ON cir.circle_id = ccr.circle_id WHERE ccr.conversation_id = :conversationId)
         GROUP BY ci.circle_id
         ORDER BY ci.ordered_at ASC, ci.created_at ASC
-        """
+        """,
     )
     suspend fun getOtherCircleItem(conversationId: String): List<ConversationCircleManagerItem>
 
@@ -92,7 +92,7 @@ interface CircleDao : BaseDao<Circle> {
         LEFT JOIN users pu ON pu.user_id = m.participant_id 
         WHERE cc.circle_id = :circleId 
         AND c.category IS NOT NULL 
-        """
+        """,
     )
     suspend fun findConversationItemByCircleId(circleId: String): List<ConversationMinimal>
 
@@ -106,7 +106,7 @@ interface CircleDao : BaseDao<Circle> {
         LEFT JOIN circle_conversations cc ON ci.circle_id = cc.circle_id 
         LEFT JOIN conversations c ON c.conversation_id = cc.conversation_id 
         WHERE ci.circle_id != :circleId
-        """
+        """,
     )
     fun observeOtherCircleUnread(circleId: String): LiveData<Int?>
 
@@ -116,7 +116,7 @@ interface CircleDao : BaseDao<Circle> {
         LEFT JOIN circle_conversations cc ON ci.circle_id = cc.circle_id 
         LEFT JOIN conversations c ON c.conversation_id = cc.conversation_id
         WHERE cc.conversation_id = :conversationId
-        """
+        """,
     )
     suspend fun findCirclesNameByConversationId(conversationId: String): List<String>
 }

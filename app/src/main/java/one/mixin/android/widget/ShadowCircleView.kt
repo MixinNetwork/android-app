@@ -13,7 +13,7 @@ class ShadowCircleView : LinearLayoutCompat {
     constructor(context: Context, attrs: AttributeSet?, defStyleAttr: Int) : super(
         context,
         attrs,
-        defStyleAttr
+        defStyleAttr,
     ) {
         binding = ViewShadowCircleBinding.inflate(LayoutInflater.from(context), this)
     }

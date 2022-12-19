@@ -20,9 +20,9 @@ import one.mixin.android.crypto.vo.SignedPreKey
         (PreKey::class),
         (SignedPreKey::class),
         (Session::class),
-        (RatchetSenderKey::class)
+        (RatchetSenderKey::class),
     ],
-    version = 3
+    version = 3,
 )
 abstract class SignalDatabase : RoomDatabase() {
 

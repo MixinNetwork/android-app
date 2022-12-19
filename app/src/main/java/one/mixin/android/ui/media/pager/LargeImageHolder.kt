@@ -36,7 +36,7 @@ class LargeImageHolder(itemView: View) : MediaPagerHolder(itemView) {
         } else {
             messageItem.thumbImage?.toBitmap(
                 messageItem.mediaWidth ?: 0,
-                messageItem.mediaHeight ?: 0
+                messageItem.mediaHeight ?: 0,
             )?.let { image ->
                 val imageData = image.toBytes()
                 imageView.setImage(BitmapFactory.decodeByteArray(imageData, 0, imageData.size))

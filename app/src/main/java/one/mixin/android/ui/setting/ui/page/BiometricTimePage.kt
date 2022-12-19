@@ -48,8 +48,8 @@ fun BiometricTimePage() {
                         context.resources.getQuantityString(
                             R.plurals.Minute,
                             (v * 60).toInt(),
-                            (v * 60).toInt()
-                        )
+                            (v * 60).toInt(),
+                        ),
                     )
                 } else {
                     strings.add(context.resources.getQuantityString(R.plurals.Hour, v.toInt(), v.toInt()))
@@ -62,7 +62,7 @@ fun BiometricTimePage() {
             context.defaultSharedPreferences
         }.longValueAsState(
             Constants.BIOMETRIC_INTERVAL,
-            Constants.BIOMETRIC_INTERVAL_DEFAULT
+            Constants.BIOMETRIC_INTERVAL_DEFAULT,
         )
 
         val selectedIndex = remember(biometricInterval) {
@@ -85,10 +85,10 @@ fun BiometricTimePage() {
                             contentDescription = null,
                             modifier = Modifier
                                 .size(28.dp)
-                                .padding(4.dp)
+                                .padding(4.dp),
                         )
                     }
-                }
+                },
             ) {
                 if (index >= presetDurations.size || selectedIndex == index) {
                     return@SettingTile
@@ -113,7 +113,7 @@ fun BiometricTimePage() {
                             }
                         }
                     },
-                    tag = PinBiometricsBottomSheetDialogFragment.TAG
+                    tag = PinBiometricsBottomSheetDialogFragment.TAG,
                 )
             }
         }
@@ -122,7 +122,7 @@ fun BiometricTimePage() {
             modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 4.dp),
             text = stringResource(id = R.string.wallet_pin_pay_interval_tips),
             color = MixinAppTheme.colors.textSubtitle,
-            fontSize = 12.sp
+            fontSize = 12.sp,
         )
     }
 }

@@ -97,7 +97,7 @@ class ContactsFragment : BaseFragment(R.layout.fragment_contacts) {
         }
 
         contactsViewModel.findContacts().observe(
-            viewLifecycleOwner
+            viewLifecycleOwner,
         ) { users ->
             if (users != null && users.isNotEmpty()) {
                 if (!hasContactPermission()) {
@@ -119,7 +119,7 @@ class ContactsFragment : BaseFragment(R.layout.fragment_contacts) {
             contactAdapter.notifyDataSetChanged()
         }
         contactsViewModel.findSelf().observe(
-            viewLifecycleOwner
+            viewLifecycleOwner,
         ) { self ->
             if (self != null) {
                 contactAdapter.me = self
@@ -146,7 +146,7 @@ class ContactsFragment : BaseFragment(R.layout.fragment_contacts) {
                             User(
                                 "",
                                 "", "contact", "", item.displayName,
-                                "", it, false, "", null
+                                "", it, false, "", null,
                             )
                         }
                     }
@@ -154,7 +154,7 @@ class ContactsFragment : BaseFragment(R.layout.fragment_contacts) {
                     contactAdapter.users = mutableList
                     contactAdapter.notifyDataSetChanged()
                 },
-                { }
+                { },
             )
         jobManager.addJobInBackground(UploadContactsJob())
     }
@@ -164,7 +164,7 @@ class ContactsFragment : BaseFragment(R.layout.fragment_contacts) {
         override fun onHeaderRl() {
             ProfileBottomSheetDialogFragment.newInstance().showNow(
                 parentFragmentManager,
-                UserBottomSheetDialogFragment.TAG
+                UserBottomSheetDialogFragment.TAG,
             )
         }
 

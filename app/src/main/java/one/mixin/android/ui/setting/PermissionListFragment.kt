@@ -120,14 +120,14 @@ class PermissionListFragment : BaseFragment(R.layout.fragment_permission_list) {
                             Activity.RESULT_OK,
                             Intent().apply {
                                 putExtra(ARGS_SUCCESS, true)
-                            }
+                            },
                         )
                         activity?.onBackPressedDispatcher?.onBackPressed()
                     },
                     {
                         pb.dismiss()
                         ErrorHandler.handleError(it)
-                    }
+                    },
                 )
                 dialog.dismiss()
             }.create().apply {

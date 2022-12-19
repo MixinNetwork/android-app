@@ -64,6 +64,6 @@ fun createPreKeyBundle(key: SignalKey): PreKeyBundle {
         key.signedPreKey.keyId,
         key.getSignedPreKeyPublic(),
         key.getSignedSignature(),
-        key.getIdentity()
+        key.getIdentity(),
     )
 }

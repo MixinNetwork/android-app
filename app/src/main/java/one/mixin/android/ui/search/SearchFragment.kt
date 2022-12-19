@@ -132,13 +132,13 @@ class SearchFragment : BaseFragment(R.layout.fragment_search) {
                             arrayListOf<Parcelable>().apply {
                                 addAll(it)
                             },
-                            keyword ?: ""
+                            keyword ?: "",
                         )
                         requireActivity().addFragment(this@SearchFragment, f, SearchSingleFragment.TAG, R.id.root_view)
                         binding.searchRv.hideKeyboard()
                     }
                 }
-            }
+            },
         )
 
         binding.appRv.layoutManager = GridLayoutManager(requireContext(), 4)
@@ -164,7 +164,7 @@ class SearchFragment : BaseFragment(R.layout.fragment_search) {
                                 if (data.userId == Session.getAccountId()) {
                                     ProfileBottomSheetDialogFragment.newInstance().showNow(
                                         parentFragmentManager,
-                                        UserBottomSheetDialogFragment.TAG
+                                        UserBottomSheetDialogFragment.TAG,
                                     )
                                 } else {
                                     searchViewModel.insertUser(user = data)
@@ -178,7 +178,7 @@ class SearchFragment : BaseFragment(R.layout.fragment_search) {
                     { t: Throwable ->
                         searchAdapter.searchingId = false
                         ErrorHandler.handleError(t)
-                    }
+                    },
                 )
             }
 

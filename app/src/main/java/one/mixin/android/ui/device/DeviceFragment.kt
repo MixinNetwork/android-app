@@ -127,7 +127,7 @@ class DeviceFragment() : MixinBottomSheetDialogFragment() {
                         ErrorHandler.handleMixinError(
                             response.errorCode,
                             response.errorDescription,
-                            getString(R.string.setting_desktop_logout_failed)
+                            getString(R.string.setting_desktop_logout_failed),
                         )
                     }
                 }
@@ -190,7 +190,7 @@ class DeviceFragment() : MixinBottomSheetDialogFragment() {
     private val loadOuting: Dialog by lazy {
         indeterminateProgressDialog(
             message = R.string.Please_wait_a_bit,
-            title = R.string.Logout
+            title = R.string.Logout,
         ).apply {
             setCancelable(false)
         }

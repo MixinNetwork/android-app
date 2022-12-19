@@ -18,7 +18,7 @@ class MentionEditText : ContentEditText {
     constructor(context: Context, attrs: AttributeSet, defStyleAttr: Int) : super(
         context,
         attrs,
-        defStyleAttr
+        defStyleAttr,
     )
 
     val mentionSet = ArraySet<String>()
@@ -32,7 +32,7 @@ class MentionEditText : ContentEditText {
         val spansToRemove: Array<Any> = text?.getSpans(
             0,
             text?.length ?: 0,
-            Any::class.java
+            Any::class.java,
         ) as Array<Any>
         for (span in spansToRemove) {
             if (span is CharacterStyle) text?.removeSpan(span)
@@ -44,7 +44,7 @@ class MentionEditText : ContentEditText {
                     ForegroundColorSpan(MENTION_COLOR),
                     matcher.start(),
                     matcher.end(),
-                    Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+                    Spanned.SPAN_EXCLUSIVE_EXCLUSIVE,
                 )
             }
         }

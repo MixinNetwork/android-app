@@ -113,7 +113,7 @@ class ConfirmBottomFragment : BiometricBottomSheetDialogFragment() {
             ErrorHandler.handleMixinError(
                 response.errorCode,
                 response.errorDescription,
-                getString(R.string.Link_desktop_failed)
+                getString(R.string.Link_desktop_failed),
             )
             dismiss()
         }
@@ -178,7 +178,7 @@ class ConfirmBottomFragment : BiometricBottomSheetDialogFragment() {
             identityKeyPair.privateKey.serialize(),
             account.userId,
             account.sessionId,
-            verificationCode
+            verificationCode,
         )
         val cipherText = cipher.encrypt(message.toByteArray())
         val encoded = cipherText.base64Encode()
@@ -191,7 +191,7 @@ class ConfirmBottomFragment : BiometricBottomSheetDialogFragment() {
     private val sanitizer = UnescapeIgnorePlusUrlQuerySanitizer().apply {
         allowUnregisteredParamaters = true
         unregisteredParameterValueSanitizer = UrlQuerySanitizer.IllegalCharacterValueSanitizer(
-            UrlQuerySanitizer.IllegalCharacterValueSanitizer.ALL_OK
+            UrlQuerySanitizer.IllegalCharacterValueSanitizer.ALL_OK,
         )
     }
 

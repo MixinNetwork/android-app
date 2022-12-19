@@ -77,7 +77,7 @@ fun PhoneNumberSettingPage() {
                     },
                     doAfterNetworkSuccess = {
                         processing = false
-                    }
+                    },
                 )
             }
         }
@@ -85,14 +85,14 @@ fun PhoneNumberSettingPage() {
         MessageSettingItem(
             title = stringResource(R.string.Everybody),
             selected = currentSelected == SearchSource.EVERYBODY.name,
-            processing = processing
+            processing = processing,
         ) {
             requestRemoteChange(SearchSource.EVERYBODY)
         }
         MessageSettingItem(
             title = stringResource(R.string.My_Contacts),
             selected = currentSelected == SearchSource.CONTACTS.name,
-            processing = processing
+            processing = processing,
         ) {
             requestRemoteChange(SearchSource.CONTACTS)
         }
@@ -100,7 +100,7 @@ fun PhoneNumberSettingPage() {
         MessageSettingItem(
             title = stringResource(R.string.Nobody),
             selected = currentSelected == SearchSource.NOBODY.name,
-            processing = processing
+            processing = processing,
         ) {
             requestRemoteChange(SearchSource.NOBODY)
         }

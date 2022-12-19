@@ -65,7 +65,7 @@ class TimeFragment : BaseFragment(R.layout.fragment_time) {
                                 ErrorHandler.handleError(exception)
                             }
                         }
-                    }
+                    },
                 )
             }
         }

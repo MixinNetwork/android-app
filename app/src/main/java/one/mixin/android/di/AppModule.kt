@@ -354,7 +354,7 @@ object AppModule {
             .networkUtil(jobNetworkUtil)
         builder.scheduler(
             FrameworkJobSchedulerService
-                .createSchedulerFor(app.applicationContext, MyJobService::class.java)
+                .createSchedulerFor(app.applicationContext, MyJobService::class.java),
         )
         return MixinJobManager(builder.build())
     }
@@ -453,8 +453,8 @@ object AppModule {
                 AudioDevice.BluetoothHeadset::class.java,
                 AudioDevice.WiredHeadset::class.java,
                 AudioDevice.Speakerphone::class.java,
-                AudioDevice.Earpiece::class.java
-            )
+                AudioDevice.Earpiece::class.java,
+            ),
         )
 
     @Provides
@@ -518,6 +518,6 @@ object AppModule {
         participantDao,
         chatWebSocket,
         linkState,
-        messageHistoryDao
+        messageHistoryDao,
     )
 }

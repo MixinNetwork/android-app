@@ -101,8 +101,8 @@ class BottomSheetViewModel @Inject internal constructor(
             amount,
             pinCipher.encryptPin(code, TipBody.forTransfer(assetId, userId, amount, trace, memo)),
             trace,
-            memo
-        )
+            memo,
+        ),
     )
 
     suspend fun authorize(authorizationId: String, scopes: List<String>, pin: String?): MixinResponse<AuthorizationResponse> =
@@ -126,8 +126,8 @@ class BottomSheetViewModel @Inject internal constructor(
             pinCipher.encryptPin(code, TipBody.forWithdrawalCreate(addressId, amount, fee, traceId, memo)),
             traceId,
             memo,
-            fee
-        )
+            fee,
+        ),
     )
 
     suspend fun syncAddr(
@@ -143,8 +143,8 @@ class BottomSheetViewModel @Inject internal constructor(
                 destination,
                 tag,
                 label,
-                pinCipher.encryptPin(code, TipBody.forAddressAdd(assetId, destination, tag, label))
-            )
+                pinCipher.encryptPin(code, TipBody.forAddressAdd(assetId, destination, tag, label)),
+            ),
         )
 
     suspend fun saveAddr(addr: Address) = withContext(Dispatchers.IO) {
@@ -199,7 +199,7 @@ class BottomSheetViewModel @Inject internal constructor(
                 cid,
                 ConversationCategory.CONTACT.name,
                 duration = duration,
-                participants = listOf(participantRequest)
+                participants = listOf(participantRequest),
             )
             conversationRepo.muteSuspend(cid, request)
         }
@@ -244,8 +244,8 @@ class BottomSheetViewModel @Inject internal constructor(
         jobManager.addJobInBackground(
             ConversationJob(
                 conversationId = conversationId,
-                type = ConversationJob.TYPE_EXIT
-            )
+                type = ConversationJob.TYPE_EXIT,
+            ),
         )
     }
 
@@ -259,14 +259,14 @@ class BottomSheetViewModel @Inject internal constructor(
             conversationId,
             name = name,
             iconBase64 = iconBase64,
-            announcement = announcement
+            announcement = announcement,
         )
         jobManager.addJobInBackground(
             ConversationJob(
                 conversationId = conversationId,
                 request = request,
-                type = ConversationJob.TYPE_UPDATE
-            )
+                type = ConversationJob.TYPE_UPDATE,
+            ),
         )
     }
 
@@ -276,7 +276,7 @@ class BottomSheetViewModel @Inject internal constructor(
 
     fun refreshUsers(userIds: List<String>, conversationId: String?) {
         jobManager.addJobInBackground(
-            RefreshUserJob(userIds, conversationId)
+            RefreshUserJob(userIds, conversationId),
         )
     }
 
@@ -352,7 +352,7 @@ class BottomSheetViewModel @Inject internal constructor(
                                 ?: return@handleMixinResponse null
                             return@handleMixinResponse Pair(snapshotItem, assetItem)
                         }
-                    }
+                    },
                 )
             }
         }
@@ -426,7 +426,7 @@ class BottomSheetViewModel @Inject internal constructor(
                         userRepository.upsertList(userList)
                     }
                     return@handleMixinResponse userRepository.findMultiUsersByIds(userIds)
-                }
+                },
             ) ?: emptyList()
         } else {
             userRepository.findMultiUsersByIds(userIds)
@@ -450,8 +450,8 @@ class BottomSheetViewModel @Inject internal constructor(
         accountRepository.signMultisigs(
             requestId,
             PinRequest(
-                pinCipher.encryptPin(pin, TipBody.forMultisigRequestSign(requestId))
-            )
+                pinCipher.encryptPin(pin, TipBody.forMultisigRequestSign(requestId)),
+            ),
         )
 
     suspend fun unlockMultisigs(requestId: String, pin: String) = accountRepository.unlockMultisigs(requestId, PinRequest(pinCipher.encryptPin(pin, TipBody.forMultisigRequestUnlock(requestId))))
@@ -510,7 +510,7 @@ class BottomSheetViewModel @Inject internal constructor(
                 },
                 exceptionBlock = {
                     return@handleMixinResponse true
-                }
+                },
             )
         }
     }
@@ -579,7 +579,7 @@ class BottomSheetViewModel @Inject internal constructor(
             invokeNetwork = { accountRepository.getAuthorizationByAppId(appId) },
             successBlock = {
                 return@handleMixinResponse it.data?.firstOrNull()
-            }
+            },
         )
     }
 

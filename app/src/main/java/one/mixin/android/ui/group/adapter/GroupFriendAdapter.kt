@@ -53,7 +53,7 @@ class GroupFriendAdapter :
                     -1L
                 }
             },
-            -1L
+            -1L,
         )
     }
 

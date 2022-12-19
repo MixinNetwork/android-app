@@ -20,7 +20,7 @@ class BottomSheetLinearLayout(context: Context, attributeSet: AttributeSet) : Li
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
         val parentHeightSpec = MeasureSpec.makeMeasureSpec(
             MeasureSpec.getSize(heightMeasureSpec) - heightOffset,
-            MeasureSpec.getMode(heightMeasureSpec)
+            MeasureSpec.getMode(heightMeasureSpec),
         )
         super.onMeasure(widthMeasureSpec, parentHeightSpec)
     }

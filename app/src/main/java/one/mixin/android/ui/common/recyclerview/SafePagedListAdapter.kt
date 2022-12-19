@@ -53,7 +53,7 @@ abstract class SafePagedListAdapter<T, VH : RecyclerView.ViewHolder>(
                 return Handler::class.java.getDeclaredConstructor(
                     Looper::class.java,
                     Handler.Callback::class.java,
-                    Boolean::class.javaPrimitiveType
+                    Boolean::class.javaPrimitiveType,
                 ).newInstance(looper, null, true)
             } catch (ignored: IllegalAccessException) {
             } catch (ignored: InstantiationException) {

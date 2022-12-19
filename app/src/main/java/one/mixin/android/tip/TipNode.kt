@@ -316,7 +316,7 @@ class TipNode @Inject internal constructor(private val tipNodeService: TipNodeSe
             ephemeral = esum.toHex(),
             watcher = watcherHex,
             nonce = nonce,
-            grace = grace
+            grace = grace,
         )
         val dataJson = gson.toJson(data).toByteArray()
         val cipher = Crypto.encrypt(signerPk, userSk, dataJson)

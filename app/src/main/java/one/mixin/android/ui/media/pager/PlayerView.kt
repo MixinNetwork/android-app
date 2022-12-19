@@ -122,7 +122,7 @@ class PlayerView(context: Context, attributeSet: AttributeSet) :
                 videoTextureWidth / rotatedTextureRect.width(),
                 videoTextureHeight / rotatedTextureRect.height(),
                 pivotX,
-                pivotY
+                pivotY,
             )
             textureView.setTransform(transformMatrix)
         }

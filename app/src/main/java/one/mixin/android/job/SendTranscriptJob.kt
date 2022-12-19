@@ -73,7 +73,7 @@ class SendTranscriptJob(
                         if (file.exists()) {
                             val outFile = MixinApplication.appContext.getTranscriptFile(
                                 transcript.messageId,
-                                file.name.getExtensionName().notNullWithElse({ ".$it" }, "")
+                                file.name.getExtensionName().notNullWithElse({ ".$it" }, ""),
                             )
                             if (!outFile.exists() || outFile.length() <= 0) {
                                 file.copy(outFile)

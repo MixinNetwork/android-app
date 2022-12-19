@@ -55,7 +55,7 @@ class AppearanceFragment : BaseFragment(R.layout.fragment_appearance) {
                     Constants.Theme.THEME_DEFAULT_ID
                 } else {
                     Constants.Theme.THEME_AUTO_ID
-                }
+                },
             )
             nightModeDescTv.text = resources.getStringArray(R.array.setting_night_array_oreo)[currentId]
             nightModeRl.setOnClickListener {
@@ -66,7 +66,7 @@ class AppearanceFragment : BaseFragment(R.layout.fragment_appearance) {
                     } else {
                         R.array.setting_night_array_oreo
                     },
-                    currentId
+                    currentId,
                 ) { dialog, index ->
                     val changed = index != currentId
                     defaultSharedPreferences.putInt(Constants.Theme.THEME_CURRENT_ID, index)
@@ -76,7 +76,7 @@ class AppearanceFragment : BaseFragment(R.layout.fragment_appearance) {
                             Constants.Theme.THEME_NIGHT_ID -> AppCompatDelegate.MODE_NIGHT_YES
                             Constants.Theme.THEME_AUTO_ID -> AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM
                             else -> AppCompatDelegate.MODE_NIGHT_NO
-                        }
+                        },
                     )
                     dialog.dismiss()
                     if (changed) {

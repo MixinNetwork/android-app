@@ -141,7 +141,7 @@ class ShareMessageBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                             }
                         },
                         {
-                        }
+                        },
                     )
             } else if (shareMessage.category == ShareCategory.AppCard) {
                 val appCardData = GsonHelper.customGson.fromJson(shareMessage.content, AppCardData::class.java)

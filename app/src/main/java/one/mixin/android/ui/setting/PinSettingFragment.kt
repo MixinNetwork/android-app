@@ -120,7 +120,7 @@ class PinSettingFragment : BaseFragment(R.layout.fragment_pin_setting) {
             }
             bottomSheet.showNow(
                 parentFragmentManager,
-                PinBiometricsBottomSheetDialogFragment.TAG
+                PinBiometricsBottomSheetDialogFragment.TAG,
             )
         }
     }

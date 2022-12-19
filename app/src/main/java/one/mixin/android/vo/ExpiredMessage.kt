@@ -5,7 +5,7 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 
 @Entity(
-    tableName = "expired_messages"
+    tableName = "expired_messages",
 )
 class ExpiredMessage(
     @PrimaryKey

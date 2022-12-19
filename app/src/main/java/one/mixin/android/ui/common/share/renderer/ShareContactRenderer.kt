@@ -24,7 +24,7 @@ open class ShareContactRenderer(val context: Context) {
         binding.avatarIv.setInfo(
             user.fullName,
             user.avatarUrl,
-            user.userId
+            user.userId,
         )
         binding.nameTv.text = user.fullName
         binding.idTv.text = user.identityNumber
@@ -37,7 +37,7 @@ open class ShareContactRenderer(val context: Context) {
             isPin = false,
             isRepresentative = false,
             isSecret = true,
-            isWhite = true
+            isWhite = true,
         )
 
         binding.chatContentLayout.setBackgroundResource(
@@ -45,7 +45,7 @@ open class ShareContactRenderer(val context: Context) {
                 R.drawable.bill_bubble_me_last
             } else {
                 R.drawable.bill_bubble_me_last_night
-            }
+            },
         )
     }
 }

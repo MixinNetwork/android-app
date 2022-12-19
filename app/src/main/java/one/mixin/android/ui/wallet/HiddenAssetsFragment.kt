@@ -77,8 +77,8 @@ class HiddenAssetsFragment : BaseFragment(R.layout.fragment_hidden_assets), Head
                                 distance = 0
                             }
                         }
-                    }
-                )
+                    },
+                ),
             ).apply { attachToRecyclerView(assetsRv) }
             assetsRv.adapter = assetsAdapter
             assetsRv.addOnScrollListener(object : RecyclerView.OnScrollListener() {
@@ -101,7 +101,7 @@ class HiddenAssetsFragment : BaseFragment(R.layout.fragment_hidden_assets), Head
                     } else {
                         assetsVa.displayedChild = POS_EMPTY
                     }
-                }
+                },
             )
         }
     }
@@ -115,7 +115,7 @@ class HiddenAssetsFragment : BaseFragment(R.layout.fragment_hidden_assets), Head
         item as AssetItem
         view?.navigate(
             R.id.action_hidden_assets_to_transactions,
-            Bundle().apply { putParcelable(TransactionsFragment.ARGS_ASSET, item) }
+            Bundle().apply { putParcelable(TransactionsFragment.ARGS_ASSET, item) },
         )
     }
 }

@@ -21,8 +21,8 @@ class FileAdapter(private val onClickListener: (MessageItem) -> Unit, private va
             LayoutInflater.from(parent.context).inflate(
                 R.layout.item_file,
                 parent,
-                false
-            )
+                false,
+            ),
         )
 
     override fun onBindViewHolder(holder: FileHolder, position: Int) {

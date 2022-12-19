@@ -42,7 +42,7 @@ class GroupActivity : BlazeBaseActivity() {
                     conversationId?.let {
                         putExtra(ARGS_CONVERSATION_ID, it)
                     }
-                }
+                },
             )
         }
     }

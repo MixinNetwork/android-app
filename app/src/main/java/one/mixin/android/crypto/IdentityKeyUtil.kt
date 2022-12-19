@@ -19,7 +19,7 @@ open class IdentityKeyUtil {
                 identityKeyPair.publicKey.serialize(),
                 identityKeyPair.privateKey.serialize(),
                 0,
-                System.currentTimeMillis()
+                System.currentTimeMillis(),
             )
             SignalDatabase.getDatabase(ctx).identityDao().insertSuspend(identity)
         }

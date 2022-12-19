@@ -19,7 +19,7 @@ import java.io.Serializable
         Index(value = arrayOf("conversation_id", "created_at")),
         Index(value = arrayOf("conversation_id", "category")),
         Index(value = arrayOf("conversation_id", "quote_message_id")),
-        Index(value = arrayOf("conversation_id", "status", "user_id", "created_at"))
+        Index(value = arrayOf("conversation_id", "status", "user_id", "created_at")),
     ],
     foreignKeys = [
         (
@@ -27,10 +27,10 @@ import java.io.Serializable
                 entity = Conversation::class,
                 onDelete = CASCADE,
                 parentColumns = arrayOf("conversation_id"),
-                childColumns = arrayOf("conversation_id")
+                childColumns = arrayOf("conversation_id"),
             )
-            )
-    ]
+            ),
+    ],
 )
 class Message(
     @PrimaryKey
@@ -145,7 +145,7 @@ class Message(
     @Deprecated(
         "Replace with mediaMimeType",
         ReplaceWith("@{link mediaMimeType}", "one.mixin.android.vo.Message.mediaMimeType"),
-        DeprecationLevel.ERROR
+        DeprecationLevel.ERROR,
     )
     @SerializedName("media_mine_type")
     @ColumnInfo(name = "media_mine_type")

@@ -142,7 +142,7 @@ class FloatingPlayer(private var isNightMode: Boolean) {
                 } else if (event.action == MotionEvent.ACTION_MOVE) {
                     if (abs(startX - x) >= appContext.getPixelsInCM(
                             0.3f,
-                            true
+                            true,
                         ) || abs(startY - y) >= appContext.getPixelsInCM(0.3f, true)
                     ) {
                         startX = x
@@ -209,7 +209,7 @@ class FloatingPlayer(private var isNightMode: Boolean) {
                 addView(musicBgView, FrameLayout.LayoutParams(48.dp, 48.dp).apply { gravity = Gravity.CENTER })
                 addView(musicView, FrameLayout.LayoutParams(30.dp, 30.dp).apply { gravity = Gravity.CENTER })
             },
-            ViewGroup.LayoutParams(WRAP_CONTENT, WRAP_CONTENT)
+            ViewGroup.LayoutParams(WRAP_CONTENT, WRAP_CONTENT),
         )
 
         musicView?.setAutoRepeat(true)
@@ -218,14 +218,14 @@ class FloatingPlayer(private var isNightMode: Boolean) {
                 R.raw.anim_music_night,
                 "music_night",
                 30.dp,
-                30.dp
+                30.dp,
             )
         } else {
             RLottieDrawable(
                 R.raw.anim_music,
                 "music",
                 30.dp,
-                30.dp
+                30.dp,
             )
         }
         musicView?.setAnimation(rLottieDrawable)

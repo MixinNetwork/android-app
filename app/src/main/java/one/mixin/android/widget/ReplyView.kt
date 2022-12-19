@@ -107,7 +107,7 @@ class ReplyView constructor(context: Context, attrs: AttributeSet) : ConstraintL
                     messageItem.sharedUserFullName,
                     messageItem.sharedUserAvatarUrl,
                     messageItem.sharedUserId
-                        ?: "0"
+                        ?: "0",
                 )
                 binding.replyAvatar.visibility = View.VISIBLE
                 binding.replyViewIv.visibility = View.INVISIBLE

@@ -84,7 +84,7 @@ suspend fun Context.autoDownload(support: suspend (value: Int) -> Boolean, actio
                 if (support(getAutoDownloadRoamingValue())) {
                     action()
                 }
-            }
+            },
         )
     }
 }

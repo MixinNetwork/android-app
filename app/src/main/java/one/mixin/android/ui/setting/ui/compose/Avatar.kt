@@ -31,7 +31,7 @@ fun UserAvatarImage(user: User, size: Dp) {
         name = user.fullName ?: "",
         imageUrl = user.avatarUrl,
         identityNumber = user.identityNumber,
-        size = size
+        size = size,
     )
 }
 
@@ -41,7 +41,7 @@ fun AppAvatarImage(app: App, size: Dp) {
         name = app.name,
         imageUrl = app.iconUrl,
         identityNumber = app.appNumber,
-        size = size
+        size = size,
     )
 }
 
@@ -58,7 +58,7 @@ private fun AvatarImage(
             modifier = Modifier
                 .size(size)
                 .clip(CircleShape),
-            placeHolderPainter = painterResource(id = R.drawable.ic_avatar_place_holder)
+            placeHolderPainter = painterResource(id = R.drawable.ic_avatar_place_holder),
         )
     } else {
         val avatarArray = integerArrayResource(id = R.array.avatar_colors)
@@ -69,12 +69,12 @@ private fun AvatarImage(
                 .size(size)
                 .clip(CircleShape)
                 .background(Color(color)),
-            contentAlignment = Alignment.Center
+            contentAlignment = Alignment.Center,
         ) {
             Text(
                 text = AvatarView.checkEmoji(name),
                 color = Color.White,
-                fontSize = 22.sp
+                fontSize = 22.sp,
             )
         }
     }
@@ -88,7 +88,7 @@ fun AvatarImagePreview() {
             name = "Test",
             imageUrl = null,
             identityNumber = "1234124",
-            size = 100.dp
+            size = 100.dp,
         )
     }
 }

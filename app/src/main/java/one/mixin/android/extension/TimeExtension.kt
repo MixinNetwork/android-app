@@ -65,7 +65,7 @@ fun String.timeAgo(context: Context): String {
     val today = ZonedDateTime.of(
         ZonedDateTime.now().toLocalDate(),
         LocalTime.MIN,
-        localeZone.normalized()
+        localeZone.normalized(),
     )
     var timeAgo = TimeCache.singleton.getTimeAgo(this + today)
     if (timeAgo == null) {
@@ -99,7 +99,7 @@ fun String.timeAgoDate(context: Context): String {
     val today = ZonedDateTime.of(
         ZonedDateTime.now().toLocalDate(),
         LocalTime.MIN,
-        localeZone.normalized()
+        localeZone.normalized(),
     )
     val todayMilli = today.toInstant().toEpochMilli()
     var timeAgoDate = TimeCache.singleton.getTimeAgoDate(this + today)
@@ -114,8 +114,8 @@ fun String.timeAgoDate(context: Context): String {
                             weekPatternCn
                         } else {
                             weekPatternEn
-                        }
-                    ).withZone(localeZone)
+                        },
+                    ).withZone(localeZone),
                 )
             }
             else -> {
@@ -125,8 +125,8 @@ fun String.timeAgoDate(context: Context): String {
                             yearPatternCn
                         } else {
                             yearPatternEn
-                        }
-                    ).withZone(localeZone)
+                        },
+                    ).withZone(localeZone),
                 )
             }
         }
@@ -140,7 +140,7 @@ fun String.timeAgoDay(patten: String = "dd/MM/yyyy"): String {
     val today = ZonedDateTime.of(
         ZonedDateTime.now().toLocalDate(),
         LocalTime.MIN,
-        localeZone.normalized()
+        localeZone.normalized(),
     ).toInstant().toEpochMilli()
     var timeAgoDate = TimeCache.singleton.getTimeAgoDate(this + today)
     if (timeAgoDate == null) {
@@ -246,7 +246,7 @@ fun Long.getRelativeTimeSpan(): String {
             ((now - this) < 3600000L) -> DateUtils.MINUTE_IN_MILLIS
             ((now - this) < 86400000L) -> DateUtils.HOUR_IN_MILLIS
             else -> DateUtils.DAY_IN_MILLIS
-        }
+        },
     )
     return time.toString()
 }

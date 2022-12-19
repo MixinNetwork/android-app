@@ -68,7 +68,7 @@ constructor(mainActivity: MainActivity) {
                         setListener(null)
                         f.view?.isVisible = false
                     }
-                }
+                },
             )
         }?.alpha(0f)?.start()
     }

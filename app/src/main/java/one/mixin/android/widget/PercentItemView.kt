@@ -27,7 +27,7 @@ class PercentItemView(context: Context) : LinearLayout(context) {
                 0 -> R.drawable.ic_rect_percent_first
                 1 -> R.drawable.ic_rect_percent_second
                 else -> R.drawable.ic_rect_percent_other
-            }
+            },
         )
         binding.name.text = item.name
         binding.percent.text = "${(item.percent * 100).toInt()}%"

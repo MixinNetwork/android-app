@@ -93,7 +93,7 @@ class NftBottomSheetDialogFragment : BiometricBottomSheetDialogFragment() {
                             nftTokenName.text = data.metadata.tokenName
                         }
                     }
-                }
+                },
             )
         }
     }
@@ -133,10 +133,10 @@ class NftBottomSheetDialogFragment : BiometricBottomSheetDialogFragment() {
                     R.string.Revoke_multisig_transaction
                 } else {
                     R.string.Multisig_Transaction
-                }
+                },
             ),
             t.memo ?: "",
-            ""
+            "",
         )
     }
 

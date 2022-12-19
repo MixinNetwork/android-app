@@ -37,7 +37,7 @@ class SendGiphyJob(
         val message = createMediaMessage(
             messageId, conversationId, senderId, category, null, url,
             MimeType.GIF.toString(), size, width, height, previewUrl, null, null,
-            time, MediaStatus.PENDING, MessageStatus.SENDING.name
+            time, MediaStatus.PENDING, MessageStatus.SENDING.name,
         )
         conversationDao.updateLastMessageId(message.messageId, message.createdAt, message.conversationId)
         InvalidateFlow.emit(message.conversationId)
@@ -53,7 +53,7 @@ class SendGiphyJob(
         val message = createMediaMessage(
             messageId, conversationId, senderId, category, null, file.name,
             MimeType.GIF.toString(), mediaSize, width, height, thumbnail, null, null,
-            time, MediaStatus.PENDING, MessageStatus.SENDING.name
+            time, MediaStatus.PENDING, MessageStatus.SENDING.name,
         )
         messageDao.updateGiphyMessage(messageId, file.name, mediaSize, thumbnail)
         InvalidateFlow.emit(message.conversationId)

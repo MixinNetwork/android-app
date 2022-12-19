@@ -35,7 +35,7 @@ class InitializeActivity : BaseActivity() {
             else -> replaceFragment(
                 LoadingFragment.newInstance(),
                 R.id.container,
-                LoadingFragment.TAG
+                LoadingFragment.TAG,
             )
         }
     }
@@ -76,7 +76,7 @@ class InitializeActivity : BaseActivity() {
                 getIntent(context, wrongTime = true).apply {
                     addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                     addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK)
-                }
+                },
             )
         }
 
@@ -85,7 +85,7 @@ class InitializeActivity : BaseActivity() {
                 getIntent(context, oldVersion = true).apply {
                     addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                     addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK)
-                }
+                },
             )
         }
 

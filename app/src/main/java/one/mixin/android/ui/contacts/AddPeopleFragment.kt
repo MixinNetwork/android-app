@@ -75,7 +75,7 @@ class AddPeopleFragment : BaseFragment(R.layout.fragment_add_people) {
                                 if (data.userId == Session.getAccountId()) {
                                     ProfileBottomSheetDialogFragment.newInstance().showNow(
                                         parentFragmentManager,
-                                        UserBottomSheetDialogFragment.TAG
+                                        UserBottomSheetDialogFragment.TAG,
                                     )
                                 } else {
                                     contactsViewModel.insertUser(user = data)
@@ -90,7 +90,7 @@ class AddPeopleFragment : BaseFragment(R.layout.fragment_add_people) {
                         searchAnimator.displayedChild = POS_SEARCH
                         searchTv.isEnabled = true
                         ErrorHandler.handleError(t)
-                    }
+                    },
                 )
             }
         }

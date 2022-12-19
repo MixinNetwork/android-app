@@ -96,7 +96,7 @@ class PipVideoView {
                 getSideCoord(true, sidex, px, videoWidth, realX, realY).toFloat(),
                 getSideCoord(false, sidey, py, videoHeight, realX, realY).toFloat(),
                 videoWidth.toFloat(),
-                videoHeight.toFloat()
+                videoHeight.toFloat(),
             )
         }
 
@@ -156,7 +156,7 @@ class PipVideoView {
     private val aodWakeLock by lazy {
         powerManager.newWakeLock(
             PowerManager.SCREEN_BRIGHT_WAKE_LOCK or PowerManager.ON_AFTER_RELEASE,
-            "mixin"
+            "mixin",
         )
     }
 
@@ -187,7 +187,7 @@ class PipVideoView {
                 } else if (event.action == MotionEvent.ACTION_MOVE) {
                     if (abs(startX - x) >= appContext.getPixelsInCM(
                             0.3f,
-                            true
+                            true,
                         ) || abs(startY - y) >= appContext.getPixelsInCM(0.3f, true)
                     ) {
                         startX = x
@@ -263,7 +263,7 @@ class PipVideoView {
             setImageResource(R.drawable.ic_pip_maximum)
             windowView?.addView(
                 this,
-                FrameLayout.LayoutParams(appContext.dpToPx(56f), appContext.dpToPx(48f), Gravity.TOP or Gravity.END)
+                FrameLayout.LayoutParams(appContext.dpToPx(56f), appContext.dpToPx(48f), Gravity.TOP or Gravity.END),
             )
             setOnClickListener {
                 if (RomUtil.isMiui && !XiaomiUtilities.isCustomPermissionGranted(XiaomiUtilities.OP_BACKGROUND_START_ACTIVITY)) {
@@ -274,7 +274,7 @@ class PipVideoView {
                     conversationId,
                     messageId,
                     aspectRatio,
-                    mediaSource
+                    mediaSource,
                 )
             }
         }
@@ -285,7 +285,7 @@ class PipVideoView {
             setImageResource(R.drawable.ic_close_white_24dp)
             windowView?.addView(
                 this,
-                FrameLayout.LayoutParams(appContext.dpToPx(56f), appContext.dpToPx(48f), Gravity.TOP or Gravity.START)
+                FrameLayout.LayoutParams(appContext.dpToPx(56f), appContext.dpToPx(48f), Gravity.TOP or Gravity.START),
             )
             setOnClickListener {
                 close(true)
@@ -394,7 +394,7 @@ class PipVideoView {
                         }
                     }
                 }
-            }
+            },
         )
 
         textureView.setOnClickListener {
@@ -562,7 +562,7 @@ class PipVideoView {
                             close(true)
                             VideoPlayer.destroy()
                         }
-                    }
+                    },
                 )
             }
             animatorSet.playTogether(animators)

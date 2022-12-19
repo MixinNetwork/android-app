@@ -14,13 +14,13 @@ class ContainerFrameLayout : FrameLayout {
     constructor(context: Context, attrs: AttributeSet?, defStyleAttr: Int) : super(
         context,
         attrs,
-        defStyleAttr
+        defStyleAttr,
     ) {
         ViewCompat.setOnApplyWindowInsetsListener(this) { _: View?, insets: WindowInsetsCompat ->
             insets.getInsets(WindowInsetsCompat.Type.systemBars()).let { systemInserts ->
                 updatePadding(
                     top = systemInserts.top,
-                    bottom = systemInserts.bottom
+                    bottom = systemInserts.bottom,
                 )
             }
             insets

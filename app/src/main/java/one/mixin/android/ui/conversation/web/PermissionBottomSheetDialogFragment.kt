@@ -119,7 +119,7 @@ class PermissionBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 R.drawable.ic_permission_audio
             } else {
                 R.drawable.ic_permission_camera
-            }
+            },
         )
     }
 

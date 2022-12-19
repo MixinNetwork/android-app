@@ -30,16 +30,16 @@ class CallUserAdapter(private val self: CallUser, private val callClicker: (Stri
                 ItemCallUserBinding.inflate(
                     LayoutInflater.from(parent.context),
                     parent,
-                    false
-                )
+                    false,
+                ),
             )
         } else {
             AddUserHolder(
                 ItemCallAddBinding.inflate(
                     LayoutInflater.from(parent.context),
                     parent,
-                    false
-                )
+                    false,
+                ),
             )
         }
 

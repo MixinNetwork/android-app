@@ -423,7 +423,7 @@ fun Fragment.openCamera(output: Uri) {
         val photoUri = FileProvider.getUriForFile(
             requireContext().applicationContext,
             BuildConfig.APPLICATION_ID + ".provider",
-            file
+            file,
         )
         intent.putExtra(MediaStore.EXTRA_OUTPUT, photoUri)
     }
@@ -628,12 +628,12 @@ fun getVideoModel(uri: Uri): VideoEditedInfo? {
             val bitrate = MediaController.getBitrate(path, scale)
             VideoEditedInfo(
                 path, duration, rotation, mediaWith, mediaHeight, resultWidth, resultHeight, thumbnail,
-                fileName, bitrate
+                fileName, bitrate,
             )
         } else {
             VideoEditedInfo(
                 path, duration, rotation, mediaWith, mediaHeight, mediaWith, mediaHeight, thumbnail,
-                fileName, 0, false
+                fileName, 0, false,
             )
         }
     } catch (e: Exception) {
@@ -681,7 +681,7 @@ fun Context.openUrl(url: String) {
             .setActionButton(
                 BitmapFactory.decodeResource(this.resources, R.drawable.ic_share),
                 this.getString(R.string.Share),
-                pendingIntent
+                pendingIntent,
             )
             .build()
         customTabsIntent.launchUrl(this, uri)
@@ -860,7 +860,7 @@ fun Context.isNightMode(): Boolean {
     return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
         val currentId = defaultSharedPreferences.getInt(
             Constants.Theme.THEME_CURRENT_ID,
-            Constants.Theme.THEME_AUTO_ID
+            Constants.Theme.THEME_AUTO_ID,
         )
         return if (currentId == Constants.Theme.THEME_AUTO_ID) {
             resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK == Configuration.UI_MODE_NIGHT_YES
@@ -870,7 +870,7 @@ fun Context.isNightMode(): Boolean {
     } else {
         defaultSharedPreferences.getInt(
             Constants.Theme.THEME_CURRENT_ID,
-            Constants.Theme.THEME_DEFAULT_ID
+            Constants.Theme.THEME_DEFAULT_ID,
         ) == Constants.Theme.THEME_NIGHT_ID
     }
 }
@@ -883,7 +883,7 @@ fun toastShort(textResource: Int) = toast(textResource, ToastDuration.Short)
 
 fun Context.getCurrentThemeId() = defaultSharedPreferences.getInt(
     Constants.Theme.THEME_CURRENT_ID,
-    defaultThemeId
+    defaultThemeId,
 )
 
 val defaultThemeId = if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
@@ -966,7 +966,7 @@ fun Activity.showPipPermissionNotification(targetActivity: Class<*>, title: Stri
         this,
         0,
         Intent(this, targetActivity),
-        PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+        PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,
     )
     val builder = NotificationCompat.Builder(this, CallActivity.CHANNEL_PIP_PERMISSION)
         .setSmallIcon(R.drawable.ic_msg_default)
@@ -978,7 +978,7 @@ fun Activity.showPipPermissionNotification(targetActivity: Class<*>, title: Stri
         val channel = NotificationChannel(
             CallActivity.CHANNEL_PIP_PERMISSION,
             getString(R.string.OTHER),
-            NotificationManager.IMPORTANCE_HIGH
+            NotificationManager.IMPORTANCE_HIGH,
         )
         notificationManager.createNotificationChannel(channel)
     }
@@ -1042,8 +1042,8 @@ fun Context.getDisplayPath(uri: Uri): String {
     val storageManager: StorageManager = requireNotNull(
         ContextCompat.getSystemService(
             this,
-            StorageManager::class.java
-        )
+            StorageManager::class.java,
+        ),
     )
     val storageVolumes = storageManager.storageVolumes
     var storageVolume: StorageVolume? = null
@@ -1133,7 +1133,7 @@ fun Context.shareMedia(isVideo: Boolean, url: String) {
         grantUriPermission(
             packageName,
             uri,
-            Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+            Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION,
         )
     }
     startActivity(chooser)

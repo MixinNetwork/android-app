@@ -19,8 +19,8 @@ import kotlinx.parcelize.Parcelize
 @Entity(
     tableName = "users",
     indices = [
-        Index(value = arrayOf("relationship", "full_name"))
-    ]
+        Index(value = arrayOf("relationship", "full_name")),
+    ],
 )
 data class User(
     @PrimaryKey

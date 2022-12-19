@@ -151,9 +151,9 @@ class ChatHistoryActivity : BaseActivity() {
                     R.string.Transcript
                 } else {
                     R.string.Pinned_Messages
-                }
+                },
             ),
-            ""
+            "",
         )
         binding.recyclerView.addItemDecoration(decoration)
         binding.recyclerView.itemAnimator = null
@@ -166,7 +166,7 @@ class ChatHistoryActivity : BaseActivity() {
                     firstLoad = false
                     scrollToPositionWithOffset(
                         state.itemCount - 1,
-                        0
+                        0,
                     )
                 }
                 super.onLayoutChildren(recycler, state)
@@ -191,7 +191,7 @@ class ChatHistoryActivity : BaseActivity() {
                     val role = withContext(Dispatchers.IO) {
                         conversationRepository.findParticipantById(
                             conversationId,
-                            Session.getAccountId()!!
+                            Session.getAccountId()!!,
                         )?.role
                     }
                     binding.unpinTv.isVisible = role == ParticipantRole.OWNER.name || role == ParticipantRole.ADMIN.name
@@ -214,7 +214,7 @@ class ChatHistoryActivity : BaseActivity() {
                                             conversationId,
                                             requireNotNull(Session.getAccount()).toUser(),
                                             PinAction.UNPIN,
-                                            list
+                                            list,
                                         )
                                     }
                             }
@@ -228,7 +228,7 @@ class ChatHistoryActivity : BaseActivity() {
                 .observe(this) { list ->
                     binding.titleView.setSubTitle(
                         this@ChatHistoryActivity.resources.getQuantityString(R.plurals.pinned_message_title, list.size, list.size),
-                        ""
+                        "",
                     )
                     chatHistoryAdapter.transcripts = list
                 }
@@ -258,7 +258,7 @@ class ChatHistoryActivity : BaseActivity() {
                     this@ChatHistoryActivity,
                     conversationId,
                     supportFragmentManager,
-                    lifecycleScope
+                    lifecycleScope,
                 )
             }
 
@@ -266,7 +266,7 @@ class ChatHistoryActivity : BaseActivity() {
                 MarkdownActivity.show(
                     this@ChatHistoryActivity,
                     messageItem.content!!,
-                    conversationId
+                    conversationId,
                 )
             }
 
@@ -275,7 +275,7 @@ class ChatHistoryActivity : BaseActivity() {
                 val view = View.inflate(
                     ContextThemeWrapper(this@ChatHistoryActivity, R.style.Custom),
                     R.layout.view_url_bottom,
-                    null
+                    null,
                 )
                 val viewBinding = ViewUrlBottomBinding.bind(view)
                 builder.setCustomView(view)
@@ -286,7 +286,7 @@ class ChatHistoryActivity : BaseActivity() {
                         this@ChatHistoryActivity,
                         conversationId,
                         supportFragmentManager,
-                        lifecycleScope
+                        lifecycleScope,
                     )
                     bottomSheet.dismiss()
                 }
@@ -322,12 +322,12 @@ class ChatHistoryActivity : BaseActivity() {
                         val index = if (isTranscript) {
                             conversationRepository.findTranscriptMessageIndex(
                                 transcriptId,
-                                msgId
+                                msgId,
                             )
                         } else {
                             conversationRepository.findPinMessageIndex(
                                 conversationId,
-                                msgId
+                                msgId,
                             )
                         }
                         scrollTo(index, this@ChatHistoryActivity.screenHeight() * 3 / 4) {
@@ -343,7 +343,7 @@ class ChatHistoryActivity : BaseActivity() {
                         this@ChatHistoryActivity,
                         view,
                         transcriptId,
-                        messageItem.messageId
+                        messageItem.messageId,
                     )
                 } else {
                     MediaPagerActivity.show(
@@ -352,7 +352,7 @@ class ChatHistoryActivity : BaseActivity() {
                         messageItem.conversationId!!,
                         messageItem.messageId,
                         messageItem.toMessageItem(),
-                        MediaPagerActivity.MediaSource.ChatHistory
+                        MediaPagerActivity.MediaSource.ChatHistory,
                     )
                 }
             }
@@ -392,7 +392,7 @@ class ChatHistoryActivity : BaseActivity() {
             override fun onTextDoubleClick(messageItem: ChatHistoryMessageItem) {
                 TextPreviewActivity.show(
                     this@ChatHistoryActivity,
-                    messageItem.toMessageItem(conversationId)
+                    messageItem.toMessageItem(conversationId),
                 )
             }
 
@@ -404,8 +404,8 @@ class ChatHistoryActivity : BaseActivity() {
                                 jobManager.addJobInBackground(
                                     TranscriptAttachmentDownloadJob(
                                         conversationId,
-                                        transcript
-                                    )
+                                        transcript,
+                                    ),
                                 )
                             }
                     } else {
@@ -421,7 +421,7 @@ class ChatHistoryActivity : BaseActivity() {
                                     }
                                 },
                                 {
-                                }
+                                },
                             )
                     }
                 }
@@ -435,8 +435,8 @@ class ChatHistoryActivity : BaseActivity() {
                                 jobManager.addJobInBackground(
                                     SendTranscriptAttachmentMessageJob(
                                         transcript,
-                                        encryptCategory
-                                    )
+                                        encryptCategory,
+                                    ),
                                 )
                             }
                     } else {
@@ -454,7 +454,7 @@ class ChatHistoryActivity : BaseActivity() {
                                     }
                                 },
                                 {
-                                }
+                                },
                             )
                     }
                 }
@@ -469,7 +469,7 @@ class ChatHistoryActivity : BaseActivity() {
                                 conversationRepository.updateTranscriptMediaStatus(
                                     transcript.transcriptId,
                                     transcript.messageId,
-                                    MediaStatus.CANCELED.name
+                                    MediaStatus.CANCELED.name,
                                 )
                             }
                     } else {
@@ -478,7 +478,7 @@ class ChatHistoryActivity : BaseActivity() {
                                 conversationRepository.updateMediaStatusSuspend(
                                     MediaStatus.CANCELED.name,
                                     messageId,
-                                    conversationId
+                                    conversationId,
                                 )
                             }
                         }
@@ -507,9 +507,9 @@ class ChatHistoryActivity : BaseActivity() {
             override fun onFileClick(messageItem: ChatHistoryMessageItem) {
                 if (Build.VERSION.SDK_INT > Build.VERSION_CODES.O &&
                     messageItem.mediaMimeType.equals(
-                            "application/vnd.android.package-archive",
-                            true
-                        )
+                        "application/vnd.android.package-archive",
+                        true,
+                    )
                 ) {
                     if (this@ChatHistoryActivity.packageManager.canRequestPackageInstalls()) {
                         openMedia(messageItem)
@@ -542,7 +542,7 @@ class ChatHistoryActivity : BaseActivity() {
                     Activity.RESULT_OK,
                     Intent().apply {
                         putExtra(JUMP_ID, messageId)
-                    }
+                    },
                 )
                 finish()
             }
@@ -554,7 +554,7 @@ class ChatHistoryActivity : BaseActivity() {
                     val popMenu = PopupMenu(this@ChatHistoryActivity, view)
                     popMenu.menuInflater.inflate(
                         R.menu.chathistory,
-                        popMenu.menu
+                        popMenu.menu,
                     )
                     popMenu.menu.findItem(R.id.unpin).isVisible = !isTranscript && isAdmin
                     popMenu.menu.findItem(R.id.copy).isVisible = messageItem.isText()
@@ -566,7 +566,7 @@ class ChatHistoryActivity : BaseActivity() {
                             R.id.copy -> {
                                 try {
                                     this@ChatHistoryActivity.getClipboardManager().setPrimaryClip(
-                                        ClipData.newPlainText(null, messageItem.content)
+                                        ClipData.newPlainText(null, messageItem.content),
                                     )
                                     toast(R.string.copied_to_clipboard)
                                 } catch (e: ArrayIndexOutOfBoundsException) {
@@ -582,7 +582,7 @@ class ChatHistoryActivity : BaseActivity() {
                                                 ForwardActivity.show(
                                                     this@ChatHistoryActivity,
                                                     arrayListOf(forwardMessage),
-                                                    ForwardAction.App.Resultless()
+                                                    ForwardAction.App.Resultless(),
                                                 )
                                             }
                                         }
@@ -633,26 +633,26 @@ class ChatHistoryActivity : BaseActivity() {
                 } else if (offset == -1) {
                     (binding.recyclerView.layoutManager as LinearLayoutManager).scrollToPositionWithOffset(
                         position,
-                        0
+                        0,
                     )
                 } else {
                     (binding.recyclerView.layoutManager as LinearLayoutManager).scrollToPositionWithOffset(
                         position,
-                        offset
+                        offset,
                     )
                 }
                 binding.recyclerView.postDelayed(
                     {
                         (binding.recyclerView.layoutManager as LinearLayoutManager).scrollToPositionWithOffset(
                             position,
-                            offset
+                            offset,
                         )
                         action?.let { it() }
                     },
-                    160
+                    160,
                 )
             },
-            delay
+            delay,
         )
     }
 
@@ -667,8 +667,8 @@ class ChatHistoryActivity : BaseActivity() {
                     {
                         checkWritePermissionAndSave(messageItem)
                         bottomSheet?.dismiss()
-                    }
-                )
+                    },
+                ),
             )
         } else if (MimeTypes.isVideo(messageItem.mediaMimeType) ||
             messageItem.mediaMimeType?.isImageSupport() == true
@@ -679,8 +679,8 @@ class ChatHistoryActivity : BaseActivity() {
                     {
                         checkWritePermissionAndSave(messageItem)
                         bottomSheet?.dismiss()
-                    }
-                )
+                    },
+                ),
             )
         } else {
             items.add(
@@ -689,8 +689,8 @@ class ChatHistoryActivity : BaseActivity() {
                     {
                         checkWritePermissionAndSave(messageItem)
                         bottomSheet?.dismiss()
-                    }
-                )
+                    },
+                ),
             )
         }
         items.add(
@@ -699,8 +699,8 @@ class ChatHistoryActivity : BaseActivity() {
                 {
                     openMedia(messageItem)
                     bottomSheet?.dismiss()
-                }
-            )
+                },
+            ),
         )
         val view = buildBottomSheetView(this, items)
         builder.setCustomView(view)
@@ -721,7 +721,7 @@ class ChatHistoryActivity : BaseActivity() {
                     }
                 },
                 {
-                }
+                },
             )
     }
 
@@ -733,7 +733,7 @@ class ChatHistoryActivity : BaseActivity() {
         val view = View.inflate(
             androidx.appcompat.view.ContextThemeWrapper(this, R.style.Custom),
             R.layout.view_transcript,
-            null
+            null,
         )
         val viewBinding = ViewTranscriptBinding.bind(view)
         builder.setCustomView(view)
@@ -756,9 +756,9 @@ class ChatHistoryActivity : BaseActivity() {
                             conversationRepository.getTranscriptsById(this@ChatHistoryActivity.transcriptId)
                                 .map {
                                     it.copy(transcriptId)
-                                }
+                                },
                         )
-                    }
+                    },
                 )
                 bottomSheet.dismiss()
             }
@@ -783,8 +783,8 @@ class ChatHistoryActivity : BaseActivity() {
                                     else -> EncryptCategory.PLAIN
                                 },
                                 it.messageId,
-                                it.createdAt
-                            )
+                                it.createdAt,
+                            ),
                         )
                     } catch (e: NullPointerException) {
                         onError.invoke()
@@ -807,8 +807,8 @@ class ChatHistoryActivity : BaseActivity() {
                                 category,
                                 it.messageId,
                                 it.thumbImage ?: "",
-                                it.createdAt
-                            )
+                                it.createdAt,
+                            ),
                         )
                     } catch (e: NullPointerException) {
                         onError.invoke()
@@ -845,7 +845,7 @@ class ChatHistoryActivity : BaseActivity() {
                     putExtra(CONVERSATION_ID, conversationId)
                     putExtra(ENCRYPT_CATEGORY, encryptCategory.ordinal)
                     putExtra(CATEGORY, TRANSCRIPT)
-                }
+                },
             )
         }
 

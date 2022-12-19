@@ -154,7 +154,7 @@ class SearchSingleFragment : BaseFragment(R.layout.fragment_search_single) {
                     cancellationSignal?.cancel()
                     searchJob = onTextChanged(it.toString())
                 },
-                {}
+                {},
             )
     }
 

@@ -62,7 +62,7 @@ interface TransactionInterface {
                             walletViewModel,
                             contentBinding,
                             asset.assetId,
-                            snapshot
+                            snapshot,
                         )
                         refreshNoTransactionHashWithdrawal(
                             fragment,
@@ -70,7 +70,7 @@ interface TransactionInterface {
                             lifecycleScope,
                             walletViewModel,
                             snapshot,
-                            asset
+                            asset,
                         )
                     }
                 }
@@ -96,7 +96,7 @@ interface TransactionInterface {
                 walletViewModel,
                 contentBinding,
                 assetItem.assetId,
-                snapshotItem
+                snapshotItem,
             )
             refreshNoTransactionHashWithdrawal(
                 fragment,
@@ -104,7 +104,7 @@ interface TransactionInterface {
                 lifecycleScope,
                 walletViewModel,
                 snapshotItem,
-                assetItem
+                assetItem,
             )
         }
     }
@@ -145,14 +145,14 @@ interface TransactionInterface {
                                 (BigDecimal(snapshot.amount).abs() * ticker.priceFiat()).numberFormat2()
                             val pricePerUnit = if (BuildConfig.DEBUG) {
                                 "(${Fiats.getSymbol()}${
-                                ticker.priceFiat().priceFormat2()
+                                    ticker.priceFiat().priceFormat2()
                                 }/${snapshot.assetSymbol})"
                             } else {
                                 ""
                             }
                             fragment.getString(
                                 R.string.value_then,
-                                "${Fiats.getSymbol()}$amount $pricePerUnit"
+                                "${Fiats.getSymbol()}$amount $pricePerUnit",
                             )
                         }
                         fragment.context?.let { c ->
@@ -185,7 +185,7 @@ interface TransactionInterface {
                         walletViewModel,
                         contentBinding,
                         assetId,
-                        snapshot
+                        snapshot,
                     )
                 }
             },
@@ -196,7 +196,7 @@ interface TransactionInterface {
                     walletViewModel,
                     contentBinding,
                     assetId,
-                    snapshot
+                    snapshot,
                 )
                 return@handleMixinResponse false
             },
@@ -207,10 +207,10 @@ interface TransactionInterface {
                     walletViewModel,
                     contentBinding,
                     assetId,
-                    snapshot
+                    snapshot,
                 )
                 return@handleMixinResponse false
-            }
+            },
         )
     }
 
@@ -236,7 +236,7 @@ interface TransactionInterface {
                         walletViewModel,
                         contentBinding,
                         assetId,
-                        snapshot
+                        snapshot,
                     )
                 }
             }
@@ -277,7 +277,7 @@ interface TransactionInterface {
                         R.color.wallet_pink
                     }
                 },
-                null
+                null,
             )
             val symbolColor = fragment.requireContext().colorFromAttribute(R.attr.text_primary)
             valueTv.text = buildAmountSymbol(fragment.requireContext(), amountText, asset.symbol, amountColor, symbolColor)
@@ -287,7 +287,7 @@ interface TransactionInterface {
 
             valueAsTv.text = fragment.getString(
                 R.string.value_now,
-                "${Fiats.getSymbol()}$amount $pricePerUnit"
+                "${Fiats.getSymbol()}$amount $pricePerUnit",
             )
             transactionIdTv.text = snapshot.snapshotId
             transactionTypeTv.text = getSnapshotType(fragment, snapshot.type)
@@ -311,7 +311,7 @@ interface TransactionInterface {
                             R.plurals.pending_confirmation,
                             snapshot.confirmations ?: 0,
                             snapshot.confirmations ?: 0,
-                            snapshot.assetConfirmations
+                            snapshot.assetConfirmations,
                         )
                 }
                 SnapshotType.transfer.name -> {

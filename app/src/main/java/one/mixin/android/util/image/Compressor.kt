@@ -39,7 +39,7 @@ class Compressor {
             maxHeight,
             compressFormat,
             quality,
-            compressedFilePath
+            compressedFilePath,
         )
     }
 }

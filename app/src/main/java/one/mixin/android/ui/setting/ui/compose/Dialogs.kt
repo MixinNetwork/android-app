@@ -64,19 +64,19 @@ fun MixinAlertDialog(
     AlertDialog(
         modifier = modifier,
         shape = RoundedCornerShape(
-            1.5.dp
+            1.5.dp,
         ),
         onDismissRequest = onDismissRequest,
         confirmButton = {
             TextButton(
                 onClick = onConfirmClick,
                 colors = ButtonDefaults.textButtonColors(
-                    contentColor = MixinAppTheme.colors.accent
-                )
+                    contentColor = MixinAppTheme.colors.accent,
+                ),
             ) {
                 Text(
                     text = confirmText,
-                    style = TextStyle.Default
+                    style = TextStyle.Default,
                 )
             }
         },
@@ -87,18 +87,18 @@ fun MixinAlertDialog(
                 TextButton(
                     onClick = onDismissClick,
                     colors = ButtonDefaults.textButtonColors(
-                        contentColor = MixinAppTheme.colors.textPrimary
-                    )
+                        contentColor = MixinAppTheme.colors.textPrimary,
+                    ),
                 ) {
                     Text(
                         text = it,
-                        style = TextStyle.Default
+                        style = TextStyle.Default,
                     )
                 }
             }
         },
         backgroundColor = MixinAppTheme.colors.background,
-        contentColor = MixinAppTheme.colors.textPrimary
+        contentColor = MixinAppTheme.colors.textPrimary,
     )
 }
 
@@ -118,7 +118,7 @@ fun PreviewMixinAlertDialog() {
                 Text("Text")
             },
             confirmText = "Confirm",
-            dismissText = "Dismiss"
+            dismissText = "Dismiss",
         )
     }
 }

@@ -30,15 +30,15 @@ class AudioAdapter(private val onClickListener: (messageItem: MessageItem) -> Un
                 return oldItem.mediaStatus == newItem.mediaStatus &&
                     oldItem.status == newItem.status
             }
-        }
+        },
     ) {
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) =
         AudioHolder(
             LayoutInflater.from(parent.context).inflate(
                 R.layout.item_audio,
                 parent,
-                false
-            )
+                false,
+            ),
         )
 
     override fun onBindViewHolder(holder: AudioHolder, position: Int) {

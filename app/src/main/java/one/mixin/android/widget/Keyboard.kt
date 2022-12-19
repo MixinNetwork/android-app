@@ -35,7 +35,7 @@ class Keyboard @JvmOverloads constructor(
             } else {
                 KeyboardHolder(
                     LayoutInflater.from(context)
-                        .inflate(R.layout.item_grid_keyboard_delete, parent, false)
+                        .inflate(R.layout.item_grid_keyboard_delete, parent, false),
                 )
             }
         }

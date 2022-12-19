@@ -49,7 +49,7 @@ class ShareHelper {
                     it.systemMediaToMessage(
                         ForwardCategory.Data,
                         fileName,
-                        type
+                        type,
                     ).addTo(result)
                 }
             } else {

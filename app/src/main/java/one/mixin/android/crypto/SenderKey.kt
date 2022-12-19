@@ -114,7 +114,7 @@ open class SenderKey(
     fun checkSessionSenderKey(conversationId: String) {
         val participants = participantSessionDao.getNotSendSessionParticipants(
             conversationId,
-            Session.getSessionId()!!
+            Session.getSessionId()!!,
         )
         if (participants.isEmpty()) return
         val requestSignalKeyUsers = arrayListOf<BlazeMessageParamSession>()
@@ -126,7 +126,7 @@ open class SenderKey(
                 val (cipherText, err) = signalProtocol.encryptSenderKey(
                     conversationId,
                     p.userId,
-                    p.sessionId.getDeviceId()
+                    p.sessionId.getDeviceId(),
                 )
                 if (err) {
                     requestSignalKeyUsers.add(BlazeMessageParamSession(p.userId, p.sessionId))
@@ -135,8 +135,8 @@ open class SenderKey(
                         createBlazeSignalKeyMessage(
                             p.userId,
                             cipherText!!,
-                            p.sessionId
-                        )
+                            p.sessionId,
+                        ),
                     )
                 }
             }
@@ -156,21 +156,21 @@ open class SenderKey(
                         val (cipherText, _) = signalProtocol.encryptSenderKey(
                             conversationId,
                             key.userId,
-                            preKeyBundle.deviceId
+                            preKeyBundle.deviceId,
                         )
                         signalKeyMessages.add(
                             createBlazeSignalKeyMessage(
                                 key.userId,
                                 cipherText!!,
-                                key.sessionId
-                            )
+                                key.sessionId,
+                            ),
                         )
                         keys.add(BlazeMessageParamSession(key.userId, key.sessionId))
                     }
                 } else {
                     Timber.tag(MixinJob.TAG).e(
                         "No any group signal key from server: %s",
-                        requestSignalKeyUsers.toString()
+                        requestSignalKeyUsers.toString(),
                     )
                 }
 
@@ -181,7 +181,7 @@ open class SenderKey(
                             conversationId,
                             it.user_id,
                             it.session_id!!,
-                            SenderKeyStatus.UNKNOWN.ordinal
+                            SenderKeyStatus.UNKNOWN.ordinal,
                         )
                     }
                     participantSessionDao.updateParticipantSessionSent(sentSenderKeys)
@@ -196,8 +196,8 @@ open class SenderKey(
             createSignalKeyMessageParam(
                 conversationId,
                 signalKeyMessages,
-                checksum
-            )
+                checksum,
+            ),
         )
         val result = deliverNoThrow(bm)
         if (result.retry) {
@@ -210,7 +210,7 @@ open class SenderKey(
                     conversationId,
                     it.recipient_id,
                     it.sessionId!!,
-                    SenderKeyStatus.SENT.ordinal
+                    SenderKeyStatus.SENT.ordinal,
                 )
             }
             participantSessionDao.updateParticipantSessionSent(sentSenderKeys)
@@ -316,8 +316,8 @@ internal fun requestResendKey(
     val plainText = gson.toJson(
         PlainJsonMessagePayload(
             action = PlainDataAction.RESEND_KEY.name,
-            messageId = messageId
-        )
+            messageId = messageId,
+        ),
     )
     val encoded = plainText.toByteArray().base64Encode()
     val bm = createParamBlazeMessage(createPlainJsonParam(conversationId, recipientId, encoded, sessionId))
