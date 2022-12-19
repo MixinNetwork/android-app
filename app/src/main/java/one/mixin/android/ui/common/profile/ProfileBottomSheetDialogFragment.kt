@@ -4,6 +4,7 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.Dialog
+import android.content.Context
 import android.content.Intent
 import android.graphics.Color
 import android.net.Uri
@@ -12,6 +13,9 @@ import android.text.method.LinkMovementMethod
 import android.util.Base64
 import android.view.View
 import android.view.ViewGroup
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.bottomsheet.BottomSheetBehavior
@@ -32,6 +36,7 @@ import one.mixin.android.extension.createImageTemp
 import one.mixin.android.extension.dayTime
 import one.mixin.android.extension.getOtherPath
 import one.mixin.android.extension.inTransaction
+import one.mixin.android.extension.isPhotoPickerAvailable
 import one.mixin.android.extension.openAsUrlOrWeb
 import one.mixin.android.extension.openCamera
 import one.mixin.android.extension.openImageGallery
@@ -53,6 +58,7 @@ import one.mixin.android.vo.Account
 import one.mixin.android.vo.App
 import one.mixin.android.vo.toUser
 import one.mixin.android.widget.linktext.AutoLinkMode
+import timber.log.Timber
 
 @AndroidEntryPoint
 class ProfileBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment() {
@@ -75,6 +81,32 @@ class ProfileBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragmen
             instant = null
             return ProfileBottomSheetDialogFragment().apply {
                 instant = this
+            }
+        }
+    }
+
+    private lateinit var pickMedia: ActivityResultLauncher<PickVisualMediaRequest>
+
+    override fun onAttach(context: Context){
+        super.onAttach(context)
+         pickMedia = registerForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
+            if (uri != null) {
+                Timber.e("PhotoPicker", "Selected URI: $uri")
+                val options = UCrop.Options()
+                options.setToolbarColor(ContextCompat.getColor(requireContext(), R.color.black))
+                options.setStatusBarColor(ContextCompat.getColor(requireContext(), R.color.black))
+                options.setToolbarWidgetColor(Color.WHITE)
+                options.setHideBottomControls(true)
+                UCrop.of(uri, imageUri)
+                    .withOptions(options)
+                    .withAspectRatio(1f, 1f)
+                    .withMaxResultSize(
+                        MAX_PHOTO_SIZE,
+                        MAX_PHOTO_SIZE
+                    )
+                    .start(requireContext(), this)
+            } else {
+                Timber.e("PhotoPicker", "No media selected")
             }
         }
     }
@@ -274,22 +306,26 @@ class ProfileBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragmen
     }
 
     private fun changePhoto(byCamera: Boolean) {
-        RxPermissions(requireActivity())
-            .request(Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE)
-            .autoDispose(stopScope)
-            .subscribe { granted ->
-                if (granted) {
-                    if (byCamera) {
-                        openCamera(imageUri)
+        if (!byCamera && isPhotoPickerAvailable()) {
+            pickMedia.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
+        } else {
+            RxPermissions(requireActivity())
+                .request(Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                .autoDispose(stopScope)
+                .subscribe { granted ->
+                    if (granted) {
+                        if (byCamera) {
+                            openCamera(imageUri)
+                        } else {
+                            openImageGallery(true)
+                        }
                     } else {
-                        openImageGallery(true)
+                        context?.openPermissionSetting()
                     }
-                } else {
-                    context?.openPermissionSetting()
                 }
-            }
+        }
     }
-
+    
     private fun changeNumber() {
         alert(getString(R.string.profile_modify_number))
             .setNegativeButton(android.R.string.no) { dialog, _ -> dialog.dismiss() }

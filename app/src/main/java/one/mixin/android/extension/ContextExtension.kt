@@ -36,6 +36,7 @@ import android.os.VibrationEffect.EFFECT_DOUBLE_CLICK
 import android.os.VibrationEffect.EFFECT_HEAVY_CLICK
 import android.os.VibrationEffect.EFFECT_TICK
 import android.os.Vibrator
+import android.os.ext.SdkExtensions.getExtensionVersion
 import android.os.storage.StorageManager
 import android.os.storage.StorageVolume
 import android.provider.Browser
@@ -1184,5 +1185,15 @@ fun <T> getParcelableExtra(intent: Intent, name: String, clazz: Class<T>): T? {
         intent.getParcelableExtra(name, clazz)
     } else {
         intent.getParcelableExtra(name) as T?
+    }
+}
+
+fun isPhotoPickerAvailable() :Boolean{
+    return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+        true
+    } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R){
+        getExtensionVersion(Build.VERSION_CODES.R) >= 2
+    }else{
+        false
     }
 }
