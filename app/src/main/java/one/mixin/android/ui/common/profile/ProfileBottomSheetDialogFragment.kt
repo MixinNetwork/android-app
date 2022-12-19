@@ -36,10 +36,8 @@ import one.mixin.android.extension.createImageTemp
 import one.mixin.android.extension.dayTime
 import one.mixin.android.extension.getOtherPath
 import one.mixin.android.extension.inTransaction
-import one.mixin.android.extension.isPhotoPickerAvailable
 import one.mixin.android.extension.openAsUrlOrWeb
 import one.mixin.android.extension.openCamera
-import one.mixin.android.extension.openImageGallery
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.toBytes
 import one.mixin.android.extension.toast
@@ -306,7 +304,7 @@ class ProfileBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragmen
     }
 
     private fun changePhoto(byCamera: Boolean) {
-        if (!byCamera && isPhotoPickerAvailable()) {
+        if (!byCamera) {
             pickMedia.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
         } else {
             RxPermissions(requireActivity())
@@ -314,11 +312,7 @@ class ProfileBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragmen
                 .autoDispose(stopScope)
                 .subscribe { granted ->
                     if (granted) {
-                        if (byCamera) {
-                            openCamera(imageUri)
-                        } else {
-                            openImageGallery(true)
-                        }
+                        openCamera(imageUri)
                     } else {
                         context?.openPermissionSetting()
                     }
