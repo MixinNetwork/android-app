@@ -27,7 +27,7 @@ interface PendingDatabase {
 
     fun getPendingMessages(): Flow<List<Message>>
 
-    fun deletePendingMessageByIds(ids: List<String>)
+    suspend fun deletePendingMessageByIds(ids: List<String>)
 
     fun findMessageMediaById(messageId: String): MessageMedia?
 

@@ -113,7 +113,7 @@ class HedwigImp(
                             RemoteMessageStatus(
                                 message.messageId,
                                 message.conversationId,
-                                MessageStatus.DELIVERED.name
+                                MessageStatus.DELIVERED.name,
                             )
                         }.let { remoteMessageStatus ->
                             remoteMessageStatusDao.insertList(remoteMessageStatus)
@@ -123,7 +123,7 @@ class HedwigImp(
                             conversationDao.updateLastMessageId(
                                 message.messageId,
                                 message.createdAt,
-                                message.conversationId
+                                message.conversationId,
                             )
                         }
                         InvalidateFlow.emit(conversationId)
