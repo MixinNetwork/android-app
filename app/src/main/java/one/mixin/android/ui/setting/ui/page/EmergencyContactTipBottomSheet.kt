@@ -29,30 +29,30 @@ fun EmergencyContactTipBottomSheet(
     MixinBottomSheetDialog(onDismissRequest = onDismissRequest) {
         Column(
             modifier = Modifier.padding(horizontal = 32.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
+            horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             Box(modifier = Modifier.height(70.dp))
             Text(
                 text = stringResource(id = R.string.Emergency_Contact),
                 fontSize = 18.sp,
-                color = MixinAppTheme.colors.textPrimary
+                color = MixinAppTheme.colors.textPrimary,
             )
             Box(modifier = Modifier.height(16.dp))
             Text(
                 text = stringResource(id = R.string.setting_emergency_content),
                 fontSize = 14.sp,
-                color = MixinAppTheme.colors.textPrimary
+                color = MixinAppTheme.colors.textPrimary,
             )
             Box(modifier = Modifier.height(16.dp))
             Text(
                 text = stringResource(id = R.string.setting_emergency_warning),
                 fontSize = 14.sp,
-                color = MixinAppTheme.colors.red
+                color = MixinAppTheme.colors.red,
             )
             Box(modifier = Modifier.height(36.dp))
             Image(
                 painter = painterResource(id = MixinAppTheme.drawables.emergencyAvatar),
-                contentDescription = null
+                contentDescription = null,
             )
             Box(modifier = Modifier.height(36.dp))
             TextButton(
@@ -63,12 +63,12 @@ fun EmergencyContactTipBottomSheet(
                     .height(40.dp),
                 colors = ButtonDefaults.textButtonColors(
                     backgroundColor = MixinAppTheme.colors.accent,
-                    contentColor = MixinAppTheme.colors.textPrimary
-                )
+                    contentColor = MixinAppTheme.colors.textPrimary,
+                ),
             ) {
                 Text(
                     text = stringResource(id = R.string.Got_it),
-                    fontSize = 14.sp
+                    fontSize = 14.sp,
                 )
             }
             Box(modifier = Modifier.height(40.dp))

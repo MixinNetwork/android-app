@@ -85,150 +85,150 @@ class ChatHistoryAdapter(
                 ItemChatTextBinding.inflate(
                     LayoutInflater.from(parent.context),
                     parent,
-                    false
-                )
+                    false,
+                ),
             )
             -1 -> TextQuoteHolder(
                 ItemChatTextQuoteBinding.inflate(
                     LayoutInflater.from(parent.context),
                     parent,
-                    false
-                )
+                    false,
+                ),
             )
             2 -> ImageHolder(
                 ItemChatImageBinding.inflate(
                     LayoutInflater.from(parent.context),
                     parent,
-                    false
-                )
+                    false,
+                ),
             )
             -2 -> ImageQuoteHolder(
                 ItemChatImageQuoteBinding.inflate(
                     LayoutInflater.from(parent.context),
                     parent,
-                    false
-                )
+                    false,
+                ),
             )
             3 -> VideoHolder(
                 ItemChatVideoBinding.inflate(
                     LayoutInflater.from(parent.context),
                     parent,
-                    false
-                )
+                    false,
+                ),
             )
             -3 -> VideoQuoteHolder(
                 ItemChatVideoQuoteBinding.inflate(
                     LayoutInflater.from(parent.context),
                     parent,
-                    false
-                )
+                    false,
+                ),
             )
             4 -> FileHolder(
                 ItemChatFileBinding.inflate(
                     LayoutInflater.from(parent.context),
                     parent,
-                    false
-                )
+                    false,
+                ),
             )
             -4 -> FileQuoteHolder(
                 ItemChatFileQuoteBinding.inflate(
                     LayoutInflater.from(parent.context),
                     parent,
-                    false
-                )
+                    false,
+                ),
             )
             5 -> AudioHolder(
                 ItemChatAudioBinding.inflate(
                     LayoutInflater.from(parent.context),
                     parent,
-                    false
-                )
+                    false,
+                ),
             )
             -5 -> AudioQuoteHolder(
                 ItemChatAudioQuoteBinding.inflate(
                     LayoutInflater.from(parent.context),
                     parent,
-                    false
-                )
+                    false,
+                ),
             )
             6 -> ContactCardHolder(
                 ItemChatContactCardBinding.inflate(
                     LayoutInflater.from(parent.context),
                     parent,
-                    false
-                )
+                    false,
+                ),
             )
             -6 -> ContactCardQuoteHolder(
                 ItemChatContactCardQuoteBinding.inflate(
                     LayoutInflater.from(
-                        parent.context
+                        parent.context,
                     ),
                     parent,
-                    false
-                )
+                    false,
+                ),
             )
             7 -> StickerHolder(
                 ItemChatStickerBinding.inflate(
                     LayoutInflater.from(parent.context),
                     parent,
-                    false
-                )
+                    false,
+                ),
             )
             8 -> TranscriptHolder(
                 ItemChatTranscriptBinding.inflate(
                     LayoutInflater.from(parent.context),
                     parent,
-                    false
-                )
+                    false,
+                ),
             )
             9 -> LocationHolder(
                 ItemChatLocationBinding.inflate(
                     LayoutInflater.from(parent.context),
                     parent,
-                    false
-                )
+                    false,
+                ),
             )
             10 -> ActionCardHolder(
                 ItemChatActionCardBinding.inflate(
                     LayoutInflater.from(parent.context),
                     parent,
-                    false
-                )
+                    false,
+                ),
             )
             11 -> PostHolder(
                 ItemChatPostBinding.inflate(
                     LayoutInflater.from(parent.context),
                     parent,
-                    false
-                )
+                    false,
+                ),
             )
             12 -> TranscriptHolder(
                 ItemChatTranscriptBinding.inflate(
                     LayoutInflater.from(parent.context),
                     parent,
-                    false
-                )
+                    false,
+                ),
             )
             13 -> RecallHolder(
                 ItemChatRecallBinding.inflate(
                     LayoutInflater.from(parent.context),
                     parent,
-                    false
-                )
+                    false,
+                ),
             )
             14 -> ActionHolder(
                 ItemChatActionBinding.inflate(
                     LayoutInflater.from(parent.context),
                     parent,
-                    false
-                )
+                    false,
+                ),
             )
             else -> UnknownHolder(
                 ItemChatUnknownBinding.inflate(
                     LayoutInflater.from(parent.context),
                     parent,
-                    false
-                )
+                    false,
+                ),
             )
         }
     }
@@ -243,127 +243,127 @@ class ChatHistoryAdapter(
                 transcripts[position],
                 isLast = isLast(position),
                 isFirst = isFirst(position),
-                onItemListener
+                onItemListener,
             )
             -1 -> (holder as TextQuoteHolder).bind(
                 transcripts[position],
                 isLast = isLast(position),
                 isFirst = isFirst(position),
-                onItemListener
+                onItemListener,
             )
             2 -> (holder as ImageHolder).bind(
                 transcripts[position],
                 isLast = isLast(position),
                 isFirst = isFirst(position),
-                onItemListener
+                onItemListener,
             )
             -2 -> (holder as ImageQuoteHolder).bind(
                 transcripts[position],
                 isLast = isLast(position),
                 isFirst = isFirst(position),
-                onItemListener
+                onItemListener,
             )
             3 -> (holder as VideoHolder).bind(
                 transcripts[position],
                 isLast = isLast(position),
                 isFirst = isFirst(position),
-                onItemListener
+                onItemListener,
             )
             -3 -> (holder as VideoQuoteHolder).bind(
                 transcripts[position],
                 isLast = isLast(position),
                 isFirst = isFirst(position),
-                onItemListener
+                onItemListener,
             )
             4 -> (holder as FileHolder).bind(
                 transcripts[position],
                 isLast = isLast(position),
                 isFirst = isFirst(position),
-                onItemListener
+                onItemListener,
             )
             -4 -> (holder as FileQuoteHolder).bind(
                 transcripts[position],
                 isLast = isLast(position),
                 isFirst = isFirst(position),
-                onItemListener
+                onItemListener,
             )
             5 -> (holder as AudioHolder).bind(
                 transcripts[position],
                 isLast = isLast(position),
                 isFirst = isFirst(position),
-                onItemListener
+                onItemListener,
             )
             -5 -> (holder as AudioQuoteHolder).bind(
                 transcripts[position],
                 isLast = isLast(position),
                 isFirst = isFirst(position),
-                onItemListener
+                onItemListener,
             )
             6 -> (holder as ContactCardHolder).bind(
                 transcripts[position],
                 isLast = isLast(position),
                 isFirst = isFirst(position),
-                onItemListener
+                onItemListener,
             )
             -6 -> (holder as ContactCardQuoteHolder).bind(
                 transcripts[position],
                 isLast = isLast(position),
                 isFirst = isFirst(position),
-                onItemListener
+                onItemListener,
             )
             7 -> (holder as StickerHolder).bind(
                 transcripts[position],
                 isFirst = isFirst(position),
-                onItemListener
+                onItemListener,
             )
             8 -> (holder as TranscriptHolder).bind(
                 transcripts[position],
                 isLast = isLast(position),
                 isFirst = isFirst(position),
-                onItemListener
+                onItemListener,
             )
             9 -> (holder as LocationHolder).bind(
                 transcripts[position],
                 isLast = isLast(position),
                 isFirst = isFirst(position),
-                onItemListener
+                onItemListener,
             )
             10 -> (holder as ActionCardHolder).bind(
                 transcripts[position],
                 isLast = isLast(position),
                 isFirst = isFirst(position),
-                onItemListener
+                onItemListener,
             )
             11 -> (holder as PostHolder).bind(
                 transcripts[position],
                 isLast = isLast(position),
                 isFirst = isFirst(position),
                 onItemListener,
-                miniMarkwon
+                miniMarkwon,
             )
             12 -> (holder as TranscriptHolder).bind(
                 transcripts[position],
                 isLast = isLast(position),
                 isFirst = isFirst(position),
-                onItemListener
+                onItemListener,
             )
             13 -> (holder as RecallHolder).bind(
                 transcripts[position],
                 isFirst = isFirst(position),
                 isLast = isLast(position),
-                onItemListener
+                onItemListener,
             )
             14 -> (holder as ActionHolder).bind(
                 transcripts[position],
                 isLast = isLast(position),
                 isFirst = isFirst(position),
-                onItemListener
+                onItemListener,
             )
             else -> (holder as UnknownHolder).bind(
                 transcripts[position],
                 isLast = isLast(position),
                 isFirst = isFirst(position),
-                onItemListener
+                onItemListener,
             )
         }
     }
@@ -470,7 +470,7 @@ class ChatHistoryAdapter(
         {
             abs(it.createdAt.hashForDate())
         },
-        0
+        0,
     )
 
     override fun onCreateHeaderViewHolder(parent: ViewGroup): TimeHolder =

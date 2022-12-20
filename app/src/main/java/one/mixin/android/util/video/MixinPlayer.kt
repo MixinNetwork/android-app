@@ -204,7 +204,7 @@ class MixinPlayer(val isAudio: Boolean = false) : Player.Listener {
 
     private fun buildDataSourceFactory(): DataSource.Factory {
         return DefaultDataSource.Factory(
-            MixinApplication.appContext
+            MixinApplication.appContext,
         )
     }
 
@@ -401,7 +401,6 @@ class MixinPlayer(val isAudio: Boolean = false) : Player.Listener {
 
     companion object {
         @SuppressLint("StaticFieldLeak")
-
         private fun isBehindLiveWindow(e: ExoPlaybackException): Boolean {
             if (e.type != ExoPlaybackException.TYPE_SOURCE) {
                 return false

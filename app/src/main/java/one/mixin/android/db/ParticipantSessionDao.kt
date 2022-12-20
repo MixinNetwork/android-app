@@ -63,7 +63,7 @@ interface ParticipantSessionDao : BaseDao<ParticipantSession> {
     @Query(
         """SELECT p.* FROM participant_session p LEFT JOIN users u ON p.user_id = u.user_id 
         WHERE p.conversation_id = :conversationId AND p.session_id != :sessionId AND u.app_id IS NULL AND p.sent_to_server IS NULL 
-        """
+        """,
     )
     fun getNotSendSessionParticipants(conversationId: String, sessionId: String): List<ParticipantSession>
 

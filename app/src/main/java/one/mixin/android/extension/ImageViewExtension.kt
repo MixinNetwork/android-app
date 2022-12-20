@@ -58,7 +58,7 @@ fun ImageView.loadImageCenterCrop(uri: String?, holder: String? = null) {
                 } else {
                     this
                 }
-            }
+            },
         ).into(this)
 }
 
@@ -72,7 +72,7 @@ fun ImageView.loadImageCenterCrop(uri: String?, @DrawableRes holder: Int? = null
                 } else {
                     this
                 }
-            }
+            },
         ).into(this)
 }
 
@@ -86,7 +86,7 @@ fun ImageView.loadImageCenterCrop(uri: Uri?, @DrawableRes holder: Int? = null) {
                 } else {
                     this
                 }
-            }
+            },
         ).into(this)
 }
 
@@ -166,7 +166,7 @@ fun ImageView.loadImageMark(uri: String?, holder: String?, mark: Int) {
                 } else {
                     this
                 }
-            }
+            },
     ).into(this)
 }
 
@@ -180,7 +180,7 @@ fun ImageView.loadImageMark(uri: String?, @DrawableRes holder: Int?, mark: Int) 
                 } else {
                     this
                 }
-            }
+            },
     ).into(this)
 }
 
@@ -188,7 +188,7 @@ fun ImageView.loadImageMark(uri: String?, mark: Int) {
     if (!isActivityNotDestroyed()) return
     Glide.with(this).load(uri).apply(
         RequestOptions().dontAnimate()
-            .signature(StringSignature("$uri$mark"))
+            .signature(StringSignature("$uri$mark")),
     )
         .listener(
             object : RequestListener<Drawable> {
@@ -213,7 +213,7 @@ fun ImageView.loadImageMark(uri: String?, mark: Int) {
                     }
                     return true
                 }
-            }
+            },
         )
         .submit(layoutParams.width, layoutParams.height)
 }
@@ -225,8 +225,8 @@ fun ImageView.loadLongImageMark(uri: String?, holder: String?, mark: Int) {
             CropTransformation(
                 0,
                 layoutParams.height,
-                CropTransformation.CropType.TOP
-            )
+                CropTransformation.CropType.TOP,
+            ),
         )
             .dontAnimate()
             .signature(StringSignature("$uri$mark")).run {
@@ -235,7 +235,7 @@ fun ImageView.loadLongImageMark(uri: String?, holder: String?, mark: Int) {
                 } else {
                     this
                 }
-            }
+            },
     ).into(this)
 }
 
@@ -246,8 +246,8 @@ fun ImageView.loadLongImageMark(uri: String?, mark: Int?) {
             CropTransformation(
                 0,
                 layoutParams.height,
-                CropTransformation.CropType.TOP
-            )
+                CropTransformation.CropType.TOP,
+            ),
         )
             .dontAnimate().run {
                 return@run if (mark != null) {
@@ -255,7 +255,7 @@ fun ImageView.loadLongImageMark(uri: String?, mark: Int?) {
                 } else {
                     this
                 }
-            }
+            },
 
     ).listener(
         object : RequestListener<Drawable> {
@@ -280,7 +280,7 @@ fun ImageView.loadLongImageMark(uri: String?, mark: Int?) {
                 }
                 return true
             }
-        }
+        },
     ).submit(layoutParams.width, layoutParams.height)
 }
 
@@ -300,7 +300,7 @@ fun ImageView.loadVideoMark(
                     } else {
                         this
                     }
-                }
+                },
         ).listener(
             object : RequestListener<Drawable> {
                 override fun onLoadFailed(
@@ -329,7 +329,7 @@ fun ImageView.loadVideoMark(
                     }
                     return true
                 }
-            }
+            },
         ).submit(layoutParams.width, layoutParams.height)
 }
 
@@ -338,7 +338,7 @@ fun ImageView.loadVideo(uri: String?) {
     if (!isActivityNotDestroyed()) return
     Glide.with(this).load(uri).apply(
         RequestOptions().frame(0)
-            .centerCrop().dontAnimate()
+            .centerCrop().dontAnimate(),
     ).into(this)
 }
 
@@ -374,7 +374,7 @@ fun RLottieImageView.loadLottie(uri: String, cacheKey: String) {
         .`as`(RLottieDrawable::class.java)
         .load(uri).apply(
             RequestOptions().dontAnimate()
-                .signature(StringSignature(cacheKey))
+                .signature(StringSignature(cacheKey)),
         )
         .into(this)
 }
@@ -387,7 +387,7 @@ fun ImageView.loadBase64(uri: ByteArray?, width: Int, height: Int, mark: Int) {
         .apply(
             RequestOptions().centerCrop()
                 .transform(multi).signature(StringSignature("$uri$mark"))
-                .dontAnimate()
+                .dontAnimate(),
         ).into(this)
 }
 
@@ -416,7 +416,7 @@ fun ImageView.loadRoundImage(uri: String?, radius: Int, @DrawableRes holder: Int
     } else {
         Glide.with(this).load(uri).apply(
             RequestOptions().transform(RoundedCornersTransformation(radius, 0))
-                .placeholder(holder)
+                .placeholder(holder),
         )
             .into(this)
     }

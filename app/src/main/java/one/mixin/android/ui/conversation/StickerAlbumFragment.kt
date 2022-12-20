@@ -64,7 +64,7 @@ class StickerAlbumFragment : BaseFragment(R.layout.fragment_sticker_album) {
         super.onViewCreated(view, savedInstanceState)
         binding.apply {
             stickerViewModel.observeSystemAddedAlbums().observe(
-                viewLifecycleOwner
+                viewLifecycleOwner,
             ) { r ->
                 r?.let {
                     albumAdapter.setItems(r)
@@ -93,7 +93,7 @@ class StickerAlbumFragment : BaseFragment(R.layout.fragment_sticker_album) {
             viewPager.adapter = albumAdapter
             tabLayoutMediator = TabLayoutMediator(
                 albumTl,
-                viewPager
+                viewPager,
             ) { tab, pos ->
                 if (pos == TYPE_STORE) {
                     _storeBinding = TabAlbumStoreBinding.inflate(layoutInflater, null, false).apply {
@@ -128,7 +128,7 @@ class StickerAlbumFragment : BaseFragment(R.layout.fragment_sticker_album) {
                     override fun onTabSelected(tab: TabLayout.Tab) {
                         tab.customView?.setBackgroundResource(R.drawable.bg_sticker_tab)
                     }
-                }
+                },
             )
         }
 

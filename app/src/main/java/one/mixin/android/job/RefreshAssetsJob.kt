@@ -10,7 +10,7 @@ class RefreshAssetsJob(
 ) : MixinJob(
     Params(PRIORITY_UI_HIGH)
         .singleInstanceBy(assetId ?: "all-assets").persist().requireNetwork(),
-    assetId ?: "all-assets"
+    assetId ?: "all-assets",
 ) {
 
     companion object {

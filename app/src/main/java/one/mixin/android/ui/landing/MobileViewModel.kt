@@ -51,14 +51,14 @@ constructor(
             AccountRequest(
                 verificationCode,
                 purpose = VerificationPurpose.PHONE.name,
-                pin = pinCipher.encryptPin(pin, TipBody.forPhoneNumberUpdate(id, verificationCode))
-            )
+                pin = pinCipher.encryptPin(pin, TipBody.forPhoneNumberUpdate(id, verificationCode)),
+            ),
         )
 
     fun deactiveVerification(id: String, code: String): Observable<MixinResponse<VerificationResponse>> =
         accountRepository.deactiveVerification(
             id,
-            DeactivateVerificationRequest(VerificationPurpose.DEACTIVATED.name, code)
+            DeactivateVerificationRequest(VerificationPurpose.DEACTIVATED.name, code),
         ).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
 
     fun update(request: AccountUpdateRequest): Observable<MixinResponse<Account>> =

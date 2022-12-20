@@ -8,8 +8,8 @@ import androidx.room.PrimaryKey
 @Entity(
     tableName = "pin_messages",
     indices = [
-        Index(value = arrayOf("conversation_id"))
-    ]
+        Index(value = arrayOf("conversation_id")),
+    ],
 )
 data class PinMessage(
     @PrimaryKey

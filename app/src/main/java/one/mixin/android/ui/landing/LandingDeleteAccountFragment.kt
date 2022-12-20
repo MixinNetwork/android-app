@@ -44,7 +44,7 @@ class LandingDeleteAccountFragment : MixinBottomSheetDialogFragment() {
         binding.apply {
             content.text = getString(
                 R.string.landing_delete_content,
-                localDateString(time)
+                localDateString(time),
             )
             continueTv.setOnClickListener {
                 dismiss()

@@ -80,7 +80,7 @@ class ImageTask<T>(
                         r.exception?.let { notifyFailureListeners(it) }
                     }
                 }
-            }
+            },
         )
     }
 

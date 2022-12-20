@@ -45,7 +45,7 @@ class QrBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         fun newInstance(userId: String, type: Int) = QrBottomSheetDialogFragment().apply {
             arguments = bundleOf(
                 ARGS_USER_ID to userId,
-                ARGS_TYPE to type
+                ARGS_TYPE to type,
             )
         }
     }
@@ -85,7 +85,7 @@ class QrBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             }
         }
         bottomViewModel.findUserById(userId).observe(
-            this
+            this,
         ) { user ->
             if (user == null) {
                 bottomViewModel.refreshUser(userId, true)
@@ -120,7 +120,7 @@ class QrBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                                 binding.qr.setImageBitmap(r.first)
                             },
                             {
-                            }
+                            },
                         )
                 }
             }
@@ -157,7 +157,7 @@ class QrBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                     },
                     {
                         toast(R.string.Save_failure)
-                    }
+                    },
                 )
             bottomSheet.dismiss()
         }

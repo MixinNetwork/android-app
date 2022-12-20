@@ -34,7 +34,7 @@ abstract class HeaderFooterAdapter<T> : HeaderAdapter<T>() {
                 it.size
             }
         },
-        0
+        0,
     )
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {

@@ -34,7 +34,7 @@ class WebActivity : BaseActivity() {
                         addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                     }
                     addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)
-                }
+                },
             )
         }
 
@@ -58,13 +58,13 @@ class WebActivity : BaseActivity() {
                                 WebFragment.CONVERSATION_ID,
                                 conversationId ?: app?.let {
                                     generateConversationId(Session.getAccountId()!!, it.appId)
-                                }
+                                },
                             )
                             putParcelable(WebFragment.ARGS_APP, app)
                             putParcelable(WebFragment.ARGS_APP_CARD, appCard)
-                        }
+                        },
                     )
-                }
+                },
             )
         }
     }
@@ -189,7 +189,7 @@ class WebActivity : BaseActivity() {
         supportFragmentManager.beginTransaction().add(
             R.id.container,
             WebFragment.newInstance(extras),
-            WebFragment.TAG
+            WebFragment.TAG,
         ).commit()
     }
 
@@ -202,7 +202,7 @@ class WebActivity : BaseActivity() {
             supportFragmentManager.beginTransaction().add(
                 R.id.container,
                 WebFragment.newInstance(extras),
-                WebFragment.TAG
+                WebFragment.TAG,
             ).commit()
         } else {
             isExpand = false

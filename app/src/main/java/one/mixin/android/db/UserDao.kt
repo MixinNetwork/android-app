@@ -69,7 +69,7 @@ interface UserDao : BaseDao<User> {
         AND (full_name LIKE '%' || :username || '%' $ESCAPE_SUFFIX OR identity_number like '%' || :identityNumber || '%' $ESCAPE_SUFFIX OR phone like '%' || :phone || '%' $ESCAPE_SUFFIX)
         ORDER BY 
             full_name = :username COLLATE NOCASE OR identity_number = :identityNumber COLLATE NOCASE DESC
-        """
+        """,
     )
     suspend fun fuzzySearchUser(username: String, identityNumber: String, phone: String, id: String): List<User>
 
@@ -80,7 +80,7 @@ interface UserDao : BaseDao<User> {
         AND p.conversation_id = :conversationId AND p.user_id = u.user_id
         AND (u.full_name LIKE '%' || :username || '%' $ESCAPE_SUFFIX OR u.identity_number like '%' || :identityNumber || '%' $ESCAPE_SUFFIX)
         ORDER BY u.full_name = :username COLLATE NOCASE OR u.identity_number = :identityNumber COLLATE NOCASE DESC
-        """
+        """,
     )
     suspend fun fuzzySearchGroupUser(conversationId: String, username: String, identityNumber: String, id: String): List<User>
 
@@ -92,7 +92,7 @@ interface UserDao : BaseDao<User> {
         AND (u.full_name LIKE '%' || :username || '%' $ESCAPE_SUFFIX OR u.identity_number like '%' || :identityNumber || '%' $ESCAPE_SUFFIX)
         ORDER BY CASE u.relationship WHEN 'FRIEND' THEN 1 ELSE 2 END, 
         u.relationship OR u.full_name = :username COLLATE NOCASE OR u.identity_number = :identityNumber COLLATE NOCASE DESC 
-        """
+        """,
     )
     suspend fun fuzzySearchBotGroupUser(conversationId: String, username: String, identityNumber: String, id: String, createdAt: String): List<User>
 
@@ -105,7 +105,7 @@ interface UserDao : BaseDao<User> {
     @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
     @Query(
         "SELECT u.user_id, u.identity_number, u.biography, u.full_name, u.relationship FROM participants p, users u " +
-            "WHERE p.conversation_id = :conversationId AND p.user_id = u.user_id"
+            "WHERE p.conversation_id = :conversationId AND p.user_id = u.user_id",
     )
     fun getGroupParticipants(conversationId: String): LiveData<List<User>>
 
@@ -126,7 +126,7 @@ interface UserDao : BaseDao<User> {
     @Query(
         """SELECT * FROM users u INNER JOIN participants p ON p.user_id = u.user_id
         WHERE p.conversation_id = :conversationId AND u.user_id IN (:userIds)
-        """
+        """,
     )
     suspend fun findMultiCallUsersByIds(conversationId: String, userIds: Set<String>): List<CallUser>
 
@@ -134,7 +134,7 @@ interface UserDao : BaseDao<User> {
     @Query(
         """SELECT * FROM users u INNER JOIN participants p ON p.user_id = u.user_id
         WHERE p.conversation_id = :conversationId AND u.user_id = :userId
-        """
+        """,
     )
     suspend fun findSelfCallUser(conversationId: String, userId: String): CallUser?
 

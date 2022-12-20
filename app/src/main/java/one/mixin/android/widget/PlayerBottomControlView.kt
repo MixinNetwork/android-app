@@ -320,14 +320,14 @@ class PlayerBottomControlView(context: Context, attributeSet: AttributeSet) :
                 0,
                 adGroupTimesMs,
                 adGroupCount,
-                extraAdGroupCount
+                extraAdGroupCount,
             )
             System.arraycopy(
                 extraPlayedAdGroups,
                 0,
                 playedAdGroups,
                 adGroupCount,
-                extraAdGroupCount
+                extraAdGroupCount,
             )
             timeBar.setAdGroupTimesMs(adGroupTimesMs, playedAdGroups, totalAdGroupCount)
             updateProgress()
@@ -367,7 +367,7 @@ class PlayerBottomControlView(context: Context, attributeSet: AttributeSet) :
             delayMs = Util.constrainValue(
                 delayMs,
                 timeBarMinUpdateIntervalMs.toLong(),
-                MAX_UPDATE_INTERVAL_MS
+                MAX_UPDATE_INTERVAL_MS,
             )
             postDelayed(updateProgressAction, delayMs)
         } else if (playbackState != Player.STATE_ENDED && playbackState != Player.STATE_IDLE) {
@@ -423,7 +423,7 @@ class PlayerBottomControlView(context: Context, attributeSet: AttributeSet) :
                     Player.EVENT_PLAYBACK_PARAMETERS_CHANGED,
                     Player.EVENT_POSITION_DISCONTINUITY,
                     Player.EVENT_REPEAT_MODE_CHANGED,
-                    Player.EVENT_SHUFFLE_MODE_ENABLED_CHANGED
+                    Player.EVENT_SHUFFLE_MODE_ENABLED_CHANGED,
                 )
             ) {
                 updatePrevAndNext()

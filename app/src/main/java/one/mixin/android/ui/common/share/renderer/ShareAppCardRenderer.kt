@@ -30,7 +30,7 @@ open class ShareAppCardRenderer(context: Context) {
                 R.drawable.chat_bubble_other
             } else {
                 R.drawable.chat_bubble_other_night
-            }
+            },
         )
     }
 }

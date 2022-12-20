@@ -32,7 +32,7 @@ internal fun buildAmountSymbol(
 ) = buildSpannedString {
     scale(3f) {
         font(
-            ResourcesCompat.getFont(context, R.font.mixin_font)
+            ResourcesCompat.getFont(context, R.font.mixin_font),
         ) {
             color(amountColor) {
                 append(amount)
@@ -55,7 +55,7 @@ internal fun buildBulletLines(context: Context, vararg lines: SpannableStringBui
                     AbsoluteSizeSpan(8, true),
                     l.length - 2,
                     l.length,
-                    Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+                    Spanned.SPAN_EXCLUSIVE_EXCLUSIVE,
                 )
             }
             val bulletSpan = BulletSpan(8.dp, context.colorFromAttribute(R.attr.text_minor))
@@ -79,7 +79,7 @@ internal fun String.highLight(
             TextAppearanceSpan(null, 0, 0, android.content.res.ColorStateList.valueOf(color), null),
             index,
             index + target.length,
-            Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+            Spannable.SPAN_EXCLUSIVE_EXCLUSIVE,
         )
         spannable.setSpan(StyleSpan(Typeface.BOLD), index, index + target.length, Spannable.SPAN_INCLUSIVE_EXCLUSIVE)
         index = indexOf(target, index + target.length, ignoreCase = ignoreCase)

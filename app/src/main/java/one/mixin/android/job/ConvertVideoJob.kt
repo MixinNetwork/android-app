@@ -45,7 +45,7 @@ class ConvertVideoJob(
     private val category = encryptCategory.toCategory(
         MessageCategory.PLAIN_VIDEO,
         MessageCategory.SIGNAL_VIDEO,
-        MessageCategory.ENCRYPTED_VIDEO
+        MessageCategory.ENCRYPTED_VIDEO,
     )
     private val createdAt: String = createdAt ?: nowInUtc()
     override fun onAdded() {
@@ -64,7 +64,7 @@ class ConvertVideoJob(
             video.fileName, uri.toString(), video.duration, video.resultWidth,
             video.resultHeight, video.thumbnail, "video/mp4",
             0L, createdAt, null, null, MediaStatus.PENDING, MessageStatus.SENDING.name,
-            replyMessage?.messageId, replyMessage?.toQuoteMessageItem()
+            replyMessage?.messageId, replyMessage?.toQuoteMessageItem(),
         )
         // insert message with mediaSize 0L
         // for show video place holder in chat list before convert video
@@ -101,7 +101,7 @@ class ConvertVideoJob(
                 override fun checkConversionCanceled(): Boolean {
                     return isCancelled
                 }
-            }
+            },
         )
         if (isCancelled) {
             removeJob()
@@ -113,7 +113,7 @@ class ConvertVideoJob(
             video.resultHeight, video.thumbnail, "video/mp4",
             videoFile.length(), createdAt, null, null,
             if (error) MediaStatus.CANCELED else MediaStatus.PENDING,
-            if (error) MessageStatus.FAILED.name else MessageStatus.SENDING.name
+            if (error) MessageStatus.FAILED.name else MessageStatus.SENDING.name,
         )
         if (!error) {
             messageDao.updateMediaMessageUrl(videoFile.name, messageId)

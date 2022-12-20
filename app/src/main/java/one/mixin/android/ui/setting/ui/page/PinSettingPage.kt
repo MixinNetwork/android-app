@@ -55,7 +55,7 @@ fun PinSettingPage() {
             Modifier
                 .fillMaxWidth()
                 .background(MixinAppTheme.colors.background),
-            horizontalAlignment = Alignment.CenterHorizontally
+            horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             Box(modifier = Modifier.height(36.dp))
             Image(
@@ -63,7 +63,7 @@ fun PinSettingPage() {
                 contentDescription = null,
                 modifier = Modifier
                     .height(83.dp)
-                    .width(92.dp)
+                    .width(92.dp),
             )
             Box(modifier = Modifier.height(20.dp))
 
@@ -75,12 +75,12 @@ fun PinSettingPage() {
                 textStyle = TextStyle(
                     fontSize = 12.sp,
                     color = MixinAppTheme.colors.textSubtitle,
-                    textAlign = TextAlign.Center
+                    textAlign = TextAlign.Center,
                 ),
                 onClick = {
                     context.openUrl(it)
                 },
-                modifier = Modifier.padding(horizontal = 16.dp)
+                modifier = Modifier.padding(horizontal = 16.dp),
             )
 
             Box(modifier = Modifier.height(24.dp))
@@ -94,7 +94,7 @@ fun PinSettingPage() {
             context.defaultSharedPreferences
         }.booleanValueAsState(
             key = Constants.Account.PREF_BIOMETRICS,
-            defaultValue = false
+            defaultValue = false,
         )
 
         val biometricInterval by remember {
@@ -108,7 +108,7 @@ fun PinSettingPage() {
         var randomKeyboardEnabled by LocalContext.current.defaultSharedPreferences
             .booleanValueAsState(
                 key = Constants.Account.PREF_RANDOM,
-                defaultValue = false
+                defaultValue = false,
             )
         Box(modifier = Modifier.height(16.dp))
         SettingTile(
@@ -120,11 +120,11 @@ fun PinSettingPage() {
                         checkedThumbColor = MixinAppTheme.colors.accent,
                         uncheckedThumbColor = MixinAppTheme.colors.unchecked,
                         checkedTrackColor = MixinAppTheme.colors.accent,
-                        uncheckedTrackColor = MixinAppTheme.colors.unchecked
+                        uncheckedTrackColor = MixinAppTheme.colors.unchecked,
                     ),
-                    onCheckedChange = null
+                    onCheckedChange = null,
                 )
-            }
+            },
         ) {
             randomKeyboardEnabled = !randomKeyboardEnabled
         }
@@ -141,15 +141,15 @@ fun PinSettingPage() {
                         checkedThumbColor = MixinAppTheme.colors.accent,
                         uncheckedThumbColor = MixinAppTheme.colors.unchecked,
                         checkedTrackColor = MixinAppTheme.colors.accent,
-                        uncheckedTrackColor = MixinAppTheme.colors.unchecked
+                        uncheckedTrackColor = MixinAppTheme.colors.unchecked,
                     ),
-                    onCheckedChange = null
+                    onCheckedChange = null,
                 )
-            }
+            },
         ) {
             isSupportWithErrorInfo = BiometricUtil.isSupportWithErrorInfo(
                 context,
-                BiometricManager.Authenticators.BIOMETRIC_STRONG
+                BiometricManager.Authenticators.BIOMETRIC_STRONG,
             )
             val isSupport = isSupportWithErrorInfo?.first == true
             if (!isSupport) {
@@ -174,7 +174,7 @@ fun PinSettingPage() {
                             enableBiometrics = true
                             context.defaultSharedPreferences.putLong(
                                 Constants.BIOMETRIC_PIN_CHECK,
-                                System.currentTimeMillis()
+                                System.currentTimeMillis(),
                             )
                         }
 
@@ -197,19 +197,19 @@ fun PinSettingPage() {
                             text = context.resources.getQuantityString(
                                 R.plurals.Minute,
                                 (hour * 60).toInt(),
-                                (hour * 60).toInt()
-                            )
+                                (hour * 60).toInt(),
+                            ),
                         )
                     } else {
                         Text(
                             text = context.resources.getQuantityString(
                                 R.plurals.Hour,
                                 hour.toInt(),
-                                hour.toInt()
-                            )
+                                hour.toInt(),
+                            ),
                         )
                     }
-                }
+                },
             ) {
                 navController.navigation(SettingDestination.BiometricTime)
             }
@@ -223,7 +223,7 @@ fun PinSettingPage() {
                 .fillMaxWidth()
                 .padding(horizontal = 16.dp),
             fontSize = 13.sp,
-            color = MixinAppTheme.colors.textSubtitle
+            color = MixinAppTheme.colors.textSubtitle,
         )
 
         Box(modifier = Modifier.height(16.dp))

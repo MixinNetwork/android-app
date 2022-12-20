@@ -52,7 +52,7 @@ class ConversationFragmentTest {
                 assertTrue(this.selectItem == expect)
 
                 requireActivity().finish()
-            }
+            },
         )
     }
 }

@@ -14,7 +14,7 @@ class QuoteLayout : ViewGroup {
     constructor(context: Context, attrs: AttributeSet?, defStyleAttr: Int) : super(
         context,
         attrs,
-        defStyleAttr
+        defStyleAttr,
     )
 
     private val minWidth by lazy {
@@ -45,22 +45,22 @@ class QuoteLayout : ViewGroup {
             measureChild(
                 secondView,
                 MeasureSpec.makeMeasureSpec(minWidth, MeasureSpec.EXACTLY),
-                MeasureSpec.makeMeasureSpec((minWidth / ratio).toInt(), MeasureSpec.EXACTLY)
+                MeasureSpec.makeMeasureSpec((minWidth / ratio).toInt(), MeasureSpec.EXACTLY),
             )
         } else {
             measureChild(
                 secondView,
                 widthMeasureSpec,
-                heightMeasureSpec
+                heightMeasureSpec,
             )
         }
         measureChild(
             firstView,
             MeasureSpec.makeMeasureSpec(
                 secondView.measuredWidth,
-                MeasureSpec.EXACTLY
+                MeasureSpec.EXACTLY,
             ),
-            heightMeasureSpec
+            heightMeasureSpec,
 
         )
         if (childCount >= 3) {
@@ -69,13 +69,13 @@ class QuoteLayout : ViewGroup {
             measureChild(
                 thirdView,
                 MeasureSpec.makeMeasureSpec(minWidth, MeasureSpec.AT_MOST),
-                heightMeasureSpec
+                heightMeasureSpec,
             )
         }
 
         setMeasuredDimension(
             secondView.measuredWidth + offset * 2,
-            firstView.measuredHeight + secondView.measuredHeight + offset * 3
+            firstView.measuredHeight + secondView.measuredHeight + offset * 3,
         )
     }
 
@@ -87,7 +87,7 @@ class QuoteLayout : ViewGroup {
             offset,
             height - secondView.measuredHeight - offset,
             width - offset,
-            height - offset
+            height - offset,
         )
         if (childCount >= 3) {
             val thirdView = getChildAt(2)
@@ -96,7 +96,7 @@ class QuoteLayout : ViewGroup {
                 width - thirdView.measuredWidth - offset - lp.marginEnd,
                 height - thirdView.measuredHeight - offset - lp.bottomMargin,
                 width - offset - lp.marginEnd,
-                height - offset - lp.bottomMargin
+                height - offset - lp.bottomMargin,
             )
         }
     }

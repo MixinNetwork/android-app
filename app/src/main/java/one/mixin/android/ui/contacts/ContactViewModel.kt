@@ -62,11 +62,11 @@ internal constructor(
                         conversationId,
                         ConversationCategory.CONTACT.name,
                         duration = duration,
-                        participants = listOf(participantRequest)
+                        participants = listOf(participantRequest),
                     ),
                     recipientId = recipientId,
-                    type = TYPE_MUTE
-                )
+                    type = TYPE_MUTE,
+                ),
             )
         }
     }

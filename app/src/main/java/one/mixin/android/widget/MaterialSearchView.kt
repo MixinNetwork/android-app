@@ -70,7 +70,7 @@ class MaterialSearchView : FrameLayout {
     constructor(context: Context, attrs: AttributeSet?, defStyleAttr: Int) : super(
         context,
         attrs,
-        defStyleAttr
+        defStyleAttr,
     ) {
         initStyle(attrs, defStyleAttr)
         initSearchView()
@@ -94,7 +94,7 @@ class MaterialSearchView : FrameLayout {
             attributeSet,
             R.styleable.MaterialSearchView,
             defStyleAttribute,
-            0
+            0,
         )
         if (typedArray.hasValue(R.styleable.MaterialSearchView_android_hint)) {
             setHint(typedArray.getString(R.styleable.MaterialSearchView_android_hint))
@@ -103,32 +103,32 @@ class MaterialSearchView : FrameLayout {
             setCancelIcon(
                 typedArray.getResourceId(
                     R.styleable.MaterialSearchView_searchCloseIcon,
-                    R.drawable.ic_action_navigation_close
-                )
+                    R.drawable.ic_action_navigation_close,
+                ),
             )
         }
         if (typedArray.hasValue(R.styleable.MaterialSearchView_searchBackIcon)) {
             setBackIcon(
                 typedArray.getResourceId(
                     R.styleable.MaterialSearchView_searchBackIcon,
-                    R.drawable.ic_wallet
-                )
+                    R.drawable.ic_wallet,
+                ),
             )
         }
         if (typedArray.hasValue(R.styleable.MaterialSearchView_android_inputType)) {
             setInputType(
                 typedArray.getInteger(
                     R.styleable.MaterialSearchView_android_inputType,
-                    InputType.TYPE_CLASS_TEXT
-                )
+                    InputType.TYPE_CLASS_TEXT,
+                ),
             )
         }
         if (typedArray.hasValue(R.styleable.MaterialSearchView_searchBarHeight)) {
             setSearchBarHeight(
                 typedArray.getDimensionPixelSize(
                     R.styleable.MaterialSearchView_searchBarHeight,
-                    context.appCompatActionBarHeight()
-                )
+                    context.appCompatActionBarHeight(),
+                ),
             )
         } else {
             setSearchBarHeight(context.appCompatActionBarHeight())
@@ -136,7 +136,7 @@ class MaterialSearchView : FrameLayout {
         @Suppress("DEPRECATION")
         ViewCompat.setFitsSystemWindows(
             this,
-            typedArray.getBoolean(R.styleable.MaterialSearchView_android_fitsSystemWindows, false)
+            typedArray.getBoolean(R.styleable.MaterialSearchView_android_fitsSystemWindows, false),
         )
         typedArray.recycle()
     }
@@ -178,7 +178,7 @@ class MaterialSearchView : FrameLayout {
                 {
                     this@MaterialSearchView.onTextChanged(it)
                 },
-                {}
+                {},
             )
 
         binding.rightClear.setOnClickListener {
@@ -299,7 +299,7 @@ class MaterialSearchView : FrameLayout {
                                     override fun onAnimationCancel(animation: Animator) {
                                         binding.searchEt.alpha = 1f
                                     }
-                                }
+                                },
                             )
                         }.setDuration(150L).alpha(1f).start()
                         binding.backIb.isVisible = true
@@ -309,11 +309,11 @@ class MaterialSearchView : FrameLayout {
                                     override fun onAnimationCancel(animation: Animator) {
                                         binding.backIb.alpha = 1f
                                     }
-                                }
+                                },
                             )
                         }.setDuration(150L).alpha(1f).start()
                     }
-                }
+                },
             )
         }.alpha(0f).setDuration(150L).start()
 
@@ -344,7 +344,7 @@ class MaterialSearchView : FrameLayout {
                         setListener(null)
                         binding.searchEt.isGone = true
                     }
-                }
+                },
             )
         }.alpha(0f).setDuration(150L).start()
         binding.backIb.animate().apply {
@@ -369,11 +369,11 @@ class MaterialSearchView : FrameLayout {
                                     override fun onAnimationCancel(animation: Animator) {
                                         binding.logoLayout.alpha = 1f
                                     }
-                                }
+                                },
                             )
                         }.setDuration(150L).alpha(1f).start()
                     }
-                }
+                },
             )
         }.setDuration(150L).alpha(0f).start()
         binding.rightClear.visibility = View.GONE

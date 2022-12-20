@@ -99,7 +99,7 @@ class SettingStorageFragment : BaseFragment(R.layout.fragment_storage) {
     private val dialog: Dialog by lazy {
         indeterminateProgressDialog(
             message = R.string.Please_wait_a_bit,
-            title = R.string.Clearing
+            title = R.string.Clearing,
         ).apply {
             setCancelable(false)
         }
@@ -135,7 +135,7 @@ class SettingStorageFragment : BaseFragment(R.layout.fragment_storage) {
                 setOnShowListener {
                     val states = arrayOf(
                         intArrayOf(android.R.attr.state_enabled),
-                        intArrayOf(-android.R.attr.state_enabled)
+                        intArrayOf(-android.R.attr.state_enabled),
                     )
                     val colors = intArrayOf(Color.RED, Color.GRAY)
                     getButton(DialogInterface.BUTTON_POSITIVE).setTextColor(ColorStateList(states, colors))
@@ -186,7 +186,7 @@ class SettingStorageFragment : BaseFragment(R.layout.fragment_storage) {
                     Timber.e(it)
                     dialog.dismiss()
                     toast(getString(R.string.error_unknown_with_message, selectSet.toString()))
-                }
+                },
             )
     }
 
@@ -204,7 +204,7 @@ class SettingStorageFragment : BaseFragment(R.layout.fragment_storage) {
                     }
                     menuDialog.getButton(DialogInterface.BUTTON_POSITIVE).isEnabled = selectSet.size > 0
                 }
-            }
+            },
         )
     }
 
@@ -277,7 +277,7 @@ class SettingStorageFragment : BaseFragment(R.layout.fragment_storage) {
                         AUDIO -> R.string.Audio
                         TRANSCRIPT -> R.string.Transcript
                         else -> R.string.Unknown
-                    }
+                    },
                 )
                 checkView.setSize(storageUsage.mediaSize)
                 checkView.isChecked = true

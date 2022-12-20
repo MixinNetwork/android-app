@@ -77,7 +77,7 @@ class PseudoNotificationView : RelativeLayout {
                 hide()
                 return super.onSingleTapConfirmed(e)
             }
-        }
+        },
     )
 
     @SuppressLint("ClickableViewAccessibility")

@@ -120,7 +120,7 @@ fun MenuList.createMenuLayout(
                     else -> {
                         context.resources.getColor(R.color.colorRed, context.theme)
                     }
-                }
+                },
             )
             val icon = menu.icon
             if (icon != null) {
@@ -149,7 +149,7 @@ fun MenuList.createMenuLayout(
             menuBinding.root.setOnClickListener { menu.action?.invoke() }
             groupLayout.addView(
                 menuBinding.root,
-                LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp56)
+                LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp56),
             )
         }
 
@@ -157,13 +157,13 @@ fun MenuList.createMenuLayout(
             groupLayout,
             LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT
+                ViewGroup.LayoutParams.WRAP_CONTENT,
             ).apply {
                 marginStart = dp16
                 marginEnd = dp16
                 topMargin = dp5
                 bottomMargin = dp5
-            }
+            },
         )
     }
     if (createdAt != null) {
@@ -176,10 +176,10 @@ fun MenuList.createMenuLayout(
             },
             LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT
+                ViewGroup.LayoutParams.WRAP_CONTENT,
             ).apply {
                 topMargin = dp5
-            }
+            },
         )
     }
     return listLayout

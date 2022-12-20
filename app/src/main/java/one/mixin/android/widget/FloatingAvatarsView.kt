@@ -39,7 +39,7 @@ class FloatingAvatarsView : ViewGroup {
 
         borderWidth = ta.getDimensionPixelSize(
             R.styleable.AvatarsView_avatar_border_width,
-            DEFAULT_BORDER_WIDTH
+            DEFAULT_BORDER_WIDTH,
         )
         borderColor = ta.getColor(R.styleable.AvatarsView_avatar_border_color, DEFAULT_BORDER_COLOR)
         avatarSize =
@@ -73,14 +73,14 @@ class FloatingAvatarsView : ViewGroup {
         }
         setMeasuredDimension(
             MeasureSpec.makeMeasureSpec(parentWidth.toInt(), MeasureSpec.EXACTLY),
-            MeasureSpec.makeMeasureSpec(avatarSize, MeasureSpec.EXACTLY)
+            MeasureSpec.makeMeasureSpec(avatarSize, MeasureSpec.EXACTLY),
         )
 
         for (i in 0 until childCount) {
             val c = getChildAt(i)
             c.measure(
                 MeasureSpec.makeMeasureSpec(avatarSize, MeasureSpec.EXACTLY),
-                MeasureSpec.makeMeasureSpec(avatarSize, MeasureSpec.EXACTLY)
+                MeasureSpec.makeMeasureSpec(avatarSize, MeasureSpec.EXACTLY),
             )
         }
     }
@@ -104,14 +104,14 @@ class FloatingAvatarsView : ViewGroup {
                     (itemOffset).toInt(),
                     0,
                     (avatarSize + itemOffset).toInt(),
-                    measuredHeight
+                    measuredHeight,
                 )
             } else {
                 c.layout(
                     (measuredWidth - avatarSize - itemOffset).toInt(),
                     0,
                     (measuredWidth - itemOffset).toInt(),
-                    measuredHeight
+                    measuredHeight,
                 )
             }
         }

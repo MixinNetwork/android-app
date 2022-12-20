@@ -143,8 +143,8 @@ class MobileFragment : BaseFragment(R.layout.fragment_mobile) {
             .setMessage(
                 getString(
                     R.string.landing_invitation_dialog_content,
-                    mCountry?.dialCode + " " + binding.mobileEt.text.toString()
-                )
+                    mCountry?.dialCode + " " + binding.mobileEt.text.toString(),
+                ),
             )
             .setNegativeButton(R.string.Change) { dialog, _ -> dialog.dismiss() }
             .setPositiveButton(R.string.Confirm) { dialog, _ ->
@@ -172,7 +172,7 @@ class MobileFragment : BaseFragment(R.layout.fragment_mobile) {
                 else -> {
                     VerificationPurpose.SESSION.name
                 }
-            }
+            },
         )
         if (captchaResponse != null) {
             if (captchaResponse.first.isG()) {
@@ -205,9 +205,9 @@ class MobileFragment : BaseFragment(R.layout.fragment_mobile) {
                                         phoneNum,
                                         pin,
                                         verificationResponse.hasEmergencyContact,
-                                        from
+                                        from,
                                     ),
-                                    VerificationFragment.TAG
+                                    VerificationFragment.TAG,
                                 )
                             }.showNow(parentFragmentManager, LandingDeleteAccountFragment.TAG)
                     } else {
@@ -218,16 +218,16 @@ class MobileFragment : BaseFragment(R.layout.fragment_mobile) {
                                 phoneNum,
                                 pin,
                                 verificationResponse.hasEmergencyContact,
-                                from
+                                from,
                             ),
-                            VerificationFragment.TAG
+                            VerificationFragment.TAG,
                         )
                     }
                 },
                 { t: Throwable ->
                     hideLoading()
                     ErrorHandler.handleError(t)
-                }
+                },
             )
     }
 
@@ -244,7 +244,7 @@ class MobileFragment : BaseFragment(R.layout.fragment_mobile) {
                     override fun onPostToken(value: Pair<CaptchaView.CaptchaType, String>) {
                         requestSend(value)
                     }
-                }
+                },
             )
             (view as ViewGroup).addView(captchaView?.webView, MATCH_PARENT, MATCH_PARENT)
         }

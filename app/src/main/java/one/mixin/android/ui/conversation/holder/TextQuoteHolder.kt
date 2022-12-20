@@ -49,13 +49,13 @@ class TextQuoteHolder constructor(val binding: ItemChatTextQuoteBinding) :
                 setItemBackgroundResource(
                     binding.chatContentLayout,
                     R.drawable.chat_bubble_reply_me_last,
-                    R.drawable.chat_bubble_reply_me_last_night
+                    R.drawable.chat_bubble_reply_me_last_night,
                 )
             } else {
                 setItemBackgroundResource(
                     binding.chatContentLayout,
                     R.drawable.chat_bubble_reply_me,
-                    R.drawable.chat_bubble_reply_me_night
+                    R.drawable.chat_bubble_reply_me_night,
                 )
             }
         } else {
@@ -64,13 +64,13 @@ class TextQuoteHolder constructor(val binding: ItemChatTextQuoteBinding) :
                 setItemBackgroundResource(
                     binding.chatContentLayout,
                     R.drawable.chat_bubble_reply_other_last,
-                    R.drawable.chat_bubble_reply_other_last_night
+                    R.drawable.chat_bubble_reply_other_last_night,
                 )
             } else {
                 setItemBackgroundResource(
                     binding.chatContentLayout,
                     R.drawable.chat_bubble_reply_other,
-                    R.drawable.chat_bubble_reply_other_night
+                    R.drawable.chat_bubble_reply_other_night,
                 )
             }
         }
@@ -176,7 +176,7 @@ class TextQuoteHolder constructor(val binding: ItemChatTextQuoteBinding) :
 
         if (messageItem.mentions?.isNotBlank() == true) {
             val mentionRenderContext = MentionRenderCache.singleton.getMentionRenderContext(
-                messageItem.mentions
+                messageItem.mentions,
             )
             binding.chatTv.renderMessage(messageItem.content, keyword, mentionRenderContext)
         } else {
@@ -212,7 +212,7 @@ class TextQuoteHolder constructor(val binding: ItemChatTextQuoteBinding) :
             messageItem.status,
             messageItem.isPin ?: false,
             isRepresentative = isRepresentative,
-            isSecret = messageItem.isSecret()
+            isSecret = messageItem.isSecret(),
         )
         binding.chatContentLayout.setOnClickListener {
             if (!hasSelect) {
@@ -224,7 +224,7 @@ class TextQuoteHolder constructor(val binding: ItemChatTextQuoteBinding) :
 
         val quoteMessage = GsonHelper.customGson.fromJson(
             messageItem.quoteContent,
-            QuoteMessageItem::class.java
+            QuoteMessageItem::class.java,
         )
         binding.chatQuote.bind(quoteMessage)
 

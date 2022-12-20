@@ -178,7 +178,7 @@ class VideoHolder constructor(val binding: ItemChatVideoBinding) : MediaHolder(b
             false,
             isRepresentative = false,
             isSecret = messageItem.isSecret(),
-            isWhite = true
+            isWhite = true,
         )
 
         dataWidth = messageItem.mediaWidth

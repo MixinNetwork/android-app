@@ -68,7 +68,7 @@ class PinAddrBottomSheetDialogFragment : BiometricBottomSheetDialogFragment() {
                 ARGS_DESTINATION to destination,
                 ARGS_ADDRESS_ID to addressId,
                 ARGS_TYPE to type,
-                ARGS_TAG to tag
+                ARGS_TAG to tag,
             )
             arguments = b
         }
@@ -143,7 +143,7 @@ class PinAddrBottomSheetDialogFragment : BiometricBottomSheetDialogFragment() {
                     TRON_CHAIN_ID -> "TRON(TRC20)"
                     else -> chainName
                 },
-                assetSymbol
+                assetSymbol,
             )
         } else {
             null
@@ -156,7 +156,7 @@ class PinAddrBottomSheetDialogFragment : BiometricBottomSheetDialogFragment() {
             MODIFY -> R.string.edit_address
             else -> R.string.Delete_withdraw_Address
         },
-        assetName
+        assetName,
     )
 
     private fun getTipText() = getString(
@@ -165,6 +165,6 @@ class PinAddrBottomSheetDialogFragment : BiometricBottomSheetDialogFragment() {
             DELETE -> R.string.withdrawal_addr_pin_delete
             MODIFY -> R.string.withdrawal_addr_pin_modify
             else -> R.string.withdrawal_addr_pin_add
-        }
+        },
     )
 }

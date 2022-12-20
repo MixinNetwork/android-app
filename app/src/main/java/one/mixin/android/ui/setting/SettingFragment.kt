@@ -61,14 +61,14 @@ class SettingFragment : BaseFragment(R.layout.fragment_setting) {
                 sendIntent.action = Intent.ACTION_SEND
                 sendIntent.putExtra(
                     Intent.EXTRA_TEXT,
-                    getString(R.string.chat_on_mixin_content, Session.getAccount()?.identityNumber)
+                    getString(R.string.chat_on_mixin_content, Session.getAccount()?.identityNumber),
                 )
                 sendIntent.type = "text/plain"
                 startActivity(
                     Intent.createChooser(
                         sendIntent,
-                        resources.getText(R.string.Invite_a_Friend)
-                    )
+                        resources.getText(R.string.Invite_a_Friend),
+                    ),
                 )
             }
             feedbackRl.setOnClickListener {

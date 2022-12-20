@@ -74,7 +74,7 @@ class AttachmentMigrationJob : BaseJob(Params(PRIORITY_LOWER).groupBy(GROUP_ID).
                             MixinApplication.get().getImagePath().createImageTemp(
                                 attachment.conversationId,
                                 attachment.messageId,
-                                ".png"
+                                ".png",
                             )
                         }
                         attachment.mediaMimeType.equals(MimeType.GIF.toString(), true) -> {
@@ -89,7 +89,7 @@ class AttachmentMigrationJob : BaseJob(Params(PRIORITY_LOWER).groupBy(GROUP_ID).
                             MixinApplication.get().getImagePath().createImageTemp(
                                 attachment.conversationId,
                                 attachment.messageId,
-                                ".jpg"
+                                ".jpg",
                             )
                         }
                     }
@@ -100,7 +100,7 @@ class AttachmentMigrationJob : BaseJob(Params(PRIORITY_LOWER).groupBy(GROUP_ID).
                         .createDocumentTemp(
                             attachment.conversationId,
                             attachment.messageId,
-                            extensionName
+                            extensionName,
                         )
                 }
                 attachment.isVideo() -> {
@@ -111,7 +111,7 @@ class AttachmentMigrationJob : BaseJob(Params(PRIORITY_LOWER).groupBy(GROUP_ID).
                         .createVideoTemp(
                             attachment.conversationId,
                             attachment.messageId,
-                            extensionName
+                            extensionName,
                         )
                 }
                 attachment.isAudio() -> {

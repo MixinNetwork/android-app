@@ -95,7 +95,7 @@ class GenerateAvatarWorker @AssistedInject constructor(
             size / 2f,
             size / 2f - dividerOffset,
             size.toFloat(),
-            size / 2f + dividerOffset
+            size / 2f + dividerOffset,
         )
         val rectF = RectF()
 
@@ -127,7 +127,7 @@ class GenerateAvatarWorker @AssistedInject constructor(
                             offset.toInt(),
                             offset.toInt(),
                             b.width - offset.toInt(),
-                            b.height - offset.toInt()
+                            b.height - offset.toInt(),
                         )
                         val dst = if (i == 0) {
                             RectF(0f, 0f, size / 2f, size.toFloat())
@@ -180,7 +180,7 @@ class GenerateAvatarWorker @AssistedInject constructor(
                                 offset.toInt(),
                                 offset.toInt(),
                                 b.width - offset.toInt(),
-                                b.height - offset.toInt()
+                                b.height - offset.toInt(),
                             )
                             val dst = RectF(0f, 0f, size / 2f, size.toFloat())
                             canvas.drawBitmap(b, src, dst, null)
@@ -202,7 +202,7 @@ class GenerateAvatarWorker @AssistedInject constructor(
                             offset.toInt(),
                             offset.toInt(),
                             b.width - offset.toInt(),
-                            b.height - offset.toInt()
+                            b.height - offset.toInt(),
                         )
                         val dst = when (i) {
                             1 -> {
@@ -253,7 +253,7 @@ class GenerateAvatarWorker @AssistedInject constructor(
                         offset.toInt(),
                         offset.toInt(),
                         item.width - offset.toInt(),
-                        item.height - offset.toInt()
+                        item.height - offset.toInt(),
                     )
                     val dst = when (i) {
                         0 -> {
@@ -312,7 +312,7 @@ class GenerateAvatarWorker @AssistedInject constructor(
                         .asBitmap()
                         .load(item)
                         .submit()
-                        .get(10, TimeUnit.SECONDS)
+                        .get(10, TimeUnit.SECONDS),
                 )
             }
         }

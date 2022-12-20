@@ -141,7 +141,7 @@ class OpusAudioRecorder private constructor(private val ctx: Context) {
                             if (recordTimeCount >= MAX_RECORD_DURATION) {
                                 stopRecording(AudioEndStatus.SEND, false)
                             }
-                        }
+                        },
                     )
                     recordQueue.postRunnable(recordRunnable)
                 } else {
@@ -150,7 +150,7 @@ class OpusAudioRecorder private constructor(private val ctx: Context) {
                             AudioEndStatus.SEND
                         } else {
                             AudioEndStatus.CANCEL
-                        }
+                        },
                     )
                 }
             }
@@ -177,7 +177,7 @@ class OpusAudioRecorder private constructor(private val ctx: Context) {
                 SAMPLE_RATE,
                 AudioFormat.CHANNEL_IN_MONO,
                 AudioFormat.ENCODING_PCM_16BIT,
-                recordBufferSize * BUFFER_SIZE_FACTOR
+                recordBufferSize * BUFFER_SIZE_FACTOR,
             )
 
             if (audioRecord == null || audioRecord!!.state != AudioRecord.STATE_INITIALIZED) {
@@ -233,7 +233,7 @@ class OpusAudioRecorder private constructor(private val ctx: Context) {
                     }
                     stopRecordingInternal(endStatus)
                 }
-            }
+            },
         )
     }
 
@@ -262,7 +262,7 @@ class OpusAudioRecorder private constructor(private val ctx: Context) {
                         callback = null
                         recordingAudioFile = null
                     }
-                }
+                },
             )
         }
         state = STATE_IDLE

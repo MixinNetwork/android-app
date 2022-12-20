@@ -58,7 +58,7 @@ class EmergencyContactFragment : BaseFragment(R.layout.fragment_emergency_contac
                         R.anim.slide_in_bottom,
                         R.anim.slide_out_bottom,
                         R.anim.slide_in_bottom,
-                        R.anim.slide_out_bottom
+                        R.anim.slide_out_bottom,
                     )
                         .add(R.id.container, VerifyFragment.newInstance(VerifyFragment.FROM_EMERGENCY))
                         .addToBackStack(null)
@@ -116,7 +116,7 @@ class EmergencyContactFragment : BaseFragment(R.layout.fragment_emergency_contac
                 doAfterNetworkSuccess = {
                     viewPb.isVisible = false
                     setEmergencySet()
-                }
+                },
             )
         }
     }
@@ -140,7 +140,7 @@ class EmergencyContactFragment : BaseFragment(R.layout.fragment_emergency_contac
                 doAfterNetworkSuccess = {
                     deletePb.isVisible = false
                     setEmergencySet()
-                }
+                },
             )
         }
     }

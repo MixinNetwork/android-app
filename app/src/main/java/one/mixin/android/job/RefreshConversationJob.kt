@@ -11,7 +11,7 @@ class RefreshConversationJob(val conversationId: String, private val skipRefresh
     MixinJob(
         Params(PRIORITY_UI_HIGH).groupBy("refresh_conversation")
             .requireNetwork().persist(),
-        conversationId
+        conversationId,
     ) {
 
     override fun cancel() {

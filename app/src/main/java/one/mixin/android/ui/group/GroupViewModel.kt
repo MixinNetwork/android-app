@@ -68,7 +68,7 @@ internal constructor(
             groupName,
             icon,
             announcement,
-            participantRequestList
+            participantRequestList,
         )
         jobManager.addJobInBackground(ConversationJob(request, type = TYPE_CREATE))
 
@@ -84,7 +84,7 @@ internal constructor(
                 .setPrefetchDistance(Constants.PAGE_SIZE * 2)
                 .setPageSize(Constants.PAGE_SIZE)
                 .setEnablePlaceholders(true)
-                .build()
+                .build(),
         )
             .build()
     }
@@ -97,7 +97,7 @@ internal constructor(
                 .setPrefetchDistance(Constants.PAGE_SIZE * 2)
                 .setPageSize(Constants.PAGE_SIZE)
                 .setEnablePlaceholders(true)
-                .build()
+                .build(),
         )
             .build()
     }
@@ -110,8 +110,8 @@ internal constructor(
             ConversationJob(
                 conversationId = conversationId,
                 request = ConversationRequest(conversationId, ConversationCategory.GROUP.name, duration = duration),
-                type = ConversationJob.TYPE_MUTE
-            )
+                type = ConversationJob.TYPE_MUTE,
+            ),
         )
     }
 

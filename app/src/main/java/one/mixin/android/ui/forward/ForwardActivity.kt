@@ -101,10 +101,10 @@ class ForwardActivity : BlazeBaseActivity() {
             val f = ForwardFragment.newCombineInstance(
                 requireNotNull(
                     intent.getParcelableArrayListExtra(
-                        ARGS_COMBINE_MESSAGES
-                    )
+                        ARGS_COMBINE_MESSAGES,
+                    ),
                 ),
-                action
+                action,
             )
             replaceFragment(f, R.id.container, ForwardFragment.TAG)
         } else {
@@ -123,10 +123,10 @@ class ForwardActivity : BlazeBaseActivity() {
                 replaceFragment(
                     ForwardFragment.newInstance(
                         forwardMessageList,
-                        ForwardAction.System(conversationId, getString(R.string.Share))
+                        ForwardAction.System(conversationId, getString(R.string.Share)),
                     ),
                     R.id.container,
-                    ForwardFragment.TAG
+                    ForwardFragment.TAG,
                 )
             } else {
                 toast(R.string.Share_error)

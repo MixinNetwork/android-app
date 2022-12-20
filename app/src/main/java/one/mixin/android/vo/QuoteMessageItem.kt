@@ -101,7 +101,7 @@ data class QuoteMessageItem(
         messageItem.sharedUserFullName,
         messageItem.sharedUserIdentityNumber,
         messageItem.sharedUserAvatarUrl,
-        messageItem.mentions
+        messageItem.mentions,
     )
 }
 

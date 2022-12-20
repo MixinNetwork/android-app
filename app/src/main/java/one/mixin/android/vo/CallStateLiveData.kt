@@ -339,7 +339,7 @@ class CallStateLiveData : LiveData<CallService.CallState>() {
                     mutableListOf<String>().apply {
                         add(self)
                         addAll(newUsers)
-                    }
+                    },
                 )
             } else {
                 groupCallState.setJoinedUsers(newUsers)

@@ -134,7 +134,7 @@ fun TranscriptMessage.copy(tid: String): TranscriptMessage {
         mentions,
         quoteId,
         quoteContent,
-        caption
+        caption,
     )
 }
 

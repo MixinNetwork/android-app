@@ -12,7 +12,7 @@ import java.util.UUID
 class RefreshOneTimePreKeysJob : MixinJob(
     Params(PRIORITY_UI_HIGH).requireNetwork()
         .groupBy("refresh_pre_keys"),
-    UUID.randomUUID().toString()
+    UUID.randomUUID().toString(),
 ) {
     override fun cancel() {
     }
@@ -51,7 +51,7 @@ class RefreshOneTimePreKeysJob : MixinJob(
             val signedPreKeyRecord = PreKeyUtil.generateSignedPreKey(
                 MixinApplication.appContext,
                 identityKeyPair,
-                false
+                false,
             )
             return SignalKeyRequest(identityKeyPair.publicKey, signedPreKeyRecord, oneTimePreKeys)
         }

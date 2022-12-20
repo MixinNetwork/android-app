@@ -50,7 +50,7 @@ class JoinGroupBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragm
         ) = JoinGroupBottomSheetDialogFragment().apply {
             arguments = bundleOf(
                 ARGS_JOIN_GROUP_CONVERSATION to joinGroupConversation,
-                CODE to code
+                CODE to code,
             )
         }
     }
@@ -96,7 +96,7 @@ class JoinGroupBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragm
                     binding.joinTv.visibility = View.VISIBLE
                     binding.joinProgress.visibility = View.GONE
                     ErrorHandler.handleError(it)
-                }
+                },
             )
         }
         binding.detailTv.movementMethod = LinkMovementMethod()

@@ -65,7 +65,7 @@ class FriendsNoBotFragment : BaseFriendsFragment<FriendsViewHolder>(), FriendsLi
     private fun requestCreateEmergency(user: User) = lifecycleScope.launch {
         val dialog = indeterminateProgressDialog(
             message = getString(R.string.Please_wait_a_bit),
-            title = getString(if (Session.hasEmergencyContact()) R.string.Changing else R.string.Creating)
+            title = getString(if (Session.hasEmergencyContact()) R.string.Changing else R.string.Creating),
         )
         dialog.setCancelable(false)
         dialog.show()
@@ -77,21 +77,21 @@ class FriendsNoBotFragment : BaseFriendsFragment<FriendsViewHolder>(), FriendsLi
                         user,
                         pin,
                         (response.data as VerificationResponse).id,
-                        FROM_CONTACT
+                        FROM_CONTACT,
                     ),
-                    VerificationEmergencyFragment.TAG
+                    VerificationEmergencyFragment.TAG,
                 )
             },
             exceptionBlock = {
                 dialog.dismiss()
                 return@handleMixinResponse false
             },
-            doAfterNetworkSuccess = { dialog.dismiss() }
+            doAfterNetworkSuccess = { dialog.dismiss() },
         )
     }
 
     private fun buildEmergencyRequest(user: User) = EmergencyRequest(
         identityNumber = user.identityNumber,
-        purpose = EmergencyPurpose.CONTACT.name
+        purpose = EmergencyPurpose.CONTACT.name,
     )
 }

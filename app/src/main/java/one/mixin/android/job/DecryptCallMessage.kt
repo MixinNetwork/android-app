@@ -102,7 +102,7 @@ class DecryptCallMessage(
                         MessageCategory.KRAKEN_INVITE.name,
                         null,
                         data.createdAt,
-                        data.status
+                        data.status,
                     )
                     insertCallMessage(message)
                 } else if (data.category == MessageCategory.KRAKEN_PUBLISH.name || data.category == MessageCategory.KRAKEN_END.name) {
@@ -132,7 +132,7 @@ class DecryptCallMessage(
                                     null,
                                     nowInUtc(),
                                     MessageStatus.SENDING.name,
-                                    null
+                                    null,
                                 )
                                 insertCallMessage(savedMessage)
                                 listPendingCandidateMap.remove(curData.messageId, listPendingCandidateMap[curData.messageId])
@@ -141,7 +141,7 @@ class DecryptCallMessage(
                         processKrakenCall(data)
                         listPendingJobMap.clear()
                     },
-                    data
+                    data,
                 )
             }
         } else {
@@ -196,7 +196,7 @@ class DecryptCallMessage(
                                     null,
                                     nowInUtc(),
                                     MessageStatus.SENDING.name,
-                                    curData.messageId
+                                    curData.messageId,
                                 )
                                 jobManager.addJobInBackground(SendMessageJob(m, recipientId = curData.userId))
 
@@ -208,7 +208,7 @@ class DecryptCallMessage(
                                     m.content,
                                     m.createdAt,
                                     curData.status,
-                                    m.quoteMessageId
+                                    m.quoteMessageId,
                                 )
                                 insertCallMessage(savedMessage)
                                 listPendingCandidateMap.remove(curData.messageId, listPendingCandidateMap[curData.messageId])
@@ -217,7 +217,7 @@ class DecryptCallMessage(
                         processCall(data)
                         listPendingJobMap.clear()
                     },
-                    data
+                    data,
                 )
             } else if (isExpired) {
                 val message = createCallMessage(
@@ -227,7 +227,7 @@ class DecryptCallMessage(
                     MessageCategory.WEBRTC_AUDIO_CANCEL.name,
                     null,
                     data.createdAt,
-                    data.status
+                    data.status,
                 )
                 insertCallMessage(message)
             }
@@ -295,7 +295,7 @@ class DecryptCallMessage(
                     MessageCategory.WEBRTC_AUDIO_CANCEL.name,
                     null,
                     data.createdAt,
-                    data.status
+                    data.status,
                 )
                 insertCallMessage(message)
             }
@@ -409,7 +409,7 @@ class DecryptCallMessage(
             null,
             data.createdAt,
             messageStatus,
-            mediaDuration = duration
+            mediaDuration = duration,
         )
         insertCallMessage(message)
     }

@@ -12,7 +12,7 @@ fun sortQueryAsset(query: String, localAssets: List<AssetItem>?, remoteAssets: L
             localAssets.any { l ->
                 l.assetId == r.assetId
             }
-        }
+        },
     )?.sortedWith(
         Comparator { o1, o2 ->
             if (o1 == null && o2 == null) return@Comparator 0
@@ -46,6 +46,6 @@ fun sortQueryAsset(query: String, localAssets: List<AssetItem>?, remoteAssets: L
             }
 
             return@Comparator o1.name.compareTo(o2.name)
-        }
+        },
     )
 }

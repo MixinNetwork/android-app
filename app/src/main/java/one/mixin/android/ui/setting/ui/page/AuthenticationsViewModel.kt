@@ -28,7 +28,7 @@ class AuthenticationsViewModel @Inject constructor(
         get() = authenticationsState.stateIn(
             viewModelScope,
             SharingStarted.Eagerly,
-            initialValue = authenticationsState.value
+            initialValue = authenticationsState.value,
         )
 
     init {
@@ -45,7 +45,7 @@ class AuthenticationsViewModel @Inject constructor(
                         authenticationsState.emit(Result.failure(it))
                     }
                     ErrorHandler.handleError(it)
-                }
+                },
             )
     }
 
@@ -54,7 +54,7 @@ class AuthenticationsViewModel @Inject constructor(
             authenticationsState.emit(
                 authentications.value?.map { list ->
                     list.filter { it.app.appId != appId }
-                }
+                },
             )
         }
     }

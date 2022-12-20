@@ -60,7 +60,7 @@ class PhotoHolder(itemView: View) : MediaPagerHolder(itemView) {
                 },
                 base64Holder = messageItem.thumbImage,
                 overrideWidth = Target.SIZE_ORIGINAL,
-                overrideHeight = Target.SIZE_ORIGINAL
+                overrideHeight = Target.SIZE_ORIGINAL,
             )
         } else {
             imageView.loadImage(
@@ -92,7 +92,7 @@ class PhotoHolder(itemView: View) : MediaPagerHolder(itemView) {
                     }
                 },
                 overrideWidth = Target.SIZE_ORIGINAL,
-                overrideHeight = Target.SIZE_ORIGINAL
+                overrideHeight = Target.SIZE_ORIGINAL,
             )
         }
         if (messageItem.mediaStatus == MediaStatus.DONE.name || messageItem.mediaStatus == MediaStatus.READ.name) {

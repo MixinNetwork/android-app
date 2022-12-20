@@ -4,7 +4,7 @@ import com.birbit.android.jobqueue.Params
 
 class RefreshAddressJob(private val assetId: String) : BaseJob(
     Params(PRIORITY_UI_HIGH)
-        .addTags(GROUP).requireNetwork()
+        .addTags(GROUP).requireNetwork(),
 ) {
 
     companion object {

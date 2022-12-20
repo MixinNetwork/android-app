@@ -58,7 +58,7 @@ class Banner @JvmOverloads constructor(
         viewPager2.setPageTransformer(
             CompositePageTransformer().also {
                 compositePageTransformer = it
-            }
+            },
         )
         viewPager2.registerOnPageChangeCallback(OnPageChangeCallback())
         viewPager2.adapter = BannerAdapterWrapper().also { adapterWrapper = it }
@@ -337,7 +337,7 @@ class Banner @JvmOverloads constructor(
                 child,
                 rect,
                 immediate,
-                focusedChildVisible
+                focusedChildVisible,
             )
         }
 
@@ -349,7 +349,7 @@ class Banner @JvmOverloads constructor(
                 val method = layoutManager.javaClass.getDeclaredMethod(
                     "calculateExtraLayoutSpace",
                     state.javaClass,
-                    extraLayoutSpace.javaClass
+                    extraLayoutSpace.javaClass,
                 )
                 method.isAccessible = true
                 method.invoke(layoutManager, state, extraLayoutSpace)
@@ -396,14 +396,14 @@ class Banner @JvmOverloads constructor(
                 viewPager2.paddingLeft,
                 tlWidth + abs(pageMargin),
                 viewPager2.paddingRight,
-                brWidth + abs(pageMargin)
+                brWidth + abs(pageMargin),
             )
         } else {
             recyclerView.setPadding(
                 tlWidth + abs(pageMargin),
                 viewPager2.paddingTop,
                 brWidth + abs(pageMargin),
-                viewPager2.paddingBottom
+                viewPager2.paddingBottom,
             )
         }
         recyclerView.clipToPadding = false

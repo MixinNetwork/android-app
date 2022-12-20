@@ -30,7 +30,7 @@ class MusicActivity : BaseActivity() {
                 context,
                 0,
                 intent,
-                PendingIntent.FLAG_IMMUTABLE
+                PendingIntent.FLAG_IMMUTABLE,
             )
             try {
                 pendingIntent.send()
@@ -52,7 +52,7 @@ class MusicActivity : BaseActivity() {
         super.onCreate(savedInstanceState)
         window.setFlags(
             WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
-            WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS
+            WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
         )
         volumeControlStream = AudioManager.STREAM_MUSIC
 
@@ -105,8 +105,8 @@ class MusicActivity : BaseActivity() {
                         startActivity(
                             Intent(
                                 Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
-                                Uri.parse("package:$packageName")
-                            )
+                                Uri.parse("package:$packageName"),
+                            ),
                         )
                     } catch (e: Exception) {
                         Timber.e(e)

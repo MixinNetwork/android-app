@@ -49,7 +49,7 @@ class WalletAssetAdapter(private val slideShow: Boolean) : HeaderAdapter<AssetIt
                         val new = newAssets[newItemPosition]
                         return old == new
                     }
-                }
+                },
             )
             data = newAssets
             if (headerView != null) {
@@ -116,7 +116,7 @@ class WalletAssetAdapter(private val slideShow: Boolean) : HeaderAdapter<AssetIt
                 {
                     holder.itemView.context?.getClipboardManager()
                         ?.setPrimaryClip(ClipData.newPlainText(null, asset.assetId))
-                }
+                },
             )
         }
     }

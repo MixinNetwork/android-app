@@ -90,7 +90,7 @@ class GiphyFragment : BaseFragment(R.layout.fragment_sticker) {
                             }
                         }
                     }
-                }
+                },
             )
             stickerRv.callback = object : DraggableRecyclerView.Callback {
                 override fun onScroll(dis: Float) {
@@ -117,7 +117,7 @@ class GiphyFragment : BaseFragment(R.layout.fragment_sticker) {
                             toast("Giphy API rate limit exceeded")
                         }
                         stickerProgress.visibility = View.GONE
-                    }
+                    },
                 )
         }
     }
@@ -167,7 +167,7 @@ class GiphyFragment : BaseFragment(R.layout.fragment_sticker) {
             {
                 if (footerView != null) it.size + 2 else it.size + 1
             },
-            0
+            0,
         )
 
         fun setOnGiphyListener(giphyListener: GiphyListener) {

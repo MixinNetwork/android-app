@@ -92,7 +92,7 @@ open class AutoLinkTextView(context: Context, attrs: AttributeSet?) :
                     BackgroundColorSpan(HIGHLIGHTED),
                     start,
                     start + keyWord.length,
-                    Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+                    Spanned.SPAN_EXCLUSIVE_EXCLUSIVE,
                 )
             }
         }
@@ -113,8 +113,8 @@ open class AutoLinkTextView(context: Context, attrs: AttributeSet?) :
                     matcher.start() - offset,
                     matcher.start() + name.length - offset + 1,
                     matcher.group(),
-                    AutoLinkMode.MODE_MENTION
-                )
+                    AutoLinkMode.MODE_MENTION,
+                ),
             )
             offset += ((matcher.group().length - 1) - name.length)
         }
@@ -222,7 +222,7 @@ open class AutoLinkTextView(context: Context, attrs: AttributeSet?) :
                 clickableSpan,
                 autoLinkItem.startPoint,
                 autoLinkItem.endPoint,
-                Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+                Spannable.SPAN_EXCLUSIVE_EXCLUSIVE,
             )
         }
 

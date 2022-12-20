@@ -74,7 +74,7 @@ class StickerAddFragment : BaseFragment() {
         fun newInstance(url: String, fromManagement: Boolean = false) = StickerAddFragment().apply {
             arguments = bundleOf(
                 ARGS_URL to url,
-                ARGS_FROM_MANAGEMENT to fromManagement
+                ARGS_FROM_MANAGEMENT to fromManagement,
             )
         }
     }
@@ -101,7 +101,7 @@ class StickerAddFragment : BaseFragment() {
             if (dialog == null) {
                 dialog = indeterminateProgressDialog(
                     message = R.string.Please_wait_a_bit,
-                    title = R.string.Adding
+                    title = R.string.Adding,
                 ).apply {
                     setCancelable(false)
                 }
@@ -204,7 +204,7 @@ class StickerAddFragment : BaseFragment() {
                     handleBack(R.string.Add_success)
                     return true
                 }
-            }
+            },
         ).submit(r.data!!.assetWidth, r.data!!.assetHeight)
     }
 
@@ -269,8 +269,8 @@ class StickerAddFragment : BaseFragment() {
                 StickerAddRequest(
                     Base64.encodeToString(
                         if (mimeType == MimeType.PNG.toString()) bitmap.toPNGBytes() else bitmap.toBytes(),
-                        Base64.NO_WRAP
-                    )
+                        Base64.NO_WRAP,
+                    ),
                 )
             } else {
                 handleBack(R.string.sticker_add_invalid_size)

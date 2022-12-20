@@ -64,8 +64,8 @@ class LocationAdapter(val currentCallback: () -> Unit, val callback: (LocationPa
                         venue.location.lng,
                         venue.name,
                         venue.location.address ?: venue.location.formattedAddress?.get(0),
-                        venue.getVenueType()
-                    )
+                        venue.getVenueType(),
+                    ),
                 )
             }
         }

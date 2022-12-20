@@ -98,7 +98,7 @@ class SendMessageHelper @Inject internal constructor(private val jobManager: Mix
         val category = encryptCategory.toCategory(
             MessageCategory.PLAIN_TEXT,
             MessageCategory.SIGNAL_TEXT,
-            MessageCategory.ENCRYPTED_TEXT
+            MessageCategory.ENCRYPTED_TEXT,
         )
         val message = createMessage(
             UUID.randomUUID().toString(),
@@ -107,7 +107,7 @@ class SendMessageHelper @Inject internal constructor(private val jobManager: Mix
             category,
             content.trim(),
             nowInUtc(),
-            MessageStatus.SENDING.name
+            MessageStatus.SENDING.name,
         )
         scope.launch {
             val botNumber = message.content?.getBotNumber()
@@ -130,59 +130,59 @@ class SendMessageHelper @Inject internal constructor(private val jobManager: Mix
         val category = encryptCategory.toCategory(
             MessageCategory.PLAIN_TRANSCRIPT,
             MessageCategory.SIGNAL_TRANSCRIPT,
-            MessageCategory.ENCRYPTED_TRANSCRIPT
+            MessageCategory.ENCRYPTED_TRANSCRIPT,
         )
         transcriptMessages.onEach { t ->
             t.type = when {
                 t.isText() -> encryptCategory.toCategory(
                     MessageCategory.PLAIN_TEXT,
                     MessageCategory.SIGNAL_TEXT,
-                    MessageCategory.ENCRYPTED_TEXT
+                    MessageCategory.ENCRYPTED_TEXT,
                 )
                 t.isAudio() -> encryptCategory.toCategory(
                     MessageCategory.PLAIN_AUDIO,
                     MessageCategory.SIGNAL_AUDIO,
-                    MessageCategory.ENCRYPTED_AUDIO
+                    MessageCategory.ENCRYPTED_AUDIO,
                 )
                 t.isContact() -> encryptCategory.toCategory(
                     MessageCategory.PLAIN_CONTACT,
                     MessageCategory.SIGNAL_CONTACT,
-                    MessageCategory.ENCRYPTED_CONTACT
+                    MessageCategory.ENCRYPTED_CONTACT,
                 )
                 t.isData() -> encryptCategory.toCategory(
                     MessageCategory.PLAIN_DATA,
                     MessageCategory.SIGNAL_DATA,
-                    MessageCategory.ENCRYPTED_DATA
+                    MessageCategory.ENCRYPTED_DATA,
                 )
                 t.isImage() -> encryptCategory.toCategory(
                     MessageCategory.PLAIN_IMAGE,
                     MessageCategory.SIGNAL_IMAGE,
-                    MessageCategory.ENCRYPTED_IMAGE
+                    MessageCategory.ENCRYPTED_IMAGE,
                 )
                 t.isLocation() -> encryptCategory.toCategory(
                     MessageCategory.PLAIN_LOCATION,
                     MessageCategory.SIGNAL_LOCATION,
-                    MessageCategory.ENCRYPTED_LOCATION
+                    MessageCategory.ENCRYPTED_LOCATION,
                 )
                 t.isPost() -> encryptCategory.toCategory(
                     MessageCategory.PLAIN_POST,
                     MessageCategory.SIGNAL_POST,
-                    MessageCategory.ENCRYPTED_POST
+                    MessageCategory.ENCRYPTED_POST,
                 )
                 t.isSticker() -> encryptCategory.toCategory(
                     MessageCategory.PLAIN_STICKER,
                     MessageCategory.SIGNAL_STICKER,
-                    MessageCategory.ENCRYPTED_STICKER
+                    MessageCategory.ENCRYPTED_STICKER,
                 )
                 t.isVideo() -> encryptCategory.toCategory(
                     MessageCategory.PLAIN_VIDEO,
                     MessageCategory.SIGNAL_VIDEO,
-                    MessageCategory.ENCRYPTED_VIDEO
+                    MessageCategory.ENCRYPTED_VIDEO,
                 )
                 t.isLive() -> encryptCategory.toCategory(
                     MessageCategory.PLAIN_LIVE,
                     MessageCategory.SIGNAL_LIVE,
-                    MessageCategory.ENCRYPTED_LIVE
+                    MessageCategory.ENCRYPTED_LIVE,
                 )
                 t.isAppCard() -> MessageCategory.APP_CARD.name
                 else -> throw IllegalArgumentException("Unknown type")
@@ -196,10 +196,10 @@ class SendMessageHelper @Inject internal constructor(private val jobManager: Mix
             GsonHelper.customGson.toJson(
                 transcriptMessages.sortedBy { t -> t.createdAt }.map {
                     TranscriptMinimal(it.userFullName ?: "", it.type, it.content)
-                }
+                },
             ),
             nowInUtc(),
-            MessageStatus.SENDING.name
+            MessageStatus.SENDING.name,
         )
         jobManager.addJobInBackground(SendTranscriptJob(message, transcriptMessages))
     }
@@ -215,7 +215,7 @@ class SendMessageHelper @Inject internal constructor(private val jobManager: Mix
         val category = encryptCategory.toCategory(
             MessageCategory.PLAIN_TEXT,
             MessageCategory.SIGNAL_TEXT,
-            MessageCategory.ENCRYPTED_TEXT
+            MessageCategory.ENCRYPTED_TEXT,
         )
         val message = createReplyTextMessage(
             UUID.randomUUID().toString(),
@@ -226,7 +226,7 @@ class SendMessageHelper @Inject internal constructor(private val jobManager: Mix
             nowInUtc(),
             MessageStatus.SENDING.name,
             replyMessage.messageId,
-            Gson().toJson(QuoteMessageItem(replyMessage))
+            Gson().toJson(QuoteMessageItem(replyMessage)),
         )
         jobManager.addJobInBackground(SendMessageJob(message, isSilent = isSilentMessage))
     }
@@ -235,7 +235,7 @@ class SendMessageHelper @Inject internal constructor(private val jobManager: Mix
         val category = encryptCategory.toCategory(
             MessageCategory.PLAIN_POST,
             MessageCategory.SIGNAL_POST,
-            MessageCategory.ENCRYPTED_POST
+            MessageCategory.ENCRYPTED_POST,
         )
         val message = createPostMessage(
             UUID.randomUUID().toString(),
@@ -245,7 +245,7 @@ class SendMessageHelper @Inject internal constructor(private val jobManager: Mix
             content.trim(),
             content.postOptimize(),
             nowInUtc(),
-            MessageStatus.SENDING.name
+            MessageStatus.SENDING.name,
         )
         jobManager.addJobInBackground(SendMessageJob(message))
     }
@@ -257,7 +257,7 @@ class SendMessageHelper @Inject internal constructor(private val jobManager: Mix
             sender.userId,
             content,
             nowInUtc(),
-            MessageStatus.SENDING.name
+            MessageStatus.SENDING.name,
         )
         jobManager.addJobInBackground(SendMessageJob(message))
     }
@@ -266,13 +266,13 @@ class SendMessageHelper @Inject internal constructor(private val jobManager: Mix
         val category = encryptCategory.toCategory(
             MessageCategory.PLAIN_DATA,
             MessageCategory.SIGNAL_DATA,
-            MessageCategory.ENCRYPTED_DATA
+            MessageCategory.ENCRYPTED_DATA,
         )
         val message = createAttachmentMessage(
             UUID.randomUUID().toString(), conversationId, sender.userId, category,
             null, attachment.filename, attachment.uri.toString(),
             attachment.mimeType, attachment.fileSize, nowInUtc(), null,
-            null, MediaStatus.PENDING, MessageStatus.SENDING.name, replyMessage?.messageId, replyMessage?.toQuoteMessageItem()
+            null, MediaStatus.PENDING, MessageStatus.SENDING.name, replyMessage?.messageId, replyMessage?.toQuoteMessageItem(),
         )
         jobManager.addJobInBackground(ConvertDataJob(message))
     }
@@ -290,12 +290,12 @@ class SendMessageHelper @Inject internal constructor(private val jobManager: Mix
         val category = encryptCategory.toCategory(
             MessageCategory.PLAIN_AUDIO,
             MessageCategory.SIGNAL_AUDIO,
-            MessageCategory.ENCRYPTED_AUDIO
+            MessageCategory.ENCRYPTED_AUDIO,
         )
         val message = createAudioMessage(
             messageId, conversationId, sender.userId, null, category,
             file.length(), file.name, duration.toString(), nowInUtc(), waveForm, null, null,
-            MediaStatus.PENDING, MessageStatus.SENDING.name, replyMessage?.messageId, replyMessage?.toQuoteMessageItem()
+            MediaStatus.PENDING, MessageStatus.SENDING.name, replyMessage?.messageId, replyMessage?.toQuoteMessageItem(),
         )
         jobManager.addJobInBackground(SendAttachmentMessageJob(message))
     }
@@ -309,7 +309,7 @@ class SendMessageHelper @Inject internal constructor(private val jobManager: Mix
         val category = encryptCategory.toCategory(
             MessageCategory.PLAIN_STICKER,
             MessageCategory.SIGNAL_STICKER,
-            MessageCategory.ENCRYPTED_STICKER
+            MessageCategory.ENCRYPTED_STICKER,
         )
         val transferStickerData = StickerMessagePayload(stickerId)
         val encoded = GsonHelper.customGson.toJson(transferStickerData).base64Encode()
@@ -321,7 +321,7 @@ class SendMessageHelper @Inject internal constructor(private val jobManager: Mix
             encoded,
             stickerId,
             MessageStatus.SENDING.name,
-            nowInUtc()
+            nowInUtc(),
         )
         jobManager.addJobInBackground(SendMessageJob(message))
     }
@@ -337,13 +337,13 @@ class SendMessageHelper @Inject internal constructor(private val jobManager: Mix
         val category = encryptCategory.toCategory(
             MessageCategory.PLAIN_CONTACT,
             MessageCategory.SIGNAL_CONTACT,
-            MessageCategory.ENCRYPTED_CONTACT
+            MessageCategory.ENCRYPTED_CONTACT,
         )
         val transferContactData = ContactMessagePayload(shareUserId)
         val encoded = GsonHelper.customGson.toJson(transferContactData).base64Encode()
         val message = createContactMessage(
             UUID.randomUUID().toString(), conversationId, sender.userId, category, encoded, shareUserId,
-            MessageStatus.SENDING.name, nowInUtc(), shareUserFullName, replyMessage?.messageId, replyMessage?.toQuoteMessageItem()
+            MessageStatus.SENDING.name, nowInUtc(), shareUserFullName, replyMessage?.messageId, replyMessage?.toQuoteMessageItem(),
         )
         jobManager.addJobInBackground(SendMessageJob(message))
     }
@@ -372,13 +372,13 @@ class SendMessageHelper @Inject internal constructor(private val jobManager: Mix
                 MessageCategory.MESSAGE_RECALL.name,
                 encoded,
                 nowInUtc(),
-                MessageStatus.SENDING.name
+                MessageStatus.SENDING.name,
             )
             jobManager.addJobInBackground(
                 SendMessageJob(
                     message,
-                    recallMessageId = messageItem.messageId
-                )
+                    recallMessageId = messageItem.messageId,
+                ),
             )
         }
     }
@@ -393,12 +393,12 @@ class SendMessageHelper @Inject internal constructor(private val jobManager: Mix
             MessageCategory.MESSAGE_PIN.name,
             encoded,
             nowInUtc(),
-            MessageStatus.SENDING.name
+            MessageStatus.SENDING.name,
         )
         jobManager.addJobInBackground(
             SendMessageJob(
-                message
-            )
+                message,
+            ),
         )
     }
 
@@ -420,7 +420,7 @@ class SendMessageHelper @Inject internal constructor(private val jobManager: Mix
             MessageCategory.MESSAGE_PIN.name,
             encoded,
             nowInUtc(),
-            MessageStatus.SENDING.name
+            MessageStatus.SENDING.name,
         )
         if (action == PinAction.PIN) {
             list.forEachIndexed { index, msg ->
@@ -439,8 +439,8 @@ class SendMessageHelper @Inject internal constructor(private val jobManager: Mix
                         msg.messageId, // quote pinned message id
                         PinMessageMinimal(msg.messageId, category, content),
                         nowInUtc(),
-                        MessageStatus.READ.name
-                    )
+                        MessageStatus.READ.name,
+                    ),
                 )
                 if (msg.isText()) {
                     conversationRepository.syncMention(msg.messageId, mId)
@@ -452,8 +452,8 @@ class SendMessageHelper @Inject internal constructor(private val jobManager: Mix
         }
         jobManager.addJobInBackground(
             SendMessageJob(
-                message
-            )
+                message,
+            ),
         )
     }
 
@@ -466,7 +466,7 @@ class SendMessageHelper @Inject internal constructor(private val jobManager: Mix
         val category = encryptCategory.toCategory(
             MessageCategory.PLAIN_LIVE,
             MessageCategory.SIGNAL_LIVE,
-            MessageCategory.ENCRYPTED_LIVE
+            MessageCategory.ENCRYPTED_LIVE,
         )
         val encoded =
             GsonHelper.customGson.toJson(transferLiveData)
@@ -481,7 +481,7 @@ class SendMessageHelper @Inject internal constructor(private val jobManager: Mix
             transferLiveData.url,
             transferLiveData.thumbUrl,
             MessageStatus.SENDING.name,
-            nowInUtc()
+            nowInUtc(),
         )
         jobManager.addJobInBackground(SendMessageJob(message))
     }
@@ -496,13 +496,13 @@ class SendMessageHelper @Inject internal constructor(private val jobManager: Mix
         val category = encryptCategory.toCategory(
             MessageCategory.PLAIN_IMAGE,
             MessageCategory.SIGNAL_IMAGE,
-            MessageCategory.ENCRYPTED_IMAGE
+            MessageCategory.ENCRYPTED_IMAGE,
         )
         jobManager.addJobInBackground(
             SendGiphyJob(
                 conversationId, senderId, image.url, image.width, image.height, image.size.toLong(),
-                category, UUID.randomUUID().toString(), previewUrl, nowInUtc()
-            )
+                category, UUID.randomUUID().toString(), previewUrl, nowInUtc(),
+            ),
         )
     }
 
@@ -510,7 +510,7 @@ class SendMessageHelper @Inject internal constructor(private val jobManager: Mix
         val category = encryptCategory.toCategory(
             MessageCategory.PLAIN_LOCATION,
             MessageCategory.SIGNAL_LOCATION,
-            MessageCategory.ENCRYPTED_LOCATION
+            MessageCategory.ENCRYPTED_LOCATION,
         )
         jobManager.addJobInBackground(
             SendMessageJob(
@@ -521,9 +521,9 @@ class SendMessageHelper @Inject internal constructor(private val jobManager: Mix
                     category,
                     GsonHelper.customGson.toJson(location),
                     MessageStatus.SENT.name,
-                    nowInUtc()
-                )
-            )
+                    nowInUtc(),
+                ),
+            ),
         )
     }
 
@@ -546,7 +546,7 @@ class SendMessageHelper @Inject internal constructor(private val jobManager: Mix
         val category = encryptCategory.toCategory(
             MessageCategory.PLAIN_IMAGE,
             MessageCategory.SIGNAL_IMAGE,
-            MessageCategory.ENCRYPTED_IMAGE
+            MessageCategory.ENCRYPTED_IMAGE,
         )
         var mimeType = mime
         if (mimeType == null) {
@@ -581,7 +581,7 @@ class SendMessageHelper @Inject internal constructor(private val jobManager: Mix
                 MediaStatus.PENDING,
                 MessageStatus.SENDING.name,
                 replyMessage?.messageId,
-                replyMessage?.toQuoteMessageItem()
+                replyMessage?.toQuoteMessageItem(),
             )
             jobManager.addJobInBackground(SendAttachmentMessageJob(message))
             return 0
@@ -594,7 +594,7 @@ class SendMessageHelper @Inject internal constructor(private val jobManager: Mix
                 ".webp"
             } else {
                 ".jpg"
-            }
+            },
         )
         val imageFile: File = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P && mimeType == MimeType.HEIC.toString()) {
             val source = ImageDecoder.createSource(MixinApplication.get().contentResolver, uri)
@@ -615,7 +615,7 @@ class SendMessageHelper @Inject internal constructor(private val jobManager: Mix
                         }
                     } else {
                         Bitmap.CompressFormat.JPEG
-                    }
+                    },
                 )
                 .compressToFile(uri, temp.absolutePath)
         }
@@ -643,7 +643,7 @@ class SendMessageHelper @Inject internal constructor(private val jobManager: Mix
             MediaStatus.PENDING,
             MessageStatus.SENDING.name,
             replyMessage?.messageId,
-            replyMessage?.toQuoteMessageItem()
+            replyMessage?.toQuoteMessageItem(),
         )
         jobManager.addJobInBackground(SendAttachmentMessageJob(message))
         return 0

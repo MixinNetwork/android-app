@@ -50,9 +50,9 @@ fun SettingPageScaffold(
                 navigationIcon = {
                     MixinBackButton()
                 },
-                actions = titleBarActions
+                actions = titleBarActions,
             )
-        }
+        },
     ) {
         Column(
             Modifier
@@ -61,7 +61,7 @@ fun SettingPageScaffold(
                     if (verticalScrollable) {
                         verticalScroll(rememberScrollState())
                     }
-                }
+                },
         ) {
             body()
         }
@@ -86,15 +86,15 @@ fun SettingTile(
                 .height(60.dp)
                 .background(color = MixinAppTheme.colors.background)
                 .padding(horizontal = 16.dp),
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.CenterVertically,
         ) {
             if (icon != null) {
                 CompositionLocalProvider(
-                    LocalContentColor provides MixinAppTheme.colors.icon
+                    LocalContentColor provides MixinAppTheme.colors.icon,
                 ) {
                     Icon(
                         painter = painterResource(icon),
-                        contentDescription = null
+                        contentDescription = null,
                     )
                     Box(modifier = Modifier.width(16.dp))
                 }
@@ -102,14 +102,14 @@ fun SettingTile(
             Text(
                 text = title,
                 color = titleColor ?: MixinAppTheme.colors.textPrimary,
-                fontSize = 14.sp
+                fontSize = 14.sp,
             )
             Spacer(Modifier.weight(1f))
             ProvideTextStyle(
                 value = TextStyle(
                     color = MixinAppTheme.colors.textSubtitle,
-                    fontSize = 13.sp
-                )
+                    fontSize = 13.sp,
+                ),
             ) {
                 trailing()
             }
@@ -122,7 +122,7 @@ fun SettingTile(
                     .padding(start = 16.dp, top = 8.dp, bottom = 16.dp, end = 16.dp),
                 text = description,
                 fontSize = 13.sp,
-                color = MixinAppTheme.colors.textSubtitle
+                color = MixinAppTheme.colors.textSubtitle,
             )
         }
     }
@@ -139,18 +139,18 @@ fun SettingScaffoldPreview() {
                 },
                 onClick = {},
                 title = "Title",
-                description = "with description"
+                description = "with description",
             )
 
             SettingTile(
                 onClick = {},
                 title = "Title",
-                description = "with long description, with long description, with long description,with long description,with long description"
+                description = "with long description, with long description, with long description,with long description,with long description",
             )
 
             SettingTile(
                 onClick = {},
-                title = "Title"
+                title = "Title",
             )
 
             SettingTile(
@@ -158,7 +158,7 @@ fun SettingScaffoldPreview() {
                 title = "Title",
                 trailing = {
                     Text("Next")
-                }
+                },
             )
 
             Box(modifier = Modifier.height(16.dp))
@@ -166,7 +166,7 @@ fun SettingScaffoldPreview() {
             SettingTile(
                 onClick = {},
                 title = "Title With Icon",
-                icon = R.drawable.ic_setting_about
+                icon = R.drawable.ic_setting_about,
             )
         }
     }

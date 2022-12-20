@@ -13,7 +13,7 @@ class SyncFts4Job : BaseJob(Params(PRIORITY_LOWER).groupBy(GROUP_ID).persist()) 
     override fun onRun() = runBlocking {
         val done = MessageFts4Helper.syncMessageFts4(
             preProcess = false,
-            waitMillis = 1000L
+            waitMillis = 1000L,
         )
         if (!done) {
             jobManager.addJobInBackground(SyncFts4Job())

@@ -36,13 +36,13 @@ class ImageQuoteHolder constructor(val binding: ItemChatImageQuoteBinding) : Med
                 setItemBackgroundResource(
                     binding.chatLayout,
                     R.drawable.chat_bubble_reply_me_last,
-                    R.drawable.chat_bubble_reply_me_last_night
+                    R.drawable.chat_bubble_reply_me_last_night,
                 )
             } else {
                 setItemBackgroundResource(
                     binding.chatLayout,
                     R.drawable.chat_bubble_reply_me,
-                    R.drawable.chat_bubble_reply_me_night
+                    R.drawable.chat_bubble_reply_me_night,
                 )
             }
         } else {
@@ -51,13 +51,13 @@ class ImageQuoteHolder constructor(val binding: ItemChatImageQuoteBinding) : Med
                 setItemBackgroundResource(
                     binding.chatLayout,
                     R.drawable.chat_bubble_reply_other_last,
-                    R.drawable.chat_bubble_reply_other_last_night
+                    R.drawable.chat_bubble_reply_other_last_night,
                 )
             } else {
                 setItemBackgroundResource(
                     binding.chatLayout,
                     R.drawable.chat_bubble_reply_other,
-                    R.drawable.chat_bubble_reply_other_night
+                    R.drawable.chat_bubble_reply_other_night,
                 )
             }
         }
@@ -166,7 +166,7 @@ class ImageQuoteHolder constructor(val binding: ItemChatImageQuoteBinding) : Med
             false,
             isRepresentative = false,
             isSecret = false,
-            isWhite = true
+            isWhite = true,
         )
 
         binding.chatQuote.bind(GsonHelper.customGson.fromJson(messageItem.quoteContent, QuoteMessageItem::class.java))

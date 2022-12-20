@@ -15,7 +15,7 @@ class ScrollableBottomSheetLayout(context: Context, attributeSet: AttributeSet) 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
         val parentHeightSpec = MeasureSpec.makeMeasureSpec(
             MeasureSpec.getSize(heightMeasureSpec) - statusBarHeight,
-            MeasureSpec.getMode(heightMeasureSpec)
+            MeasureSpec.getMode(heightMeasureSpec),
         )
         super.onMeasure(widthMeasureSpec, parentHeightSpec)
         var heightSpec = 0
@@ -29,7 +29,7 @@ class ScrollableBottomSheetLayout(context: Context, attributeSet: AttributeSet) 
             measureChild(
                 scrollView,
                 widthMeasureSpec,
-                MeasureSpec.makeMeasureSpec(scrollView.measuredHeight - diffHeight, MeasureSpec.EXACTLY)
+                MeasureSpec.makeMeasureSpec(scrollView.measuredHeight - diffHeight, MeasureSpec.EXACTLY),
             )
         } else {
             setMeasuredDimension(widthMeasureSpec, MeasureSpec.makeMeasureSpec(heightSpec, MeasureSpec.EXACTLY))

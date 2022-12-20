@@ -56,7 +56,7 @@ fun diagnosis(context: Context, diagnosisCallback: (String) -> Unit) {
         CustomDns("8.8.8.8"),
         CustomDns("1.1.1.1"),
         CustomDns("2001:4860:4860::8888"),
-        Dns.SYSTEM
+        Dns.SYSTEM,
     )
     val prefix = context.getString(R.string.parse_dns_result)
     hosts.forEach host@{ host ->

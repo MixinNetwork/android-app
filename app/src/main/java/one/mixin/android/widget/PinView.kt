@@ -47,7 +47,7 @@ class PinView : LinearLayout {
     constructor(context: Context, attrs: AttributeSet?, defStyleAttr: Int) : super(
         context,
         attrs,
-        defStyleAttr
+        defStyleAttr,
     ) {
         val ta = context.obtainStyledAttributes(attrs, R.styleable.PinView)
         if (ta.hasValue(R.styleable.PinView_pin_color)) {

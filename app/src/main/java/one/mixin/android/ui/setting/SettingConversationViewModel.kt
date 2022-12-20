@@ -52,7 +52,7 @@ internal constructor(private val userService: AccountService) : ViewModel() {
         init {
             value = context.defaultSharedPreferences.getInt(
                 SettingConversationFragment.CONVERSATION_KEY,
-                MessageSource.EVERYBODY.ordinal
+                MessageSource.EVERYBODY.ordinal,
             )
         }
 
@@ -60,7 +60,7 @@ internal constructor(private val userService: AccountService) : ViewModel() {
             value = MessageSource.EVERYBODY.ordinal
             context.defaultSharedPreferences.putInt(
                 SettingConversationFragment.CONVERSATION_KEY,
-                MessageSource.EVERYBODY.ordinal
+                MessageSource.EVERYBODY.ordinal,
             )
         }
 
@@ -68,7 +68,7 @@ internal constructor(private val userService: AccountService) : ViewModel() {
             value = MessageSource.CONTACTS.ordinal
             context.defaultSharedPreferences.putInt(
                 SettingConversationFragment.CONVERSATION_KEY,
-                MessageSource.CONTACTS.ordinal
+                MessageSource.CONTACTS.ordinal,
             )
         }
     }
@@ -77,7 +77,7 @@ internal constructor(private val userService: AccountService) : ViewModel() {
         init {
             value = context.defaultSharedPreferences.getInt(
                 SettingConversationFragment.CONVERSATION_GROUP_KEY,
-                MessageSource.EVERYBODY.ordinal
+                MessageSource.EVERYBODY.ordinal,
             )
         }
 
@@ -85,7 +85,7 @@ internal constructor(private val userService: AccountService) : ViewModel() {
             value = MessageSource.EVERYBODY.ordinal
             context.defaultSharedPreferences.putInt(
                 SettingConversationFragment.CONVERSATION_GROUP_KEY,
-                MessageSource.EVERYBODY.ordinal
+                MessageSource.EVERYBODY.ordinal,
             )
         }
 
@@ -93,7 +93,7 @@ internal constructor(private val userService: AccountService) : ViewModel() {
             value = MessageSource.CONTACTS.ordinal
             context.defaultSharedPreferences.putInt(
                 SettingConversationFragment.CONVERSATION_GROUP_KEY,
-                MessageSource.CONTACTS.ordinal
+                MessageSource.CONTACTS.ordinal,
             )
         }
     }
@@ -104,7 +104,7 @@ internal constructor(private val userService: AccountService) : ViewModel() {
         init {
             value = context.defaultSharedPreferences.getString(
                 ACCEPT_SEARCH_KEY,
-                SearchSource.EVERYBODY.name
+                SearchSource.EVERYBODY.name,
             )
         }
 
@@ -112,7 +112,7 @@ internal constructor(private val userService: AccountService) : ViewModel() {
             value = SearchSource.EVERYBODY.name
             context.defaultSharedPreferences.putString(
                 ACCEPT_SEARCH_KEY,
-                SearchSource.EVERYBODY.name
+                SearchSource.EVERYBODY.name,
             )
         }
 
@@ -120,7 +120,7 @@ internal constructor(private val userService: AccountService) : ViewModel() {
             value = SearchSource.CONTACTS.name
             context.defaultSharedPreferences.putString(
                 ACCEPT_SEARCH_KEY,
-                SearchSource.CONTACTS.name
+                SearchSource.CONTACTS.name,
             )
         }
 
@@ -128,7 +128,7 @@ internal constructor(private val userService: AccountService) : ViewModel() {
             value = SearchSource.NOBODY.name
             context.defaultSharedPreferences.putString(
                 ACCEPT_SEARCH_KEY,
-                SearchSource.NOBODY.name
+                SearchSource.NOBODY.name,
             )
         }
     }

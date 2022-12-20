@@ -74,7 +74,7 @@ class VerificationFragment : PinCodeFragment(R.layout.fragment_verification) {
                 ARGS_PHONE_NUM to phoneNum,
                 ARGS_PIN to pin,
                 ARGS_HAS_EMERGENCY_CONTACT to hasEmergencyContact,
-                ARGS_FROM to from
+                ARGS_FROM to from,
             )
         }
     }
@@ -173,12 +173,12 @@ class VerificationFragment : PinCodeFragment(R.layout.fragment_verification) {
                         return@subscribe
                     }
                     DeleteAccountPinBottomSheetDialogFragment.newInstance(
-                        r.data!!.id
+                        r.data!!.id,
                     ).showNow(parentFragmentManager, DeleteAccountPinBottomSheetDialogFragment.TAG)
                 },
                 { t: Throwable ->
                     handleError(t)
-                }
+                },
             )
     }
 
@@ -216,7 +216,7 @@ class VerificationFragment : PinCodeFragment(R.layout.fragment_verification) {
                 } else {
                     handleError(it)
                 }
-            }
+            },
         )
     }
 
@@ -233,7 +233,7 @@ class VerificationFragment : PinCodeFragment(R.layout.fragment_verification) {
             binding.pinVerificationView.code(),
             registration_id = registrationId,
             purpose = VerificationPurpose.SESSION.name,
-            session_secret = sessionSecret
+            session_secret = sessionSecret,
         )
 
         handleMixinResponse(
@@ -249,7 +249,7 @@ class VerificationFragment : PinCodeFragment(R.layout.fragment_verification) {
             },
             defaultExceptionHandle = {
                 handleError(it)
-            }
+            },
         )
     }
 
@@ -266,7 +266,7 @@ class VerificationFragment : PinCodeFragment(R.layout.fragment_verification) {
                 from == FROM_DELETE_ACCOUNT -> VerificationPurpose.DEACTIVATED.name
                 isPhoneModification() -> VerificationPurpose.PHONE.name
                 else -> VerificationPurpose.SESSION.name
-            }
+            },
         )
         if (captchaResponse != null) {
             if (captchaResponse.first.isG()) {
@@ -296,7 +296,7 @@ class VerificationFragment : PinCodeFragment(R.layout.fragment_verification) {
                     handleError(t)
                     binding.verificationNextFab.visibility = GONE
                     captchaView?.webView?.visibility = GONE
-                }
+                },
             )
     }
 
@@ -312,7 +312,7 @@ class VerificationFragment : PinCodeFragment(R.layout.fragment_verification) {
                     override fun onPostToken(value: Pair<CaptchaView.CaptchaType, String>) {
                         sendVerification(value)
                     }
-                }
+                },
             )
             (view as ViewGroup).addView(captchaView?.webView, MATCH_PARENT, MATCH_PARENT)
         }

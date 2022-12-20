@@ -49,7 +49,7 @@ class PeerConnectionClient(context: Context) {
 
     init {
         PeerConnectionFactory.initialize(
-            PeerConnectionFactory.InitializationOptions.builder(context).createInitializationOptions()
+            PeerConnectionFactory.InitializationOptions.builder(context).createInitializationOptions(),
         )
     }
 
@@ -96,15 +96,15 @@ class PeerConnectionClient(context: Context) {
                                     RxBus.publish(
                                         VoiceEvent(
                                             requireNotNull(Session.getAccountId()),
-                                            audioLevel ?: 0.0
-                                        )
+                                            audioLevel ?: 0.0,
+                                        ),
                                     )
                                 } else {
                                     RxBus.publish(
                                         VoiceEvent(
                                             requireNotNull(Session.getAccountId()),
-                                            0.0
-                                        )
+                                            0.0,
+                                        ),
                                     )
                                 }
                             }
@@ -169,7 +169,7 @@ class PeerConnectionClient(context: Context) {
                             }
                         }
                     },
-                    sdp
+                    sdp,
                 )
             }
 
@@ -244,7 +244,7 @@ class PeerConnectionClient(context: Context) {
                     remoteCandidateCache.clear()
                 }
             },
-            remoteSdp
+            remoteSdp,
         )
         val answerSdpObserver = object : SdpObserverWrapper() {
             override fun onCreateSuccess(sdp: SessionDescription) {
@@ -274,7 +274,7 @@ class PeerConnectionClient(context: Context) {
                             }
                         }
                     },
-                    sdp
+                    sdp,
                 )
             }
 
@@ -348,7 +348,7 @@ class PeerConnectionClient(context: Context) {
                     remoteCandidateCache.clear()
                 }
             },
-            sdp
+            sdp,
         )
     }
 

@@ -23,7 +23,7 @@ class RecordCircleView : View {
     private val colorCircle: Int by lazy {
         ContextCompat.getColor(
             context,
-            R.color.color_record_circle_bg
+            R.color.color_record_circle_bg,
         )
     }
     private val colorLock: Int by lazy { ContextCompat.getColor(context, R.color.text_gray) }
@@ -76,8 +76,8 @@ class RecordCircleView : View {
             ResourcesCompat.getDrawable(
                 resources,
                 R.drawable.ic_record_mic,
-                context.theme
-            )
+                context.theme,
+            ),
         )
     }
     private val sendDrawable: Drawable by lazy {
@@ -85,8 +85,8 @@ class RecordCircleView : View {
             ResourcesCompat.getDrawable(
                 resources,
                 R.drawable.ic_send,
-                context.theme
-            )
+                context.theme,
+            ),
         )
     }
 
@@ -109,7 +109,7 @@ class RecordCircleView : View {
         requireNotNull(ResourcesCompat.getDrawable(resources, R.drawable.lock_round, context.theme)).apply {
             colorFilter = PorterDuffColorFilter(
                 context.colorFromAttribute(R.attr.bg_white),
-                PorterDuff.Mode.MULTIPLY
+                PorterDuff.Mode.MULTIPLY,
             )
         }
     }
@@ -124,7 +124,7 @@ class RecordCircleView : View {
     constructor(context: Context, attrs: AttributeSet?, defStyleAttr: Int) : super(
         context,
         attrs,
-        defStyleAttr
+        defStyleAttr,
     )
 
     fun setAmplitude(value: Double) {
@@ -233,7 +233,7 @@ class RecordCircleView : View {
                 measuredWidth / 2.0f,
                 cy.toFloat(),
                 (AndroidUtilities.dp(42f) + AndroidUtilities.dp(20f) * amplitude) * scale,
-                paintRecord
+                paintRecord,
             )
         }
         canvas.drawCircle(measuredWidth / 2.0f, cy.toFloat(), AndroidUtilities.dp(42f) * sc, paint)
@@ -246,13 +246,13 @@ class RecordCircleView : View {
             cx - drawable.intrinsicWidth / 2,
             cy - drawable.intrinsicHeight / 2,
             cx + drawable.intrinsicWidth / 2,
-            cy + drawable.intrinsicHeight / 2
+            cy + drawable.intrinsicHeight / 2,
         )
         sendClickBound.set(
             cx - AndroidUtilities.dp(42f),
             cy - AndroidUtilities.dp(42f),
             cx + AndroidUtilities.dp(42f),
-            cy + AndroidUtilities.dp(42f)
+            cy + AndroidUtilities.dp(42f),
         )
         drawable.alpha = (255 * alpha).toInt()
         drawable.draw(canvas)
@@ -269,10 +269,10 @@ class RecordCircleView : View {
             lockSize = AndroidUtilities.dp(31f)
             lockY =
                 AndroidUtilities.dp(57f) + (
-                AndroidUtilities.dp(30f) * (1.0f - sc) - yAdd + AndroidUtilities.dp(
-                    20f
-                ) * moveProgress
-                ).toInt()
+                    AndroidUtilities.dp(30f) * (1.0f - sc) - yAdd + AndroidUtilities.dp(
+                        20f,
+                    ) * moveProgress
+                    ).toInt()
             lockTopY = lockY + AndroidUtilities.dp(5f)
             lockMiddleY = lockY + AndroidUtilities.dp(11f)
             lockArrowY = lockY + AndroidUtilities.dp(25f)
@@ -305,35 +305,35 @@ class RecordCircleView : View {
             cx - AndroidUtilities.dp(15f),
             lockY,
             cx + AndroidUtilities.dp(15f),
-            lockY + lockSize
+            lockY + lockSize,
         )
         lockBackgroundDrawable.draw(canvas)
         lockShadowDrawable.setBounds(
             cx - AndroidUtilities.dp(16f),
             lockY - AndroidUtilities.dp(1f),
             cx + AndroidUtilities.dp(16f),
-            lockY + lockSize + AndroidUtilities.dp(1f)
+            lockY + lockSize + AndroidUtilities.dp(1f),
         )
         lockShadowDrawable.draw(canvas)
         lockTopDrawable.setBounds(
             cx - AndroidUtilities.dp(6f),
             lockTopY,
             cx + AndroidUtilities.dp(6f),
-            lockTopY + AndroidUtilities.dp(14f)
+            lockTopY + AndroidUtilities.dp(14f),
         )
         lockTopDrawable.draw(canvas)
         lockDrawable.setBounds(
             cx - AndroidUtilities.dp(7f),
             lockMiddleY,
             cx + AndroidUtilities.dp(7f),
-            lockMiddleY + AndroidUtilities.dp(12f)
+            lockMiddleY + AndroidUtilities.dp(12f),
         )
         lockDrawable.draw(canvas)
         lockArrowDrawable.setBounds(
             cx - AndroidUtilities.dp(7.5f),
             lockArrowY,
             cx + AndroidUtilities.dp(7.5f),
-            lockArrowY + AndroidUtilities.dp(9f)
+            lockArrowY + AndroidUtilities.dp(9f),
         )
         lockArrowDrawable.draw(canvas)
         if (locked) {
@@ -341,13 +341,13 @@ class RecordCircleView : View {
                 cx - AndroidUtilities.dp(6.5f).toFloat(),
                 lockY + AndroidUtilities.dp(9f).toFloat(),
                 cx + AndroidUtilities.dp(6.5f).toFloat(),
-                lockY.toFloat() + AndroidUtilities.dp((9 + 13).toFloat())
+                lockY.toFloat() + AndroidUtilities.dp((9 + 13).toFloat()),
             )
             canvas.drawRoundRect(
                 rect,
                 AndroidUtilities.dp(1f).toFloat(),
                 AndroidUtilities.dp(1f).toFloat(),
-                paintRecord
+                paintRecord,
             )
         }
     }

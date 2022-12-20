@@ -107,7 +107,7 @@ class GroupUsersBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             binding.selectRv.layoutManager = LinearLayoutManager(
                 requireContext(),
                 LinearLayoutManager.HORIZONTAL,
-                false
+                false,
             )
             binding.selectRv.adapter = selectAdapter
             binding.userRv.layoutManager = LinearLayoutManager(requireContext())
@@ -128,7 +128,7 @@ class GroupUsersBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                     MessageCategory.KRAKEN_INVITE.name,
                     "",
                     nowInUtc(),
-                    MessageStatus.SENDING.name
+                    MessageStatus.SENDING.name,
                 )
                 if (callState.isIdle()) {
                     publish(requireContext(), conversationId, users)
@@ -175,7 +175,7 @@ class GroupUsersBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             users?.filter {
                 it.fullName!!.containsIgnoreCase(keyword) ||
                     it.identityNumber.containsIgnoreCase(keyword)
-            }?.sortedByDescending { it.fullName.equalsIgnoreCase(keyword) || it.identityNumber.equalsIgnoreCase(keyword) }
+            }?.sortedByDescending { it.fullName.equalsIgnoreCase(keyword) || it.identityNumber.equalsIgnoreCase(keyword) },
         )
     }
 }

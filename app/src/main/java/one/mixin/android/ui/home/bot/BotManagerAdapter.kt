@@ -21,7 +21,7 @@ import one.mixin.android.vo.BotInterface
 class BotManagerAdapter(private val botCallBack: (BotInterface) -> Unit) : RecyclerView.Adapter<BotManagerAdapter.ListViewHolder>(), View.OnLongClickListener {
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ListViewHolder {
         val view = LayoutInflater.from(
-            parent.context
+            parent.context,
         ).inflate(R.layout.item_bot_manager, parent, false)
         return ListViewHolder(view)
     }

@@ -81,14 +81,14 @@ class DepositFragment : BaseFragment() {
                 val confirmation = requireContext().resources.getQuantityString(
                     R.plurals.deposit_confirmation,
                     asset.confirmations,
-                    asset.confirmations
+                    asset.confirmations,
                 )
                     .highLight(requireContext(), asset.confirmations.toString())
                 tipTv.text = buildBulletLines(
                     requireContext(),
                     SpannableStringBuilder(getTipsByAsset(asset)),
                     confirmation,
-                    reserveTip
+                    reserveTip,
                 )
             }
         }
@@ -140,7 +140,7 @@ class DepositFragment : BaseFragment() {
         } else {
             @Suppress("DEPRECATION")
             getParcelable(TransactionsFragment.ARGS_ASSET)
-        }
+        },
     ) { "required AssetItem can not be null" }
 
     private fun updateUI(asset: AssetItem) {
@@ -159,7 +159,7 @@ class DepositFragment : BaseFragment() {
                     scopeProvider,
                     asset,
                     true,
-                    getString(R.string.deposit_memo_notice)
+                    getString(R.string.deposit_memo_notice),
                 )
             }
             addressView.setAsset(
@@ -167,7 +167,7 @@ class DepositFragment : BaseFragment() {
                 scopeProvider,
                 asset,
                 false,
-                if (noTag) null else getString(R.string.deposit_notice, asset.symbol)
+                if (noTag) null else getString(R.string.deposit_notice, asset.symbol),
             )
         }
     }

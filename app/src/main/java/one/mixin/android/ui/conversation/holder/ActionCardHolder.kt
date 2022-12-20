@@ -56,7 +56,7 @@ class ActionCardHolder constructor(val binding: ItemChatActionCardBinding) :
             messageItem.status,
             messageItem.isPin ?: false,
             isRepresentative = isRepresentative,
-            isSecret = messageItem.isSecret()
+            isSecret = messageItem.isSecret(),
         )
 
         if (isFirst && !isMe) {
@@ -99,13 +99,13 @@ class ActionCardHolder constructor(val binding: ItemChatActionCardBinding) :
                 setItemBackgroundResource(
                     binding.chatContentLayout,
                     R.drawable.bill_bubble_me_last,
-                    R.drawable.bill_bubble_me_last_night
+                    R.drawable.bill_bubble_me_last_night,
                 )
             } else {
                 setItemBackgroundResource(
                     binding.chatContentLayout,
                     R.drawable.bill_bubble_me,
-                    R.drawable.bill_bubble_me_night
+                    R.drawable.bill_bubble_me_night,
                 )
             }
             (binding.chatLayout.layoutParams as ConstraintLayout.LayoutParams).horizontalBias = 1f
@@ -117,13 +117,13 @@ class ActionCardHolder constructor(val binding: ItemChatActionCardBinding) :
                 setItemBackgroundResource(
                     binding.chatContentLayout,
                     R.drawable.chat_bubble_other_last,
-                    R.drawable.chat_bubble_other_last_night
+                    R.drawable.chat_bubble_other_last_night,
                 )
             } else {
                 setItemBackgroundResource(
                     binding.chatContentLayout,
                     R.drawable.chat_bubble_other,
-                    R.drawable.chat_bubble_other_night
+                    R.drawable.chat_bubble_other_night,
                 )
             }
         }

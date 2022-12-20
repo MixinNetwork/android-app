@@ -158,7 +158,7 @@ class ConversationListFragment : LinkFragment() {
                     if (isAdded) {
                         (binding.messageRv.layoutManager as LinearLayoutManager).scrollToPositionWithOffset(
                             0,
-                            0
+                            0,
                         )
                     }
                 }
@@ -227,7 +227,7 @@ class ConversationListFragment : LinkFragment() {
                         distance += dy
                     }
                 }
-            }
+            },
         )
         binding.messageRv.callback = object : DraggableRecyclerView.Callback {
             override fun onScroll(dis: Float) {
@@ -276,7 +276,7 @@ class ConversationListFragment : LinkFragment() {
                     0,
                     onEndAction = {
                         vibrated = false
-                    }
+                    },
                 )
                 _binding?.downIv?.apply {
                     scaleX = 1f
@@ -298,9 +298,9 @@ class ConversationListFragment : LinkFragment() {
 
                 override fun onNormalItemClick(item: ConversationItem) {
                     if (item.isGroupConversation() && (
-                        item.status == ConversationStatus.START.ordinal ||
-                            item.status == ConversationStatus.FAILURE.ordinal
-                        )
+                            item.status == ConversationStatus.START.ordinal ||
+                                item.status == ConversationStatus.FAILURE.ordinal
+                            )
                     ) {
                         if (!requireContext().networkConnected()) {
                             toast(R.string.Network_error)
@@ -319,7 +319,7 @@ class ConversationListFragment : LinkFragment() {
                                 if (item.unseenMessageCount != null && item.unseenMessageCount > 0) {
                                     conversationListViewModel.findFirstUnreadMessageId(
                                         item.conversationId,
-                                        item.unseenMessageCount - 1
+                                        item.unseenMessageCount - 1,
                                     )
                                 } else {
                                     null
@@ -329,7 +329,7 @@ class ConversationListFragment : LinkFragment() {
                                 conversationId = item.conversationId,
                                 recipient = user,
                                 initialPositionMessageId = messageId,
-                                unreadCount = item.unseenMessageCount ?: 0
+                                unreadCount = item.unseenMessageCount ?: 0,
                             )
                         }
                     }
@@ -400,7 +400,7 @@ class ConversationListFragment : LinkFragment() {
                     .filter { item: ConversationItem? ->
                         item?.isGroupConversation() == true && (
                             item.iconUrl() == null || !File(
-                                item.iconUrl() ?: ""
+                                item.iconUrl() ?: "",
                             ).exists()
                             )
                     }.forEach {
@@ -457,7 +457,7 @@ class ConversationListFragment : LinkFragment() {
                 R.string.Unmute
             } else {
                 R.string.Mute
-            }
+            },
         )
         val bottomSheet = builder.create()
         viewBinding.muteTv.setOnClickListener {
@@ -502,7 +502,7 @@ class ConversationListFragment : LinkFragment() {
                 conversationListViewModel.updateConversationPinTimeById(
                     conversationId,
                     circleId,
-                    nowInUtc()
+                    nowInUtc(),
                 )
                 bottomSheet.dismiss()
             }
@@ -638,8 +638,8 @@ class ConversationListFragment : LinkFragment() {
                 ItemListConversationBinding.inflate(
                     LayoutInflater.from(parent.context),
                     parent,
-                    false
-                )
+                    false,
+                ),
             )
 
         override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
@@ -679,7 +679,7 @@ class ConversationListFragment : LinkFragment() {
                                 R.string.Waiting_for_this_message
                             } else {
                                 R.string.chat_decryption_failed
-                            }
+                            },
                         )
                     }
                     AppCompatResources.getDrawable(itemView.context, R.drawable.ic_status_fail)
@@ -700,8 +700,8 @@ class ConversationListFragment : LinkFragment() {
                             binding.msgTv.renderMessage(
                                 it,
                                 MentionRenderCache.singleton.getMentionRenderContext(
-                                    conversationItem.mentions
-                                )
+                                    conversationItem.mentions,
+                                ),
                             )
                         } else {
                             binding.msgTv.text = it
@@ -803,7 +803,7 @@ class ConversationListFragment : LinkFragment() {
                     val pinMessage = try {
                         GsonHelper.customGson.fromJson(
                             conversationItem.content,
-                            PinMessageMinimal::class.java
+                            PinMessageMinimal::class.java,
                         )
                     } catch (e: Exception) {
                         null
@@ -819,11 +819,11 @@ class ConversationListFragment : LinkFragment() {
                                 },
                                 pinMessage?.let { msg ->
                                     " \"${msg.content}\""
-                                } ?: getText(R.string.a_message)
+                                } ?: getText(R.string.a_message),
                             ),
                             MentionRenderCache.singleton.getMentionRenderContext(
-                                conversationItem.mentions
-                            )
+                                conversationItem.mentions,
+                            ),
                         )
                     } else {
                         binding.msgTv.text = String.format(
@@ -833,7 +833,7 @@ class ConversationListFragment : LinkFragment() {
                             } else {
                                 conversationItem.senderFullName
                             },
-                            pinMessage.explain(itemView.context)
+                            pinMessage.explain(itemView.context),
                         )
                     }
                     null
@@ -848,7 +848,7 @@ class ConversationListFragment : LinkFragment() {
                                         getText(R.string.You)
                                     } else {
                                         conversationItem.name
-                                    }
+                                    },
                                 )
                         }
                         SystemConversationAction.ADD.name -> {
@@ -864,7 +864,7 @@ class ConversationListFragment : LinkFragment() {
                                         getText(R.string.you)
                                     } else {
                                         conversationItem.participantFullName
-                                    }
+                                    },
                                 )
                         }
                         SystemConversationAction.REMOVE.name -> {
@@ -880,7 +880,7 @@ class ConversationListFragment : LinkFragment() {
                                         getText(R.string.you)
                                     } else {
                                         conversationItem.participantFullName
-                                    }
+                                    },
                                 )
                         }
                         SystemConversationAction.JOIN.name -> {
@@ -891,7 +891,7 @@ class ConversationListFragment : LinkFragment() {
                                         getText(R.string.You)
                                     } else {
                                         conversationItem.participantFullName
-                                    }
+                                    },
                                 )
                         }
                         SystemConversationAction.EXIT.name -> {
@@ -902,7 +902,7 @@ class ConversationListFragment : LinkFragment() {
                                         getText(R.string.You)
                                     } else {
                                         conversationItem.participantFullName
-                                    }
+                                    },
                                 )
                         }
                         SystemConversationAction.ROLE.name -> {
@@ -920,20 +920,20 @@ class ConversationListFragment : LinkFragment() {
                                     timeInterval == null -> {
                                         String.format(
                                             getText(R.string.changed_disappearing_message_settings),
-                                            name
+                                            name,
                                         )
                                     }
                                     timeInterval <= 0 -> {
                                         String.format(
                                             getText(R.string.disable_disappearing_message),
-                                            name
+                                            name,
                                         )
                                     }
                                     else -> {
                                         String.format(
                                             getText(R.string.set_disappearing_message_time_to),
                                             name,
-                                            toTimeInterval(timeInterval)
+                                            toTimeInterval(timeInterval),
                                         )
                                     }
                                 }
@@ -954,7 +954,7 @@ class ConversationListFragment : LinkFragment() {
                         0,
                         0,
                         itemView.context.dpToPx(12f),
-                        itemView.context.dpToPx(12f)
+                        itemView.context.dpToPx(12f),
                     )
                     binding.msgType.setImageDrawable(drawable)
                     binding.msgType.isVisible = true
@@ -974,24 +974,24 @@ class ConversationListFragment : LinkFragment() {
                 when (conversationItem.messageStatus) {
                     MessageStatus.SENDING.name -> AppCompatResources.getDrawable(
                         itemView.context,
-                        R.drawable.ic_status_sending
+                        R.drawable.ic_status_sending,
                     )
                     MessageStatus.SENT.name -> AppCompatResources.getDrawable(
                         itemView.context,
-                        R.drawable.ic_status_sent_large
+                        R.drawable.ic_status_sent_large,
                     )
                     MessageStatus.DELIVERED.name -> AppCompatResources.getDrawable(
                         itemView.context,
-                        R.drawable.ic_status_delivered
+                        R.drawable.ic_status_delivered,
                     )
                     MessageStatus.READ.name -> AppCompatResources.getDrawable(
                         itemView.context,
-                        R.drawable.ic_status_read_dark
+                        R.drawable.ic_status_read_dark,
                     )
                     else -> {
                         AppCompatResources.getDrawable(
                             itemView.context,
-                            R.drawable.ic_status_sending
+                            R.drawable.ic_status_sending,
                         )
                     }
                 }.also {
@@ -1019,7 +1019,7 @@ class ConversationListFragment : LinkFragment() {
                         {
                             binding.unreadTv.text = "$it"; binding.unreadTv.visibility = VISIBLE
                         },
-                        { binding.unreadTv.visibility = GONE }
+                        { binding.unreadTv.visibility = GONE },
                     )
 
                     if (conversationItem.isGroupConversation() && conversationItem.status == ConversationStatus.FAILURE.ordinal) {
@@ -1038,7 +1038,7 @@ class ConversationListFragment : LinkFragment() {
                             binding.unreadTv.text = "$it"; binding.unreadTv.visibility =
                                 VISIBLE
                         },
-                        { binding.unreadTv.visibility = GONE }
+                        { binding.unreadTv.visibility = GONE },
                     )
                 }
             }
@@ -1059,14 +1059,14 @@ class ConversationListFragment : LinkFragment() {
                 binding.avatarIv.setInfo(
                     conversationItem.getConversationName(),
                     conversationItem.iconUrl(),
-                    conversationItem.ownerId
+                    conversationItem.ownerId,
                 )
             }
             itemView.setOnClickListener { onItemClickListener?.onNormalItemClick(conversationItem) }
             itemView.setOnLongClickListener {
                 onItemClickListener.notNullWithElse(
                     { it.onNormalLongClick(conversationItem) },
-                    false
+                    false,
                 )
             }
         }
@@ -1087,7 +1087,7 @@ class ConversationListFragment : LinkFragment() {
             getString(R.string.one_hour),
             resources.getQuantityString(R.plurals.Hour, 8, 8),
             getString(R.string.one_week),
-            getString(R.string.one_year)
+            getString(R.string.one_year),
         )
         var duration = MUTE_8_HOURS
         var whichItem = 0
@@ -1103,16 +1103,16 @@ class ConversationListFragment : LinkFragment() {
                             invokeNetwork = {
                                 conversationListViewModel.mute(
                                     duration.toLong(),
-                                    conversationId = conversationItem.conversationId
+                                    conversationId = conversationItem.conversationId,
                                 )
                             },
                             successBlock = { response ->
                                 conversationListViewModel.updateGroupMuteUntil(
                                     conversationItem.conversationId,
-                                    response.data!!.muteUntil
+                                    response.data!!.muteUntil,
                                 )
                                 toast(getString(R.string.contact_mute_title) + " ${conversationItem.groupName} " + choices[whichItem])
-                            }
+                            },
                         )
                     }
                 } else {
@@ -1124,16 +1124,16 @@ class ConversationListFragment : LinkFragment() {
                                     conversationListViewModel.mute(
                                         duration.toLong(),
                                         senderId = it.userId,
-                                        recipientId = conversationItem.ownerId
+                                        recipientId = conversationItem.ownerId,
                                     )
                                 },
                                 successBlock = { response ->
                                     conversationListViewModel.updateMuteUntil(
                                         conversationItem.ownerId,
-                                        response.data!!.muteUntil
+                                        response.data!!.muteUntil,
                                     )
                                     toast(getString(R.string.contact_mute_title) + "  ${conversationItem.name}  " + choices[whichItem])
-                                }
+                                },
                             )
                         }
                     }
@@ -1163,10 +1163,10 @@ class ConversationListFragment : LinkFragment() {
                     successBlock = { response ->
                         conversationListViewModel.updateGroupMuteUntil(
                             conversationItem.conversationId,
-                            response.data!!.muteUntil
+                            response.data!!.muteUntil,
                         )
                         toast(getString(R.string.Unmute) + " ${conversationItem.groupName}")
-                    }
+                    },
                 )
             }
         } else {
@@ -1177,16 +1177,16 @@ class ConversationListFragment : LinkFragment() {
                             conversationListViewModel.mute(
                                 0,
                                 senderId = it.userId,
-                                recipientId = conversationItem.ownerId
+                                recipientId = conversationItem.ownerId,
                             )
                         },
                         successBlock = { response ->
                             conversationListViewModel.updateMuteUntil(
                                 conversationItem.ownerId,
-                                response.data!!.muteUntil
+                                response.data!!.muteUntil,
                             )
                             toast(getString(R.string.Unmute) + " ${conversationItem.name}")
-                        }
+                        },
                     )
                 }
             }

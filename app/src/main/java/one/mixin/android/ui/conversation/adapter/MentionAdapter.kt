@@ -17,7 +17,7 @@ class MentionAdapter constructor(private val onClickListener: OnUserClickListene
         object : DiffUtil.ItemCallback<User>() {
             override fun areItemsTheSame(oldItem: User, newItem: User) = false
             override fun areContentsTheSame(oldItem: User, newItem: User) = false
-        }
+        },
     ) {
 
     var list: List<User>? = null
@@ -44,8 +44,8 @@ class MentionAdapter constructor(private val onClickListener: OnUserClickListene
             LayoutInflater.from(parent.context).inflate(
                 R.layout.item_chat_mention,
                 parent,
-                false
-            )
+                false,
+            ),
         )
 
     interface OnUserClickListener {

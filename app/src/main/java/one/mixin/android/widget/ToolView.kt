@@ -65,7 +65,7 @@ class ToolView constructor(context: Context, attrs: AttributeSet) : RelativeLayo
                     R.string.pin_title
                 } else {
                     R.string.Unpin
-                }
+                },
             )
             true
         }

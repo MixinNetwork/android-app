@@ -64,7 +64,7 @@ class MixinMapView(
             googleMap?.addMarker(
                 MarkerOptions()
                     .position(latLng.toGoogleMap())
-                    .icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_location_search_maker))
+                    .icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_location_search_maker)),
             )
         }
     }
@@ -80,9 +80,9 @@ class MixinMapView(
                 MarkerOptions().zIndex(index.toFloat()).position(
                     LatLng(
                         venue.location.lat,
-                        venue.location.lng
-                    )
-                ).icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_location_search_maker))
+                        venue.location.lng,
+                    ),
+                ).icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_location_search_maker)),
             )
         }
     }

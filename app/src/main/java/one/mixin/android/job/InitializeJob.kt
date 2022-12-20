@@ -31,7 +31,7 @@ class InitializeJob(private val botId: String, private val botName: String) :
                     userDao.insertUpdate(u, appDao)
                     return@handleMixinResponse
                 }
-            }
+            },
         )
     }
 }

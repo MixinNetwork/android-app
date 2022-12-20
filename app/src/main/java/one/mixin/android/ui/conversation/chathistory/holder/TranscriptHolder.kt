@@ -65,13 +65,13 @@ class TranscriptHolder constructor(val binding: ItemChatTranscriptBinding) :
                 setItemBackgroundResource(
                     binding.chatLayout,
                     R.drawable.chat_bubble_transcript_me_last,
-                    R.drawable.chat_bubble_transcript_me_last_night
+                    R.drawable.chat_bubble_transcript_me_last_night,
                 )
             } else {
                 setItemBackgroundResource(
                     binding.chatLayout,
                     R.drawable.chat_bubble_transcript_me,
-                    R.drawable.chat_bubble_transcript_me_night
+                    R.drawable.chat_bubble_transcript_me_night,
                 )
             }
         } else {
@@ -80,13 +80,13 @@ class TranscriptHolder constructor(val binding: ItemChatTranscriptBinding) :
                 setItemBackgroundResource(
                     binding.chatLayout,
                     R.drawable.chat_bubble_post_other_last,
-                    R.drawable.chat_bubble_post_other_last_night
+                    R.drawable.chat_bubble_post_other_last_night,
                 )
             } else {
                 setItemBackgroundResource(
                     binding.chatLayout,
                     R.drawable.chat_bubble_post_other,
-                    R.drawable.chat_bubble_post_other_night
+                    R.drawable.chat_bubble_post_other_night,
                 )
             }
         }
@@ -114,7 +114,7 @@ class TranscriptHolder constructor(val binding: ItemChatTranscriptBinding) :
             if (!messageItem.content.isNullOrEmpty()) {
                 val transcripts = GsonHelper.customGson.fromJson(
                     messageItem.content,
-                    Array<TranscriptMinimal>::class.java
+                    Array<TranscriptMinimal>::class.java,
                 )
                 val str = StringBuilder()
                 transcripts.forEach {
@@ -202,7 +202,7 @@ class TranscriptHolder constructor(val binding: ItemChatTranscriptBinding) :
             false,
             isRepresentative = false,
             isSecret = false,
-            isWhite = true
+            isWhite = true,
         )
 
         chatLayout(isMe, isLast)

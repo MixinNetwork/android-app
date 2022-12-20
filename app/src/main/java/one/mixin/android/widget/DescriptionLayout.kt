@@ -81,7 +81,7 @@ class DescriptionLayout : ViewGroup {
             paddingStart,
             paddingTop,
             firstView.measuredWidth + paddingStart,
-            firstView.measuredHeight + paddingTop
+            firstView.measuredHeight + paddingTop,
         )
         when (type) {
             EXPAND, DEFAULT -> {
@@ -91,7 +91,7 @@ class DescriptionLayout : ViewGroup {
                     paddingTop,
                     firstView.measuredWidth + paddingStart,
                     firstView
-                        .measuredHeight + paddingTop
+                        .measuredHeight + paddingTop,
                 )
             }
             TAIL -> {
@@ -102,7 +102,7 @@ class DescriptionLayout : ViewGroup {
                     paddingTop,
                     firstView.measuredWidth + paddingStart,
                     firstView
-                        .measuredHeight + paddingTop
+                        .measuredHeight + paddingTop,
                 )
                 secondView.layout(left, top, left + secondView.measuredWidth, top + lineHeight)
             }
@@ -112,7 +112,7 @@ class DescriptionLayout : ViewGroup {
                     paddingStart,
                     paddingTop,
                     firstView.measuredWidth + paddingStart,
-                    paddingTop + lineHeight * 2
+                    paddingTop + lineHeight * 2,
                 )
                 secondView.layout(paddingStart, top, firstView.measuredWidth + paddingStart, top + lineHeight)
             }

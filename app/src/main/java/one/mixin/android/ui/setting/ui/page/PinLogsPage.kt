@@ -48,7 +48,7 @@ import timber.log.Timber
 fun PinLogsPage() {
     SettingPageScaffold(
         title = stringResource(id = R.string.Logs),
-        verticalScrollable = false
+        verticalScrollable = false,
     ) {
         val viewModel = hiltViewModel<SettingViewModel>()
 
@@ -81,7 +81,7 @@ fun PinLogsPage() {
                 },
                 defaultErrorHandle = {
                     hasMore = false
-                }
+                },
             )
             isLoading = false
         }
@@ -103,7 +103,7 @@ fun PinLogsPage() {
                     scope.launch {
                         loadMore()
                     }
-                }
+                },
             )
         }
     }
@@ -143,18 +143,18 @@ private fun LogItem(log: LogResponse) {
         modifier = Modifier
             .background(MixinAppTheme.colors.background)
             .fillMaxWidth()
-            .padding(16.dp)
+            .padding(16.dp),
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
         ) {
             Text(
                 text = description.first,
                 fontSize = 16.sp,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
-                color = MixinAppTheme.colors.textPrimary
+                color = MixinAppTheme.colors.textPrimary,
             )
             Spacer(modifier = Modifier.weight(1f))
             Text(
@@ -162,7 +162,7 @@ private fun LogItem(log: LogResponse) {
                 fontSize = 12.sp,
                 overflow = TextOverflow.Ellipsis,
                 modifier = Modifier.padding(start = 16.dp),
-                color = MixinAppTheme.colors.textSubtitle
+                color = MixinAppTheme.colors.textSubtitle,
             )
         }
         Box(modifier = Modifier.height(6.dp))
@@ -170,7 +170,7 @@ private fun LogItem(log: LogResponse) {
         Text(
             text = description.second,
             color = MixinAppTheme.colors.textSubtitle,
-            fontSize = 14.sp
+            fontSize = 14.sp,
         )
 
         Box(modifier = Modifier.height(6.dp))
@@ -178,7 +178,7 @@ private fun LogItem(log: LogResponse) {
         Text(
             text = log.ipAddress,
             color = MixinAppTheme.colors.textSubtitle,
-            fontSize = 14.sp
+            fontSize = 14.sp,
         )
     }
 }
@@ -189,11 +189,11 @@ private fun Loading() {
         modifier = Modifier
             .fillMaxHeight()
             .fillMaxWidth(),
-        contentAlignment = Alignment.Center
+        contentAlignment = Alignment.Center,
     ) {
         CircularProgressIndicator(
             modifier = Modifier.size(48.dp),
-            color = MixinAppTheme.colors.accent
+            color = MixinAppTheme.colors.accent,
         )
     }
 }
@@ -202,17 +202,17 @@ private fun Loading() {
 private fun EmptyLayout() {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier.fillMaxWidth(),
     ) {
         Box(modifier = Modifier.height(120.dp))
         Image(
             painter = painterResource(id = R.drawable.ic_pin_empty),
-            contentDescription = null
+            contentDescription = null,
         )
         Box(modifier = Modifier.height(16.dp))
         Text(
             text = stringResource(id = R.string.No_logs),
-            color = MixinAppTheme.colors.textSubtitle
+            color = MixinAppTheme.colors.textSubtitle,
         )
     }
 }
@@ -223,7 +223,7 @@ fun PreviewEmptyLayout() {
     MixinAppTheme {
         SettingPageScaffold(
             title = stringResource(id = R.string.Logs),
-            verticalScrollable = false
+            verticalScrollable = false,
         ) {
             EmptyLayout()
         }

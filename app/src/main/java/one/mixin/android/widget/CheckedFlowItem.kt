@@ -15,7 +15,7 @@ class CheckedFlowItem @JvmOverloads constructor(
     init {
         layoutParams = ViewGroup.MarginLayoutParams(
             ViewGroup.LayoutParams.WRAP_CONTENT,
-            ViewGroup.LayoutParams.WRAP_CONTENT
+            ViewGroup.LayoutParams.WRAP_CONTENT,
         )
         setBackgroundResource(R.drawable.bg_selector_wallet_round_gray)
         setPaddingRelative(16.dp, 8.dp, 16.dp, 8.dp)

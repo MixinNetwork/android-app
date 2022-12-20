@@ -83,7 +83,7 @@ class ContentQRView : ViewAnimator {
                             qr.setImageBitmap(r.first)
                         },
                         {
-                        }
+                        },
                     )
             }
         }

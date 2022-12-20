@@ -78,7 +78,7 @@ class CurrencyBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     private fun savePreference(currency: Currency) = lifecycleScope.launch {
         val pb = indeterminateProgressDialog(
             message = R.string.Please_wait_a_bit,
-            title = R.string.Switching_currency
+            title = R.string.Switching_currency,
         ).apply {
             setCancelable(false)
         }
@@ -87,7 +87,7 @@ class CurrencyBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         handleMixinResponse(
             invokeNetwork = {
                 bottomViewModel.preferences(
-                    AccountUpdateRequest(fiatCurrency = currency.name)
+                    AccountUpdateRequest(fiatCurrency = currency.name),
                 )
             },
             successBlock = {
@@ -104,7 +104,7 @@ class CurrencyBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             exceptionBlock = {
                 pb.dismiss()
                 return@handleMixinResponse false
-            }
+            },
         )
     }
 
@@ -136,7 +136,7 @@ class CurrencyBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 }.sortedByDescending { it.name.equalsIgnoreCase(s) }
             } else {
                 currencies
-            }
+            },
         )
     }
 

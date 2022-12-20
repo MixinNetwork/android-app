@@ -52,19 +52,19 @@ fun MobileContactPage() {
     SettingPageScaffold(title = stringResource(R.string.Phone_Contact)) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
         ) {
             Box(modifier = Modifier.height(32.dp))
             Image(
                 painter = painterResource(id = R.drawable.ic_setting_mobile_contact),
-                contentDescription = null
+                contentDescription = null,
             )
             Box(modifier = Modifier.height(32.dp))
             Text(
                 modifier = Modifier.padding(horizontal = 20.dp),
                 text = stringResource(R.string.syncs_contact_hint),
                 color = MixinAppTheme.colors.textSubtitle,
-                fontSize = 14.sp
+                fontSize = 14.sp,
             )
             Box(modifier = Modifier.height(32.dp))
         }
@@ -88,7 +88,7 @@ fun MobileContactPage() {
                     invokeNetwork = { viewModel.getContacts() },
                     successBlock = { response ->
                         showUploadButton = response.data.isNullOrEmpty()
-                    }
+                    },
                 )
                 loading = false
             }
@@ -101,7 +101,7 @@ fun MobileContactPage() {
                         .size(24.dp)
                         .padding(horizontal = 4.dp),
                     color = MixinAppTheme.colors.accent,
-                    strokeWidth = 2.dp
+                    strokeWidth = 2.dp,
                 )
             }) {
             }
@@ -145,7 +145,7 @@ private fun UploadButton(
             successBlock = {
                 context.defaultSharedPreferences.putBoolean(Constants.Account.PREF_DELETE_MOBILE_CONTACTS, false)
                 onUploaded()
-            }
+            },
         )
         processing = false
     }
@@ -160,10 +160,10 @@ private fun UploadButton(
                         .size(24.dp)
                         .padding(4.dp),
                     color = MixinAppTheme.colors.accent,
-                    strokeWidth = 2.dp
+                    strokeWidth = 2.dp,
                 )
             }
-        }
+        },
     ) {
         val activity = context.findFragmentActivityOrNull()
         if (activity == null) {
@@ -188,7 +188,7 @@ private fun UploadButton(
                         },
                         {
                             processing = false
-                        }
+                        },
                     )
             }
     }
@@ -220,10 +220,10 @@ private fun DeleteButton(
                         .size(24.dp)
                         .padding(4.dp),
                     color = MixinAppTheme.colors.accent,
-                    strokeWidth = 2.dp
+                    strokeWidth = 2.dp,
                 )
             }
-        }
+        },
     ) {
         showAlert = true
     }
@@ -243,7 +243,7 @@ private fun DeleteButton(
                 return@handleMixinResponse false
             },
             doAfterNetworkSuccess = {
-            }
+            },
         )
         deleting = false
     }
@@ -259,7 +259,7 @@ private fun DeleteButton(
                 showAlert = false
                 deleteContacts()
             },
-            dismissText = stringResource(id = R.string.Cancel)
+            dismissText = stringResource(id = R.string.Cancel),
         )
     }
 }

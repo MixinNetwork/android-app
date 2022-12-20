@@ -105,13 +105,13 @@ class TransferBottomSheetDialogFragment : ValuableBiometricBottomSheetDialogFrag
                 BiometricInfo(
                     getString(
                         R.string.transfer_to,
-                        t.user.fullName
+                        t.user.fullName,
                     ),
                     getString(
                         R.string.contact_mixin_id,
-                        t.user.identityNumber
+                        t.user.identityNumber,
                     ),
-                    getDescription()
+                    getDescription(),
                 )
             }
             else -> {
@@ -181,7 +181,7 @@ class TransferBottomSheetDialogFragment : ValuableBiometricBottomSheetDialogFrag
                 PIN_INCORRECT,
                 TOO_SMALL,
                 INSUFFICIENT_TRANSACTION_FEE,
-                BLOCKCHAIN_ERROR
+                BLOCKCHAIN_ERROR,
             )
         ) {
             t.traceId?.let { traceId ->
@@ -192,7 +192,7 @@ class TransferBottomSheetDialogFragment : ValuableBiometricBottomSheetDialogFrag
                 val item = t as WithdrawBiometricItem
                 return getString(
                     R.string.error_insufficient_transaction_fee_with_amount,
-                    "${item.fee} ${t.asset.chainSymbol}"
+                    "${item.fee} ${t.asset.chainSymbol}",
                 )
             }
         } else if (errorCode == ErrorHandler.WITHDRAWAL_FEE_TOO_SMALL) {

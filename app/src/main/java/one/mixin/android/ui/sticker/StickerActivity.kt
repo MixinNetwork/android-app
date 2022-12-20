@@ -37,13 +37,13 @@ class StickerActivity : BaseActivity() {
             replaceFragment(
                 StickerAddFragment.newInstance(url),
                 R.id.container,
-                StickerAddFragment.TAG
+                StickerAddFragment.TAG,
             )
         } else {
             replaceFragment(
                 StickerManagementFragment.newInstance(intent.getStringExtra(ARGS_PERSONAL_ALBUM_ID)),
                 R.id.container,
-                StickerManagementFragment.TAG
+                StickerManagementFragment.TAG,
             )
         }
     }

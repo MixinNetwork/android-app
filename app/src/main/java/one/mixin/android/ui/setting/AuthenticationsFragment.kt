@@ -112,7 +112,7 @@ class AuthenticationsFragment : BaseFragment(R.layout.fragment_authentications) 
                 binding.searchEt.hideKeyboard()
                 navTo(fragment, PermissionListFragment.TAG)
             }
-        }
+        },
     )
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -131,7 +131,7 @@ class AuthenticationsFragment : BaseFragment(R.layout.fragment_authentications) 
                         adapter.filter = keyWord
                         appCallback.filter = keyWord
                     }
-                }
+                },
             )
 
             viewModel.authorizations().autoDispose(stopScope).subscribe(
@@ -161,7 +161,7 @@ class AuthenticationsFragment : BaseFragment(R.layout.fragment_authentications) 
                     progress.visibility = View.GONE
                     authVa.displayedChild = 1
                     ErrorHandler.handleError(it)
-                }
+                },
             )
             authRv.adapter = adapter
         }
@@ -175,7 +175,7 @@ class AuthenticationsFragment : BaseFragment(R.layout.fragment_authentications) 
                 }?.sortedByDescending { it.name.equalsIgnoreCase(keyWord) || it.appNumber.equalsIgnoreCase(keyWord) }
             } else {
                 list?.toList()
-            }
+            },
         )
     }
 

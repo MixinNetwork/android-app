@@ -38,7 +38,7 @@ import one.mixin.android.ui.setting.ui.theme.MixinAppTheme
 fun SettingPage() {
     Surface(
         modifier = Modifier.fillMaxSize(),
-        color = MixinAppTheme.colors.backgroundWindow
+        color = MixinAppTheme.colors.backgroundWindow,
     ) {
         Scaffold(
             backgroundColor = MixinAppTheme.colors.backgroundWindow,
@@ -49,52 +49,52 @@ fun SettingPage() {
                     },
                     title = {
                         Text(text = stringResource(id = R.string.Settings))
-                    }
+                    },
                 )
-            }
+            },
         ) {
             val settingNavController = LocalSettingNav.current
             Column(
                 modifier = Modifier
                     .padding(it)
-                    .verticalScroll(rememberScrollState())
+                    .verticalScroll(rememberScrollState()),
             ) {
                 val context = LocalContext.current
                 SettingTile(
                     icon = R.drawable.ic_setting_privacy,
-                    title = stringResource(id = R.string.Account)
+                    title = stringResource(id = R.string.Account),
                 ) {
                     settingNavController.navigation(SettingDestination.Account)
                 }
                 SettingTile(
                     icon = R.drawable.ic_setting_notification,
-                    title = stringResource(id = R.string.Notification_and_Confirmation)
+                    title = stringResource(id = R.string.Notification_and_Confirmation),
                 ) {
                     settingNavController.navigation(SettingDestination.NotificationAndConfirm)
                 }
                 SettingTile(
                     icon = R.drawable.ic_setting_backup,
-                    title = stringResource(id = R.string.Chat_Backup)
+                    title = stringResource(id = R.string.Chat_Backup),
                 ) {
                     settingNavController.navigation(SettingDestination.BackUp)
                 }
                 SettingTile(
                     icon = R.drawable.ic_setting_data,
-                    title = stringResource(id = R.string.Data_and_Storage_Usage)
+                    title = stringResource(id = R.string.Data_and_Storage_Usage),
                 ) {
                     settingNavController.navigation(SettingDestination.DataStorage)
                 }
                 Box(modifier = Modifier.height(16.dp))
                 SettingTile(
                     icon = R.drawable.ic_setting_appearance,
-                    title = stringResource(id = R.string.Appearance)
+                    title = stringResource(id = R.string.Appearance),
                 ) {
                     settingNavController.navigation(SettingDestination.Appearance)
                 }
                 Box(modifier = Modifier.height(16.dp))
                 SettingTile(
                     icon = R.drawable.ic_setting_desktop,
-                    title = stringResource(id = R.string.Mixin_Messenger_Desktop)
+                    title = stringResource(id = R.string.Mixin_Messenger_Desktop),
                 ) {
                     context.findFragmentActivityOrNull()?.supportFragmentManager?.let { fragmentManager ->
                         DeviceFragment.newInstance().showNow(fragmentManager, DeviceFragment.TAG)
@@ -107,7 +107,7 @@ fun SettingPage() {
 
                 SettingTile(
                     icon = R.drawable.ic_setting_feedback,
-                    title = stringResource(id = R.string.Feedback)
+                    title = stringResource(id = R.string.Feedback),
                 ) {
                     scope.launch {
                         val userTeamMixin = viewModel.refreshUser(Constants.TEAM_MIXIN_USER_ID)
@@ -120,26 +120,26 @@ fun SettingPage() {
                 }
                 SettingTile(
                     icon = R.drawable.ic_setting_share,
-                    title = stringResource(id = R.string.Invite_a_Friend)
+                    title = stringResource(id = R.string.Invite_a_Friend),
                 ) {
                     val sendIntent = Intent()
                     sendIntent.action = Intent.ACTION_SEND
                     sendIntent.putExtra(
                         Intent.EXTRA_TEXT,
-                        context.getString(R.string.chat_on_mixin_content, Session.getAccount()?.identityNumber)
+                        context.getString(R.string.chat_on_mixin_content, Session.getAccount()?.identityNumber),
                     )
                     sendIntent.type = "text/plain"
                     context.startActivity(
                         Intent.createChooser(
                             sendIntent,
-                            context.resources.getText(R.string.Share)
-                        )
+                            context.resources.getText(R.string.Share),
+                        ),
                     )
                 }
                 Box(modifier = Modifier.height(16.dp))
                 SettingTile(
                     icon = R.drawable.ic_setting_about,
-                    title = stringResource(id = R.string.About)
+                    title = stringResource(id = R.string.About),
                 ) {
                     settingNavController.navigation(SettingDestination.About)
                 }

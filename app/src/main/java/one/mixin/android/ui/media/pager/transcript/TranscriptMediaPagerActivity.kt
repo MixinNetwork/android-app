@@ -242,7 +242,7 @@ class TranscriptMediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismis
         val view = View.inflate(
             ContextThemeWrapper(this, R.style.Custom),
             R.layout.view_drag_video_bottom,
-            null
+            null,
         )
         val binding = ViewDragVideoBottomBinding.bind(view)
         builder.setCustomView(view)
@@ -262,7 +262,7 @@ class TranscriptMediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismis
                     },
                     {
                         toast(R.string.Save_failure)
-                    }
+                    },
                 )
             bottomSheet.dismiss()
         }
@@ -281,7 +281,7 @@ class TranscriptMediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismis
         val view = View.inflate(
             ContextThemeWrapper(this, R.style.Custom),
             R.layout.view_drag_image_bottom,
-            null
+            null,
         )
         val binding = ViewDragImageBottomBinding.bind(view)
         builder.setCustomView(view)
@@ -308,16 +308,16 @@ class TranscriptMediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismis
                                 val outFile = when {
                                     item.mediaMimeType.equals(
                                         MimeType.GIF.toString(),
-                                        true
+                                        true,
                                     ) -> this@TranscriptMediaPagerActivity.getPublicPicturePath().createGifTemp(
-                                        false
+                                        false,
                                     )
                                     item.mediaMimeType.equals(MimeType.PNG.toString()) ->
                                         this@TranscriptMediaPagerActivity.getPublicPicturePath().createPngTemp(
-                                            false
+                                            false,
                                         )
                                     else -> this@TranscriptMediaPagerActivity.getPublicPicturePath().createImageTemp(
-                                        noMedia = false
+                                        noMedia = false,
                                     )
                                 }
                                 outFile.copyFromInputStream(FileInputStream(file))
@@ -330,7 +330,7 @@ class TranscriptMediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismis
                     },
                     {
                         toast(R.string.Save_failure)
-                    }
+                    },
                 )
             bottomSheet.dismiss()
         }
@@ -376,7 +376,7 @@ class TranscriptMediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismis
                     if (imageView !is ImageView) {
                         imageView.isDrawingCacheEnabled = false
                     }
-                }
+                },
             )
         } else {
             toast(R.string.can_not_recognize_qr_code)
@@ -412,7 +412,7 @@ class TranscriptMediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismis
             grantUriPermission(
                 packageName,
                 uri,
-                Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+                Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION,
             )
         }
         startActivity(chooser)
@@ -449,7 +449,7 @@ class TranscriptMediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismis
                 messageItem.messageId,
                 messageItem.isVideo(),
                 MediaPagerActivity.MediaSource.ChatHistory, //
-                messageItem.absolutePath()
+                messageItem.absolutePath(),
             )
 
             val videoTexture = view.findViewById<TextureView>(R.id.video_texture)
@@ -461,14 +461,14 @@ class TranscriptMediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismis
                     videoAspectRatioLayout,
                     View.TRANSLATION_X,
                     rect.x - videoAspectRatioLayout.x -
-                        this.realSize().x * (1f - scale) / 2
+                        this.realSize().x * (1f - scale) / 2,
                 ),
                 ObjectAnimator.ofFloat(
                     videoAspectRatioLayout,
                     View.TRANSLATION_Y,
                     rect.y - videoAspectRatioLayout.y +
-                        this.statusBarHeight() - (videoAspectRatioLayout.height - rect.height) / 2
-                )
+                        this.statusBarHeight() - (videoAspectRatioLayout.height - rect.height) / 2,
+                ),
             )
             animatorSet.interpolator = DecelerateInterpolator()
             animatorSet.duration = 250
@@ -494,7 +494,7 @@ class TranscriptMediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismis
                         }
                         dismiss()
                     }
-                }
+                },
             )
             animatorSet.start()
         }
@@ -514,8 +514,8 @@ class TranscriptMediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismis
                         startActivity(
                             Intent(
                                 Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
-                                Uri.parse("package:$packageName")
-                            )
+                                Uri.parse("package:$packageName"),
+                            ),
                         )
                     } catch (e: Exception) {
                         Timber.e(e)
@@ -763,8 +763,8 @@ class TranscriptMediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismis
                 ActivityOptions.makeSceneTransitionAnimation(
                     activity,
                     imageView,
-                    "transition"
-                ).toBundle()
+                    "transition",
+                ).toBundle(),
             )
         }
     }

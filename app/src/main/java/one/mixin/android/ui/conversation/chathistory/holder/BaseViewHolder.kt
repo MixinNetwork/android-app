@@ -77,7 +77,7 @@ abstract class BaseViewHolder constructor(containerView: View) :
                 defaultBg
             } else {
                 nightBg
-            }
+            },
         )
     }
 
@@ -126,8 +126,8 @@ abstract class BaseViewHolder constructor(containerView: View) :
                         argbEvaluator.evaluate(
                             valueAnimator.animatedValue as Float,
                             Color.TRANSPARENT,
-                            SELECT_COLOR
-                        ) as Int
+                            SELECT_COLOR,
+                        ) as Int,
                     )
                 }
             }
@@ -146,7 +146,7 @@ abstract class BaseViewHolder constructor(containerView: View) :
                 R.drawable.ic_chat_jump_me
             } else {
                 R.drawable.ic_chat_jump
-            }
+            },
         )
         chatJump.setOnClickListener {
             onItemListener.onMessageJump(messageId)

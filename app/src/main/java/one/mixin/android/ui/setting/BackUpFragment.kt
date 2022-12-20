@@ -77,7 +77,7 @@ class BackUpFragment : BaseFragment(R.layout.fragment_backup) {
             chooseFolderResult = registerForActivityResult(
                 ChooseFolderContract(),
                 resultRegistry,
-                ::callbackChooseFolder
+                ::callbackChooseFolder,
             )
         }
     }
@@ -129,12 +129,12 @@ class BackUpFragment : BaseFragment(R.layout.fragment_backup) {
                         },
                         {
                             context?.openPermissionSetting()
-                        }
+                        },
                     )
             }
             if (ContextCompat.checkSelfPermission(
                     requireContext(),
-                    Manifest.permission.WRITE_EXTERNAL_STORAGE
+                    Manifest.permission.WRITE_EXTERNAL_STORAGE,
                 ) == PackageManager.PERMISSION_GRANTED
             ) {
                 findBackUp()
@@ -143,8 +143,8 @@ class BackUpFragment : BaseFragment(R.layout.fragment_backup) {
                 deleteBn.isVisible = false
                 lifecycleScope.launch {
                     if (if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                        deleteApi29(requireContext())
-                    } else {
+                            deleteApi29(requireContext())
+                        } else {
                             delete(requireContext())
                         }
                     ) {
@@ -158,7 +158,7 @@ class BackUpFragment : BaseFragment(R.layout.fragment_backup) {
             }
         }
         BackupJob.backupLiveData.observe(
-            viewLifecycleOwner
+            viewLifecycleOwner,
         ) {
             if (it) {
                 binding.backupChoose.isVisible = false
@@ -218,7 +218,7 @@ class BackUpFragment : BaseFragment(R.layout.fragment_backup) {
         val checkedItems = booleanArrayOf(checked)
         builder.setMultiChoiceItems(
             animals,
-            checkedItems
+            checkedItems,
         ) { _, _, isChecked ->
             checked = isChecked
             lifecycleScope.launch {
@@ -242,8 +242,8 @@ class BackUpFragment : BaseFragment(R.layout.fragment_backup) {
             chooseFolderResult.launch(
                 defaultSharedPreferences.getString(
                     PREF_BACKUP_DIRECTORY,
-                    null
-                )
+                    null,
+                ),
             )
         }
         builder.setNegativeButton(android.R.string.cancel) { _, _ ->
@@ -278,7 +278,7 @@ class BackUpFragment : BaseFragment(R.layout.fragment_backup) {
         } else {
             if (ActivityCompat.checkSelfPermission(
                     requireContext(),
-                    Manifest.permission.WRITE_EXTERNAL_STORAGE
+                    Manifest.permission.WRITE_EXTERNAL_STORAGE,
                 ) != PackageManager.PERMISSION_GRANTED
             ) {
                 return@launch
@@ -298,7 +298,7 @@ class BackUpFragment : BaseFragment(R.layout.fragment_backup) {
                             if (backupDirectoryUri != null) {
                                 backupPath.text = getString(
                                     R.string.restore_path,
-                                    requireContext().getDisplayPath(backupDirectoryUri)
+                                    requireContext().getDisplayPath(backupDirectoryUri),
 
                                 )
                                 backupPath.isVisible = true
@@ -314,8 +314,8 @@ class BackUpFragment : BaseFragment(R.layout.fragment_backup) {
                             R.string.restore_path,
                             requireContext().getLegacyBackupPath(
                                 create = false,
-                                legacy = false
-                            )?.absolutePath
+                                legacy = false,
+                            )?.absolutePath,
                         )
                     }
                 } else {

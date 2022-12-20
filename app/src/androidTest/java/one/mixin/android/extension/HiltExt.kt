@@ -17,8 +17,8 @@ inline fun <reified T : Fragment> launchFragmentInHiltContainer(
     val startActivityIntent = Intent.makeMainActivity(
         ComponentName(
             ApplicationProvider.getApplicationContext(),
-            HiltTestActivity::class.java
-        )
+            HiltTestActivity::class.java,
+        ),
     ).putExtra("androidx.fragment.app.testing.FragmentScenario.EmptyFragmentActivity.THEME_EXTRAS_BUNDLE_KEY", themeResId)
 
     ActivityScenario.launch<HiltTestActivity>(startActivityIntent).onActivity { activity ->
@@ -42,8 +42,8 @@ inline fun <reified T : Fragment> launchFragmentInHiltContainer(
     val startActivityIntent = Intent.makeMainActivity(
         ComponentName(
             ApplicationProvider.getApplicationContext(),
-            HiltTestActivity::class.java
-        )
+            HiltTestActivity::class.java,
+        ),
     ).putExtra("androidx.fragment.app.testing.FragmentScenario.EmptyFragmentActivity.THEME_EXTRAS_BUNDLE_KEY", themeResId)
 
     ActivityScenario.launch<HiltTestActivity>(startActivityIntent).onActivity { activity ->

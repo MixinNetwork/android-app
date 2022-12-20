@@ -45,7 +45,7 @@ interface ConversationDao : BaseDao<Conversation> {
         """$PREFIX_CONVERSATION_ITEM
         WHERE c.category IN ('CONTACT', 'GROUP')
         ORDER BY c.pin_time DESC, c.last_message_created_at DESC
-        """
+        """,
     )
     fun conversationList(): DataSource.Factory<Int, ConversationItem>
 
@@ -66,7 +66,7 @@ interface ConversationDao : BaseDao<Conversation> {
         WHERE c.category IN ('CONTACT', 'GROUP')
         AND c.status = 2
         ORDER BY c.pin_time DESC, c.last_message_created_at DESC
-        """
+        """,
     )
     suspend fun successConversationList(): List<ConversationMinimal>
 
@@ -91,7 +91,7 @@ interface ConversationDao : BaseDao<Conversation> {
                         OR ou.identity_number = :query COLLATE NOCASE)) DESC,
             c.pin_time DESC, 
             m.created_at DESC
-        """
+        """,
     )
     suspend fun fuzzySearchChat(query: String): List<ChatMinimal>
 
@@ -125,7 +125,7 @@ interface ConversationDao : BaseDao<Conversation> {
             "ou.identity_number AS ownerIdentityNumber, ou.mute_until AS ownerMuteUntil " +
             "FROM conversations c " +
             "INNER JOIN users ou ON ou.user_id = c.owner_id " +
-            "WHERE c.conversation_id = :conversationId"
+            "WHERE c.conversation_id = :conversationId",
     )
     fun getConversationItem(conversationId: String): ConversationItem?
 
@@ -136,7 +136,7 @@ interface ConversationDao : BaseDao<Conversation> {
         """
         SELECT c.conversation_id, c.owner_id, c.category, c.icon_url, c.name, u.identity_number,u.full_name, u.avatar_url, u.is_verified 
         FROM conversations c INNER JOIN users u ON u.user_id = c.owner_id WHERE c.category IS NOT NULL 
-        """
+        """,
     )
     suspend fun getConversationStorageUsage(): List<ConversationStorageUsage>
 
@@ -146,7 +146,7 @@ interface ConversationDao : BaseDao<Conversation> {
         LEFT JOIN participants p ON p.conversation_id = c.conversation_id
         LEFT JOIN apps a ON a.app_id = u.app_id
         WHERE p.user_id = :userId
-        """
+        """,
     )
     fun getConversationsByUserId(userId: String): List<ParticipantSessionMinimal>
 
@@ -156,7 +156,7 @@ interface ConversationDao : BaseDao<Conversation> {
     @Query(
         """
         SELECT sum(unseen_message_count) FROM conversations
-        """
+        """,
     )
     fun observeAllConversationUnread(): LiveData<Int?>
 
@@ -164,7 +164,7 @@ interface ConversationDao : BaseDao<Conversation> {
         """
         SELECT unseen_message_count FROM conversations WHERE conversation_id NOT IN (SELECT conversation_id FROM circle_conversations WHERE circle_id = :circleId)
         AND unseen_message_count > 0 LIMIT 1
-        """
+        """,
     )
     fun hasUnreadMessage(circleId: String): LiveData<Int?>
 
@@ -186,7 +186,7 @@ interface ConversationDao : BaseDao<Conversation> {
 
     @Query(
         "UPDATE conversations SET owner_id = :ownerId, category = :category, name = :name, announcement = :announcement, " +
-            "mute_until = :muteUntil, created_at = :createdAt, expire_in = :expireIn, status = :status WHERE conversation_id = :conversationId"
+            "mute_until = :muteUntil, created_at = :createdAt, expire_in = :expireIn, status = :status WHERE conversation_id = :conversationId",
     )
     fun updateConversation(
         conversationId: String,
@@ -243,7 +243,7 @@ interface ConversationDao : BaseDao<Conversation> {
         group by c.conversation_id
         HAVING count(p.user_id) = 2
         ORDER BY c.last_message_created_at DESC
-        """
+        """,
     )
     suspend fun findSameConversations(selfId: String, userId: String): List<GroupMinimal>
 }

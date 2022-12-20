@@ -35,7 +35,7 @@ class TranscriptAttachmentDownloadJob(
 ) : MixinJob(
     Params(PRIORITY_RECEIVE_MESSAGE)
         .groupBy("transcript_download").requireNetwork().persist(),
-    "${transcriptMessage.transcriptId}${transcriptMessage.messageId}"
+    "${transcriptMessage.transcriptId}${transcriptMessage.messageId}",
 ) {
 
     companion object {
@@ -117,7 +117,7 @@ class TranscriptAttachmentDownloadJob(
                 val originalResponse = chain.proceed(chain.request())
                 originalResponse.newBuilder().body(
                     ProgressResponseBody(
-                        originalResponse.body
+                        originalResponse.body,
                     ) { bytesRead, contentLength, done ->
                         if (!done) {
                             val progress = try {
@@ -127,7 +127,7 @@ class TranscriptAttachmentDownloadJob(
                             }
                             RxBus.publish(ProgressEvent.loadingEvent("${transcriptMessage.transcriptId}${transcriptMessage.messageId}", progress))
                         }
-                    }
+                    },
                 ).build()
             }
             .build()
@@ -157,35 +157,35 @@ class TranscriptAttachmentDownloadJob(
                             MixinApplication.get()
                                 .getTranscriptFile(
                                     transcriptMessage.messageId,
-                                    ""
+                                    "",
                                 )
                         }
                         transcriptMessage.mediaMimeType.equals(MimeType.PNG.toString(), true) -> {
                             MixinApplication.get()
                                 .getTranscriptFile(
                                     transcriptMessage.messageId,
-                                    ".png"
+                                    ".png",
                                 )
                         }
                         transcriptMessage.mediaMimeType.equals(MimeType.GIF.toString(), true) -> {
                             MixinApplication.get()
                                 .getTranscriptFile(
                                     transcriptMessage.messageId,
-                                    ".gif"
+                                    ".gif",
                                 )
                         }
                         transcriptMessage.mediaMimeType.equals(MimeType.WEBP.toString(), true) -> {
                             MixinApplication.get()
                                 .getTranscriptFile(
                                     transcriptMessage.messageId,
-                                    ".webp"
+                                    ".webp",
                                 )
                         }
                         else -> {
                             MixinApplication.get()
                                 .getTranscriptFile(
                                     transcriptMessage.messageId,
-                                    ".jpg"
+                                    ".jpg",
                                 )
                         }
                     }
@@ -195,7 +195,7 @@ class TranscriptAttachmentDownloadJob(
                         imageFile.length(),
                         MediaStatus.DONE.name,
                         transcriptMessage.transcriptId,
-                        transcriptMessage.messageId
+                        transcriptMessage.messageId,
                     )
                 }
                 transcriptMessage.type.endsWith("_DATA") -> {
@@ -208,7 +208,7 @@ class TranscriptAttachmentDownloadJob(
                     val dataFile = MixinApplication.get()
                         .getTranscriptFile(
                             transcriptMessage.messageId,
-                            extensionName.notNullWithElse({ ".$it" }, "")
+                            extensionName.notNullWithElse({ ".$it" }, ""),
                         )
                     dataFile.copyFromInputStream(attachmentCipherInputStream)
                     transcriptMessageDao.updateMedia(
@@ -216,7 +216,7 @@ class TranscriptAttachmentDownloadJob(
                         dataFile.length(),
                         MediaStatus.DONE.name,
                         transcriptMessage.transcriptId,
-                        transcriptMessage.messageId
+                        transcriptMessage.messageId,
                     )
                 }
                 transcriptMessage.type.endsWith("_VIDEO") -> {
@@ -231,7 +231,7 @@ class TranscriptAttachmentDownloadJob(
                     val videoFile = MixinApplication.get()
                         .getTranscriptFile(
                             transcriptMessage.messageId,
-                            ".$extensionName"
+                            ".$extensionName",
                         )
                     videoFile.copyFromInputStream(attachmentCipherInputStream)
                     transcriptMessageDao.updateMedia(
@@ -239,7 +239,7 @@ class TranscriptAttachmentDownloadJob(
                         videoFile.length(),
                         MediaStatus.DONE.name,
                         transcriptMessage.transcriptId,
-                        transcriptMessage.messageId
+                        transcriptMessage.messageId,
                     )
                 }
                 transcriptMessage.type.endsWith("_AUDIO") -> {
@@ -256,7 +256,7 @@ class TranscriptAttachmentDownloadJob(
                         audioFile.length(),
                         MediaStatus.DONE.name,
                         transcriptMessage.transcriptId,
-                        transcriptMessage.messageId
+                        transcriptMessage.messageId,
                     )
                 }
             }

@@ -28,7 +28,7 @@ class ConversationLoader : MusicMetaLoader() {
                     .setPageSize(pageSize)
                     .setEnablePlaceholders(true)
                     .build(),
-                initialLoadKey
+                initialLoadKey,
             )
 
     private fun loadMessageItems(messageItems: List<MessageItem>): List<MediaMetadataCompat> {

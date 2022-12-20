@@ -23,7 +23,7 @@ val shareCategories = setOf(
     categoryImageShareTarget,
     categoryVideoShareTarget,
     categoryAudioShareTarget,
-    categoryApplicationShareTarget
+    categoryApplicationShareTarget,
 )
 
 val maxDynamicShortcutCount by lazy {

@@ -430,7 +430,7 @@ class MainActivity : BlazeBaseActivity() {
                         R.anim.slide_in_bottom,
                         R.anim.slide_out_bottom,
                         R.anim.slide_in_bottom,
-                        R.anim.slide_out_bottom
+                        R.anim.slide_out_bottom,
                     )
                         .add(R.id.root_view, VerifyFragment.newInstance(VerifyFragment.FROM_PHONE))
                         .addToBackStack(null)
@@ -446,7 +446,7 @@ class MainActivity : BlazeBaseActivity() {
     private fun checkRoot() {
         if (RootUtil.isDeviceRooted && defaultSharedPreferences.getBoolean(
                 Constants.Account.PREF_BIOMETRICS,
-                false
+                false,
             )
         ) {
             BiometricUtil.deleteKey(this)
@@ -484,7 +484,7 @@ class MainActivity : BlazeBaseActivity() {
                         }
                     },
                     {
-                    }
+                    },
                 )
         }
     }
@@ -515,7 +515,7 @@ class MainActivity : BlazeBaseActivity() {
                         appUpdateInfo,
                         AppUpdateType.FLEXIBLE,
                         this,
-                        0x01
+                        0x01,
                     )
                 } catch (ignored: IntentSender.SendIntentException) {
                 }
@@ -545,7 +545,7 @@ class MainActivity : BlazeBaseActivity() {
                     }
                 },
                 {
-                }
+                },
             )
         }
     }
@@ -555,7 +555,7 @@ class MainActivity : BlazeBaseActivity() {
         Snackbar.make(
             binding.rootView,
             getString(R.string.update_downloaded),
-            Snackbar.LENGTH_INDEFINITE
+            Snackbar.LENGTH_INDEFINITE,
         ).apply {
             setAction(getString(R.string.RESTART)) { appUpdateManager.completeUpdate() }
             setActionTextColor(getColor(R.color.colorAccent))
@@ -647,7 +647,7 @@ class MainActivity : BlazeBaseActivity() {
                                     null,
                                     0,
                                     ConversationStatus.SUCCESS.ordinal,
-                                    null
+                                    null,
                                 )
                                 conversation = c
                                 conversationDao.insert(c)
@@ -661,7 +661,7 @@ class MainActivity : BlazeBaseActivity() {
                                     data.muteUntil,
                                     data.createdAt,
                                     data.expireIn,
-                                    ConversationStatus.SUCCESS.ordinal
+                                    ConversationStatus.SUCCESS.ordinal,
                                 )
                             }
 
@@ -719,7 +719,7 @@ class MainActivity : BlazeBaseActivity() {
                     {
                         alertDialog?.dismiss()
                         ErrorHandler.handleError(it)
-                    }
+                    },
                 )
         }
     }
@@ -757,7 +757,7 @@ class MainActivity : BlazeBaseActivity() {
         binding.searchBar.mOnQueryTextListener = object : MaterialSearchView.OnQueryTextListener {
             override fun onQueryTextChange(newText: String): Boolean {
                 (supportFragmentManager.findFragmentByTag(SearchFragment.TAG) as? SearchFragment)?.setQueryText(
-                    newText
+                    newText,
                 )
                 return true
             }
@@ -772,7 +772,7 @@ class MainActivity : BlazeBaseActivity() {
                 override fun onSearchViewOpened() {
                     navigationController.showSearch()
                 }
-            }
+            },
         )
         binding.searchBar.hideAction = {
             (supportFragmentManager.findFragmentByTag(CirclesFragment.TAG) as? CirclesFragment)?.cancelSort()
@@ -897,7 +897,7 @@ class MainActivity : BlazeBaseActivity() {
                 failureBlock = {
                     dialog.dismiss()
                     return@handleMixinResponse false
-                }
+                },
             )
             dialog.dismiss()
         }

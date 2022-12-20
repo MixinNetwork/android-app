@@ -60,11 +60,11 @@ class AccountFragment : BaseFragment(R.layout.fragment_account) {
                             R.anim.slide_in_bottom,
                             R.anim.slide_out_bottom,
                             R.anim.slide_in_bottom,
-                            R.anim.slide_out_bottom
+                            R.anim.slide_out_bottom,
                         )
                             .add(
                                 R.id.container,
-                                VerifyFragment.newInstance(VerifyFragment.FROM_PHONE)
+                                VerifyFragment.newInstance(VerifyFragment.FROM_PHONE),
                             )
                             .addToBackStack(null)
                     }

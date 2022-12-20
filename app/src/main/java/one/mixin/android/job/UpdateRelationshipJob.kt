@@ -68,7 +68,7 @@ class UpdateRelationshipJob(
                             InvalidateFlow.emit(conversationId)
                         }
                     }
-                }
+                },
             )
         }
     }

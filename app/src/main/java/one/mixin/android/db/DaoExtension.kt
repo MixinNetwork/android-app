@@ -85,7 +85,7 @@ fun CircleConversationDao.insertUpdate(
     runInTransaction {
         val c = findCircleConversationByCircleId(
             circleConversation.circleId,
-            circleConversation.conversationId
+            circleConversation.conversationId,
         )
         if (c == null) {
             insert(circleConversation)
@@ -106,8 +106,8 @@ fun CircleConversationDao.updateCheckPin(
                 newCircleConversation.circleId,
                 newCircleConversation.userId,
                 newCircleConversation.createdAt,
-                oldCircleConversation.pinTime
-            )
+                oldCircleConversation.pinTime,
+            ),
         )
     } else {
         update(newCircleConversation)

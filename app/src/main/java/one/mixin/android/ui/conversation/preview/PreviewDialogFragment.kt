@@ -36,7 +36,7 @@ class PreviewDialogFragment : DialogFragment(), VideoTimelineView.VideoTimelineV
         fun newInstance(isVideo: Boolean = false): PreviewDialogFragment {
             val previewDialogFragment = PreviewDialogFragment()
             previewDialogFragment.arguments = bundleOf(
-                IS_VIDEO to isVideo
+                IS_VIDEO to isVideo,
             )
             return previewDialogFragment
         }
@@ -171,7 +171,7 @@ class PreviewDialogFragment : DialogFragment(), VideoTimelineView.VideoTimelineV
                     "PreviewVideoDialogFragment"
                 } else {
                     "PreviewDialogFragment"
-                }
+                },
             )
         } catch (ignored: IllegalStateException) {
         }

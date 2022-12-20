@@ -179,7 +179,7 @@ class ConversationAdapter(
                 },
                 {
                     Timber.e(it)
-                }
+                },
             )
     }
 
@@ -202,7 +202,7 @@ class ConversationAdapter(
         {
             abs(it.createdAt.hashForDate())
         },
-        0
+        0,
     )
 
     override fun onCreateHeaderViewHolder(parent: ViewGroup): TimeHolder =
@@ -226,7 +226,7 @@ class ConversationAdapter(
                         selectSet.size > 0,
                         isSelect(position),
                         isRepresentative(it),
-                        onItemListener
+                        onItemListener,
                     )
                 }
                 TEXT_QUOTE_TYPE -> {
@@ -238,7 +238,7 @@ class ConversationAdapter(
                         selectSet.size > 0,
                         isSelect(position),
                         isRepresentative(it),
-                        onItemListener
+                        onItemListener,
                     )
                 }
                 POST_TYPE -> {
@@ -250,7 +250,7 @@ class ConversationAdapter(
                         isSelect(position),
                         isRepresentative(it),
                         onItemListener,
-                        miniMarkwon
+                        miniMarkwon,
                     )
                 }
                 IMAGE_TYPE -> {
@@ -261,7 +261,7 @@ class ConversationAdapter(
                         selectSet.size > 0,
                         isSelect(position),
                         isRepresentative(it),
-                        onItemListener
+                        onItemListener,
                     )
                 }
                 IMAGE_QUOTE_TYPE -> {
@@ -272,7 +272,7 @@ class ConversationAdapter(
                         selectSet.size > 0,
                         isSelect(position),
                         isRepresentative(it),
-                        onItemListener
+                        onItemListener,
                     )
                 }
                 VIDEO_TYPE -> {
@@ -283,7 +283,7 @@ class ConversationAdapter(
                         selectSet.size > 0,
                         isSelect(position),
                         isRepresentative(it),
-                        onItemListener
+                        onItemListener,
                     )
                 }
                 VIDEO_QUOTE_TYPE -> {
@@ -294,7 +294,7 @@ class ConversationAdapter(
                         selectSet.size > 0,
                         isSelect(position),
                         isRepresentative(it),
-                        onItemListener
+                        onItemListener,
                     )
                 }
                 AUDIO_TYPE -> {
@@ -305,7 +305,7 @@ class ConversationAdapter(
                         selectSet.size > 0,
                         isSelect(position),
                         isRepresentative(it),
-                        onItemListener
+                        onItemListener,
                     )
                 }
                 AUDIO_QUOTE_TYPE -> {
@@ -316,7 +316,7 @@ class ConversationAdapter(
                         selectSet.size > 0,
                         isSelect(position),
                         isRepresentative(it),
-                        onItemListener
+                        onItemListener,
                     )
                 }
                 SYSTEM_TYPE -> {
@@ -324,7 +324,7 @@ class ConversationAdapter(
                         it,
                         selectSet.size > 0,
                         isSelect(position),
-                        onItemListener
+                        onItemListener,
                     )
                 }
                 CARD_TYPE -> {
@@ -336,7 +336,7 @@ class ConversationAdapter(
                         isLast(position),
                         selectSet.size > 0,
                         isSelect(position),
-                        onItemListener
+                        onItemListener,
                     )
                 }
                 FILE_TYPE -> {
@@ -348,7 +348,7 @@ class ConversationAdapter(
                         selectSet.size > 0,
                         isSelect(position),
                         isRepresentative(it),
-                        onItemListener
+                        onItemListener,
                     )
                 }
                 FILE_QUOTE_TYPE -> {
@@ -360,7 +360,7 @@ class ConversationAdapter(
                         selectSet.size > 0,
                         isSelect(position),
                         isRepresentative(it),
-                        onItemListener
+                        onItemListener,
                     )
                 }
                 WAITING_TYPE -> {
@@ -368,7 +368,7 @@ class ConversationAdapter(
                         it,
                         isLast(position),
                         isFirst(position),
-                        onItemListener
+                        onItemListener,
                     )
                 }
                 STRANGER_TYPE -> {
@@ -381,7 +381,7 @@ class ConversationAdapter(
                         isFirst(position),
                         selectSet.size > 0,
                         isSelect(position),
-                        onItemListener
+                        onItemListener,
                     )
                 }
                 STICKER_TYPE -> {
@@ -391,7 +391,7 @@ class ConversationAdapter(
                         selectSet.size > 0,
                         isSelect(position),
                         isRepresentative(it),
-                        onItemListener
+                        onItemListener,
                     )
                 }
                 LINK_TYPE -> {
@@ -403,7 +403,7 @@ class ConversationAdapter(
                         selectSet.size > 0,
                         isSelect(position),
                         isRepresentative(it),
-                        onItemListener
+                        onItemListener,
                     )
                 }
                 ACTION_TYPE -> {
@@ -412,7 +412,7 @@ class ConversationAdapter(
                         isFirst(position),
                         selectSet.size > 0,
                         isSelect(position),
-                        onItemListener
+                        onItemListener,
                     )
                 }
                 ACTION_CARD_TYPE -> {
@@ -423,7 +423,7 @@ class ConversationAdapter(
                         selectSet.size > 0,
                         isSelect(position),
                         isRepresentative(it),
-                        onItemListener
+                        onItemListener,
                     )
                 }
                 CONTACT_CARD_TYPE -> {
@@ -434,7 +434,7 @@ class ConversationAdapter(
                         selectSet.size > 0,
                         isSelect(position),
                         isRepresentative(it),
-                        onItemListener
+                        onItemListener,
                     )
                 }
                 CONTACT_CARD_QUOTE_TYPE -> {
@@ -445,7 +445,7 @@ class ConversationAdapter(
                         selectSet.size > 0,
                         isSelect(position),
                         isRepresentative(it),
-                        onItemListener
+                        onItemListener,
                     )
                 }
                 SECRET_TYPE -> {
@@ -457,7 +457,7 @@ class ConversationAdapter(
                         isFirst(position),
                         selectSet.size > 0,
                         isSelect(position),
-                        onItemListener
+                        onItemListener,
                     )
                 }
                 RECALL_TYPE -> {
@@ -467,7 +467,7 @@ class ConversationAdapter(
                         isLast(position),
                         selectSet.size > 0,
                         isSelect(position),
-                        onItemListener
+                        onItemListener,
                     )
                 }
                 LOCATION_TYPE -> {
@@ -478,7 +478,7 @@ class ConversationAdapter(
                         selectSet.size > 0,
                         isSelect(position),
                         isRepresentative(it),
-                        onItemListener
+                        onItemListener,
                     )
                 }
                 GROUP_CALL_TYPE -> {
@@ -486,7 +486,7 @@ class ConversationAdapter(
                         it,
                         selectSet.size > 0,
                         isSelect(position),
-                        onItemListener
+                        onItemListener,
                     )
                 }
                 TRANSCRIPT_TYPE -> {
@@ -497,7 +497,7 @@ class ConversationAdapter(
                         selectSet.size > 0,
                         isSelect(position),
                         isRepresentative(it),
-                        onItemListener
+                        onItemListener,
                     )
                 }
                 PIN_TYPE -> {
@@ -505,7 +505,7 @@ class ConversationAdapter(
                         it,
                         selectSet.size > 0,
                         isSelect(position),
-                        onItemListener
+                        onItemListener,
                     )
                 }
                 else -> {
@@ -638,7 +638,7 @@ class ConversationAdapter(
                         getItemInternal(0)?.createdAt
                     } else {
                         null
-                    }
+                    },
                 )
                 itemCount - 1 -> create(
                     MessageCategory.SECRET.name,
@@ -646,7 +646,7 @@ class ConversationAdapter(
                         getItemInternal(super.getItemCount() - 1)?.createdAt
                     } else {
                         null
-                    }
+                    },
                 )
                 else -> getItemInternal(position - 1)
             }
@@ -658,7 +658,7 @@ class ConversationAdapter(
                         getItemInternal(super.getItemCount() - 1)?.createdAt
                     } else {
                         null
-                    }
+                    },
                 )
             } else {
                 getItemInternal(position)
@@ -671,7 +671,7 @@ class ConversationAdapter(
                         getItemInternal(0)?.createdAt
                     } else {
                         null
-                    }
+                    },
                 )
             } else {
                 getItemInternal(position - 1)
@@ -872,7 +872,7 @@ class ConversationAdapter(
                     else -> UNKNOWN_TYPE
                 }
             },
-            NULL_TYPE
+            NULL_TYPE,
         )
 
     override fun getItemViewType(position: Int): Int = getItemType(getItem(position))

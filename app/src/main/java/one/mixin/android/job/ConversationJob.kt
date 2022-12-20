@@ -82,14 +82,14 @@ class ConversationJob(
                     conversationApi.participants(
                         conversationId!!,
                         ParticipantAction.ADD.name,
-                        participantRequests!!
+                        participantRequests!!,
                     )
                         .execute().body()
                 TYPE_REMOVE ->
                     conversationApi.participants(
                         conversationId!!,
                         ParticipantAction.REMOVE.name,
-                        participantRequests!!
+                        participantRequests!!,
                     )
                         .execute().body()
                 TYPE_UPDATE ->
@@ -98,7 +98,7 @@ class ConversationJob(
                     conversationApi.participants(
                         conversationId!!,
                         ParticipantAction.ROLE.name,
-                        participantRequests!!
+                        participantRequests!!,
                     )
                         .execute().body()
                 TYPE_EXIT ->
@@ -109,7 +109,7 @@ class ConversationJob(
                     conversationApi.participants(
                         conversationId!!,
                         ParticipantAction.ROLE.name,
-                        participantRequests!!
+                        participantRequests!!,
                     )
                         .execute().body()
                 else -> null
@@ -157,7 +157,7 @@ class ConversationJob(
                 request?.let {
                     conversationDao.updateConversationStatusById(
                         request.conversationId,
-                        ConversationStatus.FAILURE.ordinal
+                        ConversationStatus.FAILURE.ordinal,
                     )
                 }
             }

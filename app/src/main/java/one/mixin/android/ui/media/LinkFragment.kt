@@ -47,7 +47,7 @@ class LinkFragment : BaseFragment(R.layout.layout_recycler_view) {
         binding.recyclerView.addItemDecoration(StickyRecyclerHeadersDecoration(adapter))
         binding.recyclerView.adapter = adapter
         viewModel.getLinkMessages(conversationId).observe(
-            viewLifecycleOwner
+            viewLifecycleOwner,
         ) {
             if (it.size <= 0) {
                 (view as ViewAnimator).displayedChild = 1

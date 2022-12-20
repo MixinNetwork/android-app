@@ -91,6 +91,6 @@ class ConversationBuilder(val conversationId: String, val createdAt: String, val
             conversationId, ownerId, category,
             name, iconUrl, announcement, codeUrl, payType,
             createdAt, pinTime, lastMessageId, lastReadMessageId,
-            unseenMessageCount, status, draft, muteUntil, null, expireIn
+            unseenMessageCount, status, draft, muteUntil, null, expireIn,
         )
 }

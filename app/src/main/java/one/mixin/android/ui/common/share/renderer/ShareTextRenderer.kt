@@ -30,7 +30,7 @@ open class ShareTextRenderer(val context: Context, maxWidth: Int) {
             MessageStatus.DELIVERED.name,
             isPin = false,
             isRepresentative = false,
-            isSecret = true
+            isSecret = true,
         )
         binding.chatTv.text = content
         binding.chatLayout.setBackgroundResource(
@@ -38,7 +38,7 @@ open class ShareTextRenderer(val context: Context, maxWidth: Int) {
                 R.drawable.chat_bubble_me_last
             } else {
                 R.drawable.chat_bubble_me_last_night
-            }
+            },
         )
     }
 }

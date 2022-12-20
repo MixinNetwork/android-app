@@ -252,7 +252,7 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
             .build()
         val pagedList = PagedList.Builder(
             FixedMessageDataSource(listOf(messageItem), 1),
-            pagedConfig
+            pagedConfig,
         ).setNotifyExecutor(ArchTaskExecutor.getMainThreadExecutor())
             .setFetchExecutor(ArchTaskExecutor.getIOThreadExecutor())
             .build()
@@ -273,7 +273,7 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
         initialIndex = viewModel.indexMediaMessages(conversationId, messageId, excludeLive)
         viewModel.getMediaMessages(conversationId, initialIndex, excludeLive)
             .observe(
-                this@MediaPagerActivity
+                this@MediaPagerActivity,
             ) {
                 adapter.submitList(it) {
                     if (firstLoad) {
@@ -297,7 +297,7 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
         val view = View.inflate(
             ContextThemeWrapper(this, R.style.Custom),
             R.layout.view_drag_video_bottom,
-            null
+            null,
         )
         val binding = ViewDragVideoBottomBinding.bind(view)
         builder.setCustomView(view)
@@ -321,7 +321,7 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
                     },
                     {
                         toast(R.string.Save_failure)
-                    }
+                    },
                 )
             bottomSheet.dismiss()
         }
@@ -340,7 +340,7 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
         val view = View.inflate(
             ContextThemeWrapper(this, R.style.Custom),
             R.layout.view_drag_image_bottom,
-            null
+            null,
         )
         val binding = ViewDragImageBottomBinding.bind(view)
         builder.setCustomView(view)
@@ -371,16 +371,16 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
                                 val outFile = when {
                                     item.mediaMimeType.equals(
                                         MimeType.GIF.toString(),
-                                        true
+                                        true,
                                     ) -> this@MediaPagerActivity.getPublicPicturePath().createGifTemp(
-                                        false
+                                        false,
                                     )
                                     item.mediaMimeType.equals(MimeType.PNG.toString()) ->
                                         this@MediaPagerActivity.getPublicPicturePath().createPngTemp(
-                                            false
+                                            false,
                                         )
                                     else -> this@MediaPagerActivity.getPublicPicturePath().createImageTemp(
-                                        noMedia = false
+                                        noMedia = false,
                                     )
                                 }
                                 outFile.copyFromInputStream(FileInputStream(file))
@@ -393,7 +393,7 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
                     },
                     {
                         toast(R.string.Save_failure)
-                    }
+                    },
                 )
             bottomSheet.dismiss()
         }
@@ -439,7 +439,7 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
                     if (imageView !is ImageView) {
                         imageView.isDrawingCacheEnabled = false
                     }
-                }
+                },
             )
         } else {
             toast(R.string.can_not_recognize_qr_code)
@@ -456,7 +456,7 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
                 Activity.RESULT_OK,
                 Intent().apply {
                     putExtra(ChatHistoryActivity.JUMP_ID, messageItem.messageId)
-                }
+                },
             )
         } else {
             ConversationActivity.showAndClear(this, conversationId, messageId = messageItem.messageId)
@@ -496,7 +496,7 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
                 messageItem.messageId,
                 messageItem.isVideo(),
                 mediaSource,
-                messageItem.absolutePath()
+                messageItem.absolutePath(),
             )
 
             val videoTexture = view.findViewById<TextureView>(R.id.video_texture)
@@ -508,14 +508,14 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
                     videoAspectRatioLayout,
                     View.TRANSLATION_X,
                     rect.x - videoAspectRatioLayout.x -
-                        this.realSize().x * (1f - scale) / 2
+                        this.realSize().x * (1f - scale) / 2,
                 ),
                 ObjectAnimator.ofFloat(
                     videoAspectRatioLayout,
                     View.TRANSLATION_Y,
                     rect.y - videoAspectRatioLayout.y +
-                        this.statusBarHeight() - (videoAspectRatioLayout.height - rect.height) / 2
-                )
+                        this.statusBarHeight() - (videoAspectRatioLayout.height - rect.height) / 2,
+                ),
             )
             animatorSet.interpolator = DecelerateInterpolator()
             animatorSet.duration = 250
@@ -541,7 +541,7 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
                         }
                         dismiss()
                     }
-                }
+                },
             )
             animatorSet.start()
         }
@@ -561,8 +561,8 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
                         startActivity(
                             Intent(
                                 Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
-                                Uri.parse("package:$packageName")
-                            )
+                                Uri.parse("package:$packageName"),
+                            ),
                         )
                     } catch (e: Exception) {
                         Timber.e(e)
@@ -861,7 +861,7 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
         fun getOptions(activity: Activity, view: View) = ActivityOptionsCompat.makeSceneTransitionAnimation(
             activity,
             view,
-            "transition"
+            "transition",
         )
     }
 }

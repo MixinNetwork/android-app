@@ -23,7 +23,7 @@ class Argon2Test {
         val verificationResult = argon2Kt.verify(
             mode = Argon2Mode.ARGON2_I,
             encoded = hashResult.encodedOutputAsString(),
-            password = password.toByteArray()
+            password = password.toByteArray(),
         )
         println(verificationResult)
         assert(verificationResult)

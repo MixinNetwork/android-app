@@ -32,7 +32,7 @@ fun AuthorizationResponse.getScopes(
     scopes.addAll(
         this.scopes.map {
             Scope.generateScopeFromString(ctx, it)
-        }
+        },
     )
     return scopes
 }

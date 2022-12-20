@@ -78,15 +78,15 @@ fun NotificationsPage() {
                 },
                 navigationIcon = {
                     MixinBackButton()
-                }
+                },
             )
         },
-        backgroundColor = MixinAppTheme.colors.backgroundWindow
+        backgroundColor = MixinAppTheme.colors.backgroundWindow,
     ) {
         Column(
             modifier = Modifier
                 .padding(it)
-                .verticalScroll(rememberScrollState())
+                .verticalScroll(rememberScrollState()),
         ) {
             TransferNotificationItem()
             TransferLargeAmountItem()
@@ -117,9 +117,9 @@ fun NotificationsPage() {
                             checkedThumbColor = MixinAppTheme.colors.accent,
                             uncheckedThumbColor = MixinAppTheme.colors.unchecked,
                             checkedTrackColor = MixinAppTheme.colors.accent,
-                            uncheckedTrackColor = MixinAppTheme.colors.unchecked
+                            uncheckedTrackColor = MixinAppTheme.colors.unchecked,
                         ),
-                        onCheckedChange = null
+                        onCheckedChange = null,
                     )
                 },
                 onClick = {
@@ -127,12 +127,12 @@ fun NotificationsPage() {
                         duplicateTransferSelected = !duplicateTransferSelected
                         PropertyHelper.updateKeyValue(
                             Constants.Account.PREF_DUPLICATE_TRANSFER,
-                            duplicateTransferSelected.toString()
+                            duplicateTransferSelected.toString(),
                         )
                     }
                 },
                 title = stringResource(id = R.string.Duplicate_Transfer_Confirmation),
-                description = stringResource(id = R.string.setting_duplicate_transfer_desc)
+                description = stringResource(id = R.string.setting_duplicate_transfer_desc),
             )
 
             NotificationItem(
@@ -143,9 +143,9 @@ fun NotificationsPage() {
                             checkedThumbColor = MixinAppTheme.colors.accent,
                             uncheckedThumbColor = MixinAppTheme.colors.unchecked,
                             checkedTrackColor = MixinAppTheme.colors.accent,
-                            uncheckedTrackColor = MixinAppTheme.colors.unchecked
+                            uncheckedTrackColor = MixinAppTheme.colors.unchecked,
                         ),
-                        onCheckedChange = null
+                        onCheckedChange = null,
                     )
                 },
                 onClick = {
@@ -153,12 +153,12 @@ fun NotificationsPage() {
                         strangerTransferChecked = !strangerTransferChecked
                         PropertyHelper.updateKeyValue(
                             Constants.Account.PREF_STRANGER_TRANSFER,
-                            strangerTransferChecked.toString()
+                            strangerTransferChecked.toString(),
                         )
                     }
                 },
                 title = stringResource(id = R.string.Stranger_Transfer_Confirmation),
-                description = stringResource(id = R.string.setting_stranger_transfer_desc)
+                description = stringResource(id = R.string.setting_stranger_transfer_desc),
             )
 
             val context = LocalContext.current
@@ -167,7 +167,7 @@ fun NotificationsPage() {
                 onClick = {
                     context.openNotificationSetting()
                 },
-                title = stringResource(id = R.string.System_options)
+                title = stringResource(id = R.string.System_options),
             )
 
             supportsOreo {
@@ -176,7 +176,7 @@ fun NotificationsPage() {
                         ChannelManager.resetChannelSound(context)
                         toast(R.string.Successful)
                     },
-                    title = stringResource(id = R.string.Reset_notifications)
+                    title = stringResource(id = R.string.Reset_notifications),
                 )
             }
         }
@@ -199,19 +199,19 @@ private fun NotificationItem(
                 .height(60.dp)
                 .background(color = MixinAppTheme.colors.background)
                 .padding(horizontal = 16.dp),
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.CenterVertically,
         ) {
             Text(
                 text = title,
                 color = MixinAppTheme.colors.textPrimary,
-                fontSize = 14.sp
+                fontSize = 14.sp,
             )
             Spacer(Modifier.weight(1f))
             ProvideTextStyle(
                 value = TextStyle(
                     color = MixinAppTheme.colors.textSubtitle,
-                    fontSize = 13.sp
-                )
+                    fontSize = 13.sp,
+                ),
             ) {
                 trailing()
             }
@@ -224,7 +224,7 @@ private fun NotificationItem(
                     .padding(start = 16.dp, top = 8.dp, bottom = 16.dp, end = 16.dp),
                 text = description,
                 fontSize = 13.sp,
-                color = MixinAppTheme.colors.textSubtitle
+                color = MixinAppTheme.colors.textSubtitle,
             )
         }
     }
@@ -258,7 +258,7 @@ private fun TransferNotificationItem() {
             showEditDialog = true
         },
         title = stringResource(R.string.Large_Amount_Confirmation),
-        description = stringResource(R.string.setting_transfer_large_summary, "$accountSymbol${threshold.value}")
+        description = stringResource(R.string.setting_transfer_large_summary, "$accountSymbol${threshold.value}"),
     )
 
     if (showEditDialog) {
@@ -283,8 +283,8 @@ private fun TransferNotificationItem() {
                                     viewModel.preferences(
                                         AccountUpdateRequest(
                                             fiatCurrency = Session.getFiatCurrency(),
-                                            transferNotificationThreshold = result
-                                        )
+                                            transferNotificationThreshold = result,
+                                        ),
                                     )
                                 },
                                 successBlock = { response ->
@@ -299,11 +299,11 @@ private fun TransferNotificationItem() {
                                 exceptionBlock = {
                                     showProgressDialog = false
                                     return@handleMixinResponse false
-                                }
+                                },
                             )
                         }
                     }
-                }
+                },
             )
         }
     }
@@ -311,7 +311,7 @@ private fun TransferNotificationItem() {
     if (showProgressDialog) {
         IndeterminateProgressDialog(
             title = stringResource(R.string.Large_Amount_Confirmation),
-            message = stringResource(R.string.Please_wait_a_bit)
+            message = stringResource(R.string.Please_wait_a_bit),
         )
     }
 }
@@ -347,14 +347,14 @@ private fun TransferLargeAmountItem() {
         description = if (threshold.value <= 0.0) {
             stringResource(
                 R.string.setting_transfer_large_summary_greater,
-                "${accountSymbol}0"
+                "${accountSymbol}0",
             )
         } else {
             stringResource(
                 R.string.setting_transfer_large_summary,
-                "$accountSymbol${threshold.value}"
+                "$accountSymbol${threshold.value}",
             )
-        }
+        },
     )
 
     if (showEditDialog) {
@@ -379,8 +379,8 @@ private fun TransferLargeAmountItem() {
                                     viewModel.preferences(
                                         AccountUpdateRequest(
                                             fiatCurrency = Session.getFiatCurrency(),
-                                            transferConfirmationThreshold = result
-                                        )
+                                            transferConfirmationThreshold = result,
+                                        ),
                                     )
                                 },
                                 successBlock = { response ->
@@ -395,11 +395,11 @@ private fun TransferLargeAmountItem() {
                                 exceptionBlock = {
                                     showProgressDialog = false
                                     return@handleMixinResponse false
-                                }
+                                },
                             )
                         }
                     }
-                }
+                },
             )
         }
     }
@@ -407,7 +407,7 @@ private fun TransferLargeAmountItem() {
     if (showProgressDialog) {
         IndeterminateProgressDialog(
             title = stringResource(R.string.Transfer_Notifications),
-            message = stringResource(R.string.Please_wait_a_bit)
+            message = stringResource(R.string.Please_wait_a_bit),
         )
     }
 }
@@ -426,21 +426,21 @@ private fun EditDialog(
         mutableStateOf(
             TextFieldValue(
                 text = text,
-                selection = TextRange(text.length)
-            )
+                selection = TextRange(text.length),
+            ),
         )
     }
     Column(
         modifier = Modifier
             .background(
                 color = MixinAppTheme.colors.background,
-                shape = RoundedCornerShape(topStart = 8.dp, topEnd = 8.dp)
+                shape = RoundedCornerShape(topStart = 8.dp, topEnd = 8.dp),
             )
-            .padding(24.dp)
+            .padding(24.dp),
     ) {
         Text(
             text = title,
-            color = MixinAppTheme.colors.textPrimary
+            color = MixinAppTheme.colors.textPrimary,
         )
 
         val focusRequester = remember {
@@ -481,13 +481,13 @@ private fun EditDialog(
                 },
             interactionSource = interactionSource,
             keyboardOptions = KeyboardOptions.Default.copy(
-                keyboardType = KeyboardType.Decimal
+                keyboardType = KeyboardType.Decimal,
             ),
             textStyle = TextStyle(
                 fontSize = 14.sp,
-                color = MixinAppTheme.colors.textPrimary
+                color = MixinAppTheme.colors.textPrimary,
             ),
-            cursorBrush = SolidColor(MixinAppTheme.colors.accent)
+            cursorBrush = SolidColor(MixinAppTheme.colors.accent),
         ) { innerTextField ->
             Box(contentAlignment = Alignment.CenterStart) {
                 innerTextField()
@@ -495,7 +495,7 @@ private fun EditDialog(
                     Text(
                         text = hint,
                         fontSize = 14.sp,
-                        color = MixinAppTheme.colors.textSubtitle
+                        color = MixinAppTheme.colors.textSubtitle,
                     )
                 }
             }
@@ -504,7 +504,7 @@ private fun EditDialog(
                     modifier = Modifier
                         .height(1.5.dp)
                         .fillMaxWidth()
-                        .background(color = if (hasFocus) MixinAppTheme.colors.accent else MixinAppTheme.colors.textSubtitle)
+                        .background(color = if (hasFocus) MixinAppTheme.colors.accent else MixinAppTheme.colors.textSubtitle),
                 )
             }
         }
@@ -518,8 +518,8 @@ private fun EditDialog(
                     text = stringResource(R.string.Cancel),
                     style = TextStyle(
                         fontSize = 14.sp,
-                        color = MixinAppTheme.colors.accent
-                    )
+                        color = MixinAppTheme.colors.accent,
+                    ),
                 )
             }
             TextButton(onClick = {
@@ -530,8 +530,8 @@ private fun EditDialog(
                     text = stringResource(R.string.Save),
                     style = TextStyle(
                         fontSize = 14.sp,
-                        color = MixinAppTheme.colors.accent
-                    )
+                        color = MixinAppTheme.colors.accent,
+                    ),
                 )
             }
         }
@@ -548,7 +548,7 @@ fun NotificationItemPreview() {
             },
             onClick = {},
             title = "Title",
-            description = "Description"
+            description = "Description",
         )
     }
 }
@@ -562,7 +562,7 @@ fun EditDialogPreview() {
             onClose = {},
             title = "Title",
             hint = "Hint",
-            text = "Text"
+            text = "Text",
         )
     }
 }
@@ -575,7 +575,7 @@ fun EditDialogEmptyPreview() {
             onClose = {},
             title = "Title",
             hint = "Hint",
-            text = ""
+            text = "",
         )
     }
 }
@@ -588,7 +588,7 @@ fun EditDialogLongTextPreview() {
             onClose = {},
             title = "Title",
             hint = "Hint",
-            text = "TextTextTextTextTextTextTextTextTextTextTextTextTextTextText"
+            text = "TextTextTextTextTextTextTextTextTextTextTextTextTextTextText",
         )
     }
 }

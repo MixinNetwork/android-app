@@ -16,7 +16,7 @@ import org.threeten.bp.ZonedDateTime
 
 class RefreshStickerAlbumJob : BaseJob(
     Params(PRIORITY_UI_HIGH)
-        .addTags(GROUP).requireNetwork()
+        .addTags(GROUP).requireNetwork(),
 ) {
 
     companion object {

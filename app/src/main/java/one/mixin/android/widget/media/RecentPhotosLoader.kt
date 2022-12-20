@@ -13,7 +13,7 @@ class RecentPhotosLoader(context: Context) : CursorLoader(context) {
             PROJECTION,
             WHERE,
             null,
-            MediaStore.Images.ImageColumns.DATE_MODIFIED + " DESC"
+            MediaStore.Images.ImageColumns.DATE_MODIFIED + " DESC",
         )
     }
 
@@ -28,7 +28,7 @@ class RecentPhotosLoader(context: Context) : CursorLoader(context) {
             MediaStore.Images.ImageColumns.DATE_TAKEN,
             MediaStore.Images.ImageColumns.DATE_MODIFIED,
             MediaStore.Images.ImageColumns.ORIENTATION,
-            MediaStore.Images.ImageColumns.MIME_TYPE
+            MediaStore.Images.ImageColumns.MIME_TYPE,
         )
     }
 }

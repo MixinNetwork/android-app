@@ -38,13 +38,13 @@ class ContactCardQuoteHolder constructor(val binding: ItemChatContactCardQuoteBi
                 setItemBackgroundResource(
                     binding.chatLayout,
                     R.drawable.chat_bubble_reply_me_last,
-                    R.drawable.chat_bubble_reply_me_last_night
+                    R.drawable.chat_bubble_reply_me_last_night,
                 )
             } else {
                 setItemBackgroundResource(
                     binding.chatLayout,
                     R.drawable.chat_bubble_reply_me,
-                    R.drawable.chat_bubble_reply_me_night
+                    R.drawable.chat_bubble_reply_me_night,
                 )
             }
         } else {
@@ -53,13 +53,13 @@ class ContactCardQuoteHolder constructor(val binding: ItemChatContactCardQuoteBi
                 setItemBackgroundResource(
                     binding.chatLayout,
                     R.drawable.chat_bubble_reply_other_last,
-                    R.drawable.chat_bubble_reply_other_last_night
+                    R.drawable.chat_bubble_reply_other_last_night,
                 )
             } else {
                 setItemBackgroundResource(
                     binding.chatLayout,
                     R.drawable.chat_bubble_reply_other,
-                    R.drawable.chat_bubble_reply_other_night
+                    R.drawable.chat_bubble_reply_other_night,
                 )
             }
         }
@@ -84,7 +84,7 @@ class ContactCardQuoteHolder constructor(val binding: ItemChatContactCardQuoteBi
             messageItem.sharedUserFullName,
             messageItem.sharedUserAvatarUrl,
             messageItem.sharedUserId
-                ?: "0"
+                ?: "0",
         )
         binding.nameTv.text = messageItem.sharedUserFullName
         binding.idTv.text = messageItem.sharedUserIdentityNumber
@@ -152,7 +152,7 @@ class ContactCardQuoteHolder constructor(val binding: ItemChatContactCardQuoteBi
             messageItem.status,
             messageItem.isPin ?: false,
             isRepresentative = isRepresentative,
-            isSecret = messageItem.isSecret()
+            isSecret = messageItem.isSecret(),
         )
         chatJumpLayout(binding.chatJump, isMe, messageItem.expireIn, R.id.chat_msg_layout)
     }

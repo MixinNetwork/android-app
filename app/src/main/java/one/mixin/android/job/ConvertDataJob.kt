@@ -58,9 +58,9 @@ class ConvertDataJob(
                         message.messageId, message.conversationId, message.userId, message.category,
                         null, message.name, file.name,
                         message.mediaMimeType!!, message.mediaSize!!, message.createdAt, null,
-                        null, MediaStatus.PENDING, MessageStatus.SENDING.name, message.quoteMessageId, message.quoteContent
-                    )
-                )
+                        null, MediaStatus.PENDING, MessageStatus.SENDING.name, message.quoteMessageId, message.quoteContent,
+                    ),
+                ),
             )
         }
     }

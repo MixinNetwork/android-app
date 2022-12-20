@@ -12,7 +12,7 @@ data class ProgressEvent(val id: String, var progress: Float, val status: Int) {
         fun loadingEvent(id: String, progress: Float) = ProgressEvent(
             id,
             progress,
-            CircleProgress.STATUS_LOADING
+            CircleProgress.STATUS_LOADING,
         )
 
         fun playEvent(id: String, progress: Float = 0f) =

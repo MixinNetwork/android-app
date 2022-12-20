@@ -63,23 +63,23 @@ class RefreshAccountWorker @AssistedInject constructor(
             }
             val searchSource = MixinApplication.appContext.defaultSharedPreferences.getString(
                 PhoneNumberSettingFragment.ACCEPT_SEARCH_KEY,
-                SearchSource.EVERYBODY.name
+                SearchSource.EVERYBODY.name,
             )
             if (account.acceptSearchSource != searchSource) {
                 if (SearchSource.EVERYBODY.name == account.acceptSearchSource) {
                     MixinApplication.appContext.defaultSharedPreferences.putString(
                         PhoneNumberSettingFragment.ACCEPT_SEARCH_KEY,
-                        SearchSource.EVERYBODY.name
+                        SearchSource.EVERYBODY.name,
                     )
                 } else if (SearchSource.CONTACTS.name == account.acceptSearchSource) {
                     MixinApplication.appContext.defaultSharedPreferences.putString(
                         PhoneNumberSettingFragment.ACCEPT_SEARCH_KEY,
-                        SearchSource.CONTACTS.name
+                        SearchSource.CONTACTS.name,
                     )
                 } else if (SearchSource.NOBODY.name == account.acceptSearchSource) {
                     MixinApplication.appContext.defaultSharedPreferences.putString(
                         PhoneNumberSettingFragment.ACCEPT_SEARCH_KEY,
-                        SearchSource.NOBODY.name
+                        SearchSource.NOBODY.name,
                     )
                 }
             }

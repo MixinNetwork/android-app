@@ -47,14 +47,14 @@ fun AccountPage() {
                 },
                 navigationIcon = {
                     MixinBackButton()
-                }
+                },
             )
-        }
+        },
     ) {
         Column(
             Modifier
                 .padding(it)
-                .verticalScroll(rememberScrollState())
+                .verticalScroll(rememberScrollState()),
         ) {
             val navController = LocalSettingNav.current
             AccountTile(stringResource(R.string.Privacy)) {
@@ -96,11 +96,11 @@ private fun ChangeNumberButton() {
                             R.anim.slide_in_bottom,
                             R.anim.slide_out_bottom,
                             R.anim.slide_in_bottom,
-                            R.anim.slide_out_bottom
+                            R.anim.slide_out_bottom,
                         )
                             .add(
                                 R.id.container,
-                                VerifyFragment.newInstance(VerifyFragment.FROM_PHONE)
+                                VerifyFragment.newInstance(VerifyFragment.FROM_PHONE),
                             )
                             .addToBackStack(null)
                     }
@@ -111,7 +111,7 @@ private fun ChangeNumberButton() {
             dismissText = stringResource(android.R.string.cancel),
             onDismissRequest = {
                 openDialog.value = false
-            }
+            },
         )
     }
     AccountTile(stringResource(R.string.Change_Phone_Number)) {
@@ -130,13 +130,13 @@ private fun AccountTile(
             .background(MixinAppTheme.colors.background)
             .clickable { onClick() }
             .padding(start = 16.dp, end = 16.dp),
-        verticalAlignment = Alignment.CenterVertically
+        verticalAlignment = Alignment.CenterVertically,
     ) {
         Text(
             text = title,
             modifier = Modifier.fillMaxWidth(),
             fontSize = 14.sp,
-            color = MixinAppTheme.colors.textPrimary
+            color = MixinAppTheme.colors.textPrimary,
         )
     }
 }

@@ -44,7 +44,7 @@ class SnapshotPagedAdapter :
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): SnapshotHolder {
         return SnapshotHolder(
             LayoutInflater.from(parent.context)
-                .inflate(R.layout.item_wallet_transactions, parent, false)
+                .inflate(R.layout.item_wallet_transactions, parent, false),
         )
     }
 }

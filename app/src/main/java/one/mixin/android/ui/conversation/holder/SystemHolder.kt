@@ -53,7 +53,7 @@ class SystemHolder constructor(val binding: ItemChatSystemBinding) : BaseViewHol
                             getText(R.string.You)
                         } else {
                             messageItem.userFullName
-                        }
+                        },
                     )
             }
             SystemConversationAction.ADD.name -> {
@@ -69,7 +69,7 @@ class SystemHolder constructor(val binding: ItemChatSystemBinding) : BaseViewHol
                             getText(R.string.you)
                         } else {
                             messageItem.participantFullName
-                        }
+                        },
                     )
             }
             SystemConversationAction.REMOVE.name -> {
@@ -85,7 +85,7 @@ class SystemHolder constructor(val binding: ItemChatSystemBinding) : BaseViewHol
                             getText(R.string.you)
                         } else {
                             messageItem.participantFullName
-                        }
+                        },
                     )
             }
             SystemConversationAction.JOIN.name -> {
@@ -96,7 +96,7 @@ class SystemHolder constructor(val binding: ItemChatSystemBinding) : BaseViewHol
                             getText(R.string.You)
                         } else {
                             messageItem.participantFullName
-                        }
+                        },
                     )
             }
             SystemConversationAction.EXIT.name -> {
@@ -107,7 +107,7 @@ class SystemHolder constructor(val binding: ItemChatSystemBinding) : BaseViewHol
                             getText(R.string.You)
                         } else {
                             messageItem.participantFullName
-                        }
+                        },
                     )
             }
             SystemConversationAction.ROLE.name -> {
@@ -125,20 +125,20 @@ class SystemHolder constructor(val binding: ItemChatSystemBinding) : BaseViewHol
                         timeInterval == null -> { // Messages received in the old version
                             String.format(
                                 getText(R.string.changed_disappearing_message_settings),
-                                name
+                                name,
                             )
                         }
                         timeInterval <= 0 -> {
                             String.format(
                                 getText(R.string.disable_disappearing_message),
-                                name
+                                name,
                             )
                         }
                         else -> {
                             String.format(
                                 getText(R.string.set_disappearing_message_time_to),
                                 name,
-                                toTimeInterval(timeInterval)
+                                toTimeInterval(timeInterval),
                             )
                         }
                     }
@@ -150,7 +150,7 @@ class SystemHolder constructor(val binding: ItemChatSystemBinding) : BaseViewHol
                 binding.chatInfo.highlightStarTag(
                     info,
                     arrayOf(learnUrl),
-                    onItemListener = onItemListener
+                    onItemListener = onItemListener,
                 )
             }
         }

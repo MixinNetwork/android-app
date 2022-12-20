@@ -36,8 +36,8 @@ class GenerateAvatarJob(
     val list: List<String>? = null,
 ) : BaseJob(
     Params(
-        PRIORITY_BACKGROUND
-    ).requireNetwork().persist().addTags(TAG)
+        PRIORITY_BACKGROUND,
+    ).requireNetwork().persist().addTags(TAG),
 ) {
     companion object {
         const val TAG = "GenerateAvatarJob"
@@ -118,7 +118,7 @@ class GenerateAvatarJob(
             size / 2f,
             size / 2f - dividerOffset,
             size.toFloat(),
-            size / 2f + dividerOffset
+            size / 2f + dividerOffset,
         )
         val rectF = RectF()
 
@@ -150,7 +150,7 @@ class GenerateAvatarJob(
                             offset.toInt(),
                             offset.toInt(),
                             b.width - offset.toInt(),
-                            b.height - offset.toInt()
+                            b.height - offset.toInt(),
                         )
                         val dst = if (i == 0) {
                             RectF(0f, 0f, size / 2f, size.toFloat())
@@ -203,7 +203,7 @@ class GenerateAvatarJob(
                                 offset.toInt(),
                                 offset.toInt(),
                                 b.width - offset.toInt(),
-                                b.height - offset.toInt()
+                                b.height - offset.toInt(),
                             )
                             val dst = RectF(0f, 0f, size / 2f, size.toFloat())
                             canvas.drawBitmap(b, src, dst, null)
@@ -225,7 +225,7 @@ class GenerateAvatarJob(
                             offset.toInt(),
                             offset.toInt(),
                             b.width - offset.toInt(),
-                            b.height - offset.toInt()
+                            b.height - offset.toInt(),
                         )
                         val dst = when (i) {
                             1 -> {
@@ -276,7 +276,7 @@ class GenerateAvatarJob(
                         offset.toInt(),
                         offset.toInt(),
                         item.width - offset.toInt(),
-                        item.height - offset.toInt()
+                        item.height - offset.toInt(),
                     )
                     val dst = when (i) {
                         0 -> {
@@ -335,7 +335,7 @@ class GenerateAvatarJob(
                         .asBitmap()
                         .load(item)
                         .submit()
-                        .get(10, TimeUnit.SECONDS)
+                        .get(10, TimeUnit.SECONDS),
                 )
             }
         }

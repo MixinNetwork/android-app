@@ -32,6 +32,6 @@ data class ParticipantItem(
 
     fun toUser() = User(
         userId, identityNumber, relationship, biography, fullName, avatarUrl,
-        phone, isVerified, userCreatedAt, muteUntil, hasPin, appId, isScam
+        phone, isVerified, userCreatedAt, muteUntil, hasPin, appId, isScam,
     )
 }

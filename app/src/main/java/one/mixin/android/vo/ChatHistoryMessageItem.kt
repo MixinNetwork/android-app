@@ -175,7 +175,7 @@ fun ChatHistoryMessageItem.toMessageItem(conversationId: String? = null): Messag
         quoteContent,
         null,
         mentions = null,
-        null
+        null,
     )
 }
 

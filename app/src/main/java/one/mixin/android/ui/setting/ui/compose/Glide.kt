@@ -40,7 +40,7 @@ fun GlideImage(
             painter = painterResource(id = R.drawable.ic_transfer_address),
             contentDescription = contentDescription,
             modifier = modifier,
-            contentScale = contentScale
+            contentScale = contentScale,
         )
         return
     }
@@ -80,18 +80,18 @@ fun GlideImage(
             builder = glideModifier(builder)
             val request = builder.into(object : CustomTarget<Drawable>(
                 constraints.maxWidth,
-                constraints.maxHeight
+                constraints.maxHeight,
             ) {
-                    override fun onResourceReady(resource: Drawable, transition: Transition<in Drawable>?) {
-                        state.value = resource.toBitmap().asImageBitmap()
-                    }
+                override fun onResourceReady(resource: Drawable, transition: Transition<in Drawable>?) {
+                    state.value = resource.toBitmap().asImageBitmap()
+                }
 
-                    override fun onLoadStarted(placeholder: Drawable?) {
-                    }
+                override fun onLoadStarted(placeholder: Drawable?) {
+                }
 
-                    override fun onLoadCleared(placeholder: Drawable?) {
-                    }
-                }).request!!
+                override fun onLoadCleared(placeholder: Drawable?) {
+                }
+            }).request!!
             onDispose {
                 request.clear()
             }
@@ -102,14 +102,14 @@ fun GlideImage(
                 modifier = modifier,
                 contentDescription = contentDescription,
                 painter = BitmapPainter(currentBitmap),
-                contentScale = contentScale
+                contentScale = contentScale,
             )
         } else if (placeHolderPainter != null) {
             Image(
                 modifier = modifier,
                 contentDescription = contentDescription,
                 painter = placeHolderPainter,
-                contentScale = contentScale
+                contentScale = contentScale,
             )
         }
     }

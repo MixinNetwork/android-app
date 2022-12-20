@@ -57,7 +57,7 @@ class ConfirmationBgView : RelativeLayout {
                         0,
                         view.width,
                         view.height,
-                        context.dpToPx(8f).toFloat()
+                        context.dpToPx(8f).toFloat(),
                     )
                 }
             }

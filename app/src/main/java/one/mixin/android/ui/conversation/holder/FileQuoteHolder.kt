@@ -38,13 +38,13 @@ class FileQuoteHolder constructor(val binding: ItemChatFileQuoteBinding) : Media
                 setItemBackgroundResource(
                     binding.chatLayout,
                     R.drawable.chat_bubble_reply_me_last,
-                    R.drawable.chat_bubble_reply_me_last_night
+                    R.drawable.chat_bubble_reply_me_last_night,
                 )
             } else {
                 setItemBackgroundResource(
                     binding.chatLayout,
                     R.drawable.chat_bubble_reply_me,
-                    R.drawable.chat_bubble_reply_me_night
+                    R.drawable.chat_bubble_reply_me_night,
                 )
             }
         } else {
@@ -53,13 +53,13 @@ class FileQuoteHolder constructor(val binding: ItemChatFileQuoteBinding) : Media
                 setItemBackgroundResource(
                     binding.chatLayout,
                     R.drawable.chat_bubble_reply_other_last,
-                    R.drawable.chat_bubble_reply_other_last_night
+                    R.drawable.chat_bubble_reply_other_last_night,
                 )
             } else {
                 setItemBackgroundResource(
                     binding.chatLayout,
                     R.drawable.chat_bubble_reply_other,
-                    R.drawable.chat_bubble_reply_other_night
+                    R.drawable.chat_bubble_reply_other_night,
                 )
             }
         }
@@ -104,7 +104,7 @@ class FileQuoteHolder constructor(val binding: ItemChatFileQuoteBinding) : Media
             messageItem.status,
             messageItem.isPin ?: false,
             isRepresentative = isRepresentative,
-            isSecret = messageItem.isSecret()
+            isSecret = messageItem.isSecret(),
         )
 
         if (keyword != null) {
@@ -116,7 +116,7 @@ class FileQuoteHolder constructor(val binding: ItemChatFileQuoteBinding) : Media
                         BackgroundColorSpan(HIGHLIGHTED),
                         start,
                         start + keyword.length,
-                        Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+                        Spanned.SPAN_EXCLUSIVE_EXCLUSIVE,
                     )
                     binding.fileNameTv.text = sp
                 } else {
@@ -147,7 +147,7 @@ class FileQuoteHolder constructor(val binding: ItemChatFileQuoteBinding) : Media
                         MusicPlayer.seekTo(seekBar.progress)
                     }
                 }
-            }
+            },
         )
         messageItem.mediaStatus?.let {
             when (it) {

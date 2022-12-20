@@ -97,7 +97,7 @@ abstract class MixinJob(
     protected fun checkSignalSession(recipientId: String, sessionId: String? = null): Boolean {
         if (!signalProtocol.containsSession(recipientId, sessionId.getDeviceId())) {
             val blazeMessage = createConsumeSessionSignalKeys(
-                createConsumeSignalKeysParam(arrayListOf(BlazeMessageParamSession(recipientId, sessionId)))
+                createConsumeSignalKeysParam(arrayListOf(BlazeMessageParamSession(recipientId, sessionId))),
             )
 
             val data = jobSenderKey.signalKeysChannel(blazeMessage) ?: return false
@@ -154,7 +154,7 @@ abstract class MixinJob(
             UUID.randomUUID().toString(),
             MessageCategory.PLAIN_JSON.name,
             encoded,
-            MessageStatus.SENDING.name
+            MessageStatus.SENDING.name,
         )
         val bm = BlazeMessage(UUID.randomUUID().toString(), CREATE_MESSAGE, params)
         jobSenderKey.deliverNoThrow(bm)
@@ -173,7 +173,7 @@ abstract class MixinJob(
         val request = ConversationRequest(
             conversationId = conversation.conversationId,
             category = conversation.category,
-            participants = arrayListOf(ParticipantRequest(conversation.ownerId!!, ""))
+            participants = arrayListOf(ParticipantRequest(conversation.ownerId!!, "")),
         )
         val response = conversationApi.create(request).execute().body()
         if (response != null && response.isSuccess && response.data != null && !isCancelled) {

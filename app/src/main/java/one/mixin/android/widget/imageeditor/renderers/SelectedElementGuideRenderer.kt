@@ -22,7 +22,7 @@ class SelectedElementGuideRenderer : Renderer {
         Bounds.RIGHT,
         Bounds.BOTTOM,
         Bounds.LEFT,
-        Bounds.BOTTOM
+        Bounds.BOTTOM,
     )
 
     private val circleRadius = DimensionUnit.DP.toPixels(5f)
@@ -72,13 +72,13 @@ class SelectedElementGuideRenderer : Renderer {
             (allPointsOnScreen[6] + allPointsOnScreen[0]) / 2f,
             (allPointsOnScreen[7] + allPointsOnScreen[1]) / 2f,
             circleRadius,
-            circlePaint
+            circlePaint,
         )
         rendererContext.canvas.drawCircle(
             (allPointsOnScreen[4] + allPointsOnScreen[2]) / 2f,
             (allPointsOnScreen[5] + allPointsOnScreen[3]) / 2f,
             circleRadius,
-            circlePaint
+            circlePaint,
         )
 
         rendererContext.restore()

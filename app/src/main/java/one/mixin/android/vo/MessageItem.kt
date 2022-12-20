@@ -84,7 +84,7 @@ data class MessageItem(
     @Deprecated(
         "Deprecated at database version 15",
         ReplaceWith("@{link sticker_id}", "one.mixin.android.vo.MessageItem.stickerId"),
-        DeprecationLevel.ERROR
+        DeprecationLevel.ERROR,
     )
     val albumId: String?,
     val stickerId: String?,
@@ -123,7 +123,7 @@ data class MessageItem(
             } else if ((type == MessageCategory.PLAIN_LIVE.name || type == MessageCategory.SIGNAL_LIVE.name || type == MessageCategory.ENCRYPTED_LIVE.name) && appCardShareable == null) {
                 appCardShareable = GsonHelper.customGson.fromJson(
                     content,
-                    LiveMessagePayload::class.java
+                    LiveMessagePayload::class.java,
                 ).shareable
             }
         } catch (e: Exception) {
@@ -171,7 +171,7 @@ fun create(type: String, createdAt: String? = null) = MessageItem(
     MessageStatus.READ.name, null, null,
     null, null, null, null, null, null, null, null,
     null, null, null, null, null, null, null, null,
-    null, null, null, null, null, null, null, null, null, null
+    null, null, null, null, null, null, null, null, null, null,
 )
 
 fun MessageItem.canNotReply() =
@@ -257,8 +257,8 @@ suspend fun MessageItem.saveToLocal(context: Context) {
     toast(
         MixinApplication.appContext.getString(
             R.string.Save_to,
-            outFile.absolutePath
-        )
+            outFile.absolutePath,
+        ),
     )
 }
 
@@ -291,11 +291,11 @@ private fun MessageItem.simpleChat(): String {
         type == MessageCategory.APP_CARD.name -> "[Mixin APP]"
         type == MessageCategory.SYSTEM_ACCOUNT_SNAPSHOT.name ->
             "[TRANSFER ${
-            if (snapshotAmount?.toFloat()!! > 0) {
-                "+"
-            } else {
-                ""
-            }
+                if (snapshotAmount?.toFloat()!! > 0) {
+                    "+"
+                } else {
+                    ""
+                }
             }$snapshotAmount $assetSymbol]"
         isContact() -> {
             "[CONTACT - $sharedUserFullName]"
@@ -358,7 +358,7 @@ fun MessageItem.toTranscript(transcriptId: String): TranscriptMessage {
         sharedUserId,
         mentions,
         quoteId,
-        quoteContent
+        quoteContent,
     )
 }
 

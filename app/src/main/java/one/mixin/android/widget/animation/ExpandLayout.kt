@@ -20,7 +20,7 @@ class ExpandLayout @JvmOverloads constructor(
 ) : ConstraintLayout(
     context,
     attrs,
-    defStyle
+    defStyle,
 ) {
     private val expandPath: Path = Path()
     private var mRunning = false
@@ -84,7 +84,7 @@ class ExpandLayout @JvmOverloads constructor(
             expandPath.reset()
             expandPath.addRect(
                 RectF(0f, 0f, measuredWidth.toFloat(), measuredHeight * p),
-                Path.Direction.CW
+                Path.Direction.CW,
             )
             canvas.clipPath(expandPath)
             val isInvalided = super.drawChild(canvas, child, drawingTime)

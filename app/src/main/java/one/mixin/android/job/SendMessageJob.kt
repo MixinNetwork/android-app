@@ -105,8 +105,8 @@ open class SendMessageJob(
                             ExpiredMessage(
                                 message.messageId,
                                 e,
-                                null
-                            )
+                                null,
+                            ),
                         )
                     }
                 }
@@ -139,7 +139,7 @@ open class SendMessageJob(
                 messageDao.updateQuoteContentByQuoteId(
                     message.conversationId,
                     msg.messageId,
-                    GsonHelper.customGson.toJson(quoteMsg)
+                    GsonHelper.customGson.toJson(quoteMsg),
                 )
             }
             jobManager.cancelJobByMixinJobId(msg.messageId)
@@ -165,7 +165,7 @@ open class SendMessageJob(
                 if (expireIn > 0) {
                     expiredMessageDao.updateExpiredMessage(
                         message.messageId,
-                        currentTimeSeconds() + e
+                        currentTimeSeconds() + e,
                     )
                 }
             }
@@ -207,7 +207,7 @@ open class SendMessageJob(
             mentions = getMentionData(message.messageId),
             recipient_ids = recipientIds,
             silent = isSilent,
-            expire_in = expireIn
+            expire_in = expireIn,
         )
         val blazeMessage = if (message.isCall()) {
             if (message.isKraken()) {
@@ -257,7 +257,7 @@ open class SendMessageJob(
             participantSessionKey.publicKey!!.base64RawURLDecode(),
             participantSessionKey.sessionId,
             extensionSessionKey?.publicKey?.base64RawURLDecode(),
-            extensionSessionKey?.sessionId
+            extensionSessionKey?.sessionId,
         )
 
         val blazeParam = BlazeMessageParam(
@@ -269,7 +269,7 @@ open class SendMessageJob(
             quote_message_id = message.quoteMessageId,
             mentions = getMentionData(message.messageId),
             recipient_ids = recipientIds,
-            expire_in = expireIn
+            expire_in = expireIn,
         )
         val blazeMessage = createParamBlazeMessage(blazeParam)
         deliver(blazeMessage)
@@ -280,12 +280,12 @@ open class SendMessageJob(
         if (recipientId != null) {
             participantSessionDao.getParticipantSessionKeyByUserId(
                 message.conversationId,
-                recipientId!!
+                recipientId!!,
             )
         } else {
             participantSessionDao.getParticipantSessionKeyWithoutSelf(
                 message.conversationId,
-                accountId
+                accountId,
             )
         }
 
@@ -318,7 +318,7 @@ open class SendMessageJob(
                 resendData.messageId,
                 resendData.sessionId,
                 getMentionData(message.messageId),
-                expireIn
+                expireIn,
             )
         } else {
             signalProtocol.encryptGroupMessage(message, getMentionData(message.messageId), isSilent, expireIn)

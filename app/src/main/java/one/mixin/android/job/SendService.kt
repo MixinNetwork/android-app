@@ -50,7 +50,7 @@ class SendService : IntentService("SendService") {
             val category = encryptCategory.toCategory(
                 MessageCategory.PLAIN_TEXT,
                 MessageCategory.SIGNAL_TEXT,
-                MessageCategory.ENCRYPTED_TEXT
+                MessageCategory.ENCRYPTED_TEXT,
             )
 
             val message = createMessage(
@@ -60,7 +60,7 @@ class SendService : IntentService("SendService") {
                 category,
                 content.toString().trim(),
                 nowInUtc(),
-                MessageStatus.SENDING.name
+                MessageStatus.SENDING.name,
             )
             jobManager.addJobInBackground(SendMessageJob(message))
         }

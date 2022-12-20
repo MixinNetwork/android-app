@@ -59,7 +59,7 @@ private fun isAvailable(): Boolean {
 fun hasWritePermission(): Boolean {
     return ContextCompat.checkSelfPermission(
         MixinApplication.appContext,
-        Manifest.permission.WRITE_EXTERNAL_STORAGE
+        Manifest.permission.WRITE_EXTERNAL_STORAGE,
     ) == PackageManager.PERMISSION_GRANTED
 }
 
@@ -78,7 +78,7 @@ private fun Context.getAppPath(legacy: Boolean = false): File? {
         }
         hasWritePermission() && isAvailable() -> {
             File(
-                "${Environment.getExternalStorageDirectory()}${File.separator}Mixin${File.separator}"
+                "${Environment.getExternalStorageDirectory()}${File.separator}Mixin${File.separator}",
             )
         }
         else -> {
@@ -201,7 +201,7 @@ private fun getOrientationFromExif(imagePath: String): Int {
     val exif = ExifInterface(imagePath)
     val exifOrientation = exif.getAttributeInt(
         ExifInterface.TAG_ORIENTATION,
-        ExifInterface.ORIENTATION_NORMAL
+        ExifInterface.ORIENTATION_NORMAL,
     )
     when (exifOrientation) {
         ExifInterface.ORIENTATION_ROTATE_270 -> orientation = 270
@@ -251,7 +251,7 @@ fun Context.getTranscriptFile(name: String, type: String, legacy: Boolean = fals
     return getTranscriptDirPath(legacy).newTempFile(
         name,
         type,
-        true
+        true,
     )
 }
 
@@ -428,7 +428,7 @@ fun File.createDocumentTemp(conversationId: String, messageId: String, type: Str
         } else {
             ".$type"
         },
-        noMedia
+        noMedia,
     )
 }
 
@@ -438,16 +438,16 @@ private fun File.createDocumentFile(
     extensionName: String? = null,
 ): File {
     val defaultName = "FILE_${
-    SimpleDateFormat(
-        "yyyyMMdd_HHmmss_SSS",
-        Locale.US
-    ).format(Date())
+        SimpleDateFormat(
+            "yyyyMMdd_HHmmss_SSS",
+            Locale.US,
+        ).format(Date())
     }${
-    if (extensionName == null) {
-        ""
-    } else {
-        ".$extensionName"
-    }
+        if (extensionName == null) {
+            ""
+        } else {
+            ".$extensionName"
+        }
     }"
     val fileName = name ?: defaultName
     if (!this.exists()) {
@@ -674,7 +674,7 @@ private fun File.getDirSize(): Long? {
         val du = Runtime.getRuntime().exec(
             "/system/bin/du -s $canonicalPath",
             arrayOf(),
-            Environment.getRootDirectory()
+            Environment.getRootDirectory(),
         )
         val br = BufferedReader(InputStreamReader(du.inputStream))
         return Scanner(br.readLine()).nextLong()
@@ -724,7 +724,7 @@ private fun File.blurThumbnail(width: Int, height: Int): Bitmap? {
         return ThumbnailUtils.extractThumbnail(
             BitmapFactory.decodeFile(this.absolutePath),
             width,
-            height
+            height,
         ).fastBlur(1f, 10)
     } catch (e: Exception) {
     }

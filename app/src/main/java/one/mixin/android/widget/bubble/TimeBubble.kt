@@ -30,7 +30,7 @@ class TimeBubble(context: Context, attributeSet: AttributeSet) :
             isPin = false,
             isRepresentative = false,
             isSecret = false,
-            isWhite = isWhite
+            isWhite = isWhite,
         )
     }
 
@@ -50,8 +50,8 @@ class TimeBubble(context: Context, attributeSet: AttributeSet) :
                     R.color.white
                 } else {
                     R.color.color_chat_date
-                }
-            )
+                },
+            ),
         )
         binding.chatPin.isVisible = isPin
         binding.chatPin.setImageDrawable(
@@ -59,7 +59,7 @@ class TimeBubble(context: Context, attributeSet: AttributeSet) :
                 AppCompatResources.getDrawable(context, R.drawable.ic_chat_pin_white)
             } else {
                 AppCompatResources.getDrawable(context, R.drawable.ic_chat_pin)
-            }
+            },
         )
         binding.chatSecret.isVisible = isSecret
         binding.chatSecret.setImageDrawable(
@@ -67,7 +67,7 @@ class TimeBubble(context: Context, attributeSet: AttributeSet) :
                 AppCompatResources.getDrawable(context, R.drawable.ic_chat_secret_white)
             } else {
                 AppCompatResources.getDrawable(context, R.drawable.ic_chat_secret)
-            }
+            },
         )
         binding.chatRepresentative.isVisible = isRepresentative
         binding.chatRepresentative.setImageDrawable(
@@ -75,7 +75,7 @@ class TimeBubble(context: Context, attributeSet: AttributeSet) :
                 AppCompatResources.getDrawable(context, R.drawable.ic_chat_representative_white)
             } else {
                 AppCompatResources.getDrawable(context, R.drawable.ic_chat_representative)
-            }
+            },
         )
         binding.chatStatus.isVisible = isMe && status != null
         if (isMe && status != null) {
@@ -105,7 +105,7 @@ class TimeBubble(context: Context, attributeSet: AttributeSet) :
                         null
                 }?.let {
                     AppCompatResources.getDrawable(context, it)
-                }
+                },
             )
             if (status == MessageStatus.SENDING.name) {
                 (binding.chatStatus.drawable as Animatable).start()

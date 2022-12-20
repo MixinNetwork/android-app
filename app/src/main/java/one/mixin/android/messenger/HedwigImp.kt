@@ -145,7 +145,7 @@ class HedwigImp(
                         RemoteMessageStatus(
                             message.messageId,
                             message.conversationId,
-                            MessageStatus.DELIVERED.name
+                            MessageStatus.DELIVERED.name,
                         )
                     }.let { remoteMessageStatus ->
                         remoteMessageStatusDao.insertList(remoteMessageStatus)

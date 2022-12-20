@@ -32,14 +32,14 @@ class LandingFragment : Fragment(R.layout.fragment_landing) {
         val termsUrl = getString(R.string.landing_terms_url)
         binding.introductionTv.highlightStarTag(
             policyWrapper,
-            arrayOf(policyUrl, termsUrl)
+            arrayOf(policyUrl, termsUrl),
         )
 
         binding.agreeTv.setOnClickListener {
             activity?.addFragment(
                 this@LandingFragment,
                 MobileFragment.newInstance(),
-                MobileFragment.TAG
+                MobileFragment.TAG,
             )
         }
         binding.imageView.setOnClickListener(object : DebugClickListener() {

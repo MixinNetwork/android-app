@@ -12,7 +12,7 @@ class StickerManagerButton : AppCompatTextView {
     constructor(context: Context, attrs: AttributeSet, defStyleAttr: Int) : super(
         context,
         attrs,
-        defStyleAttr
+        defStyleAttr,
     )
 
     private var deleteCallback: OnClickListener? = null

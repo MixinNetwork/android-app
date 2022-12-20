@@ -105,7 +105,7 @@ class BotManagerBottomSheetDialogFragment : BottomSheetDialogFragment(), BotDock
         dialog?.window?.let { window ->
             SystemUIManager.lightUI(
                 window,
-                !requireContext().booleanFromAttribute(R.attr.flag_night)
+                !requireContext().booleanFromAttribute(R.attr.flag_night),
             )
         }
     }

@@ -39,7 +39,7 @@ internal constructor(
                         }
                     }
                 },
-                {}
+                {},
             )
         return accountRepository.findUsersByType(UserRelationship.BLOCKING.name)
     }

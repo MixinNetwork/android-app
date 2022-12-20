@@ -59,7 +59,7 @@ class RestoreActivity : BaseActivity() {
         chooseFolderResult = registerForActivityResult(
             ChooseFolderContract(),
             activityResultRegistry,
-            ::callbackChooseFolder
+            ::callbackChooseFolder,
         )
         alertDialogBuilder()
             .setMessage(R.string.restore_message)
@@ -84,7 +84,7 @@ class RestoreActivity : BaseActivity() {
                         {
                             InitializeActivity.showLoading(this)
                             finish()
-                        }
+                        },
                     )
                 dialog.dismiss()
             }.create().run {
@@ -121,7 +121,7 @@ class RestoreActivity : BaseActivity() {
                 when (error) {
                     Result.FAILURE -> {
                         setMessage(
-                            R.string.Failure
+                            R.string.Failure,
                         )
                     }
                     Result.NOT_FOUND -> {
@@ -133,7 +133,7 @@ class RestoreActivity : BaseActivity() {
                     }
                     else -> {
                         setMessage(
-                            R.string.Not_support
+                            R.string.Not_support,
                         )
                     }
                 }
@@ -143,14 +143,14 @@ class RestoreActivity : BaseActivity() {
                     R.string.Choose
                 } else {
                     R.string.Retry
-                }
+                },
             ) { dialog, _ ->
                 if (userBackup) {
                     chooseFolderResult.launch(
                         defaultSharedPreferences.getString(
                             Constants.Account.PREF_BACKUP_DIRECTORY,
-                            null
-                        )
+                            null,
+                        ),
                     )
                 } else {
                     RxPermissions(this)
@@ -165,7 +165,7 @@ class RestoreActivity : BaseActivity() {
                                 }
                             },
                             {
-                            }
+                            },
                         )
                 }
                 dialog.dismiss()
@@ -220,7 +220,7 @@ class RestoreActivity : BaseActivity() {
                     {
                         BackupNotification.cancel()
                         hideProgress()
-                    }
+                    },
                 )
         }
         binding.restoreSkip.setOnClickListener {
@@ -245,7 +245,7 @@ class RestoreActivity : BaseActivity() {
             InitializeActivity.showLoading(this@RestoreActivity)
             defaultSharedPreferences.putBoolean(
                 Constants.Account.PREF_RESTORE,
-                false
+                false,
             )
             finish()
         } else {

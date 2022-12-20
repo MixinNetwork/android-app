@@ -7,7 +7,7 @@ import androidx.room.PrimaryKey
 
 @Entity(
     tableName = "message_mentions",
-    indices = [Index(value = arrayOf("conversation_id"))]
+    indices = [Index(value = arrayOf("conversation_id"))],
 )
 class MessageMention(
     @PrimaryKey
