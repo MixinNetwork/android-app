@@ -525,7 +525,7 @@ class DataProvider {
                             val _cursorIndexOfSharedUserAppId = 48
                             val _cursorIndexOfMentions = 49
                             val _res: MutableList<ChatHistoryMessageItem> = ArrayList(
-                                cursor!!.count
+                                cursor!!.count,
                             )
                             while (cursor.moveToNext()) {
                                 val _item: ChatHistoryMessageItem
@@ -752,7 +752,7 @@ class DataProvider {
                                     _tmpSharedUserAppId,
                                     _tmpQuoteId,
                                     _tmpQuoteContent,
-                                    _tmpMentions
+                                    _tmpMentions,
                                 )
                                 _res.add(_item)
                             }

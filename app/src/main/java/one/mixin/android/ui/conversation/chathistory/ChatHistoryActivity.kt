@@ -232,7 +232,7 @@ class ChatHistoryActivity : BaseActivity() {
             binding.titleView.rightAnimator.isVisible = false
             binding.titleView.setSubTitle(
                 this@ChatHistoryActivity.resources.getQuantityString(R.plurals.pinned_message_title, count, count),
-                ""
+                "",
             )
             buildLivePagedList(conversationRepository.getPinMessages(conversationId, count))
                 .observe(this) { list ->
@@ -262,7 +262,7 @@ class ChatHistoryActivity : BaseActivity() {
             .build()
         return LivePagedListBuilder(
             dataSource,
-            pagedListConfig
+            pagedListConfig,
         ).build()
     }
 

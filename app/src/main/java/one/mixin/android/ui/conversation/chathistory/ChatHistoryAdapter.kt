@@ -228,8 +228,8 @@ class ChatHistoryAdapter(
                 ItemChatTransparentBinding.inflate(
                     LayoutInflater.from(parent.context),
                     parent,
-                    false
-                )
+                    false,
+                ),
             )
             else -> UnknownHolder(
                 ItemChatUnknownBinding.inflate(
