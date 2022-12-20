@@ -112,6 +112,7 @@ import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.inTransaction
 import one.mixin.android.extension.isBluetoothHeadsetOrWiredHeadset
 import one.mixin.android.extension.isImageSupport
+import one.mixin.android.extension.isStickerSupport
 import one.mixin.android.extension.lateOneHours
 import one.mixin.android.extension.mainThreadDelayed
 import one.mixin.android.extension.networkConnected
@@ -1519,7 +1520,7 @@ class ConversationFragment() :
                     url?.let {
                         val uri = url.toUri()
                         val mimeType = getMimeType(uri, true)
-                        if (mimeType?.isImageSupport() == true) {
+                        if (mimeType?.isStickerSupport() == true) {
                             StickerActivity.show(requireContext(), url = it, showAdd = true)
                             closeTool()
                         } else {
