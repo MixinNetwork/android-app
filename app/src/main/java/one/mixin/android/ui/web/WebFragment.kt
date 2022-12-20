@@ -1118,7 +1118,7 @@ class WebFragment : BaseFragment() {
     }
 
     override fun onPause() {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N || !requireActivity().isInMultiWindowMode) {
+        if (!requireActivity().isInMultiWindowMode) {
             webView.onPause()
             webView.pauseTimers()
         }
@@ -1126,7 +1126,7 @@ class WebFragment : BaseFragment() {
     }
 
     override fun onResume() {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N || !requireActivity().isInMultiWindowMode) {
+        if (!requireActivity().isInMultiWindowMode) {
             webView.onResume()
             webView.resumeTimers()
         }
