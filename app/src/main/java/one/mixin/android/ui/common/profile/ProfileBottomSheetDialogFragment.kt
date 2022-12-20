@@ -85,9 +85,9 @@ class ProfileBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragmen
 
     private lateinit var pickMedia: ActivityResultLauncher<PickVisualMediaRequest>
 
-    override fun onAttach(context: Context){
+    override fun onAttach(context: Context) {
         super.onAttach(context)
-         pickMedia = registerForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
+        pickMedia = registerForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
             if (uri != null) {
                 val options = UCrop.Options()
                 options.setToolbarColor(ContextCompat.getColor(requireContext(), R.color.black))
@@ -318,7 +318,7 @@ class ProfileBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragmen
                 }
         }
     }
-    
+
     private fun changeNumber() {
         alert(getString(R.string.profile_modify_number))
             .setNegativeButton(android.R.string.no) { dialog, _ -> dialog.dismiss() }
