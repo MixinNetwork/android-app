@@ -212,7 +212,7 @@ class StickerAddFragment : BaseFragment() {
         mimeType: String?,
         uri: Uri,
     ): StickerAddRequest? = withContext(Dispatchers.IO) {
-        return@withContext if (mimeType == MimeType.GIF.toString() || mimeType == MimeType.WEBP.toString()) {
+        return@withContext if (mimeType == MimeType.GIF.toString()) {
             val path = uri.getFilePath(requireContext())
             if (path == null) {
                 withContext(Dispatchers.Main) {
