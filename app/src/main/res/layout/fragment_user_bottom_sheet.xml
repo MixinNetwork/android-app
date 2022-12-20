@@ -98,7 +98,7 @@
                 android:textColor="@color/wallet_blue"
                 android:visibility="gone" />
 
-            <one.mixin.android.widget.linktext.AutoLinkTextView
+            <one.mixin.android.widget.ExpandableTextView
                 android:id="@+id/detail_tv"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -107,11 +107,12 @@
                 android:layout_marginEnd="32dp"
                 android:layout_marginBottom="10dp"
                 android:gravity="center"
-                android:maxHeight="300dp"
-                android:maxLength="1024"
-                android:scrollbars="vertical"
                 android:textColor="?attr/text_primary"
-                android:textIsSelectable="true" />
+                android:maxLines="12"
+                android:scrollbars="vertical"
+                app:limitedMaxLines="6"
+                app:expandAction="@string/More"
+                app:expandActionColor="?attr/text_blue"/>
 
             <LinearLayout
                 android:id="@+id/avatar_ll"

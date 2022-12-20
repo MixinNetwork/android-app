@@ -1,6 +1,7 @@
 package one.mixin.android.ui.common
 
 import android.Manifest
+import android.animation.ValueAnimator
 import android.annotation.SuppressLint
 import android.app.Dialog
 import android.content.ClipData
@@ -18,6 +19,7 @@ import androidx.core.view.doOnPreDraw
 import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
 import androidx.fragment.app.FragmentManager
+import androidx.interpolator.view.animation.FastOutSlowInInterpolator
 import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
 import com.bumptech.glide.Glide
@@ -756,8 +758,26 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
             true
         }
         if (user.biography.isNotEmpty()) {
-            binding.detailTv.text = user.biography
+            binding.detailTv.originalText = user.biography
             binding.detailTv.visibility = VISIBLE
+            binding.detailTv.heightDifferenceCallback = { heightDifference, duration ->
+                if (behavior?.state == BottomSheetBehavior.STATE_COLLAPSED) {
+                    behavior?.peekHeight?.let { peekHeight ->
+                        ValueAnimator.ofInt(peekHeight, peekHeight + heightDifference).apply {
+                            interpolator = FastOutSlowInInterpolator()
+                            setDuration(duration)
+                            addUpdateListener { value ->
+                                behavior?.peekHeight = value.animatedValue as Int
+                            }
+                            start()
+                        }
+                    }
+                } else if (behavior?.state == BottomSheetBehavior.STATE_EXPANDED) {
+                    behavior?.peekHeight?.let { peekHeight ->
+                        behavior?.peekHeight = heightDifference + peekHeight
+                    }
+                }
+            }
         } else {
             binding.detailTv.visibility = GONE
         }
