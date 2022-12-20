@@ -1470,7 +1470,7 @@ class ConversationFragment() :
             val conversationDraft = withContext(SINGLE_DB_THREAD) {
                 chatViewModel.getConversationDraftById(conversationId)
             } ?: ""
-            if (isAdded && conversationDraft.isNotEmpty()) {
+            if (!viewDestroyed() && conversationDraft.isNotEmpty()) {
                 binding.chatControl.chatEt.setText(conversationDraft)
             }
         }
@@ -1842,7 +1842,7 @@ class ConversationFragment() :
                 val computableLiveData = this
                 lifecycleScope.launch {
                     InvalidateFlow.collect(
-                        { isAdded && this@ConversationFragment.conversationId == conversationId },
+                        { !viewDestroyed() && this@ConversationFragment.conversationId == conversationId },
                         {
                             computableLiveData.invalidate()
                         },
@@ -1974,7 +1974,7 @@ class ConversationFragment() :
                 isFirstMessage = false
 
                 withContext(Dispatchers.Main) {
-                    if (isAdded) {
+                    if (!viewDestroyed()) {
                         action()
                     }
                 }
@@ -2121,7 +2121,7 @@ class ConversationFragment() :
     }
 
     private fun getRelyMessage(): MessageItem? {
-        if (isAdded) {
+        if (!viewDestroyed()) {
             val messageItem = binding.chatControl.replyView.messageItem
             if (binding.chatControl.replyView.isVisible) {
                 lifecycleScope.launch {
@@ -2550,7 +2550,7 @@ class ConversationFragment() :
         stickerAlbumFragment.setCallback(
             object : StickerAlbumFragment.Callback {
                 override fun onStickerClick(stickerId: String) {
-                    if (isAdded) {
+                    if (!viewDestroyed()) {
                         if (binding.stickerContainer.height != binding.inputLayout.keyboardHeight) {
                             binding.inputLayout.openInputArea(binding.chatControl.chatEt)
                         }
@@ -2559,7 +2559,7 @@ class ConversationFragment() :
                 }
 
                 override fun onGiphyClick(image: Image, previewUrl: String) {
-                    if (isAdded) {
+                    if (!viewDestroyed()) {
                         sendGiphy(image, previewUrl)
                     }
                 }
@@ -2595,7 +2595,7 @@ class ConversationFragment() :
     ) {
         binding.chatRv.postDelayed(
             {
-                if (isAdded) {
+                if (!viewDestroyed()) {
                     if (position == 0 && offset == 0) {
                         binding.chatRv.layoutManager?.scrollToPosition(0)
                     } else if (offset == -1) {
