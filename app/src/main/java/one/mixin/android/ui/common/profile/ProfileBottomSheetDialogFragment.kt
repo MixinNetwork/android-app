@@ -89,7 +89,6 @@ class ProfileBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragmen
         super.onAttach(context)
          pickMedia = registerForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
             if (uri != null) {
-                Timber.e("PhotoPicker", "Selected URI: $uri")
                 val options = UCrop.Options()
                 options.setToolbarColor(ContextCompat.getColor(requireContext(), R.color.black))
                 options.setStatusBarColor(ContextCompat.getColor(requireContext(), R.color.black))
@@ -104,7 +103,7 @@ class ProfileBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragmen
                     )
                     .start(requireContext(), this)
             } else {
-                Timber.e("PhotoPicker", "No media selected")
+                Timber.e("PhotoPicker, No media selected")
             }
         }
     }
