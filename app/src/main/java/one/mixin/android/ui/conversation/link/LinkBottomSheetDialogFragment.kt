@@ -46,6 +46,7 @@ import one.mixin.android.extension.stripAmountZero
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.withArgs
 import one.mixin.android.job.getIconUrlName
+import one.mixin.android.pay.parseExternalTransferUri
 import one.mixin.android.repository.QrCodeType
 import one.mixin.android.session.Session
 import one.mixin.android.ui.auth.AuthBottomSheetDialogFragment
@@ -75,7 +76,6 @@ import one.mixin.android.ui.wallet.TransactionBottomSheetDialogFragment
 import one.mixin.android.ui.web.WebActivity
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.SystemUIManager
-import one.mixin.android.util.parseExternalTransferUri
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.Address
 import one.mixin.android.vo.AssetItem
@@ -594,15 +594,14 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
             if (checkHasPin()) return
 
             lifecycleScope.launch(errorHandler) {
-                val newUrl = url.replaceFirst(":", "://")
-                val result = parseExternalTransferUri(newUrl.toUri()) { assetId, destination ->
+                val result = parseExternalTransferUri(url) { assetId, destination ->
                     handleMixinResponse(
                         invokeNetwork = {
                             linkViewModel.getExternalAddressFee(assetId, destination, null)
                         },
                         successBlock = {
                             return@handleMixinResponse it.data
-                        }
+                        },
                     )
                 }
 

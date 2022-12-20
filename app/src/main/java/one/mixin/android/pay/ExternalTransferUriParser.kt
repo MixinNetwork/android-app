@@ -1,29 +1,22 @@
-package one.mixin.android.util
+package one.mixin.android.pay
 
-import android.net.Uri
 import one.mixin.android.Constants
 import one.mixin.android.api.response.AddressFeeResponse
 import one.mixin.android.extension.stripAmountZero
-import java.math.BigDecimal
-
-data class ExternalTransfer (
-    val destination: String,
-    val amount: BigDecimal,
-    val assetId: String,
-    val fee: BigDecimal?,
-)
+import one.mixin.android.extension.toUri
+import one.mixin.android.pay.erc831.isEthereumURLString
 
 suspend fun parseExternalTransferUri(
-    uri: Uri,
+    url: String,
     getAddressFee: suspend (String, String) -> AddressFeeResponse?,
 ): ExternalTransfer? {
-    val scheme = uri.scheme
-    val assetId = externalTransferAssetIdMap[scheme] ?: return null
-
-    if (scheme == "ethereum") {
-        return parseEthereum(uri, assetId, getAddressFee)
+    if (url.isEthereumURLString()) {
+        return parseEthereum(url, getAddressFee)
     }
 
+    val uri = url.replaceFirst(":", "://").toUri()
+    val scheme = uri.scheme
+    val assetId = externalTransferAssetIdMap[scheme] ?: return null
     val destination = uri.host ?: return null
     val addressFeeResponse = getAddressFee(assetId, destination) ?: return null
 
@@ -35,23 +28,6 @@ suspend fun parseExternalTransferUri(
     val amountBD = amount.toBigDecimalOrNull() ?: return null
 
     return ExternalTransfer(destination, amountBD, assetId, addressFeeResponse.fee.toBigDecimalOrNull())
-}
-
-private suspend fun parseEthereum(
-    uri: Uri,
-    assetId: String,
-    getAddressFee: suspend (String, String) -> AddressFeeResponse?,
-): ExternalTransfer? {
-    if (uri.scheme != "ethereum") return null
-
-    val pathSegments = uri.pathSegments
-    if (pathSegments.size < 1 || pathSegments[0] != "transfer") return null
-
-    val destination = uri.getQueryParameter("address") ?: return null
-    val addressFeeResponse = getAddressFee(assetId, destination) ?: return null
-
-    // TODO get amount
-    return ExternalTransfer(destination, BigDecimal.ZERO, assetId, addressFeeResponse.fee.toBigDecimalOrNull())
 }
 
 val externalTransferAssetIdMap by lazy {
