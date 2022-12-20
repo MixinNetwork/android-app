@@ -28,8 +28,8 @@ class LinkAdapter(private val onClickListener: (url: String) -> Unit, private va
             LayoutInflater.from(parent.context).inflate(
                 R.layout.item_shared_media_link,
                 parent,
-                false
-            )
+                false,
+            ),
         )
 
     override fun onBindViewHolder(holder: LinkHolder, position: Int) {

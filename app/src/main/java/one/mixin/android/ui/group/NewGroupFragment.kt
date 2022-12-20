@@ -97,7 +97,7 @@ class NewGroupFragment : BaseFragment() {
         if (dialog == null) {
             dialog = indeterminateProgressDialog(
                 message = R.string.Please_wait_a_bit,
-                title = R.string.Creating
+                title = R.string.Creating,
             ).apply {
                 setCancelable(false)
             }
@@ -115,11 +115,11 @@ class NewGroupFragment : BaseFragment() {
             binding.noticeDescEt.text.toString(),
             groupIcon,
             adapter.users!!,
-            sender
+            sender,
         )
         val liveData = groupViewModel.getConversationStatusById(conversation.conversationId)
         liveData.observe(
-            viewLifecycleOwner
+            viewLifecycleOwner,
         ) { c ->
             if (c != null) {
                 when (c.status) {
@@ -130,7 +130,7 @@ class NewGroupFragment : BaseFragment() {
                         activity?.finish()
                         ConversationActivity.showAndClear(
                             requireContext(),
-                            conversation.conversationId
+                            conversation.conversationId,
                         )
                     }
                     ConversationStatus.FAILURE.ordinal -> {

@@ -118,7 +118,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
         dialog?.window?.let { window ->
             SystemUIManager.lightUI(
                 window,
-                !requireContext().booleanFromAttribute(R.attr.flag_night)
+                !requireContext().booleanFromAttribute(R.attr.flag_night),
             )
         }
     }
@@ -265,7 +265,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                             val iconUrl = if (notExistsUserIdList.isNotEmpty()) {
                                 linkViewModel.refreshUsers(
                                     notExistsUserIdList,
-                                    response.conversationId
+                                    response.conversationId,
                                 )
                                 null
                             } else {
@@ -273,7 +273,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                                     linkViewModel.findMultiUsersByIds(avatar4List.toSet())
                                 linkViewModel.startGenerateAvatar(
                                     response.conversationId,
-                                    avatar4List
+                                    avatar4List,
                                 )
 
                                 val name = getIconUrlName(response.conversationId, avatarUsers)
@@ -285,14 +285,14 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                                 response.name,
                                 response.announcement,
                                 response.participants.size,
-                                iconUrl
+                                iconUrl,
                             )
                             JoinGroupBottomSheetDialogFragment.newInstance(
                                 joinGroupConversation,
-                                code
+                                code,
                             ).showNow(
                                 parentFragmentManager,
-                                JoinGroupBottomSheetDialogFragment.TAG
+                                JoinGroupBottomSheetDialogFragment.TAG,
                             )
                             dismiss()
                         }
@@ -321,11 +321,11 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                                 authorization.app.name,
                                 authorization.app.appNumber,
                                 authorization.app.iconUrl,
-                                authorization.authorizationId
+                                authorization.authorizationId,
                             )
                                 .showNow(
                                     parentFragmentManager,
-                                    AuthBottomSheetDialogFragment.TAG
+                                    AuthBottomSheetDialogFragment.TAG,
                                 )
                             authOrPay = true
                             dismiss()
@@ -348,14 +348,14 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                                 pin = null,
                                 traceId = null,
                                 memo = multisigs.memo,
-                                state = multisigs.state
+                                state = multisigs.state,
                             )
                             MultisigsBottomSheetDialogFragment.newInstance(
-                                multisigsBiometricItem
+                                multisigsBiometricItem,
                             )
                                 .showNow(
                                     parentFragmentManager,
-                                    MultisigsBottomSheetDialogFragment.TAG
+                                    MultisigsBottomSheetDialogFragment.TAG,
                                 )
                             dismiss()
                         } else {
@@ -377,7 +377,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                             amount = nfoResponse.amount,
                             pin = null,
                             memo = nfoResponse.memo,
-                            state = nfoResponse.state
+                            state = nfoResponse.state,
                         )
                         NftBottomSheetDialogFragment.newInstance(nftBiometricItem)
                             .showNow(parentFragmentManager, NftBottomSheetDialogFragment.TAG)
@@ -398,14 +398,14 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                                 pin = null,
                                 traceId = paymentCodeResponse.traceId,
                                 memo = paymentCodeResponse.memo,
-                                state = paymentCodeResponse.status
+                                state = paymentCodeResponse.status,
                             )
                             MultisigsBottomSheetDialogFragment.newInstance(
-                                multisigsBiometricItem
+                                multisigsBiometricItem,
                             )
                                 .showNow(
                                     parentFragmentManager,
-                                    MultisigsBottomSheetDialogFragment.TAG
+                                    MultisigsBottomSheetDialogFragment.TAG,
                                 )
                             dismiss()
                         } else {
@@ -446,7 +446,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                                     label = address.label,
                                     destination = address.destination,
                                     tag = address.tag,
-                                    type = PinAddrBottomSheetDialogFragment.DELETE
+                                    type = PinAddrBottomSheetDialogFragment.DELETE,
                                 ).showNow(this@LinkBottomSheetDialogFragment.parentFragmentManager, PinAddrBottomSheetDialogFragment.TAG)
                                 dismiss()
                             } else {
@@ -481,7 +481,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                                 label = label,
                                 destination = destination,
                                 tag = tag,
-                                type = PinAddrBottomSheetDialogFragment.ADD
+                                type = PinAddrBottomSheetDialogFragment.ADD,
                             )
                                 .showNow(this@LinkBottomSheetDialogFragment.parentFragmentManager, PinAddrBottomSheetDialogFragment.TAG)
                             dismiss()
@@ -579,7 +579,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                                     exceptionBlock = {
                                         showError(R.string.Checking_payment_info)
                                         return@handleMixinResponse false
-                                    }
+                                    },
                                 )
                             }
                         }
@@ -645,7 +645,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 afterShareData = { dismiss() },
                 onError = { err ->
                     showError(err)
-                }
+                },
             )
         } else if (url.startsWith(Scheme.DEVICE, true)) {
             contentView.post {
@@ -735,7 +735,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
 
                 showTransferBottom(user, amount, asset, trace, response.status, memo)
                 return@handleMixinResponse true
-            }
+            },
         ) ?: false
     }
 
@@ -757,7 +757,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
         }
         val biometricItem = WithdrawBiometricItem(
             address.destination, address.tag, address.addressId, address.label, address.fee,
-            asset, amount, null, traceId, memo, status, pair.first
+            asset, amount, null, traceId, memo, status, pair.first,
         )
         showPreconditionBottom(biometricItem)
     }

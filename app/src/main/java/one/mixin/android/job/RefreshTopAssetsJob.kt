@@ -12,7 +12,7 @@ import one.mixin.android.vo.toPriceAndChange
 
 class RefreshTopAssetsJob : BaseJob(
     Params(PRIORITY_UI_HIGH)
-        .addTags(GROUP).requireNetwork()
+        .addTags(GROUP).requireNetwork(),
 ) {
 
     companion object {

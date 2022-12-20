@@ -37,7 +37,7 @@ class InviteQrBottomFragment : MixinBottomSheetDialogFragment() {
             arguments = bundleOf(
                 ICON_URL to iconUrl,
                 NAME to name,
-                URL to url
+                URL to url,
             )
         }
     }
@@ -90,7 +90,7 @@ class InviteQrBottomFragment : MixinBottomSheetDialogFragment() {
                         },
                         {
                             toast(R.string.Save_failure)
-                        }
+                        },
                     )
             }
 
@@ -111,7 +111,7 @@ class InviteQrBottomFragment : MixinBottomSheetDialogFragment() {
                             qr.setImageBitmap(r.first)
                         },
                         {
-                        }
+                        },
                     )
             }
         }

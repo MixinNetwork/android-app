@@ -43,7 +43,7 @@ class EmergencyContactTipBottomSheetDialogFragment : MixinBottomSheetDialogFragm
                             R.anim.slide_in_bottom,
                             R.anim.slide_out_bottom,
                             R.anim.slide_in_bottom,
-                            R.anim.slide_out_bottom
+                            R.anim.slide_out_bottom,
                         )
                             .add(R.id.container, VerifyFragment.newInstance(VerifyFragment.FROM_EMERGENCY))
                             .addToBackStack(null)

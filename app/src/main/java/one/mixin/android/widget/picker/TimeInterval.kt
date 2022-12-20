@@ -9,14 +9,14 @@ val timeIntervalUnits by lazy {
         R.plurals.time_interval_unit_minute,
         R.plurals.time_interval_unit_hour,
         R.plurals.time_interval_unit_day,
-        R.plurals.time_interval_unit_week
+        R.plurals.time_interval_unit_week,
     )
 }
 
 private fun timeString(isPlurals: Boolean, index: Int) =
     MixinApplication.get().resources.getQuantityString(
         timeIntervalUnits[index],
-        if (isPlurals) 2 else 1
+        if (isPlurals) 2 else 1,
     )
 
 val numberList by lazy {
@@ -25,7 +25,7 @@ val numberList by lazy {
         (1..59).map { it.toString() }.toList(),
         (1..23).map { it.toString() }.toList(),
         (1..6).map { it.toString() }.toList(),
-        (1..12).map { it.toString() }.toList()
+        (1..12).map { it.toString() }.toList(),
     )
 }
 

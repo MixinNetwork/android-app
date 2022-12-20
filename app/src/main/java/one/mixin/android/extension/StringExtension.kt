@@ -94,7 +94,7 @@ fun String.generateQRCode(qrSize: Int, padding: Int = 32.dp): Pair<Bitmap, Int> 
         RectF(padding / 2f, padding / 2f, size.toFloat() - padding / 2f, size.toFloat() - padding / 2f),
         padding / 2f,
         padding / 2f,
-        blackPaint
+        blackPaint,
     )
     blackPaint.color = Color.BLACK
     val rect = GradientDrawable()
@@ -132,7 +132,7 @@ fun String.generateQRCode(qrSize: Int, padding: Int = 32.dp): Pair<Bitmap, Int> 
             (y + multiple).toFloat(),
             (x + (sideQuadSize - 1) * multiple).toFloat(),
             (y + (sideQuadSize - 1) * multiple).toFloat(),
-            blackPaint
+            blackPaint,
         )
         r = sideQuadSize * multiple / 4.0f
         Arrays.fill(radii, r)

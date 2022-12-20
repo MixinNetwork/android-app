@@ -58,7 +58,7 @@ class DeleteAccountTipBottomSheetDialogFragment : MixinBottomSheetDialogFragment
             assetRv.adapter = adapter
         }
         chatViewModel.assetItemsWithBalance().observe(
-            this
+            this,
         ) { r: List<AssetItem>? ->
             if (r != null && r.isNotEmpty()) {
                 assets = r
@@ -82,7 +82,7 @@ class DeleteAccountTipBottomSheetDialogFragment : MixinBottomSheetDialogFragment
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ItemHolder =
             ItemHolder(
                 LayoutInflater.from(parent.context)
-                    .inflate(R.layout.item_asset, parent, false)
+                    .inflate(R.layout.item_asset, parent, false),
             )
 
         override fun onBindViewHolder(holder: ItemHolder, position: Int) {
@@ -91,7 +91,7 @@ class DeleteAccountTipBottomSheetDialogFragment : MixinBottomSheetDialogFragment
             binding.typeAvatar.bg.loadImage(itemAssert.iconUrl, R.drawable.ic_avatar_place_holder)
             binding.typeAvatar.badge.loadImage(
                 itemAssert.chainIconUrl,
-                R.drawable.ic_avatar_place_holder
+                R.drawable.ic_avatar_place_holder,
             )
             binding.name.text = itemAssert.name
             binding.value.text = itemAssert.balance.numberFormat()

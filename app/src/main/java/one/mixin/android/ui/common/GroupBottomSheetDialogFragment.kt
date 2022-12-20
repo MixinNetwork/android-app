@@ -138,7 +138,7 @@ class GroupBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment(
                     {
                         context?.getClipboardManager()
                             ?.setPrimaryClip(ClipData.newPlainText(null, conversationId))
-                    }
+                    },
                 )
                 if (icon == null || !File(icon).exists()) {
                     bottomViewModel.startGenerateAvatar(c.conversationId)
@@ -169,7 +169,7 @@ class GroupBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment(
                     }
                 }
                 initParticipant(changeMenu, c)
-            }
+            },
         )
 
         bottomViewModel.refreshConversation(conversationId)
@@ -281,7 +281,7 @@ class GroupBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment(
                                 }
                             }
                         }
-                    }
+                    },
                 )
 
                 list.groups.add(
@@ -293,14 +293,14 @@ class GroupBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment(
                                 showDisappearing()
                             }
                         }
-                    }
+                    },
                 )
             }
             val muteMenu = if (conversation.muteUntil.notNullWithElse(
                     {
                         Instant.now().isBefore(Instant.parse(it))
                     },
-                    false
+                    false,
                 )
             ) {
                 menu {
@@ -317,7 +317,7 @@ class GroupBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment(
             list.groups.add(
                 menuGroup {
                     menu(muteMenu)
-                }
+                },
             )
         }
 
@@ -331,7 +331,7 @@ class GroupBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment(
                     }
                     this.circleNames = circleNames
                 }
-            }
+            },
         )
 
         val deleteMenu = if (me != null) {
@@ -370,14 +370,14 @@ class GroupBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment(
                     }
                 }
                 menu(deleteMenu)
-            }
+            },
         )
 
         menuListLayout?.removeAllViews()
         binding.scrollContent.removeView(menuListLayout)
         list.createMenuLayout(
             requireContext(),
-            getString(R.string.Created, conversation.createdAt.dayTime())
+            getString(R.string.Created, conversation.createdAt.dayTime()),
         )
             .let { layout ->
                 menuListLayout = layout
@@ -408,12 +408,12 @@ class GroupBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment(
                 "",
                 null,
                 null,
-                it.iconUrl
+                it.iconUrl,
             )
             activity?.addFragment(
                 this@GroupBottomSheetDialogFragment,
                 SearchMessageFragment.newInstance(searchMessageItem, ""),
-                SearchMessageFragment.TAG
+                SearchMessageFragment.TAG,
             )
         }
     }
@@ -422,7 +422,7 @@ class GroupBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment(
         activity?.addFragment(
             this,
             CircleManagerFragment.newInstance(conversation.name, conversationId = conversation.conversationId),
-            CircleManagerFragment.TAG
+            CircleManagerFragment.TAG,
         )
     }
 
@@ -431,7 +431,7 @@ class GroupBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment(
         activity?.addFragment(
             this,
             DisappearingFragment.newInstance(conversation.conversationId),
-            DisappearingFragment.TAG
+            DisappearingFragment.TAG,
         )
     }
 
@@ -450,7 +450,7 @@ class GroupBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment(
                     successBlock = { response ->
                         bottomViewModel.updateGroupMuteUntil(conversationId, response.data!!.muteUntil)
                         toast(getString(R.string.Unmute) + " ${conversation.name}")
-                    }
+                    },
                 )
             }
         }
@@ -461,7 +461,7 @@ class GroupBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment(
             getString(R.string.one_hour),
             resources.getQuantityString(R.plurals.Hour, 8, 8),
             getString(R.string.one_week),
-            getString(R.string.one_year)
+            getString(R.string.one_year),
         )
         var duration = MUTE_1_HOUR
         var whichItem = 0
@@ -478,13 +478,13 @@ class GroupBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment(
                             invokeNetwork = {
                                 bottomViewModel.mute(
                                     duration.toLong(),
-                                    conversationId = conversationId
+                                    conversationId = conversationId,
                                 )
                             },
                             successBlock = { response ->
                                 bottomViewModel.updateGroupMuteUntil(conversationId, response.data!!.muteUntil)
                                 toast(getString(R.string.contact_mute_title) + " ${conversation.name} " + choices[whichItem])
-                            }
+                            },
                         )
                     }
                 }

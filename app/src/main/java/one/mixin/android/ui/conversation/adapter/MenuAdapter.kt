@@ -25,7 +25,7 @@ class MenuAdapter(
             MenuType.Voice,
             if (isGroup) R.string.Group_Call else R.string.Voice_call,
             R.drawable.ic_menu_call,
-            null
+            null,
         )
         if (isBot) {
             if (isSelfCreatedBot) {

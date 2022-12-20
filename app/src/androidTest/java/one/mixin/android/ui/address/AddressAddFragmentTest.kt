@@ -139,7 +139,7 @@ class AddressAddFragmentTest {
             },
             {
                 this.getScanResult.launch(Pair(CaptureActivity.ARGS_FOR_SCAN_RESULT, true))
-            }
+            },
         )
 
         val expect = if (isIcapAddress("abc")) {
@@ -187,10 +187,10 @@ class AddressAddFragmentTest {
                                     R.string.Tag
                                 } else {
                                     R.string.withdrawal_memo
-                                }
-                            )
-                        )
-                    )
+                                },
+                            ),
+                        ),
+                    ),
                 )
             assertTrue(isKeyboardShown())
         }

@@ -91,14 +91,14 @@ class StickerFragment : BaseFragment(R.layout.fragment_sticker) {
         }
         if (type == TYPE_NORMAL && albumId != null) {
             stickerViewModel.observeStickers(albumId!!).observe(
-                viewLifecycleOwner
+                viewLifecycleOwner,
             ) { list ->
                 list?.let { updateStickers(it) }
             }
         } else {
             if (type == TYPE_RECENT) {
                 stickerViewModel.recentStickers().observe(
-                    viewLifecycleOwner
+                    viewLifecycleOwner,
                 ) { r ->
                     r?.let { updateStickers(r) }
                 }
@@ -110,14 +110,14 @@ class StickerFragment : BaseFragment(R.layout.fragment_sticker) {
                     if (personalAlbumId == null) { // not add any personal sticker yet
                         stickerViewModel.observePersonalStickers()
                             .observe(
-                                viewLifecycleOwner
+                                viewLifecycleOwner,
                             ) { list ->
                                 list?.let { updateStickers(it) }
                             }
                     } else {
                         stickerViewModel.observeStickers(personalAlbumId!!)
                             .observe(
-                                viewLifecycleOwner
+                                viewLifecycleOwner,
                             ) { list ->
                                 list?.let { updateStickers(it) }
                             }
@@ -143,7 +143,7 @@ class StickerFragment : BaseFragment(R.layout.fragment_sticker) {
                     override fun onAddClick() {
                         StickerActivity.show(requireContext(), personalAlbumId)
                     }
-                }
+                },
             )
             stickerRv.callback = object : DraggableRecyclerView.Callback {
                 override fun onScroll(dis: Float) {

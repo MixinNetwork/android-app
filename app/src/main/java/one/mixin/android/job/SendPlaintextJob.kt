@@ -9,7 +9,7 @@ class SendPlaintextJob(
 ) : MixinJob(
     Params(priority).groupBy("send_message_group")
         .requireWebSocketConnected().persist(),
-    blazeMessage.id
+    blazeMessage.id,
 ) {
 
     companion object {

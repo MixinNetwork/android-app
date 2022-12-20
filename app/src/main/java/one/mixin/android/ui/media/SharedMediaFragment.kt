@@ -45,7 +45,7 @@ class SharedMediaFragment : BaseFragment(R.layout.fragment_shared_media) {
             val view = View.inflate(
                 ContextThemeWrapper(requireContext(), R.style.Custom),
                 R.layout.view_shared_media,
-                null
+                null,
             )
             val binding = ViewSharedMediaBinding.bind(view)
             builder.setCustomView(view)
@@ -59,7 +59,7 @@ class SharedMediaFragment : BaseFragment(R.layout.fragment_shared_media) {
                         Activity.RESULT_OK,
                         Intent().apply {
                             putExtra(ChatHistoryActivity.JUMP_ID, messageId)
-                        }
+                        },
                     )
                 } else {
                     ConversationActivity.showAndClear(requireActivity(), conversationId, messageId = messageId)
@@ -79,7 +79,7 @@ class SharedMediaFragment : BaseFragment(R.layout.fragment_shared_media) {
         binding.viewPager.adapter = adapter
         TabLayoutMediator(
             binding.sharedTl,
-            binding.viewPager
+            binding.viewPager,
         ) { tab, position ->
             tab.text = getString(
                 when (position) {
@@ -88,7 +88,7 @@ class SharedMediaFragment : BaseFragment(R.layout.fragment_shared_media) {
                     2 -> R.string.Post
                     3 -> R.string.Links
                     else -> R.string.Files
-                }
+                },
             )
             binding.viewPager.setCurrentItem(tab.position, true)
         }.attach()

@@ -18,7 +18,7 @@ class BadgeAvatarView(context: Context, attrs: AttributeSet?) : FrameLayout(cont
         measureChild(
             binding.badge,
             MeasureSpec.makeMeasureSpec(measuredWidth / 4, MeasureSpec.EXACTLY),
-            MeasureSpec.makeMeasureSpec(measuredHeight / 4, MeasureSpec.EXACTLY)
+            MeasureSpec.makeMeasureSpec(measuredHeight / 4, MeasureSpec.EXACTLY),
         )
     }
 

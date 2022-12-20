@@ -16,7 +16,7 @@ class SendProcessSignalKeyJob(
     priority: Int = PRIORITY_SEND_MESSAGE,
 ) : MixinJob(
     Params(priority).groupBy("send_message_group").requireWebSocketConnected().persist(),
-    UUID.randomUUID().toString()
+    UUID.randomUUID().toString(),
 ) {
 
     companion object {

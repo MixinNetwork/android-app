@@ -52,7 +52,7 @@ class SettingDataStorageFragment : BaseFragment(R.layout.fragment_storage_data) 
                 requireActivity().addFragment(
                     this@SettingDataStorageFragment,
                     SettingStorageFragment.newInstance(),
-                    SettingStorageFragment.TAG
+                    SettingStorageFragment.TAG,
                 )
             }
             storageMobile.setOnClickListener {
@@ -66,7 +66,7 @@ class SettingDataStorageFragment : BaseFragment(R.layout.fragment_storage_data) 
                         AUTO_DOWNLOAD_WIFI,
                         getAutoDownloadWifiValue(),
                         R.string
-                            .setting_data_wifi
+                            .setting_data_wifi,
                     )
                 }
             }
@@ -76,7 +76,7 @@ class SettingDataStorageFragment : BaseFragment(R.layout.fragment_storage_data) 
                         AUTO_DOWNLOAD_ROAMING,
                         getAutoDownloadRoamingValue(),
                         R.string
-                            .When_roaming
+                            .When_roaming,
                     )
                 }
             }

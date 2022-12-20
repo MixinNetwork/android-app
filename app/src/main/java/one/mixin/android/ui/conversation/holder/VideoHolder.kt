@@ -263,7 +263,7 @@ class VideoHolder constructor(val binding: ItemChatVideoBinding) :
             messageItem.isPin ?: false,
             isRepresentative = isRepresentative,
             isSecret = messageItem.isSecret(),
-            isWhite = true
+            isWhite = true,
         )
 
         dataWidth = messageItem.mediaWidth

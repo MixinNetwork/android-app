@@ -63,7 +63,7 @@ interface AssetDao : BaseDao<Asset> {
         ORDER BY 
             a1.symbol = :symbol COLLATE NOCASE OR a1.name = :name COLLATE NOCASE DESC,
             a1.price_usd*a1.balance DESC
-        """
+        """,
     )
     suspend fun fuzzySearchAsset(name: String, symbol: String): List<AssetItem>
 
@@ -74,7 +74,7 @@ interface AssetDao : BaseDao<Asset> {
         ORDER BY 
             a1.symbol = :symbol COLLATE NOCASE OR a1.name = :name COLLATE NOCASE DESC,
             a1.price_usd*a1.balance DESC
-        """
+        """,
     )
     suspend fun fuzzySearchAssetIgnoreAmount(name: String, symbol: String): List<AssetItem>
 

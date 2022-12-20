@@ -109,7 +109,7 @@ class ForwardFragment : BaseFragment(R.layout.fragment_forward) {
             val fragment = ForwardFragment()
             val b = bundleOf(
                 ARGS_MESSAGES to messages,
-                ARGS_ACTION to action
+                ARGS_ACTION to action,
             )
             fragment.arguments = b
             return fragment
@@ -122,7 +122,7 @@ class ForwardFragment : BaseFragment(R.layout.fragment_forward) {
             val fragment = ForwardFragment()
             val b = bundleOf(
                 ARGS_COMBINE_MESSAGES to messages,
-                ARGS_ACTION to action
+                ARGS_ACTION to action,
             )
             fragment.arguments = b
             return fragment
@@ -274,7 +274,7 @@ class ForwardFragment : BaseFragment(R.layout.fragment_forward) {
                     }
                     setForwardText()
                 }
-            }
+            },
         )
         binding.searchEt.addTextChangedListener(mWatcher)
 
@@ -372,7 +372,7 @@ class ForwardFragment : BaseFragment(R.layout.fragment_forward) {
         RxPermissions(requireActivity())
             .request(
                 WRITE_EXTERNAL_STORAGE,
-                READ_EXTERNAL_STORAGE
+                READ_EXTERNAL_STORAGE,
             )
             .autoDispose(stopScope)
             .subscribe(
@@ -383,7 +383,7 @@ class ForwardFragment : BaseFragment(R.layout.fragment_forward) {
                         requireContext().openPermissionSetting()
                     }
                 },
-                {}
+                {},
             )
     }
 
@@ -413,7 +413,7 @@ class ForwardFragment : BaseFragment(R.layout.fragment_forward) {
                                 encryptCategory.toCategory(
                                     MessageCategory.PLAIN_IMAGE,
                                     MessageCategory.SIGNAL_IMAGE,
-                                    MessageCategory.ENCRYPTED_IMAGE
+                                    MessageCategory.ENCRYPTED_IMAGE,
                                 )
                             },
                             {
@@ -438,7 +438,7 @@ class ForwardFragment : BaseFragment(R.layout.fragment_forward) {
                                         toast(errorString!!)
                                     }
                                 }
-                            }
+                            },
                         )
                     }
                     ShareCategory.Contact -> {
@@ -467,12 +467,12 @@ class ForwardFragment : BaseFragment(R.layout.fragment_forward) {
                                 encryptCategory.toCategory(
                                     MessageCategory.PLAIN_VIDEO,
                                     MessageCategory.SIGNAL_VIDEO,
-                                    MessageCategory.ENCRYPTED_VIDEO
+                                    MessageCategory.ENCRYPTED_VIDEO,
                                 )
                             },
                             {
                                 chatViewModel.sendVideoMessage(conversationId, sender.userId, videoData, encryptCategory)
-                            }
+                            },
                         )
                     }
                     ForwardCategory.Data -> {
@@ -487,12 +487,12 @@ class ForwardFragment : BaseFragment(R.layout.fragment_forward) {
                                 encryptCategory.toCategory(
                                     MessageCategory.PLAIN_DATA,
                                     MessageCategory.SIGNAL_DATA,
-                                    MessageCategory.ENCRYPTED_DATA
+                                    MessageCategory.ENCRYPTED_DATA,
                                 )
                             },
                             {
                                 chatViewModel.sendAttachmentMessage(conversationId, sender, dataMessagePayload.toAttachment(), encryptCategory)
-                            }
+                            },
                         )
                     }
                     ForwardCategory.Audio -> {
@@ -506,12 +506,12 @@ class ForwardFragment : BaseFragment(R.layout.fragment_forward) {
                                 encryptCategory.toCategory(
                                     MessageCategory.PLAIN_AUDIO,
                                     MessageCategory.SIGNAL_AUDIO,
-                                    MessageCategory.ENCRYPTED_AUDIO
+                                    MessageCategory.ENCRYPTED_AUDIO,
                                 )
                             },
                             {
                                 chatViewModel.sendAudioMessage(conversationId, sender, audioData, encryptCategory)
-                            }
+                            },
                         )
                     }
                     ShareCategory.Sticker -> {
@@ -625,7 +625,7 @@ class ForwardFragment : BaseFragment(R.layout.fragment_forward) {
                 messageId, conversationId, sender.userId, category, GsonHelper.customGson.toJson(payload).base64Encode(), outfile.name,
                 payload.mimeType, payload.size, payload.duration?.toString(), payload.width, payload.height, null, payload.thumbnail, null,
                 payload.key, payload.digest, MediaStatus.DONE.name, MessageStatus.SENDING.name, nowInUtc(), name = payload.name, mediaWaveform = payload.waveform,
-                caption = payload.caption
+                caption = payload.caption,
             )
             chatViewModel.sendMessage(message)
         } catch (e: Exception) {
@@ -639,7 +639,7 @@ class ForwardFragment : BaseFragment(R.layout.fragment_forward) {
             val messageId = UUID.randomUUID().toString()
             val attachmentMessagePayload = AttachmentMessagePayload(
                 message.mediaKey, message.mediaDigest, attachmentExtra.attachmentId, message.mediaMimeType!!, message.mediaSize ?: 0, message.name, message.mediaWidth,
-                message.mediaHeight, message.thumbImage, message.mediaDuration?.toLongOrNull(), message.mediaWaveform, createdAt = attachmentExtra.createdAt
+                message.mediaHeight, message.thumbImage, message.mediaDuration?.toLongOrNull(), message.mediaWaveform, createdAt = attachmentExtra.createdAt,
             )
             val file = Uri.parse(message.absolutePath()).toFile()
             val outfile = File(file.parentFile?.parentFile, "$conversationId${File.separator}$messageId${file.name.getExtensionName().notNullWithElse({ ".$it" }, "")}")
@@ -650,7 +650,7 @@ class ForwardFragment : BaseFragment(R.layout.fragment_forward) {
                 message.mediaSize ?: 0L, message.mediaDuration, message.mediaWidth,
                 message.mediaHeight, message.mediaHash, message.thumbImage, message.thumbUrl,
                 message.mediaKey, message.mediaDigest, MediaStatus.DONE.name, MessageStatus.SENDING.name,
-                nowInUtc(), name = message.name, mediaWaveform = message.mediaWaveform
+                nowInUtc(), name = message.name, mediaWaveform = message.mediaWaveform,
             )
         } catch (e: Exception) {
             return null
@@ -692,7 +692,7 @@ class ForwardFragment : BaseFragment(R.layout.fragment_forward) {
                 val intent = ConversationActivity.getShortcutIntent(
                     MixinApplication.appContext,
                     s.conversationId,
-                    null
+                    null,
                 )
                 ShortcutInfo(s.conversationId, s.getConversationName(), bitmap, intent)
             } else {
@@ -700,12 +700,12 @@ class ForwardFragment : BaseFragment(R.layout.fragment_forward) {
                 val bitmap = loadBitmap(s.avatarUrl) ?: continue
                 val cid = generateConversationId(
                     Session.getAccountId()!!,
-                    s.userId
+                    s.userId,
                 )
                 val intent = ConversationActivity.getShortcutIntent(
                     MixinApplication.appContext,
                     cid,
-                    s.userId
+                    s.userId,
                 )
                 ShortcutInfo(cid, s.fullName ?: "", bitmap, intent)
             }

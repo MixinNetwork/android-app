@@ -132,10 +132,10 @@ class MultisigsBottomSheetDialogFragment :
                     }
                 } else {
                     R.string.Multisig_Transaction
-                }
+                },
             ),
             t.memo ?: "",
-            getDescription()
+            getDescription(),
         )
     }
 
@@ -161,9 +161,9 @@ class MultisigsBottomSheetDialogFragment :
                         amount = t.amount,
                         pin = "",
                         traceId = t.traceId,
-                        memo = t.memo
+                        memo = t.memo,
                     ),
-                    pin
+                    pin,
                 )
             }
             else -> {

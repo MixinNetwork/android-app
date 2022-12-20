@@ -94,7 +94,7 @@ abstract class BaseTransactionsFragment<C> : BaseFragment() {
                         lastRefreshOffset = refreshOffset
                     }
                 }
-            }
+            },
         )
 
         _filterBinding = FragmentTransactionFiltersBinding.bind(View.inflate(ContextThemeWrapper(context, R.style.Custom), R.layout.fragment_transaction_filters, null))
@@ -106,14 +106,14 @@ abstract class BaseTransactionsFragment<C> : BaseFragment() {
                     override fun onChecked(id: Int) {
                         currentType = id
                     }
-                }
+                },
             )
             sortFlow.setOnCheckedListener(
                 object : CheckedFlowLayout.OnCheckedListener {
                     override fun onChecked(id: Int) {
                         currentOrder = id
                     }
-                }
+                },
             )
         }
         filterBinding.root

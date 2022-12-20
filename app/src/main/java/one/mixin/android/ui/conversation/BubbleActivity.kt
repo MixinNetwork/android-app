@@ -66,9 +66,9 @@ class BubbleActivity : BlazeBaseActivity() {
                 replaceFragment(
                     ConversationFragment.newInstance(intent.extras!!),
                     R.id.container,
-                    ConversationFragment.TAG
+                    ConversationFragment.TAG,
                 )
-            }
+            },
         ) {
             val messageId = bundle.getString(MESSAGE_ID)
             val conversationId = bundle.getString(CONVERSATION_ID)
@@ -108,7 +108,7 @@ class BubbleActivity : BlazeBaseActivity() {
             replaceFragment(
                 ConversationFragment.newInstance(bundle),
                 R.id.container,
-                ConversationFragment.TAG
+                ConversationFragment.TAG,
             )
         }
     }

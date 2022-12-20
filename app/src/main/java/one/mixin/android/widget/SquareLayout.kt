@@ -36,7 +36,7 @@ class SquareLayout : FrameLayout {
         val size = if (w > h) w else h
         super.onMeasure(
             MeasureSpec.makeMeasureSpec(size, MeasureSpec.EXACTLY),
-            MeasureSpec.makeMeasureSpec(size, MeasureSpec.EXACTLY)
+            MeasureSpec.makeMeasureSpec(size, MeasureSpec.EXACTLY),
         )
         if (rect == null) {
             rect = RectF(0f, 0f, measuredWidth.toFloat(), measuredHeight.toFloat())

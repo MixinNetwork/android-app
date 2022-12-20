@@ -31,7 +31,7 @@ class BotDock : ViewGroup, View.OnLongClickListener {
     constructor(context: Context, attrs: AttributeSet?, defStyleAttr: Int) : super(
         context,
         attrs,
-        defStyleAttr
+        defStyleAttr,
     ) {
         val layoutInflater = LayoutInflater.from(context)
         addView(layoutInflater.inflate(R.layout.item_dock_empty, null))
@@ -44,7 +44,7 @@ class BotDock : ViewGroup, View.OnLongClickListener {
                         2 -> R.id.dock_3
                         else -> R.id.dock_4
                     }
-                }
+                },
             )
         }
         clipChildren = false
@@ -254,7 +254,7 @@ class BotDock : ViewGroup, View.OnLongClickListener {
                     view.translationX = 0f
                     animatorSet.remove(animator)
                 }
-            }
+            },
         )
     }
 

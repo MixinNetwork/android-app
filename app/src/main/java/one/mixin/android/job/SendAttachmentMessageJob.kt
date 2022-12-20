@@ -83,8 +83,8 @@ class SendAttachmentMessageJob(
                     ExpiredMessage(
                         message.messageId,
                         e,
-                        null
-                    )
+                        null,
+                    ),
                 )
             }
         }
@@ -137,7 +137,7 @@ class SendAttachmentMessageJob(
                 InvalidateFlow.emit(message.conversationId)
                 attachmentProcess.remove(message.messageId)
                 removeJob()
-            }
+            },
         )
     }
 
@@ -164,7 +164,7 @@ class SendAttachmentMessageJob(
                     null
                 } else {
                     AttachmentCipherOutputStreamFactory(key, null)
-                }
+                },
             ) { total, progress ->
                 val pg = try {
                     progress.toFloat() / total.toFloat()
@@ -210,7 +210,7 @@ class SendAttachmentMessageJob(
         val waveform = message.mediaWaveform
         val transferMediaData = AttachmentMessagePayload(
             key, digest, attachmentId, mimeType, size, name, width, height,
-            thumbnail, duration, waveform, createdAt = attachResponse.created_at
+            thumbnail, duration, waveform, createdAt = attachResponse.created_at,
         )
         val plainText = GsonHelper.customGson.toJson(transferMediaData)
         val encoded = plainText.base64Encode()

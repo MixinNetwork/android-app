@@ -18,7 +18,7 @@ class CodeEditHandler : EditHandler<RoundedBackgroundSpan> {
     override fun configurePersistedSpans(builder: PersistedSpans.Builder) {
         builder.persistSpan(RoundedBackgroundSpan::class.java) {
             RoundedBackgroundSpan(
-                theme
+                theme,
             )
         }
     }
@@ -37,7 +37,7 @@ class CodeEditHandler : EditHandler<RoundedBackgroundSpan> {
                 persistedSpans.get(RoundedBackgroundSpan::class.java),
                 match.start() + 1,
                 match.end() - 1,
-                Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+                Spanned.SPAN_EXCLUSIVE_EXCLUSIVE,
             )
         }
     }

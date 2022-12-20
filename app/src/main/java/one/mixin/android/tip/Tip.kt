@@ -193,7 +193,7 @@ class Tip @Inject internal constructor(
                 override fun onNodeFailed(info: String) {
                     observers.forEach { it.onNodeFailed(info) }
                 }
-            }
+            },
         ).sha3Sum256() // use sha3-256(recover-signature) as priv
 
         observers.forEach { it.onSyncingComplete() }
@@ -283,7 +283,7 @@ class Tip @Inject internal constructor(
         val oldPin = encryptTipPinInternal(pinToken, aggSig, timestamp)
         val newEncryptPin = encryptPinInternal(
             pinToken,
-            pub.abyte + (counter + 1).toBeByteArray()
+            pub.abyte + (counter + 1).toBeByteArray(),
         ) // TODO should use tip node counter?
         val pinRequest = PinRequest(newEncryptPin, oldPin)
         val account = tipNetwork { accountService.updatePinSuspend(pinRequest) }.getOrThrow()
@@ -323,7 +323,7 @@ class Tip @Inject internal constructor(
             seedBase64 = seedBase64,
             secretBase64 = secretBase64,
             signatureBase64 = sigBase64,
-            timestamp = timestamp
+            timestamp = timestamp,
         )
         tipNetworkNullable { tipService.updateTipSecret(tipSecretRequest) }.getOrThrow()
         return aesKey
@@ -343,7 +343,7 @@ class Tip @Inject internal constructor(
 
         val tipSecretReadRequest = TipSecretReadRequest(
             signatureBase64 = sigBase64,
-            timestamp = timestamp
+            timestamp = timestamp,
         )
         val response = tipNetwork { tipService.readTipSecret(tipSecretReadRequest) }.getOrThrow()
         return response.seedBase64?.base64RawURLDecode() ?: throw TipNullException("Not get tip secret")
@@ -369,7 +369,7 @@ class Tip @Inject internal constructor(
                 onNodeCounterInconsistency = { nodeMaxCounter, failedSigners ->
                     RxBus.publish(TipEvent(nodeMaxCounter, failedSigners))
                     throw TipCounterNotSyncedException()
-                }
+                },
             ).onSuccess { tipCounterSynced.synced = true }
                 .onFailure {
                     Timber.e("checkAndPublishTipCounterSynced meet ${it.getStackTraceString()}")

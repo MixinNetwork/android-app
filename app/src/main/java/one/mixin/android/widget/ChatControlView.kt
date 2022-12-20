@@ -200,7 +200,7 @@ class ChatControlView : LinearLayout, ActionMode.Callback {
                         binding.chatMenuIv.rotation = 0f
                         binding.chatMenuIv.setImageResource(if (value == MENU_STATUS.EXPANDED) R.drawable.ic_chat_more_checked else R.drawable.ic_chat_more)
                     }
-                }
+                },
             )
             anim.start()
         }
@@ -218,8 +218,8 @@ class ChatControlView : LinearLayout, ActionMode.Callback {
             ResourcesCompat.getDrawable(
                 resources,
                 R.drawable.ic_chat_send_checked,
-                context.theme
-            )
+                context.theme,
+            ),
         )
     }
     private val audioDrawable: Drawable by lazy {
@@ -227,8 +227,8 @@ class ChatControlView : LinearLayout, ActionMode.Callback {
             ResourcesCompat.getDrawable(
                 resources,
                 R.drawable.ic_chat_mic,
-                context.theme
-            )
+                context.theme,
+            ),
         )
     }
 
@@ -237,8 +237,8 @@ class ChatControlView : LinearLayout, ActionMode.Callback {
             ResourcesCompat.getDrawable(
                 resources,
                 R.drawable.ic_chat_sticker,
-                context.theme
-            )
+                context.theme,
+            ),
         )
     }
     private val keyboardDrawable: Drawable by lazy {
@@ -246,8 +246,8 @@ class ChatControlView : LinearLayout, ActionMode.Callback {
             ResourcesCompat.getDrawable(
                 resources,
                 R.drawable.ic_chat_keyboard,
-                context.theme
-            )
+                context.theme,
+            ),
         )
     }
 
@@ -258,7 +258,7 @@ class ChatControlView : LinearLayout, ActionMode.Callback {
     constructor(context: Context, attrs: AttributeSet?, defStyleAttr: Int) : super(
         context,
         attrs,
-        defStyleAttr
+        defStyleAttr,
     ) {
         orientation = VERTICAL
         _binding = ViewChatControlBinding.inflate(LayoutInflater.from(context), this)
@@ -433,14 +433,14 @@ class ChatControlView : LinearLayout, ActionMode.Callback {
         val scaleUp = ObjectAnimator.ofPropertyValuesHolder(
             v,
             PropertyValuesHolder.ofFloat("scaleX", 0.6f, 1f),
-            PropertyValuesHolder.ofFloat("scaleY", 0.6f, 1f)
+            PropertyValuesHolder.ofFloat("scaleY", 0.6f, 1f),
         ).apply {
             duration = 100
         }
         val scaleDown = ObjectAnimator.ofPropertyValuesHolder(
             v,
             PropertyValuesHolder.ofFloat("scaleX", 1f, 0.6f),
-            PropertyValuesHolder.ofFloat("scaleY", 1f, 0.6f)
+            PropertyValuesHolder.ofFloat("scaleY", 1f, 0.6f),
         ).apply {
             duration = 100
         }
@@ -521,7 +521,7 @@ class ChatControlView : LinearLayout, ActionMode.Callback {
                     },
                     onCancel = {
                         recordCircle.visibility = View.VISIBLE
-                    }
+                    },
                 )
             }.start()
             binding.chatSendIb.animate().setDuration(200).alpha(0f).start()
@@ -538,7 +538,7 @@ class ChatControlView : LinearLayout, ActionMode.Callback {
                     onCancel = {
                         recordCircle.visibility = View.GONE
                         recordCircle.locked = false
-                    }
+                    },
                 )
             }.start()
             binding.chatSendIb.animate().setDuration(200).alpha(1f).start()
@@ -556,7 +556,7 @@ class ChatControlView : LinearLayout, ActionMode.Callback {
             PropertyValuesHolder.ofFloat("scaleX", 1f, 0.3f),
             PropertyValuesHolder.ofFloat("scaleY", 1f, 0.3f),
             PropertyValuesHolder.ofFloat("alpha", 1f, 0f),
-            PropertyValuesHolder.ofFloat("translationX", scaleDownTransX.toFloat())
+            PropertyValuesHolder.ofFloat("translationX", scaleDownTransX.toFloat()),
         ).apply {
             duration = 50
             interpolator = DecelerateInterpolator()
@@ -567,7 +567,7 @@ class ChatControlView : LinearLayout, ActionMode.Callback {
             PropertyValuesHolder.ofFloat("scaleX", 0.3f, 1f),
             PropertyValuesHolder.ofFloat("scaleY", 0.3f, 1f),
             PropertyValuesHolder.ofFloat("alpha", 0f, 1f),
-            PropertyValuesHolder.ofFloat("translationX", 0f)
+            PropertyValuesHolder.ofFloat("translationX", 0f),
         ).apply {
             duration = 50
             interpolator = DecelerateInterpolator()
@@ -585,7 +585,7 @@ class ChatControlView : LinearLayout, ActionMode.Callback {
             PropertyValuesHolder.ofFloat("scaleX", 1f, 0.3f),
             PropertyValuesHolder.ofFloat("scaleY", 1f, 0.3f),
             PropertyValuesHolder.ofFloat("alpha", 1f, 0f),
-            PropertyValuesHolder.ofFloat("translationX", scaleDownTransX.toFloat())
+            PropertyValuesHolder.ofFloat("translationX", scaleDownTransX.toFloat()),
         ).apply {
             duration = 50
             interpolator = DecelerateInterpolator()
@@ -596,7 +596,7 @@ class ChatControlView : LinearLayout, ActionMode.Callback {
             PropertyValuesHolder.ofFloat("scaleX", 0.3f, 1f),
             PropertyValuesHolder.ofFloat("scaleY", 0.3f, 1f),
             PropertyValuesHolder.ofFloat("alpha", 0f, 1f),
-            PropertyValuesHolder.ofFloat("translationX", 0f)
+            PropertyValuesHolder.ofFloat("translationX", 0f),
         ).apply {
             duration = 50
             interpolator = DecelerateInterpolator()
@@ -631,7 +631,7 @@ class ChatControlView : LinearLayout, ActionMode.Callback {
                             {
                                 callback.onSendClick(it)
                             },
-                            {}
+                            {},
                         )
                 }
             }
@@ -718,7 +718,7 @@ class ChatControlView : LinearLayout, ActionMode.Callback {
         RxPermissions(activity!! as FragmentActivity)
             .request(
                 Manifest.permission.READ_EXTERNAL_STORAGE,
-                Manifest.permission.WRITE_EXTERNAL_STORAGE
+                Manifest.permission.WRITE_EXTERNAL_STORAGE,
             )
             .subscribe(
                 { granted ->
@@ -728,7 +728,7 @@ class ChatControlView : LinearLayout, ActionMode.Callback {
                         context?.openPermissionSetting()
                     }
                 },
-                {}
+                {},
             )
     }
 
@@ -943,7 +943,7 @@ class ChatControlView : LinearLayout, ActionMode.Callback {
                     ObjectAnimator.ofFloat(
                         recordCircle,
                         "lockAnimatedTranslation",
-                        recordCircle.startTranslation
+                        recordCircle.startTranslation,
                     ).apply {
                         duration = 150
                         interpolator = DecelerateInterpolator()
@@ -1018,15 +1018,15 @@ class ChatControlView : LinearLayout, ActionMode.Callback {
             if (activity == null || !currentAudio()) return@Runnable
 
             if (!RxPermissions(activity!! as FragmentActivity).isGranted(Manifest.permission.RECORD_AUDIO) || !RxPermissions(
-                    activity!! as FragmentActivity
+                    activity!! as FragmentActivity,
                 ).isGranted(
-                        Manifest.permission.WRITE_EXTERNAL_STORAGE
-                    )
+                    Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                )
             ) {
                 RxPermissions(activity!! as FragmentActivity)
                     .request(
                         Manifest.permission.RECORD_AUDIO,
-                        Manifest.permission.WRITE_EXTERNAL_STORAGE
+                        Manifest.permission.WRITE_EXTERNAL_STORAGE,
                     )
                     .autoDispose(this)
                     .subscribe({}, { reportException(it) })

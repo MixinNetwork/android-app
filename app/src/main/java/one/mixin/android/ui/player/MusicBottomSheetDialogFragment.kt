@@ -97,7 +97,7 @@ class MusicBottomSheetDialogFragment : BottomSheetDialogFragment() {
         val behavior = params?.behavior as? BottomSheetBehavior<*>
         contentView.measure(
             View.MeasureSpec.makeMeasureSpec(contentView.width, View.MeasureSpec.EXACTLY),
-            ViewGroup.LayoutParams.WRAP_CONTENT
+            ViewGroup.LayoutParams.WRAP_CONTENT,
         )
         behavior?.skipCollapsed = true
         behavior?.peekHeight = contentView.measuredHeight
@@ -183,7 +183,7 @@ class MusicBottomSheetDialogFragment : BottomSheetDialogFragment() {
         dialog?.window?.let { window ->
             SystemUIManager.lightUI(
                 window,
-                !requireContext().booleanFromAttribute(R.attr.flag_night)
+                !requireContext().booleanFromAttribute(R.attr.flag_night),
             )
         }
         (requireActivity() as MusicActivity).checkFloatingPermission()
@@ -262,7 +262,7 @@ class MusicBottomSheetDialogFragment : BottomSheetDialogFragment() {
                         context?.openPermissionSetting()
                     }
                 },
-                {}
+                {},
             )
     }
 
@@ -287,7 +287,7 @@ class MusicBottomSheetDialogFragment : BottomSheetDialogFragment() {
             .build()
         val pagedList = PagedList.Builder(
             FixedMessageDataSource(list, list.size),
-            pagedConfig
+            pagedConfig,
         ).setNotifyExecutor(ArchTaskExecutor.getMainThreadExecutor())
             .setFetchExecutor(ArchTaskExecutor.getIOThreadExecutor())
             .build()

@@ -76,7 +76,7 @@ class ScanFragment : BaseCameraxFragment() {
                     Timber.d("enableTorch onFailure, ${t.getStackTraceString()}")
                 }
             },
-            mainExecutor
+            mainExecutor,
         )
     }
 

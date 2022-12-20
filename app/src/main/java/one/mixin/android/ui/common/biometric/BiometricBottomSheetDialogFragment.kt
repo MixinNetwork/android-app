@@ -123,7 +123,7 @@ abstract class BiometricBottomSheetDialogFragment : MixinBottomSheetDialogFragme
     private fun showBiometricPrompt() {
         biometricDialog = BiometricDialog(
             requireActivity(),
-            getBiometricInfo()
+            getBiometricInfo(),
         )
         biometricDialog?.callback = biometricDialogCallback
         biometricDialog?.show()
@@ -168,7 +168,7 @@ abstract class BiometricBottomSheetDialogFragment : MixinBottomSheetDialogFragme
         if (response.isSuccess) {
             defaultSharedPreferences.putLong(
                 Constants.BIOMETRIC_PIN_CHECK,
-                System.currentTimeMillis()
+                System.currentTimeMillis(),
             )
             context?.updatePinCheck()
 

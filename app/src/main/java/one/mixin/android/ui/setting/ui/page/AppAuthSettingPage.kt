@@ -56,7 +56,7 @@ fun AppAuthSettingPage() {
             context.defaultSharedPreferences
         }.intValueAsState(
             key = Constants.Account.PREF_APP_AUTH,
-            defaultValue = FINGERPRINT_DISABLED
+            defaultValue = FINGERPRINT_DISABLED,
         )
 
         val authCallback = remember {
@@ -92,11 +92,11 @@ fun AppAuthSettingPage() {
                         checkedThumbColor = MixinAppTheme.colors.accent,
                         uncheckedThumbColor = MixinAppTheme.colors.unchecked,
                         checkedTrackColor = MixinAppTheme.colors.accent,
-                        uncheckedTrackColor = MixinAppTheme.colors.unchecked
+                        uncheckedTrackColor = MixinAppTheme.colors.unchecked,
                     ),
-                    onCheckedChange = null
+                    onCheckedChange = null,
                 )
-            }
+            },
         ) {
             isSupportWithErrorInfo =
                 BiometricUtil.isSupportWithErrorInfo(context, BiometricManager.Authenticators.BIOMETRIC_WEAK)
@@ -113,7 +113,7 @@ fun AppAuthSettingPage() {
                     activity,
                     context.getString(R.string.Confirm_fingerprint),
                     context.getString(R.string.Cancel),
-                    authCallback
+                    authCallback,
                 )
             }
         }
@@ -122,7 +122,7 @@ fun AppAuthSettingPage() {
             Text(
                 text = isSupportWithErrorInfo?.second ?: "",
                 color = MixinAppTheme.colors.red,
-                modifier = Modifier.padding(start = 16.dp, end = 16.dp)
+                modifier = Modifier.padding(start = 16.dp, end = 16.dp),
             )
         }
 
@@ -131,13 +131,13 @@ fun AppAuthSettingPage() {
                 text = stringResource(id = R.string.Auto_Lock),
                 fontSize = 16.sp,
                 color = MixinAppTheme.colors.accent,
-                modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 8.dp)
+                modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 8.dp),
             )
             FingerprintRadioGroup(
                 index = fingerPrintEnabled,
                 onCheckedChange = {
                     fingerPrintEnabled = it
-                }
+                },
             )
         }
     }
@@ -147,21 +147,21 @@ fun AppAuthSettingPage() {
 private fun FingerprintRadioGroup(index: Int, onCheckedChange: (Int) -> Unit) {
     FingerprintRadioButton(
         checked = index == FINGERPRINT_ENABLED_IMMEDIATELY,
-        title = stringResource(id = R.string.Immediately)
+        title = stringResource(id = R.string.Immediately),
     ) {
         onCheckedChange(FINGERPRINT_ENABLED_IMMEDIATELY)
     }
 
     FingerprintRadioButton(
         checked = index == FINGERPRINT_ENABLED_AFTER_1_MINUTES,
-        title = stringResource(id = R.string.After_1_minute)
+        title = stringResource(id = R.string.After_1_minute),
     ) {
         onCheckedChange(FINGERPRINT_ENABLED_AFTER_1_MINUTES)
     }
 
     FingerprintRadioButton(
         checked = index == FINGERPRINT_ENABLED_AFTER_30_MINUTES,
-        title = stringResource(id = R.string.After_30_minutes)
+        title = stringResource(id = R.string.After_30_minutes),
     ) {
         onCheckedChange(FINGERPRINT_ENABLED_AFTER_30_MINUTES)
     }
@@ -182,15 +182,15 @@ private fun FingerprintRadioButton(
                     onChecked()
                 }
             },
-        verticalAlignment = Alignment.CenterVertically
+        verticalAlignment = Alignment.CenterVertically,
     ) {
         Box(modifier = Modifier.width(16.dp))
         RadioButton(
             selected = checked,
             onClick = null,
             colors = RadioButtonDefaults.colors(
-                selectedColor = MixinAppTheme.colors.accent
-            )
+                selectedColor = MixinAppTheme.colors.accent,
+            ),
         )
         Box(modifier = Modifier.width(16.dp))
         Text(text = title, fontSize = 16.sp, color = MixinAppTheme.colors.textPrimary)
@@ -203,11 +203,11 @@ private fun FingerprintRadioButton(
 fun FingerprintRadioButtonPreview() {
     MixinAppTheme {
         Surface(
-            color = MixinAppTheme.colors.backgroundWindow
+            color = MixinAppTheme.colors.backgroundWindow,
         ) {
             FingerprintRadioButton(
                 checked = true,
-                title = "Fingerprint"
+                title = "Fingerprint",
             ) {
             }
         }

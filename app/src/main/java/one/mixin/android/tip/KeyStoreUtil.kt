@@ -56,11 +56,11 @@ private fun getKeyByAlias(
             .setBlockModes(
                 KeyProperties.BLOCK_MODE_CBC,
                 KeyProperties.BLOCK_MODE_CTR,
-                KeyProperties.BLOCK_MODE_GCM
+                KeyProperties.BLOCK_MODE_GCM,
             )
             .setEncryptionPaddings(
                 KeyProperties.ENCRYPTION_PADDING_PKCS7,
-                KeyProperties.ENCRYPTION_PADDING_NONE
+                KeyProperties.ENCRYPTION_PADDING_NONE,
             )
         if (userAuthenticationRequired) {
             builder.setUserAuthenticationRequired(true)

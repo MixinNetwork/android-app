@@ -100,7 +100,7 @@ class ProfileBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragmen
                     .withAspectRatio(1f, 1f)
                     .withMaxResultSize(
                         MAX_PHOTO_SIZE,
-                        MAX_PHOTO_SIZE
+                        MAX_PHOTO_SIZE,
                     )
                     .start(requireContext(), this)
             } else {
@@ -129,7 +129,7 @@ class ProfileBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragmen
     override fun getPeekHeight(contentView: View, behavior: BottomSheetBehavior<*>): Int {
         contentView.measure(
             View.MeasureSpec.makeMeasureSpec(contentView.width, View.MeasureSpec.EXACTLY),
-            ViewGroup.LayoutParams.WRAP_CONTENT
+            ViewGroup.LayoutParams.WRAP_CONTENT,
         )
         behavior.skipCollapsed = true
         return contentView.measuredHeight
@@ -197,7 +197,7 @@ class ProfileBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragmen
                         activity?.addFragment(
                             this@ProfileBottomSheetDialogFragment,
                             MySharedAppsFragment.newInstance(),
-                            MySharedAppsFragment.TAG
+                            MySharedAppsFragment.TAG,
                         )
                         dismiss()
                     }
@@ -210,7 +210,7 @@ class ProfileBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragmen
                     action = {
                         QrBottomSheetDialogFragment.newInstance(
                             account.userId,
-                            QrBottomSheetDialogFragment.TYPE_MY_QR
+                            QrBottomSheetDialogFragment.TYPE_MY_QR,
                         ).showNow(parentFragmentManager, QrBottomSheetDialogFragment.TAG)
                     }
                 }
@@ -219,7 +219,7 @@ class ProfileBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragmen
                     action = {
                         QrBottomSheetDialogFragment.newInstance(
                             account.userId,
-                            QrBottomSheetDialogFragment.TYPE_RECEIVE_QR
+                            QrBottomSheetDialogFragment.TYPE_RECEIVE_QR,
                         ).showNow(parentFragmentManager, QrBottomSheetDialogFragment.TAG)
                     }
                 }
@@ -281,7 +281,7 @@ class ProfileBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragmen
                 .withAspectRatio(1f, 1f)
                 .withMaxResultSize(
                     MAX_PHOTO_SIZE,
-                    MAX_PHOTO_SIZE
+                    MAX_PHOTO_SIZE,
                 )
                 .start(requireContext(), this)
         }
@@ -292,7 +292,7 @@ class ProfileBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragmen
                     MediaStore.Images.Media.getBitmap(requireContext().contentResolver, resultUri)
                 update(
                     Base64.encodeToString(bitmap.toBytes(), Base64.NO_WRAP),
-                    TYPE_PHOTO
+                    TYPE_PHOTO,
                 )
             }
         } else if (resultCode == UCrop.RESULT_ERROR) {
@@ -331,11 +331,11 @@ class ProfileBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragmen
                             R.anim.slide_in_bottom,
                             R.anim.slide_out_bottom,
                             R.anim.slide_in_bottom,
-                            R.anim.slide_out_bottom
+                            R.anim.slide_out_bottom,
                         )
                             .add(
                                 R.id.container,
-                                VerifyFragment.newInstance(VerifyFragment.FROM_PHONE)
+                                VerifyFragment.newInstance(VerifyFragment.FROM_PHONE),
                             )
                             .addToBackStack(null)
                     }
@@ -403,7 +403,7 @@ class ProfileBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragmen
                 },
                 { t: Throwable ->
                     ErrorHandler.handleError(t)
-                }
+                },
             )
     }
 }

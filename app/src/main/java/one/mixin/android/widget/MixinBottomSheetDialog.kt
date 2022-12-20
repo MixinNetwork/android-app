@@ -58,7 +58,7 @@ class MixinBottomSheetDialog(context: Context, theme: Int) : BottomSheetDialog(c
 
         sheetContainer.measure(
             View.MeasureSpec.makeMeasureSpec(context.displayMetrics.widthPixels, View.MeasureSpec.AT_MOST),
-            View.MeasureSpec.makeMeasureSpec(context.displayMetrics.heightPixels, View.MeasureSpec.AT_MOST)
+            View.MeasureSpec.makeMeasureSpec(context.displayMetrics.heightPixels, View.MeasureSpec.AT_MOST),
         )
         if (isShown) return
         backDrawable.alpha = 0
@@ -85,7 +85,7 @@ class MixinBottomSheetDialog(context: Context, theme: Int) : BottomSheetDialog(c
         val animatorSet = AnimatorSet()
         animatorSet.playTogether(
             ObjectAnimator.ofFloat(sheetContainer, "translationY", 0f),
-            ObjectAnimator.ofInt(backDrawable, "alpha", BACK_DRAWABLE_ALPHA)
+            ObjectAnimator.ofInt(backDrawable, "alpha", BACK_DRAWABLE_ALPHA),
         )
         animatorSet.duration = 200
         animatorSet.startDelay = 20
@@ -105,7 +105,7 @@ class MixinBottomSheetDialog(context: Context, theme: Int) : BottomSheetDialog(c
                         curSheetAnimation = null
                     }
                 }
-            }
+            },
         )
         animatorSet.start()
         curSheetAnimation = animatorSet
@@ -127,7 +127,7 @@ class MixinBottomSheetDialog(context: Context, theme: Int) : BottomSheetDialog(c
         val animatorSet = AnimatorSet()
         animatorSet.playTogether(
             ObjectAnimator.ofFloat(sheetContainer, "translationY", sheetContainer.measuredHeight.toFloat()),
-            ObjectAnimator.ofInt(backDrawable, "alpha", 0)
+            ObjectAnimator.ofInt(backDrawable, "alpha", 0),
         )
         animatorSet.duration = 180
         animatorSet.interpolator = AccelerateInterpolator()
@@ -147,7 +147,7 @@ class MixinBottomSheetDialog(context: Context, theme: Int) : BottomSheetDialog(c
                         curSheetAnimation = null
                     }
                 }
-            }
+            },
         )
         animatorSet.start()
         curSheetAnimation = animatorSet

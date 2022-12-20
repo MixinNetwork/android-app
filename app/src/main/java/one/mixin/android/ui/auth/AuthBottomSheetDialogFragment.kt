@@ -152,7 +152,7 @@ class AuthBottomSheetDialogFragment : BottomSheetDialogFragment() {
                     showBiometricPrompt()
                 }, onVerifyRequest = { scopes, pin ->
                     authVerify(scopes, pin)
-                }
+                },
             )
         }
         doOnPreDraw {
@@ -170,7 +170,7 @@ class AuthBottomSheetDialogFragment : BottomSheetDialogFragment() {
             val response = bottomViewModel.authorize(
                 authorizationId,
                 scopes,
-                pin
+                pin,
             )
             if (response.isSuccess) {
                 step = AuthStep.DONE
@@ -195,13 +195,13 @@ class AuthBottomSheetDialogFragment : BottomSheetDialogFragment() {
                     is UnknownHostException -> requireContext().getString(R.string.No_network_connection)
                     is ServerErrorException -> requireContext().getString(
                         R.string.error_server_5xx_code,
-                        e.code
+                        e.code,
                     )
                     is NetworkException -> requireContext().getString(R.string.No_network_connection)
                     is DataErrorException -> requireContext().getString(R.string.Data_error)
                     else -> requireContext().getString(
                         R.string.error_unknown_with_message,
-                        e.message
+                        e.message,
                     )
                 }
         }
@@ -216,7 +216,7 @@ class AuthBottomSheetDialogFragment : BottomSheetDialogFragment() {
         dialog.window?.setGravity(Gravity.BOTTOM)
         dialog.window?.setLayout(
             ViewGroup.LayoutParams.MATCH_PARENT,
-            ViewGroup.LayoutParams.MATCH_PARENT
+            ViewGroup.LayoutParams.MATCH_PARENT,
         )
     }
 
@@ -225,7 +225,7 @@ class AuthBottomSheetDialogFragment : BottomSheetDialogFragment() {
         dialog?.window?.let { window ->
             SystemUIManager.lightUI(
                 window,
-                !requireContext().booleanFromAttribute(R.attr.flag_night)
+                !requireContext().booleanFromAttribute(R.attr.flag_night),
             )
         }
     }
@@ -242,12 +242,12 @@ class AuthBottomSheetDialogFragment : BottomSheetDialogFragment() {
             requireContext().resources.getQuantityString(
                 R.plurals.error_pin_incorrect_with_times,
                 errorCount,
-                errorCount
+                errorCount,
             )
         } else {
             requireContext().getMixinErrorStringByCode(
                 errorCode,
-                errorDescription
+                errorDescription,
             )
         }
     }
@@ -276,7 +276,7 @@ class AuthBottomSheetDialogFragment : BottomSheetDialogFragment() {
                     successBlock = {
                         val data = it.data ?: return@handleMixinResponse
                         redirect(data.app.redirectUri, data.authorizationCode)
-                    }
+                    },
                 )
             }
         }
@@ -309,7 +309,7 @@ class AuthBottomSheetDialogFragment : BottomSheetDialogFragment() {
     private fun showBiometricPrompt() {
         biometricDialog = BiometricDialog(
             requireActivity(),
-            getBiometricInfo()
+            getBiometricInfo(),
         )
         biometricDialog?.callback = biometricDialogCallback
         biometricDialog?.show()
@@ -325,7 +325,7 @@ class AuthBottomSheetDialogFragment : BottomSheetDialogFragment() {
         override fun onPinComplete(pin: String) {
             authVerify(
                 requireNotNull(savedScopes),
-                pin
+                pin,
             )
         }
 

@@ -286,12 +286,12 @@ class TransferFragment() : MixinBottomSheetDialogFragment() {
         if (address == null || currentAsset == null) return
 
         chatViewModel.observeAddress(address!!.addressId).observe(
-            this
+            this,
         ) {
             address = it
             binding.titleView.setSubTitle(
                 getString(R.string.send_to, it.label),
-                it.displayAddress().formatPublicKey()
+                it.displayAddress().formatPublicKey(),
             )
 
             updateFeeUI(it)
@@ -379,7 +379,7 @@ class TransferFragment() : MixinBottomSheetDialogFragment() {
                                 adapter.notifyDataSetChanged()
                                 assetsBottomSheet.dismiss()
                             }
-                        }
+                        },
                     )
 
                     assetsViewBinding.closeIv.setOnClickListener {
@@ -395,7 +395,7 @@ class TransferFragment() : MixinBottomSheetDialogFragment() {
             binding.expandIv.isVisible = false
         }
         chatViewModel.findUserById(userId!!).observe(
-            this
+            this,
         ) { u ->
             if (u == null) {
                 jobManager.addJobInBackground(RefreshUserJob(listOf(userId!!)))
@@ -404,7 +404,7 @@ class TransferFragment() : MixinBottomSheetDialogFragment() {
                 binding.avatar.setInfo(u.fullName, u.avatarUrl, u.userId)
                 binding.titleView.setSubTitle(
                     getString(R.string.send_to, u.fullName),
-                    u.identityNumber
+                    u.identityNumber,
                 )
             }
         }
@@ -430,7 +430,7 @@ class TransferFragment() : MixinBottomSheetDialogFragment() {
                         }
                     }
                 }
-            }
+            },
         )
     }
 
@@ -487,7 +487,7 @@ class TransferFragment() : MixinBottomSheetDialogFragment() {
         ArrayAdapter(
             requireContext(),
             R.layout.item_dropdown,
-            mutableListOf("")
+            mutableListOf(""),
         )
     }
 
@@ -602,7 +602,7 @@ class TransferFragment() : MixinBottomSheetDialogFragment() {
         } else {
             WithdrawBiometricItem(
                 address!!.destination, address!!.tag, address!!.addressId, address!!.label, address!!.fee,
-                currentAsset!!, amount, null, traceId, memo, PaymentStatus.pending.name, trace
+                currentAsset!!, amount, null, traceId, memo, PaymentStatus.pending.name, trace,
             )
         }
         binding.continueVa.displayedChild = POST_TEXT

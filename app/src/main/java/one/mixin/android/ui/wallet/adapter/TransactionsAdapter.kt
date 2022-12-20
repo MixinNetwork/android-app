@@ -47,7 +47,7 @@ class TransactionsAdapter :
                     {
                         holder.itemView.context?.getClipboardManager()
                             ?.setPrimaryClip(ClipData.newPlainText(null, it.snapshotId))
-                    }
+                    },
                 )
             }
         }
@@ -58,7 +58,7 @@ class TransactionsAdapter :
             LayoutInflater.from(context).inflate(
                 R.layout.item_wallet_transactions,
                 parent,
-                false
-            )
+                false,
+            ),
         )
 }

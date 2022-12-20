@@ -36,7 +36,7 @@ class CheckedFlowLayout @JvmOverloads constructor(
                                     onCheckedListener?.onChecked(id)
                                 }
                             }
-                        }
+                        },
                     )
                 }
             }

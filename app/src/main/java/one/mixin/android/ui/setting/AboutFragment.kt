@@ -32,12 +32,12 @@ class AboutFragment : BaseFragment(R.layout.fragment_about) {
         super.onViewCreated(view, savedInstanceState)
         val versionName = requireContext().packageManager.getPackageInfo(
             requireContext().packageName,
-            0
+            0,
         ).versionName
         binding.apply {
             titleView.setSubTitle(
                 getString(R.string.app_name),
-                getString(R.string.about_version, versionName)
+                getString(R.string.about_version, versionName),
             )
             titleView.leftIb.setOnClickListener { activity?.onBackPressedDispatcher?.onBackPressed() }
             imageView.setOnClickListener(object : DebugClickListener() {
@@ -82,7 +82,7 @@ class AboutFragment : BaseFragment(R.layout.fragment_about) {
             database.setOnClickListener {
                 navTo(
                     DatabaseDebugFragment.newInstance(),
-                    DatabaseDebugFragment.TAG
+                    DatabaseDebugFragment.TAG,
                 )
             }
         }

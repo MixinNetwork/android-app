@@ -65,7 +65,7 @@ class MobileContactFragment : BaseFragment(R.layout.fragment_setting_mobile_cont
                 },
                 doAfterNetworkSuccess = {
                     hidePb()
-                }
+                },
             )
         }
     }
@@ -119,7 +119,7 @@ class MobileContactFragment : BaseFragment(R.layout.fragment_setting_mobile_cont
                                             binding.opPb.isVisible = false
                                             opRl.isEnabled = true
                                         }
-                                    }
+                                    },
                                 )
                         } else {
                             context?.openPermissionSetting()
@@ -145,7 +145,7 @@ class MobileContactFragment : BaseFragment(R.layout.fragment_setting_mobile_cont
             },
             doAfterNetworkSuccess = {
                 binding.opPb.isVisible = false
-            }
+            },
         )
     }
 
@@ -171,7 +171,7 @@ class MobileContactFragment : BaseFragment(R.layout.fragment_setting_mobile_cont
             },
             doAfterNetworkSuccess = {
                 binding.opPb.isVisible = false
-            }
+            },
         )
     }
 }

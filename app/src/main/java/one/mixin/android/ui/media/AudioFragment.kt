@@ -63,7 +63,7 @@ class AudioFragment : BaseFragment(R.layout.layout_recycler_view) {
         },
         fun(messageId: String) {
             onLongClickListener?.invoke(messageId)
-        }
+        },
     )
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -74,7 +74,7 @@ class AudioFragment : BaseFragment(R.layout.layout_recycler_view) {
         binding.emptyIv.setImageResource(R.drawable.ic_empty_audio)
         binding.emptyTv.setText(R.string.NO_AUDIO)
         viewModel.getAudioMessages(conversationId).observe(
-            viewLifecycleOwner
+            viewLifecycleOwner,
         ) {
             if (it.size <= 0) {
                 (view as ViewAnimator).displayedChild = 1

@@ -30,14 +30,14 @@ sealed class ImageLoader<T> {
                     override fun onResult(result: T) {
                         taskCache.remove(cacheKey)
                     }
-                }
+                },
             )
             task.addFailureListener(
                 object : ImageListener<Throwable> {
                     override fun onResult(result: Throwable) {
                         taskCache.remove(cacheKey)
                     }
-                }
+                },
             )
             taskCache[cacheKey] = task
         }
@@ -58,7 +58,7 @@ object HeicLoader : ImageLoader<Drawable>() {
             Callable {
                 val source = ImageDecoder.createSource(context.contentResolver, uri)
                 return@Callable ImageResult(ImageDecoder.decodeDrawable(source))
-            }
+            },
         )
     }
 }

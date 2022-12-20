@@ -40,7 +40,7 @@ class JobNetworkUtil(val context: Context, private val linkState: LinkState) : N
                 override fun onAvailable(network: Network) {
                     dispatchNetworkChange(context)
                 }
-            }
+            },
         )
     }
 
@@ -52,7 +52,7 @@ class JobNetworkUtil(val context: Context, private val linkState: LinkState) : N
                     dispatchNetworkChange(context)
                 }
             },
-            IntentFilter(PowerManager.ACTION_DEVICE_IDLE_MODE_CHANGED)
+            IntentFilter(PowerManager.ACTION_DEVICE_IDLE_MODE_CHANGED),
         )
     }
 
@@ -105,7 +105,7 @@ class JobNetworkUtil(val context: Context, private val linkState: LinkState) : N
     private fun isDozing(context: Context): Boolean {
         val powerManager = context.getSystemService(Context.POWER_SERVICE) as PowerManager
         return powerManager.isDeviceIdleMode && !powerManager.isIgnoringBatteryOptimizations(
-            context.packageName
+            context.packageName,
         )
     }
 

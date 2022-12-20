@@ -242,14 +242,14 @@ class CaptureFragment() : BaseCameraxFragment() {
                                     binding.captureBorderView
                                         .isVisible = false
                                 },
-                                100
+                                100,
                             )
                         } else {
                             context?.openPermissionSetting()
                         }
                     },
                     {
-                    }
+                    },
                 )
         }
 
@@ -273,7 +273,7 @@ class CaptureFragment() : BaseCameraxFragment() {
                         }
                     },
                     {
-                    }
+                    },
                 )
         }
 
@@ -300,7 +300,7 @@ class CaptureFragment() : BaseCameraxFragment() {
                         } catch (ignored: SecurityException) {
                         }
                     },
-                    300
+                    300,
                 )
             }
         }
@@ -338,8 +338,8 @@ class CaptureFragment() : BaseCameraxFragment() {
             reportException(
                 IllegalStateException(
                     "$CRASHLYTICS_CAMERAX-Video capture failed, " +
-                        "message: videoCaptureError: ${event.error}, cause: ${event.cause}"
-                )
+                        "message: videoCaptureError: ${event.error}, cause: ${event.cause}",
+                ),
             )
             startImageAnalysis()
         } else {
@@ -364,10 +364,10 @@ class CaptureFragment() : BaseCameraxFragment() {
                 arrayListOf(
                     ForwardMessage(
                         ShareCategory.Image,
-                        GsonHelper.customGson.toJson(ShareImageData(uri.toString()))
-                    )
+                        GsonHelper.customGson.toJson(ShareImageData(uri.toString())),
+                    ),
                 ),
-                ForwardAction.System(name = getString(R.string.Send), needEdit = false)
+                ForwardAction.System(name = getString(R.string.Send), needEdit = false),
             )
         }
     }

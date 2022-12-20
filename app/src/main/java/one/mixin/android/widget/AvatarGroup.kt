@@ -27,7 +27,7 @@ class AvatarGroup @JvmOverloads constructor(
             val ta = context.obtainStyledAttributes(attrs, R.styleable.AvatarsGroup)
             val size = ta.getDimensionPixelSize(
                 R.styleable.AvatarsGroup_avatar_group_size,
-                24.dp
+                24.dp,
             )
             val margin = ta.getDimensionPixelSize(R.styleable.AvatarsGroup_avatar_group_margin, 16.dp)
             setSize(size, margin)
@@ -91,7 +91,7 @@ class AvatarGroup @JvmOverloads constructor(
         setUrls(
             apps.map {
                 it.iconUrl
-            }
+            },
         )
     }
 }

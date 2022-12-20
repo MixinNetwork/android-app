@@ -71,7 +71,7 @@ class NewWalletBulletin(
         override fun onClose() {
             context.defaultSharedPreferences.putLong(
                 PREF_NEW_WALLET,
-                System.currentTimeMillis()
+                System.currentTimeMillis(),
             )
             onClose(BulletinView.Type.NewWallet)
         }
@@ -106,7 +106,7 @@ class NotificationBulletin(
         override fun onClose() {
             context.defaultSharedPreferences.putLong(
                 PREF_NOTIFICATION_ON,
-                System.currentTimeMillis()
+                System.currentTimeMillis(),
             )
             onClose(BulletinView.Type.Notification)
         }
@@ -143,7 +143,7 @@ class EmergencyContactBulletin(
         override fun onClose() {
             context.defaultSharedPreferences.putLong(
                 PREF_EMERGENCY_CONTACT,
-                System.currentTimeMillis()
+                System.currentTimeMillis(),
             )
             onClose(BulletinView.Type.EmergencyContact)
         }

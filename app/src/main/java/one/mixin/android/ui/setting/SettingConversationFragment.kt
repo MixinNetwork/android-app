@@ -38,7 +38,7 @@ class SettingConversationFragment : BaseFragment(R.layout.fragment_setting_conve
                     it?.let {
                         render(it)
                     }
-                }
+                },
             )
         viewModel.initGroupPreferences(requireContext())
             .observe(
@@ -47,7 +47,7 @@ class SettingConversationFragment : BaseFragment(R.layout.fragment_setting_conve
                     it?.let {
                         renderGroup(it)
                     }
-                }
+                },
             )
     }
 
@@ -85,7 +85,7 @@ class SettingConversationFragment : BaseFragment(R.layout.fragment_setting_conve
                             },
                             doAfterNetworkSuccess = {
                                 myContactsPb.visibility = View.GONE
-                            }
+                            },
                         )
                     }
                 }
@@ -121,7 +121,7 @@ class SettingConversationFragment : BaseFragment(R.layout.fragment_setting_conve
                             },
                             doAfterNetworkSuccess = {
                                 everybodyPb.visibility = View.GONE
-                            }
+                            },
                         )
                     }
                 }
@@ -163,7 +163,7 @@ class SettingConversationFragment : BaseFragment(R.layout.fragment_setting_conve
                             },
                             doAfterNetworkSuccess = {
                                 myContactsGroupPb.visibility = View.GONE
-                            }
+                            },
                         )
                     }
                 }
@@ -199,7 +199,7 @@ class SettingConversationFragment : BaseFragment(R.layout.fragment_setting_conve
                             },
                             doAfterNetworkSuccess = {
                                 everybodyGroupPb.visibility = View.GONE
-                            }
+                            },
                         )
                     }
                 }

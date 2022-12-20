@@ -72,13 +72,13 @@ class TranscriptHolder constructor(val binding: ItemChatTranscriptBinding) :
                 setItemBackgroundResource(
                     binding.chatLayout,
                     R.drawable.chat_bubble_transcript_me_last,
-                    R.drawable.chat_bubble_transcript_me_last_night
+                    R.drawable.chat_bubble_transcript_me_last_night,
                 )
             } else {
                 setItemBackgroundResource(
                     binding.chatLayout,
                     R.drawable.chat_bubble_transcript_me,
-                    R.drawable.chat_bubble_transcript_me_night
+                    R.drawable.chat_bubble_transcript_me_night,
                 )
             }
         } else {
@@ -87,13 +87,13 @@ class TranscriptHolder constructor(val binding: ItemChatTranscriptBinding) :
                 setItemBackgroundResource(
                     binding.chatLayout,
                     R.drawable.chat_bubble_post_other_last,
-                    R.drawable.chat_bubble_post_other_last_night
+                    R.drawable.chat_bubble_post_other_last_night,
                 )
             } else {
                 setItemBackgroundResource(
                     binding.chatLayout,
                     R.drawable.chat_bubble_post_other,
-                    R.drawable.chat_bubble_post_other_night
+                    R.drawable.chat_bubble_post_other_night,
                 )
             }
         }
@@ -249,7 +249,7 @@ class TranscriptHolder constructor(val binding: ItemChatTranscriptBinding) :
             messageItem.isPin ?: false,
             isRepresentative = isRepresentative,
             isSecret = messageItem.isSecret(),
-            isWhite = true
+            isWhite = true,
         )
         chatJumpLayout(binding.chatJump, isMe, messageItem.expireIn, R.id.chat_layout)
         chatLayout(isMe, isLast)

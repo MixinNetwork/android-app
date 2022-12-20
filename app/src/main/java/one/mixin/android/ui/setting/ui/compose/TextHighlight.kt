@@ -52,7 +52,7 @@ fun HighlightStarLinkText(
                     addStyle(
                         highlightStyle,
                         highlightStart,
-                        highlightEnd
+                        highlightEnd,
                     )
                     addStringAnnotation(TAG_URL, annotation = links[i], highlightStart, highlightEnd)
                 }
@@ -70,7 +70,7 @@ fun HighlightStarLinkText(
                 }
             }
         },
-        style = textStyle
+        style = textStyle,
     )
 }
 
@@ -84,7 +84,7 @@ fun HighlightLinkTextPreview() {
                 links = arrayOf("https://www.mixin.one/", "https://www.mixin.one/"),
                 onClick = {
                     println(it)
-                }
+                },
             )
         }
     }
@@ -109,7 +109,7 @@ fun HighlightText(
                     addStyle(
                         highlightStyle,
                         index,
-                        index + target.length
+                        index + target.length,
                     )
                     index = text.indexOf(target, index + target.length, ignoreCase = ignoreCase)
                 }
@@ -119,7 +119,7 @@ fun HighlightText(
     Text(
         text = annotatedString,
         style = textStyle,
-        overflow = overflow
+        overflow = overflow,
     )
 }
 
@@ -130,11 +130,11 @@ fun HighlightTextPreview() {
         Column {
             HighlightText(
                 text = "Test Mixin Test mixin",
-                target = "Mixin"
+                target = "Mixin",
             )
             HighlightText(
                 text = "7000100212",
-                target = "212"
+                target = "212",
             )
         }
     }

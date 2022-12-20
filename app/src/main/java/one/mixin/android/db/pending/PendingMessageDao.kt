@@ -29,7 +29,7 @@ interface PendingMessageDao : BaseDao<PendingMessage> {
         """
         SELECT m.id FROM pending_messages m
         WHERE m.conversation_id = :conversationId AND m.id = :messageId AND m.status != 'FAILED'
-        """
+        """,
     )
     fun findMessageItemById(conversationId: String, messageId: String): String?
 
@@ -50,7 +50,7 @@ interface PendingMessageDao : BaseDao<PendingMessage> {
         thumb_image = :thumbImage, media_key = :mediaKey, media_digest = :mediaDigest, media_duration = :mediaDuration, 
         media_status = :mediaStatus, status = :status, name = :name, media_waveform = :mediaWaveform WHERE id = :messageId 
         AND category != 'MESSAGE_RECALL'
-        """
+        """,
     )
     fun updateAttachmentMessage(messageId: String, content: String, mediaMimeType: String, mediaSize: Long, mediaWidth: Int?, mediaHeight: Int?, thumbImage: String?, name: String?, mediaWaveform: ByteArray?, mediaDuration: String?, mediaKey: ByteArray?, mediaDigest: ByteArray?, mediaStatus: String, status: String)
 
@@ -64,7 +64,7 @@ interface PendingMessageDao : BaseDao<PendingMessage> {
         """
         UPDATE pending_messages SET media_width = :width, media_height = :height, media_url=:url, thumb_url = :thumbUrl, status = :status 
         WHERE id = :messageId AND category != 'MESSAGE_RECALL'
-    """
+    """,
     )
     fun updateLiveMessage(width: Int, height: Int, url: String, thumbUrl: String, status: String, messageId: String)
 
@@ -72,7 +72,7 @@ interface PendingMessageDao : BaseDao<PendingMessage> {
         """
         UPDATE pending_messages SET content = :content, media_size = :mediaSize, media_status = :mediaStatus, status = :status 
         WHERE id = :messageId AND category != 'MESSAGE_RECALL'
-        """
+        """,
     )
     fun updateTranscriptMessage(content: String?, mediaSize: Long?, mediaStatus: String?, status: String, messageId: String)
 
@@ -85,7 +85,7 @@ interface PendingMessageDao : BaseDao<PendingMessage> {
         media_duration = NULL, media_width = NULL, media_height = NULL, media_hash = NULL, thumb_image = NULL, media_key = NULL, 
         media_digest = NUll, media_status = NULL, `action` = NULL, participant_id = NULL, snapshot_id = NULL, hyperlink = NULL, name = NULL, 
         album_id = NULL, sticker_id = NULL, shared_user_id = NULL, media_waveform = NULL, quote_message_id = NULL, quote_content = NULL WHERE id = :id
-        """
+        """,
     )
     fun recallMessage(id: String)
 

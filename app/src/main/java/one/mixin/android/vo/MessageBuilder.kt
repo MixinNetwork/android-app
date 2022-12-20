@@ -161,6 +161,6 @@ class MessageBuilder(
             id, conversationId, userId, category, content, mediaUrl,
             mediaMimeType, mediaSize, mediaDuration, mediaWidth, mediaHeight, mediaHash,
             thumbImage, thumbUrl, mediaKey, mediaDigest, mediaStatus, status, createdAt,
-            action, participantId, snapshotId, hyperlink, name, albumId, stickerId, sharedUserId, mediaWaveform, null, quoteMessageId, quoteContent
+            action, participantId, snapshotId, hyperlink, name, albumId, stickerId, sharedUserId, mediaWaveform, null, quoteMessageId, quoteContent,
         )
 }

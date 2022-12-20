@@ -136,7 +136,7 @@ open class MixinApplication :
             this,
             BuildConfig.APPCENTER_API_KEY,
             Analytics::class.java,
-            Crashes::class.java
+            Crashes::class.java,
         )
         if (useMapbox()) {
             AppInitializer.getInstance(this)
@@ -241,7 +241,7 @@ open class MixinApplication :
                 withContext(Dispatchers.Main) {
                     val entryPoint = EntryPointAccessors.fromApplication(
                         this@MixinApplication,
-                        AppEntryPoint::class.java
+                        AppEntryPoint::class.java,
                     )
                     entryPoint.inject(this@MixinApplication)
                     LandingActivity.show(this@MixinApplication)

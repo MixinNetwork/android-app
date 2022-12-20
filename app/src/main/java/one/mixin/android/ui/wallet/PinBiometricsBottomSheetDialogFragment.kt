@@ -50,7 +50,7 @@ class PinBiometricsBottomSheetDialogFragment : BiometricBottomSheetDialogFragmen
                 val success = BiometricUtil.savePin(
                     requireContext(),
                     pin,
-                    this@PinBiometricsBottomSheetDialogFragment
+                    this@PinBiometricsBottomSheetDialogFragment,
                 )
                 if (success) callback?.onSuccess() else dismiss()
             } else {

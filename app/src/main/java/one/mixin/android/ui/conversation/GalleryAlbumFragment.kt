@@ -48,7 +48,7 @@ class GalleryAlbumFragment : Fragment(R.layout.fragment_gallery_album), AlbumCol
             viewPager.adapter = albumAdapter
             TabLayoutMediator(
                 albumTl,
-                viewPager
+                viewPager,
             ) { tab, position ->
                 context?.let {
                     tab.text = albumAdapter.albums?.get(position)?.getDisplayName(it)
@@ -85,12 +85,12 @@ class GalleryAlbumFragment : Fragment(R.layout.fragment_gallery_album), AlbumCol
         requireContext().contentResolver.registerContentObserver(
             android.provider.MediaStore.Images.Media.INTERNAL_CONTENT_URI,
             true,
-            internalObserver
+            internalObserver,
         )
         requireContext().contentResolver.registerContentObserver(
             android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
             true,
-            externalObserver
+            externalObserver,
         )
     }
 

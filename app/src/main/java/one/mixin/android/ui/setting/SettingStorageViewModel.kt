@@ -94,7 +94,7 @@ internal constructor(
                         conversationId,
                         MessageCategory.SIGNAL_IMAGE.name,
                         MessageCategory.PLAIN_IMAGE.name,
-                        MessageCategory.ENCRYPTED_IMAGE.name
+                        MessageCategory.ENCRYPTED_IMAGE.name,
                     )
                 }
                 VIDEO -> {
@@ -103,7 +103,7 @@ internal constructor(
                         conversationId,
                         MessageCategory.SIGNAL_VIDEO.name,
                         MessageCategory.PLAIN_VIDEO.name,
-                        MessageCategory.ENCRYPTED_VIDEO.name
+                        MessageCategory.ENCRYPTED_VIDEO.name,
                     )
                 }
                 AUDIO -> {
@@ -112,7 +112,7 @@ internal constructor(
                         conversationId,
                         MessageCategory.SIGNAL_AUDIO.name,
                         MessageCategory.PLAIN_AUDIO.name,
-                        MessageCategory.ENCRYPTED_AUDIO.name
+                        MessageCategory.ENCRYPTED_AUDIO.name,
                     )
                 }
                 DATA -> {
@@ -121,7 +121,7 @@ internal constructor(
                         conversationId,
                         MessageCategory.SIGNAL_DATA.name,
                         MessageCategory.PLAIN_DATA.name,
-                        MessageCategory.ENCRYPTED_DATA.name
+                        MessageCategory.ENCRYPTED_DATA.name,
                     )
                 }
                 TRANSCRIPT -> {
@@ -129,7 +129,7 @@ internal constructor(
                         conversationId,
                         MessageCategory.SIGNAL_TRANSCRIPT.name,
                         MessageCategory.PLAIN_TRANSCRIPT.name,
-                        MessageCategory.ENCRYPTED_TRANSCRIPT.name
+                        MessageCategory.ENCRYPTED_TRANSCRIPT.name,
                     )
                 }
             }

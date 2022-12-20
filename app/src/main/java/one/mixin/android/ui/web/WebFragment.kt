@@ -251,12 +251,12 @@ class WebFragment : BaseFragment() {
                                 result.openAsUrlOrQrScan(
                                     requireActivity(),
                                     parentFragmentManager,
-                                    lifecycleScope
+                                    lifecycleScope,
                                 )
                             },
                             onFailure = {
                                 if (isAdded) toast(R.string.can_not_recognize_qr_code)
-                            }
+                            },
                         )
                     } catch (e: Exception) {
                         if (isAdded) toast(R.string.can_not_recognize_qr_code)
@@ -322,8 +322,8 @@ class WebFragment : BaseFragment() {
         WebView.setWebContentsDebuggingEnabled(
             defaultSharedPreferences.getBoolean(
                 Constants.Debug.WEB_DEBUG,
-                false
-            )
+                false,
+            ),
         )
 
         app = requireArguments().getParcelable(ARGS_APP)
@@ -456,7 +456,7 @@ class WebFragment : BaseFragment() {
                             failLoadView.isVisible = true
                         }
                     }
-                }
+                },
             )
 
         webView.webChromeClient = object : WebChromeClient() {
@@ -564,7 +564,7 @@ class WebFragment : BaseFragment() {
                             } else {
                                 PERMISSION_VIDEO
                             }
-                        }.toIntArray()
+                        }.toIntArray(),
                     )
                         .setCancelAction {
                             lastGrantedUri = null
@@ -585,7 +585,7 @@ class WebFragment : BaseFragment() {
                                     },
                                     {
                                         lastGrantedUri = null
-                                    }
+                                    },
                                 )
                         }.show(parentFragmentManager, PermissionBottomSheetDialogFragment.TAG)
                 }
@@ -605,7 +605,7 @@ class WebFragment : BaseFragment() {
                         PermissionBottomSheetDialogFragment.requestVideo(
                             binding.titleTv.text.toString(),
                             app?.name,
-                            app?.appNumber
+                            app?.appNumber,
                         )
                             .setCancelAction {
                                 uploadMessage?.onReceiveValue(null)
@@ -620,14 +620,14 @@ class WebFragment : BaseFragment() {
                                             if (granted) {
                                                 startActivityForResult(
                                                     Intent(MediaStore.ACTION_VIDEO_CAPTURE),
-                                                    FILE_CHOOSER
+                                                    FILE_CHOOSER,
                                                 )
                                             } else {
                                                 context?.openPermissionSetting()
                                             }
                                         },
                                         {
-                                        }
+                                        },
                                     )
                             }.show(parentFragmentManager, PermissionBottomSheetDialogFragment.TAG)
                         return true
@@ -635,7 +635,7 @@ class WebFragment : BaseFragment() {
                         PermissionBottomSheetDialogFragment.requestCamera(
                             binding.titleTv.text.toString(),
                             app?.appNumber,
-                            app?.iconUrl
+                            app?.iconUrl,
                         )
                             .setCancelAction {
                                 uploadMessage?.onReceiveValue(null)
@@ -653,7 +653,7 @@ class WebFragment : BaseFragment() {
                                             }
                                         },
                                         {
-                                        }
+                                        },
                                     )
                             }.show(parentFragmentManager, PermissionBottomSheetDialogFragment.TAG)
                         return true
@@ -675,7 +675,7 @@ class WebFragment : BaseFragment() {
                 startActivity(
                     Intent(Intent.ACTION_VIEW).apply {
                         data = url.toUri()
-                    }
+                    },
                 )
             } catch (ignored: ActivityNotFoundException) {
             }
@@ -694,8 +694,8 @@ class WebFragment : BaseFragment() {
             uploadMessage?.onReceiveValue(
                 WebChromeClient.FileChooserParams.parseResult(
                     resultCode,
-                    data
-                )
+                    data,
+                ),
             )
             uploadMessage = null
         } else {
@@ -733,7 +733,7 @@ class WebFragment : BaseFragment() {
                     lifecycleScope.launch {
                         closeSelf()
                     }
-                }
+                },
             )
             webAppInterface?.let { webView.addJavascriptInterface(it, "MixinContext") }
             val extraHeaders = HashMap<String, String>()
@@ -770,7 +770,7 @@ class WebFragment : BaseFragment() {
             } else {
                 requireActivity().showPipPermissionNotification(
                     MusicActivity::class.java,
-                    getString(R.string.web_floating_permission)
+                    getString(R.string.web_floating_permission),
                 )
             }
         }
@@ -823,7 +823,7 @@ class WebFragment : BaseFragment() {
             conversationId,
             appCard?.shareable ?: shareable,
             webView,
-            isFinished
+            isFinished,
         )
     }
 
@@ -866,7 +866,7 @@ class WebFragment : BaseFragment() {
         val view = View.inflate(
             ContextThemeWrapper(requireActivity(), R.style.Custom),
             R.layout.view_web_bottom_menu,
-            null
+            null,
         )
         val viewBinding = ViewWebBottomMenuBinding.bind(view)
         if (isBot()) {
@@ -928,17 +928,17 @@ class WebFragment : BaseFragment() {
                                         app.name,
                                         currentUrl,
                                         app.updatedAt,
-                                        null
+                                        null,
                                     )
                                     ForwardActivity.show(
                                         requireContext(),
                                         arrayListOf(
                                             ForwardMessage(
                                                 ShareCategory.AppCard,
-                                                GsonHelper.customGson.toJson(appCardData)
-                                            )
+                                                GsonHelper.customGson.toJson(appCardData),
+                                            ),
                                         ),
-                                        ForwardAction.App.Resultless()
+                                        ForwardAction.App.Resultless(),
                                     )
                                 } else {
                                     ForwardActivity.show(requireContext(), currentUrl)
@@ -1086,8 +1086,8 @@ class WebFragment : BaseFragment() {
                         startActivity(
                             Intent(
                                 Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
-                                Uri.parse("package:${requireContext().packageName}")
-                            )
+                                Uri.parse("package:${requireContext().packageName}"),
+                            ),
                         )
                     } catch (e: Exception) {
                         Timber.e(e)
@@ -1165,8 +1165,8 @@ class WebFragment : BaseFragment() {
                                     toast(
                                         getString(
                                             R.string.Save_to,
-                                            outFile.absolutePath
-                                        )
+                                            outFile.absolutePath,
+                                        ),
                                     )
                                 }
                             }
@@ -1261,7 +1261,7 @@ class WebFragment : BaseFragment() {
                     fragmentManager,
                     scope,
                     host = host,
-                    currentConversation = conversationId
+                    currentConversation = conversationId,
                 ) {}
                 return true
             }
@@ -1334,8 +1334,8 @@ class WebFragment : BaseFragment() {
                     "dark"
                 } else {
                     "light"
-                }
-            )
+                },
+            ),
         )
 
         @JavascriptInterface

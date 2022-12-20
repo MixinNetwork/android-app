@@ -126,7 +126,7 @@ class GroupFragment : BaseFragment() {
                 activity?.addFragment(
                     this@GroupFragment,
                     NewGroupFragment.newInstance(ArrayList(checkedUsers)),
-                    NewGroupFragment.TAG
+                    NewGroupFragment.TAG,
                 )
             }
         }
@@ -142,7 +142,7 @@ class GroupFragment : BaseFragment() {
 
         if (from == TYPE_ADD || from == TYPE_CREATE) {
             groupViewModel.getFriends().observe(
-                viewLifecycleOwner
+                viewLifecycleOwner,
             ) {
                 users = it
                 filterAndSet(binding.searchEt.text.toString(), it)
@@ -169,7 +169,7 @@ class GroupFragment : BaseFragment() {
                 it.fullName!!.containsIgnoreCase(keyword) ||
                     it.identityNumber.containsIgnoreCase(keyword)
             }?.sortedByDescending { it.fullName.equalsIgnoreCase(keyword) || it.identityNumber.equalsIgnoreCase(keyword) },
-            keyword.isEmpty()
+            keyword.isEmpty(),
         )
     }
 
@@ -184,7 +184,7 @@ class GroupFragment : BaseFragment() {
                 if (from == TYPE_ADD) R.string.Adding else R.string.Removing
             dialog = indeterminateProgressDialog(
                 message = R.string.Please_wait_a_bit,
-                title = title
+                title = title,
             ).apply {
                 setCancelable(false)
             }
@@ -207,7 +207,7 @@ class GroupFragment : BaseFragment() {
                 TYPE_REMOVE -> getString(R.string.Remove_Participants)
                 else -> getString(R.string.Add_participants)
             },
-            "$size/$MAX_USER"
+            "$size/$MAX_USER",
         )
     }
 
@@ -226,7 +226,7 @@ class GroupFragment : BaseFragment() {
                     checkedUsers.size + existCount
                 } else {
                     existCount - checkedUsers.size
-                }
+                },
             )
             groupAdapter.notifyDataSetChanged()
             binding.selectRv.layoutManager?.scrollToPosition(checkedUsers.size - 1)

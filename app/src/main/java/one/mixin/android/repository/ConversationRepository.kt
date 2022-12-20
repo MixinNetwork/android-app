@@ -321,7 +321,7 @@ internal constructor(
                 data.muteUntil,
                 data.createdAt,
                 data.expireIn,
-                status
+                status,
             )
             if (data.announcement.isNotBlank() && c.announcement != data.announcement) {
                 RxBus.publish(GroupEvent(data.conversationId))
@@ -472,8 +472,8 @@ internal constructor(
                         jobManager.addJobInBackground(
                             RefreshUserJob(
                                 conversationUserIds,
-                                conversationId
-                            )
+                                conversationId,
+                            ),
                         )
                     }
                     if (participants.size != localData.size || conversationUserIds.isNotEmpty()) {
@@ -481,7 +481,7 @@ internal constructor(
                     }
                     return@handleMixinResponse conversationDao.findConversationById(conversationId)
                 }
-            }
+            },
         )
     }
 
@@ -542,8 +542,8 @@ internal constructor(
                     pinMessageId,
                     mention.conversationId,
                     mention.mentions,
-                    true
-                )
+                    true,
+                ),
             )
         }
     }

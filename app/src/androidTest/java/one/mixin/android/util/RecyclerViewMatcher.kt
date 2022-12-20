@@ -62,6 +62,6 @@ fun swipeRight(): GeneralSwipeAction {
         Swipe.FAST,
         GeneralLocation.CENTER_LEFT,
         GeneralLocation.CENTER_RIGHT,
-        Press.FINGER
+        Press.FINGER,
     )
 }

@@ -30,7 +30,7 @@ class CleanMessageHelper @Inject internal constructor(private val jobManager: Mi
             messageList = appDatabase.messageDao().getMediaMessageMinimalByConversationId(
                 conversationId,
                 DB_DELETE_MEDIA_LIMIT,
-                DB_DELETE_MEDIA_LIMIT * repeatTimes++
+                DB_DELETE_MEDIA_LIMIT * repeatTimes++,
             )
             messageList.mapNotNull {
                 it.absolutePath(MixinApplication.appContext, conversationId, it.mediaUrl)
@@ -45,7 +45,7 @@ class CleanMessageHelper @Inject internal constructor(private val jobManager: Mi
             messageIds = appDatabase.messageDao().getTranscriptMessageIdByConversationId(
                 conversationId,
                 DB_DELETE_LIMIT,
-                DB_DELETE_LIMIT * repeatTimes++
+                DB_DELETE_LIMIT * repeatTimes++,
             )
             jobManager.addJobInBackground(TranscriptDeleteJob(messageIds))
         } while (messageIds.size > DB_DELETE_LIMIT)
@@ -65,8 +65,8 @@ class CleanMessageHelper @Inject internal constructor(private val jobManager: Mi
                     MessageDeleteJob(
                         conversationId,
                         lastRowId,
-                        deleteConversation = deleteConversation
-                    )
+                        deleteConversation = deleteConversation,
+                    ),
                 )
             } else {
                 val ids = appDatabase.messageDao()
@@ -92,7 +92,7 @@ class CleanMessageHelper @Inject internal constructor(private val jobManager: Mi
                 item.messageId,
                 item.conversationId,
                 item.absolutePath(),
-                item.mediaStatus == MediaStatus.DONE.name
+                item.mediaStatus == MediaStatus.DONE.name,
             )
 
             if (item.isTranscript()) {
@@ -110,7 +110,7 @@ class CleanMessageHelper @Inject internal constructor(private val jobManager: Mi
             deleteMessage(
                 item.messageId,
                 conversationId,
-                item.absolutePath(MixinApplication.appContext, conversationId, item.mediaUrl)
+                item.absolutePath(MixinApplication.appContext, conversationId, item.mediaUrl),
             )
         }
     }

@@ -48,13 +48,13 @@ class PostHolder constructor(val binding: ItemChatPostBinding) : BaseViewHolder(
                 setItemBackgroundResource(
                     binding.chatLayout,
                     R.drawable.chat_bubble_post_me_last,
-                    R.drawable.chat_bubble_post_me_last_night
+                    R.drawable.chat_bubble_post_me_last_night,
                 )
             } else {
                 setItemBackgroundResource(
                     binding.chatLayout,
                     R.drawable.chat_bubble_post_me,
-                    R.drawable.chat_bubble_post_me_night
+                    R.drawable.chat_bubble_post_me_night,
                 )
             }
         } else {
@@ -63,13 +63,13 @@ class PostHolder constructor(val binding: ItemChatPostBinding) : BaseViewHolder(
                 setItemBackgroundResource(
                     binding.chatLayout,
                     R.drawable.chat_bubble_post_other_last,
-                    R.drawable.chat_bubble_post_other_last_night
+                    R.drawable.chat_bubble_post_other_last_night,
                 )
             } else {
                 setItemBackgroundResource(
                     binding.chatLayout,
                     R.drawable.chat_bubble_post_other,
-                    R.drawable.chat_bubble_post_other_night
+                    R.drawable.chat_bubble_post_other_night,
                 )
             }
         }
@@ -129,7 +129,7 @@ class PostHolder constructor(val binding: ItemChatPostBinding) : BaseViewHolder(
             false,
             isRepresentative = false,
             isSecret = false,
-            isWhite = true
+            isWhite = true,
         )
 
         chatLayout(isMe, isLast)

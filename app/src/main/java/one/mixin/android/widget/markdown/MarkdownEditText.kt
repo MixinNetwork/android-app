@@ -18,7 +18,7 @@ open class MarkdownEditText : AppCompatEditText {
     constructor(context: Context, attrs: AttributeSet?, defStyleAttr: Int) : super(
         context,
         attrs,
-        defStyleAttr
+        defStyleAttr,
     )
 
     init {
@@ -33,8 +33,8 @@ open class MarkdownEditText : AppCompatEditText {
             MarkwonEditorTextWatcher.withPreRender(
                 editor,
                 Executors.newCachedThreadPool(),
-                this
-            )
+                this,
+            ),
         )
     }
 }

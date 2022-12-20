@@ -61,9 +61,9 @@ fun AppearancePage() {
                 },
                 navigationIcon = {
                     MixinBackButton()
-                }
+                },
             )
-        }
+        },
     ) {
         Column(Modifier.padding(it)) {
             ThemeItem()
@@ -91,14 +91,14 @@ private fun ThemeItem() {
                 Constants.Theme.THEME_DEFAULT_ID
             } else {
                 Constants.Theme.THEME_AUTO_ID
-            }
+            },
         )
         mutableStateOf(id)
     }
 
     AppearanceItem(
         label = stringResource(id = R.string.Theme),
-        value = context.resources.getStringArray(R.array.setting_night_array_oreo)[currentThemeId.value]
+        value = context.resources.getStringArray(R.array.setting_night_array_oreo)[currentThemeId.value],
     ) {
         context.singleChoice(
             context.getString(R.string.Theme),
@@ -107,7 +107,7 @@ private fun ThemeItem() {
             } else {
                 R.array.setting_night_array_oreo
             },
-            currentThemeId.value
+            currentThemeId.value,
         ) { _, index ->
             val changed = index != currentThemeId.value
             currentThemeId.value = index
@@ -118,7 +118,7 @@ private fun ThemeItem() {
                     Constants.Theme.THEME_NIGHT_ID -> AppCompatDelegate.MODE_NIGHT_YES
                     Constants.Theme.THEME_AUTO_ID -> AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM
                     else -> AppCompatDelegate.MODE_NIGHT_NO
-                }
+                },
             )
             if (changed) {
                 context.findFragmentActivityOrNull()?.apply {
@@ -149,7 +149,7 @@ private fun LanguageItem() {
 
     AppearanceItem(
         label = stringResource(R.string.Language),
-        value = languageNames[currentLanguage.value]
+        value = languageNames[currentLanguage.value],
     ) {
         showLanguageDialog.value = true
     }
@@ -176,14 +176,14 @@ private fun LanguageItem() {
                         AppearanceFragment.POS_SIMPLIFY_JAPANESE,
                         AppearanceFragment.POS_RUSSIAN,
                         AppearanceFragment.POS_INDONESIA,
-                        AppearanceFragment.POS_Malay
+                        AppearanceFragment.POS_Malay,
                     ).forEach { index ->
                         LanguageRadioItem(
                             name = languageNames[index],
                             selected = dialogSelected.value == index,
                             onOptionSelected = {
                                 dialogSelected.value = index
-                            }
+                            },
                         )
                     }
                 }
@@ -227,7 +227,7 @@ private fun LanguageItem() {
                         recreate()
                     }
                 }
-            }
+            },
         )
     }
 }
@@ -245,22 +245,22 @@ private fun LanguageRadioItem(
             .selectable(
                 selected = (selected),
                 onClick = { onOptionSelected() },
-                role = Role.RadioButton
+                role = Role.RadioButton,
             ),
-        verticalAlignment = Alignment.CenterVertically
+        verticalAlignment = Alignment.CenterVertically,
     ) {
         RadioButton(
             colors = RadioButtonDefaults.colors(
-                selectedColor = MixinAppTheme.colors.accent
+                selectedColor = MixinAppTheme.colors.accent,
             ),
             selected = selected,
-            onClick = null // null recommended for accessibility with screenreaders
+            onClick = null, // null recommended for accessibility with screenreaders
         )
         Text(
             text = name,
             modifier = Modifier.padding(start = 16.dp),
             fontSize = 14.sp,
-            color = MixinAppTheme.colors.textPrimary
+            color = MixinAppTheme.colors.textPrimary,
         )
     }
 }
@@ -280,14 +280,14 @@ private fun AppearanceItem(
                 onClick()
             }
             .padding(horizontal = 16.dp),
-        verticalAlignment = Alignment.CenterVertically
+        verticalAlignment = Alignment.CenterVertically,
     ) {
         Text(
             text = label,
             style = TextStyle(
                 color = MixinAppTheme.colors.textPrimary,
-                fontSize = 14.sp
-            )
+                fontSize = 14.sp,
+            ),
         )
 
         Spacer(Modifier.weight(1f))
@@ -295,8 +295,8 @@ private fun AppearanceItem(
         Text(
             text = value,
             style = TextStyle(
-                color = MixinAppTheme.colors.textSubtitle
-            )
+                color = MixinAppTheme.colors.textSubtitle,
+            ),
         )
     }
 }
@@ -314,8 +314,8 @@ private fun CurrencyItem() {
         value = stringResource(
             R.string.wallet_setting_currency_desc,
             currentCurrency.value,
-            Fiats.getSymbol(currentCurrency.value)
-        )
+            Fiats.getSymbol(currentCurrency.value),
+        ),
     ) {
         val activity = context.findFragmentActivityOrNull() ?: return@AppearanceItem
         val currencyBottom = CurrencyBottomSheetDialogFragment.newInstance()
@@ -326,7 +326,7 @@ private fun CurrencyItem() {
         }
         currencyBottom.showNow(
             activity.supportFragmentManager,
-            CurrencyBottomSheetDialogFragment.TAG
+            CurrencyBottomSheetDialogFragment.TAG,
         )
     }
 }
@@ -344,21 +344,21 @@ fun AppearanceItemPreview() {
 fun LanguageRadioItemPreview() {
     MixinAppTheme {
         Column(
-            modifier = Modifier.background(MixinAppTheme.colors.background)
+            modifier = Modifier.background(MixinAppTheme.colors.background),
         ) {
             listOf(
                 LanguageRadioItem(
                     name = "name",
                     selected = true,
                     onOptionSelected = {
-                    }
+                    },
                 ),
                 LanguageRadioItem(
                     name = "name",
                     selected = false,
                     onOptionSelected = {
-                    }
-                )
+                    },
+                ),
             )
         }
     }

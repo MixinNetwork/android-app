@@ -158,19 +158,19 @@ private fun generatePath(
     return when {
         iCategory.isImage() -> File(
             context.getImagePath(legacy).generateConversationPath(conversationId),
-            mediaUrl
+            mediaUrl,
         )
         iCategory.isVideo() -> File(
             context.getVideoPath(legacy).generateConversationPath(conversationId),
-            mediaUrl
+            mediaUrl,
         )
         iCategory.isAudio() -> File(
             context.getAudioPath(legacy).generateConversationPath(conversationId),
-            mediaUrl
+            mediaUrl,
         )
         iCategory.isData() -> File(
             context.getDocumentPath(legacy).generateConversationPath(conversationId),
-            mediaUrl
+            mediaUrl,
         )
         iCategory.isTranscript() -> File(context.getTranscriptDirPath(legacy), mediaUrl)
         else -> null

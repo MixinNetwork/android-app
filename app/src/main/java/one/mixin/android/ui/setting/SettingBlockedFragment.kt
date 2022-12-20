@@ -45,7 +45,7 @@ class SettingBlockedFragment : BaseFragment(R.layout.fragment_blocked) {
             blockedRv.adapter = adapter
             titleView.leftIb.setOnClickListener { activity?.onBackPressedDispatcher?.onBackPressed() }
             viewModel.blockingUsers(stopScope).observe(
-                viewLifecycleOwner
+                viewLifecycleOwner,
             ) {
                 if (it != null && it.isNotEmpty()) {
                     blockVa.displayedChild = POS_LIST

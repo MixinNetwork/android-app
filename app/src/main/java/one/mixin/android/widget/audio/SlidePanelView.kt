@@ -58,12 +58,12 @@ class SlidePanelView : RelativeLayout {
                         blinkingDrawable?.blinking()
                         postDelayed(updateTimeRunnable, 200)
                     }
-                }
+                },
             )
         }
         animSet.playTogether(
             ObjectAnimator.ofFloat(this, "translationX", 0f),
-            ObjectAnimator.ofFloat(this, "alpha", 1f)
+            ObjectAnimator.ofFloat(this, "alpha", 1f),
         )
         animSet.start()
     }
@@ -96,7 +96,7 @@ class SlidePanelView : RelativeLayout {
             ObjectAnimator.ofFloat(binding.slideLl, "alpha", 0f),
             ObjectAnimator.ofFloat(binding.slideLl, "translationY", AndroidUtilities.dp(20f).toFloat()),
             ObjectAnimator.ofFloat(binding.cancelTv, "alpha", 1f),
-            ObjectAnimator.ofFloat(binding.cancelTv, "translationY", -AndroidUtilities.dp(20f).toFloat(), 0f)
+            ObjectAnimator.ofFloat(binding.cancelTv, "translationY", -AndroidUtilities.dp(20f).toFloat(), 0f),
         )
         animSet.start()
         toCanceled = true
@@ -118,12 +118,12 @@ class SlidePanelView : RelativeLayout {
                         handleEnd()
                         onEnding = false
                     }
-                }
+                },
             )
         }
         animSet.playTogether(
             ObjectAnimator.ofFloat(this, "translationX", measuredWidth.toFloat()),
-            ObjectAnimator.ofFloat(this, "alpha", 0f)
+            ObjectAnimator.ofFloat(this, "alpha", 0f),
         )
         animSet.start()
     }

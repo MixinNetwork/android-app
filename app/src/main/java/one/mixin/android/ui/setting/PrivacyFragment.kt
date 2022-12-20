@@ -33,7 +33,7 @@ class PrivacyFragment : BaseFragment(R.layout.fragment_privacy) {
                 activity?.onBackPressedDispatcher?.onBackPressed()
             }
             viewModel.countBlockingUsers().observe(
-                viewLifecycleOwner
+                viewLifecycleOwner,
             ) {
                 it?.let { users ->
                     blockingTv.text = "${users.size}"
@@ -68,7 +68,7 @@ class PrivacyFragment : BaseFragment(R.layout.fragment_privacy) {
                 {
                     incognito.isVisible = false
                     incognitoFollower.isVisible = false
-                }
+                },
             )
 
             setLockDesc()
@@ -85,7 +85,7 @@ class PrivacyFragment : BaseFragment(R.layout.fragment_privacy) {
                 1 -> R.string.Enable_after_1_minute
                 2 -> R.string.Enable_after_30_minutes
                 else -> R.string.Disabled
-            }
+            },
         )
     }
 }

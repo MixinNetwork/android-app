@@ -19,7 +19,7 @@ fun reportException(msg: String, e: Throwable) {
         ArrayMap<String, String>().apply {
             put("log", msg)
         },
-        null
+        null,
     )
 }
 

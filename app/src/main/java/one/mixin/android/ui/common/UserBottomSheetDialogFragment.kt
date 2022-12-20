@@ -210,7 +210,7 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
                         binding.scrollContent.height -
                         (menuListLayout?.height ?: 0) - if (menuListLayout != null) 38.dp else 8.dp
                 }
-            }
+            },
         )
         binding.transferFl.setOnClickListener {
             if (Session.getAccount()?.hasPin == true) {
@@ -244,7 +244,7 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
                 if (!apps.isNullOrEmpty()) {
                     AppListBottomSheetDialogFragment.newInstance(
                         apps,
-                        getString(R.string.contact_share_bots_title, user.fullName)
+                        getString(R.string.contact_share_bots_title, user.fullName),
                     ).showNow(parentFragmentManager, AppListBottomSheetDialogFragment.TAG)
                 }
             }
@@ -254,10 +254,10 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
                     context?.getClipboardManager()?.setPrimaryClip(
                         ClipData.newPlainText(
                             null,
-                            "mixin://users/${user.userId}"
-                        )
+                            "mixin://users/${user.userId}",
+                        ),
                     )
-                }
+                },
             )
             apps?.let {
                 binding.avatarGroup.setApps(it)
@@ -290,7 +290,7 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
                 {
                     Instant.now().isBefore(Instant.parse(it))
                 },
-                false
+                false,
             )
         ) {
             menu {
@@ -314,7 +314,7 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
                     activity?.addFragment(
                         this@UserBottomSheetDialogFragment,
                         UserTransactionsFragment.newInstance(u.userId),
-                        UserTransactionsFragment.TAG
+                        UserTransactionsFragment.TAG,
                     )
                 }
                 dismiss()
@@ -373,10 +373,10 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
                             arrayListOf(
                                 ForwardMessage(
                                     ShareCategory.Contact,
-                                    GsonHelper.customGson.toJson(ContactMessagePayload(u.userId))
-                                )
+                                    GsonHelper.customGson.toJson(ContactMessagePayload(u.userId)),
+                                ),
                             ),
-                            ForwardAction.App.Resultless()
+                            ForwardAction.App.Resultless(),
                         )
                         RxBus.publish(BotCloseEvent())
                         dismiss()
@@ -417,7 +417,7 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
                         showDisappearing()
                     }
                 }
-            }
+            },
         )
 
         if (u.relationship == UserRelationship.FRIEND.name) {
@@ -425,13 +425,13 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
                 menuGroup {
                     menu(muteMenu)
                     menu(editNameMenu)
-                }
+                },
             )
         } else {
             list.groups.add(
                 menuGroup {
                     menu(muteMenu)
-                }
+                },
             )
         }
 
@@ -440,7 +440,7 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
                 list.groups.add(
                     menuGroup {
                         menu(telephoneCallMenu)
-                    }
+                    },
                 )
             }
         } else {
@@ -448,7 +448,7 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
                 menuGroup {
                     menu(voiceCallMenu)
                     telephoneCallMenu?.let { menu(it) }
-                }
+                },
             )
         }
 
@@ -457,13 +457,13 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
                 menuGroup {
                     menu(developerMenu)
                     menu(transactionMenu)
-                }
+                },
             )
         } else {
             list.groups.add(
                 menuGroup {
                     menu(transactionMenu)
-                }
+                },
             )
         }
 
@@ -477,7 +477,7 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
                         dismiss()
                     }
                 }
-            }
+            },
         )
 
         list.groups.add(
@@ -491,7 +491,7 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
                     }
                     this.circleNames = circleNames
                 }
-            }
+            },
         )
 
         list.groups.add(
@@ -503,7 +503,7 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
                         dismiss()
                     }
                 }
-            }
+            },
         )
 
         when (u.relationship) {
@@ -517,13 +517,13 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
                                 bottomViewModel.updateRelationship(
                                     RelationshipRequest(
                                         u.userId,
-                                        RelationshipAction.UNBLOCK.name
-                                    )
+                                        RelationshipAction.UNBLOCK.name,
+                                    ),
                                 )
                             }
                         }
                         menu(clearMenu)
-                    }
+                    },
                 )
             }
             UserRelationship.FRIEND.name -> {
@@ -535,7 +535,7 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
                                     R.string.Remove_Bot
                                 } else {
                                     R.string.Remove_Contact
-                                }
+                                },
                             )
 
                             style = MenuStyle.Danger
@@ -546,8 +546,8 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
                                             R.string.Remove_Bot
                                         } else {
                                             R.string.Remove_Contact
-                                        }
-                                    )
+                                        },
+                                    ),
                                 ) {
                                     updateRelationship(UserRelationship.STRANGER.name)
                                     if (user.isBot()) {
@@ -557,7 +557,7 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
                             }
                         }
                         menu(clearMenu)
-                    }
+                    },
                 )
             }
             UserRelationship.STRANGER.name -> {
@@ -571,8 +571,8 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
                                     bottomViewModel.updateRelationship(
                                         RelationshipRequest(
                                             u.userId,
-                                            RelationshipAction.BLOCK.name
-                                        )
+                                            RelationshipAction.BLOCK.name,
+                                        ),
                                     )
                                     if (user.isBot()) {
                                         RxBus.publish(BotEvent())
@@ -581,7 +581,7 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
                             }
                         }
                         menu(clearMenu)
-                    }
+                    },
                 )
             }
         }
@@ -594,7 +594,7 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
                         reportUser(u.userId)
                     }
                 }
-            }
+            },
         )
 
         menuListLayout?.removeAllViews()
@@ -629,7 +629,7 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
                     user.userId,
                     user.fullName,
                     user.avatarUrl,
-                    null
+                    null,
                 )
             } else {
                 SearchMessageItem(
@@ -640,13 +640,13 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
                     "",
                     null,
                     null,
-                    it.iconUrl
+                    it.iconUrl,
                 )
             }
             activity?.addFragment(
                 this@UserBottomSheetDialogFragment,
                 SearchMessageFragment.newInstance(searchMessageItem, ""),
-                SearchMessageFragment.TAG
+                SearchMessageFragment.TAG,
             )
         }
     }
@@ -655,7 +655,7 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
         activity?.addFragment(
             this@UserBottomSheetDialogFragment,
             GroupsInCommonFragment.newInstance(user.userId),
-            GroupsInCommonFragment.TAG
+            GroupsInCommonFragment.TAG,
         )
     }
 
@@ -663,7 +663,7 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
         activity?.addFragment(
             this@UserBottomSheetDialogFragment,
             CircleManagerFragment.newInstance(user.fullName, userId = user.userId),
-            CircleManagerFragment.TAG
+            CircleManagerFragment.TAG,
         )
     }
 
@@ -693,7 +693,7 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
                         }
                     },
                     {
-                    }
+                    },
                 )
         }
     }
@@ -703,7 +703,7 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
             outgoingCall(
                 requireContext(),
                 conversationId,
-                user
+                user,
             )
             RxBus.publish(BotCloseEvent())
             dismiss()
@@ -722,9 +722,9 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
                 bottomViewModel.updateRelationship(
                     RelationshipRequest(
                         userId,
-                        RelationshipAction.BLOCK.name
+                        RelationshipAction.BLOCK.name,
                     ),
-                    true
+                    true,
                 )
                 if (user.isBot()) {
                     RxBus.publish(BotEvent())
@@ -741,7 +741,7 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
         activity?.addFragment(
             this,
             DisappearingFragment.newInstance(conversationId, user.userId),
-            DisappearingFragment.TAG
+            DisappearingFragment.TAG,
         )
     }
 
@@ -799,7 +799,7 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
                     }
                 bottomViewModel.findUserById(app.creatorId)
                     .observe(
-                        this@UserBottomSheetDialogFragment
+                        this@UserBottomSheetDialogFragment,
                     ) { u ->
                         creator = u
                         if (u == null) {
@@ -831,8 +831,8 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
                     bottomViewModel.updateRelationship(
                         RelationshipRequest(
                             user.userId,
-                            RelationshipAction.UNBLOCK.name
-                        )
+                            RelationshipAction.UNBLOCK.name,
+                        ),
                     )
                     if (user.isBot()) {
                         RxBus.publish(BotEvent())
@@ -850,7 +850,7 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
                         R.string.Add_bot
                     } else {
                         R.string.Add_Contact
-                    }
+                    },
                 )}".also { binding.addTv.text = it }
                 binding.addTv.setOnClickListener {
                     updateRelationship(UserRelationship.FRIEND.name)
@@ -878,8 +878,8 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
                     RelationshipRequest(
                         user.userId,
                         RelationshipAction.UPDATE.name,
-                        it
-                    )
+                        it,
+                    ),
                 )
             }
         }
@@ -890,7 +890,7 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
             getString(R.string.one_hour),
             resources.getQuantityString(R.plurals.Hour, 8, 8),
             getString(R.string.one_week),
-            getString(R.string.one_year)
+            getString(R.string.one_year),
         )
         var duration = MUTE_1_HOUR
         var whichItem = 0
@@ -908,13 +908,13 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
                                 bottomViewModel.mute(
                                     duration.toLong(),
                                     senderId = it.userId,
-                                    recipientId = user.userId
+                                    recipientId = user.userId,
                                 )
                             },
                             successBlock = { response ->
                                 bottomViewModel.updateMuteUntil(user.userId, response.data!!.muteUntil)
                                 toast(getString(R.string.contact_mute_title) + " ${user.fullName} " + choices[whichItem])
-                            }
+                            },
                         )
                     }
                 }
@@ -947,7 +947,7 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
                     successBlock = { response ->
                         bottomViewModel.updateMuteUntil(user.userId, response.data!!.muteUntil)
                         toast(getString(R.string.Unmute) + " ${user.fullName}")
-                    }
+                    },
                 )
             }
         }
@@ -964,7 +964,7 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
             } else {
                 RelationshipAction.REMOVE.name
             },
-            user.fullName
+            user.fullName,
         )
         bottomViewModel.updateRelationship(request)
     }
@@ -983,7 +983,7 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
                 },
                 {
                     Timber.e(it)
-                }
+                },
             )
     }
 
@@ -1010,8 +1010,8 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
                                 ConversationActivity.getShortcutIntent(
                                     requireContext(),
                                     conversationId,
-                                    user.userId
-                                )
+                                    user.userId,
+                                ),
                             )
                         }
                         return false
@@ -1025,7 +1025,7 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
                     ): Boolean {
                         return false
                     }
-                }
+                },
             ).submit()
     }
 

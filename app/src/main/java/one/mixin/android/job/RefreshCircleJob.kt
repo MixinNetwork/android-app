@@ -9,7 +9,7 @@ class RefreshCircleJob(
     val circleId: String? = null,
 ) : BaseJob(
     Params(PRIORITY_UI_HIGH)
-        .groupBy("refresh_circles").requireNetwork().persist()
+        .groupBy("refresh_circles").requireNetwork().persist(),
 ) {
 
     companion object {
@@ -30,8 +30,8 @@ class RefreshCircleJob(
                             jobManager.addJobInBackground(
                                 RefreshConversationJob(
                                     circleConversation.conversationId,
-                                    skipRefreshCircle = true
-                                )
+                                    skipRefreshCircle = true,
+                                ),
                             )
                         }
                         circleDao.insertUpdate(c)
@@ -57,7 +57,7 @@ class RefreshCircleJob(
         val ccResponse = circleService.getCircleConversations(
             c.circleId,
             offset,
-            REFRESH_CIRCLE_CONVERSATION_LIMIT
+            REFRESH_CIRCLE_CONVERSATION_LIMIT,
         ).execute().body()
         if (ccResponse?.isSuccess == true) {
             ccResponse.data?.let { ccList ->

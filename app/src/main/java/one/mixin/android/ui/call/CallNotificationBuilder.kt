@@ -41,7 +41,7 @@ class CallNotificationBuilder {
                 context,
                 0,
                 callIntent,
-                PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+                PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,
             )
 
             val builder = NotificationCompat.Builder(context, CHANNEL_NODE)
@@ -71,8 +71,8 @@ class CallNotificationBuilder {
                             action,
                             R.drawable.ic_close_black,
                             R.string
-                                .Cancel
-                        )
+                                .Cancel,
+                        ),
                     )
                 }
                 CallService.CallState.STATE_RINGING -> {
@@ -94,8 +94,8 @@ class CallNotificationBuilder {
                             answerAction,
                             R.drawable.ic_close_black,
                             R.string
-                                .ANSWER
-                        )
+                                .ANSWER,
+                        ),
                     )
                     builder.addAction(
                         getAction(
@@ -104,8 +104,8 @@ class CallNotificationBuilder {
                             declineAction,
                             R.drawable.ic_close_black,
                             R.string
-                                .Decline
-                        )
+                                .Decline,
+                        ),
                     )
                 }
                 CallService.CallState.STATE_CONNECTED -> {
@@ -122,8 +122,8 @@ class CallNotificationBuilder {
                             action,
                             R.drawable.ic_close_black,
                             R.string
-                                .Hang_up
-                        )
+                                .Hang_up,
+                        ),
                     )
                 }
                 else -> {
@@ -140,8 +140,8 @@ class CallNotificationBuilder {
                             action,
                             R.drawable.ic_close_black,
                             R.string
-                                .Hang_up
-                        )
+                                .Hang_up,
+                        ),
                     )
                 }
             }
@@ -163,7 +163,7 @@ class CallNotificationBuilder {
                 context,
                 0,
                 intent,
-                PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+                PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,
             )
             return NotificationCompat.Action(iconResId, context.getString(titleResId), pendingIntent)
         }

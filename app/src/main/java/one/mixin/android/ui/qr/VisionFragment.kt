@@ -26,7 +26,7 @@ abstract class VisionFragment : BaseFragment() {
     protected val scanner: BarcodeScanner = BarcodeScanning.getClient(
         BarcodeScannerOptions.Builder()
             .setBarcodeFormats(FORMAT_QR_CODE)
-            .build()
+            .build(),
     )
 
     protected var fromShortcut = false

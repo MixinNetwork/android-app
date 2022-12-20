@@ -105,7 +105,7 @@ class LocationActivity : BaseActivity(), OnMapReadyCallback {
             },
             {
                 setResult(it)
-            }
+            },
         )
     }
 
@@ -209,7 +209,7 @@ class LocationActivity : BaseActivity(), OnMapReadyCallback {
                     }
                     return false
                 }
-            }
+            },
         )
 
         val currentLocation = location
@@ -227,7 +227,7 @@ class LocationActivity : BaseActivity(), OnMapReadyCallback {
             binding.icLocationShared.setOnClickListener {
                 try {
                     startActivity(
-                        Intent(Intent.ACTION_VIEW, Uri.parse("geo:${currentLocation.latitude},${currentLocation.longitude}?q=${currentLocation.latitude},${currentLocation.longitude}"))
+                        Intent(Intent.ACTION_VIEW, Uri.parse("geo:${currentLocation.latitude},${currentLocation.longitude}?q=${currentLocation.latitude},${currentLocation.longitude}")),
                     )
                 } catch (e: ActivityNotFoundException) {
                     toast(R.string.error_open_location)
@@ -240,9 +240,9 @@ class LocationActivity : BaseActivity(), OnMapReadyCallback {
                             Intent(
                                 Intent.ACTION_VIEW,
                                 Uri.parse(
-                                    "http://maps.google.com/maps?saddr=${selfPosition.latitude},${selfPosition.longitude}&daddr=${currentLocation.latitude},${currentLocation.longitude}"
-                                )
-                            )
+                                    "http://maps.google.com/maps?saddr=${selfPosition.latitude},${selfPosition.longitude}&daddr=${currentLocation.latitude},${currentLocation.longitude}",
+                                ),
+                            ),
                         )
                     } catch (e: ActivityNotFoundException) {
                         toast(R.string.error_open_location)
@@ -458,8 +458,8 @@ class LocationActivity : BaseActivity(), OnMapReadyCallback {
                 ObjectAnimator.ofFloat(
                     binding.mentionLocation.icMarker,
                     View.TRANSLATION_Y,
-                    0f
-                )
+                    0f,
+                ),
             )
             markerAnimatorSet?.duration = 200
             markerAnimatorSet?.start()
@@ -478,7 +478,7 @@ class LocationActivity : BaseActivity(), OnMapReadyCallback {
                 binding.mentionLocation.icMarker.isVisible = true
                 mixinMapView.moveCamera(MixinLatLng(point.latitude(), point.longitude()))
                 return@OnPointAnnotationClickListener true
-            }
+            },
         )
 
         afterInit()
@@ -624,7 +624,7 @@ class LocationActivity : BaseActivity(), OnMapReadyCallback {
                     locationSearchAdapter.venues = null
                     locationSearchAdapter.setMark()
                     mixinMapView.clear()
-                }
+                },
             )
         }
 

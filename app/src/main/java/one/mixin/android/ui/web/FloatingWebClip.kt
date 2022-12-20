@@ -114,7 +114,7 @@ class FloatingWebClip(private var isNightMode: Boolean) {
         avatarsView?.addList(
             clips.map {
                 it.app?.iconUrl ?: ""
-            }
+            },
         )
         updateSize(clips.size)
         animateToBoundsMaybe()
@@ -149,7 +149,7 @@ class FloatingWebClip(private var isNightMode: Boolean) {
                 } else if (event.action == MotionEvent.ACTION_MOVE) {
                     if (abs(startX - x) >= appContext.getPixelsInCM(
                             0.3f,
-                            true
+                            true,
                         ) || abs(startY - y) >= appContext.getPixelsInCM(0.3f, true)
                     ) {
                         startX = x
@@ -218,10 +218,10 @@ class FloatingWebClip(private var isNightMode: Boolean) {
                         gravity = Gravity.CENTER
                         marginStart = 6.dp
                         marginEnd = 6.dp
-                    }
+                    },
                 )
             },
-            ViewGroup.LayoutParams(WRAP_CONTENT, WRAP_CONTENT)
+            ViewGroup.LayoutParams(WRAP_CONTENT, WRAP_CONTENT),
         )
     }
 

@@ -88,7 +88,7 @@ class StickerAlbumAdapter(
                     override fun onStickerClick(stickerId: String) {
                         callback?.onStickerClick(stickerId)
                     }
-                }
+                },
             )
             fragment.rvCallback = rvCallback
         }

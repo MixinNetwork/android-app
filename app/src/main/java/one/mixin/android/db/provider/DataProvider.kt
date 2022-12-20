@@ -148,7 +148,7 @@ class DataProvider {
                      INNER JOIN users ou ON ou.user_id = c.owner_id
                      WHERE c.category IS NOT NULL AND cc.circle_id = '$circleId'
                     """,
-                        0
+                        0,
                     )
                     val offsetStatement = RoomSQLiteQuery.acquire(
                         """
@@ -166,7 +166,7 @@ class DataProvider {
                         DESC
                         LIMIT ? OFFSET ?
                     """,
-                        2
+                        2,
                     )
                     val querySqlGenerator = fun(ids: String): RoomSQLiteQuery {
                         return RoomSQLiteQuery.acquire(
@@ -179,7 +179,7 @@ class DataProvider {
                             END 
                             DESC
                         """,
-                            0
+                            0,
                         )
                     }
                     return object : MixinLimitOffsetDataSource<ConversationItem>(database, countStatement, offsetStatement, querySqlGenerator, "message_mentions", "circle_conversations", "conversations", "circles", "users") {
@@ -237,7 +237,7 @@ class DataProvider {
                 db,
                 false,
                 cancellationSignal,
-                callableAssetItem(db, _statement, cancellationSignal)
+                callableAssetItem(db, _statement, cancellationSignal),
             )
         }
 
@@ -300,7 +300,7 @@ class DataProvider {
                 db,
                 false,
                 cancellationSignal,
-                callableUser(db, _statement, cancellationSignal)
+                callableUser(db, _statement, cancellationSignal),
             )
         }
 
@@ -371,7 +371,7 @@ class DataProvider {
                 db,
                 false,
                 cancellationSignal,
-                callableChatMinimal(db, _statement, cancellationSignal)
+                callableChatMinimal(db, _statement, cancellationSignal),
             )
         }
 
@@ -408,7 +408,7 @@ class DataProvider {
                 db,
                 false,
                 cancellationSignal,
-                callableSearchMessageItem(db, _statement, cancellationSignal)
+                callableSearchMessageItem(db, _statement, cancellationSignal),
             )
         }
 

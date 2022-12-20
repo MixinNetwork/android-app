@@ -76,20 +76,20 @@ class MarkdownActivity : BaseActivity() {
             }
         }
         val adapter = MarkwonAdapter.builder(
-            DefaultEntry()
+            DefaultEntry(),
         ).include(
             FencedCodeBlock::class.java,
             SimpleEntry.create(
                 R.layout.item_markdown_code_block,
-                R.id.text
-            )
+                R.id.text,
+            ),
         ).include(
             TableBlock::class.java,
             TableEntry.create { builder: TableEntry.Builder ->
                 builder
                     .tableLayout(R.layout.item_markdown_table_block, R.id.table_layout)
                     .textLayoutIsRoot(R.layout.item_markdown_cell)
-            }
+            },
         ).build()
         binding.recyclerView.layoutManager = LinearLayoutManager(this)
         binding.recyclerView.setHasFixedSize(true)
@@ -102,7 +102,7 @@ class MarkdownActivity : BaseActivity() {
                         this@MarkdownActivity,
                         supportFragmentManager,
                         lifecycleScope,
-                        currentConversation = intent.getStringExtra(CONVERSATION_ID)
+                        currentConversation = intent.getStringExtra(CONVERSATION_ID),
                     ) {}
                 } else {
                     LinkBottomSheetDialogFragment.newInstance(link)
@@ -111,7 +111,7 @@ class MarkdownActivity : BaseActivity() {
             },
             { link ->
                 WebActivity.show(this, link, intent.getStringExtra(CONVERSATION_ID))
-            }
+            },
         )
         val markdown = intent.getStringExtra(CONTENT) ?: return
         adapter.setMarkdown(markwon, markdown)
@@ -124,7 +124,7 @@ class MarkdownActivity : BaseActivity() {
         val view = View.inflate(
             ContextThemeWrapper(this, R.style.Custom),
             R.layout.view_markdown,
-            null
+            null,
         )
         val viewBinding = ViewMarkdownBinding.bind(view)
         builder.setCustomView(view)
@@ -134,7 +134,7 @@ class MarkdownActivity : BaseActivity() {
             ForwardActivity.show(
                 this,
                 arrayListOf(ForwardMessage(ShareCategory.Post, markdown)),
-                ForwardAction.App.Resultless()
+                ForwardAction.App.Resultless(),
             )
             bottomSheet.dismiss()
         }
@@ -154,14 +154,14 @@ class MarkdownActivity : BaseActivity() {
                     },
                     {
                         toast(R.string.Export_failed)
-                    }
+                    },
                 )
         }
         viewBinding.save.setOnClickListener {
             RxPermissions(this)
                 .request(
                     Manifest.permission.READ_EXTERNAL_STORAGE,
-                    Manifest.permission.WRITE_EXTERNAL_STORAGE
+                    Manifest.permission.WRITE_EXTERNAL_STORAGE,
                 )
                 .subscribe(
                     { granted ->
@@ -175,7 +175,7 @@ class MarkdownActivity : BaseActivity() {
                     },
                     {
                         toast(R.string.Export_failed)
-                    }
+                    },
                 )
         }
         bottomSheet.show()
@@ -213,7 +213,7 @@ class MarkdownActivity : BaseActivity() {
         binding.recyclerView.layoutManager?.smoothScrollToPosition(
             binding.recyclerView,
             null,
-            binding.recyclerView.adapter?.itemCount ?: 0
+            binding.recyclerView.adapter?.itemCount ?: 0,
         )
 
         val pdfFile = this@MarkdownActivity.getOtherPath()
@@ -248,7 +248,7 @@ class MarkdownActivity : BaseActivity() {
                     dialog.dismiss()
                     toast(R.string.Export_failed)
                 }
-            }
+            },
         )
     }
 
@@ -300,7 +300,7 @@ class MarkdownActivity : BaseActivity() {
                 Intent(context, MarkdownActivity::class.java).apply {
                     putExtra(CONTENT, content)
                     putExtra(CONVERSATION_ID, conversationId)
-                }
+                },
             )
         }
     }

@@ -114,7 +114,7 @@ class PinLogsFragment : BaseFragment(R.layout.fragment_pin_logs) {
                         isLoading = false
                         progress.isVisible = false
                         ErrorHandler.handleError(it)
-                    }
+                    },
                 )
             }
         }
@@ -143,7 +143,7 @@ class PinLogsFragment : BaseFragment(R.layout.fragment_pin_logs) {
                     hasMore = false
                     isLoading = false
                     ErrorHandler.handleError(it)
-                }
+                },
             )
         }
     }
@@ -177,7 +177,7 @@ class PinLogsFragment : BaseFragment(R.layout.fragment_pin_logs) {
         }
 
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PinHolder = PinHolder(
-            ItemPinLogsBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+            ItemPinLogsBinding.inflate(LayoutInflater.from(parent.context), parent, false),
         )
     }
 }

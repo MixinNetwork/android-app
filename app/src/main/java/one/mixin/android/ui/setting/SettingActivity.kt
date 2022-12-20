@@ -31,7 +31,7 @@ class SettingActivity : BlazeBaseActivity() {
             context.startActivity(
                 Intent(context, SettingActivity::class.java).apply {
                     putExtra(EXTRA_SHOW_COMPOSE, compose)
-                }
+                },
             )
         }
 
@@ -39,7 +39,7 @@ class SettingActivity : BlazeBaseActivity() {
             context.startActivity(
                 Intent(context, SettingActivity::class.java).apply {
                     putExtra(EXTRA_SHOW_PIN_SETTING, true)
-                }
+                },
             )
         }
 
@@ -47,7 +47,7 @@ class SettingActivity : BlazeBaseActivity() {
             context.startActivity(
                 Intent(context, SettingActivity::class.java).apply {
                     putExtra(EXTRA_EMERGENCY_CONTACT, true)
-                }
+                },
             )
         }
     }

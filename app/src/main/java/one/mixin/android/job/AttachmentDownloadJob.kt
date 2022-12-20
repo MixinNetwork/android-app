@@ -47,7 +47,7 @@ class AttachmentDownloadJob(
 ) : MixinJob(
     Params(PRIORITY_RECEIVE_MESSAGE)
         .groupBy("attachment_download").requireNetwork().persist(),
-    message.messageId
+    message.messageId,
 ) {
 
     private val TAG = AttachmentDownloadJob::class.java.simpleName
@@ -135,7 +135,7 @@ class AttachmentDownloadJob(
                 val originalResponse = chain.proceed(chain.request())
                 originalResponse.newBuilder().body(
                     ProgressResponseBody(
-                        originalResponse.body
+                        originalResponse.body,
                     ) { bytesRead, contentLength, done ->
                         if (!done) {
                             val progress = try {
@@ -146,7 +146,7 @@ class AttachmentDownloadJob(
                             attachmentProcess[message.messageId] = (progress * 100).toInt()
                             RxBus.publish(loadingEvent(message.messageId, progress))
                         }
-                    }
+                    },
                 ).build()
             }
             .build()

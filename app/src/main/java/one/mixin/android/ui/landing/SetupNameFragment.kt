@@ -78,7 +78,7 @@ class SetupNameFragment : BaseFragment(R.layout.fragment_setup_name) {
                             nameFab.hide()
                             nameCover.visibility = INVISIBLE
                             ErrorHandler.handleError(t)
-                        }
+                        },
                     )
             }
             nameEt.addTextChangedListener(mWatcher)

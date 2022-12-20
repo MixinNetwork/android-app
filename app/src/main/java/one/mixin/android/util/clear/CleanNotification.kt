@@ -24,7 +24,7 @@ class CleanNotification {
                 context,
                 0,
                 callIntent,
-                PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+                PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,
             )
 
             val builder = NotificationCompat.Builder(context, CHANNEL_NODE)

@@ -76,8 +76,8 @@ class MarkwonUtil {
                                         1.18F,
                                         1.1F,
                                         1.0F,
-                                        0.9F
-                                    )
+                                        0.9F,
+                                    ),
                                 )
                         }
 
@@ -89,8 +89,8 @@ class MarkwonUtil {
                                         RemoveUnderlineSpan(),
                                         spansFactory.getSpans(
                                             configuration,
-                                            props
-                                        )
+                                            props,
+                                        ),
                                     )
                                 }
                             }
@@ -102,7 +102,7 @@ class MarkwonUtil {
                                     .syntaxHighlight()
                                     .highlight(
                                         fencedCodeBlock.info,
-                                        fencedCodeBlock.literal.trim { it <= ' ' }
+                                        fencedCodeBlock.literal.trim { it <= ' ' },
                                     )
                                 visitor.builder().append(code)
                             }
@@ -121,10 +121,10 @@ class MarkwonUtil {
                                             linkResolver.invoke(link)
                                         }
                                     }
-                                }
+                                },
                             )
                         }
-                    }
+                    },
                 ).build()
         }
 
@@ -157,8 +157,8 @@ class MarkwonUtil {
                                         1.18F,
                                         1.1F,
                                         1.0F,
-                                        0.9F
-                                    )
+                                        0.9F,
+                                    ),
                                 )
                         }
 
@@ -174,8 +174,8 @@ class MarkwonUtil {
                                         RemoveUnderlineSpan(),
                                         spansFactory.getSpans(
                                             configuration,
-                                            props
-                                        )
+                                            props,
+                                        ),
                                     )
                                 }
                             }
@@ -187,7 +187,7 @@ class MarkwonUtil {
                                     .syntaxHighlight()
                                     .highlight(
                                         fencedCodeBlock.info,
-                                        fencedCodeBlock.literal.trim { it <= ' ' }
+                                        fencedCodeBlock.literal.trim { it <= ' ' },
                                     )
                                 visitor.builder().append(code)
                             }
@@ -195,7 +195,7 @@ class MarkwonUtil {
                                 visitor.forceNewLine()
                             }
                         }
-                    }
+                    },
                 )
                 .build()
         }
@@ -222,7 +222,7 @@ class MarkwonUtil {
                     override fun load(drawable: AsyncDrawable): RequestBuilder<Drawable> {
                         return Glide.with(context).load(drawable.destination)
                     }
-                }
+                },
             )
     }
 }

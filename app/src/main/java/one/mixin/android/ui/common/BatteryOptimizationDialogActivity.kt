@@ -45,9 +45,9 @@ class BatteryOptimizationDialogActivity : BaseActivity() {
                             }
                         } else {
                             R.string.setting_battery_optimize_title
-                        }
-                    )
-                )
+                        },
+                    ),
+                ),
             )
             .setCancelable(false)
             .setNegativeButton(R.string.Cancel) { dialog, _ ->

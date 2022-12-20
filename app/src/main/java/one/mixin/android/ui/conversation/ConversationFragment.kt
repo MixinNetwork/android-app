@@ -359,7 +359,7 @@ class ConversationFragment() :
                 delay(160)
                 (binding.chatRv.layoutManager as LinearLayoutManager).scrollToPositionWithOffset(
                     unreadCount,
-                    binding.chatRv.measuredHeight * 3 / 4
+                    binding.chatRv.measuredHeight * 3 / 4,
                 )
                 messageId?.let { id ->
                     RxBus.publish(BlinkEvent(id))
@@ -396,7 +396,7 @@ class ConversationFragment() :
                             }
                         }
                         if (context?.sharedPreferences(RefreshConversationJob.PREFERENCES_CONVERSATION)
-                            ?.getBoolean(conversationId, false) == true
+                                ?.getBoolean(conversationId, false) == true
                         ) {
                             lifecycleScope.launch {
                                 if (viewDestroyed()) return@launch
@@ -415,12 +415,12 @@ class ConversationFragment() :
                         if (position >= itemCount - 1) {
                             (binding.chatRv.layoutManager as LinearLayoutManager).scrollToPositionWithOffset(
                                 itemCount - 1,
-                                0
+                                0,
                             )
                         } else {
                             (binding.chatRv.layoutManager as LinearLayoutManager).scrollToPositionWithOffset(
                                 position,
-                                binding.chatRv.measuredHeight * 3 / 4
+                                binding.chatRv.measuredHeight * 3 / 4,
                             )
                         }
                         binding.chatRv.isVisible = true
@@ -474,7 +474,7 @@ class ConversationFragment() :
                         val role = withContext(Dispatchers.IO) {
                             chatViewModel.findParticipantById(
                                 conversationId,
-                                Session.getAccountId()!!
+                                Session.getAccountId()!!,
                             )?.role
                         }
                         if (role != ParticipantRole.OWNER.name && role != ParticipantRole.ADMIN.name) {
@@ -606,7 +606,7 @@ class ConversationFragment() :
                             }
                         },
                         {
-                        }
+                        },
                     )
             }
 
@@ -626,7 +626,7 @@ class ConversationFragment() :
                             }
                         },
                         {
-                        }
+                        },
                     )
             }
 
@@ -654,9 +654,9 @@ class ConversationFragment() :
                             messageItem.conversationId,
                             messageItem.messageId,
                             messageItem,
-                            MediaPagerActivity.MediaSource.Chat
+                            MediaPagerActivity.MediaSource.Chat,
                         ),
-                        MediaPagerActivity.getOptions(requireActivity(), view)
+                        MediaPagerActivity.getOptions(requireActivity(), view),
                     )
                     return
                 }
@@ -666,9 +666,9 @@ class ConversationFragment() :
                             messageItem.conversationId,
                             messageItem.messageId,
                             messageItem,
-                            MediaPagerActivity.MediaSource.Chat
+                            MediaPagerActivity.MediaSource.Chat,
                         ),
-                        MediaPagerActivity.getOptions(requireActivity(), view)
+                        MediaPagerActivity.getOptions(requireActivity(), view),
                     )
                 } else {
                     toast(R.string.File_does_not_exist)
@@ -686,9 +686,9 @@ class ConversationFragment() :
             override fun onFileClick(messageItem: MessageItem) {
                 if (Build.VERSION.SDK_INT > Build.VERSION_CODES.O &&
                     messageItem.mediaMimeType.equals(
-                            "application/vnd.android.package-archive",
-                            true
-                        )
+                        "application/vnd.android.package-archive",
+                        true,
+                    )
                 ) {
                     if (requireContext().packageManager.canRequestPackageInstalls()) {
                         requireContext().openMedia(messageItem)
@@ -733,13 +733,13 @@ class ConversationFragment() :
                                     { getShareMediaResult.launch(Pair(conversationId, true)) }
                                 } else {
                                     null
-                                }
+                                },
                             )
                         }
                     },
                     {
                         Timber.e(it)
-                    }
+                    },
                 )
             }
 
@@ -752,7 +752,7 @@ class ConversationFragment() :
                 val view = View.inflate(
                     ContextThemeWrapper(requireActivity(), R.style.Custom),
                     R.layout.view_url_bottom,
-                    null
+                    null,
                 )
                 val viewBinding = ViewUrlBottomBinding.bind(view)
                 builder.setCustomView(view)
@@ -763,7 +763,7 @@ class ConversationFragment() :
                         requireContext(),
                         conversationId,
                         parentFragmentManager,
-                        lifecycleScope
+                        lifecycleScope,
                     )
                     bottomSheet.dismiss()
                 }
@@ -791,7 +791,7 @@ class ConversationFragment() :
                                     { getShareMediaResult.launch(Pair(conversationId, true)) }
                                 } else {
                                     null
-                                }
+                                },
                             )
                         }
                     }
@@ -812,8 +812,8 @@ class ConversationFragment() :
                         RelationshipRequest(
                             user.userId,
                             RelationshipAction.ADD.name,
-                            user.fullName
-                        )
+                            user.fullName,
+                        ),
                     )
                 }
             }
@@ -824,8 +824,8 @@ class ConversationFragment() :
                         RelationshipRequest(
                             user.userId,
                             RelationshipAction.BLOCK.name,
-                            user.fullName
-                        )
+                            user.fullName,
+                        ),
                     )
                 }
             }
@@ -850,9 +850,9 @@ class ConversationFragment() :
                     this@ConversationFragment,
                     TransactionFragment.newInstance(
                         assetId = messageItem.assetId,
-                        snapshotId = messageItem.snapshotId
+                        snapshotId = messageItem.snapshotId,
                     ),
-                    TransactionFragment.TAG
+                    TransactionFragment.TAG,
                 )
             }
 
@@ -860,7 +860,7 @@ class ConversationFragment() :
                 if (userId == Session.getAccountId()) {
                     ProfileBottomSheetDialogFragment.newInstance().showNow(
                         parentFragmentManager,
-                        UserBottomSheetDialogFragment.TAG
+                        UserBottomSheetDialogFragment.TAG,
                     )
                     return
                 }
@@ -875,13 +875,13 @@ class ConversationFragment() :
                                     { getShareMediaResult.launch(Pair(conversationId, true)) }
                                 } else {
                                     null
-                                }
+                                },
                             )
                         }
                     },
                     {
                         Timber.e(it)
-                    }
+                    },
                 )
             }
 
@@ -957,7 +957,7 @@ class ConversationFragment() :
                     mentionAdapter.submitList(null)
                     binding.floatingLayout.hideMention()
                 }
-            }
+            },
         )
     }
 
@@ -1018,7 +1018,7 @@ class ConversationFragment() :
     private val aodWakeLock by lazy {
         powerManager.newWakeLock(
             PowerManager.PARTIAL_WAKE_LOCK or PowerManager.ON_AFTER_RELEASE,
-            "mixin"
+            "mixin",
         )
     }
 
@@ -1127,7 +1127,7 @@ class ConversationFragment() :
         sensorManager.registerListener(
             this,
             sensorManager.getDefaultSensor(Sensor.TYPE_PROXIMITY),
-            SensorManager.SENSOR_DELAY_NORMAL
+            SensorManager.SENSOR_DELAY_NORMAL,
         )
         supportsNougat {
             binding.inputLayout.onMultiWindowModeChanged(requireActivity().isInMultiWindowMode)
@@ -1389,7 +1389,7 @@ class ConversationFragment() :
                         }
                     }
                 }
-            }
+            },
         )
         binding.chatRv.layoutManager = LinearLayoutManager(requireContext(), RecyclerView.VERTICAL, true)
         binding.chatRv.addItemDecoration(decoration)
@@ -1412,7 +1412,7 @@ class ConversationFragment() :
                         binding.flagLayout.bottomCountFlag = false
                     }
                 }
-            }
+            },
         )
         binding.chatRv.callback = object : DraggableRecyclerView.Callback {
             override fun onScroll(dis: Float) {
@@ -1452,8 +1452,8 @@ class ConversationFragment() :
                         MotionEvent.ACTION_CANCEL,
                         0f,
                         0f,
-                        0
-                    )
+                        0,
+                    ),
                 )
             }
             if (positionBeforeClickQuote != null) {
@@ -1497,7 +1497,7 @@ class ConversationFragment() :
         binding.toolView.copyIv.setOnClickListener {
             try {
                 context?.getClipboardManager()?.setPrimaryClip(
-                    ClipData.newPlainText(null, conversationAdapter.selectSet.valueAt(0)?.content)
+                    ClipData.newPlainText(null, conversationAdapter.selectSet.valueAt(0)?.content),
                 )
                 toast(R.string.copied_to_clipboard)
             } catch (_: ArrayIndexOutOfBoundsException) {
@@ -1555,14 +1555,14 @@ class ConversationFragment() :
                     conversationId,
                     sender,
                     (binding.toolView.pinIv.tag as PinAction?) ?: PinAction.PIN,
-                    pinMessages
+                    pinMessages,
                 )
                 toast(
                     if (action == PinAction.PIN) {
                         R.string.Message_pinned
                     } else {
                         R.string.Message_unpinned
-                    }
+                    },
                 )
                 closeTool()
             }
@@ -1672,22 +1672,22 @@ class ConversationFragment() :
                             requireContext().getString(
                                 R.string.send_file_group,
                                 attachment.filename,
-                                groupName
+                                groupName,
                             )
                         } else {
                             requireContext().getString(
                                 R.string.send_file_group,
                                 attachment.filename,
-                                recipient?.fullName
+                                recipient?.fullName,
                             )
-                        }
+                        },
                     )
                     .setNegativeButton(R.string.Cancel) { dialog, _ -> dialog.dismiss() }
                     .setPositiveButton(R.string.Send) { dialog, _ ->
                         sendAttachmentMessage(attachment)
                         dialog.dismiss()
                     }.show()
-            }
+            },
         )
     }
 
@@ -1716,7 +1716,7 @@ class ConversationFragment() :
                             closeTool()
                         }
                     }
-                }
+                },
             )
         itemTouchHelper = ItemTouchHelper(callback)
         itemTouchHelper.attachToRecyclerView(binding.chatRv)
@@ -1747,7 +1747,7 @@ class ConversationFragment() :
             ErrorHandler.handleMixinError(
                 r.errorCode,
                 r.errorDescription,
-                getString(R.string.Add_sticker_failed)
+                getString(R.string.Add_sticker_failed),
             )
         }
     }
@@ -1798,8 +1798,8 @@ class ConversationFragment() :
                         startActivity(
                             Intent(
                                 Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
-                                Uri.parse("package:${requireContext().packageName}")
-                            )
+                                Uri.parse("package:${requireContext().packageName}"),
+                            ),
                         )
                     } catch (e: Exception) {
                         Timber.e(e)
@@ -1845,12 +1845,12 @@ class ConversationFragment() :
                         { isAdded && this@ConversationFragment.conversationId == conversationId },
                         {
                             computableLiveData.invalidate()
-                        }
+                        },
                     )
                 }
                 this.liveData
             }.observe(
-                viewLifecycleOwner
+                viewLifecycleOwner,
             ) { list ->
                 if (Session.getAccount() == null) return@observe
 
@@ -1870,9 +1870,9 @@ class ConversationFragment() :
                 chatViewModel.viewModelScope.launch {
                     conversationAdapter.hasBottomView =
                         recipient?.relationship == UserRelationship.STRANGER.name && chatViewModel.isSilence(
-                        conversationId,
-                        sender.userId
-                    )
+                            conversationId,
+                            sender.userId,
+                        )
                 }
                 if (isFirstLoad && messageId == null && unreadCount > 0) {
                     conversationAdapter.unreadMsgId = unreadMessageId
@@ -1882,7 +1882,7 @@ class ConversationFragment() :
                             val unreadMsgId = chatViewModel.findUnreadMessageByMessageId(
                                 conversationId,
                                 sender.userId,
-                                id
+                                id,
                             )
                             if (unreadMsgId != null) {
                                 conversationAdapter.unreadMsgId = unreadMsgId
@@ -1908,7 +1908,7 @@ class ConversationFragment() :
         liveDataMessage(unreadCount, initialPositionMessageId)
 
         chatViewModel.getUnreadMentionMessageByConversationId(conversationId).observe(
-            viewLifecycleOwner
+            viewLifecycleOwner,
         ) { mentionMessages ->
             binding.flagLayout.mentionCount = mentionMessages.size
             binding.flagLayout.mentionFlagLayout.setOnClickListener {
@@ -1954,12 +1954,12 @@ class ConversationFragment() :
 
     private fun liveDataAppList() {
         chatViewModel.getBottomApps(conversationId, recipient?.userId)?.observe(
-            viewLifecycleOwner
+            viewLifecycleOwner,
         ) { list ->
             appList = list
             appList?.let {
                 (parentFragmentManager.findFragmentByTag(MenuFragment.TAG) as? MenuFragment)?.setAppList(
-                    it
+                    it,
                 )
             }
         }
@@ -1997,7 +1997,7 @@ class ConversationFragment() :
                         encryptCategory(),
                         mimeType,
                         getRelyMessage(),
-                        fromInput
+                        fromInput,
                     )
                 }
                 when (code) {
@@ -2019,13 +2019,13 @@ class ConversationFragment() :
                 sender.userId,
                 image,
                 encryptCategory(),
-                previewUrl
+                previewUrl,
             )
             binding.chatRv.postDelayed(
                 {
                     scrollToDown()
                 },
-                1000
+                1000,
             )
         }
     }
@@ -2059,7 +2059,7 @@ class ConversationFragment() :
                     duration,
                     waveForm,
                     encryptCategory(),
-                    getRelyMessage()
+                    getRelyMessage(),
                 )
                 scrollToDown()
             }
@@ -2073,13 +2073,13 @@ class ConversationFragment() :
                 sender.userId,
                 uri,
                 encryptCategory(),
-                replyMessage = getRelyMessage()
+                replyMessage = getRelyMessage(),
             )
             binding.chatRv.postDelayed(
                 {
                     scrollToDown()
                 },
-                1000
+                1000,
             )
         }
     }
@@ -2091,7 +2091,7 @@ class ConversationFragment() :
                 sender,
                 attachment,
                 encryptCategory(),
-                getRelyMessage()
+                getRelyMessage(),
             )
 
             scrollToDown()
@@ -2105,7 +2105,7 @@ class ConversationFragment() :
                 conversationId,
                 sender,
                 stickerId,
-                encryptCategory()
+                encryptCategory(),
             )
             scrollToDown()
             markRead()
@@ -2163,7 +2163,7 @@ class ConversationFragment() :
                     message,
                     binding.chatControl.replyView.messageItem!!,
                     encryptCategory(),
-                    isSilentMessage
+                    isSilentMessage,
                 )
                 binding.chatControl.replyView.animateHeight(53.dp, 0)
                 binding.chatControl.replyView.messageItem = null
@@ -2183,25 +2183,25 @@ class ConversationFragment() :
             showGroupBottomSheet(false)
         }
         chatViewModel.getConversationById(conversationId).observe(
-            viewLifecycleOwner
+            viewLifecycleOwner,
         ) {
             it?.let {
                 groupName = it.name
                 binding.actionBar.setSubTitle(
                     groupName ?: "",
-                    requireContext().resources.getQuantityString(R.plurals.title_participants, groupNumber, groupNumber)
+                    requireContext().resources.getQuantityString(R.plurals.title_participants, groupNumber, groupNumber),
                 )
                 binding.actionBar.avatarIv.setGroup(it.iconUrl)
             }
         }
         chatViewModel.observeParticipantsCount(conversationId)
             .observe(
-                viewLifecycleOwner
+                viewLifecycleOwner,
             ) { count ->
                 groupNumber = count
                 binding.actionBar.setSubTitle(
                     groupName ?: "",
-                    requireContext().resources.getQuantityString(R.plurals.title_participants, groupNumber, groupNumber)
+                    requireContext().resources.getQuantityString(R.plurals.title_participants, groupNumber, groupNumber),
                 )
 
                 lifecycleScope.launch {
@@ -2232,7 +2232,7 @@ class ConversationFragment() :
         hideIfShowBottomSheet()
         val bottomSheetDialogFragment = GroupBottomSheetDialogFragment.newInstance(
             conversationId = conversationId,
-            expand = expand
+            expand = expand,
         )
         bottomSheetDialogFragment.showNow(parentFragmentManager, GroupBottomSheetDialogFragment.TAG)
         bottomSheetDialogFragment.callback = object : GroupBottomSheetDialogFragment.Callback {
@@ -2258,7 +2258,7 @@ class ConversationFragment() :
         conversationAdapter.recipient = user
         renderUserInfo(user)
         chatViewModel.findUserById(user.userId).observe(
-            viewLifecycleOwner
+            viewLifecycleOwner,
         ) {
             it?.let { u ->
                 recipient = u
@@ -2278,7 +2278,7 @@ class ConversationFragment() :
                     { getShareMediaResult.launch(Pair(conversationId, true)) }
                 } else {
                     null
-                }
+                },
             )
         }
         binding.bottomUnblock.setOnClickListener {
@@ -2287,8 +2287,8 @@ class ConversationFragment() :
                     RelationshipRequest(
                         user.userId,
                         RelationshipAction.UNBLOCK.name,
-                        user.fullName
-                    )
+                        user.fullName,
+                    ),
                 )
             }
         }
@@ -2422,7 +2422,7 @@ class ConversationFragment() :
         activity?.replaceFragment(
             galleryAlbumFragment,
             R.id.gallery_container,
-            GalleryAlbumFragment.TAG
+            GalleryAlbumFragment.TAG,
         )
     }
 
@@ -2454,7 +2454,7 @@ class ConversationFragment() :
                                     }
                                 },
                                 {
-                                }
+                                },
                             )
                     }
                     MenuType.Transfer -> {
@@ -2475,7 +2475,7 @@ class ConversationFragment() :
                                 R.anim.slide_out_bottom,
                                 R
                                     .anim.slide_in_bottom,
-                                R.anim.slide_out_bottom
+                                R.anim.slide_out_bottom,
                             )
                                 .add(
                                     R.id.container,
@@ -2485,7 +2485,7 @@ class ConversationFragment() :
                                             parentFragmentManager.popBackStackImmediate()
                                         }
                                     },
-                                    FriendsFragment.TAG
+                                    FriendsFragment.TAG,
                                 )
                                 .addToBackStack(null)
                         }
@@ -2531,7 +2531,7 @@ class ConversationFragment() :
                                 requireActivity(),
                                 app.homeUri,
                                 conversationId,
-                                app.toApp()
+                                app.toApp(),
                             )
                         }
                     }
@@ -2545,7 +2545,7 @@ class ConversationFragment() :
         activity?.replaceFragment(
             stickerAlbumFragment,
             R.id.sticker_container,
-            StickerAlbumFragment.TAG
+            StickerAlbumFragment.TAG,
         )
         stickerAlbumFragment.setCallback(
             object : StickerAlbumFragment.Callback {
@@ -2563,7 +2563,7 @@ class ConversationFragment() :
                         sendGiphy(image, previewUrl)
                     }
                 }
-            }
+            },
         )
         stickerAlbumFragment.rvCallback = object : DraggableRecyclerView.Callback {
             override fun onScroll(dis: Float) {
@@ -2601,12 +2601,12 @@ class ConversationFragment() :
                     } else if (offset == -1) {
                         (binding.chatRv.layoutManager as LinearLayoutManager).scrollToPositionWithOffset(
                             position,
-                            0
+                            0,
                         )
                     } else {
                         (binding.chatRv.layoutManager as LinearLayoutManager).scrollToPositionWithOffset(
                             position,
-                            offset
+                            offset,
                         )
                     }
                     if (abs(firstPosition - position) > PAGE_SIZE * 3) {
@@ -2614,18 +2614,18 @@ class ConversationFragment() :
                             {
                                 (binding.chatRv.layoutManager as LinearLayoutManager).scrollToPositionWithOffset(
                                     position,
-                                    offset
+                                    offset,
                                 )
                                 action?.let { it() }
                             },
-                            160
+                            160,
                         )
                     } else {
                         action?.let { it() }
                     }
                 }
             },
-            delay
+            delay,
         )
     }
 
@@ -2650,9 +2650,9 @@ class ConversationFragment() :
                         {
                             RxBus.publish(BlinkEvent(messageId))
                         },
-                        60
+                        60,
                     )
-                }
+                },
             )
         } else {
             conversationAdapter.loadAround(index)
@@ -2665,9 +2665,9 @@ class ConversationFragment() :
                             {
                                 RxBus.publish(BlinkEvent(messageId))
                             },
-                            60
+                            60,
                         )
-                    }
+                    },
                 )
             } else {
                 val lm = (binding.chatRv.layoutManager as LinearLayoutManager)
@@ -2678,7 +2678,7 @@ class ConversationFragment() :
                         {
                             RxBus.publish(BlinkEvent(messageId))
                         },
-                        60
+                        60,
                     )
                 } else {
                     scrollTo(
@@ -2689,9 +2689,9 @@ class ConversationFragment() :
                                 {
                                     RxBus.publish(BlinkEvent(messageId))
                                 },
-                                60
+                                60,
                             )
-                        }
+                        },
                     )
                 }
             }
@@ -2721,15 +2721,15 @@ class ConversationFragment() :
                             requireContext().getString(
                                 R.string.send_file_group,
                                 attachment.filename,
-                                groupName
+                                groupName,
                             )
                         } else {
                             requireContext().getString(
                                 R.string.send_file_group,
                                 attachment.filename,
-                                recipient?.fullName
+                                recipient?.fullName,
                             )
-                        }
+                        },
                     )
                     .setNegativeButton(R.string.Cancel) { dialog, _ -> dialog.dismiss() }
                     .setPositiveButton(R.string.Send) { dialog, _ ->
@@ -2764,7 +2764,7 @@ class ConversationFragment() :
                     }
                 },
                 {
-                }
+                },
             )
     }
 
@@ -2806,8 +2806,8 @@ class ConversationFragment() :
                     {
                         checkWritePermissionAndSave(messageItem)
                         bottomSheet?.dismiss()
-                    }
-                )
+                    },
+                ),
             )
         } else if (MimeTypes.isVideo(messageItem.mediaMimeType) ||
             messageItem.mediaMimeType?.isImageSupport() == true
@@ -2818,8 +2818,8 @@ class ConversationFragment() :
                     {
                         checkWritePermissionAndSave(messageItem)
                         bottomSheet?.dismiss()
-                    }
-                )
+                    },
+                ),
             )
         } else {
             items.add(
@@ -2828,8 +2828,8 @@ class ConversationFragment() :
                     {
                         checkWritePermissionAndSave(messageItem)
                         bottomSheet?.dismiss()
-                    }
-                )
+                    },
+                ),
             )
         }
         items.add(
@@ -2838,8 +2838,8 @@ class ConversationFragment() :
                 {
                     requireContext().openMedia(messageItem)
                     bottomSheet?.dismiss()
-                }
-            )
+                },
+            ),
         )
         val view = buildBottomSheetView(requireContext(), items)
         builder.setCustomView(view)
@@ -2862,7 +2862,7 @@ class ConversationFragment() :
                     }
                 },
                 {
-                }
+                },
             )
     }
 
@@ -3151,7 +3151,7 @@ class ConversationFragment() :
                     R.string.live_shareable_false
                 } else {
                     R.string.app_card_shareable_false
-                }
+                },
             )
             return
         }

@@ -62,7 +62,7 @@ private val LightColorPalette = AppColors(
     background = Color(0xFFFFFFFF),
     backgroundDark = Color(0xFF999999),
     backgroundGray = Color(0xFFF5F7FA),
-    unchecked = Color(0xFFECECEC)
+    unchecked = Color(0xFFECECEC),
 )
 
 private val DarkColorPalette = AppColors(
@@ -77,16 +77,16 @@ private val DarkColorPalette = AppColors(
     background = Color(0xFF2c3136),
     backgroundDark = Color(0xFF121212),
     backgroundGray = Color(0xFF3B3F44),
-    unchecked = Color(0xFFECECEC)
+    unchecked = Color(0xFFECECEC),
 )
 
 private val LightDrawablePalette = AppDrawables(
     emergencyAvatar = R.drawable.ic_emergency_avatar,
-    emergencyContact = R.drawable.ic_emergency_contact
+    emergencyContact = R.drawable.ic_emergency_contact,
 )
 private val DarkDrawablePalette = AppDrawables(
     emergencyAvatar = R.drawable.ic_emergency_avatar_night,
-    emergencyContact = R.drawable.ic_emergency_contact_night
+    emergencyContact = R.drawable.ic_emergency_contact_night,
 )
 
 private val LocalColors = compositionLocalOf { LightColorPalette }
@@ -108,7 +108,7 @@ fun MixinAppTheme(darkTheme: Boolean = MixinApplication.get().isNightMode(), con
         CompositionLocalProvider(
             LocalColors provides colors,
             LocalDrawables provides drawables,
-            content = content
+            content = content,
         )
     }
 }

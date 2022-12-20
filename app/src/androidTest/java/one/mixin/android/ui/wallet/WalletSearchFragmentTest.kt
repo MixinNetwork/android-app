@@ -191,7 +191,7 @@ class WalletSearchFragmentTest {
             "2204c1ee-0ea2-4add-bb9a-b3719cfff93a",
             "23dfb5a5-5d7b-48b6-905f-3970e3176e27",
             "43d61dcd-e413-450d-80b8-101d5e903357",
-            "fd11b6e3-0b87-41f1-a41f-f0e9b49e5bf0"
+            "fd11b6e3-0b87-41f1-a41f-f0e9b49e5bf0",
         )
         val recentString = mockIds.joinToString(separator = "=")
         ctx.defaultSharedPreferences.putString(PREF_RECENT_SEARCH_ASSETS, recentString)

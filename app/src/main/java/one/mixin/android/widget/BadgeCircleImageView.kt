@@ -21,7 +21,7 @@ open class BadgeCircleImageView(context: Context, attrs: AttributeSet?) :
         measureChild(
             binding.badge,
             MeasureSpec.makeMeasureSpec(measuredWidth / 3, MeasureSpec.EXACTLY),
-            MeasureSpec.makeMeasureSpec(measuredHeight / 3, MeasureSpec.EXACTLY)
+            MeasureSpec.makeMeasureSpec(measuredHeight / 3, MeasureSpec.EXACTLY),
         )
     }
 

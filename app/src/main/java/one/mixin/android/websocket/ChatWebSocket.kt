@@ -118,7 +118,7 @@ class ChatWebSocket(
                     bm = data
                     latch.countDown()
                 }
-            }
+            },
         )
         if (client != null && connected) {
             transactions[blazeMessage.id] = transaction
@@ -145,7 +145,7 @@ class ChatWebSocket(
                 override fun error(data: BlazeMessage?) {
                     sendPendingMessage()
                 }
-            }
+            },
         )
         transactions[blazeMessage.id] = transaction
         client?.send(gson.toJson(blazeMessage).gzip())
@@ -223,7 +223,7 @@ class ChatWebSocket(
                         }
                     },
                     {
-                    }
+                    },
                 )
             }
         } else {

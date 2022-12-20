@@ -41,7 +41,7 @@ class KeyboardLayout : LinearLayout {
     constructor(context: Context, attrs: AttributeSet?, defStyleAttr: Int) : super(
         context,
         attrs,
-        defStyleAttr
+        defStyleAttr,
     ) {
         val ta = context.obtainStyledAttributes(attrs, R.styleable.KeyboardLayout)
         inputAreaId = ta.getResourceIdOrThrow(R.styleable.KeyboardLayout_input_aera_id)
@@ -120,7 +120,7 @@ class KeyboardLayout : LinearLayout {
             {
                 inputTarget.requestFocus()
             },
-            20
+            20,
         )
     }
 
@@ -141,7 +141,7 @@ class KeyboardLayout : LinearLayout {
             } else {
                 max(
                     insets.getInsets(WindowInsetsCompat.Type.ime()).bottom - systemBottom,
-                    0
+                    0,
                 ).let { value ->
                     if (lastKeyboardHeight == value) return@let
                     lastKeyboardHeight = value
@@ -167,7 +167,7 @@ class KeyboardLayout : LinearLayout {
                     if (status == STATUS.CLOSED || status == STATUS.KEYBOARD_OPENED) {
                         _inputArea.layoutParams.height = max(
                             0,
-                            insets.getInsets(WindowInsetsCompat.Type.ime()).bottom - systemBottom
+                            insets.getInsets(WindowInsetsCompat.Type.ime()).bottom - systemBottom,
                         )
                         requestLayout()
                     } else if (status == STATUS.EXPANDED) {
@@ -195,7 +195,7 @@ class KeyboardLayout : LinearLayout {
                     keyboardHeight = ViewCompat.getRootWindowInsets(this@KeyboardLayout)?.getInsets(WindowInsetsCompat.Type.ime())?.bottom ?: 0
                     return super.onStart(animation, bounds)
                 }
-            }
+            },
         )
     }
 
@@ -222,7 +222,7 @@ class KeyboardLayout : LinearLayout {
                 0,
                 actionBarHeight,
                 measuredWidth,
-                measuredHeight
+                measuredHeight,
             )
             bg.setBounds(x, y, x + width, y + height)
             bg.draw(canvas)

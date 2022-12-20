@@ -77,13 +77,13 @@ fun TextView.highlightLinkText(
             NoUnderLineSpan(link, onItemListener),
             start,
             start + text.length,
-            Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+            Spanned.SPAN_EXCLUSIVE_EXCLUSIVE,
         )
         sp.setSpan(
             ForegroundColorSpan(color),
             start,
             start + text.length,
-            Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+            Spanned.SPAN_EXCLUSIVE_EXCLUSIVE,
         )
     }
     text = sp
@@ -106,7 +106,7 @@ fun TextView.highLight(
             TextAppearanceSpan(null, 0, 0, ColorStateList.valueOf(color), null),
             index,
             index + target.length,
-            Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+            Spannable.SPAN_EXCLUSIVE_EXCLUSIVE,
         )
         index = text.indexOf(target, index + target.length, ignoreCase = ignoreCase)
     }
@@ -130,7 +130,7 @@ fun TextView.highLightClick(
             ForegroundColorSpan(color),
             index,
             index + target.length,
-            Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+            Spanned.SPAN_EXCLUSIVE_EXCLUSIVE,
         )
         spannable.setSpan(
             object : ClickableSpan() {
@@ -145,7 +145,7 @@ fun TextView.highLightClick(
             },
             index,
             index + target.length,
-            Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+            Spannable.SPAN_EXCLUSIVE_EXCLUSIVE,
         )
         index = text.indexOf(target, index + target.length, ignoreCase = ignoreCase)
     }

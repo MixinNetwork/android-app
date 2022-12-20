@@ -116,7 +116,7 @@ class TransferOutViewFragment : MixinBottomSheetDialogFragment(), OnSnapshotList
                 destination = address?.destination,
                 tag = address?.tag,
                 offset = adapter.getLastSnapshotCreated(),
-                limit = LIMIT
+                limit = LIMIT,
             )
             if (result.isSuccess && result.data?.isNotEmpty() == true) {
                 if (result.data?.size!! < LIMIT) {
@@ -125,7 +125,7 @@ class TransferOutViewFragment : MixinBottomSheetDialogFragment(), OnSnapshotList
                 adapter.list.addAll(
                     result.data!!.map {
                         fromSnapshot(it, avatarUrl, symbol)
-                    }
+                    },
                 )
                 adapter.notifyDataSetChanged()
             } else {
@@ -173,7 +173,7 @@ class TransferOutViewFragment : MixinBottomSheetDialogFragment(), OnSnapshotList
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): SnapshotHolder {
             return SnapshotHolder(
                 LayoutInflater.from(parent.context)
-                    .inflate(R.layout.item_wallet_transactions, parent, false)
+                    .inflate(R.layout.item_wallet_transactions, parent, false),
             )
         }
 

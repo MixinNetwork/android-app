@@ -73,7 +73,7 @@ fun View.fadeIn(duration: Long, maxAlpha: Float = 1f) {
             }
 
             override fun onAnimationCancel(view: View) {}
-        }
+        },
     ).start()
 }
 
@@ -96,7 +96,7 @@ fun View.fadeOut(duration: Long, delay: Long = 0, isGone: Boolean = false) {
             }
 
             override fun onAnimationCancel(view: View) {}
-        }
+        },
     )
 }
 
@@ -125,7 +125,7 @@ fun View.translationY(value: Float, duration: Long, endAction: (() -> Unit)? = n
                 }
 
                 override fun onAnimationStart(view: View) {}
-            }
+            },
         )
         .start()
 }
@@ -288,7 +288,7 @@ fun View.bounce() {
                     scaleX = value
                     scaleY = value
                 }
-            }
+            },
         )
     spring.endValue = 1.0
 }

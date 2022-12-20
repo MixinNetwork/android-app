@@ -40,7 +40,7 @@ fun printPdf(context: Context, html: String, outputFile: File, callback: PrintPd
                                 override fun onWriteFailed(error: CharSequence?) {
                                     callback.onFailure(error)
                                 }
-                            }
+                            },
                         )
                     }
 
@@ -48,7 +48,7 @@ fun printPdf(context: Context, html: String, outputFile: File, callback: PrintPd
                         callback.onFailure(error)
                     }
                 },
-                null
+                null,
             )
         }
     }

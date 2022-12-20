@@ -85,13 +85,13 @@ class CircleProgress @JvmOverloads constructor(
         mBorderWidth = a.getDimensionPixelSize(
             R.styleable.CircleProgress_progressWidth,
 
-            DEFAULT_BORDER_WIDTH.dp
+            DEFAULT_BORDER_WIDTH.dp,
         )
         mShadowColor = a.getColor(R.styleable.CircleProgress_shadowColor, Color.WHITE)
         mProgressColor = a.getColor(R.styleable.CircleProgress_progressColor, Color.BLUE)
         mPlayColor = a.getColor(
             R.styleable.CircleProgress_playColor,
-            context.getColor(R.color.colorDarkBlue)
+            context.getColor(R.color.colorDarkBlue),
         )
         mBorder = a.getBoolean(R.styleable.CircleProgress_border, false)
         mProgress = a.getInt(R.styleable.CircleProgress_mProgress, mProgress)
@@ -224,7 +224,7 @@ class CircleProgress @JvmOverloads constructor(
             (centerX - mSize / 2).toFloat(),
             (centerY - mSize / 2).toFloat(),
             (centerX + mSize / 2).toFloat(),
-            (centerY + mSize / 2).toFloat()
+            (centerY + mSize / 2).toFloat(),
         )
         fBounds.left = bounds.left + mBorderWidth
         fBounds.right = bounds.right - mBorderWidth
@@ -288,11 +288,11 @@ class CircleProgress @JvmOverloads constructor(
                 fBounds.centerX() - fBounds.width() * 0.16f,
                 fBounds.centerY() - fBounds.height() * 0.16f,
                 fBounds.centerX() + fBounds.width() * 0.16f,
-                fBounds.centerY() + fBounds.height() * 0.16f
+                fBounds.centerY() + fBounds.height() * 0.16f,
             ),
             cornerRadius,
             0f,
-            mPaint
+            mPaint,
         )
     }
 
@@ -301,7 +301,7 @@ class CircleProgress @JvmOverloads constructor(
         mForkPath.moveTo(fBounds.centerX(), fBounds.centerY() - fBounds.height() * 0.25f)
         mForkPath.lineTo(
             fBounds.centerX(),
-            fBounds.centerY() + fBounds.height() * 0.25f - mBorderWidth
+            fBounds.centerY() + fBounds.height() * 0.25f - mBorderWidth,
         )
         mForkPath.moveTo(fBounds.centerX() + fBounds.width() * 0.16f, fBounds.centerY())
         mForkPath.lineTo(fBounds.centerX(), fBounds.centerY() + fBounds.height() * 0.25f)
@@ -314,7 +314,7 @@ class CircleProgress @JvmOverloads constructor(
         mForkPath.moveTo(fBounds.centerX(), fBounds.centerY() + fBounds.height() * 0.25f)
         mForkPath.lineTo(
             fBounds.centerX(),
-            fBounds.centerY() - fBounds.height() * 0.25f + mBorderWidth
+            fBounds.centerY() - fBounds.height() * 0.25f + mBorderWidth,
         )
         mForkPath.moveTo(fBounds.centerX() - fBounds.width() * 0.16f, fBounds.centerY())
         mForkPath.lineTo(fBounds.centerX(), fBounds.centerY() - fBounds.height() * 0.25f)

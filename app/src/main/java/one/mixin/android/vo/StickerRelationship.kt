@@ -6,7 +6,7 @@ import com.google.gson.annotations.SerializedName
 
 @Entity(
     tableName = "sticker_relationships",
-    primaryKeys = ["album_id", "sticker_id"]
+    primaryKeys = ["album_id", "sticker_id"],
 )
 data class StickerRelationship(
     @SerializedName("album_id")

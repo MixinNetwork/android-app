@@ -109,7 +109,7 @@ class ImageHolder constructor(val binding: ItemChatImageBinding) : MediaHolder(b
             false,
             isRepresentative = false,
             isSecret = false,
-            isWhite = true
+            isWhite = true,
         )
 
         dataWidth = messageItem.mediaWidth
@@ -193,7 +193,7 @@ class ImageHolder constructor(val binding: ItemChatImageBinding) : MediaHolder(b
                 isGif -> handleGif(mark)
                 binding.chatImage.layoutParams.height == mediaHeight -> binding.chatImage.loadLongImageMark(
                     dataUrl,
-                    mark
+                    mark,
                 )
                 else -> binding.chatImage.loadImageMark(dataUrl, mark)
             }
@@ -203,7 +203,7 @@ class ImageHolder constructor(val binding: ItemChatImageBinding) : MediaHolder(b
                 binding.chatImage.layoutParams.height == mediaHeight -> binding.chatImage.loadLongImageMark(
                     dataUrl,
                     dataThumbImage,
-                    mark
+                    mark,
                 )
                 else -> binding.chatImage.loadImageMark(dataUrl, dataThumbImage, mark)
             }

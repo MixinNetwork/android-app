@@ -68,7 +68,7 @@ fun MixinBottomSheetDialog(
                     currentContent()
                 }
             },
-            onDismissRequest = onDismissRequest
+            onDismissRequest = onDismissRequest,
         )
     }
 
@@ -96,7 +96,7 @@ private class MixinBottomSheetDialogWrapper(
         BottomSheet.Builder(
             ContextThemeWrapper(composeView.context, R.style.AppTheme_Dialog),
             needFocus = true,
-            softInputResize = true
+            softInputResize = true,
         ).create()
 
     private val dialogContentView = ComposeView(composeView.context).apply {
@@ -104,7 +104,7 @@ private class MixinBottomSheetDialogWrapper(
         ViewTreeLifecycleOwner.set(this, ViewTreeLifecycleOwner.get(composeView))
         ViewTreeViewModelStoreOwner.set(this, ViewTreeViewModelStoreOwner.get(composeView))
         setViewTreeSavedStateRegistryOwner(
-            composeView.findViewTreeSavedStateRegistryOwner()
+            composeView.findViewTreeSavedStateRegistryOwner(),
         )
 
         setParentCompositionContext(parent)

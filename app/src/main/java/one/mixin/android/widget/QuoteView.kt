@@ -68,7 +68,7 @@ class QuoteView constructor(context: Context, attrs: AttributeSet) :
                 if (quoteMessageItem.mentions != null) {
                     binding.replyContentTv.renderMessage(
                         quoteMessageItem.content,
-                        MentionRenderCache.singleton.getMentionRenderContext(quoteMessageItem.mentions)
+                        MentionRenderCache.singleton.getMentionRenderContext(quoteMessageItem.mentions),
                     )
                 } else {
                     binding.replyContentTv.text = quoteMessageItem.content
@@ -87,7 +87,7 @@ class QuoteView constructor(context: Context, attrs: AttributeSet) :
                         R.string.You_deleted_this_message
                     } else {
                         R.string.This_message_was_deleted
-                    }
+                    },
                 )
                 binding.replyIv.visibility = View.GONE
                 binding.replyAvatar.visibility = View.GONE
@@ -100,7 +100,7 @@ class QuoteView constructor(context: Context, attrs: AttributeSet) :
             quoteMessageItem.type.endsWith("_IMAGE") -> {
                 binding.replyIv.loadImageCenterCrop(
                     absolutePath(quoteMessageItem.mediaUrl, quoteMessageItem.type, quoteMessageItem.conversationId),
-                    R.drawable.image_holder
+                    R.drawable.image_holder,
                 )
                 binding.replyContentTv.setText(R.string.Photo)
                 setIcon(R.drawable.ic_type_pic)
@@ -114,7 +114,7 @@ class QuoteView constructor(context: Context, attrs: AttributeSet) :
             quoteMessageItem.type.endsWith("_VIDEO") -> {
                 binding.replyIv.loadImageCenterCrop(
                     absolutePath(quoteMessageItem.mediaUrl, quoteMessageItem.type, quoteMessageItem.conversationId),
-                    R.drawable.image_holder
+                    R.drawable.image_holder,
                 )
                 binding.replyContentTv.setText(R.string.Video)
                 setIcon(R.drawable.ic_type_video)
@@ -128,7 +128,7 @@ class QuoteView constructor(context: Context, attrs: AttributeSet) :
             quoteMessageItem.type.endsWith("_LIVE") -> {
                 binding.replyIv.loadImageCenterCrop(
                     quoteMessageItem.thumbUrl,
-                    R.drawable.image_holder
+                    R.drawable.image_holder,
                 )
                 binding.replyContentTv.setText(R.string.Live)
                 setIcon(R.drawable.ic_type_live)
@@ -204,7 +204,7 @@ class QuoteView constructor(context: Context, attrs: AttributeSet) :
                 setIcon(R.drawable.ic_type_stiker)
                 binding.replyIv.loadImageCenterCrop(
                     quoteMessageItem.assetUrl,
-                    R.drawable.image_holder
+                    R.drawable.image_holder,
                 )
                 binding.replyIv.visibility = View.VISIBLE
                 binding.replyAvatar.visibility = View.GONE
@@ -220,7 +220,7 @@ class QuoteView constructor(context: Context, attrs: AttributeSet) :
                     quoteMessageItem.sharedUserFullName,
                     quoteMessageItem.sharedUserAvatarUrl,
                     quoteMessageItem.sharedUserId
-                        ?: "0"
+                        ?: "0",
                 )
                 binding.replyAvatar.visibility = View.VISIBLE
                 binding.replyIv.visibility = View.INVISIBLE
@@ -262,7 +262,7 @@ class QuoteView constructor(context: Context, attrs: AttributeSet) :
                     it,
                     null,
                     null,
-                    null
+                    null,
                 )
             }
         } else {
@@ -271,7 +271,7 @@ class QuoteView constructor(context: Context, attrs: AttributeSet) :
                 null,
                 null,
                 null,
-                null
+                null,
             )
         }
     }
@@ -288,12 +288,12 @@ class QuoteView constructor(context: Context, attrs: AttributeSet) :
             mediaUrl.startsWith(mediaPath) -> mediaUrl
             type == MessageCategory.SIGNAL_IMAGE.name || type == MessageCategory.PLAIN_IMAGE.name || type == MessageCategory.ENCRYPTED_IMAGE.name -> File(
                 context.getImagePath().generateConversationPath(conversationId),
-                mediaUrl
+                mediaUrl,
             ).toUri().toString()
             type == MessageCategory.SIGNAL_VIDEO.name || type == MessageCategory.PLAIN_VIDEO.name || type == MessageCategory.ENCRYPTED_VIDEO.name ->
                 File(
                     context.getVideoPath().generateConversationPath(conversationId),
-                    mediaUrl
+                    mediaUrl,
                 ).toUri().toString()
             else -> null
         }

@@ -74,7 +74,7 @@ class WalletPasswordFragment :
     private val rightInAnim by lazy {
         AnimationUtils.loadAnimation(
             requireContext(),
-            R.anim.slide_in_right
+            R.anim.slide_in_right,
         ).apply {
             duration = 200
         }
@@ -83,7 +83,7 @@ class WalletPasswordFragment :
     private val leftOutAnim by lazy {
         AnimationUtils.loadAnimation(
             requireContext(),
-            R.anim.slide_out_left
+            R.anim.slide_out_left,
         ).apply {
             duration = 200
         }
@@ -92,7 +92,7 @@ class WalletPasswordFragment :
     private val leftInAnim by lazy {
         AnimationUtils.loadAnimation(
             requireContext(),
-            R.anim.slide_in_left
+            R.anim.slide_in_left,
         ).apply {
             duration = 200
         }
@@ -101,7 +101,7 @@ class WalletPasswordFragment :
     private val rightOutAnim by lazy {
         AnimationUtils.loadAnimation(
             requireContext(),
-            R.anim.slide_out_right
+            R.anim.slide_out_right,
         ).apply {
             duration = 200
         }
@@ -213,7 +213,7 @@ class WalletPasswordFragment :
         step = STEP0
         binding.titleView.setSubTitle(
             getString(R.string.Old_PIN),
-            getSubTitle()
+            getSubTitle(),
         )
     }
 
@@ -229,7 +229,7 @@ class WalletPasswordFragment :
         step = STEP1
         binding.titleView.setSubTitle(
             getString(if (tipBundle.forChange()) R.string.Set_new_PIN else R.string.Set_PIN),
-            getSubTitle()
+            getSubTitle(),
         )
     }
 
@@ -348,7 +348,7 @@ class WalletPasswordFragment :
     private fun verify(pinCode: String) = lifecycleScope.launch {
         val dialog = indeterminateProgressDialog(
             message = getString(R.string.Please_wait_a_bit),
-            title = getString(R.string.Verifying)
+            title = getString(R.string.Verifying),
         )
         dialog.setCancelable(false)
         dialog.show()
@@ -377,7 +377,7 @@ class WalletPasswordFragment :
             },
             failureBlock = {
                 return@handleMixinResponse handleFailure(requireNotNull(it.error), dialog)
-            }
+            },
         )
     }
 

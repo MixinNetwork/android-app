@@ -14,7 +14,7 @@ var pendingMessageStatusMap = ArrayMap<String, String>()
 class RefreshOffsetJob : MixinJob(
     Params(PRIORITY_UI_HIGH)
         .setSingleId(GROUP).requireNetwork(),
-    UUID.randomUUID().toString()
+    UUID.randomUUID().toString(),
 ) {
     override fun cancel() {
     }

@@ -19,9 +19,9 @@ import one.mixin.android.vo.MessageMedia
     entities = [
         (FloodMessage::class),
         (PendingMessage::class),
-        (Job::class)
+        (Job::class),
     ],
-    version = 1
+    version = 1,
 )
 abstract class PendingDatabaseImp : RoomDatabase(), PendingDatabase {
     abstract override fun floodMessageDao(): FloodMessageDao
@@ -40,7 +40,7 @@ abstract class PendingDatabaseImp : RoomDatabase(), PendingDatabase {
                     val builder = Room.databaseBuilder(
                         context,
                         PendingDatabaseImp::class.java,
-                        "pending.db"
+                        "pending.db",
                     ).enableMultiInstanceInvalidation().addCallback(
                         object : Callback() {
                             override fun onCreate(db: SupportSQLiteDatabase) {
@@ -80,7 +80,7 @@ abstract class PendingDatabaseImp : RoomDatabase(), PendingDatabase {
                                     }
                                 }
                             }
-                        }
+                        },
                     )
                     INSTANCE = builder.build()
                 }

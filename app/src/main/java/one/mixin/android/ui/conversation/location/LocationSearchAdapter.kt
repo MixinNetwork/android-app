@@ -62,7 +62,7 @@ class LocationSearchAdapter(val callback: (LocationPayload) -> Unit) : RecyclerV
             0
         } else {
             1
-        }
+        },
     )
 
     override fun getItemViewType(position: Int): Int {
@@ -106,8 +106,8 @@ class LocationSearchAdapter(val callback: (LocationPayload) -> Unit) : RecyclerV
                         venue.location.lng,
                         venue.name,
                         venue.location.address,
-                        venue.getVenueType()
-                    )
+                        venue.getVenueType(),
+                    ),
                 )
             }
             return
@@ -127,8 +127,8 @@ class LocationSearchAdapter(val callback: (LocationPayload) -> Unit) : RecyclerV
                     venue.location.lng,
                     venue.name,
                     venue.location.address ?: venue.location.formattedAddress?.get(0),
-                    venue.getVenueType()
-                )
+                    venue.getVenueType(),
+                ),
             )
         }
     }

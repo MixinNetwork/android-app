@@ -83,7 +83,7 @@ class SearchMessageFragment : BaseFragment(R.layout.fragment_search_message) {
             binding.titleView.avatarIv.setInfo(
                 searchMessageItem.userFullName,
                 searchMessageItem.userAvatarUrl,
-                searchMessageItem.userId
+                searchMessageItem.userId,
             )
         } else {
             binding.titleView.titleTv.text = searchMessageItem.conversationName
@@ -115,7 +115,7 @@ class SearchMessageFragment : BaseFragment(R.layout.fragment_search_message) {
                                 requireContext(),
                                 conversationId = searchMessageItem.conversationId,
                                 messageId = item.messageId,
-                                keyword = binding.searchEt.text.toString()
+                                keyword = binding.searchEt.text.toString(),
                             )
                             if (isConversationSearch()) {
                                 parentFragmentManager.popBackStack()
@@ -137,20 +137,20 @@ class SearchMessageFragment : BaseFragment(R.layout.fragment_search_message) {
                     searchJob?.cancel()
                     searchJob = onTextChanged(it.toString())
                 },
-                {}
+                {},
             )
         binding.searchEt.postDelayed(
             {
                 searchJob = onTextChanged(query)
             },
-            50
+            50,
         )
         if (isConversationSearch()) {
             binding.searchEt.postDelayed(
                 {
                     binding.searchEt.showKeyboard()
                 },
-                500
+                500,
             )
         }
     }

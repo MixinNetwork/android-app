@@ -88,7 +88,7 @@ data class SnapshotItem(
             confirmations = snapshot.confirmations,
             avatarUrl = avatarUrl,
             assetConfirmations = 0,
-            traceId = snapshot.traceId
+            traceId = snapshot.traceId,
         )
     }
 }

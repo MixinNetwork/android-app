@@ -8,7 +8,7 @@ import one.mixin.android.extension.putStringSet
 
 class RefreshExternalSchemeJob : BaseJob(
     Params(PRIORITY_UI_HIGH)
-        .addTags(GROUP).requireNetwork()
+        .addTags(GROUP).requireNetwork(),
 ) {
     companion object {
         private const val serialVersionUID = 1L

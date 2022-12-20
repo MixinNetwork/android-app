@@ -64,7 +64,7 @@ class PinCheckDialogFragment : DialogFragment() {
                             verify(pin.code())
                         }
                     }
-                }
+                },
             )
             gotItTv.setOnClickListener { activity?.finish() }
             keyboard.apply {
@@ -105,7 +105,7 @@ class PinCheckDialogFragment : DialogFragment() {
                 failureBlock = { response ->
                     handleFailure(requireNotNull(response.error))
                     return@handleMixinResponse false
-                }
+                },
             )
         }
     }

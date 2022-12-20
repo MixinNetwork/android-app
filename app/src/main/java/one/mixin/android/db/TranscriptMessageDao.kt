@@ -71,7 +71,7 @@ interface TranscriptMessageDao : BaseDao<TranscriptMessage> {
         LEFT JOIN stickers st ON st.sticker_id = t.sticker_id
         WHERE t.transcript_id = :transcriptId
         ORDER BY t.created_at ASC, t.rowid ASC
-        """
+        """,
     )
     fun getTranscriptMessages(transcriptId: String): LiveData<List<ChatHistoryMessageItem>>
 
@@ -94,7 +94,7 @@ interface TranscriptMessageDao : BaseDao<TranscriptMessage> {
         WHERE t.transcript_id = :transcriptId
         AND t.category IN ($IMAGES, $VIDEOS, $LIVES)
         ORDER BY t.created_at ASC, t.rowid ASC
-        """
+        """,
     )
     suspend fun getTranscriptMediaMessage(transcriptId: String): List<ChatHistoryMessageItem>
 
@@ -105,7 +105,7 @@ interface TranscriptMessageDao : BaseDao<TranscriptMessage> {
             AND category IN ($IMAGES, $VIDEOS, $LIVES) 
             AND created_at < (SELECT created_at FROM transcript_messages WHERE message_id = :messageId AND transcript_id = :transcriptId)
             ORDER BY created_at ASC, rowid ASC
-        """
+        """,
     )
     suspend fun indexTranscriptMediaMessages(transcriptId: String, messageId: String): Int
 
@@ -134,7 +134,7 @@ interface TranscriptMessageDao : BaseDao<TranscriptMessage> {
     suspend fun lastDoneAttachmentId(): Long?
 
     @Query(
-        "SELECT rowid, message_id, media_url FROM transcript_messages WHERE category IN ($IMAGES, $VIDEOS,  $DATA, $AUDIOS) AND media_status = 'DONE' AND rowid <= :rowId ORDER BY rowid DESC LIMIT :limit"
+        "SELECT rowid, message_id, media_url FROM transcript_messages WHERE category IN ($IMAGES, $VIDEOS,  $DATA, $AUDIOS) AND media_status = 'DONE' AND rowid <= :rowId ORDER BY rowid DESC LIMIT :limit",
     )
     suspend fun findAttachmentMigration(rowId: Long, limit: Int): List<TranscriptAttachmentMigration>
 

@@ -91,7 +91,7 @@ class GalleryItemFragment : Fragment(R.layout.fragment_draggable_recycler_view),
                             adapter.hideBLur()
                         }
                     }
-                }
+                },
             )
             rv.callback = object : DraggableRecyclerView.Callback {
                 override fun onScroll(dis: Float) {

@@ -105,7 +105,7 @@ class EditDialog : MixinBottomSheetDialogFragment() {
                 }
 
                 override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
-            }
+            },
         )
         binding.editCancel.setText(leftText)
         binding.editCancel.setOnClickListener {

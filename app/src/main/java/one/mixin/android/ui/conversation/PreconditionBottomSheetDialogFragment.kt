@@ -148,7 +148,7 @@ class PreconditionBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             R.string.wallet_withdrawal_recent_tip,
             time,
             t.displayAddress().formatPublicKey(),
-            amount
+            amount,
         )
         binding.continueTv.setOnClickListener {
             callback?.onSuccess()
@@ -186,7 +186,7 @@ class PreconditionBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             R.string.wallet_transaction_tip,
             t.user.fullName,
             "${Fiats.getSymbol()}$fiatAmount",
-            t.asset.symbol
+            t.asset.symbol,
         )
         binding.continueTv.setOnClickListener {
             callback?.onSuccess()

@@ -33,5 +33,5 @@ inline fun <reified W : ListenableWorker> buildNetworkRequest(inputData: Data? =
         .setConstraints(
             Constraints.Builder()
                 .setRequiredNetworkType(NetworkType.CONNECTED)
-                .build()
+                .build(),
         )

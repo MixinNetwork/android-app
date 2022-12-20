@@ -47,7 +47,7 @@ class MediaFragment : BaseFragment(R.layout.layout_recycler_view) {
         },
         fun(messageId: String) {
             onLongClickListener?.invoke(messageId)
-        }
+        },
     )
 
     private val viewModel by viewModels<SharedMediaViewModel>()
@@ -79,7 +79,7 @@ class MediaFragment : BaseFragment(R.layout.layout_recycler_view) {
         binding.emptyIv.setImageResource(R.drawable.ic_empty_media)
         binding.emptyTv.setText(R.string.NO_MEDIA)
         viewModel.getMediaMessagesExcludeLive(conversationId).observe(
-            viewLifecycleOwner
+            viewLifecycleOwner,
         ) {
             if (it.size <= 0) {
                 (view as ViewAnimator).displayedChild = 1

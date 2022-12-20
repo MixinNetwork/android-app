@@ -107,7 +107,7 @@ class WalletSearchFragment : BaseFragment() {
                             }
                         }
                     },
-                    {}
+                    {},
                 )
 
             defaultRv.layoutManager = LinearLayoutManager(context, RecyclerView.VERTICAL, false)
@@ -147,7 +147,7 @@ class WalletSearchFragment : BaseFragment() {
         if (viewDestroyed()) return@launch
 
         viewModel.observeTopAssets().observe(
-            viewLifecycleOwner
+            viewLifecycleOwner,
         ) {
             searchDefaultAdapter.topAssets = it
             if (binding.searchEt.et.text.isNullOrBlank() && binding.rvVa.displayedChild == POS_SEARCH) {
@@ -223,13 +223,13 @@ class WalletSearchFragment : BaseFragment() {
             if (assetItem != null) {
                 view?.navigate(
                     R.id.action_wallet_search_to_transactions,
-                    Bundle().apply { putParcelable(ARGS_ASSET, assetItem) }
+                    Bundle().apply { putParcelable(ARGS_ASSET, assetItem) },
                 )
                 viewModel.updateRecentSearchAssets(defaultSharedPreferences, assetId)
             } else {
                 lifecycleScope.launch {
                     val dialog = indeterminateProgressDialog(
-                        message = R.string.Please_wait_a_bit
+                        message = R.string.Please_wait_a_bit,
                     ).apply {
                         setCancelable(false)
                     }
@@ -241,7 +241,7 @@ class WalletSearchFragment : BaseFragment() {
 
                     view?.navigate(
                         R.id.action_wallet_search_to_transactions,
-                        Bundle().apply { putParcelable(ARGS_ASSET, asset) }
+                        Bundle().apply { putParcelable(ARGS_ASSET, asset) },
                     )
                     viewModel.updateRecentSearchAssets(defaultSharedPreferences, assetId)
                 }

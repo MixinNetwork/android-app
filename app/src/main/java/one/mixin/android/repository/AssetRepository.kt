@@ -89,7 +89,7 @@ constructor(
             successBlock = { chain ->
                 chain.data?.let { c -> insert(c) }
                 return@handleMixinResponse assetDao.findAssetItemById(assetId)
-            }
+            },
         )
     }
 
@@ -268,7 +268,7 @@ constructor(
                     notExists = true
                 }
                 return@handleMixinResponse false
-            }
+            },
         )
         return Pair(result, notExists)
     }
@@ -292,7 +292,7 @@ constructor(
                     snapshotDao.insert(it)
                     result = snapshotDao.findSnapshotById(snapshotId)
                 }
-            }
+            },
         )
         return result
     }

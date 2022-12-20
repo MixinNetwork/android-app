@@ -22,7 +22,7 @@ internal class LinkTouchMovementMethod : LinkMovementMethod() {
                     Selection.setSelection(
                         spannable,
                         spannable.getSpanStart(pressedSpan),
-                        spannable.getSpanEnd(pressedSpan)
+                        spannable.getSpanEnd(pressedSpan),
                     )
                     if (pressedSpan is LongTouchableSpan) {
                         pressedSpan.startLongClick()

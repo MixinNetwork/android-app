@@ -34,7 +34,7 @@ class RadioGroup(context: Context, attrs: AttributeSet) : LinearLayout(context, 
                                     update(id)
                                     onCheckedListener?.onChecked(id)
                                 }
-                            }
+                            },
                         )
                     } else if (child is RadioButton) {
                         child.setOnCheckedChangeListener(
@@ -45,7 +45,7 @@ class RadioGroup(context: Context, attrs: AttributeSet) : LinearLayout(context, 
                                         onCheckedListener?.onChecked(id)
                                     }
                                 }
-                            }
+                            },
                         )
                     }
                 }

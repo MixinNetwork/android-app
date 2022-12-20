@@ -74,7 +74,7 @@ object RomUtil {
         } else if (!TextUtils.isEmpty(
                 getProp(KEY_VERSION_SMARTISAN).also {
                     sVersion = it
-                }
+                },
             )
         ) {
             sName = ROM_SMARTISAN

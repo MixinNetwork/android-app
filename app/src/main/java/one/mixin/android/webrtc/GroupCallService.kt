@@ -93,7 +93,7 @@ class GroupCallService : CallService() {
             signalProtocol,
             conversationApi,
             participantDao,
-            chatWebSocket
+            chatWebSocket,
         ) {
             return@GroupCallSenderKey webSocketChannel(it)
         }
@@ -196,7 +196,7 @@ class GroupCallService : CallService() {
                     conversation_id = conversationId,
                     category = MessageCategory.KRAKEN_PUBLISH.name,
                     message_id = UUID.randomUUID().toString(),
-                    jsep = gson.toJson(Sdp(it.description, it.type.canonicalForm())).base64Encode()
+                    jsep = gson.toJson(Sdp(it.description, it.type.canonicalForm())).base64Encode(),
                 )
                 val bm = createKrakenMessage(blazeMessageParam)
                 val data = getBlazeMessageData(bm) ?: return@createOffer
@@ -206,7 +206,7 @@ class GroupCallService : CallService() {
             frameKey = key,
             doWhenSetFailure = {
                 reconnect(conversationId)
-            }
+            },
         )
 
         disposable = RxBus.listen(SenderKeyChange::class.java)
@@ -247,7 +247,7 @@ class GroupCallService : CallService() {
             conversation_id = conversationId,
             category = MessageCategory.KRAKEN_SUBSCRIBE.name,
             message_id = UUID.randomUUID().toString(),
-            track_id = trackId
+            track_id = trackId,
         )
         val bm = createKrakenMessage(blazeMessageParam)
         Timber.d("$TAG_CALL subscribe track id: $trackId")
@@ -270,7 +270,7 @@ class GroupCallService : CallService() {
                         category = MessageCategory.KRAKEN_ANSWER.name,
                         message_id = UUID.randomUUID().toString(),
                         jsep = gson.toJson(Sdp(it.description, it.type.canonicalForm())).base64Encode(),
-                        track_id = krakenData.trackId
+                        track_id = krakenData.trackId,
                     )
                     val bm = createKrakenMessage(blazeMessageParam)
                     val data = webSocketChannel(bm) ?: return@createAnswer
@@ -278,7 +278,7 @@ class GroupCallService : CallService() {
                 },
                 doWhenSetFailure = {
                     reconnect(conversationId)
-                }
+                },
             )
         }
     }
@@ -299,7 +299,7 @@ class GroupCallService : CallService() {
                 ListRunnable(cid),
                 KRAKEN_LIST_INTERVAL,
                 KRAKEN_LIST_INTERVAL,
-                TimeUnit.SECONDS
+                TimeUnit.SECONDS,
             )
         }
     }
@@ -320,13 +320,13 @@ class GroupCallService : CallService() {
             } else {
                 callState.setUsersByConversationId(
                     conversationId,
-                    userIdList
+                    userIdList,
                 )
             }
         } else if (currentList == null && setWhenCurrentListEmpty) {
             callState.setUsersByConversationId(
                 conversationId,
-                userIdList
+                userIdList,
             )
         }
     }
@@ -335,7 +335,7 @@ class GroupCallService : CallService() {
         val blazeMessageParam = BlazeMessageParam(
             conversation_id = conversationId,
             category = MessageCategory.KRAKEN_LIST.name,
-            message_id = UUID.randomUUID().toString()
+            message_id = UUID.randomUUID().toString(),
         )
         val bm = createListKrakenPeers(blazeMessageParam)
         val json = getJsonElement(bm) ?: return null
@@ -357,7 +357,7 @@ class GroupCallService : CallService() {
                     conversation_id = cid,
                     recipient_id = it,
                     category = MessageCategory.KRAKEN_DECLINE.name,
-                    message_id = UUID.randomUUID().toString()
+                    message_id = UUID.randomUUID().toString(),
                 )
                 val bm = createKrakenMessage(blazeMessageParam)
                 val bmData = getBlazeMessageData(bm) ?: return
@@ -382,7 +382,7 @@ class GroupCallService : CallService() {
                 timeoutFuture = timeoutExecutor.schedule(
                     TimeoutRunnable(),
                     DEFAULT_TIMEOUT_MINUTES,
-                    TimeUnit.MINUTES
+                    TimeUnit.MINUTES,
                 )
                 CallActivity.show(this, !playRing)
                 audioManager.start(false, playRing)
@@ -476,7 +476,7 @@ class GroupCallService : CallService() {
             conversation_id = cid,
             category = MessageCategory.KRAKEN_END.name,
             message_id = UUID.randomUUID().toString(),
-            track_id = trackId
+            track_id = trackId,
         )
 
         disconnect()
@@ -504,7 +504,7 @@ class GroupCallService : CallService() {
         val blazeMessageParam = BlazeMessageParam(
             conversation_id = cid,
             category = MessageCategory.KRAKEN_CANCEL.name,
-            message_id = UUID.randomUUID().toString()
+            message_id = UUID.randomUUID().toString(),
         )
 
         audioManager.stop()
@@ -541,7 +541,7 @@ class GroupCallService : CallService() {
                 conversation_id = cid,
                 recipient_id = inviter,
                 category = MessageCategory.KRAKEN_DECLINE.name,
-                message_id = UUID.randomUUID().toString()
+                message_id = UUID.randomUUID().toString(),
             )
             val bm = createKrakenMessage(blazeMessageParam)
             val bmData = getBlazeMessageData(bm) ?: return
@@ -639,7 +639,7 @@ class GroupCallService : CallService() {
     @SuppressLint("AutoDispose")
     override fun onIceFailed() {
         Timber.d(
-            "$TAG_CALL onIceFailed callState.isConnected(): ${callState.isConnected()}, disconnected: ${callState.disconnected}, reconnecting: ${callState.reconnecting}"
+            "$TAG_CALL onIceFailed callState.isConnected(): ${callState.isConnected()}, disconnected: ${callState.disconnected}, reconnecting: ${callState.reconnecting}",
         )
         if (!callState.isConnected() || callState.reconnecting) return
 
@@ -669,7 +669,7 @@ class GroupCallService : CallService() {
                         category = MessageCategory.KRAKEN_RESTART.name,
                         message_id = UUID.randomUUID().toString(),
                         track_id = trackId,
-                        jsep = gson.toJson(Sdp(it.description, it.type.canonicalForm())).base64Encode()
+                        jsep = gson.toJson(Sdp(it.description, it.type.canonicalForm())).base64Encode(),
                     )
                     val bm = createKrakenMessage(blazeMessageParam)
                     val data = getBlazeMessageData(bm) ?: return@createOffer
@@ -678,7 +678,7 @@ class GroupCallService : CallService() {
                 },
                 doWhenSetFailure = {
                     reconnect(conversationId)
-                }
+                },
             )
         }
     }
@@ -704,7 +704,7 @@ class GroupCallService : CallService() {
                     cid,
                     userId,
                     null,
-                    sessionId
+                    sessionId,
                 )
             }
         }
@@ -734,7 +734,7 @@ class GroupCallService : CallService() {
                 category = MessageCategory.KRAKEN_TRICKLE.name,
                 message_id = UUID.randomUUID().toString(),
                 candidate = gson.toJson(candidate).base64Encode(),
-                track_id = trackId
+                track_id = trackId,
             )
             val bm = createKrakenMessage(blazeMessageParam)
 
@@ -882,7 +882,7 @@ class GroupCallService : CallService() {
             "",
             nowInUtc(),
             MessageStatus.READ.name,
-            mediaDuration = duration
+            mediaDuration = duration,
         )
         database.conversationDao().findConversationById(cid)?.let {
             val expiredIn = it.expireIn ?: return@let
@@ -934,7 +934,7 @@ class GroupCallService : CallService() {
                     $iceGatheringState,
                     $iceConnectionState,
                     $connectionState
-                """
+                """,
             )
         }
     }

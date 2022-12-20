@@ -44,7 +44,7 @@ class AvatarTransform(private val bitmap: Bitmap) : Transition() {
             v.width / 2,
             v.height / 2,
             startBounds.width() / 2f,
-            Math.hypot(endBounds.width() / 2.0, endBounds.height() / 2.0).toFloat()
+            Math.hypot(endBounds.width() / 2.0, endBounds.height() / 2.0).toFloat(),
         ).apply {
             duration = DURATION
         }
@@ -53,7 +53,7 @@ class AvatarTransform(private val bitmap: Bitmap) : Transition() {
             v,
             View.TRANSLATION_X,
             View.TRANSLATION_Y,
-            pathMotion.getPath(translationX, translationY, 0f, 0f)
+            pathMotion.getPath(translationX, translationY, 0f, 0f),
         ).apply {
             duration = DURATION
         }

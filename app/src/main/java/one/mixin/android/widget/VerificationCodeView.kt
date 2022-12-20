@@ -65,11 +65,11 @@ class VerificationCodeView : LinearLayout {
             inputColor = typedArray.getColor(R.styleable.VerificationCodeView_vcv_inputColor, inputColor)
             inputWidth = typedArray.getDimensionPixelSize(
                 R.styleable.VerificationCodeView_vcv_inputWidth,
-                context.dpToPx(20f)
+                context.dpToPx(20f),
             )
             inputHeight = typedArray.getDimensionPixelSize(
                 R.styleable.VerificationCodeView_vcv_inputHeight,
-                context.dpToPx(1f)
+                context.dpToPx(1f),
             )
             textSize = typedArray.getDimension(R.styleable.VerificationCodeView_vcv_textSize, 30f)
             textColor = typedArray.getColor(R.styleable.VerificationCodeView_vcv_textColor, textColor)

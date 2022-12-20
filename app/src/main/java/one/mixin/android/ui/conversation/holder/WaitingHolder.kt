@@ -26,13 +26,13 @@ class WaitingHolder constructor(
                 setItemBackgroundResource(
                     binding.chatLayout,
                     R.drawable.chat_bubble_me_last,
-                    R.drawable.chat_bubble_me_last_night
+                    R.drawable.chat_bubble_me_last_night,
                 )
             } else {
                 setItemBackgroundResource(
                     binding.chatLayout,
                     R.drawable.chat_bubble_me,
-                    R.drawable.chat_bubble_me_night
+                    R.drawable.chat_bubble_me_night,
                 )
             }
         } else {
@@ -41,13 +41,13 @@ class WaitingHolder constructor(
                 setItemBackgroundResource(
                     binding.chatLayout,
                     R.drawable.chat_bubble_other_last,
-                    R.drawable.chat_bubble_other_last_night
+                    R.drawable.chat_bubble_other_last_night,
                 )
             } else {
                 setItemBackgroundResource(
                     binding.chatLayout,
                     R.drawable.chat_bubble_other,
-                    R.drawable.chat_bubble_other_night
+                    R.drawable.chat_bubble_other_night,
                 )
             }
         }
@@ -70,13 +70,13 @@ class WaitingHolder constructor(
                     } else {
                         messageItem.userFullName
                     },
-                    "**$learn**"
+                    "**$learn**",
                 )
             val learnUrl = MixinApplication.get().getString(R.string.secret_url)
             binding.chatTv.highlightStarTag(
                 info,
                 arrayOf(learnUrl),
-                onItemListener = onItemListener
+                onItemListener = onItemListener,
             )
         } else {
             binding.chatTv.setText(R.string.chat_decryption_failed)

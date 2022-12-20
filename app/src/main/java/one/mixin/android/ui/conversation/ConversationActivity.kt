@@ -38,7 +38,7 @@ class ConversationActivity : BlazeBaseActivity() {
                 replaceFragment(
                     ConversationFragment.newInstance(intent.extras!!),
                     R.id.container,
-                    ConversationFragment.TAG
+                    ConversationFragment.TAG,
                 )
             } else {
                 showConversation(intent)
@@ -72,9 +72,9 @@ class ConversationActivity : BlazeBaseActivity() {
                 replaceFragment(
                     ConversationFragment.newInstance(intent.extras!!),
                     R.id.container,
-                    ConversationFragment.TAG
+                    ConversationFragment.TAG,
                 )
-            }
+            },
         ) {
             val messageId = bundle.getString(MESSAGE_ID)
             val conversationId = bundle.getString(CONVERSATION_ID)
@@ -114,7 +114,7 @@ class ConversationActivity : BlazeBaseActivity() {
             replaceFragment(
                 ConversationFragment.newInstance(bundle),
                 R.id.container,
-                ConversationFragment.TAG
+                ConversationFragment.TAG,
             )
         }
     }
@@ -138,7 +138,7 @@ class ConversationActivity : BlazeBaseActivity() {
                         putString(INITIAL_POSITION_MESSAGE_ID, initialPositionMessageId)
                         putInt(UNREAD_COUNT, unreadCount)
                         putBoolean(ARGS_FAST_SHOW, true)
-                    }
+                    },
                 )
             }.run {
                 context.startActivity(this)
@@ -173,8 +173,8 @@ class ConversationActivity : BlazeBaseActivity() {
                         messageId,
                         keyword,
                         unreadCount,
-                        transcriptData
-                    )
+                        transcriptData,
+                    ),
                 )
             }.run {
                 context.startActivity(this)
@@ -196,8 +196,8 @@ class ConversationActivity : BlazeBaseActivity() {
                         conversationId,
                         recipientId,
                         messageId,
-                        keyword
-                    )
+                        keyword,
+                    ),
                 )
             }
         }

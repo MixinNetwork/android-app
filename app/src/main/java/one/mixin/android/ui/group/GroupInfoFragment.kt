@@ -125,10 +125,10 @@ class GroupInfoFragment : BaseFragment(R.layout.fragment_group_info) {
                                         getString(
                                             R.string.group_info_remove_tip,
                                             participant.fullName,
-                                            conversation?.name
+                                            conversation?.name,
                                         ),
                                         TYPE_REMOVE,
-                                        user = participant.toUser()
+                                        user = participant.toUser(),
                                     )
                                 }
                                 3 -> {
@@ -179,10 +179,10 @@ class GroupInfoFragment : BaseFragment(R.layout.fragment_group_info) {
                                     getString(
                                         R.string.group_info_remove_tip,
                                         participant.fullName,
-                                        conversation?.name
+                                        conversation?.name,
                                     ),
                                     TYPE_REMOVE,
-                                    user = participant.toUser()
+                                    user = participant.toUser(),
                                 )
                             }
                             R.id.admin -> {
@@ -194,13 +194,13 @@ class GroupInfoFragment : BaseFragment(R.layout.fragment_group_info) {
                     popMenu.show()
                     return true
                 }
-            }
+            },
         )
 
         filter()
 
         groupViewModel.getConversationById(conversationId).observe(
-            viewLifecycleOwner
+            viewLifecycleOwner,
         ) {
             it?.let {
                 conversation = it
@@ -216,7 +216,7 @@ class GroupInfoFragment : BaseFragment(R.layout.fragment_group_info) {
                 override fun afterTextChanged(s: Editable) {
                     keyword = s.toString()
                 }
-            }
+            },
         )
     }
 
@@ -338,7 +338,7 @@ class GroupInfoFragment : BaseFragment(R.layout.fragment_group_info) {
         activity?.addFragment(
             this@GroupInfoFragment,
             GroupFragment.newInstance(if (isAdd) TYPE_ADD else TYPE_REMOVE, list, conversationId),
-            GroupFragment.TAG
+            GroupFragment.TAG,
         )
     }
 }

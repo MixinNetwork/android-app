@@ -63,14 +63,14 @@ fun EmergencyContactPage() {
                 Icon(
                     painter = painterResource(id = R.drawable.ic_help_outline),
                     contentDescription = null,
-                    tint = MixinAppTheme.colors.icon
+                    tint = MixinAppTheme.colors.icon,
                 )
             }
-        }
+        },
     ) {
         Column(
             modifier = Modifier.background(MixinAppTheme.colors.background),
-            horizontalAlignment = Alignment.CenterHorizontally
+            horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             Box(modifier = Modifier.height(36.dp))
             Image(
@@ -78,7 +78,7 @@ fun EmergencyContactPage() {
                     .height(83.dp)
                     .width(92.dp),
                 painter = painterResource(id = MixinAppTheme.drawables.emergencyAvatar),
-                contentDescription = null
+                contentDescription = null,
             )
             Box(modifier = Modifier.height(28.dp))
             Text(
@@ -86,7 +86,7 @@ fun EmergencyContactPage() {
                 text = stringResource(id = R.string.setting_emergency_content),
                 color = MixinAppTheme.colors.textSubtitle,
                 fontSize = 12.sp,
-                textAlign = TextAlign.Center
+                textAlign = TextAlign.Center,
             )
             Box(modifier = Modifier.height(24.dp))
         }
@@ -111,7 +111,7 @@ fun EmergencyContactPage() {
 
             SettingTile(
                 title = stringResource(id = R.string.Enable_Emergency_Contact),
-                titleColor = MixinAppTheme.colors.accent
+                titleColor = MixinAppTheme.colors.accent,
             ) {
                 showEnableTip = true
             }
@@ -132,7 +132,7 @@ fun EmergencyContactPage() {
                                     R.anim.slide_in_bottom,
                                     R.anim.slide_out_bottom,
                                     R.anim.slide_in_bottom,
-                                    R.anim.slide_out_bottom
+                                    R.anim.slide_out_bottom,
                                 )
                                     .add(R.id.container, VerifyFragment.newInstance(VerifyFragment.FROM_EMERGENCY))
                                     .addToBackStack(null)
@@ -140,14 +140,14 @@ fun EmergencyContactPage() {
                         } else {
                             activity?.let { TipActivity.show(it, TipType.Create, true) }
                         }
-                    }
+                    },
                 )
             }
         } else {
             HasEmergencyLayout(
                 onEmergencyAccountRemoved = {
                     hasEmergencyContact = false
-                }
+                },
             )
         }
     }
@@ -163,7 +163,7 @@ private fun HasEmergencyLayout(
 
     val context = LocalContext.current
     SettingTile(
-        title = stringResource(id = R.string.Change_emergency_contact)
+        title = stringResource(id = R.string.Change_emergency_contact),
     ) {
         val activity = context.findFragmentActivityOrNull()
         activity?.supportFragmentManager?.inTransaction {
@@ -171,7 +171,7 @@ private fun HasEmergencyLayout(
                 R.anim.slide_in_bottom,
                 R.anim.slide_out_bottom,
                 R.anim.slide_in_bottom,
-                R.anim.slide_out_bottom
+                R.anim.slide_out_bottom,
             )
                 .add(R.id.container, VerifyFragment.newInstance(VerifyFragment.FROM_EMERGENCY))
                 .addToBackStack(null)
@@ -212,10 +212,10 @@ private fun RemoveEmergencyButton(
                         .size(24.dp)
                         .padding(4.dp),
                     color = MixinAppTheme.colors.accent,
-                    strokeWidth = 2.dp
+                    strokeWidth = 2.dp,
                 )
             }
-        }
+        },
     ) {
         showConfirmDialog = true
     }
@@ -231,7 +231,7 @@ private fun RemoveEmergencyButton(
                 showConfirmDialog = false
                 showPinBottomSheet = true
             },
-            dismissText = stringResource(id = R.string.Cancel)
+            dismissText = stringResource(id = R.string.Cancel),
         )
     }
 
@@ -257,10 +257,10 @@ private fun RemoveEmergencyButton(
                         },
                         doAfterNetworkSuccess = {
                             showLoading = false
-                        }
+                        },
                     )
                 }
-            }
+            },
         )
     }
 }
@@ -297,10 +297,10 @@ private fun ShowEmergencyButton() {
                         },
                         doAfterNetworkSuccess = {
                             loading = false
-                        }
+                        },
                     )
                 }
-            }
+            },
         )
     }
 
@@ -313,10 +313,10 @@ private fun ShowEmergencyButton() {
                         .size(24.dp)
                         .padding(4.dp),
                     color = MixinAppTheme.colors.accent,
-                    strokeWidth = 2.dp
+                    strokeWidth = 2.dp,
                 )
             }
-        }
+        },
     ) {
         showPinBottomSheet = true
     }

@@ -57,7 +57,7 @@ internal fun Intent.getTipBundle(): TipBundle = requireNotNull(
     } else {
         @Suppress("DEPRECATION")
         getParcelableExtra(TipFragment.ARGS_TIP_BUNDLE)
-    }
+    },
 ) { "required TipBundle can not be null" }
 
 internal fun Bundle.getTipBundle(): TipBundle = requireNotNull(
@@ -66,5 +66,5 @@ internal fun Bundle.getTipBundle(): TipBundle = requireNotNull(
     } else {
         @Suppress("DEPRECATION")
         getParcelable(TipFragment.ARGS_TIP_BUNDLE)
-    }
+    },
 ) { "required TipBundle can not be null" }

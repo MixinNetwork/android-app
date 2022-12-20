@@ -40,7 +40,7 @@ class SharedMediaViewModel @Inject constructor(
             PagedList.Config.Builder()
                 .setPageSize(MediaFragment.PAGE_SIZE)
                 .setEnablePlaceholders(true)
-                .build()
+                .build(),
         )
             .build()
     }
@@ -68,7 +68,7 @@ class SharedMediaViewModel @Inject constructor(
                     } else {
                         return@Comparator year2 - year1
                     }
-                }
+                },
             )
             return@mapByPage list
         }
@@ -78,7 +78,7 @@ class SharedMediaViewModel @Inject constructor(
                 .setPrefetchDistance(PAGE_SIZE * 2)
                 .setPageSize(PAGE_SIZE)
                 .setEnablePlaceholders(true)
-                .build()
+                .build(),
         )
             .build()
     }
@@ -90,7 +90,7 @@ class SharedMediaViewModel @Inject constructor(
                 .setPrefetchDistance(PAGE_SIZE * 2)
                 .setPageSize(PAGE_SIZE)
                 .setEnablePlaceholders(true)
-                .build()
+                .build(),
         )
             .build()
     }
@@ -102,7 +102,7 @@ class SharedMediaViewModel @Inject constructor(
                 .setPrefetchDistance(PAGE_SIZE * 2)
                 .setPageSize(PAGE_SIZE)
                 .setEnablePlaceholders(true)
-                .build()
+                .build(),
         )
             .build()
     }
@@ -114,7 +114,7 @@ class SharedMediaViewModel @Inject constructor(
                 .setPrefetchDistance(PAGE_SIZE * 2)
                 .setPageSize(PAGE_SIZE)
                 .setEnablePlaceholders(true)
-                .build()
+                .build(),
         )
             .build()
     }
@@ -140,8 +140,8 @@ class SharedMediaViewModel @Inject constructor(
                                 else -> EncryptCategory.PLAIN
                             },
                             it.messageId,
-                            it.createdAt
-                        )
+                            it.createdAt,
+                        ),
                     )
                 } catch (e: NullPointerException) {
                     onError.invoke()
@@ -156,8 +156,8 @@ class SharedMediaViewModel @Inject constructor(
                     jobManager.addJobInBackground(
                         SendGiphyJob(
                             it.conversationId, it.userId, it.mediaUrl!!, it.mediaWidth!!, it.mediaHeight!!,
-                            it.mediaSize, category, it.messageId, it.thumbImage ?: "", it.createdAt
-                        )
+                            it.mediaSize, category, it.messageId, it.thumbImage ?: "", it.createdAt,
+                        ),
                     )
                 } catch (e: NullPointerException) {
                     onError.invoke()

@@ -100,7 +100,7 @@ class AllTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>
                     Bundle().apply {
                         putParcelable(ARGS_SNAPSHOT, snapshot)
                         putParcelable(ARGS_ASSET, it)
-                    }
+                    },
                 )
             }
         }
@@ -119,7 +119,7 @@ class AllTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>
                 f?.showUserTransactionAction = {
                     view?.navigate(
                         R.id.action_all_transactions_to_user_transactions,
-                        Bundle().apply { putString(Constants.ARGS_USER_ID, userId) }
+                        Bundle().apply { putString(Constants.ARGS_USER_ID, userId) },
                     )
                 }
                 f?.show(parentFragmentManager, UserBottomSheetDialogFragment.TAG)
@@ -149,8 +149,8 @@ class AllTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>
                         SnapshotType.transfer.name,
                         SnapshotType.pending.name,
                         initialLoadKey = initialLoadKey,
-                        orderByAmount = orderByAmount
-                    )
+                        orderByAmount = orderByAmount,
+                    ),
                 )
             }
             R.id.filters_radio_deposit -> {

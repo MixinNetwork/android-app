@@ -81,7 +81,7 @@ class NonMessengerUserBottomSheetDialogFragment : MixinBottomSheetDialogFragment
                     } else {
                         binding.detailTv.isVisible = false
                     }
-                }
+                },
             )
         }
     }

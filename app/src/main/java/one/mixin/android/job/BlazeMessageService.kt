@@ -266,7 +266,7 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
             this,
             0,
             exitIntent,
-            PendingIntent.FLAG_IMMUTABLE
+            PendingIntent.FLAG_IMMUTABLE,
         )
 
         val builder = NotificationCompat.Builder(this, CHANNEL_NODE)
@@ -285,7 +285,7 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
             this,
             0,
             MainActivity.getWakeUpIntent(this),
-            PendingIntent.FLAG_IMMUTABLE
+            PendingIntent.FLAG_IMMUTABLE,
         )
 
         builder.setContentIntent(pendingIntent)
@@ -348,9 +348,9 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
                 ackMessages.map {
                     gson.fromJson(
                         it.blazeMessage,
-                        BlazeAckMessage::class.java
+                        BlazeAckMessage::class.java,
                     )
-                }
+                },
             )
             jobDao.deleteList(ackMessages)
         } catch (e: Exception) {
@@ -369,8 +369,8 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
             val plainText = gson.toJson(
                 PlainJsonMessagePayload(
                     action = PlainDataAction.ACKNOWLEDGE_MESSAGE_RECEIPTS.name,
-                    ackMessages = it
-                )
+                    ackMessages = it,
+                ),
             )
             val encoded = plainText.toByteArray().base64Encode()
             val bm = createParamBlazeMessage(createPlainJsonParam(participantDao.joinedConversationId(accountId), accountId, encoded, sessionId))
@@ -433,7 +433,7 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
         list.map { msg ->
             createAckJob(
                 ACKNOWLEDGE_MESSAGE_RECEIPTS,
-                BlazeAckMessage(msg.messageId, MessageStatus.READ.name, msg.expireAt)
+                BlazeAckMessage(msg.messageId, MessageStatus.READ.name, msg.expireAt),
             )
         }.apply {
             pendingDatabase.insertJobs(this)
@@ -494,7 +494,7 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
                 nextExpirationTime = firstExpiredMessage.expireAt
                 val delayTime = max(
                     requireNotNull(firstExpiredMessage.expireAt) * 1000 - System.currentTimeMillis(),
-                    0
+                    0,
                 )
                 Timber.e("Expired job: delay $delayTime")
                 delay(delayTime)
@@ -510,7 +510,7 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
                 messageMedia?.absolutePath(
                     MixinApplication.appContext,
                     messageMedia.conversationId,
-                    messageMedia.mediaUrl
+                    messageMedia.mediaUrl,
                 )?.let {
                     jobManager.addJobInBackground(AttachmentDeleteJob(it))
                 }

@@ -18,7 +18,7 @@ class TimeIntervalPicker : LinearLayout {
     constructor(context: Context, attrs: AttributeSet?, defStyleAttr: Int) : super(
         context,
         attrs,
-        defStyleAttr
+        defStyleAttr,
     ) {
         setBackgroundResource(R.drawable.bg_round_gray_14dp)
         binding.apply {

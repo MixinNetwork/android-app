@@ -118,13 +118,13 @@ class BottomSheet(
                 context.isTablet() -> {
                     MeasureSpec.makeMeasureSpec(
                         (minOf(context.displayMetrics.widthPixels, context.displayMetrics.heightPixels) * 0.8f).toInt(),
-                        MeasureSpec.EXACTLY
+                        MeasureSpec.EXACTLY,
                     )
                 }
                 else -> {
                     MeasureSpec.makeMeasureSpec(
                         if (isPortrait) width else max((width * 0.6f).toInt(), min(dp(480f), width)),
-                        MeasureSpec.EXACTLY
+                        MeasureSpec.EXACTLY,
                     )
                 }
             }
@@ -163,7 +163,7 @@ class BottomSheet(
         window?.addFlags(
             WindowManager.LayoutParams.FLAG_LAYOUT_INSET_DECOR
                 or WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN
-                or WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS
+                or WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS,
         )
         container.background = backDrawable
         container.fitsSystemWindows = true
@@ -197,8 +197,8 @@ class BottomSheet(
                 FrameLayout.LayoutParams(
                     MATCH_PARENT,
                     if (customViewHeight > 0) customViewHeight else WRAP_CONTENT,
-                    Gravity.BOTTOM
-                )
+                    Gravity.BOTTOM,
+                ),
             )
         }
 
@@ -228,7 +228,7 @@ class BottomSheet(
         cancelSheetAnimation()
         sheetContainer.measure(
             View.MeasureSpec.makeMeasureSpec(context.displayMetrics.widthPixels, AT_MOST),
-            View.MeasureSpec.makeMeasureSpec(context.displayMetrics.heightPixels, AT_MOST)
+            View.MeasureSpec.makeMeasureSpec(context.displayMetrics.heightPixels, AT_MOST),
         )
         if (isShown) return
         backDrawable.alpha = 0
@@ -255,7 +255,7 @@ class BottomSheet(
         val animatorSet = AnimatorSet()
         animatorSet.playTogether(
             ObjectAnimator.ofFloat(sheetContainer, "translationY", 0f),
-            ObjectAnimator.ofInt(backDrawable, "alpha", 153)
+            ObjectAnimator.ofInt(backDrawable, "alpha", 153),
         )
         animatorSet.duration = 200
         animatorSet.startDelay = 20
@@ -276,7 +276,7 @@ class BottomSheet(
                         curSheetAnimation = null
                     }
                 }
-            }
+            },
         )
         animatorSet.start()
         curSheetAnimation = animatorSet
@@ -299,7 +299,7 @@ class BottomSheet(
         val animatorSet = AnimatorSet()
         animatorSet.playTogether(
             ObjectAnimator.ofFloat(sheetContainer, "translationY", sheetContainer.measuredHeight.toFloat()),
-            ObjectAnimator.ofInt(backDrawable, "alpha", 0)
+            ObjectAnimator.ofInt(backDrawable, "alpha", 0),
         )
         animatorSet.duration = 180
         animatorSet.interpolator = AccelerateInterpolator()
@@ -325,7 +325,7 @@ class BottomSheet(
                         curSheetAnimation = null
                     }
                 }
-            }
+            },
         )
         animatorSet.start()
         curSheetAnimation = animatorSet
@@ -352,7 +352,7 @@ class BottomSheet(
                     200
                 }
             },
-            200
+            200,
         ).toLong()
 
         if (duration == 0L) {

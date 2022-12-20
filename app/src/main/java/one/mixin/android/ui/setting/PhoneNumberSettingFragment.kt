@@ -104,7 +104,7 @@ class PhoneNumberSettingFragment : BaseFragment(R.layout.fragment_setting_phone_
                 },
                 doAfterNetworkSuccess = {
                     resetPb(targetPref)
-                }
+                },
             )
         }
     }

@@ -104,8 +104,8 @@ class VerificationEmergencyFragment : PinCodeFragment(R.layout.fragment_verifica
                         user?.identityNumber ?: userIdentityNumber,
                         pinCipher.encryptPin(requireNotNull(pin), TipBody.forEmergencyContactCreate(verificationId, code)),
                         code,
-                        EmergencyPurpose.CONTACT.name
-                    )
+                        EmergencyPurpose.CONTACT.name,
+                    ),
                 )
             },
             successBlock = { response ->
@@ -123,8 +123,8 @@ class VerificationEmergencyFragment : PinCodeFragment(R.layout.fragment_verifica
                                 R.string.Your_emergency_contact_has_been_changed
                             } else {
                                 R.string.setting_emergency_create_success
-                            }
-                        )
+                            },
+                        ),
                     )
                     .setPositiveButton(R.string.OK) { dialog, _ ->
                         parentFragmentManager.popBackStackImmediate()
@@ -144,7 +144,7 @@ class VerificationEmergencyFragment : PinCodeFragment(R.layout.fragment_verifica
                 } else {
                     handleError(it)
                 }
-            }
+            },
         )
     }
 
@@ -165,7 +165,7 @@ class VerificationEmergencyFragment : PinCodeFragment(R.layout.fragment_verifica
             },
             defaultExceptionHandle = {
                 handleError(it)
-            }
+            },
         )
     }
 
@@ -179,7 +179,7 @@ class VerificationEmergencyFragment : PinCodeFragment(R.layout.fragment_verifica
             code = binding.pinVerificationView.code(),
             purpose = EmergencyPurpose.SESSION.name,
             sessionSecret = sessionSecret,
-            registrationId = registrationId
+            registrationId = registrationId,
         )
     }
 }

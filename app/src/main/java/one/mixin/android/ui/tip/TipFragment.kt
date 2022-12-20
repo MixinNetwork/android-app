@@ -219,7 +219,7 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
                     onNodeCounterGreaterThanServer = { tipBundle.updateTipEvent(null, it) },
                     onNodeCounterInconsistency = { nodeMaxCounter, nodeFailedSigners ->
                         tipBundle.updateTipEvent(nodeFailedSigners, nodeMaxCounter)
-                    }
+                    },
                 ).onSuccess { available = true }
                     .onFailure {
                         Timber.d("try connect tip watch failure $it")
@@ -339,7 +339,7 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
             onNodeCounterGreaterThanServer = { tipBundle.updateTipEvent(null, it) },
             onNodeCounterInconsistency = { nodeMaxCounter, nodeFailedSigners ->
                 tipBundle.updateTipEvent(nodeFailedSigners, nodeMaxCounter)
-            }
+            },
         ).onFailure {
             // Generally, check-counter should NOT meet exceptions, if this happens,
             // we should go to the RetryConnect step to check network and other steps.
@@ -414,7 +414,7 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
                         TipType.Create -> R.string.Creating_wallet_terminated_unexpectedly
                         TipType.Upgrade -> R.string.Upgrading_TIP_terminated_unexpectedly
                         TipType.Change -> R.string.Changing_PIN_terminated_unexpectedly
-                    }
+                    },
                 )
             } else {
                 if (tipBundle.forCreate()) {
@@ -431,7 +431,7 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
             invokeNetwork = { accountService.getMeSuspend() },
             successBlock = { r ->
                 r.data?.let { Session.storeAccount(it) }
-            }
+            },
         )
     }
 

@@ -24,7 +24,7 @@ class SixLayout : ConstraintLayout {
     constructor(context: Context, attrs: AttributeSet?, defStyleAttr: Int) : super(
         context,
         attrs,
-        defStyleAttr
+        defStyleAttr,
     )
 
     private var layouts: List<LinearLayout>
@@ -40,7 +40,7 @@ class SixLayout : ConstraintLayout {
             binding.thumbnailLayout3,
             binding.thumbnailLayout4,
             binding.thumbnailLayout5,
-            binding.thumbnailLayout6
+            binding.thumbnailLayout6,
         )
         thumbs = listOf(
             binding.thumbnailIv1,
@@ -48,7 +48,7 @@ class SixLayout : ConstraintLayout {
             binding.thumbnailIv3,
             binding.thumbnailIv4,
             binding.thumbnailIv5,
-            binding.thumbnailIv6
+            binding.thumbnailIv6,
         )
         avatars = listOf(
             binding.avatar1,
@@ -56,7 +56,7 @@ class SixLayout : ConstraintLayout {
             binding.avatar3,
             binding.avatar4,
             binding.avatar5,
-            binding.avatar6
+            binding.avatar6,
         )
         titles = listOf(
             binding.title1,
@@ -64,7 +64,7 @@ class SixLayout : ConstraintLayout {
             binding.title3,
             binding.title4,
             binding.title5,
-            binding.title6
+            binding.title6,
         )
         titlesLayouts = listOf(
             binding.titleLayout1,
@@ -72,7 +72,7 @@ class SixLayout : ConstraintLayout {
             binding.titleLayout3,
             binding.titleLayout4,
             binding.titleLayout5,
-            binding.titleLayout6
+            binding.titleLayout6,
         )
         binding.thumbnailLayout1.round(8.dp)
         binding.thumbnailLayout2.round(8.dp)

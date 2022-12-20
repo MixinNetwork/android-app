@@ -88,7 +88,7 @@ class MediaPagerAdapter(
         return if (messageItem.isImage()) {
             if (!messageItem.mediaMimeType.equals(
                     MimeType.GIF.toString(),
-                    true
+                    true,
                 ) && messageItem.mediaHeight != null && messageItem.mediaWidth != null &&
                 (
                     messageItem.mediaHeight / messageItem.mediaWidth.toFloat() > context.displayRatio() * 1.5f ||
@@ -116,7 +116,7 @@ class MediaPagerAdapter(
         photoViewAttacher.isZoomable = false
         imageView.layoutParams = ViewGroup.LayoutParams(
             ViewGroup.LayoutParams.MATCH_PARENT,
-            ViewGroup.LayoutParams.MATCH_PARENT
+            ViewGroup.LayoutParams.MATCH_PARENT,
         )
         return imageView
     }

@@ -50,7 +50,7 @@ class ConversationCircleEditFragment : BaseFragment() {
             circle: ConversationCircleItem,
         ) = ConversationCircleEditFragment().apply {
             arguments = bundleOf(
-                ARGS_CIRCLE to circle
+                ARGS_CIRCLE to circle,
             )
         }
     }
@@ -105,8 +105,8 @@ class ConversationCircleEditFragment : BaseFragment() {
                             val count = chatViewModel.getCircleConversationCount(
                                 generateConversationId(
                                     Session.getAccountId()!!,
-                                    user.userId
-                                )
+                                    user.userId,
+                                ),
                             )
                             if (count >= CIRCLE_CONVERSATION_LIMIT) {
                                 toast(R.string.number_reached_limit)
@@ -143,7 +143,7 @@ class ConversationCircleEditFragment : BaseFragment() {
                         updateTitleText(adapter.selectItem.size)
                     }
                 }
-            }
+            },
         )
         binding.searchEt.et.addTextChangedListener(mWatcher)
         loadData()
@@ -192,8 +192,8 @@ class ConversationCircleEditFragment : BaseFragment() {
                         null
                     } else {
                         cc.userId
-                    }
-                )
+                    },
+                ),
             )
             if (cc.userId != null) {
                 inCircleContactId.add(cc.userId)
@@ -237,7 +237,7 @@ class ConversationCircleEditFragment : BaseFragment() {
     private fun save() = lifecycleScope.launch {
         val dialog = indeterminateProgressDialog(
             message = R.string.Please_wait_a_bit,
-            title = R.string.Saving
+            title = R.string.Saving,
         ).apply {
             setCancelable(false)
         }
@@ -250,15 +250,15 @@ class ConversationCircleEditFragment : BaseFragment() {
                 conversationRequests.add(
                     CircleConversationPayload(
                         generateConversationId(Session.getAccountId()!!, item.userId),
-                        item.userId
-                    )
+                        item.userId,
+                    ),
                 )
             } else if (item is ConversationMinimal) {
                 conversationRequests.add(
                     CircleConversationPayload(
                         item.conversationId,
-                        if (item.isContactConversation()) item.ownerId else null
-                    )
+                        if (item.isContactConversation()) item.ownerId else null,
+                    ),
                 )
             }
         }
@@ -289,7 +289,7 @@ class ConversationCircleEditFragment : BaseFragment() {
             failureBlock = {
                 dialog.dismiss()
                 return@handleMixinResponse false
-            }
+            },
         )
     }
 

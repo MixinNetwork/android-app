@@ -46,7 +46,7 @@ class SearchChatPopupMenu(
                             chatMinimal.conversationId,
                             null,
                             null,
-                            afterAction
+                            afterAction,
                         )
                         toast(R.string.Chat_unpinned)
                     } else {
@@ -54,7 +54,7 @@ class SearchChatPopupMenu(
                             chatMinimal.conversationId,
                             null,
                             nowInUtc(),
-                            afterAction
+                            afterAction,
                         )
                         toast(R.string.Chat_pinned)
                     }
@@ -74,8 +74,8 @@ class SearchChatPopupMenu(
                         .setTitle(
                             context.getString(
                                 R.string.conversation_delete_title,
-                                chatMinimal.getConversationName()
-                            )
+                                chatMinimal.getConversationName(),
+                            ),
                         )
                         .setMessage(context.getString(R.string.conversation_delete_tip))
                         .setNegativeButton(R.string.Cancel) { dialog, _ ->
@@ -100,7 +100,7 @@ class SearchChatPopupMenu(
             context.getString(R.string.one_hour),
             context.resources.getQuantityString(R.plurals.Hour, 8, 8),
             context.getString(R.string.one_week),
-            context.getString(R.string.one_year)
+            context.getString(R.string.one_year),
         )
         var duration = Constants.Mute.MUTE_8_HOURS
         var whichItem = 0
@@ -116,17 +116,17 @@ class SearchChatPopupMenu(
                             invokeNetwork = {
                                 searchViewModel.mute(
                                     duration.toLong(),
-                                    conversationId = chatMinimal.conversationId
+                                    conversationId = chatMinimal.conversationId,
                                 )
                             },
                             successBlock = { response ->
                                 searchViewModel.updateGroupMuteUntil(
                                     chatMinimal.conversationId,
-                                    response.data!!.muteUntil
+                                    response.data!!.muteUntil,
                                 )
                                 afterAction.invoke()
                                 toast(context.getString(R.string.contact_mute_title) + " ${chatMinimal.groupName} " + choices[whichItem])
-                            }
+                            },
                         )
                     }
                 } else {
@@ -138,17 +138,17 @@ class SearchChatPopupMenu(
                                     searchViewModel.mute(
                                         duration.toLong(),
                                         senderId = it.userId,
-                                        recipientId = chatMinimal.userId
+                                        recipientId = chatMinimal.userId,
                                     )
                                 },
                                 successBlock = { response ->
                                     searchViewModel.updateMuteUntil(
                                         chatMinimal.userId,
-                                        response.data!!.muteUntil
+                                        response.data!!.muteUntil,
                                     )
                                     afterAction.invoke()
                                     toast(context.getString(R.string.contact_mute_title) + "  ${chatMinimal.fullName}  " + choices[whichItem])
-                                }
+                                },
                             )
                         }
                     }
@@ -177,11 +177,11 @@ class SearchChatPopupMenu(
                     successBlock = { response ->
                         searchViewModel.updateGroupMuteUntil(
                             chatMinimal.conversationId,
-                            response.data!!.muteUntil
+                            response.data!!.muteUntil,
                         )
                         afterAction.invoke()
                         toast(context.getString(R.string.Unmute) + " ${chatMinimal.groupName}")
-                    }
+                    },
                 )
             }
         } else {
@@ -192,17 +192,17 @@ class SearchChatPopupMenu(
                             searchViewModel.mute(
                                 0,
                                 senderId = it.userId,
-                                recipientId = chatMinimal.userId
+                                recipientId = chatMinimal.userId,
                             )
                         },
                         successBlock = { response ->
                             searchViewModel.updateMuteUntil(
                                 chatMinimal.userId,
-                                response.data!!.muteUntil
+                                response.data!!.muteUntil,
                             )
                             afterAction.invoke()
                             toast(context.getString(R.string.Unmute) + " ${chatMinimal.fullName}")
-                        }
+                        },
                     )
                 }
             }

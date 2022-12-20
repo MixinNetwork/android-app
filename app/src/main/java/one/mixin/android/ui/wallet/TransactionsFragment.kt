@@ -102,7 +102,7 @@ class TransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>>()
             sendReceiveView.receive.setOnClickListener {
                 view.navigate(
                     R.id.action_transactions_to_deposit,
-                    Bundle().apply { putParcelable(ARGS_ASSET, asset) }
+                    Bundle().apply { putParcelable(ARGS_ASSET, asset) },
                 )
             }
 
@@ -142,7 +142,7 @@ class TransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>>()
         }
         bindLiveData()
         walletViewModel.assetItem(asset.assetId).observe(
-            viewLifecycleOwner
+            viewLifecycleOwner,
         ) { assetItem ->
             assetItem?.let {
                 asset = it
@@ -222,7 +222,7 @@ class TransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>>()
                                 }
                             }
                         }
-                    }
+                    },
                 )
             } else {
                 headBinding.sendReceiveView.apply {
@@ -242,7 +242,7 @@ class TransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>>()
                                     refreshPendingDeposits(assetItem)
                                 }
                             }
-                        }
+                        },
                     )
                 }
             }
@@ -276,7 +276,7 @@ class TransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>>()
             Bundle().apply {
                 putParcelable(TransactionFragment.ARGS_SNAPSHOT, item as SnapshotItem)
                 putParcelable(ARGS_ASSET, asset)
-            }
+            },
         )
     }
 
@@ -294,7 +294,7 @@ class TransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>>()
                 f?.showUserTransactionAction = {
                     view?.navigate(
                         R.id.action_transactions_to_user_transactions,
-                        Bundle().apply { putString(Constants.ARGS_USER_ID, userId) }
+                        Bundle().apply { putString(Constants.ARGS_USER_ID, userId) },
                     )
                 }
                 f?.show(parentFragmentManager, UserBottomSheetDialogFragment.TAG)
@@ -327,8 +327,8 @@ class TransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>>()
                             SnapshotType.transfer.name,
                             SnapshotType.pending.name,
                             initialLoadKey = initialLoadKey,
-                            orderByAmount = orderByAmount
-                        )
+                            orderByAmount = orderByAmount,
+                        ),
                     )
                     groupInfoMemberTitle.setText(R.string.Transfer)
                     walletTransactionsEmpty.setText(R.string.No_transactions)
@@ -339,8 +339,8 @@ class TransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>>()
                             asset.assetId,
                             SnapshotType.deposit.name,
                             initialLoadKey = initialLoadKey,
-                            orderByAmount = orderByAmount
-                        )
+                            orderByAmount = orderByAmount,
+                        ),
                     )
                     groupInfoMemberTitle.setText(R.string.Deposit)
                     walletTransactionsEmpty.setText(R.string.No_deposits)
@@ -351,29 +351,29 @@ class TransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>>()
                             asset.assetId,
                             SnapshotType.withdrawal.name,
                             initialLoadKey = initialLoadKey,
-                            orderByAmount = orderByAmount
-                        )
+                            orderByAmount = orderByAmount,
+                        ),
                     )
                     groupInfoMemberTitle.setText(R.string.Withdrawal)
                     walletTransactionsEmpty.setText(R.string.No_withdrawals)
                 }
                 R.id.filters_radio_fee -> {
                     bindLiveData(
-                        walletViewModel.snapshotsFromDb(asset.assetId, SnapshotType.fee.name, initialLoadKey = initialLoadKey, orderByAmount = orderByAmount)
+                        walletViewModel.snapshotsFromDb(asset.assetId, SnapshotType.fee.name, initialLoadKey = initialLoadKey, orderByAmount = orderByAmount),
                     )
                     groupInfoMemberTitle.setText(R.string.Fee)
                     walletTransactionsEmpty.setText(R.string.No_fees)
                 }
                 R.id.filters_radio_rebate -> {
                     bindLiveData(
-                        walletViewModel.snapshotsFromDb(asset.assetId, SnapshotType.rebate.name, initialLoadKey = initialLoadKey, orderByAmount = orderByAmount)
+                        walletViewModel.snapshotsFromDb(asset.assetId, SnapshotType.rebate.name, initialLoadKey = initialLoadKey, orderByAmount = orderByAmount),
                     )
                     groupInfoMemberTitle.setText(R.string.Rebate)
                     walletTransactionsEmpty.setText(R.string.No_rebates)
                 }
                 R.id.filters_radio_raw -> {
                     bindLiveData(
-                        walletViewModel.snapshotsFromDb(asset.assetId, SnapshotType.raw.name, initialLoadKey = initialLoadKey, orderByAmount = orderByAmount)
+                        walletViewModel.snapshotsFromDb(asset.assetId, SnapshotType.raw.name, initialLoadKey = initialLoadKey, orderByAmount = orderByAmount),
                     )
                     groupInfoMemberTitle.setText(R.string.Raw)
                     walletTransactionsEmpty.setText(R.string.No_raws)

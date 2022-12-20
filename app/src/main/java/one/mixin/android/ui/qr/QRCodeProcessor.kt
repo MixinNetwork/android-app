@@ -17,7 +17,7 @@ class QRCodeProcessor {
     private val scanner: BarcodeScanner = BarcodeScanning.getClient(
         BarcodeScannerOptions.Builder()
             .setBarcodeFormats(FORMAT_QR_CODE)
-            .build()
+            .build(),
     )
 
     fun detect(

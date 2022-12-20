@@ -58,7 +58,7 @@ class GiphyBottomSheetFragment : MixinBottomSheetDialogFragment() {
                     callback?.onGiphyClick(image, previewUrl)
                     dismiss()
                 }
-            }
+            },
         )
     }
     private var offset = 0
@@ -161,7 +161,7 @@ class GiphyBottomSheetFragment : MixinBottomSheetDialogFragment() {
                     if (t is HttpException && t.code() == 429) {
                         toast("Giphy API rate limit exceeded")
                     }
-                }
+                },
             )
     }
 

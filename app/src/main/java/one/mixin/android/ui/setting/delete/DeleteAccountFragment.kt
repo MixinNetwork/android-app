@@ -102,7 +102,7 @@ class DeleteAccountFragment : BaseFragment(R.layout.fragment_delete_account) {
                     }
                     .showNow(
                         parentFragmentManager,
-                        DeleteAccountTipBottomSheetDialogFragment.TAG
+                        DeleteAccountTipBottomSheetDialogFragment.TAG,
                     )
             }
         }
@@ -113,8 +113,8 @@ class DeleteAccountFragment : BaseFragment(R.layout.fragment_delete_account) {
             .setMessage(
                 getString(
                     R.string.setting_delete_account_send,
-                    phone
-                )
+                    phone,
+                ),
             )
             .setNegativeButton(R.string.Cancel) { dialog, _ ->
                 dialog.dismiss()
@@ -136,7 +136,7 @@ class DeleteAccountFragment : BaseFragment(R.layout.fragment_delete_account) {
     ) {
         val verificationRequest = VerificationRequest(
             phone,
-            VerificationPurpose.DEACTIVATED.name
+            VerificationPurpose.DEACTIVATED.name,
         )
         if (captchaResponse != null) {
             if (captchaResponse.first.isG()) {
@@ -160,9 +160,9 @@ class DeleteAccountFragment : BaseFragment(R.layout.fragment_delete_account) {
                         phone,
                         null,
                         verificationResponse.hasEmergencyContact,
-                        FROM_DELETE_ACCOUNT
+                        FROM_DELETE_ACCOUNT,
                     ),
-                    VerificationFragment.TAG
+                    VerificationFragment.TAG,
                 )
             },
             failureBlock = { r ->
@@ -176,7 +176,7 @@ class DeleteAccountFragment : BaseFragment(R.layout.fragment_delete_account) {
             exceptionBlock = {
                 binding.deleteCover.isVisible = false
                 return@handleMixinResponse false
-            }
+            },
         )
     }
 
@@ -194,12 +194,12 @@ class DeleteAccountFragment : BaseFragment(R.layout.fragment_delete_account) {
                             verify(captchaResponse = value)
                         }
                     }
-                }
+                },
             )
             (view as ViewGroup).addView(
                 captchaView?.webView,
                 ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.MATCH_PARENT
+                ViewGroup.LayoutParams.MATCH_PARENT,
             )
         }
         captchaView?.loadCaptcha(CaptchaView.CaptchaType.GCaptcha)
@@ -216,11 +216,11 @@ class DeleteAccountFragment : BaseFragment(R.layout.fragment_delete_account) {
                             R.anim.slide_in_bottom,
                             R.anim.slide_out_bottom,
                             R.anim.slide_in_bottom,
-                            R.anim.slide_out_bottom
+                            R.anim.slide_out_bottom,
                         )
                             .add(
                                 R.id.container,
-                                VerifyFragment.newInstance(VerifyFragment.FROM_PHONE)
+                                VerifyFragment.newInstance(VerifyFragment.FROM_PHONE),
                             )
                             .addToBackStack(null)
                     }

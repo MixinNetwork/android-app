@@ -110,7 +110,7 @@ class VideoHolder(
             } else {
                 val imageData = messageItem.thumbImage?.toBitmap(
                     messageItem.mediaWidth,
-                    messageItem.mediaHeight
+                    messageItem.mediaHeight,
                 )
                 Glide.with(itemView).load(imageData).into(binding.previewIv)
             }

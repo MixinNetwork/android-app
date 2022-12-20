@@ -40,7 +40,7 @@ fun ScopeCheckLayout(
                 }
             }
             .padding(horizontal = 16.dp, vertical = 8.dp)
-            .fillMaxWidth()
+            .fillMaxWidth(),
 
     ) {
         Image(
@@ -55,22 +55,22 @@ fun ScopeCheckLayout(
                         R.drawable.ic_selected
                     else ->
                         R.drawable.ic_not_selected
-                }
+                },
             ),
-            contentDescription = null
+            contentDescription = null,
         )
         Column(
-            modifier = Modifier.align(alignment = Alignment.Top)
+            modifier = Modifier.align(alignment = Alignment.Top),
         ) {
             Text(
                 scope.name,
                 fontSize = 16.sp,
-                color = MixinAppTheme.colors.textPrimary
+                color = MixinAppTheme.colors.textPrimary,
             )
             Text(
                 scope.desc,
                 fontSize = 14.sp,
-                color = MixinAppTheme.colors.textSubtitle
+                color = MixinAppTheme.colors.textSubtitle,
             )
         }
     }

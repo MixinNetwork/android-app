@@ -166,8 +166,8 @@ constructor(
         accountService.deactivate(
             DeactivateRequest(
                 pinCipher.encryptPin(pin, TipBody.forUserDeactivate(verificationId)),
-                verificationId
-            )
+                verificationId,
+            ),
         )
     }
 
@@ -180,8 +180,8 @@ constructor(
                     pinCipher.encryptPin(pin, TipBody.forOAuthApprove(authorizationId))
                 } else {
                     null
-                }
-            )
+                },
+            ),
         )
     }
 
@@ -374,7 +374,7 @@ constructor(
                     stickerDao.insertSuspend(s)
                     return@handleMixinResponse s
                 }
-            }
+            },
         )
     }
 }

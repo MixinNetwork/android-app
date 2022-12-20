@@ -91,7 +91,7 @@ open class FlowLayout @JvmOverloads constructor(context: Context, attrs: Attribu
         }
         setMeasuredDimension(
             if (modeWidth == MeasureSpec.EXACTLY) sizeWidth else width + paddingLeft + paddingRight,
-            if (modeHeight == MeasureSpec.EXACTLY) sizeHeight else height + paddingTop + paddingBottom
+            if (modeHeight == MeasureSpec.EXACTLY) sizeHeight else height + paddingTop + paddingBottom,
         )
     }
 
