@@ -210,7 +210,7 @@ abstract class MixinDatabase : RoomDatabase() {
                     if (BuildConfig.DEBUG) {
                         builder.setQueryCallback(
                             { sqlQuery, bindArgs ->
-                                DatabaseMonitor.monitor(sqlQuery)
+                                // DatabaseMonitor.monitor(sqlQuery)
                             },
                             ArchTaskExecutor.getIOThreadExecutor()
                         )
@@ -247,6 +247,9 @@ abstract class MixinDatabase : RoomDatabase() {
         fun checkPoint() {
             supportSQLiteDatabase?.query("PRAGMA wal_checkpoint(FULL)")?.close()
         }
+
+        internal fun rawDelete(table: String, whereClause: String, whereArgs: Array<Any>): Int? =
+            supportSQLiteDatabase?.delete(table, whereClause, whereArgs)
 
         private val CALLBACK = object : RoomDatabase.Callback() {
             override fun onOpen(db: SupportSQLiteDatabase) {

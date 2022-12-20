@@ -369,7 +369,6 @@ constructor(
             invokeNetwork = {
                 accountService.getStickerByIdSuspend(id)
             },
-            switchContext = Dispatchers.IO,
             successBlock = {
                 it.data?.let { s ->
                     stickerDao.insertSuspend(s)

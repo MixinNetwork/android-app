@@ -28,4 +28,7 @@ interface RemoteMessageStatusDao : BaseDao<RemoteMessageStatus> {
 
     @Query("DELETE FROM remote_messages_status WHERE message_id IN (:messageIds)")
     fun deleteByMessageIds(messageIds: List<String>)
+
+    @Query("SELECT message_id FROM remote_messages_status WHERE conversation_id = :conversationId AND status != 'READ' LIMIT 50")
+    suspend fun getUnreadMessageIds(conversationId: String): List<String>
 }

@@ -304,6 +304,10 @@ class BottomSheetViewModel @Inject internal constructor(
         return@withContext Pair(address, false)
     }
 
+    suspend fun refreshAndGetAddress(addressId: String, assetId: String): Pair<Address?, Boolean> = withContext(Dispatchers.IO) {
+        return@withContext assetRepository.refreshAndGetAddress(addressId, assetId)
+    }
+
     suspend fun findAssetItemById(assetId: String): AssetItem? =
         assetRepository.findAssetItemById(assetId)
 

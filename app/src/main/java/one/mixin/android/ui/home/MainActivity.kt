@@ -881,7 +881,6 @@ class MainActivity : BlazeBaseActivity() {
                 setCancelable(false)
             }
             handleMixinResponse(
-                switchContext = Dispatchers.IO,
                 invokeNetwork = {
                     userRepo.createCircle(name)
                 },

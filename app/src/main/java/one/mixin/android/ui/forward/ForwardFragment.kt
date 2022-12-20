@@ -223,6 +223,7 @@ class ForwardFragment : BaseFragment(R.layout.fragment_forward) {
         binding.forwardRv.adapter = adapter
         binding.forwardRv.addItemDecoration(StickyRecyclerHeadersDecoration(adapter))
         binding.forwardBn.setOnClickListener {
+            binding.forwardBn.isEnabled = false
             binding.searchEt.hideKeyboard()
             checkPermission {
                 updateDynamicShortcuts(adapter.selectItem)

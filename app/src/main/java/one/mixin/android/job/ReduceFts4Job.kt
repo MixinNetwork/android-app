@@ -4,6 +4,7 @@ import com.birbit.android.jobqueue.Params
 import kotlinx.coroutines.runBlocking
 import one.mixin.android.Constants.Account.PREF_FTS4_REDUCE
 import one.mixin.android.Constants.DB_DELETE_LIMIT
+import one.mixin.android.db.deleteFtsByMessageIds
 import one.mixin.android.util.PropertyHelper
 import timber.log.Timber
 
@@ -29,7 +30,7 @@ class ReduceFts4Job :
     private suspend fun delete(list: List<String>) {
         if (list.isEmpty()) return
         val startTime = System.currentTimeMillis()
-        messageFts4Dao.deleteByMessageIds(list)
+        deleteFtsByMessageIds(list)
         Timber.e("Delete message fts4 ${list.size}, cost: ${System.currentTimeMillis() - startTime} ms")
     }
 }

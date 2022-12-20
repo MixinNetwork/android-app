@@ -976,7 +976,7 @@
     <string name="wallet_password_unsafe">PIN 過於簡單不安全</string>
     <string name="wallet_pin_modify_biometrics">請輸入 PIN 來修改支付 PIN 使用間隔</string>
     <string name="wallet_pin_open_biometrics">請輸入 PIN 來啟用生物識別支付</string>
-    <string name="wallet_pin_pay_interval_tips">為了您的資產安全，距離上次輸入支付 PIN 的時間超過以上指定時間時，再次轉賬時已然需要支付 PIN</string>
+    <string name="wallet_pin_pay_interval_tips">為了您的資產安全，距離上次輸入支付 PIN 的時間超過以上指定時間時，再次轉賬時依然需要支付 PIN</string>
     <string name="wallet_pin_tops_desc">注意 PIN 丟失無法找回，6 位數字 PIN 是基於去中心化金鑰派生協議 Throttled Identity Protocol，閱讀檔案以**瞭解更多**。</string>
     <string name="wallet_refresh_address_failed">手續費已變更且重新整理失敗，請重試。</string>
     <string name="wallet_setting_currency_desc">%1$s（%2$s）</string>

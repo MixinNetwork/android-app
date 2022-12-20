@@ -6,7 +6,6 @@ import android.content.DialogInterface
 import android.view.View.GONE
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
@@ -84,7 +83,6 @@ class NftBottomSheetDialogFragment : BiometricBottomSheetDialogFragment() {
 
             handleMixinResponse(
                 invokeNetwork = { bottomViewModel.getToken(t.tokenId) },
-                switchContext = Dispatchers.IO,
                 successBlock = { response ->
                     response.data?.let { data ->
                         data.metadata

@@ -11,12 +11,12 @@ plugins {
 
 def versionMajor = 0
 def versionMinor = 37
-def versionPatch = 4
-def versionBuild = 0
+def versionPatch = 6
+def versionBuild = 2
 
 android {
     compileSdkVersion 33
-    buildToolsVersion "33.0.0"
+    buildToolsVersion "33.0.1"
     ndkVersion "23.1.7779620"
     namespace "one.mixin.android"
     defaultConfig {
@@ -27,7 +27,7 @@ android {
         versionName "${versionMajor}.${versionMinor}.${versionPatch}"
         multiDexEnabled true
         testInstrumentationRunner "one.mixin.android.CustomTestRunner"
-        resConfigs "en", "in", "ja", "ms", "ru", "zh-rCN", "zh-rTW"
+        resConfigs 'en', 'in', 'ja', 'ms', 'ru', 'zh-rCN', 'zh-rTW'
 
         javaCompileOptions {
             annotationProcessorOptions {
@@ -192,7 +192,7 @@ android {
 
 dependencies {
     coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:1.2.2'
-    implementation platform("com.google.firebase:firebase-bom:31.1.0")
+    implementation platform("com.google.firebase:firebase-bom:31.1.1")
     implementation fileTree(include: ['*.aar'], dir: 'libs')
     implementation "androidx.fragment:fragment-ktx:${fragmentVersion}"
     implementation "androidx.appcompat:appcompat:${appcompatVersion}"
@@ -361,8 +361,8 @@ dependencies {
     implementation "androidx.compose.runtime:runtime-rxjava2:${composeVersion}"
     implementation 'androidx.activity:activity-compose:1.6.1'
     androidTestImplementation "androidx.compose.ui:ui-test-junit4:${composeVersion}"
-    implementation "com.google.accompanist:accompanist-pager:0.27.1"
-    implementation "com.google.accompanist:accompanist-pager-indicators:0.27.1"
+    implementation "com.google.accompanist:accompanist-pager:0.28.0"
+    implementation "com.google.accompanist:accompanist-pager-indicators:0.28.0"
 
     // accompanist
     implementation "com.google.accompanist:accompanist-navigation-animation:${accompanistVersion}"
@@ -401,6 +401,9 @@ dependencies {
     kaptAndroidTest "com.google.dagger:hilt-android-compiler:$hiltVersion"
     kaptAndroidTest "androidx.hilt:hilt-compiler:$hiltAndroidxVersion"
 
+    // ML Kit
+    implementation 'com.google.mlkit:entity-extraction:16.0.0-beta4'
+
     // Leak Canary
     debugImplementation "com.squareup.leakcanary:leakcanary-android:$leakcanaryVerison"
     implementation "com.squareup.leakcanary:leakcanary-android-process:$leakcanaryVerison"
@@ -428,6 +431,7 @@ task ktlintFormat(type: JavaExec, group: "formatting") {
     classpath = configurations.ktlint
     main = "com.pinterest.ktlint.Main"
     args "-F", "src/**/*.kt"
+    jvmArgs("--add-opens", "java.base/java.lang=ALL-UNNAMED")
 }
 
 configurations.all {

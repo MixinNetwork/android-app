@@ -17,6 +17,7 @@ import one.mixin.android.crypto.Base64
 import one.mixin.android.crypto.SignalProtocol
 import one.mixin.android.crypto.requestResendKey
 import one.mixin.android.crypto.vo.RatchetStatus
+import one.mixin.android.db.deleteFtsByMessageId
 import one.mixin.android.db.insertAndNotifyConversation
 import one.mixin.android.db.insertMessage
 import one.mixin.android.db.insertNoReplace
@@ -404,8 +405,6 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                 messageDao.recallPinMessage(msg.messageId, msg.conversationId)
                 pinMessageDao.deleteByMessageId(msg.messageId)
                 messageMentionDao.deleteMessage(msg.messageId)
-                remoteMessageStatusDao.deleteByMessageId(msg.messageId)
-                remoteMessageStatusDao.updateConversationUnseen(msg.conversationId)
                 if (msg.mediaUrl != null && mediaDownloaded(msg.mediaStatus)) {
                     msg.mediaUrl.getFilePath()?.let {
                         File(it).let { file ->
@@ -424,7 +423,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                     notificationManager.cancel(msg.conversationId.hashCode())
                 }
                 InvalidateFlow.emit(msg.conversationId)
-                messagesFts4Dao.deleteByMessageId(msg.messageId)
+                deleteFtsByMessageId(msg.messageId)
             }
             updateRemoteMessageStatus(data.messageId, MessageStatus.READ)
             messageHistoryDao.insert(MessageHistory(data.messageId))
@@ -460,6 +459,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                     if (updateExpiredMessageList.isNotEmpty()) {
                         val updateMessageIds = updateExpiredMessageList.map { it.first }
                         remoteMessageStatusDao.deleteByMessageIds(updateMessageIds)
+                        pendingMessagesDao.markReadIds(updateMessageIds)
                         updateExpiredMessageList.forEach { expiredMessage ->
                             val messageId = expiredMessage.first
                             val expireAt = expiredMessage.second

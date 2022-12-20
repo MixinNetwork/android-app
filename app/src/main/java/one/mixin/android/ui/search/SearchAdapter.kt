@@ -125,7 +125,14 @@ class SearchAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>(), StickyRec
         notifyItemRangeChanged(data.getCount() - messageCount, messageCount)
     }
 
+    @SuppressLint("NotifyDataSetChanged")
+    fun setUrlData(url: String?) {
+        data.url = url
+        notifyDataSetChanged()
+    }
+
     private fun shouldTips(keyword: String): Boolean {
+        if (data.url != null) { return true }
         if (keyword.length < 4) return false
         if (!keyword.all { it.isDigit() or (it == '+') }) return false
         return if (keyword.startsWith('+')) {
@@ -143,7 +150,7 @@ class SearchAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>(), StickyRec
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         when (getItemViewType(position)) {
             0 -> {
-                (holder as TipHolder).bind(query, searchingId, onItemClickListener)
+                (holder as TipHolder).bind(query, searchingId, data.url, onItemClickListener)
             }
             TypeAsset.index -> {
                 data.getItem(position).let {

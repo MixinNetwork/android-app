@@ -32,6 +32,7 @@ import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.deserialize
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.isUUID
+import one.mixin.android.extension.openAsUrlOrWeb
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.session.Session
@@ -87,6 +88,7 @@ class SearchFragment : BaseFragment(R.layout.fragment_search) {
     }
 
     private var searchJob: Job? = null
+    private var searchUrlJob: Job? = null
     private var messageSearchJob: Job? = null
     private var refreshAssetsJob: Job? = null
     private var cancellationSignal: CancellationSignal? = null
@@ -95,6 +97,7 @@ class SearchFragment : BaseFragment(R.layout.fragment_search) {
     @Suppress("UNCHECKED_CAST")
     private fun bindData(keyword: String? = this@SearchFragment.keyword) {
         searchJob?.cancel()
+        searchUrlJob?.cancel()
         messageSearchJob?.cancel()
         refreshAssetsJob?.cancel()
         cancellationSignal?.cancel()
@@ -177,6 +180,10 @@ class SearchFragment : BaseFragment(R.layout.fragment_search) {
                         ErrorHandler.handleError(t)
                     }
                 )
+            }
+
+            override fun onUrlClick(url: String) {
+                url.openAsUrlOrWeb(requireContext(), null, parentFragmentManager, lifecycleScope)
             }
 
             override fun onAsset(assetItem: AssetItem) {
@@ -297,6 +304,13 @@ class SearchFragment : BaseFragment(R.layout.fragment_search) {
 
         val cancellationSignal = CancellationSignal()
         this@SearchFragment.cancellationSignal = cancellationSignal
+
+        searchUrlJob = launch {
+            searchViewModel.fuzzySearchUrl(keyword).let { url ->
+                searchAdapter.setUrlData(url)
+            }
+        }
+
         messageSearchJob = launch {
             (searchViewModel.fuzzySearch<SearchMessageItem>(cancellationSignal, keyword, 10) as? List<SearchMessageItem>)?.let { searchMessageItems ->
                 searchAdapter.setMessageData(searchMessageItems)
@@ -365,6 +379,7 @@ class SearchFragment : BaseFragment(R.layout.fragment_search) {
         fun onMessageClick(message: SearchMessageItem)
         fun onAsset(assetItem: AssetItem)
         fun onTipClick()
+        fun onUrlClick(url: String)
         fun onChatLongClick(chatMinimal: ChatMinimal, anchor: View): Boolean
     }
 }

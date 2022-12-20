@@ -2,6 +2,7 @@ package one.mixin.android.widget
 
 import android.animation.ObjectAnimator
 import android.animation.ValueAnimator
+import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Canvas
 import android.graphics.Color
@@ -31,8 +32,7 @@ class CircleProgress @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null,
     defStyleAttr: Int = 0,
-) :
-    View(context, attrs, defStyleAttr) {
+) : View(context, attrs, defStyleAttr) {
     private val bounds = RectF()
     private val fBounds = RectF()
 
@@ -119,7 +119,6 @@ class CircleProgress @JvmOverloads constructor(
         mTextPaint.textSize = mTextSize.toFloat()
         mTextPaint.textAlign = Paint.Align.CENTER
         mTextPaint.typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
-        setupAnimations()
     }
 
     private fun start() {
@@ -127,7 +126,7 @@ class CircleProgress @JvmOverloads constructor(
             return
         }
         isRunning = true
-        mObjectAnimatorAngle!!.start()
+        getObjectAnimatorAngle()?.start()
     }
 
     private fun stop() {
@@ -135,7 +134,8 @@ class CircleProgress @JvmOverloads constructor(
             return
         }
         isRunning = false
-        mObjectAnimatorAngle!!.cancel()
+        getObjectAnimatorAngle()?.cancel()
+        mObjectAnimatorAngle = null
         arcAngle = 10f
         setProgress(0)
         invalidate()
@@ -193,7 +193,7 @@ class CircleProgress @JvmOverloads constructor(
                 }
         }
         if (isVisible) {
-            mObjectAnimatorAngle!!.resume()
+            getObjectAnimatorAngle()?.resume()
         }
         super.onAttachedToWindow()
     }
@@ -207,7 +207,7 @@ class CircleProgress @JvmOverloads constructor(
         }
         disposable = null
         if (isVisible) {
-            mObjectAnimatorAngle!!.pause()
+            mObjectAnimatorAngle?.pause()
         }
         super.onDetachedFromWindow()
     }
@@ -341,12 +341,24 @@ class CircleProgress @JvmOverloads constructor(
         canvas.drawArc(fBounds, startAngle, arcAngle, false, mPaint)
     }
 
-    private fun setupAnimations() {
-        mObjectAnimatorAngle = ObjectAnimator.ofFloat(this, "CurrentGlobalAngle", 0f, 360f)
-        mObjectAnimatorAngle!!.interpolator = ANGLE_INTERPOLATOR
-        mObjectAnimatorAngle!!.duration = ANGLE_ANIMATOR_DURATION.toLong()
-        mObjectAnimatorAngle!!.repeatMode = ValueAnimator.RESTART
-        mObjectAnimatorAngle!!.repeatCount = ValueAnimator.INFINITE
+    @SuppressLint("Recycle")
+    private fun getObjectAnimatorAngle(): ObjectAnimator? {
+        return mObjectAnimatorAngle ?: ObjectAnimator.ofFloat(this, "CurrentGlobalAngle", 0f, 360f).apply {
+            interpolator = ANGLE_INTERPOLATOR
+            duration = ANGLE_ANIMATOR_DURATION.toLong()
+            repeatMode = ValueAnimator.RESTART
+            repeatCount = ValueAnimator.INFINITE
+            mObjectAnimatorAngle = this
+        }
+    }
+
+    override fun onWindowVisibilityChanged(visibility: Int) {
+        if (visibility == VISIBLE) {
+            mObjectAnimatorAngle?.resume()
+        } else {
+            mObjectAnimatorAngle?.pause()
+        }
+        super.onWindowVisibilityChanged(visibility)
     }
 
     fun setProgress(progress: Int) {

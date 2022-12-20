@@ -35,7 +35,7 @@ interface AppDao : BaseDao<App> {
         """
         $PREFIX_APP_ITEM
         FROM favorite_apps fa INNER JOIN apps a ON a.app_id = fa.app_id INNER JOIN users u ON u.user_id = fa.user_id
-        WHERE fa.user_id in (:guestId, :masterId) 
+        WHERE fa.user_id IN (:guestId, :masterId) 
         AND u.user_id IS NOT NULL ORDER BY CASE  WHEN fa.user_id= :guestId THEN 2 WHEN fa.user_id= :masterId THEN 1 END;
         """
     )
