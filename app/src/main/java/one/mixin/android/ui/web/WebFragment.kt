@@ -659,13 +659,19 @@ class WebFragment : BaseFragment() {
                         return true
                     }
                 }
-                try {
-                    startActivityForResult(intent, FILE_CHOOSER)
-                } catch (e: ActivityNotFoundException) {
-                    uploadMessage = null
-                    toast(R.string.File_chooser_error)
-                    return false
-                }
+                pickMedia.launch(
+                    when (intent?.type) {
+                        "image/*" -> {
+                            PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
+                        }
+                        "video/*" -> {
+                            PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.VideoOnly)
+                        }
+                        else -> {
+                            PickVisualMediaRequest()
+                        }
+                    }
+                )
                 return true
             }
         }
