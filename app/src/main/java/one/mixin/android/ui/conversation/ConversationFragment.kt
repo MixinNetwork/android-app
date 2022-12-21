@@ -1039,7 +1039,7 @@ class ConversationFragment() :
     // for testing
     lateinit var getForwardResult: ActivityResultLauncher<Pair<ArrayList<ForwardMessage>, String?>>
     private lateinit var getCombineForwardResult: ActivityResultLauncher<ArrayList<TranscriptMessage>>
-    private lateinit var getChatHistoryResult: ActivityResultLauncher<Pair<String, Boolean>>
+    private lateinit var getChatHistoryResult: ActivityResultLauncher<Triple<String, Boolean, Int>>
     private lateinit var getMediaResult: ActivityResultLauncher<MediaPagerActivity.MediaParam>
     private lateinit var getShareMediaResult: ActivityResultLauncher<Pair<String, Boolean>>
     lateinit var getEditorResult: ActivityResultLauncher<Pair<Uri, String?>>
@@ -1942,12 +1942,13 @@ class ConversationFragment() :
                         scrollToMessage(messageId)
                     }
                     binding.pinMessageLayout.pin.setOnClickListener {
-                        getChatHistoryResult.launch(Pair(conversationId, isGroup))
+                        getChatHistoryResult.launch(Triple(conversationId, isGroup, pinCount))
                     }
                 }
             }
         chatViewModel.countPinMessages(conversationId)
             .observe(viewLifecycleOwner) { count ->
+                pinCount = count
                 binding.pinMessageLayout.isVisible = count > 0
             }
     }
@@ -1965,6 +1966,7 @@ class ConversationFragment() :
         }
     }
 
+    private var pinCount: Int = 0
     private var appList: List<AppItem>? = null
 
     private inline fun createConversation(crossinline action: () -> Unit) {

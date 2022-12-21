@@ -10,7 +10,9 @@ import one.mixin.android.db.MixinDatabase
 import one.mixin.android.ui.search.CancellationLimitOffsetDataSource
 import one.mixin.android.util.chat.FastLimitOffsetDataSource
 import one.mixin.android.util.chat.MixinLimitOffsetDataSource
+import one.mixin.android.util.chat.NoCountLimitOffsetDataSource
 import one.mixin.android.vo.AssetItem
+import one.mixin.android.vo.ChatHistoryMessageItem
 import one.mixin.android.vo.ChatMinimal
 import one.mixin.android.vo.ConversationItem
 import one.mixin.android.vo.MessageItem
@@ -452,6 +454,313 @@ class DataProvider {
                     return CancellationMessageDetailItemLimitOffsetDataSource(database, statement, countStatement, cancellationSignal)
                 }
             }
+
+        fun getPinMessages(database: MixinDatabase, conversationId: String, count: Int) =
+            object : DataSource.Factory<Int, ChatHistoryMessageItem>() {
+                override fun create(): DataSource<Int, ChatHistoryMessageItem> {
+                    val sql =
+                        """
+                        SELECT m.id AS messageId, m.conversation_id AS conversationId, u.user_id AS userId,
+                        u.full_name AS userFullName, u.identity_number AS userIdentityNumber, u.app_id AS appId, m.category AS type,
+                        m.content AS content, m.created_at AS createdAt, m.status AS status, m.media_status AS mediaStatus, m.media_waveform AS mediaWaveform,
+                        m.name AS mediaName, m.media_mime_type AS mediaMimeType, m.media_size AS mediaSize, m.media_width AS mediaWidth, m.media_height AS mediaHeight,
+                        m.thumb_image AS thumbImage, m.thumb_url AS thumbUrl, m.media_url AS mediaUrl, m.media_duration AS mediaDuration, m.quote_message_id as quoteId,
+                        m.quote_content as quoteContent, m.caption as caption, u1.full_name AS participantFullName, m.action AS actionName, u1.user_id AS participantUserId,
+                        s.snapshot_id AS snapshotId, s.type AS snapshotType, s.amount AS snapshotAmount, a.symbol AS assetSymbol, s.asset_id AS assetId,
+                        a.icon_url AS assetIcon, st.asset_url AS assetUrl, st.asset_width AS assetWidth, st.asset_height AS assetHeight, st.sticker_id AS stickerId,
+                        st.name AS assetName, st.asset_type AS assetType, h.site_name AS siteName, h.site_title AS siteTitle, h.site_description AS siteDescription,
+                        h.site_image AS siteImage, m.shared_user_id AS sharedUserId, su.full_name AS sharedUserFullName, su.identity_number AS sharedUserIdentityNumber,
+                        su.avatar_url AS sharedUserAvatarUrl, su.is_verified AS sharedUserIsVerified, su.app_id AS sharedUserAppId, mm.mentions AS mentions, mm.has_read as mentionRead,
+                        c.name AS groupName
+                        FROM pin_messages pm
+                        INNER JOIN messages m ON m.id = pm.message_id
+                        INNER JOIN users u ON m.user_id = u.user_id
+                        LEFT JOIN users u1 ON m.participant_id = u1.user_id
+                        LEFT JOIN snapshots s ON m.snapshot_id = s.snapshot_id
+                        LEFT JOIN assets a ON s.asset_id = a.asset_id
+                        LEFT JOIN stickers st ON st.sticker_id = m.sticker_id
+                        LEFT JOIN hyperlinks h ON m.hyperlink = h.hyperlink
+                        LEFT JOIN users su ON m.shared_user_id = su.user_id
+                        LEFT JOIN conversations c ON m.conversation_id = c.conversation_id
+                        LEFT JOIN message_mentions mm ON m.id = mm.message_id
+                        WHERE m.conversation_id = ? 
+                        ORDER BY m.created_at ASC
+                        """
+                    val statement = RoomSQLiteQuery.acquire(sql, 1)
+                    statement.bindString(1, conversationId)
+                    return object : NoCountLimitOffsetDataSource<ChatHistoryMessageItem>(database, statement, count, "pin_messages", "messages", "users", "snapshots", "assets", "stickers", "hyperlinks", "conversations", "message_mentions") {
+                        @Suppress("LocalVariableName")
+                        override fun convertRows(cursor: Cursor?): MutableList<ChatHistoryMessageItem> {
+                            val _cursorIndexOfMessageId = 0
+                            val _cursorIndexOfConversationId = 1
+                            val _cursorIndexOfUserId = 2
+                            val _cursorIndexOfUserFullName = 3
+                            val _cursorIndexOfUserIdentityNumber = 4
+                            val _cursorIndexOfAppId = 5
+                            val _cursorIndexOfType = 6
+                            val _cursorIndexOfContent = 7
+                            val _cursorIndexOfCreatedAt = 8
+                            val _cursorIndexOfMediaStatus = 10
+                            val _cursorIndexOfMediaWaveform = 11
+                            val _cursorIndexOfMediaName = 12
+                            val _cursorIndexOfMediaMimeType = 13
+                            val _cursorIndexOfMediaSize = 14
+                            val _cursorIndexOfMediaWidth = 15
+                            val _cursorIndexOfMediaHeight = 16
+                            val _cursorIndexOfThumbImage = 17
+                            val _cursorIndexOfThumbUrl = 18
+                            val _cursorIndexOfMediaUrl = 19
+                            val _cursorIndexOfMediaDuration = 20
+                            val _cursorIndexOfQuoteId = 21
+                            val _cursorIndexOfQuoteContent = 22
+                            val _cursorIndexOfAssetUrl = 33
+                            val _cursorIndexOfAssetWidth = 34
+                            val _cursorIndexOfAssetHeight = 35
+                            val _cursorIndexOfAssetType = 38
+                            val _cursorIndexOfSharedUserId = 43
+                            val _cursorIndexOfSharedUserFullName = 44
+                            val _cursorIndexOfSharedUserIdentityNumber = 45
+                            val _cursorIndexOfSharedUserAvatarUrl = 46
+                            val _cursorIndexOfSharedUserIsVerified = 47
+                            val _cursorIndexOfSharedUserAppId = 48
+                            val _cursorIndexOfMentions = 49
+                            val _res: MutableList<ChatHistoryMessageItem> = ArrayList(
+                                cursor!!.count,
+                            )
+                            while (cursor.moveToNext()) {
+                                val _item: ChatHistoryMessageItem
+                                val _tmpMessageId: String? = if (cursor.isNull(_cursorIndexOfMessageId)) {
+                                    null
+                                } else {
+                                    cursor.getString(_cursorIndexOfMessageId)
+                                }
+                                val _tmpConversationId: String? =
+                                    if (cursor.isNull(_cursorIndexOfConversationId)) {
+                                        null
+                                    } else {
+                                        cursor.getString(_cursorIndexOfConversationId)
+                                    }
+                                val _tmpUserId: String? = if (cursor.isNull(_cursorIndexOfUserId)) {
+                                    null
+                                } else {
+                                    cursor.getString(_cursorIndexOfUserId)
+                                }
+                                val _tmpUserFullName: String? =
+                                    if (cursor.isNull(_cursorIndexOfUserFullName)) {
+                                        null
+                                    } else {
+                                        cursor.getString(_cursorIndexOfUserFullName)
+                                    }
+                                val _tmpUserIdentityNumber: String? =
+                                    if (cursor.isNull(_cursorIndexOfUserIdentityNumber)) {
+                                        null
+                                    } else {
+                                        cursor.getString(_cursorIndexOfUserIdentityNumber)
+                                    }
+                                val _tmpAppId: String? = if (cursor.isNull(_cursorIndexOfAppId)) {
+                                    null
+                                } else {
+                                    cursor.getString(_cursorIndexOfAppId)
+                                }
+                                val _tmpType: String? = if (cursor.isNull(_cursorIndexOfType)) {
+                                    null
+                                } else {
+                                    cursor.getString(_cursorIndexOfType)
+                                }
+                                val _tmpContent: String? = if (cursor.isNull(_cursorIndexOfContent)) {
+                                    null
+                                } else {
+                                    cursor.getString(_cursorIndexOfContent)
+                                }
+                                val _tmpCreatedAt: String? =
+                                    if (cursor.isNull(_cursorIndexOfCreatedAt)) {
+                                        null
+                                    } else {
+                                        cursor.getString(_cursorIndexOfCreatedAt)
+                                    }
+                                val _tmpMediaStatus: String? =
+                                    if (cursor.isNull(_cursorIndexOfMediaStatus)) {
+                                        null
+                                    } else {
+                                        cursor.getString(_cursorIndexOfMediaStatus)
+                                    }
+                                val _tmpMediaWaveform: ByteArray? =
+                                    if (cursor.isNull(_cursorIndexOfMediaWaveform)) {
+                                        null
+                                    } else {
+                                        cursor.getBlob(_cursorIndexOfMediaWaveform)
+                                    }
+                                val _tmpMediaName: String? =
+                                    if (cursor.isNull(_cursorIndexOfMediaName)) {
+                                        null
+                                    } else {
+                                        cursor.getString(_cursorIndexOfMediaName)
+                                    }
+                                val _tmpMediaMimeType: String? =
+                                    if (cursor.isNull(_cursorIndexOfMediaMimeType)) {
+                                        null
+                                    } else {
+                                        cursor.getString(_cursorIndexOfMediaMimeType)
+                                    }
+                                val _tmpMediaSize: Long? = if (cursor.isNull(_cursorIndexOfMediaSize)) {
+                                    null
+                                } else {
+                                    cursor.getLong(_cursorIndexOfMediaSize)
+                                }
+                                val _tmpMediaWidth: Int? =
+                                    if (cursor.isNull(_cursorIndexOfMediaWidth)) {
+                                        null
+                                    } else {
+                                        cursor.getInt(_cursorIndexOfMediaWidth)
+                                    }
+                                val _tmpMediaHeight: Int? =
+                                    if (cursor.isNull(_cursorIndexOfMediaHeight)) {
+                                        null
+                                    } else {
+                                        cursor.getInt(_cursorIndexOfMediaHeight)
+                                    }
+                                val _tmpThumbImage: String? =
+                                    if (cursor.isNull(_cursorIndexOfThumbImage)) {
+                                        null
+                                    } else {
+                                        cursor.getString(_cursorIndexOfThumbImage)
+                                    }
+                                val _tmpThumbUrl: String? = if (cursor.isNull(_cursorIndexOfThumbUrl)) {
+                                    null
+                                } else {
+                                    cursor.getString(_cursorIndexOfThumbUrl)
+                                }
+                                val _tmpMediaUrl: String? = if (cursor.isNull(_cursorIndexOfMediaUrl)) {
+                                    null
+                                } else {
+                                    cursor.getString(_cursorIndexOfMediaUrl)
+                                }
+                                val _tmpMediaDuration: String? =
+                                    if (cursor.isNull(_cursorIndexOfMediaDuration)) {
+                                        null
+                                    } else {
+                                        cursor.getString(_cursorIndexOfMediaDuration)
+                                    }
+                                val _tmpQuoteId: String? = if (cursor.isNull(_cursorIndexOfQuoteId)) {
+                                    null
+                                } else {
+                                    cursor.getString(_cursorIndexOfQuoteId)
+                                }
+                                val _tmpQuoteContent: String? =
+                                    if (cursor.isNull(_cursorIndexOfQuoteContent)) {
+                                        null
+                                    } else {
+                                        cursor.getString(_cursorIndexOfQuoteContent)
+                                    }
+                                val _tmpAssetUrl: String? = if (cursor.isNull(_cursorIndexOfAssetUrl)) {
+                                    null
+                                } else {
+                                    cursor.getString(_cursorIndexOfAssetUrl)
+                                }
+                                val _tmpAssetWidth: Int? =
+                                    if (cursor.isNull(_cursorIndexOfAssetWidth)) {
+                                        null
+                                    } else {
+                                        cursor.getInt(_cursorIndexOfAssetWidth)
+                                    }
+                                val _tmpAssetHeight: Int? =
+                                    if (cursor.isNull(_cursorIndexOfAssetHeight)) {
+                                        null
+                                    } else {
+                                        cursor.getInt(_cursorIndexOfAssetHeight)
+                                    }
+                                val _tmpAssetType: String? =
+                                    if (cursor.isNull(_cursorIndexOfAssetType)) {
+                                        null
+                                    } else {
+                                        cursor.getString(_cursorIndexOfAssetType)
+                                    }
+                                val _tmpSharedUserId: String? =
+                                    if (cursor.isNull(_cursorIndexOfSharedUserId)) {
+                                        null
+                                    } else {
+                                        cursor.getString(_cursorIndexOfSharedUserId)
+                                    }
+                                val _tmpSharedUserFullName: String? =
+                                    if (cursor.isNull(_cursorIndexOfSharedUserFullName)) {
+                                        null
+                                    } else {
+                                        cursor.getString(_cursorIndexOfSharedUserFullName)
+                                    }
+                                val _tmpSharedUserIdentityNumber: String? =
+                                    if (cursor.isNull(_cursorIndexOfSharedUserIdentityNumber)) {
+                                        null
+                                    } else {
+                                        cursor.getString(_cursorIndexOfSharedUserIdentityNumber)
+                                    }
+                                val _tmpSharedUserAvatarUrl: String? =
+                                    if (cursor.isNull(_cursorIndexOfSharedUserAvatarUrl)) {
+                                        null
+                                    } else {
+                                        cursor.getString(_cursorIndexOfSharedUserAvatarUrl)
+                                    }
+                                val _tmpSharedUserIsVerified: Boolean?
+                                val _tmp: Int? =
+                                    if (cursor.isNull(_cursorIndexOfSharedUserIsVerified)) {
+                                        null
+                                    } else {
+                                        cursor.getInt(_cursorIndexOfSharedUserIsVerified)
+                                    }
+                                _tmpSharedUserIsVerified = if (_tmp == null) null else _tmp != 0
+                                val _tmpSharedUserAppId: String? =
+                                    if (cursor.isNull(_cursorIndexOfSharedUserAppId)) {
+                                        null
+                                    } else {
+                                        cursor.getString(_cursorIndexOfSharedUserAppId)
+                                    }
+                                val _tmpMentions: String? = if (cursor.isNull(_cursorIndexOfMentions)) {
+                                    null
+                                } else {
+                                    cursor.getString(_cursorIndexOfMentions)
+                                }
+                                _item = ChatHistoryMessageItem(
+                                    null,
+                                    _tmpConversationId,
+                                    _tmpMessageId!!,
+                                    _tmpUserId,
+                                    _tmpUserFullName,
+                                    _tmpUserIdentityNumber,
+                                    _tmpType!!,
+                                    _tmpAppId,
+                                    _tmpContent,
+                                    _tmpCreatedAt!!,
+                                    _tmpMediaStatus,
+                                    _tmpMediaName,
+                                    _tmpMediaMimeType,
+                                    _tmpMediaSize,
+                                    _tmpThumbUrl,
+                                    _tmpMediaWidth,
+                                    _tmpMediaHeight,
+                                    _tmpThumbImage,
+                                    _tmpMediaUrl,
+                                    _tmpMediaDuration,
+                                    _tmpMediaWaveform,
+                                    _tmpAssetWidth,
+                                    _tmpAssetHeight,
+                                    _tmpAssetUrl,
+                                    _tmpAssetType,
+                                    _tmpSharedUserId,
+                                    _tmpSharedUserFullName,
+                                    _tmpSharedUserAvatarUrl,
+                                    _tmpSharedUserIdentityNumber,
+                                    _tmpSharedUserIsVerified,
+                                    _tmpSharedUserAppId,
+                                    _tmpQuoteId,
+                                    _tmpQuoteContent,
+                                    _tmpMentions,
+                                )
+                                _res.add(_item)
+                            }
+                            return _res
+                        }
+                    }
+                }
+            }
     }
 
     private class CancellationMessageDetailItemLimitOffsetDataSource(
@@ -459,7 +768,7 @@ class DataProvider {
         statement: RoomSQLiteQuery,
         countStatement: RoomSQLiteQuery,
         cancellationSignal: CancellationSignal,
-    ) : CancellationLimitOffsetDataSource<SearchMessageDetailItem>(database, statement, countStatement, cancellationSignal, true, "messages", "users", "snapshots", "assets", "stickers", "hyperlinks", "conversations", "message_mentions") {
+    ) : CancellationLimitOffsetDataSource<SearchMessageDetailItem>(database, statement, countStatement, cancellationSignal, true, "pin_messages", "messages", "users", "snapshots", "assets", "stickers", "hyperlinks", "conversations", "message_mentions") {
         override fun convertRows(cursor: Cursor?): MutableList<SearchMessageDetailItem> {
             return convertToSearchMessageDetailItem(cursor)
         }

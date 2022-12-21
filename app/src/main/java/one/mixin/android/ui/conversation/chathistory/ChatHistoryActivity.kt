@@ -12,12 +12,15 @@ import android.os.Bundle
 import android.provider.Settings
 import android.view.ContextThemeWrapper
 import android.view.View
-import androidx.activity.result.ActivityResultLauncher
 import androidx.appcompat.widget.PopupMenu
 import androidx.core.content.ContextCompat
 import androidx.core.view.children
 import androidx.core.view.isVisible
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.lifecycleScope
+import androidx.paging.DataSource
+import androidx.paging.LivePagedListBuilder
+import androidx.paging.PagedList
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.exoplayer2.util.MimeTypes
@@ -128,6 +131,9 @@ class ChatHistoryActivity : BaseActivity() {
     private val isGroup by lazy {
         intent.getBooleanExtra(IS_GROUP, false)
     }
+    private val count by lazy {
+        intent.getIntExtra(COUNT, 0)
+    }
     private val isTranscript by lazy {
         intent.getIntExtra(CATEGORY, TRANSCRIPT) == TRANSCRIPT
     }
@@ -176,12 +182,12 @@ class ChatHistoryActivity : BaseActivity() {
         binding.recyclerView.adapter = chatHistoryAdapter
         if (isTranscript) {
             binding.unpinTv.isVisible = false
-            conversationRepository.findTranscriptMessageItemById(transcriptId)
+            buildLivePagedList(conversationRepository.findTranscriptMessageItemById(transcriptId))
                 .observe(this) { transcripts ->
                     binding.titleView.rightIb.setOnClickListener {
                         showBottomSheet()
                     }
-                    chatHistoryAdapter.transcripts = transcripts
+                    chatHistoryAdapter.submitList(transcripts)
                 }
             binding.titleView.rightAnimator.isVisible = true
             binding.titleView.rightIb.setImageResource(R.drawable.ic_more)
@@ -224,13 +230,13 @@ class ChatHistoryActivity : BaseActivity() {
                     }.show()
             }
             binding.titleView.rightAnimator.isVisible = false
-            conversationRepository.getPinMessages(conversationId)
+            binding.titleView.setSubTitle(
+                this@ChatHistoryActivity.resources.getQuantityString(R.plurals.pinned_message_title, count, count),
+                "",
+            )
+            buildLivePagedList(conversationRepository.getPinMessages(conversationId, count))
                 .observe(this) { list ->
-                    binding.titleView.setSubTitle(
-                        this@ChatHistoryActivity.resources.getQuantityString(R.plurals.pinned_message_title, list.size, list.size),
-                        "",
-                    )
-                    chatHistoryAdapter.transcripts = list
+                    chatHistoryAdapter.submitList(list)
                 }
         }
     }
@@ -246,6 +252,18 @@ class ChatHistoryActivity : BaseActivity() {
         }
         super.onStop()
         AudioPlayer.pause()
+    }
+
+    private fun buildLivePagedList(dataSource: DataSource.Factory<Int, ChatHistoryMessageItem>): LiveData<PagedList<ChatHistoryMessageItem>> {
+        val pagedListConfig = PagedList.Config.Builder()
+            .setPrefetchDistance(10 * 2)
+            .setPageSize(10)
+            .setEnablePlaceholders(true)
+            .build()
+        return LivePagedListBuilder(
+            dataSource,
+            pagedListConfig,
+        ).build()
     }
 
     private val chatHistoryAdapter by lazy {
@@ -569,7 +587,7 @@ class ChatHistoryActivity : BaseActivity() {
                                         ClipData.newPlainText(null, messageItem.content),
                                     )
                                     toast(R.string.copied_to_clipboard)
-                                } catch (e: ArrayIndexOutOfBoundsException) {
+                                } catch (_: ArrayIndexOutOfBoundsException) {
                                 }
                             }
                             R.id.forward -> {
@@ -725,8 +743,6 @@ class ChatHistoryActivity : BaseActivity() {
             )
     }
 
-    lateinit var getCombineForwardContract: ActivityResultLauncher<ArrayList<TranscriptMessage>>
-
     @SuppressLint("AutoDispose")
     private fun showBottomSheet() {
         val builder = BottomSheet.Builder(this)
@@ -836,6 +852,7 @@ class ChatHistoryActivity : BaseActivity() {
         private const val ENCRYPT_CATEGORY = "encryptCategory"
         private const val IS_GROUP = "is_group"
         private const val CATEGORY = "category"
+        private const val COUNT = "count"
         private const val TRANSCRIPT = 0
         private const val CHAT_HISTORY = 1
         fun show(context: Context, messageId: String, conversationId: String, encryptCategory: EncryptCategory) {
@@ -849,11 +866,12 @@ class ChatHistoryActivity : BaseActivity() {
             )
         }
 
-        fun getPinIntent(context: Context, conversationId: String, isGroup: Boolean): Intent {
+        fun getPinIntent(context: Context, conversationId: String, isGroup: Boolean, count: Int): Intent {
             return Intent(context, ChatHistoryActivity::class.java).apply {
                 putExtra(CONVERSATION_ID, conversationId)
                 putExtra(CATEGORY, CHAT_HISTORY)
                 putExtra(IS_GROUP, isGroup)
+                putExtra(COUNT, count)
             }
         }
     }

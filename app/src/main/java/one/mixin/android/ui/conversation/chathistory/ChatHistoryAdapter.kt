@@ -1,11 +1,9 @@
 package one.mixin.android.ui.conversation.chathistory
 
-import android.annotation.SuppressLint
 import android.app.Activity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.recyclerview.widget.RecyclerView
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemChatActionBinding
 import one.mixin.android.databinding.ItemChatActionCardBinding
@@ -25,12 +23,14 @@ import one.mixin.android.databinding.ItemChatTextBinding
 import one.mixin.android.databinding.ItemChatTextQuoteBinding
 import one.mixin.android.databinding.ItemChatTimeBinding
 import one.mixin.android.databinding.ItemChatTranscriptBinding
+import one.mixin.android.databinding.ItemChatTransparentBinding
 import one.mixin.android.databinding.ItemChatUnknownBinding
 import one.mixin.android.databinding.ItemChatVideoBinding
 import one.mixin.android.databinding.ItemChatVideoQuoteBinding
 import one.mixin.android.extension.hashForDate
 import one.mixin.android.extension.isSameDay
 import one.mixin.android.extension.notNullWithElse
+import one.mixin.android.ui.common.recyclerview.SafePagedListAdapter
 import one.mixin.android.ui.conversation.chathistory.holder.ActionCardHolder
 import one.mixin.android.ui.conversation.chathistory.holder.ActionHolder
 import one.mixin.android.ui.conversation.chathistory.holder.AudioHolder
@@ -49,6 +49,7 @@ import one.mixin.android.ui.conversation.chathistory.holder.StickerHolder
 import one.mixin.android.ui.conversation.chathistory.holder.TextHolder
 import one.mixin.android.ui.conversation.chathistory.holder.TextQuoteHolder
 import one.mixin.android.ui.conversation.chathistory.holder.TranscriptHolder
+import one.mixin.android.ui.conversation.chathistory.holder.TransparentHolder
 import one.mixin.android.ui.conversation.chathistory.holder.UnknownHolder
 import one.mixin.android.ui.conversation.chathistory.holder.VideoHolder
 import one.mixin.android.ui.conversation.chathistory.holder.VideoQuoteHolder
@@ -77,8 +78,8 @@ import kotlin.math.abs
 class ChatHistoryAdapter(
     private val onItemListener: OnItemListener,
     private val context: Activity,
-) :
-    RecyclerView.Adapter<BaseViewHolder>(), MixinStickyRecyclerHeadersAdapter<TimeHolder> {
+) : SafePagedListAdapter<ChatHistoryMessageItem, BaseViewHolder>(ChatHistoryMessageItem.DIFF_CALLBACK),
+    MixinStickyRecyclerHeadersAdapter<TimeHolder> {
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): BaseViewHolder {
         return when (viewType) {
             1 -> TextHolder(
@@ -223,6 +224,13 @@ class ChatHistoryAdapter(
                     false,
                 ),
             )
+            0 -> TransparentHolder(
+                ItemChatTransparentBinding.inflate(
+                    LayoutInflater.from(parent.context),
+                    parent,
+                    false,
+                ),
+            )
             else -> UnknownHolder(
                 ItemChatUnknownBinding.inflate(
                     LayoutInflater.from(parent.context),
@@ -238,129 +246,134 @@ class ChatHistoryAdapter(
     }
 
     override fun onBindViewHolder(holder: BaseViewHolder, position: Int) {
+        val transcript = getItem(position) ?: return
+
         return when (getItemViewType(position)) {
             1 -> (holder as TextHolder).bind(
-                transcripts[position],
+                transcript,
                 isLast = isLast(position),
                 isFirst = isFirst(position),
                 onItemListener,
             )
             -1 -> (holder as TextQuoteHolder).bind(
-                transcripts[position],
+                transcript,
                 isLast = isLast(position),
                 isFirst = isFirst(position),
                 onItemListener,
             )
             2 -> (holder as ImageHolder).bind(
-                transcripts[position],
+                transcript,
                 isLast = isLast(position),
                 isFirst = isFirst(position),
                 onItemListener,
             )
             -2 -> (holder as ImageQuoteHolder).bind(
-                transcripts[position],
+                transcript,
                 isLast = isLast(position),
                 isFirst = isFirst(position),
                 onItemListener,
             )
             3 -> (holder as VideoHolder).bind(
-                transcripts[position],
+                transcript,
                 isLast = isLast(position),
                 isFirst = isFirst(position),
                 onItemListener,
             )
             -3 -> (holder as VideoQuoteHolder).bind(
-                transcripts[position],
+                transcript,
                 isLast = isLast(position),
                 isFirst = isFirst(position),
                 onItemListener,
             )
             4 -> (holder as FileHolder).bind(
-                transcripts[position],
+                transcript,
                 isLast = isLast(position),
                 isFirst = isFirst(position),
                 onItemListener,
             )
             -4 -> (holder as FileQuoteHolder).bind(
-                transcripts[position],
+                transcript,
                 isLast = isLast(position),
                 isFirst = isFirst(position),
                 onItemListener,
             )
             5 -> (holder as AudioHolder).bind(
-                transcripts[position],
+                transcript,
                 isLast = isLast(position),
                 isFirst = isFirst(position),
                 onItemListener,
             )
             -5 -> (holder as AudioQuoteHolder).bind(
-                transcripts[position],
+                transcript,
                 isLast = isLast(position),
                 isFirst = isFirst(position),
                 onItemListener,
             )
             6 -> (holder as ContactCardHolder).bind(
-                transcripts[position],
+                transcript,
                 isLast = isLast(position),
                 isFirst = isFirst(position),
                 onItemListener,
             )
             -6 -> (holder as ContactCardQuoteHolder).bind(
-                transcripts[position],
+                transcript,
                 isLast = isLast(position),
                 isFirst = isFirst(position),
                 onItemListener,
             )
             7 -> (holder as StickerHolder).bind(
-                transcripts[position],
+                transcript,
                 isFirst = isFirst(position),
                 onItemListener,
             )
             8 -> (holder as TranscriptHolder).bind(
-                transcripts[position],
+                transcript,
                 isLast = isLast(position),
                 isFirst = isFirst(position),
                 onItemListener,
             )
             9 -> (holder as LocationHolder).bind(
-                transcripts[position],
+                transcript,
                 isLast = isLast(position),
                 isFirst = isFirst(position),
                 onItemListener,
             )
             10 -> (holder as ActionCardHolder).bind(
-                transcripts[position],
+                transcript,
                 isLast = isLast(position),
                 isFirst = isFirst(position),
                 onItemListener,
             )
             11 -> (holder as PostHolder).bind(
-                transcripts[position],
+                transcript,
                 isLast = isLast(position),
                 isFirst = isFirst(position),
                 onItemListener,
                 miniMarkwon,
             )
             12 -> (holder as TranscriptHolder).bind(
-                transcripts[position],
+                transcript,
                 isLast = isLast(position),
                 isFirst = isFirst(position),
                 onItemListener,
             )
             13 -> (holder as RecallHolder).bind(
-                transcripts[position],
+                transcript,
                 isFirst = isFirst(position),
                 isLast = isLast(position),
                 onItemListener,
             )
             14 -> (holder as ActionHolder).bind(
-                transcripts[position],
+                transcript,
                 isLast = isLast(position),
                 isFirst = isFirst(position),
                 onItemListener,
             )
+            0 -> {
+                // left empty
+            }
             else -> (holder as UnknownHolder).bind(
-                transcripts[position],
+                transcript,
                 isLast = isLast(position),
                 isFirst = isFirst(position),
                 onItemListener,
@@ -369,7 +382,7 @@ class ChatHistoryAdapter(
     }
 
     override fun getItemViewType(position: Int): Int {
-        val item = getItem(position)
+        val item = getItem(position) ?: return 0
         return when {
             item.isText() && item.quoteContent.isNullOrEmpty() -> 1
             item.isText() -> -1
@@ -395,7 +408,7 @@ class ChatHistoryAdapter(
     }
 
     override fun onViewAttachedToWindow(holder: BaseViewHolder) {
-        getItem(holder.layoutPosition).let {
+        getItem(holder.layoutPosition)?.let {
             holder.listen(holder.itemView, it.messageId)
         }
     }
@@ -404,11 +417,6 @@ class ChatHistoryAdapter(
         holder.stopListen()
     }
 
-    private fun getItem(position: Int): ChatHistoryMessageItem {
-        return transcripts[position]
-    }
-
-    override fun getItemCount(): Int = transcripts.size
     override fun onCreateAttach(parent: ViewGroup): View =
         LayoutInflater.from(parent.context).inflate(R.layout.item_chat_unread, parent, false)
 
@@ -433,7 +441,7 @@ class ChatHistoryAdapter(
     }
 
     private fun isFirst(position: Int): Boolean {
-        val currentItem = getItem(position)
+        val currentItem = getItem(position) ?: return false
         val previousItem = previous(position)
         return when {
             previousItem == null ->
@@ -447,7 +455,7 @@ class ChatHistoryAdapter(
     }
 
     override fun isLast(position: Int): Boolean {
-        val currentItem = getItem(position)
+        val currentItem = getItem(position) ?: return false
         val nextItem = next(position)
         return when {
             nextItem == null ->
@@ -477,17 +485,10 @@ class ChatHistoryAdapter(
         TimeHolder(ItemChatTimeBinding.inflate(LayoutInflater.from(parent.context), parent, false))
 
     override fun onBindHeaderViewHolder(holder: TimeHolder, position: Int) {
-        getItem(position).let {
+        getItem(position)?.let {
             holder.bind(it.createdAt)
         }
     }
-
-    var transcripts: List<ChatHistoryMessageItem> = emptyList()
-        @SuppressLint("NotifyDataSetChanged")
-        set(value) {
-            field = value
-            notifyDataSetChanged()
-        }
 
     open class OnItemListener {
 

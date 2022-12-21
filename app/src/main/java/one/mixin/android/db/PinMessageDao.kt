@@ -1,6 +1,7 @@
 package one.mixin.android.db
 
 import androidx.lifecycle.LiveData
+import androidx.paging.DataSource
 import androidx.room.Dao
 import androidx.room.Query
 import androidx.room.RoomWarnings
@@ -57,10 +58,12 @@ interface PinMessageDao : BaseDao<PinMessage> {
         LEFT JOIN hyperlinks h ON m.hyperlink = h.hyperlink
         LEFT JOIN users su ON m.shared_user_id = su.user_id
         LEFT JOIN conversations c ON m.conversation_id = c.conversation_id
-        LEFT JOIN message_mentions mm ON m.id = mm.message_id  WHERE m.conversation_id = :conversationId ORDER BY m.created_at ASC
+        LEFT JOIN message_mentions mm ON m.id = mm.message_id  
+        WHERE m.conversation_id = :conversationId 
+        ORDER BY m.created_at ASC
         """,
     )
-    fun getPinMessages(conversationId: String): LiveData<List<ChatHistoryMessageItem>>
+    fun getPinMessages(conversationId: String): DataSource.Factory<Int, ChatHistoryMessageItem>
 
     @Query("SELECT count(1) FROM pin_messages pm INNER JOIN messages m ON m.id = pm.message_id WHERE m.created_at < (SELECT created_at FROM messages WHERE conversation_id = :conversationId AND id = :messageId) AND pm.conversation_id = :conversationId")
     suspend fun findPinMessageIndex(conversationId: String, messageId: String): Int

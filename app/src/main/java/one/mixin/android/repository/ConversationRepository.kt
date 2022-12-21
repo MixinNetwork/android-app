@@ -410,7 +410,7 @@ internal constructor(
 
     fun findTranscriptMessageItemById(transcriptId: String) = transcriptMessageDao.getTranscriptMessages(transcriptId)
 
-    fun getPinMessages(conversationId: String) = pinMessageDao.getPinMessages(conversationId)
+    fun getPinMessages(conversationId: String, count: Int) = DataProvider.getPinMessages(appDatabase, conversationId, count)
 
     suspend fun findTranscriptMessageIndex(transcriptId: String, messageId: String) = transcriptMessageDao.findTranscriptMessageIndex(transcriptId, messageId)
 
