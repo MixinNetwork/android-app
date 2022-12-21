@@ -1385,7 +1385,7 @@ class ConversationFragment() :
                 ) {
                     lifecycleScope.launch(Dispatchers.IO) {
                         if (inputContentInfo != null) {
-                            sendImageMessage(inputContentInfo.contentUri, null, true)
+                            sendImageMessage(inputContentInfo.contentUri, false, null, true)
                         }
                     }
                 }
@@ -1986,7 +1986,7 @@ class ConversationFragment() :
 
     private fun encryptCategory(): EncryptCategory = getEncryptedCategory(isBot, app)
 
-    private fun sendImageMessage(uri: Uri, mimeType: String? = null, fromInput: Boolean = false) {
+    private fun sendImageMessage(uri: Uri, notCompress: Boolean = false, mimeType: String? = null, fromInput: Boolean = false) {
         createConversation {
             lifecycleScope.launch {
                 val code = withContext(Dispatchers.IO) {
@@ -1995,6 +1995,7 @@ class ConversationFragment() :
                         sender,
                         uri,
                         encryptCategory(),
+                        notCompress,
                         mimeType,
                         getRelyMessage(),
                         fromInput,
@@ -3082,7 +3083,8 @@ class ConversationFragment() :
     private fun callbackEditor(data: Intent?) {
         val uri = data?.getParcelableExtra<Uri>(ImageEditorActivity.ARGS_EDITOR_RESULT)
         if (uri != null) {
-            sendImageMessage(uri)
+            val notCompress = data.getBooleanExtra(ImageEditorActivity.ARGS_NOT_COMPRESS, false)
+            sendImageMessage(uri, notCompress)
         }
     }
 

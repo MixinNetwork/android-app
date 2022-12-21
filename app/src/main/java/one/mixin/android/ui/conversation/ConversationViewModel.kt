@@ -323,11 +323,12 @@ internal constructor(
         sender: User,
         uri: Uri,
         encryptCategory: EncryptCategory,
+        notCompress: Boolean = false,
         mime: String? = null,
         replyMessage: MessageItem? = null,
         fromInput: Boolean = false,
     ): Int {
-        return messenger.sendImageMessage(conversationId, sender, uri, encryptCategory, mime, replyMessage, fromInput)
+        return messenger.sendImageMessage(conversationId, sender, uri, encryptCategory, notCompress, mime, replyMessage, fromInput)
     }
 
     fun updateRelationship(request: RelationshipRequest) {

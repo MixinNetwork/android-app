@@ -539,6 +539,7 @@ class SendMessageHelper @Inject internal constructor(private val jobManager: Mix
         sender: User,
         uri: Uri,
         encryptCategory: EncryptCategory,
+        notCompress: Boolean,
         mime: String? = null,
         replyMessage: MessageItem? = null,
         fromInput: Boolean = false,
@@ -617,6 +618,7 @@ class SendMessageHelper @Inject internal constructor(private val jobManager: Mix
                         Bitmap.CompressFormat.JPEG
                     },
                 )
+                .setQuality(if (notCompress) 100 else 85)
                 .compressToFile(uri, temp.absolutePath)
         }
         val length = imageFile.length()
