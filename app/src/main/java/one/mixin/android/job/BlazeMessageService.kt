@@ -368,16 +368,18 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
                     }.apply {
                         pendingDatabase.insertJobs(this)
                     }
-                    Session.getExtensionSessionId()?.let { _ ->
-                        val conversationId = list.first().conversationId
-                        list.map { msg ->
-                            createAckJob(
-                                CREATE_MESSAGE,
-                                BlazeAckMessage(msg.messageId, MessageStatus.READ.name),
-                                conversationId,
-                            )
-                        }.let { jobs ->
-                            pendingDatabase.insertJobs(jobs)
+                    launch {
+                        Session.getExtensionSessionId()?.let { _ ->
+                            val conversationId = list.first().conversationId
+                            list.map { msg ->
+                                createAckJob(
+                                    CREATE_MESSAGE,
+                                    BlazeAckMessage(msg.messageId, MessageStatus.READ.name),
+                                    conversationId,
+                                )
+                            }.let { jobs ->
+                                pendingDatabase.insertJobs(jobs)
+                            }
                         }
                     }
                     remoteMessageStatusDao.deleteByMessageIds(list.map { it.messageId })
