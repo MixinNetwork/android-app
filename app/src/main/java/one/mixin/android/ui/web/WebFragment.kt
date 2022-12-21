@@ -1090,6 +1090,7 @@ class WebFragment : BaseFragment() {
                     },
                 ),
             )
+            uploadMessage = null
         } else {
             uploadMessage?.onReceiveValue(null)
             uploadMessage = null
