@@ -314,9 +314,9 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
                     list.map {
                         gson.fromJson(
                             it.blazeMessage,
-                            BlazeAckMessage::class.java
+                            BlazeAckMessage::class.java,
                         )
-                    }
+                    },
                 )
                 launch {
                     Session.getExtensionSessionId()?.let {
@@ -363,7 +363,7 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
                     list.map { msg ->
                         createAckJob(
                             ACKNOWLEDGE_MESSAGE_RECEIPTS,
-                            BlazeAckMessage(msg.messageId, MessageStatus.READ.name, msg.expireAt)
+                            BlazeAckMessage(msg.messageId, MessageStatus.READ.name, msg.expireAt),
                         )
                     }.apply {
                         pendingDatabase.insertJobs(this)
@@ -374,7 +374,7 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
                             createAckJob(
                                 CREATE_MESSAGE,
                                 BlazeAckMessage(msg.messageId, MessageStatus.READ.name),
-                                conversationId
+                                conversationId,
                             )
                         }.let { jobs ->
                             pendingDatabase.insertJobs(jobs)
@@ -403,7 +403,6 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
             runExpiredJob()
         }
     }
-
 
     private fun runExpiredJob() {
         if (expiredJob?.isActive == true) {
