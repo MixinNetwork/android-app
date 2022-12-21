@@ -40,6 +40,7 @@ class ImageEditorActivity : BaseActivity() {
 
     companion object {
         const val ARGS_EDITOR_RESULT = "args_editor_result"
+        const val ARGS_NOT_COMPRESS = "args_not_compress"
         const val ARGS_IMAGE_URI = "args_image_uri"
         const val ARGS_NEXT_TITLE = "args_next_title"
 

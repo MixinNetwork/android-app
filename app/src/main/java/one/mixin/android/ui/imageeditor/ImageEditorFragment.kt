@@ -9,6 +9,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.appcompat.widget.PopupMenu
 import androidx.collection.arraySetOf
 import androidx.core.net.toUri
 import androidx.core.view.isVisible
@@ -42,6 +43,7 @@ import one.mixin.android.ui.imageeditor.ColorPaletteAdapter.Companion.paletteCol
 import one.mixin.android.ui.imageeditor.ImageEditorActivity.Companion.ARGS_EDITOR_RESULT
 import one.mixin.android.ui.imageeditor.ImageEditorActivity.Companion.ARGS_IMAGE_URI
 import one.mixin.android.ui.imageeditor.ImageEditorActivity.Companion.ARGS_NEXT_TITLE
+import one.mixin.android.ui.imageeditor.ImageEditorActivity.Companion.ARGS_NOT_COMPRESS
 import one.mixin.android.widget.PrevNextView
 import one.mixin.android.widget.imageeditor.ColorableRenderer
 import one.mixin.android.widget.imageeditor.ImageEditorView
@@ -106,7 +108,7 @@ class ImageEditorFragment : BaseFragment(), TextEntryDialogFragment.Controller {
                 nextTv.text = it
             }
             closeIv.setOnClickListener { activity?.onBackPressedDispatcher?.onBackPressed() }
-            nextTv.setOnClickListener { goNext() }
+            nextTv.setOnClickListener { goNext(false) }
             cropLl.setOnClickListener { setMode(Mode.Crop) }
             textLl.setOnClickListener { setMode(Mode.Text) }
             drawLl.setOnClickListener { setMode(Mode.Draw) }
@@ -116,6 +118,10 @@ class ImageEditorFragment : BaseFragment(), TextEntryDialogFragment.Controller {
             titlePrevNextView.next.setOnClickListener { redo() }
             undoRedoView.prev.setOnClickListener { undo() }
             undoRedoView.next.setOnClickListener { redo() }
+            nextTv.setOnLongClickListener {
+                showNotCompress()
+                return@setOnLongClickListener true
+            }
             sizeSeekbar.onSeekChangeListener = onSeekChangeListener
 
             colorRv.layoutManager = LinearLayoutManager(requireContext(), RecyclerView.HORIZONTAL, false)
@@ -196,17 +202,29 @@ class ImageEditorFragment : BaseFragment(), TextEntryDialogFragment.Controller {
         }
     }
 
-    private fun goNext() {
+    private fun goNext(notCompress: Boolean) {
         RxPermissions(requireActivity())
             .request(Manifest.permission.WRITE_EXTERNAL_STORAGE)
             .autoDispose(stopScope)
             .subscribe { granted ->
                 if (granted) {
-                    renderAndSave()
+                    renderAndSave(notCompress)
                 } else {
                     context?.openPermissionSetting()
                 }
             }
+    }
+
+    private fun showNotCompress() {
+        val popMenu = PopupMenu(requireActivity(), binding.nextTv)
+        popMenu.menuInflater.inflate(R.menu.send_without_compression, popMenu.menu)
+        popMenu.setOnMenuItemClickListener {
+            if (it.itemId == R.id.send_without_compression) {
+                goNext(true)
+            }
+            return@setOnMenuItemClickListener true
+        }
+        popMenu.show()
     }
 
     private fun onColorChanged(c: Int) {
@@ -322,12 +340,13 @@ class ImageEditorFragment : BaseFragment(), TextEntryDialogFragment.Controller {
         next.isEnabled = redoAvailable
     }
 
-    private fun renderAndSave() = lifecycleScope.launch {
+    private fun renderAndSave(notCompress: Boolean) = lifecycleScope.launch {
         if (viewDestroyed()) return@launch
 
         fun finishWithUri(uri: Uri) {
             val result = Intent().apply {
                 putExtra(ARGS_EDITOR_RESULT, uri)
+                putExtra(ARGS_NOT_COMPRESS, notCompress)
             }
             requireActivity().apply {
                 setResult(Activity.RESULT_OK, result)
