@@ -30,7 +30,6 @@ import one.mixin.android.Constants.ALLOW_INTERVAL
 import one.mixin.android.Constants.API.FOURSQUARE_URL
 import one.mixin.android.Constants.API.GIPHY_URL
 import one.mixin.android.Constants.API.Mixin_URL
-import one.mixin.android.Constants.API.TIP_URL
 import one.mixin.android.Constants.API.URL
 import one.mixin.android.Constants.DNS
 import one.mixin.android.MixinApplication
@@ -328,6 +327,11 @@ object AppModule {
 
     @Singleton
     @Provides
+    fun provideTipNodeService(retrofit: Retrofit) =
+        retrofit.create(TipNodeService::class.java) as TipNodeService
+
+    @Singleton
+    @Provides
     fun provideContentResolver(app: Application) = app.contentResolver as ContentResolver
 
     @Provides
@@ -399,23 +403,6 @@ object AppModule {
             .client(client)
             .build()
         return retrofit.create(GiphyService::class.java)
-    }
-
-    @Provides
-    @Singleton
-    fun provideTipNodeService(httpLoggingInterceptor: HttpLoggingInterceptor?): TipNodeService {
-        val client = OkHttpClient.Builder().apply {
-            httpLoggingInterceptor?.let { interceptor ->
-                addNetworkInterceptor(interceptor)
-            }
-        }.build()
-        val retrofit = Retrofit.Builder()
-            .baseUrl(TIP_URL)
-            .addConverterFactory(GsonConverterFactory.create())
-            .addCallAdapterFactory(CoroutineCallAdapterFactory())
-            .client(client)
-            .build()
-        return retrofit.create(TipNodeService::class.java)
     }
 
     @Provides

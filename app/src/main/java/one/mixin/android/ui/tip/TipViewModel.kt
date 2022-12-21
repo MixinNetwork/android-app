@@ -8,6 +8,7 @@ import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
 import one.mixin.android.api.response.TipConfig
 import one.mixin.android.api.service.TipNodeService
+import one.mixin.android.tip.TipConstants.tipNodeApi2Path
 import retrofit2.HttpException
 import java.util.concurrent.atomic.AtomicInteger
 import javax.inject.Inject
@@ -28,7 +29,7 @@ internal constructor(
             signers.map { signer ->
                 async(Dispatchers.IO) {
                     kotlin.runCatching {
-                        tipNodeService.get(signer.api)
+                        tipNodeService.get(tipNodeApi2Path(signer.api))
                         successSum.incrementAndGet()
                     }.onFailure {
                         if (it is HttpException) {
