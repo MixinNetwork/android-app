@@ -47,7 +47,6 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.view.ContextThemeWrapper
 import androidx.core.app.ShareCompat
-import androidx.core.content.ContextCompat
 import androidx.core.view.isGone
 import androidx.core.view.isInvisible
 import androidx.core.view.isVisible
@@ -60,7 +59,6 @@ import com.google.gson.Gson
 import com.google.gson.annotations.SerializedName
 import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.autoDispose
-import com.yalantis.ucrop.UCrop
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -286,11 +284,12 @@ class WebFragment : BaseFragment() {
                         Activity.RESULT_OK,
                         Intent().apply {
                             data = uri
-                        }
-                    )
+                        },
+                    ),
                 )
             } else {
-                Timber.e("PhotoPicker", "No media selected")
+                uploadMessage?.onReceiveValue(null)
+                uploadMessage = null
             }
         }
     }
