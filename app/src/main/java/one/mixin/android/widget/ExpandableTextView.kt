@@ -45,7 +45,7 @@ class ExpandableTextView @JvmOverloads constructor(
                 ForegroundColorSpan(expandActionColor),
                 start,
                 expandActionSpannable.length,
-                SPAN_EXCLUSIVE_EXCLUSIVE
+                SPAN_EXCLUSIVE_EXCLUSIVE,
             )
             updateCollapsedDisplayedText(ctaChanged = true)
         }

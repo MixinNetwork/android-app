@@ -427,7 +427,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                 conversationDao.updateLastMessageId(
                     msg.messageId,
                     msg.createdAt,
-                    msg.conversationId
+                    msg.conversationId,
                 )
                 deleteFtsByMessageId(msg.messageId)
             }
