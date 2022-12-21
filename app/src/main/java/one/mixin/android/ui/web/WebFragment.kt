@@ -42,6 +42,8 @@ import android.webkit.WebViewClient.ERROR_TIMEOUT
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.ActivityResultRegistry
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.view.ContextThemeWrapper
 import androidx.core.app.ShareCompat
@@ -269,6 +271,8 @@ class WebFragment : BaseFragment() {
         }
         return super.onContextItemSelected(item)
     }
+
+    private lateinit var pickMedia: ActivityResultLauncher<PickVisualMediaRequest>
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
@@ -698,13 +702,12 @@ class WebFragment : BaseFragment() {
             }
             uploadMessage = null
         } else if (requestCode == FILE_CHOOSER && resultCode == Activity.RESULT_OK) {
-            uploadMessage?.onReceiveValue(
-                WebChromeClient.FileChooserParams.parseResult(
-                    resultCode,
-                    data,
-                ),
-            )
-            uploadMessage = null
+            val dataString = data?.dataString
+            if (dataString != null) {
+                callbackPicker(Uri.parse(dataString))
+            } else {
+                callbackPicker(null)
+            }
         } else {
             uploadMessage?.onReceiveValue(null)
             uploadMessage = null
@@ -1082,14 +1085,7 @@ class WebFragment : BaseFragment() {
 
     private fun callbackPicker(uri:Uri?) {
         if (uri != null) {
-            uploadMessage?.onReceiveValue(
-                WebChromeClient.FileChooserParams.parseResult(
-                    Activity.RESULT_OK,
-                    Intent().apply {
-                        data = uri
-                    },
-                ),
-            )
+            uploadMessage?.onReceiveValue(arrayOf(uri))
             uploadMessage = null
         } else {
             uploadMessage?.onReceiveValue(null)
