@@ -273,6 +273,7 @@ class WebFragment : BaseFragment() {
     override fun onAttach(context: Context) {
         super.onAttach(context)
         getPermissionResult = registerForActivityResult(SettingActivity.PermissionContract(), requireActivity().activityResultRegistry, ::callbackPermission)
+        pickMedia = registerForActivityResult(ActivityResultContracts.PickVisualMedia(), requireActivity().activityResultRegistry, ::callbackPicker)
     }
 
     var uploadMessage: ValueCallback<Array<Uri>>? = null
@@ -1077,6 +1078,22 @@ class WebFragment : BaseFragment() {
         if (!success) return
 
         webView.loadUrl("javascript:localStorage.clear()")
+    }
+
+    private fun callbackPicker(uri:Uri?) {
+        if (uri != null) {
+            uploadMessage?.onReceiveValue(
+                WebChromeClient.FileChooserParams.parseResult(
+                    Activity.RESULT_OK,
+                    Intent().apply {
+                        data = uri
+                    },
+                ),
+            )
+        } else {
+            uploadMessage?.onReceiveValue(null)
+            uploadMessage = null
+        }
     }
 
     private var permissionAlert: AlertDialog? = null
