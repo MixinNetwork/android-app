@@ -42,9 +42,12 @@ import android.webkit.WebViewClient.ERROR_TIMEOUT
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.ActivityResultRegistry
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.view.ContextThemeWrapper
 import androidx.core.app.ShareCompat
+import androidx.core.content.ContextCompat
 import androidx.core.view.isGone
 import androidx.core.view.isInvisible
 import androidx.core.view.isVisible
@@ -57,6 +60,7 @@ import com.google.gson.Gson
 import com.google.gson.annotations.SerializedName
 import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.autoDispose
+import com.yalantis.ucrop.UCrop
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -270,9 +274,25 @@ class WebFragment : BaseFragment() {
         return super.onContextItemSelected(item)
     }
 
+    private lateinit var pickMedia: ActivityResultLauncher<PickVisualMediaRequest>
+
     override fun onAttach(context: Context) {
         super.onAttach(context)
         getPermissionResult = registerForActivityResult(SettingActivity.PermissionContract(), requireActivity().activityResultRegistry, ::callbackPermission)
+        pickMedia = registerForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
+            if (uri != null) {
+                uploadMessage?.onReceiveValue(
+                    WebChromeClient.FileChooserParams.parseResult(
+                        Activity.RESULT_OK,
+                        Intent().apply {
+                            data = uri
+                        }
+                    )
+                )
+            } else {
+                Timber.e("PhotoPicker", "No media selected")
+            }
+        }
     }
 
     var uploadMessage: ValueCallback<Array<Uri>>? = null
@@ -659,13 +679,7 @@ class WebFragment : BaseFragment() {
                         return true
                     }
                 }
-                try {
-                    startActivityForResult(intent, FILE_CHOOSER)
-                } catch (e: ActivityNotFoundException) {
-                    uploadMessage = null
-                    toast(R.string.File_chooser_error)
-                    return false
-                }
+                pickMedia.launch(PickVisualMediaRequest())
                 return true
             }
         }
