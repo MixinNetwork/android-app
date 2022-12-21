@@ -42,6 +42,8 @@ import android.webkit.WebViewClient.ERROR_TIMEOUT
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.ActivityResultRegistry
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.view.ContextThemeWrapper
 import androidx.core.app.ShareCompat
@@ -270,9 +272,26 @@ class WebFragment : BaseFragment() {
         return super.onContextItemSelected(item)
     }
 
+    private lateinit var pickMedia: ActivityResultLauncher<PickVisualMediaRequest>
+
     override fun onAttach(context: Context) {
         super.onAttach(context)
         getPermissionResult = registerForActivityResult(SettingActivity.PermissionContract(), requireActivity().activityResultRegistry, ::callbackPermission)
+        pickMedia = registerForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
+            if (uri != null) {
+                uploadMessage?.onReceiveValue(
+                    WebChromeClient.FileChooserParams.parseResult(
+                        Activity.RESULT_OK,
+                        Intent().apply {
+                            data = uri
+                        },
+                    ),
+                )
+            } else {
+                uploadMessage?.onReceiveValue(null)
+                uploadMessage = null
+            }
+        }
     }
 
     var uploadMessage: ValueCallback<Array<Uri>>? = null
@@ -659,13 +678,7 @@ class WebFragment : BaseFragment() {
                         return true
                     }
                 }
-                try {
-                    startActivityForResult(intent, FILE_CHOOSER)
-                } catch (e: ActivityNotFoundException) {
-                    uploadMessage = null
-                    toast(R.string.File_chooser_error)
-                    return false
-                }
+                pickMedia.launch(PickVisualMediaRequest())
                 return true
             }
         }
