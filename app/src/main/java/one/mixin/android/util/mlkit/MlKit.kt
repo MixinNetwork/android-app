@@ -20,7 +20,7 @@ suspend fun entityInitialize() {
     withContext(Dispatchers.IO) {
         try {
             Tasks.await(mlExtractor.downloadModelIfNeeded(conditions))
-        } catch (e: Exception) {
+        } catch (e: Throwable) {
             reportException("MLKit init", e)
         }
     }
@@ -35,7 +35,7 @@ suspend fun firstUrl(input: String): String? = withContext(Dispatchers.IO) {
             Tasks.await(mlExtractor.downloadModelIfNeeded(conditions))
             null
         }
-    } catch (e: Exception) {
+    } catch (e: Throwable) {
         reportException("MLKit firstUrl", e)
         return@withContext null
     }
