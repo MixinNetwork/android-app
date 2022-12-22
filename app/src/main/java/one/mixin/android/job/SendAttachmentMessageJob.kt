@@ -22,6 +22,7 @@ import one.mixin.android.job.MixinJobManager.Companion.attachmentProcess
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.chat.InvalidateFlow
 import one.mixin.android.util.reportException
+import one.mixin.android.vo.AttachmentExtra
 import one.mixin.android.vo.ExpiredMessage
 import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.Message
@@ -215,7 +216,7 @@ class SendAttachmentMessageJob(
         val plainText = GsonHelper.customGson.toJson(transferMediaData)
         val encoded = plainText.base64Encode()
         message.content = encoded
-        messageDao.updateMessageContent(encoded, message.messageId)
+        messageDao.updateMessageContent(GsonHelper.customGson.toJson(AttachmentExtra(attachmentId = attachmentId, messageId = message.messageId)), message.messageId)
         jobManager.addJobInBackground(SendMessageJob(message, null, true))
         return true
     }

@@ -41,8 +41,6 @@ import one.mixin.android.util.VideoPlayer
 import one.mixin.android.util.blurhash.Base83
 import one.mixin.android.util.blurhash.BlurHashEncoder
 import one.mixin.android.util.reportException
-import one.mixin.android.websocket.AttachmentMessagePayload
-import one.mixin.android.websocket.AudioMessagePayload
 import one.mixin.android.websocket.LiveMessagePayload
 import one.mixin.android.websocket.toLocationData
 import timber.log.Timber
@@ -120,7 +118,14 @@ data class MessageItem(
     private var appCardShareable: Boolean? = null
 
     fun isShareable(): Boolean? {
-        if (type != MessageCategory.APP_CARD.name && type != MessageCategory.PLAIN_LIVE.name && type != MessageCategory.SIGNAL_LIVE.name && type != MessageCategory.ENCRYPTED_LIVE.name) return null
+        if (type != MessageCategory.APP_CARD.name && type != MessageCategory.PLAIN_LIVE.name && type != MessageCategory.SIGNAL_LIVE.name && type != MessageCategory.ENCRYPTED_LIVE.name &&
+            type != MessageCategory.PLAIN_AUDIO.name && type != MessageCategory.SIGNAL_AUDIO.name && type != MessageCategory.ENCRYPTED_AUDIO.name &&
+            type != MessageCategory.PLAIN_IMAGE.name && type != MessageCategory.SIGNAL_IMAGE.name && type != MessageCategory.ENCRYPTED_IMAGE.name &&
+            type != MessageCategory.PLAIN_VIDEO.name && type != MessageCategory.SIGNAL_VIDEO.name && type != MessageCategory.ENCRYPTED_VIDEO.name
+        ) {
+            return null
+        }
+
         try {
             if (type == MessageCategory.APP_CARD.name && appCardShareable == null) {
                 appCardShareable =
@@ -130,20 +135,15 @@ data class MessageItem(
                     content,
                     LiveMessagePayload::class.java,
                 ).shareable
-            } else if ((type == MessageCategory.PLAIN_AUDIO.name || type == MessageCategory.SIGNAL_AUDIO.name || type == MessageCategory.ENCRYPTED_AUDIO.name) && appCardShareable == null) {
+            } else if ((
+                    type == MessageCategory.PLAIN_AUDIO.name || type == MessageCategory.SIGNAL_AUDIO.name || type == MessageCategory.ENCRYPTED_AUDIO.name ||
+                        type == MessageCategory.PLAIN_IMAGE.name || type == MessageCategory.SIGNAL_IMAGE.name || type == MessageCategory.ENCRYPTED_IMAGE.name ||
+                        type == MessageCategory.PLAIN_VIDEO.name || type == MessageCategory.SIGNAL_VIDEO.name || type == MessageCategory.ENCRYPTED_VIDEO.name
+                    ) && appCardShareable == null
+            ) {
                 appCardShareable = GsonHelper.customGson.fromJson(
                     content,
-                    AudioMessagePayload::class.java,
-                ).shareable
-            } else if ((type == MessageCategory.PLAIN_IMAGE.name || type == MessageCategory.SIGNAL_IMAGE.name || type == MessageCategory.ENCRYPTED_IMAGE.name) && appCardShareable == null) {
-                appCardShareable = GsonHelper.customGson.fromJson(
-                    content,
-                    AttachmentMessagePayload::class.java,
-                ).shareable
-            } else if ((type == MessageCategory.PLAIN_VIDEO.name || type == MessageCategory.SIGNAL_VIDEO.name || type == MessageCategory.ENCRYPTED_VIDEO.name) && appCardShareable == null) {
-                appCardShareable = GsonHelper.customGson.fromJson(
-                    content,
-                    AttachmentMessagePayload::class.java,
+                    AttachmentExtra::class.java,
                 ).shareable
             }
         } catch (e: Exception) {

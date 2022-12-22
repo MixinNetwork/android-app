@@ -573,6 +573,7 @@
     <string name="Messages">消息</string>
     <string name="Messaging_Node">消息节点</string>
     <string name="Messaging_node_running">消息节点正在运行</string>
+    <string name="message_shareable_false">该消息已被设置为不允许转发</string>
     <plurals name="Minute" tools:ignore="UnusedQuantity">
         <item quantity="one">%d 分钟</item>
         <item quantity="other">%d 分钟</item>

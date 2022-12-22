@@ -59,6 +59,7 @@ import one.mixin.android.util.reportException
 import one.mixin.android.vo.AppButtonData
 import one.mixin.android.vo.AppCap
 import one.mixin.android.vo.AppCardData
+import one.mixin.android.vo.AttachmentExtra
 import one.mixin.android.vo.CircleConversation
 import one.mixin.android.vo.ConversationStatus
 import one.mixin.android.vo.ExpiredMessage
@@ -645,7 +646,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
 
                 val message = generateQuoteMessageItem(data) { quoteMessageItem ->
                     createMediaMessage(
-                        data.messageId, data.conversationId, data.userId, data.category, mediaData.attachmentId, null, mediaData.mimeType, mediaData.size,
+                        data.messageId, data.conversationId, data.userId, data.category, gson.toJson(AttachmentExtra(attachmentId = mediaData.attachmentId, messageId = data.messageId, shareable = mediaData.shareable)), null, mediaData.mimeType, mediaData.size,
                         mediaData.width, mediaData.height, mediaData.thumbnail, mediaData.key, mediaData.digest, data.createdAt, MediaStatus.CANCELED,
                         data.status, quoteMessageItem?.messageId, quoteMessageItem.toJson(),
                     )
@@ -672,7 +673,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                 val message = generateQuoteMessageItem(data) { quoteMessageItem ->
                     createVideoMessage(
                         data.messageId, data.conversationId, data.userId,
-                        data.category, mediaData.attachmentId, mediaData.name, null, mediaData.duration,
+                        data.category, gson.toJson(AttachmentExtra(attachmentId = mediaData.attachmentId, messageId = data.messageId, shareable = mediaData.shareable)), mediaData.name, null, mediaData.duration,
                         mediaData.width, mediaData.height, mediaData.thumbnail, mediaData.mimeType,
                         mediaData.size, data.createdAt, mediaData.key, mediaData.digest, MediaStatus.CANCELED, data.status,
                         quoteMessageItem?.messageId, quoteMessageItem.toJson(),
@@ -694,7 +695,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                 val message = generateQuoteMessageItem(data) { quoteMessageItem ->
                     createAttachmentMessage(
                         data.messageId, data.conversationId, data.userId,
-                        data.category, mediaData.attachmentId, mediaData.name, null,
+                        data.category, gson.toJson(AttachmentExtra(attachmentId = mediaData.attachmentId, messageId = data.messageId, shareable = mediaData.shareable)), mediaData.name, null,
                         mediaData.mimeType, mediaData.size, data.createdAt,
                         mediaData.key, mediaData.digest, MediaStatus.CANCELED, data.status,
                         quoteMessageItem?.messageId, quoteMessageItem.toJson(),
@@ -716,7 +717,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                 )
                 val message = generateQuoteMessageItem(data) { quoteMessageItem ->
                     createAudioMessage(
-                        data.messageId, data.conversationId, data.userId, mediaData.attachmentId,
+                        data.messageId, data.conversationId, data.userId, gson.toJson(AttachmentExtra(attachmentId = mediaData.attachmentId, messageId = data.messageId, shareable = mediaData.shareable)),
                         data.category, mediaData.size, null, mediaData.duration.toString(), data.createdAt, mediaData.waveform,
                         mediaData.key, mediaData.digest, MediaStatus.PENDING, data.status,
                         quoteMessageItem?.messageId, quoteMessageItem.toJson(),
@@ -1246,12 +1247,12 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
             val mediaData = gson.fromJson(String(decoded), AttachmentMessagePayload::class.java)
             val duration = mediaData.duration?.toString()
             pendingMessagesDao.updateAttachmentMessage(
-                messageId, mediaData.attachmentId, mediaData.mimeType, mediaData.size,
+                messageId, gson.toJson(AttachmentExtra(attachmentId = mediaData.attachmentId, messageId = data.messageId, shareable = mediaData.shareable)), mediaData.mimeType, mediaData.size,
                 mediaData.width, mediaData.height, mediaData.thumbnail, mediaData.name, mediaData.waveform, duration,
                 mediaData.key, mediaData.digest, MediaStatus.CANCELED.name, data.status,
             )
             messageDao.updateAttachmentMessage(
-                messageId, mediaData.attachmentId, mediaData.mimeType, mediaData.size,
+                messageId, gson.toJson(AttachmentExtra(attachmentId = mediaData.attachmentId, messageId = data.messageId, shareable = mediaData.shareable)), mediaData.mimeType, mediaData.size,
                 mediaData.width, mediaData.height, mediaData.thumbnail, mediaData.name, mediaData.waveform, duration,
                 mediaData.key, mediaData.digest, MediaStatus.CANCELED.name, data.status,
             )
