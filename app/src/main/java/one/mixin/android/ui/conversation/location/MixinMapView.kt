@@ -175,8 +175,7 @@ class MixinMapView(
     }
 }
 
-fun useMapbox() = getLanguage() == "zh" &&
-    !MixinApplication.appContext.isGooglePlayServicesAvailable() &&
+fun useMapbox() = !MixinApplication.appContext.isGooglePlayServicesAvailable() &&
     BuildConfig.MAPBOX_PUBLIC_TOKEN.isNotBlank()
 
 data class MixinLatLng(val latitude: Double, val longitude: Double) {
