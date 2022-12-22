@@ -1257,8 +1257,10 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
             )
             InvalidateFlow.emit(data.conversationId)
             if (data.category == MessageCategory.SIGNAL_IMAGE.name || data.category == MessageCategory.SIGNAL_AUDIO.name) {
-                val message = messageDao.findMessageById(messageId)!!
-                jobManager.addJobInBackground(AttachmentDownloadJob(message))
+                val message = messageDao.findMessageById(messageId)
+                if (message != null) {
+                    jobManager.addJobInBackground(AttachmentDownloadJob(message))
+                }
             }
         } else if (data.category == MessageCategory.SIGNAL_STICKER.name) {
             val decoded = Base64.decode(plainText)
