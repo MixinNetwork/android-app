@@ -16,9 +16,7 @@ class SurpriseLinearLayout(context: Context, attrs: AttributeSet) : LinearLayout
 
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
-        if (!christmas && !lunarNewYear) {
-            return
-        } else if (christmas) {
+        if (christmas) {
             snowflakesEffect.onDraw(this, canvas)
         } else if (lunarNewYear) {
             fireworksEffect.onDraw(this, canvas)
@@ -27,9 +25,9 @@ class SurpriseLinearLayout(context: Context, attrs: AttributeSet) : LinearLayout
 
     companion object {
         // Christmas
-        val christmas = System.currentTimeMillis() in 1640275200000..1641225600000
+        val christmas = System.currentTimeMillis() in 1671811200000..1672761600000
 
         // Lunar New Year
-        val lunarNewYear = System.currentTimeMillis() in 1643558400000..1644163200000
+        val lunarNewYear = System.currentTimeMillis() in 1674230400000..1674835200000
     }
 }
