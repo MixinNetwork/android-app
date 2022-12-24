@@ -88,7 +88,7 @@ class ProfileBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragmen
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
-        pickMedia = registerForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
+        pickMedia = registerForActivityResult(ActivityResultContracts.PickVisualMedia(), requireActivity().activityResultRegistry) { uri ->
             if (uri != null) {
                 val options = UCrop.Options()
                 options.setToolbarColor(ContextCompat.getColor(requireContext(), R.color.black))

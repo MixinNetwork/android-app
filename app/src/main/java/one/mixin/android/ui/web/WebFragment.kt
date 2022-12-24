@@ -42,6 +42,8 @@ import android.webkit.WebViewClient.ERROR_TIMEOUT
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.ActivityResultRegistry
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.view.ContextThemeWrapper
 import androidx.core.app.ShareCompat
@@ -270,9 +272,12 @@ class WebFragment : BaseFragment() {
         return super.onContextItemSelected(item)
     }
 
+    private lateinit var pickMedia: ActivityResultLauncher<PickVisualMediaRequest>
+
     override fun onAttach(context: Context) {
         super.onAttach(context)
         getPermissionResult = registerForActivityResult(SettingActivity.PermissionContract(), requireActivity().activityResultRegistry, ::callbackPermission)
+        pickMedia = registerForActivityResult(ActivityResultContracts.PickVisualMedia(), requireActivity().activityResultRegistry, ::callbackPicker)
     }
 
     var uploadMessage: ValueCallback<Array<Uri>>? = null
@@ -659,13 +664,19 @@ class WebFragment : BaseFragment() {
                         return true
                     }
                 }
-                try {
-                    startActivityForResult(intent, FILE_CHOOSER)
-                } catch (e: ActivityNotFoundException) {
-                    uploadMessage = null
-                    toast(R.string.File_chooser_error)
-                    return false
-                }
+                pickMedia.launch(
+                    when (intent?.type) {
+                        "image/*" -> {
+                            PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
+                        }
+                        "video/*" -> {
+                            PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.VideoOnly)
+                        }
+                        else -> {
+                            PickVisualMediaRequest()
+                        }
+                    }
+                )
                 return true
             }
         }
@@ -691,13 +702,12 @@ class WebFragment : BaseFragment() {
             }
             uploadMessage = null
         } else if (requestCode == FILE_CHOOSER && resultCode == Activity.RESULT_OK) {
-            uploadMessage?.onReceiveValue(
-                WebChromeClient.FileChooserParams.parseResult(
-                    resultCode,
-                    data,
-                ),
-            )
-            uploadMessage = null
+            val dataString = data?.dataString
+            if (dataString != null) {
+                callbackPicker(Uri.parse(dataString))
+            } else {
+                callbackPicker(null)
+            }
         } else {
             uploadMessage?.onReceiveValue(null)
             uploadMessage = null
@@ -1071,6 +1081,16 @@ class WebFragment : BaseFragment() {
         if (!success) return
 
         webView.loadUrl("javascript:localStorage.clear()")
+    }
+
+    private fun callbackPicker(uri:Uri?) {
+        if (uri != null) {
+            uploadMessage?.onReceiveValue(arrayOf(uri))
+            uploadMessage = null
+        } else {
+            uploadMessage?.onReceiveValue(null)
+            uploadMessage = null
+        }
     }
 
     private var permissionAlert: AlertDialog? = null
