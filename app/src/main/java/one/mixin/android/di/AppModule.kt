@@ -39,6 +39,7 @@ import one.mixin.android.api.ExpiredTokenException
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.NetworkException
 import one.mixin.android.api.ServerErrorException
+import one.mixin.android.api.listener.NetworkListener
 import one.mixin.android.api.response.TipConfig
 import one.mixin.android.api.service.AccountService
 import one.mixin.android.api.service.AddressService
@@ -160,6 +161,7 @@ object AppModule {
     @Provides
     fun provideOkHttp(resolver: ContentResolver, httpLoggingInterceptor: HttpLoggingInterceptor?, engine: CronetEngine?): OkHttpClient {
         val builder = OkHttpClient.Builder()
+        builder.eventListenerFactory(NetworkListener.get())
         builder.addInterceptor(HostSelectionInterceptor.get())
         httpLoggingInterceptor?.let { interceptor ->
             builder.addInterceptor(interceptor)
