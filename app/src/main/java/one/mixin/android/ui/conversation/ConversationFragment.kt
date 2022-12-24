@@ -117,7 +117,6 @@ import one.mixin.android.extension.lateOneHours
 import one.mixin.android.extension.mainThreadDelayed
 import one.mixin.android.extension.networkConnected
 import one.mixin.android.extension.nowInUtc
-import one.mixin.android.extension.openApk
 import one.mixin.android.extension.openAsUrlOrWeb
 import one.mixin.android.extension.openCamera
 import one.mixin.android.extension.openEmail
