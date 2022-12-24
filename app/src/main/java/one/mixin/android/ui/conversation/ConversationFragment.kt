@@ -117,6 +117,7 @@ import one.mixin.android.extension.lateOneHours
 import one.mixin.android.extension.mainThreadDelayed
 import one.mixin.android.extension.networkConnected
 import one.mixin.android.extension.nowInUtc
+import one.mixin.android.extension.openApk
 import one.mixin.android.extension.openAsUrlOrWeb
 import one.mixin.android.extension.openCamera
 import one.mixin.android.extension.openEmail
@@ -690,11 +691,23 @@ class ConversationFragment() :
                         true,
                     )
                 ) {
-                    if (requireContext().packageManager.canRequestPackageInstalls()) {
-                        requireContext().openMedia(messageItem)
-                    } else {
-                        startActivity(Intent(Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES))
-                    }
+                    RxPermissions(requireActivity())
+                        .request(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                        .autoDispose(stopScope)
+                        .subscribe(
+                            { granted ->
+                                if (granted) {
+                                    lifecycleScope.launch{
+                                        messageItem.saveToLocal(requireContext())
+                                    }
+                                } else {
+                                    requireContext().openPermissionSetting()
+                                }
+                            },
+                            {
+                                toast(R.string.Save_failure)
+                            }
+                        )
                 } else if (MimeTypes.isAudio(messageItem.mediaMimeType)) {
                     showBottomSheet(messageItem)
                 } else {
