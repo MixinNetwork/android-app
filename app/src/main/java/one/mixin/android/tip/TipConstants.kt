@@ -53,4 +53,6 @@ object TipConstants {
             ),
         )
     }
+
+    fun tipNodeApi2Path(api: String) = api.substringAfter("https://api.mixin.one/")
 }

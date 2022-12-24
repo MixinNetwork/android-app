@@ -22,6 +22,7 @@ import one.mixin.android.extension.getStackTraceString
 import one.mixin.android.extension.hexStringToByteArray
 import one.mixin.android.extension.toBeByteArray
 import one.mixin.android.extension.toHex
+import one.mixin.android.tip.TipConstants.tipNodeApi2Path
 import one.mixin.android.tip.exception.DifferentIdentityException
 import one.mixin.android.tip.exception.NotAllSignerSuccessException
 import one.mixin.android.tip.exception.NotEnoughPartialsException
@@ -205,7 +206,7 @@ class TipNode @Inject internal constructor(private val tipNodeService: TipNodeSe
     private suspend fun watchTipNode(tipSigner: TipSigner, watcher: ByteArray): Pair<Int, Int> {
         val tipWatchRequest = TipWatchRequest(watcher.toHex())
         return try {
-            val tipWatchResponse = tipNodeService.watch(tipWatchRequest, tipSigner.api)
+            val tipWatchResponse = tipNodeService.watch(tipWatchRequest, tipNodeApi2Path(tipSigner.api))
             return Pair(tipWatchResponse.counter, -1)
         } catch (e: Exception) {
             Timber.d(e)
@@ -220,7 +221,7 @@ class TipNode @Inject internal constructor(private val tipNodeService: TipNodeSe
     private suspend fun signTipNode(userSk: Scalar, tipSigner: TipSigner, ephemeral: ByteArray, watcher: ByteArray, nonce: Long, grace: Long, assignee: ByteArray?): Pair<TipSignRespData?, TipNodeError?> {
         return try {
             val tipSignRequest = genTipSignRequest(userSk, tipSigner, ephemeral, watcher, nonce, grace, assignee)
-            val response = tipNodeService.sign(tipSignRequest, tipSigner.api)
+            val response = tipNodeService.sign(tipSignRequest, tipNodeApi2Path(tipSigner.api))
             val requestId = response.headers()["x-request-id"] ?: ""
             if (response.isSuccessful.not()) {
                 return Pair(null, response.code().toTipNodeError(tipSigner.index, requestId, response.message()))

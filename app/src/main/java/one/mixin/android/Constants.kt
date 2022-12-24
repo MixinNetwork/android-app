@@ -15,7 +15,6 @@ object Constants {
         const val Mixin_WS_URL = "wss://blaze.mixin.one"
 
         const val GIPHY_URL = "https://api.giphy.com/v1/"
-        const val TIP_URL = "https://tip.id/"
         const val FOURSQUARE_URL = "https://api.foursquare.com/v2/"
     }
 
