@@ -2,12 +2,12 @@ package one.mixin.android.vo
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.content.Intent
 import android.media.MediaScannerConnection
 import android.net.Uri
-import android.os.Environment.DIRECTORY_DOWNLOADS
-import android.os.Environment.DIRECTORY_MUSIC
 import android.os.Parcelable
 import android.view.View
+import androidx.core.content.FileProvider
 import androidx.core.net.toFile
 import androidx.core.net.toUri
 import androidx.core.view.isVisible
@@ -21,11 +21,14 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.parcelize.IgnoredOnParcel
 import kotlinx.parcelize.Parcelize
+import one.mixin.android.BuildConfig
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.extension.copyFromInputStream
 import one.mixin.android.extension.decodeBase64
 import one.mixin.android.extension.encodeBitmap
+import one.mixin.android.extension.getPublicDownloadPath
+import one.mixin.android.extension.getPublicMusicPath
 import one.mixin.android.extension.getPublicPicturePath
 import one.mixin.android.extension.hasWritePermission
 import one.mixin.android.extension.isImageSupport
@@ -219,7 +222,7 @@ fun MessageItem.showVerifiedOrBot(verifiedView: View, botView: View) {
     }
 }
 
-suspend fun MessageItem.saveToLocal(context: Context) {
+suspend fun MessageItem.saveToLocal(context: Context, openFile: Boolean = false) {
     if (!hasWritePermission()) return
 
     val filePath = absolutePath()
@@ -242,9 +245,9 @@ suspend fun MessageItem.saveToLocal(context: Context) {
         File(dir, mediaName ?: file.name)
     } else {
         val dir = if (MimeTypes.isAudio(mediaMimeType)) {
-            context.getExternalFilesDir(DIRECTORY_MUSIC)
+            context.getPublicMusicPath()
         } else {
-            context.getExternalFilesDir(DIRECTORY_DOWNLOADS)
+            context.getPublicDownloadPath()
         } ?: return
         dir.mkdirs()
         File(dir, mediaName ?: file.name)
@@ -254,6 +257,22 @@ suspend fun MessageItem.saveToLocal(context: Context) {
         outFile.copyFromInputStream(file.inputStream())
     }
     MediaScannerConnection.scanFile(context, arrayOf(outFile.toString()), null, null)
+
+    if (openFile) {
+        val uri = outFile.parentFile?.let {
+            FileProvider.getUriForFile(
+                context,
+                BuildConfig.APPLICATION_ID + ".provider",
+                it,
+            )
+        }
+
+        val intent = Intent()
+        intent.action = Intent.ACTION_VIEW
+        intent.setDataAndType(uri, "*/*")
+        intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        context.startActivity(intent)
+    }
     toast(
         MixinApplication.appContext.getString(
             R.string.Save_to,
