@@ -26,6 +26,7 @@ import one.mixin.android.RxBus
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.event.ProgressEvent.Companion.playEvent
 import one.mixin.android.extension.isServiceRunning
+import one.mixin.android.ui.call.CallNotificationBuilder
 import one.mixin.android.ui.player.internal.ConversationLoader
 import one.mixin.android.ui.player.internal.UrlLoader
 import one.mixin.android.ui.player.internal.currentMediaItems
@@ -277,7 +278,11 @@ class MusicService : LifecycleService() {
                 Intent(applicationContext, this@MusicService.javaClass),
             )
 
-            startForeground(notificationId, notification)
+            try {
+                startForeground(notificationId, notification)
+            } catch (e: Exception) {
+                Timber.e(e)
+            }
         }
 
         override fun onNotificationCancelled(notificationId: Int, dismissedByUser: Boolean) {
