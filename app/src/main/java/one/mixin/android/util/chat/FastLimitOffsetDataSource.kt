@@ -9,7 +9,6 @@ import androidx.paging.PositionalDataSource
 import androidx.room.InvalidationTracker
 import androidx.room.RoomDatabase
 import androidx.room.RoomSQLiteQuery
-import one.mixin.android.util.reportException
 import timber.log.Timber
 
 @SuppressLint("RestrictedApi")
@@ -65,13 +64,6 @@ abstract class FastLimitOffsetDataSource<T, S>(
                 callback.onResult(list, firstLoadPosition, firstLoadPosition + list.size)
             } catch (iae: IllegalArgumentException) {
                 // workaround with paging incorrect tiling
-                val message = (
-                    "FastLimitOffsetDataSource " +
-                        "firstLoadPosition: " + firstLoadPosition +
-                        ", list size: " + list.size +
-                        ", count: " + totalCount
-                    )
-                reportException(message, iae)
                 Timber.w(iae)
             }
         }
