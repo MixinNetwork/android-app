@@ -121,8 +121,8 @@ class PinCheckDialogFragment : DialogFragment() {
                         requireContext().resources.getQuantityString(
                             R.plurals.error_pin_incorrect_with_times,
                             errorCount,
-                            errorCount
-                        )
+                            errorCount,
+                        ),
                     )
                 }
                 ErrorHandler.TOO_MANY_REQUEST -> {

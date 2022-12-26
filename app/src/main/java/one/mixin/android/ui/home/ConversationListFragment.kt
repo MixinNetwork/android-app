@@ -30,7 +30,6 @@ import androidx.lifecycle.lifecycleScope
 import androidx.paging.PagedList
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.google.gson.Gson
 import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
@@ -761,17 +760,30 @@ class ConversationListFragment : LinkFragment() {
                 conversationItem.contentType == MessageCategory.APP_BUTTON_GROUP.name -> {
                     binding.groupNameTv.visibility = GONE
                     val buttons =
-                        Gson().fromJson(conversationItem.content, Array<AppButtonData>::class.java)
+                        try {
+                            GsonHelper.customGson.fromJson(
+                                conversationItem.content,
+                                Array<AppButtonData>::class.java,
+                            )
+                        } catch (e: Exception) {
+                            null
+                        }
                     var content = ""
-                    buttons.map { content += "[" + it.label + "]" }
+                    buttons?.map { content += "[" + it.label + "]" }
                     binding.msgTv.text = content
                     AppCompatResources.getDrawable(itemView.context, R.drawable.ic_type_touch_app)
                 }
                 conversationItem.contentType == MessageCategory.APP_CARD.name -> {
                     binding.groupNameTv.visibility = GONE
-                    val cardData =
-                        Gson().fromJson(conversationItem.content, AppCardData::class.java)
-                    binding.msgTv.text = "[${cardData.title}]"
+                    val cardData = try {
+                        GsonHelper.customGson.fromJson(
+                            conversationItem.content,
+                            AppCardData::class.java,
+                        )
+                    } catch (e: Exception) {
+                        null
+                    }
+                    binding.msgTv.text = "[${cardData?.title}]"
                     AppCompatResources.getDrawable(itemView.context, R.drawable.ic_type_touch_app)
                 }
                 conversationItem.isContact() -> {
