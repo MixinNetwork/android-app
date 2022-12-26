@@ -180,7 +180,7 @@ class DeleteAccountFragment : BaseFragment(R.layout.fragment_delete_account) {
         )
     }
 
-    private fun initAndLoadCaptcha() {
+    private fun initAndLoadCaptcha() = lifecycleScope.launch {
         if (captchaView == null) {
             captchaView = CaptchaView(
                 requireContext(),
