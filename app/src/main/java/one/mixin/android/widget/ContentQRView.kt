@@ -17,6 +17,7 @@ import one.mixin.android.R
 import one.mixin.android.databinding.ViewContentQrBinding
 import one.mixin.android.extension.generateQRCode
 import one.mixin.android.extension.getClipboardManager
+import one.mixin.android.extension.heavyClickVibrate
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.toast
 import one.mixin.android.ui.wallet.DepositQrBottomFragment
@@ -50,6 +51,7 @@ class ContentQRView : ViewAnimator {
             val content = if (isTag) asset.getTag() else asset.getDestination()
             contentTv.text = content
             copyIv.setOnClickListener {
+                context.heavyClickVibrate()
                 context?.getClipboardManager()?.setPrimaryClip(ClipData.newPlainText(null, content))
                 toast(R.string.copied_to_clipboard)
             }
