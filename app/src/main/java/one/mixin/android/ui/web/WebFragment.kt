@@ -675,7 +675,7 @@ class WebFragment : BaseFragment() {
                         else -> {
                             PickVisualMediaRequest()
                         }
-                    }
+                    },
                 )
                 return true
             }
@@ -1083,7 +1083,7 @@ class WebFragment : BaseFragment() {
         webView.loadUrl("javascript:localStorage.clear()")
     }
 
-    private fun callbackPicker(uri:Uri?) {
+    private fun callbackPicker(uri: Uri?) {
         if (uri != null) {
             uploadMessage?.onReceiveValue(arrayOf(uri))
             uploadMessage = null

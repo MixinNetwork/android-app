@@ -232,6 +232,7 @@ import one.mixin.android.vo.isText
 import one.mixin.android.vo.isTranscript
 import one.mixin.android.vo.mediaExists
 import one.mixin.android.vo.saveToLocal
+import one.mixin.android.vo.shareFile
 import one.mixin.android.vo.supportSticker
 import one.mixin.android.vo.toApp
 import one.mixin.android.vo.toTranscript
@@ -697,7 +698,10 @@ class ConversationFragment() :
                             { granted ->
                                 if (granted) {
                                     lifecycleScope.launch {
-                                        messageItem.saveToLocal(requireContext(), true)
+                                        messageItem.shareFile(
+                                            requireContext(),
+                                            "application/vnd.android.package-archive",
+                                        )
                                     }
                                 } else {
                                     requireContext().openPermissionSetting()
@@ -705,7 +709,7 @@ class ConversationFragment() :
                             },
                             {
                                 toast(R.string.Save_failure)
-                            }
+                            },
                         )
                 } else if (MimeTypes.isAudio(messageItem.mediaMimeType)) {
                     showBottomSheet(messageItem)

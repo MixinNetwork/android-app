@@ -222,7 +222,32 @@ fun MessageItem.showVerifiedOrBot(verifiedView: View, botView: View) {
     }
 }
 
-suspend fun MessageItem.saveToLocal(context: Context, openFile: Boolean = false) {
+fun MessageItem.shareFile(context: Context, mediaMimeType: String) {
+    if (!hasWritePermission()) return
+
+    val filePath = absolutePath()
+    if (filePath == null) {
+        reportException(IllegalStateException("Share messageItem failure, category: $type, mediaUrl: $mediaUrl, absolutePath: $filePath)}"))
+        toast(R.string.File_error)
+        return
+    }
+
+    val file = filePath.toUri().toFile()
+    if (!file.exists()) {
+        reportException(IllegalStateException("Share messageItem failure, category: $type, mediaUrl: $mediaUrl, absolutePath: $filePath)}"))
+        toast(R.string.File_error)
+        return
+    }
+    val uri = FileProvider.getUriForFile(context, BuildConfig.APPLICATION_ID + ".provider", file)
+
+    val share = Intent()
+    share.action = Intent.ACTION_SEND
+    share.type = mediaMimeType
+    share.putExtra(Intent.EXTRA_STREAM, uri)
+    context.startActivity(Intent.createChooser(share, context.getString(R.string.Share)))
+}
+
+suspend fun MessageItem.saveToLocal(context: Context) {
     if (!hasWritePermission()) return
 
     val filePath = absolutePath()
@@ -257,22 +282,6 @@ suspend fun MessageItem.saveToLocal(context: Context, openFile: Boolean = false)
         outFile.copyFromInputStream(file.inputStream())
     }
     MediaScannerConnection.scanFile(context, arrayOf(outFile.toString()), null, null)
-
-    if (openFile) {
-        val uri = outFile.parentFile?.let {
-            FileProvider.getUriForFile(
-                context,
-                BuildConfig.APPLICATION_ID + ".provider",
-                it,
-            )
-        }
-
-        val intent = Intent()
-        intent.action = Intent.ACTION_VIEW
-        intent.setDataAndType(uri, "*/*")
-        intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-        context.startActivity(intent)
-    }
     toast(
         MixinApplication.appContext.getString(
             R.string.Save_to,
