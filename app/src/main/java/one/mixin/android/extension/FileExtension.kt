@@ -333,6 +333,14 @@ fun Context.getPublicPicturePath(): File {
     return File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES), "Mixin")
 }
 
+fun Context.getPublicDownloadPath(): File {
+    return File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), "Mixin")
+}
+
+fun Context.getPublicMusicPath(): File {
+    return File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MUSIC), "Mixin")
+}
+
 fun Context.getPublicDocumentPath(): File {
     return File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS), "Mixin")
 }

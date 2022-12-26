@@ -27,7 +27,6 @@ import one.mixin.android.R
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.isGooglePlayServicesAvailable
 import one.mixin.android.extension.isNightMode
-import one.mixin.android.util.getLanguage
 import one.mixin.android.vo.foursquare.Venue
 
 class MixinMapView(
