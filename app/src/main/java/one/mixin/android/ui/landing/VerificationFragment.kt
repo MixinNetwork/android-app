@@ -300,7 +300,7 @@ class VerificationFragment : PinCodeFragment(R.layout.fragment_verification) {
             )
     }
 
-    private fun initAndLoadCaptcha() {
+    private fun initAndLoadCaptcha() = lifecycleScope.launch {
         if (captchaView == null) {
             captchaView = CaptchaView(
                 requireContext(),

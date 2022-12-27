@@ -7,7 +7,6 @@ import androidx.paging.PositionalDataSource
 import androidx.room.InvalidationTracker
 import androidx.room.RoomDatabase
 import androidx.room.RoomSQLiteQuery
-import one.mixin.android.util.reportException
 import timber.log.Timber
 
 @SuppressLint("RestrictedApi")
@@ -67,13 +66,6 @@ abstract class MixinLimitOffsetDataSource<T> protected constructor(
                 callback.onResult(list, firstLoadPosition, firstLoadPosition + list.size)
             } catch (iae: IllegalArgumentException) {
                 // workaround with paging incorrect tiling
-                val message = (
-                    "MixinLimitOffsetDataSource " +
-                        "firstLoadPosition: " + firstLoadPosition +
-                        ", list size: " + list.size +
-                        ", count: " + totalCount
-                    )
-                reportException(message, iae)
                 Timber.w(iae)
             }
         }

@@ -14,12 +14,14 @@ import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
 import com.google.i18n.phonenumbers.PhoneNumberUtil
 import com.google.i18n.phonenumbers.Phonenumber
 import com.mukesh.countrypicker.Country
 import com.mukesh.countrypicker.CountryPicker
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.request.VerificationPurpose
@@ -231,7 +233,7 @@ class MobileFragment : BaseFragment(R.layout.fragment_mobile) {
             )
     }
 
-    private fun initAndLoadCaptcha() {
+    private fun initAndLoadCaptcha() = lifecycleScope.launch {
         if (captchaView == null) {
             captchaView = CaptchaView(
                 requireContext(),

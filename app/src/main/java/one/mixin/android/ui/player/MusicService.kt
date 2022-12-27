@@ -277,7 +277,11 @@ class MusicService : LifecycleService() {
                 Intent(applicationContext, this@MusicService.javaClass),
             )
 
-            startForeground(notificationId, notification)
+            try {
+                startForeground(notificationId, notification)
+            } catch (e: Exception) {
+                Timber.e(e)
+            }
         }
 
         override fun onNotificationCancelled(notificationId: Int, dismissedByUser: Boolean) {

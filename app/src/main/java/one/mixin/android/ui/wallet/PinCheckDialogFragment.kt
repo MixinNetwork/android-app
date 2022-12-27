@@ -110,22 +110,32 @@ class PinCheckDialogFragment : DialogFragment() {
         }
     }
 
-    private suspend fun handleFailure(error: ResponseError) {
+    private fun handleFailure(error: ResponseError) = lifecycleScope.launch {
         binding.apply {
             pin.clear()
-            if (error.code == ErrorHandler.PIN_INCORRECT) {
-                val errorCount = pinCheckViewModel.errorCount()
-                pinVa.displayedChild = POS_PIN
-                pin.error(requireContext().resources.getQuantityString(R.plurals.error_pin_incorrect_with_times, errorCount, errorCount))
-            } else if (error.code == ErrorHandler.TOO_MANY_REQUEST) {
-                pinVa.displayedChild = POS_TIP
-                tipVa.showNext()
-                val transY = root.height / 2 - topLl.translationY * 2
-                topLl.animate()?.translationY(transY)?.start()
-                keyboard.animate()?.translationY(keyboard.height.toFloat())?.start()
-            } else {
-                pinVa.displayedChild = POS_PIN
-                pin.error(requireContext().getMixinErrorStringByCode(error.code, error.description))
+            when (error.code) {
+                ErrorHandler.PIN_INCORRECT -> {
+                    val errorCount = pinCheckViewModel.errorCount()
+                    pinVa.displayedChild = POS_PIN
+                    pin.error(
+                        requireContext().resources.getQuantityString(
+                            R.plurals.error_pin_incorrect_with_times,
+                            errorCount,
+                            errorCount,
+                        ),
+                    )
+                }
+                ErrorHandler.TOO_MANY_REQUEST -> {
+                    pinVa.displayedChild = POS_TIP
+                    tipVa.showNext()
+                    val transY = root.height / 2 - topLl.translationY * 2
+                    topLl.animate()?.translationY(transY)?.start()
+                    keyboard.animate()?.translationY(keyboard.height.toFloat())?.start()
+                }
+                else -> {
+                    pinVa.displayedChild = POS_PIN
+                    pin.error(requireContext().getMixinErrorStringByCode(error.code, error.description))
+                }
             }
         }
     }

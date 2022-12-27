@@ -293,7 +293,12 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
         supportsOreo {
             createNodeChannel(notificationManager)
         }
-        startForeground(FOREGROUND_ID, builder.build())
+
+        try {
+            startForeground(FOREGROUND_ID, builder.build())
+        } catch (e: Exception) {
+            Timber.e(e)
+        }
     }
 
     private fun startObserveAck() {

@@ -311,7 +311,11 @@ abstract class CallService : LifecycleService(), PeerConnectionClient.PeerConnec
                 ChannelManager.createNodeChannel(notificationManager)
             }
             CallNotificationBuilder.getCallNotification(this, callState)?.let {
-                startForeground(CallNotificationBuilder.WEBRTC_NOTIFICATION, it)
+                try {
+                    startForeground(CallNotificationBuilder.WEBRTC_NOTIFICATION, it)
+                } catch (e: Exception) {
+                    Timber.e(e)
+                }
             }
         }
     }
