@@ -107,6 +107,10 @@ class AppearanceFragment : BaseFragment(R.layout.fragment_appearance) {
             backgroundRl.setOnClickListener {
                 navTo(SettingWallpaperFragment.newInstance(), SettingWallpaperFragment.TAG)
             }
+
+            textSizeRl.setOnClickListener {
+                navTo(SettingSizeFragment.newInstance(), SettingSizeFragment.TAG)
+            }
         }
     }
 

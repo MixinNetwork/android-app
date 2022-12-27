@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<one.mixin.android.widget.BackgroundConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:id="@+id/container"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical">
+
+        <one.mixin.android.widget.TitleView
+                android:id="@+id/title_view"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:titleText="@string/text_size" />
+
+        <androidx.recyclerview.widget.RecyclerView
+                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+                android:id="@+id/chatRv"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1" />
+
+        <LinearLayout
+                android:background="?attr/bg_window"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+            <TextView
+                    android:text="@string/text_size"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
+
+            <com.google.android.material.slider.Slider
+                    android:layout_marginTop="16dp"
+                    android:theme="@style/MaterialTheme"
+                    android:id="@+id/slider"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:valueFrom="0"
+                    android:valueTo="6"
+                    android:stepSize="1"
+                    app:labelBehavior="gone" />
+        </LinearLayout>
+    </LinearLayout>
+</one.mixin.android.widget.BackgroundConstraintLayout>
