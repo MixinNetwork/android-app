@@ -67,7 +67,7 @@ abstract class BaseViewHolder constructor(containerView: View) :
         itemView.context.booleanFromAttribute(R.attr.flag_night)
     }
 
-    protected fun setItemBackgroundResource(
+    fun setItemBackgroundResource(
         view: View,
         @DrawableRes defaultBg: Int,
         @DrawableRes nightBg: Int,

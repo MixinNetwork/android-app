@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<one.mixin.android.widget.BackgroundConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/container"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:clickable="true"
+        android:focusable="true"
+        android:orientation="vertical">
+
+        <one.mixin.android.widget.TitleView
+            android:id="@+id/title_view"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:rightText="@string/Settings"
+            app:titleText="@string/background_preview"
+            app:rightTextColor="@color/selector_tv_blue"/>
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/chat_rv"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:padding="8dp"
+            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/background_rv"
+            android:background="?attr/bg_white"
+            android:layout_width="match_parent"
+            android:paddingTop="24dp"
+            android:paddingBottom="24dp"
+            android:layout_height="200dp"
+            android:orientation="horizontal"
+            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"/>
+    </LinearLayout>
+</one.mixin.android.widget.BackgroundConstraintLayout>

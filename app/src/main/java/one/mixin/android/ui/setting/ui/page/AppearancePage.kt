@@ -40,6 +40,8 @@ import one.mixin.android.session.Session
 import one.mixin.android.ui.setting.AppearanceFragment
 import one.mixin.android.ui.setting.Currency
 import one.mixin.android.ui.setting.CurrencyBottomSheetDialogFragment
+import one.mixin.android.ui.setting.LocalSettingNav
+import one.mixin.android.ui.setting.SettingDestination
 import one.mixin.android.ui.setting.getLanguagePos
 import one.mixin.android.ui.setting.ui.compose.MixinAlertDialog
 import one.mixin.android.ui.setting.ui.compose.MixinBackButton
@@ -48,10 +50,11 @@ import one.mixin.android.ui.setting.ui.theme.MixinAppTheme
 import one.mixin.android.util.TimeCache
 import one.mixin.android.util.isFollowSystem
 import one.mixin.android.vo.Fiats
-import java.util.*
+import java.util.Locale
 
 @Composable
 fun AppearancePage() {
+    val navController = LocalSettingNav.current
     Scaffold(
         backgroundColor = MixinAppTheme.colors.backgroundWindow,
         topBar = {
@@ -75,6 +78,26 @@ fun AppearancePage() {
             Box(modifier = Modifier.height(20.dp))
 
             CurrencyItem()
+
+            Box(modifier = Modifier.height(20.dp))
+
+            Row(
+                modifier = Modifier
+                    .height(60.dp)
+                    .background(MixinAppTheme.colors.background)
+                    .clickable {
+                        navController.navigation(SettingDestination.Wallpaper)
+                    }
+                    .padding(start = 16.dp, end = 16.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = stringResource(id = R.string.chat_background),
+                    modifier = Modifier.fillMaxWidth(),
+                    fontSize = 14.sp,
+                    color = MixinAppTheme.colors.textPrimary
+                )
+            }
         }
     }
 }

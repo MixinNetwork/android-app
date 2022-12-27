@@ -13,7 +13,6 @@ import android.provider.Settings
 import android.view.ContextThemeWrapper
 import android.view.View
 import androidx.appcompat.widget.PopupMenu
-import androidx.core.content.ContextCompat
 import androidx.core.view.children
 import androidx.core.view.isVisible
 import androidx.lifecycle.LiveData
@@ -37,7 +36,6 @@ import one.mixin.android.databinding.ViewTranscriptBinding
 import one.mixin.android.databinding.ViewUrlBottomBinding
 import one.mixin.android.event.BlinkEvent
 import one.mixin.android.extension.alert
-import one.mixin.android.extension.booleanFromAttribute
 import one.mixin.android.extension.callPhone
 import one.mixin.android.extension.getClipboardManager
 import one.mixin.android.extension.isImageSupport
@@ -68,6 +66,7 @@ import one.mixin.android.ui.forward.ForwardActivity
 import one.mixin.android.ui.media.pager.MediaPagerActivity
 import one.mixin.android.ui.media.pager.transcript.TranscriptMediaPagerActivity
 import one.mixin.android.ui.preview.TextPreviewActivity
+import one.mixin.android.ui.setting.WallpaperManager
 import one.mixin.android.util.AudioPlayer
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.vo.AppCardData
@@ -143,13 +142,7 @@ class ChatHistoryActivity : BaseActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityChatHistoryBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        if (booleanFromAttribute(R.attr.flag_night)) {
-            binding.container.backgroundImage =
-                ContextCompat.getDrawable(this@ChatHistoryActivity, R.drawable.bg_chat_night)
-        } else {
-            binding.container.backgroundImage =
-                ContextCompat.getDrawable(this@ChatHistoryActivity, R.drawable.bg_chat)
-        }
+        binding.container.backgroundImage = WallpaperManager.getWallpaper(this@ChatHistoryActivity)
         binding.titleView.leftIb.setOnClickListener { finish() }
         binding.titleView.setSubTitle(
             getString(

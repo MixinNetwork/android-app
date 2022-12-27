@@ -11,12 +11,12 @@ import one.mixin.android.api.response.AuthorizationResponse
 import one.mixin.android.databinding.ActivityContactBinding
 import one.mixin.android.extension.addFragment
 import one.mixin.android.extension.replaceFragment
-import one.mixin.android.ui.common.BlazeBaseActivity
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.App
+import one.mixin.android.widget.theme.ThemeActivity
 
 @AndroidEntryPoint
-class SettingActivity : BlazeBaseActivity() {
+class SettingActivity : ThemeActivity() {
     companion object {
         const val FROM_NOTIFICATION = "notification"
         const val EXTRA_SHOW_PIN_SETTING = "extra_show_pin_setting"
