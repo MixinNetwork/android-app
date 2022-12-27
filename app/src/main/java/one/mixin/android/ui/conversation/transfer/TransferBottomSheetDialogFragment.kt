@@ -77,7 +77,11 @@ class TransferBottomSheetDialogFragment : ValuableBiometricBottomSheetDialogFrag
                 }
                 is WithdrawBiometricItem -> {
                     (t as WithdrawBiometricItem).let {
-                        title.text = getString(R.string.withdrawal_to, it.label)
+                        title.text = if (it.label != null) {
+                            getString(R.string.withdrawal_to, it.label)
+                        } else {
+                            getString(R.string.Withdrawal)
+                        }
                         subTitle.text = it.displayAddress()
                     }
                     biometricLayout.biometricTv.setText(R.string.Verify_by_Biometric)
@@ -137,7 +141,7 @@ class TransferBottomSheetDialogFragment : ValuableBiometricBottomSheetDialogFrag
             else -> {
                 t as WithdrawBiometricItem
                 trace = Trace(t.traceId!!, t.asset.assetId, t.amount, null, t.destination, t.tag, null, nowInUtc())
-                bottomViewModel.withdrawal(t.addressId, t.amount, pin, t.traceId!!, t.memo, t.fee)
+                bottomViewModel.withdrawal(t.addressId, t.amount, pin, t.traceId!!, t.memo, t.fee, t.asset.assetId, t.destination, t.tag)
             }
         }
         bottomViewModel.insertTrace(trace)

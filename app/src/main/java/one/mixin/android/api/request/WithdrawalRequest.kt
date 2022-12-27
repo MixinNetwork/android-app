@@ -11,4 +11,8 @@ data class WithdrawalRequest(
     val traceId: String,
     val memo: String?,
     val fee: String?,
+    @SerializedName("asset_id")
+    val assetId: String?,
+    val destination: String?,
+    val tag: String?,
 )

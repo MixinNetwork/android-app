@@ -25,6 +25,7 @@ import one.mixin.android.extension.getRelativeTimeSpan
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.textColor
 import one.mixin.android.extension.withArgs
+import one.mixin.android.pay.generateAddressId
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
 import one.mixin.android.ui.common.biometric.AssetBiometricItem
@@ -36,6 +37,7 @@ import one.mixin.android.util.PropertyHelper
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.UserRelationship
+import one.mixin.android.vo.generateConversationId
 import one.mixin.android.widget.BottomSheet
 import java.math.BigDecimal
 
@@ -88,7 +90,11 @@ class PreconditionBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                         checkTransferTrace(t)
                     }
                 } else if (t is WithdrawBiometricItem) {
-                    checkWithdrawTrace(t)
+                    if (t.addressId == generateAddressId(requireNotNull(Session.getAccountId()), t.asset.assetId, t.destination, t.tag)) {
+                        checkWithdrawalWithoutAddress(t)
+                    } else {
+                        checkWithdrawTrace(t)
+                    }
                 }
             }
         } else if (t.state == PaymentStatus.paid.name) {
@@ -125,6 +131,19 @@ class PreconditionBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 callback?.onSuccess()
                 dismiss()
             }
+        }
+        startCountDown()
+    }
+
+    private fun checkWithdrawalWithoutAddress(t: WithdrawBiometricItem) {
+        binding.titleTv.text = getString(R.string.Withdrawal)
+        binding.warningTv.text = getString(
+            R.string.wallet_withdrawal_not_in_addresses,
+            t.displayAddress().formatPublicKey(),
+        )
+        binding.continueTv.setOnClickListener {
+            callback?.onSuccess()
+            dismiss()
         }
         startCountDown()
     }

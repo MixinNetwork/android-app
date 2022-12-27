@@ -119,6 +119,9 @@ class BottomSheetViewModel @Inject internal constructor(
         traceId: String,
         memo: String?,
         fee: String?,
+        assetId: String?,
+        destination: String?,
+        tag: String?,
     ) = assetRepository.withdrawal(
         WithdrawalRequest(
             addressId,
@@ -127,6 +130,9 @@ class BottomSheetViewModel @Inject internal constructor(
             traceId,
             memo,
             fee,
+            assetId,
+            destination,
+            tag,
         ),
     )
 
