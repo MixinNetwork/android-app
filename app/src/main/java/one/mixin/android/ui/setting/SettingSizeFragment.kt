@@ -93,7 +93,7 @@ class SettingSizeFragment : BaseFragment(R.layout.fragment_size) {
 
             override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
                 when (position) {
-                    2 -> (holder as TextHolder).apply {
+                    1 -> (holder as TextHolder).apply {
                         val lp = (binding.chatLayout.layoutParams as ConstraintLayout.LayoutParams)
                         lp.horizontalBias = 0f
                         binding.chatName.isVisible = false
@@ -106,7 +106,8 @@ class SettingSizeFragment : BaseFragment(R.layout.fragment_size) {
                             isRepresentative = false,
                             isSecret = false,
                         )
-                        binding.chatTv.setTextSize(TypedValue.COMPLEX_UNIT_SP, textSize)
+                        binding.chatTime.changeSize(textSize - 4f)
+                        binding.chatTv.setTextSize(TypedValue.COMPLEX_UNIT_DIP, textSize)
                         setItemBackgroundResource(
                             binding.chatLayout,
                             R.drawable.chat_bubble_other_last,
@@ -114,7 +115,7 @@ class SettingSizeFragment : BaseFragment(R.layout.fragment_size) {
                         )
                     }
 
-                    1 -> (holder as TextHolder).apply {
+                    2 -> (holder as TextHolder).apply {
                         val lp = (binding.chatLayout.layoutParams as ConstraintLayout.LayoutParams)
                         lp.horizontalBias = 1f
                         binding.chatName.isVisible = false
@@ -126,6 +127,7 @@ class SettingSizeFragment : BaseFragment(R.layout.fragment_size) {
                             isRepresentative = false,
                             isSecret = false,
                         )
+                        binding.chatTime.changeSize(textSize - 4f)
                         binding.chatTv.text = requireContext().getString(R.string.i_am_good)
                         binding.chatTv.setTextSize(TypedValue.COMPLEX_UNIT_SP, textSize)
                         setItemBackgroundResource(
@@ -151,7 +153,7 @@ class SettingSizeFragment : BaseFragment(R.layout.fragment_size) {
                     Slider.OnChangeListener { _, value, _ -> trySend(value.toInt()) }
                 binding.slider.addOnChangeListener(onChangeListener)
                 awaitClose {
-                    if(isAdded) binding.slider.removeOnChangeListener(onChangeListener)
+                    if (isAdded) binding.slider.removeOnChangeListener(onChangeListener)
                 }
             }.collect {
                 textSize = 12f + (it * 2f)
@@ -160,7 +162,7 @@ class SettingSizeFragment : BaseFragment(R.layout.fragment_size) {
                     binding.titleView.rightTv.isEnabled = isEnabled
                     binding.titleView.rightTv.textColor = resources.getColor(
                         if (isEnabled) R.color.colorBlue else R.color.text_gray,
-                        null
+                        null,
                     )
                 }
                 binding.chatRv.adapter?.notifyDataSetChanged()
