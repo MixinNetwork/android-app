@@ -3,6 +3,7 @@ package one.mixin.android.widget
 import android.content.Context
 import android.graphics.Typeface
 import android.util.AttributeSet
+import android.util.TypedValue
 import android.view.LayoutInflater
 import android.view.View
 import androidx.annotation.DrawableRes
@@ -41,6 +42,16 @@ class QuoteView constructor(context: Context, attrs: AttributeSet) :
 
     init {
         round(4.dp)
+    }
+
+    private var iconSize = context.dpToPx(10f)
+    fun changeSize(size: Float) {
+        binding.replyNameTv.setTextSize(TypedValue.COMPLEX_UNIT_DIP, size)
+        binding.replyContentTv.setTextSize(TypedValue.COMPLEX_UNIT_DIP, size - 2f)
+        (binding.replyAvatar.layoutParams as LayoutParams).apply {
+            this.matchConstraintMaxWidth = context.dpToPx(26 + size)
+        }
+        iconSize = context.dpToPx(size - 4f)
     }
 
     fun bind(quoteMessageItem: QuoteMessageItem?) {
@@ -256,7 +267,7 @@ class QuoteView constructor(context: Context, attrs: AttributeSet) :
     private fun setIcon(@DrawableRes icon: Int? = null) {
         if (icon != null) {
             AppCompatResources.getDrawable(context, icon).let {
-                it?.setBounds(0, 0, context.dpToPx(10f), context.dpToPx(10f))
+                it?.setBounds(0, 0, iconSize, iconSize)
                 TextViewCompat.setCompoundDrawablesRelative(
                     binding.replyContentTv,
                     it,

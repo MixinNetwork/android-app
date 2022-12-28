@@ -1,10 +1,12 @@
 package one.mixin.android.ui.conversation.holder
 
 import android.graphics.Color
+import android.util.TypedValue
 import android.view.GestureDetector
 import android.view.MotionEvent
 import android.view.View
 import androidx.constraintlayout.widget.ConstraintLayout
+import one.mixin.android.Constants
 import one.mixin.android.Constants.Colors.LINK_COLOR
 import one.mixin.android.Constants.Colors.SELECT_COLOR
 import one.mixin.android.R
@@ -12,6 +14,7 @@ import one.mixin.android.RxBus
 import one.mixin.android.databinding.ItemChatTextQuoteBinding
 import one.mixin.android.event.ExpiredEvent
 import one.mixin.android.event.MentionReadEvent
+import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.initChatMode
@@ -34,6 +37,15 @@ class TextQuoteHolder constructor(val binding: ItemChatTextQuoteBinding) :
     private val dp16 = itemView.context.dpToPx(16f)
 
     init {
+        binding.root.context.defaultSharedPreferences.getInt(Constants.Account.PREF_TEXT_SIZE_STEP, 1).apply {
+            if (this != 1) {
+                val textSize = 12f + 2f * this
+                binding.chatTime.changeSize(textSize - 4f)
+                binding.chatQuote.changeSize(textSize)
+                binding.chatName.setTextSize(TypedValue.COMPLEX_UNIT_DIP, textSize)
+                binding.chatTv.setTextSize(TypedValue.COMPLEX_UNIT_DIP, textSize)
+            }
+        }
         binding.chatTv.initChatMode(LINK_COLOR)
         binding.chatTv.setSelectedStateColor(SELECT_COLOR)
         binding.chatName.maxWidth = itemView.context.maxItemWidth() - dp16
