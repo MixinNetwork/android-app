@@ -3,8 +3,10 @@ package one.mixin.android.pay
 import one.mixin.android.Constants
 import one.mixin.android.api.response.AddressFeeResponse
 import one.mixin.android.pay.erc681.parseERC681
+import one.mixin.android.pay.erc681.scientificNumberRegEx
 import timber.log.Timber
 import java.math.BigDecimal
+import java.math.BigInteger
 
 data class EthereumURI(val uri: String)
 
@@ -14,7 +16,7 @@ internal suspend fun parseEthereum(
 ): ExternalTransfer? {
     val erc681 = parseERC681(url)
 
-    Timber.d("@@@ $erc681")
+    Timber.d("parseEthereum: $erc681")
     if (!erc681.valid) return null
     val chainId = erc681.chainId?.toInt() ?: 1
     val assetId = ethereumChainIdMap[chainId] ?: return null
@@ -32,10 +34,10 @@ internal suspend fun parseEthereum(
                 address = pair.second
             } else if (value == null) {
                 if (pair.first == "amount") {
-                    value = pair.second.toBigIntegerOrNull()
+                    value = pair.second.toBigInteger()
                     amountExists = true
-                } else if (!amountExists || pair.first == "uint256") {
-                    value = pair.second.toBigIntegerOrNull()
+                } else if (!amountExists && pair.first == "uint256") {
+                    value = pair.second.toBigInteger()
                 }
             }
         }
@@ -43,11 +45,33 @@ internal suspend fun parseEthereum(
         address = erc681.address
     }
     val destination = address ?: return null
+    if (value == null) return null
 
     val amount = Convert.fromWei(BigDecimal(value), Convert.Unit.ETHER)
     val addressFeeResponse = getAddressFee(assetId, destination) ?: return null
 
     return ExternalTransfer(destination, amount, assetId, addressFeeResponse.fee.toBigDecimalOrNull())
+}
+
+internal fun String?.toBigInteger(): BigInteger? {
+    if (this == null) {
+        return null
+    }
+
+    if (!scientificNumberRegEx.matches(this)) {
+        return null
+    }
+
+    return when {
+        contains("e") -> {
+            val split = split("e")
+            BigDecimal(split.first()).multiply(BigDecimal.TEN.pow(split[1].toIntOrNull() ?: 1)).toBigInteger()
+        }
+        contains(".") -> {
+            null
+        }
+        else -> BigInteger(this)
+    }
 }
 
 private val ethereumChainIdMap by lazy {

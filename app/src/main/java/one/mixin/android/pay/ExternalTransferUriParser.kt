@@ -37,7 +37,7 @@ val externalTransferAssetIdMap by lazy {
         "tron" to Constants.ChainId.TRON_CHAIN_ID,
         "litecoin" to Constants.ChainId.Litecoin,
         "dash" to Constants.ChainId.Dash,
-        "dogcoin" to Constants.ChainId.Dogecoin,
+        "dogecoin" to Constants.ChainId.Dogecoin,
         "monero" to Constants.ChainId.Monero,
     )
 }

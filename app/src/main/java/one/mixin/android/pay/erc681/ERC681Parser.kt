@@ -7,7 +7,7 @@ import one.mixin.android.pay.parseCommonURI
 import java.math.BigDecimal
 import java.math.BigInteger
 
-private val scientificNumberRegEx = Regex("^\\d+(\\.\\d+)?(e\\d+)?$")
+internal val scientificNumberRegEx = Regex("^\\d+(\\.\\d+)?(e\\d+)?$")
 
 fun EthereumURI.toERC681() = parseCommonURI().toERC681()
 
