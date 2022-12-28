@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <one.mixin.android.widget.BackgroundConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools"
         android:id="@+id/container"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
@@ -14,7 +15,9 @@
                 android:id="@+id/title_view"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                app:titleText="@string/text_size" />
+                app:rightText="@string/Settings"
+                app:titleText="@string/text_size"
+                app:rightTextColor="@color/colorBlue" />
 
         <androidx.recyclerview.widget.RecyclerView
                 app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
@@ -23,7 +26,7 @@
                 android:layout_height="0dp"
                 android:layout_weight="1" />
 
-        <LinearLayout
+        <androidx.constraintlayout.widget.ConstraintLayout
                 android:background="?attr/bg_window"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -31,20 +34,58 @@
                 android:padding="16dp">
 
             <TextView
+                    android:id="@+id/title_tv"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
                     android:text="@string/text_size"
+                    android:textSize="18sp"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content" />
 
+
+            <TextView
+                    app:layout_constraintTop_toTopOf="@id/slider"
+                    app:layout_constraintBottom_toBottomOf="@id/slider"
+                    android:id="@+id/start"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toStartOf="@id/slider"
+                    android:text="A"
+                    android:textSize="12sp"
+                    android:layout_marginEnd="12dp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="?attr/text_primary"
+                    tools:ignore="HardcodedText" />
+
+            <TextView
+                    android:id="@+id/end"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="@id/slider"
+                    app:layout_constraintStart_toEndOf="@id/slider"
+                    app:layout_constraintBottom_toBottomOf="@id/slider"
+                    android:text="A"
+                    android:textSize="26sp"
+                    android:layout_width="wrap_content"
+                    android:layout_marginStart="12dp"
+                    android:layout_height="wrap_content"
+                    android:textColor="?attr/text_primary"
+                    tools:ignore="HardcodedText" />
+
             <com.google.android.material.slider.Slider
-                    android:layout_marginTop="16dp"
+                    app:layout_constraintTop_toBottomOf="@id/title_tv"
+                    app:layout_constraintStart_toEndOf="@id/start"
+                    app:layout_constraintEnd_toStartOf="@id/end"
+                    android:layout_marginTop="12dp"
                     android:theme="@style/MaterialTheme"
                     android:id="@+id/slider"
-                    android:layout_width="match_parent"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:valueFrom="0"
                     android:valueTo="6"
                     android:stepSize="1"
+                    android:value="1"
                     app:labelBehavior="gone" />
-        </LinearLayout>
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
     </LinearLayout>
 </one.mixin.android.widget.BackgroundConstraintLayout>

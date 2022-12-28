@@ -15,11 +15,16 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.launch
+import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentSizeBinding
 import one.mixin.android.databinding.ItemChatTextBinding
 import one.mixin.android.databinding.ItemChatTimeBinding
+import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.nowInUtc
+import one.mixin.android.extension.putInt
+import one.mixin.android.extension.textColor
+import one.mixin.android.extension.tickVibrate
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.conversation.chathistory.holder.TextHolder
 import one.mixin.android.ui.conversation.holder.TimeHolder
@@ -38,13 +43,16 @@ class SettingSizeFragment : BaseFragment(R.layout.fragment_size) {
     @SuppressLint("NotifyDataSetChanged")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        textSize = initTextSizeStep * 2f + 12
         binding.container.backgroundImage = WallpaperManager.getWallpaper(requireContext())
         binding.titleView.leftIb.setOnClickListener {
             requireActivity().onBackPressed()
         }
         binding.titleView.rightTv.setOnClickListener {
+            requireContext().defaultSharedPreferences.putInt(Constants.Account.PREF_TEXT_SIZE_STEP, binding.slider.value.toInt())
             requireActivity().onBackPressed()
         }
+        binding.slider.value = initTextSizeStep.toFloat()
         binding.chatRv.adapter = object : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
             override fun onCreateViewHolder(
                 parent: ViewGroup,
@@ -56,8 +64,8 @@ class SettingSizeFragment : BaseFragment(R.layout.fragment_size) {
                             ItemChatTimeBinding.inflate(
                                 LayoutInflater.from(parent.context),
                                 parent,
-                                false
-                            )
+                                false,
+                            ),
                         )
                     }
 
@@ -66,8 +74,8 @@ class SettingSizeFragment : BaseFragment(R.layout.fragment_size) {
                             ItemChatTextBinding.inflate(
                                 LayoutInflater.from(parent.context),
                                 parent,
-                                false
-                            )
+                                false,
+                            ),
                         )
                     }
 
@@ -76,8 +84,8 @@ class SettingSizeFragment : BaseFragment(R.layout.fragment_size) {
                             ItemChatTextBinding.inflate(
                                 LayoutInflater.from(parent.context),
                                 parent,
-                                false
-                            )
+                                false,
+                            ),
                         )
                     }
                 }
@@ -96,13 +104,13 @@ class SettingSizeFragment : BaseFragment(R.layout.fragment_size) {
                             MessageStatus.DELIVERED.name,
                             isPin = false,
                             isRepresentative = false,
-                            isSecret = false
+                            isSecret = false,
                         )
                         binding.chatTv.setTextSize(TypedValue.COMPLEX_UNIT_SP, textSize)
                         setItemBackgroundResource(
                             binding.chatLayout,
                             R.drawable.chat_bubble_other_last,
-                            R.drawable.chat_bubble_other_last_night
+                            R.drawable.chat_bubble_other_last_night,
                         )
                     }
 
@@ -116,14 +124,14 @@ class SettingSizeFragment : BaseFragment(R.layout.fragment_size) {
                             MessageStatus.READ.name,
                             isPin = false,
                             isRepresentative = false,
-                            isSecret = false
+                            isSecret = false,
                         )
                         binding.chatTv.text = requireContext().getString(R.string.i_am_good)
                         binding.chatTv.setTextSize(TypedValue.COMPLEX_UNIT_SP, textSize)
                         setItemBackgroundResource(
                             binding.chatLayout,
                             R.drawable.chat_bubble_me_last,
-                            R.drawable.chat_bubble_me_last_night
+                            R.drawable.chat_bubble_me_last_night,
                         )
                     }
 
@@ -143,13 +151,25 @@ class SettingSizeFragment : BaseFragment(R.layout.fragment_size) {
                     Slider.OnChangeListener { _, value, _ -> trySend(value.toInt()) }
                 binding.slider.addOnChangeListener(onChangeListener)
                 awaitClose {
-                    binding.slider.removeOnChangeListener(onChangeListener)
+                    if(isAdded) binding.slider.removeOnChangeListener(onChangeListener)
                 }
             }.collect {
-                textSize = 13f + (it * 2f)
+                textSize = 12f + (it * 2f)
+                requireContext().tickVibrate()
+                (it != initTextSizeStep).let { isEnabled ->
+                    binding.titleView.rightTv.isEnabled = isEnabled
+                    binding.titleView.rightTv.textColor = resources.getColor(
+                        if (isEnabled) R.color.colorBlue else R.color.text_gray,
+                        null
+                    )
+                }
                 binding.chatRv.adapter?.notifyDataSetChanged()
             }
         }
+    }
+
+    private val initTextSizeStep by lazy {
+        requireContext().defaultSharedPreferences.getInt(Constants.Account.PREF_TEXT_SIZE_STEP, 1)
     }
 
     private var textSize = 14f
