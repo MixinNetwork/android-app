@@ -138,7 +138,8 @@ data class MessageItem(
             } else if ((
                     type == MessageCategory.PLAIN_AUDIO.name || type == MessageCategory.SIGNAL_AUDIO.name || type == MessageCategory.ENCRYPTED_AUDIO.name ||
                         type == MessageCategory.PLAIN_IMAGE.name || type == MessageCategory.SIGNAL_IMAGE.name || type == MessageCategory.ENCRYPTED_IMAGE.name ||
-                        type == MessageCategory.PLAIN_VIDEO.name || type == MessageCategory.SIGNAL_VIDEO.name || type == MessageCategory.ENCRYPTED_VIDEO.name
+                        type == MessageCategory.PLAIN_VIDEO.name || type == MessageCategory.SIGNAL_VIDEO.name || type == MessageCategory.ENCRYPTED_VIDEO.name ||
+                        type == MessageCategory.PLAIN_DATA.name || type == MessageCategory.SIGNAL_DATA.name || type == MessageCategory.ENCRYPTED_DATA.name
                     ) && appCardShareable == null
             ) {
                 appCardShareable = GsonHelper.customGson.fromJson(
