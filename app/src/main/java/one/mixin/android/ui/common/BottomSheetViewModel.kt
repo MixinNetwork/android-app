@@ -34,10 +34,12 @@ import one.mixin.android.job.RefreshAccountJob
 import one.mixin.android.job.RefreshConversationJob
 import one.mixin.android.job.RefreshUserJob
 import one.mixin.android.job.UpdateRelationshipJob
+import one.mixin.android.pay.generateAddressId
 import one.mixin.android.repository.AccountRepository
 import one.mixin.android.repository.AssetRepository
 import one.mixin.android.repository.ConversationRepository
 import one.mixin.android.repository.UserRepository
+import one.mixin.android.session.Session
 import one.mixin.android.tip.TipBody
 import one.mixin.android.ui.common.message.CleanMessageHelper
 import one.mixin.android.vo.Account
@@ -113,7 +115,7 @@ class BottomSheetViewModel @Inject internal constructor(
     }
 
     suspend fun withdrawal(
-        addressId: String,
+        addressId: String?,
         amount: String,
         code: String,
         traceId: String,
@@ -126,7 +128,10 @@ class BottomSheetViewModel @Inject internal constructor(
         WithdrawalRequest(
             addressId,
             amount,
-            pinCipher.encryptPin(code, TipBody.forWithdrawalCreate(addressId, amount, fee, traceId, memo)),
+            pinCipher.encryptPin(
+                code,
+                TipBody.forWithdrawalCreate(addressId ?: generateAddressId(requireNotNull(Session.getAccountId()), assetId ?: "", destination ?: "", tag), amount, fee, traceId, memo),
+            ),
             traceId,
             memo,
             fee,

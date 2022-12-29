@@ -40,7 +40,7 @@ class TransferBiometricItem(
 class WithdrawBiometricItem(
     val destination: String,
     val tag: String?,
-    val addressId: String,
+    val addressId: String?,
     val label: String?,
     var fee: String,
     override val asset: AssetItem,

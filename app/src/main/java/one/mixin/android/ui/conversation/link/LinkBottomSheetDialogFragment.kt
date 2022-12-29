@@ -46,7 +46,6 @@ import one.mixin.android.extension.stripAmountZero
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.withArgs
 import one.mixin.android.job.getIconUrlName
-import one.mixin.android.pay.generateAddressId
 import one.mixin.android.pay.parseExternalTransferUri
 import one.mixin.android.repository.QrCodeType
 import one.mixin.android.session.Session
@@ -617,16 +616,16 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                     }
 
                     val traceId = UUID.randomUUID().toString()
-                    val addressId = generateAddressId(requireNotNull(Session.getAccountId()), result.assetId, result.destination, null)
                     val amount = result.amount.toPlainString()
-                    val transferRequest = TransferRequest(result.assetId, null, amount, null, traceId, "", addressId)
+                    val destination = result.destination.lowercase()
+                    val transferRequest = TransferRequest(result.assetId, null, amount, null, traceId, "", null, destination)
                     handleMixinResponse(
                         invokeNetwork = {
                             linkViewModel.paySuspend(transferRequest)
                         },
                         successBlock = { r ->
                             val response = r.data ?: return@handleMixinResponse false
-                            showWithdrawalBottom(addressId, result.destination, null, null, result.fee?.toPlainString() ?: "0", amount, asset, traceId, response.status, "")
+                            showWithdrawalBottom(null, destination, null, null, result.fee?.toPlainString() ?: "0", amount, asset, traceId, response.status, "")
                         },
                         failureBlock = {
                             showError(R.string.Invalid_payment_link)
@@ -802,7 +801,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
         showPreconditionBottom(biometricItem)
     }
 
-    private suspend fun showWithdrawalBottom(addressId: String, destination: String, tag: String?, label: String?, fee: String, amount: String, asset: AssetItem, traceId: String, status: String, memo: String?) {
+    private suspend fun showWithdrawalBottom(addressId: String?, destination: String, tag: String?, label: String?, fee: String, amount: String, asset: AssetItem, traceId: String, status: String, memo: String?) {
         val pair = linkViewModel.findLatestTrace(null, destination, tag, amount, asset.assetId)
         if (pair.second) {
             showError(getString(R.string.check_trace_failed))
