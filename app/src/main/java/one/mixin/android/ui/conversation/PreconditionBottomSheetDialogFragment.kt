@@ -33,6 +33,7 @@ import one.mixin.android.ui.common.biometric.TransferBiometricItem
 import one.mixin.android.ui.common.biometric.ValuableBiometricBottomSheetDialogFragment
 import one.mixin.android.ui.common.biometric.WithdrawBiometricItem
 import one.mixin.android.ui.common.biometric.displayAddress
+import one.mixin.android.ui.common.biometric.hasAddress
 import one.mixin.android.util.PropertyHelper
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.Fiats
@@ -89,10 +90,10 @@ class PreconditionBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                         checkTransferTrace(t)
                     }
                 } else if (t is WithdrawBiometricItem) {
-                    if (t.addressId == null) {
-                        checkWithdrawalWithoutAddress(t)
-                    } else {
+                    if (t.hasAddress()) {
                         checkWithdrawTrace(t)
+                    } else {
+                        checkWithdrawalWithoutAddress(t)
                     }
                 }
             }

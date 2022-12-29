@@ -15,9 +15,10 @@ internal suspend fun parseEthereum(
     getAddressFee: suspend (String, String) -> AddressFeeResponse?,
 ): ExternalTransfer? {
     val erc681 = parseERC681(url)
-
     Timber.d("parseEthereum: $erc681")
-    if (!erc681.valid) return null
+
+    // if (!erc681.valid) return null
+
     val chainId = erc681.chainId?.toInt() ?: 1
     val assetId = ethereumChainIdMap[chainId] ?: return null
 

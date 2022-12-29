@@ -15,6 +15,7 @@ import one.mixin.android.extension.closeSilently
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.isDonateUrl
 import one.mixin.android.extension.isExternalScheme
+import one.mixin.android.extension.isExternalTransferUrl
 import one.mixin.android.extension.isMixinUrl
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.home.MainActivity
@@ -56,7 +57,7 @@ abstract class VisionFragment : BaseFragment() {
         } else {
             Intent()
         }
-        if (content.isDonateUrl() || content.isExternalScheme(requireContext())) {
+        if (content.isDonateUrl() || content.isExternalScheme(requireContext()) || content.isExternalTransferUrl()) {
             result.putExtra(MainActivity.URL, content)
         } else if (!content.isMixinUrl()) {
             result.putExtra(MainActivity.SCAN, content)

@@ -27,6 +27,7 @@ import one.mixin.android.ui.common.biometric.TransferBiometricItem
 import one.mixin.android.ui.common.biometric.ValuableBiometricBottomSheetDialogFragment
 import one.mixin.android.ui.common.biometric.WithdrawBiometricItem
 import one.mixin.android.ui.common.biometric.displayAddress
+import one.mixin.android.ui.common.biometric.hasAddress
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.ErrorHandler.Companion.BLOCKCHAIN_ERROR
 import one.mixin.android.util.ErrorHandler.Companion.INSUFFICIENT_BALANCE
@@ -77,7 +78,7 @@ class TransferBottomSheetDialogFragment : ValuableBiometricBottomSheetDialogFrag
                 }
                 is WithdrawBiometricItem -> {
                     (t as WithdrawBiometricItem).let {
-                        title.text = if (it.label != null) {
+                        title.text = if (it.hasAddress()) {
                             getString(R.string.withdrawal_to, it.label)
                         } else {
                             getString(R.string.Withdrawal)

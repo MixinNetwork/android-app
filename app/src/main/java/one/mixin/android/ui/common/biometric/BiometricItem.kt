@@ -60,6 +60,8 @@ fun WithdrawBiometricItem.displayAddress(): String {
     }
 }
 
+fun WithdrawBiometricItem.hasAddress() = addressId != null
+
 @Parcelize
 open class MultisigsBiometricItem(
     open val senders: Array<String>,
