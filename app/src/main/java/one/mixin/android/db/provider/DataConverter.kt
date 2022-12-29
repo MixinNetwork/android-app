@@ -3,6 +3,7 @@ package one.mixin.android.db.provider
 import android.annotation.SuppressLint
 import android.database.Cursor
 import android.os.CancellationSignal
+import androidx.room.RoomDatabase
 import androidx.room.RoomSQLiteQuery
 import androidx.room.util.CursorUtil
 import androidx.room.util.DBUtil
@@ -11,6 +12,7 @@ import one.mixin.android.db.converter.DepositEntryListConverter
 import one.mixin.android.vo.AssetItem
 import one.mixin.android.vo.ChatMinimal
 import one.mixin.android.vo.ConversationItem
+import one.mixin.android.vo.Message
 import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.SearchMessageDetailItem
 import one.mixin.android.vo.SearchMessageItem
@@ -877,6 +879,251 @@ fun callableChatMinimal(
         } finally {
             cursor.close()
             statement.release()
+        }
+    }
+}
+
+@SuppressLint("RestrictedApi")
+fun callableMessageList(
+    db: RoomDatabase,
+    statement: RoomSQLiteQuery,
+    cancellationSignal: CancellationSignal,
+): Callable<List<Message>> {
+    return Callable<List<Message>> {
+        val c = DBUtil.query(db, statement, false, cancellationSignal)
+        return@Callable c.use { cursor ->
+            val cursorIndexOfMessageId = 0
+            val cursorIndexOfConversationId = 1
+            val cursorIndexOfUserId = 2
+            val cursorIndexOfCategory = 3
+            val cursorIndexOfContent = 4
+            val cursorIndexOfMediaUrl = 5
+            val cursorIndexOfMediaMimeType = 6
+            val cursorIndexOfMediaSize = 7
+            val cursorIndexOfMediaDuration = 8
+            val cursorIndexOfMediaWidth = 9
+            val cursorIndexOfMediaHeight = 10
+            val cursorIndexOfMediaHash = 11
+            val cursorIndexOfThumbImage = 12
+            val cursorIndexOfThumbUrl = 13
+            val cursorIndexOfMediaKey = 14
+            val cursorIndexOfMediaDigest = 15
+            val cursorIndexOfMediaStatus = 16
+            val cursorIndexOfStatus = 17
+            val cursorIndexOfCreatedAt = 18
+            val cursorIndexOfAction = 19
+            val cursorIndexOfParticipantId = 20
+            val cursorIndexOfSnapshotId = 21
+            val cursorIndexOfHyperlink = 22
+            val cursorIndexOfName = 23
+            val cursorIndexOfAlbumId = 24
+            val cursorIndexOfStickerId = 25
+            val cursorIndexOfSharedUserId = 26
+            val cursorIndexOfMediaWaveform = 27
+            val cursorIndexOfMediaMineType = 28
+            val cursorIndexOfQuoteMessageId = 29
+            val cursorIndexOfQuoteContent = 30
+            val cursorIndexOfCaption = 31
+            val result: MutableList<Message> = java.util.ArrayList<Message>(cursor.count)
+            while (cursor.moveToNext()) {
+                val item: Message
+                val tmpMessageId: String? = if (cursor.isNull(cursorIndexOfMessageId)) {
+                    null
+                } else {
+                    cursor.getString(cursorIndexOfMessageId)
+                }
+                val tmpConversationId: String? = if (cursor.isNull(cursorIndexOfConversationId)) {
+                    null
+                } else {
+                    cursor.getString(cursorIndexOfConversationId)
+                }
+                val tmpUserId: String? = if (cursor.isNull(cursorIndexOfUserId)) {
+                    null
+                } else {
+                    cursor.getString(cursorIndexOfUserId)
+                }
+                val tmpCategory: String? = if (cursor.isNull(cursorIndexOfCategory)) {
+                    null
+                } else {
+                    cursor.getString(cursorIndexOfCategory)
+                }
+                val tmpContent: String? = if (cursor.isNull(cursorIndexOfContent)) {
+                    null
+                } else {
+                    cursor.getString(cursorIndexOfContent)
+                }
+                val tmpMediaUrl: String? = if (cursor.isNull(cursorIndexOfMediaUrl)) {
+                    null
+                } else {
+                    cursor.getString(cursorIndexOfMediaUrl)
+                }
+                val tmpMediaMimeType: String? = if (cursor.isNull(cursorIndexOfMediaMimeType)) {
+                    null
+                } else {
+                    cursor.getString(cursorIndexOfMediaMimeType)
+                }
+                val tmpMediaSize: Long? = if (cursor.isNull(cursorIndexOfMediaSize)) {
+                    null
+                } else {
+                    cursor.getLong(cursorIndexOfMediaSize)
+                }
+                val tmpMediaDuration: String? = if (cursor.isNull(cursorIndexOfMediaDuration)) {
+                    null
+                } else {
+                    cursor.getString(cursorIndexOfMediaDuration)
+                }
+                val tmpMediaWidth: Int? = if (cursor.isNull(cursorIndexOfMediaWidth)) {
+                    null
+                } else {
+                    cursor.getInt(cursorIndexOfMediaWidth)
+                }
+                val tmpMediaHeight: Int? = if (cursor.isNull(cursorIndexOfMediaHeight)) {
+                    null
+                } else {
+                    cursor.getInt(cursorIndexOfMediaHeight)
+                }
+                val tmpMediaHash: String? = if (cursor.isNull(cursorIndexOfMediaHash)) {
+                    null
+                } else {
+                    cursor.getString(cursorIndexOfMediaHash)
+                }
+                val tmpThumbImage: String? = if (cursor.isNull(cursorIndexOfThumbImage)) {
+                    null
+                } else {
+                    cursor.getString(cursorIndexOfThumbImage)
+                }
+                val tmpThumbUrl: String? = if (cursor.isNull(cursorIndexOfThumbUrl)) {
+                    null
+                } else {
+                    cursor.getString(cursorIndexOfThumbUrl)
+                }
+                val tmpMediaKey: ByteArray? = if (cursor.isNull(cursorIndexOfMediaKey)) {
+                    null
+                } else {
+                    cursor.getBlob(cursorIndexOfMediaKey)
+                }
+                val tmpMediaDigest: ByteArray? = if (cursor.isNull(cursorIndexOfMediaDigest)) {
+                    null
+                } else {
+                    cursor.getBlob(cursorIndexOfMediaDigest)
+                }
+                val tmpMediaStatus: String? = if (cursor.isNull(cursorIndexOfMediaStatus)) {
+                    null
+                } else {
+                    cursor.getString(cursorIndexOfMediaStatus)
+                }
+                val tmpStatus: String? = if (cursor.isNull(cursorIndexOfStatus)) {
+                    null
+                } else {
+                    cursor.getString(cursorIndexOfStatus)
+                }
+                val tmpCreatedAt: String? = if (cursor.isNull(cursorIndexOfCreatedAt)) {
+                    null
+                } else {
+                    cursor.getString(cursorIndexOfCreatedAt)
+                }
+                val tmpAction: String? = if (cursor.isNull(cursorIndexOfAction)) {
+                    null
+                } else {
+                    cursor.getString(cursorIndexOfAction)
+                }
+                val tmpParticipantId: String? = if (cursor.isNull(cursorIndexOfParticipantId)) {
+                    null
+                } else {
+                    cursor.getString(cursorIndexOfParticipantId)
+                }
+                val tmpSnapshotId: String? = if (cursor.isNull(cursorIndexOfSnapshotId)) {
+                    null
+                } else {
+                    cursor.getString(cursorIndexOfSnapshotId)
+                }
+                val tmpHyperlink: String? = if (cursor.isNull(cursorIndexOfHyperlink)) {
+                    null
+                } else {
+                    cursor.getString(cursorIndexOfHyperlink)
+                }
+                val tmpName: String? = if (cursor.isNull(cursorIndexOfName)) {
+                    null
+                } else {
+                    cursor.getString(cursorIndexOfName)
+                }
+                val tmpAlbumId: String? = if (cursor.isNull(cursorIndexOfAlbumId)) {
+                    null
+                } else {
+                    cursor.getString(cursorIndexOfAlbumId)
+                }
+                val tmpStickerId: String? = if (cursor.isNull(cursorIndexOfStickerId)) {
+                    null
+                } else {
+                    cursor.getString(cursorIndexOfStickerId)
+                }
+                val tmpSharedUserId: String? = if (cursor.isNull(cursorIndexOfSharedUserId)) {
+                    null
+                } else {
+                    cursor.getString(cursorIndexOfSharedUserId)
+                }
+                val tmpMediaWaveform: ByteArray? = if (cursor.isNull(cursorIndexOfMediaWaveform)) {
+                    null
+                } else {
+                    cursor.getBlob(cursorIndexOfMediaWaveform)
+                }
+                val tmpMediaMineType: String? = if (cursor.isNull(cursorIndexOfMediaMineType)) {
+                    null
+                } else {
+                    cursor.getString(cursorIndexOfMediaMineType)
+                }
+                val tmpQuoteMessageId: String? = if (cursor.isNull(cursorIndexOfQuoteMessageId)) {
+                    null
+                } else {
+                    cursor.getString(cursorIndexOfQuoteMessageId)
+                }
+                val tmpQuoteContent: String? = if (cursor.isNull(cursorIndexOfQuoteContent)) {
+                    null
+                } else {
+                    cursor.getString(cursorIndexOfQuoteContent)
+                }
+                val tmpCaption: String? = if (cursor.isNull(cursorIndexOfCaption)) {
+                    null
+                } else {
+                    cursor.getString(cursorIndexOfCaption)
+                }
+                item = Message(
+                    tmpMessageId!!,
+                    tmpConversationId!!,
+                    tmpUserId!!,
+                    tmpCategory!!,
+                    tmpContent,
+                    tmpMediaUrl,
+                    tmpMediaMimeType,
+                    tmpMediaSize,
+                    tmpMediaDuration,
+                    tmpMediaWidth,
+                    tmpMediaHeight,
+                    tmpMediaHash,
+                    tmpThumbImage,
+                    tmpThumbUrl,
+                    tmpMediaKey,
+                    tmpMediaDigest,
+                    tmpMediaStatus,
+                    tmpStatus!!,
+                    tmpCreatedAt!!,
+                    tmpAction,
+                    tmpParticipantId,
+                    tmpSnapshotId,
+                    tmpHyperlink,
+                    tmpName,
+                    tmpAlbumId,
+                    tmpStickerId,
+                    tmpSharedUserId,
+                    tmpMediaWaveform,
+                    tmpMediaMineType,
+                    tmpQuoteMessageId,
+                    tmpQuoteContent,
+                    tmpCaption,
+                )
+                result.add(item)
+            }
+            result
         }
     }
 }

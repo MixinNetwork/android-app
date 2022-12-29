@@ -2,6 +2,7 @@ package one.mixin.android.db.pending
 
 import androidx.room.InvalidationTracker
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.FlowCollector
 import one.mixin.android.db.FloodMessageDao
 import one.mixin.android.db.JobDao
 import one.mixin.android.vo.FloodMessage
@@ -25,8 +26,6 @@ interface PendingDatabase {
 
     fun deleteFloodMessage(floodMessage: FloodMessage)
 
-    fun getPendingMessages(): Flow<List<Message>>
-
     suspend fun deletePendingMessageByIds(ids: List<String>)
 
     fun findMessageMediaById(messageId: String): MessageMedia?
@@ -40,4 +39,5 @@ interface PendingDatabase {
     fun floodMessageDao(): FloodMessageDao
 
     fun pendingMessageDao(): PendingMessageDao
+    suspend fun collectPendingMessages(collector: FlowCollector<List<Message>>): kotlinx.coroutines.Job
 }
