@@ -121,7 +121,8 @@ data class MessageItem(
         if (type != MessageCategory.APP_CARD.name && type != MessageCategory.PLAIN_LIVE.name && type != MessageCategory.SIGNAL_LIVE.name && type != MessageCategory.ENCRYPTED_LIVE.name &&
             type != MessageCategory.PLAIN_AUDIO.name && type != MessageCategory.SIGNAL_AUDIO.name && type != MessageCategory.ENCRYPTED_AUDIO.name &&
             type != MessageCategory.PLAIN_IMAGE.name && type != MessageCategory.SIGNAL_IMAGE.name && type != MessageCategory.ENCRYPTED_IMAGE.name &&
-            type != MessageCategory.PLAIN_VIDEO.name && type != MessageCategory.SIGNAL_VIDEO.name && type != MessageCategory.ENCRYPTED_VIDEO.name
+            type != MessageCategory.PLAIN_VIDEO.name && type != MessageCategory.SIGNAL_VIDEO.name && type != MessageCategory.ENCRYPTED_VIDEO.name &&
+            type != MessageCategory.PLAIN_DATA.name && type != MessageCategory.SIGNAL_DATA.name && type != MessageCategory.ENCRYPTED_DATA.name
         ) {
             return null
         }
