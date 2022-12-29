@@ -1,6 +1,9 @@
 package one.mixin.android.pay
 
-import one.mixin.android.pay.ParseState.*
+import one.mixin.android.pay.ParseState.ADDRESS
+import one.mixin.android.pay.ParseState.CHAIN
+import one.mixin.android.pay.ParseState.FUNCTION
+import one.mixin.android.pay.ParseState.QUERY
 import one.mixin.android.pay.erc831.ERC831
 import one.mixin.android.pay.erc831.toERC831
 import java.math.BigInteger

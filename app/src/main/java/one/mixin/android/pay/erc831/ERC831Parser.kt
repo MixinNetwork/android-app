@@ -1,7 +1,9 @@
 package one.mixin.android.pay.erc831
 
 import one.mixin.android.pay.EthereumURI
-import one.mixin.android.pay.erc831.ParseState.*
+import one.mixin.android.pay.erc831.ParseState.PAYLOAD
+import one.mixin.android.pay.erc831.ParseState.PREFIX
+import one.mixin.android.pay.erc831.ParseState.SCHEMA
 
 // as defined in http://eips.ethereum.org/EIPS/eip-831
 
