@@ -11,6 +11,7 @@ import one.mixin.android.job.DecryptCallMessage
 import one.mixin.android.job.DecryptMessage
 import one.mixin.android.job.pendingMessageStatusMap
 import one.mixin.android.util.GsonHelper
+import one.mixin.android.util.PENDING_DB_THREAD
 import one.mixin.android.util.chat.InvalidateFlow
 import one.mixin.android.vo.CallStateLiveData
 import one.mixin.android.vo.MessageStatus
@@ -132,7 +133,7 @@ class HedwigImp(
         if (pendingJob?.isActive == true) {
             return
         }
-        pendingJob = lifecycleScope.launch(Dispatchers.IO) {
+        pendingJob = lifecycleScope.launch(PENDING_DB_THREAD) {
             try {
                 val list = pendingDatabase.getPendingMessages()
                 messageDao.insertList(list)
