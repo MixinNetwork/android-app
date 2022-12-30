@@ -27,7 +27,7 @@ suspend fun parseExternalTransferUri(
     if (amount == null) return null
     val amountBD = amount.toBigDecimalOrNull() ?: return null
 
-    return ExternalTransfer(destination, amountBD, assetId, addressFeeResponse.fee.toBigDecimalOrNull())
+    return ExternalTransfer(addressFeeResponse.destination, amountBD, assetId, addressFeeResponse.fee.toBigDecimalOrNull())
 }
 
 val externalTransferAssetIdMap by lazy {

@@ -51,7 +51,7 @@ internal suspend fun parseEthereum(
     val amount = Convert.fromWei(BigDecimal(value), Convert.Unit.ETHER)
     val addressFeeResponse = getAddressFee(assetId, destination) ?: return null
 
-    return ExternalTransfer(destination, amount, assetId, addressFeeResponse.fee.toBigDecimalOrNull())
+    return ExternalTransfer(addressFeeResponse.destination, amount, assetId, addressFeeResponse.fee.toBigDecimalOrNull())
 }
 
 internal fun String?.toBigInteger(): BigInteger? {
