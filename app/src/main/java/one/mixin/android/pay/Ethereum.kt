@@ -33,15 +33,25 @@ internal suspend fun parseEthereum(
         assetId = findAssetIdByAssetKey(assetKey) ?: return null
 
         val fp = erc681.functionParams
-        fp.forEach { pair ->
-            if (pair.first == "address") {
-                address = pair.second
-            } else {
-                if (pair.first == "amount") {
-                    amount = BigDecimal(pair.second)
-                } else if (pair.first == "uint256") {
-                    amount = pair.second.dropE2BigDecimal()
-                    // more check
+        var amountFound = false
+        var addressFound = false
+        run loop@{
+            fp.forEach { pair ->
+                if (amountFound && addressFound) {
+                    return@loop
+                }
+
+                if (pair.first == "address") {
+                    address = pair.second
+                    addressFound = true
+                } else {
+                    if (pair.first == "amount") {
+                        amount = BigDecimal(pair.second)
+                        amountFound = true
+                    } else if (!amountFound && pair.first == "uint256") {
+                        amount = pair.second.dropE2BigDecimal()
+                        // more check
+                    }
                 }
             }
         }
