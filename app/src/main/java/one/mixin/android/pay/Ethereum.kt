@@ -49,8 +49,7 @@ internal suspend fun parseEthereum(
                         amount = BigDecimal(pair.second)
                         amountFound = true
                     } else if (!amountFound && pair.first == "uint256") {
-                        amount = pair.second.dropE2BigDecimal()
-                        // more check
+                        // todo support
                     }
                 }
             }
@@ -64,24 +63,6 @@ internal suspend fun parseEthereum(
 
     val addressFeeResponse = getAddressFee(assetId, destination) ?: return null
     return ExternalTransfer(addressFeeResponse.destination, am, assetId, addressFeeResponse.fee.toBigDecimalOrNull())
-}
-
-fun String?.dropE2BigDecimal(): BigDecimal? {
-    if (this == null) {
-        return null
-    }
-
-    if (!scientificNumberRegEx.matches(this)) {
-        return null
-    }
-
-    return when {
-        contains("e") -> {
-            val split = split("e")
-            BigDecimal(split.first())
-        }
-        else -> BigDecimal(this)
-    }
 }
 
 private val ethereumChainIdMap by lazy {
