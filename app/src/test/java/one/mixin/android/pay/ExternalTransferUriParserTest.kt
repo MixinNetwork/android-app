@@ -1,6 +1,7 @@
 package one.mixin.android.pay
 
 import kotlinx.coroutines.runBlocking
+import one.mixin.android.Constants
 import one.mixin.android.api.response.AddressFeeResponse
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -20,7 +21,13 @@ class ExternalTransferUriParserTest {
         val result3 = parse(url3)
 
         assertTrue(result1 != null)
+        if (result1 != null) {
+            checkResult(result1, Constants.ChainId.BITCOIN_CHAIN_ID, "BC1QA7A84SQ2NNKPXUA5DLY6FG553D5V06NSL608SS", "0.00186487")
+        }
         assertTrue(result2 != null)
+        if (result2 != null) {
+            checkResult(result2, Constants.ChainId.BITCOIN_CHAIN_ID, "35pkcZ531UWYwVWRGeMG6eXkWbPptFg6AG", "0.00173492")
+        }
         assertTrue(result3 == null)
     }
 
@@ -39,9 +46,21 @@ class ExternalTransferUriParserTest {
         val result5 = parse(url5)
 
         assertTrue(result1 != null)
+        if (result1 != null) {
+            checkResult(result1, Constants.ChainId.ETHEREUM_CHAIN_ID, "0xfb6916095ca1df60bb79Ce92ce3ea74c37c5d359", "2.014")
+        }
         assertTrue(result2 != null)
+        if (result2 != null) {
+            checkResult(result2, "4d8c508b-91c5-375b-92b0-ee702ed2dac5", "0x00d02d4A148bCcc66C6de20C4EB1CbAB4298cDcc", "2")
+        }
         assertTrue(result3 != null)
+        if (result3 != null) {
+            checkResult(result3, Constants.ChainId.ETHEREUM_CHAIN_ID, "0xD994790d2905b073c438457c9b8933C0148862db", "0.01697")
+        }
         assertTrue(result4 != null)
+        if (result4 != null) {
+            checkResult(result4, "c94ac88f-4671-3976-b60a-09064f1811e8", "0xB38F2E40e82F0AE5613D55203d84953aE4d5181B", "1")
+        }
         assertTrue(result5 == null)
     }
 
@@ -61,6 +80,9 @@ class ExternalTransferUriParserTest {
         val result1 = parse(url1)
 
         assertTrue(result1 != null)
+        if (result1 != null) {
+            checkResult(result1, Constants.ChainId.Litecoin, "MAA5rAYDJcfpGShL2fHHyqdH5Sum4hC9My", "0.31837321")
+        }
     }
 
     @Test
@@ -70,6 +92,9 @@ class ExternalTransferUriParserTest {
         val result1 = parse(url1)
 
         assertTrue(result1 != null)
+        if (result1 != null) {
+            checkResult(result1, Constants.ChainId.Dogecoin, "DQDHx7KcDjq1uDR5MC8tHQPiUp1C3eQHcd", "258.69")
+        }
     }
 
     @Test
@@ -79,6 +104,9 @@ class ExternalTransferUriParserTest {
         val result1 = parse(url1)
 
         assertTrue(result1 != null)
+        if (result1 != null) {
+            checkResult(result1, Constants.ChainId.Dash, "XimNHukVq5PFRkadrwybyuppbree51mByS", "0.47098703")
+        }
     }
 
     @Test
@@ -88,6 +116,9 @@ class ExternalTransferUriParserTest {
         val result1 = parse(url1)
 
         assertTrue(result1 != null)
+        if (result1 != null) {
+            checkResult(result1, Constants.ChainId.Monero, "83sfoqWFNrsGTAyuC3PxHeS9stn8TQiTkiBcizHwjyHN57NczsRJE8UfrnhTUxT5PLBWLnq5yXrtPKeAjWeoDTkCPHGVe1Y", "1.61861962")
+        }
     }
 
     @Test
@@ -99,12 +130,32 @@ class ExternalTransferUriParserTest {
         val result2 = parse(url2)
 
         assertTrue(result1 != null)
-        assertTrue(result2 != null)
+        if (result1 != null) {
+            checkResult(result1, Constants.ChainId.Solana, "mvines9iiHiQTysrwkJjGf2gb9Ex9jXJX8ns3qwf2kN", "1")
+        }
+        assertTrue(result2 == null)
     }
 
-    private suspend fun parse(url: String) = parseExternalTransferUri(url, { assetId, destination -> mockGetAddressFeeResponse(assetId, destination) }, { assetKey -> ""})
+    private fun checkResult(result: ExternalTransfer, targetAssetId: String, targetDestination: String, targetAmount: String) {
+        assertTrue(result.assetId == targetAssetId)
+        assertTrue(result.destination == targetDestination)
+        assertTrue(result.amount == targetAmount)
+    }
+
+    private suspend fun parse(url: String) = parseExternalTransferUri(
+        url,
+        { assetId, destination ->
+            mockGetAddressFeeResponse(assetId, destination)
+        }, { assetKey ->
+            return@parseExternalTransferUri mockAssetKeyAssetId[assetKey]
+        })
 
     private val mockGetAddressFeeResponse: suspend (String, String) -> AddressFeeResponse? = { assetId, destination ->
         AddressFeeResponse(destination, null, assetId, "0")
     }
+
+    private val mockAssetKeyAssetId = mapOf(
+        "0xdac17f958d2ee523a2206206994597c13d831ec7" to "4d8c508b-91c5-375b-92b0-ee702ed2dac5",  // ERC20 USDT
+        "0xa974c709cfb4566686553a20790685a47aceaa33" to "c94ac88f-4671-3976-b60a-09064f1811e8", // XIN
+    )
 }
