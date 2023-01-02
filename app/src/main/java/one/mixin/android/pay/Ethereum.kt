@@ -2,8 +2,9 @@ package one.mixin.android.pay
 
 import one.mixin.android.Constants
 import one.mixin.android.api.response.AddressFeeResponse
-import one.mixin.android.pay.erc681.parseERC681
+import one.mixin.android.extension.stripAmountZero
 import one.mixin.android.pay.erc681.scientificNumberRegEx
+import one.mixin.android.pay.erc681.toERC681
 import timber.log.Timber
 import java.math.BigDecimal
 
@@ -14,10 +15,10 @@ internal suspend fun parseEthereum(
     getAddressFee: suspend (String, String) -> AddressFeeResponse?,
     findAssetIdByAssetKey: suspend (String) -> String?,
 ): ExternalTransfer? {
-    val erc681 = parseERC681(url)
+    val erc681 = EthereumURI(url).toERC681()
     Timber.d("parseEthereum: $erc681")
 
-    // if (!erc681.valid) return null
+    if (!erc681.valid) return null
 
     val chainId = erc681.chainId?.toInt() ?: 1
     var assetId = ethereumChainIdMap[chainId] ?: return null
@@ -40,6 +41,7 @@ internal suspend fun parseEthereum(
                     amount = BigDecimal(pair.second)
                 } else if (pair.first == "uint256") {
                     amount = pair.second.dropE2BigDecimal()
+                    // more check
                 }
             }
         }
@@ -48,11 +50,10 @@ internal suspend fun parseEthereum(
         amount = Convert.fromWei(BigDecimal(value), Convert.Unit.ETHER)
     }
     val destination = address ?: return null
-    val amountBD = amount ?: return null
+    val am = amount?.toPlainString()?.stripAmountZero() ?: return null
 
     val addressFeeResponse = getAddressFee(assetId, destination) ?: return null
-
-    return ExternalTransfer(addressFeeResponse.destination, amountBD, assetId, addressFeeResponse.fee.toBigDecimalOrNull())
+    return ExternalTransfer(addressFeeResponse.destination, am, assetId, addressFeeResponse.fee.toBigDecimalOrNull())
 }
 
 fun String?.dropE2BigDecimal(): BigDecimal? {

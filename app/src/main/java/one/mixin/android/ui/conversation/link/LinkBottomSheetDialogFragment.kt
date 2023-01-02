@@ -618,7 +618,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                     }
 
                     val traceId = UUID.randomUUID().toString()
-                    val amount = result.amount.toPlainString()
+                    val amount = result.amount
                     val destination = result.destination
                     handleMixinResponse(
                         invokeNetwork = {

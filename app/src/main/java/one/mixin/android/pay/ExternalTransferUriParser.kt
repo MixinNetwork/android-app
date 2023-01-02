@@ -37,9 +37,11 @@ suspend fun parseExternalTransferUri(
     }
     if (amount.isNullOrEmpty()) return null
     val amountBD = amount.toBigDecimalOrNull() ?: return null
-
+    if (amount != amountBD.toPlainString()) {
+        return null
+    }
     val memo = uri.getQueryParameter("memo")
-    return ExternalTransfer(addressFeeResponse.destination, amountBD, assetId, addressFeeResponse.fee.toBigDecimalOrNull(), memo)
+    return ExternalTransfer(addressFeeResponse.destination, amount, assetId, addressFeeResponse.fee.toBigDecimalOrNull(), memo)
 }
 
 val externalTransferAssetIdMap by lazy {

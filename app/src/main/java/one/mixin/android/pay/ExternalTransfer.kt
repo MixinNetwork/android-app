@@ -5,7 +5,7 @@ import java.util.UUID
 
 data class ExternalTransfer(
     val destination: String,
-    val amount: BigDecimal,
+    val amount: String,
     val assetId: String,
     val fee: BigDecimal?,
     val memo: String? = null,

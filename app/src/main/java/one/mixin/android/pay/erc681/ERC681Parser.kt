@@ -54,5 +54,3 @@ fun CommonEthereumURIData.toERC681() = let { commonURI ->
         functionParams = commonURI.query.filter { it.first != "gas" && it.first != "value" }
     }
 }
-
-fun parseERC681(url: String) = EthereumURI(url).toERC681()
