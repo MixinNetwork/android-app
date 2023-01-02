@@ -23,7 +23,7 @@ suspend fun parseExternalTransferUri(
 
     if (assetId == Constants.ChainId.Solana) {
         val splToken = uri.getQueryParameter("spl-token")
-        if (splToken != null) {
+        if (!splToken.isNullOrEmpty()) {
             return null
         }
     }
@@ -35,10 +35,11 @@ suspend fun parseExternalTransferUri(
     if (amount == null) {
         amount = uri.getQueryParameter("tx_amount")?.stripAmountZero()
     }
-    if (amount == null) return null
+    if (amount.isNullOrEmpty()) return null
     val amountBD = amount.toBigDecimalOrNull() ?: return null
 
-    return ExternalTransfer(addressFeeResponse.destination, amountBD, assetId, addressFeeResponse.fee.toBigDecimalOrNull())
+    val memo = uri.getQueryParameter("memo")
+    return ExternalTransfer(addressFeeResponse.destination, amountBD, assetId, addressFeeResponse.fee.toBigDecimalOrNull(), memo)
 }
 
 val externalTransferAssetIdMap by lazy {

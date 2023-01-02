@@ -620,14 +620,14 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                     val traceId = UUID.randomUUID().toString()
                     val amount = result.amount.toPlainString()
                     val destination = result.destination
-                    val transferRequest = TransferRequest(result.assetId, null, amount, null, traceId, "", null, destination)
                     handleMixinResponse(
                         invokeNetwork = {
+                            val transferRequest = TransferRequest(result.assetId, null, amount, null, traceId, result.memo, null, destination)
                             linkViewModel.paySuspend(transferRequest)
                         },
                         successBlock = { r ->
                             val response = r.data ?: return@handleMixinResponse false
-                            showWithdrawalBottom(null, destination, null, null, result.fee?.toPlainString() ?: "0", amount, asset, traceId, response.status, "")
+                            showWithdrawalBottom(null, destination, null, null, result.fee?.toPlainString() ?: "0", amount, asset, traceId, response.status, result.memo)
                         },
                         failureBlock = {
                             showError(R.string.Invalid_payment_link)
