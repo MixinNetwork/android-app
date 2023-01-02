@@ -593,7 +593,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
             if (checkHasPin()) return
 
             lifecycleScope.launch(errorHandler) {
-                val result = parseExternalTransferUri(url) { assetId, destination ->
+                val result = parseExternalTransferUri(url, { assetId, destination ->
                     handleMixinResponse(
                         invokeNetwork = {
                             linkViewModel.getExternalAddressFee(assetId, destination, null)
@@ -602,7 +602,9 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                             return@handleMixinResponse it.data
                         },
                     )
-                }
+                }, { assetKey ->
+                    return@parseExternalTransferUri linkViewModel.findAssetIdByAssetKey(assetKey)
+                })
 
                 if (result == null) {
                     QrScanBottomSheetDialogFragment.newInstance(url)

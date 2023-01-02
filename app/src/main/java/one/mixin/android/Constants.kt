@@ -152,6 +152,7 @@ object Constants {
         const val Dogecoin = "6770a1e5-6086-44d5-b60f-545f9d9e8ffd"
         const val Monero = "05c5ac01-31f9-4a69-aa8a-ab796de1d041"
         const val Dash = "6472e7e3-75fd-48b6-b1dc-28d294ee1476"
+        const val Solana = "64692c23-8971-4cf4-84a7-4dd1271dd887"
     }
 
     object AssetId {

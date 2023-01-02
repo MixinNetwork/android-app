@@ -358,4 +358,7 @@ constructor(
     suspend fun findTotalUSDBalance(): Int = assetDao.findTotalUSDBalance() ?: 0
 
     suspend fun findAllAssetIdSuspend() = assetDao.findAllAssetIdSuspend()
+
+    suspend fun findAssetIdByAssetKey(assetKey: String): String? =
+        assetDao.findAssetIdByAssetKey(assetKey)
 }
