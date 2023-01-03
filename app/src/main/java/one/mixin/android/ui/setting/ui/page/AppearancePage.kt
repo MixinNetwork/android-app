@@ -89,13 +89,13 @@ fun AppearancePage() {
                         navController.navigation(SettingDestination.Wallpaper)
                     }
                     .padding(start = 16.dp, end = 16.dp),
-                verticalAlignment = Alignment.CenterVertically
+                verticalAlignment = Alignment.CenterVertically,
             ) {
                 Text(
                     text = stringResource(id = R.string.chat_background),
                     modifier = Modifier.fillMaxWidth(),
                     fontSize = 14.sp,
-                    color = MixinAppTheme.colors.textPrimary
+                    color = MixinAppTheme.colors.textPrimary,
                 )
             }
         }
