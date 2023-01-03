@@ -3,7 +3,9 @@ package one.mixin.android.pay
 import one.mixin.android.Constants
 import one.mixin.android.api.response.AddressFeeResponse
 import one.mixin.android.extension.stripAmountZero
+import one.mixin.android.pay.erc681.scientificNumberRegEx
 import one.mixin.android.pay.erc681.toERC681
+import one.mixin.android.vo.AssetPrecision
 import timber.log.Timber
 import java.math.BigDecimal
 
@@ -13,6 +15,7 @@ internal suspend fun parseEthereum(
     url: String,
     getAddressFee: suspend (String, String) -> AddressFeeResponse?,
     findAssetIdByAssetKey: suspend (String) -> String?,
+    getAssetPrecisionById: suspend (String) -> AssetPrecision?,
 ): ExternalTransfer? {
     val erc681 = EthereumURI(url).toERC681()
     Timber.d("parseEthereum: $erc681")
@@ -54,7 +57,7 @@ internal suspend fun parseEthereum(
                         amountFound = true
                         needCheckPrecision = false
                     } else if (!amountFound && pair.first == "uint256") {
-                        amount = BigDecimal(pair.second)
+                        amount = pair.second.toBigDecimal()
                         needCheckPrecision = true
                     }
                 }
@@ -65,10 +68,38 @@ internal suspend fun parseEthereum(
         amount = Convert.fromWei(BigDecimal(value), Convert.Unit.ETHER)
     }
     val destination = address ?: return null
-    val am = amount?.toPlainString()?.stripAmountZero() ?: return null
+    val amountBD = amount ?: return null
 
+    if (needCheckPrecision) {
+        val assetPrecision = getAssetPrecisionById(assetId) ?: return null
+        val precision = assetPrecision.precision
+        amount = amountBD.divide(BigDecimal.TEN.pow(precision))
+    }
+
+    val am = amount?.toPlainString()?.stripAmountZero() ?: return null
     val addressFeeResponse = getAddressFee(assetId, destination) ?: return null
-    return ExternalTransfer(addressFeeResponse.destination, am, assetId, addressFeeResponse.fee.toBigDecimalOrNull(), null, needCheckPrecision)
+    return ExternalTransfer(addressFeeResponse.destination, am, assetId, addressFeeResponse.fee.toBigDecimalOrNull(), null)
+}
+
+fun String?.toBigDecimal(): BigDecimal? {
+    if (this == null) {
+        return null
+    }
+
+    if (!scientificNumberRegEx.matches(this)) {
+        return null
+    }
+
+    return when {
+        contains("e") -> {
+            val split = split("e")
+            BigDecimal(split.first()).multiply(BigDecimal.TEN.pow(split[1].toIntOrNull() ?: 1))
+        }
+        contains(".") -> {
+            null
+        }
+        else -> BigDecimal(this)
+    }
 }
 
 private val ethereumChainIdMap by lazy {

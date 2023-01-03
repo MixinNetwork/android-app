@@ -5,16 +5,18 @@ import one.mixin.android.api.response.AddressFeeResponse
 import one.mixin.android.extension.stripAmountZero
 import one.mixin.android.extension.toUri
 import one.mixin.android.pay.erc831.isEthereumURLString
+import one.mixin.android.vo.AssetPrecision
 import timber.log.Timber
 
 suspend fun parseExternalTransferUri(
     url: String,
     getAddressFee: suspend (String, String) -> AddressFeeResponse?,
     findAssetIdByAssetKey: suspend (String) -> String?,
+    getAssetPrecisionById: suspend (String) -> AssetPrecision?,
 ): ExternalTransfer? {
     Timber.d("parseExternalTransferUri: $url")
     if (url.isEthereumURLString()) {
-        return parseEthereum(url, getAddressFee, findAssetIdByAssetKey)
+        return parseEthereum(url, getAddressFee, findAssetIdByAssetKey, getAssetPrecisionById)
     }
 
     val uri = url.replaceFirst(":", "://").toUri()

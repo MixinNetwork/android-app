@@ -3,6 +3,7 @@ package one.mixin.android.pay
 import kotlinx.coroutines.runBlocking
 import one.mixin.android.Constants
 import one.mixin.android.api.response.AddressFeeResponse
+import one.mixin.android.vo.AssetPrecision
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -178,6 +179,9 @@ class ExternalTransferUriParserTest {
         { assetKey ->
             return@parseExternalTransferUri mockAssetKeyAssetId[assetKey]
         },
+        { assetId ->
+            return@parseExternalTransferUri AssetPrecision(assetId, Constants.ChainId.ETHEREUM_CHAIN_ID, mockAssetPrecision[assetId] ?: 0)
+        },
     )
 
     private val mockGetAddressFeeResponse: suspend (String, String) -> AddressFeeResponse? = { assetId, destination ->
@@ -187,5 +191,10 @@ class ExternalTransferUriParserTest {
     private val mockAssetKeyAssetId = mapOf(
         "0xdac17f958d2ee523a2206206994597c13d831ec7" to "4d8c508b-91c5-375b-92b0-ee702ed2dac5", // ERC20 USDT
         "0xa974c709cfb4566686553a20790685a47aceaa33" to "c94ac88f-4671-3976-b60a-09064f1811e8", // XIN
+    )
+
+    private val mockAssetPrecision = mapOf(
+        "4d8c508b-91c5-375b-92b0-ee702ed2dac5" to 6,
+        "c94ac88f-4671-3976-b60a-09064f1811e8" to 18,
     )
 }

@@ -6,6 +6,7 @@ import one.mixin.android.api.request.WithdrawalRequest
 import one.mixin.android.api.response.PaymentResponse
 import one.mixin.android.ui.wallet.BaseTransactionsFragment.Companion.LIMIT
 import one.mixin.android.vo.Asset
+import one.mixin.android.vo.AssetPrecision
 import one.mixin.android.vo.PendingDeposit
 import one.mixin.android.vo.Snapshot
 import one.mixin.android.vo.Ticker
@@ -27,6 +28,9 @@ interface AssetService {
 
     @GET("assets/{id}")
     suspend fun getAssetByIdSuspend(@Path("id") id: String): MixinResponse<Asset>
+
+    @GET("assets/{id}")
+    suspend fun getAssetPrecisionById(@Path("id") id: String): MixinResponse<AssetPrecision>
 
     @GET("assets/{id}/snapshots")
     suspend fun getSnapshotsByAssetId(

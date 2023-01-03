@@ -66,6 +66,8 @@ constructor(
 
     suspend fun asset(id: String) = assetService.getAssetByIdSuspend(id)
 
+    suspend fun getAssetPrecisionById(id: String) = assetService.getAssetPrecisionById(id)
+
     suspend fun findOrSyncAsset(assetId: String): AssetItem? {
         var assetItem = assetDao.findAssetItemById(assetId)
         if (assetItem != null && assetItem.getDestination().isNotBlank()) return assetItem

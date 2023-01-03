@@ -46,6 +46,7 @@ import one.mixin.android.vo.Account
 import one.mixin.android.vo.Address
 import one.mixin.android.vo.App
 import one.mixin.android.vo.AssetItem
+import one.mixin.android.vo.AssetPrecision
 import one.mixin.android.vo.Circle
 import one.mixin.android.vo.CircleConversation
 import one.mixin.android.vo.ConversationCategory
@@ -617,4 +618,7 @@ class BottomSheetViewModel @Inject internal constructor(
 
     suspend fun findAssetIdByAssetKey(assetKey: String): String? =
         assetRepository.findAssetIdByAssetKey(assetKey)
+
+    suspend fun getAssetPrecisionById(assetId: String): MixinResponse<AssetPrecision> =
+        assetRepository.getAssetPrecisionById(assetId)
 }
