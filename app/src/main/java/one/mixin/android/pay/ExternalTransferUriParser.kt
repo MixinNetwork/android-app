@@ -31,11 +31,14 @@ suspend fun parseExternalTransferUri(
     val destination = uri.host ?: return null
     val addressFeeResponse = getAddressFee(assetId, destination) ?: return null
 
-    var amount = uri.getQueryParameter("amount")?.stripAmountZero()
+    var amount = uri.getQueryParameter("amount")
     if (amount == null) {
-        amount = uri.getQueryParameter("tx_amount")?.stripAmountZero()
+        amount = uri.getQueryParameter("tx_amount")
     }
     if (amount.isNullOrEmpty()) return null
+    if (amount.amountWithE()) return null
+
+    amount = amount.stripAmountZero()
     val amountBD = amount.toBigDecimalOrNull() ?: return null
     if (amount != amountBD.toPlainString()) {
         return null
@@ -43,6 +46,9 @@ suspend fun parseExternalTransferUri(
     val memo = uri.getQueryParameter("memo")
     return ExternalTransfer(addressFeeResponse.destination, amount, assetId, addressFeeResponse.fee.toBigDecimalOrNull(), memo)
 }
+
+// check amount has scientific E
+fun String?.amountWithE(): Boolean = this?.contains("e") == true
 
 val externalTransferAssetIdMap by lazy {
     mapOf(

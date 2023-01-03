@@ -3,7 +3,6 @@ package one.mixin.android.pay
 import one.mixin.android.Constants
 import one.mixin.android.api.response.AddressFeeResponse
 import one.mixin.android.extension.stripAmountZero
-import one.mixin.android.pay.erc681.scientificNumberRegEx
 import one.mixin.android.pay.erc681.toERC681
 import timber.log.Timber
 import java.math.BigDecimal
@@ -47,11 +46,15 @@ internal suspend fun parseEthereum(
                     addressFound = true
                 } else {
                     if (pair.first == "amount") {
+                        if (pair.second.amountWithE()) {
+                            return null
+                        }
+
                         amount = BigDecimal(pair.second)
                         amountFound = true
                         needCheckPrecision = false
                     } else if (!amountFound && pair.first == "uint256") {
-                        amount = pair.second.toBigDecimal()
+                        amount = BigDecimal(pair.second)
                         needCheckPrecision = true
                     }
                 }
@@ -67,28 +70,6 @@ internal suspend fun parseEthereum(
     val addressFeeResponse = getAddressFee(assetId, destination) ?: return null
     return ExternalTransfer(addressFeeResponse.destination, am, assetId, addressFeeResponse.fee.toBigDecimalOrNull(), null, needCheckPrecision)
 }
-
-fun String?.toBigDecimal(): BigDecimal? {
-    if (this == null) {
-        return null
-    }
-
-    if (!scientificNumberRegEx.matches(this)) {
-        return null
-    }
-
-    return when {
-        contains("e") -> {
-            val split = split("e")
-            BigDecimal(split.first()).multiply(BigDecimal.TEN.pow(split[1].toIntOrNull() ?: 1))
-        }
-        contains(".") -> {
-            null
-        }
-        else -> BigDecimal(this)
-    }
-}
-
 
 private val ethereumChainIdMap by lazy {
     mapOf(
