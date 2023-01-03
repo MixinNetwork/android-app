@@ -17,6 +17,7 @@ import one.mixin.android.R
 import one.mixin.android.crypto.Base64
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.job.RefreshExternalSchemeJob.Companion.PREF_EXTERNAL_SCHEMES
+import one.mixin.android.pay.externalTransferAssetIdMap
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.QrScanBottomSheetDialogFragment
 import one.mixin.android.ui.common.share.ShareMessageBottomSheetDialogFragment
@@ -213,6 +214,8 @@ fun String.checkUserOrApp(
 }
 
 fun String.isDonateUrl() = donateSupported.any { startsWith(it) }
+
+fun String.isExternalTransferUrl() = externalTransferAssetIdMap.keys.any { startsWith(it) }
 
 private fun String.isUserScheme() = startsWith(Constants.Scheme.USERS, true) ||
     startsWith(Constants.Scheme.HTTPS_USERS, true)

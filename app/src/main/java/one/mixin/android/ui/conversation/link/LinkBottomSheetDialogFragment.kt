@@ -39,12 +39,14 @@ import one.mixin.android.extension.getGroupAvatarPath
 import one.mixin.android.extension.handleSchemeSend
 import one.mixin.android.extension.isDonateUrl
 import one.mixin.android.extension.isExternalScheme
+import one.mixin.android.extension.isExternalTransferUrl
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.isUUID
 import one.mixin.android.extension.stripAmountZero
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.withArgs
 import one.mixin.android.job.getIconUrlName
+import one.mixin.android.pay.parseExternalTransferUri
 import one.mixin.android.repository.QrCodeType
 import one.mixin.android.session.Session
 import one.mixin.android.ui.auth.AuthBottomSheetDialogFragment
@@ -75,7 +77,6 @@ import one.mixin.android.ui.web.WebActivity
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.SystemUIManager
 import one.mixin.android.util.viewBinding
-import one.mixin.android.vo.Address
 import one.mixin.android.vo.AssetItem
 import one.mixin.android.vo.User
 import one.mixin.android.vo.generateConversationId
@@ -570,7 +571,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                                     },
                                     successBlock = { r ->
                                         val response = r.data ?: return@handleMixinResponse false
-                                        showWithdrawalBottom(address, amount, asset, traceId, response.status, memo)
+                                        showWithdrawalBottom(address.addressId, address.destination, address.tag, address.label, address.fee, amount, asset, traceId, response.status, memo)
                                     },
                                     failureBlock = {
                                         showError(R.string.Invalid_payment_link)
@@ -587,6 +588,68 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                         showError(R.string.Asset_not_found)
                     }
                 }
+            }
+        } else if (url.isExternalTransferUrl()) {
+            if (checkHasPin()) return
+
+            lifecycleScope.launch(errorHandler) {
+                val result = parseExternalTransferUri(url, { assetId, destination ->
+                    handleMixinResponse(
+                        invokeNetwork = {
+                            linkViewModel.getExternalAddressFee(assetId, destination, null)
+                        },
+                        successBlock = {
+                            return@handleMixinResponse it.data
+                        },
+                    )
+                }, { assetKey ->
+                    return@parseExternalTransferUri linkViewModel.findAssetIdByAssetKey(assetKey)
+                }, { assetId ->
+                    handleMixinResponse(
+                        invokeNetwork = {
+                            linkViewModel.getAssetPrecisionById(assetId)
+                        },
+                        successBlock = {
+                            return@handleMixinResponse it.data
+                        },
+                    )
+                })
+
+                if (result == null) {
+                    QrScanBottomSheetDialogFragment.newInstance(url)
+                        .show(parentFragmentManager, QrScanBottomSheetDialogFragment.TAG)
+                } else {
+                    val asset = checkAsset(result.assetId)
+                    if (asset == null) {
+                        showError(R.string.Asset_not_found)
+                        dismiss()
+                        return@launch
+                    }
+
+                    val traceId = UUID.randomUUID().toString()
+                    val amount = result.amount
+                    val destination = result.destination
+                    handleMixinResponse(
+                        invokeNetwork = {
+                            val transferRequest = TransferRequest(result.assetId, null, amount, null, traceId, result.memo, null, destination)
+                            linkViewModel.paySuspend(transferRequest)
+                        },
+                        successBlock = { r ->
+                            val response = r.data ?: return@handleMixinResponse false
+                            showWithdrawalBottom(null, destination, null, null, result.fee?.toPlainString() ?: "0", amount, asset, traceId, response.status, result.memo)
+                        },
+                        failureBlock = {
+                            showError(R.string.Invalid_payment_link)
+                            return@handleMixinResponse false
+                        },
+                        exceptionBlock = {
+                            showError(R.string.Checking_payment_info)
+                            return@handleMixinResponse false
+                        },
+                    )
+                }
+
+                dismiss()
             }
         } else if (url.isDonateUrl()) {
             if (checkHasPin()) return
@@ -749,14 +812,14 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
         showPreconditionBottom(biometricItem)
     }
 
-    private suspend fun showWithdrawalBottom(address: Address, amount: String, asset: AssetItem, traceId: String, status: String, memo: String?) {
-        val pair = linkViewModel.findLatestTrace(null, address.destination, address.tag, amount, asset.assetId)
+    private suspend fun showWithdrawalBottom(addressId: String?, destination: String, tag: String?, label: String?, fee: String, amount: String, asset: AssetItem, traceId: String, status: String, memo: String?) {
+        val pair = linkViewModel.findLatestTrace(null, destination, tag, amount, asset.assetId)
         if (pair.second) {
             showError(getString(R.string.check_trace_failed))
             return
         }
         val biometricItem = WithdrawBiometricItem(
-            address.destination, address.tag, address.addressId, address.label, address.fee,
+            destination, tag, addressId, label, fee,
             asset, amount, null, traceId, memo, status, pair.first,
         )
         showPreconditionBottom(biometricItem)

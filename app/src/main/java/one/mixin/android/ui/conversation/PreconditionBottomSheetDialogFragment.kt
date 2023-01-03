@@ -18,6 +18,7 @@ import one.mixin.android.Constants.Account.PREF_STRANGER_TRANSFER
 import one.mixin.android.R
 import one.mixin.android.api.response.PaymentStatus
 import one.mixin.android.databinding.FragmentPreconditionBottomSheetBinding
+import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.formatPublicKey
@@ -32,6 +33,7 @@ import one.mixin.android.ui.common.biometric.TransferBiometricItem
 import one.mixin.android.ui.common.biometric.ValuableBiometricBottomSheetDialogFragment
 import one.mixin.android.ui.common.biometric.WithdrawBiometricItem
 import one.mixin.android.ui.common.biometric.displayAddress
+import one.mixin.android.ui.common.biometric.hasAddress
 import one.mixin.android.util.PropertyHelper
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.Fiats
@@ -88,7 +90,11 @@ class PreconditionBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                         checkTransferTrace(t)
                     }
                 } else if (t is WithdrawBiometricItem) {
-                    checkWithdrawTrace(t)
+                    if (t.hasAddress()) {
+                        checkWithdrawTrace(t)
+                    } else {
+                        checkWithdrawalWithoutAddress(t)
+                    }
                 }
             }
         } else if (t.state == PaymentStatus.paid.name) {
@@ -125,6 +131,22 @@ class PreconditionBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 callback?.onSuccess()
                 dismiss()
             }
+        }
+        startCountDown()
+    }
+
+    private fun checkWithdrawalWithoutAddress(t: WithdrawBiometricItem) {
+        binding.titleTv.text = getString(R.string.Withdrawal)
+        binding.warningTv.text = t.displayAddress()
+        binding.warningTv.setTextColor(requireContext().colorFromAttribute(R.attr.text_minor))
+        binding.warningBottomTv.isVisible = true
+        binding.warningBottomTv.text = getString(
+            R.string.wallet_withdrawal_not_in_addresses,
+            t.displayAddress(),
+        )
+        binding.continueTv.setOnClickListener {
+            callback?.onSuccess()
+            dismiss()
         }
         startCountDown()
     }

@@ -34,16 +34,19 @@ import one.mixin.android.job.RefreshAccountJob
 import one.mixin.android.job.RefreshConversationJob
 import one.mixin.android.job.RefreshUserJob
 import one.mixin.android.job.UpdateRelationshipJob
+import one.mixin.android.pay.generateAddressId
 import one.mixin.android.repository.AccountRepository
 import one.mixin.android.repository.AssetRepository
 import one.mixin.android.repository.ConversationRepository
 import one.mixin.android.repository.UserRepository
+import one.mixin.android.session.Session
 import one.mixin.android.tip.TipBody
 import one.mixin.android.ui.common.message.CleanMessageHelper
 import one.mixin.android.vo.Account
 import one.mixin.android.vo.Address
 import one.mixin.android.vo.App
 import one.mixin.android.vo.AssetItem
+import one.mixin.android.vo.AssetPrecision
 import one.mixin.android.vo.Circle
 import one.mixin.android.vo.CircleConversation
 import one.mixin.android.vo.ConversationCategory
@@ -113,20 +116,29 @@ class BottomSheetViewModel @Inject internal constructor(
     }
 
     suspend fun withdrawal(
-        addressId: String,
+        addressId: String?,
         amount: String,
         code: String,
         traceId: String,
         memo: String?,
         fee: String?,
+        assetId: String?,
+        destination: String?,
+        tag: String?,
     ) = assetRepository.withdrawal(
         WithdrawalRequest(
             addressId,
             amount,
-            pinCipher.encryptPin(code, TipBody.forWithdrawalCreate(addressId, amount, fee, traceId, memo)),
+            pinCipher.encryptPin(
+                code,
+                TipBody.forWithdrawalCreate(addressId ?: generateAddressId(requireNotNull(Session.getAccountId()), assetId ?: "", destination ?: "", tag), amount, fee, traceId, memo),
+            ),
             traceId,
             memo,
             fee,
+            assetId,
+            destination,
+            tag,
         ),
     )
 
@@ -600,4 +612,13 @@ class BottomSheetViewModel @Inject internal constructor(
             assetRepository.findOrSyncAsset(assetId)
         }
     }
+
+    suspend fun getExternalAddressFee(assetId: String, destination: String, tag: String?) =
+        accountRepository.getExternalAddressFee(assetId, destination, tag)
+
+    suspend fun findAssetIdByAssetKey(assetKey: String): String? =
+        assetRepository.findAssetIdByAssetKey(assetKey)
+
+    suspend fun getAssetPrecisionById(assetId: String): MixinResponse<AssetPrecision> =
+        assetRepository.getAssetPrecisionById(assetId)
 }

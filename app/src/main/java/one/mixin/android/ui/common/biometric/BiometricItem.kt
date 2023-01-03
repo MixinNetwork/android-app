@@ -40,8 +40,8 @@ class TransferBiometricItem(
 class WithdrawBiometricItem(
     val destination: String,
     val tag: String?,
-    val addressId: String,
-    val label: String,
+    val addressId: String?,
+    val label: String?,
     var fee: String,
     override val asset: AssetItem,
     override val amount: String,
@@ -59,6 +59,8 @@ fun WithdrawBiometricItem.displayAddress(): String {
         destination
     }
 }
+
+fun WithdrawBiometricItem.hasAddress() = addressId != null
 
 @Parcelize
 open class MultisigsBiometricItem(

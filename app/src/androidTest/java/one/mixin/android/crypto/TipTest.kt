@@ -5,7 +5,7 @@ import com.google.gson.Gson
 import crypto.Crypto
 import dagger.hilt.android.testing.HiltAndroidTest
 import one.mixin.android.api.request.TipSignData
-import one.mixin.android.extension.base64RawUrlDecode
+import one.mixin.android.extension.base64RawURLDecode
 import one.mixin.android.extension.hexStringToByteArray
 import one.mixin.android.extension.toBeByteArray
 import one.mixin.android.extension.toHex
@@ -25,9 +25,9 @@ class TipTest {
         val user = suite.scalar()
         assert(signer.publicKey().publicKeyString() == "5HSsddpV8HiKbu9vL3ZB69dtDjaZdQAn8RuL2aK1d1yZknUhBAXNhJLkZfCc2RwTxcaxKonNsXnQJFGcM8jgBztGTHzCA26LgKZWCe74Bw8VJ51FyqCGTysSLnNvkKPT3gh1RhjbyKPEoq3d3DXhJEQJt7GhVgZC82VeMfME9LnYECn9Pui1ta")
 
-        user.setBytes("p8ogX1BMb-IsRisEBS2kOchXEqjbqxtsXR8J9Bf0AGI".base64RawUrlDecode())
+        user.setBytes("p8ogX1BMb-IsRisEBS2kOchXEqjbqxtsXR8J9Bf0AGI".base64RawURLDecode())
         val ephemeral = suite.scalar()
-        ephemeral.setBytes("-e7M3ZD5k-rW6KQ7GVfV9V9bpmfbUY5y8HiqqBGv8-r46YMRRSlyc-ZKGU3s92gsC9GVuIhgn33I".base64RawUrlDecode())
+        ephemeral.setBytes("-e7M3ZD5k-rW6KQ7GVfV9V9bpmfbUY5y8HiqqBGv8-r46YMRRSlyc-ZKGU3s92gsC9GVuIhgn33I".base64RawURLDecode())
         val eBytes = ephemeral.privateKeyBytes()
 
         val nonce = 1024L
@@ -54,6 +54,7 @@ class TipTest {
             ephemeral = eBytes.toHex(),
             nonce = nonce,
             grace = grace,
+            watcher = "",
         )
         println("data: ${Gson().toJson(data)}")
         val json = Gson().toJson(data).toByteArray()

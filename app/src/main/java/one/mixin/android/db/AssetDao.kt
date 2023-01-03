@@ -113,4 +113,7 @@ interface AssetDao : BaseDao<Asset> {
 
     @Query("SELECT SUM(balance * price_usd) FROM assets")
     suspend fun findTotalUSDBalance(): Int?
+
+    @Query("SELECT asset_id FROM assets WHERE asset_key = :assetKey")
+    suspend fun findAssetIdByAssetKey(assetKey: String): String?
 }
