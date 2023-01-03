@@ -6,7 +6,6 @@ import one.mixin.android.extension.stripAmountZero
 import one.mixin.android.pay.erc681.scientificNumberRegEx
 import one.mixin.android.pay.erc681.toERC681
 import one.mixin.android.vo.AssetPrecision
-import timber.log.Timber
 import java.math.BigDecimal
 
 data class EthereumURI(val uri: String)
@@ -18,8 +17,6 @@ internal suspend fun parseEthereum(
     getAssetPrecisionById: suspend (String) -> AssetPrecision?,
 ): ExternalTransfer? {
     val erc681 = EthereumURI(url).toERC681()
-    Timber.d("parseEthereum: $erc681")
-
     if (!erc681.valid) return null
 
     val chainId = erc681.chainId?.toInt() ?: 1

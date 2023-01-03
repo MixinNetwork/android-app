@@ -6,7 +6,6 @@ import one.mixin.android.extension.stripAmountZero
 import one.mixin.android.extension.toUri
 import one.mixin.android.pay.erc831.isEthereumURLString
 import one.mixin.android.vo.AssetPrecision
-import timber.log.Timber
 
 suspend fun parseExternalTransferUri(
     url: String,
@@ -14,7 +13,6 @@ suspend fun parseExternalTransferUri(
     findAssetIdByAssetKey: suspend (String) -> String?,
     getAssetPrecisionById: suspend (String) -> AssetPrecision?,
 ): ExternalTransfer? {
-    Timber.d("parseExternalTransferUri: $url")
     if (url.isEthereumURLString()) {
         return parseEthereum(url, getAddressFee, findAssetIdByAssetKey, getAssetPrecisionById)
     }
