@@ -89,6 +89,7 @@ interface UserDao : BaseDao<User> {
         WHERE (u.user_id IN (SELECT DISTINCT m.user_id FROM messages m WHERE conversation_id = :conversationId AND m.created_at > :createdAt)
         OR u.user_id IN (SELECT f.user_id FROM users f WHERE relationship = 'FRIEND'))
         AND u.user_id != :id
+        AND u.identity_number != 0
         AND (u.full_name LIKE '%' || :username || '%' $ESCAPE_SUFFIX OR u.identity_number like '%' || :identityNumber || '%' $ESCAPE_SUFFIX)
         ORDER BY CASE u.relationship WHEN 'FRIEND' THEN 1 ELSE 2 END, 
         u.relationship OR u.full_name = :username COLLATE NOCASE OR u.identity_number = :identityNumber COLLATE NOCASE DESC 
