@@ -26,6 +26,7 @@ internal suspend fun parseEthereum(
     val value = erc681.value
     var address: String? = null
     var amount: BigDecimal? = null
+    var needCheckPrecision = false
     if (value == null) {
         if (erc681.function != "transfer") return null
 
@@ -48,8 +49,10 @@ internal suspend fun parseEthereum(
                     if (pair.first == "amount") {
                         amount = BigDecimal(pair.second)
                         amountFound = true
+                        needCheckPrecision = false
                     } else if (!amountFound && pair.first == "uint256") {
-                        // todo support
+                        amount = pair.second.toBigDecimal()
+                        needCheckPrecision = true
                     }
                 }
             }
@@ -62,8 +65,30 @@ internal suspend fun parseEthereum(
     val am = amount?.toPlainString()?.stripAmountZero() ?: return null
 
     val addressFeeResponse = getAddressFee(assetId, destination) ?: return null
-    return ExternalTransfer(addressFeeResponse.destination, am, assetId, addressFeeResponse.fee.toBigDecimalOrNull())
+    return ExternalTransfer(addressFeeResponse.destination, am, assetId, addressFeeResponse.fee.toBigDecimalOrNull(), null, needCheckPrecision)
 }
+
+fun String?.toBigDecimal(): BigDecimal? {
+    if (this == null) {
+        return null
+    }
+
+    if (!scientificNumberRegEx.matches(this)) {
+        return null
+    }
+
+    return when {
+        contains("e") -> {
+            val split = split("e")
+            BigDecimal(split.first()).multiply(BigDecimal.TEN.pow(split[1].toIntOrNull() ?: 1))
+        }
+        contains(".") -> {
+            null
+        }
+        else -> BigDecimal(this)
+    }
+}
+
 
 private val ethereumChainIdMap by lazy {
     mapOf(

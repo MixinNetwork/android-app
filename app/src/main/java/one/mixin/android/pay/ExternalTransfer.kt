@@ -9,6 +9,7 @@ data class ExternalTransfer(
     val assetId: String,
     val fee: BigDecimal?,
     val memo: String? = null,
+    val needCheckPrecision: Boolean = false,
 )
 
 fun generateAddressId(userId: String, assetId: String, destination: String, tag: String?): String {

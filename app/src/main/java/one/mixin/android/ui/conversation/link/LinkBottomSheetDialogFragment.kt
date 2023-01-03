@@ -21,6 +21,7 @@ import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.launch
+import one.mixin.android.Constants
 import one.mixin.android.Constants.Scheme
 import one.mixin.android.R
 import one.mixin.android.api.handleMixinResponse
@@ -82,6 +83,7 @@ import one.mixin.android.vo.User
 import one.mixin.android.vo.generateConversationId
 import timber.log.Timber
 import java.io.IOException
+import java.math.BigDecimal
 import java.net.SocketTimeoutException
 import java.net.UnknownHostException
 import java.util.UUID
@@ -618,7 +620,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                     }
 
                     val traceId = UUID.randomUUID().toString()
-                    val amount = result.amount
+                    var amount = result.amount
                     val destination = result.destination
                     handleMixinResponse(
                         invokeNetwork = {
@@ -627,6 +629,12 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                         },
                         successBlock = { r ->
                             val response = r.data ?: return@handleMixinResponse false
+
+                            val assetPrecision = response.assetPrecision
+                            if (result.needCheckPrecision && assetPrecision != null && assetPrecision.chainId == Constants.ChainId.ETHEREUM_CHAIN_ID) {
+                                amount = BigDecimal(amount).divide(BigDecimal.TEN.pow(assetPrecision.precision)).toPlainString()
+                            }
+
                             showWithdrawalBottom(null, destination, null, null, result.fee?.toPlainString() ?: "0", amount, asset, traceId, response.status, result.memo)
                         },
                         failureBlock = {

@@ -53,7 +53,7 @@ class ExternalTransferUriParserTest {
         }
         assertTrue(result2 != null)
         if (result2 != null) {
-            checkResult(result2, "4d8c508b-91c5-375b-92b0-ee702ed2dac5", "0x00d02d4A148bCcc66C6de20C4EB1CbAB4298cDcc", "2")
+            checkResult(result2, "4d8c508b-91c5-375b-92b0-ee702ed2dac5", "0x00d02d4A148bCcc66C6de20C4EB1CbAB4298cDcc", "20000000")
         }
         assertTrue(result3 != null)
         if (result3 != null) {
