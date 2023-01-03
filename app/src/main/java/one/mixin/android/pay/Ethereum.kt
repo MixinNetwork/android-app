@@ -28,8 +28,8 @@ internal suspend fun parseEthereum(
     val value = erc681.value
     var address: String? = null
     var amount: BigDecimal? = null
-    var needCheckPrecision = false
     if (value == null) {
+        var needCheckPrecision = false
         if (erc681.function != "transfer") return null
 
         val assetKey = erc681.address?.lowercase() ?: return null
@@ -52,36 +52,34 @@ internal suspend fun parseEthereum(
                         if (pair.second.amountWithE()) {
                             return null
                         }
-
                         amount = BigDecimal(pair.second)
                         amountFound = true
                         needCheckPrecision = false
                     } else if (!amountFound && pair.first == "uint256") {
-                        amount = pair.second.toBigDecimal()
+                        amount = pair.second.uint256ToBigDecimal()
+                        if (amount?.compareTo(BigDecimal(pair.second)) != 0) {
+                            return null
+                        }
                         needCheckPrecision = true
                     }
                 }
             }
+        }
+        if (needCheckPrecision) {
+            val assetPrecision = getAssetPrecisionById(assetId) ?: return null
+            amount = amount?.divide(BigDecimal.TEN.pow(assetPrecision.precision))
         }
     } else {
         address = erc681.address
         amount = Convert.fromWei(BigDecimal(value), Convert.Unit.ETHER)
     }
     val destination = address ?: return null
-    val amountBD = amount ?: return null
-
-    if (needCheckPrecision) {
-        val assetPrecision = getAssetPrecisionById(assetId) ?: return null
-        val precision = assetPrecision.precision
-        amount = amountBD.divide(BigDecimal.TEN.pow(precision))
-    }
-
     val am = amount?.toPlainString()?.stripAmountZero() ?: return null
     val addressFeeResponse = getAddressFee(assetId, destination) ?: return null
-    return ExternalTransfer(addressFeeResponse.destination, am, assetId, addressFeeResponse.fee.toBigDecimalOrNull(), null)
+    return ExternalTransfer(addressFeeResponse.destination, am, assetId, addressFeeResponse.fee.toBigDecimalOrNull())
 }
 
-fun String?.toBigDecimal(): BigDecimal? {
+fun String?.uint256ToBigDecimal(): BigDecimal? {
     if (this == null) {
         return null
     }
