@@ -1,5 +1,6 @@
 package one.mixin.android.db.pending
 
+import androidx.lifecycle.LiveData
 import androidx.room.Dao
 import androidx.room.Query
 import androidx.room.RoomWarnings
@@ -12,6 +13,9 @@ interface PendingMessageDao : BaseDao<PendingMessage> {
 
     @Query("SELECT * FROM pending_messages ORDER BY created_at ASC limit 100")
     suspend fun getMessages(): List<Message>
+
+    @Query("select count(1) from pending_messages")
+    fun getPendingMessageCount(): LiveData<Int>
 
     @Query("SELECT * FROM pending_messages WHERE id = :messageId")
     fun findMessageById(messageId: String): Message?

@@ -6,9 +6,11 @@ import android.view.View.VISIBLE
 import android.widget.TextView
 import androidx.core.view.isVisible
 import androidx.lifecycle.LiveData
+import androidx.lifecycle.MediatorLiveData
 import androidx.lifecycle.Observer
 import one.mixin.android.R
 import one.mixin.android.db.FloodMessageDao
+import one.mixin.android.db.pending.PendingMessageDao
 import one.mixin.android.extension.animateHeight
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.networkConnected
@@ -24,25 +26,45 @@ abstract class LinkFragment : BaseFragment(), Observer<Int> {
     @Inject
     lateinit var floodMessageDao: FloodMessageDao
 
-    private lateinit var floodMessageCount: LiveData<Int>
+    @Inject
+    lateinit var pendingMessageDao: PendingMessageDao
+
+    private lateinit var processedCount: LiveData<Int>
 
     private var barShown = false
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        floodMessageCount = floodMessageDao.getFloodMessageCount()
+        processedCount = floodMessageDao.getFloodMessageCount()
+            .combineWith(pendingMessageDao.getPendingMessageCount()) { a, b ->
+                (a ?: 0) + (b ?: 0)
+            }
         linkState.observe(viewLifecycleOwner) { state ->
             check(state)
         }
     }
 
+    private fun <T, K, R> LiveData<T>.combineWith(
+        liveData: LiveData<K>,
+        block: (T?, K?) -> R,
+    ): LiveData<R> {
+        val result = MediatorLiveData<R>()
+        result.addSource(this) {
+            result.value = block(this.value, liveData.value)
+        }
+        result.addSource(liveData) {
+            result.value = block(this.value, liveData.value)
+        }
+        return result
+    }
+
     @Synchronized
     private fun check(state: Int?) {
         if (LinkState.isOnline(state)) {
-            floodMessageCount.observe(viewLifecycleOwner, this)
+            processedCount.observe(viewLifecycleOwner, this)
             hiddenBar()
         } else {
-            floodMessageCount.removeObserver(this)
+            processedCount.removeObserver(this)
             setConnecting()
             showBar()
         }

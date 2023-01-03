@@ -32,6 +32,7 @@ import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshOffsetJob
 import one.mixin.android.session.Session
 import one.mixin.android.util.ErrorHandler.Companion.AUTHENTICATION
+import one.mixin.android.util.FLOOD_THREAD
 import one.mixin.android.util.GzipException
 import one.mixin.android.util.SINGLE_DB_THREAD
 import one.mixin.android.util.reportException
@@ -274,7 +275,9 @@ class ChatWebSocket(
             if (data.userId == accountId && data.category.isEmpty()) { // Ack of the create message
                 mixinDatabase.makeMessageStatus(data.status, data.messageId)
             } else {
-                pendingDatabase.insertFloodMessage(FloodMessage(data.messageId, gson.toJson(data), data.createdAt))
+                applicationScope.launch(FLOOD_THREAD) {
+                    pendingDatabase.insertFloodMessage(FloodMessage(data.messageId, gson.toJson(data), data.createdAt))
+                }
             }
         } else {
             pendingDatabase.insertJob(createAckJob(ACKNOWLEDGE_MESSAGE_RECEIPTS, BlazeAckMessage(data.messageId, MessageStatus.READ.name)))
