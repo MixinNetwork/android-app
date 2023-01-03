@@ -33,6 +33,8 @@ import one.mixin.android.Constants.MARK_REMOTE_LIMIT
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.RxBus
+import one.mixin.android.api.service.CircleService
+import one.mixin.android.api.service.ConversationService
 import one.mixin.android.api.service.MessageService
 import one.mixin.android.db.ExpiredMessageDao
 import one.mixin.android.db.JobDao
@@ -146,6 +148,12 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
     @Inject
     lateinit var messageService: MessageService
 
+    @Inject
+    lateinit var conversationService: ConversationService
+
+    @Inject
+    lateinit var circleService: CircleService
+
     private val accountId = Session.getAccountId()
     private val gson = GsonHelper.customGson
 
@@ -156,7 +164,7 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
     private val destroyScope = scope(Lifecycle.Event.ON_DESTROY)
 
     private val hedwig: Hedwig by lazy {
-        HedwigImp(database, pendingDatabase, callState, lifecycleScope)
+        HedwigImp(database, pendingDatabase, conversationService, circleService, jobManager, callState, lifecycleScope)
     }
 
     override fun onBind(intent: Intent): IBinder? {
