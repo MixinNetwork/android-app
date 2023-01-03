@@ -78,10 +78,10 @@ class SettingWallpaperFragment : BaseFragment(R.layout.fragment_setting_chat) {
                     ItemBackgroudBinding.inflate(
                         LayoutInflater.from(parent.context),
                         parent,
-                        false
+                        false,
                     ).apply {
                         image.round(3.dp)
-                    }
+                    },
                 )
             }
 
@@ -94,7 +94,7 @@ class SettingWallpaperFragment : BaseFragment(R.layout.fragment_setting_chat) {
                     WallpaperManager.getWallpaperByPosition(requireContext(), position),
                     position == 0,
                     position == currentSelected,
-                    !(position == 1 && WallpaperManager.wallpaperExists(requireContext()))
+                    !(position == 1 && WallpaperManager.wallpaperExists(requireContext())),
                 )
                 holder.itemView.setOnClickListener {
                     if (position == 0) {
@@ -122,8 +122,8 @@ class SettingWallpaperFragment : BaseFragment(R.layout.fragment_setting_chat) {
                             ItemChatTimeBinding.inflate(
                                 LayoutInflater.from(parent.context),
                                 parent,
-                                false
-                            )
+                                false,
+                            ),
                         )
                     }
                     1 -> {
@@ -131,8 +131,8 @@ class SettingWallpaperFragment : BaseFragment(R.layout.fragment_setting_chat) {
                             ItemChatTextBinding.inflate(
                                 LayoutInflater.from(parent.context),
                                 parent,
-                                false
-                            )
+                                false,
+                            ),
                         )
                     }
                     else -> {
@@ -140,8 +140,8 @@ class SettingWallpaperFragment : BaseFragment(R.layout.fragment_setting_chat) {
                             ItemChatTextBinding.inflate(
                                 LayoutInflater.from(parent.context),
                                 parent,
-                                false
-                            )
+                                false,
+                            ),
                         )
                     }
                 }
@@ -160,12 +160,12 @@ class SettingWallpaperFragment : BaseFragment(R.layout.fragment_setting_chat) {
                             MessageStatus.DELIVERED.name,
                             isPin = false,
                             isRepresentative = false,
-                            isSecret = false
+                            isSecret = false,
                         )
                         setItemBackgroundResource(
                             binding.chatLayout,
                             R.drawable.chat_bubble_other_last,
-                            R.drawable.chat_bubble_other_last_night
+                            R.drawable.chat_bubble_other_last_night,
                         )
                     }
                     1 -> (holder as TextHolder).apply {
@@ -178,13 +178,13 @@ class SettingWallpaperFragment : BaseFragment(R.layout.fragment_setting_chat) {
                             MessageStatus.READ.name,
                             isPin = false,
                             isRepresentative = false,
-                            isSecret = false
+                            isSecret = false,
                         )
                         binding.chatTv.text = requireContext().getString(R.string.i_am_good)
                         setItemBackgroundResource(
                             binding.chatLayout,
                             R.drawable.chat_bubble_me_last,
-                            R.drawable.chat_bubble_me_last_night
+                            R.drawable.chat_bubble_me_last_night,
                         )
                     }
                     else -> (holder as TimeHolder).binding.chatTime.text =
@@ -245,7 +245,7 @@ class SettingWallpaperFragment : BaseFragment(R.layout.fragment_setting_chat) {
                 .withAspectRatio(1f, requireContext().displayRatio())
                 .withMaxResultSize(
                     requireContext().screenWidth(),
-                    requireContext().screenHeight()
+                    requireContext().screenHeight(),
                 )
                 .start(requireContext(), this)
         } else if (resultCode == Activity.RESULT_OK && requestCode == UCrop.REQUEST_CROP) {
@@ -277,7 +277,7 @@ class SettingWallpaperFragment : BaseFragment(R.layout.fragment_setting_chat) {
             changeTheme(
                 getViewCoordinates(view),
                 250L,
-                false
+                false,
             ) {
             }
         }
@@ -286,7 +286,7 @@ class SettingWallpaperFragment : BaseFragment(R.layout.fragment_setting_chat) {
     private fun getViewCoordinates(view: View): Coordinate {
         return Coordinate(
             getRelativeLeft(view) + view.width / 2,
-            getRelativeTop(view) + view.height / 2
+            getRelativeTop(view) + view.height / 2,
         )
     }
 
@@ -295,7 +295,7 @@ class SettingWallpaperFragment : BaseFragment(R.layout.fragment_setting_chat) {
             myView.left
         } else {
             myView.left + getRelativeLeft(
-                myView.parent as View
+                myView.parent as View,
             )
         }
     }
@@ -305,7 +305,7 @@ class SettingWallpaperFragment : BaseFragment(R.layout.fragment_setting_chat) {
             myView.top
         } else {
             myView.top + getRelativeTop(
-                myView.parent as View
+                myView.parent as View,
             )
         }
     }

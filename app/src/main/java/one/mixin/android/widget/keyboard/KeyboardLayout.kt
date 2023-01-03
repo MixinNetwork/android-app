@@ -23,6 +23,7 @@ import one.mixin.android.RxBus
 import one.mixin.android.event.DragReleaseEvent
 import one.mixin.android.extension.ANIMATION_DURATION_SHORTEST
 import one.mixin.android.extension.appCompatActionBarHeight
+import one.mixin.android.extension.dp
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.putInt
 import one.mixin.android.extension.screenHeight
@@ -64,8 +65,10 @@ class KeyboardLayout : LinearLayout {
         private set(value) {
             if (field != value && value > 0) {
                 field = value
-                PreferenceManager.getDefaultSharedPreferences(context)
-                    .putInt("keyboard_height_portrait", value)
+                if (value >= 100.dp) {
+                    PreferenceManager.getDefaultSharedPreferences(context)
+                        .putInt("keyboard_height_portrait", value)
+                }
             }
         }
 

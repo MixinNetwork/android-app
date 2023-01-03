@@ -38,19 +38,19 @@ object WallpaperManager {
             }
             0 -> ContextCompat.getDrawable(
                 context,
-                if (isNight) R.drawable.bg_chat_symbol_night else R.drawable.bg_chat_symbol
+                if (isNight) R.drawable.bg_chat_symbol_night else R.drawable.bg_chat_symbol,
             )
             1 -> ContextCompat.getDrawable(
                 context,
-                if (isNight) R.drawable.bg_chat_star_night else R.drawable.bg_chat_star
+                if (isNight) R.drawable.bg_chat_star_night else R.drawable.bg_chat_star,
             )
             2 -> ContextCompat.getDrawable(
                 context,
-                if (isNight) R.drawable.bg_chat_animal_night else R.drawable.bg_chat_animal
+                if (isNight) R.drawable.bg_chat_animal_night else R.drawable.bg_chat_animal,
             )
             3 -> ContextCompat.getDrawable(
                 context,
-                if (isNight) R.drawable.bg_chat_plant_night else R.drawable.bg_chat_plant
+                if (isNight) R.drawable.bg_chat_plant_night else R.drawable.bg_chat_plant,
             )
             else -> null
         }
@@ -66,7 +66,7 @@ object WallpaperManager {
         } else {
             context.defaultSharedPreferences.putInt(
                 INDEX_KEY,
-                position - if (wallpaperExists) 2 else 1
+                position - if (wallpaperExists) 2 else 1,
             )
             clear(context)
         }

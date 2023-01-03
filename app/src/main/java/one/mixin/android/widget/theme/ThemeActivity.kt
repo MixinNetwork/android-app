@@ -54,7 +54,7 @@ abstract class ThemeActivity : BlazeBaseActivity() {
         root = FrameLayout(this).apply {
             layoutParams = FrameLayout.LayoutParams(
                 FrameLayout.LayoutParams.MATCH_PARENT,
-                FrameLayout.LayoutParams.MATCH_PARENT
+                FrameLayout.LayoutParams.MATCH_PARENT,
             )
 
             // create and add behindFakeThemeImageView
@@ -62,11 +62,11 @@ abstract class ThemeActivity : BlazeBaseActivity() {
                 FakeThemeView(context).apply {
                     layoutParams = FrameLayout.LayoutParams(
                         FrameLayout.LayoutParams.MATCH_PARENT,
-                        FrameLayout.LayoutParams.MATCH_PARENT
+                        FrameLayout.LayoutParams.MATCH_PARENT,
                     )
                     visibility = View.GONE
                     behindFakeThemeView = this
-                }
+                },
             )
 
             // create and add decorView, ROOT_ID is generated ID
@@ -74,11 +74,11 @@ abstract class ThemeActivity : BlazeBaseActivity() {
                 FrameLayout(context).apply {
                     layoutParams = FrameLayout.LayoutParams(
                         FrameLayout.LayoutParams.MATCH_PARENT,
-                        FrameLayout.LayoutParams.MATCH_PARENT
+                        FrameLayout.LayoutParams.MATCH_PARENT,
                     )
                     decorView = this
                     id = ROOT_ID
-                }
+                },
             )
 
             // create and add frontFakeThemeImageView
@@ -86,11 +86,11 @@ abstract class ThemeActivity : BlazeBaseActivity() {
                 FakeThemeView(context).apply {
                     layoutParams = FrameLayout.LayoutParams(
                         FrameLayout.LayoutParams.MATCH_PARENT,
-                        FrameLayout.LayoutParams.MATCH_PARENT
+                        FrameLayout.LayoutParams.MATCH_PARENT,
                     )
                     visibility = View.GONE
                     frontFakeThemeView = this
-                }
+                },
             )
         }
     }
@@ -127,7 +127,7 @@ abstract class ThemeActivity : BlazeBaseActivity() {
                 sourceCoordinate.x,
                 sourceCoordinate.y,
                 finalRadius,
-                0f
+                0f,
             )
         } else {
             behindFakeThemeView.bitmap = bitmap
@@ -137,7 +137,7 @@ abstract class ThemeActivity : BlazeBaseActivity() {
                 sourceCoordinate.x,
                 sourceCoordinate.y,
                 0f,
-                finalRadius
+                finalRadius,
             )
         }
 
