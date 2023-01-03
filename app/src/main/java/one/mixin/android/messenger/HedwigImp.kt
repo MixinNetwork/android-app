@@ -2,7 +2,6 @@ package one.mixin.android.messenger
 
 import androidx.room.InvalidationTracker
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import one.mixin.android.db.MixinDatabase
@@ -10,6 +9,7 @@ import one.mixin.android.db.pending.PendingDatabase
 import one.mixin.android.job.DecryptCallMessage
 import one.mixin.android.job.DecryptMessage
 import one.mixin.android.job.pendingMessageStatusMap
+import one.mixin.android.util.FLOOD_THREAD
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.PENDING_DB_THREAD
 import one.mixin.android.util.chat.InvalidateFlow
@@ -76,7 +76,7 @@ class HedwigImp(
         if (floodJob?.isActive == true) {
             return
         }
-        floodJob = lifecycleScope.launch(Dispatchers.IO) {
+        floodJob = lifecycleScope.launch(FLOOD_THREAD) {
             try {
                 processFloodMessage()
             } catch (e: Exception) {
