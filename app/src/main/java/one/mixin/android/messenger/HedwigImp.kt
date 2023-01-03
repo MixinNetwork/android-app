@@ -96,6 +96,7 @@ class HedwigImp(
     private tailrec suspend fun processFloodMessage(): Boolean {
         val messages = pendingDatabase.findFloodMessages()
         return if (messages.isNotEmpty()) {
+            Timber.e("process flood ${messages.size}")
             messages.forEach { message ->
                 val data = gson.fromJson(message.data, BlazeMessageData::class.java)
                 if (data.category.startsWith("WEBRTC_") || data.category.startsWith("KRAKEN_")) {
@@ -106,6 +107,7 @@ class HedwigImp(
                 pendingDatabase.deleteFloodMessage(message)
                 pendingMessageStatusMap.remove(data.messageId)
             }
+            Timber.e("process flood ${messages.size} end")
             processFloodMessage()
         } else {
             false
@@ -115,6 +117,7 @@ class HedwigImp(
     private var pendingJob: Job? = null
     private val pendingObserver = object : InvalidationTracker.Observer("pending_messages") {
         override fun onInvalidated(tables: MutableSet<String>) {
+            Timber.e("pending invalidated")
             runPendingJob()
         }
     }
@@ -130,15 +133,20 @@ class HedwigImp(
 
     @Synchronized
     private fun runPendingJob() {
+        Timber.e("runPendingJob")
         if (pendingJob?.isActive == true) {
+            Timber.e("runPendingJob return")
             return
         }
         pendingJob = lifecycleScope.launch(PENDING_DB_THREAD) {
             try {
                 val list = pendingDatabase.getPendingMessages()
+                Timber.e("runPendingJob list ${list.size}")
                 messageDao.insertList(list)
                 pendingDatabase.deletePendingMessageByIds(list.map { it.messageId })
+                Timber.e("runPendingJob list ${list.size}")
                 list.groupBy { it.conversationId }.forEach { (conversationId, messages) ->
+                    Timber.e("runPendingJob increment $conversationId ${messages.size}")
                     conversationExtDao.increment(conversationId, messages.size)
                     messages.filter { message ->
                         !message.isMine() && message.status != MessageStatus.READ.name
@@ -157,7 +165,7 @@ class HedwigImp(
                     remoteMessageStatusDao.updateConversationUnseen(conversationId)
                     InvalidateFlow.emit(conversationId)
                 }
-
+                Timber.e("runPendingJob end")
                 if (list.size == 100) {
                     runPendingJob()
                 }
