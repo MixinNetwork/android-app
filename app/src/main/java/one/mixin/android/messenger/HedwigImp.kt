@@ -20,6 +20,7 @@ import one.mixin.android.util.PENDING_DB_THREAD
 import one.mixin.android.util.chat.InvalidateFlow
 import one.mixin.android.vo.CallStateLiveData
 import one.mixin.android.vo.Conversation
+import one.mixin.android.vo.ConversationBuilder
 import one.mixin.android.vo.ConversationCategory
 import one.mixin.android.vo.ConversationStatus
 import one.mixin.android.vo.MessageStatus
@@ -130,40 +131,34 @@ class HedwigImp(
         if (pendingJob?.isActive == true) return
         pendingJob = lifecycleScope.launch(PENDING_DB_THREAD) {
             pendingDatabase.collectPendingMessages { list ->
-                Timber.e("collect ${list.size}")
+                Timber.e("collect pending ${list.size}")
                 try {
-                    messageDao.insertListSuspend(list)
-                    pendingDatabase.deletePendingMessageByIds(list.map { it.messageId })
-                    list.groupBy { it.conversationId }.forEach { (conversationId, messages) ->
-                        if (conversationId == SYSTEM_USER || conversationId == Session.getAccountId() || checkConversation(conversationId) != null) {
-                            conversationExtDao.increment(conversationId, messages.size)
-                            messages.filter { message -> !message.isMine() }.groupBy { m ->
-                                m.status == MessageStatus.READ.name
-                            }.forEach { (b, messages) ->
-                                launch {
-                                    if (b) {
-                                        messages.map { it.messageId }.let { ids ->
-                                            remoteMessageStatusDao.deleteByMessageIds(ids)
-                                        }
-                                    } else {
-                                        messages.map { message ->
-                                            RemoteMessageStatus(
-                                                message.messageId,
-                                                message.conversationId,
-                                                MessageStatus.DELIVERED.name,
-                                            )
-                                        }.let { remoteMessageStatus ->
-                                            remoteMessageStatusDao.insertList(remoteMessageStatus)
-                                        }
-                                    }
+                    list.groupBy { it.conversationId }.filter { (conversationId, _) ->
+                        conversationId != SYSTEM_USER && conversationId != Session.getAccountId() && checkConversation(conversationId) != null
+                    }.forEach { (conversationId, messages) ->
+                        messageDao.insertList(messages)
+                        pendingDatabase.deletePendingMessageByIds(messages.map { it.messageId })
+                        conversationExtDao.increment(conversationId, messages.size)
+                        messages.filter { message -> !message.isMine() }.groupBy { m ->
+                            m.status == MessageStatus.READ.name
+                        }.forEach { (b, messages) ->
+                            if (b) {
+                                messages.map { it.messageId }.let { ids ->
+                                    remoteMessageStatusDao.deleteByMessageIds(ids)
+                                }
+                            } else {
+                                messages.map { message ->
+                                    RemoteMessageStatus(message.messageId, message.conversationId, MessageStatus.DELIVERED.name)
+                                }.let { remoteMessageStatus ->
+                                    remoteMessageStatusDao.insertList(remoteMessageStatus)
                                 }
                             }
-                            remoteMessageStatusDao.updateConversationUnseen(conversationId)
-                            messages.last().let { message ->
-                                conversationDao.updateLastMessageId(message.messageId, message.createdAt, message.conversationId)
-                            }
-                            InvalidateFlow.emit(conversationId)
                         }
+                        remoteMessageStatusDao.updateConversationUnseen(conversationId)
+                        messages.last().let { message ->
+                            conversationDao.updateLastMessageId(message.messageId, message.createdAt, message.conversationId)
+                        }
+                        InvalidateFlow.emit(conversationId)
                     }
                 } catch (e: Exception) {
                     Timber.e(e)
@@ -195,16 +190,14 @@ class HedwigImp(
                     } else if (conversationData.category == ConversationCategory.GROUP.name) {
                         jobManager.addJobInBackground(RefreshUserJob(listOf(conversationData.creatorId)))
                     }
-                    conversationDao.updateConversation(
-                        conversationData.conversationId,
-                        ownerId,
-                        conversationData.category,
-                        conversationData.name,
-                        conversationData.announcement,
-                        conversationData.muteUntil,
-                        conversationData.createdAt,
-                        conversationData.expireIn,
-                        status,
+                    conversationDao.insert(
+                        ConversationBuilder(conversationData.conversationId, conversationData.createdAt, status)
+                            .setOwnerId(ownerId)
+                            .setCategory(conversationData.category)
+                            .setName(conversationData.name)
+                            .setAnnouncement(conversationData.announcement)
+                            .setMuteUntil(conversationData.muteUntil)
+                            .setExpireIn(conversationData.expireIn).build(),
                     )
                     val remote = mutableListOf<Participant>()
                     val conversationUserIds = mutableListOf<String>()
