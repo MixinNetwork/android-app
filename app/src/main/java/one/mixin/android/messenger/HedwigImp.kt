@@ -2,7 +2,6 @@ package one.mixin.android.messenger
 
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.launch
 import one.mixin.android.api.service.CircleService
 import one.mixin.android.api.service.ConversationService
@@ -95,7 +94,8 @@ class HedwigImp(
     private fun runFloodJob() {
         if (floodJob?.isActive == true) return
         floodJob = lifecycleScope.launch(FLOOD_THREAD) {
-            pendingDatabase.findFloodMessages().filter { it.isNotEmpty() }.collect { messages ->
+            pendingDatabase.collectFloodMessages { messages ->
+                Timber.e("collect flood ${messages.size}")
                 messages.forEach { message ->
                     val data = gson.fromJson(message.data, BlazeMessageData::class.java)
                     if (data.category.startsWith("WEBRTC_") || data.category.startsWith("KRAKEN_")) {

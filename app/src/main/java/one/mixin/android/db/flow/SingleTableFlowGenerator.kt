@@ -15,11 +15,12 @@ import timber.log.Timber
 
 suspend fun <T> collectSingleTableFlow(
     invalidationTracker: InvalidationTracker,
+    tableName: String,
     converter: () -> List<T>,
     collector: FlowCollector<List<T>>,
 ) = coroutineScope {
     val dataFlow by lazy {
-        MutableSharedFlow<Long>(0, 1, BufferOverflow.DROP_OLDEST)
+        MutableSharedFlow<Long>(1, 1, BufferOverflow.DROP_OLDEST)
     }
     launch(PENDING_DB_THREAD) {
         dataFlow.map {
@@ -29,9 +30,9 @@ suspend fun <T> collectSingleTableFlow(
 
     launch {
         callbackFlow {
-            val observer = object : InvalidationTracker.Observer("pending_messages") {
+            val observer = object : InvalidationTracker.Observer(tableName) {
                 override fun onInvalidated(tables: MutableSet<String>) {
-                    Timber.e("send")
+                    Timber.e("send $tableName")
                     trySend(System.currentTimeMillis())
                 }
             }
@@ -40,7 +41,7 @@ suspend fun <T> collectSingleTableFlow(
                 invalidationTracker.removeObserver(observer)
             }
         }.collect {
-            Timber.e("emit $it")
+            Timber.e("emit $tableName $it")
             dataFlow.emit(it)
         }
     }

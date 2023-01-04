@@ -12,6 +12,7 @@ import one.mixin.android.db.converter.DepositEntryListConverter
 import one.mixin.android.vo.AssetItem
 import one.mixin.android.vo.ChatMinimal
 import one.mixin.android.vo.ConversationItem
+import one.mixin.android.vo.FloodMessage
 import one.mixin.android.vo.Message
 import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.SearchMessageDetailItem
@@ -887,10 +888,9 @@ fun callableChatMinimal(
 fun callableMessageList(
     db: RoomDatabase,
     statement: RoomSQLiteQuery,
-    cancellationSignal: CancellationSignal,
 ): Callable<List<Message>> {
     return Callable<List<Message>> {
-        val c = DBUtil.query(db, statement, false, cancellationSignal)
+        val c = DBUtil.query(db, statement, false, null)
         return@Callable c.use { cursor ->
             val cursorIndexOfMessageId = 0
             val cursorIndexOfConversationId = 1
@@ -1121,6 +1121,43 @@ fun callableMessageList(
                     tmpQuoteContent,
                     tmpCaption,
                 )
+                result.add(item)
+            }
+            result
+        }
+    }
+}
+
+@SuppressLint("RestrictedApi")
+fun callableFloodMessageList(
+    db: RoomDatabase,
+    statement: RoomSQLiteQuery,
+): Callable<List<FloodMessage>> {
+    return Callable<List<FloodMessage>> {
+        val c = DBUtil.query(db, statement, false, null)
+        return@Callable c.use { cursor ->
+            val cursorIndexOfMessageId = 0
+            val cursorIndexOfData = 1
+            val cursorIndexOfCreatedAt = 2
+            val result: MutableList<FloodMessage> = java.util.ArrayList(cursor.count)
+            while (cursor.moveToNext()) {
+                val item: FloodMessage
+                val tmpMessageId: String? = if (cursor.isNull(cursorIndexOfMessageId)) {
+                    null
+                } else {
+                    cursor.getString(cursorIndexOfMessageId)
+                }
+                val tmpData: String? = if (cursor.isNull(cursorIndexOfData)) {
+                    null
+                } else {
+                    cursor.getString(cursorIndexOfData)
+                }
+                val tmpCreatedAt: String? = if (cursor.isNull(cursorIndexOfCreatedAt)) {
+                    null
+                } else {
+                    cursor.getString(cursorIndexOfCreatedAt)
+                }
+                item = FloodMessage(tmpMessageId!!, tmpData!!, tmpCreatedAt!!)
                 result.add(item)
             }
             result

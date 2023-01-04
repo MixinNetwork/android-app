@@ -4,7 +4,6 @@ import android.annotation.SuppressLint
 import android.content.ContentValues
 import android.content.Context
 import android.database.sqlite.SQLiteDatabase
-import android.os.CancellationSignal
 import androidx.room.Database
 import androidx.room.InvalidationTracker
 import androidx.room.Room
@@ -17,6 +16,7 @@ import one.mixin.android.db.FloodMessageDao
 import one.mixin.android.db.JobDao
 import one.mixin.android.db.flow.collectSingleTableFlow
 import one.mixin.android.db.insertNoReplace
+import one.mixin.android.db.provider.callableFloodMessageList
 import one.mixin.android.db.provider.callableMessageList
 import one.mixin.android.vo.FloodMessage
 import one.mixin.android.vo.Job
@@ -100,12 +100,26 @@ abstract class PendingDatabaseImp : RoomDatabase(), PendingDatabase {
     @SuppressLint("RestrictedApi")
     override suspend fun collectPendingMessages(collector: FlowCollector<List<Message>>) = collectSingleTableFlow(
         this@PendingDatabaseImp.invalidationTracker,
+        "pending_messages",
         {
             val sql =
                 "SELECT `id`, `conversation_id`, `user_id`, `category`, `content`, `media_url`, `media_mime_type`, `media_size`, `media_duration`, `media_width`, `media_height`, `media_hash`, `thumb_image`, `thumb_url`, `media_key`, `media_digest`, `media_status`, `status`, `created_at`, `action`, `participant_id`, `snapshot_id`, `hyperlink`, `name`, `album_id`, `sticker_id`, `shared_user_id`, `media_waveform`, `media_mine_type`, `quote_message_id`, `quote_content`, `caption` FROM pending_messages ORDER BY created_at ASC limit 100"
             val statement = RoomSQLiteQuery.acquire(sql, 0)
 
-            callableMessageList(this@PendingDatabaseImp, statement, CancellationSignal()).call()
+            callableMessageList(this@PendingDatabaseImp, statement).call()
+        },
+        collector,
+    )
+
+    @SuppressLint("RestrictedApi")
+    override suspend fun collectFloodMessages(collector: FlowCollector<List<FloodMessage>>) = collectSingleTableFlow(
+        this@PendingDatabaseImp.invalidationTracker,
+        "flood_messages",
+        {
+            val sql = "SELECT `flood_messages`.`message_id` AS `message_id`, `flood_messages`.`data` AS `data`, `flood_messages`.`created_at` AS `created_at` FROM flood_messages ORDER BY created_at ASC limit 10"
+            val statement = RoomSQLiteQuery.acquire(sql, 0)
+
+            callableFloodMessageList(this@PendingDatabaseImp, statement).call()
         },
         collector,
     )
