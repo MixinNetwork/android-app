@@ -20,6 +20,7 @@ object TipBody {
     private const val TIPWithdrawalCreate = "TIP:WITHDRAWAL:CREATE:"
     private const val TIPRawTransactionCreate = "TIP:TRANSACTION:CREATE:"
     private const val TIPOAuthApprove = "TIP:OAUTH:APPROVE:"
+    private const val TIPProvisioningCreate = "TIP:PROVISIONING:UPDATE:"
 
     fun forVerify(timestamp: Long): ByteArray =
         "$TIPVerify${String.format("%032d", timestamp)}".toByteArray()
@@ -73,6 +74,9 @@ object TipBody {
 
     fun forOAuthApprove(authorizationId: String): ByteArray =
         (TIPOAuthApprove + authorizationId).hashToBody()
+
+    fun forProvisioningCreate(id: String, secret: String): ByteArray =
+        (TIPProvisioningCreate + id + secret).hashToBody()
 
     private fun String.hashToBody() = sha256()
 }

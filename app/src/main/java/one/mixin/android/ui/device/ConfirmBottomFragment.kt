@@ -26,6 +26,7 @@ import one.mixin.android.extension.base64Encode
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.withArgs
 import one.mixin.android.session.Session
+import one.mixin.android.tip.TipBody
 import one.mixin.android.ui.common.AvatarActivity
 import one.mixin.android.ui.common.biometric.BiometricBottomSheetDialogFragment
 import one.mixin.android.ui.common.biometric.BiometricInfo
@@ -34,6 +35,7 @@ import one.mixin.android.util.UnescapeIgnorePlusUrlQuerySanitizer
 import one.mixin.android.util.viewBinding
 import one.mixin.android.widget.BottomSheet
 import org.whispersystems.libsignal.ecc.Curve
+import retrofit2.Response
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -82,7 +84,7 @@ class ConfirmBottomFragment : BiometricBottomSheetDialogFragment() {
         requireArguments().getString(AvatarActivity.ARGS_URL)!!
     }
 
-    private fun authDevice(ephemeralId: String, pubKey: String) = lifecycleScope.launch {
+    private fun authDevice(ephemeralId: String, pubKey: String, pin: String) = lifecycleScope.launch {
         val response = try {
             withContext(Dispatchers.IO) {
                 provisioningService.provisionCodeAsync().await()
@@ -95,7 +97,7 @@ class ConfirmBottomFragment : BiometricBottomSheetDialogFragment() {
         if (response.isSuccess) {
             val success = try {
                 withContext(Dispatchers.IO) {
-                    encryptKey(requireContext(), ephemeralId, pubKey, response.data!!.code)
+                    encryptKey(requireContext(), ephemeralId, pubKey, response.data!!.code, pin)
                 }
             } catch (t: Throwable) {
                 toast(R.string.Link_desktop_failed)
@@ -133,7 +135,7 @@ class ConfirmBottomFragment : BiometricBottomSheetDialogFragment() {
     }
 
     override suspend fun invokeNetwork(pin: String): MixinResponse<*> {
-        return bottomViewModel.verifyPin(pin)
+        return MixinResponse(Response.success(Any()))
     }
 
     override fun doWhenInvokeNetworkSuccess(response: MixinResponse<*>, pin: String): Boolean {
@@ -148,7 +150,7 @@ class ConfirmBottomFragment : BiometricBottomSheetDialogFragment() {
             }
             sanitizer.parseUrl(url)
             val publicKeyEncoded = sanitizer.getValue("pub_key")
-            authDevice(ephemeralId, publicKeyEncoded)
+            authDevice(ephemeralId, publicKeyEncoded, pin)
         }
         return false
     }
@@ -164,6 +166,7 @@ class ConfirmBottomFragment : BiometricBottomSheetDialogFragment() {
         ephemeralId: String,
         publicKeyEncoded: String,
         verificationCode: String,
+        pin: String,
     ): Boolean {
         val account = Session.getAccount() ?: return false
         if (TextUtils.isEmpty(ephemeralId) || TextUtils.isEmpty(publicKeyEncoded)) {
@@ -183,7 +186,7 @@ class ConfirmBottomFragment : BiometricBottomSheetDialogFragment() {
         val cipherText = cipher.encrypt(message.toByteArray())
         val encoded = cipherText.base64Encode()
         val response =
-            provisioningService.updateProvisioningAsync(ephemeralId, ProvisioningRequest(encoded))
+            provisioningService.updateProvisioningAsync(ephemeralId, ProvisioningRequest(encoded, pinCipher.encryptPin(pin, TipBody.forProvisioningCreate(ephemeralId, encoded))))
                 .await()
         return response.isSuccess
     }
