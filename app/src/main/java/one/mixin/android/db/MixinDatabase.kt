@@ -8,10 +8,12 @@ import androidx.arch.core.executor.ArchTaskExecutor
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
+import androidx.room.RoomSQLiteQuery
 import androidx.room.TypeConverters
 import androidx.room.withTransaction
 import androidx.sqlite.db.SupportSQLiteDatabase
 import androidx.sqlite.db.framework.FrameworkSQLiteOpenHelperFactory
+import kotlinx.coroutines.flow.FlowCollector
 import one.mixin.android.BuildConfig
 import one.mixin.android.Constants.DataBase.CURRENT_VERSION
 import one.mixin.android.Constants.DataBase.DB_NAME
@@ -50,6 +52,8 @@ import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_45_46
 import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_46_47
 import one.mixin.android.db.converter.DepositEntryListConverter
 import one.mixin.android.db.converter.MessageStatusConverter
+import one.mixin.android.db.flow.collectSingleTableFlow
+import one.mixin.android.db.provider.callableStatusMessageList
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.SINGLE_DB_EXECUTOR
 import one.mixin.android.util.debug.getContent
@@ -81,6 +85,7 @@ import one.mixin.android.vo.ResendMessage
 import one.mixin.android.vo.ResendSessionMessage
 import one.mixin.android.vo.SentSenderKey
 import one.mixin.android.vo.Snapshot
+import one.mixin.android.vo.StatusMessage
 import one.mixin.android.vo.Sticker
 import one.mixin.android.vo.StickerAlbum
 import one.mixin.android.vo.StickerRelationship
@@ -264,6 +269,19 @@ abstract class MixinDatabase : RoomDatabase() {
     }
 
     fun isDbLockedByCurrentThread() = supportSQLiteDatabase?.isDbLockedByCurrentThread
+
+    @SuppressLint("RestrictedApi")
+    suspend fun collectStatusMessages(collector: FlowCollector<List<StatusMessage>>) = collectSingleTableFlow(
+        this.invalidationTracker,
+        "remote_messages_status",
+        {
+            val sql = "SELECT `rm`.`message_id`, `rm`.`conversation_id`, `rm`.`status`, em.expire_at FROM remote_messages_status rm LEFT JOIN expired_messages em WHERE rm.status = 'READ' ORDER BY rm.rowid ASC LIMIT 500"
+            val statement = RoomSQLiteQuery.acquire(sql, 0)
+
+            callableStatusMessageList(this, statement).call()
+        },
+        collector,
+    )
 }
 
 fun runInTransaction(block: () -> Unit) {

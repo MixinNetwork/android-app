@@ -42,4 +42,6 @@ interface PendingDatabase {
     suspend fun collectPendingMessages(collector: FlowCollector<List<Message>>): kotlinx.coroutines.Job
 
     suspend fun collectFloodMessages(collector: FlowCollector<List<FloodMessage>>): kotlinx.coroutines.Job
+
+    suspend fun collectAckJobs(collector: FlowCollector<List<Job>>): kotlinx.coroutines.Job
 }

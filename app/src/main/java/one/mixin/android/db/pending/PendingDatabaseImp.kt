@@ -17,6 +17,7 @@ import one.mixin.android.db.JobDao
 import one.mixin.android.db.flow.collectSingleTableFlow
 import one.mixin.android.db.insertNoReplace
 import one.mixin.android.db.provider.callableFloodMessageList
+import one.mixin.android.db.provider.callableJobList
 import one.mixin.android.db.provider.callableMessageList
 import one.mixin.android.vo.FloodMessage
 import one.mixin.android.vo.Job
@@ -120,6 +121,19 @@ abstract class PendingDatabaseImp : RoomDatabase(), PendingDatabase {
             val statement = RoomSQLiteQuery.acquire(sql, 0)
 
             callableFloodMessageList(this@PendingDatabaseImp, statement).call()
+        },
+        collector,
+    )
+
+    @SuppressLint("RestrictedApi")
+    override suspend fun collectAckJobs(collector: FlowCollector<List<Job>>) = collectSingleTableFlow(
+        this@PendingDatabaseImp.invalidationTracker,
+        "jobs",
+        {
+            val sql = "SELECT `jobs`.`job_id` AS `job_id`, `jobs`.`action` AS `action`, `jobs`.`created_at` AS `created_at`, `jobs`.`order_id` AS `order_id`, `jobs`.`priority` AS `priority`, `jobs`.`user_id` AS `user_id`, `jobs`.`blaze_message` AS `blaze_message`, `jobs`.`conversation_id` AS `conversation_id`, `jobs`.`resend_message_id` AS `resend_message_id`, `jobs`.`run_count` AS `run_count` FROM jobs WHERE `action` = 'ACKNOWLEDGE_MESSAGE_RECEIPTS' ORDER BY rowid ASC LIMIT 100"
+            val statement = RoomSQLiteQuery.acquire(sql, 0)
+
+            callableJobList(this@PendingDatabaseImp, statement).call()
         },
         collector,
     )

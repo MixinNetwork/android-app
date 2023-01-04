@@ -26,7 +26,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.ensureActive
-import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.Constants.DB_EXPIRED_LIMIT
@@ -314,7 +313,8 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
     private fun startObserveAck() {
         if (ackJob?.isActive == true) return
         ackJob = lifecycleScope.launch(Dispatchers.IO) {
-            jobDao.findAckJobs().filter { it.isNotEmpty() }.collect { list ->
+            pendingDatabase.collectAckJobs { list ->
+                Timber.e("ack ${list.size}")
                 if (list.size == 100) {
                     jobDao.getJobsCount().apply {
                         if (this >= 10000 && this - lastAckPendingCount >= 10000) {
@@ -371,32 +371,32 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
             return
         }
         statusJob = lifecycleScope.launch(Dispatchers.IO) {
-            remoteMessageStatusDao.findRemoteMessageStatus().filter { it.isNotEmpty() }
-                .collect { list ->
-                    list.map { msg ->
-                        createAckJob(
-                            ACKNOWLEDGE_MESSAGE_RECEIPTS,
-                            BlazeAckMessage(msg.messageId, MessageStatus.READ.name, msg.expireAt),
-                        )
-                    }.apply {
-                        pendingDatabase.insertJobs(this)
-                    }
-                    launch {
-                        Session.getExtensionSessionId()?.let { _ ->
-                            val conversationId = list.first().conversationId
-                            list.map { msg ->
-                                createAckJob(
-                                    CREATE_MESSAGE,
-                                    BlazeAckMessage(msg.messageId, MessageStatus.READ.name),
-                                    conversationId,
-                                )
-                            }.let { jobs ->
-                                pendingDatabase.insertJobs(jobs)
-                            }
+            database.collectStatusMessages { list ->
+                Timber.e("status ${list.size}")
+                list.map { msg ->
+                    createAckJob(
+                        ACKNOWLEDGE_MESSAGE_RECEIPTS,
+                        BlazeAckMessage(msg.messageId, MessageStatus.READ.name, msg.expireAt),
+                    )
+                }.apply {
+                    pendingDatabase.insertJobs(this)
+                }
+                launch {
+                    Session.getExtensionSessionId()?.let { _ ->
+                        val conversationId = list.first().conversationId
+                        list.map { msg ->
+                            createAckJob(
+                                CREATE_MESSAGE,
+                                BlazeAckMessage(msg.messageId, MessageStatus.READ.name),
+                                conversationId,
+                            )
+                        }.let { jobs ->
+                            pendingDatabase.insertJobs(jobs)
                         }
                     }
-                    remoteMessageStatusDao.deleteByMessageIds(list.map { it.messageId })
                 }
+                remoteMessageStatusDao.deleteByMessageIds(list.map { it.messageId })
+            }
         }
     }
 

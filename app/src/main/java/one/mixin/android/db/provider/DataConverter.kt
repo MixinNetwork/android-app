@@ -13,10 +13,12 @@ import one.mixin.android.vo.AssetItem
 import one.mixin.android.vo.ChatMinimal
 import one.mixin.android.vo.ConversationItem
 import one.mixin.android.vo.FloodMessage
+import one.mixin.android.vo.Job
 import one.mixin.android.vo.Message
 import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.SearchMessageDetailItem
 import one.mixin.android.vo.SearchMessageItem
+import one.mixin.android.vo.StatusMessage
 import one.mixin.android.vo.User
 import java.util.concurrent.Callable
 
@@ -1158,6 +1160,136 @@ fun callableFloodMessageList(
                     cursor.getString(cursorIndexOfCreatedAt)
                 }
                 item = FloodMessage(tmpMessageId!!, tmpData!!, tmpCreatedAt!!)
+                result.add(item)
+            }
+            result
+        }
+    }
+}
+
+@SuppressLint("RestrictedApi")
+fun callableStatusMessageList(
+    db: RoomDatabase,
+    statement: RoomSQLiteQuery,
+): Callable<List<StatusMessage>> {
+    return Callable<List<StatusMessage>> {
+        val c = DBUtil.query(db, statement, false, null)
+        return@Callable c.use { cursor ->
+            val cIndexOfMessageId = 0
+            val cIndexOfConversationId = 1
+            val cIndexOfStatus = 2
+            val cIndexOfExpireAt = 3
+            val result: MutableList<StatusMessage> = java.util.ArrayList(cursor.count)
+            while (cursor.moveToNext()) {
+                val item: StatusMessage
+                val tmpMessageId: String? = if (cursor.isNull(cIndexOfMessageId)) {
+                    null
+                } else {
+                    cursor.getString(cIndexOfMessageId)
+                }
+                val tmpConversationId: String? = if (cursor.isNull(cIndexOfConversationId)) {
+                    null
+                } else {
+                    cursor.getString(cIndexOfConversationId)
+                }
+                val tmpStatus: String? = if (cursor.isNull(cIndexOfStatus)) {
+                    null
+                } else {
+                    cursor.getString(cIndexOfStatus)
+                }
+                val tmpExpireAt: Long? = if (cursor.isNull(cIndexOfExpireAt)) {
+                    null
+                } else {
+                    cursor.getLong(cIndexOfExpireAt)
+                }
+                item = StatusMessage(
+                    tmpMessageId!!,
+                    tmpConversationId!!,
+                    tmpStatus!!,
+                    tmpExpireAt,
+                )
+                result.add(item)
+            }
+            result
+        }
+    }
+}
+
+@SuppressLint("RestrictedApi")
+fun callableJobList(
+    db: RoomDatabase,
+    statement: RoomSQLiteQuery,
+): Callable<List<Job>> {
+    return Callable<List<Job>> {
+        val c = DBUtil.query(db, statement, false, null)
+        return@Callable c.use { cursor ->
+            val cursorIndexOfJobId = 0
+            val cursorIndexOfAction = 1
+            val cursorIndexOfCreatedAt = 2
+            val cursorIndexOfOrderId = 3
+            val cursorIndexOfPriority = 4
+            val cursorIndexOfUserId = 5
+            val cursorIndexOfBlazeMessage = 6
+            val cursorIndexOfConversationId = 7
+            val cursorIndexOfResendMessageId = 8
+            val cursorIndexOfRunCount = 9
+            val result: MutableList<Job> = java.util.ArrayList<Job>(cursor.count)
+            while (cursor.moveToNext()) {
+                val item: Job
+                val tmpJobId: String? = if (cursor.isNull(cursorIndexOfJobId)) {
+                    null
+                } else {
+                    cursor.getString(cursorIndexOfJobId)
+                }
+                val tmpAction: String? = if (cursor.isNull(cursorIndexOfAction)) {
+                    null
+                } else {
+                    cursor.getString(cursorIndexOfAction)
+                }
+                val tmpCreatedAt: String? = if (cursor.isNull(cursorIndexOfCreatedAt)) {
+                    null
+                } else {
+                    cursor.getString(cursorIndexOfCreatedAt)
+                }
+                val tmpOrderId: Int? = if (cursor.isNull(cursorIndexOfOrderId)) {
+                    null
+                } else {
+                    cursor.getInt(cursorIndexOfOrderId)
+                }
+                val tmpPriority: Int = cursor.getInt(cursorIndexOfPriority)
+                val tmpUserId: String? = if (cursor.isNull(cursorIndexOfUserId)) {
+                    null
+                } else {
+                    cursor.getString(cursorIndexOfUserId)
+                }
+                val tmpBlazeMessage: String? = if (cursor.isNull(cursorIndexOfBlazeMessage)) {
+                    null
+                } else {
+                    cursor.getString(cursorIndexOfBlazeMessage)
+                }
+                val tmpConversationId: String? = if (cursor.isNull(cursorIndexOfConversationId)) {
+                    null
+                } else {
+                    cursor.getString(cursorIndexOfConversationId)
+                }
+                val tmpResendMessageId: String? = if (cursor.isNull(cursorIndexOfResendMessageId)) {
+                    null
+                } else {
+                    cursor.getString(cursorIndexOfResendMessageId)
+                }
+                val tmpRunCount: Int = cursor.getInt(cursorIndexOfRunCount)
+                item = Job(
+                    tmpJobId!!,
+                    tmpAction!!,
+                    tmpCreatedAt!!,
+                    tmpOrderId,
+                    tmpPriority,
+                    tmpUserId,
+                    tmpBlazeMessage,
+                    tmpConversationId,
+                    tmpResendMessageId,
+                    tmpRunCount,
+                )
                 result.add(item)
             }
             result
