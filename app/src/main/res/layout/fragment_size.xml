@@ -15,8 +15,8 @@
                 android:id="@+id/title_view"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                app:rightText="@string/Settings"
                 app:titleText="@string/text_size"
+                app:rightText="@string/Reset"
                 app:rightTextColor="@color/colorBlue" />
 
         <androidx.recyclerview.widget.RecyclerView
@@ -27,28 +27,12 @@
                 android:layout_weight="1" />
 
         <androidx.constraintlayout.widget.ConstraintLayout
-                android:background="?attr/bg_window"
+                android:background="?attr/bg_white"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
                 android:padding="16dp">
 
-            <TextView
-                    android:id="@+id/title_tv"
-                    app:layout_constraintTop_toTopOf="parent"
-                    app:layout_constraintStart_toStartOf="parent"
-                    android:text="@string/from_system"
-                    android:textSize="18sp"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content" />
-
-            <androidx.appcompat.widget.SwitchCompat
-                android:id="@+id/system_switch"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                app:layout_constraintBottom_toBottomOf="@id/title_tv"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toTopOf="@id/title_tv" />
 
             <TextView
                     app:layout_constraintTop_toTopOf="@id/slider"
@@ -79,7 +63,7 @@
                     tools:ignore="HardcodedText" />
 
             <com.google.android.material.slider.Slider
-                    app:layout_constraintTop_toBottomOf="@id/title_tv"
+                    app:layout_constraintTop_toTopOf="parent"
                     app:layout_constraintStart_toEndOf="@id/start"
                     app:layout_constraintEnd_toStartOf="@id/end"
                     android:layout_marginTop="12dp"

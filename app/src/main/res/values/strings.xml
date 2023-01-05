@@ -786,6 +786,7 @@
     <string name="Resend_code">Resend code</string>
     <string name="Resend_code_in">Resend code in %1$d s</string>
     <string name="Reset_Link">Reset Link</string>
+    <string name="Reset">Reset</string>
     <string name="Reset_notifications">Reset notifications</string>
     <string name="RESTART">RESTART</string>
     <string name="Restore">Restore</string>

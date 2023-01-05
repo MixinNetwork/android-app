@@ -15,8 +15,6 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.launch
-import one.mixin.android.Constants
-import one.mixin.android.Constants.Account.PREF_TEXT_SIZE_FROM_SYSTEM
 import one.mixin.android.Constants.Account.PREF_TEXT_SIZE_STEP
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentSizeBinding
@@ -24,9 +22,7 @@ import one.mixin.android.databinding.ItemChatTextBinding
 import one.mixin.android.databinding.ItemChatTimeBinding
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.nowInUtc
-import one.mixin.android.extension.putBoolean
 import one.mixin.android.extension.putInt
-import one.mixin.android.extension.textColor
 import one.mixin.android.extension.tickVibrate
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.conversation.chathistory.holder.TextHolder
@@ -46,30 +42,16 @@ class SettingSizeFragment : BaseFragment(R.layout.fragment_size) {
     @SuppressLint("NotifyDataSetChanged")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        textSize = if (fromSystem) {
-            14f
-        } else {
-            initTextSizeStep * 2f + 12
-        }
-        binding.slider.isEnabled = !fromSystem
+        textSize = initTextSizeStep * 2f + 12
         binding.container.backgroundImage = WallpaperManager.getWallpaper(requireContext())
         binding.titleView.leftIb.setOnClickListener {
             requireActivity().onBackPressed()
         }
         binding.titleView.rightTv.setOnClickListener {
-            requireContext().defaultSharedPreferences.putBoolean(PREF_TEXT_SIZE_FROM_SYSTEM, binding.systemSwitch.isChecked)
-            requireContext().defaultSharedPreferences.putInt(PREF_TEXT_SIZE_STEP, binding.slider.value.toInt())
-            requireActivity().onBackPressed()
-        }
-        binding.systemSwitch.isChecked = fromSystem
-        binding.systemSwitch.setOnCheckedChangeListener { _, b ->
+            textSize = 14f
+            requireContext().defaultSharedPreferences.putInt(PREF_TEXT_SIZE_STEP, 1)
             requireContext().tickVibrate()
-            binding.slider.isEnabled = !b
-            textSize = if (b) {
-                14f
-            } else {
-                12f + (binding.slider.value * 2f)
-            }
+            binding.slider.value = 1.toFloat()
             binding.chatRv.adapter?.notifyDataSetChanged()
         }
         binding.slider.value = initTextSizeStep.toFloat()
@@ -177,6 +159,7 @@ class SettingSizeFragment : BaseFragment(R.layout.fragment_size) {
                 }
             }.collect {
                 textSize = 12f + (it * 2f)
+                requireContext().defaultSharedPreferences.putInt(PREF_TEXT_SIZE_STEP, it)
                 requireContext().tickVibrate()
                 binding.chatRv.adapter?.notifyDataSetChanged()
             }
@@ -185,10 +168,6 @@ class SettingSizeFragment : BaseFragment(R.layout.fragment_size) {
 
     private val initTextSizeStep by lazy {
         requireContext().defaultSharedPreferences.getInt(PREF_TEXT_SIZE_STEP, 1)
-    }
-
-    private val fromSystem by lazy {
-        requireContext().defaultSharedPreferences.getBoolean(PREF_TEXT_SIZE_FROM_SYSTEM, true)
     }
 
     private var textSize = 14f

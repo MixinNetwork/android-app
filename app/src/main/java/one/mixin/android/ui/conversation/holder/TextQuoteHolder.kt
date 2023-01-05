@@ -37,23 +37,13 @@ class TextQuoteHolder constructor(val binding: ItemChatTextQuoteBinding) :
     private val dp16 = itemView.context.dpToPx(16f)
 
     init {
-        binding.root.context.defaultSharedPreferences.getBoolean(
-            Constants.Account.PREF_TEXT_SIZE_FROM_SYSTEM,
-            true,
-        ).apply {
-            if (!this) {
-                binding.root.context.defaultSharedPreferences.getInt(
-                    Constants.Account.PREF_TEXT_SIZE_STEP,
-                    1,
-                ).apply {
-                    if (this != 1) {
-                        val textSize = 12f + 2f * this
-                        binding.chatTime.changeSize(textSize - 4f)
-                        binding.chatQuote.changeSize(textSize)
-                        binding.chatName.setTextSize(TypedValue.COMPLEX_UNIT_DIP, textSize)
-                        binding.chatTv.setTextSize(TypedValue.COMPLEX_UNIT_DIP, textSize)
-                    }
-                }
+        binding.root.context.defaultSharedPreferences.getInt(Constants.Account.PREF_TEXT_SIZE_STEP, 1).apply {
+            if (this != 1) {
+                val textSize = 12f + 2f * this
+                binding.chatTime.changeSize(textSize - 4f)
+                binding.chatQuote.changeSize(textSize)
+                binding.chatName.setTextSize(TypedValue.COMPLEX_UNIT_DIP, textSize)
+                binding.chatTv.setTextSize(TypedValue.COMPLEX_UNIT_DIP, textSize)
             }
         }
         binding.chatTv.initChatMode(LINK_COLOR)

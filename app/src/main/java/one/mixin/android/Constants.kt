@@ -61,7 +61,6 @@ object Constants {
         const val PREF_APP_AUTH = "pref_app_auth"
         const val PREF_APP_ENTER_BACKGROUND = "pref_app_enter_background"
         const val PREF_DEVICE_SDK = "pref_device_sdk"
-        const val PREF_TEXT_SIZE_FROM_SYSTEM = "pref_text_size_from_system"
         const val PREF_TEXT_SIZE_STEP = "pref_text_size_step"
         const val PREF_ATTACHMENT = "pref_attachment"
         object Migration {
