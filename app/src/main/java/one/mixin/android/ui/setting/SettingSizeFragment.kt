@@ -26,7 +26,6 @@ import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.nowInUtc
 import one.mixin.android.extension.putBoolean
 import one.mixin.android.extension.putInt
-import one.mixin.android.extension.remove
 import one.mixin.android.extension.textColor
 import one.mixin.android.extension.tickVibrate
 import one.mixin.android.ui.common.BaseFragment
@@ -58,11 +57,12 @@ class SettingSizeFragment : BaseFragment(R.layout.fragment_size) {
             requireActivity().onBackPressed()
         }
         binding.titleView.rightTv.setOnClickListener {
-            requireContext().defaultSharedPreferences.putInt(Constants.Account.PREF_TEXT_SIZE_STEP, binding.slider.value.toInt())
+            requireContext().defaultSharedPreferences.putBoolean(PREF_TEXT_SIZE_FROM_SYSTEM, binding.systemSwitch.isChecked)
+            requireContext().defaultSharedPreferences.putInt(PREF_TEXT_SIZE_STEP, binding.slider.value.toInt())
             requireActivity().onBackPressed()
         }
+        binding.systemSwitch.isChecked = fromSystem
         binding.systemSwitch.setOnCheckedChangeListener { _, b ->
-            requireContext().defaultSharedPreferences.putBoolean(Constants.Account.PREF_TEXT_SIZE_FROM_SYSTEM, b)
             requireContext().tickVibrate()
             binding.slider.isEnabled = !b
             textSize = if (b) {
@@ -178,24 +178,17 @@ class SettingSizeFragment : BaseFragment(R.layout.fragment_size) {
             }.collect {
                 textSize = 12f + (it * 2f)
                 requireContext().tickVibrate()
-                (it != initTextSizeStep).let { isEnabled ->
-                    binding.titleView.rightTv.isEnabled = isEnabled
-                    binding.titleView.rightTv.textColor = resources.getColor(
-                        if (isEnabled) R.color.colorBlue else R.color.text_gray,
-                        null,
-                    )
-                }
                 binding.chatRv.adapter?.notifyDataSetChanged()
             }
         }
     }
 
     private val initTextSizeStep by lazy {
-        requireContext().defaultSharedPreferences.getInt(Constants.Account.PREF_TEXT_SIZE_STEP, 1)
+        requireContext().defaultSharedPreferences.getInt(PREF_TEXT_SIZE_STEP, 1)
     }
 
     private val fromSystem by lazy {
-        requireContext().defaultSharedPreferences.getBoolean(Constants.Account.PREF_TEXT_SIZE_FROM_SYSTEM, true)
+        requireContext().defaultSharedPreferences.getBoolean(PREF_TEXT_SIZE_FROM_SYSTEM, true)
     }
 
     private var textSize = 14f
