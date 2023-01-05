@@ -16,7 +16,7 @@
             android:id="@+id/title_view"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            app:rightText="@string/Settings"
+            app:rightText="@string/Save"
             app:titleText="@string/background_preview"
             app:rightTextColor="@color/selector_tv_blue"/>
 
