@@ -31,12 +31,22 @@ import one.mixin.android.widget.linktext.AutoLinkMode
 class TextHolder constructor(val binding: ItemChatTextBinding) : BaseMentionHolder(binding.root), Terminable {
 
     init {
-        binding.root.context.defaultSharedPreferences.getInt(Constants.Account.PREF_TEXT_SIZE_STEP, 1).apply {
-            if (this != 1) {
-                val textSize = 12f + 2f * this
-                binding.chatTime.changeSize(textSize - 4f)
-                binding.chatName.setTextSize(TypedValue.COMPLEX_UNIT_DIP, textSize)
-                binding.chatTv.setTextSize(TypedValue.COMPLEX_UNIT_DIP, textSize)
+        binding.root.context.defaultSharedPreferences.getBoolean(
+            Constants.Account.PREF_TEXT_SIZE_FROM_SYSTEM,
+            true,
+        ).apply {
+            if (!this) {
+                binding.root.context.defaultSharedPreferences.getInt(
+                    Constants.Account.PREF_TEXT_SIZE_STEP,
+                    1,
+                ).apply {
+                    if (this != 1) {
+                        val textSize = 12f + 2f * this
+                        binding.chatTime.changeSize(textSize - 4f)
+                        binding.chatName.setTextSize(TypedValue.COMPLEX_UNIT_DIP, textSize)
+                        binding.chatTv.setTextSize(TypedValue.COMPLEX_UNIT_DIP, textSize)
+                    }
+                }
             }
         }
         binding.chatTv.initChatMode(LINK_COLOR)

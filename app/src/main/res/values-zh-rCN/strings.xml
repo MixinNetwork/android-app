@@ -1092,4 +1092,5 @@
     <string name="Your_emergency_contact_has_been_changed">紧急联系人已更改</string>
     <string name="your_pin_has_been_created">PIN 已创建</string>
     <string name="text_size">字体大小</string>
+    <string name="from_system">跟随系统</string>
 </resources>

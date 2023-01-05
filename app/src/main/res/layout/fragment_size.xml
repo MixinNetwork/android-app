@@ -37,11 +37,18 @@
                     android:id="@+id/title_tv"
                     app:layout_constraintTop_toTopOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
-                    android:text="@string/text_size"
+                    android:text="@string/from_system"
                     android:textSize="18sp"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content" />
 
+            <androidx.appcompat.widget.SwitchCompat
+                android:id="@+id/system_switch"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:layout_constraintBottom_toBottomOf="@id/title_tv"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="@id/title_tv" />
 
             <TextView
                     app:layout_constraintTop_toTopOf="@id/slider"

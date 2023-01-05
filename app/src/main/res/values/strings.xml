@@ -1114,4 +1114,5 @@
     <string name="Your_emergency_contact_has_been_changed">Your emergency contact has been changed</string>
     <string name="your_pin_has_been_created">Your PIN has been created</string>
     <string name="text_size">Text Size</string>
+    <string name="from_system">From system</string>
 </resources>
