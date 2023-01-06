@@ -151,7 +151,6 @@ import one.mixin.android.vo.ParticipantRole
 import one.mixin.android.vo.isGroupConversation
 import one.mixin.android.widget.MaterialSearchView
 import javax.inject.Inject
-import android.net.Uri
 
 @AndroidEntryPoint
 class MainActivity : BlazeBaseActivity() {
@@ -289,7 +288,6 @@ class MainActivity : BlazeBaseActivity() {
             .subscribe { e ->
                 handleTipEvent(e, deviceId)
             }
-        handlerCode(intent)
     }
 
     override fun onStart() {
@@ -594,7 +592,7 @@ class MainActivity : BlazeBaseActivity() {
             bottomSheet?.dismiss()
             showScanBottom(scan)
             clearCodeAfterConsume(intent, SCAN)
-        } else if (intent.hasExtra(URL) || intent.data!=null) {
+        } else if (intent.hasExtra(URL) || (intent.action == Intent.ACTION_VIEW && intent.categories.contains(Intent.CATEGORY_BROWSABLE))) {
             val url = intent.getStringExtra(URL) ?: intent.data?.toString() ?: return
             bottomSheet?.dismiss()
             bottomSheet = LinkBottomSheetDialogFragment.newInstance(url)

@@ -67,7 +67,7 @@
                 <data
                     android:scheme="https"
                     android:host="mixin.one"
-                    android:path="/code" />
+                    android:pathPrefix="/codes" />
             </intent-filter>
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
@@ -78,7 +78,7 @@
                 <data
                     android:scheme="https"
                     android:host="mixin.one"
-                    android:path="/pay" />
+                    android:pathPrefix="/pay" />
             </intent-filter>
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
@@ -89,7 +89,7 @@
                 <data
                     android:scheme="https"
                     android:host="mixin.one"
-                    android:path="/users" />
+                    android:pathPrefix="/users" />
             </intent-filter>
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
@@ -100,7 +100,7 @@
                 <data
                     android:scheme="https"
                     android:host="mixin.one"
-                    android:path="/transfer" />
+                    android:pathPrefix="/transfer" />
             </intent-filter>
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
@@ -111,7 +111,7 @@
                 <data
                     android:scheme="https"
                     android:host="mixin.one"
-                    android:path="/address" />
+                    android:pathPrefix="/address" />
             </intent-filter>
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
@@ -122,7 +122,7 @@
                 <data
                     android:scheme="https"
                     android:host="mixin.one"
-                    android:path="/withdrawal" />
+                    android:pathPrefix="/withdrawal" />
             </intent-filter>
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
@@ -133,7 +133,7 @@
                 <data
                     android:scheme="https"
                     android:host="mixin.one"
-                    android:path="/apps" />
+                    android:pathPrefix="/apps" />
             </intent-filter>
         </activity>
         <activity
