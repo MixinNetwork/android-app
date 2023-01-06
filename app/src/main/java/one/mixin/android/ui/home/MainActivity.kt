@@ -289,10 +289,7 @@ class MainActivity : BlazeBaseActivity() {
             .subscribe { e ->
                 handleTipEvent(e, deviceId)
             }
-        // ATTENTION: This was auto-generated to handle app links.
-        val appLinkIntent: Intent = intent
-        val appLinkAction: String? = appLinkIntent.action
-        val appLinkData: Uri? = appLinkIntent.data
+        handlerCode(intent)
     }
 
     override fun onStart() {
@@ -597,8 +594,8 @@ class MainActivity : BlazeBaseActivity() {
             bottomSheet?.dismiss()
             showScanBottom(scan)
             clearCodeAfterConsume(intent, SCAN)
-        } else if (intent.hasExtra(URL)) {
-            val url = intent.getStringExtra(URL)!!
+        } else if (intent.hasExtra(URL) || intent.data!=null) {
+            val url = intent.getStringExtra(URL) ?: intent.data?.toString() ?: return
             bottomSheet?.dismiss()
             bottomSheet = LinkBottomSheetDialogFragment.newInstance(url)
             bottomSheet?.showNow(supportFragmentManager, LinkBottomSheetDialogFragment.TAG)
