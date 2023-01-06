@@ -589,18 +589,6 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                     }
                 }
             }
-        } else if (url.isExternalTransferUrl() || url.isDonateUrl()) {
-            if (checkHasPin()) return
-
-            lifecycleScope.launch(errorHandler) {
-                val newUrl = url.replaceFirst(":", "://")
-                if (checkIsDonate(newUrl) && showTransfer(newUrl)) {
-                    dismiss()
-                    return@launch
-                }
-
-                parseExternalTransferUrl(url)
-            }
         } else if (url.startsWith(Scheme.CONVERSATIONS, true)) {
             val uri = Uri.parse(url)
             val segments = uri.pathSegments
@@ -655,7 +643,22 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 dismiss()
             }
         } else {
-            if (url.isExternalScheme(requireContext())) {
+            val isDonateUrl = url.isDonateUrl()
+            val isExternalTransferUrl = url.isExternalTransferUrl()
+            if (isDonateUrl || isExternalTransferUrl) {
+                if (checkHasPin()) return
+
+                lifecycleScope.launch(errorHandler) {
+                    val newUrl = url.replaceFirst(":", "://")
+                    if (checkIsDonate(newUrl) && showTransfer(newUrl)) {
+                        dismiss()
+                    } else if (isExternalTransferUrl) {
+                        parseExternalTransferUrl(url)
+                    } else {
+                        showError()
+                    }
+                }
+            } else if (url.isExternalScheme(requireContext())) {
                 WebActivity.show(requireContext(), url, null)
                 dismiss()
             } else {
