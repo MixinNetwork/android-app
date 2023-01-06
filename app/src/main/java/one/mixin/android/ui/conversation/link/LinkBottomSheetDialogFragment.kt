@@ -650,7 +650,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
 
                 lifecycleScope.launch(errorHandler) {
                     val newUrl = url.replaceFirst(":", "://")
-                    if (checkIsDonate(newUrl) && showTransfer(newUrl)) {
+                    if (isDonateUrl && showTransfer(newUrl)) {
                         dismiss()
                     } else if (isExternalTransferUrl) {
                         parseExternalTransferUrl(url)
@@ -768,13 +768,6 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
             )
         }
         dismiss()
-    }
-
-    private fun checkIsDonate(url: String): Boolean {
-        val uri = url.toUri()
-        val userId = uri.getQueryParameter("recipient")
-        val asset = uri.getQueryParameter("asset")
-        return userId != null && userId.isUUID() && asset != null && asset.isUUID() && url.isDonateUrl()
     }
 
     private suspend fun showTransfer(text: String): Boolean {
