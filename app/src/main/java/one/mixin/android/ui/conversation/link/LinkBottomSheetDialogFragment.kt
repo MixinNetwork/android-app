@@ -589,78 +589,17 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                     }
                 }
             }
-        } else if (url.isExternalTransferUrl()) {
-            if (checkHasPin()) return
-
-            lifecycleScope.launch(errorHandler) {
-                val result = parseExternalTransferUri(url, { assetId, destination ->
-                    handleMixinResponse(
-                        invokeNetwork = {
-                            linkViewModel.getExternalAddressFee(assetId, destination, null)
-                        },
-                        successBlock = {
-                            return@handleMixinResponse it.data
-                        },
-                    )
-                }, { assetKey ->
-                    return@parseExternalTransferUri linkViewModel.findAssetIdByAssetKey(assetKey)
-                }, { assetId ->
-                    handleMixinResponse(
-                        invokeNetwork = {
-                            linkViewModel.getAssetPrecisionById(assetId)
-                        },
-                        successBlock = {
-                            return@handleMixinResponse it.data
-                        },
-                    )
-                })
-
-                if (result == null) {
-                    QrScanBottomSheetDialogFragment.newInstance(url)
-                        .show(parentFragmentManager, QrScanBottomSheetDialogFragment.TAG)
-                } else {
-                    val asset = checkAsset(result.assetId)
-                    if (asset == null) {
-                        showError(R.string.Asset_not_found)
-                        dismiss()
-                        return@launch
-                    }
-
-                    val traceId = UUID.randomUUID().toString()
-                    val amount = result.amount
-                    val destination = result.destination
-                    handleMixinResponse(
-                        invokeNetwork = {
-                            val transferRequest = TransferRequest(result.assetId, null, amount, null, traceId, result.memo, null, destination)
-                            linkViewModel.paySuspend(transferRequest)
-                        },
-                        successBlock = { r ->
-                            val response = r.data ?: return@handleMixinResponse false
-                            showWithdrawalBottom(null, destination, null, null, result.fee?.toPlainString() ?: "0", amount, asset, traceId, response.status, result.memo)
-                        },
-                        failureBlock = {
-                            showError(R.string.Invalid_payment_link)
-                            return@handleMixinResponse false
-                        },
-                        exceptionBlock = {
-                            showError(R.string.Checking_payment_info)
-                            return@handleMixinResponse false
-                        },
-                    )
-                }
-
-                dismiss()
-            }
-        } else if (url.isDonateUrl()) {
+        } else if (url.isExternalTransferUrl() || url.isDonateUrl()) {
             if (checkHasPin()) return
 
             lifecycleScope.launch(errorHandler) {
                 val newUrl = url.replaceFirst(":", "://")
-                if (!showTransfer(newUrl)) {
-                    QrScanBottomSheetDialogFragment.newInstance(url)
-                        .show(parentFragmentManager, QrScanBottomSheetDialogFragment.TAG)
+                if (checkIsDonate(newUrl) && showTransfer(newUrl)) {
+                    dismiss()
+                    return@launch
                 }
-                dismiss()
+
+                parseExternalTransferUrl(url)
             }
         } else if (url.startsWith(Scheme.CONVERSATIONS, true)) {
             val uri = Uri.parse(url)
@@ -767,6 +706,72 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 }
             }
         }
+    }
+
+    private suspend fun parseExternalTransferUrl(url: String) {
+        val result = parseExternalTransferUri(url, { assetId, destination ->
+            handleMixinResponse(
+                invokeNetwork = {
+                    linkViewModel.getExternalAddressFee(assetId, destination, null)
+                },
+                successBlock = {
+                    return@handleMixinResponse it.data
+                },
+            )
+        }, { assetKey ->
+            return@parseExternalTransferUri linkViewModel.findAssetIdByAssetKey(assetKey)
+        }, { assetId ->
+            handleMixinResponse(
+                invokeNetwork = {
+                    linkViewModel.getAssetPrecisionById(assetId)
+                },
+                successBlock = {
+                    return@handleMixinResponse it.data
+                },
+            )
+        })
+
+        if (result == null) {
+            QrScanBottomSheetDialogFragment.newInstance(url)
+                .show(parentFragmentManager, QrScanBottomSheetDialogFragment.TAG)
+        } else {
+            val asset = checkAsset(result.assetId)
+            if (asset == null) {
+                showError(R.string.Asset_not_found)
+                dismiss()
+                return
+            }
+
+            val traceId = UUID.randomUUID().toString()
+            val amount = result.amount
+            val destination = result.destination
+            handleMixinResponse(
+                invokeNetwork = {
+                    val transferRequest = TransferRequest(result.assetId, null, amount, null, traceId, result.memo, null, destination)
+                    linkViewModel.paySuspend(transferRequest)
+                },
+                successBlock = { r ->
+                    val response = r.data ?: return@handleMixinResponse false
+                    showWithdrawalBottom(null, destination, null, null, result.fee?.toPlainString() ?: "0", amount, asset, traceId, response.status, result.memo)
+                },
+                failureBlock = {
+                    showError(R.string.Invalid_payment_link)
+                    return@handleMixinResponse false
+                },
+                exceptionBlock = {
+                    showError(R.string.Checking_payment_info)
+                    return@handleMixinResponse false
+                },
+            )
+        }
+        dismiss()
+    }
+
+    private fun checkIsDonate(url: String): Boolean {
+        val uri = url.toUri()
+        val userId = uri.getQueryParameter("recipient")
+        val asset = uri.getQueryParameter("asset")
+        return userId != null && userId.isUUID() && asset != null && asset.isUUID() && url.isDonateUrl()
     }
 
     private suspend fun showTransfer(text: String): Boolean {
