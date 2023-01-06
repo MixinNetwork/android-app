@@ -151,6 +151,7 @@ import one.mixin.android.vo.ParticipantRole
 import one.mixin.android.vo.isGroupConversation
 import one.mixin.android.widget.MaterialSearchView
 import javax.inject.Inject
+import android.net.Uri
 
 @AndroidEntryPoint
 class MainActivity : BlazeBaseActivity() {
@@ -288,6 +289,10 @@ class MainActivity : BlazeBaseActivity() {
             .subscribe { e ->
                 handleTipEvent(e, deviceId)
             }
+        // ATTENTION: This was auto-generated to handle app links.
+        val appLinkIntent: Intent = intent
+        val appLinkAction: String? = appLinkIntent.action
+        val appLinkData: Uri? = appLinkIntent.data
     }
 
     override fun onStart() {
