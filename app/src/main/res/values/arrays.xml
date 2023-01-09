@@ -15,6 +15,7 @@
         <item>@drawable/ic_flag_eur</item>
         <item>@drawable/ic_flag_gbp</item>
         <item>@drawable/ic_flag_hkd</item>
+        <item>@drawable/ic_flag_idr</item>
         <item>@drawable/ic_flag_jpy</item>
         <item>@drawable/ic_flag_krw</item>
         <item>@drawable/ic_flag_myr</item>
@@ -31,6 +32,7 @@
         <item>EUR</item>
         <item>GBP</item>
         <item>HKD</item>
+        <item>IDR</item>
         <item>JPY</item>
         <item>KRW</item>
         <item>MYR</item>
@@ -47,6 +49,7 @@
         <item>€</item>
         <item>£</item>
         <item>HK$</item>
+        <item>Rp</item>
         <item>¥</item>
         <item>₩</item>
         <item>RM</item>
