@@ -46,6 +46,7 @@ import one.mixin.android.extension.stripAmountZero
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.withArgs
 import one.mixin.android.job.getIconUrlName
+import one.mixin.android.pay.addSlashesIfNeeded
 import one.mixin.android.pay.parseExternalTransferUri
 import one.mixin.android.repository.QrCodeType
 import one.mixin.android.session.Session
@@ -649,7 +650,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 if (checkHasPin()) return
 
                 lifecycleScope.launch(errorHandler) {
-                    val newUrl = url.replaceFirst(":", "://")
+                    val newUrl = url.addSlashesIfNeeded()
                     if (isDonateUrl && showTransfer(newUrl)) {
                         dismiss()
                     } else if (isExternalTransferUrl) {

@@ -17,7 +17,7 @@ suspend fun parseExternalTransferUri(
         return parseEthereum(url, getAddressFee, findAssetIdByAssetKey, getAssetPrecisionById)
     }
 
-    val uri = url.replaceFirst(":", "://").toUri()
+    val uri = url.addSlashesIfNeeded().toUri()
     val scheme = uri.scheme
     val assetId = externalTransferAssetIdMap[scheme] ?: return null
 
@@ -49,6 +49,13 @@ suspend fun parseExternalTransferUri(
 
 // check amount has scientific E
 fun String?.amountWithE(): Boolean = this?.contains("e") == true
+
+fun String.addSlashesIfNeeded(): String {
+    if (this.indexOf("://") != -1) {
+        return this
+    }
+    return this.replace(":", "://")
+}
 
 val externalTransferAssetIdMap by lazy {
     mapOf(
