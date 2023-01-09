@@ -31,9 +31,9 @@ import one.mixin.android.widget.linktext.AutoLinkMode
 class TextHolder constructor(val binding: ItemChatTextBinding) : BaseMentionHolder(binding.root), Terminable {
 
     init {
-        binding.root.context.defaultSharedPreferences.getInt(Constants.Account.PREF_TEXT_SIZE_STEP, 1).apply {
-            if (this != 1) {
-                val textSize = 12f + 2f * this
+        binding.root.context.defaultSharedPreferences.getInt(Constants.Account.PREF_TEXT_SIZE, 14).apply {
+            if (this != 14) {
+                val textSize = this.toFloat()
                 binding.chatTime.changeSize(textSize - 4f)
                 binding.chatName.setTextSize(TypedValue.COMPLEX_UNIT_DIP, textSize)
                 binding.chatTv.setTextSize(TypedValue.COMPLEX_UNIT_DIP, textSize)

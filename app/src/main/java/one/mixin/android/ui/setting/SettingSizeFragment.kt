@@ -15,7 +15,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.launch
-import one.mixin.android.Constants.Account.PREF_TEXT_SIZE_STEP
+import one.mixin.android.Constants.Account.PREF_TEXT_SIZE
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentSizeBinding
 import one.mixin.android.databinding.ItemChatTextBinding
@@ -42,19 +42,19 @@ class SettingSizeFragment : BaseFragment(R.layout.fragment_size) {
     @SuppressLint("NotifyDataSetChanged")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        textSize = initTextSizeStep * 2f + 12
+        textSize = initTextSize.toFloat()
         binding.container.backgroundImage = WallpaperManager.getWallpaper(requireContext())
         binding.titleView.leftIb.setOnClickListener {
             requireActivity().onBackPressed()
         }
         binding.titleView.rightTv.setOnClickListener {
             textSize = 14f
-            requireContext().defaultSharedPreferences.putInt(PREF_TEXT_SIZE_STEP, 1)
+            requireContext().defaultSharedPreferences.putInt(PREF_TEXT_SIZE, 14)
             requireContext().tickVibrate()
-            binding.slider.value = 1.toFloat()
+            binding.slider.value = textSize
             binding.chatRv.adapter?.notifyDataSetChanged()
         }
-        binding.slider.value = initTextSizeStep.toFloat()
+        binding.slider.value = initTextSize.toFloat()
         binding.chatRv.adapter = object : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
             override fun onCreateViewHolder(
                 parent: ViewGroup,
@@ -131,7 +131,7 @@ class SettingSizeFragment : BaseFragment(R.layout.fragment_size) {
                         )
                         binding.chatTime.changeSize(textSize - 4f)
                         binding.chatTv.text = requireContext().getString(R.string.i_am_good)
-                        binding.chatTv.setTextSize(TypedValue.COMPLEX_UNIT_SP, textSize)
+                        binding.chatTv.setTextSize(TypedValue.COMPLEX_UNIT_DIP, textSize)
                         setItemBackgroundResource(
                             binding.chatLayout,
                             R.drawable.chat_bubble_me_last,
@@ -158,16 +158,16 @@ class SettingSizeFragment : BaseFragment(R.layout.fragment_size) {
                     if (isAdded) binding.slider.removeOnChangeListener(onChangeListener)
                 }
             }.collect {
-                textSize = 12f + (it * 2f)
-                requireContext().defaultSharedPreferences.putInt(PREF_TEXT_SIZE_STEP, it)
+                textSize = it.toFloat()
+                requireContext().defaultSharedPreferences.putInt(PREF_TEXT_SIZE, it)
                 requireContext().tickVibrate()
                 binding.chatRv.adapter?.notifyDataSetChanged()
             }
         }
     }
 
-    private val initTextSizeStep by lazy {
-        requireContext().defaultSharedPreferences.getInt(PREF_TEXT_SIZE_STEP, 1)
+    private val initTextSize by lazy {
+        requireContext().defaultSharedPreferences.getInt(PREF_TEXT_SIZE, 14)
     }
 
     private var textSize = 14f

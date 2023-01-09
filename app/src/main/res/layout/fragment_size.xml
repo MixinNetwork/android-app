@@ -71,10 +71,10 @@
                     android:id="@+id/slider"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:valueFrom="0"
-                    android:valueTo="6"
-                    android:stepSize="1"
-                    android:value="1"
+                    android:valueFrom="12"
+                    android:valueTo="24"
+                    android:stepSize="2"
+                    android:value="14"
                     app:labelBehavior="gone" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>

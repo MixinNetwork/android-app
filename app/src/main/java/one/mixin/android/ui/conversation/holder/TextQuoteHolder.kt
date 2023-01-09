@@ -37,9 +37,9 @@ class TextQuoteHolder constructor(val binding: ItemChatTextQuoteBinding) :
     private val dp16 = itemView.context.dpToPx(16f)
 
     init {
-        binding.root.context.defaultSharedPreferences.getInt(Constants.Account.PREF_TEXT_SIZE_STEP, 1).apply {
-            if (this != 1) {
-                val textSize = 12f + 2f * this
+        binding.root.context.defaultSharedPreferences.getInt(Constants.Account.PREF_TEXT_SIZE, 14).apply {
+            if (this != 14) {
+                val textSize = this.toFloat()
                 binding.chatTime.changeSize(textSize - 4f)
                 binding.chatQuote.changeSize(textSize)
                 binding.chatName.setTextSize(TypedValue.COMPLEX_UNIT_DIP, textSize)
