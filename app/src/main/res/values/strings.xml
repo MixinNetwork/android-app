@@ -587,6 +587,7 @@
     <string name="Messages">Messages</string>
     <string name="Messaging_Node">Messaging Node</string>
     <string name="Messaging_node_running">Messaging node running</string>
+    <string name="message_shareable_false">The message has been set to not allow sharing</string>
     <plurals name="Minute">
         <item quantity="one">%d Minute</item>
         <item quantity="other">%d Minutes</item>

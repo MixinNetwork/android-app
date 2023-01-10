@@ -90,14 +90,26 @@ class AttachmentDownloadJob(
             return
         }
         jobManager.saveJob(this)
-        attachmentCall = conversationApi.getAttachment(attachmentId ?: message.content!!)
+        var shareable: Boolean? = null
+        attachmentCall = conversationApi.getAttachment(
+            attachmentId ?: try {
+                GsonHelper.customGson.fromJson(
+                    message.content,
+                    AttachmentExtra::class.java,
+                ).apply {
+                    shareable = this.shareable
+                }.attachmentId
+            } catch (e: Exception) {
+                message.content!!
+            },
+        )
         val body = attachmentCall!!.execute().body()
         if (body != null && (body.isSuccess || !isCancelled) && body.data != null) {
             val attachmentResponse = body.data!!
             attachmentResponse.view_url?.let {
                 val result = decryptAttachment(it)
                 if (result) {
-                    val attachmentExtra = GsonHelper.customGson.toJson(AttachmentExtra(attachmentResponse.attachment_id, message.messageId, attachmentResponse.created_at))
+                    val attachmentExtra = GsonHelper.customGson.toJson(AttachmentExtra(attachmentResponse.attachment_id, message.messageId, attachmentResponse.created_at, shareable))
                     messageDao.updateMessageContent(attachmentExtra, message.messageId)
                 }
             }

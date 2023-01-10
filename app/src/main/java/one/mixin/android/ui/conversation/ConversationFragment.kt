@@ -222,6 +222,7 @@ import one.mixin.android.vo.canRecall
 import one.mixin.android.vo.generateConversationId
 import one.mixin.android.vo.getEncryptedCategory
 import one.mixin.android.vo.giphy.Image
+import one.mixin.android.vo.isAppCard
 import one.mixin.android.vo.isAttachment
 import one.mixin.android.vo.isAudio
 import one.mixin.android.vo.isData
@@ -3161,10 +3162,10 @@ class ConversationFragment() :
         val unShareable = conversationAdapter.selectSet.find { it.isShareable() == false }
         if (unShareable != null) {
             toast(
-                if (unShareable.isLive()) {
-                    R.string.live_shareable_false
-                } else {
-                    R.string.app_card_shareable_false
+                when {
+                    unShareable.isLive() -> R.string.live_shareable_false
+                    unShareable.isAppCard() -> R.string.app_card_shareable_false
+                    else -> R.string.message_shareable_false
                 },
             )
             return

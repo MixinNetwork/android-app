@@ -118,7 +118,17 @@ data class MessageItem(
     private var appCardShareable: Boolean? = null
 
     fun isShareable(): Boolean? {
-        if (type != MessageCategory.APP_CARD.name && type != MessageCategory.PLAIN_LIVE.name && type != MessageCategory.SIGNAL_LIVE.name && type != MessageCategory.ENCRYPTED_LIVE.name) return null
+        if (type != MessageCategory.APP_CARD.name &&
+            type != MessageCategory.PLAIN_LIVE.name &&
+            type != MessageCategory.SIGNAL_LIVE.name &&
+            type != MessageCategory.ENCRYPTED_LIVE.name &&
+            type != MessageCategory.PLAIN_AUDIO.name &&
+            type != MessageCategory.SIGNAL_AUDIO.name &&
+            type != MessageCategory.ENCRYPTED_AUDIO.name
+        ) {
+            return null
+        }
+
         try {
             if (type == MessageCategory.APP_CARD.name && appCardShareable == null) {
                 appCardShareable =
@@ -127,6 +137,11 @@ data class MessageItem(
                 appCardShareable = GsonHelper.customGson.fromJson(
                     content,
                     LiveMessagePayload::class.java,
+                ).shareable
+            } else if ((type == MessageCategory.PLAIN_AUDIO.name || type == MessageCategory.SIGNAL_AUDIO.name || type == MessageCategory.ENCRYPTED_AUDIO.name) && appCardShareable == null) {
+                appCardShareable = GsonHelper.customGson.fromJson(
+                    content,
+                    AttachmentExtra::class.java,
                 ).shareable
             }
         } catch (e: Exception) {
