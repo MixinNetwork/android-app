@@ -118,8 +118,13 @@ data class MessageItem(
     private var appCardShareable: Boolean? = null
 
     fun isShareable(): Boolean? {
-        if (type != MessageCategory.APP_CARD.name && type != MessageCategory.PLAIN_LIVE.name && type != MessageCategory.SIGNAL_LIVE.name && type != MessageCategory.ENCRYPTED_LIVE.name &&
-            type != MessageCategory.PLAIN_AUDIO.name && type != MessageCategory.SIGNAL_AUDIO.name && type != MessageCategory.ENCRYPTED_AUDIO.name
+        if (type != MessageCategory.APP_CARD.name &&
+            type != MessageCategory.PLAIN_LIVE.name &&
+            type != MessageCategory.SIGNAL_LIVE.name &&
+            type != MessageCategory.ENCRYPTED_LIVE.name &&
+            type != MessageCategory.PLAIN_AUDIO.name &&
+            type != MessageCategory.SIGNAL_AUDIO.name &&
+            type != MessageCategory.ENCRYPTED_AUDIO.name
         ) {
             return null
         }
