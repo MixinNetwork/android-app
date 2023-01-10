@@ -54,6 +54,7 @@ import one.mixin.android.db.StickerRelationshipDao
 import one.mixin.android.db.TopAssetDao
 import one.mixin.android.db.TranscriptMessageDao
 import one.mixin.android.db.UserDao
+import one.mixin.android.db.pending.PendingDatabase
 import one.mixin.android.di.ApplicationScope
 import one.mixin.android.repository.AssetRepository
 import one.mixin.android.repository.ConversationRepository
@@ -81,6 +82,10 @@ abstract class BaseJob(params: Params) : Job(params) {
     @Inject
     @Transient
     lateinit var mixinDatabase: MixinDatabase
+
+    @Inject
+    @Transient
+    lateinit var pendingDatabase: PendingDatabase
 
     @Inject
     @Transient

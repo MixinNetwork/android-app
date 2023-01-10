@@ -1,6 +1,7 @@
 package one.mixin.android.db
 
 import one.mixin.android.db.MixinDatabase.Companion.rawDelete
+import one.mixin.android.db.pending.PendingDatabase
 import one.mixin.android.session.Session
 import one.mixin.android.util.chat.InvalidateFlow
 import one.mixin.android.vo.App
@@ -218,6 +219,22 @@ fun MixinDatabase.makeMessageStatus(status: String, messageId: String, noExistCa
         if (message.userId == Session.getAccountId()) {
             conversationDao().forceRefreshConversationsByLastMessageId(message.conversationId, messageId)
         }
+        InvalidateFlow.emit(message.conversationId) // Update and notify flow
+    }
+}
+
+fun PendingDatabase.makeMessageStatus(status: String, messageId: String, noExistCallback: (() -> Unit)? = null) {
+    val messageStatus = MessageStatus.values().firstOrNull { it.name == status } ?: return
+    if (messageStatus != MessageStatus.SENT && messageStatus != MessageStatus.DELIVERED && messageStatus != MessageStatus.READ) {
+        return
+    }
+    val message = pendingMessageDao().findMessageStatusById(messageId)
+    if (message == null) {
+        noExistCallback?.invoke()
+        return
+    }
+    if (messageStatus.ordinal > message.status.ordinal) {
+        pendingMessageDao().updateMessageStatus(status, messageId)
         InvalidateFlow.emit(message.conversationId) // Update and notify flow
     }
 }

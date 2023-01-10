@@ -31,6 +31,7 @@ class RefreshOffsetJob : MixinJob(
     override fun onRun() {
         val statusOffset = offsetDao.getStatusOffset()
         var status = statusOffset?.getEpochNano() ?: firstInstallTime
+
         while (true) {
             val response = messageService.messageStatusOffset(status).execute().body()
             if (response != null && response.isSuccess && response.data != null) {
@@ -39,15 +40,15 @@ class RefreshOffsetJob : MixinJob(
                     break
                 }
                 for (m in blazeMessages) {
-                    mixinDatabase.makeMessageStatus(m.status, m.messageId) {
+                    val callback = block@{
                         val mh = messageHistoryDao.findMessageHistoryById(m.messageId)
                         if (mh != null) {
-                            return@makeMessageStatus
+                            return@block
                         }
                         val pendingMessageStatus = pendingMessageStatusMap[m.messageId]
                         if (pendingMessageStatus != null) {
-                            val currentStatus = MessageStatus.values().firstOrNull { it.name == m.status }?.ordinal ?: return@makeMessageStatus
-                            val localStatus = MessageStatus.values().firstOrNull { it.name == pendingMessageStatus }?.ordinal ?: return@makeMessageStatus
+                            val currentStatus = MessageStatus.values().firstOrNull { it.name == m.status }?.ordinal ?: return@block
+                            val localStatus = MessageStatus.values().firstOrNull { it.name == pendingMessageStatus }?.ordinal ?: return@block
                             if (currentStatus > localStatus) {
                                 pendingMessageStatusMap[m.messageId] = m.status
                             }
@@ -55,6 +56,8 @@ class RefreshOffsetJob : MixinJob(
                             pendingMessageStatusMap[m.messageId] = m.status
                         }
                     }
+                    pendingDatabase.makeMessageStatus(m.status, m.messageId, callback)
+                    mixinDatabase.makeMessageStatus(m.status, m.messageId, callback)
                     offsetDao.insert(Offset(STATUS_OFFSET, m.updatedAt))
                 }
                 if (blazeMessages.isNotEmpty() && blazeMessages.last().updatedAt.getEpochNano() == status) {
