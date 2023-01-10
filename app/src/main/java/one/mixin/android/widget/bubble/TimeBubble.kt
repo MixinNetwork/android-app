@@ -3,13 +3,16 @@ package one.mixin.android.widget.bubble
 import android.content.Context
 import android.graphics.drawable.Animatable
 import android.util.AttributeSet
+import android.util.TypedValue
 import android.view.Gravity
 import android.view.LayoutInflater
+import android.view.View
 import android.widget.LinearLayout
 import androidx.appcompat.content.res.AppCompatResources
 import androidx.core.view.isVisible
 import one.mixin.android.R
 import one.mixin.android.databinding.BubbleTimeBinding
+import one.mixin.android.extension.dp
 import one.mixin.android.extension.timeAgoClock
 import one.mixin.android.vo.MessageStatus
 
@@ -34,6 +37,20 @@ class TimeBubble(context: Context, attributeSet: AttributeSet) :
         )
     }
 
+    private fun changeSize(view: View, size: Float) {
+        view.layoutParams.apply {
+            this.width = size.dp
+            this.height = size.dp
+        }
+    }
+
+    fun changeSize(textSize: Float) {
+        binding.chatTime.setTextSize(TypedValue.COMPLEX_UNIT_DIP, textSize)
+        changeSize(binding.chatPin, textSize)
+        changeSize(binding.chatSecret, textSize)
+        changeSize(binding.chatRepresentative, textSize)
+        changeSize(binding.chatStatus, textSize)
+    }
     fun load(
         isMe: Boolean,
         createdAt: String,

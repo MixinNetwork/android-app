@@ -770,6 +770,7 @@
     <string name="Resend_code">重发验证码</string>
     <string name="Resend_code_in">%1$d 秒后重新发送验证码</string>
     <string name="Reset_Link">重置邀请链接</string>
+    <string name="Reset">重置</string>
     <string name="Reset_notifications">重置通知设置</string>
     <string name="RESTART">重启应用</string>
     <string name="Restore">恢复</string>
@@ -1091,4 +1092,6 @@
     <string name="You_have_left_the_group">你不在此群组</string>
     <string name="Your_emergency_contact_has_been_changed">紧急联系人已更改</string>
     <string name="your_pin_has_been_created">PIN 已创建</string>
+    <string name="text_size">字体大小</string>
+    <string name="from_system">跟随系统</string>
 </resources>
