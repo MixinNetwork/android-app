@@ -21,7 +21,6 @@ import androidx.lifecycle.lifecycleScope
 import androidx.room.util.DBUtil
 import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.GoogleApiAvailability
-import com.google.android.gms.safetynet.SafetyNet
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
 import com.google.android.play.core.appupdate.AppUpdateManagerFactory
@@ -29,6 +28,8 @@ import com.google.android.play.core.install.InstallStateUpdatedListener
 import com.google.android.play.core.install.model.AppUpdateType
 import com.google.android.play.core.install.model.InstallStatus
 import com.google.android.play.core.install.model.UpdateAvailability
+import com.google.android.play.core.integrity.IntegrityManagerFactory
+import com.google.android.play.core.integrity.IntegrityTokenRequest
 import com.google.firebase.crashlytics.FirebaseCrashlytics
 import com.microsoft.appcenter.AppCenter
 import com.uber.autodispose.autoDispose
@@ -40,7 +41,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
-import one.mixin.android.BuildConfig
 import one.mixin.android.Constants
 import one.mixin.android.Constants.Account.PREF_BACKUP
 import one.mixin.android.Constants.Account.PREF_BATTERY_OPTIMIZE
@@ -64,7 +64,6 @@ import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.SessionRequest
 import one.mixin.android.api.service.ConversationService
 import one.mixin.android.api.service.UserService
-import one.mixin.android.crypto.Base64
 import one.mixin.android.crypto.PrivacyPreference.getIsLoaded
 import one.mixin.android.crypto.PrivacyPreference.getIsSyncSession
 import one.mixin.android.databinding.ActivityMainBinding
@@ -151,6 +150,7 @@ import one.mixin.android.vo.ParticipantRole
 import one.mixin.android.vo.isGroupConversation
 import one.mixin.android.widget.MaterialSearchView
 import javax.inject.Inject
+
 
 @AndroidEntryPoint
 class MainActivity : BlazeBaseActivity() {
@@ -479,8 +479,7 @@ class MainActivity : BlazeBaseActivity() {
                 .subscribe(
                     { resp ->
                         resp.data?.let {
-                            val nonce = Base64.decode(it.nonce)
-                            validateSafetyNet(nonce)
+                            validateSafetyNet(it.nonce)
                         }
                     },
                     {
@@ -489,11 +488,14 @@ class MainActivity : BlazeBaseActivity() {
         }
     }
 
-    private fun validateSafetyNet(nonce: ByteArray) {
-        val client = SafetyNet.getClient(this)
-        val task = client.attest(nonce, BuildConfig.SAFETYNET_API_KEY)
-        task.addOnSuccessListener { safetyResp ->
-            accountRepo.updateSession(SessionRequest(deviceCheckToken = safetyResp.jwsResult))
+    private fun validateSafetyNet(nonce: String) {
+        val integrityManager = IntegrityManagerFactory.create(this)
+        val task = integrityManager
+            .requestIntegrityToken(
+                IntegrityTokenRequest.builder().setNonce(nonce).build()
+            )
+        task.addOnSuccessListener { integrityResponse ->
+            accountRepo.updateSession(SessionRequest(deviceCheckToken = integrityResponse.token()))
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .autoDispose(stopScope)
