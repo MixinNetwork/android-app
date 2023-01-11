@@ -164,25 +164,24 @@ class HedwigImp(
         pendingJob = lifecycleScope.launch(PENDING_DB_THREAD) {
             try {
                 val list = pendingDatabase.getPendingMessages()
-                messageDao.insertList(list)
-                pendingDatabase.deletePendingMessageByIds(list.map { it.messageId })
-                list.groupBy { it.conversationId }.forEach { (conversationId, messages) ->
-                    if (conversationId == SYSTEM_USER || conversationId == Session.getAccountId() || checkConversation(conversationId) != null) {
-                        checkConversation(conversationId) ?: return@forEach
-                        conversationExtDao.increment(conversationId, messages.size)
-                        messages.filter { message ->
-                            !message.isMine() && message.status != MessageStatus.READ.name
-                        }.map { message ->
-                            RemoteMessageStatus(message.messageId, message.conversationId, MessageStatus.DELIVERED.name)
-                        }.let { remoteMessageStatus ->
-                            remoteMessageStatusDao.insertList(remoteMessageStatus)
-                        }
-                        messages.last().let { message ->
-                            conversationDao.updateLastMessageId(message.messageId, message.createdAt, message.conversationId)
-                        }
-                        remoteMessageStatusDao.updateConversationUnseen(conversationId)
-                        InvalidateFlow.emit(conversationId)
+                list.groupBy { it.conversationId }.filter { (conversationId, _) ->
+                    conversationId != SYSTEM_USER && conversationId != Session.getAccountId() && checkConversation(conversationId) != null
+                }.forEach { (conversationId, messages) ->
+                    messageDao.insertList(messages)
+                    pendingDatabase.deletePendingMessageByIds(messages.map { it.messageId })
+                    conversationExtDao.increment(conversationId, messages.size)
+                    messages.filter { message ->
+                        !message.isMine() && message.status != MessageStatus.READ.name
+                    }.map { message ->
+                        RemoteMessageStatus(message.messageId, message.conversationId, MessageStatus.DELIVERED.name)
+                    }.let { remoteMessageStatus ->
+                        remoteMessageStatusDao.insertList(remoteMessageStatus)
                     }
+                    messages.last().let { message ->
+                        conversationDao.updateLastMessageId(message.messageId, message.createdAt, message.conversationId)
+                    }
+                    remoteMessageStatusDao.updateConversationUnseen(conversationId)
+                    InvalidateFlow.emit(conversationId)
                 }
                 if (list.size == 100) {
                     runPendingJob()
