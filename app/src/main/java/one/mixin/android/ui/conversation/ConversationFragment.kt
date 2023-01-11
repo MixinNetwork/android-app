@@ -1175,7 +1175,7 @@ class ConversationFragment() :
             ViewCompat.getRootWindowInsets(binding.inputArea)?.let { windowInsetsCompat ->
                 val imeHeight = windowInsetsCompat.getInsets(WindowInsetsCompat.Type.ime()).bottom
                 if (imeHeight <= 0) {
-                    binding.inputLayout.closeInputArea(binding.chatControl.chatEt)
+                    binding.inputLayout.forceClose(binding.chatControl.chatEt)
                 }
             }
         }
