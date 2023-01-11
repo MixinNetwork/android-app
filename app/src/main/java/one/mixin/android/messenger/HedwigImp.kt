@@ -21,6 +21,7 @@ import one.mixin.android.util.PENDING_DB_THREAD
 import one.mixin.android.util.chat.InvalidateFlow
 import one.mixin.android.vo.CallStateLiveData
 import one.mixin.android.vo.Conversation
+import one.mixin.android.vo.ConversationBuilder
 import one.mixin.android.vo.ConversationCategory
 import one.mixin.android.vo.ConversationStatus
 import one.mixin.android.vo.MessageStatus
@@ -216,16 +217,14 @@ class HedwigImp(
                     } else if (conversationData.category == ConversationCategory.GROUP.name) {
                         jobManager.addJobInBackground(RefreshUserJob(listOf(conversationData.creatorId)))
                     }
-                    conversationDao.updateConversation(
-                        conversationData.conversationId,
-                        ownerId,
-                        conversationData.category,
-                        conversationData.name,
-                        conversationData.announcement,
-                        conversationData.muteUntil,
-                        conversationData.createdAt,
-                        conversationData.expireIn,
-                        status,
+                    conversationDao.insert(
+                        ConversationBuilder(conversationData.conversationId, conversationData.createdAt, status)
+                            .setOwnerId(ownerId)
+                            .setCategory(conversationData.category)
+                            .setName(conversationData.name)
+                            .setAnnouncement(conversationData.announcement)
+                            .setMuteUntil(conversationData.muteUntil)
+                            .setExpireIn(conversationData.expireIn).build()
                     )
                     val remote = mutableListOf<Participant>()
                     val conversationUserIds = mutableListOf<String>()
