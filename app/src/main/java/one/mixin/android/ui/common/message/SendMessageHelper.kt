@@ -536,6 +536,7 @@ class SendMessageHelper @Inject internal constructor(private val jobManager: Mix
      */
     fun sendImageMessage(
         conversationId: String,
+        messageId: String,
         sender: User,
         uri: Uri,
         encryptCategory: EncryptCategory,
@@ -556,7 +557,6 @@ class SendMessageHelper @Inject internal constructor(private val jobManager: Mix
                 return -2
             }
         }
-        val messageId = UUID.randomUUID().toString()
         if (mimeType == MimeType.GIF.toString()) {
             val gifFile = MixinApplication.get().getImagePath().createGifTemp(conversationId, messageId)
             val path = uri.getFilePath(MixinApplication.get()) ?: return -1

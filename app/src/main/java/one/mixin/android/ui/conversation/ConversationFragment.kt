@@ -428,8 +428,8 @@ class ConversationFragment() :
                         binding.chatRv.isVisible = true
                     }
                     isBottom -> {
-                        if (conversationAdapter.currentList != null && conversationAdapter.currentList!!.size > oldSize) {
-                            binding.chatRv.layoutManager?.scrollToPosition(0)
+                        if (conversationAdapter.currentList != null && (conversationAdapter.currentList!!.size > oldSize) || lastSendMessageId == conversationAdapter.getItem(0)?.messageId) {
+                            scrollToDown()
                         }
                     }
                     else -> {
@@ -1175,7 +1175,7 @@ class ConversationFragment() :
             ViewCompat.getRootWindowInsets(binding.inputArea)?.let { windowInsetsCompat ->
                 val imeHeight = windowInsetsCompat.getInsets(WindowInsetsCompat.Type.ime()).bottom
                 if (imeHeight <= 0) {
-                    binding.inputLayout.closeInputArea(binding.chatControl.chatEt)
+                    binding.inputLayout.forceClose(binding.chatControl.chatEt)
                 }
             }
         }
@@ -1999,10 +1999,13 @@ class ConversationFragment() :
 
     private fun encryptCategory(): EncryptCategory = getEncryptedCategory(isBot, app)
 
+    private var lastSendMessageId: String? = null
     private fun sendImageMessage(uri: Uri, notCompress: Boolean = false, mimeType: String? = null, fromInput: Boolean = false) {
         createConversation {
             lifecycleScope.launch {
                 val code = withContext(Dispatchers.IO) {
+                    val messageId = UUID.randomUUID().toString()
+                    lastSendMessageId = messageId
                     chatViewModel.sendImageMessage(
                         conversationId,
                         sender,
@@ -2012,6 +2015,7 @@ class ConversationFragment() :
                         mimeType,
                         getRelyMessage(),
                         fromInput,
+                        messageId = messageId
                     )
                 }
                 when (code) {
