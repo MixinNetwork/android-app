@@ -16,7 +16,6 @@ import one.mixin.android.ui.conversation.TransferFragment
 import one.mixin.android.ui.conversation.link.LinkBottomSheetDialogFragment
 import one.mixin.android.ui.device.ConfirmBottomFragment
 import timber.log.Timber
-import kotlin.IllegalStateException
 
 @AndroidEntryPoint
 class UrlInterpreterActivity : BaseActivity() {
@@ -61,7 +60,12 @@ class UrlInterpreterActivity : BaseActivity() {
             finish()
             return
         }
-        interpretIntent(data)
+        if (data.toString().startsWith("https://", true)) {
+            val bottomSheet = LinkBottomSheetDialogFragment.newInstance(data.toString())
+            bottomSheet.showNow(supportFragmentManager, LinkBottomSheetDialogFragment.TAG)
+        } else {
+            interpretIntent(data)
+        }
     }
 
     override fun onPause() {
@@ -76,6 +80,7 @@ class UrlInterpreterActivity : BaseActivity() {
                 val bottomSheet = LinkBottomSheetDialogFragment.newInstance(uri.toString())
                 bottomSheet.showNow(supportFragmentManager, LinkBottomSheetDialogFragment.TAG)
             }
+
             TRANSFER -> {
                 uri.lastPathSegment?.let { lastPathSegment ->
                     if (Session.getAccount()?.hasPin == true) {
@@ -86,9 +91,11 @@ class UrlInterpreterActivity : BaseActivity() {
                     }
                 }
             }
+
             DEVICE -> {
                 ConfirmBottomFragment.show(this, supportFragmentManager, uri.toString())
             }
+
             SEND -> {
                 uri.handleSchemeSend(
                     this,
