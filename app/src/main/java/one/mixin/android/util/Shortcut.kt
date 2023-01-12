@@ -37,8 +37,7 @@ fun addPinShortcut(context: Context, conversationId: String, name: String, icon:
         .setIcon(IconCompat.createWithBitmap(icon))
         .setIntent(launcher)
         .build()
-    val successCallback = PendingIntent.getBroadcast(context, 0, ShortcutManagerCompat.createShortcutResultIntent(context, shortcut), PendingIntent.FLAG_IMMUTABLE)
-    ShortcutManagerCompat.requestPinShortcut(context, shortcut, successCallback.intentSender)
+    ShortcutManagerCompat.requestPinShortcut(context, shortcut, null)
 }
 
 fun generateDynamicShortcut(context: Context, shortcutInfo: ShortcutInfo): ShortcutInfoCompat {
