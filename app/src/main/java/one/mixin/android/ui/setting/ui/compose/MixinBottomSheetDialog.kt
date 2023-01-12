@@ -101,7 +101,7 @@ private class MixinBottomSheetDialogWrapper(
         ).create()
 
     private val dialogContentView = ComposeView(composeView.context).apply {
-        composeView.setViewTreeLifecycleOwner(composeView.findViewTreeLifecycleOwner())
+        setViewTreeLifecycleOwner(composeView.findViewTreeLifecycleOwner())
         ViewTreeViewModelStoreOwner.set(this, ViewTreeViewModelStoreOwner.get(composeView))
         setViewTreeSavedStateRegistryOwner(
             composeView.findViewTreeSavedStateRegistryOwner(),
