@@ -319,7 +319,7 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
 
     private var ackJob: Job? = null
     private val ackObserver = object : InvalidationTracker.Observer("jobs") {
-        override fun onInvalidated(tables: MutableSet<String>) {
+        override fun onInvalidated(tables: Set<String>) {
             runAckJob()
         }
     }
@@ -402,7 +402,7 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
 
     private var statusJob: Job? = null
     private val statusObserver = object : InvalidationTracker.Observer("remote_messages_status") {
-        override fun onInvalidated(tables: MutableSet<String>) {
+        override fun onInvalidated(tables: Set<String>) {
             runStatusJob()
         }
     }
@@ -417,7 +417,7 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
 
     private var expiredJob: Job? = null
     private val expiredObserver = object : InvalidationTracker.Observer("expired_messages") {
-        override fun onInvalidated(tables: MutableSet<String>) {
+        override fun onInvalidated(tables: Set<String>) {
             runExpiredJob()
         }
     }

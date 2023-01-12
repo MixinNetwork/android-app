@@ -18,7 +18,7 @@ import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
-import androidx.room.util.DBUtil
+import androidx.room.util.readVersion
 import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.GoogleApiAvailability
 import com.google.android.gms.safetynet.SafetyNet
@@ -388,7 +388,7 @@ class MainActivity : BlazeBaseActivity() {
     @SuppressLint("RestrictedApi")
     private fun checkNeedGo2MigrationPage(): Boolean {
         val currentVersion = try {
-            DBUtil.readVersion(getDatabasePath(DB_NAME))
+            readVersion(getDatabasePath(DB_NAME))
         } catch (e: Exception) {
             0
         }
