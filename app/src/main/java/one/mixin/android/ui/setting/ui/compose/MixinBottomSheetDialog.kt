@@ -17,8 +17,9 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.semantics.dialog
 import androidx.compose.ui.semantics.semantics
-import androidx.lifecycle.ViewTreeLifecycleOwner
 import androidx.lifecycle.ViewTreeViewModelStoreOwner
+import androidx.lifecycle.findViewTreeLifecycleOwner
+import androidx.lifecycle.setViewTreeLifecycleOwner
 import androidx.savedstate.findViewTreeSavedStateRegistryOwner
 import androidx.savedstate.setViewTreeSavedStateRegistryOwner
 import one.mixin.android.R
@@ -100,8 +101,7 @@ private class MixinBottomSheetDialogWrapper(
         ).create()
 
     private val dialogContentView = ComposeView(composeView.context).apply {
-
-        ViewTreeLifecycleOwner.set(this, ViewTreeLifecycleOwner.get(composeView))
+        composeView.setViewTreeLifecycleOwner(composeView.findViewTreeLifecycleOwner())
         ViewTreeViewModelStoreOwner.set(this, ViewTreeViewModelStoreOwner.get(composeView))
         setViewTreeSavedStateRegistryOwner(
             composeView.findViewTreeSavedStateRegistryOwner(),

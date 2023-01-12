@@ -109,7 +109,7 @@ class DataProvider {
                     val querySqlGenerator = fun(ids: String): RoomSQLiteQuery {
                         return RoomSQLiteQuery.acquire("$sql WHERE c.rowid IN ($ids) ORDER BY c.pin_time DESC, c.last_message_created_at DESC", 0)
                     }
-                    return object : MixinLimitOffsetDataSource<ConversationItem>(database, countStatement, offsetStatement, querySqlGenerator, "message_mentions", "conversations", "users") {
+                    return object : MixinLimitOffsetDataSource<ConversationItem>(database, countStatement, offsetStatement, querySqlGenerator, arrayOf("message_mentions", "conversations", "users")) {
                         override fun convertRows(cursor: Cursor?): List<ConversationItem> {
                             return convertToConversationItems(cursor)
                         }
@@ -184,7 +184,7 @@ class DataProvider {
                             0,
                         )
                     }
-                    return object : MixinLimitOffsetDataSource<ConversationItem>(database, countStatement, offsetStatement, querySqlGenerator, "message_mentions", "circle_conversations", "conversations", "circles", "users") {
+                    return object : MixinLimitOffsetDataSource<ConversationItem>(database, countStatement, offsetStatement, querySqlGenerator, arrayOf("message_mentions", "circle_conversations", "conversations", "circles", "users")) {
                         override fun convertRows(cursor: Cursor?): List<ConversationItem> {
                             return convertToConversationItems(cursor)
                         }

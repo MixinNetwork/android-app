@@ -86,7 +86,7 @@ class HedwigImp(
 
     private var floodJob: Job? = null
     private val floodObserver = object : InvalidationTracker.Observer("flood_messages") {
-        override fun onInvalidated(tables: MutableSet<String>) {
+        override fun onInvalidated(tables: Set<String>) {
             runFloodJob()
         }
     }
@@ -143,7 +143,7 @@ class HedwigImp(
 
     private var pendingJob: Job? = null
     private val pendingObserver = object : InvalidationTracker.Observer("pending_messages") {
-        override fun onInvalidated(tables: MutableSet<String>) {
+        override fun onInvalidated(tables: Set<String>) {
             runPendingJob()
         }
     }
@@ -224,7 +224,7 @@ class HedwigImp(
                             .setName(conversationData.name)
                             .setAnnouncement(conversationData.announcement)
                             .setMuteUntil(conversationData.muteUntil)
-                            .setExpireIn(conversationData.expireIn).build()
+                            .setExpireIn(conversationData.expireIn).build(),
                     )
                     val remote = mutableListOf<Participant>()
                     val conversationUserIds = mutableListOf<String>()
