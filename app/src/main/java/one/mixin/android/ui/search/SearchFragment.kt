@@ -276,6 +276,7 @@ class SearchFragment : BaseFragment(R.layout.fragment_search) {
         if (assetItems.isNullOrEmpty()) return
 
         val newItems = withContext(Dispatchers.IO) {
+            // Only refresh at most 3 assets, not refresh other matching assets when clicking on `more`.
             searchViewModel.queryAssets(assetItems.take(3).map { it.assetId })
         }
         if (newItems.isEmpty()) return
