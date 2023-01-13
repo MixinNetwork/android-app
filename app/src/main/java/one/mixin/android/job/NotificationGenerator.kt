@@ -500,7 +500,7 @@ object NotificationGenerator : Injector() {
     private fun buildBubble(context: Context, conversation: ConversationItem, notificationBuilder: NotificationCompat.Builder, message: Message, bitmap: Bitmap, person: Person? = null) {
         supportsR({
             val icon = IconCompat.createWithAdaptiveBitmap(bitmap)
-            val shortcut = ShortcutInfoCompat.Builder(context, conversation.conversationId)
+            val shortcut = ShortcutInfoCompat.Builder(context, "Bubble-${conversation.conversationId}")
                 .setIntent(Intent(Intent.ACTION_DEFAULT))
                 .setLongLived(true)
                 .setIcon(icon)
