@@ -196,8 +196,7 @@
             android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation"
             android:launchMode="singleTask"
             android:theme="@style/AppTheme.NoActionBar"
-            android:windowSoftInputMode="adjustResize|stateHidden"
-            android:exported="true" />
+            android:windowSoftInputMode="adjustResize|stateHidden" />
         <activity
             android:name=".ui.conversation.BubbleActivity"
             android:allowEmbedded="true"
