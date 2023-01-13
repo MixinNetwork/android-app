@@ -30,7 +30,6 @@ import one.mixin.android.extension.showKeyboard
 import one.mixin.android.widget.ContentEditText
 import one.mixin.android.widget.DraggableRecyclerView.Companion.FLING_DOWN
 import one.mixin.android.widget.DraggableRecyclerView.Companion.FLING_UP
-import timber.log.Timber
 import kotlin.math.ceil
 import kotlin.math.max
 
@@ -52,8 +51,6 @@ class KeyboardLayout : LinearLayout {
     private val defaultCustomKeyboardSize =
         resources.getDimensionPixelSize(R.dimen.default_custom_keyboard_size)
 
-    private val minKeyboardSize = resources.getDimensionPixelSize(R.dimen.min_keyboard_size)
-
     private var systemBottom = 0
     private var systemTop = 0
 
@@ -68,10 +65,8 @@ class KeyboardLayout : LinearLayout {
         private set(value) {
             if (field != value && value > 0) {
                 field = value
-                if (value >= minKeyboardSize) {
-                    PreferenceManager.getDefaultSharedPreferences(context)
-                        .putInt("keyboard_height_portrait", value)
-                }
+                PreferenceManager.getDefaultSharedPreferences(context)
+                    .putInt("keyboard_height_portrait", value)
             }
         }
 
@@ -83,21 +78,17 @@ class KeyboardLayout : LinearLayout {
     private var inputAreaHeight: Int = 0
         @SuppressLint("Recycle")
         set(value) {
-            if (value >= minKeyboardSize) {
-                if (value != field || _inputArea.layoutParams.height != value) {
-                    field = value
-                    ValueAnimator.ofInt(_inputArea.layoutParams.height, value)
-                        .apply {
-                            addUpdateListener { valueAnimator ->
-                                _inputArea.layoutParams.height = valueAnimator.animatedValue as Int
-                                requestLayout()
-                            }
-                            interpolator = CubicBezierInterpolator.DEFAULT
-                            duration = ANIMATION_DURATION_SHORTEST
-                        }.start()
-                }
-            } else {
-                Timber.e("updateKeyboardState:$status systemBottom:$systemBottom keyboardHeight: $keyboardHeight minKeyboardSize: $minKeyboardSize")
+            if (value != field || _inputArea.layoutParams.height != value) {
+                field = value
+                ValueAnimator.ofInt(_inputArea.layoutParams.height, value)
+                    .apply {
+                        addUpdateListener { valueAnimator ->
+                            _inputArea.layoutParams.height = valueAnimator.animatedValue as Int
+                            requestLayout()
+                        }
+                        interpolator = CubicBezierInterpolator.DEFAULT
+                        duration = ANIMATION_DURATION_SHORTEST
+                    }.start()
             }
         }
 
