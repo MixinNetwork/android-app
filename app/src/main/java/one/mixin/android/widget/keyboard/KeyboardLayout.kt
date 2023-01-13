@@ -152,6 +152,10 @@ class KeyboardLayout : LinearLayout {
                         inputAreaHeight = value
                     }
                     if (value > 0) {
+                        // If the callback saved keyboard height is very small, and the height obtained at this time is greater than it, reset the new value
+                        if (100.dp in (keyboardHeight + 1) until lastKeyboardHeight) {
+                            keyboardHeight = lastKeyboardHeight
+                        }
                         onKeyboardShownListener?.onKeyboardShown(value)
                     } else {
                         onKeyboardHiddenListener?.onKeyboardHidden()
