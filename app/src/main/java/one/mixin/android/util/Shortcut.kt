@@ -6,6 +6,7 @@ import android.content.Intent
 import android.graphics.Bitmap
 import androidx.core.content.pm.ShortcutInfoCompat
 import androidx.core.content.pm.ShortcutManagerCompat
+import androidx.core.content.pm.ShortcutManagerCompat.FLAG_MATCH_CACHED
 import androidx.core.graphics.drawable.IconCompat
 import one.mixin.android.MixinApplication
 import kotlin.math.min
@@ -32,7 +33,12 @@ val maxDynamicShortcutCount by lazy {
 }
 
 fun addPinShortcut(context: Context, conversationId: String, name: String, icon: Bitmap, launcher: Intent) {
-    val shortcut = ShortcutInfoCompat.Builder(context, conversationId)
+    ShortcutManagerCompat.getShortcuts(context, FLAG_MATCH_CACHED).forEach {
+        if (it.id == conversationId) {
+            ShortcutManagerCompat.removeLongLivedShortcuts(context, listOf("Pin-$conversationId", conversationId))
+        }
+    }
+    val shortcut = ShortcutInfoCompat.Builder(context, "Pin-$conversationId")
         .setShortLabel(name)
         .setIcon(IconCompat.createWithBitmap(icon))
         .setIntent(launcher)
