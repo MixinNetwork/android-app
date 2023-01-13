@@ -327,7 +327,7 @@ internal constructor(
         mime: String? = null,
         replyMessage: MessageItem? = null,
         fromInput: Boolean = false,
-        messageId: String = UUID.randomUUID().toString()
+        messageId: String = UUID.randomUUID().toString(),
     ): Int {
         return messenger.sendImageMessage(conversationId, messageId, sender, uri, encryptCategory, notCompress, mime, replyMessage, fromInput)
     }
