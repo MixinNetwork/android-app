@@ -99,6 +99,7 @@ class WalletSearchFragment : BaseFragment() {
                     {
                         if (it.isNullOrBlank()) {
                             rvVa.displayedChild = POS_DEFAULT
+                            currentQuery = ""
                         } else {
                             rvVa.displayedChild = POS_SEARCH
                             if (it.toString() != currentQuery) {
