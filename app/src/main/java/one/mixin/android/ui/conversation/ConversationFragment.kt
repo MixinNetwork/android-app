@@ -222,6 +222,7 @@ import one.mixin.android.vo.canRecall
 import one.mixin.android.vo.generateConversationId
 import one.mixin.android.vo.getEncryptedCategory
 import one.mixin.android.vo.giphy.Image
+import one.mixin.android.vo.isAppCard
 import one.mixin.android.vo.isAttachment
 import one.mixin.android.vo.isAudio
 import one.mixin.android.vo.isData
@@ -427,8 +428,8 @@ class ConversationFragment() :
                         binding.chatRv.isVisible = true
                     }
                     isBottom -> {
-                        if (conversationAdapter.currentList != null && conversationAdapter.currentList!!.size > oldSize) {
-                            binding.chatRv.layoutManager?.scrollToPosition(0)
+                        if (conversationAdapter.currentList != null && (conversationAdapter.currentList!!.size > oldSize) || lastSendMessageId == conversationAdapter.getItem(0)?.messageId) {
+                            scrollToDown()
                         }
                     }
                     else -> {
@@ -1174,7 +1175,7 @@ class ConversationFragment() :
             ViewCompat.getRootWindowInsets(binding.inputArea)?.let { windowInsetsCompat ->
                 val imeHeight = windowInsetsCompat.getInsets(WindowInsetsCompat.Type.ime()).bottom
                 if (imeHeight <= 0) {
-                    binding.inputLayout.closeInputArea(binding.chatControl.chatEt)
+                    binding.inputLayout.forceClose(binding.chatControl.chatEt)
                 }
             }
         }
@@ -1998,10 +1999,13 @@ class ConversationFragment() :
 
     private fun encryptCategory(): EncryptCategory = getEncryptedCategory(isBot, app)
 
+    private var lastSendMessageId: String? = null
     private fun sendImageMessage(uri: Uri, notCompress: Boolean = false, mimeType: String? = null, fromInput: Boolean = false) {
         createConversation {
             lifecycleScope.launch {
                 val code = withContext(Dispatchers.IO) {
+                    val messageId = UUID.randomUUID().toString()
+                    lastSendMessageId = messageId
                     chatViewModel.sendImageMessage(
                         conversationId,
                         sender,
@@ -2011,6 +2015,7 @@ class ConversationFragment() :
                         mimeType,
                         getRelyMessage(),
                         fromInput,
+                        messageId = messageId,
                     )
                 }
                 when (code) {
@@ -3161,10 +3166,10 @@ class ConversationFragment() :
         val unShareable = conversationAdapter.selectSet.find { it.isShareable() == false }
         if (unShareable != null) {
             toast(
-                if (unShareable.isLive()) {
-                    R.string.live_shareable_false
-                } else {
-                    R.string.app_card_shareable_false
+                when {
+                    unShareable.isLive() -> R.string.live_shareable_false
+                    unShareable.isAppCard() -> R.string.app_card_shareable_false
+                    else -> R.string.message_shareable_false
                 },
             )
             return

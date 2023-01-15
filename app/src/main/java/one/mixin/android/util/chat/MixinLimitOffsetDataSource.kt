@@ -16,7 +16,7 @@ abstract class MixinLimitOffsetDataSource<T> protected constructor(
     private val countQuery: RoomSQLiteQuery,
     private val offsetStatement: RoomSQLiteQuery,
     private val querySqlGenerator: (String) -> RoomSQLiteQuery,
-    vararg tables: String?,
+    private val tables: Array<out String>,
 ) : PositionalDataSource<T>() {
     private val observer: InvalidationTracker.Observer
 

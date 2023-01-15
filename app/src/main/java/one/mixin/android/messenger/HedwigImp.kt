@@ -119,7 +119,6 @@ class HedwigImp(
     private val callMessageDecrypt by lazy { DecryptCallMessage(callState, lifecycleScope) }
 
     private var pendingJob: Job? = null
-
     private fun startObservePending() {
         runPendingJob()
     }

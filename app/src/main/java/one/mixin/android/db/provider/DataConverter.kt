@@ -5,8 +5,8 @@ import android.database.Cursor
 import android.os.CancellationSignal
 import androidx.room.RoomDatabase
 import androidx.room.RoomSQLiteQuery
-import androidx.room.util.CursorUtil
-import androidx.room.util.DBUtil
+import androidx.room.util.getColumnIndexOrThrow
+import androidx.room.util.query
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.converter.DepositEntryListConverter
 import one.mixin.android.vo.AssetItem
@@ -25,36 +25,36 @@ import java.util.concurrent.Callable
 @SuppressLint("RestrictedApi")
 fun convertToConversationItems(cursor: Cursor?): List<ConversationItem> {
     cursor ?: return emptyList()
-    val cursorIndexOfConversationId = CursorUtil.getColumnIndexOrThrow(cursor, "conversationId")
-    val cursorIndexOfGroupIconUrl = CursorUtil.getColumnIndexOrThrow(cursor, "groupIconUrl")
-    val cursorIndexOfCategory = CursorUtil.getColumnIndexOrThrow(cursor, "category")
-    val cursorIndexOfGroupName = CursorUtil.getColumnIndexOrThrow(cursor, "groupName")
-    val cursorIndexOfStatus = CursorUtil.getColumnIndexOrThrow(cursor, "status")
+    val cursorIndexOfConversationId = getColumnIndexOrThrow(cursor, "conversationId")
+    val cursorIndexOfGroupIconUrl = getColumnIndexOrThrow(cursor, "groupIconUrl")
+    val cursorIndexOfCategory = getColumnIndexOrThrow(cursor, "category")
+    val cursorIndexOfGroupName = getColumnIndexOrThrow(cursor, "groupName")
+    val cursorIndexOfStatus = getColumnIndexOrThrow(cursor, "status")
     val cursorIndexOfLastReadMessageId =
-        CursorUtil.getColumnIndexOrThrow(cursor, "lastReadMessageId")
+        getColumnIndexOrThrow(cursor, "lastReadMessageId")
     val cursorIndexOfUnseenMessageCount =
-        CursorUtil.getColumnIndexOrThrow(cursor, "unseenMessageCount")
-    val cursorIndexOfOwnerId = CursorUtil.getColumnIndexOrThrow(cursor, "ownerId")
-    val cursorIndexOfPinTime = CursorUtil.getColumnIndexOrThrow(cursor, "pinTime")
-    val cursorIndexOfMuteUntil = CursorUtil.getColumnIndexOrThrow(cursor, "muteUntil")
-    val cursorIndexOfAvatarUrl = CursorUtil.getColumnIndexOrThrow(cursor, "avatarUrl")
-    val cursorIndexOfName = CursorUtil.getColumnIndexOrThrow(cursor, "name")
-    val cursorIndexOfOwnerVerified = CursorUtil.getColumnIndexOrThrow(cursor, "ownerVerified")
-    val cursorIndexOfOwnerMuteUntil = CursorUtil.getColumnIndexOrThrow(cursor, "ownerMuteUntil")
-    val cursorIndexOfAppId = CursorUtil.getColumnIndexOrThrow(cursor, "appId")
-    val cursorIndexOfContent = CursorUtil.getColumnIndexOrThrow(cursor, "content")
-    val cursorIndexOfContentType = CursorUtil.getColumnIndexOrThrow(cursor, "contentType")
-    val cursorIndexOfCreatedAt = CursorUtil.getColumnIndexOrThrow(cursor, "createdAt")
-    val cursorIndexOfSenderId = CursorUtil.getColumnIndexOrThrow(cursor, "senderId")
-    val cursorIndexOfActionName = CursorUtil.getColumnIndexOrThrow(cursor, "actionName")
-    val cursorIndexOfMessageStatus = CursorUtil.getColumnIndexOrThrow(cursor, "messageStatus")
-    val cursorIndexOfSenderFullName = CursorUtil.getColumnIndexOrThrow(cursor, "senderFullName")
+        getColumnIndexOrThrow(cursor, "unseenMessageCount")
+    val cursorIndexOfOwnerId = getColumnIndexOrThrow(cursor, "ownerId")
+    val cursorIndexOfPinTime = getColumnIndexOrThrow(cursor, "pinTime")
+    val cursorIndexOfMuteUntil = getColumnIndexOrThrow(cursor, "muteUntil")
+    val cursorIndexOfAvatarUrl = getColumnIndexOrThrow(cursor, "avatarUrl")
+    val cursorIndexOfName = getColumnIndexOrThrow(cursor, "name")
+    val cursorIndexOfOwnerVerified = getColumnIndexOrThrow(cursor, "ownerVerified")
+    val cursorIndexOfOwnerMuteUntil = getColumnIndexOrThrow(cursor, "ownerMuteUntil")
+    val cursorIndexOfAppId = getColumnIndexOrThrow(cursor, "appId")
+    val cursorIndexOfContent = getColumnIndexOrThrow(cursor, "content")
+    val cursorIndexOfContentType = getColumnIndexOrThrow(cursor, "contentType")
+    val cursorIndexOfCreatedAt = getColumnIndexOrThrow(cursor, "createdAt")
+    val cursorIndexOfSenderId = getColumnIndexOrThrow(cursor, "senderId")
+    val cursorIndexOfActionName = getColumnIndexOrThrow(cursor, "actionName")
+    val cursorIndexOfMessageStatus = getColumnIndexOrThrow(cursor, "messageStatus")
+    val cursorIndexOfSenderFullName = getColumnIndexOrThrow(cursor, "senderFullName")
     val cursorIndexOfParticipantFullName =
-        CursorUtil.getColumnIndexOrThrow(cursor, "participantFullName")
+        getColumnIndexOrThrow(cursor, "participantFullName")
     val cursorIndexOfParticipantUserId =
-        CursorUtil.getColumnIndexOrThrow(cursor, "participantUserId")
-    val cursorIndexOfMentionCount = CursorUtil.getColumnIndexOrThrow(cursor, "mentionCount")
-    val cursorIndexOfMentions = CursorUtil.getColumnIndexOrThrow(cursor, "mentions")
+        getColumnIndexOrThrow(cursor, "participantUserId")
+    val cursorIndexOfMentionCount = getColumnIndexOrThrow(cursor, "mentionCount")
+    val cursorIndexOfMentions = getColumnIndexOrThrow(cursor, "mentions")
     val res = ArrayList<ConversationItem>(cursor.count)
     while (cursor.moveToNext()) {
         val item: ConversationItem
@@ -389,33 +389,33 @@ fun callableUser(
     cancellationSignal: CancellationSignal,
 ): Callable<List<User>> {
     return Callable<List<User>> {
-        val cursor = DBUtil.query(db, statement, false, cancellationSignal)
+        val cursor = query(db, statement, false, cancellationSignal)
         try {
             val cursorIndexOfUserId =
-                CursorUtil.getColumnIndexOrThrow(cursor, "user_id")
+                getColumnIndexOrThrow(cursor, "user_id")
             val cursorIndexOfIdentityNumber =
-                CursorUtil.getColumnIndexOrThrow(cursor, "identity_number")
+                getColumnIndexOrThrow(cursor, "identity_number")
             val cursorIndexOfRelationship =
-                CursorUtil.getColumnIndexOrThrow(cursor, "relationship")
+                getColumnIndexOrThrow(cursor, "relationship")
             val cursorIndexOfBiography =
-                CursorUtil.getColumnIndexOrThrow(cursor, "biography")
+                getColumnIndexOrThrow(cursor, "biography")
             val cursorIndexOfFullName =
-                CursorUtil.getColumnIndexOrThrow(cursor, "full_name")
+                getColumnIndexOrThrow(cursor, "full_name")
             val cursorIndexOfAvatarUrl =
-                CursorUtil.getColumnIndexOrThrow(cursor, "avatar_url")
-            val cursorIndexOfPhone = CursorUtil.getColumnIndexOrThrow(cursor, "phone")
+                getColumnIndexOrThrow(cursor, "avatar_url")
+            val cursorIndexOfPhone = getColumnIndexOrThrow(cursor, "phone")
             val cursorIndexOfIsVerified =
-                CursorUtil.getColumnIndexOrThrow(cursor, "is_verified")
+                getColumnIndexOrThrow(cursor, "is_verified")
             val cursorIndexOfCreatedAt =
-                CursorUtil.getColumnIndexOrThrow(cursor, "created_at")
+                getColumnIndexOrThrow(cursor, "created_at")
             val cursorIndexOfMuteUntil =
-                CursorUtil.getColumnIndexOrThrow(cursor, "mute_until")
+                getColumnIndexOrThrow(cursor, "mute_until")
             val cursorIndexOfHasPin =
-                CursorUtil.getColumnIndexOrThrow(cursor, "has_pin")
+                getColumnIndexOrThrow(cursor, "has_pin")
             val cursorIndexOfAppId =
-                CursorUtil.getColumnIndexOrThrow(cursor, "app_id")
+                getColumnIndexOrThrow(cursor, "app_id")
             val cursorIndexOfIsScam =
-                CursorUtil.getColumnIndexOrThrow(cursor, "is_scam")
+                getColumnIndexOrThrow(cursor, "is_scam")
             val result: MutableList<User> = java.util.ArrayList(cursor.count)
             while (cursor.moveToNext()) {
                 val item: User
@@ -526,7 +526,7 @@ fun callableAssetItem(
     cancellationSignal: CancellationSignal,
 ): Callable<List<AssetItem>> {
     return Callable<List<AssetItem>> {
-        val cursor = DBUtil.query(db, statement, false, cancellationSignal)
+        val cursor = query(db, statement, false, cancellationSignal)
         try {
             val cursorIndexOfAssetId = 0
             val cursorIndexOfSymbol = 1
@@ -695,7 +695,7 @@ fun callableSearchMessageItem(
     cancellationSignal: CancellationSignal,
 ): Callable<List<SearchMessageItem>> {
     return Callable<List<SearchMessageItem>> {
-        val cursor = DBUtil.query(db, statement, false, cancellationSignal)
+        val cursor = query(db, statement, false, cancellationSignal)
         try {
             val cursorIndexOfConversationId = 0
             val cursorIndexOfConversationAvatarUrl = 1
@@ -775,7 +775,7 @@ fun callableChatMinimal(
     cancellationSignal: CancellationSignal,
 ): Callable<List<ChatMinimal>> {
     return Callable<List<ChatMinimal>> {
-        val cursor = DBUtil.query(db, statement, false, cancellationSignal)
+        val cursor = query(db, statement, false, cancellationSignal)
         try {
             val cursorIndexOfConversationId = 0
             val cursorIndexOfGroupIconUrl = 1

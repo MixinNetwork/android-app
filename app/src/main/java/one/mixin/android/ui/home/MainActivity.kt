@@ -18,7 +18,7 @@ import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
-import androidx.room.util.DBUtil
+import androidx.room.util.readVersion
 import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.GoogleApiAvailability
 import com.google.android.gms.safetynet.SafetyNet
@@ -388,7 +388,7 @@ class MainActivity : BlazeBaseActivity() {
     @SuppressLint("RestrictedApi")
     private fun checkNeedGo2MigrationPage(): Boolean {
         val currentVersion = try {
-            DBUtil.readVersion(getDatabasePath(DB_NAME))
+            readVersion(getDatabasePath(DB_NAME))
         } catch (e: Exception) {
             0
         }
@@ -592,8 +592,8 @@ class MainActivity : BlazeBaseActivity() {
             bottomSheet?.dismiss()
             showScanBottom(scan)
             clearCodeAfterConsume(intent, SCAN)
-        } else if (intent.hasExtra(URL)) {
-            val url = intent.getStringExtra(URL)!!
+        } else if (intent.hasExtra(URL) || (intent.action == Intent.ACTION_VIEW && intent.categories.contains(Intent.CATEGORY_BROWSABLE))) {
+            val url = intent.getStringExtra(URL) ?: intent.data?.toString() ?: return
             bottomSheet?.dismiss()
             bottomSheet = LinkBottomSheetDialogFragment.newInstance(url)
             bottomSheet?.showNow(supportFragmentManager, LinkBottomSheetDialogFragment.TAG)

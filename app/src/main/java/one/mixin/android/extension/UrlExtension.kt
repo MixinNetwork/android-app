@@ -215,7 +215,7 @@ fun String.checkUserOrApp(
 
 fun String.isDonateUrl() = donateSupported.any { startsWith(it) }
 
-fun String.isExternalTransferUrl() = externalTransferAssetIdMap.keys.any { startsWith(it) }
+fun String.isExternalTransferUrl() = externalTransferAssetIdMap.keys.any { startsWith("$it:") }
 
 private fun String.isUserScheme() = startsWith(Constants.Scheme.USERS, true) ||
     startsWith(Constants.Scheme.HTTPS_USERS, true)

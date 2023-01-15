@@ -79,6 +79,7 @@
 
         <item name="snackbarStyle">@style/Snackbar</item>
 
+
         <item name="swirl_ridgeColor">@color/gray_light</item>
         <item name="swirl_errorColor">@color/colorRed</item>
 
@@ -311,5 +312,9 @@
     </style>
 
     <style name="Snackbar" parent="Widget.MaterialComponents.Snackbar">
+    </style>
+
+    <style name="MaterialTheme" parent="Theme.MaterialComponents.Light.NoActionBar">
+        <item name="colorPrimary">@color/colorDarkBlue</item>
     </style>
 </resources>

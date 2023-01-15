@@ -587,6 +587,7 @@
     <string name="Messages">Messages</string>
     <string name="Messaging_Node">Messaging Node</string>
     <string name="Messaging_node_running">Messaging node running</string>
+    <string name="message_shareable_false">The message has been set to not allow sharing</string>
     <plurals name="Minute">
         <item quantity="one">%d Minute</item>
         <item quantity="other">%d Minutes</item>
@@ -786,6 +787,7 @@
     <string name="Resend_code">Resend code</string>
     <string name="Resend_code_in">Resend code in %1$d s</string>
     <string name="Reset_Link">Reset Link</string>
+    <string name="Reset">Reset</string>
     <string name="Reset_notifications">Reset notifications</string>
     <string name="RESTART">RESTART</string>
     <string name="Restore">Restore</string>
@@ -1113,4 +1115,6 @@
     <string name="You_have_left_the_group">You have left the group</string>
     <string name="Your_emergency_contact_has_been_changed">Your emergency contact has been changed</string>
     <string name="your_pin_has_been_created">Your PIN has been created</string>
+    <string name="text_size">Text Size</string>
+    <string name="from_system">From system</string>
 </resources>

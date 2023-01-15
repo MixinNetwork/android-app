@@ -414,7 +414,7 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
 
     private var expiredJob: Job? = null
     private val expiredObserver = object : InvalidationTracker.Observer("expired_messages") {
-        override fun onInvalidated(tables: MutableSet<String>) {
+        override fun onInvalidated(tables: Set<String>) {
             runExpiredJob()
         }
     }

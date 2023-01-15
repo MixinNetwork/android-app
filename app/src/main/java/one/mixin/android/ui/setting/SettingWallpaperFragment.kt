@@ -149,7 +149,7 @@ class SettingWallpaperFragment : BaseFragment(R.layout.fragment_setting_chat) {
 
             override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
                 when (position) {
-                    2 -> (holder as TextHolder).apply {
+                    1 -> (holder as TextHolder).apply {
                         val lp = (binding.chatLayout.layoutParams as ConstraintLayout.LayoutParams)
                         lp.horizontalBias = 0f
                         binding.chatName.isVisible = false
@@ -168,7 +168,7 @@ class SettingWallpaperFragment : BaseFragment(R.layout.fragment_setting_chat) {
                             R.drawable.chat_bubble_other_last_night,
                         )
                     }
-                    1 -> (holder as TextHolder).apply {
+                    2 -> (holder as TextHolder).apply {
                         val lp = (binding.chatLayout.layoutParams as ConstraintLayout.LayoutParams)
                         lp.horizontalBias = 1f
                         binding.chatName.isVisible = false

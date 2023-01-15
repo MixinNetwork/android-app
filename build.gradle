@@ -3,10 +3,10 @@ buildscript {
     ext {
         ext.fragmentVersion = '1.5.5'
         ext.lifecycleVersion = '2.5.1'
-        ext.appcompatVersion = '1.7.0-alpha01'
+        ext.appcompatVersion = '1.6.0'
         ext.pagingVersion = '2.1.2'
         ext.collectionx = '1.2.0'
-        ext.roomVersion = '2.4.3'
+        ext.roomVersion = '2.5.0'
         ext.navigationVersion = '2.5.3'
         ext.workManagerVersion = '2.7.1'
         ext.constraintLayoutVersion = '2.1.4'
@@ -35,7 +35,7 @@ buildscript {
         ext.coroutineAdapterVersion = '0.9.2'
         ext.loggerVersion = '2.2.0'
         ext.kotlinVersion = '1.8.0'
-        ext.libphonenumberVersion = '8.13.3'
+        ext.libphonenumberVersion = '8.13.4'
         ext.coroutinesVersion = '1.6.4'
         ext.firebaseVersion = '18.0.2'
         ext.firebaseMessageVersion = '21.0.1'
@@ -85,7 +85,7 @@ buildscript {
         ext.testSupVersion = '1.0.1'
         ext.robolectricVersion = '4.9.2'
 
-        ext.gsonVersion = '2.10'
+        ext.gsonVersion = '2.10.1'
         ext.autodisposeVersion = '1.4.0'
         ext.jsoupVersion = '1.13.1'
         ext.isoparserVersion = '1.0.6'
@@ -97,12 +97,12 @@ buildscript {
         ext.dnsVersion = '2.1.9'
         ext.appCenterSdkVersion = '4.3.1'
         ext.audioSwitchVersion = '1.1.5.1'
-        ext.balloonVersion = '1.5.0'
+        ext.balloonVersion = '1.5.2'
         ext.markdownVersion = '0.3.5'
 
         ext.bcVersion = '1.70'
         ext.jsonVersion = '20220924'
-        ext.composeVersion = '1.4.0-alpha03'
+        ext.composeVersion = '1.4.0-alpha04'
         ext.accompanistVersion = '0.28.0'
     }
 
@@ -112,7 +112,7 @@ buildscript {
         maven { url "https://jitpack.io" }
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:7.4.0-rc03'
+        classpath 'com.android.tools.build:gradle:7.4.0'
         classpath 'com.android.tools.build.jetifier:jetifier-processor:1.0.0-beta10'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:${kotlinVersion}"
         classpath 'com.google.gms:google-services:4.3.14'
