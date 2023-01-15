@@ -892,7 +892,7 @@ fun callableMessageList(
     statement: RoomSQLiteQuery,
 ): Callable<List<Message>> {
     return Callable<List<Message>> {
-        val c = DBUtil.query(db, statement, false, null)
+        val c = query(db, statement, false, null)
         return@Callable c.use { cursor ->
             val cursorIndexOfMessageId = 0
             val cursorIndexOfConversationId = 1
@@ -1136,7 +1136,7 @@ fun callableFloodMessageList(
     statement: RoomSQLiteQuery,
 ): Callable<List<FloodMessage>> {
     return Callable<List<FloodMessage>> {
-        val c = DBUtil.query(db, statement, false, null)
+        val c = query(db, statement, false, null)
         return@Callable c.use { cursor ->
             val cursorIndexOfMessageId = 0
             val cursorIndexOfData = 1
@@ -1173,7 +1173,7 @@ fun callableStatusMessageList(
     statement: RoomSQLiteQuery,
 ): Callable<List<StatusMessage>> {
     return Callable<List<StatusMessage>> {
-        val c = DBUtil.query(db, statement, false, null)
+        val c = query(db, statement, false, null)
         return@Callable c.use { cursor ->
             val cIndexOfMessageId = 0
             val cIndexOfConversationId = 1
@@ -1221,7 +1221,7 @@ fun callableJobList(
     statement: RoomSQLiteQuery,
 ): Callable<List<Job>> {
     return Callable<List<Job>> {
-        val c = DBUtil.query(db, statement, false, null)
+        val c = query(db, statement, false, null)
         return@Callable c.use { cursor ->
             val cursorIndexOfJobId = 0
             val cursorIndexOfAction = 1

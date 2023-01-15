@@ -31,7 +31,7 @@ suspend fun <T> collectSingleTableFlow(
     launch {
         callbackFlow {
             val observer = object : InvalidationTracker.Observer(tableName) {
-                override fun onInvalidated(tables: MutableSet<String>) {
+                override fun onInvalidated(tables: Set<String>) {
                     Timber.e("send $tableName")
                     trySend(System.currentTimeMillis())
                 }
