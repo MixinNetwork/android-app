@@ -30,6 +30,9 @@ suspend fun parseExternalTransferUri(
 
     val destination = uri.host ?: return null
     val addressFeeResponse = getAddressFee(assetId, destination) ?: return null
+    if (!addressFeeResponse.destination.equals(destination, true)) {
+        return null
+    }
 
     var amount = uri.getQueryParameter("amount")
     if (amount == null) {
