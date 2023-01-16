@@ -446,6 +446,9 @@
                 android:name="one.mixin.android.startup.FirebaseAppInitializer"
                 android:value="androidx.startup" />
             <meta-data
+                    android:name="one.mixin.android.startup.MlkitInitializer"
+                    android:value="androidx.startup" />
+            <meta-data
                 android:name="one.mixin.android.startup.AndroidThreeTenInitializer"
                 android:value="androidx.startup" />
             <meta-data
