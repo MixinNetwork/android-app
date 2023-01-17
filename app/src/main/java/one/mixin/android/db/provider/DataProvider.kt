@@ -408,7 +408,7 @@ class DataProvider {
             _statement.bindLong(_argIndex, limit.toLong())
             return CoroutinesRoom.execute(
                 db,
-                false,
+                true,
                 cancellationSignal,
                 callableSearchMessageItem(db, _statement, cancellationSignal),
             )
