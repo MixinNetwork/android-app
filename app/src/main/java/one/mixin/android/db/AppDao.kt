@@ -4,10 +4,12 @@ import androidx.lifecycle.LiveData
 import androidx.room.Dao
 import androidx.room.Query
 import androidx.room.RoomWarnings
+import androidx.room.Upsert
 import one.mixin.android.db.BaseDao.Companion.ESCAPE_SUFFIX
 import one.mixin.android.vo.App
 import one.mixin.android.vo.AppItem
 import one.mixin.android.vo.RecentUsedApp
+
 
 @Dao
 interface AppDao : BaseDao<App> {
@@ -78,4 +80,10 @@ interface AppDao : BaseDao<App> {
         """,
     )
     suspend fun findAppByAppNumber(conversationId: String, appNumber: String): App?
+
+    @Upsert
+    suspend fun upsertApp(c: App)
+
+    @Upsert
+    fun upsertApps(apps: List<App>)
 }

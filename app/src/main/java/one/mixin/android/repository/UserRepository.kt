@@ -23,7 +23,6 @@ import one.mixin.android.db.insertUpdateList
 import one.mixin.android.db.insertUpdateSuspend
 import one.mixin.android.db.provider.DataProvider
 import one.mixin.android.db.runInTransaction
-import one.mixin.android.db.updateRelationship
 import one.mixin.android.extension.oneWeekAgo
 import one.mixin.android.session.Session
 import one.mixin.android.vo.App
@@ -145,7 +144,7 @@ constructor(
     }
 
     suspend fun upsertBlock(user: User) = withContext(Dispatchers.IO) {
-        userDao.updateRelationship(user, UserRelationship.BLOCKING.name)
+        userDao.upsert(user)
     }
 
     fun updatePhone(id: String, phone: String) = userDao.updatePhone(id, phone)

@@ -25,12 +25,7 @@ fun UserDao.insertUpdate(
             user.appId = user.app!!.appId
             appDao.insert(user.app!!)
         }
-        val u = findUser(user.userId)
-        if (u == null) {
-            insert(user)
-        } else {
-            update(user)
-        }
+        upsert(user)
     }
 }
 
@@ -39,32 +34,11 @@ fun UserDao.insertUpdateList(
     appDao: AppDao,
 ) {
     runInTransaction {
-        val apps = arrayListOf<App>()
-        for (u in users) {
-            if (u.app != null) {
-                u.appId = u.app!!.appId
-                apps.add(u.app!!)
-            }
-        }
-        appDao.insertList(apps)
-        insertList(users)
+        appDao.insertList(users.filter { it.app != null }.map { it.app }.filterNotNull())
+        upsertUsers(users)
     }
 }
 
-fun UserDao.updateRelationship(
-    user: User,
-    relationship: String,
-) {
-    runInTransaction {
-        val u = findUser(user.userId)
-        if (u == null) {
-            insert(user)
-        } else {
-            user.relationship = relationship
-            update(user)
-        }
-    }
-}
 
 fun StickerDao.insertUpdate(s: Sticker) {
     runInTransaction {
