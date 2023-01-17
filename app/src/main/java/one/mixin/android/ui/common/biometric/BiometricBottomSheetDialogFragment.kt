@@ -193,7 +193,9 @@ abstract class BiometricBottomSheetDialogFragment : MixinBottomSheetDialogFragme
             layout.setErrorButton(layout.getErrorActionByErrorCode(errorCode))
             layout.pin.clear()
         }
-        val errorInfo = if (errorCode == ErrorHandler.PIN_INCORRECT || errorCode == ErrorHandler.TOO_MANY_REQUEST) {
+        val errorInfo = if (errorCode == ErrorHandler.TOO_MANY_REQUEST) {
+            requireContext().getString(R.string.error_pin_check_too_many_request)
+        } else if (errorCode == ErrorHandler.PIN_INCORRECT) {
             val errorCount = bottomViewModel.errorCount()
             requireContext().resources.getQuantityString(R.plurals.error_pin_incorrect_with_times, errorCount, errorCount)
         } else if (!errorString.isNullOrBlank()) {

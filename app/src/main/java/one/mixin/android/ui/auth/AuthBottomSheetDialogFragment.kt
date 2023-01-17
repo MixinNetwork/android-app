@@ -237,18 +237,24 @@ class AuthBottomSheetDialogFragment : BottomSheetDialogFragment() {
     private suspend fun getMixinErrorInfo(error: ResponseError): String {
         val errorCode = error.code
         val errorDescription = error.description
-        return if (errorCode == ErrorHandler.PIN_INCORRECT || errorCode == ErrorHandler.TOO_MANY_REQUEST) {
-            val errorCount = bottomViewModel.errorCount()
-            requireContext().resources.getQuantityString(
-                R.plurals.error_pin_incorrect_with_times,
-                errorCount,
-                errorCount,
-            )
-        } else {
-            requireContext().getMixinErrorStringByCode(
-                errorCode,
-                errorDescription,
-            )
+        return when (errorCode) {
+            ErrorHandler.TOO_MANY_REQUEST -> {
+                requireContext().getString(R.string.error_pin_check_too_many_request)
+            }
+            ErrorHandler.PIN_INCORRECT -> {
+                val errorCount = bottomViewModel.errorCount()
+                requireContext().resources.getQuantityString(
+                    R.plurals.error_pin_incorrect_with_times,
+                    errorCount,
+                    errorCount,
+                )
+            }
+            else -> {
+                requireContext().getMixinErrorStringByCode(
+                    errorCode,
+                    errorDescription,
+                )
+            }
         }
     }
 
