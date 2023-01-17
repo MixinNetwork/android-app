@@ -73,6 +73,9 @@ internal suspend fun parseEthereum(
     val destination = address ?: return null
     val am = amount?.toPlainString()?.stripAmountZero() ?: return null
     val addressFeeResponse = getAddressFee(assetId, destination) ?: return null
+    if (!addressFeeResponse.destination.equals(destination, true)) {
+        return null
+    }
     return ExternalTransfer(addressFeeResponse.destination, am, assetId, addressFeeResponse.fee.toBigDecimalOrNull())
 }
 
