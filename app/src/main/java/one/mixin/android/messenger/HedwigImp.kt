@@ -172,7 +172,7 @@ class HedwigImp(
                     pendingDatabase.deletePendingMessageByIds(messages.map { it.messageId })
                     conversationExtDao.increment(conversationId, messages.size)
                     messages.filter { message ->
-                        !message.isMine() && message.status != MessageStatus.READ.name
+                        !message.isMine() && message.status != MessageStatus.READ.name && (pendingMessageStatusMap[message.messageId] != MessageStatus.READ.name)
                     }.map { message ->
                         RemoteMessageStatus(message.messageId, message.conversationId, MessageStatus.DELIVERED.name)
                     }.let { remoteMessageStatus ->

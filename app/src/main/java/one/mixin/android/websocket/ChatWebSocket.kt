@@ -270,10 +270,12 @@ class ChatWebSocket(
         val data = gson.fromJson(blazeMessage.data, BlazeMessageData::class.java)
         if (blazeMessage.action == ACKNOWLEDGE_MESSAGE_RECEIPT) {
             mixinDatabase.makeMessageStatus(data.status, data.messageId) // Ack of the server, conversationId is ""
+            pendingDatabase.makeMessageStatus(data.status, data.messageId)
             offsetDao.insert(Offset(STATUS_OFFSET, data.updatedAt))
         } else if (blazeMessage.action == CREATE_MESSAGE || blazeMessage.action == CREATE_CALL || blazeMessage.action == CREATE_KRAKEN) {
             if (data.userId == accountId && data.category.isEmpty()) { // Ack of the create message
                 mixinDatabase.makeMessageStatus(data.status, data.messageId)
+                pendingDatabase.makeMessageStatus(data.status, data.messageId)
             } else {
                 applicationScope.launch(FLOOD_THREAD) {
                     pendingDatabase.insertFloodMessage(FloodMessage(data.messageId, gson.toJson(data), data.createdAt))

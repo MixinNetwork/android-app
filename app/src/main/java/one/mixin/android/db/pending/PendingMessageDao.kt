@@ -5,6 +5,7 @@ import androidx.room.Dao
 import androidx.room.Query
 import androidx.room.RoomWarnings
 import one.mixin.android.db.BaseDao
+import one.mixin.android.vo.ConversationWithStatus
 import one.mixin.android.vo.Message
 import one.mixin.android.vo.MessageMedia
 
@@ -102,6 +103,12 @@ interface PendingMessageDao : BaseDao<PendingMessage> {
     @Query("DELETE FROM pending_messages WHERE id IN (:ids)")
     fun deleteByIds(ids: List<String>)
 
-    @Query("UPDATE pending_messages SET status = 'READ' WHERE id IN (:ids)")
-    fun markReadIds(ids: List<String>)
+    @Query("UPDATE pending_messages SET status = 'READ' WHERE id IN (:ids) AND status != 'FAILED'")
+    fun markReadIds(ids: List<String>): Int
+
+    @Query("UPDATE pending_messages SET status = :status WHERE id = :id")
+    fun updateMessageStatus(status: String, id: String)
+
+    @Query("SELECT conversation_id, user_id, status FROM pending_messages WHERE id = :messageId")
+    fun findMessageStatusById(messageId: String): ConversationWithStatus?
 }
