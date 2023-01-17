@@ -91,16 +91,14 @@ class SearchFragment : BaseFragment(R.layout.fragment_search) {
     private var searchUrlJob: Job? = null
     private var messageSearchJob: Job? = null
     private var refreshAssetsJob: Job? = null
-    private var cancellationSignal: CancellationSignal? = null
     private lateinit var searchChatPopupMenu: SearchChatPopupMenu
 
     @Suppress("UNCHECKED_CAST")
     private fun bindData(keyword: String? = this@SearchFragment.keyword) {
-        searchJob?.cancel()
         searchUrlJob?.cancel()
-        messageSearchJob?.cancel()
         refreshAssetsJob?.cancel()
-        cancellationSignal?.cancel()
+        messageSearchJob?.cancel()
+        searchJob?.cancel()
         searchJob = fuzzySearch(keyword)
     }
 
@@ -220,11 +218,6 @@ class SearchFragment : BaseFragment(R.layout.fragment_search) {
         loadRecentUsedApps()
     }
 
-    override fun onDestroy() {
-        super.onDestroy()
-        cancellationSignal?.cancel()
-    }
-
     private fun loadRecentUsedApps() = lifecycleScope.launch {
         if (viewDestroyed()) return@launch
 
@@ -304,7 +297,6 @@ class SearchFragment : BaseFragment(R.layout.fragment_search) {
         searchAdapter.clear()
 
         val cancellationSignal = CancellationSignal()
-        this@SearchFragment.cancellationSignal = cancellationSignal
 
         searchUrlJob = launch {
             searchViewModel.fuzzySearchUrl(keyword).let { url ->
@@ -339,7 +331,6 @@ class SearchFragment : BaseFragment(R.layout.fragment_search) {
         (requireActivity() as MainActivity).showSearchLoading()
 
         val cancellationSignal = CancellationSignal()
-        this@SearchFragment.cancellationSignal = cancellationSignal
         val chatMinimals = searchViewModel.fuzzySearch<ChatMinimal>(cancellationSignal, keyword) as List<ChatMinimal>?
         searchAdapter.setChatData(chatMinimals)
         decoration.invalidateHeaders()
