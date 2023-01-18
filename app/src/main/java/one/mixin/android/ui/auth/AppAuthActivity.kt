@@ -4,9 +4,11 @@ package one.mixin.android.ui.auth
 
 import android.app.Activity
 import android.content.Intent
+import android.hardware.fingerprint.FingerprintManager
 import android.os.Bundle
 import androidx.biometric.BiometricManager
 import androidx.biometric.BiometricPrompt
+import androidx.core.hardware.fingerprint.FingerprintManagerCompat
 import androidx.core.os.CancellationSignal
 import com.mattprecious.swirl.SwirlView
 import one.mixin.android.Constants
@@ -20,7 +22,6 @@ import one.mixin.android.extension.putInt
 import one.mixin.android.extension.putLong
 import one.mixin.android.ui.common.BaseActivity
 import one.mixin.android.ui.url.UrlInterpreterActivity
-import one.mixin.android.util.reportException
 import timber.log.Timber
 
 class AppAuthActivity : BaseActivity() {
@@ -36,7 +37,10 @@ class AppAuthActivity : BaseActivity() {
 
     private lateinit var binding: ActivityAppAuthBinding
 
+    private var fingerprintManager: FingerprintManagerCompat? = null
     private var biometricManager: BiometricManager? = null
+
+    private var hasEnrolledFingerprints = false
 
     private var cancellationSignal: CancellationSignal? = null
 
@@ -44,7 +48,12 @@ class AppAuthActivity : BaseActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityAppAuthBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        biometricManager = BiometricManager.from(this)
+        fingerprintManager = FingerprintManagerCompat.from(this).apply {
+            this@AppAuthActivity.hasEnrolledFingerprints = hasEnrolledFingerprints()
+        }
+        if (!hasEnrolledFingerprints) {
+            biometricManager = BiometricManager.from(this)
+        }
 
         binding.swirl.setState(SwirlView.State.ON)
         binding.swirl.setOnClickListener {
@@ -82,7 +91,16 @@ class AppAuthActivity : BaseActivity() {
     private fun showPrompt() {
         cancellationSignal?.cancel()
         cancellationSignal = CancellationSignal()
-        showAppAuthPrompt(this, getString(R.string.Confirm_fingerprint), getString(R.string.Cancel), authCallback)
+        if (hasEnrolledFingerprints) {
+            fingerprintManager?.authenticate(null, 0, cancellationSignal, fingerprintCallback, null)
+        } else {
+            showAppAuthPrompt(
+                this,
+                getString(R.string.Confirm_fingerprint),
+                getString(R.string.Cancel),
+                biometricCallback,
+            )
+        }
     }
 
     private fun refreshSwirl(errString: CharSequence, show: Boolean) {
@@ -119,9 +137,9 @@ class AppAuthActivity : BaseActivity() {
         showPrompt()
     }
 
-    private val authCallback = object : BiometricPrompt.AuthenticationCallback() {
+    private val biometricCallback = object : BiometricPrompt.AuthenticationCallback() {
         override fun onAuthenticationError(errorCode: Int, errString: CharSequence) {
-            Timber.d("errorCode: $errorCode, errString: $errString")
+            Timber.d("biometricCallback errorCode: $errorCode, errString: $errString")
             when (errorCode) {
                 BiometricPrompt.ERROR_CANCELED, BiometricPrompt.ERROR_USER_CANCELED, BiometricPrompt.ERROR_NEGATIVE_BUTTON -> {
                     moveTaskToBack(true)
@@ -147,6 +165,41 @@ class AppAuthActivity : BaseActivity() {
 
         override fun onAuthenticationSucceeded(result: BiometricPrompt.AuthenticationResult) {
             finishAndCheckNeed2GoUrlInterpreter()
+        }
+    }
+
+    private val fingerprintCallback = object : FingerprintManagerCompat.AuthenticationCallback() {
+        override fun onAuthenticationError(errorCode: Int, errString: CharSequence) {
+            Timber.d("fingerprintCallback errorCode: $errorCode, errString: $errString")
+            when (errorCode) {
+                FingerprintManager.FINGERPRINT_ERROR_CANCELED, FingerprintManager.FINGERPRINT_ERROR_USER_CANCELED, 1010 -> {
+                    moveTaskToBack(true)
+                }
+                FingerprintManager.FINGERPRINT_ERROR_LOCKOUT, FingerprintManager.FINGERPRINT_ERROR_LOCKOUT_PERMANENT -> {
+                    showError(errString)
+                }
+                FingerprintManager.FINGERPRINT_ERROR_NO_FINGERPRINTS -> {
+                    defaultSharedPreferences.putInt(Constants.Account.PREF_APP_AUTH, -1)
+                    defaultSharedPreferences.putLong(Constants.Account.PREF_APP_ENTER_BACKGROUND, 0)
+                    finishAndCheckNeed2GoUrlInterpreter()
+                }
+                else -> {
+                    refreshSwirl(errString, true)
+                }
+            }
+            // reportException(IllegalStateException("Unlock app meet $errorCode, $errString"))
+        }
+
+        override fun onAuthenticationFailed() {
+            refreshSwirl(getString(R.string.Not_recognized), false)
+        }
+
+        override fun onAuthenticationSucceeded(result: FingerprintManagerCompat.AuthenticationResult?) {
+            finishAndCheckNeed2GoUrlInterpreter()
+        }
+
+        override fun onAuthenticationHelp(helpMsgId: Int, helpString: CharSequence?) {
+            refreshSwirl(helpString.toString(), true)
         }
     }
 }
