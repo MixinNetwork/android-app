@@ -15,6 +15,7 @@ import android.view.KeyEvent
 import androidx.core.content.getSystemService
 import androidx.core.view.isVisible
 import androidx.fragment.app.DialogFragment
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
@@ -510,14 +511,16 @@ class MainActivity : BlazeBaseActivity() {
             if (appUpdateInfo.updateAvailability() == UpdateAvailability.UPDATE_AVAILABLE &&
                 appUpdateInfo.isUpdateTypeAllowed(AppUpdateType.FLEXIBLE)
             ) {
-                try {
-                    appUpdateManager.startUpdateFlowForResult(
-                        appUpdateInfo,
-                        AppUpdateType.FLEXIBLE,
-                        this,
-                        0x01,
-                    )
-                } catch (ignored: IntentSender.SendIntentException) {
+                if (lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED)) {
+                    try {
+                        appUpdateManager.startUpdateFlowForResult(
+                            appUpdateInfo,
+                            AppUpdateType.FLEXIBLE,
+                            this,
+                            0x01,
+                        )
+                    } catch (ignored: IntentSender.SendIntentException) {
+                    }
                 }
             } else if (appUpdateInfo.installStatus() == InstallStatus.DOWNLOADED) {
                 popupSnackbarForCompleteUpdate()
