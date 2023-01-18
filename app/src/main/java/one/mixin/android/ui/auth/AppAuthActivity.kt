@@ -3,13 +3,10 @@
 package one.mixin.android.ui.auth
 
 import android.app.Activity
-import android.app.ActivityManager
 import android.content.Intent
 import android.os.Bundle
 import androidx.biometric.BiometricManager
 import androidx.biometric.BiometricPrompt
-import androidx.core.content.ContextCompat
-import androidx.core.content.getSystemService
 import androidx.core.os.CancellationSignal
 import com.mattprecious.swirl.SwirlView
 import one.mixin.android.Constants
@@ -47,10 +44,12 @@ class AppAuthActivity : BaseActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityAppAuthBinding.inflate(layoutInflater)
         setContentView(binding.root)
-
         biometricManager = BiometricManager.from(this)
 
         binding.swirl.setState(SwirlView.State.ON)
+        binding.swirl.setOnClickListener {
+            showPrompt()
+        }
     }
 
     override fun onNewIntent(intent: Intent?) {
@@ -77,22 +76,13 @@ class AppAuthActivity : BaseActivity() {
 
     override fun onBackPressed() {
         super.onBackPressed()
-        val am = getSystemService<ActivityManager>()
-        if (am != null && am.lockTaskModeState == ActivityManager.LOCK_TASK_MODE_PINNED) return
-
-        finishAffinity()
+        moveTaskToBack(true)
     }
 
     private fun showPrompt() {
         cancellationSignal?.cancel()
         cancellationSignal = CancellationSignal()
-        val biometricPromptInfo = BiometricPrompt.PromptInfo.Builder()
-            .setTitle(getString(R.string.Confirm_fingerprint))
-            .setNegativeButtonText(getString(R.string.Cancel))
-            .setAllowedAuthenticators(BiometricManager.Authenticators.BIOMETRIC_WEAK)
-            .build()
-        val biometricPrompt = BiometricPrompt(this, ContextCompat.getMainExecutor(this), authCallback)
-        biometricPrompt.authenticate(biometricPromptInfo)
+        showAppAuthPrompt(this, getString(R.string.Confirm_fingerprint), getString(R.string.Cancel), authCallback)
     }
 
     private fun refreshSwirl(errString: CharSequence, show: Boolean) {
@@ -134,7 +124,7 @@ class AppAuthActivity : BaseActivity() {
             Timber.d("errorCode: $errorCode, errString: $errString")
             when (errorCode) {
                 BiometricPrompt.ERROR_CANCELED, BiometricPrompt.ERROR_USER_CANCELED, BiometricPrompt.ERROR_NEGATIVE_BUTTON -> {
-                    onBackPressed()
+                    moveTaskToBack(true)
                 }
                 BiometricPrompt.ERROR_LOCKOUT, BiometricPrompt.ERROR_LOCKOUT_PERMANENT -> {
                     showError(errString)
