@@ -309,6 +309,7 @@ open class MixinApplication :
     }
 
     private var appAuthShown = false
+    fun isAppAuthShown(): Boolean = appAuthShown
 
     override fun onActivityStopped(activity: Activity) {
         isActivityChangingConfigurations = activity.isChangingConfigurations

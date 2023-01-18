@@ -15,7 +15,6 @@ import android.view.KeyEvent
 import androidx.core.content.getSystemService
 import androidx.core.view.isVisible
 import androidx.fragment.app.DialogFragment
-import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
@@ -289,6 +288,14 @@ class MainActivity : BlazeBaseActivity() {
             .subscribe { e ->
                 handleTipEvent(e, deviceId)
             }
+
+        lifecycleScope.launch(Dispatchers.IO) {
+            delay(10_000)
+            if (MixinApplication.get().isAppAuthShown()) {
+                return@launch
+            }
+            checkUpdate()
+        }
     }
 
     override fun onStart() {
@@ -306,7 +313,6 @@ class MainActivity : BlazeBaseActivity() {
 
     private fun checkAsync() = lifecycleScope.launch(Dispatchers.IO) {
         checkRoot()
-        checkUpdate()
         checkStorage()
         refreshStickerAlbum()
         refreshExternalSchemes()
@@ -508,19 +514,18 @@ class MainActivity : BlazeBaseActivity() {
     private fun checkUpdate() {
         appUpdateManager.registerListener(updatedListener)
         appUpdateManager.appUpdateInfo.addOnSuccessListener { appUpdateInfo ->
-            if (appUpdateInfo.updateAvailability() == UpdateAvailability.UPDATE_AVAILABLE &&
-                appUpdateInfo.isUpdateTypeAllowed(AppUpdateType.FLEXIBLE)
+            if (appUpdateInfo.updateAvailability() == UpdateAvailability.UPDATE_AVAILABLE
+                && (appUpdateInfo.clientVersionStalenessDays() ?: -1) >= 3
+                && appUpdateInfo.isUpdateTypeAllowed(AppUpdateType.FLEXIBLE)
             ) {
-                if (lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED)) {
-                    try {
-                        appUpdateManager.startUpdateFlowForResult(
-                            appUpdateInfo,
-                            AppUpdateType.FLEXIBLE,
-                            this,
-                            0x01,
-                        )
-                    } catch (ignored: IntentSender.SendIntentException) {
-                    }
+                try {
+                    appUpdateManager.startUpdateFlowForResult(
+                        appUpdateInfo,
+                        AppUpdateType.FLEXIBLE,
+                        this,
+                        0x01,
+                    )
+                } catch (ignored: IntentSender.SendIntentException) {
                 }
             } else if (appUpdateInfo.installStatus() == InstallStatus.DOWNLOADED) {
                 popupSnackbarForCompleteUpdate()
