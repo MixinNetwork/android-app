@@ -44,6 +44,7 @@ class ExternalTransferUriParserTest {
         val url5 = "ethereum:pay-0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48@1/transfer?address=0x50bF16E33E892F1c9Aa7C7FfBaF710E971b86Dd1&gasPrice=14"
         val url6 = "ethereum:0xA974c709cFb4566686553a20790685A47acEAA33@1/transfer?a=b&c=d&uint256=1.24e18&e=f&amount=1&g=h&address=0xB38F2E40e82F0AE5613D55203d84953aE4d5181B&i=j&k=m&n=o&p=q"
         val url7 = "ethereum:0xA974c709cFb4566686553a20790685A47acEAA33@1/transfer?address=0xB38F2E40e82F0AE5613D55203d84953aE4d5181B&amount=1e7&uint256=1.24e18"
+        val url8 = "ethereum:0x20269e75b1637632e87f65A0A053d6720A781f39?amount=0.00016882"
 
         val result1 = parse(url1)
         val result2 = parse(url2)
@@ -52,6 +53,7 @@ class ExternalTransferUriParserTest {
         val result5 = parse(url5)
         val result6 = parse(url6)
         val result7 = parse(url7)
+        val result8 = parse(url8)
 
         assertTrue(result1 != null)
         if (result1 != null) {
@@ -76,6 +78,11 @@ class ExternalTransferUriParserTest {
             checkResult(result6, "c94ac88f-4671-3976-b60a-09064f1811e8", "0xB38F2E40e82F0AE5613D55203d84953aE4d5181B", "1")
         }
         assertTrue(result7 == null)
+
+        assertTrue(result8 != null)
+        if (result8 != null) {
+            checkResult(result8, Constants.ChainId.ETHEREUM_CHAIN_ID, "0x20269e75b1637632e87f65A0A053d6720A781f39", "0.00016882")
+        }
     }
 
     // @Test

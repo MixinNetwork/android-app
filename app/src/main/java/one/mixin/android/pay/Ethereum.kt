@@ -23,9 +23,10 @@ internal suspend fun parseEthereum(
     var assetId = ethereumChainIdMap[chainId] ?: return null
 
     val value = erc681.value
+    val erc681Amount = erc681.amount
     var address: String? = null
     var amount: BigDecimal? = null
-    if (value == null) {
+    if (value == null && erc681Amount == null) {
         var needCheckPrecision = false
         if (erc681.function != "transfer") return null
 
@@ -66,6 +67,9 @@ internal suspend fun parseEthereum(
             val assetPrecision = getAssetPrecisionById(assetId) ?: return null
             amount = amount?.divide(BigDecimal.TEN.pow(assetPrecision.precision))
         }
+    } else if (erc681Amount != null) {
+        address = erc681.address
+        amount = erc681Amount
     } else {
         address = erc681.address
         amount = Convert.fromWei(BigDecimal(value), Convert.Unit.ETHER)
