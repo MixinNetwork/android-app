@@ -288,6 +288,14 @@ class MainActivity : BlazeBaseActivity() {
             .subscribe { e ->
                 handleTipEvent(e, deviceId)
             }
+
+        lifecycleScope.launch(Dispatchers.IO) {
+            delay(10_000)
+            if (MixinApplication.get().isAppAuthShown()) {
+                return@launch
+            }
+            checkUpdate()
+        }
     }
 
     override fun onStart() {
@@ -305,7 +313,6 @@ class MainActivity : BlazeBaseActivity() {
 
     private fun checkAsync() = lifecycleScope.launch(Dispatchers.IO) {
         checkRoot()
-        checkUpdate()
         checkStorage()
         refreshStickerAlbum()
         refreshExternalSchemes()
@@ -507,8 +514,9 @@ class MainActivity : BlazeBaseActivity() {
     private fun checkUpdate() {
         appUpdateManager.registerListener(updatedListener)
         appUpdateManager.appUpdateInfo.addOnSuccessListener { appUpdateInfo ->
-            if (appUpdateInfo.updateAvailability() == UpdateAvailability.UPDATE_AVAILABLE &&
-                appUpdateInfo.isUpdateTypeAllowed(AppUpdateType.FLEXIBLE)
+            if (appUpdateInfo.updateAvailability() == UpdateAvailability.UPDATE_AVAILABLE
+                && (appUpdateInfo.clientVersionStalenessDays() ?: -1) >= 3
+                && appUpdateInfo.isUpdateTypeAllowed(AppUpdateType.FLEXIBLE)
             ) {
                 try {
                     appUpdateManager.startUpdateFlowForResult(
