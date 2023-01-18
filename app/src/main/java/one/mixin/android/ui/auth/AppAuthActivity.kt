@@ -22,7 +22,6 @@ import one.mixin.android.extension.putInt
 import one.mixin.android.extension.putLong
 import one.mixin.android.ui.common.BaseActivity
 import one.mixin.android.ui.url.UrlInterpreterActivity
-import timber.log.Timber
 
 class AppAuthActivity : BaseActivity() {
     companion object {
@@ -139,7 +138,6 @@ class AppAuthActivity : BaseActivity() {
 
     private val biometricCallback = object : BiometricPrompt.AuthenticationCallback() {
         override fun onAuthenticationError(errorCode: Int, errString: CharSequence) {
-            Timber.d("biometricCallback errorCode: $errorCode, errString: $errString")
             when (errorCode) {
                 BiometricPrompt.ERROR_CANCELED, BiometricPrompt.ERROR_USER_CANCELED, BiometricPrompt.ERROR_NEGATIVE_BUTTON -> {
                     moveTaskToBack(true)
@@ -156,7 +154,6 @@ class AppAuthActivity : BaseActivity() {
                     refreshSwirl(errString, true)
                 }
             }
-            // reportException(IllegalStateException("Unlock app meet $errorCode, $errString"))
         }
 
         override fun onAuthenticationFailed() {
@@ -170,7 +167,6 @@ class AppAuthActivity : BaseActivity() {
 
     private val fingerprintCallback = object : FingerprintManagerCompat.AuthenticationCallback() {
         override fun onAuthenticationError(errorCode: Int, errString: CharSequence) {
-            Timber.d("fingerprintCallback errorCode: $errorCode, errString: $errString")
             when (errorCode) {
                 FingerprintManager.FINGERPRINT_ERROR_CANCELED, FingerprintManager.FINGERPRINT_ERROR_USER_CANCELED, 1010 -> {
                     moveTaskToBack(true)
@@ -187,7 +183,6 @@ class AppAuthActivity : BaseActivity() {
                     refreshSwirl(errString, true)
                 }
             }
-            // reportException(IllegalStateException("Unlock app meet $errorCode, $errString"))
         }
 
         override fun onAuthenticationFailed() {
