@@ -72,8 +72,7 @@ class SendAttachmentMessageJob(
         } else {
             val mId = messageDao.findMessageIdById(message.messageId)
             if (mId == null) {
-                messageDao.insert(message)
-                conversationDao.updateLastMessageId(message.messageId, message.createdAt, message.conversationId)
+                mixinDatabase.insertMessage(message)
                 InvalidateFlow.emit(message.conversationId)
             }
         }

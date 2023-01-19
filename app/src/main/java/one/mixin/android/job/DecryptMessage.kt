@@ -375,8 +375,8 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                             nowInUtc(),
                             MessageStatus.READ.name,
                         )
-                        messageDao.insert(m)
-                        conversationDao.updateLastMessageId(m.messageId, m.createdAt, m.conversationId)
+                        // Locally generated messages are inserted directly
+                        pendingMessagesDao.insert(PendingMessage(m))
                         InvalidateFlow.emit(data.conversationId)
                     }
                     if (index == transferPinData.messageIds.size - 1) {
