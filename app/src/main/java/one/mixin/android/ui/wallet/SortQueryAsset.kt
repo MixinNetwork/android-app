@@ -27,14 +27,22 @@ fun sortQueryAsset(query: String, localAssets: List<AssetItem>?, remoteAssets: L
                 return@Comparator 1
             }
 
-            val capitalization1 = o1.priceFiat() * BigDecimal(o1.balance)
-            val capitalization2 = o2.priceFiat() * BigDecimal(o2.balance)
+            val priceFiat1 = o1.priceFiat()
+            val priceFiat2 = o2.priceFiat()
+            val capitalization1 = priceFiat1 * BigDecimal(o1.balance)
+            val capitalization2 = priceFiat2 * BigDecimal(o2.balance)
             if (capitalization1 != capitalization2) {
                 if (capitalization2 > capitalization1) {
                     return@Comparator 1
                 } else if (capitalization2 < capitalization1) {
                     return@Comparator -1
                 }
+            }
+
+            if (priceFiat1 == BigDecimal.ZERO && priceFiat2 != BigDecimal.ZERO) {
+                return@Comparator 1
+            } else if (priceFiat1 != BigDecimal.ZERO && priceFiat2 == BigDecimal.ZERO) {
+                return@Comparator -1
             }
 
             val hasIcon1 = o1.iconUrl != defaultIconUrl
