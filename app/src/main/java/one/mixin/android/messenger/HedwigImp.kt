@@ -123,15 +123,19 @@ class HedwigImp(
     private val callMessageDecrypt by lazy { DecryptCallMessage(callState, lifecycleScope) }
 
     private tailrec suspend fun processFloodMessage(): Boolean {
+        Timber.e("process flood message")
         val messages = pendingDatabase.findFloodMessages()
+        Timber.e("findFloodMessages ${messages.size}")
         return if (messages.isNotEmpty()) {
             messages.forEach { message ->
+                Timber.e("fromJson ${message.messageId} ${message.data}")
                 val data = gson.fromJson(message.data, BlazeMessageData::class.java)
                 if (data.category.startsWith("WEBRTC_") || data.category.startsWith("KRAKEN_")) {
                     callMessageDecrypt.onRun(data)
                 } else {
                     messageDecrypt.onRun(data)
                 }
+                Timber.e("delete ${message.messageId}")
                 pendingDatabase.deleteFloodMessage(message)
                 pendingMessageStatusMap.remove(data.messageId)
             }
