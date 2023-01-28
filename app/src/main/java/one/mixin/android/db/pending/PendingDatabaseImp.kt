@@ -9,7 +9,6 @@ import androidx.room.Database
 import androidx.room.InvalidationTracker
 import androidx.room.Room
 import androidx.room.RoomDatabase
-import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 import one.mixin.android.db.FloodMessageDao
 import one.mixin.android.db.JobDao
@@ -26,7 +25,7 @@ import one.mixin.android.vo.MessageMedia
         (PendingMessage::class),
         (Job::class),
     ],
-    version = 2,
+    version = 1,
 )
 abstract class PendingDatabaseImp : RoomDatabase(), PendingDatabase {
     abstract override fun floodMessageDao(): FloodMessageDao
@@ -91,12 +90,7 @@ abstract class PendingDatabaseImp : RoomDatabase(), PendingDatabase {
                                 supportSQLiteDatabase = db
                             }
                         },
-                    ).addMigrations(
-                        object : Migration(1, 2) {
-                            override fun migrate(database: SupportSQLiteDatabase) {
-                                database.execSQL("DELETE  FROM flood_messages WHERE data = \"\"")
-                            }
-                        })
+                    )
                     INSTANCE = builder.build()
                 }
             }
