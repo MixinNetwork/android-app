@@ -25,14 +25,27 @@
         android:maxLines="5"
         tools:ignore="Autofill,HardcodedText,TextFields" />
 
-    <Button
-        android:id="@+id/run_bn"
-        style="@style/AppTheme.MaterialButton"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_margin="8dp"
-        android:text="run"
-        tools:ignore="HardcodedText" />
+    <LinearLayout
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+        <CheckBox
+                android:id="@+id/run_check"
+                android:layout_width="wrap_content"
+                android:checked="true"
+                android:layout_height="wrap_content" />
+
+        <Button
+                android:id="@+id/run_bn"
+                style="@style/AppTheme.MaterialButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="8dp"
+                android:text="run"
+                tools:ignore="HardcodedText" />
+    </LinearLayout>
 
     <ScrollView
         android:layout_width="match_parent"
