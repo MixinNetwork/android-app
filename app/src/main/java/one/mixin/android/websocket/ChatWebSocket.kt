@@ -278,6 +278,8 @@ class ChatWebSocket(
                 pendingDatabase.makeMessageStatus(data.status, data.messageId)
             } else {
                 applicationScope.launch(FLOOD_THREAD) {
+                    val json = gson.toJson(data)
+                    if (json.isNullOrBlank()) return@launch
                     pendingDatabase.insertFloodMessage(FloodMessage(data.messageId, gson.toJson(data), data.createdAt))
                 }
             }
