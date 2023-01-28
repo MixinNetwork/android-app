@@ -99,6 +99,10 @@ data class AssetItem(
     }
 }
 
+fun AssetItem.toPriceAndChange(): PriceAndChange {
+    return PriceAndChange(assetId, priceBtc, priceUsd, changeUsd, changeBtc)
+}
+
 fun AssetItem.differentProcess(
     keyAction: () -> Unit,
     memoAction: () -> Unit,

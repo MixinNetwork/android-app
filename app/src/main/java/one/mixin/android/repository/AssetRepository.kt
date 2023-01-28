@@ -1,7 +1,6 @@
 package one.mixin.android.repository
 
 import android.os.CancellationSignal
-import androidx.collection.ArraySet
 import androidx.paging.DataSource
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -95,7 +94,7 @@ constructor(
         )
     }
 
-    suspend fun simpleAsset(id: String) = assetDao.simpleAsset(id)
+    private suspend fun simpleAsset(id: String) = assetDao.simpleAsset(id)
 
     suspend fun insertPendingDeposit(snapshot: List<Snapshot>) = snapshotDao.insertListSuspend(snapshot)
 
@@ -199,6 +198,9 @@ constructor(
         }
         if (response.isSuccess) {
             val assetList = response.data as List<Asset>
+            if (assetList.isEmpty()) {
+                return emptyList()
+            }
             val assetItemList = arrayListOf<AssetItem>()
             assetList.mapTo(assetItemList) { asset ->
                 var chainIconUrl = getIconUrl(asset.chainId)
@@ -207,19 +209,24 @@ constructor(
                 }
                 asset.toAssetItem(chainIconUrl)
             }
-            val existsSet = ArraySet<AssetItem>()
+            val localExistsIds = arrayListOf<String>()
+            val onlyRemoteItems = arrayListOf<AssetItem>()
             val needUpdatePrice = arrayListOf<PriceAndChange>()
-            assetList.forEach {
+            assetItemList.forEach {
                 val exists = findAssetItemById(it.assetId)
                 if (exists != null) {
                     needUpdatePrice.add(it.toPriceAndChange())
-                    existsSet.add(exists)
+                    localExistsIds.add(exists.assetId)
+                } else {
+                    onlyRemoteItems.add(it)
                 }
             }
-            if (needUpdatePrice.isNotEmpty()) {
+            return if (needUpdatePrice.isNotEmpty()) {
                 suspendUpdatePrices(needUpdatePrice)
+                onlyRemoteItems + findAssetsByIds(localExistsIds)
+            } else {
+                assetItemList
             }
-            return assetItemList
         }
         return emptyList()
     }
@@ -242,9 +249,9 @@ constructor(
         return@withContext null
     }
 
-    suspend fun queryAssets(query: String) = assetService.queryAssets(query)
+    private suspend fun queryAssets(query: String) = assetService.queryAssets(query)
 
-    suspend fun getIconUrl(id: String) = assetDao.getIconUrl(id)
+    private suspend fun getIconUrl(id: String) = assetDao.getIconUrl(id)
 
     fun observeTopAssets() = hotAssetDao.topAssets()
 
