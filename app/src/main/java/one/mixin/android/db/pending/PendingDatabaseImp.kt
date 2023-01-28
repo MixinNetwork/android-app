@@ -11,6 +11,8 @@ import androidx.sqlite.db.SupportSQLiteDatabase
 import one.mixin.android.db.FloodMessageDao
 import one.mixin.android.db.JobDao
 import one.mixin.android.db.insertNoReplace
+import one.mixin.android.extension.defaultSharedPreferences
+import one.mixin.android.extension.putBoolean
 import one.mixin.android.vo.FloodMessage
 import one.mixin.android.vo.Job
 import one.mixin.android.vo.MessageMedia
@@ -31,6 +33,8 @@ abstract class PendingDatabaseImp : RoomDatabase(), PendingDatabase {
 
     companion object {
         private var INSTANCE: PendingDatabaseImp? = null
+
+        private val PRE_DELETE_DIRTY = "DELETE_DIRTY"
 
         private val lock = Any()
 
@@ -78,6 +82,16 @@ abstract class PendingDatabaseImp : RoomDatabase(), PendingDatabase {
                                     if (list.size < 100) {
                                         break
                                     }
+                                }
+                            }
+
+                            override fun onOpen(db: SupportSQLiteDatabase) {
+                                super.onOpen(db)
+                                val defaultSharedPreferences = context.defaultSharedPreferences
+                                val isDirtyData = defaultSharedPreferences.getBoolean(PRE_DELETE_DIRTY, false)
+                                if (!isDirtyData) {
+                                    db.execSQL("DELETE FROM flood_messages WHERE data = ''")
+                                    defaultSharedPreferences.putBoolean(PRE_DELETE_DIRTY, true)
                                 }
                             }
                         },
