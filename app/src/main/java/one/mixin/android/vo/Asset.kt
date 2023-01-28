@@ -72,10 +72,6 @@ data class PriceAndChange(
     val changeBtc: String,
 )
 
-fun Asset.toPriceAndChange(): PriceAndChange {
-    return PriceAndChange(assetId, priceBtc, priceUsd, changeUsd, changeBtc)
-}
-
 fun Asset.toAssetItem(chainIconUrl: String? = null): AssetItem = AssetItem(
     assetId, symbol, name, iconUrl, balance, destination, depositEntries, tag, priceBtc, priceUsd, chainId, changeUsd, changeBtc, false,
     confirmations, chainIconUrl, null, null, null, assetKey, reserve,
