@@ -278,7 +278,12 @@ class ChatWebSocket(
                 pendingDatabase.makeMessageStatus(data.status, data.messageId)
             } else {
                 applicationScope.launch(FLOOD_THREAD) {
-                    pendingDatabase.insertFloodMessage(FloodMessage(data.messageId, gson.toJson(data), data.createdAt))
+                    val jsonData = gson.toJson(data)
+                    if (jsonData.isNullOrBlank()) {
+                        reportException(IllegalArgumentException("Error flood data: ${blazeMessage.id} ${blazeMessage.action}"))
+                        return@launch
+                    }
+                    pendingDatabase.insertFloodMessage(FloodMessage(data.messageId, jsonData, data.createdAt))
                 }
             }
         } else {
