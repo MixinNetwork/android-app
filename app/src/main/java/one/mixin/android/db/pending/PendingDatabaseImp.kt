@@ -88,11 +88,10 @@ abstract class PendingDatabaseImp : RoomDatabase(), PendingDatabase {
                             override fun onOpen(db: SupportSQLiteDatabase) {
                                 super.onOpen(db)
                                 val defaultSharedPreferences = context.defaultSharedPreferences
-                                defaultSharedPreferences.getBoolean(PRE_DELETE_DIRTY, false).apply {
-                                    if (!this) {
-                                        db.execSQL("DELETE FROM flood_messages WHERE data = ''")
-                                        defaultSharedPreferences.putBoolean(PRE_DELETE_DIRTY, true)
-                                    }
+                                val isDirtyData = defaultSharedPreferences.getBoolean(PRE_DELETE_DIRTY, false)
+                                if (!isDirtyData) {
+                                    db.execSQL("DELETE FROM flood_messages WHERE data = ''")
+                                    defaultSharedPreferences.putBoolean(PRE_DELETE_DIRTY, true)
                                 }
                             }
                         },
