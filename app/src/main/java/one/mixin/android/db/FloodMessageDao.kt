@@ -19,4 +19,19 @@ interface FloodMessageDao : BaseDao<FloodMessage> {
 
     @Query("select created_at from flood_messages ORDER BY created_at DESC limit 1")
     fun getLastBlazeMessageCreatedAt(): String?
+
+    @Query(
+        """
+        DELETE FROM flood_messages 
+        WHERE message_id = (
+            SELECT message_id FROM flood_messages 
+            WHERE message_id in (:ids) 
+            ORDER BY length(data) DESC LIMIT 1
+        )
+    """,
+    )
+    suspend fun deleteMaxLenMessage(ids: List<String>)
+
+    @Query("SELECT message_id FROM flood_messages ORDER BY created_at ASC limit 10")
+    suspend fun findMessageIdsLimit10(): List<String>
 }
