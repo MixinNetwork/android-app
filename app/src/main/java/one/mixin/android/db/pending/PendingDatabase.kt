@@ -16,6 +16,10 @@ interface PendingDatabase {
 
     suspend fun findFloodMessages(): List<FloodMessage>
 
+    suspend fun findMessageIdsLimit10(): List<String>
+
+    suspend fun deleteMaxLenMessage(ids: List<String>)
+
     fun insertFloodMessage(floodMessage: FloodMessage)
 
     fun addObserver(observer: InvalidationTracker.Observer)

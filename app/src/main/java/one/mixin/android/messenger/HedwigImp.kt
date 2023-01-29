@@ -1,5 +1,6 @@
 package one.mixin.android.messenger
 
+import android.database.sqlite.SQLiteBlobTooBigException
 import androidx.room.InvalidationTracker
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
@@ -108,6 +109,11 @@ class HedwigImp(
         floodJob = lifecycleScope.launch(FLOOD_THREAD) {
             try {
                 processFloodMessage()
+            } catch (e: SQLiteBlobTooBigException) {
+                val messageIds = pendingDatabase.findMessageIdsLimit10()
+                pendingDatabase.deleteMaxLenMessage(messageIds)
+                Timber.e(e)
+                runFloodJob()
             } catch (e: Exception) {
                 Timber.e(e)
                 runFloodJob()

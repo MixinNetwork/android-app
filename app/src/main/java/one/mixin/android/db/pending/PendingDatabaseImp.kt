@@ -114,6 +114,10 @@ abstract class PendingDatabaseImp : RoomDatabase(), PendingDatabase {
 
     override suspend fun findFloodMessages() = floodMessageDao().findFloodMessages()
 
+    override suspend fun findMessageIdsLimit10() = floodMessageDao().findMessageIdsLimit10()
+
+    override suspend fun deleteMaxLenMessage(ids: List<String>) = floodMessageDao().deleteMaxLenMessage(ids)
+
     override fun insertFloodMessage(floodMessage: FloodMessage) = floodMessageDao().insert(floodMessage)
 
     override fun deleteFloodMessage(floodMessage: FloodMessage) = floodMessageDao().delete(floodMessage)
