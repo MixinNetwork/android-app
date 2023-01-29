@@ -11,8 +11,6 @@ import androidx.sqlite.db.SupportSQLiteDatabase
 import one.mixin.android.db.FloodMessageDao
 import one.mixin.android.db.JobDao
 import one.mixin.android.db.insertNoReplace
-import one.mixin.android.extension.defaultSharedPreferences
-import one.mixin.android.extension.putBoolean
 import one.mixin.android.vo.FloodMessage
 import one.mixin.android.vo.Job
 import one.mixin.android.vo.MessageMedia
@@ -85,15 +83,6 @@ abstract class PendingDatabaseImp : RoomDatabase(), PendingDatabase {
                                 }
                             }
 
-                            override fun onOpen(db: SupportSQLiteDatabase) {
-                                super.onOpen(db)
-                                val defaultSharedPreferences = context.defaultSharedPreferences
-                                val isDirtyData = defaultSharedPreferences.getBoolean(PRE_DELETE_DIRTY, false)
-                                if (!isDirtyData) {
-                                    db.execSQL("DELETE FROM flood_messages WHERE data = ''")
-                                    defaultSharedPreferences.putBoolean(PRE_DELETE_DIRTY, true)
-                                }
-                            }
                         },
                     )
                     INSTANCE = builder.build()
@@ -117,6 +106,8 @@ abstract class PendingDatabaseImp : RoomDatabase(), PendingDatabase {
     override suspend fun findMessageIdsLimit10() = floodMessageDao().findMessageIdsLimit10()
 
     override suspend fun deleteMaxLenMessage(ids: List<String>) = floodMessageDao().deleteMaxLenMessage(ids)
+
+    override suspend fun deleteEmptyMessages() = floodMessageDao().deleteEmptyMessages()
 
     override fun insertFloodMessage(floodMessage: FloodMessage) = floodMessageDao().insert(floodMessage)
 
