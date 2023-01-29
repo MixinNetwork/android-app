@@ -109,6 +109,10 @@ class HedwigImp(
         floodJob = lifecycleScope.launch(FLOOD_THREAD) {
             try {
                 processFloodMessage()
+            } catch (e: NullPointerException) {
+                pendingDatabase.deleteEmptyMessages()
+                Timber.e(e)
+                runFloodJob()
             } catch (e: SQLiteBlobTooBigException) {
                 val messageIds = pendingDatabase.findMessageIdsLimit10()
                 pendingDatabase.deleteMaxLenMessage(messageIds)

@@ -32,6 +32,9 @@ interface FloodMessageDao : BaseDao<FloodMessage> {
     )
     suspend fun deleteMaxLenMessage(ids: List<String>)
 
+    @Query("DELETE FROM flood_messages WHERE data = ''")
+    suspend fun deleteEmptyMessages()
+
     @Query("SELECT message_id FROM flood_messages ORDER BY created_at ASC limit 10")
     suspend fun findMessageIdsLimit10(): List<String>
 }
