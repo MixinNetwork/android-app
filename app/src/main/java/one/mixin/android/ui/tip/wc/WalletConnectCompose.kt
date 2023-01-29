@@ -35,7 +35,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.trustwallet.walletconnect.models.WCPeerMeta
+import com.walletconnect.android.Core
 import one.mixin.android.R
 import one.mixin.android.ui.setting.ui.theme.MixinAppTheme
 
@@ -43,10 +43,9 @@ import one.mixin.android.ui.setting.ui.theme.MixinAppTheme
 fun WalletConnectCompose(
     step: WCStep,
     networkName: String?,
-    peerMeta: WCPeerMeta?,
+    peerMeta: Core.Model.AppMetaData?,
     action: String,
     desc: String?,
-    balance: String?,
     errorInfo: String?,
     onDisconnectClick: (() -> Unit)?,
     onDismissClick: (() -> Unit)?,
@@ -61,7 +60,7 @@ fun WalletConnectCompose(
                 .clip(shape = RoundedCornerShape(topStart = 8.dp, topEnd = 8.dp))
                 .fillMaxWidth()
                 .height(690.dp)
-                .background(MixinAppTheme.colors.background)
+                .background(MixinAppTheme.colors.background),
         ) {
             Image(
                 painter = painterResource(R.drawable.ic_close_black_24dp),
@@ -73,7 +72,7 @@ fun WalletConnectCompose(
                     .clickable {
                         onDismissClick?.invoke()
                     },
-                contentDescription = null
+                contentDescription = null,
             )
             if (networkName != null) {
                 NetworkInfo(name = networkName)
@@ -91,7 +90,7 @@ fun WalletConnectCompose(
                 textAlign = TextAlign.Center,
                 color = MixinAppTheme.colors.textPrimary,
                 fontWeight = FontWeight.Bold,
-                fontSize = 18.sp
+                fontSize = 18.sp,
             )
             if (desc != null) {
                 Spacer(modifier = Modifier.height(8.dp))
@@ -104,19 +103,7 @@ fun WalletConnectCompose(
                         .verticalScroll(rememberScrollState()),
                     textAlign = TextAlign.Start,
                     text = desc,
-                    color = MixinAppTheme.colors.textMinor
-                )
-            }
-            if (step == WCStep.Account && balance != null) {
-                Spacer(modifier = Modifier.height(16.dp))
-                Text(
-                    modifier = Modifier
-                        .align(alignment = CenterHorizontally)
-                        .padding(horizontal = 32.dp),
-                    text = balance,
-                    textAlign = TextAlign.Center,
-                    color = MixinAppTheme.colors.textPrimary,
-                    fontSize = 18.sp
+                    color = MixinAppTheme.colors.textMinor,
                 )
             }
             Spacer(modifier = Modifier.weight(1f))
@@ -128,7 +115,7 @@ fun WalletConnectCompose(
                 onApproveClick = onApproveClick,
                 onBiometricClick = {
                     onBiometricClick?.invoke()
-                }
+                },
             ) { pin ->
                 onPinComplete?.invoke(pin)
             }
@@ -137,23 +124,23 @@ fun WalletConnectCompose(
 }
 
 @Composable
-fun PeerMeta(peerMeta: WCPeerMeta) {
+fun PeerMeta(peerMeta: Core.Model.AppMetaData) {
     Row(
         modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
         verticalAlignment = CenterVertically,
-        horizontalArrangement = Arrangement.Center
+        horizontalArrangement = Arrangement.Center,
     ) {
         GlideImage(
             data = peerMeta.icons.last(),
             modifier = Modifier
                 .size(32.dp)
-                .clip(CircleShape)
+                .clip(CircleShape),
         )
         Spacer(modifier = Modifier.width(8.dp))
         Text(
             peerMeta.url,
             textAlign = TextAlign.Center,
-            color = MixinAppTheme.colors.textPrimary
+            color = MixinAppTheme.colors.textPrimary,
         )
     }
 }
@@ -166,12 +153,12 @@ fun NetworkInfo(
     Row(
         modifier = modifier.fillMaxWidth().padding(vertical = 8.dp),
         verticalAlignment = CenterVertically,
-        horizontalArrangement = Arrangement.Center
+        horizontalArrangement = Arrangement.Center,
     ) {
         Canvas(
             modifier = Modifier
                 .padding(start = 8.dp, end = 8.dp)
-                .size(6.dp)
+                .size(6.dp),
         ) {
             drawCircle(color = Color(0xFF00B56E), radius = 12f, style = Stroke(1f))
             drawCircle(color = Color(0xFF00B56E), radius = 6f)
@@ -179,7 +166,7 @@ fun NetworkInfo(
         Text(
             name,
             color = MixinAppTheme.colors.textPrimary,
-            textAlign = TextAlign.Center
+            textAlign = TextAlign.Center,
         )
     }
 }
@@ -190,11 +177,10 @@ fun WalletConnectComposePreview() {
     WalletConnectCompose(
         step = WCStep.Input,
         networkName = "Polygon Mainnet",
-        peerMeta = WCPeerMeta("MyCrypto", "https://app.mycrypto.com", "test description", listOf("")),
+        peerMeta = Core.Model.AppMetaData("MyCrypto", "https://app.mycrypto.com", "test description", listOf(""), null),
         action = "Sign Transaction",
         desc = "long descccccccccccccccccccccccccccccccccccccccccccccccccccc",
-        balance = "10.02 MATIC",
         errorInfo = null,
-        {}, {}, {}, {}, {}, {}
+        {}, {}, {}, {}, {}, {},
     )
 }

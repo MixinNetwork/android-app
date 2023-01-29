@@ -69,7 +69,7 @@ class VerifyBottomSheetDialogFragment : BiometricBottomSheetDialogFragment() {
     override fun getBiometricInfo() = BiometricInfo(
         getString(R.string.Verify_by_Biometric),
         "",
-        ""
+        "",
     )
 
     fun setContinueCallback(callback: (DialogFragment) -> Unit): VerifyBottomSheetDialogFragment {

@@ -63,18 +63,6 @@ class MaterialSearchView : FrameLayout {
     val actionVa get() = binding.actionVa
     val logo get() = binding.logo
     val dot get() = binding.dot
-    val wcIv get() = binding.wcIv
-
-    var wcConnected = false
-        set(value) {
-            if (field != value) {
-                field = value
-
-                if (!isOpen) {
-                    wcIv.isVisible = value
-                }
-            }
-        }
 
     constructor(context: Context) : this(context, null)
     constructor(context: Context, attrs: AttributeSet?) : this(context, attrs, 0)
@@ -214,7 +202,6 @@ class MaterialSearchView : FrameLayout {
         containerDisplay = false
         binding.searchIb.fadeIn()
         binding.avatar.fadeIn()
-        if (wcConnected) binding.wcIv.fadeIn()
         binding.actionVa.fadeOut()
         ValueAnimator.ofFloat(1f, 0f).apply {
             addListener(object : AnimatorListenerAdapter() {
@@ -245,7 +232,6 @@ class MaterialSearchView : FrameLayout {
         containerDisplay = true
         binding.searchIb.fadeOut()
         binding.avatar.fadeOut()
-        if (wcConnected) binding.wcIv.fadeOut()
         binding.actionVa.fadeIn()
         binding.containerCircle.isVisible = true
         ValueAnimator.ofFloat(0f, 1f).apply {
@@ -281,7 +267,6 @@ class MaterialSearchView : FrameLayout {
     fun dragSearch(progress: Float) {
         binding.avatar.translationX = context.dpToPx(rightTranslationX) * progress
         binding.searchIb.translationX = context.dpToPx(rightTranslationX) * progress
-        if (wcConnected) binding.wcIv.translationX = context.dpToPx(rightTranslationX) * progress
         val fastFadeOut = (1 - 2 * progress).coerceAtLeast(0f)
         val fastFadeIn = (progress.coerceAtLeast(.5f) - .5f) * 2
         binding.searchEt.isVisible = true
@@ -341,7 +326,6 @@ class MaterialSearchView : FrameLayout {
         oldSearchWidth = binding.searchEt.measuredWidth
         binding.avatar.translationX(context.dpToPx(rightTranslationX).toFloat())
         binding.searchIb.translationX(context.dpToPx(rightTranslationX).toFloat())
-        if (wcConnected) binding.wcIv.translationX(context.dpToPx(rightTranslationX).toFloat())
         mSearchViewListener?.onSearchViewOpened()
         isOpen = true
     }
@@ -399,7 +383,6 @@ class MaterialSearchView : FrameLayout {
 
         binding.avatar.translationX(0f)
         binding.searchIb.translationX(0f)
-        if (wcConnected) binding.wcIv.translationX(0f)
         clearFocus()
         binding.searchEt.hideKeyboard()
         binding.searchEt.setText("")

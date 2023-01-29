@@ -387,7 +387,9 @@ dependencies {
     // wallet connect && web3j
     implementation "org.web3j:core:$web3jVersion"
     implementation "org.web3j:crypto:$web3jVersion"
-    implementation "com.github.TrustWallet:wallet-connect-kotlin:$walletConnectVersion"
+    implementation platform("com.walletconnect:android-bom:1.4.1")
+    implementation "com.walletconnect:android-core"
+    implementation "com.walletconnect:web3wallet"
 
     ktlint "com.pinterest:ktlint:${ktlintVersion}"
 

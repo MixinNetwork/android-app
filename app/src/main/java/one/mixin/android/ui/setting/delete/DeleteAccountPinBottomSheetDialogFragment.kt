@@ -59,6 +59,6 @@ class DeleteAccountPinBottomSheetDialogFragment : BiometricBottomSheetDialogFrag
     override fun getBiometricInfo() = BiometricInfo(
         getString(R.string.Verify_by_Biometric),
         "",
-        ""
+        "",
     )
 }

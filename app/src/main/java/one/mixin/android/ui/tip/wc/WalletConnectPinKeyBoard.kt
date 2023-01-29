@@ -93,7 +93,7 @@ fun WalletConnectPinKeyBoard(
     val randomKeyboardEnabled by LocalContext.current.defaultSharedPreferences
         .booleanValueAsState(
             key = Constants.Account.PREF_RANDOM,
-            defaultValue = false
+            defaultValue = false,
         )
     val list = if (randomKeyboardEnabled) {
         mutableListOf("1", "2", "3", "4", "5", "6", "7", "8", "9", "0").apply {
@@ -106,7 +106,7 @@ fun WalletConnectPinKeyBoard(
             "1", "2", "3",
             "4", "5", "6",
             "7", "8", "9",
-            "", "0", "<<"
+            "", "0", "<<",
         )
     }
     var size by remember { mutableStateOf(IntSize.Zero) }
@@ -131,18 +131,18 @@ fun WalletConnectPinKeyBoard(
                     modifier = Modifier
                         .height(150.dp)
                         .fillMaxWidth(),
-                    horizontalArrangement = Arrangement.Center
+                    horizontalArrangement = Arrangement.Center,
                 ) {
                     OutlinedButton(
                         modifier = Modifier.size(width = 132.dp, height = 48.dp),
                         onClick = { onDisconnectClick?.invoke() },
                         border = BorderStroke(1.dp, MixinAppTheme.colors.accent),
                         contentPadding = PaddingValues(horizontal = 20.dp),
-                        shape = RoundedCornerShape(20.dp)
+                        shape = RoundedCornerShape(20.dp),
                     ) {
                         Text(
                             text = "Disconnect",
-                            color = MixinAppTheme.colors.textPrimary
+                            color = MixinAppTheme.colors.textPrimary,
                         )
                     }
                 }
@@ -151,18 +151,18 @@ fun WalletConnectPinKeyBoard(
                 modifier = Modifier
                     .height(150.dp)
                     .fillMaxWidth(),
-                horizontalAlignment = Alignment.CenterHorizontally
+                horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 Text(
                     text = "Error",
                     color = MixinAppTheme.colors.red,
-                    fontSize = 18.sp
+                    fontSize = 18.sp,
                 )
                 Text(
                     modifier = Modifier.padding(32.dp, 32.dp),
                     text = errorInfo ?: "",
                     textAlign = TextAlign.Center,
-                    color = MixinAppTheme.colors.textPrimary
+                    color = MixinAppTheme.colors.textPrimary,
                 )
             }
             WCStep.Done -> Column(
@@ -170,11 +170,11 @@ fun WalletConnectPinKeyBoard(
                     .height(150.dp)
                     .fillMaxWidth(),
                 horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center
+                verticalArrangement = Arrangement.Center,
             ) {
                 Image(
                     painter = painterResource(id = R.drawable.ic_transfer_done),
-                    contentDescription = null
+                    contentDescription = null,
                 )
                 Text(text = stringResource(R.string.Done), color = MixinAppTheme.colors.textMinor)
             }
@@ -183,32 +183,32 @@ fun WalletConnectPinKeyBoard(
                     modifier = Modifier
                         .height(150.dp)
                         .fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceEvenly
+                    horizontalArrangement = Arrangement.SpaceEvenly,
                 ) {
                     OutlinedButton(
                         modifier = Modifier.size(width = 120.dp, height = 48.dp),
                         onClick = { onCancelClick?.invoke() },
                         border = BorderStroke(1.dp, MixinAppTheme.colors.accent),
                         contentPadding = PaddingValues(horizontal = 20.dp),
-                        shape = RoundedCornerShape(20.dp)
+                        shape = RoundedCornerShape(20.dp),
                     ) {
                         Text(
                             text = stringResource(R.string.Cancel),
-                            color = MixinAppTheme.colors.textPrimary
+                            color = MixinAppTheme.colors.textPrimary,
                         )
                     }
                     Button(
                         modifier = Modifier.size(width = 120.dp, height = 48.dp),
                         onClick = { onApproveClick?.invoke() },
                         colors = ButtonDefaults.outlinedButtonColors(
-                            backgroundColor = MixinAppTheme.colors.accent
+                            backgroundColor = MixinAppTheme.colors.accent,
                         ),
                         contentPadding = PaddingValues(horizontal = 20.dp),
-                        shape = RoundedCornerShape(20.dp)
+                        shape = RoundedCornerShape(20.dp),
                     ) {
                         Text(
                             text = "Approve",
-                            color = Color.White
+                            color = Color.White,
                         )
                     }
                 }
@@ -223,17 +223,17 @@ fun WalletConnectPinKeyBoard(
                             verticalArrangement = Arrangement.Center,
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .wrapContentHeight()
+                                .wrapContentHeight(),
                         ) {
                             Box(
                                 modifier = Modifier
                                     .padding(8.dp)
                                     .fillMaxWidth(),
-                                contentAlignment = Alignment.Center
+                                contentAlignment = Alignment.Center,
                             ) {
                                 LazyRow(
                                     modifier = Modifier.height(20.dp),
-                                    verticalAlignment = Alignment.CenterVertically
+                                    verticalAlignment = Alignment.CenterVertically,
                                 ) {
                                     items(6) { index ->
                                         val hasContent = index < pinCode.length
@@ -245,9 +245,9 @@ fun WalletConnectPinKeyBoard(
                                                 } else {
                                                     scaleIn() + fadeIn() with scaleOut() + fadeOut()
                                                 }.using(
-                                                    SizeTransform(clip = false)
+                                                    SizeTransform(clip = false),
                                                 )
-                                            }
+                                            },
                                         ) { b ->
                                             Text(
                                                 "*",
@@ -256,7 +256,7 @@ fun WalletConnectPinKeyBoard(
                                                 fontWeight = FontWeight.Bold,
                                                 color = if (b) MixinAppTheme.colors.textPrimary else MixinAppTheme.colors.textMinor,
                                                 fontSize = if (b) 18.sp else 12.sp,
-                                                textAlign = TextAlign.Center
+                                                textAlign = TextAlign.Center,
                                             )
                                         }
                                     }
@@ -265,7 +265,7 @@ fun WalletConnectPinKeyBoard(
                             Spacer(modifier = Modifier.height(8.dp))
                             Text(
                                 text = stringResource(R.string.Confirm_with_PIN),
-                                color = MixinAppTheme.colors.textMinor
+                                color = MixinAppTheme.colors.textMinor,
                             )
                             if (showBiometric) {
                                 Spacer(modifier = Modifier.height(12.dp))
@@ -274,18 +274,18 @@ fun WalletConnectPinKeyBoard(
                                     modifier = Modifier
                                         .padding(horizontal = 12.dp, vertical = 3.dp)
                                         .clip(
-                                            shape = RoundedCornerShape(4.dp)
+                                            shape = RoundedCornerShape(4.dp),
                                         )
-                                        .clickable { onBiometricClick?.invoke() }
+                                        .clickable { onBiometricClick?.invoke() },
                                 ) {
                                     Image(
                                         painter = painterResource(R.drawable.ic_biometric),
-                                        contentDescription = null
+                                        contentDescription = null,
                                     )
                                     Spacer(modifier = Modifier.width(4.dp))
                                     Text(
                                         text = stringResource(R.string.Verify_by_Biometric),
-                                        color = MixinAppTheme.colors.textBlue
+                                        color = MixinAppTheme.colors.textBlue,
                                     )
                                 }
                             }
@@ -296,12 +296,12 @@ fun WalletConnectPinKeyBoard(
                             contentAlignment = Alignment.Center,
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .height(94.dp)
+                                .height(94.dp),
                         ) {
                             CircularProgressIndicator(
                                 modifier = Modifier
                                     .size(32.dp),
-                                color = MixinAppTheme.colors.accent
+                                color = MixinAppTheme.colors.accent,
                             )
                         }
                     }
@@ -309,7 +309,7 @@ fun WalletConnectPinKeyBoard(
                 AnimatedVisibility(
                     visible = step == WCStep.Input || step == WCStep.Loading,
                     enter = slideInVertically(initialOffsetY = { it }),
-                    exit = slideOutVertically(targetOffsetY = { it })
+                    exit = slideOutVertically(targetOffsetY = { it }),
                 ) {
                     Column(modifier = Modifier.background(MixinAppTheme.colors.backgroundWindow)) {
                         if (Session.getTipPub() != null) {
@@ -319,17 +319,17 @@ fun WalletConnectPinKeyBoard(
                                     .height(36.dp)
                                     .fillMaxWidth(),
                                 verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.Center
+                                horizontalArrangement = Arrangement.Center,
                             ) {
                                 Icon(
                                     painter = painterResource(id = R.drawable.ic_secret_tip),
                                     contentDescription = null,
-                                    tint = MixinAppTheme.colors.textMinor
+                                    tint = MixinAppTheme.colors.textMinor,
                                 )
                                 Text(
                                     color = MixinAppTheme.colors.textMinor,
                                     text = stringResource(id = R.string.Secured_by_TIP),
-                                    fontSize = 12.sp
+                                    fontSize = 12.sp,
                                 )
                             }
                         }
@@ -339,7 +339,7 @@ fun WalletConnectPinKeyBoard(
                                 .heightIn(120.dp, 240.dp)
                                 .onSizeChanged {
                                     size = it
-                                }
+                                },
                         ) {
                             LazyVerticalGrid(
                                 modifier = Modifier
@@ -357,10 +357,10 @@ fun WalletConnectPinKeyBoard(
                                                     context.pxToDp(
                                                         (
                                                             size.toSize().height - context.dpToPx(
-                                                                40f
+                                                                40f,
                                                             )
-                                                            ) / 4
-                                                    ).dp
+                                                            ) / 4,
+                                                    ).dp,
                                                 )
                                                 .clip(shape = RoundedCornerShape(8.dp))
                                                 .background(
@@ -368,7 +368,7 @@ fun WalletConnectPinKeyBoard(
                                                         11 -> MixinAppTheme.colors.backgroundDark
                                                         9 -> Color.Transparent
                                                         else -> MixinAppTheme.colors.background
-                                                    }
+                                                    },
                                                 )
                                                 .run {
                                                     if (step == WCStep.Input && index != 9) {
@@ -379,7 +379,7 @@ fun WalletConnectPinKeyBoard(
                                                                     pinCode =
                                                                         pinCode.substring(
                                                                             0,
-                                                                            pinCode.length - 1
+                                                                            pinCode.length - 1,
                                                                         )
                                                                 }
                                                             } else if (pinCode.length < 6) {
@@ -393,24 +393,24 @@ fun WalletConnectPinKeyBoard(
                                                     } else {
                                                         this
                                                     }
-                                                }
+                                                },
                                         ) {
                                             if (index == 11) {
                                                 Image(
                                                     painter = painterResource(R.drawable.ic_delete),
-                                                    contentDescription = null
+                                                    contentDescription = null,
                                                 )
                                             } else if (index != 9) {
                                                 Text(
                                                     text = list[index],
                                                     fontSize = 24.sp,
                                                     color = MixinAppTheme.colors.textPrimary,
-                                                    textAlign = TextAlign.Center
+                                                    textAlign = TextAlign.Center,
                                                 )
                                             }
                                         }
                                     }
-                                }
+                                },
                             )
                         }
                     }

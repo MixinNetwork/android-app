@@ -806,7 +806,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                         asset,
                         traceId,
                         response.status,
-                        result.memo
+                        result.memo,
                     )
                 },
                 failureBlock = {

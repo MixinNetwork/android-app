@@ -125,7 +125,7 @@ class OutputBottomSheetDialogFragment : ValuableBiometricBottomSheetDialogFragme
                 BiometricInfo(
                     getString(R.string.withdrawal_to, t.label),
                     t.displayAddress().formatPublicKey(),
-                    getDescription()
+                    getDescription(),
                 )
             }
         }

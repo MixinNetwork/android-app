@@ -31,8 +31,8 @@ import one.mixin.android.extension.booleanFromAttribute
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.withArgs
-import one.mixin.android.tip.wc.WalletConnect
 import one.mixin.android.tip.wc.WalletConnectException
+import one.mixin.android.tip.wc.WalletConnectV2
 import one.mixin.android.ui.common.biometric.BiometricDialog
 import one.mixin.android.ui.common.biometric.BiometricInfo
 import one.mixin.android.util.BiometricUtil
@@ -46,11 +46,12 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
     companion object {
         const val TAG = "WalletConnectBottomSheetDialogFragment"
 
+        const val ARGS_TOPIC = "args_topic"
         const val ARGS_IS_ACCOUNT = "args_is_account"
         const val ARGS_ACTION = "args_action"
         const val ARGS_DESC = "args_desc"
 
-        fun newInstance(isAccount: Boolean, action: String, desc: String? = null) = WalletConnectBottomSheetDialogFragment().withArgs {
+        fun newInstance(topic: String, isAccount: Boolean, action: String, desc: String? = null) = WalletConnectBottomSheetDialogFragment().withArgs {
             putBoolean(ARGS_IS_ACCOUNT, isAccount)
             putString(ARGS_ACTION, action)
             desc?.let { putString(ARGS_DESC, it) }
@@ -85,18 +86,18 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
     ): View = ComposeView(requireContext()).apply {
         step = if (requireArguments().getBoolean(ARGS_IS_ACCOUNT)) WCStep.Account else WCStep.Choice
         desc = requireArguments().getString(ARGS_DESC)
+        val topic = requireNotNull(requireArguments().getString(ARGS_TOPIC))
         setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
         setContent {
             WalletConnectCompose(
                 step = step,
-                networkName = WalletConnect.get().getNetworkName(),
-                peerMeta = WalletConnect.get().remotePeerMeta,
+                networkName = WalletConnectV2.chain.name,
+                peerMeta = WalletConnectV2.getActiveSessionByTopic(topic)?.metaData,
                 action = requireNotNull(requireArguments().getString(ARGS_ACTION)) { "action can not be null" },
                 desc = desc,
-                balance = WalletConnect.get().getBalanceString(),
                 errorInfo = errorInfo,
                 onDisconnectClick = {
-                    WalletConnect.release()
+                    WalletConnectV2.rejectSession()
                     dismiss()
                 },
                 onDismissClick = {
@@ -115,7 +116,7 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 },
                 onPinComplete = { pin ->
                     doAfterPinComplete(pin)
-                }
+                },
             )
         }
         doOnPreDraw {
@@ -138,7 +139,7 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
         dialog.window?.setGravity(Gravity.BOTTOM)
         dialog.window?.setLayout(
             ViewGroup.LayoutParams.MATCH_PARENT,
-            ViewGroup.LayoutParams.MATCH_PARENT
+            ViewGroup.LayoutParams.MATCH_PARENT,
         )
     }
 
@@ -147,14 +148,14 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
         dialog?.window?.let { window ->
             SystemUIManager.lightUI(
                 window,
-                !requireContext().booleanFromAttribute(R.attr.flag_night)
+                !requireContext().booleanFromAttribute(R.attr.flag_night),
             )
         }
     }
 
     override fun onDismiss(dialog: DialogInterface) {
         if (!pinCompleted && step != WCStep.Account) {
-            Timber.d("${WalletConnect.TAG} dismiss onReject")
+            Timber.d("${WalletConnectV2.TAG} dismiss onReject")
             onReject?.invoke()
         }
         super.onDismiss(dialog)
@@ -165,10 +166,10 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
     }
 
     private fun refreshEstimatedGas() {
-        val tx = WalletConnect.get().currentWCEthereumTransaction ?: return
+        val tx = WalletConnectV2.currentWCEthereumTransaction ?: return
 
         tickerFlow(15.seconds)
-            .onEach { desc = WalletConnect.get().getHumanReadableTransactionInfo(tx) }
+            .onEach { desc = WalletConnectV2.getHumanReadableTransactionInfo(tx) }
             .launchIn(lifecycleScope)
     }
 
@@ -228,7 +229,7 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
     private fun showBiometricPrompt() {
         biometricDialog = BiometricDialog(
             requireActivity(),
-            getBiometricInfo()
+            getBiometricInfo(),
         )
         biometricDialog?.callback = biometricDialogCallback
         biometricDialog?.show()
@@ -237,7 +238,7 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
     fun getBiometricInfo() = BiometricInfo(
         getString(R.string.Verify_by_Biometric),
         "",
-        ""
+        "",
     )
 
     private val biometricDialogCallback = object : BiometricDialog.Callback {

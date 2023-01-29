@@ -75,7 +75,7 @@ class UrlInterpreterActivity : BaseActivity() {
             startActivity(
                 Intent(this, MainActivity::class.java).apply {
                     putExtra(MainActivity.WALLET_CONNECT, data.toString())
-                }
+                },
             )
             finish()
         } else {
