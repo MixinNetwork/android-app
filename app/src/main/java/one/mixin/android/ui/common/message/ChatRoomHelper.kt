@@ -2,6 +2,7 @@ package one.mixin.android.ui.common.message
 
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
+import one.mixin.android.db.JobDao
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.insertNoReplace
 import one.mixin.android.db.runInTransaction
@@ -14,7 +15,11 @@ import one.mixin.android.websocket.BlazeAckMessage
 import one.mixin.android.websocket.CREATE_MESSAGE
 import javax.inject.Inject
 
-class ChatRoomHelper @Inject internal constructor(@ApplicationScope private val applicationScope: CoroutineScope, private val appDatabase: MixinDatabase) {
+class ChatRoomHelper @Inject internal constructor(
+    @ApplicationScope private val applicationScope: CoroutineScope,
+    private val appDatabase: MixinDatabase,
+    private val jobDao: JobDao
+) {
     fun saveDraft(conversationId: String, draft: String) = applicationScope.launch {
         timeoutEarlyWarning({
             val localDraft = appDatabase.conversationDao().getConversationDraftById(conversationId)
@@ -39,7 +44,7 @@ class ChatRoomHelper @Inject internal constructor(@ApplicationScope private val 
     fun markMentionRead(messageId: String, conversationId: String) {
         applicationScope.launch {
             appDatabase.mentionMessageDao().suspendMarkMentionRead(messageId)
-            appDatabase.jobDao().insertNoReplace(createAckJob(CREATE_MESSAGE, BlazeAckMessage(messageId, MessageMentionStatus.MENTION_READ.name), conversationId))
+            jobDao.insertNoReplace(createAckJob(CREATE_MESSAGE, BlazeAckMessage(messageId, MessageMentionStatus.MENTION_READ.name), conversationId))
         }
     }
 }
