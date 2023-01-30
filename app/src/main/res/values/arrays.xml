@@ -101,5 +101,8 @@
         <item quantity="one">week</item>
         <item quantity="other">weeks</item>
     </plurals>
-
+    <array name="database">
+        <item>Secondary</item>
+        <item>Primary</item>
+    </array>
 </resources>

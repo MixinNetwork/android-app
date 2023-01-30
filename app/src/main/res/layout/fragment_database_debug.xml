@@ -13,17 +13,32 @@
         android:layout_height="wrap_content"
         app:titleText="@string/app_name" />
 
-    <EditText
-        android:id="@+id/sql"
-        style="@style/NormalTextStyle"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_margin="8dp"
-        android:background="@drawable/bg_input"
-        android:hint="type raw sql"
-        android:padding="12dp"
-        android:maxLines="5"
-        tools:ignore="Autofill,HardcodedText,TextFields" />
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+        <androidx.appcompat.widget.AppCompatSpinner
+                android:id="@+id/spinner"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:entries="@array/database"
+                style="@style/common_spinner"/>
+
+        <EditText
+                android:id="@+id/sql"
+                style="@style/NormalTextStyle"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content"
+                android:layout_margin="8dp"
+                android:background="@drawable/bg_input"
+                android:hint="type raw sql"
+                android:padding="12dp"
+                android:maxLines="5"
+                tools:ignore="Autofill,HardcodedText,TextFields" />
+    </LinearLayout>
 
     <Button
         android:id="@+id/run_bn"

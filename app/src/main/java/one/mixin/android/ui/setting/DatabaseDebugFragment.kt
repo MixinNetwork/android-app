@@ -11,6 +11,7 @@ import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentDatabaseDebugBinding
 import one.mixin.android.db.MixinDatabase
+import one.mixin.android.db.pending.PendingDatabaseImp
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.getClipboardManager
 import one.mixin.android.extension.putBoolean
@@ -35,8 +36,14 @@ class DatabaseDebugFragment : BaseFragment(R.layout.fragment_database_debug) {
         binding.root.setOnClickListener { }
         binding.runBn.setOnClickListener {
             lifecycleScope.launch {
-                binding.logs.text =
-                    "${binding.logs.text}\n${MixinDatabase.query(binding.sql.text.toString())}"
+                if (binding.spinner.selectedItemPosition == 0) {
+                    binding.logs.text =
+                        "${binding.logs.text}\n${PendingDatabaseImp.query(binding.sql.text.toString())}"
+                } else {
+                    binding.logs.text =
+                        "${binding.logs.text}\n${MixinDatabase.query(binding.sql.text.toString())}"
+                }
+
             }
         }
         binding.logs.setOnLongClickListener {
