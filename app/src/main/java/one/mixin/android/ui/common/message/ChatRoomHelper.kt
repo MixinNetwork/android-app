@@ -22,7 +22,7 @@ class ChatRoomHelper @Inject internal constructor(
     private val conversationDao: ConversationDao,
     private val remoteMessageStatusDao: RemoteMessageStatusDao,
     private val messageMentionDao: MessageMentionDao,
-    private val jobDao: JobDao
+    private val jobDao: JobDao,
 ) {
     fun saveDraft(conversationId: String, draft: String) = applicationScope.launch {
         timeoutEarlyWarning({

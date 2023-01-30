@@ -317,4 +317,24 @@
     <style name="MaterialTheme" parent="Theme.MaterialComponents.Light.NoActionBar">
         <item name="colorPrimary">@color/colorDarkBlue</item>
     </style>
+
+    <style name="common_spinner">
+        <item name="android:popupBackground">?attr/bg_white</item>
+        <item name="android:layout_gravity">center</item>
+        <item name="android:gravity">center</item>
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">match_parent</item>
+        <item name="android:dropDownVerticalOffset">?attr/actionBarSize</item>
+        <item name="android:dropDownListViewStyle">@style/spinnerListStyle</item>
+        <item name="android:dropDownItemStyle">@style/itemSpinnerStyle</item>
+    </style>
+
+    <style name="spinnerListStyle" parent="@android:style/Widget.ListView.DropDown">
+        <item name="android:dividerHeight">0dp</item>
+    </style>
+
+    <style name="itemSpinnerStyle" parent="@android:style/Widget.TextView.SpinnerItem">
+        <item name="android:textColor">?attr/bg_white</item>
+        <item name="android:textSize">14sp</item>
+    </style>
 </resources>

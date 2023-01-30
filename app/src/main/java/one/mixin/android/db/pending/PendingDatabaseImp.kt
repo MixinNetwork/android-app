@@ -2,7 +2,9 @@ package one.mixin.android.db.pending
 
 import android.content.ContentValues
 import android.content.Context
+import android.database.Cursor
 import android.database.sqlite.SQLiteDatabase
+import android.util.ArrayMap
 import androidx.room.Database
 import androidx.room.InvalidationTracker
 import androidx.room.Room
@@ -11,6 +13,8 @@ import androidx.sqlite.db.SupportSQLiteDatabase
 import one.mixin.android.db.FloodMessageDao
 import one.mixin.android.db.JobDao
 import one.mixin.android.db.insertNoReplace
+import one.mixin.android.util.GsonHelper
+import one.mixin.android.util.debug.getContent
 import one.mixin.android.vo.FloodMessage
 import one.mixin.android.vo.Job
 import one.mixin.android.vo.MessageMedia
@@ -32,8 +36,6 @@ abstract class PendingDatabaseImp : RoomDatabase(), PendingDatabase {
     companion object {
         private var INSTANCE: PendingDatabaseImp? = null
 
-        private val PRE_DELETE_DIRTY = "DELETE_DIRTY"
-
         private val lock = Any()
 
         fun getDatabase(context: Context, floodMessageDao: FloodMessageDao, jobDao: JobDao): PendingDatabaseImp {
@@ -45,6 +47,11 @@ abstract class PendingDatabaseImp : RoomDatabase(), PendingDatabase {
                         "pending.db",
                     ).enableMultiInstanceInvalidation().addCallback(
                         object : Callback() {
+                            override fun onOpen(db: SupportSQLiteDatabase) {
+                                super.onOpen(db)
+                                supportSQLiteDatabase = db
+                            }
+
                             override fun onCreate(db: SupportSQLiteDatabase) {
                                 while (true) {
                                     val list = floodMessageDao.limit100()
@@ -82,13 +89,36 @@ abstract class PendingDatabaseImp : RoomDatabase(), PendingDatabase {
                                     }
                                 }
                             }
-
                         },
                     )
                     INSTANCE = builder.build()
                 }
             }
             return INSTANCE as PendingDatabaseImp
+        }
+
+        private var supportSQLiteDatabase: SupportSQLiteDatabase? = null
+        fun query(query: String): String? {
+            val start = System.currentTimeMillis()
+            var cursor: Cursor? = null
+            try {
+                cursor =
+                    supportSQLiteDatabase?.query(query) ?: return null
+                cursor.moveToFirst()
+                val result = ArrayList<ArrayMap<String, String>>()
+                do {
+                    val map = ArrayMap<String, String>()
+                    for (i in 0 until cursor.columnCount) {
+                        map[cursor.getColumnName(i)] = cursor.getContent(i)
+                    }
+                    result.add(map)
+                } while (cursor.moveToNext())
+                return "${GsonHelper.customGson.toJson(result)} ${System.currentTimeMillis() - start}ms"
+            } catch (e: Exception) {
+                return e.message
+            } finally {
+                cursor?.close()
+            }
         }
     }
     override suspend fun getPendingMessages() = pendingMessageDao().getMessages()
@@ -105,7 +135,8 @@ abstract class PendingDatabaseImp : RoomDatabase(), PendingDatabase {
 
     override suspend fun findMessageIdsLimit10() = floodMessageDao().findMessageIdsLimit10()
 
-    override suspend fun deleteMaxLenMessage(ids: List<String>) = floodMessageDao().deleteMaxLenMessage(ids)
+    override suspend fun findMaxLengthMessageId(ids: List<String>) = floodMessageDao().findMaxLengthMessageId(ids)
+    override suspend fun deleteFloodMessageById(id: String) = floodMessageDao().deleteFloodMessageById(id)
 
     override suspend fun deleteEmptyMessages() = floodMessageDao().deleteEmptyMessages()
 

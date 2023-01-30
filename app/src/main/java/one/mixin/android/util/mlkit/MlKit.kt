@@ -17,13 +17,13 @@ private val mlExtractor by lazy {
 }
 private val conditions = DownloadConditions.Builder().build()
 
- fun entityInitialize(): EntityExtractor {
-     try {
-         Tasks.await(mlExtractor.downloadModelIfNeeded(conditions))
-     } catch (e: Throwable) {
-         reportException("MLKit init", e)
-     }
-     return mlExtractor
+fun entityInitialize(): EntityExtractor {
+    try {
+        Tasks.await(mlExtractor.downloadModelIfNeeded(conditions))
+    } catch (e: Throwable) {
+        reportException("MLKit init", e)
+    }
+    return mlExtractor
 }
 
 suspend fun firstUrl(input: String): String? = withContext(Dispatchers.IO) {

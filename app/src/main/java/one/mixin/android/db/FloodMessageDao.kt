@@ -22,15 +22,15 @@ interface FloodMessageDao : BaseDao<FloodMessage> {
 
     @Query(
         """
-        DELETE FROM flood_messages 
-        WHERE message_id = (
             SELECT message_id FROM flood_messages 
             WHERE message_id in (:ids) 
             ORDER BY length(data) DESC LIMIT 1
-        )
-    """,
+        """,
     )
-    suspend fun deleteMaxLenMessage(ids: List<String>)
+    suspend fun findMaxLengthMessageId(ids: List<String>): String?
+
+    @Query("DELETE FROM flood_messages WHERE message_id = :id")
+    suspend fun deleteFloodMessageById(id: String)
 
     @Query("DELETE FROM flood_messages WHERE data = ''")
     suspend fun deleteEmptyMessages()
