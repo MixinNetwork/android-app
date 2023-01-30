@@ -18,4 +18,6 @@ class TransferRequest(
     @SerializedName("address_id")
     val addressId: String? = null,
     val destination: String? = null,
+    @SerializedName("raw_payment_url")
+    val rawPaymentUrl: String? = null,
 )
