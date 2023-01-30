@@ -25,7 +25,7 @@ interface FloodMessageDao : BaseDao<FloodMessage> {
             SELECT message_id FROM flood_messages 
             WHERE message_id in (:ids) 
             ORDER BY length(data) DESC LIMIT 1
-        """
+        """,
     )
     suspend fun findMaxLengthMessageId(ids: List<String>): String?
 

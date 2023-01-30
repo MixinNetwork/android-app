@@ -5,7 +5,6 @@ import android.app.Activity
 import android.app.Application
 import android.content.Context
 import android.content.MutableContextWrapper
-import android.database.CursorWindow
 import android.os.Bundle
 import android.webkit.CookieManager
 import android.webkit.WebStorage
@@ -71,11 +70,9 @@ import one.mixin.android.webrtc.VoiceCallService
 import one.mixin.android.webrtc.disconnect
 import org.whispersystems.libsignal.logging.SignalProtocolLoggerProvider
 import timber.log.Timber
-import java.lang.reflect.Field
 import java.util.concurrent.atomic.AtomicBoolean
 import javax.inject.Inject
 import kotlin.system.exitProcess
-
 
 open class MixinApplication :
     Application(),

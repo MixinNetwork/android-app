@@ -18,7 +18,7 @@ interface PendingDatabase {
 
     suspend fun findMessageIdsLimit10(): List<String>
 
-    suspend fun findMaxLengthMessageId(ids: List<String>):String?
+    suspend fun findMaxLengthMessageId(ids: List<String>): String?
 
     suspend fun deleteFloodMessageById(id: String)
 

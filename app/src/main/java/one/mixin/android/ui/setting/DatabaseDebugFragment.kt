@@ -43,7 +43,6 @@ class DatabaseDebugFragment : BaseFragment(R.layout.fragment_database_debug) {
                     binding.logs.text =
                         "${binding.logs.text}\n${MixinDatabase.query(binding.sql.text.toString())}"
                 }
-
             }
         }
         binding.logs.setOnLongClickListener {
