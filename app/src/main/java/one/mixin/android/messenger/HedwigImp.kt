@@ -21,6 +21,7 @@ import one.mixin.android.util.FLOOD_THREAD
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.PENDING_DB_THREAD
 import one.mixin.android.util.chat.InvalidateFlow
+import one.mixin.android.util.reportException
 import one.mixin.android.vo.CallStateLiveData
 import one.mixin.android.vo.Conversation
 import one.mixin.android.vo.ConversationBuilder
@@ -118,11 +119,13 @@ class HedwigImp(
             try {
                 processFloodMessage()
             } catch (e: NullPointerException) {
+                // Hackfix: Samsung mobile phone throws NullPointerException equals SQLiteBlobTooBigException
                 handleBlobTooBigError(e)
             } catch (e: SQLiteBlobTooBigException) {
                 handleBlobTooBigError(e)
             } catch (e: Exception) {
                 Timber.e(e)
+                reportException(e)
                 runFloodJob()
             }
         }
