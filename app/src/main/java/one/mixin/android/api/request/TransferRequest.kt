@@ -4,7 +4,7 @@ import com.google.gson.annotations.SerializedName
 
 class TransferRequest(
     @SerializedName("asset_id")
-    val assertId: String,
+    val assetId: String?,
     @SerializedName("opponent_id")
     val opponentId: String?,
     @SerializedName("amount")

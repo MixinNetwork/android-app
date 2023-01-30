@@ -788,7 +788,9 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
             return false
         }
         val trace = uri.getQueryParameter("trace") ?: UUID.randomUUID().toString()
-        val memo = uri.getQueryParameter("memo")
+        val memo = uri.getQueryParameter("memo")?.run {
+            Uri.decode(this)
+        }
         val returnTo = uri.getQueryParameter("return_to")?.run {
             try {
                 URLDecoder.decode(this, UTF_8.name())
