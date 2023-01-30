@@ -8,6 +8,7 @@ import kotlinx.coroutines.launch
 import one.mixin.android.api.service.CircleService
 import one.mixin.android.api.service.ConversationService
 import one.mixin.android.db.MixinDatabase
+import one.mixin.android.db.insertNoReplace
 import one.mixin.android.db.insertUpdate
 import one.mixin.android.db.pending.PendingDatabase
 import one.mixin.android.job.DecryptCallMessage
@@ -30,7 +31,10 @@ import one.mixin.android.vo.Participant
 import one.mixin.android.vo.ParticipantSession
 import one.mixin.android.vo.RemoteMessageStatus
 import one.mixin.android.vo.SYSTEM_USER
+import one.mixin.android.vo.createAckJob
 import one.mixin.android.vo.isMine
+import one.mixin.android.websocket.ACKNOWLEDGE_MESSAGE_RECEIPTS
+import one.mixin.android.websocket.BlazeAckMessage
 import one.mixin.android.websocket.BlazeMessageData
 import timber.log.Timber
 import java.io.IOException
@@ -85,6 +89,10 @@ class HedwigImp(
         mixinDatabase.remoteMessageStatusDao()
     }
 
+    private val jobDao by lazy {
+        pendingDatabase.jobDao()
+    }
+
     private var floodJob: Job? = null
     private val floodObserver = object : InvalidationTracker.Observer("flood_messages") {
         override fun onInvalidated(tables: Set<String>) {
@@ -110,19 +118,25 @@ class HedwigImp(
             try {
                 processFloodMessage()
             } catch (e: NullPointerException) {
-                pendingDatabase.deleteEmptyMessages()
-                Timber.e(e)
-                runFloodJob()
+                handleBlobTooBigError(e)
             } catch (e: SQLiteBlobTooBigException) {
-                val messageIds = pendingDatabase.findMessageIdsLimit10()
-                pendingDatabase.deleteMaxLenMessage(messageIds)
-                Timber.e(e)
-                runFloodJob()
+                handleBlobTooBigError(e)
             } catch (e: Exception) {
                 Timber.e(e)
                 runFloodJob()
             }
         }
+    }
+
+    private suspend fun handleBlobTooBigError(e: Exception) {
+        val messageIds = pendingDatabase.findMessageIdsLimit10()
+        val maxLengthId = pendingDatabase.findMaxLengthMessageId(messageIds)
+        if (maxLengthId != null) {
+            pendingDatabase.deleteFloodMessageById(maxLengthId)
+            jobDao.insertNoReplace(createAckJob(ACKNOWLEDGE_MESSAGE_RECEIPTS, BlazeAckMessage(maxLengthId, MessageStatus.DELIVERED.name)))
+        }
+        Timber.e(e)
+        runFloodJob()
     }
 
     private val gson by lazy {
