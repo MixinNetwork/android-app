@@ -60,6 +60,7 @@ import one.mixin.android.ui.web.FloatingWebClip
 import one.mixin.android.ui.web.WebActivity
 import one.mixin.android.ui.web.refresh
 import one.mixin.android.ui.web.releaseAll
+import one.mixin.android.util.CursorWindowFixer
 import one.mixin.android.util.MemoryCallback
 import one.mixin.android.util.debug.FileLogTree
 import one.mixin.android.util.initNativeLibs
@@ -158,13 +159,7 @@ open class MixinApplication :
     @SuppressLint("DiscouragedPrivateApi")
     private fun init() {
         CronetProviderInstaller.installProvider(this)
-        try {
-            val field: Field = CursorWindow::class.java.getDeclaredField("sCursorWindowSize")
-            field.isAccessible = true
-            field.set(null, 100 * 1024 * 1024) //the 100MB is the new size
-        } catch (e: Exception) {
-            Timber.e(e)
-        }
+        CursorWindowFixer.fix()
         if (BuildConfig.DEBUG) {
             Timber.plant(Timber.DebugTree(), FileLogTree())
             // ignore known leaks
