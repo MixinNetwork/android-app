@@ -1,9 +1,11 @@
 package one.mixin.android
 
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.Application
 import android.content.Context
 import android.content.MutableContextWrapper
+import android.database.CursorWindow
 import android.os.Bundle
 import android.webkit.CookieManager
 import android.webkit.WebStorage
@@ -68,9 +70,11 @@ import one.mixin.android.webrtc.VoiceCallService
 import one.mixin.android.webrtc.disconnect
 import org.whispersystems.libsignal.logging.SignalProtocolLoggerProvider
 import timber.log.Timber
+import java.lang.reflect.Field
 import java.util.concurrent.atomic.AtomicBoolean
 import javax.inject.Inject
 import kotlin.system.exitProcess
+
 
 open class MixinApplication :
     Application(),
@@ -151,8 +155,16 @@ open class MixinApplication :
         }
     }
 
+    @SuppressLint("DiscouragedPrivateApi")
     private fun init() {
         CronetProviderInstaller.installProvider(this)
+        try {
+            val field: Field = CursorWindow::class.java.getDeclaredField("sCursorWindowSize")
+            field.isAccessible = true
+            field.set(null, 100 * 1024 * 1024) //the 100MB is the new size
+        } catch (e: Exception) {
+            Timber.e(e)
+        }
         if (BuildConfig.DEBUG) {
             Timber.plant(Timber.DebugTree(), FileLogTree())
             // ignore known leaks
