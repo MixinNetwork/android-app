@@ -3,7 +3,11 @@ package one.mixin.android.ui.common.message
 import one.mixin.android.Constants.DB_DELETE_LIMIT
 import one.mixin.android.Constants.DB_DELETE_MEDIA_LIMIT
 import one.mixin.android.MixinApplication
+import one.mixin.android.db.ConversationDao
+import one.mixin.android.db.ConversationExtDao
+import one.mixin.android.db.MessageDao
 import one.mixin.android.db.MixinDatabase
+import one.mixin.android.db.RemoteMessageStatusDao
 import one.mixin.android.db.deleteMessageById
 import one.mixin.android.db.deleteMessageByIds
 import one.mixin.android.job.AttachmentDeleteJob
@@ -20,14 +24,21 @@ import one.mixin.android.vo.absolutePath
 import one.mixin.android.vo.isTranscript
 import javax.inject.Inject
 
-class CleanMessageHelper @Inject internal constructor(private val jobManager: MixinJobManager, private val appDatabase: MixinDatabase) {
+class CleanMessageHelper @Inject internal constructor(
+    private val jobManager: MixinJobManager,
+    private val appDatabase: MixinDatabase,
+    private val messageDao: MessageDao,
+    private val conversationDao: ConversationDao,
+    private val remoteMessageStatusDao: RemoteMessageStatusDao,
+    private val conversationExtDao: ConversationExtDao,
+) {
 
     suspend fun deleteMessageByConversationId(conversationId: String, deleteConversation: Boolean = false) {
         // DELETE message's media
         var repeatTimes = 0
         var messageList: List<MediaMessageMinimal>
         do {
-            messageList = appDatabase.messageDao().getMediaMessageMinimalByConversationId(
+            messageList = messageDao.getMediaMessageMinimalByConversationId(
                 conversationId,
                 DB_DELETE_MEDIA_LIMIT,
                 DB_DELETE_MEDIA_LIMIT * repeatTimes++,
@@ -42,7 +53,7 @@ class CleanMessageHelper @Inject internal constructor(private val jobManager: Mi
         var messageIds: List<String>
         repeatTimes = 0
         do {
-            messageIds = appDatabase.messageDao().getTranscriptMessageIdByConversationId(
+            messageIds = messageDao.getTranscriptMessageIdByConversationId(
                 conversationId,
                 DB_DELETE_LIMIT,
                 DB_DELETE_LIMIT * repeatTimes++,
@@ -51,15 +62,15 @@ class CleanMessageHelper @Inject internal constructor(private val jobManager: Mi
         } while (messageIds.size > DB_DELETE_LIMIT)
 
         // DELETE message
-        val deleteCount = appDatabase.messageDao().countDeleteMessageByConversationId(conversationId)
+        val deleteCount = messageDao.countDeleteMessageByConversationId(conversationId)
         if (deleteCount <= 0) {
             if (deleteConversation) {
-                appDatabase.conversationDao().deleteConversationById(conversationId)
-                appDatabase.conversationExtDao().deleteConversationById(conversationId)
+                conversationDao.deleteConversationById(conversationId)
+                conversationExtDao.deleteConversationById(conversationId)
                 InvalidateFlow.emit(conversationId)
             }
         } else {
-            val lastRowId = appDatabase.messageDao().findLastMessageRowId(conversationId) ?: return
+            val lastRowId = messageDao.findLastMessageRowId(conversationId) ?: return
             if (deleteCount > DB_DELETE_LIMIT) {
                 jobManager.addJobInBackground(
                     MessageDeleteJob(
@@ -69,17 +80,17 @@ class CleanMessageHelper @Inject internal constructor(private val jobManager: Mi
                     ),
                 )
             } else {
-                val ids = appDatabase.messageDao()
+                val ids = messageDao
                     .getMessageIdsByConversationId(conversationId, lastRowId)
                 jobManager.addJobInBackground(MessageFtsDeleteJob(ids))
                 appDatabase.deleteMessageByIds(ids)
                 if (deleteConversation) {
-                    appDatabase.conversationDao().deleteConversationById(conversationId)
-                    appDatabase.conversationExtDao().deleteConversationById(conversationId)
+                    conversationDao.deleteConversationById(conversationId)
+                    conversationExtDao.deleteConversationById(conversationId)
                 } else {
-                    appDatabase.remoteMessageStatusDao().countUnread(conversationId)
-                    appDatabase.conversationDao().refreshLastMessageId(conversationId)
-                    appDatabase.conversationExtDao().refreshCountByConversationId(conversationId)
+                    remoteMessageStatusDao.countUnread(conversationId)
+                    conversationDao.refreshLastMessageId(conversationId)
+                    conversationExtDao.refreshCountByConversationId(conversationId)
                 }
                 InvalidateFlow.emit(conversationId)
             }
