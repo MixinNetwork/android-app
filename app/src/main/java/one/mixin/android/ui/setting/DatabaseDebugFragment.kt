@@ -36,7 +36,7 @@ class DatabaseDebugFragment : BaseFragment(R.layout.fragment_database_debug) {
         binding.root.setOnClickListener { }
         binding.runBn.setOnClickListener {
             lifecycleScope.launch {
-                if (binding.spinner.selectedItemPosition == 0) {
+                if (binding.spinner.selectedItemPosition == 1) {
                     binding.logs.text =
                         "${binding.logs.text}\n${PendingDatabaseImp.query(binding.sql.text.toString())}"
                 } else {
