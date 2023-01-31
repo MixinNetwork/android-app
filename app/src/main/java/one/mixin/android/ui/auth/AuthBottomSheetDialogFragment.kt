@@ -22,6 +22,7 @@ import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.view.doOnPreDraw
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
+import com.bumptech.glide.manager.SupportRequestManagerFragment
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import dagger.hilt.android.AndroidEntryPoint
@@ -49,6 +50,7 @@ import one.mixin.android.ui.common.biometric.BiometricDialog
 import one.mixin.android.ui.common.biometric.BiometricInfo
 import one.mixin.android.ui.tip.TipActivity
 import one.mixin.android.ui.tip.TipType
+import one.mixin.android.ui.url.UrlInterpreterActivity
 import one.mixin.android.util.BiometricUtil
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.SystemUIManager
@@ -227,6 +229,22 @@ class AuthBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 window,
                 !requireContext().booleanFromAttribute(R.attr.flag_night),
             )
+        }
+    }
+
+    override fun onDetach() {
+        super.onDetach()
+        // UrlInterpreterActivity doesn't have a UI and needs it's son fragment to handle it's finish.
+        if (activity is UrlInterpreterActivity) {
+            var realFragmentCount = 0
+            parentFragmentManager.fragments.forEach { f ->
+                if (f !is SupportRequestManagerFragment) {
+                    realFragmentCount++
+                }
+            }
+            if (realFragmentCount <= 0) {
+                activity?.finish()
+            }
         }
     }
 
