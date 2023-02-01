@@ -267,7 +267,7 @@ suspend fun MessageItem.saveToLocal(context: Context) {
 
     val filePath = absolutePath()
     if (filePath == null) {
-        reportException(IllegalStateException("Save messageItem failure, category: $type, mediaUrl: $mediaUrl, absolutePath: $filePath)}"))
+        reportException(IllegalStateException("Save messageItem failure, category: $type, mediaUrl: $mediaUrl, absolutePath: null)}"))
         toast(R.string.Save_failure)
         return
     }
@@ -288,7 +288,7 @@ suspend fun MessageItem.saveToLocal(context: Context) {
             context.getPublicMusicPath()
         } else {
             context.getPublicDownloadPath()
-        } ?: return
+        }
         dir.mkdirs()
         File(dir, mediaName ?: file.name)
     }
@@ -297,12 +297,7 @@ suspend fun MessageItem.saveToLocal(context: Context) {
         outFile.copyFromInputStream(file.inputStream())
     }
     MediaScannerConnection.scanFile(context, arrayOf(outFile.toString()), null, null)
-    toast(
-        MixinApplication.appContext.getString(
-            R.string.Save_to,
-            outFile.absolutePath,
-        ),
-    )
+    toast(MixinApplication.appContext.getString(R.string.Save_to_Gallery))
 }
 
 fun MessageItem.loadVideoOrLive(actionAfterLoad: (() -> Unit)? = null) {
