@@ -72,9 +72,12 @@ class NonMessengerUserBottomSheetDialogFragment : MixinBottomSheetDialogFragment
                 this@NonMessengerUserBottomSheetDialogFragment,
                 Observer { u ->
                     if (u == null) return@Observer
-
                     binding.avatar.setInfo(u.fullName, u.avatarUrl, u.userId)
-                    binding.name.text = u.fullName
+                    binding.name.text = if (u.fullName.isNullOrBlank()) {
+                        u.userId
+                    } else {
+                        u.fullName
+                    }
                     if (u.biography.isNotEmpty()) {
                         binding.detailTv.text = u.biography
                         binding.detailTv.isVisible = true
