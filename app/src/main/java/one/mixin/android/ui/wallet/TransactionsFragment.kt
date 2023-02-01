@@ -285,7 +285,6 @@ class TransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>>()
             val user = withContext(Dispatchers.IO) {
                 walletViewModel.getUser(userId)
             } ?: return@launch
-
             if (user.notMessengerUser()) {
                 NonMessengerUserBottomSheetDialogFragment.newInstance(user)
                     .showNow(parentFragmentManager, NonMessengerUserBottomSheetDialogFragment.TAG)
