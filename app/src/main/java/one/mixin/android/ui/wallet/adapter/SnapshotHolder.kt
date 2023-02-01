@@ -30,12 +30,7 @@ open class SnapshotHolder(itemView: View) : NormalHolder(itemView) {
             }
             SnapshotType.transfer.name -> {
                 binding.name.setText(R.string.Transfer)
-                val name = if (snapshot.opponentFullName.isNullOrBlank()) {
-                    snapshot.opponentId
-                } else {
-                    snapshot.opponentFullName
-                }
-                binding.avatar.setInfo(name, snapshot.avatarUrl, snapshot.opponentId ?: "")
+                binding.avatar.setInfo(snapshot.opponentFullName, snapshot.avatarUrl, snapshot.opponentId ?: "")
                 binding.avatar.setOnClickListener {
                     listener?.onUserClick(snapshot.opponentId!!)
                 }
