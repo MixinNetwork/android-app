@@ -2,6 +2,8 @@ package one.mixin.android.db
 
 import androidx.room.Dao
 import androidx.room.Query
+import androidx.room.RawQuery
+import androidx.sqlite.db.SupportSQLiteQuery
 import one.mixin.android.Constants.MARK_REMOTE_LIMIT
 import one.mixin.android.vo.RemoteMessageStatus
 import one.mixin.android.vo.StatusMessage
@@ -13,6 +15,9 @@ interface RemoteMessageStatusDao : BaseDao<RemoteMessageStatus> {
 
     @Query("UPDATE remote_messages_status SET status = 'READ' WHERE conversation_id = :conversationId")
     fun markReadByConversationId(conversationId: String)
+
+    @RawQuery
+    fun rawUpdateQuery(sql: SupportSQLiteQuery): Int
 
     @Query("UPDATE conversations SET unseen_message_count = (SELECT count(1) FROM remote_messages_status WHERE conversation_id = :conversationId AND status == 'DELIVERED') WHERE conversation_id = :conversationId")
     fun updateConversationUnseen(conversationId: String)

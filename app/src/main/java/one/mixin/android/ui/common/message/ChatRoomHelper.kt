@@ -1,5 +1,6 @@
 package one.mixin.android.ui.common.message
 
+import androidx.sqlite.db.SimpleSQLiteQuery
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import one.mixin.android.db.ConversationDao
@@ -37,8 +38,8 @@ class ChatRoomHelper @Inject internal constructor(
         applicationScope.launch(SINGLE_THREAD) {
             timeoutEarlyWarning({
                 runInTransaction {
-                    remoteMessageStatusDao.markReadByConversationId(conversationId)
-                    remoteMessageStatusDao.zeroConversationUnseen(conversationId)
+                    remoteMessageStatusDao.rawUpdateQuery(SimpleSQLiteQuery("UPDATE remote_messages_status SET status = 'READ' WHERE conversation_id = '$conversationId'"))
+                    remoteMessageStatusDao.rawUpdateQuery(SimpleSQLiteQuery("UPDATE conversations SET unseen_message_count = 0 WHERE conversation_id = '$conversationId'"))
                 }
             })
         }
