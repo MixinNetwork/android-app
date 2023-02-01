@@ -16,7 +16,10 @@ import one.mixin.android.vo.MessageMentionStatus
 import one.mixin.android.vo.createAckJob
 import one.mixin.android.websocket.BlazeAckMessage
 import one.mixin.android.websocket.CREATE_MESSAGE
+import timber.log.Timber
 import javax.inject.Inject
+
+private var runCount = 0
 
 class ChatRoomHelper @Inject internal constructor(
     @ApplicationScope private val applicationScope: CoroutineScope,
@@ -38,11 +41,19 @@ class ChatRoomHelper @Inject internal constructor(
         applicationScope.launch(SINGLE_THREAD) {
             timeoutEarlyWarning({
                 runInTransaction {
-                    remoteMessageStatusDao.rawUpdateQuery(SimpleSQLiteQuery("UPDATE remote_messages_status SET status = 'READ' WHERE conversation_id = '$conversationId'"))
-                    remoteMessageStatusDao.rawUpdateQuery(SimpleSQLiteQuery("UPDATE conversations SET unseen_message_count = 0 WHERE conversation_id = '$conversationId'"))
+                    if (runCount % 2 == 0) {
+                        Timber.e("default $runCount")
+                        remoteMessageStatusDao.markReadByConversationId(conversationId)
+                        remoteMessageStatusDao.zeroConversationUnseen(conversationId)
+                    } else {
+                        Timber.e("raw $runCount")
+                        remoteMessageStatusDao.rawUpdateQuery(SimpleSQLiteQuery("UPDATE remote_messages_status SET status = 'READ' WHERE conversation_id = '$conversationId'"))
+                        remoteMessageStatusDao.rawUpdateQuery(SimpleSQLiteQuery("UPDATE conversations SET unseen_message_count = 0 WHERE conversation_id = '$conversationId'"))
+                    }
                 }
-            })
+            },0)
         }
+        runCount++
     }
 
     fun markMentionRead(messageId: String, conversationId: String) {
