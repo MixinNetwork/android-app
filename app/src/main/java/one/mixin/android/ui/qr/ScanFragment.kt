@@ -1,27 +1,57 @@
 package one.mixin.android.ui.qr
 
-import android.annotation.SuppressLint
+import android.app.Activity
+import android.content.Intent
+import android.graphics.Point
+import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.camera.core.TorchState
-import androidx.camera.core.UseCase
-import androidx.camera.core.impl.utils.futures.FutureCallback
-import androidx.camera.core.impl.utils.futures.Futures
+import androidx.activity.OnBackPressedCallback
+import com.google.mlkit.vision.barcode.common.Barcode
+import com.tbruyelle.rxpermissions2.RxPermissions
+import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
+import one.mixin.android.Constants
+import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentScanBinding
-import one.mixin.android.extension.getStackTraceString
+import one.mixin.android.extension.REQUEST_GALLERY
+import one.mixin.android.extension.bounce
+import one.mixin.android.extension.defaultSharedPreferences
+import one.mixin.android.extension.getFilePath
+import one.mixin.android.extension.heavyClickVibrate
+import one.mixin.android.extension.inTransaction
+import one.mixin.android.extension.isDonateUrl
+import one.mixin.android.extension.isExternalScheme
+import one.mixin.android.extension.isExternalTransferUrl
+import one.mixin.android.extension.isMixinUrl
+import one.mixin.android.extension.matchResourcePattern
+import one.mixin.android.extension.openGallery
+import one.mixin.android.extension.openPermissionSetting
+import one.mixin.android.extension.putBoolean
 import one.mixin.android.extension.toast
+import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.extension.withArgs
+import one.mixin.android.job.RefreshExternalSchemeJob
 import one.mixin.android.ui.conversation.ConversationActivity.Companion.ARGS_SHORTCUT
+import one.mixin.android.ui.device.ConfirmBottomFragment
+import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.ui.qr.CaptureActivity.Companion.ARGS_FOR_SCAN_RESULT
+import one.mixin.android.ui.web.WebActivity
+import one.mixin.android.util.mlkit.scan.BaseCameraScanFragment
+import one.mixin.android.util.mlkit.scan.analyze.AnalyzeResult
+import one.mixin.android.util.mlkit.scan.analyze.Analyzer
+import one.mixin.android.util.mlkit.scan.analyze.BarcodeScanningAnalyzer
+import one.mixin.android.util.mlkit.scan.camera.config.AspectRatioCameraConfig
+import one.mixin.android.util.mlkit.scan.utils.PointUtils
 import one.mixin.android.util.viewBinding
+import one.mixin.android.widget.gallery.ui.GalleryActivity
 import timber.log.Timber
 
 @AndroidEntryPoint
-class ScanFragment : BaseCameraxFragment() {
+class ScanFragment : BaseCameraScanFragment<List<Barcode>>() {
     companion object {
         const val TAG = "ScanFragment"
 
@@ -34,60 +64,210 @@ class ScanFragment : BaseCameraxFragment() {
         }
     }
 
+    private val forScanResult by lazy { requireArguments().getBoolean(ARGS_FOR_SCAN_RESULT) }
+    private val fromShortcut by lazy { requireArguments().getBoolean(ARGS_SHORTCUT) }
+
+    override fun getLayoutId() = R.layout.fragment_scan
+    override fun getPreviewViewId() = R.id.previewView
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        forScanResult = requireArguments().getBoolean(ARGS_FOR_SCAN_RESULT)
-        fromShortcut = requireArguments().getBoolean(ARGS_SHORTCUT)
+        activity?.onBackPressedDispatcher?.addCallback(
+            this,
+            object : OnBackPressedCallback(true) {
+                override fun handleOnBackPressed() {
+                    if (binding.viewfinderView
+                            .isShowPoints
+                    ) {
+                        binding.ivResult
+                            .setImageBitmap(null)
+                        binding.viewfinderView
+                            .showScanner()
+                        cameraScan.setAnalyzeImage(true)
+                        return
+                    } else {
+                        activity?.finish()
+                    }
+                }
+            },
+        )
     }
 
+    private val binding by viewBinding(FragmentScanBinding::bind)
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?,
-    ): View? =
-        layoutInflater.inflate(R.layout.fragment_scan, container, false)
+    ): View? {
+        return super.onCreateView(inflater, container, savedInstanceState)
+    }
 
-    private val binding by viewBinding(FragmentScanBinding::bind)
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        binding.apply {
+            close.setOnClickListener { activity?.onBackPressedDispatcher?.onBackPressed() }
+            flash.setOnClickListener {
+                cameraScan.enableTorch(cameraScan.isTorchEnabled().not())
+                flash.bounce()
+            }
+            galleryIv.setOnClickListener {
+                RxPermissions(requireActivity())
+                    .request(android.Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                    .autoDispose(stopScope)
+                    .subscribe(
+                        { granted ->
+                            if (granted) {
+                                openGallery()
+                            } else {
+                                context?.openPermissionSetting()
+                            }
+                        },
+                        {
+                        },
+                    )
+            }
+        }
+    }
 
-    override fun getContentView(): View = binding.root
+    override fun createAnalyzer(): Analyzer<List<Barcode>> {
+        return BarcodeScanningAnalyzer(Barcode.FORMAT_ALL_FORMATS)
+    }
 
-    @SuppressLint("RestrictedApi")
-    override fun onFlashClick() {
-        if (camera?.cameraInfo?.hasFlashUnit() == false) {
-            toast(R.string.Flash_unit_not_available)
+    override fun initCameraScan() {
+        super.initCameraScan()
+        cameraScan.setPlayBeep(true)
+            .setCameraConfig(AspectRatioCameraConfig(requireContext()))
+            .setVibrate(true)
+    }
+
+    override fun onScanResultCallback(result: AnalyzeResult<List<Barcode>>) {
+        cameraScan.setAnalyzeImage(false)
+
+        val width = result.bitmap?.width ?: return
+        val height = result.bitmap?.height ?: return
+        Timber.e("$width - $height ${binding.viewfinderView.width} ${binding.viewfinderView.height}")
+        result.result?.let { results ->
+            binding.ivResult.setImageBitmap(previewView.bitmap)
+            val points = mutableListOf<Point>()
+            for (barcode in results) {
+                barcode.boundingBox?.let { box ->
+                    val point = PointUtils.transform(
+                        box.centerX(),
+                        box.centerY(),
+                        width,
+                        height,
+                        binding.viewfinderView.width,
+                        binding.viewfinderView.height,
+                    )
+                    points.add(point)
+                }
+            }
+            Timber.e("$width - $height $points")
+            binding.viewfinderView.showResultPoints(points)
+            binding.viewfinderView.setOnItemClickListener {
+                handleAnalysis(results[it].displayValue!!)
+            }
+            if (points.size == 1) {
+                handleAnalysis(results[0].displayValue!!)
+            }
+        }
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        if (requestCode == REQUEST_GALLERY && resultCode == Activity.RESULT_OK) {
+            data?.data?.let {
+                val path = it.getFilePath(MixinApplication.get())
+                if (path == null) {
+                    toast(R.string.File_error)
+                } else {
+                    if (data.hasExtra(GalleryActivity.IS_VIDEO)) {
+                        openEdit(path, true, fromGallery = true)
+                    } else {
+                        openEdit(path, false, fromGallery = true)
+                    }
+                }
+            }
+        }
+    }
+
+    private fun openEdit(path: String, isVideo: Boolean, fromGallery: Boolean = false) {
+        activity?.supportFragmentManager?.inTransaction {
+            add(R.id.container, EditFragment.newInstance(path, isVideo, fromGallery, true), EditFragment.TAG)
+                .addToBackStack(null)
+        }
+    }
+
+    private fun handleAnalysis(analysisResult: String) {
+        if (viewDestroyed()) return
+
+        requireContext().heavyClickVibrate()
+        requireContext().defaultSharedPreferences.putBoolean(CaptureActivity.SHOW_QR_CODE, false)
+        if (forScanResult) {
+            val scanResult = if (analysisResult.isDonateUrl()) {
+                val index = analysisResult.indexOf("?")
+                if (index != -1) {
+                    analysisResult.take(index)
+                } else {
+                    analysisResult
+                }
+            } else {
+                analysisResult
+            }
+            val result = Intent().apply {
+                putExtra(CaptureActivity.ARGS_FOR_SCAN_RESULT, scanResult)
+            }
+            activity?.setResult(Activity.RESULT_OK, result)
+            activity?.finish()
             return
         }
-        val torchState = camera?.cameraInfo?.torchState?.value ?: TorchState.OFF
-        binding.flash.setImageResource(R.drawable.ic_scan_flash)
-        val future = (
-            if (torchState == TorchState.ON) {
-                camera?.cameraControl?.enableTorch(false)
-            } else {
-                camera?.cameraControl?.enableTorch(true)
+        if (analysisResult.startsWith(Constants.Scheme.DEVICE)) {
+            ConfirmBottomFragment.show(requireContext(), parentFragmentManager, analysisResult) {
+                activity?.finish()
             }
-            ) ?: return
-        Futures.addCallback(
-            future,
-            object : FutureCallback<Void> {
-                override fun onSuccess(result: Void?) {
-                }
-
-                override fun onFailure(t: Throwable) {
-                    Timber.d("enableTorch onFailure, ${t.getStackTraceString()}")
-                }
-            },
-            mainExecutor,
-        )
+        } else {
+            val externalSchemes = requireContext().defaultSharedPreferences.getStringSet(
+                RefreshExternalSchemeJob.PREF_EXTERNAL_SCHEMES,
+                emptySet(),
+            )
+            if (!externalSchemes.isNullOrEmpty() && analysisResult.matchResourcePattern(externalSchemes)) {
+                WebActivity.show(requireContext(), analysisResult, null)
+                activity?.finish()
+                return
+            }
+            handleResult(analysisResult)
+        }
     }
 
-    @SuppressLint("RestrictedApi")
-    override fun appendOtherUseCases(
-        useCases: ArrayList<UseCase>,
-        rotation: Int,
-    ) {}
+    protected fun handleResult(content: String) {
+        val result = if (fromShortcut) {
+            Intent(requireContext(), MainActivity::class.java)
+        } else {
+            Intent()
+        }
+        if (content.isDonateUrl() || content.isExternalScheme(requireContext()) || content.isExternalTransferUrl()) {
+            result.putExtra(MainActivity.URL, content)
+        } else if (!content.isMixinUrl()) {
+            result.putExtra(MainActivity.SCAN, content)
+        } else if (content.startsWith(Constants.Scheme.TRANSFER, true) ||
+            content.startsWith(Constants.Scheme.HTTPS_TRANSFER, true)
+        ) {
+            val segments = Uri.parse(content).pathSegments
+            if (segments.isEmpty()) return
 
-    override fun onDisplayChanged(rotation: Int) {
+            val userId = if (segments.size >= 2) {
+                segments[1]
+            } else {
+                segments[0]
+            }
+            result.putExtra(MainActivity.TRANSFER, userId)
+        } else {
+            result.putExtra(MainActivity.URL, content)
+        }
+        if (fromShortcut) {
+            MainActivity.showFromShortcut(requireActivity(), result)
+        } else {
+            requireActivity().setResult(Activity.RESULT_OK, result)
+            requireActivity().finish()
+        }
     }
-
-    override fun fromScan() = true
 }

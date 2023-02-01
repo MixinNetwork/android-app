@@ -211,4 +211,11 @@
         <item>#FFCCC0</item>
         <item>#CEA06B</item>
     </array>
+
+    <color name="viewfinder_mask">#60000000</color>
+    <color name="viewfinder_frame">#7F1FB3E2</color>
+    <color name="viewfinder_corner">#FF1FB3E2</color>
+    <color name="viewfinder_laser">#FF1FB3E2</color>
+    <color name="viewfinder_point">#FF1FB3E2</color>
+    <color name="viewfinder_text_color">#FFC0C0C0</color>
 </resources>

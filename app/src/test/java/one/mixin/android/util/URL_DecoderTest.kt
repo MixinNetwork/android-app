@@ -16,19 +16,22 @@ class URL_DecoderTest : TestCase() {
         val URL2 = "telnet://mixin.one:400"
         val URL3 = "file://myServer.org/a file with spaces.jpg"
         assertTrue(
-            "1. Incorrect encoding/decoding", URLDecoder.decode(
-                URLEncoder.encode(URL, UTF_8.name())
-            ) == URL
+            "1. Incorrect encoding/decoding",
+            URLDecoder.decode(
+                URLEncoder.encode(URL, UTF_8.name()),
+            ) == URL,
         )
         assertTrue(
-            "2. Incorrect encoding/decoding", URLDecoder.decode(
-                URLEncoder.encode(URL2, UTF_8.name())
-            ) == URL2
+            "2. Incorrect encoding/decoding",
+            URLDecoder.decode(
+                URLEncoder.encode(URL2, UTF_8.name()),
+            ) == URL2,
         )
         assertTrue(
-            "3. Incorrect encoding/decoding", URLDecoder.decode(
-                URLEncoder.encode(URL3, UTF_8.name())
-            ) == URL3
+            "3. Incorrect encoding/decoding",
+            URLDecoder.decode(
+                URLEncoder.encode(URL3, UTF_8.name()),
+            ) == URL3,
         )
     }
 
@@ -40,12 +43,12 @@ class URL_DecoderTest : TestCase() {
             "file://a+b/c/d.e-f*g_+l",
             "jar:file://a.jar+!/b.c/",
             "ftp://test:pwd@localhost:2121/%D0%9C",
-            "%D0%A2%D0%B5%D1%81%D1%82+URL+for+test"
+            "%D0%A2%D0%B5%D1%81%D1%82+URL+for+test",
         )
         val expected = arrayOf(
             "http://mixin.one/test?hl=en&q=te st",
             "file://a b/c/d.e-f*g_ l",
-            "jar:file://a.jar !/b.c/"
+            "jar:file://a.jar !/b.c/",
         )
         for (i in 0 until urls.size - 2) {
             try {
