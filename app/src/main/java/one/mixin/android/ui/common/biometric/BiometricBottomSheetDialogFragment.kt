@@ -52,7 +52,9 @@ abstract class BiometricBottomSheetDialogFragment : MixinBottomSheetDialogFragme
     override fun onDestroyView() {
         super.onDestroyView()
         dialog?.window?.clearFlags(WindowManager.LayoutParams.FLAG_SECURE)
-        callback?.onSuccess()
+        if(isSuccess) {
+            callback?.onSuccess()
+        }
         biometricDialog?.callback = null
     }
 
@@ -104,12 +106,13 @@ abstract class BiometricBottomSheetDialogFragment : MixinBottomSheetDialogFragme
         dialog?.window?.clearFlags(WindowManager.LayoutParams.FLAG_SECURE)
     }
 
+    private var isSuccess = false
     protected fun showDone(returnTo: String? = null) {
         if (!isAdded) return
         biometricLayout.showDone(returnTo) {
             dismiss()
+            isSuccess = true
             callback?.onSuccess()
-            callback = null
             dialog?.window?.clearFlags(WindowManager.LayoutParams.FLAG_SECURE)
         }
     }
