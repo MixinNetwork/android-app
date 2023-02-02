@@ -64,11 +64,15 @@ fun hasWritePermission(): Boolean {
 }
 
 fun Context.checkStorageNotLow(lowAction: () -> Unit, defaultAction: () -> Unit) {
-    if (cacheDir.freeSpace < 100 * 1024 * 1024) { // 100MB
+    if (isLowDisk()) { // 100MB
         lowAction()
     } else {
         defaultAction()
     }
+}
+
+fun Context.isLowDisk(): Boolean {
+    return cacheDir.freeSpace < 100 * 1024 * 1024
 }
 
 private fun Context.getAppPath(legacy: Boolean = false): File? {
