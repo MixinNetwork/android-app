@@ -786,6 +786,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
         }
         val trace = uri.getQueryParameter("trace") ?: UUID.randomUUID().toString()
         val memo = uri.getQueryParameter("memo")
+        val returnTo = uri.getQueryParameter("return_to")
 
         val asset: AssetItem = checkAsset(assetId) ?: return false
 
@@ -799,19 +800,19 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
             successBlock = { r ->
                 val response = r.data ?: return@handleMixinResponse false
 
-                showTransferBottom(user, amount, asset, trace, response.status, memo)
+                showTransferBottom(user, amount, asset, trace, response.status, memo, returnTo)
                 return@handleMixinResponse true
             },
         ) ?: false
     }
 
-    private suspend fun showTransferBottom(user: User, amount: String, asset: AssetItem, traceId: String, status: String, memo: String?) {
+    private suspend fun showTransferBottom(user: User, amount: String, asset: AssetItem, traceId: String, status: String, memo: String?, returnTo: String?) {
         val pair = linkViewModel.findLatestTrace(user.userId, null, null, amount, asset.assetId)
         if (pair.second) {
             showError(getString(R.string.check_trace_failed))
             return
         }
-        val biometricItem = TransferBiometricItem(user, asset, amount, null, traceId, memo, status, pair.first)
+        val biometricItem = TransferBiometricItem(user, asset, amount, null, traceId, memo, status, pair.first, returnTo)
         showPreconditionBottom(biometricItem)
     }
 

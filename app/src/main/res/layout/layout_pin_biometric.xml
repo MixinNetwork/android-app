@@ -97,14 +97,18 @@
             android:layout_gravity="center_horizontal"
             android:contentDescription="@null" />
 
-        <TextView
+        <Button
+            android:id="@+id/done_btn"
+            style="@style/AppTheme.MaterialButton"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/margin12"
+            android:layout_height="40dp"
+            android:layout_marginTop="16dp"
             android:layout_gravity="center_horizontal"
-            android:layout_marginBottom="20dp"
-            android:textColor="@color/textRemarks"
-            android:text="@string/Done" />
+            android:paddingStart="@dimen/margin20"
+            android:paddingEnd="@dimen/margin20"
+            android:enabled="true"
+            android:text="@string/Done"
+            android:textSize="14sp" />
 
         <TextView
             android:id="@+id/enable_biometric_tv"
@@ -112,6 +116,7 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
             android:layout_marginBottom="32dp"
+            android:layout_marginTop="16dp"
             android:textColor="@color/colorBlue"
             android:text="@string/setting_enable_biometric_pay"
             android:drawablePadding="@dimen/margin10"
