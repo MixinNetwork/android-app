@@ -470,8 +470,12 @@ object NotificationGenerator : Injector() {
 
         var person: Person? = null
         supportsR({
+            val name = conversation.getConversationName()
+            if (name.isEmpty()) {
+                return@supportsR
+            }
             person = Person.Builder()
-                .setName(conversation.getConversationName())
+                .setName(name)
                 .setImportant(true)
                 .build()
 
