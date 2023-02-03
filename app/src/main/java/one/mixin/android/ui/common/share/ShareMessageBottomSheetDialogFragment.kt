@@ -12,6 +12,7 @@ import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import com.bumptech.glide.manager.SupportRequestManagerFragment
+import com.google.gson.JsonSyntaxException
 import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
@@ -45,6 +46,7 @@ import one.mixin.android.vo.ShareCategory
 import one.mixin.android.vo.ShareImageData
 import one.mixin.android.websocket.ContactMessagePayload
 import one.mixin.android.websocket.LiveMessagePayload
+import one.mixin.android.websocket.StickerMessagePayload
 import one.mixin.android.widget.BottomSheet
 import timber.log.Timber
 
@@ -238,7 +240,12 @@ class ShareMessageBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         }
         lifecycleScope.launch {
             binding.progress.isVisible = true
-            val sticker = viewModel.refreshSticker(content)
+            val stickerId = try {
+                GsonHelper.customGson.fromJson(content, StickerMessagePayload::class.java).stickerId
+            } catch (e: JsonSyntaxException) {
+                content
+            }
+            val sticker = viewModel.refreshSticker(stickerId)
             if (sticker == null) {
                 toast(R.string.error_not_found)
                 binding.progress.isVisible = false
