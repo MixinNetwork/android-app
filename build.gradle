@@ -34,7 +34,7 @@ buildscript {
         ext.retrofitVersion = '2.9.0'
         ext.coroutineAdapterVersion = '0.9.2'
         ext.loggerVersion = '2.2.0'
-        ext.kotlinVersion = '1.8.0'
+        ext.kotlinVersion = '1.8.10'
         ext.libphonenumberVersion = '8.13.5'
         ext.coroutinesVersion = '1.6.4'
         ext.firebaseVersion = '18.0.2'
