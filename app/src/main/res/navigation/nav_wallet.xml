@@ -95,6 +95,7 @@
     <fragment
         android:id="@+id/all_transactions_fragment"
         android:name="one.mixin.android.ui.wallet.AllTransactionsFragment"
+        android:label="AllTransactionsFragment"
         tools:layout="@layout/fragment_all_transactions">
 
         <action

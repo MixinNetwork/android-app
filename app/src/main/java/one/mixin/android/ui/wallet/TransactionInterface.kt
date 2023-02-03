@@ -6,6 +6,7 @@ import android.view.View
 import androidx.core.view.isVisible
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.Fragment
+import androidx.navigation.fragment.FragmentNavigator
 import androidx.navigation.fragment.findNavController
 import com.skydoves.balloon.BalloonAnimation
 import com.skydoves.balloon.createBalloon
@@ -115,7 +116,7 @@ interface TransactionInterface {
     private fun clickAvatar(fragment: Fragment, asset: AssetItem) {
         val curActivity = fragment.requireActivity()
         if (curActivity is WalletActivity) {
-            if (fragment.findNavController().findDestination(R.id.all_transactions_fragment) != null) {
+            if ((fragment.findNavController().previousBackStackEntry?.destination as FragmentNavigator.Destination?)?.label == AllTransactionsFragment.TAG) {
                 fragment.view?.navigate(
                     R.id.action_all_transactions_fragment_to_transactions_fragment,
                     Bundle().apply { putParcelable(TransactionsFragment.ARGS_ASSET, asset) },
