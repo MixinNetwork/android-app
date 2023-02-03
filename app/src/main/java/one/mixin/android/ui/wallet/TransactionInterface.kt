@@ -118,7 +118,7 @@ interface TransactionInterface {
         if (curActivity is WalletActivity) {
             if ((fragment.findNavController().previousBackStackEntry?.destination as FragmentNavigator.Destination?)?.label == AllTransactionsFragment.TAG) {
                 fragment.view?.navigate(
-                    R.id.action_all_transactions_fragment_to_transactions_fragment,
+                    R.id.action_transaction_fragment_to_transactions,
                     Bundle().apply { putParcelable(TransactionsFragment.ARGS_ASSET, asset) },
                 )
             } else {

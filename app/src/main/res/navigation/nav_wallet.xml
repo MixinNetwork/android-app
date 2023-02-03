@@ -109,12 +109,7 @@
             app:destination="@id/user_transactions_fragment"
             app:enterAnim="@anim/slide_in_right"
             app:popExitAnim="@anim/slide_out_right"/>
-
-        <action
-            android:id="@+id/action_all_transactions_fragment_to_transactions_fragment"
-            app:destination="@id/transactions_fragment"
-            app:enterAnim="@anim/slide_in_right"
-            app:popExitAnim="@anim/slide_out_right" />
+        
     </fragment>
 
     <fragment
@@ -137,6 +132,12 @@
         <argument
             android:name="args_snapshot_id"
             app:argType="string"/>
+
+        <action
+            android:id="@+id/action_transaction_fragment_to_transactions"
+            app:destination="@id/transactions_fragment"
+            app:enterAnim="@anim/slide_in_right"
+            app:popExitAnim="@anim/slide_out_right" />
     </fragment>
 
     <fragment
