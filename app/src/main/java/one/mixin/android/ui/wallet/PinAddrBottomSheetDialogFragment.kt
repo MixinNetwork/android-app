@@ -98,6 +98,7 @@ class PinAddrBottomSheetDialogFragment : BiometricBottomSheetDialogFragment() {
         binding.apply {
             titleView.rightIv.setOnClickListener { dismiss() }
             title.text = getTitle()
+            chain.text = chainName
             assetIcon.bg.loadImage(assetUrl, R.drawable.ic_avatar_place_holder)
             assetIcon.badge.loadImage(chainIconUrl, R.drawable.ic_avatar_place_holder)
             assetName.text = label
