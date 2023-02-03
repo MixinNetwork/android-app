@@ -1,10 +1,12 @@
 package one.mixin.android.ui.wallet
 
 import android.annotation.SuppressLint
+import android.os.Bundle
 import android.view.View
 import androidx.core.view.isVisible
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.Fragment
+import androidx.navigation.fragment.findNavController
 import com.skydoves.balloon.BalloonAnimation
 import com.skydoves.balloon.createBalloon
 import kotlinx.coroutines.CoroutineScope
@@ -18,6 +20,7 @@ import one.mixin.android.extension.buildAmountSymbol
 import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.fullDate
 import one.mixin.android.extension.loadImage
+import one.mixin.android.extension.navigate
 import one.mixin.android.extension.navigateUp
 import one.mixin.android.extension.numberFormat
 import one.mixin.android.extension.numberFormat2
@@ -112,7 +115,14 @@ interface TransactionInterface {
     private fun clickAvatar(fragment: Fragment, asset: AssetItem) {
         val curActivity = fragment.requireActivity()
         if (curActivity is WalletActivity) {
-            fragment.view?.navigateUp()
+            if (fragment.findNavController().findDestination(R.id.all_transactions_fragment) != null) {
+                fragment.view?.navigate(
+                    R.id.action_all_transactions_fragment_to_transactions_fragment,
+                    Bundle().apply { putParcelable(TransactionsFragment.ARGS_ASSET, asset) },
+                )
+            } else {
+                fragment.view?.navigateUp()
+            }
         } else {
             WalletActivity.show(curActivity, asset, false)
         }
