@@ -36,7 +36,7 @@ suspend fun firstUrl(input: String): String? = withContext(Dispatchers.IO) {
             val annotations = Tasks.await(mlExtractor.annotate(input))
             annotations.firstOrNull { annotation -> annotation.entities.any { entity -> entity.type == Entity.TYPE_URL } }?.annotatedText
         } else {
-            if (MixinApplication.get().isLowDisk().not()){
+            if (MixinApplication.get().isLowDisk().not()) {
                 Tasks.await(mlExtractor.downloadModelIfNeeded(conditions))
             }
             null
