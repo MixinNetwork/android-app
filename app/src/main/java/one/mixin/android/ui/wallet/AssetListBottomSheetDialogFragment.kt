@@ -144,7 +144,9 @@ class AssetListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         val assetList = defaultAssets.filter {
             it.name.containsIgnoreCase(s) || it.symbol.containsIgnoreCase(s)
         }.sortedByDescending { it.name.equalsIgnoreCase(s) || it.symbol.equalsIgnoreCase(s) }
-        adapter.submitList(assetList)
+        adapter.submitList(assetList) {
+            binding.assetRv.scrollToPosition(0)
+        }
     }
 
     private fun search(query: String) {
@@ -161,7 +163,9 @@ class AssetListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             val remoteAssets = bottomViewModel.queryAsset(query)
             val result = sortQueryAsset(query, localAssets, remoteAssets)
 
-            adapter.submitList(result)
+            adapter.submitList(result) {
+                binding.assetRv.scrollToPosition(0)
+            }
             binding.pb.isVisible = false
 
             if (localAssets.isNullOrEmpty() && remoteAssets.isEmpty()) {
