@@ -6,6 +6,7 @@ import androidx.core.os.bundleOf
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
+import one.mixin.android.Constants.CHAINS
 import one.mixin.android.Constants.ChainId.ETHEREUM_CHAIN_ID
 import one.mixin.android.Constants.ChainId.TRON_CHAIN_ID
 import one.mixin.android.R
@@ -98,6 +99,7 @@ class PinAddrBottomSheetDialogFragment : BiometricBottomSheetDialogFragment() {
         binding.apply {
             titleView.rightIv.setOnClickListener { dismiss() }
             title.text = getTitle()
+            chain.text = CHAINS[chainId] ?: chainName
             assetIcon.bg.loadImage(assetUrl, R.drawable.ic_avatar_place_holder)
             assetIcon.badge.loadImage(chainIconUrl, R.drawable.ic_avatar_place_holder)
             assetName.text = label
