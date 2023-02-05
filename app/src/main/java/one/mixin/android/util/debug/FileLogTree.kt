@@ -13,7 +13,7 @@ class FileLogTree : Timber.Tree() {
     override fun log(priority: Int, tag: String?, message: String, t: Throwable?) {
         if (priority >= Log.ERROR) {
             try {
-                val directory = MixinApplication.appContext.cacheDir
+                val directory = MixinApplication.appContext.externalCacheDir ?: return
 
                 if (!directory.exists()) {
                     directory.mkdirs()
@@ -41,7 +41,7 @@ class FileLogTree : Timber.Tree() {
         private const val LOG_FILE_NAME = "mixin.log"
         private const val MAX_SIZE = 5 * 1024 * 1024
         fun getLogFile(): File? {
-            val directory = MixinApplication.appContext.cacheDir
+            val directory = MixinApplication.appContext.externalCacheDir ?: return null
             val file = File("${directory.absolutePath}${File.separator}$LOG_LOCAL_FILE_NAME")
             return if (file.exists()) {
                 val result = File("${directory.absolutePath}${File.separator}$LOG_FILE_NAME")

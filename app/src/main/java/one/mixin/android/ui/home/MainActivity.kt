@@ -150,6 +150,7 @@ import one.mixin.android.vo.Participant
 import one.mixin.android.vo.ParticipantRole
 import one.mixin.android.vo.isGroupConversation
 import one.mixin.android.widget.MaterialSearchView
+import timber.log.Timber
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -203,8 +204,8 @@ class MainActivity : BlazeBaseActivity() {
     private lateinit var binding: ActivityMainBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        Timber.e("main onCreate")
         super.onCreate(savedInstanceState)
-        navigationController = NavigationController(this)
 
         var deviceId = defaultSharedPreferences.getString(DEVICE_ID, null)
         if (deviceId == null) {
@@ -217,6 +218,7 @@ class MainActivity : BlazeBaseActivity() {
             return
         }
 
+        Timber.e("main checkToken")
         if (!Session.checkToken()) {
             run {
                 startActivity(Intent(this, LandingActivity::class.java))
@@ -244,7 +246,7 @@ class MainActivity : BlazeBaseActivity() {
         }
 
         MixinApplication.get().isOnline.set(true)
-
+        Timber.e("main check end")
         if (checkNeedGo2MigrationPage()) {
             InitializeActivity.showDBUpgrade(this)
             finish()
@@ -265,9 +267,10 @@ class MainActivity : BlazeBaseActivity() {
             return
         }
 
+        navigationController = NavigationController(this)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
-
+        Timber.e("main init end")
         if (savedInstanceState == null) {
             navigationController.navigateToMessage()
         }
@@ -296,6 +299,7 @@ class MainActivity : BlazeBaseActivity() {
             }
             checkUpdate()
         }
+        Timber.e("main created")
     }
 
     override fun onStart() {
