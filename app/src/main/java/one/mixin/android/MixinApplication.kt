@@ -127,13 +127,13 @@ open class MixinApplication :
     lateinit var applicationScope: CoroutineScope
 
     override fun onCreate() {
+        appContext = applicationContext
         Timber.e("App onCreate")
         super.onCreate()
         init()
         Timber.e("App init end")
         registerActivityLifecycleCallbacks(this)
         SignalProtocolLoggerProvider.setProvider(MixinSignalProtocolLogger())
-        appContext = applicationContext
         RxJavaPlugins.setErrorHandler {}
         AppCenter.start(
             this,
