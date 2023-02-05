@@ -127,8 +127,10 @@ open class MixinApplication :
     lateinit var applicationScope: CoroutineScope
 
     override fun onCreate() {
+        Timber.e("App onCreate")
         super.onCreate()
         init()
+        Timber.e("App init end")
         registerActivityLifecycleCallbacks(this)
         SignalProtocolLoggerProvider.setProvider(MixinSignalProtocolLogger())
         appContext = applicationContext
@@ -139,18 +141,20 @@ open class MixinApplication :
             Analytics::class.java,
             Crashes::class.java,
         )
+        Timber.e("App AppCenter end")
         if (useMapbox()) {
             AppInitializer.getInstance(this)
                 .initializeComponent(MapboxMapsInitializer::class.java)
         }
 
         initNativeLibs(applicationContext)
-
+        Timber.e("App initNativeLibs end")
         registerComponentCallbacks(MemoryCallback())
         Thread.setDefaultUncaughtExceptionHandler { thread, throwable ->
             Timber.e("${thread.name}-${throwable.message}")
             exitProcess(2)
         }
+        Timber.e("App onCreate end")
     }
 
     @SuppressLint("DiscouragedPrivateApi")
