@@ -21,14 +21,13 @@ private val mlExtractor by lazy {
         null
     }
 }
-private val conditions = DownloadConditions.Builder().build()
 
 suspend fun entityInitialize() {
     withContext(Dispatchers.IO) {
         val extractor = mlExtractor ?: return@withContext
         try {
             if (MixinApplication.get().isLowDisk().not()) {
-                Tasks.await(extractor.downloadModelIfNeeded(conditions))
+                Tasks.await(extractor.downloadModelIfNeeded(DownloadConditions.Builder().build()))
             }
         } catch (e: Exception) {
             reportException(e)
