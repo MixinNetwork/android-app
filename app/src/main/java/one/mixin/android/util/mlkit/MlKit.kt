@@ -12,31 +12,39 @@ import one.mixin.android.extension.isLowDisk
 import one.mixin.android.util.reportException
 
 private val mlExtractor by lazy {
-    EntityExtraction.getClient(
-        EntityExtractorOptions.Builder(EntityExtractorOptions.ENGLISH).build(),
-    )
+    return@lazy try {
+        EntityExtraction.getClient(
+            EntityExtractorOptions.Builder(EntityExtractorOptions.ENGLISH).build(),
+        )
+    } catch (e: Exception) {
+        reportException(e)
+        null
+    }
 }
 private val conditions = DownloadConditions.Builder().build()
 
-
 suspend fun entityInitialize() {
     withContext(Dispatchers.IO) {
+        val extractor = mlExtractor ?: return@withContext
         try {
-            Tasks.await(mlExtractor.downloadModelIfNeeded(conditions))
-        } catch (e: Throwable) {
-            reportException("MLKit init", e)
+            if (MixinApplication.get().isLowDisk().not()) {
+                Tasks.await(extractor.downloadModelIfNeeded(conditions))
+            }
+        } catch (e: Exception) {
+            reportException(e)
         }
     }
 }
 
 suspend fun firstUrl(input: String): String? = withContext(Dispatchers.IO) {
+    val extractor = mlExtractor ?: return@withContext null
     return@withContext try {
-        if (Tasks.await(mlExtractor.isModelDownloaded)) {
-            val annotations = Tasks.await(mlExtractor.annotate(input))
+        if (Tasks.await(extractor.isModelDownloaded)) {
+            val annotations = Tasks.await(extractor.annotate(input))
             annotations.firstOrNull { annotation -> annotation.entities.any { entity -> entity.type == Entity.TYPE_URL } }?.annotatedText
         } else {
             if (MixinApplication.get().isLowDisk().not()) {
-                Tasks.await(mlExtractor.downloadModelIfNeeded(conditions))
+                Tasks.await(extractor.downloadModelIfNeeded(conditions))
             }
             null
         }
