@@ -43,9 +43,7 @@ suspend fun firstUrl(input: String): String? = withContext(Dispatchers.IO) {
             val annotations = Tasks.await(extractor.annotate(input))
             annotations.firstOrNull { annotation -> annotation.entities.any { entity -> entity.type == Entity.TYPE_URL } }?.annotatedText
         } else {
-            if (MixinApplication.get().isLowDisk().not()) {
-                Tasks.await(extractor.downloadModelIfNeeded(conditions))
-            }
+            entityInitialize()
             null
         }
     } catch (e: Throwable) {
