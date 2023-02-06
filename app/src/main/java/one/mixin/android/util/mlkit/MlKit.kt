@@ -4,7 +4,6 @@ import com.google.android.gms.tasks.Tasks
 import com.google.mlkit.common.model.DownloadConditions
 import com.google.mlkit.nl.entityextraction.Entity
 import com.google.mlkit.nl.entityextraction.EntityExtraction
-import com.google.mlkit.nl.entityextraction.EntityExtractor
 import com.google.mlkit.nl.entityextraction.EntityExtractorOptions
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -19,15 +18,15 @@ private val mlExtractor by lazy {
 }
 private val conditions = DownloadConditions.Builder().build()
 
-fun entityInitialize(): EntityExtractor {
-    try {
-        if (MixinApplication.get().isLowDisk().not()) {
+
+suspend fun entityInitialize() {
+    withContext(Dispatchers.IO) {
+        try {
             Tasks.await(mlExtractor.downloadModelIfNeeded(conditions))
+        } catch (e: Throwable) {
+            reportException("MLKit init", e)
         }
-    } catch (e: Throwable) {
-        reportException("MLKit init", e)
     }
-    return mlExtractor
 }
 
 suspend fun firstUrl(input: String): String? = withContext(Dispatchers.IO) {
