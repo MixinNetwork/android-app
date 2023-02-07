@@ -5,6 +5,7 @@ import androidx.room.Dao
 import androidx.room.Query
 import androidx.room.RoomWarnings
 import androidx.room.Update
+import androidx.room.Upsert
 import one.mixin.android.db.BaseDao.Companion.ESCAPE_SUFFIX
 import one.mixin.android.vo.Asset
 import one.mixin.android.vo.AssetItem
@@ -116,4 +117,10 @@ interface AssetDao : BaseDao<Asset> {
 
     @Query("SELECT asset_id FROM assets WHERE asset_key = :assetKey")
     suspend fun findAssetIdByAssetKey(assetKey: String): String?
+
+    @Upsert
+    suspend fun upsertAsset(asset: Asset)
+
+    @Upsert
+    fun upsertAssets(assets: List<Asset>)
 }

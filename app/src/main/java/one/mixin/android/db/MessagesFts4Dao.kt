@@ -2,6 +2,8 @@ package one.mixin.android.db
 
 import androidx.room.Dao
 import androidx.room.Query
+import androidx.room.RawQuery
+import androidx.sqlite.db.SupportSQLiteQuery
 import one.mixin.android.vo.MessageFts4
 
 @Dao
@@ -9,4 +11,7 @@ interface MessagesFts4Dao : BaseDao<MessageFts4> {
 
     @Query("SELECT message_id FROM messages_fts4 WHERE message_id NOT IN (SELECT id FROM messages) LIMIT :limit")
     suspend fun excludeIds(limit: Int): List<String>
+
+    @RawQuery
+    fun rawQuery(sql: SupportSQLiteQuery): Int
 }
