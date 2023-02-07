@@ -3,9 +3,11 @@ package one.mixin.android.db
 import androidx.lifecycle.LiveData
 import androidx.room.Dao
 import androidx.room.Query
+import androidx.room.RawQuery
 import androidx.room.RoomWarnings
 import androidx.room.Update
 import androidx.room.Upsert
+import androidx.sqlite.db.SupportSQLiteQuery
 import one.mixin.android.db.BaseDao.Companion.ESCAPE_SUFFIX
 import one.mixin.android.vo.Asset
 import one.mixin.android.vo.AssetItem
@@ -123,4 +125,7 @@ interface AssetDao : BaseDao<Asset> {
 
     @Upsert
     fun upsertAssets(assets: List<Asset>)
+
+    @RawQuery
+    fun rawQuery(query: SupportSQLiteQuery):Int
 }
