@@ -1,6 +1,7 @@
 package one.mixin.android.db
 
 import one.mixin.android.BuildConfig
+import one.mixin.android.util.reportException
 import timber.log.Timber
 
 object DatabaseMonitor {
@@ -27,7 +28,7 @@ object DatabaseMonitor {
                     str.append("It takes $time milliseconds\n")
                     str.append("--------<END>--------($currentThreadName)\n\n")
                     Timber.e(str.toString())
-                    // reportException("It takes $time milliseconds\n $str", LogExtension())
+                    reportException("It takes $time milliseconds\n $str", SlowSqlExtension())
                     str = StringBuffer()
                 }
                 logSet.remove(currentThreadName)
@@ -37,5 +38,11 @@ object DatabaseMonitor {
         } else {
             // Timber.w("$currentThreadName[$sql]")
         }
+    }
+}
+
+class SlowSqlExtension : Exception() {
+    companion object {
+        private const val serialVersionUID: Long = 1L
     }
 }
