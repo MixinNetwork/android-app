@@ -403,6 +403,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                 RxBus.publish(RecallEvent(msg.messageId))
                 messageDao.recallFailedMessage(msg.messageId)
                 messageDao.recallMessage(msg.messageId)
+                messagesFts4Dao.deleteFtsByMessageId(msg.messageId)
                 messageDao.recallPinMessage(msg.messageId, msg.conversationId)
                 pinMessageDao.deleteByMessageId(msg.messageId)
                 messageMentionDao.deleteMessage(msg.messageId)
@@ -429,7 +430,6 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                     msg.createdAt,
                     msg.conversationId,
                 )
-                deleteFtsByMessageId(msg.messageId)
             }
             updateRemoteMessageStatus(data.messageId, MessageStatus.READ)
             messageHistoryDao.insert(MessageHistory(data.messageId))
