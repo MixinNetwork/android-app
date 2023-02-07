@@ -23,7 +23,7 @@ class RefreshAssetsJob(
             val response = assetService.getAssetByIdSuspend(assetId)
             if (response.isSuccess && response.data != null) {
                 response.data?.let {
-                    assetRepo.insert(it)
+                    assetDao.upsertAsset(it)
                 }
             }
         } else {
@@ -37,7 +37,7 @@ class RefreshAssetsJob(
                         assetDao.zeroClearSuspend(it)
                     }
                 }
-                assetRepo.insertList(list)
+                assetDao.upsertAssets(list)
             }
             refreshFiats()
         }
