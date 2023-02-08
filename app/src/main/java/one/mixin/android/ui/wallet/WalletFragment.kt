@@ -36,6 +36,7 @@ import one.mixin.android.extension.navigate
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.numberFormat8
 import one.mixin.android.extension.supportsS
+import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshAssetsJob
 import one.mixin.android.session.Session
@@ -319,6 +320,8 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
             val pinCheckDialog = PinCheckDialogFragment.newInstance().apply {
                 supportsS({
                     setDialogCallback { showed ->
+                        if (this@WalletFragment.viewDestroyed()) return@setDialogCallback
+
                         binding.container.setRenderEffect(
                             if (showed) {
                                 RenderEffect.createBlurEffect(25f, 25f, Shader.TileMode.MIRROR)
