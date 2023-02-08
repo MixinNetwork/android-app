@@ -8,12 +8,12 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.core.view.isVisible
-import androidx.paging.PagedListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemFragmentMediaBinding
 import one.mixin.android.extension.loadImage
 import one.mixin.android.job.MixinJobManager
+import one.mixin.android.ui.common.recyclerview.SafePagedListAdapter
 import one.mixin.android.ui.player.internal.albumArtUri
 import one.mixin.android.ui.player.internal.diffCallback
 import one.mixin.android.ui.player.internal.displaySubtitle
@@ -23,7 +23,7 @@ import one.mixin.android.ui.player.internal.id
 import one.mixin.android.util.MusicPlayer
 import one.mixin.android.widget.CircleProgress
 
-class MediaItemAdapter : PagedListAdapter<MediaMetadataCompat, MediaViewHolder>(diffCallback) {
+class MediaItemAdapter : SafePagedListAdapter<MediaMetadataCompat, MediaViewHolder>(diffCallback) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MediaViewHolder {
         val inflater = LayoutInflater.from(parent.context)

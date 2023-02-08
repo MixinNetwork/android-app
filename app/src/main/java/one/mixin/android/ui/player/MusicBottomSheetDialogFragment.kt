@@ -281,6 +281,7 @@ class MusicBottomSheetDialogFragment : BottomSheetDialogFragment() {
         }
     }
 
+    @SuppressLint("RestrictedApi")
     private val urlObserver = UrlLoader.UrlObserver { list ->
         val pagedConfig = PagedList.Config.Builder()
             .setPageSize(CONVERSATION_UI_PAGE_SIZE)
