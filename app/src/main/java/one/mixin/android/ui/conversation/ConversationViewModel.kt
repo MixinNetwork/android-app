@@ -1,6 +1,7 @@
 package one.mixin.android.ui.conversation
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.NotificationManager
 import android.content.SharedPreferences
@@ -8,8 +9,8 @@ import android.net.Uri
 import androidx.annotation.RequiresPermission
 import androidx.core.net.toUri
 import androidx.lifecycle.LiveData
-import androidx.lifecycle.Transformations
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.map
 import androidx.lifecycle.viewModelScope
 import androidx.paging.PagedList
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -501,11 +502,10 @@ internal constructor(
         }
     }
 
+    @SuppressLint("CheckResult")
     fun getBottomApps(conversationId: String, guestId: String?): LiveData<List<AppItem>>? {
         return if (guestId == null) {
-            Transformations.map(
-                conversationRepository.getGroupAppsByConversationId(conversationId),
-            ) { list ->
+            conversationRepository.getGroupAppsByConversationId(conversationId).map { list ->
                 list.filter {
                     it.capabilities?.contains(AppCap.GROUP.name) == true
                 }

@@ -70,14 +70,10 @@ abstract class LinkFragment : BaseFragment(), Observer<Int> {
         }
     }
 
-    override fun onChanged(t: Int?) {
-        if (t != null) {
-            if (t > 500) {
-                setSyncing()
-                showBar()
-            } else {
-                hiddenBar()
-            }
+    override fun onChanged(value: Int) {
+        if (value > 500) {
+            setSyncing()
+            showBar()
         } else {
             hiddenBar()
         }
