@@ -83,8 +83,11 @@ import one.mixin.android.vo.User
 import one.mixin.android.vo.generateConversationId
 import timber.log.Timber
 import java.io.IOException
+import java.io.UnsupportedEncodingException
 import java.net.SocketTimeoutException
+import java.net.URLDecoder
 import java.net.UnknownHostException
+import java.nio.charset.StandardCharsets.UTF_8
 import java.util.UUID
 
 @AndroidEntryPoint
@@ -786,7 +789,13 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
         }
         val trace = uri.getQueryParameter("trace") ?: UUID.randomUUID().toString()
         val memo = uri.getQueryParameter("memo")
-        val returnTo = uri.getQueryParameter("return_to")
+        val returnTo = uri.getQueryParameter("return_to")?.run {
+            try {
+                URLDecoder.decode(this, UTF_8.name())
+            } catch (e: UnsupportedEncodingException) {
+                this
+            }
+        }
 
         val asset: AssetItem = checkAsset(assetId) ?: return false
 
