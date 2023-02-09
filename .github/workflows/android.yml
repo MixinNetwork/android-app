@@ -25,11 +25,11 @@ jobs:
 
     - name: Restore gradle.properties
       env:
-        GRADLE_PROPERTIES: ${{ secrets.MAPBOX_DOWNLOADS_TOKEN }}
+        MAPBOX_DOWNLOADS_TOKEN: ${{ secrets.MAPBOX_DOWNLOADS_TOKEN }}
       shell: bash
       run: |
         mkdir -p ~/.gradle/
         echo "GRADLE_USER_HOME=${HOME}/.gradle" >> $GITHUB_ENV
-        echo "MAPBOX_DOWNLOADS_TOKEN=${GRADLE_PROPERTIES}" > ~/.gradle/gradle.properties
+        echo "${MAPBOX_DOWNLOADS_TOKEN}" > ~/.gradle/gradle.properties
     - name: Build
       run: ./gradlew build
