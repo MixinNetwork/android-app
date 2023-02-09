@@ -30,6 +30,6 @@ jobs:
       run: |
         mkdir -p ~/.gradle/
         echo "GRADLE_USER_HOME=${HOME}/.gradle" >> $GITHUB_ENV
-        echo "${MAPBOX_DOWNLOADS_TOKEN}" > ~/.gradle/gradle.properties
+        echo "MAPBOX_DOWNLOADS_TOKEN=${MAPBOX_DOWNLOADS_TOKEN}" > .gradle/gradle.properties
     - name: Build
       run: ./gradlew build
