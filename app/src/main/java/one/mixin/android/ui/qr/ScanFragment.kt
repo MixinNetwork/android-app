@@ -47,6 +47,7 @@ import one.mixin.android.util.mlkit.scan.analyze.BarcodeScanningAnalyzer
 import one.mixin.android.util.mlkit.scan.camera.config.AspectRatioCameraConfig
 import one.mixin.android.util.mlkit.scan.utils.PointUtils
 import one.mixin.android.util.viewBinding
+import one.mixin.android.widget.ViewfinderView
 import one.mixin.android.widget.gallery.ui.GalleryActivity
 import timber.log.Timber
 
@@ -164,9 +165,11 @@ class ScanFragment : BaseCameraScanFragment<List<Barcode>>() {
             }
             Timber.e("$width - $height $points")
             binding.viewfinderView.showResultPoints(points)
-            binding.viewfinderView.setOnItemClickListener {
-                handleAnalysis(results[it].displayValue!!)
-            }
+            binding.viewfinderView.setOnItemClickListener(object :ViewfinderView.OnItemClickListener{
+                override fun onItemClick(position: Int) {
+                    handleAnalysis(results[position].displayValue!!)
+                }
+            })
             if (points.size == 1) {
                 handleAnalysis(results[0].displayValue!!)
             }
