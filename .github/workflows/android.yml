@@ -22,3 +22,5 @@ jobs:
       run: chmod +x ./gradlew
     - name: Check format with ktlint
       run: ./gradlew ktlintFormat
+    - name: Build
+      run: ./gradlew build
