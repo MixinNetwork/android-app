@@ -23,11 +23,14 @@ mkdir -p "$tmp/to_verify" "$tmp/baseline"
 
 echo "Building mixin APK from source code. This might take a while (20-30 minutes)..."
 
-docker build -t mixin-android .
-docker run --rm -v "$PWD":/home/source mixin-android
+mkdir -p ./output-apk
+docker run --rm \
+  -v $(pwd):/project \
+  -v $(pwd)/output-apk:/home/gradle/app/build/outputs/apk/release \
+  mingc/android-build-box bash -c 'cd /project; ./gradlew :app:assembleRelease'
 
 unzip -q -d "$tmp/to_verify" "$apk_to_verify"
-unzip -q -d "$tmp/baseline" "apk/mixin-android.apk"
+unzip -q -d "$tmp/baseline" "output-apk/app-release-unsigned.apk"
 
 # Remove the signature since OSS users won't have Mixin private signing key
 rm -r "$tmp"/{to_verify,baseline}/{META-INF,resources.arsc}
