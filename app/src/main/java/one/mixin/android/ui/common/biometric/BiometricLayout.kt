@@ -8,17 +8,16 @@ import android.widget.ViewAnimator
 import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
 import one.mixin.android.Constants
-import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.databinding.LayoutPinBiometricBinding
 import one.mixin.android.extension.animateHeight
 import one.mixin.android.extension.clickVibrate
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.dpToPx
+import one.mixin.android.extension.openExternalUrl
 import one.mixin.android.extension.textColor
 import one.mixin.android.extension.tickVibrate
 import one.mixin.android.ui.setting.SettingActivity
-import one.mixin.android.ui.web.WebActivity
 import one.mixin.android.util.BiometricUtil
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.widget.Keyboard
@@ -148,7 +147,9 @@ class BiometricLayout(context: Context, attributeSet: AttributeSet) : ViewAnimat
             binding.doneBtn.setText(R.string.Back_To_Merchant)
             binding.doneBtn.setOnClickListener {
                 doneAction()
-                WebActivity.show(MixinApplication.appContext, returnTo, null)
+                val context = this@BiometricLayout.context
+                // To be optimized: Internal bot link jump
+                context.openExternalUrl(returnTo)
             }
             enableBiometricTv.setText(R.string.Stay_in_Mixin)
             enableBiometricTv.isVisible = true
