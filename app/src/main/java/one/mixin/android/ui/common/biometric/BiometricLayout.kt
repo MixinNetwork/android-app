@@ -148,6 +148,7 @@ class BiometricLayout(context: Context, attributeSet: AttributeSet) : ViewAnimat
             binding.doneBtn.setOnClickListener {
                 doneAction()
                 val context = this@BiometricLayout.context
+                // To be optimized: Internal bot link jump
                 context.openExternalUrl(returnTo)
             }
             enableBiometricTv.setText(R.string.Stay_in_Mixin)
