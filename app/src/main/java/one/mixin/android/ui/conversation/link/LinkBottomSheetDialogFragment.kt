@@ -83,8 +83,11 @@ import one.mixin.android.vo.User
 import one.mixin.android.vo.generateConversationId
 import timber.log.Timber
 import java.io.IOException
+import java.io.UnsupportedEncodingException
 import java.net.SocketTimeoutException
+import java.net.URLDecoder
 import java.net.UnknownHostException
+import java.nio.charset.StandardCharsets.UTF_8
 import java.util.UUID
 
 @AndroidEntryPoint
@@ -786,6 +789,13 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
         }
         val trace = uri.getQueryParameter("trace") ?: UUID.randomUUID().toString()
         val memo = uri.getQueryParameter("memo")
+        val returnTo = uri.getQueryParameter("return_to")?.run {
+            try {
+                URLDecoder.decode(this, UTF_8.name())
+            } catch (e: UnsupportedEncodingException) {
+                this
+            }
+        }
 
         val asset: AssetItem = checkAsset(assetId) ?: return false
 
@@ -799,19 +809,19 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
             successBlock = { r ->
                 val response = r.data ?: return@handleMixinResponse false
 
-                showTransferBottom(user, amount, asset, trace, response.status, memo)
+                showTransferBottom(user, amount, asset, trace, response.status, memo, returnTo)
                 return@handleMixinResponse true
             },
         ) ?: false
     }
 
-    private suspend fun showTransferBottom(user: User, amount: String, asset: AssetItem, traceId: String, status: String, memo: String?) {
+    private suspend fun showTransferBottom(user: User, amount: String, asset: AssetItem, traceId: String, status: String, memo: String?, returnTo: String?) {
         val pair = linkViewModel.findLatestTrace(user.userId, null, null, amount, asset.assetId)
         if (pair.second) {
             showError(getString(R.string.check_trace_failed))
             return
         }
-        val biometricItem = TransferBiometricItem(user, asset, amount, null, traceId, memo, status, pair.first)
+        val biometricItem = TransferBiometricItem(user, asset, amount, null, traceId, memo, status, pair.first, returnTo)
         showPreconditionBottom(biometricItem)
     }
 

@@ -106,6 +106,7 @@
     <string name="auto_download_hint">媒体自动下载设定，所有语音消息将自动下载。</string>
     <string name="Auto_Lock">自动锁定</string>
     <string name="Back_To_Chat">返回聊天</string>
+    <string name="Back_To_Merchant">返回商家</string>
     <string name="Backing_Up">正在备份…</string>
     <string name="Backup">备份</string>
     <string name="backup_choose_a_folder">请选择用于保存备份的文件夹</string>
@@ -907,6 +908,7 @@
     <string name="Start">开始</string>
     <string name="Start_Messaging">开始聊天</string>
     <string name="Status">交易状态</string>
+    <string name="Stay_in_Mixin">留在 Mixin</string>
     <string name="Sticker">贴纸</string>
     <string name="sticker_add_invalid_size">贴纸要求大于 1KB 且小于 1MB，宽高大于 128 像素且小于 1024 像素。</string>
     <string name="Sticker_Store">表情商店</string>

@@ -5,7 +5,6 @@ import android.content.DialogInterface
 import android.content.Intent
 import android.os.Bundle
 import android.view.WindowManager
-import androidx.core.view.postDelayed
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -32,7 +31,6 @@ import javax.inject.Inject
 
 abstract class BiometricBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     private var biometricDialog: BiometricDialog? = null
-    private var dismissRunnable: Runnable? = null
     var autoDismiss: Boolean = true
 
     @Inject
@@ -54,8 +52,7 @@ abstract class BiometricBottomSheetDialogFragment : MixinBottomSheetDialogFragme
     override fun onDestroyView() {
         super.onDestroyView()
         dialog?.window?.clearFlags(WindowManager.LayoutParams.FLAG_SECURE)
-        if (dismissRunnable != null) {
-            contentView.removeCallbacks(dismissRunnable)
+        if(isSuccess) {
             callback?.onSuccess()
         }
         biometricDialog?.callback = null
@@ -109,12 +106,12 @@ abstract class BiometricBottomSheetDialogFragment : MixinBottomSheetDialogFragme
         dialog?.window?.clearFlags(WindowManager.LayoutParams.FLAG_SECURE)
     }
 
-    protected fun showDone() {
+    private var isSuccess = false
+    protected fun showDone(returnTo: String? = null) {
         if (!isAdded) return
-        val delayMillis = biometricLayout.showDone()
-        dismissRunnable = contentView.postDelayed(delayMillis) {
-            dismissRunnable = null
+        biometricLayout.showDone(returnTo) {
             dismiss()
+            isSuccess = true
             callback?.onSuccess()
             dialog?.window?.clearFlags(WindowManager.LayoutParams.FLAG_SECURE)
         }

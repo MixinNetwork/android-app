@@ -8,6 +8,7 @@ import android.widget.ViewAnimator
 import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
 import one.mixin.android.Constants
+import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.databinding.LayoutPinBiometricBinding
 import one.mixin.android.extension.animateHeight
@@ -17,6 +18,7 @@ import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.textColor
 import one.mixin.android.extension.tickVibrate
 import one.mixin.android.ui.setting.SettingActivity
+import one.mixin.android.ui.web.WebActivity
 import one.mixin.android.util.BiometricUtil
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.widget.Keyboard
@@ -125,19 +127,37 @@ class BiometricLayout(context: Context, attributeSet: AttributeSet) : ViewAnimat
         )
     }
 
-    fun showDone(): Long {
+    fun showDone(
+        returnTo: String? = null,
+        doneAction: () -> Unit,
+    ) {
         displayedChild = POS_DONE
-
-        val open = context.defaultSharedPreferences.getBoolean(Constants.Account.PREF_BIOMETRICS, false)
-        val enable = !open && BiometricUtil.isSupport(context)
-        enableBiometricTv.isVisible = enable
-        enableBiometricTv.setOnClickListener {
-            SettingActivity.showPinSetting(context)
+        if (returnTo.isNullOrBlank()) {
+            val open = context.defaultSharedPreferences.getBoolean(Constants.Account.PREF_BIOMETRICS, false)
+            val enable = !open && BiometricUtil.isSupport(context)
+            binding.doneBtn.setText(R.string.Done)
+            binding.doneBtn.setOnClickListener {
+                doneAction()
+            }
+            enableBiometricTv.isVisible = enable
+            enableBiometricTv.setOnClickListener {
+                doneAction()
+                SettingActivity.showPinSetting(context)
+            }
+        } else {
+            binding.doneBtn.setText(R.string.Back_To_Merchant)
+            binding.doneBtn.setOnClickListener {
+                doneAction()
+                WebActivity.show(MixinApplication.appContext, returnTo, null)
+            }
+            enableBiometricTv.setText(R.string.Stay_in_Mixin)
+            enableBiometricTv.isVisible = true
+            enableBiometricTv.setCompoundDrawables(null, null, null, null)
+            enableBiometricTv.setOnClickListener {
+                doneAction()
+            }
         }
-
         keyboard?.animateHeight(keyboardHeight, 0)
-
-        return if (enable) 4000L else 3000L
     }
 
     fun showPb() {
