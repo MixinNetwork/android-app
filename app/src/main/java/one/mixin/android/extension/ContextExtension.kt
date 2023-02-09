@@ -698,6 +698,16 @@ fun Context.openUrl(url: String) {
     }
 }
 
+fun Context.openExternalUrl(url:String) {
+    try {
+        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+        intent.putExtra(Browser.EXTRA_APPLICATION_ID, packageName)
+        startActivity(intent)
+    } catch (e: Exception) {
+        Timber.e(e, "OpenUrl")
+    }
+}
+
 fun Context.getClipboardManager(): ClipboardManager = requireNotNull(getSystemService())
 
 fun Window.isNotchScreen(): Boolean {
