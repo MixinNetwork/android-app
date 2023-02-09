@@ -47,7 +47,6 @@ class BaseCameraScan<T> : CameraScan<T> {
     private var mCamera: Camera? = null
     private var mAnalyzer: Analyzer<T>? = null
 
-
     @Volatile
     private var isAnalyze = true
 

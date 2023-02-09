@@ -165,7 +165,7 @@ class ScanFragment : BaseCameraScanFragment<List<Barcode>>() {
             }
             Timber.e("$width - $height $points")
             binding.viewfinderView.showResultPoints(points)
-            binding.viewfinderView.setOnItemClickListener(object :ViewfinderView.OnItemClickListener{
+            binding.viewfinderView.setOnItemClickListener(object : ViewfinderView.OnItemClickListener {
                 override fun onItemClick(position: Int) {
                     handleAnalysis(results[position].displayValue!!)
                 }

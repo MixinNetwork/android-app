@@ -7,13 +7,15 @@ import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.LinearGradient
 import android.graphics.Paint
+import android.graphics.Path
 import android.graphics.PixelFormat
 import android.graphics.Point
 import android.graphics.Rect
 import android.graphics.RectF
-import android.graphics.Shader
 import android.graphics.Shader.TileMode
+import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
+import android.graphics.drawable.VectorDrawable
 import android.text.Layout
 import android.text.StaticLayout
 import android.text.TextPaint
@@ -30,16 +32,18 @@ import androidx.annotation.ColorRes
 import androidx.annotation.DrawableRes
 import androidx.annotation.IntDef
 import androidx.core.content.ContextCompat
+import androidx.core.graphics.toRectF
 import one.mixin.android.R
+import one.mixin.android.extension.dp
 
 class ViewfinderView @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null,
-    defStyleAttr: Int = 0
+    defStyleAttr: Int = 0,
 ) : View(context, attrs, defStyleAttr) {
     private val DEFAULT_RANGE_RATIO = 1.2f
     private val MAX_ZOOM_RATIO = 1.2f
-    private lateinit var paint: Paint 
+    private lateinit var paint: Paint
     private lateinit var textPaint: TextPaint
     private var maskColor = 0
     private var frameColor = 0
@@ -58,7 +62,7 @@ class ViewfinderView @JvmOverloads constructor(
     private var laserStyle: LaserStyle? = null
     private var gridColumn = 0
     private var gridHeight = 0
-    private var frame: Rect? = null
+    private lateinit var frame: Rect
     private var cornerRectWidth = 0
     private var cornerRectHeight = 0
     private var scannerLineMoveDistance = 0
@@ -91,18 +95,17 @@ class ViewfinderView @JvmOverloads constructor(
     private var onItemClickListener: OnItemClickListener? = null
     private var gestureDetector: GestureDetector? = null
 
-    @IntDef(ViewfinderStyle.CLASSIC, ViewfinderStyle.POPULAR, ViewfinderStyle.RADAR)
+    @IntDef(ViewfinderStyle.CLASSIC, ViewfinderStyle.POPULAR)
     @Retention(AnnotationRetention.SOURCE)
     annotation class ViewfinderStyle {
         companion object {
             const val CLASSIC = 0
             const val POPULAR = 1
-            const val RADAR = 2
         }
     }
 
     enum class LaserStyle(val mValue: Int) {
-        NONE(0), LINE(1), GRID(2), IMAGE(3);
+        NONE(0), LINE(1), GRID(2), RADAR(3), IMAGE(4);
 
         companion object {
             fun getFromInt(value: Int): LaserStyle {
@@ -154,32 +157,32 @@ class ViewfinderView @JvmOverloads constructor(
         val array = context.obtainStyledAttributes(attrs, R.styleable.ViewfinderView)
         maskColor = array.getColor(
             R.styleable.ViewfinderView_maskColor,
-            ContextCompat.getColor(context, R.color.viewfinder_mask)
+            ContextCompat.getColor(context, R.color.viewfinder_mask),
         )
         frameColor = array.getColor(
             R.styleable.ViewfinderView_frameColor,
-            ContextCompat.getColor(context, R.color.viewfinder_frame)
+            ContextCompat.getColor(context, R.color.viewfinder_frame),
         )
         cornerColor = array.getColor(
             R.styleable.ViewfinderView_cornerColor,
-            ContextCompat.getColor(context, R.color.viewfinder_corner)
+            ContextCompat.getColor(context, R.color.viewfinder_corner),
         )
         laserColor = array.getColor(
             R.styleable.ViewfinderView_laserColor,
-            ContextCompat.getColor(context, R.color.viewfinder_laser)
+            ContextCompat.getColor(context, R.color.viewfinder_laser),
         )
         labelText = array.getString(R.styleable.ViewfinderView_labelText)
         labelTextColor = array.getColor(
             R.styleable.ViewfinderView_labelTextColor,
-            ContextCompat.getColor(context, R.color.viewfinder_text_color)
+            ContextCompat.getColor(context, R.color.viewfinder_text_color),
         )
         labelTextSize = array.getDimension(
             R.styleable.ViewfinderView_labelTextSize,
-            TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, 14f, resources.displayMetrics)
+            TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, 14f, resources.displayMetrics),
         )
         labelTextPadding = array.getDimension(
             R.styleable.ViewfinderView_labelTextPadding,
-            TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 24f, resources.displayMetrics)
+            TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 24f, resources.displayMetrics),
         )
         labelTextWidth = array.getDimensionPixelSize(R.styleable.ViewfinderView_labelTextWidth, 0)
         labelTextLocation =
@@ -189,37 +192,37 @@ class ViewfinderView @JvmOverloads constructor(
         laserStyle = LaserStyle.getFromInt(
             array.getInt(
                 R.styleable.ViewfinderView_laserStyle,
-                LaserStyle.LINE.mValue
-            )
+                LaserStyle.NONE.mValue,
+            ),
         )
         gridColumn = array.getInt(R.styleable.ViewfinderView_gridColumn, 20)
         gridHeight = array.getDimension(
             R.styleable.ViewfinderView_gridHeight,
-            TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 40f, resources.displayMetrics)
+            TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 40f, resources.displayMetrics),
         ).toInt()
         cornerRectWidth = array.getDimension(
             R.styleable.ViewfinderView_cornerRectWidth,
-            TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 4f, resources.displayMetrics)
+            TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 4f, resources.displayMetrics),
         ).toInt()
         cornerRectHeight = array.getDimension(
             R.styleable.ViewfinderView_cornerRectHeight,
-            TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 16f, resources.displayMetrics)
+            TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 16f, resources.displayMetrics),
         ).toInt()
         scannerLineMoveDistance = array.getDimension(
             R.styleable.ViewfinderView_scannerLineMoveDistance,
-            TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 2f, resources.displayMetrics)
+            TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 4.5f, resources.displayMetrics),
         ).toInt()
         scannerLineHeight = array.getDimension(
             R.styleable.ViewfinderView_scannerLineHeight,
-            TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 5f, resources.displayMetrics)
+            TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 5f, resources.displayMetrics),
         ).toInt()
         frameLineWidth = array.getDimension(
             R.styleable.ViewfinderView_frameLineWidth,
-            TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 1f, resources.displayMetrics)
+            TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 1f, resources.displayMetrics),
         ).toInt()
         scannerAnimationDelay =
             array.getInteger(R.styleable.ViewfinderView_scannerAnimationDelay, 20)
-        frameRatio = array.getFloat(R.styleable.ViewfinderView_frameRatio, 0.625f)
+        frameRatio = array.getFloat(R.styleable.ViewfinderView_frameRatio, 0.45f)
         framePaddingLeft = array.getDimension(R.styleable.ViewfinderView_framePaddingLeft, 0f)
         framePaddingTop = array.getDimension(R.styleable.ViewfinderView_framePaddingTop, 0f)
         framePaddingRight = array.getDimension(R.styleable.ViewfinderView_framePaddingRight, 0f)
@@ -227,17 +230,17 @@ class ViewfinderView @JvmOverloads constructor(
         frameGravity = FrameGravity.getFromInt(
             array.getInt(
                 R.styleable.ViewfinderView_frameGravity,
-                FrameGravity.CENTER.mValue
-            )
+                FrameGravity.CENTER.mValue,
+            ),
         )
         pointColor = array.getColor(
             R.styleable.ViewfinderView_pointColor,
-            ContextCompat.getColor(context, R.color.viewfinder_point)
+            ContextCompat.getColor(context, R.color.viewfinder_point),
         )
         pointStrokeColor = array.getColor(R.styleable.ViewfinderView_pointStrokeColor, Color.WHITE)
         pointRadius = array.getDimension(
             R.styleable.ViewfinderView_pointRadius,
-            TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 15f, resources.displayMetrics)
+            TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 15f, resources.displayMetrics),
         )
         pointStrokeRatio =
             array.getFloat(R.styleable.ViewfinderView_pointStrokeRatio, DEFAULT_RANGE_RATIO)
@@ -261,20 +264,25 @@ class ViewfinderView @JvmOverloads constructor(
         paint = Paint(Paint.ANTI_ALIAS_FLAG)
         paint.isAntiAlias = true
         textPaint = TextPaint(Paint.ANTI_ALIAS_FLAG)
-        gestureDetector = GestureDetector(context, object : SimpleOnGestureListener() {
-            override fun onSingleTapUp(e: MotionEvent): Boolean {
-                return if (isShowPoints && checkSingleTap(e.x, e.y)) {
-                    true
-                } else super.onSingleTapUp(e)
-            }
-        })
+        gestureDetector = GestureDetector(
+            context,
+            object : SimpleOnGestureListener() {
+                override fun onSingleTapUp(e: MotionEvent): Boolean {
+                    return if (isShowPoints && checkSingleTap(e.x, e.y)) {
+                        true
+                    } else {
+                        super.onSingleTapUp(e)
+                    }
+                }
+            },
+        )
     }
 
     private fun getBitmapFormDrawable(drawable: Drawable): Bitmap {
         val bitmap = Bitmap.createBitmap(
             drawable.intrinsicWidth,
             drawable.intrinsicHeight,
-            if (drawable.opacity != PixelFormat.OPAQUE) Bitmap.Config.ARGB_8888 else Bitmap.Config.RGB_565
+            if (drawable.opacity != PixelFormat.OPAQUE) Bitmap.Config.ARGB_8888 else Bitmap.Config.RGB_565,
         )
         val canvas = Canvas(bitmap)
         drawable.setBounds(0, 0, bitmap.width, bitmap.height)
@@ -309,7 +317,7 @@ class ViewfinderView @JvmOverloads constructor(
         setPointBitmap(BitmapFactory.decodeResource(resources, drawable))
     }
 
-    fun setPointBitmap(bitmap: Bitmap?) {
+    private fun setPointBitmap(bitmap: Bitmap?) {
         pointBitmap = bitmap
         pointRangeRadius = (pointBitmap!!.width + pointBitmap!!.height) / 4 * DEFAULT_RANGE_RATIO
     }
@@ -320,7 +328,7 @@ class ViewfinderView @JvmOverloads constructor(
     }
 
     private fun initFrame(width: Int, height: Int) {
-        val size = (Math.min(width, height) * frameRatio).toInt()
+        val size = (width.coerceAtMost(height) * frameRatio).toInt()
         if (frameWidth <= 0 || frameWidth > width) {
             frameWidth = size
         }
@@ -345,8 +353,21 @@ class ViewfinderView @JvmOverloads constructor(
             leftOffsets.toInt(),
             topOffsets.toInt(),
             leftOffsets.toInt() + frameWidth,
-            topOffsets.toInt() + frameHeight
+            topOffsets.toInt() + frameHeight,
         )
+        if (laserStyle == LaserStyle.RADAR) {
+            this.radarPath.reset()
+            this.radarPath.addRoundRect(
+                frame.left.toFloat(),
+                frame.top.toFloat(),
+                frame.right.toFloat(),
+                frame.bottom.toFloat(),
+                cornerRadius,
+                cornerRadius,
+                Path.Direction.CW,
+            )
+            this.radarPath.close()
+        }
     }
 
     public override fun onDraw(canvas: Canvas) {
@@ -358,37 +379,31 @@ class ViewfinderView @JvmOverloads constructor(
             }
             return
         }
-        if (frame == null) {
-            return
-        }
         if (scannerStart == 0 || scannerEnd == 0) {
-            scannerStart = frame!!.top
-            scannerEnd = frame!!.bottom - scannerLineHeight
+            scannerStart = frame.top
+            scannerEnd = frame.bottom - scannerLineHeight
         }
-        if (viewfinderStyle == ViewfinderStyle.CLASSIC) {
-            drawExterior(canvas, frame!!, width, height)
-            drawLaserScanner(canvas, frame!!)
-            drawFrame(canvas, frame!!)
-            drawCorner(canvas, frame!!)
-            drawTextInfo(canvas, frame!!)
-            postInvalidateDelayed(
-                scannerAnimationDelay.toLong(),
-                frame!!.left,
-                frame!!.top,
-                frame!!.right,
-                frame!!.bottom
-            )
-        } else if (viewfinderStyle == ViewfinderStyle.POPULAR) {
-            drawLaserScanner(canvas, frame!!)
-            postInvalidateDelayed(scannerAnimationDelay.toLong())
-        } else if (viewfinderStyle == ViewfinderStyle.RADAR) {
-            drawRadar(canvas, frame!!)
-        }
-    }
+        when (viewfinderStyle) {
+            ViewfinderStyle.CLASSIC -> {
+                drawExterior(canvas, frame, width, height)
+                drawLaserScanner(canvas, frame)
+                drawFrame(canvas, frame)
+                drawCorner(canvas, frame)
+                drawTextInfo(canvas, frame)
+                postInvalidateDelayed(
+                    scannerAnimationDelay.toLong(),
+                    frame.left,
+                    frame.top,
+                    frame.right,
+                    frame.bottom,
+                )
+            }
 
-    private fun drawRadar(canvas: Canvas, frame: Rect) {
-        val save = canvas.save()
-        canvas.restoreToCount(save)
+            ViewfinderStyle.POPULAR -> {
+                drawLaserScanner(canvas, frame)
+                postInvalidateDelayed(scannerAnimationDelay.toLong())
+            }
+        }
     }
 
     private fun drawTextInfo(canvas: Canvas, frame: Rect) {
@@ -403,17 +418,17 @@ class ViewfinderView @JvmOverloads constructor(
                 Layout.Alignment.ALIGN_NORMAL,
                 1.2f,
                 0.0f,
-                true
+                true,
             )
             if (labelTextLocation == TextLocation.BOTTOM) {
                 canvas.translate(
                     (frame.left + frame.width() / 2).toFloat(),
-                    frame.bottom + labelTextPadding
+                    frame.bottom + labelTextPadding,
                 )
             } else {
                 canvas.translate(
                     (frame.left + frame.width() / 2).toFloat(),
-                    frame.top - labelTextPadding - staticLayout.height
+                    frame.top - labelTextPadding - staticLayout.height,
                 )
             }
             staticLayout.draw(canvas)
@@ -427,56 +442,56 @@ class ViewfinderView @JvmOverloads constructor(
             frame.top.toFloat(),
             (frame.left + cornerRectWidth).toFloat(),
             (frame.top + cornerRectHeight).toFloat(),
-            paint
+            paint,
         )
         canvas.drawRect(
             frame.left.toFloat(),
             frame.top.toFloat(),
             (frame.left + cornerRectHeight).toFloat(),
             (frame.top + cornerRectWidth).toFloat(),
-            paint
+            paint,
         )
         canvas.drawRect(
             (frame.right - cornerRectWidth).toFloat(),
             frame.top.toFloat(),
             frame.right.toFloat(),
             (frame.top + cornerRectHeight).toFloat(),
-            paint
+            paint,
         )
         canvas.drawRect(
             (frame.right - cornerRectHeight).toFloat(),
             frame.top.toFloat(),
             frame.right.toFloat(),
             (frame.top + cornerRectWidth).toFloat(),
-            paint
+            paint,
         )
         canvas.drawRect(
             frame.left.toFloat(),
             (frame.bottom - cornerRectWidth).toFloat(),
             (frame.left + cornerRectHeight).toFloat(),
             frame.bottom.toFloat(),
-            paint
+            paint,
         )
         canvas.drawRect(
             frame.left.toFloat(),
             (frame.bottom - cornerRectHeight).toFloat(),
             (frame.left + cornerRectWidth).toFloat(),
             frame.bottom.toFloat(),
-            paint
+            paint,
         )
         canvas.drawRect(
             (frame.right - cornerRectWidth).toFloat(),
             (frame.bottom - cornerRectHeight).toFloat(),
             frame.right.toFloat(),
             frame.bottom.toFloat(),
-            paint
+            paint,
         )
         canvas.drawRect(
             (frame.right - cornerRectHeight).toFloat(),
             (frame.bottom - cornerRectWidth).toFloat(),
             frame.right.toFloat(),
             frame.bottom.toFloat(),
-            paint
+            paint,
         )
     }
 
@@ -494,12 +509,88 @@ class ViewfinderView @JvmOverloads constructor(
         }
     }
 
+    private val radarPath by lazy {
+        Path()
+    }
+
+    private val radarPadding = 4.dp.toFloat()
+    private val cornerRadius = 32.dp.toFloat()
+
+    private fun drawRadarScanner(canvas: Canvas, frame: Rect) {
+        val rFrame = frame.toRectF()
+
+        if (scannerStart < scannerEnd) {
+            val save = canvas.save()
+            canvas.clipPath(radarPath)
+            paint.shader = null
+            radarGrid?.run {
+                canvas.drawBitmap(this, rFrame.left, scannerStart.toFloat() - height, paint)
+            }
+            paint.shader = LinearGradient(
+                0f,
+                scannerStart + rFrame.height() / 4,
+                0f,
+                scannerStart.toFloat(),
+                Color.TRANSPARENT,
+                Color.argb(153, 170, 255, 224),
+                TileMode.MIRROR,
+            )
+            canvas.drawRect(rFrame.left + radarPadding, scannerStart - rFrame.height() / 4, rFrame.right - radarPadding, scannerStart.toFloat(), paint)
+            canvas.restoreToCount(save)
+            scannerStart += scannerLineMoveDistance
+        } else {
+            scannerStart = frame.top
+        }
+        radarFrame?.run {
+            canvas.drawBitmap(this, rFrame.left, rFrame.top, paint)
+        }
+    }
+
+    private fun getBitmap(vectorDrawable: VectorDrawable): Bitmap? {
+        val bitmap = Bitmap.createBitmap(
+            vectorDrawable.intrinsicWidth,
+            vectorDrawable.intrinsicHeight,
+            Bitmap.Config.ARGB_8888,
+        )
+        val canvas = Canvas(bitmap)
+        vectorDrawable.setBounds(0, 0, frame.width(), frame.width())
+        vectorDrawable.draw(canvas)
+        return bitmap
+    }
+
+    private fun getBitmap(context: Context, @DrawableRes drawableId: Int): Bitmap? {
+        return when (val drawable = ContextCompat.getDrawable(context, drawableId)) {
+            is BitmapDrawable -> {
+                BitmapFactory.decodeResource(context.resources, drawableId).run {
+                    Bitmap.createScaledBitmap(this, frame.width(), frame.width(), true)
+                }
+            }
+
+            is VectorDrawable -> {
+                getBitmap(drawable)
+            }
+
+            else -> {
+                throw IllegalArgumentException("unsupported drawable type")
+            }
+        }
+    }
+
+    private val radarGrid by lazy {
+        getBitmap(context, R.drawable.scan_grid)
+    }
+
+    private val radarFrame by lazy {
+        getBitmap(context, R.drawable.scan_frame)
+    }
+
     private fun drawLaserScanner(canvas: Canvas, frame: Rect) {
         if (laserStyle != null) {
             paint.color = laserColor
             when (laserStyle) {
                 LaserStyle.LINE -> drawLineScanner(canvas, frame)
                 LaserStyle.GRID -> drawGridScanner(canvas, frame)
+                LaserStyle.RADAR -> drawRadarScanner(canvas, frame)
                 LaserStyle.IMAGE -> drawImageScanner(canvas, frame)
                 else -> {
                     // do noting
@@ -511,11 +602,13 @@ class ViewfinderView @JvmOverloads constructor(
 
     private fun drawLineScanner(canvas: Canvas, frame: Rect) {
         val linearGradient = LinearGradient(
-            frame.left.toFloat(), scannerStart.toFloat(),
-            frame.left.toFloat(), (scannerStart + scannerLineHeight).toFloat(),
+            frame.left.toFloat(),
+            scannerStart.toFloat(),
+            frame.left.toFloat(),
+            (scannerStart + scannerLineHeight).toFloat(),
             shadeColor(laserColor),
             laserColor,
-            Shader.TileMode.MIRROR
+            TileMode.MIRROR,
         )
         paint.shader = linearGradient
         if (scannerStart < scannerEnd) {
@@ -523,7 +616,7 @@ class ViewfinderView @JvmOverloads constructor(
                 (frame.left + 2 * scannerLineHeight).toFloat(),
                 scannerStart.toFloat(),
                 (frame.right - 2 * scannerLineHeight).toFloat(),
-                (scannerStart + scannerLineHeight).toFloat()
+                (scannerStart + scannerLineHeight).toFloat(),
             )
             canvas.drawOval(rectF, paint)
             scannerStart += scannerLineMoveDistance
@@ -544,7 +637,7 @@ class ViewfinderView @JvmOverloads constructor(
             scannerStart.toFloat(),
             intArrayOf(shadeColor(laserColor), laserColor),
             floatArrayOf(0f, 1f),
-            TileMode.CLAMP
+            TileMode.CLAMP,
         )
         paint.shader = linearGradient
         val wUnit = frame.width() * 1.0f / gridColumn
@@ -554,7 +647,7 @@ class ViewfinderView @JvmOverloads constructor(
                 startY.toFloat(),
                 frame.left + i * wUnit,
                 scannerStart.toFloat(),
-                paint
+                paint,
             )
         }
         val height =
@@ -563,7 +656,10 @@ class ViewfinderView @JvmOverloads constructor(
         while (i <= height / wUnit) {
             canvas.drawLine(
                 frame.left.toFloat(),
-                scannerStart - i * wUnit, frame.right.toFloat(), scannerStart - i * wUnit, paint
+                scannerStart - i * wUnit,
+                frame.right.toFloat(),
+                scannerStart - i * wUnit,
+                paint,
             )
             i++
         }
@@ -587,28 +683,28 @@ class ViewfinderView @JvmOverloads constructor(
             frame.top.toFloat(),
             frame.right.toFloat(),
             (frame.top + frameLineWidth).toFloat(),
-            paint
+            paint,
         )
         canvas.drawRect(
             frame.left.toFloat(),
             frame.top.toFloat(),
             (frame.left + frameLineWidth).toFloat(),
             frame.bottom.toFloat(),
-            paint
+            paint,
         )
         canvas.drawRect(
             (frame.right - frameLineWidth).toFloat(),
             frame.top.toFloat(),
             frame.right.toFloat(),
             frame.bottom.toFloat(),
-            paint
+            paint,
         )
         canvas.drawRect(
             frame.left.toFloat(),
             (frame.bottom - frameLineWidth).toFloat(),
             frame.right.toFloat(),
             frame.bottom.toFloat(),
-            paint
+            paint,
         )
     }
 
@@ -621,14 +717,14 @@ class ViewfinderView @JvmOverloads constructor(
                 frame.top.toFloat(),
                 frame.left.toFloat(),
                 frame.bottom.toFloat(),
-                paint
+                paint,
             )
             canvas.drawRect(
                 frame.right.toFloat(),
                 frame.top.toFloat(),
                 width.toFloat(),
                 frame.bottom.toFloat(),
-                paint
+                paint,
             )
             canvas.drawRect(0f, frame.bottom.toFloat(), width.toFloat(), height.toFloat(), paint)
         }
@@ -685,14 +781,14 @@ class ViewfinderView @JvmOverloads constructor(
                 point.x.toFloat(),
                 point.y.toFloat(),
                 pointStrokeRadius * currentZoomRatio,
-                paint
+                paint,
             )
             paint.color = pointColor
             canvas.drawCircle(
                 point.x.toFloat(),
                 point.y.toFloat(),
                 pointRadius * currentZoomRatio,
-                paint
+                paint,
             )
         }
     }

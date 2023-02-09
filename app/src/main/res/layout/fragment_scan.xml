@@ -21,8 +21,8 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             app:viewfinderStyle="popular"
-            app:laserStyle="none"
-            app:frameRatio="0.9" />
+            app:frameRatio="0.6"
+            app:laserStyle="radar" />
 
     <RelativeLayout
             android:layout_width="match_parent"
