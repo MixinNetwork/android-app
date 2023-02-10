@@ -17,13 +17,13 @@ class MonitorData(private val createdTime: Long) {
         if (timeDiff > 500){
             reportException("It takes $timeDiff milliseconds\n $content", SlowSqlExtension())
         }
-        return "************\n$content\n**** $timeDiff milliseconds****\n\n"
+        return "$content\n**** $timeDiff milliseconds****\n\n"
     }
 
     fun log(currentThreadName: String, diff:Long = 200) {
         val timeDiff = System.currentTimeMillis() - createdTime
         if (timeDiff >= diff) {
-            Timber.e("$currentThreadName $this")
+            Timber.e("******$currentThreadName******\n $this")
         }
     }
 }

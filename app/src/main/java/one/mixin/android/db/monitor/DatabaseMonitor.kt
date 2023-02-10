@@ -1,7 +1,6 @@
 package one.mixin.android.db.monitor
 
 import one.mixin.android.BuildConfig
-import timber.log.Timber
 
 object DatabaseMonitor {
 
@@ -12,10 +11,11 @@ object DatabaseMonitor {
         val sql = sqlQuery.trim()
         val currentThreadName = Thread.currentThread().name
         var monitorData = databaseMap[currentThreadName]
-        if (monitorData == null) {
+        if (monitorData == null && sql.startsWith("BEGIN")) {
             monitorData = MonitorData(System.currentTimeMillis())
             databaseMap[currentThreadName] = monitorData
         }
+        monitorData ?: return
         monitorData.append(sql, args)
         if (sql.startsWith("END TRANSACTION")) {
             monitorData.log(currentThreadName)
