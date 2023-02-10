@@ -37,4 +37,4 @@ jobs:
       run: echo $DATA > /home/runner/work/android-app/android-app/app/src/debug/google-services.json
 
     - name: Build
-      run: ./gradlew buildDebug
+      run: ./gradlew assembleDebug --stacktrace
