@@ -4,7 +4,6 @@ import androidx.lifecycle.LiveData
 import androidx.room.Dao
 import androidx.room.Query
 import androidx.room.RoomWarnings
-import androidx.room.Upsert
 import kotlinx.coroutines.flow.Flow
 import one.mixin.android.db.BaseDao.Companion.ESCAPE_SUFFIX
 import one.mixin.android.vo.CallUser
@@ -154,10 +153,4 @@ interface UserDao : BaseDao<User> {
 
     @Query("SELECT u.user_id, u.app_id, a.capabilities FROM users u LEFT JOIN apps a on a.app_id = u.app_id WHERE u.user_id = :id")
     fun findForwardUserById(id: String): ForwardUser?
-
-    @Upsert
-    fun upsert(user: User)
-
-    @Upsert
-    fun upsertUsers(user: List<User>)
 }

@@ -13,6 +13,6 @@ class FtsDeleteJob(private val messageId: String) : BaseJob(Params(PRIORITY_BACK
     }
 
     override fun onRun() {
-        messageFts4Dao.deleteFtsByMessageId(messageId)
+        deleteFtsByMessageId(messageId)
     }
 }

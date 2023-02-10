@@ -3,12 +3,10 @@ package one.mixin.android.util
 import android.os.SystemClock
 import androidx.annotation.WorkerThread
 import androidx.room.ColumnInfo
-import androidx.sqlite.db.SimpleSQLiteQuery
 import one.mixin.android.Constants.Account.PREF_SYNC_FTS4_OFFSET
 import one.mixin.android.MixinApplication
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.extension.joinWhiteSpace
-import one.mixin.android.util.debug.timeoutEarlyWarning
 import one.mixin.android.vo.Message
 import one.mixin.android.vo.MessageFts4
 import one.mixin.android.vo.isContact
@@ -48,8 +46,7 @@ object MessageFts4Helper {
         Timber.d("syncMessageFts4 preProcess: $preProcess， start offset: $offset")
         while (true) {
             start = System.currentTimeMillis()
-            val queryMessageList =
-                messageDao.batchQueryMessages(SYNC_FTS4_LIMIT, offset, sixMonthsAgo)
+            val queryMessageList = messageDao.batchQueryMessages(SYNC_FTS4_LIMIT, offset, sixMonthsAgo)
             val messageFts4List = arrayListOf<MessageFts4>()
             queryMessageList.forEach { item ->
                 val name = item.name.joinWhiteSpace()
@@ -91,28 +88,21 @@ object MessageFts4Helper {
         }
 
         val messageFts4Dao = MixinDatabase.getDatabase(MixinApplication.appContext).messageFts4Dao()
-        timeoutEarlyWarning({
-            val name = message.name.joinWhiteSpace()
-            val content = message.content.joinWhiteSpace()
-            messageFts4Dao.rawQuery(SimpleSQLiteQuery("INSERT OR REPLACE INTO `messages_fts4` (`message_id`,`content`) VALUES (?,?)", arrayOf(message.messageId, name + content)))
-        })
+        val name = message.name.joinWhiteSpace()
+        val content = message.content.joinWhiteSpace()
+        messageFts4Dao.insert(MessageFts4(message.messageId, name + content))
     }
 
     @WorkerThread
     fun insertMessageFts4(messageId: String, content: String) {
         val messageFts4Dao = MixinDatabase.getDatabase(MixinApplication.appContext).messageFts4Dao()
-        timeoutEarlyWarning({
-            messageFts4Dao.rawQuery(SimpleSQLiteQuery("INSERT OR REPLACE INTO `messages_fts4` (`message_id`,`content`) VALUES (?,?)", arrayOf(messageId, content)))
-        })
+        messageFts4Dao.insert(MessageFts4(messageId, content))
     }
 
     @WorkerThread
     private fun insertContact(messageId: String, text: String) {
         val messageFts4Dao = MixinDatabase.getDatabase(MixinApplication.appContext).messageFts4Dao()
-
-        timeoutEarlyWarning({
-            val content = text.joinWhiteSpace()
-            messageFts4Dao.rawQuery(SimpleSQLiteQuery("INSERT OR REPLACE INTO `messages_fts4` (`message_id`,`content`) VALUES (?,?)", arrayOf(messageId, content)))
-        })
+        val content = text.joinWhiteSpace()
+        messageFts4Dao.insert(MessageFts4(messageId, content))
     }
 }

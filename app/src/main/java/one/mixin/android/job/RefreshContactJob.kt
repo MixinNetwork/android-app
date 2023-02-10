@@ -1,6 +1,7 @@
 package one.mixin.android.job
 
 import com.birbit.android.jobqueue.Params
+import one.mixin.android.db.insertUpdateList
 import one.mixin.android.vo.User
 
 class RefreshContactJob : BaseJob(Params(PRIORITY_BACKGROUND).addTags(GROUP).requireNetwork().persist()) {
@@ -13,9 +14,7 @@ class RefreshContactJob : BaseJob(Params(PRIORITY_BACKGROUND).addTags(GROUP).req
         val response = contactService.friends().execute().body()
         if (response != null && response.isSuccess && response.data != null) {
             val users = response.data as List<User>
-            appDao.upsertApps(users.mapNotNull { it.app })
-            userDao.upsertUsers(users)
-//            userDao.insertUpdateList(users, appDao)
+            userDao.insertUpdateList(users, appDao)
         }
     }
 }

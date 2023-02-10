@@ -30,7 +30,7 @@ class ReduceFts4Job :
     private suspend fun delete(list: List<String>) {
         if (list.isEmpty()) return
         val startTime = System.currentTimeMillis()
-        messageFts4Dao.deleteFtsByMessageIds(list)
+        deleteFtsByMessageIds(list)
         Timber.e("Delete message fts4 ${list.size}, cost: ${System.currentTimeMillis() - startTime} ms")
     }
 }
