@@ -25,12 +25,7 @@ jobs:
 #      run: ./gradlew ktlintFormat
 
     - name: Restore gradle.properties
-      env:
-        MAPBOX_DOWNLOADS_TOKEN: ${{ secrets.MAPBOX_DOWNLOADS_TOKEN }}
-      shell: bash
       run: |
-        mkdir -p ~/.gradle/
-        echo "GRADLE_USER_HOME=${HOME}/.gradle" >> $GITHUB_ENV
-        echo "MAPBOX_DOWNLOADS_TOKEN=${MAPBOX_DOWNLOADS_TOKEN}" > .local.properties
+        echo MAPBOX_DOWNLOADS_TOKEN=${{ secrets.MAPBOX_DOWNLOADS_TOKEN }} >> ./gradle.properties
     - name: Build
       run: ./gradlew build
