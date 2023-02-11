@@ -5,6 +5,7 @@ import android.os.CountDownTimer
 import android.util.AttributeSet
 import android.view.LayoutInflater
 import android.widget.ViewAnimator
+import androidx.core.view.isGone
 import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
 import one.mixin.android.Constants
@@ -13,6 +14,7 @@ import one.mixin.android.databinding.LayoutPinBiometricBinding
 import one.mixin.android.extension.animateHeight
 import one.mixin.android.extension.clickVibrate
 import one.mixin.android.extension.defaultSharedPreferences
+import one.mixin.android.extension.dp
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.openExternalUrl
 import one.mixin.android.extension.textColor
@@ -139,6 +141,11 @@ class BiometricLayout(context: Context, attributeSet: AttributeSet) : ViewAnimat
                 doneAction()
             }
             enableBiometricTv.isVisible = enable
+            if (enableBiometricTv.isGone) {
+                binding.doneBtn.updateLayoutParams<MarginLayoutParams> {
+                    bottomMargin = 32.dp
+                }
+            }
             enableBiometricTv.setOnClickListener {
                 doneAction()
                 SettingActivity.showPinSetting(context)
