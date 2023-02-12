@@ -698,7 +698,7 @@ fun Context.openUrl(url: String) {
     }
 }
 
-fun Context.openExternalUrl(url:String) {
+fun Context.openExternalUrl(url: String) {
     try {
         val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
         intent.putExtra(Browser.EXTRA_APPLICATION_ID, packageName)
