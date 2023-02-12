@@ -34,7 +34,6 @@ import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
@@ -449,7 +448,7 @@ private fun EditDialog(
         val keyboardController = LocalSoftwareKeyboardController.current
 
         val interactionSource = remember { MutableInteractionSource() }
-        var hasFocus by remember {
+        val hasFocus by remember {
             mutableStateOf(false)
         }
 
@@ -460,11 +459,6 @@ private fun EditDialog(
                 // delay to request focus. make sure the compose is ready.
                 delay(50)
                 focusRequester.requestFocus()
-            }
-        }
-
-        LaunchedEffect(hasFocus) {
-            if (hasFocus) {
                 keyboardController?.show()
             }
         }
@@ -475,10 +469,7 @@ private fun EditDialog(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(48.dp)
-                .focusRequester(focusRequester)
-                .onFocusChanged {
-                    hasFocus = it.isFocused
-                },
+                .focusRequester(focusRequester),
             interactionSource = interactionSource,
             keyboardOptions = KeyboardOptions.Default.copy(
                 keyboardType = KeyboardType.Decimal,
@@ -512,6 +503,7 @@ private fun EditDialog(
         Row {
             Spacer(Modifier.weight(1f))
             TextButton(onClick = {
+                keyboardController?.hide()
                 onClose()
             }) {
                 Text(
@@ -523,6 +515,7 @@ private fun EditDialog(
                 )
             }
             TextButton(onClick = {
+                keyboardController?.hide()
                 onClose()
                 onConfirm(inputText.value.text)
             }) {
