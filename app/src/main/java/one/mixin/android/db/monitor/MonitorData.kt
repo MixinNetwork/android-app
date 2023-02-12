@@ -3,9 +3,13 @@ package one.mixin.android.db.monitor
 import one.mixin.android.util.reportException
 import timber.log.Timber
 
-class MonitorData(private val createdTime: Long) {
+class MonitorData(private var createdTime: Long, private var isDeferred: Boolean = false) {
     private val statements = mutableListOf<String>()
     fun append(sql: String, args: List<Any?>) {
+        if (isDeferred && !sql.startsWith("BEGIN") && !sql.startsWith("END")){
+            createdTime = System.currentTimeMillis()
+            isDeferred = isDeferred.not()
+        }
         statements.add(sql)
         // if (args.isEmpty()) statements.add(sql)
         // else statements.add("$sql $args")

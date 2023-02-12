@@ -12,7 +12,7 @@ object DatabaseMonitor {
         val currentThreadName = Thread.currentThread().name
         var monitorData = databaseMap[currentThreadName]
         if (monitorData == null && sql.startsWith("BEGIN")) {
-            monitorData = MonitorData(System.currentTimeMillis())
+            monitorData = MonitorData(System.currentTimeMillis(), sql.contains("DEFERRED", true))
             databaseMap[currentThreadName] = monitorData
         }
         monitorData ?: return
