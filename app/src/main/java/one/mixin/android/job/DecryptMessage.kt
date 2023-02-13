@@ -477,18 +477,21 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                         }
 
                         // expired message
-                        updateExpiredMessageList.forEach { expiredMessage ->
-                            val messageId = expiredMessage.first
+                        updateExpiredMessageList.groupBy { expiredMessage ->
                             val expireAt = expiredMessage.second
-                            if (expireAt != null && expireAt > 0) {
+                            expireAt != null && expireAt > 0
+                        }.let { map ->
+                            map[true]?.forEach {
+                                val messageId = it.first
+                                val expireAt = it.second!!
                                 expiredMessageDao.updateExpiredMessage(messageId, expireAt)
                                 RxBus.publish(ExpiredEvent(messageId, null, expireAt))
-                            } else {
-                                val localExpiredMessage = expiredMessageDao.getExpiredMessageById(messageId)
-                                if (localExpiredMessage != null) { // The old version mark read
-                                    expiredMessageDao.markRead(messageId, currentTimeSeconds())
-                                    RxBus.publish(ExpiredEvent(messageId, null, currentTimeSeconds() + localExpiredMessage.expireIn))
-                                }
+                            }
+                            map[false]?.map { it.first }?.let {
+                                expiredMessageDao.getExpiredMessageByIds(it)
+                            }?.forEach { localExpiredMessage -> // The old version mark read
+                                expiredMessageDao.markRead(localExpiredMessage.messageId, currentTimeSeconds())
+                                RxBus.publish(ExpiredEvent(localExpiredMessage.messageId, null, currentTimeSeconds() + localExpiredMessage.expireIn))
                             }
                         }
                     }
