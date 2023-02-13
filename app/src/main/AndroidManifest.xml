@@ -347,6 +347,8 @@
             android:windowSoftInputMode="adjustResize|stateAlwaysHidden" />
         <activity
             android:name=".ui.auth.AppAuthActivity"
+            android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation"
+            android:windowSoftInputMode="adjustResize|stateAlwaysHidden"
             android:launchMode="singleTop"
             android:theme="@style/AppTheme.Blur" />
         <activity
