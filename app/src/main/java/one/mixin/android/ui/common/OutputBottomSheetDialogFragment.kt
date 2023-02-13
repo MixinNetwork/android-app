@@ -1,4 +1,4 @@
-package one.mixin.android.ui.conversation.transfer
+package one.mixin.android.ui.common
 
 import android.annotation.SuppressLint
 import android.app.Dialog
@@ -42,12 +42,12 @@ import one.mixin.android.vo.Trace
 import one.mixin.android.widget.BottomSheet
 
 @AndroidEntryPoint
-class TransferBottomSheetDialogFragment : ValuableBiometricBottomSheetDialogFragment<AssetBiometricItem>() {
+class OutputBottomSheetDialogFragment : ValuableBiometricBottomSheetDialogFragment<AssetBiometricItem>() {
     companion object {
-        const val TAG = "TransferBottomSheetDialogFragment"
+        const val TAG = "OutputBottomSheetDialogFragment"
 
         inline fun <reified T : BiometricItem> newInstance(t: T) =
-            TransferBottomSheetDialogFragment().withArgs {
+            OutputBottomSheetDialogFragment().withArgs {
                 putParcelable(ARGS_BIOMETRIC_ITEM, t)
             }
     }
@@ -151,8 +151,11 @@ class TransferBottomSheetDialogFragment : ValuableBiometricBottomSheetDialogFrag
     }
 
     override fun doWhenInvokeNetworkSuccess(response: MixinResponse<*>, pin: String): Boolean {
-        when (val t = this@TransferBottomSheetDialogFragment.t) {
-            is TransferBiometricItem -> {}
+        var returnTo: String? = null
+        when (val t = this@OutputBottomSheetDialogFragment.t) {
+            is TransferBiometricItem -> {
+                returnTo = t.returnTo
+            }
             else -> {
                 t as WithdrawBiometricItem
                 updateFirstWithdrawalSet(t)
@@ -175,7 +178,7 @@ class TransferBottomSheetDialogFragment : ValuableBiometricBottomSheetDialogFrag
             }
         }
 
-        showDone((t as TransferBiometricItem?)?.returnTo)
+        showDone(returnTo)
         return false
     }
 

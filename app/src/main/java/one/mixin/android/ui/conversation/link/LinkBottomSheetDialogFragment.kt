@@ -56,6 +56,7 @@ import one.mixin.android.ui.common.JoinGroupBottomSheetDialogFragment
 import one.mixin.android.ui.common.JoinGroupConversation
 import one.mixin.android.ui.common.MultisigsBottomSheetDialogFragment
 import one.mixin.android.ui.common.NftBottomSheetDialogFragment
+import one.mixin.android.ui.common.OutputBottomSheetDialogFragment
 import one.mixin.android.ui.common.QrScanBottomSheetDialogFragment
 import one.mixin.android.ui.common.biometric.AssetBiometricItem
 import one.mixin.android.ui.common.biometric.Multi2MultiBiometricItem
@@ -68,7 +69,6 @@ import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.conversation.PreconditionBottomSheetDialogFragment
 import one.mixin.android.ui.conversation.PreconditionBottomSheetDialogFragment.Companion.FROM_LINK
 import one.mixin.android.ui.conversation.TransferFragment
-import one.mixin.android.ui.conversation.transfer.TransferBottomSheetDialogFragment
 import one.mixin.android.ui.device.ConfirmBottomFragment
 import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.ui.url.UrlInterpreterActivity
@@ -842,8 +842,8 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
         val preconditionBottom = PreconditionBottomSheetDialogFragment.newInstance(biometricItem, FROM_LINK)
         preconditionBottom.callback = object : PreconditionBottomSheetDialogFragment.Callback {
             override fun onSuccess() {
-                val bottom = TransferBottomSheetDialogFragment.newInstance(biometricItem)
-                bottom.show(preconditionBottom.parentFragmentManager, TransferBottomSheetDialogFragment.TAG)
+                val bottom = OutputBottomSheetDialogFragment.newInstance(biometricItem)
+                bottom.show(preconditionBottom.parentFragmentManager, OutputBottomSheetDialogFragment.TAG)
                 dismiss()
             }
 

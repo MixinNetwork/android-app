@@ -4,12 +4,15 @@ package one.mixin.android.ui.auth
 
 import android.app.Activity
 import android.content.Intent
+import android.content.res.Configuration
 import android.hardware.fingerprint.FingerprintManager
 import android.os.Bundle
+import android.widget.RelativeLayout
 import androidx.biometric.BiometricManager
 import androidx.biometric.BiometricPrompt
 import androidx.core.hardware.fingerprint.FingerprintManagerCompat
 import androidx.core.os.CancellationSignal
+import androidx.core.view.updateLayoutParams
 import com.mattprecious.swirl.SwirlView
 import one.mixin.android.Constants
 import one.mixin.android.R
@@ -18,6 +21,8 @@ import one.mixin.android.databinding.ActivityAppAuthBinding
 import one.mixin.android.event.AppAuthEvent
 import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.defaultSharedPreferences
+import one.mixin.android.extension.dp
+import one.mixin.android.extension.isLandscape
 import one.mixin.android.extension.putInt
 import one.mixin.android.extension.putLong
 import one.mixin.android.ui.common.BaseActivity
@@ -47,6 +52,7 @@ class AppAuthActivity : BaseActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityAppAuthBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        updateLayout()
         fingerprintManager = FingerprintManagerCompat.from(this).apply {
             this@AppAuthActivity.hasEnrolledFingerprints = hasEnrolledFingerprints()
         }
@@ -80,6 +86,11 @@ class AppAuthActivity : BaseActivity() {
     override fun onDestroy() {
         super.onDestroy()
         biometricManager = null
+    }
+
+    override fun onConfigurationChanged(newConfig: Configuration) {
+        super.onConfigurationChanged(newConfig)
+        updateLayout()
     }
 
     override fun onBackPressed() {
@@ -124,6 +135,20 @@ class AppAuthActivity : BaseActivity() {
         finish()
 
         RxBus.publish(AppAuthEvent())
+    }
+
+    private fun updateLayout() {
+        binding.title.updateLayoutParams<RelativeLayout.LayoutParams> {
+            if (isLandscape()) {
+                removeRule(RelativeLayout.BELOW)
+                addRule(RelativeLayout.ALIGN_PARENT_BOTTOM)
+                setMargins(0, 0, 0, 32.dp)
+            } else {
+                removeRule(RelativeLayout.ALIGN_PARENT_BOTTOM)
+                addRule(RelativeLayout.BELOW, binding.icon.id)
+                setMargins(0, 12.dp, 0, 0)
+            }
+        }
     }
 
     private val resetSwirlRunnable = Runnable {
