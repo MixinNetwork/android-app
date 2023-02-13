@@ -466,6 +466,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                         val updateMessageIds = updateExpiredMessageList.map { it.first }
                         lifecycleScope.launch(PENDING_DB_THREAD) {
                             remoteMessageStatusDao.deleteByMessageIds(updateMessageIds)
+                            Timber.e("${Thread.currentThread().name} Mark read $updateMessageIds")
                             pendingMessagesDao.markReadIds(updateMessageIds)
                             // Data that does not enter the message table will not enter the remote status table, do not consider
                             val updateConversationList = messageDao.findConversationsByMessages(updateMessageIds)
