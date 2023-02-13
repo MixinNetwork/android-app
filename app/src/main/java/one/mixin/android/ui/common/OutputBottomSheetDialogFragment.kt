@@ -151,8 +151,11 @@ class OutputBottomSheetDialogFragment : ValuableBiometricBottomSheetDialogFragme
     }
 
     override fun doWhenInvokeNetworkSuccess(response: MixinResponse<*>, pin: String): Boolean {
+        var returnTo: String? = null
         when (val t = this@OutputBottomSheetDialogFragment.t) {
-            is TransferBiometricItem -> {}
+            is TransferBiometricItem -> {
+                returnTo = t.returnTo
+            }
             else -> {
                 t as WithdrawBiometricItem
                 updateFirstWithdrawalSet(t)
@@ -175,11 +178,7 @@ class OutputBottomSheetDialogFragment : ValuableBiometricBottomSheetDialogFragme
             }
         }
 
-        if (t is TransferBiometricItem) {
-            showDone((t as TransferBiometricItem?)?.returnTo)
-        } else {
-            showDone(null)
-        }
+        showDone(returnTo)
         return false
     }
 
