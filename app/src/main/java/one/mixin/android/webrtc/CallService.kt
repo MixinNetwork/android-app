@@ -254,6 +254,7 @@ abstract class CallService : LifecycleService(), PeerConnectionClient.PeerConnec
         peerConnectionClient.enableCommunication()
         callState.disconnected = false
         callState.reconnecting = false
+        pipCallView.updateIcon(!callState.audioEnable)
 
         lifecycleScope.launch(observeStatsDispatcher) {
             peerConnectionClient.observeStats {

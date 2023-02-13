@@ -13,6 +13,7 @@ import android.view.MotionEvent
 import android.view.WindowManager
 import android.view.animation.DecelerateInterpolator
 import android.widget.FrameLayout
+import android.widget.ImageView
 import android.widget.TextView
 import androidx.annotation.Keep
 import androidx.core.content.ContextCompat
@@ -106,6 +107,7 @@ class PipCallView {
     private lateinit var windowLayoutParams: WindowManager.LayoutParams
 
     private var timeView: TextView? = null
+    private var iconView: ImageView? = null
 
     private val windowManager: WindowManager by lazy {
         appContext.getSystemService(Context.WINDOW_SERVICE) as WindowManager
@@ -170,8 +172,11 @@ class PipCallView {
         view.setOnClickListener {
             CallActivity.show(appContext)
         }
+        val isNightMode = appContext.isNightMode()
+        iconView = view.findViewById(R.id.icon)
+        updateIcon(callState.isConnected() && !callState.audioEnable)
         timeView = view.findViewById(R.id.time_tv)
-        if (appContext.isNightMode()) {
+        if (isNightMode) {
             view.setBackgroundResource(R.drawable.bg_pip_call_dark)
             timeView?.setTextColor(ContextCompat.getColor(appContext, R.color.white))
         } else {
@@ -232,6 +237,7 @@ class PipCallView {
             }
         }
         timeView = null
+        iconView = null
         windowView = null
         stopTimer()
     }
@@ -264,6 +270,16 @@ class PipCallView {
         timer?.cancel()
         timer?.purge()
         timer = null
+    }
+
+    fun updateIcon(muted: Boolean) {
+        appContext.runOnUiThread {
+            if (muted) {
+                iconView?.setImageResource(if (appContext.isNightMode()) R.drawable.ic_pip_call_mute_night else R.drawable.ic_pip_call_mute)
+            } else {
+                iconView?.setImageResource(R.drawable.ic_pip_call)
+            }
+        }
     }
 
     private fun setDuration(connectedTime: Long) {
