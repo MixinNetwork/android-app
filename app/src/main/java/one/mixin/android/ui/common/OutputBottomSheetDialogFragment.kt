@@ -1,4 +1,4 @@
-package one.mixin.android.ui.conversation.transfer
+package one.mixin.android.ui.common
 
 import android.annotation.SuppressLint
 import android.app.Dialog
