@@ -175,7 +175,11 @@ class TransferBottomSheetDialogFragment : ValuableBiometricBottomSheetDialogFrag
             }
         }
 
-        showDone((t as TransferBiometricItem?)?.returnTo)
+        if (t is TransferBiometricItem) {
+            showDone((t as TransferBiometricItem?)?.returnTo)
+        } else {
+            showDone(null)
+        }
         return false
     }
 
