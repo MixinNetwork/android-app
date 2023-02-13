@@ -77,7 +77,7 @@ import one.mixin.android.ui.common.biometric.BiometricItem
 import one.mixin.android.ui.common.biometric.TransferBiometricItem
 import one.mixin.android.ui.common.biometric.WithdrawBiometricItem
 import one.mixin.android.ui.conversation.PreconditionBottomSheetDialogFragment.Companion.FROM_TRANSFER
-import one.mixin.android.ui.conversation.transfer.TransferBottomSheetDialogFragment
+import one.mixin.android.ui.conversation.transfer.OutputBottomSheetDialogFragment
 import one.mixin.android.ui.qr.CaptureActivity
 import one.mixin.android.ui.qr.CaptureActivity.Companion.ARGS_FOR_SCAN_RESULT
 import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
@@ -620,19 +620,19 @@ class TransferFragment() : MixinBottomSheetDialogFragment() {
     }
 
     private fun showTransferBottom(biometricItem: BiometricItem) {
-        val bottom = TransferBottomSheetDialogFragment.newInstance(biometricItem)
+        val bottom = OutputBottomSheetDialogFragment.newInstance(biometricItem)
         bottom.callback = object : BiometricBottomSheetDialogFragment.Callback() {
             override fun onSuccess() {
                 dialog?.dismiss()
                 callback?.onSuccess()
             }
         }
-        bottom.onDestroyListener = object : TransferBottomSheetDialogFragment.OnDestroyListener {
+        bottom.onDestroyListener = object : OutputBottomSheetDialogFragment.OnDestroyListener {
             override fun onDestroy() {
                 transferBottomOpened = false
             }
         }
-        bottom.show(parentFragmentManager, TransferBottomSheetDialogFragment.TAG)
+        bottom.show(parentFragmentManager, OutputBottomSheetDialogFragment.TAG)
         transferBottomOpened = true
     }
 
