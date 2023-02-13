@@ -12,6 +12,9 @@ interface ExpiredMessageDao : BaseDao<ExpiredMessage> {
     @Query("SELECT * FROM expired_messages WHERE message_id = :messageId")
     fun getExpiredMessageById(messageId: String): ExpiredMessage?
 
+    @Query("SELECT * FROM expired_messages WHERE message_id IN (:messageIds)")
+    fun getExpiredMessageByIds(messageIds: List<String>): List<ExpiredMessage>
+
     @Query("SELECT * FROM expired_messages WHERE expire_at IS NOT NULL ORDER BY expire_at ASC LIMIT 1")
     suspend fun getFirstExpiredMessage(): ExpiredMessage?
 

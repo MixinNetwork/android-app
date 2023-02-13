@@ -203,7 +203,7 @@ class HedwigImp(
                     messages.filter { message ->
                         !message.isMine() && message.status != MessageStatus.READ.name && (pendingMessageStatusMap[message.messageId] != MessageStatus.READ.name)
                     }.map { message ->
-                        DatabaseMonitor.log("Generate remote ${message.messageId}")
+                        DatabaseMonitor.log("${{Thread.currentThread().name}} Generate remote ${message.messageId}")
                         RemoteMessageStatus(message.messageId, message.conversationId, MessageStatus.DELIVERED.name)
                     }.let { remoteMessageStatus ->
                         remoteMessageStatusDao.insertList(remoteMessageStatus)

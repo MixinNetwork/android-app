@@ -404,6 +404,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                 RxBus.publish(RecallEvent(msg.messageId))
                 messageDao.recallFailedMessage(msg.messageId)
                 messageDao.recallMessage(msg.messageId)
+                messagesFts4Dao.deleteFtsByMessageId(msg.messageId)
                 messageDao.recallPinMessage(msg.messageId, msg.conversationId)
                 pinMessageDao.deleteByMessageId(msg.messageId)
                 messageMentionDao.deleteMessage(msg.messageId)
@@ -430,7 +431,6 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                     msg.createdAt,
                     msg.conversationId,
                 )
-                deleteFtsByMessageId(msg.messageId)
             }
             updateRemoteMessageStatus(data.messageId, MessageStatus.READ)
             messageHistoryDao.insert(MessageHistory(data.messageId))
@@ -466,8 +466,12 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                     if (updateExpiredMessageList.isNotEmpty()) {
                         val updateMessageIds = updateExpiredMessageList.map { it.first }
                         lifecycleScope.launch(PENDING_DB_THREAD) {
-                            DatabaseMonitor.log("remote mark read $updateMessageIds")
-                            remoteMessageStatusDao.deleteByMessageIds(updateMessageIds)
+                            DatabaseMonitor.log("${Thread.currentThread().name} remote mark read $updateMessageIds")
+                            remoteMessageStatusDao.deleteByMessageIds(updateMessageIds).apply {
+                                if (this != updateMessageIds.size){
+                                    DatabaseMonitor.log("${Thread.currentThread().name} Warning!!!")
+                                }
+                            }
                             pendingMessagesDao.markReadIds(updateMessageIds)
                             // Data that does not enter the message table will not enter the remote status table, do not consider
                             val updateConversationList = messageDao.findConversationsByMessages(updateMessageIds)
@@ -476,22 +480,25 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                                 InvalidateFlow.emit(cId)
                                 notificationManager.cancel(cId.hashCode())
                             }
-                            DatabaseMonitor.log("remote mark read end $updateMessageIds")
+                            DatabaseMonitor.log("${Thread.currentThread().name} remote mark read end $updateMessageIds")
                         }
 
                         // expired message
-                        updateExpiredMessageList.forEach { expiredMessage ->
-                            val messageId = expiredMessage.first
+                        updateExpiredMessageList.groupBy { expiredMessage ->
                             val expireAt = expiredMessage.second
-                            if (expireAt != null && expireAt > 0) {
+                            expireAt != null && expireAt > 0
+                        }.let { map ->
+                            map[true]?.forEach {
+                                val messageId = it.first
+                                val expireAt = it.second!!
                                 expiredMessageDao.updateExpiredMessage(messageId, expireAt)
                                 RxBus.publish(ExpiredEvent(messageId, null, expireAt))
-                            } else {
-                                val localExpiredMessage = expiredMessageDao.getExpiredMessageById(messageId)
-                                if (localExpiredMessage != null) { // The old version mark read
-                                    expiredMessageDao.markRead(messageId, currentTimeSeconds())
-                                    RxBus.publish(ExpiredEvent(messageId, null, currentTimeSeconds() + localExpiredMessage.expireIn))
-                                }
+                            }
+                            map[false]?.map { it.first }?.let {
+                                expiredMessageDao.getExpiredMessageByIds(it)
+                            }?.forEach { localExpiredMessage -> // The old version mark read
+                                expiredMessageDao.markRead(localExpiredMessage.messageId, currentTimeSeconds())
+                                RxBus.publish(ExpiredEvent(localExpiredMessage.messageId, null, currentTimeSeconds() + localExpiredMessage.expireIn))
                             }
                         }
                     }
