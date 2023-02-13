@@ -468,6 +468,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                         lifecycleScope.launch(PENDING_DB_THREAD) {
                             DatabaseMonitor.log("remote mark read $updateMessageIds")
                             remoteMessageStatusDao.deleteByMessageIds(updateMessageIds)
+                            DatabaseMonitor.log("${Thread.currentThread().name} Mark read $updateMessageIds")
                             pendingMessagesDao.markReadIds(updateMessageIds)
                             // Data that does not enter the message table will not enter the remote status table, do not consider
                             val updateConversationList = messageDao.findConversationsByMessages(updateMessageIds)
