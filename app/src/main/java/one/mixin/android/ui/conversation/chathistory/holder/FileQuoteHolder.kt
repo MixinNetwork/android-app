@@ -147,7 +147,9 @@ class FileQuoteHolder constructor(val binding: ItemChatFileQuoteBinding) : Media
                 MediaStatus.CANCELED.name -> {
                     binding.fileExpired.visibility = View.GONE
                     binding.fileProgress.visibility = View.VISIBLE
-                    if (isMe && messageItem.mediaUrl != null) {
+                    if (messageItem.transcriptId != null && messageItem.mediaUrl != null) {
+                        binding.fileProgress.enableUpload()
+                    } else if (messageItem.mediaUrl != null && isMe) {
                         binding.fileProgress.enableUpload()
                     } else {
                         binding.fileProgress.enableDownload()

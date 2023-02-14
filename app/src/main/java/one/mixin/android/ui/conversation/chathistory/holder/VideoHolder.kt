@@ -151,7 +151,9 @@ class VideoHolder constructor(val binding: ItemChatVideoBinding) : MediaHolder(b
                         binding.chatWarning.visibility = GONE
                         binding.progress.visibility = VISIBLE
                         binding.play.visibility = GONE
-                        if (isMe) {
+                        if (messageItem.transcriptId != null && messageItem.mediaUrl != null) {
+                            binding.progress.enableUpload()
+                        } else if (messageItem.mediaUrl != null && isMe) {
                             binding.progress.enableUpload()
                         } else {
                             binding.progress.enableDownload()

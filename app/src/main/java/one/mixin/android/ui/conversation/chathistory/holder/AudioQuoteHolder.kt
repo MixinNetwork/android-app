@@ -163,7 +163,9 @@ class AudioQuoteHolder constructor(val binding: ItemChatAudioQuoteBinding) : Med
                 MediaStatus.CANCELED.name -> {
                     binding.audioExpired.visibility = View.GONE
                     binding.audioProgress.visibility = View.VISIBLE
-                    if (isMe) {
+                    if (messageItem.transcriptId != null && messageItem.mediaUrl != null) {
+                        binding.audioProgress.enableUpload()
+                    } else if (messageItem.mediaUrl != null && isMe) {
                         binding.audioProgress.enableUpload()
                     } else {
                         binding.audioProgress.enableDownload()

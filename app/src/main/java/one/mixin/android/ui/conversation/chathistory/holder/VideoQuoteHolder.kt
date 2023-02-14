@@ -153,7 +153,9 @@ class VideoQuoteHolder constructor(val binding: ItemChatVideoQuoteBinding) : Bas
                     binding.play.visibility = View.GONE
                     binding.chatWarning.visibility = View.GONE
                     binding.progress.visibility = View.VISIBLE
-                    if (isMe && messageItem.mediaUrl != null) {
+                    if (messageItem.transcriptId != null && messageItem.mediaUrl != null) {
+                        binding.progress.enableUpload()
+                    } else if (messageItem.mediaUrl != null && isMe) {
                         binding.progress.enableUpload()
                     } else {
                         binding.progress.enableDownload()
