@@ -341,10 +341,6 @@ class WebFragment : BaseFragment() {
         } else {
             loadWebView()
         }
-
-        if (requireContext().checkInlinePermissions()) {
-            showClip()
-        }
     }
 
     private fun checkAppCard(appCard: AppCardData) = lifecycleScope.launch {
