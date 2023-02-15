@@ -196,6 +196,10 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
                                     startExpiredJob(currentTime + expiredIn)
                                 }
                             }
+                        } else {
+                            database.expiredMessageDao().getExpiredMessageById(event.messageId)?.expireAt?.let { expiredAt ->
+                                startExpiredJob(expiredAt)
+                            }
                         }
                     } else {
                         val expiredAt = requireNotNull(event.expireAt)
