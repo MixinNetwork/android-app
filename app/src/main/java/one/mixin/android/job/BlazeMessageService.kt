@@ -190,14 +190,14 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
                     val expiredIn = event.expireIn
                     if (expiredIn != null) {
                         val currentTime = currentTimeSeconds()
-                        if (database.expiredMessageDao().markRead(event.messageId, currentTime) > 0) {
+                        if (expiredMessageDao.markRead(event.messageId, currentTime) > 0) {
                             lifecycleScope.launch {
                                 withContext(Dispatchers.IO) {
                                     startExpiredJob(currentTime + expiredIn)
                                 }
                             }
                         } else {
-                            database.expiredMessageDao().getExpiredMessageById(event.messageId)?.expireAt?.let { expiredAt ->
+                            expiredMessageDao.getExpiredMessageById(event.messageId)?.expireAt?.let { expiredAt ->
                                 startExpiredJob(expiredAt)
                             }
                         }
