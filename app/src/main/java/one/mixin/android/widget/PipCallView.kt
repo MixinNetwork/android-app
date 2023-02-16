@@ -275,7 +275,7 @@ class PipCallView {
     fun updateIcon(muted: Boolean) {
         appContext.runOnUiThread {
             if (muted) {
-                iconView?.setImageResource(if (appContext.isNightMode()) R.drawable.ic_pip_call_mute_night else R.drawable.ic_pip_call_mute)
+                iconView?.setImageResource(R.drawable.ic_pip_call_mute)
             } else {
                 iconView?.setImageResource(R.drawable.ic_pip_call)
             }
