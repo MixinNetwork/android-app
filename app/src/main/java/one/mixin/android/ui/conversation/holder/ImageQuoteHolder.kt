@@ -272,7 +272,7 @@ class ImageQuoteHolder constructor(val binding: ItemChatImageQuoteBinding) : Med
         }
 
         chatLayout(isMe, isLast)
-        chatJumpLayout(binding.chatJump, isMe, messageItem.expireIn, R.id.chat_msg_layout)
+        chatJumpLayout(binding.chatJump, isMe, messageItem.expireIn, messageItem.expireAt, R.id.chat_msg_layout)
     }
     override fun onRead(messageItem: MessageItem) {
         if (messageItem.expireIn != null) {

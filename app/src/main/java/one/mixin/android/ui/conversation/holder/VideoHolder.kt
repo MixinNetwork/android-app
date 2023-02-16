@@ -275,7 +275,7 @@ class VideoHolder constructor(val binding: ItemChatVideoBinding) :
         }
         type = messageItem.type
         dataThumbImage = messageItem.thumbImage
-        chatJumpLayout(binding.chatJump, isMe, messageItem.expireIn, R.id.chat_layout)
+        chatJumpLayout(binding.chatJump, isMe, messageItem.expireIn, messageItem.expireAt, R.id.chat_layout)
         chatLayout(isMe, isLast)
     }
 

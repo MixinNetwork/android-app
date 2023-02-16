@@ -10,6 +10,7 @@ import androidx.annotation.ColorInt
 import androidx.annotation.DrawableRes
 import androidx.annotation.IdRes
 import androidx.appcompat.content.res.AppCompatResources
+import androidx.appcompat.widget.TooltipCompat
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.RecyclerView
@@ -24,6 +25,7 @@ import one.mixin.android.event.BlinkEvent
 import one.mixin.android.extension.CodeType
 import one.mixin.android.extension.booleanFromAttribute
 import one.mixin.android.extension.dpToPx
+import one.mixin.android.extension.fullTime
 import one.mixin.android.extension.getColorCode
 import one.mixin.android.session.Session
 import one.mixin.android.vo.MessageItem
@@ -128,12 +130,15 @@ abstract class BaseViewHolder constructor(containerView: View) :
         chatJump: ImageView,
         isMe: Boolean,
         expireIn: Long?,
+        expireAt: Long?,
         @IdRes id: Int,
     ) {
         chatJump.isVisible = expireIn != null
         if (expireIn != null) {
             chatJump.setImageResource(R.drawable.ic_expire_message)
-
+            expireAt?.fullTime().let {
+                TooltipCompat.setTooltipText(chatJump, chatJump.context.getString(R.string.Expired_tip, it))
+            }
             (chatJump.layoutParams as ConstraintLayout.LayoutParams).apply {
                 if (isMe) {
                     endToStart = id

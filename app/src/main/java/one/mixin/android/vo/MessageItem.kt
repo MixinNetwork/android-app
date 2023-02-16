@@ -111,6 +111,7 @@ data class MessageItem(
     val mentionRead: Boolean? = null,
     val isPin: Boolean? = null,
     val expireIn: Long? = null,
+    val expireAt: Long? = null,
 ) : Parcelable, ICategory {
 
     @IgnoredOnParcel
