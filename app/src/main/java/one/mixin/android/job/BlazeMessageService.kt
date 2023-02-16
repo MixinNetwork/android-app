@@ -450,7 +450,7 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
         list.map { msg ->
             createAckJob(
                 ACKNOWLEDGE_MESSAGE_RECEIPTS,
-                BlazeAckMessage(msg.messageId, MessageStatus.READ.name, msg.expireAt),
+                BlazeAckMessage(msg.messageId, MessageStatus.READ.name),
             )
         }.apply {
             pendingDatabase.insertJobs(this)
@@ -458,7 +458,7 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
         Session.getExtensionSessionId()?.let { _ ->
             val conversationId = list.first().conversationId
             list.map { msg ->
-                createAckJob(CREATE_MESSAGE, BlazeAckMessage(msg.messageId, MessageStatus.READ.name), conversationId)
+                createAckJob(CREATE_MESSAGE, BlazeAckMessage(msg.messageId, MessageStatus.READ.name, msg.expireAt), conversationId)
             }.let { jobs ->
                 pendingDatabase.insertJobs(jobs)
             }
