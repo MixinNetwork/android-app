@@ -136,7 +136,7 @@ abstract class BaseViewHolder constructor(containerView: View) :
         chatJump.isVisible = expireIn != null
         if (expireIn != null) {
             chatJump.setImageResource(R.drawable.ic_expire_message)
-            expireAt?.fullTime().let {
+            expireAt?.fullTime()?.let {
                 TooltipCompat.setTooltipText(chatJump, chatJump.context.getString(R.string.Expired_tip, it))
             }
             (chatJump.layoutParams as ConstraintLayout.LayoutParams).apply {
