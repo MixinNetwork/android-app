@@ -490,12 +490,11 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
 
     private fun startExpiredJob(expiredTime: Long) {
         val nextExpirationTime = this.nextExpirationTime
-        if (expiredJob?.isActive == true && nextExpirationTime != null && expiredTime < nextExpirationTime) {
+        if (expiredTime <= currentTimeSeconds() || (nextExpirationTime != null && expiredTime < nextExpirationTime)) {
             expiredJob?.cancel()
             runExpiredJob()
-        } else {
-            runExpiredJob()
         }
+        runExpiredJob()
     }
 
     private var nextExpirationTime: Long? = null
