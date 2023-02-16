@@ -1197,6 +1197,10 @@ class ConversationFragment() :
 
     private var lastReadMessage: String? = null
     override fun onPause() {
+        // don't stop audio player if triggered by screen off
+        if (powerManager.isInteractive) {
+            AudioPlayer.pause()
+        }
         sensorManager.unregisterListener(this)
         lifecycleScope.launch {
             if (viewDestroyed()) return@launch
@@ -1248,7 +1252,6 @@ class ConversationFragment() :
 
     override fun onStop() {
         markRead()
-        AudioPlayer.pause()
         val draftText = binding.chatControl.chatEt.text?.toString() ?: ""
         chatRoomHelper.saveDraft(conversationId, draftText)
 
@@ -1298,6 +1301,7 @@ class ConversationFragment() :
                 }
             }
         }
+        AudioPlayer.pause()
         AudioPlayer.setStatusListener(null)
         AudioPlayer.release()
         context?.let {
