@@ -27,7 +27,6 @@ import one.mixin.android.db.JobDao
 import one.mixin.android.db.MessageDao
 import one.mixin.android.db.MessageHistoryDao
 import one.mixin.android.db.MessageMentionDao
-import one.mixin.android.db.MessagesFts4Dao
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.ParticipantDao
 import one.mixin.android.db.ParticipantSessionDao
@@ -42,6 +41,7 @@ import one.mixin.android.db.UserDao
 import one.mixin.android.db.insertUpdate
 import one.mixin.android.db.pending.PendingMessageDao
 import one.mixin.android.di.ApplicationScope
+import one.mixin.android.fts.FtsDbHelper
 import one.mixin.android.session.Session
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.vo.ConversationCategory
@@ -60,6 +60,9 @@ import javax.inject.Inject
 open class Injector {
     @Inject
     lateinit var jobManager: MixinJobManager
+
+    @Inject
+    lateinit var ftsDbHelper: FtsDbHelper
 
     @Inject
     lateinit var messageDao: MessageDao
@@ -141,9 +144,6 @@ open class Injector {
 
     @Inject
     lateinit var transcriptMessageDao: TranscriptMessageDao
-
-    @Inject
-    lateinit var messagesFts4Dao: MessagesFts4Dao
 
     @Inject
     lateinit var pinMessageDao: PinMessageDao

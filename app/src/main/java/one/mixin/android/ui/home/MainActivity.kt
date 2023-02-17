@@ -5,7 +5,6 @@ import android.app.Activity
 import android.app.ActivityManager
 import android.app.Dialog
 import android.app.NotificationManager
-import android.content.ContentValues
 import android.content.Context
 import android.content.Intent
 import android.content.IntentSender
@@ -47,7 +46,6 @@ import one.mixin.android.Constants.Account.PREF_BACKUP
 import one.mixin.android.Constants.Account.PREF_BATTERY_OPTIMIZE
 import one.mixin.android.Constants.Account.PREF_CHECK_STORAGE
 import one.mixin.android.Constants.Account.PREF_DEVICE_SDK
-import one.mixin.android.Constants.Account.PREF_FTS4_REDUCE
 import one.mixin.android.Constants.Account.PREF_SYNC_CIRCLE
 import one.mixin.android.Constants.CIRCLE.CIRCLE_ID
 import one.mixin.android.Constants.CIRCLE.CIRCLE_NAME
@@ -87,12 +85,10 @@ import one.mixin.android.extension.putLong
 import one.mixin.android.extension.putString
 import one.mixin.android.extension.remove
 import one.mixin.android.extension.toast
-import one.mixin.android.fts5.FtsDbHelper
 import one.mixin.android.job.AttachmentMigrationJob
 import one.mixin.android.job.BackupJob
 import one.mixin.android.job.CleanCacheJob
 import one.mixin.android.job.MixinJobManager
-import one.mixin.android.job.ReduceFts4Job
 import one.mixin.android.job.RefreshAccountJob
 import one.mixin.android.job.RefreshAssetsJob
 import one.mixin.android.job.RefreshCircleJob
@@ -152,10 +148,7 @@ import one.mixin.android.vo.Participant
 import one.mixin.android.vo.ParticipantRole
 import one.mixin.android.vo.isGroupConversation
 import one.mixin.android.widget.MaterialSearchView
-import timber.log.Timber
-import java.util.UUID
 import javax.inject.Inject
-
 
 @AndroidEntryPoint
 class MainActivity : BlazeBaseActivity() {
@@ -301,32 +294,6 @@ class MainActivity : BlazeBaseActivity() {
             }
             checkUpdate()
         }
-        // Todo remove test code
-        lifecycleScope.launch(Dispatchers.IO) {
-            val ftsDbHelper = FtsDbHelper(this@MainActivity)
-            ftsDbHelper.writableDatabase.use { db ->
-                repeat(100) {
-                    db.beginTransaction()
-                    val values = ContentValues()
-                    values.put("content", UUID.randomUUID().toString())
-                    val lastRowId =  db.insert("messages_fts", null, values).apply {
-                        Timber.e("insert return $this")
-                    }
-                    if (lastRowId<=0) return@repeat
-                    db.execSQL("INSERT INTO metas(doc_id, message_id, conversation_id, user_id) VALUES ($lastRowId, random(), random(), random())")
-                    db.setTransactionSuccessful()
-                    db.endTransaction()
-                }
-                Timber.e("Over!")
-            }
-            ftsDbHelper.readableDatabase.use { db ->
-                db.rawQuery(
-                    "SELECT * FROM messages_fts", null
-                ).use { cursor ->
-                    Timber.e("find ${cursor.count}")
-                }
-            }
-        }
     }
 
     override fun onStart() {
@@ -361,7 +328,7 @@ class MainActivity : BlazeBaseActivity() {
 
         jobManager.addJobInBackground(RefreshOneTimePreKeysJob())
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q && PropertyHelper.findValueByKey(
-                PREF_BACKUP
+                PREF_BACKUP,
             )?.toBooleanStrictOrNull() == true
         ) {
             jobManager.addJobInBackground(BackupJob())
@@ -374,12 +341,6 @@ class MainActivity : BlazeBaseActivity() {
 
         if (Fiats.isRateEmpty()) {
             jobManager.addJobInBackground(RefreshFiatsJob())
-        }
-
-        if (PropertyHelper.checkFts4Upgrade()) {
-            InitializeActivity.showFts(this@MainActivity)
-            finish()
-            return@launch
         }
 
         val sdk = PropertyHelper.findValueByKey(PREF_DEVICE_SDK)?.toIntOrNull()
@@ -403,11 +364,6 @@ class MainActivity : BlazeBaseActivity() {
 
         PropertyHelper.checkBackupMigrated {
             jobManager.addJobInBackground(BackupJob(force = true, delete = true))
-        }
-
-        val ftsReduce = PropertyHelper.findValueByKey(PREF_FTS4_REDUCE)?.toBooleanStrictOrNull()
-        if (ftsReduce != false) {
-            jobManager.addJobInBackground(ReduceFts4Job())
         }
 
         jobManager.addJobInBackground(RefreshContactJob())
@@ -513,7 +469,7 @@ class MainActivity : BlazeBaseActivity() {
     private fun sendSafetyNetRequest() {
         if (GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(
                 applicationContext,
-                13000000
+                13000000,
             ) != ConnectionResult.SUCCESS
         ) {
             return
@@ -640,9 +596,11 @@ class MainActivity : BlazeBaseActivity() {
             bottomSheet?.dismiss()
             showScanBottom(scan)
             clearCodeAfterConsume(intent, SCAN)
-        } else if (intent.hasExtra(URL) || (intent.action == Intent.ACTION_VIEW && intent.categories.contains(
-                Intent.CATEGORY_BROWSABLE
-            ))
+        } else if (intent.hasExtra(URL) || (
+                intent.action == Intent.ACTION_VIEW && intent.categories.contains(
+                    Intent.CATEGORY_BROWSABLE,
+                )
+                )
         ) {
             val url = intent.getStringExtra(URL) ?: intent.data?.toString() ?: return
             bottomSheet?.dismiss()
@@ -663,7 +621,7 @@ class MainActivity : BlazeBaseActivity() {
             clearCodeAfterConsume(intent, TRANSFER)
         } else if (intent.extras != null && intent.extras!!.getString(
                 "conversation_id",
-                null
+                null,
             ) != null
         ) {
             alertDialog?.dismiss()

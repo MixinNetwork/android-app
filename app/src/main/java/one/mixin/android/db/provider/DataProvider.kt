@@ -414,7 +414,7 @@ class DataProvider {
             )
         }
 
-        fun fuzzySearchMessageDetail(query: String?, conversationId: String?, database: MixinDatabase, cancellationSignal: CancellationSignal) =
+        fun fuzzySearchMessageDetail(messageIds: List<String>, conversationId: String?, database: MixinDatabase, cancellationSignal: CancellationSignal) =
             object : DataSource.Factory<Int, SearchMessageDetailItem>() {
                 override fun create(): DataSource<Int, SearchMessageDetailItem> {
                     val sql =
@@ -422,7 +422,7 @@ class DataProvider {
                             SELECT m.id AS messageId, u.user_id AS userId, u.avatar_url AS userAvatarUrl, u.full_name AS userFullName,
                             m.category AS type, m.content AS content, m.created_at AS createdAt, m.name AS mediaName 
                             FROM messages m INNER JOIN users u ON m.user_id = u.user_id 
-                            WHERE m.id IN (SELECT message_id FROM messages_fts4 WHERE messages_fts4 MATCH ?) 
+                            WHERE m.id IN (*) 
                             AND m.conversation_id = ?
                             ORDER BY m.created_at DESC
                         """
@@ -430,20 +430,17 @@ class DataProvider {
                         """
                             SELECT count(1) FROM messages m 
                             INNER JOIN users u ON m.user_id = u.user_id 
-                            WHERE m.id IN (SELECT message_id FROM messages_fts4 WHERE messages_fts4 MATCH ?) 
+                            WHERE m.id IN (*)
                             AND m.conversation_id = ?
                         """
-                    val countStatement = RoomSQLiteQuery.acquire(countSql, 2)
-                    val statement = RoomSQLiteQuery.acquire(sql, 2)
-                    var argIndex = 1
-                    if (query == null) {
-                        statement.bindNull(argIndex)
-                        countStatement.bindNull(argIndex)
+                    val ids = if (messageIds.isEmpty()) {
+                        "NULL"
                     } else {
-                        statement.bindString(argIndex, query)
-                        countStatement.bindString(argIndex, query)
+                        messageIds.joinToString(prefix = "'", postfix = "'", separator = "', '")
                     }
-                    argIndex = 2
+                    val countStatement = RoomSQLiteQuery.acquire(countSql.replace("*", ids), 1)
+                    val statement = RoomSQLiteQuery.acquire(sql.replace("*", ids), 1)
+                    val argIndex = 1
                     if (conversationId == null) {
                         statement.bindNull(argIndex)
                         countStatement.bindNull(argIndex)

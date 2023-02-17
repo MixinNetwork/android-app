@@ -2,7 +2,6 @@ package one.mixin.android.job
 
 import com.birbit.android.jobqueue.Params
 import kotlinx.coroutines.runBlocking
-import one.mixin.android.db.deleteFtsByMessageIds
 
 class MessageFtsDeleteJob(private val messageIds: List<String>) :
     BaseJob(Params(PRIORITY_LOWER).addTags(GROUP).groupBy("message_delete").persist()) {
@@ -13,8 +12,5 @@ class MessageFtsDeleteJob(private val messageIds: List<String>) :
     }
 
     override fun onRun() = runBlocking {
-        messageIds.chunked(100).forEach {
-            messageFts4Dao.deleteFtsByMessageIds(it)
-        }
     }
 }

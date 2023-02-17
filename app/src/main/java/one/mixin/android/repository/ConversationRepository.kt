@@ -42,6 +42,7 @@ import one.mixin.android.extension.joinStar
 import one.mixin.android.extension.putBoolean
 import one.mixin.android.extension.replaceQuotationMark
 import one.mixin.android.extension.sharedPreferences
+import one.mixin.android.fts.FtsDbHelper
 import one.mixin.android.job.GenerateAvatarJob
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshConversationJob
@@ -91,6 +92,7 @@ internal constructor(
     private val conversationService: ConversationService,
     private val userService: UserService,
     private val jobManager: MixinJobManager,
+    private val ftsDbHelper: FtsDbHelper,
 ) {
 
     @SuppressLint("RestrictedApi")
@@ -144,7 +146,7 @@ internal constructor(
         DataProvider.fuzzySearchMessage(query.joinStar().replaceQuotationMark(), limit, appDatabase, cancellationSignal)
 
     fun fuzzySearchMessageDetail(query: String, conversationId: String, cancellationSignal: CancellationSignal) =
-        DataProvider.fuzzySearchMessageDetail(query.joinStar().replaceQuotationMark(), conversationId, appDatabase, cancellationSignal)
+        DataProvider.fuzzySearchMessageDetail(ftsDbHelper.search(query.joinStar().replaceQuotationMark()), conversationId, appDatabase, cancellationSignal)
 
     suspend fun fuzzySearchChat(query: String, cancellationSignal: CancellationSignal): List<ChatMinimal> =
         DataProvider.fuzzySearchChat(query, appDatabase, cancellationSignal)

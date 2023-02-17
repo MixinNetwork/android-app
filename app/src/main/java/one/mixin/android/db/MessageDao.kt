@@ -231,16 +231,16 @@ interface MessageDao : BaseDao<Message> {
         SELECT m.conversation_id AS conversationId, c.icon_url AS conversationAvatarUrl,
         c.name AS conversationName, c.category AS conversationCategory, count(m.id) as messageCount,
         u.user_id AS userId, u.avatar_url AS userAvatarUrl, u.full_name AS userFullName
-        FROM messages m, (SELECT message_id FROM messages_fts4 WHERE messages_fts4 MATCH :query) fts
+        FROM messages m
         INNER JOIN users u ON c.owner_id = u.user_id
         INNER JOIN conversations c ON c.conversation_id = m.conversation_id
-        WHERE m.id = fts.message_id
+        WHERE m.id IN (:messageIds) 
         GROUP BY m.conversation_id
         ORDER BY max(m.created_at) DESC
         LIMIT :limit
         """,
     )
-    suspend fun fuzzySearchMessage(query: String, limit: Int): List<SearchMessageItem>
+    suspend fun fuzzySearchMessage(messageIds: List<String>, limit: Int): List<SearchMessageItem>
 
     @Query("SELECT m.category as type, m.id as messageId, m.media_url as mediaUrl FROM messages m WHERE m.conversation_id = :conversationId AND m.media_url IS NOT NULL AND m.media_status = 'DONE' LIMIT :limit OFFSET :offset")
     suspend fun getMediaMessageMinimalByConversationId(conversationId: String, limit: Int, offset: Int): List<MediaMessageMinimal>
