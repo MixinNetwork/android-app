@@ -151,6 +151,7 @@ class AddressManagementFragment : BaseFragment(R.layout.fragment_address_managem
             addressId = address.addressId,
             assetUrl = asset.iconUrl,
             assetSymbol = asset.symbol,
+            assetKey = asset.assetKey,
             chainId = asset.chainId,
             chainName = asset.chainName,
             chainIconUrl = asset.chainIconUrl,

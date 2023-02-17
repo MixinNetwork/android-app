@@ -32,3 +32,24 @@ fun getChainNetwork(assetId: String, chainId: String, assetKey: String?): String
     }
     return chainNetworks[chainId]
 }
+
+private val chainNames by lazy {
+    mapOf(
+        "43d61dcd-e413-450d-80b8-101d5e903357" to "Ethereum (ERC-20)",
+        "cbc77539-0a20-4666-8c8a-4ded62b36f0a" to "Avalanche X-Chain",
+        "17f78d7c-ed96-40ff-980c-5dc62fecbc85" to "BNB Beacon Chain (BEP-2)",
+        "1949e683-6a08-49e2-b087-d6b72398588f" to "BNB Smart Chain (BEP-20)",
+        "05891083-63d2-4f3d-bfbe-d14d7fb9b25a" to "BitShares",
+    )
+}
+
+fun getChainName(chainId: String?, chainName: String?, assetKey: String?): String? {
+    if (chainId == Constants.ChainId.TRON_CHAIN_ID) {
+        return if (assetKey?.isDigitsOnly() == true) {
+            "Tron (TRC-10)"
+        } else {
+            "Tron (TRC-20)"
+        }
+    }
+    return chainNames[chainId] ?: chainName
+}
