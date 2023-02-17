@@ -96,7 +96,7 @@ open class SendMessageJob(
                 if (!message.isTranscript()) {
                     mixinDatabase.insertMessage(message)
                     InvalidateFlow.emit(message.conversationId)
-                    MessageFts4Helper.insertOrReplaceMessageFts4(message, message.name)
+                    MessageFts4Helper.insertOrReplaceMessageFts4(ftsDbHelper ,message, message.name)
                 }
 
                 conversation.expireIn?.let { e ->

@@ -42,6 +42,7 @@ import one.mixin.android.db.UserDao
 import one.mixin.android.db.insertUpdate
 import one.mixin.android.db.pending.PendingMessageDao
 import one.mixin.android.di.ApplicationScope
+import one.mixin.android.fts5.FtsDbHelper
 import one.mixin.android.session.Session
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.vo.ConversationCategory
@@ -60,6 +61,9 @@ import javax.inject.Inject
 open class Injector {
     @Inject
     lateinit var jobManager: MixinJobManager
+
+    @Inject
+    lateinit var ftsDbHelper: FtsDbHelper
 
     @Inject
     lateinit var messageDao: MessageDao

@@ -622,7 +622,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                 }
                 val (mentions, mentionMe) = parseMentionData(plain, data.messageId, data.conversationId, userDao, messageMentionDao, data.userId)
                 insertMessage(message, data)
-                MessageFts4Helper.insertOrReplaceMessageFts4(message)
+                MessageFts4Helper.insertOrReplaceMessageFts4(ftsDbHelper, message)
                 val userMap = mentions?.associate { it.identityNumber to it.fullName }
                 generateNotification(message, data, userMap, quoteMe || mentionMe)
             }
@@ -639,7 +639,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                     data.status,
                 )
                 insertMessage(message, data)
-                MessageFts4Helper.insertOrReplaceMessageFts4(message)
+                MessageFts4Helper.insertOrReplaceMessageFts4(ftsDbHelper, message)
                 generateNotification(message, data)
             }
             data.category.endsWith("_LOCATION") -> {
@@ -718,7 +718,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                     )
                 }
                 insertMessage(message, data)
-                MessageFts4Helper.insertOrReplaceMessageFts4(message)
+                MessageFts4Helper.insertOrReplaceMessageFts4(ftsDbHelper, message)
                 lifecycleScope.launch {
                     MixinApplication.appContext.autoDownload(autoDownloadDocument) {
                         jobManager.addJobInBackground(AttachmentDownloadJob(message))
@@ -785,7 +785,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                 insertMessage(message, data)
                 val fullName = user?.fullName
                 if (!fullName.isNullOrBlank()) {
-                    MessageFts4Helper.insertOrReplaceMessageFts4(message, fullName)
+                    MessageFts4Helper.insertOrReplaceMessageFts4(ftsDbHelper, message, fullName)
                 }
                 generateNotification(message, data)
             }

@@ -28,10 +28,6 @@ object MessageFts4Helper {
     private const val PRE_PROCESS_COUNT = 20000
     private const val PER_JOB_HANDLE_COUNT = 1000
 
-    val dbHandler by lazy {
-        FtsDbHelper(MixinApplication.appContext)
-    }
-
     suspend fun syncMessageFts4(
         preProcess: Boolean,
         waitMillis: Long? = null,
@@ -83,8 +79,8 @@ object MessageFts4Helper {
     }
 
     @WorkerThread
-    fun insertOrReplaceMessageFts4(message: Message, extraContent: String? = null) {
-        dbHandler.insertOrReplaceMessageFts4(message,extraContent)
+    fun insertOrReplaceMessageFts4(ftsDbHelper: FtsDbHelper, message: Message, extraContent: String? = null, ) {
+        ftsDbHelper.insertOrReplaceMessageFts4(message, extraContent)
     }
 
     @WorkerThread
