@@ -8,10 +8,9 @@ import one.mixin.android.Constants.Account.PREF_SYNC_FTS4_OFFSET
 import one.mixin.android.MixinApplication
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.extension.joinWhiteSpace
+import one.mixin.android.fts5.FtsDbHelper
 import one.mixin.android.vo.Message
 import one.mixin.android.vo.MessageFts4
-import one.mixin.android.vo.isContact
-import one.mixin.android.vo.isFtsMessage
 import org.threeten.bp.Instant
 import org.threeten.bp.temporal.ChronoUnit
 import timber.log.Timber
@@ -28,6 +27,10 @@ object MessageFts4Helper {
     private const val SYNC_FTS4_LIMIT = 100
     private const val PRE_PROCESS_COUNT = 20000
     private const val PER_JOB_HANDLE_COUNT = 1000
+
+    val dbHandler by lazy {
+        FtsDbHelper(MixinApplication.appContext)
+    }
 
     suspend fun syncMessageFts4(
         preProcess: Boolean,
@@ -81,17 +84,7 @@ object MessageFts4Helper {
 
     @WorkerThread
     fun insertOrReplaceMessageFts4(message: Message, extraContent: String? = null) {
-        if (!message.isFtsMessage()) {
-            if (message.isContact() && !extraContent.isNullOrBlank()) {
-                insertContact(message.messageId, extraContent)
-            }
-            return
-        }
-
-        val messageFts4Dao = MixinDatabase.getDatabase(MixinApplication.appContext).messageFts4Dao()
-        val name = message.name.joinWhiteSpace()
-        val content = message.content.joinWhiteSpace()
-        messageFts4Dao.rawQuery(SimpleSQLiteQuery("INSERT OR REPLACE INTO `messages_fts4` (`message_id`,`content`) VALUES (?,?)", arrayOf(message.messageId, name + content)))
+        dbHandler.insertOrReplaceMessageFts4(message,extraContent)
     }
 
     @WorkerThread

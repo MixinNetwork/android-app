@@ -301,32 +301,6 @@ class MainActivity : BlazeBaseActivity() {
             }
             checkUpdate()
         }
-        // Todo remove test code
-        lifecycleScope.launch(Dispatchers.IO) {
-            val ftsDbHelper = FtsDbHelper(this@MainActivity)
-            ftsDbHelper.writableDatabase.use { db ->
-                repeat(100) {
-                    db.beginTransaction()
-                    val values = ContentValues()
-                    values.put("content", UUID.randomUUID().toString())
-                    val lastRowId =  db.insert("messages_fts", null, values).apply {
-                        Timber.e("insert return $this")
-                    }
-                    if (lastRowId<=0) return@repeat
-                    db.execSQL("INSERT INTO metas(doc_id, message_id, conversation_id, user_id) VALUES ($lastRowId, random(), random(), random())")
-                    db.setTransactionSuccessful()
-                    db.endTransaction()
-                }
-                Timber.e("Over!")
-            }
-            ftsDbHelper.readableDatabase.use { db ->
-                db.rawQuery(
-                    "SELECT * FROM messages_fts", null
-                ).use { cursor ->
-                    Timber.e("find ${cursor.count}")
-                }
-            }
-        }
     }
 
     override fun onStart() {
