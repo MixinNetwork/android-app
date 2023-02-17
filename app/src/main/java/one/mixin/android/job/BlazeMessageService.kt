@@ -240,12 +240,16 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
         stopObserveStatus()
         stopObserveExpired()
         ackJob?.cancel()
+        ackJob = null
         statusJob?.cancel()
+        statusJob = null
         expiredJob?.cancel()
+        expiredJob = null
         webSocket.disconnect()
         webSocket.setWebSocketObserver(null)
         networkUtil.unregisterListener()
         disposable?.dispose()
+        disposable = null
     }
 
     override fun onNetworkChange(networkStatus: Int) {
