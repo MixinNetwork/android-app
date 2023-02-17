@@ -18,7 +18,6 @@ open class SqlHelper(context: Context?, name: String, version: Int, private val 
                 // Todo
             }
             else -> {
-
             }
         }
     }

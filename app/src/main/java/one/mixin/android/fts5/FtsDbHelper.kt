@@ -10,11 +10,13 @@ import one.mixin.android.vo.isFtsMessage
 import timber.log.Timber
 
 class FtsDbHelper(val context: Context) : SqlHelper(
-    context, "fts.db", 1,
+    context,
+    "fts.db",
+    1,
     listOf(
         "CREATE VIRTUAL TABLE IF NOT EXISTS `messages_fts` USING FTS4(content, tokenize=unicode61);",
-        "CREATE TABLE IF NOT EXISTS `metas` (`doc_id` INTEGER NOT NULL, `message_id` TEXT NOT NULL, `conversation_id` TEXT NOT NULL, `user_id` TEXT NOT NULL, PRIMARY KEY(`message_id`), FOREIGN KEY(`doc_id`) REFERENCES `messages_fts`(DOCID)) WITHOUT ROWID;"
-    )
+        "CREATE TABLE IF NOT EXISTS `metas` (`doc_id` INTEGER NOT NULL, `message_id` TEXT NOT NULL, `conversation_id` TEXT NOT NULL, `user_id` TEXT NOT NULL, PRIMARY KEY(`message_id`), FOREIGN KEY(`doc_id`) REFERENCES `messages_fts`(DOCID)) WITHOUT ROWID;",
+    ),
 ) {
     fun insertOrReplaceMessageFts4(message: Message, extraContent: String? = null) {
         if (!message.isFtsMessage()) {
@@ -23,7 +25,7 @@ class FtsDbHelper(val context: Context) : SqlHelper(
                     extraContent.joinWhiteSpace(),
                     messageId = message.messageId,
                     conversationId = message.conversationId,
-                    userId = message.userId
+                    userId = message.userId,
                 )
             }
             return
@@ -35,7 +37,7 @@ class FtsDbHelper(val context: Context) : SqlHelper(
             name + content,
             messageId = message.messageId,
             conversationId = message.conversationId,
-            userId = message.userId
+            userId = message.userId,
         )
     }
 
@@ -63,7 +65,7 @@ class FtsDbHelper(val context: Context) : SqlHelper(
     fun search(content: String): List<String> {
         readableDatabase.rawQuery(
             "SELECT message_id FROM metas WHERE doc_id IN  (SELECT docid FROM messages_fts WHERE content MATCH '$content')",
-            null
+            null,
         ).use { cursor ->
             val ids = mutableListOf<String>()
             while (cursor.moveToNext()) {

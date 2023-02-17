@@ -79,7 +79,7 @@ object MessageFts4Helper {
     }
 
     @WorkerThread
-    fun insertOrReplaceMessageFts4(ftsDbHelper: FtsDbHelper, message: Message, extraContent: String? = null, ) {
+    fun insertOrReplaceMessageFts4(ftsDbHelper: FtsDbHelper, message: Message, extraContent: String? = null) {
         ftsDbHelper.insertOrReplaceMessageFts4(message, extraContent)
     }
 
