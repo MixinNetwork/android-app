@@ -64,11 +64,6 @@ class RefreshAssetsJob(
     }
 
     private suspend fun refreshChainById(chainId: String) {
-        val exists = chainDao.checkExistsById(chainId)
-        if (exists != null) {
-            return
-        }
-
         val resp = assetService.getChainById(chainId)
         if (resp.isSuccess) {
             resp.data?.let { chain ->
