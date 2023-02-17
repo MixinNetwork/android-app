@@ -4,6 +4,7 @@ import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Update
+import androidx.room.Upsert
 
 interface BaseDao<T> {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
@@ -29,6 +30,12 @@ interface BaseDao<T> {
 
     @Delete
     fun deleteList(obj: List<T>)
+
+    @Upsert
+    suspend fun upsert(entity: T)
+
+    @Upsert
+    suspend fun upsertList(obj: List<T>)
 
     companion object {
         const val ESCAPE_SUFFIX = " ESCAPE '\\'"
