@@ -14,6 +14,7 @@ import one.mixin.android.api.service.AssetService
 import one.mixin.android.db.AddressDao
 import one.mixin.android.db.AssetDao
 import one.mixin.android.db.AssetsExtraDao
+import one.mixin.android.db.ChainDao
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.SnapshotDao
 import one.mixin.android.db.TopAssetDao
@@ -49,6 +50,7 @@ constructor(
     private val addressService: AddressService,
     private val hotAssetDao: TopAssetDao,
     private val traceDao: TraceDao,
+    private val chainDao: ChainDao,
 ) {
 
     fun assets() = assetService.assets()
@@ -83,15 +85,33 @@ constructor(
     }
 
     suspend fun syncAsset(assetId: String): AssetItem? {
-        return handleMixinResponse(
+        val asset: Asset = handleMixinResponse(
             invokeNetwork = {
                 assetService.getAssetByIdSuspend(assetId)
             },
-            successBlock = { chain ->
-                chain.data?.let { c -> insert(c) }
-                return@handleMixinResponse assetDao.findAssetItemById(assetId)
+            successBlock = { resp ->
+                resp.data?.let { a ->
+                    insert(a)
+                    a
+                }
             },
-        )
+        ) ?: return null
+
+        val exists = chainDao.checkExistsById(asset.chainId)
+        if (exists == null) {
+            handleMixinResponse(
+                invokeNetwork = {
+                    assetService.getChainById(asset.chainId)
+                },
+                successBlock = { resp ->
+                    resp.data?.let { c ->
+                        chainDao.upsert(c)
+                    }
+                },
+            )
+        }
+
+        return assetDao.findAssetItemById(assetId)
     }
 
     private suspend fun simpleAsset(id: String) = assetDao.simpleAsset(id)

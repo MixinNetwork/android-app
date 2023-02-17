@@ -24,6 +24,7 @@ class RefreshAssetsJob(
             if (response.isSuccess && response.data != null) {
                 response.data?.let {
                     assetRepo.insert(it)
+                    refreshChainById(it.chainId)
                 }
             }
         } else {
@@ -39,15 +40,39 @@ class RefreshAssetsJob(
                 }
                 assetRepo.insertList(list)
             }
+            refreshChains()
             refreshFiats()
         }
     }
 
-    private fun refreshFiats() = runBlocking {
+    private suspend fun refreshFiats() {
         val resp = accountService.getFiats()
         if (resp.isSuccess) {
             resp.data?.let { fiatList ->
                 Fiats.updateFiats(fiatList)
+            }
+        }
+    }
+
+    private suspend fun refreshChains() {
+        val resp = assetService.getChains()
+        if (resp.isSuccess) {
+            resp.data?.let { chains ->
+                chainDao.upsertList(chains)
+            }
+        }
+    }
+
+    private suspend fun refreshChainById(chainId: String) {
+        val exists = chainDao.checkExistsById(chainId)
+        if (exists != null) {
+            return
+        }
+
+        val resp = assetService.getChainById(chainId)
+        if (resp.isSuccess) {
+            resp.data?.let { chain ->
+                chainDao.upsert(chain)
             }
         }
     }
