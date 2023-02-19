@@ -209,7 +209,7 @@ class TextHolder constructor(val binding: ItemChatTextBinding) : BaseMentionHold
             messageItem.isSecret(),
         )
 
-        chatJumpLayout(binding.chatJump, isMe, messageItem.expireIn, R.id.chat_layout)
+        chatJumpLayout(binding.chatJump, isMe, messageItem.expireIn, messageItem.expireAt, R.id.chat_layout)
 
         chatLayout(isMe, isLast)
 

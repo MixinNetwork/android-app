@@ -125,15 +125,6 @@ class WebActivity : BaseActivity() {
         handleExtras(intent)
     }
 
-    override fun onResume() {
-        super.onResume()
-        supportFragmentManager.findFragmentByTag(WebFragment.TAG).run {
-            if (this != null && this.isVisible) {
-                showClip()
-            }
-        }
-    }
-
     override fun onBackPressed() {
         if (!isExpand) {
             val f = supportFragmentManager.findFragmentByTag(WebFragment.TAG)

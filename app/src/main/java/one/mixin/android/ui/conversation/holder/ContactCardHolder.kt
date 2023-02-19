@@ -101,7 +101,7 @@ class ContactCardHolder(val binding: ItemChatContactCardBinding) : BaseViewHolde
                 true
             }
         }
-        chatJumpLayout(binding.chatJump, isMe, messageItem.expireIn, R.id.chat_layout)
+        chatJumpLayout(binding.chatJump, isMe, messageItem.expireIn, messageItem.expireAt, R.id.chat_layout)
     }
 
     override fun chatLayout(isMe: Boolean, isLast: Boolean, isBlink: Boolean) {

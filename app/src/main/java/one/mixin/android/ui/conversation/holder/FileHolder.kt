@@ -225,7 +225,7 @@ class FileHolder constructor(val binding: ItemChatFileBinding) : BaseViewHolder(
                 true
             }
         }
-        chatJumpLayout(binding.chatJump, isMe, messageItem.expireIn, R.id.chat_msg_layout)
+        chatJumpLayout(binding.chatJump, isMe, messageItem.expireIn, messageItem.expireAt, R.id.chat_msg_layout)
     }
 
     private fun handleClick(

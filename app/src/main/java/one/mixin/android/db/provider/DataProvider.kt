@@ -49,7 +49,7 @@ class DataProvider {
                         st.name AS assetName, st.asset_type AS assetType, h.site_name AS siteName, h.site_title AS siteTitle, h.site_description AS siteDescription,
                         h.site_image AS siteImage, m.shared_user_id AS sharedUserId, su.full_name AS sharedUserFullName, su.identity_number AS sharedUserIdentityNumber,
                         su.avatar_url AS sharedUserAvatarUrl, su.is_verified AS sharedUserIsVerified, su.app_id AS sharedUserAppId, mm.mentions AS mentions, mm.has_read as mentionRead, 
-                        pm.message_id IS NOT NULL as isPin, c.name AS groupName, em.expire_in AS expireIn  
+                        pm.message_id IS NOT NULL as isPin, c.name AS groupName, em.expire_in AS expireIn, em.expire_at AS expireAt   
                         FROM messages m
                         INNER JOIN users u ON m.user_id = u.user_id
                         LEFT JOIN users u1 ON m.participant_id = u1.user_id

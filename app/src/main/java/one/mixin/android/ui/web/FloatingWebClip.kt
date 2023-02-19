@@ -26,6 +26,7 @@ import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.navigationBarHeight
 import one.mixin.android.extension.putInt
 import one.mixin.android.extension.realSize
+import one.mixin.android.extension.statusBarHeight
 import one.mixin.android.widget.FloatingAvatarsView
 import kotlin.math.abs
 import kotlin.math.min
@@ -258,6 +259,11 @@ class FloatingWebClip(private var isNightMode: Boolean) {
         val realSize = appContext.realSize()
         val realX = realSize.x
         val startX = windowLayoutParams.x
+        var endY = windowLayoutParams.y
+        val maxY = realSize.y - windowLayoutParams.height - appContext.statusBarHeight()
+        if (endY > maxY) {
+            endY = maxY
+        }
         val endX = if (startX >= realX / 2) {
             avatarsView?.setRTL(false)
             realSize.x - windowLayoutParams.width
@@ -266,12 +272,10 @@ class FloatingWebClip(private var isNightMode: Boolean) {
             0
         }
         preferences.putInt(FX, endX)
-        preferences.putInt(FY, windowLayoutParams.y)
-        var animators: ArrayList<Animator>? = null
-        if (animators == null) {
-            animators = ArrayList()
-        }
+        preferences.putInt(FY, endY)
+        val animators: ArrayList<Animator> = arrayListOf()
         animators.add(ObjectAnimator.ofInt(this, "x", windowLayoutParams.x, endX))
+        animators.add(ObjectAnimator.ofInt(this, "y", windowLayoutParams.y, endY))
         if (decelerateInterpolator == null) {
             decelerateInterpolator = DecelerateInterpolator()
         }

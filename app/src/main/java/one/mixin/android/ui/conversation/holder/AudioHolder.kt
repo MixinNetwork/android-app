@@ -191,7 +191,7 @@ class AudioHolder constructor(val binding: ItemChatAudioBinding) : BaseViewHolde
                 true
             }
         }
-        chatJumpLayout(binding.chatJump, isMe, messageItem.expireIn, R.id.chat_msg_layout)
+        chatJumpLayout(binding.chatJump, isMe, messageItem.expireIn, messageItem.expireAt, R.id.chat_msg_layout)
     }
 
     private fun handleClick(
