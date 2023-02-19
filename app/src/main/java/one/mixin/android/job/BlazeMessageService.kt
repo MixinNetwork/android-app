@@ -240,12 +240,16 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
         stopObserveStatus()
         stopObserveExpired()
         ackJob?.cancel()
+        ackJob = null
         statusJob?.cancel()
+        statusJob = null
         expiredJob?.cancel()
+        expiredJob = null
         webSocket.disconnect()
         webSocket.setWebSocketObserver(null)
         networkUtil.unregisterListener()
         disposable?.dispose()
+        disposable = null
     }
 
     override fun onNetworkChange(networkStatus: Int) {
@@ -450,7 +454,7 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
         list.map { msg ->
             createAckJob(
                 ACKNOWLEDGE_MESSAGE_RECEIPTS,
-                BlazeAckMessage(msg.messageId, MessageStatus.READ.name, msg.expireAt),
+                BlazeAckMessage(msg.messageId, MessageStatus.READ.name),
             )
         }.apply {
             pendingDatabase.insertJobs(this)
@@ -458,7 +462,7 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
         Session.getExtensionSessionId()?.let { _ ->
             val conversationId = list.first().conversationId
             list.map { msg ->
-                createAckJob(CREATE_MESSAGE, BlazeAckMessage(msg.messageId, MessageStatus.READ.name), conversationId)
+                createAckJob(CREATE_MESSAGE, BlazeAckMessage(msg.messageId, MessageStatus.READ.name, msg.expireAt), conversationId)
             }.let { jobs ->
                 pendingDatabase.insertJobs(jobs)
             }
@@ -490,12 +494,11 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
 
     private fun startExpiredJob(expiredTime: Long) {
         val nextExpirationTime = this.nextExpirationTime
-        if (expiredJob?.isActive == true && nextExpirationTime != null && expiredTime < nextExpirationTime) {
+        if (expiredTime <= currentTimeSeconds() || (nextExpirationTime != null && expiredTime < nextExpirationTime)) {
             expiredJob?.cancel()
             runExpiredJob()
-        } else {
-            runExpiredJob()
         }
+        runExpiredJob()
     }
 
     private var nextExpirationTime: Long? = null

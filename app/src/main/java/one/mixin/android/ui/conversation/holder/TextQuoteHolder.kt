@@ -247,7 +247,7 @@ class TextQuoteHolder constructor(val binding: ItemChatTextQuoteBinding) :
                 onItemListener.onSelect(!isSelect, messageItem, absoluteAdapterPosition)
             }
         }
-        chatJumpLayout(binding.chatJump, isMe, messageItem.expireIn, R.id.chat_layout)
+        chatJumpLayout(binding.chatJump, isMe, messageItem.expireIn, messageItem.expireAt, R.id.chat_layout)
         chatLayout(isMe, isLast)
         attachAction = if (messageItem.mentionRead == false) {
             {

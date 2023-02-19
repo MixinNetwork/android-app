@@ -284,7 +284,7 @@ class LocationHolder constructor(val binding: ItemChatLocationBinding) :
         } else {
             binding.chatName.setCompoundDrawables(null, null, null, null)
         }
-        chatJumpLayout(binding.chatJump, isMe, messageItem.expireIn, R.id.chat_layout)
+        chatJumpLayout(binding.chatJump, isMe, messageItem.expireIn, messageItem.expireAt, R.id.chat_layout)
         chatLayout(isMe, isLast)
     }
 

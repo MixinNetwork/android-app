@@ -431,7 +431,7 @@
     <string name="exit_without_save">不保存就退出？</string>
     <string name="Expired">已过期</string>
     <string name="Export_Chat">导出聊天记录</string>
-    <string name="Export_failed">导出失败</string>
+    <string name="Expired_tip">将于 %1$s 过期</string>
     <string name="export_ip">出口 IP</string>
     <string name="Export_Markdown">导出为 Markdown</string>
     <string name="Export_PDF">导出为 PDF</string>
