@@ -1,13 +1,15 @@
-package one.mixin.android.fts5
+package one.mixin.android.fts
 
 import android.content.ContentValues
 import android.content.Context
+import androidx.core.database.getLongOrNull
 import androidx.core.database.getStringOrNull
 import one.mixin.android.extension.joinWhiteSpace
 import one.mixin.android.vo.Message
 import one.mixin.android.vo.isContact
 import one.mixin.android.vo.isFtsMessage
 import timber.log.Timber
+import kotlin.math.max
 
 class FtsDbHelper(val context: Context) : SqlHelper(
     context,
@@ -75,5 +77,33 @@ class FtsDbHelper(val context: Context) : SqlHelper(
             }
             return ids
         }
+    }
+
+    fun deleteByMessageId(messageId: String): Long {
+        var count: Long
+        writableDatabase.beginTransaction()
+        writableDatabase.rawQuery("DELETE FROM messages_fts WHERE docid = (SELECT doc_id FROM metas WHERE message_id = '$messageId')", null).use { cursor ->
+            count = cursor.getLongOrNull(0) ?: 0
+        }
+        writableDatabase.rawQuery("DELETE FROM metas WHERE messageId = '$messageId'", null).use { cursor ->
+            count = max(cursor.getLongOrNull(0) ?: 0, count)
+        }
+        writableDatabase.setTransactionSuccessful()
+        writableDatabase.endTransaction()
+        return count
+    }
+
+    fun deleteByConversationId(conversationId: String): Long {
+        var count: Long
+        writableDatabase.beginTransaction()
+        writableDatabase.rawQuery("DELETE FROM messages_fts WHERE docid IN (SELECT doc_id FROM metas WHERE conversation_id = '$conversationId')", null).use { cursor ->
+            count = cursor.getLongOrNull(0) ?: 0
+        }
+        writableDatabase.rawQuery("DELETE FROM metas WHERE conversation_id = '$conversationId'", null).use { cursor ->
+            count = max(cursor.getLongOrNull(0) ?: 0, count)
+        }
+        writableDatabase.setTransactionSuccessful()
+        writableDatabase.endTransaction()
+        return count
     }
 }

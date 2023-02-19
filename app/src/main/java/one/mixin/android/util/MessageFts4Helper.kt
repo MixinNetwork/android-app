@@ -8,7 +8,7 @@ import one.mixin.android.Constants.Account.PREF_SYNC_FTS4_OFFSET
 import one.mixin.android.MixinApplication
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.extension.joinWhiteSpace
-import one.mixin.android.fts5.FtsDbHelper
+import one.mixin.android.fts.FtsDbHelper
 import one.mixin.android.vo.Message
 import one.mixin.android.vo.MessageFts4
 import org.threeten.bp.Instant

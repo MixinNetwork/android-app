@@ -1,4 +1,4 @@
-package one.mixin.android.fts5
+package one.mixin.android.fts
 
 import android.content.Context
 import android.database.sqlite.SQLiteDatabase

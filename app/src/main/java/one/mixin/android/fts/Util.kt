@@ -1,4 +1,4 @@
-package one.mixin.android.fts5
+package one.mixin.android.fts
 
 import java.util.concurrent.ThreadLocalRandom
 import kotlin.streams.asSequence
