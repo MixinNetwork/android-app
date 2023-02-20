@@ -3,12 +3,12 @@ package one.mixin.android.util
 import android.os.SystemClock
 import androidx.annotation.WorkerThread
 import androidx.room.ColumnInfo
-import androidx.sqlite.db.SimpleSQLiteQuery
 import one.mixin.android.Constants.Account.PREF_SYNC_FTS4_OFFSET
 import one.mixin.android.MixinApplication
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.extension.joinWhiteSpace
 import one.mixin.android.fts.FtsDbHelper
+import one.mixin.android.job.NotificationGenerator.ftsDbHelper
 import one.mixin.android.vo.Message
 import one.mixin.android.vo.MessageFts4
 import org.threeten.bp.Instant
@@ -84,15 +84,8 @@ object MessageFts4Helper {
     }
 
     @WorkerThread
-    fun insertMessageFts4(messageId: String, content: String) {
-        val messageFts4Dao = MixinDatabase.getDatabase(MixinApplication.appContext).messageFts4Dao()
-        messageFts4Dao.rawQuery(SimpleSQLiteQuery("INSERT OR REPLACE INTO `messages_fts4` (`message_id`,`content`) VALUES (?,?)", arrayOf(messageId, content)))
+    fun insertMessageFts4(content: String, conversationId:String, messageId:String, userId:String) {
+        ftsDbHelper.insertFts4(content, conversationId, messageId, userId)
     }
 
-    @WorkerThread
-    private fun insertContact(messageId: String, text: String) {
-        val messageFts4Dao = MixinDatabase.getDatabase(MixinApplication.appContext).messageFts4Dao()
-        val content = text.joinWhiteSpace()
-        messageFts4Dao.rawQuery(SimpleSQLiteQuery("INSERT OR REPLACE INTO `messages_fts4` (`message_id`,`content`) VALUES (?,?)", arrayOf(messageId, content)))
-    }
 }

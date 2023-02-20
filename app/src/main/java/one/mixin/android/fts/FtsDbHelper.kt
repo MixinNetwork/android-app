@@ -43,6 +43,15 @@ class FtsDbHelper(val context: Context) : SqlHelper(
         )
     }
 
+    fun insertFts4(content: String, conversationId: String, messageId: String, userId: String) {
+        inertContent(
+            content,
+            messageId = messageId,
+            conversationId = conversationId,
+            userId = userId,
+        )
+    }
+
     private fun inertContent(
         content: String,
         messageId: String,
