@@ -345,12 +345,6 @@ class MainActivity : BlazeBaseActivity() {
             jobManager.addJobInBackground(RefreshFiatsJob())
         }
 
-        if (PropertyHelper.checkFts4Upgrade()) {
-            InitializeActivity.showFts(this@MainActivity)
-            finish()
-            return@launch
-        }
-
         val sdk = PropertyHelper.findValueByKey(PREF_DEVICE_SDK)?.toIntOrNull()
         if (sdk == null) {
             PropertyHelper.updateKeyValue(PREF_DEVICE_SDK, Build.VERSION.SDK_INT.toString())
