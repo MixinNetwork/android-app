@@ -127,6 +127,7 @@ class AddressAddFragment() : BaseFragment(R.layout.fragment_address_add) {
                     asset.name,
                     assetUrl = asset.iconUrl,
                     assetSymbol = asset.symbol,
+                    assetKey = asset.assetKey,
                     chainId = asset.chainId,
                     chainName = asset.chainName,
                     chainIconUrl = asset.chainIconUrl,

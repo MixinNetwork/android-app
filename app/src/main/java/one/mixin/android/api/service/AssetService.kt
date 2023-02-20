@@ -7,6 +7,7 @@ import one.mixin.android.api.response.PaymentResponse
 import one.mixin.android.ui.wallet.BaseTransactionsFragment.Companion.LIMIT
 import one.mixin.android.vo.Asset
 import one.mixin.android.vo.AssetPrecision
+import one.mixin.android.vo.Chain
 import one.mixin.android.vo.PendingDeposit
 import one.mixin.android.vo.Snapshot
 import one.mixin.android.vo.Ticker
@@ -89,4 +90,10 @@ interface AssetService {
         @Query("asset") assetId: String,
         @Query("offset") offset: String? = null,
     ): MixinResponse<Ticker>
+
+    @GET("network/chains")
+    suspend fun getChains(): MixinResponse<List<Chain>>
+
+    @GET("network/chains/{id}")
+    suspend fun getChainById(@Path("id") id: String): MixinResponse<Chain>
 }

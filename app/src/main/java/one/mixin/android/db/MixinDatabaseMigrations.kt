@@ -344,10 +344,17 @@ class MixinDatabaseMigrations private constructor() {
                 database.execSQL("ALTER TABLE `addresses` ADD COLUMN fee_asset_id TEXT NOT NULL DEFAULT ''")
             }
         }
+
         val MIGRATION_46_47: Migration = object : Migration(46, 47) {
             override fun migrate(database: SupportSQLiteDatabase) {
                 database.execSQL("CREATE TABLE IF NOT EXISTS `conversation_ext` (`conversation_id` TEXT NOT NULL, `count` INTEGER NOT NULL DEFAULT 0, `created_at` TEXT NOT NULL, PRIMARY KEY(`conversation_id`))")
                 database.execSQL("INSERT OR REPLACE INTO `conversation_ext` (`conversation_id`, `count`, `created_at`) SELECT conversation_id, count(1), '${nowInUtc()}' FROM messages m INNER JOIN users u ON m.user_id = u.user_id GROUP BY conversation_id LIMIT 100")
+            }
+        }
+
+        val MIGRATION_47_48: Migration = object : Migration(47, 48) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                database.execSQL("CREATE TABLE IF NOT EXISTS `chains` (`chain_id` TEXT NOT NULL, `name` TEXT NOT NULL, `symbol` TEXT NOT NULL, `icon_url` TEXT NOT NULL, `threshold` INTEGER NOT NULL, PRIMARY KEY(`chain_id`))")
             }
         }
 
