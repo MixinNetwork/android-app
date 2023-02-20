@@ -9,13 +9,13 @@ import androidx.core.view.isVisible
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import dagger.hilt.android.AndroidEntryPoint
-import one.mixin.android.Constants.CHAINS
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentDepositChooseNetworkBottomSheetBinding
 import one.mixin.android.databinding.ItemChooseNetworkBinding
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
+import one.mixin.android.util.getChainName
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.AssetItem
 import one.mixin.android.widget.BottomSheet
@@ -100,7 +100,7 @@ class DepositChooseNetworkBottomSheetDialogFragment : MixinBottomSheetDialogFrag
                     assetItem.chainIconUrl,
                     R.drawable.ic_avatar_place_holder,
                 )
-                binding.content.text = CHAINS[assetItem.chainId] ?: assetItem.chainName
+                binding.content.text = getChainName(assetItem.chainId, assetItem.chainName, assetItem.assetKey)
                 binding.root.setBackgroundResource(R.drawable.bg_round_choose_network)
                 binding.content.setTextSize(TypedValue.COMPLEX_UNIT_SP, 18f)
                 binding.root.setOnClickListener {

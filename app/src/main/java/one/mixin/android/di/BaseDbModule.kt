@@ -168,4 +168,8 @@ internal object BaseDbModule {
     @Singleton
     @Provides
     fun providesConversationExtDao(db: MixinDatabase) = db.conversationExtDao()
+
+    @Singleton
+    @Provides
+    fun providesChainDao(db: MixinDatabase) = db.chainDao()
 }

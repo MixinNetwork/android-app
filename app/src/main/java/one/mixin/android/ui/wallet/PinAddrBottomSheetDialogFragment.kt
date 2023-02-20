@@ -6,7 +6,6 @@ import androidx.core.os.bundleOf
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
-import one.mixin.android.Constants.CHAINS
 import one.mixin.android.Constants.ChainId.ETHEREUM_CHAIN_ID
 import one.mixin.android.Constants.ChainId.TRON_CHAIN_ID
 import one.mixin.android.R
@@ -16,6 +15,7 @@ import one.mixin.android.extension.loadImage
 import one.mixin.android.ui.common.biometric.BiometricBottomSheetDialogFragment
 import one.mixin.android.ui.common.biometric.BiometricInfo
 import one.mixin.android.util.ErrorHandler.Companion.INVALID_ADDRESS
+import one.mixin.android.util.getChainName
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.Address
 import one.mixin.android.widget.BottomSheet
@@ -34,6 +34,7 @@ class PinAddrBottomSheetDialogFragment : BiometricBottomSheetDialogFragment() {
         const val ARGS_ASSET_NAME = "args_asset_name"
         const val ARGS_ASSET_URL = "args_asset_url"
         const val ARGS_ASSET_SYMBOL = "args_asset_symbol"
+        const val ARGS_ASSET_KEY = "args_asset_key"
         const val ARGS_CHAIN_ID = "args_chain_id"
         const val ARGS_CHAIN_NAME = "args_chain_name"
         const val ARGS_CHAIN_URL = "args_chain_url"
@@ -48,6 +49,7 @@ class PinAddrBottomSheetDialogFragment : BiometricBottomSheetDialogFragment() {
             assetName: String? = null,
             assetUrl: String? = null,
             assetSymbol: String? = null,
+            assetKey: String? = null,
             chainId: String? = null,
             chainName: String? = null,
             chainIconUrl: String? = null,
@@ -62,6 +64,7 @@ class PinAddrBottomSheetDialogFragment : BiometricBottomSheetDialogFragment() {
                 ARGS_ASSET_NAME to assetName,
                 ARGS_ASSET_URL to assetUrl,
                 ARGS_ASSET_SYMBOL to assetSymbol,
+                ARGS_ASSET_KEY to assetKey,
                 ARGS_CHAIN_ID to chainId,
                 ARGS_CHAIN_NAME to chainName,
                 ARGS_CHAIN_URL to chainIconUrl,
@@ -79,6 +82,7 @@ class PinAddrBottomSheetDialogFragment : BiometricBottomSheetDialogFragment() {
     private val assetName: String? by lazy { requireArguments().getString(ARGS_ASSET_NAME) }
     private val assetUrl: String? by lazy { requireArguments().getString(ARGS_ASSET_URL) }
     private val assetSymbol: String? by lazy { requireArguments().getString(ARGS_ASSET_SYMBOL) }
+    private val assetKey: String? by lazy { requireArguments().getString(ARGS_ASSET_KEY) }
     private val chainId: String? by lazy { requireArguments().getString(ARGS_CHAIN_ID) }
     private val chainName: String? by lazy { requireArguments().getString(ARGS_CHAIN_NAME) }
     private val chainIconUrl: String? by lazy { requireArguments().getString(ARGS_CHAIN_URL) }
@@ -99,7 +103,7 @@ class PinAddrBottomSheetDialogFragment : BiometricBottomSheetDialogFragment() {
         binding.apply {
             titleView.rightIv.setOnClickListener { dismiss() }
             title.text = getTitle()
-            chain.text = CHAINS[chainId] ?: chainName
+            chain.text = getChainName(chainId, chainName, assetKey)
             assetIcon.bg.loadImage(assetUrl, R.drawable.ic_avatar_place_holder)
             assetIcon.badge.loadImage(chainIconUrl, R.drawable.ic_avatar_place_holder)
             assetName.text = label
