@@ -67,7 +67,7 @@ class RecallHolder constructor(val binding: ItemChatRecallBinding) : BaseViewHol
         } else {
             itemView.setBackgroundColor(Color.TRANSPARENT)
         }
-        binding.chatLayout.setOnClickListener {
+        binding.chatMsgLayout.setOnClickListener {
             if (hasSelect) {
                 onItemListener.onSelect(!isSelect, messageItem, absoluteAdapterPosition)
             }
@@ -77,7 +77,7 @@ class RecallHolder constructor(val binding: ItemChatRecallBinding) : BaseViewHol
                 onItemListener.onSelect(!isSelect, messageItem, absoluteAdapterPosition)
             }
         }
-        binding.chatLayout.setOnLongClickListener {
+        binding.chatMsgLayout.setOnLongClickListener {
             if (!hasSelect) {
                 onItemListener.onLongClick(messageItem, absoluteAdapterPosition)
             } else {
@@ -85,22 +85,23 @@ class RecallHolder constructor(val binding: ItemChatRecallBinding) : BaseViewHol
                 true
             }
         }
+        chatJumpLayout(binding.chatJump, isMe, messageItem.expireIn, messageItem.expireAt, R.id.chat_msg_layout)
     }
 
     override fun chatLayout(isMe: Boolean, isLast: Boolean, isBlink: Boolean) {
         super.chatLayout(isMe, isLast, isBlink)
-        val lp = (binding.chatLayout.layoutParams as ConstraintLayout.LayoutParams)
+        val lp = (binding.chatMsgLayout.layoutParams as ConstraintLayout.LayoutParams)
         if (isMe) {
             lp.horizontalBias = 1f
             if (isLast) {
                 setItemBackgroundResource(
-                    binding.chatLayout,
+                    binding.chatMsgLayout,
                     R.drawable.chat_bubble_me_last,
                     R.drawable.chat_bubble_me_last_night,
                 )
             } else {
                 setItemBackgroundResource(
-                    binding.chatLayout,
+                    binding.chatMsgLayout,
                     R.drawable.chat_bubble_me,
                     R.drawable.chat_bubble_me_night,
                 )
@@ -109,13 +110,13 @@ class RecallHolder constructor(val binding: ItemChatRecallBinding) : BaseViewHol
             lp.horizontalBias = 0f
             if (isLast) {
                 setItemBackgroundResource(
-                    binding.chatLayout,
+                    binding.chatMsgLayout,
                     R.drawable.chat_bubble_other_last,
                     R.drawable.chat_bubble_other_last_night,
                 )
             } else {
                 setItemBackgroundResource(
-                    binding.chatLayout,
+                    binding.chatMsgLayout,
                     R.drawable.chat_bubble_other,
                     R.drawable.chat_bubble_other_night,
                 )
