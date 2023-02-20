@@ -5,9 +5,7 @@ import android.view.View
 import androidx.constraintlayout.widget.ConstraintLayout
 import one.mixin.android.Constants.Colors.SELECT_COLOR
 import one.mixin.android.R
-import one.mixin.android.RxBus
 import one.mixin.android.databinding.ItemChatAudioQuoteBinding
-import one.mixin.android.event.ExpiredEvent
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.formatMillis
@@ -254,12 +252,6 @@ class AudioQuoteHolder constructor(val binding: ItemChatAudioQuoteBinding) : Med
             onItemListener.onAudioClick(messageItem)
         } else if (messageItem.mediaStatus == MediaStatus.EXPIRED.name) {
         } else {
-        }
-    }
-
-    override fun onRead(messageItem: MessageItem) {
-        if (messageItem.expireIn != null) {
-            RxBus.publish(ExpiredEvent(messageItem.messageId, messageItem.expireIn))
         }
     }
 }

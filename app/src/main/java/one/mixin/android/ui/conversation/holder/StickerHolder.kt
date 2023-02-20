@@ -8,9 +8,7 @@ import android.view.View.VISIBLE
 import androidx.constraintlayout.widget.ConstraintLayout
 import one.mixin.android.Constants.Colors.SELECT_COLOR
 import one.mixin.android.R
-import one.mixin.android.RxBus
 import one.mixin.android.databinding.ItemChatStickerBinding
-import one.mixin.android.event.ExpiredEvent
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.loadSticker
@@ -146,12 +144,6 @@ class StickerHolder constructor(val binding: ItemChatStickerBinding) :
         } else {
             (binding.chatLayout.layoutParams as ConstraintLayout.LayoutParams).horizontalBias = 0f
             itemView.requestLayout()
-        }
-    }
-
-    override fun onRead(messageItem: MessageItem) {
-        if (messageItem.expireIn != null) {
-            RxBus.publish(ExpiredEvent(messageItem.messageId, messageItem.expireIn))
         }
     }
 }
