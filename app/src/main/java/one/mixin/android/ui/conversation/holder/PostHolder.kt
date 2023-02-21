@@ -7,9 +7,7 @@ import androidx.constraintlayout.widget.ConstraintLayout
 import io.noties.markwon.Markwon
 import one.mixin.android.Constants.Colors.SELECT_COLOR
 import one.mixin.android.R
-import one.mixin.android.RxBus
 import one.mixin.android.databinding.ItemChatPostBinding
-import one.mixin.android.event.ExpiredEvent
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.maxItemWidth
 import one.mixin.android.extension.postLengthOptimize
@@ -182,11 +180,5 @@ class PostHolder constructor(val binding: ItemChatPostBinding) : BaseViewHolder(
         )
         chatJumpLayout(binding.chatJump, isMe, messageItem.expireIn, messageItem.expireAt, R.id.chat_layout)
         chatLayout(isMe, isLast)
-    }
-
-    override fun onRead(messageItem: MessageItem) {
-        if (messageItem.expireIn != null) {
-            RxBus.publish(ExpiredEvent(messageItem.messageId, messageItem.expireIn))
-        }
     }
 }
