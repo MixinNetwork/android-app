@@ -121,7 +121,9 @@ object WalletConnectV2 : Web3Wallet.WalletDelegate, CoreClient.CoreDelegate {
             supportAccounts.firstOrNull { (chain, _) -> chain.chainId == namespaceChainId }
         }.toMap()
         val sessionNamespaces: Map<String, Wallet.Model.Namespace.Session> = selectedAccounts.filter { (chain: Chain, _) ->
-            "${chain.chainNamespace}:${chain.chainReference}" in sessionProposal.requiredNamespaces.values.flatMap { it.chains }
+            "${chain.chainNamespace}:${chain.chainReference}" in sessionProposal.requiredNamespaces.values
+                .filter { namespace -> namespace.chains != null }
+                .flatMap { namespace -> namespace.chains!! }
         }.toList().groupBy { (chain: Chain, _: String) ->
             chain.chainNamespace
         }.map { (namespaceKey: String, chainData: List<Pair<Chain, String>>) ->
@@ -133,7 +135,7 @@ object WalletConnectV2 : Web3Wallet.WalletDelegate, CoreClient.CoreDelegate {
             val methods = sessionProposal.requiredNamespaces[namespaceKey]?.methods ?: emptyList()
             val events = sessionProposal.requiredNamespaces[namespaceKey]?.events ?: emptyList()
 
-            namespaceKey to Wallet.Model.Namespace.Session(accounts = accounts, methods = methods, events = events, extensions = null)
+            namespaceKey to Wallet.Model.Namespace.Session(accounts = accounts, methods = methods, events = events)
         }.toMap()
 
         val approveParams: Wallet.Params.SessionApprove = Wallet.Params.SessionApprove(
