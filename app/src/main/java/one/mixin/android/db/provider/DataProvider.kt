@@ -379,6 +379,7 @@ class DataProvider {
 
         @Suppress("LocalVariableName")
         suspend fun fuzzySearchMessage(
+            query: String,
             messageIds: List<String>,
             limit: Int,
             db: MixinDatabase,
@@ -389,10 +390,10 @@ class DataProvider {
                 SELECT m.conversation_id AS conversationId, c.icon_url AS conversationAvatarUrl,
                 c.name AS conversationName, c.category AS conversationCategory, count(m.id) as messageCount,
                 u.user_id AS userId, u.avatar_url AS userAvatarUrl, u.full_name AS userFullName
-                FROM messages m
+                FROM messages m, (SELECT message_id FROM messages_fts4 WHERE messages_fts4 MATCH ?) fts
                 INNER JOIN users u ON c.owner_id = u.user_id
                 INNER JOIN conversations c ON c.conversation_id = m.conversation_id
-                WHERE m.id IN (*)
+                WHERE m.id IN (*) OR m.id = fts.message_id
                 GROUP BY m.conversation_id
                 ORDER BY max(m.created_at) DESC
                 LIMIT ?
@@ -403,8 +404,11 @@ class DataProvider {
             } else {
                 messageIds.joinToString(prefix = "'", postfix = "'", separator = "', '")
             }
-            val _statement = RoomSQLiteQuery.acquire(_sql.replace("*", ids), 1)
-            _statement.bindLong(1, limit.toLong())
+            val _statement = RoomSQLiteQuery.acquire(_sql.replace("*", ids), 2)
+            var _argIndex = 1
+            _statement.bindString(_argIndex, query)
+            _argIndex = 2
+            _statement.bindLong(_argIndex, limit.toLong())
             return CoroutinesRoom.execute(
                 db,
                 true,

@@ -146,11 +146,12 @@ internal constructor(
         if (query.isBlank()) {
             emptyList<SearchMessageItem>()
         } else {
-            val ids = ftsDbHelper.search(query.joinStar().replaceQuotationMark())
+            val queryString = query.joinStar().replaceQuotationMark()
+            val ids = ftsDbHelper.search(queryString)
             if (ids.isEmpty()) {
                 emptyList<SearchMessageItem>()
             } else {
-                DataProvider.fuzzySearchMessage(ids, limit, appDatabase, cancellationSignal)
+                DataProvider.fuzzySearchMessage(queryString, ids, limit, appDatabase, cancellationSignal)
             }
         }
 
