@@ -69,6 +69,7 @@ import one.mixin.android.vo.Participant
 import one.mixin.android.vo.ParticipantRole
 import one.mixin.android.vo.ParticipantSession
 import one.mixin.android.vo.PinMessage
+import one.mixin.android.vo.SearchMessageDetailItem
 import one.mixin.android.vo.SearchMessageItem
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -155,8 +156,10 @@ internal constructor(
             }
         }
 
-    fun fuzzySearchMessageDetail(query: String, conversationId: String, cancellationSignal: CancellationSignal) =
-        DataProvider.fuzzySearchMessageDetail(ftsDbHelper.search(query.joinStar().replaceQuotationMark()), conversationId, appDatabase, cancellationSignal)
+    fun fuzzySearchMessageDetail(query: String, conversationId: String, cancellationSignal: CancellationSignal): DataSource.Factory<Int, SearchMessageDetailItem> {
+        val queryString = query.joinStar().replaceQuotationMark()
+        return DataProvider.fuzzySearchMessageDetail(queryString, ftsDbHelper.search(queryString, conversationId), conversationId, appDatabase, cancellationSignal)
+    }
 
     suspend fun fuzzySearchChat(query: String, cancellationSignal: CancellationSignal): List<ChatMinimal> =
         DataProvider.fuzzySearchChat(query, appDatabase, cancellationSignal)
