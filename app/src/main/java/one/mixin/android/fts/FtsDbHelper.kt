@@ -2,7 +2,6 @@ package one.mixin.android.fts
 
 import android.content.ContentValues
 import android.content.Context
-import androidx.core.database.getLongOrNull
 import androidx.core.database.getStringOrNull
 import one.mixin.android.extension.joinWhiteSpace
 import one.mixin.android.vo.Message
@@ -103,44 +102,44 @@ class FtsDbHelper(val context: Context) : SqlHelper(
         }
     }
 
-    fun deleteByMessageId(messageId: String): Long {
-        var count: Long
+    fun deleteByMessageId(messageId: String): Int {
+        var count: Int
         writableDatabase.beginTransaction()
-        writableDatabase.rawQuery("DELETE FROM messages_fts WHERE docid = (SELECT doc_id FROM metas WHERE message_id = '$messageId')", null).use { cursor ->
-            count = cursor.getLongOrNull(0) ?: 0
+        writableDatabase.delete("messages_fts", "docid = (SELECT doc_id FROM metas WHERE message_id = '$messageId')", null).apply {
+            count = this
         }
-        writableDatabase.rawQuery("DELETE FROM metas WHERE messageId = '$messageId'", null).use { cursor ->
-            count = max(cursor.getLongOrNull(0) ?: 0, count)
+        writableDatabase.delete("metas","message_id = '$messageId'", null).apply {
+            count = max(this, count)
         }
         writableDatabase.setTransactionSuccessful()
         writableDatabase.endTransaction()
         return count
     }
 
-    fun deleteByMessageIds(messageIds: List<String>): Long {
+    fun deleteByMessageIds(messageIds: List<String>): Int {
         if (messageIds.isEmpty()) return 0
-        var count: Long
+        var count: Int
         writableDatabase.beginTransaction()
         val ids = messageIds.joinToString(prefix = "'", postfix = "'", separator = "', '")
-        writableDatabase.rawQuery("DELETE FROM messages_fts WHERE docid = (SELECT doc_id FROM metas WHERE message_id IN ($ids))", null).use { cursor ->
-            count = cursor.getLongOrNull(0) ?: 0
+        writableDatabase.delete("messages_fts","docid IN (SELECT doc_id FROM metas WHERE message_id IN ($ids))", null).apply {
+            count = this
         }
-        writableDatabase.rawQuery("DELETE FROM metas WHERE messageId IN ($ids)", null).use { cursor ->
-            count = max(cursor.getLongOrNull(0) ?: 0, count)
+        writableDatabase.delete("metas", "message_id IN ($ids)", null).apply {
+            count = max(this, count)
         }
         writableDatabase.setTransactionSuccessful()
         writableDatabase.endTransaction()
         return count
     }
 
-    fun deleteByConversationId(conversationId: String): Long {
-        var count: Long
+    fun deleteByConversationId(conversationId: String): Int {
+        var count: Int
         writableDatabase.beginTransaction()
-        writableDatabase.rawQuery("DELETE FROM messages_fts WHERE docid IN (SELECT doc_id FROM metas WHERE conversation_id = '$conversationId')", null).use { cursor ->
-            count = cursor.getLongOrNull(0) ?: 0
+        writableDatabase.delete("messages_fts","docid IN (SELECT doc_id FROM metas WHERE conversation_id = '$conversationId')", null).apply {
+            count = this
         }
-        writableDatabase.rawQuery("DELETE FROM metas WHERE conversation_id = '$conversationId'", null).use { cursor ->
-            count = max(cursor.getLongOrNull(0) ?: 0, count)
+        writableDatabase.delete("metas","conversation_id IN '$conversationId'", null).apply {
+            count = max(this, count)
         }
         writableDatabase.setTransactionSuccessful()
         writableDatabase.endTransaction()
