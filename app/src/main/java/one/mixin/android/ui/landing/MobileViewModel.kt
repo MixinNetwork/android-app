@@ -68,5 +68,4 @@ constructor(
     }
 
     fun updatePhone(id: String, phone: String) = userRepository.updatePhone(id, phone)
-
 }

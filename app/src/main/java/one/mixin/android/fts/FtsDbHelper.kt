@@ -88,6 +88,21 @@ class FtsDbHelper(val context: Context) : SqlHelper(
         }
     }
 
+    fun search(content: String, conversationId: String): List<String> {
+        readableDatabase.rawQuery(
+            "SELECT message_id FROM metas WHERE conversation_id = '$conversationId' AND doc_id IN  (SELECT docid FROM messages_fts WHERE content MATCH '$content')",
+            null,
+        ).use { cursor ->
+            val ids = mutableListOf<String>()
+            while (cursor.moveToNext()) {
+                cursor.getStringOrNull(0)?.let { messageId ->
+                    ids.add(messageId)
+                }
+            }
+            return ids
+        }
+    }
+
     fun deleteByMessageId(messageId: String): Long {
         var count: Long
         writableDatabase.beginTransaction()
@@ -107,10 +122,10 @@ class FtsDbHelper(val context: Context) : SqlHelper(
         var count: Long
         writableDatabase.beginTransaction()
         val ids = messageIds.joinToString(prefix = "'", postfix = "'", separator = "', '")
-        writableDatabase.rawQuery("DELETE FROM messages_fts WHERE docid = (SELECT doc_id FROM metas WHERE message_id IN (ids))", null).use { cursor ->
+        writableDatabase.rawQuery("DELETE FROM messages_fts WHERE docid = (SELECT doc_id FROM metas WHERE message_id IN ($ids))", null).use { cursor ->
             count = cursor.getLongOrNull(0) ?: 0
         }
-        writableDatabase.rawQuery("DELETE FROM metas WHERE messageId IN (ids)", null).use { cursor ->
+        writableDatabase.rawQuery("DELETE FROM metas WHERE messageId IN ($ids)", null).use { cursor ->
             count = max(cursor.getLongOrNull(0) ?: 0, count)
         }
         writableDatabase.setTransactionSuccessful()
