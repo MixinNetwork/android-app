@@ -403,7 +403,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                 RxBus.publish(RecallEvent(msg.messageId))
                 messageDao.recallFailedMessage(msg.messageId)
                 messageDao.recallMessage(msg.messageId)
-                // Todo delete fts
+                ftsDbHelper.deleteByMessageId(msg.messageId)
                 messageDao.recallPinMessage(msg.messageId, msg.conversationId)
                 pinMessageDao.deleteByMessageId(msg.messageId)
                 messageMentionDao.deleteMessage(msg.messageId)

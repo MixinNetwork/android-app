@@ -102,6 +102,22 @@ class FtsDbHelper(val context: Context) : SqlHelper(
         return count
     }
 
+    fun deleteByMessageIds(messageIds: List<String>): Long {
+        if (messageIds.isEmpty()) return 0
+        var count: Long
+        writableDatabase.beginTransaction()
+        val ids = messageIds.joinToString(prefix = "'", postfix = "'", separator = "', '")
+        writableDatabase.rawQuery("DELETE FROM messages_fts WHERE docid = (SELECT doc_id FROM metas WHERE message_id IN (ids))", null).use { cursor ->
+            count = cursor.getLongOrNull(0) ?: 0
+        }
+        writableDatabase.rawQuery("DELETE FROM metas WHERE messageId IN (ids)", null).use { cursor ->
+            count = max(cursor.getLongOrNull(0) ?: 0, count)
+        }
+        writableDatabase.setTransactionSuccessful()
+        writableDatabase.endTransaction()
+        return count
+    }
+
     fun deleteByConversationId(conversationId: String): Long {
         var count: Long
         writableDatabase.beginTransaction()
