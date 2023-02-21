@@ -41,7 +41,6 @@ import one.mixin.android.db.JobDao
 import one.mixin.android.db.MessageDao
 import one.mixin.android.db.MessageHistoryDao
 import one.mixin.android.db.MessageMentionDao
-import one.mixin.android.db.MessagesFts4Dao
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.OffsetDao
 import one.mixin.android.db.ParticipantDao
@@ -225,10 +224,6 @@ abstract class BaseJob(params: Params) : Job(params) {
     @Inject
     @Transient
     lateinit var messageMentionDao: MessageMentionDao
-
-    @Inject
-    @Transient
-    lateinit var messageFts4Dao: MessagesFts4Dao
 
     @Inject
     @Transient

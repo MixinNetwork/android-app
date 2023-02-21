@@ -131,10 +131,6 @@ internal object BaseDbModule {
 
     @Singleton
     @Provides
-    fun providesMessageFts4Dao(db: MixinDatabase) = db.messageFts4Dao()
-
-    @Singleton
-    @Provides
     fun providesCircleDao(db: MixinDatabase) = db.circleDao()
 
     @Singleton

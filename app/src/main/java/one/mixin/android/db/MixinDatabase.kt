@@ -160,7 +160,6 @@ abstract class MixinDatabase : RoomDatabase() {
     abstract fun topAssetDao(): TopAssetDao
     abstract fun favoriteAppDao(): FavoriteAppDao
     abstract fun mentionMessageDao(): MessageMentionDao
-    abstract fun messageFts4Dao(): MessagesFts4Dao
     abstract fun circleDao(): CircleDao
     abstract fun circleConversationDao(): CircleConversationDao
     abstract fun traceDao(): TraceDao

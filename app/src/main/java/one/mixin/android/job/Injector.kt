@@ -27,7 +27,6 @@ import one.mixin.android.db.JobDao
 import one.mixin.android.db.MessageDao
 import one.mixin.android.db.MessageHistoryDao
 import one.mixin.android.db.MessageMentionDao
-import one.mixin.android.db.MessagesFts4Dao
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.ParticipantDao
 import one.mixin.android.db.ParticipantSessionDao
@@ -145,9 +144,6 @@ open class Injector {
 
     @Inject
     lateinit var transcriptMessageDao: TranscriptMessageDao
-
-    @Inject
-    lateinit var messagesFts4Dao: MessagesFts4Dao
 
     @Inject
     lateinit var pinMessageDao: PinMessageDao
