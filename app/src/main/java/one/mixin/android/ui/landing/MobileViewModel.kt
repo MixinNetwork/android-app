@@ -18,7 +18,6 @@ import one.mixin.android.api.request.VerificationRequest
 import one.mixin.android.api.response.VerificationResponse
 import one.mixin.android.crypto.PinCipher
 import one.mixin.android.job.MixinJobManager
-import one.mixin.android.job.SyncFts4Job
 import one.mixin.android.repository.AccountRepository
 import one.mixin.android.repository.UserRepository
 import one.mixin.android.tip.TipBody
@@ -70,7 +69,4 @@ constructor(
 
     fun updatePhone(id: String, phone: String) = userRepository.updatePhone(id, phone)
 
-    fun startSyncFts4Job() {
-        jobManager.addJobInBackground(SyncFts4Job())
-    }
 }
