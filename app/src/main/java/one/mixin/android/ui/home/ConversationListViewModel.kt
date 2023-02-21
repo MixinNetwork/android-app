@@ -201,6 +201,4 @@ internal constructor(
     suspend fun findAppById(appId: String) = userRepository.findAppById(appId)
 
     suspend fun findTotalUSDBalance() = assetRepository.findTotalUSDBalance()
-
-    suspend fun getUnreadMessageIds(conversationId: String) = conversationRepository.getUnreadMessageIds(conversationId)
 }

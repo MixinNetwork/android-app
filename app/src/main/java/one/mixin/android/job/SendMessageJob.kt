@@ -13,7 +13,6 @@ import one.mixin.android.extension.getFilePath
 import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.session.Session
 import one.mixin.android.util.GsonHelper
-import one.mixin.android.util.MessageFts4Helper
 import one.mixin.android.util.chat.InvalidateFlow
 import one.mixin.android.util.hyperlink.parseHyperlink
 import one.mixin.android.util.mention.parseMentionData
@@ -95,7 +94,7 @@ open class SendMessageJob(
                 if (!message.isTranscript()) {
                     mixinDatabase.insertMessage(message)
                     InvalidateFlow.emit(message.conversationId)
-                    MessageFts4Helper.insertOrReplaceMessageFts4(ftsDbHelper, message, message.name)
+                    ftsDbHelper.insertOrReplaceMessageFts4(message, message.name)
                 }
 
                 conversation.expireIn?.let { e ->
@@ -144,7 +143,7 @@ open class SendMessageJob(
             jobManager.cancelJobByMixinJobId(msg.messageId)
         }
         InvalidateFlow.emit(conversationId)
-        // Todo
+        ftsDbHelper.deleteByMessageId(recallMessageId)
     }
 
     override fun onCancel(cancelReason: Int, throwable: Throwable?) {

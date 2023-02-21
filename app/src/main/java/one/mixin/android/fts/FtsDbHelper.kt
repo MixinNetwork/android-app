@@ -2,9 +2,14 @@ package one.mixin.android.fts
 
 import android.content.ContentValues
 import android.content.Context
-import androidx.core.database.getLongOrNull
+import android.os.CancellationSignal
 import androidx.core.database.getStringOrNull
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
+import one.mixin.android.extension.createAtToLong
 import one.mixin.android.extension.joinWhiteSpace
+import one.mixin.android.util.FTS_THREAD
+import one.mixin.android.vo.FtsSearchResult
 import one.mixin.android.vo.Message
 import one.mixin.android.vo.isContact
 import one.mixin.android.vo.isFtsMessage
@@ -17,47 +22,66 @@ class FtsDbHelper(val context: Context) : SqlHelper(
     1,
     listOf(
         "CREATE VIRTUAL TABLE IF NOT EXISTS `messages_fts` USING FTS4(content, tokenize=unicode61);",
-        "CREATE TABLE IF NOT EXISTS `metas` (`doc_id` INTEGER NOT NULL, `message_id` TEXT NOT NULL, `conversation_id` TEXT NOT NULL, `user_id` TEXT NOT NULL, PRIMARY KEY(`message_id`), FOREIGN KEY(`doc_id`) REFERENCES `messages_fts`(DOCID)) WITHOUT ROWID;",
+        "CREATE TABLE IF NOT EXISTS `messages_metas` (`doc_id` INTEGER NOT NULL, `message_id` TEXT NOT NULL, `conversation_id` TEXT NOT NULL, `category` TEXT NOT NULL, `user_id` TEXT NOT NULL, `created_at` INTEGER NOT NULL, PRIMARY KEY(`message_id`));",
     ),
 ) {
     fun insertOrReplaceMessageFts4(message: Message, extraContent: String? = null) {
         if (!message.isFtsMessage()) {
             if (message.isContact() && !extraContent.isNullOrBlank()) {
-                inertContent(
-                    extraContent.joinWhiteSpace(),
-                    messageId = message.messageId,
-                    conversationId = message.conversationId,
-                    userId = message.userId,
-                )
+                runBlocking {
+                    inertContent(
+                        extraContent.joinWhiteSpace(),
+                        conversationId = message.conversationId,
+                        messageId = message.messageId,
+                        category = message.category,
+                        userId = message.userId,
+                        createdAt = message.createdAt.createAtToLong(),
+                    )
+                }
             }
             return
         }
 
         val name = message.name.joinWhiteSpace()
         val content = message.content.joinWhiteSpace()
-        inertContent(
-            name + content,
-            messageId = message.messageId,
-            conversationId = message.conversationId,
-            userId = message.userId,
-        )
+        runBlocking {
+            inertContent(
+                name + content,
+                conversationId = message.conversationId,
+                messageId = message.messageId,
+                category = message.category,
+                userId = message.userId,
+                createdAt = message.createdAt.createAtToLong(),
+            )
+        }
     }
 
-    fun insertFts4(content: String, conversationId: String, messageId: String, userId: String) {
+    fun insertFts4(
+        content: String,
+        conversationId: String,
+        messageId: String,
+        category: String,
+        userId: String,
+        createdAt: String,
+    ) = runBlocking {
         inertContent(
             content,
-            messageId = messageId,
             conversationId = conversationId,
+            messageId = messageId,
+            category = category,
             userId = userId,
+            createdAt = createdAt.createAtToLong(),
         )
     }
 
-    private fun inertContent(
+    private suspend fun inertContent(
         content: String,
-        messageId: String,
         conversationId: String,
+        messageId: String,
+        category: String,
         userId: String,
-    ) {
+        createdAt: Long,
+    ) = withContext(FTS_THREAD) {
         writableDatabase.beginTransaction()
         val values = ContentValues()
         values.put("content", content)
@@ -66,84 +90,117 @@ class FtsDbHelper(val context: Context) : SqlHelper(
         }
         if (lastRowId <= 0) {
             writableDatabase.endTransaction()
-            return
+            return@withContext
         }
-        writableDatabase.execSQL("INSERT INTO metas(doc_id, message_id, conversation_id, user_id) VALUES ($lastRowId, '$messageId', '$conversationId', '$userId')")
+        writableDatabase.execSQL("INSERT INTO messages_metas(doc_id, message_id, conversation_id, category, user_id, created_at) VALUES ($lastRowId, '$messageId', '$conversationId', '$category', '$userId', '$createdAt')")
         writableDatabase.setTransactionSuccessful()
         writableDatabase.endTransaction()
     }
 
-    fun search(content: String): List<String> {
-        readableDatabase.rawQuery(
-            "SELECT message_id FROM metas WHERE doc_id IN  (SELECT docid FROM messages_fts WHERE content MATCH '$content')",
-            null,
-        ).use { cursor ->
-            val ids = mutableListOf<String>()
-            while (cursor.moveToNext()) {
-                cursor.getStringOrNull(0)?.let { messageId ->
-                    ids.add(messageId)
+    fun rawSearch(content: String, cancellationSignal: CancellationSignal): List<FtsSearchResult> {
+        return try {
+            readableDatabase.rawQuery(
+                """
+                SELECT message_id, conversation_id, user_id, count(message_id) FROM messages_metas WHERE doc_id 
+                IN (SELECT docid FROM messages_fts WHERE content MATCH '$content')
+                GROUP BY conversation_id
+                ORDER BY max(created_at) DESC
+                LIMIT 999
+            """,
+                null,
+                cancellationSignal,
+            ).use {
+                val results = mutableListOf<FtsSearchResult>()
+                while (it.moveToNext()) {
+                    val messageId = it.getStringOrNull(0) ?: continue
+                    val conversationId = it.getStringOrNull(1) ?: continue
+                    val userId = it.getStringOrNull(2) ?: continue
+                    val count = it.getInt(3)
+                    if (count > 0) {
+                        results.add(FtsSearchResult(messageId, conversationId, userId, count))
+                    }
                 }
+                return@use results
             }
-            return ids
+        } catch (e: Exception) {
+            return emptyList()
         }
     }
 
-    fun search(content: String, conversationId: String): List<String> {
-        readableDatabase.rawQuery(
-            "SELECT message_id FROM metas WHERE conversation_id = '$conversationId' AND doc_id IN  (SELECT docid FROM messages_fts WHERE content MATCH '$content')",
-            null,
-        ).use { cursor ->
-            val ids = mutableListOf<String>()
-            while (cursor.moveToNext()) {
-                cursor.getStringOrNull(0)?.let { messageId ->
-                    ids.add(messageId)
+    fun rawSearch(content: String, conversationId: String, cancellationSignal: CancellationSignal): Collection<String> {
+        try {
+            readableDatabase.rawQuery(
+                "SELECT message_id FROM messages_metas WHERE conversation_id = '$conversationId' AND doc_id IN  (SELECT docid FROM messages_fts WHERE content MATCH '$content' LIMIT 999)",
+                null,
+                cancellationSignal,
+            ).use { cursor ->
+                val ids = mutableSetOf<String>()
+                while (cursor.moveToNext()) {
+                    cursor.getStringOrNull(0)?.let { messageId ->
+                        ids.add(messageId)
+                    }
                 }
+                return ids
             }
-            return ids
+        } catch (e: Exception) {
+            return emptyList()
         }
     }
 
-    fun deleteByMessageId(messageId: String): Long {
-        var count: Long
+    fun deleteByMessageId(messageId: String): Int = runBlocking(FTS_THREAD) {
+        var count: Int
         writableDatabase.beginTransaction()
-        writableDatabase.rawQuery("DELETE FROM messages_fts WHERE docid = (SELECT doc_id FROM metas WHERE message_id = '$messageId')", null).use { cursor ->
-            count = cursor.getLongOrNull(0) ?: 0
+        writableDatabase.delete(
+            "messages_fts",
+            "docid = (SELECT doc_id FROM messages_metas WHERE message_id = '$messageId')",
+            null,
+        ).apply {
+            count = this
         }
-        writableDatabase.rawQuery("DELETE FROM metas WHERE messageId = '$messageId'", null).use { cursor ->
-            count = max(cursor.getLongOrNull(0) ?: 0, count)
+        writableDatabase.delete("messages_metas", "message_id = '$messageId'", null).apply {
+            count = max(this, count)
         }
         writableDatabase.setTransactionSuccessful()
         writableDatabase.endTransaction()
-        return count
+        return@runBlocking count
     }
 
-    fun deleteByMessageIds(messageIds: List<String>): Long {
-        if (messageIds.isEmpty()) return 0
-        var count: Long
+    fun deleteByMessageIds(messageIds: List<String>): Int = runBlocking(FTS_THREAD) {
+        if (messageIds.isEmpty()) return@runBlocking 0
+        var count: Int
         writableDatabase.beginTransaction()
         val ids = messageIds.joinToString(prefix = "'", postfix = "'", separator = "', '")
-        writableDatabase.rawQuery("DELETE FROM messages_fts WHERE docid = (SELECT doc_id FROM metas WHERE message_id IN ($ids))", null).use { cursor ->
-            count = cursor.getLongOrNull(0) ?: 0
+        writableDatabase.delete(
+            "messages_fts",
+            "docid IN (SELECT doc_id FROM messages_metas WHERE message_id IN ($ids))",
+            null,
+        ).apply {
+            count = this
         }
-        writableDatabase.rawQuery("DELETE FROM metas WHERE messageId IN ($ids)", null).use { cursor ->
-            count = max(cursor.getLongOrNull(0) ?: 0, count)
+        writableDatabase.delete("messages_metas", "message_id IN ($ids)", null).apply {
+            count = max(this, count)
         }
         writableDatabase.setTransactionSuccessful()
         writableDatabase.endTransaction()
-        return count
+        return@runBlocking count
     }
 
-    fun deleteByConversationId(conversationId: String): Long {
-        var count: Long
+    fun deleteByConversationId(conversationId: String): Int = runBlocking(FTS_THREAD) {
+        var count: Int
         writableDatabase.beginTransaction()
-        writableDatabase.rawQuery("DELETE FROM messages_fts WHERE docid IN (SELECT doc_id FROM metas WHERE conversation_id = '$conversationId')", null).use { cursor ->
-            count = cursor.getLongOrNull(0) ?: 0
+        writableDatabase.delete(
+            "messages_fts",
+            "docid IN (SELECT doc_id FROM messages_metas WHERE conversation_id = '$conversationId')",
+            null,
+        ).apply {
+            count = this
         }
-        writableDatabase.rawQuery("DELETE FROM metas WHERE conversation_id = '$conversationId'", null).use { cursor ->
-            count = max(cursor.getLongOrNull(0) ?: 0, count)
-        }
+        writableDatabase.delete("messages_metas", "conversation_id IN '$conversationId'", null)
+            .apply {
+                count = max(this, count)
+            }
         writableDatabase.setTransactionSuccessful()
         writableDatabase.endTransaction()
-        return count
+        return@runBlocking count
     }
 }

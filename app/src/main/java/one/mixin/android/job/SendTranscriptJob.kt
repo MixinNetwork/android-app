@@ -10,7 +10,6 @@ import one.mixin.android.extension.getTranscriptFile
 import one.mixin.android.extension.joinWhiteSpace
 import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.util.GsonHelper
-import one.mixin.android.util.MessageFts4Helper
 import one.mixin.android.util.chat.InvalidateFlow
 import one.mixin.android.util.reportException
 import one.mixin.android.vo.EncryptCategory
@@ -59,7 +58,7 @@ class SendTranscriptJob(
                     }
                 }
             }
-            MessageFts4Helper.insertMessageFts4(stringBuffer.toString(), message.conversationId, message.messageId, message.userId)
+            ftsDbHelper.insertFts4(stringBuffer.toString(), message.conversationId, message.messageId, message.category, message.userId, message.createdAt)
             appDatabase.insertMessage(message)
             InvalidateFlow.emit(message.conversationId)
             transcriptMessages.forEach { transcript ->

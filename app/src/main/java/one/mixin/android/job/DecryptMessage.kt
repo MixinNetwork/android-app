@@ -17,7 +17,6 @@ import one.mixin.android.crypto.Base64
 import one.mixin.android.crypto.SignalProtocol
 import one.mixin.android.crypto.requestResendKey
 import one.mixin.android.crypto.vo.RatchetStatus
-import one.mixin.android.db.DatabaseMonitor
 import one.mixin.android.db.insertMessage
 import one.mixin.android.db.insertNoReplace
 import one.mixin.android.db.insertUpdate
@@ -50,7 +49,6 @@ import one.mixin.android.session.Session
 import one.mixin.android.ui.web.replaceApp
 import one.mixin.android.util.ColorUtil
 import one.mixin.android.util.GsonHelper
-import one.mixin.android.util.MessageFts4Helper
 import one.mixin.android.util.PENDING_DB_THREAD
 import one.mixin.android.util.chat.InvalidateFlow
 import one.mixin.android.util.hyperlink.parseHyperlink
@@ -465,9 +463,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                     if (updateExpiredMessageList.isNotEmpty()) {
                         val updateMessageIds = updateExpiredMessageList.map { it.first }
                         lifecycleScope.launch(PENDING_DB_THREAD) {
-                            DatabaseMonitor.log("remote mark read $updateMessageIds")
                             remoteMessageStatusDao.deleteByMessageIds(updateMessageIds)
-                            DatabaseMonitor.log("${Thread.currentThread().name} Mark read $updateMessageIds")
                             pendingMessagesDao.markReadIds(updateMessageIds)
                             // Data that does not enter the message table will not enter the remote status table, do not consider
                             val updateConversationList = messageDao.findConversationsByMessages(updateMessageIds)
@@ -476,7 +472,6 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                                 InvalidateFlow.emit(cId)
                                 notificationManager.cancel(cId.hashCode())
                             }
-                            DatabaseMonitor.log("remote mark read end $updateMessageIds")
                         }
 
                         // expired message
@@ -621,7 +616,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                 }
                 val (mentions, mentionMe) = parseMentionData(plain, data.messageId, data.conversationId, userDao, messageMentionDao, data.userId)
                 insertMessage(message, data)
-                MessageFts4Helper.insertOrReplaceMessageFts4(ftsDbHelper, message)
+                ftsDbHelper.insertOrReplaceMessageFts4(message)
                 val userMap = mentions?.associate { it.identityNumber to it.fullName }
                 generateNotification(message, data, userMap, quoteMe || mentionMe)
             }
@@ -638,7 +633,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                     data.status,
                 )
                 insertMessage(message, data)
-                MessageFts4Helper.insertOrReplaceMessageFts4(ftsDbHelper, message)
+                ftsDbHelper.insertOrReplaceMessageFts4(message)
                 generateNotification(message, data)
             }
             data.category.endsWith("_LOCATION") -> {
@@ -717,7 +712,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                     )
                 }
                 insertMessage(message, data)
-                MessageFts4Helper.insertOrReplaceMessageFts4(ftsDbHelper, message)
+                ftsDbHelper.insertOrReplaceMessageFts4(message)
                 lifecycleScope.launch {
                     MixinApplication.appContext.autoDownload(autoDownloadDocument) {
                         jobManager.addJobInBackground(AttachmentDownloadJob(message))
@@ -784,7 +779,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                 insertMessage(message, data)
                 val fullName = user?.fullName
                 if (!fullName.isNullOrBlank()) {
-                    MessageFts4Helper.insertOrReplaceMessageFts4(ftsDbHelper, message, fullName)
+                    ftsDbHelper.insertOrReplaceMessageFts4(message, fullName)
                 }
                 generateNotification(message, data)
             }
@@ -862,7 +857,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                     }
                 }
             }
-        MessageFts4Helper.insertMessageFts4(stringBuilder.toString(), data.conversationId, data.messageId, data.userId)
+        ftsDbHelper.insertFts4(stringBuilder.toString(), data.conversationId, data.messageId, data.category, data.userId, data.createdAt)
 
         transcripts.filter { t -> t.isSticker() || t.isContact() }.forEach { transcript ->
             transcript.stickerId?.let { stickerId ->
