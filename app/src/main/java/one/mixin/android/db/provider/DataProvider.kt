@@ -377,9 +377,9 @@ class DataProvider {
             )
         }
 
-        @Suppress("LocalVariableName", "JoinDeclarationAndAssignment")
+        @Suppress("LocalVariableName")
         suspend fun fuzzySearchMessage(
-            query: String?,
+            messageIds: List<String>,
             limit: Int,
             db: MixinDatabase,
             cancellationSignal: CancellationSignal,
@@ -389,23 +389,22 @@ class DataProvider {
                 SELECT m.conversation_id AS conversationId, c.icon_url AS conversationAvatarUrl,
                 c.name AS conversationName, c.category AS conversationCategory, count(m.id) as messageCount,
                 u.user_id AS userId, u.avatar_url AS userAvatarUrl, u.full_name AS userFullName
-                FROM messages m, (SELECT message_id FROM messages_fts4 WHERE messages_fts4 MATCH ?) fts
+                FROM messages m
                 INNER JOIN users u ON c.owner_id = u.user_id
                 INNER JOIN conversations c ON c.conversation_id = m.conversation_id
-                WHERE m.id = fts.message_id
+                WHERE m.id IN (*)
                 GROUP BY m.conversation_id
                 ORDER BY max(m.created_at) DESC
                 LIMIT ?
                 """
-            val _statement = RoomSQLiteQuery.acquire(_sql, 2)
-            var _argIndex = 1
-            if (query == null) {
-                _statement.bindNull(_argIndex)
+
+            val ids = if (messageIds.isEmpty()) {
+                "NULL"
             } else {
-                _statement.bindString(_argIndex, query)
+                messageIds.joinToString(prefix = "'", postfix = "'", separator = "', '")
             }
-            _argIndex = 2
-            _statement.bindLong(_argIndex, limit.toLong())
+            val _statement = RoomSQLiteQuery.acquire(_sql.replace("*", ids), 1)
+            _statement.bindLong(1, limit.toLong())
             return CoroutinesRoom.execute(
                 db,
                 true,

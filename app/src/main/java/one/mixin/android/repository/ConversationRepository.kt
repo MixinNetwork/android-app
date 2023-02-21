@@ -143,7 +143,16 @@ internal constructor(
         conversationDao.findConversationById(conversationId)
 
     suspend fun fuzzySearchMessage(query: String, limit: Int, cancellationSignal: CancellationSignal): List<SearchMessageItem> =
-        DataProvider.fuzzySearchMessage(query.joinStar().replaceQuotationMark(), limit, appDatabase, cancellationSignal)
+        if (query.isBlank()) {
+            emptyList<SearchMessageItem>()
+        } else {
+            val ids = ftsDbHelper.search(query.joinStar().replaceQuotationMark())
+            if (ids.isEmpty()) {
+                emptyList<SearchMessageItem>()
+            } else {
+                DataProvider.fuzzySearchMessage(ids, limit, appDatabase, cancellationSignal)
+            }
+        }
 
     fun fuzzySearchMessageDetail(query: String, conversationId: String, cancellationSignal: CancellationSignal) =
         DataProvider.fuzzySearchMessageDetail(ftsDbHelper.search(query.joinStar().replaceQuotationMark()), conversationId, appDatabase, cancellationSignal)
