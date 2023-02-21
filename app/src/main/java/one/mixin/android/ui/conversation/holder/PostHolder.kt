@@ -180,7 +180,7 @@ class PostHolder constructor(val binding: ItemChatPostBinding) : BaseViewHolder(
             isSecret = messageItem.isSecret(),
             isWhite = true,
         )
-        chatJumpLayout(binding.chatJump, isMe, messageItem.expireIn, R.id.chat_layout)
+        chatJumpLayout(binding.chatJump, isMe, messageItem.expireIn, messageItem.expireAt, R.id.chat_layout)
         chatLayout(isMe, isLast)
     }
 

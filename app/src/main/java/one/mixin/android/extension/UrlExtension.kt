@@ -145,7 +145,7 @@ User-agent: ${WebView(context).settings.userAgentString}
     } else if (isUserScheme() || isAppScheme()) {
         checkUserOrApp(context, supportFragmentManager, scope)
     } else {
-        if (isMixinUrl() || isDonateUrl() || isExternalScheme(context)) {
+        if (isMixinUrl() || isDonateUrl() || isExternalScheme(context) || isExternalTransferUrl()) {
             LinkBottomSheetDialogFragment.newInstance(this)
                 .showNow(supportFragmentManager, LinkBottomSheetDialogFragment.TAG)
         } else {

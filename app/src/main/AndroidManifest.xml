@@ -347,6 +347,8 @@
             android:windowSoftInputMode="adjustResize|stateAlwaysHidden" />
         <activity
             android:name=".ui.auth.AppAuthActivity"
+            android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation"
+            android:windowSoftInputMode="adjustResize|stateAlwaysHidden"
             android:launchMode="singleTop"
             android:theme="@style/AppTheme.Blur" />
         <activity
@@ -468,9 +470,9 @@
         <meta-data
             android:name="com.google.android.geo.API_KEY"
             android:value="${GOOGLE_MAP_KEY}" />
-        <meta-data
-            android:name="com.google.android.gms.car.application"
-            android:resource="@xml/automotive_app_desc" />
+<!--        <meta-data-->
+<!--            android:name="com.google.android.gms.car.application"-->
+<!--            android:resource="@xml/automotive_app_desc" />-->
     </application>
 
     <queries>

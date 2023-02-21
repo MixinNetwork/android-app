@@ -3,8 +3,9 @@ name: Android CI
 on:
   push:
     branches: [ master ]
-  pull_request:
+  pull_request_target:
     branches: [ master ]
+
 
 
 jobs:
@@ -22,3 +23,19 @@ jobs:
       run: chmod +x ./gradlew
     - name: Check format with ktlint
       run: ./gradlew ktlintFormat
+
+    - name: Set mapbox token
+      env:
+        MAPBOX_DOWNLOADS_TOKEN: ${{ secrets.MAPBOX_DOWNLOADS_TOKEN }}
+      shell: bash
+      run: echo MAPBOX_DOWNLOADS_TOKEN=${MAPBOX_DOWNLOADS_TOKEN} >> gradle.properties
+
+    - name: Create google-service.json file
+      run: cat /home/runner/work/android-app/android-app/app/src/debug/google-services.json | base64
+    - name: Set google-service.json data
+      env:
+        DATA: ${{ secrets.GOOGLE_SERVICES_JSON }}
+      run: echo $DATA > /home/runner/work/android-app/android-app/app/src/debug/google-services.json
+
+    - name: Build
+      run: ./gradlew assembleDebug --stacktrace

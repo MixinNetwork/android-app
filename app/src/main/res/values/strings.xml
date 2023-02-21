@@ -438,6 +438,7 @@
     <string name="Exit_Group">Exit Group</string>
     <string name="exit_without_save">Exit without save?</string>
     <string name="Expired">Expired</string>
+    <string name="Expired_tip">Will expire on %1$s</string>
     <string name="Export_Chat">Export Chat</string>
     <string name="Export_failed">Export failed</string>
     <string name="export_ip">Export IP</string>

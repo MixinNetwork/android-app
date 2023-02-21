@@ -154,7 +154,7 @@ class ContactCardQuoteHolder constructor(val binding: ItemChatContactCardQuoteBi
             isRepresentative = isRepresentative,
             isSecret = messageItem.isSecret(),
         )
-        chatJumpLayout(binding.chatJump, isMe, messageItem.expireIn, R.id.chat_msg_layout)
+        chatJumpLayout(binding.chatJump, isMe, messageItem.expireIn, messageItem.expireAt, R.id.chat_msg_layout)
     }
 
     override fun onRead(messageItem: MessageItem) {

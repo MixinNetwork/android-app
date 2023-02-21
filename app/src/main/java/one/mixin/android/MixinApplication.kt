@@ -57,6 +57,7 @@ import one.mixin.android.ui.player.MusicActivity
 import one.mixin.android.ui.player.MusicService
 import one.mixin.android.ui.web.FloatingWebClip
 import one.mixin.android.ui.web.WebActivity
+import one.mixin.android.ui.web.clips
 import one.mixin.android.ui.web.refresh
 import one.mixin.android.ui.web.releaseAll
 import one.mixin.android.util.CursorWindowFixer
@@ -155,6 +156,14 @@ open class MixinApplication :
 
         applicationScope.launch {
             entityInitialize()
+        }
+    }
+
+    override fun onConfigurationChanged(newConfig: android.content.res.Configuration) {
+        super.onConfigurationChanged(newConfig)
+        val activity = topActivity
+        if (activity != null) {
+            refreshFloating(activity, true)
         }
     }
 
@@ -265,6 +274,7 @@ open class MixinApplication :
 
     var activityInForeground = true
     var currentActivity: Activity? = null
+    var topActivity: Activity? = null
     val contextWrapper by lazy {
         MutableContextWrapper(this@MixinApplication)
     }
@@ -290,20 +300,9 @@ open class MixinApplication :
 
     override fun onActivityResumed(activity: Activity) {
         contextWrapper.baseContext = activity
+        topActivity = activity
         activityInForeground = true
-        if (activity is MediaPagerActivity || activity is CallActivity || activity is MusicActivity || activity is WebActivity || activity is AppAuthActivity) {
-            FloatingWebClip.getInstance(activity.isNightMode()).hide()
-            FloatingPlayer.getInstance(activity.isNightMode()).hide()
-        } else if (activity !is LandingActivity && activity !is InitializeActivity) {
-            currentActivity = activity
-            applicationScope.launch(Dispatchers.Main) {
-                refresh()
-
-                if (MusicService.isRunning(activity)) {
-                    FloatingPlayer.getInstance(activity.isNightMode()).show()
-                }
-            }
-        }
+        refreshFloating(activity, false)
     }
 
     override fun onActivityPaused(activity: Activity) {
@@ -340,6 +339,27 @@ open class MixinApplication :
 
     override fun onActivityDestroyed(activity: Activity) {
         if (activity == currentActivity) currentActivity = null
+        if (activity == topActivity) topActivity = null
+    }
+
+    private fun refreshFloating(activity: Activity, recreate: Boolean) {
+        if (activity is MediaPagerActivity || activity is CallActivity || activity is MusicActivity || activity is WebActivity || activity is AppAuthActivity) {
+            FloatingWebClip.getInstance(activity.isNightMode()).hide()
+            FloatingPlayer.getInstance(activity.isNightMode()).hide()
+        } else if (activity !is LandingActivity && activity !is InitializeActivity) {
+            currentActivity = activity
+            applicationScope.launch(Dispatchers.Main) {
+                if (recreate && clips.isNotEmpty()) {
+                    FloatingWebClip.recreate(activity.isNightMode()).show()
+                } else {
+                    refresh()
+                }
+
+                if (MusicService.isRunning(activity)) {
+                    FloatingPlayer.getInstance(activity.isNightMode()).show()
+                }
+            }
+        }
     }
 
     fun checkAndShowAppAuth(activity: Activity): Boolean {
