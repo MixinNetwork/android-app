@@ -8,9 +8,7 @@ import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.view.isVisible
 import one.mixin.android.Constants.Colors.SELECT_COLOR
 import one.mixin.android.R
-import one.mixin.android.RxBus
 import one.mixin.android.databinding.ItemChatVideoBinding
-import one.mixin.android.event.ExpiredEvent
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.fileSize
@@ -339,12 +337,6 @@ class VideoHolder constructor(val binding: ItemChatVideoBinding) :
             binding.chatImage.loadImageMark(dataUrl, R.drawable.image_holder, mark)
         } else {
             binding.chatImage.loadVideoMark(dataUrl, dataThumbImage, mark)
-        }
-    }
-
-    override fun onRead(messageItem: MessageItem) {
-        if (messageItem.expireIn != null) {
-            RxBus.publish(ExpiredEvent(messageItem.messageId, messageItem.expireIn))
         }
     }
 }

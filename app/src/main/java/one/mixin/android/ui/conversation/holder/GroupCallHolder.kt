@@ -4,9 +4,7 @@ import android.content.Context
 import android.graphics.Color
 import one.mixin.android.Constants.Colors.SELECT_COLOR
 import one.mixin.android.R
-import one.mixin.android.RxBus
 import one.mixin.android.databinding.ItemChatSystemBinding
-import one.mixin.android.event.ExpiredEvent
 import one.mixin.android.extension.formatMillis
 import one.mixin.android.ui.conversation.adapter.ConversationAdapter
 import one.mixin.android.ui.conversation.holder.base.BaseViewHolder
@@ -69,12 +67,6 @@ class GroupCallHolder constructor(val binding: ItemChatSystemBinding) :
                 }
                 binding.chatInfo.text = context.getString(R.string.group_call_end_with_duration, duration)
             }
-        }
-    }
-
-    override fun onRead(messageItem: MessageItem) {
-        if (messageItem.expireIn != null) {
-            RxBus.publish(ExpiredEvent(messageItem.messageId, messageItem.expireIn))
         }
     }
 }

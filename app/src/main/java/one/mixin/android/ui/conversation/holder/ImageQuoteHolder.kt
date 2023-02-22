@@ -5,9 +5,7 @@ import android.view.View
 import androidx.constraintlayout.widget.ConstraintLayout
 import one.mixin.android.Constants.Colors.SELECT_COLOR
 import one.mixin.android.R
-import one.mixin.android.RxBus
 import one.mixin.android.databinding.ItemChatImageQuoteBinding
-import one.mixin.android.event.ExpiredEvent
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.loadLongImageMark
@@ -273,10 +271,5 @@ class ImageQuoteHolder constructor(val binding: ItemChatImageQuoteBinding) : Med
 
         chatLayout(isMe, isLast)
         chatJumpLayout(binding.chatJump, isMe, messageItem.expireIn, messageItem.expireAt, R.id.chat_msg_layout)
-    }
-    override fun onRead(messageItem: MessageItem) {
-        if (messageItem.expireIn != null) {
-            RxBus.publish(ExpiredEvent(messageItem.messageId, messageItem.expireIn))
-        }
     }
 }

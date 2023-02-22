@@ -58,7 +58,7 @@ abstract class BaseViewHolder constructor(containerView: View) :
     protected open fun bind(messageItem: MessageItem) {
         canNotReply = messageItem.canNotReply()
         if (this is Terminable && itemView.isShown) {
-            onRead(messageItem)
+            onRead(messageItem.messageId, messageItem.expireIn, messageItem.expireAt)
         }
     }
 
