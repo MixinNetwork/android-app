@@ -59,7 +59,7 @@ class SendTranscriptJob(
                     }
                 }
             }
-            MessageFts4Helper.insertMessageFts4(stringBuffer.toString(), message.conversationId, message.messageId, message.userId)
+            MessageFts4Helper.insertMessageFts4(stringBuffer.toString(), message.conversationId, message.messageId, message.category, message.userId, message.createdAt)
             appDatabase.insertMessage(message)
             InvalidateFlow.emit(message.conversationId)
             transcriptMessages.forEach { transcript ->

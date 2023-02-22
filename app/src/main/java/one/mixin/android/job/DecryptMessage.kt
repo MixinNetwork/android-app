@@ -862,7 +862,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                     }
                 }
             }
-        MessageFts4Helper.insertMessageFts4(stringBuilder.toString(), data.conversationId, data.messageId, data.userId)
+        MessageFts4Helper.insertMessageFts4(stringBuilder.toString(), data.conversationId, data.messageId, data.category, data.userId, data.createdAt)
 
         transcripts.filter { t -> t.isSticker() || t.isContact() }.forEach { transcript ->
             transcript.stickerId?.let { stickerId ->

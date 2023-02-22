@@ -21,7 +21,7 @@ object MessageFts4Helper {
     }
 
     @WorkerThread
-    fun insertMessageFts4(content: String, conversationId: String, messageId: String, userId: String) {
-        ftsDbHelper.insertFts4(content, conversationId, messageId, userId)
+    fun insertMessageFts4(content: String, conversationId: String, messageId: String, category: String, userId: String, createdAt: String) {
+        ftsDbHelper.insertFts4(content, conversationId, messageId, category, userId, createdAt)
     }
 }

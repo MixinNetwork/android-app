@@ -3,6 +3,7 @@ package one.mixin.android.fts
 import android.content.ContentValues
 import android.content.Context
 import androidx.core.database.getStringOrNull
+import one.mixin.android.extension.createAtToLong
 import one.mixin.android.extension.joinWhiteSpace
 import one.mixin.android.vo.Message
 import one.mixin.android.vo.isContact
@@ -16,7 +17,7 @@ class FtsDbHelper(val context: Context) : SqlHelper(
     1,
     listOf(
         "CREATE VIRTUAL TABLE IF NOT EXISTS `messages_fts` USING FTS4(content, tokenize=unicode61);",
-        "CREATE TABLE IF NOT EXISTS `metas` (`doc_id` INTEGER NOT NULL, `message_id` TEXT NOT NULL, `conversation_id` TEXT NOT NULL, `user_id` TEXT NOT NULL, PRIMARY KEY(`message_id`), FOREIGN KEY(`doc_id`) REFERENCES `messages_fts`(DOCID)) WITHOUT ROWID;",
+        "CREATE TABLE IF NOT EXISTS `metas` (`doc_id` INTEGER NOT NULL, `message_id` TEXT NOT NULL, `conversation_id` TEXT NOT NULL, `category` TEXT NOT NULL, `user_id` TEXT NOT NULL, `created_at` INTEGER NOT NULL, PRIMARY KEY(`message_id`));",
     ),
 ) {
     fun insertOrReplaceMessageFts4(message: Message, extraContent: String? = null) {
@@ -24,9 +25,11 @@ class FtsDbHelper(val context: Context) : SqlHelper(
             if (message.isContact() && !extraContent.isNullOrBlank()) {
                 inertContent(
                     extraContent.joinWhiteSpace(),
-                    messageId = message.messageId,
                     conversationId = message.conversationId,
+                    messageId = message.messageId,
+                    category = message.category,
                     userId = message.userId,
+                    createdAt = message.createdAt.createAtToLong(),
                 )
             }
             return
@@ -36,26 +39,32 @@ class FtsDbHelper(val context: Context) : SqlHelper(
         val content = message.content.joinWhiteSpace()
         inertContent(
             name + content,
-            messageId = message.messageId,
             conversationId = message.conversationId,
+            messageId = message.messageId,
+            category = message.category,
             userId = message.userId,
+            createdAt = message.createdAt.createAtToLong(),
         )
     }
 
-    fun insertFts4(content: String, conversationId: String, messageId: String, userId: String) {
+    fun insertFts4(content: String, conversationId: String, messageId: String, category: String, userId: String, createdAt: String) {
         inertContent(
             content,
-            messageId = messageId,
             conversationId = conversationId,
+            messageId = messageId,
+            category = category,
             userId = userId,
+            createdAt = createdAt.createAtToLong(),
         )
     }
 
     private fun inertContent(
         content: String,
-        messageId: String,
         conversationId: String,
+        messageId: String,
+        category: String,
         userId: String,
+        createdAt: Long,
     ) {
         writableDatabase.beginTransaction()
         val values = ContentValues()
@@ -67,7 +76,7 @@ class FtsDbHelper(val context: Context) : SqlHelper(
             writableDatabase.endTransaction()
             return
         }
-        writableDatabase.execSQL("INSERT INTO metas(doc_id, message_id, conversation_id, user_id) VALUES ($lastRowId, '$messageId', '$conversationId', '$userId')")
+        writableDatabase.execSQL("INSERT INTO metas(doc_id, message_id, conversation_id, category, user_id, created_at) VALUES ($lastRowId, '$messageId', '$conversationId', '$category', '$userId', '$createdAt')")
         writableDatabase.setTransactionSuccessful()
         writableDatabase.endTransaction()
     }
@@ -89,7 +98,7 @@ class FtsDbHelper(val context: Context) : SqlHelper(
 
     fun search(content: String, conversationId: String): List<String> {
         readableDatabase.rawQuery(
-            "SELECT message_id FROM metas WHERE conversation_id = '$conversationId' AND doc_id IN  (SELECT docid FROM messages_fts WHERE content MATCH '$content')",
+            "SELECT message_id FROM metas WHERE conversation_id = '$conversationId' AND doc_id IN  (SELECT docid FROM messages_fts WHERE content MATCH '$content' LIMIT 100)",
             null,
         ).use { cursor ->
             val ids = mutableListOf<String>()
@@ -108,7 +117,7 @@ class FtsDbHelper(val context: Context) : SqlHelper(
         writableDatabase.delete("messages_fts", "docid = (SELECT doc_id FROM metas WHERE message_id = '$messageId')", null).apply {
             count = this
         }
-        writableDatabase.delete("metas","message_id = '$messageId'", null).apply {
+        writableDatabase.delete("metas", "message_id = '$messageId'", null).apply {
             count = max(this, count)
         }
         writableDatabase.setTransactionSuccessful()
@@ -121,7 +130,7 @@ class FtsDbHelper(val context: Context) : SqlHelper(
         var count: Int
         writableDatabase.beginTransaction()
         val ids = messageIds.joinToString(prefix = "'", postfix = "'", separator = "', '")
-        writableDatabase.delete("messages_fts","docid IN (SELECT doc_id FROM metas WHERE message_id IN ($ids))", null).apply {
+        writableDatabase.delete("messages_fts", "docid IN (SELECT doc_id FROM metas WHERE message_id IN ($ids))", null).apply {
             count = this
         }
         writableDatabase.delete("metas", "message_id IN ($ids)", null).apply {
@@ -135,10 +144,10 @@ class FtsDbHelper(val context: Context) : SqlHelper(
     fun deleteByConversationId(conversationId: String): Int {
         var count: Int
         writableDatabase.beginTransaction()
-        writableDatabase.delete("messages_fts","docid IN (SELECT doc_id FROM metas WHERE conversation_id = '$conversationId')", null).apply {
+        writableDatabase.delete("messages_fts", "docid IN (SELECT doc_id FROM metas WHERE conversation_id = '$conversationId')", null).apply {
             count = this
         }
-        writableDatabase.delete("metas","conversation_id IN '$conversationId'", null).apply {
+        writableDatabase.delete("metas", "conversation_id IN '$conversationId'", null).apply {
             count = max(this, count)
         }
         writableDatabase.setTransactionSuccessful()
