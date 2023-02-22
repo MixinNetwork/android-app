@@ -43,6 +43,7 @@ import one.mixin.android.ui.web.WebActivity
 import one.mixin.android.util.mlkit.scan.BaseCameraScanFragment
 import one.mixin.android.util.mlkit.scan.analyze.AnalyzeResult
 import one.mixin.android.util.mlkit.scan.analyze.Analyzer
+import one.mixin.android.util.mlkit.scan.analyze.BarcodeResult
 import one.mixin.android.util.mlkit.scan.analyze.BarcodeScanningAnalyzer
 import one.mixin.android.util.mlkit.scan.camera.config.AspectRatioCameraConfig
 import one.mixin.android.util.mlkit.scan.utils.PointUtils
@@ -52,7 +53,7 @@ import one.mixin.android.widget.gallery.ui.GalleryActivity
 import timber.log.Timber
 
 @AndroidEntryPoint
-class ScanFragment : BaseCameraScanFragment<List<Barcode>>() {
+class ScanFragment : BaseCameraScanFragment<BarcodeResult>() {
     companion object {
         const val TAG = "ScanFragment"
 
@@ -130,48 +131,52 @@ class ScanFragment : BaseCameraScanFragment<List<Barcode>>() {
         }
     }
 
-    override fun createAnalyzer(): Analyzer<List<Barcode>> {
+    override fun createAnalyzer(): Analyzer<BarcodeResult> {
         return BarcodeScanningAnalyzer(Barcode.FORMAT_ALL_FORMATS)
     }
 
     override fun initCameraScan() {
         super.initCameraScan()
-        cameraScan.setPlayBeep(true)
+        cameraScan.setPlayBeep(false)
             .setCameraConfig(AspectRatioCameraConfig(requireContext()))
             .setVibrate(true)
     }
 
-    override fun onScanResultCallback(result: AnalyzeResult<List<Barcode>>) {
-        cameraScan.setAnalyzeImage(false)
-
+    override fun onScanResultCallback(result: AnalyzeResult<BarcodeResult>) {
         val width = result.bitmap?.width ?: return
         val height = result.bitmap?.height ?: return
-        Timber.e("$width - $height ${binding.viewfinderView.width} ${binding.viewfinderView.height}")
-        result.result?.let { results ->
-            binding.ivResult.setImageBitmap(previewView.bitmap)
-            val points = mutableListOf<Point>()
-            for (barcode in results) {
-                barcode.boundingBox?.let { box ->
-                    val point = PointUtils.transform(
-                        box.centerX(),
-                        box.centerY(),
-                        width,
-                        height,
-                        binding.viewfinderView.width,
-                        binding.viewfinderView.height,
-                    )
-                    points.add(point)
+        if (result.result?.content != null) {
+            cameraScan.setAnalyzeImage(false)
+            handleAnalysis(result.result?.content!!)
+        } else if (result.result?.barcodes != null) {
+            cameraScan.setAnalyzeImage(false)
+            Timber.e("$width - $height ${binding.viewfinderView.width} ${binding.viewfinderView.height}")
+            result.result?.barcodes?.let { results ->
+                binding.ivResult.setImageBitmap(previewView.bitmap)
+                val points = mutableListOf<Point>()
+                for (barcode in results) {
+                    barcode.boundingBox?.let { box ->
+                        val point = PointUtils.transform(
+                            box.centerX(),
+                            box.centerY(),
+                            width,
+                            height,
+                            binding.viewfinderView.width,
+                            binding.viewfinderView.height,
+                        )
+                        points.add(point)
+                    }
                 }
-            }
-            Timber.e("$width - $height $points")
-            binding.viewfinderView.showResultPoints(points)
-            binding.viewfinderView.setOnItemClickListener(object : ViewfinderView.OnItemClickListener {
-                override fun onItemClick(position: Int) {
-                    handleAnalysis(results[position].displayValue!!)
+                Timber.e("$width - $height $points")
+                binding.viewfinderView.showResultPoints(points)
+                binding.viewfinderView.setOnItemClickListener(object : ViewfinderView.OnItemClickListener {
+                    override fun onItemClick(position: Int) {
+                        handleAnalysis(results[position].displayValue!!)
+                    }
+                })
+                if (points.size == 1) {
+                    handleAnalysis(results[0].displayValue!!)
                 }
-            })
-            if (points.size == 1) {
-                handleAnalysis(results[0].displayValue!!)
             }
         }
     }

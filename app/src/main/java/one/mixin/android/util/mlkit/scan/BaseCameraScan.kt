@@ -32,6 +32,7 @@ import one.mixin.android.util.mlkit.scan.camera.config.CameraConfig
 import one.mixin.android.util.mlkit.scan.manager.AmbientLightManager
 import one.mixin.android.util.mlkit.scan.manager.AmbientLightManager.OnLightSensorEventListener
 import one.mixin.android.util.mlkit.scan.manager.BeepManager
+import one.mixin.android.util.reportException
 import timber.log.Timber
 import java.util.concurrent.Executors
 
@@ -214,11 +215,11 @@ class BaseCameraScan<T> : CameraScan<T> {
                 if (mCamera != null) {
                     mCameraProviderFuture!!.get().unbindAll()
                 }
-                // 绑定到生命周期
+                // bind to the lifecycle
                 mCamera = mCameraProviderFuture!!.get()
                     .bindToLifecycle(lifecycleOwner, cameraSelector, preview, imageAnalysis)
             } catch (e: Exception) {
-                Timber.e(e)
+                reportException(e)
             }
         }, ContextCompat.getMainExecutor(context))
     }
