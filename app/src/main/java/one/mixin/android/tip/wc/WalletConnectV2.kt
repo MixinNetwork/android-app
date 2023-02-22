@@ -12,13 +12,6 @@ import com.walletconnect.android.relay.ConnectionType
 import com.walletconnect.web3.wallet.client.Wallet
 import com.walletconnect.web3.wallet.client.Web3Wallet
 import com.walletconnect.web3.wallet.utils.CacaoSigner
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.SharedFlow
-import kotlinx.coroutines.flow.asSharedFlow
-import kotlinx.coroutines.launch
 import one.mixin.android.BuildConfig
 import one.mixin.android.MixinApplication
 import one.mixin.android.tip.wc.eth.WCEthereumSignMessage
@@ -39,19 +32,11 @@ import timber.log.Timber
 import java.math.BigInteger
 import java.util.concurrent.TimeUnit
 
-object WalletConnectV2 : Web3Wallet.WalletDelegate, CoreClient.CoreDelegate {
+object WalletConnectV2 {
     const val TAG = "WalletConnectV2"
 
     private const val web3jTimeout = 3L
     private const val defaultGasLimit = "250000"
-
-    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
-
-    private val _coreEvents: MutableSharedFlow<Core.Model> = MutableSharedFlow()
-    val coreEvents: SharedFlow<Core.Model> = _coreEvents.asSharedFlow()
-
-    private val _walletEvents: MutableSharedFlow<Wallet.Model> = MutableSharedFlow()
-    val walletEvents: SharedFlow<Wallet.Model> = _walletEvents.asSharedFlow()
 
     var sessionProposal: Wallet.Model.SessionProposal? = null
         private set
@@ -91,8 +76,61 @@ object WalletConnectV2 : Web3Wallet.WalletDelegate, CoreClient.CoreDelegate {
         Web3Wallet.initialize(initParams) { error ->
             Timber.d("$TAG Web3Wallet init error: $error")
         }
-        CoreClient.setDelegate(this)
-        Web3Wallet.setWalletDelegate(this)
+
+        val coreDelegate = object : CoreClient.CoreDelegate {
+            override fun onPairingDelete(deletedPairing: Core.Model.DeletedPairing) {
+                Timber.d("$TAG onPairingDelete $deletedPairing")
+                onPairingDelete(deletedPairing)
+            }
+        }
+
+        val walletDelegate = object : Web3Wallet.WalletDelegate {
+            override fun onAuthRequest(authRequest: Wallet.Model.AuthRequest) {
+                Timber.d("$TAG onAuthRequest $authRequest")
+                this@WalletConnectV2.authRequest = authRequest
+                this@WalletConnectV2.onAuthRequest(authRequest)
+            }
+
+            override fun onConnectionStateChange(state: Wallet.Model.ConnectionState) {
+                Timber.d("$TAG onConnectionStateChange $state")
+                this@WalletConnectV2.onConnectionStateChange(state)
+            }
+
+            override fun onError(error: Wallet.Model.Error) {
+                Timber.d("$TAG onError $error")
+            }
+
+            override fun onSessionDelete(sessionDelete: Wallet.Model.SessionDelete) {
+                Timber.d("$TAG onSessionDelete $sessionDelete")
+                this@WalletConnectV2.onSessionDelete(sessionDelete)
+            }
+
+            override fun onSessionProposal(sessionProposal: Wallet.Model.SessionProposal) {
+                Timber.d("$TAG onSessionProposal $sessionProposal")
+                this@WalletConnectV2.sessionProposal = sessionProposal
+                this@WalletConnectV2.onSessionProposal(sessionProposal)
+            }
+
+            override fun onSessionRequest(sessionRequest: Wallet.Model.SessionRequest) {
+                Timber.d("$TAG onSessionRequest $sessionRequest")
+                this@WalletConnectV2.sessionRequest = sessionRequest
+                onSessionRequest(sessionRequest)
+            }
+
+            override fun onSessionSettleResponse(settleSessionResponse: Wallet.Model.SettledSessionResponse) {
+                Timber.d("$TAG onSessionSettleResponse $settleSessionResponse")
+                this@WalletConnectV2.sessionProposal = null
+                this@WalletConnectV2.onSessionSettleResponse(settleSessionResponse)
+            }
+
+            override fun onSessionUpdateResponse(sessionUpdateResponse: Wallet.Model.SessionUpdateResponse) {
+                Timber.d("$TAG onSessionUpdateResponse $sessionUpdateResponse")
+                this@WalletConnectV2.onSessionUpdateResponse(sessionUpdateResponse)
+            }
+        }
+
+        CoreClient.setDelegate(coreDelegate)
+        Web3Wallet.setWalletDelegate(walletDelegate)
     }
 
     fun pair(uri: String) {
@@ -325,73 +363,6 @@ object WalletConnectV2 : Web3Wallet.WalletDelegate, CoreClient.CoreDelegate {
         }
     }
 
-    override fun onAuthRequest(authRequest: Wallet.Model.AuthRequest) {
-        Timber.d("$TAG onAuthRequest $authRequest")
-        this.authRequest = authRequest
-        scope.launch {
-            _walletEvents.emit(authRequest)
-        }
-    }
-
-    override fun onConnectionStateChange(state: Wallet.Model.ConnectionState) {
-        Timber.d("$TAG onConnectionStateChange $state")
-        scope.launch {
-            _walletEvents.emit(state)
-        }
-    }
-
-    override fun onError(error: Wallet.Model.Error) {
-        Timber.d("$TAG onError $error")
-        scope.launch {
-            _walletEvents.emit(error)
-        }
-    }
-
-    override fun onSessionDelete(sessionDelete: Wallet.Model.SessionDelete) {
-        Timber.d("$TAG onSessionDelete $sessionDelete")
-        scope.launch {
-            _walletEvents.emit(sessionDelete)
-        }
-    }
-
-    override fun onSessionProposal(sessionProposal: Wallet.Model.SessionProposal) {
-        Timber.d("$TAG onSessionProposal $sessionProposal")
-        this.sessionProposal = sessionProposal
-        scope.launch {
-            _walletEvents.emit(sessionProposal)
-        }
-    }
-
-    override fun onSessionRequest(sessionRequest: Wallet.Model.SessionRequest) {
-        Timber.d("$TAG onSessionRequest $sessionRequest")
-        this.sessionRequest = sessionRequest
-        scope.launch {
-            _walletEvents.emit(sessionRequest)
-        }
-    }
-
-    override fun onSessionSettleResponse(settleSessionResponse: Wallet.Model.SettledSessionResponse) {
-        Timber.d("$TAG onSessionSettleResponse $settleSessionResponse")
-        this.sessionProposal = null
-        scope.launch {
-            _walletEvents.emit(settleSessionResponse)
-        }
-    }
-
-    override fun onSessionUpdateResponse(sessionUpdateResponse: Wallet.Model.SessionUpdateResponse) {
-        Timber.d("$TAG onSessionUpdateResponse $sessionUpdateResponse")
-        scope.launch {
-            _walletEvents.emit(sessionUpdateResponse)
-        }
-    }
-
-    override fun onPairingDelete(deletedPairing: Core.Model.DeletedPairing) {
-        Timber.d("$TAG onPairingDelete $deletedPairing")
-        scope.launch {
-            _coreEvents.emit(deletedPairing)
-        }
-    }
-
     private fun approveRequestInternal(result: String, topic: String, requestId: Long) {
         val response = Wallet.Params.SessionRequestResponse(
             sessionTopic = topic,
@@ -480,4 +451,13 @@ object WalletConnectV2 : Web3Wallet.WalletDelegate, CoreClient.CoreDelegate {
             Timber.d("$TAG sendResponseDeepLink meet ActivityNotFoundException")
         }
     }
+
+    var onAuthRequest: (authRequest: Wallet.Model.AuthRequest) -> Unit = { _ -> }
+    var onConnectionStateChange: (state: Wallet.Model.ConnectionState) -> Unit = { _ -> }
+    var onSessionDelete: (sessionDelete: Wallet.Model.SessionDelete) -> Unit = { _ -> }
+    var onSessionProposal: (sessionProposal: Wallet.Model.SessionProposal) -> Unit = { _ -> }
+    var onSessionRequest: (sessionRequest: Wallet.Model.SessionRequest) -> Unit = { _ -> }
+    var onSessionSettleResponse: (settleSessionResponse: Wallet.Model.SettledSessionResponse) -> Unit = { _ -> }
+    var onSessionUpdateResponse: (sessionUpdateResponse: Wallet.Model.SessionUpdateResponse) -> Unit = { _ -> }
+    var onPairingDelete: (deletedPairing: Core.Model.DeletedPairing) -> Unit = { _ -> }
 }

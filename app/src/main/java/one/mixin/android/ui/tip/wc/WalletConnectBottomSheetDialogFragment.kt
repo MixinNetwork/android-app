@@ -52,6 +52,7 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
         const val ARGS_DESC = "args_desc"
 
         fun newInstance(topic: String, isAccount: Boolean, action: String, desc: String? = null) = WalletConnectBottomSheetDialogFragment().withArgs {
+            putString(ARGS_TOPIC, topic)
             putBoolean(ARGS_IS_ACCOUNT, isAccount)
             putString(ARGS_ACTION, action)
             desc?.let { putString(ARGS_DESC, it) }

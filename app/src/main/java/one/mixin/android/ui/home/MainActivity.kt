@@ -33,16 +33,12 @@ import com.google.firebase.crashlytics.FirebaseCrashlytics
 import com.google.gson.GsonBuilder
 import com.microsoft.appcenter.AppCenter
 import com.uber.autodispose.autoDispose
-import com.walletconnect.web3.wallet.client.Wallet
 import dagger.hilt.android.AndroidEntryPoint
 import io.reactivex.Maybe
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
@@ -743,35 +739,29 @@ class MainActivity : BlazeBaseActivity() {
         } else if (intent.hasExtra(WALLET_CONNECT)) {
             val wcUrl = requireNotNull(intent.getStringExtra(WALLET_CONNECT))
             val gson = GsonBuilder().setPrettyPrinting().create()
-            WalletConnectV2.walletEvents.map { wcEvent ->
-                Timber.d("${WalletConnectV2.TAG} $wcEvent")
-                when (wcEvent) {
-                    is Wallet.Model.SessionRequest -> {
-                        val action = when (wcEvent.request.method) {
-                            Method.ETHSign.name, Method.ETHPersonalSign.name, Method.ETHSignTypedData.name, Method.ETHSignTypedDataV4.name -> "Sign Message"
-                            Method.ETHSignTransaction.name -> "Sign Transaction"
-                            Method.ETHSendTransaction.name -> "Send Transaction"
-                            else -> "Unknown"
-                        }
-                        showWalletConnectBottomSheet(wcEvent.topic, action, "", { WalletConnectV2.rejectRequest() }, { priv ->
-                            WalletConnectV2.approveRequest(priv)
-                        })
-                    }
-                    is Wallet.Model.AuthRequest -> {
-                        showWalletConnectBottomSheet("", "Auth request", gson.toJson(wcEvent.payloadParams), { WalletConnectV2.rejectAuthRequest() }) { priv ->
-                            WalletConnectV2.approveAuthRequest(priv)
-                        }
-                    }
-                    is Wallet.Model.SessionProposal -> {
-                        showWalletConnectBottomSheet(wcEvent.pairingTopic, "Connect with ${wcEvent.name}", "", { WalletConnectV2.rejectSession() }) { priv ->
-                            WalletConnectV2.approveSession(priv)
-                        }
-                    }
-                    else -> {
-                        Timber.d("${WalletConnectV2.TAG} $wcEvent")
+            WalletConnectV2.also { wc ->
+                wc.onAuthRequest = { authRequest ->
+                    showWalletConnectBottomSheet("", "Auth request", gson.toJson(authRequest.payloadParams), { WalletConnectV2.rejectAuthRequest() }) { priv ->
+                        WalletConnectV2.approveAuthRequest(priv)
                     }
                 }
-            }.shareIn(lifecycleScope, SharingStarted.WhileSubscribed())
+                wc.onSessionProposal = { sessionProposal ->
+                    showWalletConnectBottomSheet(sessionProposal.pairingTopic, "Connect with ${sessionProposal.name}", "", { WalletConnectV2.rejectSession() }) { priv ->
+                        WalletConnectV2.approveSession(priv)
+                    }
+                }
+                wc.onSessionRequest = { sessionRequest ->
+                    val action = when (sessionRequest.request.method) {
+                        Method.ETHSign.name, Method.ETHPersonalSign.name, Method.ETHSignTypedData.name, Method.ETHSignTypedDataV4.name -> "Sign Message"
+                        Method.ETHSignTransaction.name -> "Sign Transaction"
+                        Method.ETHSendTransaction.name -> "Send Transaction"
+                        else -> "Unknown"
+                    }
+                    showWalletConnectBottomSheet(sessionRequest.topic, action, "", { WalletConnectV2.rejectRequest() }, { priv ->
+                        WalletConnectV2.approveRequest(priv)
+                    })
+                }
+            }
             WalletConnectV2.pair(wcUrl)
             // if (WCSession.from(wcUrl) == null) {
             //     return
