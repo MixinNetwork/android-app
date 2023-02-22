@@ -154,6 +154,7 @@ object Constants {
         const val Monero = "05c5ac01-31f9-4a69-aa8a-ab796de1d041"
         const val Dash = "6472e7e3-75fd-48b6-b1dc-28d294ee1476"
         const val Solana = "64692c23-8971-4cf4-84a7-4dd1271dd887"
+        const val Polygon = "b7938396-3f94-4e0a-9179-d3440718156f"
     }
 
     object AssetId {

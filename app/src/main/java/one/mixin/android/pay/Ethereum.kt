@@ -111,5 +111,6 @@ fun String?.uint256ToBigDecimal(): BigDecimal? {
 private val ethereumChainIdMap by lazy {
     mapOf(
         1 to Constants.ChainId.ETHEREUM_CHAIN_ID,
+        137 to Constants.ChainId.Polygon,
     )
 }

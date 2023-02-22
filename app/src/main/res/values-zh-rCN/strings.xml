@@ -435,6 +435,7 @@
     <string name="export_ip">出口 IP</string>
     <string name="Export_Markdown">导出为 Markdown</string>
     <string name="Export_PDF">导出为 PDF</string>
+    <string name="external_pay_no_asset_found">无法找到该资产，请先充值。</string>
     <string name="Extract_QR_Code">识别二维码</string>
     <string name="Failure">错误</string>
     <string name="Fee">手续费</string>

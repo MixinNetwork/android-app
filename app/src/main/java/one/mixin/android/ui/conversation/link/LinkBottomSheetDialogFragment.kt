@@ -717,6 +717,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
     }
 
     private suspend fun parseExternalTransferUrl(url: String) {
+        var errorMsg: String? = null
         val result = parseExternalTransferUri(url, { assetId, destination ->
             handleMixinResponse(
                 invokeNetwork = {
@@ -727,7 +728,11 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 },
             )
         }, { assetKey ->
-            return@parseExternalTransferUri linkViewModel.findAssetIdByAssetKey(assetKey)
+            val assetId = linkViewModel.findAssetIdByAssetKey(assetKey)
+            if (assetId == null) {
+                errorMsg = getString(R.string.external_pay_no_asset_found)
+            }
+            return@parseExternalTransferUri assetId
         }, { assetId ->
             handleMixinResponse(
                 invokeNetwork = {
@@ -738,6 +743,11 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 },
             )
         })
+
+        errorMsg?.let {
+            showError(it)
+            return
+        }
 
         if (result == null) {
             QrScanBottomSheetDialogFragment.newInstance(url)
