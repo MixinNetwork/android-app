@@ -1174,4 +1174,10 @@
     <string name="transfer_breakpoint_continuation">Breakpoint continuation</string>
     <string name="transfer_breakpoint_continuation_desc">Last sync time on this device was %1$s, do you want to resume from the last sync point?</string>
     <string name="transfer_syncing_des">Transferring chat history, do you want to cancel ?</string>
+
+    <string name="Connected_dapps">Connected dapps</string>
+    <string name="connected_dapp_search_hint">Name, URL</string>
+    <string name="NO_CONNECTED_DAPPS">NO CONNECTED DAPPS</string>
+    <string name="connected_desc">This dapp are connected to your wallet, it can view your wallet balance, activity and request approval for transactions.</string>
+    <string name="Disconnect">Disconnect</string>
 </resources>

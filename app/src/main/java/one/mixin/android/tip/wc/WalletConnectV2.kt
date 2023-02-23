@@ -4,6 +4,10 @@ import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.net.Uri
 import androidx.core.net.toUri
+import com.github.salomonbrys.kotson.fromJson
+import com.github.salomonbrys.kotson.registerTypeAdapter
+import com.google.gson.GsonBuilder
+import com.google.gson.JsonParser
 import com.walletconnect.android.Core
 import com.walletconnect.android.CoreClient
 import com.walletconnect.android.cacao.sign
@@ -16,11 +20,12 @@ import one.mixin.android.BuildConfig
 import one.mixin.android.MixinApplication
 import one.mixin.android.tip.wc.eth.WCEthereumSignMessage
 import one.mixin.android.tip.wc.eth.WCEthereumTransaction
-import one.mixin.android.util.GsonHelper
+import one.mixin.android.tip.wc.eth.ethTransactionSerializer
 import org.web3j.crypto.Credentials
 import org.web3j.crypto.ECKeyPair
 import org.web3j.crypto.Keys
 import org.web3j.crypto.RawTransaction
+import org.web3j.crypto.Sign
 import org.web3j.crypto.TransactionEncoder
 import org.web3j.protocol.Web3j
 import org.web3j.protocol.core.DefaultBlockParameterName
@@ -32,17 +37,10 @@ import timber.log.Timber
 import java.math.BigInteger
 import java.util.concurrent.TimeUnit
 
-object WalletConnectV2 {
+object WalletConnectV2 : WalletConnect() {
     const val TAG = "WalletConnectV2"
 
-    private const val web3jTimeout = 3L
-    private const val defaultGasLimit = "250000"
-
-    var sessionProposal: Wallet.Model.SessionProposal? = null
-        private set
-
     var authRequest: Wallet.Model.AuthRequest? = null
-
     var sessionRequest: Wallet.Model.SessionRequest? = null
     var currentWCEthereumTransaction: WCEthereumTransaction? = null
 
@@ -50,7 +48,10 @@ object WalletConnectV2 {
         private set
     private var web3j = Web3j.build(HttpService(chain.rpcServers[0]))
 
-    private val gson = GsonHelper.customGson
+    private val gson = GsonBuilder()
+        .serializeNulls()
+        .registerTypeAdapter(ethTransactionSerializer)
+        .create()
 
     init {
         val projectId = BuildConfig.WC_PROJECT_ID
@@ -80,7 +81,7 @@ object WalletConnectV2 {
         val coreDelegate = object : CoreClient.CoreDelegate {
             override fun onPairingDelete(deletedPairing: Core.Model.DeletedPairing) {
                 Timber.d("$TAG onPairingDelete $deletedPairing")
-                onPairingDelete(deletedPairing)
+                this@WalletConnectV2.onPairingDelete(deletedPairing)
             }
         }
 
@@ -107,19 +108,17 @@ object WalletConnectV2 {
 
             override fun onSessionProposal(sessionProposal: Wallet.Model.SessionProposal) {
                 Timber.d("$TAG onSessionProposal $sessionProposal")
-                this@WalletConnectV2.sessionProposal = sessionProposal
                 this@WalletConnectV2.onSessionProposal(sessionProposal)
             }
 
             override fun onSessionRequest(sessionRequest: Wallet.Model.SessionRequest) {
                 Timber.d("$TAG onSessionRequest $sessionRequest")
                 this@WalletConnectV2.sessionRequest = sessionRequest
-                onSessionRequest(sessionRequest)
+                this@WalletConnectV2.onSessionRequest(sessionRequest)
             }
 
             override fun onSessionSettleResponse(settleSessionResponse: Wallet.Model.SettledSessionResponse) {
                 Timber.d("$TAG onSessionSettleResponse $settleSessionResponse")
-                this@WalletConnectV2.sessionProposal = null
                 this@WalletConnectV2.onSessionSettleResponse(settleSessionResponse)
             }
 
@@ -143,7 +142,7 @@ object WalletConnectV2 {
     }
 
     fun approveSession(priv: ByteArray) {
-        val sessionProposal = this.sessionProposal ?: return
+        val sessionProposal = Web3Wallet.getSessionProposals().lastOrNull() ?: return
 
         val pub = ECKeyPair.create(priv).publicKey
         val address = Keys.toChecksumAddress(Keys.getAddress(pub))
@@ -155,26 +154,73 @@ object WalletConnectV2 {
             Chain.Polygon to address,
         )
 
-        val selectedAccounts: Map<Chain, String> = chains.mapNotNull { namespaceChainId ->
-            supportAccounts.firstOrNull { (chain, _) -> chain.chainId == namespaceChainId }
-        }.toMap()
-        val sessionNamespaces: Map<String, Wallet.Model.Namespace.Session> = selectedAccounts.filter { (chain: Chain, _) ->
-            "${chain.chainNamespace}:${chain.chainReference}" in sessionProposal.requiredNamespaces.values
-                .filter { namespace -> namespace.chains != null }
-                .flatMap { namespace -> namespace.chains!! }
-        }.toList().groupBy { (chain: Chain, _: String) ->
-            chain.chainNamespace
-        }.map { (namespaceKey: String, chainData: List<Pair<Chain, String>>) ->
-            val accounts = chainData.filter { (chain: Chain, _) ->
-                chain.chainNamespace == namespaceKey
-            }.map { (chain: Chain, accountAddress: String) ->
-                "${chain.chainNamespace}:${chain.chainReference}:$accountAddress"
-            }
-            val methods = sessionProposal.requiredNamespaces[namespaceKey]?.methods ?: emptyList()
-            val events = sessionProposal.requiredNamespaces[namespaceKey]?.events ?: emptyList()
+        val selectedAccounts: Map<Chain, String> = chains.map { namespaceChainId ->
+            supportAccounts.firstOrNull { (chain, address) -> chain.chainId == namespaceChainId }
+        }.filterNotNull().toMap()
 
-            namespaceKey to Wallet.Model.Namespace.Session(accounts = accounts, methods = methods, events = events)
-        }.toMap()
+        val sessionNamespacesIndexedByNamespace: Map<String, Wallet.Model.Namespace.Session> =
+            selectedAccounts.filter { (chain: Chain, _) ->
+                sessionProposal.requiredNamespaces
+                    .filter { (_, namespace) -> namespace.chains != null }
+                    .flatMap { (_, namespace) -> namespace.chains!! }
+                    .contains(chain.chainId)
+            }.toList()
+                .groupBy { (chain: Chain, _: String) -> chain.chainNamespace }
+                .asIterable()
+                .associate { (key: String, chainData: List<Pair<Chain, String>>) ->
+                    val accounts = chainData.map { (chain: Chain, accountAddress: String) ->
+                        "${chain.chainNamespace}:${chain.chainReference}:${accountAddress}"
+                    }
+
+                    val methods = sessionProposal.requiredNamespaces.values
+                        .filter { namespace -> namespace.chains != null }
+                        .flatMap { it.methods }
+
+                    val events = sessionProposal.requiredNamespaces.values
+                        .filter { namespace -> namespace.chains != null }
+                        .flatMap { it.events }
+
+                    val chains: List<String> =
+                        sessionProposal.requiredNamespaces.values
+                            .filter { namespace -> namespace.chains != null }
+                            .flatMap { namespace -> namespace.chains!! }
+
+                    key to Wallet.Model.Namespace.Session(
+                        accounts = accounts,
+                        methods = methods,
+                        events = events,
+                        chains = chains.ifEmpty { null })
+                }
+
+        val sessionNamespacesIndexedByChain: Map<String, Wallet.Model.Namespace.Session> =
+            selectedAccounts.filter { (chain: Chain, _) ->
+                sessionProposal.requiredNamespaces
+                    .filter { (namespaceKey, namespace) -> namespace.chains == null && namespaceKey == chain.chainId }
+                    .isNotEmpty()
+            }.toList()
+                .groupBy { (chain: Chain, _: String) -> chain.chainId }
+                .asIterable()
+                .associate { (key: String, chainData: List<Pair<Chain, String>>) ->
+                    val accounts = chainData.map { (chain: Chain, accountAddress: String) ->
+                        "${chain.chainNamespace}:${chain.chainReference}:${accountAddress}"
+                    }
+
+                    val methods = sessionProposal.requiredNamespaces.values
+                        .filter { namespace -> namespace.chains == null }
+                        .flatMap { it.methods }
+
+                    val events = sessionProposal.requiredNamespaces.values
+                        .filter { namespace -> namespace.chains == null }
+                        .flatMap { it.events }
+
+                    key to Wallet.Model.Namespace.Session(
+                        accounts = accounts,
+                        methods = methods,
+                        events = events
+                    )
+                }
+
+        val sessionNamespaces = sessionNamespacesIndexedByNamespace.plus(sessionNamespacesIndexedByChain)
 
         val approveParams: Wallet.Params.SessionApprove = Wallet.Params.SessionApprove(
             sessionProposal.proposerPublicKey,
@@ -186,7 +232,7 @@ object WalletConnectV2 {
     }
 
     fun rejectSession() {
-        val sessionProposal = this.sessionProposal ?: return
+        val sessionProposal = Web3Wallet.getSessionProposals().lastOrNull() ?: return
 
         val rejectParams: Wallet.Params.SessionReject = Wallet.Params.SessionReject(
             sessionProposal.proposerPublicKey,
@@ -235,38 +281,30 @@ object WalletConnectV2 {
     fun approveRequest(priv: ByteArray) {
         val request = this.sessionRequest ?: return
 
+        Timber.d("$TAG ${request.request.params}")
         when (request.request.method) {
             Method.ETHSign.name -> {
-                val params: List<String> = gson.fromJson(request.request.params, Array<String>::class.java).toList()
-                if (params.size < 2) {
-                    Timber.d("$TAG invalid json rpc params ${request.request.id}")
-                    return
-                }
-                ethSign(priv, request.request.id, request.topic, WCEthereumSignMessage(params, WCEthereumSignMessage.WCSignType.MESSAGE))
+                val data = JsonParser.parseString(request.request.params).asJsonArray[1].toString().trim('"')
+                Timber.d("$TAG eth sign: $data")
+                ethSignData(priv, request.request.id, request.topic, data.toByteArray())
             }
             Method.ETHPersonalSign.name -> {
-                val params: List<String> = gson.fromJson(request.request.params, Array<String>::class.java).toList()
-                if (params.size < 2) {
-                    Timber.d("$TAG invalid json rpc params ${request.request.id}")
-                    return
-                }
-                ethSign(priv, request.request.id, request.topic, WCEthereumSignMessage(params, WCEthereumSignMessage.WCSignType.PERSONAL_MESSAGE))
+                val data = JsonParser.parseString(request.request.params).asJsonArray[0].toString().trim('"')
+                Timber.d("$TAG personal sign: $data")
+                ethSignData(priv, request.request.id, request.topic, data.toByteArray())
             }
             Method.ETHSignTypedData.name, Method.ETHSignTypedDataV4.name -> {
-                val params: List<String> = gson.fromJson(request.request.params, Array<String>::class.java).toList()
-                if (params.size < 2) {
-                    Timber.d("$TAG invalid json rpc params ${request.request.id}")
-                    return
-                }
-                ethSign(priv, request.request.id, request.topic, WCEthereumSignMessage(params, WCEthereumSignMessage.WCSignType.TYPED_MESSAGE))
+                val data = JsonParser.parseString(request.request.params).asJsonArray[1].toString()
+                Timber.d("$TAG sign typed data: $data")
+                ethSignData(priv, request.request.id, request.topic, data.toByteArray())
             }
             Method.ETHSignTransaction.name -> {
-                val params: WCEthereumTransaction = gson.fromJson(request.request.params, Array<WCEthereumTransaction>::class.java).firstOrNull() ?: return
+                val params = gson.fromJson<List<WCEthereumTransaction>>(request.request.params).firstOrNull() ?: return
                 this.currentWCEthereumTransaction = params
                 ethSignTransaction(priv, request.request.id, request.topic, params, true)
             }
             Method.ETHSendTransaction.name -> {
-                val params: WCEthereumTransaction = gson.fromJson(request.request.params, Array<WCEthereumTransaction>::class.java).firstOrNull() ?: return
+                val params = gson.fromJson<List<WCEthereumTransaction>>(request.request.params).firstOrNull() ?: return
                 this.currentWCEthereumTransaction = params
                 ethSendTransaction(priv, request.request.id, request.topic, params)
             }
@@ -363,7 +401,19 @@ object WalletConnectV2 {
         }
     }
 
+    fun disconnect(topic: String) {
+        Web3Wallet.disconnectSession(
+            Wallet.Params.SessionDisconnect(topic),
+            onSuccess = {
+                Timber.d("$TAG disconnect success")
+            },
+        ) { error ->
+            Timber.d("$TAG disconnect error $error")
+        }
+    }
+
     private fun approveRequestInternal(result: String, topic: String, requestId: Long) {
+        Timber.d("$TAG approve request $result")
         val response = Wallet.Params.SessionRequestResponse(
             sessionTopic = topic,
             jsonRpcResponse = Wallet.Model.JsonRpcResponse.JsonRpcResult(
@@ -380,12 +430,23 @@ object WalletConnectV2 {
         this.sessionRequest = null
     }
 
-    private fun ethSign(priv: ByteArray, id: Long, topic: String, message: WCEthereumSignMessage) {
-        val signature = CacaoSigner.sign(message.data, priv, SignatureType.EIP191)
+    private fun ethSignData(priv: ByteArray, id: Long, topic: String, data: ByteArray) {
+        val keyPair = ECKeyPair.create(priv)
+        val signature = Sign.signPrefixedMessage(data, keyPair)
         val b = ByteArray(65)
-        System.arraycopy(signature.t, 0, b, 0, 32)
+        System.arraycopy(signature.r, 0, b, 0, 32)
         System.arraycopy(signature.s, 0, b, 32, 32)
-        signature.m?.let { System.arraycopy(it, 0, b, 64, 1) }
+        System.arraycopy(signature.v, 0, b, 64, 1)
+        approveRequestInternal(Numeric.toHexString(b), topic, id)
+    }
+
+    private fun ethSign(priv: ByteArray, id: Long, topic: String, message: WCEthereumSignMessage) {
+        val keyPair = ECKeyPair.create(priv)
+        val signature = Sign.signPrefixedMessage(message.data.toByteArray(), keyPair)
+        val b = ByteArray(65)
+        System.arraycopy(signature.r, 0, b, 0, 32)
+        System.arraycopy(signature.s, 0, b, 32, 32)
+        System.arraycopy(signature.v, 0, b, 64, 1)
         approveRequestInternal(Numeric.toHexString(b), topic, id)
     }
 
@@ -410,7 +471,7 @@ object WalletConnectV2 {
         val v = Numeric.toBigInt(value)
         Timber.d("$TAG nonce: $nonce, value $v wei")
         val rawTransaction = RawTransaction.createTransaction(
-            chain.chainId.toLong(),
+            chain.chainReference.toLong(),
             nonce,
             Numeric.toBigInt(gasLimit),
             transaction.to,
@@ -419,7 +480,7 @@ object WalletConnectV2 {
             Numeric.toBigInt(maxPriorityFeePerGas),
             Numeric.toBigInt(maxFeePerGas),
         )
-        val signedMessage = TransactionEncoder.signMessage(rawTransaction, chain.chainId.toLong(), credential)
+        val signedMessage = TransactionEncoder.signMessage(rawTransaction, chain.chainReference.toLong(), credential)
         val hexMessage = Numeric.toHexString(signedMessage)
         Timber.d("$TAG signTransaction $hexMessage")
         if (approve) {

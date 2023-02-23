@@ -32,6 +32,8 @@ import com.google.android.play.core.install.model.UpdateAvailability
 import com.google.firebase.crashlytics.FirebaseCrashlytics
 import com.google.gson.GsonBuilder
 import com.microsoft.appcenter.AppCenter
+import com.trustwallet.walletconnect.models.ethereum.WCEthereumTransaction
+import com.trustwallet.walletconnect.models.session.WCSession
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import io.reactivex.Maybe
@@ -79,6 +81,7 @@ import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.areBubblesAllowedCompat
 import one.mixin.android.extension.checkStorageNotLow
 import one.mixin.android.extension.defaultSharedPreferences
+import one.mixin.android.extension.formatPublicKey
 import one.mixin.android.extension.getDeviceId
 import one.mixin.android.extension.inTransaction
 import one.mixin.android.extension.indeterminateProgressDialog
@@ -112,7 +115,9 @@ import one.mixin.android.session.Session
 import one.mixin.android.tip.Tip
 import one.mixin.android.tip.tipPrivToPrivateKey
 import one.mixin.android.tip.wc.Method
+import one.mixin.android.tip.wc.WalletConnectV1
 import one.mixin.android.tip.wc.WalletConnectV2
+import one.mixin.android.tip.wc.getChain
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.BatteryOptimizationDialogActivity
 import one.mixin.android.ui.common.BlazeBaseActivity
@@ -739,6 +744,37 @@ class MainActivity : BlazeBaseActivity() {
         } else if (intent.hasExtra(WALLET_CONNECT)) {
             val wcUrl = requireNotNull(intent.getStringExtra(WALLET_CONNECT))
             val gson = GsonBuilder().setPrettyPrinting().create()
+            if (WCSession.from(wcUrl) != null) {
+                WalletConnectV1.also { wc ->
+                    wc.onSessionRequest = { _, peer ->
+                        showWalletConnectBottomSheet("", "Connect with ${peer.name}", "", { wc.rejectSession() }) { priv ->
+                            wc.approveSession(priv)
+                        }
+                    }
+                    wc.onWalletChangeNetwork = { id, chainId ->
+                        showWalletConnectBottomSheet("", "Change Network", "${WalletConnectV1.chain.name} => ${chainId.getChain()?.name}", { wc.rejectRequest(id) }) { priv ->
+                            wc.walletChangeNetwork(priv, id, chainId)
+                        }
+                    }
+                    wc.onEthSign = { id, message ->
+                        showWalletConnectBottomSheet("", "Sign Message", gson.toJson(message), { wc.rejectRequest(id) }) { priv ->
+                            wc.ethSignMessage(priv, id, message.data.toByteArray())
+                        }
+                    }
+                    wc.onEthSignTransaction = { id, transaction ->
+                        showWalletConnectBottomSheet("", "Sign Transaction\n${getFromTo(transaction)}", "", { wc.rejectRequest(id) }) { priv ->
+                            wc.ethSignTransaction(priv, id, transaction, true)
+                        }
+                    }
+                    wc.onEthSendTransaction = { id, transaction ->
+                        showWalletConnectBottomSheet("", "Send Transaction\n${getFromTo(transaction)}", "", { wc.rejectRequest(id) }) { priv ->
+                            wc.ethSendTransaction(priv, id, transaction)
+                        }
+                    }
+                }
+                WalletConnectV1.connect(wcUrl)
+                return
+            }
             WalletConnectV2.also { wc ->
                 wc.onAuthRequest = { authRequest ->
                     showWalletConnectBottomSheet("", "Auth request", gson.toJson(authRequest.payloadParams), { WalletConnectV2.rejectAuthRequest() }) { priv ->
@@ -763,39 +799,6 @@ class MainActivity : BlazeBaseActivity() {
                 }
             }
             WalletConnectV2.pair(wcUrl)
-            // if (WCSession.from(wcUrl) == null) {
-            //     return
-            // }
-            //
-            // val gson = GsonBuilder().setPrettyPrinting().create()
-            // WalletConnectV1.get().also { wc ->
-            //     wc.onSessionRequest = { _, peer ->
-            //         showWalletConnectBottomSheet("Connect with ${peer.name}", "", { wc.rejectSession() }) { priv ->
-            //             wc.approveSession(priv)
-            //         }
-            //     }
-            //     wc.onWalletChangeNetwork = { id, chainId ->
-            //         showWalletConnectBottomSheet("Change Network", "${WalletConnectV1.get().chain.name} => ${chainId.getChain()?.name}", { wc.rejectRequest(id) }) { priv ->
-            //             wc.walletChangeNetwork(priv, id, chainId)
-            //         }
-            //     }
-            //     wc.onEthSign = { id, message ->
-            //         showWalletConnectBottomSheet("Sign Message", gson.toJson(message), { wc.rejectRequest(id) }) { priv ->
-            //             wc.ethSignMessage(priv, id, message.data.toByteArray())
-            //         }
-            //     }
-            //     wc.onEthSignTransaction = { id, transaction ->
-            //         showWalletConnectBottomSheet("Sign Transaction\n${getFromTo(transaction)}", "", { wc.rejectRequest(id) }) { priv ->
-            //             wc.ethSignTransaction(priv, id, transaction, true)
-            //         }
-            //     }
-            //     wc.onEthSendTransaction = { id, transaction ->
-            //         showWalletConnectBottomSheet("Send Transaction\n${getFromTo(transaction)}", "", { wc.rejectRequest(id) }) { priv ->
-            //             wc.ethSendTransaction(priv, id, transaction)
-            //         }
-            //     }
-            // }
-            // WalletConnectV1.get().connect(wcUrl)
         }
     }
 
@@ -813,6 +816,8 @@ class MainActivity : BlazeBaseActivity() {
             }.setOnReject { onReject() }
             .showNow(supportFragmentManager, WalletConnectBottomSheetDialogFragment.TAG)
     }
+
+    private fun getFromTo(transaction: WCEthereumTransaction): String = "${transaction.from.formatPublicKey()} => ${transaction.to?.formatPublicKey()}"
 
     private fun clearCodeAfterConsume(intent: Intent, code: String) {
         intent.removeExtra(code)

@@ -9,7 +9,7 @@ data class WCEthereumSignMessage(
     }
 
     /**
-     * Raw parameters will always be the message and the addess. Depending on the WCSignType,
+     * Raw parameters will always be the message and the address. Depending on the WCSignType,
      * those parameters can be swapped as description below:
      *
      *  - MESSAGE: `[address, data ]`

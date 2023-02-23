@@ -24,6 +24,16 @@ internal fun String.getChain(): Chain? {
     }
 }
 
+internal fun Int.getChain(): Chain? {
+    return when (this) {
+        Chain.Ethereum.chainReference -> Chain.Ethereum
+        Chain.BinanceSmartChain.chainReference -> Chain.BinanceSmartChain
+        Chain.Polygon.chainReference -> Chain.Polygon
+        Chain.AvalancheCChain.chainReference -> Chain.AvalancheCChain
+        else -> null
+    }
+}
+
 internal fun String?.getChainName(): String? {
     if (this == null) return null
 
