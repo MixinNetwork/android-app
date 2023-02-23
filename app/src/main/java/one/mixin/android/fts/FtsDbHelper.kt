@@ -17,7 +17,7 @@ class FtsDbHelper(val context: Context) : SqlHelper(
     1,
     listOf(
         "CREATE VIRTUAL TABLE IF NOT EXISTS `messages_fts` USING FTS4(content, tokenize=unicode61);",
-        "CREATE TABLE IF NOT EXISTS `metas` (`doc_id` INTEGER NOT NULL, `message_id` TEXT NOT NULL, `conversation_id` TEXT NOT NULL, `category` TEXT NOT NULL, `user_id` TEXT NOT NULL, `created_at` INTEGER NOT NULL, PRIMARY KEY(`message_id`));",
+        "CREATE TABLE IF NOT EXISTS `messages_metas` (`doc_id` INTEGER NOT NULL, `message_id` TEXT NOT NULL, `conversation_id` TEXT NOT NULL, `category` TEXT NOT NULL, `user_id` TEXT NOT NULL, `created_at` INTEGER NOT NULL, PRIMARY KEY(`message_id`));",
     ),
 ) {
     fun insertOrReplaceMessageFts4(message: Message, extraContent: String? = null) {
@@ -76,14 +76,14 @@ class FtsDbHelper(val context: Context) : SqlHelper(
             writableDatabase.endTransaction()
             return
         }
-        writableDatabase.execSQL("INSERT INTO metas(doc_id, message_id, conversation_id, category, user_id, created_at) VALUES ($lastRowId, '$messageId', '$conversationId', '$category', '$userId', '$createdAt')")
+        writableDatabase.execSQL("INSERT INTO messages_metas(doc_id, message_id, conversation_id, category, user_id, created_at) VALUES ($lastRowId, '$messageId', '$conversationId', '$category', '$userId', '$createdAt')")
         writableDatabase.setTransactionSuccessful()
         writableDatabase.endTransaction()
     }
 
     fun search(content: String): List<String> {
         readableDatabase.rawQuery(
-            "SELECT message_id FROM metas WHERE doc_id IN  (SELECT docid FROM messages_fts WHERE content MATCH '$content' LIMIT 999)",
+            "SELECT message_id FROM messages_metas WHERE doc_id IN  (SELECT docid FROM messages_fts WHERE content MATCH '$content' LIMIT 999)",
             null,
         ).use { cursor ->
             val ids = mutableListOf<String>()
@@ -98,7 +98,7 @@ class FtsDbHelper(val context: Context) : SqlHelper(
 
     fun search(content: String, conversationId: String): List<String> {
         readableDatabase.rawQuery(
-            "SELECT message_id FROM metas WHERE conversation_id = '$conversationId' AND doc_id IN  (SELECT docid FROM messages_fts WHERE content MATCH '$content' LIMIT 100)",
+            "SELECT message_id FROM messages_metas WHERE conversation_id = '$conversationId' AND doc_id IN  (SELECT docid FROM messages_fts WHERE content MATCH '$content' LIMIT 100)",
             null,
         ).use { cursor ->
             val ids = mutableListOf<String>()
@@ -114,10 +114,10 @@ class FtsDbHelper(val context: Context) : SqlHelper(
     fun deleteByMessageId(messageId: String): Int {
         var count: Int
         writableDatabase.beginTransaction()
-        writableDatabase.delete("messages_fts", "docid = (SELECT doc_id FROM metas WHERE message_id = '$messageId')", null).apply {
+        writableDatabase.delete("messages_fts", "docid = (SELECT doc_id FROM messages_metas WHERE message_id = '$messageId')", null).apply {
             count = this
         }
-        writableDatabase.delete("metas", "message_id = '$messageId'", null).apply {
+        writableDatabase.delete("messages_metas", "message_id = '$messageId'", null).apply {
             count = max(this, count)
         }
         writableDatabase.setTransactionSuccessful()
@@ -130,10 +130,10 @@ class FtsDbHelper(val context: Context) : SqlHelper(
         var count: Int
         writableDatabase.beginTransaction()
         val ids = messageIds.joinToString(prefix = "'", postfix = "'", separator = "', '")
-        writableDatabase.delete("messages_fts", "docid IN (SELECT doc_id FROM metas WHERE message_id IN ($ids))", null).apply {
+        writableDatabase.delete("messages_fts", "docid IN (SELECT doc_id FROM messages_metas WHERE message_id IN ($ids))", null).apply {
             count = this
         }
-        writableDatabase.delete("metas", "message_id IN ($ids)", null).apply {
+        writableDatabase.delete("messages_metas", "message_id IN ($ids)", null).apply {
             count = max(this, count)
         }
         writableDatabase.setTransactionSuccessful()
@@ -144,10 +144,10 @@ class FtsDbHelper(val context: Context) : SqlHelper(
     fun deleteByConversationId(conversationId: String): Int {
         var count: Int
         writableDatabase.beginTransaction()
-        writableDatabase.delete("messages_fts", "docid IN (SELECT doc_id FROM metas WHERE conversation_id = '$conversationId')", null).apply {
+        writableDatabase.delete("messages_fts", "docid IN (SELECT doc_id FROM messages_metas WHERE conversation_id = '$conversationId')", null).apply {
             count = this
         }
-        writableDatabase.delete("metas", "conversation_id IN '$conversationId'", null).apply {
+        writableDatabase.delete("messages_metas", "conversation_id IN '$conversationId'", null).apply {
             count = max(this, count)
         }
         writableDatabase.setTransactionSuccessful()
