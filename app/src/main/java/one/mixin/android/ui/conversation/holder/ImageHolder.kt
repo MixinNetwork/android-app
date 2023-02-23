@@ -7,9 +7,7 @@ import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.view.isVisible
 import one.mixin.android.Constants.Colors.SELECT_COLOR
 import one.mixin.android.R
-import one.mixin.android.RxBus
 import one.mixin.android.databinding.ItemChatImageBinding
-import one.mixin.android.event.ExpiredEvent
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.loadGifMark
@@ -271,12 +269,6 @@ class ImageHolder constructor(val binding: ItemChatImageBinding) : MediaHolder(b
             binding.chatImage.loadGifMark(dataThumbImage, null, mark, false)
         } else {
             binding.chatImage.loadGifMark(dataUrl, dataThumbImage, mark, true)
-        }
-    }
-
-    override fun onRead(messageItem: MessageItem) {
-        if (messageItem.expireIn != null) {
-            RxBus.publish(ExpiredEvent(messageItem.messageId, messageItem.expireIn))
         }
     }
 }

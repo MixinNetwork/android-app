@@ -796,7 +796,7 @@ class ConversationAdapter(
                 holder.onViewAttachedToWindow()
             }
             if (holder is Terminable) {
-                holder.onRead(messageItem)
+                holder.onRead(messageItem.messageId, messageItem.expireIn, messageItem.expireAt)
             }
         }
     }

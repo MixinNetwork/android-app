@@ -1,83 +1,84 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/container"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent">
+        xmlns:tools="http://schemas.android.com/tools"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <androidx.camera.view.PreviewView
-        android:id="@+id/view_finder"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"/>
+            android:id="@+id/previewView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
 
-    <one.mixin.android.ui.qr.FocusView
-        android:id="@+id/focus_view"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"/>
+    <ImageView
+            android:id="@+id/ivResult"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:importantForAccessibility="no" />
 
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="88dp"
-        android:background="@drawable/camera_cover_top"/>
-
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="190dp"
-        android:layout_alignParentBottom="true"
-        android:background="@drawable/camera_cover_bottom"/>
+    <one.mixin.android.widget.ViewfinderView
+            android:id="@+id/viewfinderView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            app:viewfinderStyle="popular"
+            app:frameRatio="0.6"
+            app:laserStyle="radar" />
 
     <RelativeLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/margin20">
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/margin20">
 
         <ImageView
-            android:id="@+id/close"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_margin="24dp"
-            android:padding="8dp"
-            android:background="@drawable/mixin_ripple"
-            android:src="@drawable/ic_close_white_24dp"
-            tools:ignore="ContentDescription"/>
+                android:id="@+id/close"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="24dp"
+                android:padding="8dp"
+                android:background="@drawable/mixin_ripple"
+                android:src="@drawable/ic_close_white_24dp"
+                tools:ignore="ContentDescription" />
+
 
         <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_centerInParent="true"
-            android:textColor="@color/white"
-            android:textSize="18sp"
-            android:text="@string/Scan_QR_Code"/>
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerInParent="true"
+                android:textColor="@color/white"
+                android:textSize="18sp"
+                android:text="@string/Scan_QR_Code" />
     </RelativeLayout>
 
     <RelativeLayout
-        android:id="@+id/bottom_ll"
-        android:layout_width="match_parent"
-        android:layout_height="100dp"
-        android:layout_marginBottom="50dp"
-        android:layout_alignParentBottom="true">
+            android:id="@+id/bottom_ll"
+            android:layout_width="match_parent"
+            android:layout_height="100dp"
+            android:layout_marginBottom="50dp"
+            android:layout_alignParentBottom="true">
+
 
         <ImageView
-            android:id="@+id/gallery_iv"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_centerVertical="true"
-            android:layout_marginStart="88dp"
-            android:padding="8dp"
-            android:background="@drawable/mixin_ripple"
-            android:src="@drawable/ic_camera_gallery"
-            tools:ignore="ContentDescription"/>
+                android:id="@+id/gallery_iv"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:layout_marginStart="88dp"
+                android:padding="8dp"
+                android:background="@drawable/mixin_ripple"
+                android:src="@drawable/ic_camera_gallery"
+                tools:ignore="ContentDescription" />
 
         <ImageView
-            android:id="@+id/flash"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_centerVertical="true"
-            android:layout_alignParentEnd="true"
-            android:layout_marginEnd="88dp"
-            android:padding="8dp"
-            android:background="@drawable/mixin_ripple"
-            android:src="@drawable/ic_scan_flash"
-            tools:ignore="ContentDescription"/>
+                android:id="@+id/flash"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:layout_alignParentEnd="true"
+                android:layout_marginEnd="88dp"
+                android:padding="8dp"
+                android:background="@drawable/mixin_ripple"
+                android:src="@drawable/ic_scan_flash"
+                tools:ignore="ContentDescription" />
     </RelativeLayout>
+
 </RelativeLayout>
