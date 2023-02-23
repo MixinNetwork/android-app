@@ -21,7 +21,7 @@ private val bepChains by lazy {
 }
 
 fun getChainNetwork(assetId: String, chainId: String, assetKey: String?): String? {
-    if (chainId == Constants.ChainId.MVMEthereum) {
+    if (chainId == Constants.ChainId.MixinVirtualMachine) {
         return "MVM"
     }
 
