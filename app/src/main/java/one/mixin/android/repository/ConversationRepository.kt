@@ -152,7 +152,7 @@ internal constructor(
             if (ids.isEmpty()) {
                 emptyList<SearchMessageItem>()
             } else {
-                DataProvider.fuzzySearchMessage(queryString, ids, limit, appDatabase, cancellationSignal)
+                DataProvider.fuzzySearchMessage(queryString, ids, appDatabase, cancellationSignal)
             }
         }
 

@@ -83,7 +83,7 @@ class FtsDbHelper(val context: Context) : SqlHelper(
 
     fun search(content: String): List<String> {
         readableDatabase.rawQuery(
-            "SELECT message_id FROM metas WHERE doc_id IN  (SELECT docid FROM messages_fts WHERE content MATCH '$content')",
+            "SELECT message_id FROM metas WHERE doc_id IN  (SELECT docid FROM messages_fts WHERE content MATCH '$content' LIMIT 999)",
             null,
         ).use { cursor ->
             val ids = mutableListOf<String>()

@@ -381,10 +381,10 @@ class DataProvider {
         suspend fun fuzzySearchMessage(
             query: String,
             messageIds: List<String>,
-            limit: Int,
             db: MixinDatabase,
             cancellationSignal: CancellationSignal,
         ): List<SearchMessageItem> {
+            val isBigSize = messageIds.size >= 999
             val _sql =
                 """
                 SELECT m.conversation_id AS conversationId, c.icon_url AS conversationAvatarUrl,
@@ -393,10 +393,15 @@ class DataProvider {
                 FROM messages m
                 LEFT JOIN conversations c ON c.conversation_id = m.conversation_id
 				LEFT JOIN users u ON c.owner_id = u.user_id
-                WHERE (m.id IN (*)) OR (m.id IN (SELECT message_id FROM messages_fts4 WHERE messages_fts4 MATCH ?)) 
+                WHERE (m.id IN (*)) ${
+                    if (isBigSize) {
+                        " "
+                    } else { // If new fts return too much(> 999), discard the old one.
+                        "OR (m.id IN (SELECT message_id FROM messages_fts4 WHERE messages_fts4 MATCH ?)) "
+                    }
+                }
 				GROUP BY m.conversation_id
                 ORDER BY max(m.created_at) DESC
-                LIMIT ?
                 """
 
             val ids = if (messageIds.isEmpty()) {
@@ -404,16 +409,20 @@ class DataProvider {
             } else {
                 messageIds.joinToString(prefix = "'", postfix = "'", separator = "', '")
             }
-            val _statement = RoomSQLiteQuery.acquire(_sql.replace("*", ids), 2)
-            var _argIndex = 1
-            _statement.bindString(_argIndex, query)
-            _argIndex = 2
-            _statement.bindLong(_argIndex, limit.toLong())
+            val statement = if(isBigSize){
+                val _statement = RoomSQLiteQuery.acquire(_sql.replace("*", ids), 0)
+                _statement
+            } else {
+                val _statement = RoomSQLiteQuery.acquire(_sql.replace("*", ids), 1)
+                val _argIndex = 1
+                _statement.bindString(_argIndex, query)
+                _statement
+            }
             return CoroutinesRoom.execute(
                 db,
                 true,
                 cancellationSignal,
-                callableSearchMessageItem(db, _statement, cancellationSignal),
+                callableSearchMessageItem(db, statement, cancellationSignal),
             )
         }
 
