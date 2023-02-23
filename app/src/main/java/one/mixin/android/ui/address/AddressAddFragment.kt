@@ -27,6 +27,7 @@ import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.highLight
 import one.mixin.android.extension.loadImage
+import one.mixin.android.extension.navigateUp
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.showKeyboard
 import one.mixin.android.extension.textColor
@@ -144,7 +145,9 @@ class AddressAddFragment() : BaseFragment(R.layout.fragment_address_add) {
             bottomSheet.showNow(parentFragmentManager, PinAddrBottomSheetDialogFragment.TAG)
             bottomSheet.callback = object : BiometricBottomSheetDialogFragment.Callback() {
                 override fun onSuccess() {
-                    activity?.onBackPressedDispatcher?.onBackPressed()
+                    if (viewDestroyed()) return
+
+                    view.navigateUp()
                 }
             }
         }
