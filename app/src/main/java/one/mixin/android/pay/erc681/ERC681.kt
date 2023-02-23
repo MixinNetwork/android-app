@@ -1,5 +1,6 @@
 package one.mixin.android.pay.erc681
 
+import java.math.BigDecimal
 import java.math.BigInteger
 
 data class ERC681(
@@ -14,4 +15,7 @@ data class ERC681(
 
     var function: String? = null,
     var functionParams: List<Pair<String, String>> = listOf(),
+
+    // extra adapted field
+    var amount: BigDecimal? = null,
 )

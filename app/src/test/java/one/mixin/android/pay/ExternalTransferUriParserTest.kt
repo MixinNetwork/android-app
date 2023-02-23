@@ -40,10 +40,17 @@ class ExternalTransferUriParserTest {
         val url1 = "ethereum:0xfb6916095ca1df60bb79Ce92ce3ea74c37c5d359?value=2.014e18"
         val url2 = "ethereum:pay-0xdAC17F958D2ee523a2206206994597C13D831ec7@1/transfer?address=0x00d02d4A148bCcc66C6de20C4EB1CbAB4298cDcc&uint256=2e7&gasPrice=14"
         val url3 = "ethereum:0xD994790d2905b073c438457c9b8933C0148862db@1?value=1.697e16&gasPrice=14&label=Bitrefill%2008cba4ee-b6cd-47c8-9768-c82959c0edce"
-        val url4 = "ethereum:0xA974c709cFb4566686553a20790685A47acEAA33@1/transfer?address=0xB38F2E40e82F0AE5613D55203d84953aE4d5181B&amount=1&uint256=1.24e18"
+        val url4 = "ethereum:0xA974c709cFb4566686553a20790685A47acEAA33@1/transfer?address=0xB38F2E40e82F0AE5613D55203d84953aE4d5181B&amount=1.24&uint256=1.24e18"
         val url5 = "ethereum:pay-0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48@1/transfer?address=0x50bF16E33E892F1c9Aa7C7FfBaF710E971b86Dd1&gasPrice=14"
-        val url6 = "ethereum:0xA974c709cFb4566686553a20790685A47acEAA33@1/transfer?a=b&c=d&uint256=1.24e18&e=f&amount=1&g=h&address=0xB38F2E40e82F0AE5613D55203d84953aE4d5181B&i=j&k=m&n=o&p=q"
+        val url6 = "ethereum:0xA974c709cFb4566686553a20790685A47acEAA33@1/transfer?a=b&c=d&uint256=1.24e18&e=f&amount=1.24&g=h&address=0xB38F2E40e82F0AE5613D55203d84953aE4d5181B&i=j&k=m&n=o&p=q"
         val url7 = "ethereum:0xA974c709cFb4566686553a20790685A47acEAA33@1/transfer?address=0xB38F2E40e82F0AE5613D55203d84953aE4d5181B&amount=1e7&uint256=1.24e18"
+        val url8 = "ethereum:0x20269e75b1637632e87f65A0A053d6720A781f39?amount=0.00016882"
+        val url9 = "ethereum:0xfb6916095ca1df60bb79Ce92ce3ea74c37c5d359?value=2.014e18&amount=2.014"
+        val url10 = "ethereum:0xfb6916095ca1df60bb79Ce92ce3ea74c37c5d359?value=2.014e18&amount=2.013"
+        val url11 = "ethereum:0xA974c709cFb4566686553a20790685A47acEAA33@1/transfer?address=0xB38F2E40e82F0AE5613D55203d84953aE4d5181B&amount=1&uint256=1.24e18"
+
+        // polygon usdc
+        val url12 = "ethereum:0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174@137/transfer?address=0x1DB766A18aB5b70A38e2A8a8819Ba6472029E9Ac&uint256=3.27e6&gas=250000"
 
         val result1 = parse(url1)
         val result2 = parse(url2)
@@ -52,6 +59,11 @@ class ExternalTransferUriParserTest {
         val result5 = parse(url5)
         val result6 = parse(url6)
         val result7 = parse(url7)
+        val result8 = parse(url8)
+        val result9 = parse(url9)
+        val result10 = parse(url10)
+        val result11 = parse(url11)
+        val result12 = parse(url12)
 
         assertTrue(result1 != null)
         if (result1 != null) {
@@ -67,15 +79,29 @@ class ExternalTransferUriParserTest {
         }
         assertTrue(result4 != null)
         if (result4 != null) {
-            checkResult(result4, "c94ac88f-4671-3976-b60a-09064f1811e8", "0xB38F2E40e82F0AE5613D55203d84953aE4d5181B", "1")
+            checkResult(result4, "c94ac88f-4671-3976-b60a-09064f1811e8", "0xB38F2E40e82F0AE5613D55203d84953aE4d5181B", "1.24")
         }
         assertTrue(result5 == null)
-
         assertTrue(result6 != null)
         if (result6 != null) {
-            checkResult(result6, "c94ac88f-4671-3976-b60a-09064f1811e8", "0xB38F2E40e82F0AE5613D55203d84953aE4d5181B", "1")
+            checkResult(result6, "c94ac88f-4671-3976-b60a-09064f1811e8", "0xB38F2E40e82F0AE5613D55203d84953aE4d5181B", "1.24")
         }
         assertTrue(result7 == null)
+        assertTrue(result8 != null)
+        if (result8 != null) {
+            checkResult(result8, Constants.ChainId.ETHEREUM_CHAIN_ID, "0x20269e75b1637632e87f65A0A053d6720A781f39", "0.00016882")
+        }
+        assertTrue(result9 != null)
+        if (result9 != null) {
+            checkResult(result9, Constants.ChainId.ETHEREUM_CHAIN_ID, "0xfb6916095ca1df60bb79Ce92ce3ea74c37c5d359", "2.014")
+        }
+        assertTrue(result10 == null)
+        assertTrue(result11 == null)
+
+        assertTrue(result12 != null)
+        if (result12 != null) {
+            checkResult(result12, "80b65786-7c75-3523-bc03-fb25378eae41", "0x1DB766A18aB5b70A38e2A8a8819Ba6472029E9Ac", "3.27")
+        }
     }
 
     // @Test
@@ -191,10 +217,12 @@ class ExternalTransferUriParserTest {
     private val mockAssetKeyAssetId = mapOf(
         "0xdac17f958d2ee523a2206206994597c13d831ec7" to "4d8c508b-91c5-375b-92b0-ee702ed2dac5", // ERC20 USDT
         "0xa974c709cfb4566686553a20790685a47aceaa33" to "c94ac88f-4671-3976-b60a-09064f1811e8", // XIN
+        "0x2791bca1f2de4661ed88a30c99a7a9449aa84174" to "80b65786-7c75-3523-bc03-fb25378eae41", // Polygon USDC
     )
 
     private val mockAssetPrecision = mapOf(
         "4d8c508b-91c5-375b-92b0-ee702ed2dac5" to 6,
         "c94ac88f-4671-3976-b60a-09064f1811e8" to 18,
+        "80b65786-7c75-3523-bc03-fb25378eae41" to 6,
     )
 }

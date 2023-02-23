@@ -444,6 +444,7 @@
     <string name="export_ip">Export IP</string>
     <string name="Export_Markdown">Export Markdown</string>
     <string name="Export_PDF">Export PDF</string>
+    <string name="external_pay_no_asset_found">No asset found, please deposit to your wallet first.</string>
     <string name="Extract_QR_Code">Extract QR Code</string>
     <string name="Failure">Failure</string>
     <string name="Fee">Fee</string>

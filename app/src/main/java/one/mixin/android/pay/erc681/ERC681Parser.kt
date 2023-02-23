@@ -51,6 +51,9 @@ fun CommonEthereumURIData.toERC681() = let { commonURI ->
         gasPrice = (queryAsMap["gasPrice"]).toBigInteger()
         value = queryAsMap["value"]?.split("-")?.first()?.toBigInteger()
 
+        // extra adapt non-contract amount
+        amount = queryAsMap["amount"]?.toBigDecimalOrNull()
+
         functionParams = commonURI.query.filter { it.first != "gas" && it.first != "value" }
     }
 }
