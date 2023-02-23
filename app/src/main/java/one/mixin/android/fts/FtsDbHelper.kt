@@ -2,8 +2,11 @@ package one.mixin.android.fts
 
 import android.content.ContentValues
 import android.content.Context
+import android.database.sqlite.SQLiteConstraintException
 import android.os.CancellationSignal
+import androidx.core.database.getLongOrNull
 import androidx.core.database.getStringOrNull
+import androidx.sqlite.db.SupportSQLiteDatabase
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import one.mixin.android.extension.createAtToLong
@@ -16,6 +19,7 @@ import one.mixin.android.vo.isFtsMessage
 import timber.log.Timber
 import kotlin.math.max
 
+@Suppress("NON_TAIL_RECURSIVE_CALL")
 class FtsDbHelper(val context: Context) : SqlHelper(
     context,
     "fts.db",
@@ -86,7 +90,7 @@ class FtsDbHelper(val context: Context) : SqlHelper(
         val values = ContentValues()
         values.put("content", content)
         val lastRowId = writableDatabase.insert("messages_fts", null, values).apply {
-            Timber.e("insert return $this")
+            Timber.e("insert new fts return rowid: $this")
         }
         if (lastRowId <= 0) {
             writableDatabase.endTransaction()
@@ -193,5 +197,58 @@ class FtsDbHelper(val context: Context) : SqlHelper(
         writableDatabase.setTransactionSuccessful()
         writableDatabase.endTransaction()
         return@runBlocking count
+    }
+
+    tailrec fun sync(db: SupportSQLiteDatabase) {
+        db.query("SELECT message_id, rowid, content FROM messages_fts4 LIMIT 10000").use { cursor ->
+            while (cursor.moveToNext()) {
+                val messageId = cursor.getStringOrNull(0) ?: continue
+                val rowid = cursor.getLongOrNull(1) ?: continue
+                val content = cursor.getStringOrNull(2) ?: continue
+                syncFtsMessage(db, messageId, content)
+                db.delete("messages_fts4", "rowid = '$rowid'", null)
+                Timber.e("delete fts4 rowid: $rowid")
+            }
+            if (cursor.count >= 10000) {
+                sync(db)
+            }
+        }
+    }
+
+    private fun syncFtsMessage(db: SupportSQLiteDatabase, messageId: String, content: String) {
+        db.query("SELECT conversation_id, user_id, category, created_at FROM messages WHERE id = '$messageId'")
+            .use { cursor ->
+                if (cursor.moveToNext()) {
+                    val conversationId = cursor.getStringOrNull(0) ?: return@use
+                    val userId = cursor.getStringOrNull(1) ?: return@use
+                    val category = cursor.getStringOrNull(2) ?: return@use
+                    val createdAt = cursor.getStringOrNull(3)?.createAtToLong() ?: return@use
+                    try {
+                        writableDatabase.beginTransaction()
+                        val values = ContentValues()
+                        values.put("content", content)
+                        val lastRowId = writableDatabase.insert("messages_fts", null, values).apply {
+                            Timber.e("insert new fts return rowid: $this")
+                        }
+                        if (lastRowId <= 0) {
+                            writableDatabase.endTransaction()
+                            return@use
+                        }
+                        writableDatabase.execSQL("INSERT INTO messages_metas(doc_id, message_id, conversation_id, category, user_id, created_at) VALUES ($lastRowId, '$messageId', '$conversationId', '$category', '$userId', $createdAt)")
+                        writableDatabase.setTransactionSuccessful()
+                        writableDatabase.endTransaction()
+                    } catch (e: SQLiteConstraintException) {
+                        readableDatabase.rawQuery("SELECT message_id FROM messages_metas WHERE message_id = '$messageId'", null).use {
+                            if (it.moveToNext()) {
+                                Timber.e("insert fts4 exits: $messageId")
+                            }
+                        }
+                    } catch (e: Exception) {
+                        Timber.e("insert fts4 error: $messageId\t$e")
+                    }
+                } else {
+                    Timber.e("messageId: $messageId not found")
+                }
+            }
     }
 }

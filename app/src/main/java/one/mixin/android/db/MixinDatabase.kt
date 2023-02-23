@@ -12,6 +12,7 @@ import androidx.room.TypeConverters
 import androidx.room.withTransaction
 import androidx.sqlite.db.SupportSQLiteDatabase
 import androidx.sqlite.db.framework.FrameworkSQLiteOpenHelperFactory
+import kotlinx.coroutines.launch
 import one.mixin.android.BuildConfig
 import one.mixin.android.Constants.DataBase.CURRENT_VERSION
 import one.mixin.android.Constants.DataBase.DB_NAME
@@ -52,6 +53,8 @@ import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_47_48
 import one.mixin.android.db.converter.DepositEntryListConverter
 import one.mixin.android.db.converter.MessageStatusConverter
 import one.mixin.android.db.monitor.MonitorPrinter
+import one.mixin.android.fts.FtsDbHelper
+import one.mixin.android.util.FTS_THREAD
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.SINGLE_DB_EXECUTOR
 import one.mixin.android.util.debug.getContent
@@ -91,6 +94,7 @@ import one.mixin.android.vo.TopAsset
 import one.mixin.android.vo.Trace
 import one.mixin.android.vo.TranscriptMessage
 import one.mixin.android.vo.User
+import timber.log.Timber
 import java.util.concurrent.Executors
 import kotlin.math.max
 import kotlin.math.min
@@ -258,6 +262,15 @@ abstract class MixinDatabase : RoomDatabase() {
             override fun onOpen(db: SupportSQLiteDatabase) {
                 super.onOpen(db)
                 supportSQLiteDatabase = db
+                FtsDbHelper(MixinApplication.get()).apply {
+                    MixinApplication.get().applicationScope.launch(FTS_THREAD) {
+                        try {
+                            sync(db)
+                        } catch (e: Exception) {
+                            Timber.e(e)
+                        }
+                    }
+                }
                 db.execSQL("DROP TRIGGER IF EXISTS conversation_unseen_count_insert")
                 db.execSQL("DROP TRIGGER IF EXISTS conversation_unseen_message_count_insert")
                 db.execSQL("DROP TRIGGER IF EXISTS conversation_last_message_update")
