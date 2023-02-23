@@ -815,7 +815,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
 
         val user = linkViewModel.refreshUser(userId) ?: return false
 
-        val transferRequest = TransferRequest(assetId, userId, amount, null, trace, memo, rawPaymentUrl = url)
+        val transferRequest = TransferRequest(assetId, userId, amount, null, trace, memo)
         return handleMixinResponse(
             invokeNetwork = {
                 linkViewModel.paySuspend(transferRequest)
