@@ -16,6 +16,7 @@ import one.mixin.android.databinding.ItemAddressBinding
 import one.mixin.android.extension.containsIgnoreCase
 import one.mixin.android.extension.equalsIgnoreCase
 import one.mixin.android.extension.navigate
+import one.mixin.android.extension.navigateUp
 import one.mixin.android.extension.toast
 import one.mixin.android.session.Session
 import one.mixin.android.ui.address.adapter.AddressAdapter
@@ -98,7 +99,9 @@ class AddressManagementFragment : BaseFragment(R.layout.fragment_address_managem
                     transferFragment.showNow(parentFragmentManager, TransferFragment.TAG)
                     transferFragment.callback = object : TransferFragment.Callback {
                         override fun onSuccess() {
-                            activity?.onBackPressedDispatcher?.onBackPressed()
+                            if(isAdded) {
+                                view.navigateUp()
+                            }
                         }
                     }
                 } else {
