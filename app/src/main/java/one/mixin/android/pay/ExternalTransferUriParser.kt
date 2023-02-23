@@ -1,5 +1,6 @@
 package one.mixin.android.pay
 
+import android.net.Uri
 import one.mixin.android.Constants
 import one.mixin.android.api.response.AddressFeeResponse
 import one.mixin.android.extension.stripAmountZero
@@ -46,7 +47,9 @@ suspend fun parseExternalTransferUri(
     if (amount != amountBD.toPlainString()) {
         return null
     }
-    val memo = uri.getQueryParameter("memo")
+    val memo = uri.getQueryParameter("memo")?.run {
+        Uri.decode(this)
+    }
     return ExternalTransfer(addressFeeResponse.destination, amount, assetId, addressFeeResponse.fee.toBigDecimalOrNull(), memo)
 }
 

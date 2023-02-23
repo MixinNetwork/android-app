@@ -719,6 +719,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
     }
 
     private suspend fun parseExternalTransferUrl(url: String) {
+        var errorMsg: String? = null
         val result = parseExternalTransferUri(url, { assetId, destination ->
             handleMixinResponse(
                 invokeNetwork = {
@@ -729,7 +730,11 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 },
             )
         }, { assetKey ->
-            return@parseExternalTransferUri linkViewModel.findAssetIdByAssetKey(assetKey)
+            val assetId = linkViewModel.findAssetIdByAssetKey(assetKey)
+            if (assetId == null) {
+                errorMsg = getString(R.string.external_pay_no_asset_found)
+            }
+            return@parseExternalTransferUri assetId
         }, { assetId ->
             handleMixinResponse(
                 invokeNetwork = {
@@ -740,6 +745,11 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 },
             )
         })
+
+        errorMsg?.let {
+            showError(it)
+            return
+        }
 
         if (result == null) {
             QrScanBottomSheetDialogFragment.newInstance(url)
@@ -757,7 +767,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
             val destination = result.destination
             handleMixinResponse(
                 invokeNetwork = {
-                    val transferRequest = TransferRequest(result.assetId, null, amount, null, traceId, result.memo, null, destination)
+                    val transferRequest = TransferRequest(result.assetId, null, amount, null, traceId, result.memo, null, destination, url)
                     linkViewModel.paySuspend(transferRequest)
                 },
                 successBlock = { r ->
@@ -790,7 +800,9 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
             return false
         }
         val trace = uri.getQueryParameter("trace") ?: UUID.randomUUID().toString()
-        val memo = uri.getQueryParameter("memo")
+        val memo = uri.getQueryParameter("memo")?.run {
+            Uri.decode(this)
+        }
         val returnTo = uri.getQueryParameter("return_to")?.run {
             try {
                 URLDecoder.decode(this, UTF_8.name())

@@ -24,53 +24,61 @@ internal suspend fun parseEthereum(
 
     val value = erc681.value
     var address: String? = null
-    var amount: BigDecimal? = null
-    if (value == null) {
-        var needCheckPrecision = false
-        if (erc681.function != "transfer") return null
+    val amountTmp: BigDecimal? = erc681.amount
+    var uint256Tmp: BigDecimal? = null
+    var valueTmp: BigDecimal? = null
 
+    if (value != null) {
+        address = erc681.address
+        valueTmp = Convert.fromWei(BigDecimal(value), Convert.Unit.ETHER)
+    }
+
+    if (erc681.function != "transfer") {
+        address = erc681.address
+    } else {
         val assetKey = erc681.address?.lowercase() ?: return null
         assetId = findAssetIdByAssetKey(assetKey) ?: return null
 
         val fp = erc681.functionParams
-        var amountFound = false
-        var addressFound = false
         run loop@{
             fp.forEach { pair ->
-                if (amountFound && addressFound) {
-                    return@loop
-                }
-
                 if (pair.first == "address") {
                     address = pair.second
-                    addressFound = true
-                } else {
-                    if (pair.first == "amount") {
-                        if (pair.second.amountWithE()) {
-                            return null
-                        }
-                        amount = BigDecimal(pair.second)
-                        amountFound = true
-                        needCheckPrecision = false
-                    } else if (!amountFound && pair.first == "uint256") {
-                        amount = pair.second.uint256ToBigDecimal()
-                        if (amount?.compareTo(BigDecimal(pair.second)) != 0) {
-                            return null
-                        }
-                        needCheckPrecision = true
+                } else if (pair.first == "uint256") {
+                    uint256Tmp = pair.second.uint256ToBigDecimal()
+                    if (uint256Tmp?.compareTo(BigDecimal(pair.second)) != 0) {
+                        return null
                     }
+                    val assetPrecision = getAssetPrecisionById(assetId) ?: return null
+                    uint256Tmp = uint256Tmp?.divide(BigDecimal.TEN.pow(assetPrecision.precision))
                 }
             }
         }
-        if (needCheckPrecision) {
-            val assetPrecision = getAssetPrecisionById(assetId) ?: return null
-            amount = amount?.divide(BigDecimal.TEN.pow(assetPrecision.precision))
-        }
-    } else {
-        address = erc681.address
-        amount = Convert.fromWei(BigDecimal(value), Convert.Unit.ETHER)
     }
+
     val destination = address ?: return null
+    var amount: BigDecimal? = null
+    if (valueTmp != null) {
+        amount = valueTmp
+    }
+    if (amountTmp != null) {
+        if (amount == null) {
+            if (amountTmp.toPlainString().amountWithE()) {
+                return null
+            }
+            amount = amountTmp
+        } else if (amount.compareTo(amountTmp) != 0) {
+            return null
+        }
+    }
+    if (uint256Tmp != null) {
+        if (amount == null) {
+            amount = uint256Tmp
+        } else if (amount.compareTo(uint256Tmp) != 0) {
+            return null
+        }
+    }
+
     val am = amount?.toPlainString()?.stripAmountZero() ?: return null
     val addressFeeResponse = getAddressFee(assetId, destination) ?: return null
     if (!addressFeeResponse.destination.equals(destination, true)) {
@@ -103,5 +111,6 @@ fun String?.uint256ToBigDecimal(): BigDecimal? {
 private val ethereumChainIdMap by lazy {
     mapOf(
         1 to Constants.ChainId.ETHEREUM_CHAIN_ID,
+        137 to Constants.ChainId.Polygon,
     )
 }
