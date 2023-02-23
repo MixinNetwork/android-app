@@ -21,6 +21,10 @@ private val bepChains by lazy {
 }
 
 fun getChainNetwork(assetId: String, chainId: String, assetKey: String?): String? {
+    if (chainId == Constants.ChainId.MVMEthereum) {
+        return "MVM"
+    }
+
     if (assetId == chainId && !bepChains.contains(chainId)) return null
 
     if (chainId == Constants.ChainId.TRON_CHAIN_ID) {
