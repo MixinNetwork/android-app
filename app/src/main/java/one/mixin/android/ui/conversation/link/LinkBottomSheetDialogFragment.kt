@@ -767,7 +767,8 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
             val destination = result.destination
             handleMixinResponse(
                 invokeNetwork = {
-                    val transferRequest = TransferRequest(result.assetId, null, amount, null, traceId, result.memo, null, destination, url)
+                    // raw_payment_url support
+                    val transferRequest = TransferRequest(result.assetId, null, amount, null, traceId, result.memo, null, destination)
                     linkViewModel.paySuspend(transferRequest)
                 },
                 successBlock = { r ->
