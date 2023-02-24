@@ -5,4 +5,8 @@ abstract class WalletConnect {
         internal const val web3jTimeout = 3L
         internal const val defaultGasLimit = "250000"
     }
+
+    enum class Version {
+        V1, V2
+    }
 }

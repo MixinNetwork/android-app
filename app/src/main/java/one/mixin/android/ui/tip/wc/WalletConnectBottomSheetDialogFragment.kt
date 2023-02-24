@@ -28,14 +28,18 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.extension.booleanFromAttribute
-import one.mixin.android.extension.dp
 import one.mixin.android.extension.isNightMode
+import one.mixin.android.extension.navigationBarHeight
+import one.mixin.android.extension.realSize
+import one.mixin.android.extension.statusBarHeight
 import one.mixin.android.extension.withArgs
+import one.mixin.android.tip.wc.WalletConnect
 import one.mixin.android.tip.wc.WalletConnectException
-import one.mixin.android.tip.wc.WalletConnectV1
 import one.mixin.android.tip.wc.WalletConnectV2
 import one.mixin.android.ui.common.biometric.BiometricDialog
 import one.mixin.android.ui.common.biometric.BiometricInfo
+import one.mixin.android.ui.tip.wc.sessionproposal.SessionProposalPage
+import one.mixin.android.ui.tip.wc.sessionrequest.SessionRequestPage
 import one.mixin.android.util.BiometricUtil
 import one.mixin.android.util.SystemUIManager
 import timber.log.Timber
@@ -47,17 +51,21 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
     companion object {
         const val TAG = "WalletConnectBottomSheetDialogFragment"
 
-        const val ARGS_TOPIC = "args_topic"
-        const val ARGS_IS_ACCOUNT = "args_is_account"
-        const val ARGS_ACTION = "args_action"
-        const val ARGS_DESC = "args_desc"
+        const val ARGS_REQUEST_TYPE = "args_request_type"
+        const val ARGS_VERSION = "args_version"
 
-        fun newInstance(topic: String, isAccount: Boolean, action: String, desc: String? = null) = WalletConnectBottomSheetDialogFragment().withArgs {
-            putString(ARGS_TOPIC, topic)
-            putBoolean(ARGS_IS_ACCOUNT, isAccount)
-            putString(ARGS_ACTION, action)
-            desc?.let { putString(ARGS_DESC, it) }
+        fun newInstance(requestType: RequestType, version: WalletConnect.Version) = WalletConnectBottomSheetDialogFragment().withArgs {
+            putInt(ARGS_REQUEST_TYPE, requestType.ordinal)
+            putInt(ARGS_VERSION, version.ordinal)
         }
+    }
+
+    enum class RequestType {
+        SessionProposal, SessionRequest,
+    }
+
+    enum class Step {
+        Sign, Send, Input, Loading, Done, Error,
     }
 
     private var behavior: BottomSheetBehavior<*>? = null
@@ -65,14 +73,17 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
 
     private var pinCompleted = false
 
-    private var step by mutableStateOf(WCStep.Account)
+    private val requestType by lazy { RequestType.values()[requireArguments().getInt(ARGS_REQUEST_TYPE)] }
+    private val version by lazy { WalletConnect.Version.values()[requireArguments().getInt(ARGS_VERSION)] }
+
+    private var step by mutableStateOf(Step.Input)
     private var errorInfo: String? by mutableStateOf(null)
     private var desc: String? by mutableStateOf(null)
 
     init {
         lifecycleScope.launchWhenCreated {
             snapshotFlow { step }.collect { value ->
-                if (value == WCStep.Input) {
+                if (value == Step.Input) {
                     dialog?.window?.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
                 } else {
                     dialog?.window?.clearFlags(WindowManager.LayoutParams.FLAG_SECURE)
@@ -86,45 +97,37 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?,
     ): View = ComposeView(requireContext()).apply {
-        step = if (requireArguments().getBoolean(ARGS_IS_ACCOUNT)) WCStep.Account else WCStep.Choice
-        desc = requireArguments().getString(ARGS_DESC)
-        val topic = requireNotNull(requireArguments().getString(ARGS_TOPIC))
         setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
+        step = if (requestType == RequestType.SessionProposal) Step.Input else Step.Input
         setContent {
-            WalletConnectCompose(
-                step = step,
-                networkName = WalletConnectV2.chain.name,
-                peerMeta = WalletConnectV2.getActiveSessionByTopic(topic)?.metaData,
-                action = requireNotNull(requireArguments().getString(ARGS_ACTION)) { "action can not be null" },
-                desc = desc,
-                errorInfo = errorInfo,
-                onDisconnectClick = {
-                    WalletConnectV2.rejectSession()
-                    dismiss()
-                },
-                onDismissClick = {
-                    onReject?.invoke()
-                    dismiss()
-                },
-                onCancelClick = {
-                    onReject?.invoke()
-                    dismiss()
-                },
-                onApproveClick = {
-                    step = WCStep.Input
-                },
-                onBiometricClick = {
-                    showBiometricPrompt()
-                },
-                onPinComplete = { pin ->
-                    doAfterPinComplete(pin)
-                },
-            )
+            when (requestType) {
+                RequestType.SessionProposal -> {
+                    SessionProposalPage(
+                        version,
+                        step,
+                        errorInfo,
+                        onDismissRequest = { dismiss() },
+                        onBiometricClick = { showBiometricPrompt() },
+                        onPinComplete = { pin -> doAfterPinComplete(pin) },
+                    )
+                }
+                RequestType.SessionRequest -> {
+                    SessionRequestPage(
+                        version,
+                        step,
+                        errorInfo,
+                        onDismissRequest = { dismiss() },
+                        onBiometricClick = { showBiometricPrompt() },
+                        onPinComplete = { pin -> doAfterPinComplete(pin) },
+                    )
+                }
+            }
         }
         doOnPreDraw {
             val params = (it.parent as View).layoutParams as? CoordinatorLayout.LayoutParams
             behavior = params?.behavior as? BottomSheetBehavior<*>
-            behavior?.peekHeight = 690.dp
+            val ctx = requireContext()
+            behavior?.peekHeight = ctx.realSize().y - ctx.statusBarHeight() - ctx.navigationBarHeight()
             behavior?.isDraggable = false
             behavior?.addBottomSheetCallback(bottomSheetBehaviorCallback)
         }
@@ -156,7 +159,7 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
     }
 
     override fun onDismiss(dialog: DialogInterface) {
-        if (!pinCompleted && step != WCStep.Account) {
+        if (!pinCompleted) {
             Timber.d("${WalletConnectV2.TAG} dismiss onReject")
             onReject?.invoke()
         }
@@ -184,20 +187,23 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
     }
 
     private fun doAfterPinComplete(pin: String) = lifecycleScope.launch {
-        step = WCStep.Loading
+        step = Step.Loading
         try {
-            onPinComplete?.invoke(pin)
-            pinCompleted = true
-            step = WCStep.Done
-            delay(1000)
-            dismiss()
+            val error = onPinComplete?.invoke(pin)
+            if (error == null) {
+                pinCompleted = true
+                step = Step.Done
+            } else {
+                errorInfo = error
+                step = Step.Error
+            }
         } catch (e: Exception) {
             errorInfo = if (e is WalletConnectException) {
                 "code: ${e.code}, message: ${e.message}"
             } else {
                 e.stackTraceToString()
             }
-            step = WCStep.Error
+            step = Step.Error
         }
     }
 
@@ -214,7 +220,7 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
         }
     }
 
-    fun setOnPinComplete(callback: suspend (String) -> Unit): WalletConnectBottomSheetDialogFragment {
+    fun setOnPinComplete(callback: suspend (String) -> String?): WalletConnectBottomSheetDialogFragment {
         onPinComplete = callback
         return this
     }
@@ -224,7 +230,7 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
         return this
     }
 
-    private var onPinComplete: (suspend (String) -> Unit)? = null
+    private var onPinComplete: (suspend (String) -> String?)? = null
     private var onReject: (() -> Unit)? = null
 
     private var biometricDialog: BiometricDialog? = null

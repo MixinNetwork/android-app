@@ -1,6 +1,6 @@
 @file:OptIn(ExperimentalAnimationApi::class)
 
-package one.mixin.android.ui.tip.wc
+package one.mixin.android.ui.tip.wc.sessionproposal
 
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
@@ -15,7 +15,6 @@ import androidx.compose.animation.scaleOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.animation.with
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -41,7 +40,6 @@ import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Icon
-import androidx.compose.material.OutlinedButton
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -72,24 +70,21 @@ import one.mixin.android.extension.tickVibrate
 import one.mixin.android.session.Session
 import one.mixin.android.ui.setting.ui.compose.booleanValueAsState
 import one.mixin.android.ui.setting.ui.theme.MixinAppTheme
+import one.mixin.android.ui.tip.wc.WalletConnectBottomSheetDialogFragment.Step
 import one.mixin.android.util.BiometricUtil
 
-enum class WCStep {
-    Account, Choice, Input, Loading, Done, Error,
-}
-
 @Composable
-fun WalletConnectPinKeyBoard(
-    step: WCStep,
+fun WCPinBoard(
+    step: Step,
     errorInfo: String?,
-    onDisconnectClick: (() -> Unit)?,
-    onCancelClick: (() -> Unit)?,
-    onApproveClick: (() -> Unit)?,
+    allowBiometric: Boolean,
+    onCancelClick: (() -> Unit),
+    onApproveClick: (() -> Unit),
     onBiometricClick: (() -> Unit)?,
     onPinComplete: ((String) -> Unit)?,
 ) {
     val context = LocalContext.current
-    val showBiometric = BiometricUtil.shouldShowBiometric(context)
+    val showBiometric = allowBiometric && BiometricUtil.shouldShowBiometric(context)
     val randomKeyboardEnabled by LocalContext.current.defaultSharedPreferences
         .booleanValueAsState(
             key = Constants.Account.PREF_RANDOM,
@@ -113,10 +108,10 @@ fun WalletConnectPinKeyBoard(
     var pinCode by remember { mutableStateOf("") }
 
     AnimatedContent(targetState = step, transitionSpec = {
-        if (targetState == WCStep.Input) {
+        if (targetState == Step.Input) {
             (slideInVertically(initialOffsetY = { it }) with scaleOut() + fadeOut())
-        } else if (initialState == WCStep.Input) {
-            if (targetState == WCStep.Loading) {
+        } else if (initialState == Step.Input) {
+            if (targetState == Step.Loading) {
                 (EnterTransition.None with ExitTransition.None)
             } else {
                 (scaleIn() + fadeIn() with fadeOut())
@@ -126,28 +121,7 @@ fun WalletConnectPinKeyBoard(
         }
     }) { s ->
         when (s) {
-            WCStep.Account -> Column {
-                Row(
-                    modifier = Modifier
-                        .height(150.dp)
-                        .fillMaxWidth(),
-                    horizontalArrangement = Arrangement.Center,
-                ) {
-                    OutlinedButton(
-                        modifier = Modifier.size(width = 132.dp, height = 48.dp),
-                        onClick = { onDisconnectClick?.invoke() },
-                        border = BorderStroke(1.dp, MixinAppTheme.colors.accent),
-                        contentPadding = PaddingValues(horizontal = 20.dp),
-                        shape = RoundedCornerShape(20.dp),
-                    ) {
-                        Text(
-                            text = "Disconnect",
-                            color = MixinAppTheme.colors.textPrimary,
-                        )
-                    }
-                }
-            }
-            WCStep.Error -> Column(
+            Step.Error -> Column(
                 modifier = Modifier
                     .height(150.dp)
                     .fillMaxWidth(),
@@ -165,7 +139,7 @@ fun WalletConnectPinKeyBoard(
                     color = MixinAppTheme.colors.textPrimary,
                 )
             }
-            WCStep.Done -> Column(
+            Step.Done -> Column(
                 modifier = Modifier
                     .height(150.dp)
                     .fillMaxWidth(),
@@ -178,46 +152,91 @@ fun WalletConnectPinKeyBoard(
                 )
                 Text(text = stringResource(R.string.Done), color = MixinAppTheme.colors.textMinor)
             }
-            WCStep.Choice -> Column {
-                Row(
-                    modifier = Modifier
-                        .height(150.dp)
-                        .fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceEvenly,
+            Step.Sign -> Column(
+                modifier = Modifier
+                    .height(150.dp)
+                    .fillMaxWidth(),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.SpaceEvenly,
+            ) {
+                Button(
+                    modifier = Modifier.size(width = 140.dp, height = 42.dp),
+                    onClick = { onApproveClick.invoke() },
+                    colors = ButtonDefaults.outlinedButtonColors(
+                        backgroundColor = MixinAppTheme.colors.accent,
+                    ),
+                    contentPadding = PaddingValues(horizontal = 28.dp),
+                    shape = RoundedCornerShape(40.dp),
                 ) {
-                    OutlinedButton(
-                        modifier = Modifier.size(width = 120.dp, height = 48.dp),
-                        onClick = { onCancelClick?.invoke() },
-                        border = BorderStroke(1.dp, MixinAppTheme.colors.accent),
-                        contentPadding = PaddingValues(horizontal = 20.dp),
-                        shape = RoundedCornerShape(20.dp),
-                    ) {
-                        Text(
-                            text = stringResource(R.string.Cancel),
-                            color = MixinAppTheme.colors.textPrimary,
-                        )
-                    }
-                    Button(
-                        modifier = Modifier.size(width = 120.dp, height = 48.dp),
-                        onClick = { onApproveClick?.invoke() },
-                        colors = ButtonDefaults.outlinedButtonColors(
-                            backgroundColor = MixinAppTheme.colors.accent,
-                        ),
-                        contentPadding = PaddingValues(horizontal = 20.dp),
-                        shape = RoundedCornerShape(20.dp),
-                    ) {
-                        Text(
-                            text = "Approve",
-                            color = Color.White,
-                        )
-                    }
+                    Text(
+                        text = stringResource(id = R.string.Sign_by_PIN),
+                        color = Color.White,
+                    )
+                }
+                Box(modifier = Modifier.height(24.dp))
+                Box(
+                    modifier = Modifier
+                        .size(width = 140.dp, height = 42.dp)
+                        .clickable(onClick = onCancelClick),
+                ) {
+                    Text(
+                        text = stringResource(R.string.Cancel),
+                        color = MixinAppTheme.colors.textPrimary,
+                    )
+                }
+            }
+            Step.Send -> Column(
+                modifier = Modifier
+                    .height(250.dp)
+                    .fillMaxWidth(),
+                verticalArrangement = Arrangement.SpaceEvenly,
+            ) {
+                Image(
+                    painter = painterResource(id = R.drawable.ic_transfer_done),
+                    contentDescription = null,
+                )
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 28.dp),
+                ) {
+                    Text(
+                        text = stringResource(R.string.signed_success_tip),
+                        color = MixinAppTheme.colors.textMinor,
+                        fontSize = 14.sp,
+                    )
+                }
+                Button(
+                    modifier = Modifier.size(width = 140.dp, height = 42.dp),
+                    onClick = { onApproveClick.invoke() },
+                    colors = ButtonDefaults.outlinedButtonColors(
+                        backgroundColor = MixinAppTheme.colors.accent,
+                    ),
+                    contentPadding = PaddingValues(horizontal = 28.dp),
+                    shape = RoundedCornerShape(40.dp),
+                ) {
+                    Text(
+                        text = stringResource(id = R.string.Send),
+                        color = Color.White,
+                    )
+                }
+                Box(modifier = Modifier.height(24.dp))
+                Box(
+                    modifier = Modifier
+                        .size(width = 140.dp, height = 42.dp)
+                        .clickable(onClick = onCancelClick),
+                ) {
+                    Text(
+                        text = stringResource(R.string.Cancel),
+                        color = MixinAppTheme.colors.textPrimary,
+                    )
                 }
             }
             else -> Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 AnimatedContent(targetState = step, transitionSpec = {
                     (fadeIn() with fadeOut())
                 }) {
-                    if (step == WCStep.Input) {
+                    if (step == Step.Input) {
                         Column(
                             horizontalAlignment = Alignment.CenterHorizontally,
                             verticalArrangement = Arrangement.Center,
@@ -262,11 +281,6 @@ fun WalletConnectPinKeyBoard(
                                     }
                                 }
                             }
-                            Spacer(modifier = Modifier.height(8.dp))
-                            Text(
-                                text = stringResource(R.string.Confirm_with_PIN),
-                                color = MixinAppTheme.colors.textMinor,
-                            )
                             if (showBiometric) {
                                 Spacer(modifier = Modifier.height(12.dp))
                                 Row(
@@ -307,7 +321,7 @@ fun WalletConnectPinKeyBoard(
                     }
                 }
                 AnimatedVisibility(
-                    visible = step == WCStep.Input || step == WCStep.Loading,
+                    visible = step == Step.Input || step == Step.Loading,
                     enter = slideInVertically(initialOffsetY = { it }),
                     exit = slideOutVertically(targetOffsetY = { it }),
                 ) {
@@ -371,7 +385,7 @@ fun WalletConnectPinKeyBoard(
                                                     },
                                                 )
                                                 .run {
-                                                    if (step == WCStep.Input && index != 9) {
+                                                    if (step == Step.Input && index != 9) {
                                                         clickable {
                                                             context.tickVibrate()
                                                             if (index == 11) {
@@ -422,6 +436,6 @@ fun WalletConnectPinKeyBoard(
 
 @Preview
 @Composable
-fun WalletConnectPinKeyBoardPreview() {
-    WalletConnectPinKeyBoard(WCStep.Input, null, {}, {}, {}, null, null)
+fun WCPinBoardPreview() {
+    WCPinBoard(Step.Input, null, false, {}, {}, null, null)
 }

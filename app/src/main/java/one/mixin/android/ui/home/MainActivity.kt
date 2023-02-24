@@ -30,9 +30,8 @@ import com.google.android.play.core.install.model.AppUpdateType
 import com.google.android.play.core.install.model.InstallStatus
 import com.google.android.play.core.install.model.UpdateAvailability
 import com.google.firebase.crashlytics.FirebaseCrashlytics
-import com.google.gson.GsonBuilder
 import com.microsoft.appcenter.AppCenter
-import com.trustwallet.walletconnect.models.ethereum.WCEthereumTransaction
+import com.trustwallet.walletconnect.models.ethereum.WCEthereumSignMessage
 import com.trustwallet.walletconnect.models.session.WCSession
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
@@ -81,7 +80,6 @@ import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.areBubblesAllowedCompat
 import one.mixin.android.extension.checkStorageNotLow
 import one.mixin.android.extension.defaultSharedPreferences
-import one.mixin.android.extension.formatPublicKey
 import one.mixin.android.extension.getDeviceId
 import one.mixin.android.extension.inTransaction
 import one.mixin.android.extension.indeterminateProgressDialog
@@ -113,11 +111,11 @@ import one.mixin.android.repository.AccountRepository
 import one.mixin.android.repository.UserRepository
 import one.mixin.android.session.Session
 import one.mixin.android.tip.Tip
+import one.mixin.android.tip.exception.TipNetworkException
 import one.mixin.android.tip.tipPrivToPrivateKey
-import one.mixin.android.tip.wc.Method
+import one.mixin.android.tip.wc.WalletConnect
 import one.mixin.android.tip.wc.WalletConnectV1
 import one.mixin.android.tip.wc.WalletConnectV2
-import one.mixin.android.tip.wc.getChain
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.BatteryOptimizationDialogActivity
 import one.mixin.android.ui.common.BlazeBaseActivity
@@ -161,6 +159,7 @@ import one.mixin.android.vo.Participant
 import one.mixin.android.vo.ParticipantRole
 import one.mixin.android.vo.isGroupConversation
 import one.mixin.android.widget.MaterialSearchView
+import org.web3j.utils.Numeric
 import timber.log.Timber
 import javax.inject.Inject
 
@@ -743,31 +742,35 @@ class MainActivity : BlazeBaseActivity() {
                 )
         } else if (intent.hasExtra(WALLET_CONNECT)) {
             val wcUrl = requireNotNull(intent.getStringExtra(WALLET_CONNECT))
-            val gson = GsonBuilder().setPrettyPrinting().create()
             if (WCSession.from(wcUrl) != null) {
                 WalletConnectV1.also { wc ->
                     wc.onSessionRequest = { _, peer ->
-                        showWalletConnectBottomSheet("", "Connect with ${peer.name}", "", { wc.rejectSession() }) { priv ->
+                        showWalletConnectBottomSheet(WalletConnectBottomSheetDialogFragment.RequestType.SessionProposal, WalletConnect.Version.V1, { wc.rejectSession() }) { priv ->
                             wc.approveSession(priv)
                         }
                     }
-                    wc.onWalletChangeNetwork = { id, chainId ->
-                        showWalletConnectBottomSheet("", "Change Network", "${WalletConnectV1.chain.name} => ${chainId.getChain()?.name}", { wc.rejectRequest(id) }) { priv ->
-                            wc.walletChangeNetwork(priv, id, chainId)
-                        }
-                    }
+//                    wc.onWalletChangeNetwork = { id, chainId ->
+//                        showWalletConnectBottomSheet("", "Change Network", "${WalletConnectV1.chain.name} => ${chainId.getChain()?.name}", { wc.rejectRequest(id) }) { priv ->
+//                            wc.walletChangeNetwork(priv, id, chainId)
+//                        }
+//                    }
                     wc.onEthSign = { id, message ->
-                        showWalletConnectBottomSheet("", "Sign Message", gson.toJson(message), { wc.rejectRequest(id) }) { priv ->
-                            wc.ethSignMessage(priv, id, message.data.toByteArray())
+                        showWalletConnectBottomSheet(WalletConnectBottomSheetDialogFragment.RequestType.SessionRequest, WalletConnect.Version.V1, { wc.rejectRequest(id) }) { priv ->
+                            val data = if (message.type == WCEthereumSignMessage.WCSignType.TYPED_MESSAGE) {
+                                message.data.toByteArray()
+                            } else {
+                                Numeric.hexStringToByteArray(message.data)
+                            }
+                            wc.ethSignMessage(priv, id, data)
                         }
                     }
                     wc.onEthSignTransaction = { id, transaction ->
-                        showWalletConnectBottomSheet("", "Sign Transaction\n${getFromTo(transaction)}", "", { wc.rejectRequest(id) }) { priv ->
+                        showWalletConnectBottomSheet(WalletConnectBottomSheetDialogFragment.RequestType.SessionRequest, WalletConnect.Version.V1, { wc.rejectRequest(id) }) { priv ->
                             wc.ethSignTransaction(priv, id, transaction, true)
                         }
                     }
                     wc.onEthSendTransaction = { id, transaction ->
-                        showWalletConnectBottomSheet("", "Send Transaction\n${getFromTo(transaction)}", "", { wc.rejectRequest(id) }) { priv ->
+                        showWalletConnectBottomSheet(WalletConnectBottomSheetDialogFragment.RequestType.SessionRequest, WalletConnect.Version.V1, { wc.rejectRequest(id) }) { priv ->
                             wc.ethSendTransaction(priv, id, transaction)
                         }
                     }
@@ -777,23 +780,17 @@ class MainActivity : BlazeBaseActivity() {
             }
             WalletConnectV2.also { wc ->
                 wc.onAuthRequest = { authRequest ->
-                    showWalletConnectBottomSheet("", "Auth request", gson.toJson(authRequest.payloadParams), { WalletConnectV2.rejectAuthRequest() }) { priv ->
-                        WalletConnectV2.approveAuthRequest(priv)
-                    }
+//                    showWalletConnectBottomSheet("", "Auth request", gson.toJson(authRequest.payloadParams), { WalletConnectV2.rejectAuthRequest() }) { priv ->
+//                        WalletConnectV2.approveAuthRequest(priv)
+//                    }
                 }
-                wc.onSessionProposal = { sessionProposal ->
-                    showWalletConnectBottomSheet(sessionProposal.pairingTopic, "Connect with ${sessionProposal.name}", "", { WalletConnectV2.rejectSession() }) { priv ->
+                wc.onSessionProposal = { _ ->
+                    showWalletConnectBottomSheet(WalletConnectBottomSheetDialogFragment.RequestType.SessionProposal, WalletConnect.Version.V2, { WalletConnectV2.rejectSession() }) { priv ->
                         WalletConnectV2.approveSession(priv)
                     }
                 }
-                wc.onSessionRequest = { sessionRequest ->
-                    val action = when (sessionRequest.request.method) {
-                        Method.ETHSign.name, Method.ETHPersonalSign.name, Method.ETHSignTypedData.name, Method.ETHSignTypedDataV4.name -> "Sign Message"
-                        Method.ETHSignTransaction.name -> "Sign Transaction"
-                        Method.ETHSendTransaction.name -> "Send Transaction"
-                        else -> "Unknown"
-                    }
-                    showWalletConnectBottomSheet(sessionRequest.topic, action, "", { WalletConnectV2.rejectRequest() }, { priv ->
+                wc.onSessionRequest = { _ ->
+                    showWalletConnectBottomSheet(WalletConnectBottomSheetDialogFragment.RequestType.SessionRequest, WalletConnect.Version.V2, { WalletConnectV2.rejectRequest() }, { priv ->
                         WalletConnectV2.approveRequest(priv)
                     })
                 }
@@ -802,22 +799,33 @@ class MainActivity : BlazeBaseActivity() {
         }
     }
 
-    private fun showWalletConnectBottomSheet(topic: String, action: String, desc: String?, onReject: () -> Unit, callback: suspend (ByteArray) -> Unit) = lifecycleScope.launch {
-        WalletConnectBottomSheetDialogFragment.newInstance(topic, false, action, desc)
-            .setOnPinComplete { pin ->
-                tip.getOrRecoverTipPriv(this@MainActivity, pin)
-                    .onSuccess { priv ->
-                        withContext(Dispatchers.IO) {
-                            callback(tipPrivToPrivateKey(priv))
-                        }
-                    }.onFailure {
-                        Timber.d("${WalletConnectV2.TAG} ${it.stackTraceToString()}")
-                    }
-            }.setOnReject { onReject() }
+    private fun showWalletConnectBottomSheet(
+        requestType: WalletConnectBottomSheetDialogFragment.RequestType,
+        version: WalletConnect.Version,
+        onReject: () -> Unit,
+        callback: suspend (ByteArray) -> Unit,
+    ) = lifecycleScope.launch {
+        val wcBottomSheet = WalletConnectBottomSheetDialogFragment.newInstance(requestType, version)
+        wcBottomSheet.setOnPinComplete { pin ->
+            val result = tip.getOrRecoverTipPriv(this@MainActivity, pin)
+            if (result.isSuccess) {
+                withContext(Dispatchers.IO) {
+                    callback(tipPrivToPrivateKey(result.getOrThrow()))
+                }
+                return@setOnPinComplete null
+            } else {
+                val e = result.exceptionOrNull()
+                val errorInfo = e?.stackTraceToString()
+                Timber.d("${if (version == WalletConnect.Version.V2) WalletConnectV2.TAG else WalletConnectV1.TAG} $errorInfo")
+                return@setOnPinComplete if (e is TipNetworkException) {
+                    "code: ${e.error.code}, message: ${e.error.description}"
+                } else {
+                    errorInfo
+                }
+            }
+        }.setOnReject { onReject() }
             .showNow(supportFragmentManager, WalletConnectBottomSheetDialogFragment.TAG)
     }
-
-    private fun getFromTo(transaction: WCEthereumTransaction): String = "${transaction.from.formatPublicKey()} => ${transaction.to?.formatPublicKey()}"
 
     private fun clearCodeAfterConsume(intent: Intent, code: String) {
         intent.removeExtra(code)

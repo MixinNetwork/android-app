@@ -1,4 +1,4 @@
-package one.mixin.android.ui.tip.wc.connection_details
+package one.mixin.android.ui.tip.wc.connections
 
 import GlideImage
 import androidx.compose.foundation.background
@@ -22,23 +22,22 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import one.mixin.android.R
-import one.mixin.android.ui.setting.ui.compose.SettingPageScaffold
 import one.mixin.android.ui.setting.ui.theme.MixinAppTheme
 import one.mixin.android.ui.tip.wc.LocalWCNav
-import one.mixin.android.ui.tip.wc.connections.ConnectionUI
-import one.mixin.android.ui.tip.wc.connections.ConnectionsViewModel
 
 @Composable
-fun ConnectionDetailsPage() {
-    SettingPageScaffold(
+fun ConnectionDetailsPage(connectionId: Int?) {
+    WCPageScaffold(
         title = "",
         verticalScrollable = false,
     ) {
         val viewModel = hiltViewModel<ConnectionsViewModel>()
+        viewModel.currentConnectionId = connectionId
         val connectionUI by remember { viewModel.currentConnectionUI }
         if (connectionUI == null) {
             Loading()
@@ -67,7 +66,8 @@ private fun Content(
             modifier = Modifier
                 .size(90.dp)
                 .clip(CircleShape),
-            placeHolderPainter = painterResource(id = R.drawable.ic_avatar_place_holder))
+            placeHolderPainter = painterResource(id = R.drawable.ic_avatar_place_holder),
+        )
         Box(modifier = Modifier.height(10.dp))
         Text(
             text = connectionUI.name,
@@ -84,6 +84,7 @@ private fun Content(
         Text(
             text = stringResource(id = R.string.connected_desc),
             modifier = Modifier.padding(horizontal = 30.dp),
+            textAlign = TextAlign.Center,
             fontSize = 14.sp,
             color = MixinAppTheme.colors.textPrimary,
         )
@@ -94,12 +95,12 @@ private fun Content(
                 .padding(horizontal = 16.dp)
                 .clip(RoundedCornerShape(13.dp))
                 .background(MixinAppTheme.colors.backgroundWindow)
-                .clickable(onClick = onClick)
+                .clickable(onClick = onClick),
         ) {
             Text(
                 text = stringResource(id = R.string.Disconnect),
                 modifier = Modifier
-                    .padding(horizontal = 20.dp)
+                    .padding(horizontal = 20.dp, vertical = 22.dp)
                     .align(Alignment.CenterStart),
                 fontSize = 16.sp,
                 color = MixinAppTheme.colors.textBlue,
@@ -109,7 +110,7 @@ private fun Content(
 }
 
 @Composable
-private fun Loading() {
+fun Loading() {
     Box(
         modifier = Modifier
             .fillMaxHeight()

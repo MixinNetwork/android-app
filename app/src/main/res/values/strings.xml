@@ -1180,4 +1180,17 @@
     <string name="NO_CONNECTED_DAPPS">NO CONNECTED DAPPS</string>
     <string name="connected_desc">This dapp are connected to your wallet, it can view your wallet balance, activity and request approval for transactions.</string>
     <string name="Disconnect">Disconnect</string>
+    <string name="Connect_Wallet">Connect Wallet</string>
+    <string name="Read_your_public_address">Read your public address</string>
+    <string name="Allow_app_access_wallet_balance_activity">Allow app to access your wallet balance and activity.</string>
+    <string name="Request_permission">Request permission</string>
+    <string name="Allow_dapp_ask_permission">allow dapp to ask for your permission to make a transaction.</string>
+    <string name="Signature_Request">Signature Request</string>
+    <string name="signature_request_warning">We cannot verify this signature request. Make sure you trust this app before sending this request.</string>
+    <string name="Sign_by_PIN">Sign by PIN</string>
+    <string name="Discard">Discard</string>
+    <string name="signed_success_tip">The message has been signed successfully, click the button above to send or discard the signed message.</string>
+    <string name="Network">Network</string>
+    <string name="Network_fee">Network fee</string>
+    <string name="Message">Message</string>
 </resources>

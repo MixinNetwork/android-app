@@ -169,7 +169,7 @@ object WalletConnectV2 : WalletConnect() {
                 .asIterable()
                 .associate { (key: String, chainData: List<Pair<Chain, String>>) ->
                     val accounts = chainData.map { (chain: Chain, accountAddress: String) ->
-                        "${chain.chainNamespace}:${chain.chainReference}:${accountAddress}"
+                        "${chain.chainNamespace}:${chain.chainReference}:$accountAddress"
                     }
 
                     val methods = sessionProposal.requiredNamespaces.values
@@ -189,7 +189,8 @@ object WalletConnectV2 : WalletConnect() {
                         accounts = accounts,
                         methods = methods,
                         events = events,
-                        chains = chains.ifEmpty { null })
+                        chains = chains.ifEmpty { null },
+                    )
                 }
 
         val sessionNamespacesIndexedByChain: Map<String, Wallet.Model.Namespace.Session> =
@@ -202,7 +203,7 @@ object WalletConnectV2 : WalletConnect() {
                 .asIterable()
                 .associate { (key: String, chainData: List<Pair<Chain, String>>) ->
                     val accounts = chainData.map { (chain: Chain, accountAddress: String) ->
-                        "${chain.chainNamespace}:${chain.chainReference}:${accountAddress}"
+                        "${chain.chainNamespace}:${chain.chainReference}:$accountAddress"
                     }
 
                     val methods = sessionProposal.requiredNamespaces.values
@@ -216,7 +217,7 @@ object WalletConnectV2 : WalletConnect() {
                     key to Wallet.Model.Namespace.Session(
                         accounts = accounts,
                         methods = methods,
-                        events = events
+                        events = events,
                     )
                 }
 
@@ -286,12 +287,12 @@ object WalletConnectV2 : WalletConnect() {
             Method.ETHSign.name -> {
                 val data = JsonParser.parseString(request.request.params).asJsonArray[1].toString().trim('"')
                 Timber.d("$TAG eth sign: $data")
-                ethSignData(priv, request.request.id, request.topic, data.toByteArray())
+                ethSignData(priv, request.request.id, request.topic, Numeric.hexStringToByteArray(data))
             }
             Method.ETHPersonalSign.name -> {
                 val data = JsonParser.parseString(request.request.params).asJsonArray[0].toString().trim('"')
                 Timber.d("$TAG personal sign: $data")
-                ethSignData(priv, request.request.id, request.topic, data.toByteArray())
+                ethSignData(priv, request.request.id, request.topic, Numeric.hexStringToByteArray(data))
             }
             Method.ETHSignTypedData.name, Method.ETHSignTypedDataV4.name -> {
                 val data = JsonParser.parseString(request.request.params).asJsonArray[1].toString()
@@ -401,6 +402,15 @@ object WalletConnectV2 : WalletConnect() {
         }
     }
 
+    fun getSessionProposals(): List<Wallet.Model.SessionProposal> {
+        return try {
+            Web3Wallet.getSessionProposals()
+        } catch (e: IllegalStateException) {
+            Timber.d("$TAG getSessionProposals ${e.stackTraceToString()}")
+            emptyList()
+        }
+    }
+
     fun disconnect(topic: String) {
         Web3Wallet.disconnectSession(
             Wallet.Params.SessionDisconnect(topic),
@@ -427,7 +437,7 @@ object WalletConnectV2 : WalletConnect() {
 
         Web3Wallet.getActiveSessionByTopic(topic)?.redirect?.toUri()
             ?.let { deepLinkUri -> sendResponseDeepLink(deepLinkUri) }
-        this.sessionRequest = null
+//        this.sessionRequest = null
     }
 
     private fun ethSignData(priv: ByteArray, id: Long, topic: String, data: ByteArray) {

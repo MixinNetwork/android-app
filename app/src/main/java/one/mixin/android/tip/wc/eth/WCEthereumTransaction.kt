@@ -24,4 +24,3 @@ val ethTransactionSerializer = jsonDeserializer<List<WCEthereumTransaction>> {
     }
     array
 }
-

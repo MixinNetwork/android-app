@@ -1,21 +1,29 @@
 package one.mixin.android.ui.tip.wc.connections
 
 import GlideImage
+import android.os.Bundle
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.Icon
+import androidx.compose.material.IconButton
+import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -38,14 +46,14 @@ import one.mixin.android.R
 import one.mixin.android.extension.containsIgnoreCase
 import one.mixin.android.ui.common.compose.SearchTextField
 import one.mixin.android.ui.setting.ui.compose.HighlightText
-import one.mixin.android.ui.setting.ui.compose.SettingPageScaffold
+import one.mixin.android.ui.setting.ui.compose.MixinTopAppBar
 import one.mixin.android.ui.setting.ui.theme.MixinAppTheme
 import one.mixin.android.ui.tip.wc.LocalWCNav
 import one.mixin.android.ui.tip.wc.WCDestination
 
 @Composable
 fun ConnectionsPage() {
-    SettingPageScaffold(
+    WCPageScaffold(
         title = stringResource(id = R.string.Connected_dapps),
         verticalScrollable = true,
     ) {
@@ -84,12 +92,11 @@ private fun ConnectionList(
     }
     LazyColumn {
         items(filteredData, key = {
-            listOf(it.uri, keyword)
+            listOf(it.index, keyword)
         }) { item ->
             val navController = LocalWCNav.current
             ConnectionItem(item, keyword) {
-                viewModel.currentConnectionId = item.index
-                navController.navTo(WCDestination.ConnectionDetails)
+                navController.navTo(WCDestination.ConnectionDetails, Bundle().apply { putInt("connectionId", item.index) })
             }
         }
     }
@@ -129,7 +136,7 @@ private fun ConnectionItem(
                     color = MixinAppTheme.colors.textPrimary,
                 ),
                 overflow = TextOverflow.Ellipsis,
-                target = highlight, 
+                target = highlight,
             )
             Box(modifier = Modifier.width(8.dp))
             HighlightText(
@@ -170,6 +177,46 @@ private fun EmptyLayout() {
                 fontSize = 16.sp,
                 color = MixinAppTheme.colors.textSubtitle,
             )
+        }
+    }
+}
+
+@Composable
+fun WCPageScaffold(
+    title: String,
+    verticalScrollable: Boolean = true,
+    body: @Composable ColumnScope.() -> Unit,
+) {
+    Scaffold(
+        backgroundColor = MixinAppTheme.colors.background,
+        topBar = {
+            MixinTopAppBar(
+                title = {
+                    Text(title)
+                },
+                navigationIcon = {
+                    val navController = LocalWCNav.current
+                    IconButton(onClick = { navController.pop() }) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.ic_back),
+                            contentDescription = null,
+                            tint = MixinAppTheme.colors.icon,
+                        )
+                    }
+                },
+            )
+        },
+    ) {
+        Column(
+            Modifier
+                .padding(it)
+                .apply {
+                    if (verticalScrollable) {
+                        verticalScroll(rememberScrollState())
+                    }
+                },
+        ) {
+            body()
         }
     }
 }
