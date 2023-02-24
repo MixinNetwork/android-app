@@ -409,7 +409,7 @@ class DataProvider {
             } else {
                 messageIds.joinToString(prefix = "'", postfix = "'", separator = "', '")
             }
-            val statement = if(isBigSize){
+            val statement = if (isBigSize) {
                 val _statement = RoomSQLiteQuery.acquire(_sql.replace("*", ids), 0)
                 _statement
             } else {

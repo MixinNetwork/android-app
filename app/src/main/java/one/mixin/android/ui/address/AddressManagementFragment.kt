@@ -99,7 +99,7 @@ class AddressManagementFragment : BaseFragment(R.layout.fragment_address_managem
                     transferFragment.showNow(parentFragmentManager, TransferFragment.TAG)
                     transferFragment.callback = object : TransferFragment.Callback {
                         override fun onSuccess() {
-                            if(isAdded) {
+                            if (isAdded) {
                                 view.navigateUp()
                             }
                         }

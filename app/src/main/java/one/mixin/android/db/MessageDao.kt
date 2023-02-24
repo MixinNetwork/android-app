@@ -11,7 +11,6 @@ import one.mixin.android.db.contants.IMAGES
 import one.mixin.android.db.contants.LIVES
 import one.mixin.android.db.contants.TRANSCRIPTS
 import one.mixin.android.db.contants.VIDEOS
-import one.mixin.android.util.QueryMessage
 import one.mixin.android.vo.AttachmentMigration
 import one.mixin.android.vo.ConversationWithStatus
 import one.mixin.android.vo.HyperlinkItem
@@ -354,16 +353,6 @@ interface MessageDao : BaseDao<Message> {
 
     @Query("SELECT id FROM messages WHERE conversation_id =:conversationId AND rowid <= :rowid ORDER BY rowid")
     suspend fun getMessageIdsByConversationId(conversationId: String, rowid: Long): List<String>
-
-    @Query(
-        """
-        SELECT id as message_id, content, name FROM messages 
-        WHERE category IN ('SIGNAL_TEXT', 'SIGNAL_DATA', 'SIGNAL_POST')
-        AND created_at > :after
-        LIMIT :limit OFFSET :offset
-        """,
-    )
-    suspend fun batchQueryMessages(limit: Int, offset: Int, after: Long): List<QueryMessage>
 
     @Query(
         """
