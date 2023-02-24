@@ -148,17 +148,12 @@ internal constructor(
             emptyList<SearchMessageItem>()
         } else {
             val queryString = query.joinStar().replaceQuotationMark()
-            val ids = ftsDbHelper.search(queryString)
-            if (ids.isEmpty()) {
-                emptyList<SearchMessageItem>()
-            } else {
-                DataProvider.fuzzySearchMessage(queryString, ids, appDatabase, cancellationSignal)
-            }
+            DataProvider.fuzzySearchMessage(ftsDbHelper, queryString, appDatabase, cancellationSignal)
         }
 
     fun fuzzySearchMessageDetail(query: String, conversationId: String, cancellationSignal: CancellationSignal): DataSource.Factory<Int, SearchMessageDetailItem> {
         val queryString = query.joinStar().replaceQuotationMark()
-        return DataProvider.fuzzySearchMessageDetail(queryString, ftsDbHelper.search(queryString, conversationId), conversationId, appDatabase, cancellationSignal)
+        return DataProvider.fuzzySearchMessageDetail(queryString, ftsDbHelper.rawSearch(queryString, conversationId), conversationId, appDatabase, cancellationSignal)
     }
 
     suspend fun fuzzySearchChat(query: String, cancellationSignal: CancellationSignal): List<ChatMinimal> =

@@ -2,6 +2,8 @@ package one.mixin.android.fts
 
 import android.content.ContentValues
 import android.content.Context
+import android.database.Cursor
+import android.os.CancellationSignal
 import androidx.core.database.getStringOrNull
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
@@ -95,22 +97,9 @@ class FtsDbHelper(val context: Context) : SqlHelper(
         writableDatabase.endTransaction()
     }
 
-    fun search(content: String): List<String> {
-        readableDatabase.rawQuery(
-            "SELECT message_id FROM messages_metas WHERE doc_id IN  (SELECT docid FROM messages_fts WHERE content MATCH '$content' LIMIT 999)",
-            null,
-        ).use { cursor ->
-            val ids = mutableListOf<String>()
-            while (cursor.moveToNext()) {
-                cursor.getStringOrNull(0)?.let { messageId ->
-                    ids.add(messageId)
-                }
-            }
-            return ids
-        }
-    }
+    fun rawSearch(content: String, cancellationSignal: CancellationSignal): Cursor = readableDatabase.rawQuery("SELECT message_id FROM messages_metas WHERE doc_id IN  (SELECT docid FROM messages_fts WHERE content MATCH '$content') LIMIT 999", null, cancellationSignal)
 
-    fun search(content: String, conversationId: String): List<String> {
+    fun rawSearch(content: String, conversationId: String): List<String> {
         readableDatabase.rawQuery(
             "SELECT message_id FROM messages_metas WHERE conversation_id = '$conversationId' AND doc_id IN  (SELECT docid FROM messages_fts WHERE content MATCH '$content' LIMIT 100)",
             null,

@@ -3,10 +3,13 @@ package one.mixin.android.db.provider
 import android.annotation.SuppressLint
 import android.database.Cursor
 import android.os.CancellationSignal
+import androidx.core.database.getStringOrNull
 import androidx.paging.DataSource
 import androidx.room.CoroutinesRoom
 import androidx.room.RoomSQLiteQuery
+import androidx.sqlite.db.SimpleSQLiteQuery
 import one.mixin.android.db.MixinDatabase
+import one.mixin.android.fts.FtsDbHelper
 import one.mixin.android.ui.search.CancellationLimitOffsetDataSource
 import one.mixin.android.util.chat.FastLimitOffsetDataSource
 import one.mixin.android.util.chat.MixinLimitOffsetDataSource
@@ -379,51 +382,43 @@ class DataProvider {
 
         @Suppress("LocalVariableName")
         suspend fun fuzzySearchMessage(
+            ftsDbHelper: FtsDbHelper,
             query: String,
-            messageIds: List<String>,
             db: MixinDatabase,
             cancellationSignal: CancellationSignal,
         ): List<SearchMessageItem> {
-            val isBigSize = messageIds.size >= 999
-            val _sql =
-                """
-                SELECT m.conversation_id AS conversationId, c.icon_url AS conversationAvatarUrl,
+            val ftsCursor = ftsDbHelper.rawSearch(query, cancellationSignal)
+            val ftsCount = ftsCursor.count
+            val result = mutableSetOf<String>()
+            if (ftsCount >= 999) {
+                while (ftsCursor.moveToNext()) {
+                    ftsCursor.getStringOrNull(0)?.let {
+                        result.add(it)
+                    }
+                }
+                ftsCursor.close()
+            } else {
+                val querySql = SimpleSQLiteQuery(
+                    "SELECT message_id FROM messages_fts4 WHERE messages_fts4 MATCH ? LIMIT ${999 - ftsCount}",
+                    arrayOf(query)
+                )
+                result.addAll(db.messageDao().fuzzySearchMessage(querySql))
+            }
+
+            val _sql = """
+                 SELECT m.conversation_id AS conversationId, c.icon_url AS conversationAvatarUrl,
                 c.name AS conversationName, c.category AS conversationCategory, count(m.id) as messageCount,
                 u.user_id AS userId, u.avatar_url AS userAvatarUrl, u.full_name AS userFullName
                 FROM messages m
                 LEFT JOIN conversations c ON c.conversation_id = m.conversation_id
 				LEFT JOIN users u ON c.owner_id = u.user_id
-                WHERE (m.id IN (*)) ${
-                    if (isBigSize) {
-                        " "
-                    } else { // If new fts return too much(> 999), discard the old one.
-                        "OR (m.id IN (SELECT message_id FROM messages_fts4 WHERE messages_fts4 MATCH ?)) "
-                    }
-                }
-				GROUP BY m.conversation_id
+                WHERE m.id IN (*)
+                GROUP BY m.conversation_id
                 ORDER BY max(m.created_at) DESC
-                """
-
-            val ids = if (messageIds.isEmpty()) {
-                "NULL"
-            } else {
-                messageIds.joinToString(prefix = "'", postfix = "'", separator = "', '")
-            }
-            val statement = if (isBigSize) {
-                val _statement = RoomSQLiteQuery.acquire(_sql.replace("*", ids), 0)
-                _statement
-            } else {
-                val _statement = RoomSQLiteQuery.acquire(_sql.replace("*", ids), 1)
-                val _argIndex = 1
-                _statement.bindString(_argIndex, query)
-                _statement
-            }
-            return CoroutinesRoom.execute(
-                db,
-                true,
-                cancellationSignal,
-                callableSearchMessageItem(db, statement, cancellationSignal),
-            )
+            """
+            val ids = result.joinToString(prefix = "'", postfix = "'", separator = "', '")
+            val _statement = RoomSQLiteQuery.acquire(_sql.replace("*", ids), 0)
+            return CoroutinesRoom.execute(db, true, cancellationSignal, callableSearchMessageItem(db, _statement, cancellationSignal),)
         }
 
         fun fuzzySearchMessageDetail(query: String, messageIds: List<String>, conversationId: String?, database: MixinDatabase, cancellationSignal: CancellationSignal) =

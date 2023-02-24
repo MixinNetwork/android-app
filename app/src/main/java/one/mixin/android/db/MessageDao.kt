@@ -4,7 +4,9 @@ import androidx.lifecycle.LiveData
 import androidx.paging.DataSource
 import androidx.room.Dao
 import androidx.room.Query
+import androidx.room.RawQuery
 import androidx.room.RoomWarnings
+import androidx.sqlite.db.SupportSQLiteQuery
 import one.mixin.android.db.contants.AUDIOS
 import one.mixin.android.db.contants.DATA
 import one.mixin.android.db.contants.IMAGES
@@ -240,6 +242,9 @@ interface MessageDao : BaseDao<Message> {
         """,
     )
     suspend fun fuzzySearchMessage(messageIds: List<String>, limit: Int): List<SearchMessageItem>
+
+    @RawQuery
+    suspend fun fuzzySearchMessage(query: SupportSQLiteQuery): List<String>
 
     @Query("SELECT m.category as type, m.id as messageId, m.media_url as mediaUrl FROM messages m WHERE m.conversation_id = :conversationId AND m.media_url IS NOT NULL AND m.media_status = 'DONE' LIMIT :limit OFFSET :offset")
     suspend fun getMediaMessageMinimalByConversationId(conversationId: String, limit: Int, offset: Int): List<MediaMessageMinimal>
