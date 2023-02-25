@@ -12,13 +12,13 @@ object DatabaseMonitor {
 
     private val logSet = HashMap<String, Long>()
     private var str = StringBuffer()
-    var enable = true
+    var enable = false
         private set
 
     fun reset() {
         MixinApplication.get().applicationScope.launch {
             enable = PropertyHelper.findValueByKey(Constants.Debug.DB_DEBUG_LOGS)
-                ?.toBoolean() ?: true
+                ?.toBoolean() ?: false
         }
     }
 

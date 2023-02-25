@@ -15,6 +15,7 @@ import one.mixin.android.db.contants.TRANSCRIPTS
 import one.mixin.android.db.contants.VIDEOS
 import one.mixin.android.vo.AttachmentMigration
 import one.mixin.android.vo.ConversationWithStatus
+import one.mixin.android.vo.FtsSearchResult
 import one.mixin.android.vo.HyperlinkItem
 import one.mixin.android.vo.MediaMessageMinimal
 import one.mixin.android.vo.Message
@@ -244,7 +245,7 @@ interface MessageDao : BaseDao<Message> {
     suspend fun fuzzySearchMessage(messageIds: List<String>, limit: Int): List<SearchMessageItem>
 
     @RawQuery
-    suspend fun fuzzySearchMessage(query: SupportSQLiteQuery): List<String>
+    suspend fun fuzzySearchMessage(query: SupportSQLiteQuery): List<FtsSearchResult>
 
     @Query("SELECT m.category as type, m.id as messageId, m.media_url as mediaUrl FROM messages m WHERE m.conversation_id = :conversationId AND m.media_url IS NOT NULL AND m.media_status = 'DONE' LIMIT :limit OFFSET :offset")
     suspend fun getMediaMessageMinimalByConversationId(conversationId: String, limit: Int, offset: Int): List<MediaMessageMinimal>

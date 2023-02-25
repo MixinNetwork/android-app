@@ -153,7 +153,7 @@ internal constructor(
 
     fun fuzzySearchMessageDetail(query: String, conversationId: String, cancellationSignal: CancellationSignal): DataSource.Factory<Int, SearchMessageDetailItem> {
         val queryString = query.joinStar().replaceQuotationMark()
-        return DataProvider.fuzzySearchMessageDetail(queryString, ftsDbHelper.rawSearch(queryString, conversationId), conversationId, appDatabase, cancellationSignal)
+        return DataProvider.fuzzySearchMessageDetail(ftsDbHelper, queryString, conversationId, appDatabase, cancellationSignal)
     }
 
     suspend fun fuzzySearchChat(query: String, cancellationSignal: CancellationSignal): List<ChatMinimal> =

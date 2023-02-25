@@ -7,7 +7,6 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import one.mixin.android.api.service.CircleService
 import one.mixin.android.api.service.ConversationService
-import one.mixin.android.db.DatabaseMonitor
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.insertNoReplace
 import one.mixin.android.db.insertUpdate
@@ -192,7 +191,6 @@ class HedwigImp(
         }
         pendingJob = lifecycleScope.launch(PENDING_DB_THREAD) {
             try {
-                DatabaseMonitor.log("runPendingJob start")
                 val list = pendingDatabase.getPendingMessages()
                 list.groupBy { it.conversationId }.filter { (conversationId, _) ->
                     conversationId != SYSTEM_USER && conversationId != Session.getAccountId() && checkConversation(conversationId) != null
@@ -203,7 +201,6 @@ class HedwigImp(
                     messages.filter { message ->
                         !message.isMine() && message.status != MessageStatus.READ.name && (pendingMessageStatusMap[message.messageId] != MessageStatus.READ.name)
                     }.map { message ->
-                        DatabaseMonitor.log("${Thread.currentThread().name} Generate remote message ${message.messageId}")
                         RemoteMessageStatus(message.messageId, message.conversationId, MessageStatus.DELIVERED.name)
                     }.let { remoteMessageStatus ->
                         remoteMessageStatusDao.insertList(remoteMessageStatus)
@@ -220,8 +217,6 @@ class HedwigImp(
             } catch (e: Exception) {
                 Timber.e(e)
                 runPendingJob()
-            } finally {
-                DatabaseMonitor.log("runPendingJob end")
             }
         }
     }

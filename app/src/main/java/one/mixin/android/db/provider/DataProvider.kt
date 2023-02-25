@@ -3,7 +3,6 @@ package one.mixin.android.db.provider
 import android.annotation.SuppressLint
 import android.database.Cursor
 import android.os.CancellationSignal
-import androidx.core.database.getStringOrNull
 import androidx.paging.DataSource
 import androidx.room.CoroutinesRoom
 import androidx.room.RoomSQLiteQuery
@@ -18,6 +17,7 @@ import one.mixin.android.vo.AssetItem
 import one.mixin.android.vo.ChatHistoryMessageItem
 import one.mixin.android.vo.ChatMinimal
 import one.mixin.android.vo.ConversationItem
+import one.mixin.android.vo.FtsSearchResult
 import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.SearchMessageDetailItem
 import one.mixin.android.vo.SearchMessageItem
@@ -380,51 +380,76 @@ class DataProvider {
             )
         }
 
-        @Suppress("LocalVariableName")
         suspend fun fuzzySearchMessage(
             ftsDbHelper: FtsDbHelper,
             query: String,
             db: MixinDatabase,
             cancellationSignal: CancellationSignal,
         ): List<SearchMessageItem> {
-            val ftsCursor = ftsDbHelper.rawSearch(query, cancellationSignal)
-            val result = mutableSetOf<String>()
-            var ftsCount: Int
-            ftsCursor.use {
-                ftsCount = ftsCursor.count
-                while (ftsCursor.moveToNext()) {
-                    ftsCursor.getStringOrNull(0)?.let {
-                        result.add(it)
+            val newFtsResults = ftsDbHelper.rawSearch(query, cancellationSignal)
+            val querySql = SimpleSQLiteQuery(
+                """
+                SELECT m.id as message_id, m.conversation_id , m.user_id, count(m.id) as count FROM messages m
+                WHERE m.id IN (SELECT message_id FROM messages_fts4 WHERE content MATCH ?)
+                GROUP BY m.conversation_id
+                ORDER BY max(m.created_at) DESC
+                """,
+                arrayOf(query),
+            )
+            val oldFtsResults = db.messageDao().fuzzySearchMessage(querySql)
+            val resultMerge = fun(s: Iterable<FtsSearchResult>, o: Iterable<FtsSearchResult>): MutableMap<String, FtsSearchResult> {
+                val sourceMap = s.associateBy { it.conversationId }.toMutableMap()
+                val otherMap = o.associateBy { it.conversationId }
+                for (item in otherMap) {
+                    val key = item.key
+                    val contain = sourceMap.containsKey(key)
+                    if (contain) {
+                        val localItem = sourceMap[item.key] ?: continue
+                        localItem.messageCount += item.value.messageCount
+                    } else {
+                        sourceMap[key] = item.value
                     }
                 }
+                return sourceMap
             }
-            if (ftsCount < 999) {
-                val querySql = SimpleSQLiteQuery(
-                    "SELECT message_id FROM messages_fts4 WHERE content MATCH ? LIMIT ${999 - ftsCount}",
-                    arrayOf(query)
-                )
-                result.addAll(db.messageDao().fuzzySearchMessage(querySql))
-            }
+            val result = resultMerge(newFtsResults, oldFtsResults)
 
             val sql = """
-                 SELECT m.conversation_id AS conversationId, c.icon_url AS conversationAvatarUrl,
-                c.name AS conversationName, c.category AS conversationCategory, count(m.id) as messageCount,
+                SELECT m.conversation_id AS conversationId, c.icon_url AS conversationAvatarUrl,
+                c.name AS conversationName, c.category AS conversationCategory, 0 as messageCount,
                 u.user_id AS userId, u.avatar_url AS userAvatarUrl, u.full_name AS userFullName
                 FROM messages m
                 LEFT JOIN conversations c ON c.conversation_id = m.conversation_id
 				LEFT JOIN users u ON c.owner_id = u.user_id
                 WHERE m.id IN (*)
-                GROUP BY m.conversation_id
-                ORDER BY max(m.created_at) DESC
             """
-            val ids = result.joinToString(prefix = "'", postfix = "'", separator = "', '")
+            val ids = result.values.joinToString(
+                prefix = "'",
+                postfix = "'",
+                separator = "', '",
+            ) { it.messageId }
             val statement = RoomSQLiteQuery.acquire(sql.replace("*", ids), 0)
-            return CoroutinesRoom.execute(db, true, cancellationSignal, callableSearchMessageItem(db, statement, cancellationSignal),)
+            return CoroutinesRoom.execute(
+                db,
+                true,
+                cancellationSignal,
+                callableSearchMessageItem(db, statement, cancellationSignal),
+            ).map {
+                it.messageCount = result[it.conversationId]?.messageCount ?: 0
+                it
+            }
         }
 
-        fun fuzzySearchMessageDetail(query: String, messageIds: List<String>, conversationId: String?, database: MixinDatabase, cancellationSignal: CancellationSignal) =
+        fun fuzzySearchMessageDetail(
+            ftsDbHelper: FtsDbHelper,
+            query: String,
+            conversationId: String,
+            database: MixinDatabase,
+            cancellationSignal: CancellationSignal,
+        ) =
             object : DataSource.Factory<Int, SearchMessageDetailItem>() {
                 override fun create(): DataSource<Int, SearchMessageDetailItem> {
+                    val messageIds = ftsDbHelper.rawSearch(query, conversationId, cancellationSignal)
                     val sql =
                         """
                             SELECT m.id AS messageId, u.user_id AS userId, u.avatar_url AS userAvatarUrl, u.full_name AS userFullName,
@@ -452,13 +477,8 @@ class DataProvider {
                     statement.bindString(argIndex, query)
                     countStatement.bindString(argIndex, query)
                     argIndex = 2
-                    if (conversationId == null) {
-                        statement.bindNull(argIndex)
-                        countStatement.bindNull(argIndex)
-                    } else {
-                        statement.bindString(argIndex, conversationId)
-                        countStatement.bindString(argIndex, conversationId)
-                    }
+                    statement.bindString(argIndex, conversationId)
+                    countStatement.bindString(argIndex, conversationId)
                     return CancellationMessageDetailItemLimitOffsetDataSource(database, statement, countStatement, cancellationSignal)
                 }
             }

@@ -101,7 +101,6 @@ class AddressManagementFragment : BaseFragment(R.layout.fragment_address_managem
                     transferFragment.callback = object : TransferFragment.Callback {
                         override fun onSuccess() {
                             if (viewDestroyed()) return
-                            
                             view.navigateUp()
                         }
                     }

@@ -10,7 +10,7 @@ data class SearchMessageItem(
     val conversationId: String,
     val conversationCategory: String?,
     val conversationName: String?,
-    val messageCount: Int,
+    var messageCount: Int,
     val userId: String,
     val userFullName: String?,
     val userAvatarUrl: String?,

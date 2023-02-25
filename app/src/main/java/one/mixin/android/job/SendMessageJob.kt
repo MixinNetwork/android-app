@@ -143,7 +143,7 @@ open class SendMessageJob(
             jobManager.cancelJobByMixinJobId(msg.messageId)
         }
         InvalidateFlow.emit(conversationId)
-        // Todo
+        ftsDbHelper.deleteByMessageId(recallMessageId)
     }
 
     override fun onCancel(cancelReason: Int, throwable: Throwable?) {

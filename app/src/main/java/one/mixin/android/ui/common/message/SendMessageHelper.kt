@@ -112,7 +112,7 @@ class SendMessageHelper @Inject internal constructor(private val jobManager: Mix
         scope.launch {
             val botNumber = message.content?.getBotNumber()
             var recipientId: String? = null
-            if (botNumber != null && botNumber.isNotBlank()) {
+            if (!botNumber.isNullOrBlank()) {
                 userRepository.findAppByAppNumber(message.conversationId, botNumber)?.apply {
                     recipientId = appId
                     message.category = if (capabilities?.contains(AppCap.ENCRYPTED.name) == true) {

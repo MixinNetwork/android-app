@@ -2,7 +2,6 @@ package one.mixin.android.fts
 
 import android.content.ContentValues
 import android.content.Context
-import android.database.Cursor
 import android.os.CancellationSignal
 import androidx.core.database.getStringOrNull
 import kotlinx.coroutines.runBlocking
@@ -10,6 +9,7 @@ import kotlinx.coroutines.withContext
 import one.mixin.android.extension.createAtToLong
 import one.mixin.android.extension.joinWhiteSpace
 import one.mixin.android.util.FTS_THREAD
+import one.mixin.android.vo.FtsSearchResult
 import one.mixin.android.vo.Message
 import one.mixin.android.vo.isContact
 import one.mixin.android.vo.isFtsMessage
@@ -97,14 +97,38 @@ class FtsDbHelper(val context: Context) : SqlHelper(
         writableDatabase.endTransaction()
     }
 
-    fun rawSearch(content: String, cancellationSignal: CancellationSignal): Cursor = readableDatabase.rawQuery("SELECT message_id FROM messages_metas WHERE doc_id IN  (SELECT docid FROM messages_fts WHERE content MATCH '$content') LIMIT 999", null, cancellationSignal)
-
-    fun rawSearch(content: String, conversationId: String): List<String> {
+    fun rawSearch(content: String, cancellationSignal: CancellationSignal): List<FtsSearchResult> =
         readableDatabase.rawQuery(
-            "SELECT message_id FROM messages_metas WHERE conversation_id = '$conversationId' AND doc_id IN  (SELECT docid FROM messages_fts WHERE content MATCH '$content' LIMIT 100)",
+            """
+                SELECT message_id, conversation_id, user_id, count(message_id) FROM messages_metas WHERE doc_id 
+                IN (SELECT docid FROM messages_fts WHERE content MATCH '$content')
+                GROUP BY conversation_id
+                ORDER BY max(created_at) DESC
+                LIMIT 999
+            """,
             null,
+            cancellationSignal,
+        ).use {
+            val results = mutableListOf<FtsSearchResult>()
+            while (it.moveToNext()) {
+                val messageId = it.getStringOrNull(0) ?: continue
+                val conversationId = it.getStringOrNull(1) ?: continue
+                val userId = it.getStringOrNull(2) ?: continue
+                val count = it.getInt(3)
+                if (count > 0) {
+                    results.add(FtsSearchResult(messageId, conversationId, userId, count))
+                }
+            }
+            return@use results
+        }
+
+    fun rawSearch(content: String, conversationId: String, cancellationSignal: CancellationSignal): Collection<String> {
+        readableDatabase.rawQuery(
+            "SELECT message_id FROM messages_metas WHERE conversation_id = '$conversationId' AND doc_id IN  (SELECT docid FROM messages_fts WHERE content MATCH '$content' LIMIT 999)",
+            null,
+            cancellationSignal,
         ).use { cursor ->
-            val ids = mutableListOf<String>()
+            val ids = mutableSetOf<String>()
             while (cursor.moveToNext()) {
                 cursor.getStringOrNull(0)?.let { messageId ->
                     ids.add(messageId)
