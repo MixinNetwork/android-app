@@ -8,6 +8,8 @@ import com.github.salomonbrys.kotson.fromJson
 import com.github.salomonbrys.kotson.registerTypeAdapter
 import com.google.gson.GsonBuilder
 import com.google.gson.JsonParser
+import com.trustwallet.walletconnect.models.ethereum.WCEthereumTransaction
+import com.trustwallet.walletconnect.models.ethereum.ethTransactionSerializer
 import com.walletconnect.android.Core
 import com.walletconnect.android.CoreClient
 import com.walletconnect.android.cacao.sign
@@ -18,23 +20,15 @@ import com.walletconnect.web3.wallet.client.Web3Wallet
 import com.walletconnect.web3.wallet.utils.CacaoSigner
 import one.mixin.android.BuildConfig
 import one.mixin.android.MixinApplication
-import one.mixin.android.tip.wc.eth.WCEthereumSignMessage
-import one.mixin.android.tip.wc.eth.WCEthereumTransaction
-import one.mixin.android.tip.wc.eth.ethTransactionSerializer
 import org.web3j.crypto.Credentials
 import org.web3j.crypto.ECKeyPair
 import org.web3j.crypto.Keys
 import org.web3j.crypto.RawTransaction
 import org.web3j.crypto.Sign
 import org.web3j.crypto.TransactionEncoder
-import org.web3j.protocol.Web3j
 import org.web3j.protocol.core.DefaultBlockParameterName
-import org.web3j.protocol.core.methods.request.Transaction
-import org.web3j.protocol.http.HttpService
-import org.web3j.utils.Convert
 import org.web3j.utils.Numeric
 import timber.log.Timber
-import java.math.BigInteger
 import java.util.concurrent.TimeUnit
 
 object WalletConnectV2 : WalletConnect() {
@@ -43,10 +37,6 @@ object WalletConnectV2 : WalletConnect() {
     var authRequest: Wallet.Model.AuthRequest? = null
     var sessionRequest: Wallet.Model.SessionRequest? = null
     var currentWCEthereumTransaction: WCEthereumTransaction? = null
-
-    var chain: Chain = Chain.Polygon
-        private set
-    private var web3j = Web3j.build(HttpService(chain.rpcServers[0]))
 
     private val gson = GsonBuilder()
         .serializeNulls()
@@ -333,57 +323,6 @@ object WalletConnectV2 : WalletConnect() {
         this.currentWCEthereumTransaction = null
     }
 
-    fun getHumanReadableTransactionInfo(wct: WCEthereumTransaction): String {
-        val result = StringBuilder()
-        val estimateGas = getEstimateGas(wct)
-        val amount = Numeric.toBigInt(wct.value)
-        result.append("Estimated gas fee: ${Convert.fromWei(estimateGas.toBigDecimal(), Convert.Unit.ETHER).toPlainString()} ${chain.symbol}\n\n")
-            .append("Amount + gas fee: ${Convert.fromWei((estimateGas + amount).toBigDecimal(), Convert.Unit.ETHER).toPlainString()} ${chain.symbol}\n\n")
-        wct.maxFeePerGas?.let { result.append("maxFeePerGas: ${Convert.fromWei(Numeric.toBigInt(it).toBigDecimal(), Convert.Unit.GWEI).toPlainString()} GWEI\n") }
-        wct.maxPriorityFeePerGas?.let { result.append("maxPriorityFeePerGas: ${Convert.fromWei(Numeric.toBigInt(it).toBigDecimal(), Convert.Unit.GWEI).toPlainString()} GWEI\n\n") }
-        return result.append("HEX Data\n")
-            .append(wct.data)
-            .toString()
-    }
-
-    private fun getEstimateGas(wct: WCEthereumTransaction): BigInteger {
-        val gasPrice = if (wct.maxFeePerGas != null) {
-            Numeric.toBigInt(wct.maxFeePerGas)
-        } else {
-            val ethGasPrice = web3j.ethGasPrice().sendAsync().get(web3jTimeout, TimeUnit.SECONDS)
-            if (ethGasPrice.hasError()) {
-                val error = ethGasPrice.error
-                val msg = "error code: ${error.code}, message: ${error.message}"
-                Timber.d("$TAG ethGasPrice error $msg")
-                throw WalletConnectException(error.code, error.message)
-            }
-            ethGasPrice.gasPrice
-        }
-        val gas = if (wct.gas != null) {
-            Numeric.toBigInt(wct.gas)
-        } else {
-            val tx = Transaction.createFunctionCallTransaction(
-                wct.from,
-                null,
-                gasPrice,
-                Numeric.toBigInt(wct.gasLimit ?: defaultGasLimit),
-                wct.to,
-                Numeric.toBigInt(wct.value),
-                wct.data,
-            )
-            val ethEstimateGas =
-                web3j.ethEstimateGas(tx).sendAsync().get(web3jTimeout, TimeUnit.SECONDS)
-            if (ethEstimateGas.hasError()) {
-                val error = ethEstimateGas.error
-                val msg = "error code: ${error.code}, message: ${error.message}"
-                Timber.d("$TAG ethEstimateGas error $msg")
-                throw WalletConnectException(error.code, error.message)
-            }
-            ethEstimateGas.amountUsed
-        }
-        return gas * gasPrice
-    }
-
     fun getListOfActiveSessions(): List<Wallet.Model.Session> {
         return try {
             Web3Wallet.getListOfActiveSessions()
@@ -443,16 +382,6 @@ object WalletConnectV2 : WalletConnect() {
     private fun ethSignData(priv: ByteArray, id: Long, topic: String, data: ByteArray) {
         val keyPair = ECKeyPair.create(priv)
         val signature = Sign.signPrefixedMessage(data, keyPair)
-        val b = ByteArray(65)
-        System.arraycopy(signature.r, 0, b, 0, 32)
-        System.arraycopy(signature.s, 0, b, 32, 32)
-        System.arraycopy(signature.v, 0, b, 64, 1)
-        approveRequestInternal(Numeric.toHexString(b), topic, id)
-    }
-
-    private fun ethSign(priv: ByteArray, id: Long, topic: String, message: WCEthereumSignMessage) {
-        val keyPair = ECKeyPair.create(priv)
-        val signature = Sign.signPrefixedMessage(message.data.toByteArray(), keyPair)
         val b = ByteArray(65)
         System.arraycopy(signature.r, 0, b, 0, 32)
         System.arraycopy(signature.s, 0, b, 32, 32)

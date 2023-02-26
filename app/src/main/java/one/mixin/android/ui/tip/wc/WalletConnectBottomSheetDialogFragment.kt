@@ -20,6 +20,7 @@ import androidx.core.view.doOnPreDraw
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
+import com.trustwallet.walletconnect.models.ethereum.WCEthereumTransaction
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.flow
@@ -35,6 +36,7 @@ import one.mixin.android.extension.statusBarHeight
 import one.mixin.android.extension.withArgs
 import one.mixin.android.tip.wc.WalletConnect
 import one.mixin.android.tip.wc.WalletConnectException
+import one.mixin.android.tip.wc.WalletConnectV1
 import one.mixin.android.tip.wc.WalletConnectV2
 import one.mixin.android.ui.common.biometric.BiometricDialog
 import one.mixin.android.ui.common.biometric.BiometricInfo
@@ -42,6 +44,7 @@ import one.mixin.android.ui.tip.wc.sessionproposal.SessionProposalPage
 import one.mixin.android.ui.tip.wc.sessionrequest.SessionRequestPage
 import one.mixin.android.util.BiometricUtil
 import one.mixin.android.util.SystemUIManager
+import org.web3j.utils.Convert
 import timber.log.Timber
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
@@ -78,7 +81,7 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
 
     private var step by mutableStateOf(Step.Input)
     private var errorInfo: String? by mutableStateOf(null)
-    private var desc: String? by mutableStateOf(null)
+    private var fee: String? by mutableStateOf(null)
 
     init {
         lifecycleScope.launchWhenCreated {
@@ -115,6 +118,7 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
                     SessionRequestPage(
                         version,
                         step,
+                        fee,
                         errorInfo,
                         onDismissRequest = { dismiss() },
                         onBiometricClick = { showBiometricPrompt() },
@@ -171,10 +175,15 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
     }
 
     private fun refreshEstimatedGas() {
-        val tx = WalletConnectV2.currentWCEthereumTransaction ?: return
+        val signData = WalletConnectV1.currentSignData ?: return
+        if (signData.signMessage !is WCEthereumTransaction) return
 
+        val tx = signData.signMessage
         tickerFlow(15.seconds)
-            .onEach { desc = WalletConnectV2.getHumanReadableTransactionInfo(tx) }
+            .onEach {
+                val estimateGas = WalletConnectV1.getEstimateGas(tx)
+                fee = Convert.fromWei(estimateGas.toBigDecimal(), Convert.Unit.ETHER).toPlainString()
+            }
             .launchIn(lifecycleScope)
     }
 
@@ -193,6 +202,10 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
             if (error == null) {
                 pinCompleted = true
                 step = Step.Done
+
+                // TODO remove
+                delay(1000)
+                dismiss()
             } else {
                 errorInfo = error
                 step = Step.Error

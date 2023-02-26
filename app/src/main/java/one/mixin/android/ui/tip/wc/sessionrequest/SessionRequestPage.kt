@@ -1,5 +1,6 @@
 package one.mixin.android.ui.tip.wc.sessionrequest
 
+import GlideImage
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -24,10 +25,15 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.Font
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.trustwallet.walletconnect.models.ethereum.WCEthereumSignMessage
+import com.trustwallet.walletconnect.models.ethereum.WCEthereumTransaction
 import one.mixin.android.R
 import one.mixin.android.tip.wc.WalletConnect
 import one.mixin.android.ui.setting.ui.theme.MixinAppTheme
@@ -35,11 +41,14 @@ import one.mixin.android.ui.tip.wc.WalletConnectBottomSheetDialogFragment
 import one.mixin.android.ui.tip.wc.connections.Loading
 import one.mixin.android.ui.tip.wc.sessionproposal.DAppInfo
 import one.mixin.android.ui.tip.wc.sessionproposal.WCPinBoard
+import org.web3j.utils.Convert
+import org.web3j.utils.Numeric
 
 @Composable
 fun SessionRequestPage(
     version: WalletConnect.Version,
     step: WalletConnectBottomSheetDialogFragment.Step,
+    fee: String?,
     errorInfo: String?,
     onDismissRequest: () -> Unit,
     onBiometricClick: () -> Unit,
@@ -87,9 +96,13 @@ fun SessionRequestPage(
             icon = sessionRequestUI.peerUI.icon,
         )
         Box(modifier = Modifier.height(16.dp))
-        Content(content = sessionRequestUI.param) {
+        if (sessionRequestUI.data is WCEthereumSignMessage) {
+            Message(content = viewModel.getContent(version, sessionRequestUI.data)) {
+            }
+        } else if (sessionRequestUI.data is WCEthereumTransaction) {
+            Transaction(balance = Convert.fromWei(Numeric.toBigInt(sessionRequestUI.data.value).toBigDecimal(), Convert.Unit.ETHER).toPlainString() ?: "0")
         }
-        NetworkInfo(name = "Ethereum", fee = "$1")
+        NetworkInfo(name = sessionRequestUI.chain ?: "", fee = fee ?: "0")
         Box(modifier = Modifier.width(16.dp))
         Warning()
         Box(modifier = Modifier.width(20.dp))
@@ -106,7 +119,63 @@ fun SessionRequestPage(
 }
 
 @Composable
-private fun Content(
+private fun Transaction(
+    balance: String,
+    icon: String = "https://mixin-images.zeromesh.net/zVDjOxNTQvVsA8h2B4ZVxuHoCF3DJszufYKWpd9duXUSbSapoZadC7_13cnWBqg0EmwmRcKGbJaUpA8wFfpgZA=s128",
+) {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(100.dp)
+            .padding(horizontal = 20.dp)
+            .clip(RoundedCornerShape(12.dp))
+            .background(MixinAppTheme.colors.backgroundWindow)
+            .padding(horizontal = 16.dp),
+    ) {
+        Text(
+            modifier = Modifier.padding(top = 16.dp),
+            text = stringResource(id = R.string.Balance_Change),
+            color = MixinAppTheme.colors.textPrimary,
+            fontSize = 14.sp,
+        )
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 44.dp, bottom = 2.dp),
+            verticalAlignment = Alignment.Bottom,
+        ) {
+            Text(
+                text = "-$balance",
+                color = Color(0xFFE86B67),
+                fontFamily = FontFamily(Font(R.font.mixin_font)),
+                fontSize = 30.sp,
+            )
+            Box(modifier = Modifier.width(4.dp))
+            Text(
+                text = "ETH",
+                color = MixinAppTheme.colors.textPrimary,
+                fontSize = 12.sp,
+            )
+            Box(modifier = Modifier.weight(1f))
+            GlideImage(
+                data = icon,
+                modifier = Modifier
+                    .size(32.dp)
+                    .clip(CircleShape),
+                placeHolderPainter = painterResource(id = R.drawable.ic_avatar_place_holder),
+            )
+        }
+        Text(
+            modifier = Modifier.padding(top = 76.dp),
+            text = "≈ $100",
+            color = MixinAppTheme.colors.textMinor,
+            fontSize = 12.sp,
+        )
+    }
+}
+
+@Composable
+private fun Message(
     content: String,
     onClick: () -> Unit,
 ) {
@@ -214,4 +283,10 @@ private fun Warning() {
         )
         Box(modifier = Modifier.width(16.dp))
     }
+}
+
+@Preview
+@Composable
+private fun TransactionPreview() {
+    Transaction(balance = "0.134")
 }

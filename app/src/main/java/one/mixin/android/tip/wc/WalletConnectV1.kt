@@ -20,20 +20,18 @@ import org.web3j.crypto.Sign
 import org.web3j.crypto.TransactionEncoder
 import org.web3j.protocol.Web3j
 import org.web3j.protocol.core.DefaultBlockParameterName
-import org.web3j.protocol.core.methods.request.Transaction
 import org.web3j.protocol.http.HttpService
 import org.web3j.utils.Convert
 import org.web3j.utils.Numeric
 import timber.log.Timber
-import java.math.BigInteger
 import java.util.concurrent.TimeUnit
 
 object WalletConnectV1 : WalletConnect() {
     const val TAG = "WalletConnectV1"
 
-    data class SignData(
+    data class WCV1SignData<T>(
         val requestId: Long,
-        val signMessage: WCEthereumSignMessage,
+        val signMessage: T,
     )
 
     private val wcClient = WCClient(GsonBuilder(), OkHttpClient.Builder().build()).also { wcc ->
@@ -63,17 +61,17 @@ object WalletConnectV1 : WalletConnect() {
         }
         wcc.onEthSign = { id, message ->
             Timber.d("$TAG onEthSign id: $id, message: $message")
-            currentSignData = SignData(id, message)
+            currentSignData = WCV1SignData(id, message)
             onEthSign(id, message)
         }
         wcc.onEthSignTransaction = { id, transaction ->
             Timber.d("$TAG onEthSignTransaction id: $id, transaction: $transaction")
-            currentWCEthereumTransaction = transaction
+            currentSignData = WCV1SignData(id, transaction)
             onEthSendTransaction(id, transaction)
         }
         wcc.onEthSendTransaction = { id, transaction ->
             Timber.d("$TAG onEthSendTransaction id: $id, transaction: $transaction")
-            currentWCEthereumTransaction = transaction
+            currentSignData = WCV1SignData(id, transaction)
             onEthSendTransaction(id, transaction)
         }
         wcc.onSignTransaction = { id, transaction ->
@@ -93,12 +91,7 @@ object WalletConnectV1 : WalletConnect() {
 
     var balance: String? = null
     var address: String? = null
-    var currentWCEthereumTransaction: WCEthereumTransaction? = null
-    var currentSignData: SignData? = null
-
-    var chain: Chain = Chain.Polygon
-        private set
-    private var web3j = Web3j.build(HttpService(chain.rpcServers[0]))
+    var currentSignData: WCV1SignData<*>? = null
 
     val sessionStore = WCSessionStoreType(
         MixinApplication.appContext.getSharedPreferences("wallet_connect_v1_session_store", Context.MODE_PRIVATE),
@@ -122,7 +115,6 @@ object WalletConnectV1 : WalletConnect() {
         balance = null
         address = null
         currentSignData = null
-        currentWCEthereumTransaction = null
         sessionStore.session = null
         if (wcClient.session != null) {
             wcClient.killSession()
@@ -160,7 +152,6 @@ object WalletConnectV1 : WalletConnect() {
     fun rejectRequest(id: Long, message: String = "Reject by the user") {
         wcClient.rejectRequest(id, message)
         currentSignData = null
-        currentWCEthereumTransaction = null
     }
 
     fun walletChangeNetwork(priv: ByteArray, id: Long, chainId: Int = Chain.Polygon.chainReference) {
@@ -219,7 +210,7 @@ object WalletConnectV1 : WalletConnect() {
         val v = Numeric.toBigInt(value)
         Timber.d("$TAG nonce: $nonce, value $v wei")
         val rawTransaction = RawTransaction.createTransaction(
-            chain.chainId.toLong(),
+            chain.chainReference.toLong(),
             nonce,
             Numeric.toBigInt(gasLimit),
             transaction.to,
@@ -228,12 +219,11 @@ object WalletConnectV1 : WalletConnect() {
             Numeric.toBigInt(maxPriorityFeePerGas),
             Numeric.toBigInt(maxFeePerGas),
         )
-        val signedMessage = TransactionEncoder.signMessage(rawTransaction, chain.chainId.toLong(), credential)
+        val signedMessage = TransactionEncoder.signMessage(rawTransaction, chain.chainReference.toLong(), credential)
         val hexMessage = Numeric.toHexString(signedMessage)
         Timber.d("$TAG signTransaction $hexMessage")
         if (approve) {
             wcClient.approveRequest(id, hexMessage)
-            currentWCEthereumTransaction = null
         }
         return hexMessage
     }
@@ -251,58 +241,6 @@ object WalletConnectV1 : WalletConnect() {
             Timber.d("$TAG sendTransaction $transactionHash")
             wcClient.approveRequest(id, transactionHash)
         }
-        currentWCEthereumTransaction = null
-    }
-
-    fun getHumanReadableTransactionInfo(wct: WCEthereumTransaction): String {
-        val result = StringBuilder()
-        val estimateGas = getEstimateGas(wct)
-        val amount = Numeric.toBigInt(wct.value)
-        result.append("Estimated gas fee: ${Convert.fromWei(estimateGas.toBigDecimal(), Convert.Unit.ETHER).toPlainString()} ${chain.symbol}\n\n")
-            .append("Amount + gas fee: ${Convert.fromWei((estimateGas + amount).toBigDecimal(), Convert.Unit.ETHER).toPlainString()} ${chain.symbol}\n\n")
-        wct.maxFeePerGas?.let { result.append("maxFeePerGas: ${Convert.fromWei(Numeric.toBigInt(it).toBigDecimal(), Convert.Unit.GWEI).toPlainString()} GWEI\n") }
-        wct.maxPriorityFeePerGas?.let { result.append("maxPriorityFeePerGas: ${Convert.fromWei(Numeric.toBigInt(it).toBigDecimal(), Convert.Unit.GWEI).toPlainString()} GWEI\n\n") }
-        return result.append("HEX Data\n")
-            .append(wct.data)
-            .toString()
-    }
-
-    private fun getEstimateGas(wct: WCEthereumTransaction): BigInteger {
-        val gasPrice = if (wct.maxFeePerGas != null) {
-            Numeric.toBigInt(wct.maxFeePerGas)
-        } else {
-            val ethGasPrice = web3j.ethGasPrice().sendAsync().get(web3jTimeout, TimeUnit.SECONDS)
-            if (ethGasPrice.hasError()) {
-                val error = ethGasPrice.error
-                val msg = "error code: ${error.code}, message: ${error.message}"
-                Timber.d("$TAG ethGasPrice error $msg")
-                throw WalletConnectException(error.code, error.message)
-            }
-            ethGasPrice.gasPrice
-        }
-        val gas = if (wct.gas != null) {
-            Numeric.toBigInt(wct.gas)
-        } else {
-            val tx = Transaction.createFunctionCallTransaction(
-                wct.from,
-                null,
-                gasPrice,
-                Numeric.toBigInt(wct.gasLimit ?: defaultGasLimit),
-                wct.to,
-                Numeric.toBigInt(wct.value),
-                wct.data,
-            )
-            val ethEstimateGas =
-                web3j.ethEstimateGas(tx).sendAsync().get(web3jTimeout, TimeUnit.SECONDS)
-            if (ethEstimateGas.hasError()) {
-                val error = ethEstimateGas.error
-                val msg = "error code: ${error.code}, message: ${error.message}"
-                Timber.d("$TAG ethEstimateGas error $msg")
-                throw WalletConnectException(error.code, error.message)
-            }
-            ethEstimateGas.amountUsed
-        }
-        return gas * gasPrice
     }
 
     var onSessionRequest: (id: Long, peer: WCPeerMeta) -> Unit = { _, _ -> Unit }

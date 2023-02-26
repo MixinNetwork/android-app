@@ -1193,4 +1193,5 @@
     <string name="Network">Network</string>
     <string name="Network_fee">Network fee</string>
     <string name="Message">Message</string>
+    <string name="Balance_Change">Balance Changes (estimate)</string>
 </resources>

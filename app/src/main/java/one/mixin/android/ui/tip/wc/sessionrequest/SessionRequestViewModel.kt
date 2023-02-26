@@ -1,6 +1,8 @@
 package one.mixin.android.ui.tip.wc.sessionrequest
 
 import androidx.lifecycle.ViewModel
+import com.trustwallet.walletconnect.models.ethereum.WCEthereumSignMessage
+import com.trustwallet.walletconnect.models.ethereum.WCEthereumTransaction
 import dagger.hilt.android.lifecycle.HiltViewModel
 import one.mixin.android.tip.wc.WalletConnect
 import one.mixin.android.tip.wc.WalletConnectV1
@@ -22,7 +24,7 @@ class SessionRequestViewModel @Inject internal constructor() : ViewModel() {
         }
     }
 
-    fun getSessionRequestUI(version: WalletConnect.Version): SessionRequestUI? {
+    fun getSessionRequestUI(version: WalletConnect.Version): SessionRequestUI<*>? {
         when (version) {
             WalletConnect.Version.V1 -> {
                 val signData = WalletConnectV1.currentSignData ?: return null
@@ -34,11 +36,23 @@ class SessionRequestViewModel @Inject internal constructor() : ViewModel() {
                     desc = peer.description ?: "",
                     icon = peer.icons.firstOrNull().toString(),
                 )
-                return SessionRequestUI(
-                    peerUI = peerUI,
-                    requestId = signData.requestId,
-                    param = signData.signMessage.data,
-                )
+                when (signData.signMessage) {
+                    is WCEthereumSignMessage -> {
+                        return SessionRequestUI(
+                            peerUI = peerUI,
+                            requestId = signData.requestId,
+                            data = signData.signMessage,
+                        )
+                    }
+                    is WCEthereumTransaction -> {
+                        return SessionRequestUI(
+                            peerUI = peerUI,
+                            requestId = signData.requestId,
+                            data = signData.signMessage,
+                        )
+                    }
+                    else -> return null
+                }
             }
             WalletConnect.Version.V2 -> {
                 val sessionRequest = WalletConnectV2.sessionRequest ?: return null
@@ -50,11 +64,31 @@ class SessionRequestViewModel @Inject internal constructor() : ViewModel() {
                         desc = sessionRequest.peerMetaData?.description ?: "",
                     ),
                     requestId = sessionRequest.request.id,
-                    param = sessionRequest.request.params,
+                    data = sessionRequest.request.params,
                     chain = sessionRequest.chainId,
                     method = sessionRequest.request.method,
                 )
             }
+        }
+    }
+
+    fun <T> getContent(
+        version: WalletConnect.Version,
+        data: T,
+    ): String = when (version) {
+        WalletConnect.Version.V1 -> {
+            when (data) {
+                is WCEthereumSignMessage -> {
+                    data.data
+                }
+                is WCEthereumTransaction -> {
+                    data.toString()
+                }
+                else -> "Invalid data"
+            }
+        }
+        WalletConnect.Version.V2 -> {
+            data.toString()
         }
     }
 }
