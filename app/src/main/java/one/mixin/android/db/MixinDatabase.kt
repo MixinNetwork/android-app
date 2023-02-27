@@ -250,9 +250,6 @@ abstract class MixinDatabase : RoomDatabase() {
             }
         }
 
-        internal fun rawDelete(table: String, whereClause: String, whereArgs: Array<Any>): Int? =
-            supportSQLiteDatabase?.delete(table, whereClause, whereArgs)
-
         fun checkPoint() {
             supportSQLiteDatabase?.query("PRAGMA wal_checkpoint(FULL)")?.close()
         }
@@ -268,8 +265,6 @@ abstract class MixinDatabase : RoomDatabase() {
             }
         }
     }
-
-    fun isDbLockedByCurrentThread() = supportSQLiteDatabase?.isDbLockedByCurrentThread
 }
 
 fun runInTransaction(block: () -> Unit) {

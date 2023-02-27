@@ -569,6 +569,4 @@ internal constructor(
 
     suspend fun indexAudioByConversationId(messageId: String, conversationId: String): Int =
         messageDao.indexAudioByConversationId(messageId, conversationId)
-
-    suspend fun getUnreadMessageIds(conversationId: String) = remoteMessageStatusDao.getUnreadMessageIds(conversationId)
 }

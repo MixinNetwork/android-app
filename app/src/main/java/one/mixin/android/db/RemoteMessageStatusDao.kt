@@ -31,7 +31,4 @@ interface RemoteMessageStatusDao : BaseDao<RemoteMessageStatus> {
 
     @Query("SELECT message_id FROM remote_messages_status WHERE conversation_id = :conversationId AND status != 'READ' LIMIT 50")
     suspend fun getUnreadMessageIds(conversationId: String): List<String>
-
-    @Query("SELECT * FROM remote_messages_status WHERE message_id IN (:ids)")
-    fun getByIds(ids: List<String>): List<RemoteMessageStatus>
 }

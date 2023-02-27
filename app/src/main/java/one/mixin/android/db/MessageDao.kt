@@ -23,7 +23,6 @@ import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.MessageMedia
 import one.mixin.android.vo.MessageMinimal
 import one.mixin.android.vo.QuoteMessageItem
-import one.mixin.android.vo.SearchMessageItem
 
 @Dao
 interface MessageDao : BaseDao<Message> {
@@ -227,22 +226,6 @@ interface MessageDao : BaseDao<Message> {
 
     @Query("SELECT count(id) FROM messages WHERE conversation_id = :conversationId AND quote_message_id = :messageId AND quote_content IS NULL")
     fun countMessageByQuoteId(conversationId: String, messageId: String): Int
-
-    @Query(
-        """
-        SELECT m.conversation_id AS conversationId, c.icon_url AS conversationAvatarUrl,
-        c.name AS conversationName, c.category AS conversationCategory, count(m.id) as messageCount,
-        u.user_id AS userId, u.avatar_url AS userAvatarUrl, u.full_name AS userFullName
-        FROM messages m
-        INNER JOIN users u ON c.owner_id = u.user_id
-        INNER JOIN conversations c ON c.conversation_id = m.conversation_id
-        WHERE m.id IN (:messageIds) 
-        GROUP BY m.conversation_id
-        ORDER BY max(m.created_at) DESC
-        LIMIT :limit
-        """,
-    )
-    suspend fun fuzzySearchMessage(messageIds: List<String>, limit: Int): List<SearchMessageItem>
 
     @RawQuery
     suspend fun fuzzySearchMessage(query: SupportSQLiteQuery): List<FtsSearchResult>

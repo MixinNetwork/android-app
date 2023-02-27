@@ -48,7 +48,6 @@ import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.databinding.FragmentConversationListBinding
 import one.mixin.android.databinding.ItemListConversationBinding
 import one.mixin.android.databinding.ViewConversationBottomBinding
-import one.mixin.android.db.DatabaseMonitor
 import one.mixin.android.event.BotEvent
 import one.mixin.android.event.CircleDeleteEvent
 import one.mixin.android.extension.alertDialogBuilder
@@ -459,7 +458,6 @@ class ConversationListFragment : LinkFragment() {
                 R.string.Mute
             },
         )
-        viewBinding.debugTv.isVisible = DatabaseMonitor.enable
         val bottomSheet = builder.create()
         viewBinding.muteTv.setOnClickListener {
             if (isMute) {
