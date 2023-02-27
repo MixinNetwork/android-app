@@ -16,7 +16,6 @@ import org.web3j.crypto.Credentials
 import org.web3j.crypto.ECKeyPair
 import org.web3j.crypto.Keys
 import org.web3j.crypto.RawTransaction
-import org.web3j.crypto.Sign
 import org.web3j.crypto.TransactionEncoder
 import org.web3j.protocol.Web3j
 import org.web3j.protocol.core.DefaultBlockParameterName
@@ -173,14 +172,8 @@ object WalletConnectV1 : WalletConnect() {
         return "$balance ${chainId.getChainSymbol()}"
     }
 
-    fun ethSignMessage(priv: ByteArray, id: Long, message: ByteArray) {
-        val keyPair = ECKeyPair.create(priv)
-        val signature = Sign.signPrefixedMessage(message, keyPair)
-        val b = ByteArray(65)
-        System.arraycopy(signature.r, 0, b, 0, 32)
-        System.arraycopy(signature.s, 0, b, 32, 32)
-        System.arraycopy(signature.v, 0, b, 64, 1)
-        wcClient.approveRequest(id, Numeric.toHexString(b))
+    fun ethSignMessage(priv: ByteArray, id: Long, message: WCEthereumSignMessage) {
+        wcClient.approveRequest(id, signMessage(priv, message))
     }
 
     fun ethSignTransaction(priv: ByteArray, id: Long, transaction: WCEthereumTransaction, approve: Boolean): String {

@@ -17,6 +17,7 @@ import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.view.doOnPreDraw
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
@@ -38,14 +39,17 @@ import one.mixin.android.tip.wc.WalletConnect
 import one.mixin.android.tip.wc.WalletConnectException
 import one.mixin.android.tip.wc.WalletConnectV1
 import one.mixin.android.tip.wc.WalletConnectV2
+import one.mixin.android.tip.wc.walletConnectChainIdMap
 import one.mixin.android.ui.common.biometric.BiometricDialog
 import one.mixin.android.ui.common.biometric.BiometricInfo
 import one.mixin.android.ui.tip.wc.sessionproposal.SessionProposalPage
 import one.mixin.android.ui.tip.wc.sessionrequest.SessionRequestPage
 import one.mixin.android.util.BiometricUtil
 import one.mixin.android.util.SystemUIManager
+import one.mixin.android.vo.Asset
 import org.web3j.utils.Convert
 import timber.log.Timber
+import java.math.BigDecimal
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 
@@ -74,6 +78,8 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
     private var behavior: BottomSheetBehavior<*>? = null
     override fun getTheme() = R.style.AppTheme_Dialog
 
+    private val viewModel by viewModels<WalletConnectBottomSheetViewModel>()
+
     private var pinCompleted = false
 
     private val requestType by lazy { RequestType.values()[requireArguments().getInt(ARGS_REQUEST_TYPE)] }
@@ -82,7 +88,8 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
 
     private var step by mutableStateOf(Step.Input)
     private var errorInfo: String? by mutableStateOf(null)
-    private var fee: String? by mutableStateOf(null)
+    private var fee: BigDecimal? by mutableStateOf(null)
+    private var asset: Asset? by mutableStateOf(null)
 
     init {
         lifecycleScope.launchWhenCreated {
@@ -119,6 +126,7 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
                     SessionRequestPage(
                         version,
                         step,
+                        asset,
                         fee,
                         errorInfo,
                         onDismissRequest = { dismiss() },
@@ -137,7 +145,7 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
             behavior?.addBottomSheetCallback(bottomSheetBehaviorCallback)
         }
 
-        refreshEstimatedGas()
+        refreshEstimatedGasAndAsset()
     }
 
     @SuppressLint("RestrictedApi")
@@ -175,10 +183,21 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
         dismissAllowingStateLoss()
     }
 
-    private fun refreshEstimatedGas() {
+    private fun refreshEstimatedGasAndAsset() {
         val signData = wc.currentSignData ?: return
         val tx = signData.signMessage
         if (tx !is WCEthereumTransaction) return
+        val assetId = walletConnectChainIdMap[
+            if (version == WalletConnect.Version.V1) {
+                WalletConnectV1.chain.symbol
+            } else {
+                WalletConnectV2.chain.symbol
+            },
+        ]
+        if (assetId == null) {
+            Timber.d("$TAG refreshEstimatedGasAndAsset assetId not support")
+            return
+        }
 
         tickerFlow(15.seconds)
             .onEach {
@@ -187,7 +206,8 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 } catch (e: WalletConnectException) {
                     return@onEach
                 }
-                fee = Convert.fromWei(estimateGas.toBigDecimal(), Convert.Unit.ETHER).toPlainString()
+                fee = Convert.fromWei(estimateGas.toBigDecimal(), Convert.Unit.ETHER)
+                asset = viewModel.refreshAsset(assetId)
             }
             .launchIn(lifecycleScope)
     }

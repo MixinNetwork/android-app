@@ -115,7 +115,6 @@ import one.mixin.android.tip.tipPrivToPrivateKey
 import one.mixin.android.tip.wc.WalletConnect
 import one.mixin.android.tip.wc.WalletConnectV1
 import one.mixin.android.tip.wc.WalletConnectV2
-import one.mixin.android.tip.wc.hexToBytes
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.BatteryOptimizationDialogActivity
 import one.mixin.android.ui.common.BlazeBaseActivity
@@ -755,7 +754,7 @@ class MainActivity : BlazeBaseActivity() {
 //                    }
                     wc.onEthSign = { id, message ->
                         showWalletConnectBottomSheet(WalletConnectBottomSheetDialogFragment.RequestType.SessionRequest, WalletConnect.Version.V1, { wc.rejectRequest(id) }) { priv ->
-                            wc.ethSignMessage(priv, id, message.hexToBytes())
+                            wc.ethSignMessage(priv, id, message)
                         }
                     }
                     wc.onEthSignTransaction = { id, transaction ->

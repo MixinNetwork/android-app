@@ -1,5 +1,7 @@
 package one.mixin.android.tip.wc
 
+import one.mixin.android.Constants
+
 sealed class Chain(
     val chainNamespace: String,
     val chainReference: Int,
@@ -57,3 +59,8 @@ internal fun String?.getChainSymbol(): String? {
         else -> null
     }
 }
+
+val walletConnectChainIdMap = mapOf(
+    Chain.Ethereum.symbol to Constants.ChainId.ETHEREUM_CHAIN_ID,
+    Chain.Polygon.symbol to Constants.ChainId.Polygon,
+)

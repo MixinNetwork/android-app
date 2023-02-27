@@ -42,14 +42,18 @@ import one.mixin.android.ui.tip.wc.WalletConnectBottomSheetDialogFragment
 import one.mixin.android.ui.tip.wc.connections.Loading
 import one.mixin.android.ui.tip.wc.sessionproposal.DAppInfo
 import one.mixin.android.ui.tip.wc.sessionproposal.WCPinBoard
+import one.mixin.android.vo.Asset
+import one.mixin.android.vo.priceUSD
 import org.web3j.utils.Convert
 import org.web3j.utils.Numeric
+import java.math.BigDecimal
 
 @Composable
 fun SessionRequestPage(
     version: WalletConnect.Version,
     step: WalletConnectBottomSheetDialogFragment.Step,
-    fee: String?,
+    asset: Asset?,
+    fee: BigDecimal?,
     errorInfo: String?,
     onDismissRequest: () -> Unit,
     onBiometricClick: () -> Unit,
@@ -101,9 +105,9 @@ fun SessionRequestPage(
             Message(content = viewModel.getContent(version, sessionRequestUI.data)) {
             }
         } else if (sessionRequestUI.data is WCEthereumTransaction) {
-            Transaction(balance = Convert.fromWei(Numeric.toBigInt(sessionRequestUI.data.value).toBigDecimal(), Convert.Unit.ETHER).toPlainString() ?: "0", sessionRequestUI.chain)
+            Transaction(balance = Convert.fromWei(Numeric.toBigInt(sessionRequestUI.data.value).toBigDecimal(), Convert.Unit.ETHER).multiply(asset.priceUSD()), sessionRequestUI.chain, asset)
         }
-        NetworkInfo(name = sessionRequestUI.chain.name, fee = fee ?: "0")
+        NetworkInfo(name = sessionRequestUI.chain.name, fee = (fee ?: BigDecimal.ZERO).multiply(asset.priceUSD()).toPlainString())
         Box(modifier = Modifier.width(16.dp))
         Warning()
         Box(modifier = Modifier.width(20.dp))
@@ -121,9 +125,9 @@ fun SessionRequestPage(
 
 @Composable
 private fun Transaction(
-    balance: String,
+    balance: BigDecimal,
     chain: Chain,
-    icon: String = "https://mixin-images.zeromesh.net/zVDjOxNTQvVsA8h2B4ZVxuHoCF3DJszufYKWpd9duXUSbSapoZadC7_13cnWBqg0EmwmRcKGbJaUpA8wFfpgZA=s128",
+    asset: Asset?,
 ) {
     Box(
         modifier = Modifier
@@ -160,7 +164,7 @@ private fun Transaction(
             )
             Box(modifier = Modifier.weight(1f))
             GlideImage(
-                data = icon,
+                data = asset?.iconUrl ?: "",
                 modifier = Modifier
                     .size(32.dp)
                     .clip(CircleShape),
@@ -169,7 +173,7 @@ private fun Transaction(
         }
         Text(
             modifier = Modifier.padding(top = 76.dp),
-            text = "≈ $100",
+            text = "≈ $${balance.multiply(asset.priceUSD()).toPlainString()}",
             color = MixinAppTheme.colors.textMinor,
             fontSize = 12.sp,
         )
@@ -249,7 +253,7 @@ private fun NetworkInfo(
                 fontSize = 14.sp,
             )
             Text(
-                text = fee,
+                text = "≈ $$fee",
                 color = MixinAppTheme.colors.textSubtitle,
                 fontSize = 14.sp,
             )
@@ -290,5 +294,5 @@ private fun Warning() {
 @Preview
 @Composable
 private fun TransactionPreview() {
-    Transaction(balance = "0.134", chain = Chain.Ethereum)
+    Transaction(balance = BigDecimal(0.134), chain = Chain.Ethereum, null)
 }

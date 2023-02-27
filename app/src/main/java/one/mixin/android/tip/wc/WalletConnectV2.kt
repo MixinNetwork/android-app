@@ -25,7 +25,6 @@ import org.web3j.crypto.Credentials
 import org.web3j.crypto.ECKeyPair
 import org.web3j.crypto.Keys
 import org.web3j.crypto.RawTransaction
-import org.web3j.crypto.Sign
 import org.web3j.crypto.TransactionEncoder
 import org.web3j.protocol.core.DefaultBlockParameterName
 import org.web3j.utils.Numeric
@@ -282,14 +281,14 @@ object WalletConnectV2 : WalletConnect() {
                 val address = array[1].toString().trim('"')
                 val data = array[0].toString().trim('"')
                 Timber.d("$TAG personal sign: $data")
-                currentSignData = WCSignData.V2SignData(request.request.id, WCEthereumSignMessage(listOf(address, data), WCEthereumSignMessage.WCSignType.MESSAGE), request)
+                currentSignData = WCSignData.V2SignData(request.request.id, WCEthereumSignMessage(listOf(address, data), WCEthereumSignMessage.WCSignType.PERSONAL_MESSAGE), request)
             }
             Method.ETHSignTypedData.name, Method.ETHSignTypedDataV4.name -> {
                 val array = JsonParser.parseString(request.request.params).asJsonArray
                 val address = array[0].toString().trim('"')
                 val data = array[1].toString().trim('"')
                 Timber.d("$TAG sign typed data: $data")
-                currentSignData = WCSignData.V2SignData(request.request.id, WCEthereumSignMessage(listOf(address, data), WCEthereumSignMessage.WCSignType.MESSAGE), request)
+                currentSignData = WCSignData.V2SignData(request.request.id, WCEthereumSignMessage(listOf(address, data), WCEthereumSignMessage.WCSignType.TYPED_MESSAGE), request)
             }
             Method.ETHSignTransaction.name -> {
                 val transaction = gson.fromJson<List<WCEthereumTransaction>>(request.request.params).firstOrNull() ?: return
@@ -311,7 +310,7 @@ object WalletConnectV2 : WalletConnect() {
         val signMessage = signData.signMessage ?: return
 
         if (signMessage is WCEthereumSignMessage) {
-            ethSignData(priv, signData.requestId, signData.sessionRequest.topic, signMessage.hexToBytes())
+            ethSignMessage(priv, signData.requestId, signData.sessionRequest.topic, signMessage)
         } else if (signMessage is WCEthereumTransaction) {
             when (signData.sessionRequest.request.method) {
                 Method.ETHSignTransaction.name -> {
@@ -404,14 +403,8 @@ object WalletConnectV2 : WalletConnect() {
 //        this.sessionRequest = null
     }
 
-    private fun ethSignData(priv: ByteArray, id: Long, topic: String, data: ByteArray) {
-        val keyPair = ECKeyPair.create(priv)
-        val signature = Sign.signPrefixedMessage(data, keyPair)
-        val b = ByteArray(65)
-        System.arraycopy(signature.r, 0, b, 0, 32)
-        System.arraycopy(signature.s, 0, b, 32, 32)
-        System.arraycopy(signature.v, 0, b, 64, 1)
-        approveRequestInternal(Numeric.toHexString(b), topic, id)
+    fun ethSignMessage(priv: ByteArray, id: Long, topic: String, message: WCEthereumSignMessage) {
+        approveRequestInternal(signMessage(priv, message), topic, id)
     }
 
     private fun ethSignTransaction(priv: ByteArray, id: Long, topic: String, transaction: WCEthereumTransaction, approve: Boolean): String {

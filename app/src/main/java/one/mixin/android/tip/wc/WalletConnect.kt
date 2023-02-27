@@ -3,6 +3,9 @@ package one.mixin.android.tip.wc
 import com.trustwallet.walletconnect.models.ethereum.WCEthereumSignMessage
 import com.trustwallet.walletconnect.models.ethereum.WCEthereumTransaction
 import com.walletconnect.web3.wallet.client.Wallet
+import org.web3j.crypto.ECKeyPair
+import org.web3j.crypto.Sign
+import org.web3j.crypto.StructuredDataEncoder
 import org.web3j.protocol.Web3j
 import org.web3j.protocol.core.methods.request.Transaction
 import org.web3j.protocol.http.HttpService
@@ -104,11 +107,19 @@ abstract class WalletConnect {
         }
         return gas * gasPrice
     }
-}
 
-fun WCEthereumSignMessage.hexToBytes(): ByteArray =
-    if (type == WCEthereumSignMessage.WCSignType.TYPED_MESSAGE) {
-        data.toByteArray()
-    } else {
-        Numeric.hexStringToByteArray(data)
+    fun signMessage(priv: ByteArray, message: WCEthereumSignMessage): String {
+        val keyPair = ECKeyPair.create(priv)
+        val signature = if (message.type == WCEthereumSignMessage.WCSignType.TYPED_MESSAGE) {
+            val encoder = StructuredDataEncoder(message.data)
+            Sign.signMessage(encoder.hashStructuredData(), keyPair, false)
+        } else {
+            Sign.signPrefixedMessage(Numeric.hexStringToByteArray(message.data), keyPair)
+        }
+        val b = ByteArray(65)
+        System.arraycopy(signature.r, 0, b, 0, 32)
+        System.arraycopy(signature.s, 0, b, 32, 32)
+        System.arraycopy(signature.v, 0, b, 64, 1)
+        return Numeric.toHexString(b)
     }
+}

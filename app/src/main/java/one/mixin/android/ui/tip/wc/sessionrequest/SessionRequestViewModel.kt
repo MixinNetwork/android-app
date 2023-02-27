@@ -46,11 +46,12 @@ class SessionRequestViewModel @Inject internal constructor() : ViewModel() {
             WalletConnect.Version.V2 -> {
                 val signData = (WalletConnectV2.currentSignData ?: return null) as? WalletConnect.WCSignData.V2SignData ?: return null
                 val sessionRequest = signData.sessionRequest
+                val peer = sessionRequest.peerMetaData ?: return null
                 val peerUI = PeerUI(
-                    name = sessionRequest.peerMetaData?.name ?: "",
-                    icon = sessionRequest.peerMetaData?.icons?.firstOrNull() ?: "",
-                    uri = sessionRequest.peerMetaData?.url ?: "",
-                    desc = sessionRequest.peerMetaData?.description ?: "",
+                    name = peer.name,
+                    icon = peer.icons.firstOrNull() ?: "",
+                    uri = peer.url,
+                    desc = peer.description,
                 )
                 return SessionRequestUI(
                     peerUI = peerUI,
