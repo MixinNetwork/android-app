@@ -2,11 +2,11 @@ package one.mixin.android.db.monitor
 
 import one.mixin.android.BuildConfig
 
-object DatabaseMonitor {
+object MonitorPrinter {
 
     private val databaseMap = HashMap<String, MonitorData>()
 
-    fun monitor(sqlQuery: String, args: List<Any?>) {
+    fun print(sqlQuery: String, args: List<Any?>) {
         if (!BuildConfig.DEBUG) return
         val sql = sqlQuery.trim()
         val currentThreadName = Thread.currentThread().name
