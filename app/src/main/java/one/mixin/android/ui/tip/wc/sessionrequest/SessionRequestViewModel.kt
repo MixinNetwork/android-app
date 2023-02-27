@@ -36,37 +36,27 @@ class SessionRequestViewModel @Inject internal constructor() : ViewModel() {
                     desc = peer.description ?: "",
                     icon = peer.icons.firstOrNull().toString(),
                 )
-                when (signData.signMessage) {
-                    is WCEthereumSignMessage -> {
-                        return SessionRequestUI(
-                            peerUI = peerUI,
-                            requestId = signData.requestId,
-                            data = signData.signMessage,
-                        )
-                    }
-                    is WCEthereumTransaction -> {
-                        return SessionRequestUI(
-                            peerUI = peerUI,
-                            requestId = signData.requestId,
-                            data = signData.signMessage,
-                        )
-                    }
-                    else -> return null
-                }
+                return SessionRequestUI(
+                    peerUI = peerUI,
+                    requestId = signData.requestId,
+                    data = signData.signMessage,
+                    chain = WalletConnectV1.chain,
+                )
             }
             WalletConnect.Version.V2 -> {
-                val sessionRequest = WalletConnectV2.sessionRequest ?: return null
+                val signData = (WalletConnectV2.currentSignData ?: return null) as? WalletConnect.WCSignData.V2SignData ?: return null
+                val sessionRequest = signData.sessionRequest
+                val peerUI = PeerUI(
+                    name = sessionRequest.peerMetaData?.name ?: "",
+                    icon = sessionRequest.peerMetaData?.icons?.firstOrNull() ?: "",
+                    uri = sessionRequest.peerMetaData?.url ?: "",
+                    desc = sessionRequest.peerMetaData?.description ?: "",
+                )
                 return SessionRequestUI(
-                    peerUI = PeerUI(
-                        name = sessionRequest.peerMetaData?.name ?: "",
-                        icon = sessionRequest.peerMetaData?.icons?.firstOrNull() ?: "",
-                        uri = sessionRequest.peerMetaData?.url ?: "",
-                        desc = sessionRequest.peerMetaData?.description ?: "",
-                    ),
-                    requestId = sessionRequest.request.id,
-                    data = sessionRequest.request.params,
-                    chain = sessionRequest.chainId,
-                    method = sessionRequest.request.method,
+                    peerUI = peerUI,
+                    requestId = signData.requestId,
+                    data = signData.signMessage,
+                    chain = WalletConnectV2.chain,
                 )
             }
         }

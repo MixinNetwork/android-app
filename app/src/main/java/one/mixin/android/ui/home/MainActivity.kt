@@ -31,7 +31,6 @@ import com.google.android.play.core.install.model.InstallStatus
 import com.google.android.play.core.install.model.UpdateAvailability
 import com.google.firebase.crashlytics.FirebaseCrashlytics
 import com.microsoft.appcenter.AppCenter
-import com.trustwallet.walletconnect.models.ethereum.WCEthereumSignMessage
 import com.trustwallet.walletconnect.models.session.WCSession
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
@@ -116,6 +115,7 @@ import one.mixin.android.tip.tipPrivToPrivateKey
 import one.mixin.android.tip.wc.WalletConnect
 import one.mixin.android.tip.wc.WalletConnectV1
 import one.mixin.android.tip.wc.WalletConnectV2
+import one.mixin.android.tip.wc.hexToBytes
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.BatteryOptimizationDialogActivity
 import one.mixin.android.ui.common.BlazeBaseActivity
@@ -159,7 +159,6 @@ import one.mixin.android.vo.Participant
 import one.mixin.android.vo.ParticipantRole
 import one.mixin.android.vo.isGroupConversation
 import one.mixin.android.widget.MaterialSearchView
-import org.web3j.utils.Numeric
 import timber.log.Timber
 import javax.inject.Inject
 
@@ -756,12 +755,7 @@ class MainActivity : BlazeBaseActivity() {
 //                    }
                     wc.onEthSign = { id, message ->
                         showWalletConnectBottomSheet(WalletConnectBottomSheetDialogFragment.RequestType.SessionRequest, WalletConnect.Version.V1, { wc.rejectRequest(id) }) { priv ->
-                            val data = if (message.type == WCEthereumSignMessage.WCSignType.TYPED_MESSAGE) {
-                                message.data.toByteArray()
-                            } else {
-                                Numeric.hexStringToByteArray(message.data)
-                            }
-                            wc.ethSignMessage(priv, id, data)
+                            wc.ethSignMessage(priv, id, message.hexToBytes())
                         }
                     }
                     wc.onEthSignTransaction = { id, transaction ->

@@ -78,6 +78,7 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
 
     private val requestType by lazy { RequestType.values()[requireArguments().getInt(ARGS_REQUEST_TYPE)] }
     private val version by lazy { WalletConnect.Version.values()[requireArguments().getInt(ARGS_VERSION)] }
+    private val wc by lazy { if (version == WalletConnect.Version.V1) WalletConnectV1 else WalletConnectV2 }
 
     private var step by mutableStateOf(Step.Input)
     private var errorInfo: String? by mutableStateOf(null)
@@ -164,7 +165,7 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
 
     override fun onDismiss(dialog: DialogInterface) {
         if (!pinCompleted) {
-            Timber.d("${WalletConnectV2.TAG} dismiss onReject")
+            Timber.d("$TAG dismiss onReject")
             onReject?.invoke()
         }
         super.onDismiss(dialog)
@@ -175,13 +176,17 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
     }
 
     private fun refreshEstimatedGas() {
-        val signData = WalletConnectV1.currentSignData ?: return
-        if (signData.signMessage !is WCEthereumTransaction) return
-
+        val signData = wc.currentSignData ?: return
         val tx = signData.signMessage
+        if (tx !is WCEthereumTransaction) return
+
         tickerFlow(15.seconds)
             .onEach {
-                val estimateGas = WalletConnectV1.getEstimateGas(tx)
+                val estimateGas = try {
+                    wc.getEstimateGas(tx)
+                } catch (e: WalletConnectException) {
+                    return@onEach
+                }
                 fee = Convert.fromWei(estimateGas.toBigDecimal(), Convert.Unit.ETHER).toPlainString()
             }
             .launchIn(lifecycleScope)

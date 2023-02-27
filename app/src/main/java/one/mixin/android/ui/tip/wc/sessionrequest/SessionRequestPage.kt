@@ -35,6 +35,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.trustwallet.walletconnect.models.ethereum.WCEthereumSignMessage
 import com.trustwallet.walletconnect.models.ethereum.WCEthereumTransaction
 import one.mixin.android.R
+import one.mixin.android.tip.wc.Chain
 import one.mixin.android.tip.wc.WalletConnect
 import one.mixin.android.ui.setting.ui.theme.MixinAppTheme
 import one.mixin.android.ui.tip.wc.WalletConnectBottomSheetDialogFragment
@@ -100,9 +101,9 @@ fun SessionRequestPage(
             Message(content = viewModel.getContent(version, sessionRequestUI.data)) {
             }
         } else if (sessionRequestUI.data is WCEthereumTransaction) {
-            Transaction(balance = Convert.fromWei(Numeric.toBigInt(sessionRequestUI.data.value).toBigDecimal(), Convert.Unit.ETHER).toPlainString() ?: "0")
+            Transaction(balance = Convert.fromWei(Numeric.toBigInt(sessionRequestUI.data.value).toBigDecimal(), Convert.Unit.ETHER).toPlainString() ?: "0", sessionRequestUI.chain)
         }
-        NetworkInfo(name = sessionRequestUI.chain ?: "", fee = fee ?: "0")
+        NetworkInfo(name = sessionRequestUI.chain.name, fee = fee ?: "0")
         Box(modifier = Modifier.width(16.dp))
         Warning()
         Box(modifier = Modifier.width(20.dp))
@@ -121,6 +122,7 @@ fun SessionRequestPage(
 @Composable
 private fun Transaction(
     balance: String,
+    chain: Chain,
     icon: String = "https://mixin-images.zeromesh.net/zVDjOxNTQvVsA8h2B4ZVxuHoCF3DJszufYKWpd9duXUSbSapoZadC7_13cnWBqg0EmwmRcKGbJaUpA8wFfpgZA=s128",
 ) {
     Box(
@@ -152,7 +154,7 @@ private fun Transaction(
             )
             Box(modifier = Modifier.width(4.dp))
             Text(
-                text = "ETH",
+                text = chain.symbol,
                 color = MixinAppTheme.colors.textPrimary,
                 fontSize = 12.sp,
             )
@@ -288,5 +290,5 @@ private fun Warning() {
 @Preview
 @Composable
 private fun TransactionPreview() {
-    Transaction(balance = "0.134")
+    Transaction(balance = "0.134", chain = Chain.Ethereum)
 }

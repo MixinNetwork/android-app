@@ -29,11 +29,6 @@ import java.util.concurrent.TimeUnit
 object WalletConnectV1 : WalletConnect() {
     const val TAG = "WalletConnectV1"
 
-    data class WCV1SignData<T>(
-        val requestId: Long,
-        val signMessage: T,
-    )
-
     private val wcClient = WCClient(GsonBuilder(), OkHttpClient.Builder().build()).also { wcc ->
         wcc.onSessionRequest = { id, peer ->
             Timber.d("$TAG onSessionRequest id: $id, peer: $peer")
@@ -61,17 +56,17 @@ object WalletConnectV1 : WalletConnect() {
         }
         wcc.onEthSign = { id, message ->
             Timber.d("$TAG onEthSign id: $id, message: $message")
-            currentSignData = WCV1SignData(id, message)
+            currentSignData = WCSignData.V1SignData(id, message)
             onEthSign(id, message)
         }
         wcc.onEthSignTransaction = { id, transaction ->
             Timber.d("$TAG onEthSignTransaction id: $id, transaction: $transaction")
-            currentSignData = WCV1SignData(id, transaction)
+            currentSignData = WCSignData.V1SignData(id, transaction)
             onEthSendTransaction(id, transaction)
         }
         wcc.onEthSendTransaction = { id, transaction ->
             Timber.d("$TAG onEthSendTransaction id: $id, transaction: $transaction")
-            currentSignData = WCV1SignData(id, transaction)
+            currentSignData = WCSignData.V1SignData(id, transaction)
             onEthSendTransaction(id, transaction)
         }
         wcc.onSignTransaction = { id, transaction ->
@@ -91,7 +86,6 @@ object WalletConnectV1 : WalletConnect() {
 
     var balance: String? = null
     var address: String? = null
-    var currentSignData: WCV1SignData<*>? = null
 
     val sessionStore = WCSessionStoreType(
         MixinApplication.appContext.getSharedPreferences("wallet_connect_v1_session_store", Context.MODE_PRIVATE),

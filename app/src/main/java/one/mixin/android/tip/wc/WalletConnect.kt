@@ -1,6 +1,8 @@
 package one.mixin.android.tip.wc
 
+import com.trustwallet.walletconnect.models.ethereum.WCEthereumSignMessage
 import com.trustwallet.walletconnect.models.ethereum.WCEthereumTransaction
+import com.walletconnect.web3.wallet.client.Wallet
 import org.web3j.protocol.Web3j
 import org.web3j.protocol.core.methods.request.Transaction
 import org.web3j.protocol.http.HttpService
@@ -22,9 +24,27 @@ abstract class WalletConnect {
         V1, V2
     }
 
+    sealed class WCSignData<T>(
+        open val requestId: Long,
+        open val signMessage: T,
+    ) {
+        data class V1SignData<T>(
+            override val requestId: Long,
+            override val signMessage: T,
+        ) : WCSignData<T>(requestId, signMessage)
+
+        data class V2SignData<T>(
+            override val requestId: Long,
+            override val signMessage: T,
+            val sessionRequest: Wallet.Model.SessionRequest,
+        ) : WCSignData<T>(requestId, signMessage)
+    }
+
     var chain: Chain = Chain.Polygon
         protected set
     protected var web3j = Web3j.build(HttpService(chain.rpcServers[0]))
+
+    open var currentSignData: WCSignData<*>? = null
 
     fun getHumanReadableTransactionInfo(wct: WCEthereumTransaction): String {
         val result = StringBuilder()
@@ -85,3 +105,10 @@ abstract class WalletConnect {
         return gas * gasPrice
     }
 }
+
+fun WCEthereumSignMessage.hexToBytes(): ByteArray =
+    if (type == WCEthereumSignMessage.WCSignType.TYPED_MESSAGE) {
+        data.toByteArray()
+    } else {
+        Numeric.hexStringToByteArray(data)
+    }

@@ -8,6 +8,7 @@ import com.github.salomonbrys.kotson.fromJson
 import com.github.salomonbrys.kotson.registerTypeAdapter
 import com.google.gson.GsonBuilder
 import com.google.gson.JsonParser
+import com.trustwallet.walletconnect.models.ethereum.WCEthereumSignMessage
 import com.trustwallet.walletconnect.models.ethereum.WCEthereumTransaction
 import com.trustwallet.walletconnect.models.ethereum.ethTransactionSerializer
 import com.walletconnect.android.Core
@@ -35,8 +36,6 @@ object WalletConnectV2 : WalletConnect() {
     const val TAG = "WalletConnectV2"
 
     var authRequest: Wallet.Model.AuthRequest? = null
-    var sessionRequest: Wallet.Model.SessionRequest? = null
-    var currentWCEthereumTransaction: WCEthereumTransaction? = null
 
     private val gson = GsonBuilder()
         .serializeNulls()
@@ -103,7 +102,7 @@ object WalletConnectV2 : WalletConnect() {
 
             override fun onSessionRequest(sessionRequest: Wallet.Model.SessionRequest) {
                 Timber.d("$TAG onSessionRequest $sessionRequest")
-                this@WalletConnectV2.sessionRequest = sessionRequest
+                parseSessionRequest(sessionRequest)
                 this@WalletConnectV2.onSessionRequest(sessionRequest)
             }
 
@@ -269,41 +268,69 @@ object WalletConnectV2 : WalletConnect() {
         this.authRequest = null
     }
 
-    fun approveRequest(priv: ByteArray) {
-        val request = this.sessionRequest ?: return
-
-        Timber.d("$TAG ${request.request.params}")
+    private fun parseSessionRequest(request: Wallet.Model.SessionRequest) {
         when (request.request.method) {
             Method.ETHSign.name -> {
-                val data = JsonParser.parseString(request.request.params).asJsonArray[1].toString().trim('"')
+                val array = JsonParser.parseString(request.request.params).asJsonArray
+                val address = array[0].toString().trim('"')
+                val data = array[1].toString().trim('"')
                 Timber.d("$TAG eth sign: $data")
-                ethSignData(priv, request.request.id, request.topic, Numeric.hexStringToByteArray(data))
+                currentSignData = WCSignData.V2SignData(request.request.id, WCEthereumSignMessage(listOf(address, data), WCEthereumSignMessage.WCSignType.MESSAGE), request)
             }
             Method.ETHPersonalSign.name -> {
-                val data = JsonParser.parseString(request.request.params).asJsonArray[0].toString().trim('"')
+                val array = JsonParser.parseString(request.request.params).asJsonArray
+                val address = array[1].toString().trim('"')
+                val data = array[0].toString().trim('"')
                 Timber.d("$TAG personal sign: $data")
-                ethSignData(priv, request.request.id, request.topic, Numeric.hexStringToByteArray(data))
+                currentSignData = WCSignData.V2SignData(request.request.id, WCEthereumSignMessage(listOf(address, data), WCEthereumSignMessage.WCSignType.MESSAGE), request)
             }
             Method.ETHSignTypedData.name, Method.ETHSignTypedDataV4.name -> {
-                val data = JsonParser.parseString(request.request.params).asJsonArray[1].toString()
+                val array = JsonParser.parseString(request.request.params).asJsonArray
+                val address = array[0].toString().trim('"')
+                val data = array[1].toString().trim('"')
                 Timber.d("$TAG sign typed data: $data")
-                ethSignData(priv, request.request.id, request.topic, data.toByteArray())
+                currentSignData = WCSignData.V2SignData(request.request.id, WCEthereumSignMessage(listOf(address, data), WCEthereumSignMessage.WCSignType.MESSAGE), request)
             }
             Method.ETHSignTransaction.name -> {
-                val params = gson.fromJson<List<WCEthereumTransaction>>(request.request.params).firstOrNull() ?: return
-                this.currentWCEthereumTransaction = params
-                ethSignTransaction(priv, request.request.id, request.topic, params, true)
+                val transaction = gson.fromJson<List<WCEthereumTransaction>>(request.request.params).firstOrNull() ?: return
+                currentSignData = WCSignData.V2SignData(request.request.id, transaction, request)
             }
             Method.ETHSendTransaction.name -> {
-                val params = gson.fromJson<List<WCEthereumTransaction>>(request.request.params).firstOrNull() ?: return
-                this.currentWCEthereumTransaction = params
-                ethSendTransaction(priv, request.request.id, request.topic, params)
+                val transaction = gson.fromJson<List<WCEthereumTransaction>>(request.request.params).firstOrNull() ?: return
+                currentSignData = WCSignData.V2SignData(request.request.id, transaction, request)
+            }
+        }
+    }
+
+    fun approveRequest(priv: ByteArray) {
+        val signData = this.currentSignData ?: return
+        if (signData !is WCSignData.V2SignData) {
+            Timber.d("TAG signData is not V2SignData")
+            return
+        }
+        val signMessage = signData.signMessage ?: return
+
+        if (signMessage is WCEthereumSignMessage) {
+            ethSignData(priv, signData.requestId, signData.sessionRequest.topic, signMessage.hexToBytes())
+        } else if (signMessage is WCEthereumTransaction) {
+            when (signData.sessionRequest.request.method) {
+                Method.ETHSignTransaction.name -> {
+                    ethSignTransaction(priv, signData.requestId, signData.sessionRequest.topic, signMessage, true)
+                }
+                Method.ETHSendTransaction.name -> {
+                    ethSendTransaction(priv, signData.requestId, signData.sessionRequest.topic, signMessage)
+                }
             }
         }
     }
 
     fun rejectRequest(message: String? = null) {
-        val request = this.sessionRequest ?: return
+        val signData = this.currentSignData ?: return
+        if (signData !is WCSignData.V2SignData) {
+            Timber.d("TAG signData is not V2SignData")
+            return
+        }
+        val request = signData.sessionRequest
 
         val result = Wallet.Params.SessionRequestResponse(
             sessionTopic = request.topic,
@@ -319,8 +346,6 @@ object WalletConnectV2 : WalletConnect() {
 
         Web3Wallet.getActiveSessionByTopic(request.topic)?.redirect?.toUri()
             ?.let { deepLinkUri -> sendResponseDeepLink(deepLinkUri) }
-        this.sessionRequest = null
-        this.currentWCEthereumTransaction = null
     }
 
     fun getListOfActiveSessions(): List<Wallet.Model.Session> {
