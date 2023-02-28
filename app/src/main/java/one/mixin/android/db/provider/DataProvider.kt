@@ -422,6 +422,7 @@ class DataProvider {
                 LEFT JOIN conversations c ON c.conversation_id = m.conversation_id
 				LEFT JOIN users u ON c.owner_id = u.user_id
                 WHERE m.id IN (*)
+                ORDER BY m.created_at DESC
             """
             val ids = result.values.joinToString(
                 prefix = "'",
