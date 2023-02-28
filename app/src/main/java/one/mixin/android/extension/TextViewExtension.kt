@@ -94,11 +94,12 @@ fun TextView.highLight(
     target: String?,
     ignoreCase: Boolean = true,
     @ColorInt color: Int = resources.getColor(R.color.wallet_blue_secondary, null),
+    source: String? = null,
 ) {
     if (target.isNullOrBlank()) {
         return
     }
-    val text = this.text.toString()
+    val text = source ?: this.text.toString()
     val spannable = SpannableString(text)
     var index = text.indexOf(target, ignoreCase = ignoreCase)
     while (index != -1) {
