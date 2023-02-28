@@ -7,6 +7,8 @@ import org.web3j.crypto.ECKeyPair
 import org.web3j.crypto.Sign
 import org.web3j.crypto.StructuredDataEncoder
 import org.web3j.protocol.Web3j
+import org.web3j.protocol.core.DefaultBlockParameter
+import org.web3j.protocol.core.Response
 import org.web3j.protocol.core.methods.request.Transaction
 import org.web3j.protocol.http.HttpService
 import org.web3j.utils.Convert
@@ -76,10 +78,7 @@ abstract class WalletConnect {
         } else {
             val ethGasPrice = web3j.ethGasPrice().sendAsync().get(web3jTimeout, TimeUnit.SECONDS)
             if (ethGasPrice.hasError()) {
-                val error = ethGasPrice.error
-                val msg = "error code: ${error.code}, message: ${error.message}"
-                Timber.d("$TAG ethGasPrice error $msg")
-                throw WalletConnectException(error.code, error.message)
+                throwError(ethGasPrice.error)
             }
             ethGasPrice.gasPrice
         }
@@ -98,14 +97,38 @@ abstract class WalletConnect {
             val ethEstimateGas =
                 web3j.ethEstimateGas(tx).sendAsync().get(web3jTimeout, TimeUnit.SECONDS)
             if (ethEstimateGas.hasError()) {
-                val error = ethEstimateGas.error
-                val msg = "error code: ${error.code}, message: ${error.message}"
-                Timber.d("$TAG ethEstimateGas error $msg")
-                throw WalletConnectException(error.code, error.message)
+                throwError(ethEstimateGas.error)
             }
             ethEstimateGas.amountUsed
         }
         return gas * gasPrice
+    }
+
+    fun getBaseFeePerGas(): BigInteger {
+        val number = web3j.ethBlockNumber().sendAsync().get(web3jTimeout, TimeUnit.SECONDS)
+        if (number.hasError()) {
+            throwError(number.error)
+        }
+        val block = web3j.ethGetBlockByNumber(DefaultBlockParameter.valueOf(number.blockNumber), true)
+            .sendAsync().get(web3jTimeout, TimeUnit.SECONDS)
+        if (block.hasError()) {
+            throwError(block.error)
+        }
+        return block.block.baseFeePerGas
+    }
+
+    fun getMaxFeePerGasAndMaxPriorityFeePerGas(): Pair<BigInteger, BigInteger> {
+        val number = web3j.ethBlockNumber().sendAsync().get(web3jTimeout, TimeUnit.SECONDS)
+        if (number.hasError()) {
+            throwError(number.error)
+        }
+        val txResp = web3j.ethGetTransactionByBlockNumberAndIndex(DefaultBlockParameter.valueOf(number.blockNumber), BigInteger.ONE)
+            .sendAsync().get(web3jTimeout, TimeUnit.SECONDS)
+        if (txResp.hasError()) {
+            throwError(txResp.error)
+        }
+        val tx = txResp.transaction.get()
+        return Pair(tx.maxFeePerGas, tx.maxPriorityFeePerGas)
     }
 
     fun signMessage(priv: ByteArray, message: WCEthereumSignMessage): String {
@@ -121,5 +144,12 @@ abstract class WalletConnect {
         System.arraycopy(signature.s, 0, b, 32, 32)
         System.arraycopy(signature.v, 0, b, 64, 1)
         return Numeric.toHexString(b)
+    }
+
+    protected fun throwError(error: Response.Error, msgAction: ((String) -> Unit)? = null) {
+        val msg = "error code: ${error.code}, message: ${error.message}"
+        Timber.d("$TAG error $msg")
+        msgAction?.invoke(msg)
+        throw WalletConnectException(error.code, error.message)
     }
 }

@@ -23,6 +23,7 @@ import org.web3j.protocol.http.HttpService
 import org.web3j.utils.Convert
 import org.web3j.utils.Numeric
 import timber.log.Timber
+import java.math.BigInteger
 import java.util.concurrent.TimeUnit
 
 object WalletConnectV1 : WalletConnect() {
@@ -177,38 +178,69 @@ object WalletConnectV1 : WalletConnect() {
     }
 
     fun ethSignTransaction(priv: ByteArray, id: Long, transaction: WCEthereumTransaction, approve: Boolean): String {
-        val value = transaction.value
-        val maxFeePerGas = transaction.maxFeePerGas
-        val maxPriorityFeePerGas = transaction.maxPriorityFeePerGas
-        if (value == null || maxFeePerGas == null || maxPriorityFeePerGas == null) {
-            val msg = "value: $value maxFeePerGas: $maxFeePerGas, maxPriorityFeePerGas: $maxPriorityFeePerGas"
-            Timber.d("$TAG $msg")
-            wcClient.rejectRequest(id, msg)
-            throw WalletConnectException(-1, msg)
-        }
-        val gasLimit = transaction.gasLimit ?: defaultGasLimit
+        val value = transaction.value ?: "0x0"
+        val maxFeePerGas = transaction.maxFeePerGas?.let { Numeric.toBigInt(it) }
+        val maxPriorityFeePerGas = transaction.maxPriorityFeePerGas?.let { Numeric.toBigInt(it) }
+        Timber.d("$TAG ethSignTransaction value: $value, maxFeePerGas: $maxFeePerGas, maxPriorityFeePerGas: $maxPriorityFeePerGas")
+//        if (maxFeePerGas == null || maxPriorityFeePerGas == null) {
+//            val r = getMaxFeePerGasAndMaxPriorityFeePerGas()
+//            if (maxFeePerGas == null) {
+//                maxFeePerGas = r.first
+//                Timber.d("$TAG ethSignTransaction maxFeePerGas: $maxFeePerGas")
+//            }
+//            if (maxPriorityFeePerGas == null) {
+//                maxPriorityFeePerGas = r.second
+//                Timber.d("$TAG ethSignTransaction maxPriorityFeePerGas: $maxPriorityFeePerGas")
+//            }
+//        }
 
         val keyPair = ECKeyPair.create(priv)
         val credential = Credentials.create(keyPair)
         val transactionCount = web3j.ethGetTransactionCount(credential.address, DefaultBlockParameterName.LATEST)
             .sendAsync()
             .get(web3jTimeout, TimeUnit.SECONDS)
+        if (transactionCount.hasError()) {
+            throwError(transactionCount.error)
+        }
         val nonce = transactionCount.transactionCount
         val v = Numeric.toBigInt(value)
-        Timber.d("$TAG nonce: $nonce, value $v wei")
-        val rawTransaction = RawTransaction.createTransaction(
-            chain.chainReference.toLong(),
-            nonce,
-            Numeric.toBigInt(gasLimit),
-            transaction.to,
-            v,
-            transaction.data,
-            Numeric.toBigInt(maxPriorityFeePerGas),
-            Numeric.toBigInt(maxFeePerGas),
-        )
+        val gasLimit = transaction.gasLimit?.let { Numeric.toBigInt(it) } ?: BigInteger(defaultGasLimit)
+        Timber.d("$TAG nonce: $nonce, value $v wei, gasLimit: $gasLimit")
+        val rawTransaction = if (maxFeePerGas == null && maxPriorityFeePerGas == null) {
+            val gasPrice = if (transaction.gasPrice != null) {
+                Numeric.toBigInt(transaction.gasPrice)
+            } else {
+                val ethGasPrice =
+                    web3j.ethGasPrice().sendAsync().get(web3jTimeout, TimeUnit.SECONDS)
+                if (ethGasPrice.hasError()) {
+                    throwError(ethGasPrice.error)
+                }
+                ethGasPrice.gasPrice
+            }
+            Timber.d("$TAG gasPrice $gasPrice")
+            RawTransaction.createTransaction(
+                nonce,
+                gasPrice,
+                gasLimit,
+                transaction.to,
+                v,
+                transaction.data,
+            )
+        } else {
+            RawTransaction.createTransaction(
+                chain.chainReference.toLong(),
+                nonce,
+                gasLimit,
+                transaction.to,
+                v,
+                transaction.data,
+                maxPriorityFeePerGas,
+                maxFeePerGas,
+            )
+        }
         val signedMessage = TransactionEncoder.signMessage(rawTransaction, chain.chainReference.toLong(), credential)
         val hexMessage = Numeric.toHexString(signedMessage)
-        Timber.d("$TAG signTransaction $hexMessage")
+        Timber.d("$TAG signTransaction hexMessage: $hexMessage")
         if (approve) {
             wcClient.approveRequest(id, hexMessage)
         }
@@ -219,11 +251,10 @@ object WalletConnectV1 : WalletConnect() {
         val hexMessage = ethSignTransaction(priv, id, transaction, false)
         val raw = web3j.ethSendRawTransaction(hexMessage).sendAsync().get(web3jTimeout, TimeUnit.SECONDS)
         val transactionHash = raw.transactionHash
-        if (transactionHash == null) {
-            val msg = "error code: ${raw.error.code}, message: ${raw.error.message}"
-            Timber.d("$TAG transactionHash is null, $msg")
-            wcClient.rejectRequest(id, msg)
-            throw WalletConnectException(raw.error.code, raw.error.message)
+        if (raw.hasError()) {
+            throwError(raw.error) {
+                wcClient.rejectRequest(id, it)
+            }
         } else {
             Timber.d("$TAG sendTransaction $transactionHash")
             wcClient.approveRequest(id, transactionHash)

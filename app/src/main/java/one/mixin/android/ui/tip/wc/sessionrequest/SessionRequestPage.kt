@@ -105,7 +105,7 @@ fun SessionRequestPage(
             Message(content = viewModel.getContent(version, sessionRequestUI.data)) {
             }
         } else if (sessionRequestUI.data is WCEthereumTransaction) {
-            Transaction(balance = Convert.fromWei(Numeric.toBigInt(sessionRequestUI.data.value).toBigDecimal(), Convert.Unit.ETHER).multiply(asset.priceUSD()), sessionRequestUI.chain, asset)
+            Transaction(balance = Convert.fromWei(Numeric.toBigInt(sessionRequestUI.data.value ?: "0").toBigDecimal(), Convert.Unit.ETHER).multiply(asset.priceUSD()), sessionRequestUI.chain, asset)
         }
         NetworkInfo(name = sessionRequestUI.chain.name, fee = (fee ?: BigDecimal.ZERO).multiply(asset.priceUSD()).toPlainString())
         Box(modifier = Modifier.width(16.dp))
