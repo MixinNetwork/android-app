@@ -42,6 +42,7 @@ import one.mixin.android.tip.wc.WalletConnectV2
 import one.mixin.android.tip.wc.walletConnectChainIdMap
 import one.mixin.android.ui.common.biometric.BiometricDialog
 import one.mixin.android.ui.common.biometric.BiometricInfo
+import one.mixin.android.ui.preview.TextPreviewActivity
 import one.mixin.android.ui.tip.wc.sessionproposal.SessionProposalPage
 import one.mixin.android.ui.tip.wc.sessionrequest.SessionRequestPage
 import one.mixin.android.util.BiometricUtil
@@ -129,6 +130,7 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
                         asset,
                         fee,
                         errorInfo,
+                        onPreviewMessage = { TextPreviewActivity.show(requireContext(), it) },
                         onDismissRequest = { dismiss() },
                         onBiometricClick = { showBiometricPrompt() },
                         onPinComplete = { pin -> doAfterPinComplete(pin) },

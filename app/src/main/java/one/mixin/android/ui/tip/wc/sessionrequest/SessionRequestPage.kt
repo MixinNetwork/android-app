@@ -55,6 +55,7 @@ fun SessionRequestPage(
     asset: Asset?,
     fee: BigDecimal?,
     errorInfo: String?,
+    onPreviewMessage: (String) -> Unit,
     onDismissRequest: () -> Unit,
     onBiometricClick: () -> Unit,
     onPinComplete: (String) -> Unit,
@@ -103,6 +104,7 @@ fun SessionRequestPage(
         Box(modifier = Modifier.height(16.dp))
         if (sessionRequestUI.data is WCEthereumSignMessage) {
             Message(content = viewModel.getContent(version, sessionRequestUI.data)) {
+                onPreviewMessage.invoke(it)
             }
         } else if (sessionRequestUI.data is WCEthereumTransaction) {
             Transaction(balance = Convert.fromWei(Numeric.toBigInt(sessionRequestUI.data.value ?: "0").toBigDecimal(), Convert.Unit.ETHER).multiply(asset.priceUSD()), sessionRequestUI.chain, asset)
@@ -183,7 +185,7 @@ private fun Transaction(
 @Composable
 private fun Message(
     content: String,
-    onClick: () -> Unit,
+    onPreviewMessage: (String) -> Unit,
 ) {
     Box(
         modifier = Modifier
@@ -192,7 +194,8 @@ private fun Message(
             .padding(horizontal = 20.dp)
             .clip(RoundedCornerShape(12.dp))
             .background(MixinAppTheme.colors.backgroundWindow)
-            .padding(horizontal = 16.dp),
+            .padding(horizontal = 16.dp)
+            .clickable { onPreviewMessage(content) },
     ) {
         Text(
             modifier = Modifier.padding(top = 12.dp),
