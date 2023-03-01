@@ -747,11 +747,11 @@ class MainActivity : BlazeBaseActivity() {
                             wc.approveSession(priv)
                         }
                     }
-//                    wc.onWalletChangeNetwork = { id, chainId ->
-//                        showWalletConnectBottomSheet("", "Change Network", "${WalletConnectV1.chain.name} => ${chainId.getChain()?.name}", { wc.rejectRequest(id) }) { priv ->
-//                            wc.walletChangeNetwork(priv, id, chainId)
-//                        }
-//                    }
+                    wc.onWalletChangeNetwork = { id, chainId ->
+                        showWalletConnectBottomSheet(WalletConnectBottomSheetDialogFragment.RequestType.SwitchNetwork, WalletConnect.Version.V1, { wc.rejectRequest(id) }) { priv ->
+                            wc.walletChangeNetwork(priv, id, chainId)
+                        }
+                    }
                     wc.onEthSign = { id, message ->
                         showWalletConnectBottomSheet(WalletConnectBottomSheetDialogFragment.RequestType.SessionRequest, WalletConnect.Version.V1, { wc.rejectRequest(id) }) { priv ->
                             wc.ethSignMessage(priv, id, message)

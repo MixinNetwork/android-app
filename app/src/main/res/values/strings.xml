@@ -1181,6 +1181,7 @@
     <string name="connected_desc">This dapp are connected to your wallet, it can view your wallet balance, activity and request approval for transactions.</string>
     <string name="Disconnect">Disconnect</string>
     <string name="Connect_Wallet">Connect Wallet</string>
+    <string name="Switch_Network">Switch Network</string>
     <string name="Read_your_public_address">Read your public address</string>
     <string name="Allow_app_access_wallet_balance_activity">Allow app to access your wallet balance and activity.</string>
     <string name="Request_permission">Request permission</string>

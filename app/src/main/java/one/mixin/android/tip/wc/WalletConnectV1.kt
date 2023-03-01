@@ -17,10 +17,7 @@ import org.web3j.crypto.ECKeyPair
 import org.web3j.crypto.Keys
 import org.web3j.crypto.RawTransaction
 import org.web3j.crypto.TransactionEncoder
-import org.web3j.protocol.Web3j
 import org.web3j.protocol.core.DefaultBlockParameterName
-import org.web3j.protocol.http.HttpService
-import org.web3j.utils.Convert
 import org.web3j.utils.Numeric
 import timber.log.Timber
 import java.math.BigInteger
@@ -47,6 +44,7 @@ object WalletConnectV1 : WalletConnect() {
             if (chain == null) {
                 rejectRequest(id, "Network not supported")
             } else {
+                targetNetwork = chain
                 onWalletChangeNetwork(id, chainId)
             }
         }
@@ -84,8 +82,8 @@ object WalletConnectV1 : WalletConnect() {
         }
     }
 
-    var balance: String? = null
     var address: String? = null
+    var targetNetwork: Chain? = null
 
     val sessionStore = WCSessionStoreType(
         MixinApplication.appContext.getSharedPreferences("wallet_connect_v1_session_store", Context.MODE_PRIVATE),
@@ -106,8 +104,8 @@ object WalletConnectV1 : WalletConnect() {
     }
 
     fun disconnect() {
-        balance = null
         address = null
+        targetNetwork = null
         currentSignData = null
         sessionStore.session = null
         if (wcClient.session != null) {
@@ -122,19 +120,6 @@ object WalletConnectV1 : WalletConnect() {
         val address = Keys.toChecksumAddress(Keys.getAddress(pub))
         Timber.d("$TAG address: $address")
         wcClient.approveSession(listOf(address), chain.chainReference)
-
-        web3j = Web3j.build(HttpService(chain.rpcServers[0]))
-        val balanceResp = web3j.ethGetBalance(address, DefaultBlockParameterName.LATEST)
-            .sendAsync()
-            .get(web3jTimeout, TimeUnit.SECONDS)
-        val balance = balanceResp.balance
-        if (balance == null) {
-            val msg = "code: ${balanceResp.error.code}, message: ${balanceResp.error.message}"
-            Timber.d("$TAG access balance error: $msg")
-            this.balance = null
-        } else {
-            this.balance = Convert.fromWei(balance.toString(), Convert.Unit.ETHER).toPlainString()
-        }
         this.address = address
     }
 
@@ -155,23 +140,28 @@ object WalletConnectV1 : WalletConnect() {
             return
         }
         this.chain = chain
+        val session = sessionStore.session ?: return
+
         approveSession(priv)
+
+        sessionStore.session = WCSessionStoreItem(session.session, chain.chainReference, session.peerId, session.remotePeerId, session.remotePeerMeta, session.isAutoSign, session.date)
+        targetNetwork = null
+    }
+
+    fun changeNetwork(chain: Chain) {
+        val address = this.address
+        if (address == null) {
+            Timber.d("$TAG changeNetwork address is null")
+            return
+        }
+        this.chain = chain
+        val session = sessionStore.session ?: return
+
+        wcClient.approveSession(listOf(address), chain.chainReference)
+        sessionStore.session = WCSessionStoreItem(session.session, chain.chainReference, session.peerId, session.remotePeerId, session.remotePeerMeta, session.isAutoSign, session.date)
     }
 
     fun getLastSession(): WCSessionStoreItem? = sessionStore.session
-
-    fun getNetworkName(): String? {
-        val chainId = wcClient.chainId ?: return null
-
-        return chainId.getChainName()
-    }
-
-    fun getBalanceString(): String? {
-        val balance = this.balance ?: return null
-        val chainId = wcClient.chainId ?: return null
-
-        return "$balance ${chainId.getChainSymbol()}"
-    }
 
     fun ethSignMessage(priv: ByteArray, id: Long, message: WCEthereumSignMessage) {
         wcClient.approveRequest(id, signMessage(priv, message))

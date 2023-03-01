@@ -63,4 +63,5 @@ internal fun String?.getChainSymbol(): String? {
 val walletConnectChainIdMap = mapOf(
     Chain.Ethereum.symbol to Constants.ChainId.ETHEREUM_CHAIN_ID,
     Chain.Polygon.symbol to Constants.ChainId.Polygon,
+    Chain.BinanceSmartChain to Constants.ChainId.BinanceSmartChain,
 )

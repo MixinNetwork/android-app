@@ -82,8 +82,8 @@ fun SessionProposalPage(
         )
         Box(modifier = Modifier.height(8.dp))
         DAppInfo(
-            info = "${sessionProposalUI.name} (${sessionProposalUI.uri})",
-            icon = sessionProposalUI.icon,
+            info = "${sessionProposalUI.peer.name} (${sessionProposalUI.peer.uri})",
+            icon = sessionProposalUI.peer.icon,
         )
         Box(modifier = Modifier.height(16.dp))
         Column(
@@ -102,6 +102,7 @@ fun SessionProposalPage(
                 desc = stringResource(id = R.string.Allow_dapp_ask_permission),
             )
         }
+        Network(name = sessionProposalUI.chain.name)
         WCPinBoard(
             step = step,
             errorInfo = errorInfo,
@@ -178,5 +179,28 @@ private fun Scope(
                 color = MixinAppTheme.colors.textSubtitle,
             )
         }
+    }
+}
+
+@Composable
+private fun Network(
+    name: String,
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 28.dp, vertical = 16.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+    ) {
+        Text(
+            text = stringResource(id = R.string.Network),
+            color = MixinAppTheme.colors.textSubtitle,
+            fontSize = 14.sp,
+        )
+        Text(
+            text = name,
+            color = MixinAppTheme.colors.textSubtitle,
+            fontSize = 14.sp,
+        )
     }
 }

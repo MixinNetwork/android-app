@@ -21,6 +21,7 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
+import com.google.gson.GsonBuilder
 import com.trustwallet.walletconnect.models.ethereum.WCEthereumTransaction
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.delay
@@ -45,6 +46,7 @@ import one.mixin.android.ui.common.biometric.BiometricInfo
 import one.mixin.android.ui.preview.TextPreviewActivity
 import one.mixin.android.ui.tip.wc.sessionproposal.SessionProposalPage
 import one.mixin.android.ui.tip.wc.sessionrequest.SessionRequestPage
+import one.mixin.android.ui.tip.wc.switchnetwork.SwitchNetworkPage
 import one.mixin.android.util.BiometricUtil
 import one.mixin.android.util.SystemUIManager
 import one.mixin.android.vo.Asset
@@ -69,7 +71,7 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
     }
 
     enum class RequestType {
-        SessionProposal, SessionRequest,
+        SessionProposal, SessionRequest, SwitchNetwork,
     }
 
     enum class Step {
@@ -124,13 +126,27 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
                     )
                 }
                 RequestType.SessionRequest -> {
+                    val gson = GsonBuilder()
+                        .serializeNulls()
+                        .setPrettyPrinting()
+                        .create()
                     SessionRequestPage(
+                        gson,
                         version,
                         step,
                         asset,
                         fee,
                         errorInfo,
                         onPreviewMessage = { TextPreviewActivity.show(requireContext(), it) },
+                        onDismissRequest = { dismiss() },
+                        onBiometricClick = { showBiometricPrompt() },
+                        onPinComplete = { pin -> doAfterPinComplete(pin) },
+                    )
+                }
+                RequestType.SwitchNetwork -> {
+                    SwitchNetworkPage(
+                        version,
+                        step,
                         onDismissRequest = { dismiss() },
                         onBiometricClick = { showBiometricPrompt() },
                         onPinComplete = { pin -> doAfterPinComplete(pin) },

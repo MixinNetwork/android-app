@@ -17,26 +17,32 @@ class SessionProposalViewModel @Inject internal constructor() : ViewModel() {
         }
     }
 
-    fun getSessionProposalUI(version: WalletConnect.Version): PeerUI? {
+    fun getSessionProposalUI(version: WalletConnect.Version): SessionProposalUI? {
         when (version) {
             WalletConnect.Version.V1 -> {
                 val session = WalletConnectV1.getLastSession() ?: return null
                 val peer = session.remotePeerMeta
-                return PeerUI(
-                    uri = peer.url,
-                    name = peer.name,
-                    desc = peer.description ?: "",
-                    icon = peer.icons.firstOrNull().toString(),
+                return SessionProposalUI(
+                    peer = PeerUI(
+                        uri = peer.url,
+                        name = peer.name,
+                        desc = peer.description ?: "",
+                        icon = peer.icons.firstOrNull().toString(),
+                    ),
+                    chain = WalletConnectV1.chain,
                 )
             }
             WalletConnect.Version.V2 -> {
                 val sessionProposal = WalletConnectV2.getSessionProposals().lastOrNull()
                 return if (sessionProposal != null) {
-                    PeerUI(
-                        icon = sessionProposal.icons.firstOrNull().toString(),
-                        name = sessionProposal.name,
-                        desc = sessionProposal.description,
-                        uri = sessionProposal.url,
+                    SessionProposalUI(
+                        peer = PeerUI(
+                            icon = sessionProposal.icons.firstOrNull().toString(),
+                            name = sessionProposal.name,
+                            desc = sessionProposal.description,
+                            uri = sessionProposal.url,
+                        ),
+                        chain = WalletConnectV2.chain,
                     )
                 } else {
                     null
@@ -44,4 +50,6 @@ class SessionProposalViewModel @Inject internal constructor() : ViewModel() {
             }
         }
     }
+
+    fun getTargetSwitchNetworks() = WalletConnectV1.targetNetwork
 }

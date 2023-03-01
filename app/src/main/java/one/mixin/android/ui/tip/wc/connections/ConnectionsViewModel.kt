@@ -1,6 +1,5 @@
 package one.mixin.android.ui.tip.wc.connections
 
-import android.util.Log
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
@@ -14,8 +13,10 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
+import one.mixin.android.tip.wc.Chain
 import one.mixin.android.tip.wc.WalletConnectV1
 import one.mixin.android.tip.wc.WalletConnectV2
+import one.mixin.android.tip.wc.getChain
 import timber.log.Timber
 import javax.inject.Inject
 
@@ -25,7 +26,6 @@ class ConnectionsViewModel @Inject internal constructor() : ViewModel() {
     private var _refreshFlow: MutableSharedFlow<Unit> = MutableSharedFlow(replay = 0, extraBufferCapacity = 1, BufferOverflow.DROP_OLDEST)
     private var refreshFlow: SharedFlow<Unit> = _refreshFlow.asSharedFlow()
     private val signConnectionsFlow = refreshFlow.map {
-        Log.d("Web3Wallet", "signConnectionsFlow: $it")
         getLatestActiveSignSessions()
     }
 
@@ -46,10 +46,17 @@ class ConnectionsViewModel @Inject internal constructor() : ViewModel() {
         WalletConnectV2.disconnect(topic)
     }
 
-    // Refreshes connections list from Web3Wallet
     fun refreshConnections() {
         val res = _refreshFlow.tryEmit(Unit)
         Timber.d("Web3Wallet refreshConnections $res")
+    }
+
+    fun changeNetworkV1(chain: Chain) {
+        val connectionUI = getConnectionUI() ?: return
+        if (connectionUI.chain == chain) return
+
+        WalletConnectV1.changeNetwork(chain)
+        refreshConnections()
     }
 
     private fun refreshCurrentConnectionUI() {
@@ -81,6 +88,7 @@ class ConnectionsViewModel @Inject internal constructor() : ViewModel() {
                 name = peer.name.takeIf { it.isNotBlank() } ?: "Dapp",
                 uri = peer.url.takeIf { it.isNotBlank() } ?: "Not provided",
                 data = item.session.topic,
+                chain = item.chainId.getChain(),
             )
         }
         return if (v1List != null) v2List + v1List else v2List

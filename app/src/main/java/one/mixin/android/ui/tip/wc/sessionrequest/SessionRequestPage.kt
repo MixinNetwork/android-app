@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -32,6 +33,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.google.gson.Gson
 import com.trustwallet.walletconnect.models.ethereum.WCEthereumSignMessage
 import com.trustwallet.walletconnect.models.ethereum.WCEthereumTransaction
 import one.mixin.android.R
@@ -50,6 +52,7 @@ import java.math.BigDecimal
 
 @Composable
 fun SessionRequestPage(
+    gson: Gson,
     version: WalletConnect.Version,
     step: WalletConnectBottomSheetDialogFragment.Step,
     asset: Asset?,
@@ -103,7 +106,7 @@ fun SessionRequestPage(
         )
         Box(modifier = Modifier.height(16.dp))
         if (sessionRequestUI.data is WCEthereumSignMessage) {
-            Message(content = viewModel.getContent(version, sessionRequestUI.data)) {
+            Message(content = viewModel.getContent(version, gson.toJson(sessionRequestUI.data))) {
                 onPreviewMessage.invoke(it)
             }
         } else if (sessionRequestUI.data is WCEthereumTransaction) {
@@ -190,7 +193,7 @@ private fun Message(
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .height(128.dp)
+            .heightIn(0.dp, 128.dp)
             .padding(horizontal = 20.dp)
             .clip(RoundedCornerShape(12.dp))
             .background(MixinAppTheme.colors.backgroundWindow)
