@@ -11,6 +11,8 @@ import one.mixin.android.extension.decodeBase64
 import one.mixin.android.extension.findLastUrl
 import one.mixin.android.extension.getFilePath
 import one.mixin.android.extension.notNullWithElse
+import one.mixin.android.fts.deleteByMessageId
+import one.mixin.android.fts.insertOrReplaceMessageFts4
 import one.mixin.android.session.Session
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.chat.InvalidateFlow
@@ -94,7 +96,7 @@ open class SendMessageJob(
                 if (!message.isTranscript()) {
                     mixinDatabase.insertMessage(message)
                     InvalidateFlow.emit(message.conversationId)
-                    ftsDatabase.insertOrReplaceMessageFts4(message, message.name)
+                    ftsDatabase.insertOrReplaceMessageFts4(message)
                 }
 
                 conversation.expireIn?.let { e ->

@@ -6,9 +6,12 @@ import android.os.CancellationSignal
 import androidx.paging.DataSource
 import androidx.room.CoroutinesRoom
 import androidx.room.RoomSQLiteQuery
+import androidx.room.getQueryDispatcher
 import androidx.sqlite.db.SimpleSQLiteQuery
+import kotlinx.coroutines.withContext
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.fts.FtsDatabase
+import one.mixin.android.fts.rawSearch
 import one.mixin.android.ui.search.CancellationLimitOffsetDataSource
 import one.mixin.android.util.chat.FastLimitOffsetDataSource
 import one.mixin.android.util.chat.MixinLimitOffsetDataSource
@@ -385,12 +388,13 @@ class DataProvider {
             query: String,
             db: MixinDatabase,
             cancellationSignal: CancellationSignal,
-        ): List<SearchMessageItem> {
+        ): List<SearchMessageItem> = withContext(db.getQueryDispatcher()){
             val newFtsResults = ftsDatabase.rawSearch(query, cancellationSignal)
             val querySql = SimpleSQLiteQuery(
                 """
-                SELECT m.id as message_id, m.conversation_id , m.user_id, count(m.id) as count FROM messages m
-                WHERE m.id IN (SELECT message_id FROM messages_fts4 WHERE content MATCH ?)
+                SELECT m.id as message_id, m.conversation_id , m.user_id, count(m.id) as count 
+                FROM messages m, (SELECT message_id FROM messages_fts4 WHERE content MATCH ?) fts4
+                WHERE m.id = fts4.message_id 
                 GROUP BY m.conversation_id
                 ORDER BY max(m.created_at) DESC
                 """,
@@ -430,7 +434,7 @@ class DataProvider {
                 separator = "', '",
             ) { it.messageId }
             val statement = RoomSQLiteQuery.acquire(sql.replace("*", ids), 0)
-            return CoroutinesRoom.execute(
+            return@withContext CoroutinesRoom.execute(
                 db,
                 true,
                 cancellationSignal,

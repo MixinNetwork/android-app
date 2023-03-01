@@ -5,7 +5,7 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 
 @Entity(tableName = "messages_metas")
-class MessagesMetas(
+class MessagesMeta(
     @ColumnInfo(name = "doc_id")
     var docId: Long,
     @PrimaryKey

@@ -11,6 +11,8 @@ import one.mixin.android.db.RemoteMessageStatusDao
 import one.mixin.android.db.deleteMessageById
 import one.mixin.android.db.deleteMessageByIds
 import one.mixin.android.fts.FtsDatabase
+import one.mixin.android.fts.deleteByMessageId
+import one.mixin.android.fts.deleteByMessageIds
 import one.mixin.android.job.AttachmentDeleteJob
 import one.mixin.android.job.MessageDeleteJob
 import one.mixin.android.job.MixinJobManager

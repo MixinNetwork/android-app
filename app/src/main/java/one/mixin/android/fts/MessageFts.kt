@@ -7,7 +7,7 @@ import androidx.room.FtsOptions
 
 @Entity(tableName = "messages_fts")
 @Fts4(tokenizer = FtsOptions.TOKENIZER_UNICODE61)
-class MessagesFts(
+class MessageFts(
     @ColumnInfo(name = "content", typeAffinity = ColumnInfo.TEXT)
     val content: String,
 )

@@ -62,7 +62,7 @@ open class Injector {
     lateinit var jobManager: MixinJobManager
 
     @Inject
-    lateinit var ftsDbHelper: FtsDatabase
+    lateinit var ftsDatabase: FtsDatabase
 
     @Inject
     lateinit var messageDao: MessageDao

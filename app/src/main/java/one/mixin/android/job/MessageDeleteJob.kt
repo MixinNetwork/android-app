@@ -4,6 +4,7 @@ import com.birbit.android.jobqueue.Params
 import kotlinx.coroutines.runBlocking
 import one.mixin.android.Constants.DB_DELETE_LIMIT
 import one.mixin.android.db.deleteMessageByIds
+import one.mixin.android.fts.deleteByMessageIds
 import one.mixin.android.util.chat.InvalidateFlow
 
 class MessageDeleteJob(
