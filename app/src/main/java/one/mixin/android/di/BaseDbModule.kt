@@ -9,7 +9,7 @@ import one.mixin.android.crypto.db.SignalDatabase
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.pending.PendingDatabase
 import one.mixin.android.db.pending.PendingDatabaseImp
-import one.mixin.android.fts.FtsDbHelper
+import one.mixin.android.fts.FtsDatabase
 import javax.inject.Singleton
 
 @InstallIn(SingletonComponent::class)
@@ -22,7 +22,7 @@ internal object BaseDbModule {
 
     @Singleton
     @Provides
-    fun provideFtsDbHelper(app: Application) = FtsDbHelper(app.applicationContext)
+    fun provideFtsDb(app: Application) = FtsDatabase.getDatabase(app)
 
     @Singleton
     @Provides

@@ -29,7 +29,7 @@ class MessageDeleteJob(
                 lastRowId,
                 DB_DELETE_LIMIT,
             )
-            ftsDbHelper.deleteByMessageIds(ids)
+            ftsDatabase.deleteByMessageIds(ids)
             appDatabase.deleteMessageByIds(ids)
         }
         val currentRowId = messageDao.findLastMessageRowId(conversationId)

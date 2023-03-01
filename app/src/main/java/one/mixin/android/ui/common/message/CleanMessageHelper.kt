@@ -10,7 +10,7 @@ import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.RemoteMessageStatusDao
 import one.mixin.android.db.deleteMessageById
 import one.mixin.android.db.deleteMessageByIds
-import one.mixin.android.fts.FtsDbHelper
+import one.mixin.android.fts.FtsDatabase
 import one.mixin.android.job.AttachmentDeleteJob
 import one.mixin.android.job.MessageDeleteJob
 import one.mixin.android.job.MixinJobManager
@@ -30,7 +30,7 @@ class CleanMessageHelper @Inject internal constructor(
     private val conversationDao: ConversationDao,
     private val remoteMessageStatusDao: RemoteMessageStatusDao,
     private val conversationExtDao: ConversationExtDao,
-    private val ftsDbHelper: FtsDbHelper,
+    private val ftsDatabase: FtsDatabase,
 ) {
 
     suspend fun deleteMessageByConversationId(conversationId: String, deleteConversation: Boolean = false) {
@@ -82,7 +82,7 @@ class CleanMessageHelper @Inject internal constructor(
             } else {
                 val ids = messageDao
                     .getMessageIdsByConversationId(conversationId, lastRowId)
-                ftsDbHelper.deleteByMessageIds(ids)
+                ftsDatabase.deleteByMessageIds(ids)
                 appDatabase.deleteMessageByIds(ids)
                 if (deleteConversation) {
                     conversationDao.deleteConversationById(conversationId)
@@ -131,7 +131,7 @@ class CleanMessageHelper @Inject internal constructor(
             jobManager.addJobInBackground(AttachmentDeleteJob(mediaUrl))
         }
         appDatabase.deleteMessageById(messageId, conversationId)
-        ftsDbHelper.deleteByMessageId(messageId)
+        ftsDatabase.deleteByMessageId(messageId)
         InvalidateFlow.emit(conversationId)
     }
 

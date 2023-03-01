@@ -42,7 +42,7 @@ import one.mixin.android.extension.joinStar
 import one.mixin.android.extension.putBoolean
 import one.mixin.android.extension.replaceQuotationMark
 import one.mixin.android.extension.sharedPreferences
-import one.mixin.android.fts.FtsDbHelper
+import one.mixin.android.fts.FtsDatabase
 import one.mixin.android.job.GenerateAvatarJob
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshConversationJob
@@ -93,7 +93,7 @@ internal constructor(
     private val conversationService: ConversationService,
     private val userService: UserService,
     private val jobManager: MixinJobManager,
-    private val ftsDbHelper: FtsDbHelper,
+    private val ftsDbHelper: FtsDatabase,
 ) {
 
     @SuppressLint("RestrictedApi")

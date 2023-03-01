@@ -8,7 +8,7 @@ import androidx.room.CoroutinesRoom
 import androidx.room.RoomSQLiteQuery
 import androidx.sqlite.db.SimpleSQLiteQuery
 import one.mixin.android.db.MixinDatabase
-import one.mixin.android.fts.FtsDbHelper
+import one.mixin.android.fts.FtsDatabase
 import one.mixin.android.ui.search.CancellationLimitOffsetDataSource
 import one.mixin.android.util.chat.FastLimitOffsetDataSource
 import one.mixin.android.util.chat.MixinLimitOffsetDataSource
@@ -381,12 +381,12 @@ class DataProvider {
         }
 
         suspend fun fuzzySearchMessage(
-            ftsDbHelper: FtsDbHelper,
+            ftsDatabase: FtsDatabase,
             query: String,
             db: MixinDatabase,
             cancellationSignal: CancellationSignal,
         ): List<SearchMessageItem> {
-            val newFtsResults = ftsDbHelper.rawSearch(query, cancellationSignal)
+            val newFtsResults = ftsDatabase.rawSearch(query, cancellationSignal)
             val querySql = SimpleSQLiteQuery(
                 """
                 SELECT m.id as message_id, m.conversation_id , m.user_id, count(m.id) as count FROM messages m
@@ -442,7 +442,7 @@ class DataProvider {
         }
 
         fun fuzzySearchMessageDetail(
-            ftsDbHelper: FtsDbHelper,
+            ftsDatabase: FtsDatabase,
             query: String,
             conversationId: String,
             database: MixinDatabase,
@@ -450,7 +450,7 @@ class DataProvider {
         ) =
             object : DataSource.Factory<Int, SearchMessageDetailItem>() {
                 override fun create(): DataSource<Int, SearchMessageDetailItem> {
-                    val messageIds = ftsDbHelper.rawSearch(query, conversationId, cancellationSignal)
+                    val messageIds = ftsDatabase.rawSearch(query, conversationId, cancellationSignal)
                     val sql =
                         """
                             SELECT m.id AS messageId, u.user_id AS userId, u.avatar_url AS userAvatarUrl, u.full_name AS userFullName,

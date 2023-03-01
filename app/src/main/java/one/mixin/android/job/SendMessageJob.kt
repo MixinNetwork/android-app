@@ -94,7 +94,7 @@ open class SendMessageJob(
                 if (!message.isTranscript()) {
                     mixinDatabase.insertMessage(message)
                     InvalidateFlow.emit(message.conversationId)
-                    ftsDbHelper.insertOrReplaceMessageFts4(message, message.name)
+                    ftsDatabase.insertOrReplaceMessageFts4(message, message.name)
                 }
 
                 conversation.expireIn?.let { e ->
@@ -143,7 +143,7 @@ open class SendMessageJob(
             jobManager.cancelJobByMixinJobId(msg.messageId)
         }
         InvalidateFlow.emit(conversationId)
-        ftsDbHelper.deleteByMessageId(recallMessageId)
+        ftsDatabase.deleteByMessageId(recallMessageId)
     }
 
     override fun onCancel(cancelReason: Int, throwable: Throwable?) {

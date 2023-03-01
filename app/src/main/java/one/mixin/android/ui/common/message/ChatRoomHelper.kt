@@ -9,7 +9,7 @@ import one.mixin.android.db.RemoteMessageStatusDao
 import one.mixin.android.db.insertNoReplace
 import one.mixin.android.db.runInTransaction
 import one.mixin.android.di.ApplicationScope
-import one.mixin.android.fts.FtsDbHelper
+import one.mixin.android.fts.FtsDatabase
 import one.mixin.android.util.SINGLE_THREAD
 import one.mixin.android.util.debug.timeoutEarlyWarning
 import one.mixin.android.vo.MessageMentionStatus
@@ -24,7 +24,7 @@ class ChatRoomHelper @Inject internal constructor(
     private val remoteMessageStatusDao: RemoteMessageStatusDao,
     private val messageMentionDao: MessageMentionDao,
     private val jobDao: JobDao,
-    private val ftsDbHelper: FtsDbHelper,
+    private val ftsDbHelper: FtsDatabase,
 ) {
     fun saveDraft(conversationId: String, draft: String) = applicationScope.launch {
         timeoutEarlyWarning({
