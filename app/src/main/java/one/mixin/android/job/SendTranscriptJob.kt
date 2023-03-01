@@ -9,6 +9,7 @@ import one.mixin.android.extension.getExtensionName
 import one.mixin.android.extension.getTranscriptFile
 import one.mixin.android.extension.joinWhiteSpace
 import one.mixin.android.extension.notNullWithElse
+import one.mixin.android.fts.insertFts4
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.chat.InvalidateFlow
 import one.mixin.android.util.reportException
@@ -58,7 +59,7 @@ class SendTranscriptJob(
                     }
                 }
             }
-            ftsDbHelper.insertFts4(stringBuffer.toString(), message.conversationId, message.messageId, message.category, message.userId, message.createdAt)
+            ftsDatabase.insertFts4(stringBuffer.toString(), message.conversationId, message.messageId, message.category, message.userId, message.createdAt)
             appDatabase.insertMessage(message)
             InvalidateFlow.emit(message.conversationId)
             transcriptMessages.forEach { transcript ->

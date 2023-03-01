@@ -170,7 +170,7 @@ fun JobDao.insertNoReplace(job: Job) {
     }
 }
 
-// Delete SQL, Please use FtsDeleteJob to delete fts
+// Delete SQL
 fun MixinDatabase.deleteMessageById(messageId: String) {
     runInTransaction {
         pinMessageDao().deleteByMessageId(messageId)
