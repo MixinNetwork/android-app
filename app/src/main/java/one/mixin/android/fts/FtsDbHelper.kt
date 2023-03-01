@@ -97,44 +97,53 @@ class FtsDbHelper(val context: Context) : SqlHelper(
         writableDatabase.endTransaction()
     }
 
-    fun rawSearch(content: String, cancellationSignal: CancellationSignal): List<FtsSearchResult> =
-        readableDatabase.rawQuery(
-            """
+    fun rawSearch(content: String, cancellationSignal: CancellationSignal): List<FtsSearchResult> {
+        return try {
+            readableDatabase.rawQuery(
+                """
                 SELECT message_id, conversation_id, user_id, count(message_id) FROM messages_metas WHERE doc_id 
                 IN (SELECT docid FROM messages_fts WHERE content MATCH '$content')
                 GROUP BY conversation_id
                 ORDER BY max(created_at) DESC
                 LIMIT 999
             """,
-            null,
-            cancellationSignal,
-        ).use {
-            val results = mutableListOf<FtsSearchResult>()
-            while (it.moveToNext()) {
-                val messageId = it.getStringOrNull(0) ?: continue
-                val conversationId = it.getStringOrNull(1) ?: continue
-                val userId = it.getStringOrNull(2) ?: continue
-                val count = it.getInt(3)
-                if (count > 0) {
-                    results.add(FtsSearchResult(messageId, conversationId, userId, count))
+                null,
+                cancellationSignal,
+            ).use {
+                val results = mutableListOf<FtsSearchResult>()
+                while (it.moveToNext()) {
+                    val messageId = it.getStringOrNull(0) ?: continue
+                    val conversationId = it.getStringOrNull(1) ?: continue
+                    val userId = it.getStringOrNull(2) ?: continue
+                    val count = it.getInt(3)
+                    if (count > 0) {
+                        results.add(FtsSearchResult(messageId, conversationId, userId, count))
+                    }
                 }
+                return@use results
             }
-            return@use results
+        } catch (e: Exception) {
+            return emptyList()
         }
+    }
 
     fun rawSearch(content: String, conversationId: String, cancellationSignal: CancellationSignal): Collection<String> {
-        readableDatabase.rawQuery(
-            "SELECT message_id FROM messages_metas WHERE conversation_id = '$conversationId' AND doc_id IN  (SELECT docid FROM messages_fts WHERE content MATCH '$content' LIMIT 999)",
-            null,
-            cancellationSignal,
-        ).use { cursor ->
-            val ids = mutableSetOf<String>()
-            while (cursor.moveToNext()) {
-                cursor.getStringOrNull(0)?.let { messageId ->
-                    ids.add(messageId)
+        try {
+            readableDatabase.rawQuery(
+                "SELECT message_id FROM messages_metas WHERE conversation_id = '$conversationId' AND doc_id IN  (SELECT docid FROM messages_fts WHERE content MATCH '$content' LIMIT 999)",
+                null,
+                cancellationSignal,
+            ).use { cursor ->
+                val ids = mutableSetOf<String>()
+                while (cursor.moveToNext()) {
+                    cursor.getStringOrNull(0)?.let { messageId ->
+                        ids.add(messageId)
+                    }
                 }
+                return ids
             }
-            return ids
+        } catch (e: Exception) {
+            return emptyList()
         }
     }
 
