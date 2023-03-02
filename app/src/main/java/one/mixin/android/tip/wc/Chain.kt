@@ -40,10 +40,10 @@ internal fun String?.getChainName(): String? {
     if (this == null) return null
 
     return when (this) {
-        Chain.Ethereum.chainId.toString() -> Chain.Ethereum.name
-        Chain.BinanceSmartChain.chainId.toString() -> Chain.BinanceSmartChain.name
-        Chain.Polygon.chainId.toString() -> Chain.Polygon.name
-        Chain.AvalancheCChain.chainId.toString() -> Chain.AvalancheCChain.name
+        Chain.Ethereum.chainId -> Chain.Ethereum.name
+        Chain.BinanceSmartChain.chainId -> Chain.BinanceSmartChain.name
+        Chain.Polygon.chainId -> Chain.Polygon.name
+        Chain.AvalancheCChain.chainId -> Chain.AvalancheCChain.name
         else -> null
     }
 }
@@ -52,10 +52,10 @@ internal fun String?.getChainSymbol(): String? {
     if (this == null) return null
 
     return when (this) {
-        Chain.Ethereum.chainId.toString() -> Chain.Ethereum.symbol
-        Chain.BinanceSmartChain.chainId.toString() -> Chain.BinanceSmartChain.symbol
-        Chain.Polygon.chainId.toString() -> Chain.Polygon.symbol
-        Chain.AvalancheCChain.chainId.toString() -> Chain.AvalancheCChain.symbol
+        Chain.Ethereum.chainId -> Chain.Ethereum.symbol
+        Chain.BinanceSmartChain.chainId -> Chain.BinanceSmartChain.symbol
+        Chain.Polygon.chainId -> Chain.Polygon.symbol
+        Chain.AvalancheCChain.chainId -> Chain.AvalancheCChain.symbol
         else -> null
     }
 }

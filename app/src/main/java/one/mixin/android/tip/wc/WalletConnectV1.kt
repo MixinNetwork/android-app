@@ -3,8 +3,6 @@ package one.mixin.android.tip.wc
 import android.content.Context
 import com.google.gson.GsonBuilder
 import com.trustwallet.walletconnect.WCClient
-import com.trustwallet.walletconnect.WCSessionStoreItem
-import com.trustwallet.walletconnect.WCSessionStoreType
 import com.trustwallet.walletconnect.models.WCPeerMeta
 import com.trustwallet.walletconnect.models.ethereum.WCEthereumSignMessage
 import com.trustwallet.walletconnect.models.ethereum.WCEthereumTransaction
@@ -32,7 +30,7 @@ object WalletConnectV1 : WalletConnect() {
         wcc.onSessionRequest = { id, peer ->
             Timber.d("$TAG onSessionRequest id: $id, peer: $peer")
             wcc.session?.let {
-                sessionStore.session = WCSessionStoreItem(it, chain.chainReference, "peerId", "remotePeerID", peer)
+                currentSession = WCV1Session(it, chain.chainReference, peer)
             }
             RxBus.publish(WCEvent.V1(Version.V1, WalletConnectBottomSheetDialogFragment.RequestType.SessionProposal, id))
         }
@@ -85,7 +83,8 @@ object WalletConnectV1 : WalletConnect() {
     var address: String? = null
     var targetNetwork: Chain? = null
 
-    val sessionStore = WCSessionStoreType(
+    var currentSession: WCV1Session? = null
+    private val sessionStore = WCV1SessionStore(
         MixinApplication.appContext.getSharedPreferences("wallet_connect_v1_session_store", Context.MODE_PRIVATE),
     )
 
@@ -105,7 +104,7 @@ object WalletConnectV1 : WalletConnect() {
         address = null
         targetNetwork = null
         currentSignData = null
-        sessionStore.session = null
+        currentSession = null
         if (wcClient.session != null) {
             wcClient.killSession()
         } else {
@@ -119,6 +118,12 @@ object WalletConnectV1 : WalletConnect() {
         Timber.d("$TAG address: $address")
         wcClient.approveSession(listOf(address), chain.chainReference)
         this.address = address
+
+        val session = currentSession ?: return
+        WCV1Session(session.session, chain.chainReference, session.remotePeerMeta, session.date).apply {
+            currentSession = this
+            sessionStore.store(this)
+        }
     }
 
     fun rejectSession() {
@@ -138,11 +143,7 @@ object WalletConnectV1 : WalletConnect() {
             return
         }
         this.chain = chain
-        val session = sessionStore.session ?: return
-
         approveSession(priv)
-
-        sessionStore.session = WCSessionStoreItem(session.session, chain.chainReference, session.peerId, session.remotePeerId, session.remotePeerMeta, session.isAutoSign, session.date)
         targetNetwork = null
     }
 
@@ -153,13 +154,19 @@ object WalletConnectV1 : WalletConnect() {
             return
         }
         this.chain = chain
-        val session = sessionStore.session ?: return
-
         wcClient.approveSession(listOf(address), chain.chainReference)
-        sessionStore.session = WCSessionStoreItem(session.session, chain.chainReference, session.peerId, session.remotePeerId, session.remotePeerMeta, session.isAutoSign, session.date)
     }
 
-    fun getLastSession(): WCSessionStoreItem? = sessionStore.session
+    fun getStoredSessions() = sessionStore.load()
+
+    fun removeFromStore(topic: String) {
+        sessionStore.removeByTopic(topic)
+
+        val session = currentSession
+        if (session != null && session.session.topic == topic) {
+            disconnect()
+        }
+    }
 
     fun approveRequest(priv: ByteArray, id: Long) {
         val signData = this.currentSignData ?: return

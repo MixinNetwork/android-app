@@ -29,7 +29,7 @@ class SessionRequestViewModel @Inject internal constructor() : ViewModel() {
         when (version) {
             WalletConnect.Version.V1 -> {
                 val signData = WalletConnectV1.currentSignData ?: return null
-                val session = WalletConnectV1.getLastSession() ?: return null
+                val session = WalletConnectV1.currentSession ?: return null
                 val peer = session.remotePeerMeta
                 val peerUI = PeerUI(
                     uri = peer.url,

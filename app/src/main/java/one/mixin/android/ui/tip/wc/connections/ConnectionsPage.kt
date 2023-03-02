@@ -70,14 +70,13 @@ fun ConnectionsPage() {
         if (connections.isEmpty()) {
             EmptyLayout()
         } else {
-            ConnectionList(viewModel, connections, keyword = text.value.trim())
+            ConnectionList(connections, keyword = text.value.trim())
         }
     }
 }
 
 @Composable
 private fun ConnectionList(
-    viewModel: ConnectionsViewModel,
     data: List<ConnectionUI>,
     keyword: String,
 ) {

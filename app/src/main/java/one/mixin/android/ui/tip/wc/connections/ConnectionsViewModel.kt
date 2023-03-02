@@ -14,6 +14,7 @@ import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import one.mixin.android.tip.wc.Chain
+import one.mixin.android.tip.wc.WalletConnect
 import one.mixin.android.tip.wc.WalletConnectV1
 import one.mixin.android.tip.wc.WalletConnectV2
 import one.mixin.android.tip.wc.getChain
@@ -42,8 +43,15 @@ class ConnectionsViewModel @Inject internal constructor() : ViewModel() {
 
     val currentConnectionUI: MutableState<ConnectionUI?> = mutableStateOf(getConnectionUI())
 
-    fun disconnect(topic: String) {
-        WalletConnectV2.disconnect(topic)
+    fun disconnect(version: WalletConnect.Version, topic: String) {
+        when (version) {
+            WalletConnect.Version.V1 -> {
+                WalletConnectV1.removeFromStore(topic)
+            }
+            WalletConnect.Version.V2 -> {
+                WalletConnectV2.disconnect(topic)
+            }
+        }
     }
 
     fun refreshConnections() {
@@ -64,33 +72,30 @@ class ConnectionsViewModel @Inject internal constructor() : ViewModel() {
     }
 
     private fun getLatestActiveSignSessions(): List<ConnectionUI> {
-        val v2List = try {
-            WalletConnectV2.getListOfActiveSessions().filter { wcSession ->
-                wcSession.metaData != null
-            }.mapIndexed { index, wcSession ->
-                ConnectionUI(
-                    index = index,
-                    icon = wcSession.metaData?.icons?.firstOrNull(),
-                    name = wcSession.metaData!!.name.takeIf { it.isNotBlank() } ?: "Dapp",
-                    uri = wcSession.metaData!!.url.takeIf { it.isNotBlank() } ?: "Not provided",
-                    data = wcSession.topic,
-                )
-            }
-        } catch (e: Exception) {
-            emptyList()
+        val v2List = WalletConnectV2.getListOfActiveSessions().filter { wcSession ->
+            wcSession.metaData != null
+        }.mapIndexed { index, wcSession ->
+            ConnectionUI(
+                index = index,
+                icon = wcSession.metaData?.icons?.firstOrNull(),
+                name = wcSession.metaData!!.name.takeIf { it.isNotBlank() } ?: "Dapp",
+                uri = wcSession.metaData!!.url.takeIf { it.isNotBlank() } ?: "Not provided",
+                data = wcSession.topic,
+            )
         }
 
-        val v1List = WalletConnectV1.getLastSession()?.let { item ->
+        val v1List = WalletConnectV1.getStoredSessions()?.mapIndexed { index, item ->
             val peer = item.remotePeerMeta
-            ConnectionUI(
-                index = v2List.size,
+            val connectionUI = ConnectionUI(
+                index = index + v2List.size,
                 icon = peer.icons.firstOrNull(),
                 name = peer.name.takeIf { it.isNotBlank() } ?: "Dapp",
                 uri = peer.url.takeIf { it.isNotBlank() } ?: "Not provided",
                 data = item.session.topic,
                 chain = item.chainId.getChain(),
             )
+            connectionUI
         }
-        return if (v1List != null) v2List + v1List else v2List
+        return v2List.plus(v1List ?: emptyList())
     }
 }

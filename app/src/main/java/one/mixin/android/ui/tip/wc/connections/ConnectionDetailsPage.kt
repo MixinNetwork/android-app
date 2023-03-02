@@ -36,12 +36,15 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import one.mixin.android.R
 import one.mixin.android.tip.wc.Chain
+import one.mixin.android.tip.wc.WalletConnect
 import one.mixin.android.ui.setting.ui.compose.MixinBottomSheetDialog
 import one.mixin.android.ui.setting.ui.theme.MixinAppTheme
 import one.mixin.android.ui.tip.wc.LocalWCNav
 
 @Composable
-fun ConnectionDetailsPage(connectionId: Int?) {
+fun ConnectionDetailsPage(
+    connectionId: Int?,
+) {
     WCPageScaffold(
         title = "",
         verticalScrollable = false,
@@ -57,7 +60,7 @@ fun ConnectionDetailsPage(connectionId: Int?) {
             Content(connectionUI = requireNotNull(connectionUI), {
                 openBottomSheet = true
             }) {
-                viewModel.disconnect(connectionUI!!.data)
+                viewModel.disconnect(if (connectionUI!!.chain != null) WalletConnect.Version.V1 else WalletConnect.Version.V2, connectionUI!!.data)
                 viewModel.refreshConnections()
                 navController.pop()
             }
