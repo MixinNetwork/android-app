@@ -64,7 +64,7 @@ fun FtsDatabase.insertOrReplaceMessageFts4(message: Message) {
     val ftsContent = content?.joinWhiteSpace() ?: return
     runBlocking {
         insertMessageFts4(
-            content= ftsContent,
+            content = ftsContent,
             conversationId = message.conversationId,
             messageId = message.messageId,
             category = message.category,
@@ -102,10 +102,9 @@ fun FtsDatabase.rawSearch(
         query(
             SimpleSQLiteQuery(
                 """
-                SELECT m.message_id, m.conversation_id, m.user_id, count(m.message_id) FROM messages_metas m, (SELECT docid FROM messages_fts WHERE content MATCH '$content') fts 
-                WHERE m.doc_id = fts.docid 
-                GROUP BY m.conversation_id
-                ORDER BY max(m.created_at) DESC
+                SELECT message_id, conversation_id, user_id, count(message_id) FROM messages_metas WHERE doc_id IN (SELECT docid FROM messages_fts WHERE content MATCH '$content')
+                GROUP BY conversation_id
+                ORDER BY max(created_at) DESC
                 LIMIT 999
             """,
             ),

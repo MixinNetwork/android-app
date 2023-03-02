@@ -3,6 +3,7 @@ package one.mixin.android.db.provider
 import android.annotation.SuppressLint
 import android.database.Cursor
 import android.os.CancellationSignal
+import androidx.core.database.getStringOrNull
 import androidx.paging.DataSource
 import androidx.room.CoroutinesRoom
 import androidx.room.RoomSQLiteQuery
@@ -388,7 +389,7 @@ class DataProvider {
             query: String,
             db: MixinDatabase,
             cancellationSignal: CancellationSignal,
-        ): List<SearchMessageItem> = withContext(db.getQueryDispatcher()){
+        ): List<SearchMessageItem> = withContext(db.getQueryDispatcher()) {
             val newFtsResults = ftsDatabase.rawSearch(query, cancellationSignal)
             val querySql = SimpleSQLiteQuery(
                 """
@@ -400,7 +401,19 @@ class DataProvider {
                 """,
                 arrayOf(query),
             )
-            val oldFtsResults = db.messageDao().fuzzySearchMessage(querySql)
+            val oldFtsResults = db.query(querySql, cancellationSignal).use {
+                val results = mutableListOf<FtsSearchResult>()
+                while (it.moveToNext()) {
+                    val messageId = it.getStringOrNull(0) ?: continue
+                    val conversationId = it.getStringOrNull(1) ?: continue
+                    val userId = it.getStringOrNull(2) ?: continue
+                    val count = it.getInt(3)
+                    if (count > 0) {
+                        results.add(FtsSearchResult(messageId, conversationId, userId, count))
+                    }
+                }
+                return@use results
+            }
             val resultMerge = fun(s: Iterable<FtsSearchResult>, o: Iterable<FtsSearchResult>): MutableMap<String, FtsSearchResult> {
                 val sourceMap = s.associateBy { it.conversationId }.toMutableMap()
                 val otherMap = o.associateBy { it.conversationId }
@@ -460,7 +473,7 @@ class DataProvider {
                             SELECT m.id AS messageId, u.user_id AS userId, u.avatar_url AS userAvatarUrl, u.full_name AS userFullName,
                             m.category AS type, m.content AS content, m.created_at AS createdAt, m.name AS mediaName 
                             FROM messages m INNER JOIN users u ON m.user_id = u.user_id 
-                            WHERE m.id IN (*) OR m.id IN (SELECT message_id FROM messages_fts4 WHERE messages_fts4 MATCH ?)
+                            WHERE * m.id IN (SELECT message_id FROM messages_fts4 WHERE messages_fts4 MATCH ?)
                             AND m.conversation_id = ?
                             ORDER BY m.created_at DESC
                         """
@@ -468,16 +481,16 @@ class DataProvider {
                         """
                             SELECT count(1) FROM messages m 
                             INNER JOIN users u ON m.user_id = u.user_id 
-                            WHERE m.id IN (*) OR m.id IN (SELECT message_id FROM messages_fts4 WHERE messages_fts4 MATCH ?) 
+                            WHERE * m.id IN (SELECT message_id FROM messages_fts4 WHERE messages_fts4 MATCH ?) 
                             AND m.conversation_id = ?
                         """
-                    val ids = if (messageIds.isEmpty()) {
-                        "NULL"
+                    val idsSql = if (messageIds.isEmpty()) {
+                        ""
                     } else {
-                        messageIds.joinToString(prefix = "'", postfix = "'", separator = "', '")
+                        "m.id IN (${messageIds.joinToString(prefix = "'", postfix = "'", separator = "', '")}) OR"
                     }
-                    val countStatement = RoomSQLiteQuery.acquire(countSql.replace("*", ids), 2)
-                    val statement = RoomSQLiteQuery.acquire(sql.replace("*", ids), 2)
+                    val countStatement = RoomSQLiteQuery.acquire(countSql.replace("*", idsSql), 2)
+                    val statement = RoomSQLiteQuery.acquire(sql.replace("*", idsSql), 2)
                     var argIndex = 1
                     statement.bindString(argIndex, query)
                     countStatement.bindString(argIndex, query)
