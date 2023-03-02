@@ -2,9 +2,14 @@ package one.mixin.android.fts
 
 import androidx.room.ColumnInfo
 import androidx.room.Entity
+import androidx.room.Index
 import androidx.room.PrimaryKey
 
-@Entity(tableName = "messages_metas")
+@Entity(tableName = "messages_metas",
+    indices = [
+        Index(value = arrayOf("doc_id", "created_at")),
+        Index(value = arrayOf("conversation_id", "user_id", "category"))
+    ])
 class MessagesMeta(
     @ColumnInfo(name = "doc_id")
     var docId: Long,

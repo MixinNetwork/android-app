@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "0126208553b84669b771a2bedd3164ea",
+    "identityHash": "3f3777f75e513b1db963d5a43d4f2aca",
     "entities": [
       {
         "ftsVersion": "FTS4",
@@ -81,14 +81,36 @@
             "message_id"
           ]
         },
-        "indices": [],
+        "indices": [
+          {
+            "name": "index_messages_metas_doc_id_created_at",
+            "unique": false,
+            "columnNames": [
+              "doc_id",
+              "created_at"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_messages_metas_doc_id_created_at` ON `${TABLE_NAME}` (`doc_id`, `created_at`)"
+          },
+          {
+            "name": "index_messages_metas_conversation_id_user_id_category",
+            "unique": false,
+            "columnNames": [
+              "conversation_id",
+              "user_id",
+              "category"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_messages_metas_conversation_id_user_id_category` ON `${TABLE_NAME}` (`conversation_id`, `user_id`, `category`)"
+          }
+        ],
         "foreignKeys": []
       }
     ],
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '0126208553b84669b771a2bedd3164ea')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '3f3777f75e513b1db963d5a43d4f2aca')"
     ]
   }
 }
