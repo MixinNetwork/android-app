@@ -46,7 +46,7 @@ fun SwitchNetworkPage(
         Loading()
         return
     }
-    val targetNetwork = viewModel.getTargetSwitchNetworks() ?: return
+    val targetNetwork = viewModel.getTargetSwitchNetworks()
 
     Column(
         modifier = Modifier
@@ -83,7 +83,11 @@ fun SwitchNetworkPage(
         )
         Box(modifier = Modifier.height(12.dp))
         Text(
-            text = "${sessionProposalUI.chain.name} -> ${targetNetwork.name}",
+            text = if (targetNetwork == null) {
+                sessionProposalUI.chain.name
+            } else {
+                "${sessionProposalUI.chain.name} -> ${targetNetwork.name}"
+            },
             fontSize = 18.sp,
             color = MixinAppTheme.colors.textPrimary,
         )

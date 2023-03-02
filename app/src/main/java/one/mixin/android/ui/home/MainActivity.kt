@@ -41,7 +41,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.withContext
 import one.mixin.android.BuildConfig
 import one.mixin.android.Constants
 import one.mixin.android.Constants.Account.PREF_BACKUP
@@ -74,6 +73,7 @@ import one.mixin.android.db.ParticipantDao
 import one.mixin.android.db.UserDao
 import one.mixin.android.db.property.PropertyHelper
 import one.mixin.android.event.TipEvent
+import one.mixin.android.event.WCEvent
 import one.mixin.android.extension.alert
 import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.areBubblesAllowedCompat
@@ -110,9 +110,6 @@ import one.mixin.android.repository.AccountRepository
 import one.mixin.android.repository.UserRepository
 import one.mixin.android.session.Session
 import one.mixin.android.tip.Tip
-import one.mixin.android.tip.exception.TipNetworkException
-import one.mixin.android.tip.tipPrivToPrivateKey
-import one.mixin.android.tip.wc.WalletConnect
 import one.mixin.android.tip.wc.WalletConnectV1
 import one.mixin.android.tip.wc.WalletConnectV2
 import one.mixin.android.ui.common.BaseFragment
@@ -143,7 +140,7 @@ import one.mixin.android.ui.tip.TipActivity
 import one.mixin.android.ui.tip.TipBundle
 import one.mixin.android.ui.tip.TipType
 import one.mixin.android.ui.tip.TryConnecting
-import one.mixin.android.ui.tip.wc.WalletConnectBottomSheetDialogFragment
+import one.mixin.android.ui.tip.wc.WalletConnectActivity
 import one.mixin.android.util.BiometricUtil
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.ErrorHandler.Companion.errorHandler
@@ -158,7 +155,6 @@ import one.mixin.android.vo.Participant
 import one.mixin.android.vo.ParticipantRole
 import one.mixin.android.vo.isGroupConversation
 import one.mixin.android.widget.MaterialSearchView
-import timber.log.Timber
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -297,6 +293,11 @@ class MainActivity : BlazeBaseActivity() {
             .subscribe { e ->
                 handleTipEvent(e, deviceId)
             }
+        RxBus.listen(WCEvent::class.java)
+            .autoDispose(destroyScope)
+            .subscribe { e ->
+                WalletConnectActivity.show(this, e)
+            }
 
         lifecycleScope.launch(Dispatchers.IO) {
             delay(10_000)
@@ -387,6 +388,10 @@ class MainActivity : BlazeBaseActivity() {
 
         jobManager.addJobInBackground(RefreshContactJob())
         jobManager.addJobInBackground(RefreshFcmJob())
+
+        // TODO init
+        WalletConnectV1
+        WalletConnectV2
     }
 
     private fun handleTipEvent(e: TipEvent, deviceId: String) {
@@ -741,83 +746,11 @@ class MainActivity : BlazeBaseActivity() {
         } else if (intent.hasExtra(WALLET_CONNECT)) {
             val wcUrl = requireNotNull(intent.getStringExtra(WALLET_CONNECT))
             if (WCSession.from(wcUrl) != null) {
-                WalletConnectV1.also { wc ->
-                    wc.onSessionRequest = { _, peer ->
-                        showWalletConnectBottomSheet(WalletConnectBottomSheetDialogFragment.RequestType.SessionProposal, WalletConnect.Version.V1, { wc.rejectSession() }) { priv ->
-                            wc.approveSession(priv)
-                        }
-                    }
-                    wc.onWalletChangeNetwork = { id, chainId ->
-                        showWalletConnectBottomSheet(WalletConnectBottomSheetDialogFragment.RequestType.SwitchNetwork, WalletConnect.Version.V1, { wc.rejectRequest(id) }) { priv ->
-                            wc.walletChangeNetwork(priv, id, chainId)
-                        }
-                    }
-                    wc.onEthSign = { id, message ->
-                        showWalletConnectBottomSheet(WalletConnectBottomSheetDialogFragment.RequestType.SessionRequest, WalletConnect.Version.V1, { wc.rejectRequest(id) }) { priv ->
-                            wc.ethSignMessage(priv, id, message)
-                        }
-                    }
-                    wc.onEthSignTransaction = { id, transaction ->
-                        showWalletConnectBottomSheet(WalletConnectBottomSheetDialogFragment.RequestType.SessionRequest, WalletConnect.Version.V1, { wc.rejectRequest(id) }) { priv ->
-                            wc.ethSignTransaction(priv, id, transaction, true)
-                        }
-                    }
-                    wc.onEthSendTransaction = { id, transaction ->
-                        showWalletConnectBottomSheet(WalletConnectBottomSheetDialogFragment.RequestType.SessionRequest, WalletConnect.Version.V1, { wc.rejectRequest(id) }) { priv ->
-                            wc.ethSendTransaction(priv, id, transaction)
-                        }
-                    }
-                }
                 WalletConnectV1.connect(wcUrl)
                 return
             }
-            WalletConnectV2.also { wc ->
-                wc.onAuthRequest = { authRequest ->
-//                    showWalletConnectBottomSheet("", "Auth request", gson.toJson(authRequest.payloadParams), { WalletConnectV2.rejectAuthRequest() }) { priv ->
-//                        WalletConnectV2.approveAuthRequest(priv)
-//                    }
-                }
-                wc.onSessionProposal = { _ ->
-                    showWalletConnectBottomSheet(WalletConnectBottomSheetDialogFragment.RequestType.SessionProposal, WalletConnect.Version.V2, { WalletConnectV2.rejectSession() }) { priv ->
-                        WalletConnectV2.approveSession(priv)
-                    }
-                }
-                wc.onSessionRequest = { _ ->
-                    showWalletConnectBottomSheet(WalletConnectBottomSheetDialogFragment.RequestType.SessionRequest, WalletConnect.Version.V2, { WalletConnectV2.rejectRequest() }, { priv ->
-                        WalletConnectV2.approveRequest(priv)
-                    })
-                }
-            }
             WalletConnectV2.pair(wcUrl)
         }
-    }
-
-    private fun showWalletConnectBottomSheet(
-        requestType: WalletConnectBottomSheetDialogFragment.RequestType,
-        version: WalletConnect.Version,
-        onReject: () -> Unit,
-        callback: suspend (ByteArray) -> Unit,
-    ) = lifecycleScope.launch {
-        val wcBottomSheet = WalletConnectBottomSheetDialogFragment.newInstance(requestType, version)
-        wcBottomSheet.setOnPinComplete { pin ->
-            val result = tip.getOrRecoverTipPriv(this@MainActivity, pin)
-            if (result.isSuccess) {
-                withContext(Dispatchers.IO) {
-                    callback(tipPrivToPrivateKey(result.getOrThrow()))
-                }
-                return@setOnPinComplete null
-            } else {
-                val e = result.exceptionOrNull()
-                val errorInfo = e?.stackTraceToString()
-                Timber.d("${if (version == WalletConnect.Version.V2) WalletConnectV2.TAG else WalletConnectV1.TAG} $errorInfo")
-                return@setOnPinComplete if (e is TipNetworkException) {
-                    "code: ${e.error.code}, message: ${e.error.description}"
-                } else {
-                    errorInfo
-                }
-            }
-        }.setOnReject { onReject() }
-            .showNow(supportFragmentManager, WalletConnectBottomSheetDialogFragment.TAG)
     }
 
     private fun clearCodeAfterConsume(intent: Intent, code: String) {

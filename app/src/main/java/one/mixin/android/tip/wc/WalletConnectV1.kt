@@ -8,10 +8,12 @@ import com.trustwallet.walletconnect.WCSessionStoreType
 import com.trustwallet.walletconnect.models.WCPeerMeta
 import com.trustwallet.walletconnect.models.ethereum.WCEthereumSignMessage
 import com.trustwallet.walletconnect.models.ethereum.WCEthereumTransaction
-import com.trustwallet.walletconnect.models.session.WCAddNetwork
 import com.trustwallet.walletconnect.models.session.WCSession
 import okhttp3.OkHttpClient
 import one.mixin.android.MixinApplication
+import one.mixin.android.RxBus
+import one.mixin.android.event.WCEvent
+import one.mixin.android.ui.tip.wc.WalletConnectBottomSheetDialogFragment
 import org.web3j.crypto.Credentials
 import org.web3j.crypto.ECKeyPair
 import org.web3j.crypto.Keys
@@ -32,11 +34,10 @@ object WalletConnectV1 : WalletConnect() {
             wcc.session?.let {
                 sessionStore.session = WCSessionStoreItem(it, chain.chainReference, "peerId", "remotePeerID", peer)
             }
-            onSessionRequest(id, peer)
+            RxBus.publish(WCEvent.V1(Version.V1, WalletConnectBottomSheetDialogFragment.RequestType.SessionProposal, id))
         }
         wcc.onGetAccounts = { id ->
             Timber.d("$TAG onGetAccounts id: $id")
-            onGetAccounts(id)
         }
         wcc.onWalletChangeNetwork = { id, chainId ->
             Timber.d("$TAG onWalletChangeNetwork id: $id")
@@ -45,27 +46,26 @@ object WalletConnectV1 : WalletConnect() {
                 rejectRequest(id, "Network not supported")
             } else {
                 targetNetwork = chain
-                onWalletChangeNetwork(id, chainId)
+                RxBus.publish(WCEvent.V1(Version.V1, WalletConnectBottomSheetDialogFragment.RequestType.SwitchNetwork, id))
             }
         }
         wcc.onWalletAddNetwork = { id, network ->
             Timber.d("$TAG onWalletAddNetwork id: $id, network: $network")
-            onWalletAddNetwork(id, network)
         }
         wcc.onEthSign = { id, message ->
             Timber.d("$TAG onEthSign id: $id, message: $message")
             currentSignData = WCSignData.V1SignData(id, message)
-            onEthSign(id, message)
+            RxBus.publish(WCEvent.V1(Version.V1, WalletConnectBottomSheetDialogFragment.RequestType.SessionRequest, id))
         }
         wcc.onEthSignTransaction = { id, transaction ->
             Timber.d("$TAG onEthSignTransaction id: $id, transaction: $transaction")
             currentSignData = WCSignData.V1SignData(id, transaction)
-            onEthSendTransaction(id, transaction)
+            RxBus.publish(WCEvent.V1(Version.V1, WalletConnectBottomSheetDialogFragment.RequestType.SessionRequest, id))
         }
         wcc.onEthSendTransaction = { id, transaction ->
             Timber.d("$TAG onEthSendTransaction id: $id, transaction: $transaction")
             currentSignData = WCSignData.V1SignData(id, transaction)
-            onEthSendTransaction(id, transaction)
+            RxBus.publish(WCEvent.V1(Version.V1, WalletConnectBottomSheetDialogFragment.RequestType.SessionRequest, id))
         }
         wcc.onSignTransaction = { id, transaction ->
             Timber.d("$TAG onSignTransaction id: $id, transaction: $transaction")
@@ -90,8 +90,6 @@ object WalletConnectV1 : WalletConnect() {
     )
 
     fun connect(url: String): Boolean {
-        disconnect()
-
         val peerMeta = WCPeerMeta(
             name = "Mixin Messenger",
             url = "https://mixin.one",
@@ -133,8 +131,8 @@ object WalletConnectV1 : WalletConnect() {
         currentSignData = null
     }
 
-    fun walletChangeNetwork(priv: ByteArray, id: Long, chainId: Int = Chain.Polygon.chainReference) {
-        val chain = chainId.getChain()
+    fun walletChangeNetwork(priv: ByteArray, id: Long) {
+        val chain = targetNetwork
         if (chain == null) {
             rejectRequest(id, "Network not supported")
             return
@@ -162,6 +160,20 @@ object WalletConnectV1 : WalletConnect() {
     }
 
     fun getLastSession(): WCSessionStoreItem? = sessionStore.session
+
+    fun approveRequest(priv: ByteArray, id: Long) {
+        val signData = this.currentSignData ?: return
+        if (signData.requestId != id) return
+
+        when (val data = signData.signMessage) {
+            is WCEthereumSignMessage -> {
+                ethSignMessage(priv, id, data)
+            }
+            is WCEthereumTransaction -> {
+                ethSendTransaction(priv, id, data)
+            }
+        }
+    }
 
     fun ethSignMessage(priv: ByteArray, id: Long, message: WCEthereumSignMessage) {
         wcClient.approveRequest(id, signMessage(priv, message))
@@ -250,13 +262,4 @@ object WalletConnectV1 : WalletConnect() {
             wcClient.approveRequest(id, transactionHash)
         }
     }
-
-    var onSessionRequest: (id: Long, peer: WCPeerMeta) -> Unit = { _, _ -> Unit }
-    var onEthSign: (id: Long, message: WCEthereumSignMessage) -> Unit = { _, _ -> Unit }
-    var onEthSignTransaction: (id: Long, transaction: WCEthereumTransaction) -> Unit = { _, _ -> Unit }
-    var onEthSendTransaction: (id: Long, transaction: WCEthereumTransaction) -> Unit = { _, _ -> Unit }
-    var onCustomRequest: (id: Long, payload: String) -> Unit = { _, _ -> Unit }
-    var onGetAccounts: (id: Long) -> Unit = { _ -> Unit }
-    var onWalletChangeNetwork: (id: Long, chainId: Int) -> Unit = { _, _ -> Unit }
-    var onWalletAddNetwork: (id: Long, network: WCAddNetwork) -> Unit = { _, _ -> Unit }
 }

@@ -21,6 +21,9 @@ import com.walletconnect.web3.wallet.client.Web3Wallet
 import com.walletconnect.web3.wallet.utils.CacaoSigner
 import one.mixin.android.BuildConfig
 import one.mixin.android.MixinApplication
+import one.mixin.android.RxBus
+import one.mixin.android.event.WCEvent
+import one.mixin.android.ui.tip.wc.WalletConnectBottomSheetDialogFragment
 import org.web3j.crypto.Credentials
 import org.web3j.crypto.ECKeyPair
 import org.web3j.crypto.Keys
@@ -96,13 +99,13 @@ object WalletConnectV2 : WalletConnect() {
 
             override fun onSessionProposal(sessionProposal: Wallet.Model.SessionProposal) {
                 Timber.d("$TAG onSessionProposal $sessionProposal")
-                this@WalletConnectV2.onSessionProposal(sessionProposal)
+                RxBus.publish(WCEvent.V2(Version.V2, WalletConnectBottomSheetDialogFragment.RequestType.SessionProposal))
             }
 
             override fun onSessionRequest(sessionRequest: Wallet.Model.SessionRequest) {
                 Timber.d("$TAG onSessionRequest $sessionRequest")
                 parseSessionRequest(sessionRequest)
-                this@WalletConnectV2.onSessionRequest(sessionRequest)
+                RxBus.publish(WCEvent.V2(Version.V2, WalletConnectBottomSheetDialogFragment.RequestType.SessionRequest))
             }
 
             override fun onSessionSettleResponse(settleSessionResponse: Wallet.Model.SettledSessionResponse) {
@@ -278,10 +281,10 @@ object WalletConnectV2 : WalletConnect() {
             }
             Method.ETHPersonalSign.name -> {
                 val array = JsonParser.parseString(request.request.params).asJsonArray
-                val address = array[1].toString().trim('"')
                 val data = array[0].toString().trim('"')
+                val address = array[1].toString().trim('"')
                 Timber.d("$TAG personal sign: $data")
-                currentSignData = WCSignData.V2SignData(request.request.id, WCEthereumSignMessage(listOf(address, data), WCEthereumSignMessage.WCSignType.PERSONAL_MESSAGE), request)
+                currentSignData = WCSignData.V2SignData(request.request.id, WCEthereumSignMessage(listOf(data, address), WCEthereumSignMessage.WCSignType.PERSONAL_MESSAGE), request)
             }
             Method.ETHSignTypedData.name, Method.ETHSignTypedDataV4.name -> {
                 val array = JsonParser.parseString(request.request.params).asJsonArray
@@ -473,8 +476,6 @@ object WalletConnectV2 : WalletConnect() {
     var onAuthRequest: (authRequest: Wallet.Model.AuthRequest) -> Unit = { _ -> }
     var onConnectionStateChange: (state: Wallet.Model.ConnectionState) -> Unit = { _ -> }
     var onSessionDelete: (sessionDelete: Wallet.Model.SessionDelete) -> Unit = { _ -> }
-    var onSessionProposal: (sessionProposal: Wallet.Model.SessionProposal) -> Unit = { _ -> }
-    var onSessionRequest: (sessionRequest: Wallet.Model.SessionRequest) -> Unit = { _ -> }
     var onSessionSettleResponse: (settleSessionResponse: Wallet.Model.SettledSessionResponse) -> Unit = { _ -> }
     var onSessionUpdateResponse: (sessionUpdateResponse: Wallet.Model.SessionUpdateResponse) -> Unit = { _ -> }
     var onPairingDelete: (deletedPairing: Core.Model.DeletedPairing) -> Unit = { _ -> }

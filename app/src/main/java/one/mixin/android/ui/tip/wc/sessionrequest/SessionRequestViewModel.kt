@@ -1,6 +1,7 @@
 package one.mixin.android.ui.tip.wc.sessionrequest
 
 import androidx.lifecycle.ViewModel
+import com.google.gson.Gson
 import com.trustwallet.walletconnect.models.ethereum.WCEthereumSignMessage
 import com.trustwallet.walletconnect.models.ethereum.WCEthereumTransaction
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -65,21 +66,22 @@ class SessionRequestViewModel @Inject internal constructor() : ViewModel() {
 
     fun <T> getContent(
         version: WalletConnect.Version,
+        gson: Gson,
         data: T,
     ): String = when (version) {
         WalletConnect.Version.V1 -> {
             when (data) {
                 is WCEthereumSignMessage -> {
-                    data.data
+                    gson.toJson(data.data)
                 }
                 is WCEthereumTransaction -> {
-                    data.toString()
+                    gson.toJson(data)
                 }
                 else -> "Invalid data"
             }
         }
         WalletConnect.Version.V2 -> {
-            data.toString()
+            gson.toJson(data)
         }
     }
 }

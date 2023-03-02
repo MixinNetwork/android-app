@@ -50,6 +50,7 @@ import one.mixin.android.ui.tip.wc.switchnetwork.SwitchNetworkPage
 import one.mixin.android.util.BiometricUtil
 import one.mixin.android.util.SystemUIManager
 import one.mixin.android.vo.Asset
+import one.mixin.android.widget.MixinBottomSheetDialog
 import org.web3j.utils.Convert
 import timber.log.Timber
 import java.math.BigDecimal
@@ -103,6 +104,12 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
                     dialog?.window?.clearFlags(WindowManager.LayoutParams.FLAG_SECURE)
                 }
             }
+        }
+    }
+
+    override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
+        return MixinBottomSheetDialog(requireContext(), theme).apply {
+            dismissWithAnimation = true
         }
     }
 
@@ -198,7 +205,34 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
     }
 
     override fun dismiss() {
-        dismissAllowingStateLoss()
+        safeDismiss()
+    }
+
+    private fun safeDismiss() {
+        if (isAdded) {
+            dialog?.dismiss()
+            dialog?.setOnDismissListener {
+                try {
+                    super.dismissAllowingStateLoss()
+                } catch (e: IllegalStateException) {
+                    Timber.w(e)
+                } finally {
+                    if (activity?.isFinishing == false) {
+                        activity?.finish()
+                    }
+                }
+            }
+        } else {
+            try {
+                super.dismissAllowingStateLoss()
+            } catch (e: IllegalStateException) {
+                Timber.w(e)
+            } finally {
+                if (activity?.isFinishing == false) {
+                    activity?.finish()
+                }
+            }
+        }
     }
 
     private fun refreshEstimatedGasAndAsset() {
@@ -267,7 +301,7 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
 
         override fun onStateChanged(bottomSheet: View, newState: Int) {
             when (newState) {
-                BottomSheetBehavior.STATE_HIDDEN -> dismissAllowingStateLoss()
+                BottomSheetBehavior.STATE_HIDDEN -> safeDismiss()
                 else -> {}
             }
         }

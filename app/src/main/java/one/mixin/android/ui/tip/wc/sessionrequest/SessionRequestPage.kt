@@ -106,7 +106,7 @@ fun SessionRequestPage(
         )
         Box(modifier = Modifier.height(16.dp))
         if (sessionRequestUI.data is WCEthereumSignMessage) {
-            Message(content = viewModel.getContent(version, gson.toJson(sessionRequestUI.data))) {
+            Message(content = viewModel.getContent(version, gson, sessionRequestUI.data)) {
                 onPreviewMessage.invoke(it)
             }
         } else if (sessionRequestUI.data is WCEthereumTransaction) {
