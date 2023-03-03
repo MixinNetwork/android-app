@@ -96,8 +96,9 @@ fun SwitchNetworkPage(
             step = step,
             errorInfo = null,
             allowBiometric = true,
-            onCancelClick = { },
-            onApproveClick = { },
+            onNegativeClick = { },
+            onPositiveClick = { },
+            onDoneClick = { onDismissRequest() },
             onBiometricClick = { onBiometricClick.invoke() },
             onPinComplete = { pin -> onPinComplete.invoke(pin) },
         )

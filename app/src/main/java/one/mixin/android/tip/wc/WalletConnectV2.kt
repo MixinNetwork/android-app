@@ -403,7 +403,6 @@ object WalletConnectV2 : WalletConnect() {
 
         Web3Wallet.getActiveSessionByTopic(topic)?.redirect?.toUri()
             ?.let { deepLinkUri -> sendResponseDeepLink(deepLinkUri) }
-//        this.sessionRequest = null
     }
 
     fun ethSignMessage(priv: ByteArray, id: Long, topic: String, message: WCEthereumSignMessage) {

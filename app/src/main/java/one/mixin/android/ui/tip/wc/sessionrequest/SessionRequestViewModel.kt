@@ -64,6 +64,16 @@ class SessionRequestViewModel @Inject internal constructor() : ViewModel() {
         }
     }
 
+    fun sendTransaction(version: WalletConnect.Version, id: Long) {
+        when (version) {
+            WalletConnect.Version.V1 -> {
+                WalletConnectV1.sendTransaction(id)
+            }
+            WalletConnect.Version.V2 -> {
+            }
+        }
+    }
+
     fun <T> getContent(
         version: WalletConnect.Version,
         gson: Gson,

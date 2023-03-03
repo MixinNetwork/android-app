@@ -107,8 +107,9 @@ fun SessionProposalPage(
             step = step,
             errorInfo = errorInfo,
             allowBiometric = true,
-            onCancelClick = { },
-            onApproveClick = { },
+            onNegativeClick = { },
+            onPositiveClick = { },
+            onDoneClick = { onDismissRequest() },
             onBiometricClick = { onBiometricClick.invoke() },
             onPinComplete = { pin -> onPinComplete.invoke(pin) },
         )

@@ -119,7 +119,11 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
         savedInstanceState: Bundle?,
     ): View = ComposeView(requireContext()).apply {
         setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
-        step = if (requestType == RequestType.SessionProposal) Step.Input else Step.Input
+        step = when (requestType) {
+            RequestType.SessionProposal -> Step.Input
+            RequestType.SessionRequest -> Step.Sign
+            RequestType.SwitchNetwork -> Step.Input
+        }
         setContent {
             when (requestType) {
                 RequestType.SessionProposal -> {
@@ -146,6 +150,13 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
                         errorInfo,
                         onPreviewMessage = { TextPreviewActivity.show(requireContext(), it) },
                         onDismissRequest = { dismiss() },
+                        onPositiveClick = {
+                            if (step == Step.Sign) {
+                                step = Step.Input
+                            } else if (step == Step.Send) {
+                                step = Step.Done
+                            }
+                        },
                         onBiometricClick = { showBiometricPrompt() },
                         onPinComplete = { pin -> doAfterPinComplete(pin) },
                     )
@@ -278,11 +289,11 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
             val error = onPinComplete?.invoke(pin)
             if (error == null) {
                 pinCompleted = true
-                step = Step.Done
-
-                // TODO remove
-                delay(1000)
-                dismiss()
+                step = if (viewModel.isTransaction(version)) {
+                    Step.Send
+                } else {
+                    Step.Done
+                }
             } else {
                 errorInfo = error
                 step = Step.Error

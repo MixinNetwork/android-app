@@ -20,7 +20,6 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
@@ -60,6 +59,7 @@ fun SessionRequestPage(
     errorInfo: String?,
     onPreviewMessage: (String) -> Unit,
     onDismissRequest: () -> Unit,
+    onPositiveClick: () -> Unit,
     onBiometricClick: () -> Unit,
     onPinComplete: (String) -> Unit,
 ) {
@@ -114,14 +114,22 @@ fun SessionRequestPage(
         }
         NetworkInfo(name = sessionRequestUI.chain.name, fee = (fee ?: BigDecimal.ZERO).multiply(asset.priceUSD()).toPlainString())
         Box(modifier = Modifier.width(16.dp))
-        Warning()
-        Box(modifier = Modifier.width(20.dp))
+        if (step == WalletConnectBottomSheetDialogFragment.Step.Input || step == WalletConnectBottomSheetDialogFragment.Step.Sign) {
+            Warning()
+        }
+        Box(modifier = Modifier.width(32.dp))
         WCPinBoard(
             step = step,
             errorInfo = errorInfo,
             allowBiometric = true,
-            onCancelClick = { },
-            onApproveClick = { },
+            onNegativeClick = { onDismissRequest() },
+            onPositiveClick = {
+                if (step == WalletConnectBottomSheetDialogFragment.Step.Send) {
+                    viewModel.sendTransaction(version, sessionRequestUI.requestId)
+                }
+                onPositiveClick()
+            },
+            onDoneClick = { onDismissRequest() },
             onBiometricClick = { onBiometricClick.invoke() },
             onPinComplete = { pin -> onPinComplete.invoke(pin) },
         )
@@ -274,8 +282,7 @@ private fun Warning() {
             .fillMaxWidth()
             .padding(horizontal = 20.dp)
             .clip(RoundedCornerShape(8.dp))
-            .background(Color(0xFFFFF7AD))
-            .alpha(0.7f)
+            .background(Color(0xBBFFF7AD))
             .padding(horizontal = 8.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {

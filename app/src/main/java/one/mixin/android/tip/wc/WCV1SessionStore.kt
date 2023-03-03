@@ -11,6 +11,7 @@ data class WCV1Session(
     val session: WCSession,
     val chainId: Int,
     val remotePeerMeta: WCPeerMeta,
+    val address: String?,
     val date: Date = Date(),
 )
 
@@ -28,6 +29,9 @@ class WCV1SessionStore(
             sharedPreferences.edit().putString(walletConnectV1Sessions, gson.toJson(listOf(item))).apply()
         } else {
             val sessions: MutableList<WCV1Session> = gson.fromJson<List<WCV1Session>>(json).toMutableList()
+            sessions.removeAll { s ->
+                s.remotePeerMeta.url == item.remotePeerMeta.url
+            }
             sessions.add(item)
             sharedPreferences.edit().putString(walletConnectV1Sessions, gson.toJson(sessions)).apply()
         }

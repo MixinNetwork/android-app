@@ -30,7 +30,7 @@ object WalletConnectV1 : WalletConnect() {
         wcc.onSessionRequest = { id, peer ->
             Timber.d("$TAG onSessionRequest id: $id, peer: $peer")
             wcc.session?.let {
-                currentSession = WCV1Session(it, chain.chainReference, peer)
+                currentSession = WCV1Session(it, chain.chainReference, peer, null)
             }
             RxBus.publish(WCEvent.V1(Version.V1, WalletConnectBottomSheetDialogFragment.RequestType.SessionProposal, id))
         }
@@ -82,7 +82,7 @@ object WalletConnectV1 : WalletConnect() {
 
     var address: String? = null
     var targetNetwork: Chain? = null
-
+    var signedTransactionData: String? = null
     var currentSession: WCV1Session? = null
     private val sessionStore = WCV1SessionStore(
         MixinApplication.appContext.getSharedPreferences("wallet_connect_v1_session_store", Context.MODE_PRIVATE),
@@ -120,7 +120,7 @@ object WalletConnectV1 : WalletConnect() {
         this.address = address
 
         val session = currentSession ?: return
-        WCV1Session(session.session, chain.chainReference, session.remotePeerMeta, session.date).apply {
+        WCV1Session(session.session, chain.chainReference, session.remotePeerMeta, address, session.date).apply {
             currentSession = this
             sessionStore.store(this)
         }
@@ -134,6 +134,7 @@ object WalletConnectV1 : WalletConnect() {
     fun rejectRequest(id: Long, message: String = "Reject by the user") {
         wcClient.rejectRequest(id, message)
         currentSignData = null
+        signedTransactionData = null
     }
 
     fun walletChangeNetwork(priv: ByteArray, id: Long) {
@@ -177,8 +178,24 @@ object WalletConnectV1 : WalletConnect() {
                 ethSignMessage(priv, id, data)
             }
             is WCEthereumTransaction -> {
-                ethSendTransaction(priv, id, data)
+//                ethSendTransaction(priv, id, data)
+                signedTransactionData = ethSignTransaction(priv, id, data, false)
             }
+        }
+    }
+
+    fun sendTransaction(id: Long) {
+        val signatureDataOperations = this.signedTransactionData ?: return
+
+        val raw = web3j.ethSendRawTransaction(signedTransactionData).sendAsync().get(web3jTimeout, TimeUnit.SECONDS)
+        val transactionHash = raw.transactionHash
+        if (raw.hasError()) {
+            throwError(raw.error) {
+                wcClient.rejectRequest(id, it)
+            }
+        } else {
+            Timber.d("$TAG sendTransaction $transactionHash")
+            wcClient.approveRequest(id, transactionHash)
         }
     }
 

@@ -41,6 +41,7 @@ import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Icon
 import androidx.compose.material.Text
+import androidx.compose.material.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -78,8 +79,9 @@ fun WCPinBoard(
     step: Step,
     errorInfo: String?,
     allowBiometric: Boolean,
-    onCancelClick: (() -> Unit),
-    onApproveClick: (() -> Unit),
+    onNegativeClick: () -> Unit,
+    onPositiveClick: () -> Unit,
+    onDoneClick: () -> Unit,
     onBiometricClick: (() -> Unit)?,
     onPinComplete: ((String) -> Unit)?,
 ) {
@@ -140,28 +142,20 @@ fun WCPinBoard(
                 )
             }
             Step.Done -> Column(
-                modifier = Modifier
-                    .height(150.dp)
-                    .fillMaxWidth(),
+                modifier = Modifier.fillMaxWidth(),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center,
             ) {
+                Box(modifier = Modifier.height(20.dp))
                 Image(
                     painter = painterResource(id = R.drawable.ic_transfer_done),
                     contentDescription = null,
                 )
-                Text(text = stringResource(R.string.Done), color = MixinAppTheme.colors.textMinor)
-            }
-            Step.Sign -> Column(
-                modifier = Modifier
-                    .height(150.dp)
-                    .fillMaxWidth(),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.SpaceEvenly,
-            ) {
+                Box(modifier = Modifier.height(12.dp))
+                Text(text = stringResource(R.string.Success), color = MixinAppTheme.colors.textMinor)
+                Box(modifier = Modifier.height(40.dp))
                 Button(
-                    modifier = Modifier.size(width = 140.dp, height = 42.dp),
-                    onClick = { onApproveClick.invoke() },
+                    onClick = { onDoneClick.invoke() },
                     colors = ButtonDefaults.outlinedButtonColors(
                         backgroundColor = MixinAppTheme.colors.accent,
                     ),
@@ -169,32 +163,59 @@ fun WCPinBoard(
                     shape = RoundedCornerShape(40.dp),
                 ) {
                     Text(
-                        text = stringResource(id = R.string.Sign_by_PIN),
+                        text = stringResource(id = R.string.Done),
                         color = Color.White,
                     )
                 }
+                Box(modifier = Modifier.height(32.dp))
+            }
+            Step.Sign -> Column(
+                modifier = Modifier
+                    .fillMaxWidth(),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.SpaceEvenly,
+            ) {
+                Box(modifier = Modifier.height(20.dp))
+                Button(
+                    onClick = { onPositiveClick.invoke() },
+                    colors = ButtonDefaults.outlinedButtonColors(
+                        backgroundColor = MixinAppTheme.colors.accent,
+                    ),
+                    contentPadding = PaddingValues(horizontal = 28.dp, vertical = 11.dp),
+                    shape = RoundedCornerShape(40.dp),
+                ) {
+                    Text(
+                        text = stringResource(id = R.string.Sign_by_PIN),
+                        color = Color.White,
+                        fontSize = 16.sp,
+                    )
+                }
                 Box(modifier = Modifier.height(24.dp))
-                Box(
-                    modifier = Modifier
-                        .size(width = 140.dp, height = 42.dp)
-                        .clickable(onClick = onCancelClick),
+                TextButton(
+                    onClick = { onNegativeClick() },
+                    contentPadding = PaddingValues(horizontal = 28.dp, vertical = 11.dp),
+                    shape = RoundedCornerShape(40.dp),
                 ) {
                     Text(
                         text = stringResource(R.string.Cancel),
-                        color = MixinAppTheme.colors.textPrimary,
+                        color = Color(0xFF4B7CDD),
+                        fontSize = 16.sp,
                     )
                 }
+                Box(modifier = Modifier.height(32.dp))
             }
             Step.Send -> Column(
                 modifier = Modifier
-                    .height(250.dp)
                     .fillMaxWidth(),
+                horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.SpaceEvenly,
             ) {
+                Box(modifier = Modifier.height(20.dp))
                 Image(
                     painter = painterResource(id = R.drawable.ic_transfer_done),
                     contentDescription = null,
                 )
+                Box(modifier = Modifier.height(10.dp))
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -206,31 +227,34 @@ fun WCPinBoard(
                         fontSize = 14.sp,
                     )
                 }
+                Box(modifier = Modifier.height(24.dp))
                 Button(
-                    modifier = Modifier.size(width = 140.dp, height = 42.dp),
-                    onClick = { onApproveClick.invoke() },
+                    onClick = { onPositiveClick.invoke() },
                     colors = ButtonDefaults.outlinedButtonColors(
                         backgroundColor = MixinAppTheme.colors.accent,
                     ),
-                    contentPadding = PaddingValues(horizontal = 28.dp),
+                    contentPadding = PaddingValues(horizontal = 39.dp, vertical = 11.dp),
                     shape = RoundedCornerShape(40.dp),
                 ) {
                     Text(
                         text = stringResource(id = R.string.Send),
                         color = Color.White,
+                        textAlign = TextAlign.Center,
                     )
                 }
                 Box(modifier = Modifier.height(24.dp))
-                Box(
-                    modifier = Modifier
-                        .size(width = 140.dp, height = 42.dp)
-                        .clickable(onClick = onCancelClick),
+                TextButton(
+                    onClick = { onNegativeClick() },
+                    contentPadding = PaddingValues(horizontal = 28.dp, vertical = 11.dp),
+                    shape = RoundedCornerShape(40.dp),
                 ) {
                     Text(
-                        text = stringResource(R.string.Cancel),
-                        color = MixinAppTheme.colors.textPrimary,
+                        text = stringResource(R.string.Discard),
+                        color = Color(0xFF4B7CDD),
+                        fontSize = 16.sp,
                     )
                 }
+                Box(modifier = Modifier.height(32.dp))
             }
             else -> Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 AnimatedContent(targetState = step, transitionSpec = {
@@ -244,6 +268,7 @@ fun WCPinBoard(
                                 .fillMaxWidth()
                                 .wrapContentHeight(),
                         ) {
+                            Box(modifier = Modifier.height(10.dp))
                             Box(
                                 modifier = Modifier
                                     .padding(8.dp)
@@ -437,5 +462,5 @@ fun WCPinBoard(
 @Preview
 @Composable
 fun WCPinBoardPreview() {
-    WCPinBoard(Step.Input, null, false, {}, {}, null, null)
+    WCPinBoard(Step.Input, null, false, {}, {}, {}, null, null)
 }
