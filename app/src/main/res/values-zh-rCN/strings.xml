@@ -958,7 +958,7 @@
     <string name="Today">今天</string>
     <string name="Touch_the_fingerprint_sensor">触摸指纹传感器</string>
     <string name="Transaction">交易详情</string>
-    <string name="transaction_Hash">上链哈希</string>
+    <string name="transaction_Hash">交易哈希</string>
     <string name="Transaction_Id">交易编号</string>
     <string name="Transaction_Type">交易类型</string>
     <string name="Transactions">转账记录</string>
