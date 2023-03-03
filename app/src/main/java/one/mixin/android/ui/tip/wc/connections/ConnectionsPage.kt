@@ -1,7 +1,6 @@
 package one.mixin.android.ui.tip.wc.connections
 
 import GlideImage
-import android.os.Bundle
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -48,14 +47,16 @@ import one.mixin.android.ui.common.compose.SearchTextField
 import one.mixin.android.ui.setting.ui.compose.HighlightText
 import one.mixin.android.ui.setting.ui.compose.MixinTopAppBar
 import one.mixin.android.ui.setting.ui.theme.MixinAppTheme
-import one.mixin.android.ui.tip.wc.LocalWCNav
-import one.mixin.android.ui.tip.wc.WCDestination
 
 @Composable
-fun ConnectionsPage() {
+fun ConnectionsPage(
+    toDetails: (Int) -> Unit,
+    pop: () -> Unit,
+) {
     WCPageScaffold(
         title = stringResource(id = R.string.Connected_dapps),
         verticalScrollable = true,
+        pop = pop,
     ) {
         val viewModel = hiltViewModel<ConnectionsViewModel>()
 
@@ -70,7 +71,7 @@ fun ConnectionsPage() {
         if (connections.isEmpty()) {
             EmptyLayout()
         } else {
-            ConnectionList(connections, keyword = text.value.trim())
+            ConnectionList(connections, keyword = text.value.trim(), toDetails = toDetails)
         }
     }
 }
@@ -79,6 +80,7 @@ fun ConnectionsPage() {
 private fun ConnectionList(
     data: List<ConnectionUI>,
     keyword: String,
+    toDetails: (Int) -> Unit,
 ) {
     val filteredData = remember(data, keyword) {
         if (keyword.isEmpty()) {
@@ -93,9 +95,8 @@ private fun ConnectionList(
         items(filteredData, key = {
             listOf(it.index, keyword)
         }) { item ->
-            val navController = LocalWCNav.current
             ConnectionItem(item, keyword) {
-                navController.navTo(WCDestination.ConnectionDetails, Bundle().apply { putInt("connectionId", item.index) })
+                toDetails.invoke(item.index)
             }
         }
     }
@@ -184,6 +185,7 @@ private fun EmptyLayout() {
 fun WCPageScaffold(
     title: String,
     verticalScrollable: Boolean = true,
+    pop: () -> Unit,
     body: @Composable ColumnScope.() -> Unit,
 ) {
     Scaffold(
@@ -194,8 +196,7 @@ fun WCPageScaffold(
                     Text(title)
                 },
                 navigationIcon = {
-                    val navController = LocalWCNav.current
-                    IconButton(onClick = { navController.pop() }) {
+                    IconButton(onClick = { pop() }) {
                         Icon(
                             painter = painterResource(id = R.drawable.ic_back),
                             contentDescription = null,

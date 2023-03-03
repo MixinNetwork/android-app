@@ -39,15 +39,16 @@ import one.mixin.android.tip.wc.Chain
 import one.mixin.android.tip.wc.WalletConnect
 import one.mixin.android.ui.setting.ui.compose.MixinBottomSheetDialog
 import one.mixin.android.ui.setting.ui.theme.MixinAppTheme
-import one.mixin.android.ui.tip.wc.LocalWCNav
 
 @Composable
 fun ConnectionDetailsPage(
     connectionId: Int?,
+    pop: () -> Unit,
 ) {
     WCPageScaffold(
         title = "",
         verticalScrollable = false,
+        pop = pop,
     ) {
         val viewModel = hiltViewModel<ConnectionsViewModel>()
         viewModel.currentConnectionId = connectionId
@@ -55,14 +56,13 @@ fun ConnectionDetailsPage(
         if (connectionUI == null) {
             Loading()
         } else {
-            val navController = LocalWCNav.current
             var openBottomSheet by rememberSaveable { mutableStateOf(false) }
             Content(connectionUI = requireNotNull(connectionUI), {
                 openBottomSheet = true
             }) {
                 viewModel.disconnect(if (connectionUI!!.chain != null) WalletConnect.Version.V1 else WalletConnect.Version.V2, connectionUI!!.data)
                 viewModel.refreshConnections()
-                navController.pop()
+                pop()
             }
             if (openBottomSheet) {
                 NetworkBottomSheet(
