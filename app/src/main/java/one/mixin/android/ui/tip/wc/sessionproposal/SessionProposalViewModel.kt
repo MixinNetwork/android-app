@@ -1,5 +1,6 @@
 package one.mixin.android.ui.tip.wc.sessionproposal
 
+import androidx.core.net.toUri
 import androidx.lifecycle.ViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import one.mixin.android.tip.wc.WalletConnect
@@ -24,7 +25,7 @@ class SessionProposalViewModel @Inject internal constructor() : ViewModel() {
                 val peer = session.remotePeerMeta
                 return SessionProposalUI(
                     peer = PeerUI(
-                        uri = peer.url,
+                        uri = peer.url.toUri().host ?: "",
                         name = peer.name,
                         desc = peer.description ?: "",
                         icon = peer.icons.firstOrNull().toString(),
@@ -40,7 +41,7 @@ class SessionProposalViewModel @Inject internal constructor() : ViewModel() {
                             icon = sessionProposal.icons.firstOrNull().toString(),
                             name = sessionProposal.name,
                             desc = sessionProposal.description,
-                            uri = sessionProposal.url,
+                            uri = sessionProposal.url.toUri().host ?: "",
                         ),
                         chain = WalletConnectV2.chain,
                     )

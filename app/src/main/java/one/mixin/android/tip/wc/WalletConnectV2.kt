@@ -38,6 +38,7 @@ object WalletConnectV2 : WalletConnect() {
     const val TAG = "WalletConnectV2"
 
     var authRequest: Wallet.Model.AuthRequest? = null
+    var signedTransactionData: String? = null
 
     private val gson = GsonBuilder()
         .serializeNulls()
@@ -320,7 +321,8 @@ object WalletConnectV2 : WalletConnect() {
                     ethSignTransaction(priv, signData.requestId, signData.sessionRequest.topic, signMessage, true)
                 }
                 Method.ETHSendTransaction.name -> {
-                    ethSendTransaction(priv, signData.requestId, signData.sessionRequest.topic, signMessage)
+//                    ethSendTransaction(priv, signData.requestId, signData.sessionRequest.topic, signMessage)
+                    signedTransactionData = ethSignTransaction(priv, signData.requestId, signData.sessionRequest.topic, signMessage, false)
                 }
             }
         }
@@ -403,6 +405,23 @@ object WalletConnectV2 : WalletConnect() {
 
         Web3Wallet.getActiveSessionByTopic(topic)?.redirect?.toUri()
             ?.let { deepLinkUri -> sendResponseDeepLink(deepLinkUri) }
+    }
+
+    fun sendTransaction(id: Long) {
+        val signedTransactionData = this.signedTransactionData ?: return
+        val topic = (this.currentSignData as? WCSignData.V2SignData<*>)?.sessionRequest?.topic ?: return
+
+        val raw = web3j.ethSendRawTransaction(signedTransactionData).sendAsync().get(web3jTimeout, TimeUnit.SECONDS)
+        val transactionHash = raw.transactionHash
+        if (transactionHash == null) {
+            val msg = "error code: ${raw.error.code}, message: ${raw.error.message}"
+            Timber.d("$TAG transactionHash is null, $msg")
+            rejectRequest(msg)
+            throw WalletConnectException(raw.error.code, raw.error.message)
+        } else {
+            Timber.d("$TAG sendTransaction $transactionHash")
+            approveRequestInternal(transactionHash, topic, id)
+        }
     }
 
     fun ethSignMessage(priv: ByteArray, id: Long, topic: String, message: WCEthereumSignMessage) {

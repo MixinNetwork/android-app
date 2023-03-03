@@ -84,7 +84,9 @@ class ConnectionsViewModel @Inject internal constructor() : ViewModel() {
             )
         }
 
-        val v1List = WalletConnectV1.getStoredSessions()?.mapIndexed { index, item ->
+        val v1List = WalletConnectV1.getStoredSessions()?.sortedByDescending { wcV1Session ->
+            wcV1Session.date
+        }?.mapIndexed { index, item ->
             val peer = item.remotePeerMeta
             val connectionUI = ConnectionUI(
                 index = index + v2List.size,

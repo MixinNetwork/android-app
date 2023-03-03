@@ -58,9 +58,9 @@ fun SwitchNetworkPage(
         Image(
             painter = painterResource(R.drawable.ic_close_black_24dp),
             modifier = Modifier
-                .size(40.dp, 40.dp)
+                .size(52.dp, 52.dp)
                 .align(alignment = Alignment.End)
-                .padding(horizontal = 8.dp)
+                .padding(horizontal = 14.dp, vertical = 14.dp)
                 .clip(CircleShape)
                 .clickable(onClick = {
                     onDismissRequest()

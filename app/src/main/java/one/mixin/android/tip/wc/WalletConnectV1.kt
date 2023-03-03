@@ -127,7 +127,11 @@ object WalletConnectV1 : WalletConnect() {
     }
 
     fun rejectSession() {
-        wcClient.rejectSession()
+        try {
+            wcClient.rejectSession()
+        } catch (e: IllegalStateException) {
+            Timber.d("$TAG rejectSession ${e.stackTraceToString()}")
+        }
         wcClient.disconnect()
     }
 
@@ -185,7 +189,7 @@ object WalletConnectV1 : WalletConnect() {
     }
 
     fun sendTransaction(id: Long) {
-        val signatureDataOperations = this.signedTransactionData ?: return
+        val signedTransactionData = this.signedTransactionData ?: return
 
         val raw = web3j.ethSendRawTransaction(signedTransactionData).sendAsync().get(web3jTimeout, TimeUnit.SECONDS)
         val transactionHash = raw.transactionHash

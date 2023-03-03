@@ -80,9 +80,9 @@ fun SessionRequestPage(
         Image(
             painter = painterResource(R.drawable.ic_close_black_24dp),
             modifier = Modifier
-                .size(40.dp, 40.dp)
+                .size(52.dp, 52.dp)
                 .align(alignment = Alignment.End)
-                .padding(horizontal = 8.dp)
+                .padding(horizontal = 14.dp, vertical = 14.dp)
                 .clip(CircleShape)
                 .clickable(onClick = {
                     viewModel.rejectRequest(version, sessionRequestUI.requestId)
@@ -92,7 +92,7 @@ fun SessionRequestPage(
         )
         Box(modifier = Modifier.height(12.dp))
         Text(
-            text = stringResource(id = R.string.Signature_Request),
+            text = stringResource(id = if (sessionRequestUI.data is WCEthereumSignMessage) R.string.Signature_Request else R.string.Transaction_Request),
             style = TextStyle(
                 color = MixinAppTheme.colors.textPrimary,
                 fontSize = 18.sp,
@@ -282,7 +282,7 @@ private fun Warning() {
             .fillMaxWidth()
             .padding(horizontal = 20.dp)
             .clip(RoundedCornerShape(8.dp))
-            .background(Color(0xBBFFF7AD))
+            .background(Color(0x66FFF7AD))
             .padding(horizontal = 8.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {

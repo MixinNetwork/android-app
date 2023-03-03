@@ -89,7 +89,7 @@ class WalletConnectFragment : BaseFragment() {
         fun newInstance(): WalletConnectFragment = WalletConnectFragment()
     }
 
-    private val parentBackStackEntryCount = MutableLiveData(0)
+    private val parentBackStackEntryCount = MutableLiveData(1)
 
     private val onParentBackStackChanged = FragmentManager.OnBackStackChangedListener {
         parentBackStackEntryCount.value = parentFragmentManager.backStackEntryCount

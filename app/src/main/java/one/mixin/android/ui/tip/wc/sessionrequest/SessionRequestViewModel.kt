@@ -1,5 +1,6 @@
 package one.mixin.android.ui.tip.wc.sessionrequest
 
+import androidx.core.net.toUri
 import androidx.lifecycle.ViewModel
 import com.google.gson.Gson
 import com.trustwallet.walletconnect.models.ethereum.WCEthereumSignMessage
@@ -32,7 +33,7 @@ class SessionRequestViewModel @Inject internal constructor() : ViewModel() {
                 val session = WalletConnectV1.currentSession ?: return null
                 val peer = session.remotePeerMeta
                 val peerUI = PeerUI(
-                    uri = peer.url,
+                    uri = peer.url.toUri().host ?: "",
                     name = peer.name,
                     desc = peer.description ?: "",
                     icon = peer.icons.firstOrNull().toString(),
@@ -51,7 +52,7 @@ class SessionRequestViewModel @Inject internal constructor() : ViewModel() {
                 val peerUI = PeerUI(
                     name = peer.name,
                     icon = peer.icons.firstOrNull() ?: "",
-                    uri = peer.url,
+                    uri = peer.url.toUri().host ?: "",
                     desc = peer.description,
                 )
                 return SessionRequestUI(
@@ -70,6 +71,7 @@ class SessionRequestViewModel @Inject internal constructor() : ViewModel() {
                 WalletConnectV1.sendTransaction(id)
             }
             WalletConnect.Version.V2 -> {
+                WalletConnectV2.sendTransaction(id)
             }
         }
     }
