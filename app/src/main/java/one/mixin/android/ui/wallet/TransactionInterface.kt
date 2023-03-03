@@ -303,6 +303,12 @@ interface TransactionInterface {
             transactionIdTv.text = snapshot.snapshotId
             transactionTypeTv.text = getSnapshotType(fragment, snapshot.type)
             memoTv.text = snapshot.memo
+            openingBalanceLayout.isVisible = snapshot.openingBalance.isNotBlank()
+            openingBalanceTv.text = "${snapshot.openingBalance} ${asset.symbol}"
+            closingBalanceLayout.isVisible = snapshot.openingBalance.isNotBlank()
+            closingBalanceTv.text = "${snapshot.closingBalance} ${asset.symbol}"
+            snapshotHashLayout.isVisible = !snapshot.snapshotHash.isNullOrBlank()
+            snapshotHashTv.text = snapshot.snapshotHash
             dateTv.text = snapshot.createdAt.fullDate()
             when (snapshot.type) {
                 SnapshotType.deposit.name -> {
@@ -335,7 +341,7 @@ interface TransactionInterface {
                         receiverTv.text = snapshot.opponentFullName
                     }
                 }
-                else -> {
+                else -> { // withdrawal, fee, rebate, raw
                     if (!asset.getTag().isNullOrEmpty()) {
                         receiverTitle.text = fragment.getString(R.string.Address)
                     } else {
