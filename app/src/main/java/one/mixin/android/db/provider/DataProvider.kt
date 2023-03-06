@@ -11,6 +11,7 @@ import androidx.room.getQueryDispatcher
 import androidx.sqlite.db.SimpleSQLiteQuery
 import kotlinx.coroutines.withContext
 import one.mixin.android.db.MixinDatabase
+import one.mixin.android.fts.FtsDataSource
 import one.mixin.android.fts.FtsDatabase
 import one.mixin.android.fts.rawSearch
 import one.mixin.android.ui.search.CancellationLimitOffsetDataSource
@@ -467,37 +468,7 @@ class DataProvider {
         ) =
             object : DataSource.Factory<Int, SearchMessageDetailItem>() {
                 override fun create(): DataSource<Int, SearchMessageDetailItem> {
-                    val messageIds = ftsDatabase.rawSearch(query, conversationId, cancellationSignal)
-                    val sql =
-                        """
-                            SELECT m.id AS messageId, u.user_id AS userId, u.avatar_url AS userAvatarUrl, u.full_name AS userFullName,
-                            m.category AS type, m.content AS content, m.created_at AS createdAt, m.name AS mediaName 
-                            FROM messages m INNER JOIN users u ON m.user_id = u.user_id 
-                            WHERE * m.id IN (SELECT message_id FROM messages_fts4 WHERE messages_fts4 MATCH ?)
-                            AND m.conversation_id = ?
-                            ORDER BY m.created_at DESC
-                        """
-                    val countSql =
-                        """
-                            SELECT count(1) FROM messages m 
-                            INNER JOIN users u ON m.user_id = u.user_id 
-                            WHERE * m.id IN (SELECT message_id FROM messages_fts4 WHERE messages_fts4 MATCH ?) 
-                            AND m.conversation_id = ?
-                        """
-                    val idsSql = if (messageIds.isEmpty()) {
-                        ""
-                    } else {
-                        "m.id IN (${messageIds.joinToString(prefix = "'", postfix = "'", separator = "', '")}) OR"
-                    }
-                    val countStatement = RoomSQLiteQuery.acquire(countSql.replace("*", idsSql), 2)
-                    val statement = RoomSQLiteQuery.acquire(sql.replace("*", idsSql), 2)
-                    var argIndex = 1
-                    statement.bindString(argIndex, query)
-                    countStatement.bindString(argIndex, query)
-                    argIndex = 2
-                    statement.bindString(argIndex, conversationId)
-                    countStatement.bindString(argIndex, conversationId)
-                    return CancellationMessageDetailItemLimitOffsetDataSource(database, statement, countStatement, cancellationSignal)
+                    return FtsDataSource(ftsDatabase, database, query,conversationId,cancellationSignal)
                 }
             }
 

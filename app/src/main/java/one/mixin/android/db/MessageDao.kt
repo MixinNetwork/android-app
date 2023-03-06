@@ -23,6 +23,7 @@ import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.MessageMedia
 import one.mixin.android.vo.MessageMinimal
 import one.mixin.android.vo.QuoteMessageItem
+import one.mixin.android.vo.SearchMessageDetailItem
 
 @Dao
 interface MessageDao : BaseDao<Message> {
@@ -229,6 +230,15 @@ interface MessageDao : BaseDao<Message> {
 
     @RawQuery
     suspend fun fuzzySearchMessage(query: SupportSQLiteQuery): List<FtsSearchResult>
+
+    @Query("""
+        SELECT m.id AS messageId, u.user_id AS userId, u.avatar_url AS userAvatarUrl, u.full_name AS userFullName,
+        m.category AS type, m.content AS content, m.created_at AS createdAt, m.name AS mediaName 
+        FROM messages m INNER JOIN users u ON m.user_id = u.user_id 
+        WHERE  m.id IN (:ids)
+        ORDER BY m.created_at DESC
+    """)
+    fun getSearchMessageDetailItemsByIds(ids:List<String>):List<SearchMessageDetailItem>
 
     @Query("SELECT m.category as type, m.id as messageId, m.media_url as mediaUrl FROM messages m WHERE m.conversation_id = :conversationId AND m.media_url IS NOT NULL AND m.media_status = 'DONE' LIMIT :limit OFFSET :offset")
     suspend fun getMediaMessageMinimalByConversationId(conversationId: String, limit: Int, offset: Int): List<MediaMessageMinimal>

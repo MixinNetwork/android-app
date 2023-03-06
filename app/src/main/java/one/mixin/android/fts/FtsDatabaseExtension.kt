@@ -126,28 +126,3 @@ fun FtsDatabase.rawSearch(
         return emptyList()
     }
 }
-
-fun FtsDatabase.rawSearch(
-    content: String,
-    conversationId: String,
-    cancellationSignal: CancellationSignal,
-): Collection<String> {
-    try {
-        query(
-            SimpleSQLiteQuery(
-                "SELECT message_id FROM messages_metas WHERE conversation_id = '$conversationId' AND doc_id IN  (SELECT docid FROM messages_fts WHERE content MATCH '$content' LIMIT 999)",
-            ),
-            cancellationSignal,
-        ).use { cursor ->
-            val ids = mutableSetOf<String>()
-            while (cursor.moveToNext()) {
-                cursor.getStringOrNull(0)?.let { messageId ->
-                    ids.add(messageId)
-                }
-            }
-            return ids
-        }
-    } catch (e: Exception) {
-        return emptyList()
-    }
-}
