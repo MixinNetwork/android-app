@@ -170,7 +170,7 @@ open class MixinApplication :
     @SuppressLint("DiscouragedPrivateApi")
     private fun init() {
         CronetProviderInstaller.installProvider(this)
-        CursorWindowFixer.fix()
+        CursorWindowFixer.fix(this)
         if (BuildConfig.DEBUG) {
             Timber.plant(Timber.DebugTree(), FileLogTree())
             // ignore known leaks
