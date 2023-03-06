@@ -99,7 +99,7 @@ class AddressManagementFragment : BaseFragment(R.layout.fragment_address_managem
                     transferFragment.callback = object : TransferFragment.Callback {
                         override fun onSuccess() {
                             if (viewDestroyed()) return
-                            
+
                             view.navigate(
                                 R.id.action_address_management_to_transactions,
                                 Bundle().apply { putParcelable(ARGS_ASSET, asset) },
