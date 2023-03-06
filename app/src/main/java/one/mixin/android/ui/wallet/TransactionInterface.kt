@@ -363,7 +363,7 @@ interface TransactionInterface {
         snapshot: SnapshotItem,
         asset: AssetItem,
     ) {
-        if (snapshot.type == SnapshotType.withdrawal.name && snapshot.transactionHash.isNullOrBlank()) {
+        if (snapshot.snapshotHash.isNullOrBlank() || (snapshot.type == SnapshotType.withdrawal.name && snapshot.transactionHash.isNullOrBlank())) {
             lifecycleScope.launch {
                 walletViewModel.refreshSnapshot(snapshot.snapshotId)?.let {
                     updateUI(fragment, contentBinding, asset, snapshot)
