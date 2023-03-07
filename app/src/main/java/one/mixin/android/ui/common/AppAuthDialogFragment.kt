@@ -63,7 +63,7 @@ class AppAuthDialogFragment : DialogFragment() {
 
         binding.swirl.setState(SwirlView.State.ON)
         binding.swirl.setOnClickListener {
-            showPrompt()
+            showVerifyBottomSheet()
         }
 
         dialog.window?.setLayout(
@@ -155,10 +155,21 @@ class AppAuthDialogFragment : DialogFragment() {
 
     private var success = false
 
-    private fun finishAndCheckNeed2GoUrlInterpreter() {
+    private fun successDismiss() {
         success = true
         RxBus.publish(AppAuthEvent())
         dismiss()
+    }
+
+    private fun showVerifyBottomSheet() {
+        VerifyBottomSheetDialogFragment.newInstance(disableBiometric = true, systemAlertLevel = true)
+            .setOnPinSuccess {
+                defaultSharedPreferences.putInt(Constants.Account.PREF_APP_AUTH, -1)
+                defaultSharedPreferences.putLong(Constants.Account.PREF_APP_ENTER_BACKGROUND, 0)
+                successDismiss()
+            }.apply {
+                autoDismiss = true
+            }.showNow(parentFragmentManager, VerifyBottomSheetDialogFragment.TAG)
     }
 
     private val resetSwirlRunnable = Runnable {
@@ -182,10 +193,8 @@ class AppAuthDialogFragment : DialogFragment() {
                 BiometricPrompt.ERROR_LOCKOUT, BiometricPrompt.ERROR_LOCKOUT_PERMANENT -> {
                     showError(errString)
                 }
-                BiometricPrompt.ERROR_NO_BIOMETRICS -> {
-                    defaultSharedPreferences.putInt(Constants.Account.PREF_APP_AUTH, -1)
-                    defaultSharedPreferences.putLong(Constants.Account.PREF_APP_ENTER_BACKGROUND, 0)
-                    finishAndCheckNeed2GoUrlInterpreter()
+                BiometricPrompt.ERROR_NO_BIOMETRICS, BiometricPrompt.ERROR_HW_NOT_PRESENT, BiometricPrompt.ERROR_HW_UNAVAILABLE -> {
+                    showVerifyBottomSheet()
                 }
                 else -> {
                     refreshSwirl(errString, true)
@@ -198,7 +207,7 @@ class AppAuthDialogFragment : DialogFragment() {
         }
 
         override fun onAuthenticationSucceeded(result: BiometricPrompt.AuthenticationResult) {
-            finishAndCheckNeed2GoUrlInterpreter()
+            successDismiss()
         }
     }
 
@@ -213,10 +222,8 @@ class AppAuthDialogFragment : DialogFragment() {
                 FingerprintManager.FINGERPRINT_ERROR_LOCKOUT, FingerprintManager.FINGERPRINT_ERROR_LOCKOUT_PERMANENT -> {
                     showError(errString)
                 }
-                FingerprintManager.FINGERPRINT_ERROR_NO_FINGERPRINTS -> {
-                    defaultSharedPreferences.putInt(Constants.Account.PREF_APP_AUTH, -1)
-                    defaultSharedPreferences.putLong(Constants.Account.PREF_APP_ENTER_BACKGROUND, 0)
-                    finishAndCheckNeed2GoUrlInterpreter()
+                FingerprintManager.FINGERPRINT_ERROR_NO_FINGERPRINTS, FingerprintManager.FINGERPRINT_ERROR_HW_NOT_PRESENT, FingerprintManager.FINGERPRINT_ERROR_HW_UNAVAILABLE -> {
+                    showVerifyBottomSheet()
                 }
                 else -> {
                     refreshSwirl(errString, true)
@@ -229,7 +236,7 @@ class AppAuthDialogFragment : DialogFragment() {
         }
 
         override fun onAuthenticationSucceeded(result: FingerprintManagerCompat.AuthenticationResult?) {
-            finishAndCheckNeed2GoUrlInterpreter()
+            successDismiss()
         }
 
         override fun onAuthenticationHelp(helpMsgId: Int, helpString: CharSequence?) {
