@@ -1,5 +1,6 @@
 package one.mixin.android.ui.common
 
+import android.view.WindowManager
 import androidx.fragment.app.DialogFragment
 import one.mixin.android.Constants
 import one.mixin.android.MixinApplication
@@ -14,6 +15,11 @@ open class AppAuthActivity : BaseActivity() {
         if (MixinApplication.get().activityReferences == 1) {
             MixinApplication.get().appAuthShown = checkAndShowAppAuth()
         }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        disableScreenshotsIfAppAuthShown()
     }
 
     override fun onStop() {
@@ -50,5 +56,13 @@ open class AppAuthActivity : BaseActivity() {
             }
         }
         return false
+    }
+
+    private fun disableScreenshotsIfAppAuthShown() {
+        if (MixinApplication.get().appAuthShown) {
+            window.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
+        } else {
+            window.clearFlags(WindowManager.LayoutParams.FLAG_SECURE)
+        }
     }
 }
