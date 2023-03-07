@@ -13,9 +13,7 @@ import android.graphics.Point
 import android.graphics.Rect
 import android.graphics.RectF
 import android.graphics.Shader.TileMode
-import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
-import android.graphics.drawable.VectorDrawable
 import android.text.Layout
 import android.text.StaticLayout
 import android.text.TextPaint
@@ -290,6 +288,20 @@ class ViewfinderView @JvmOverloads constructor(
         return bitmap
     }
 
+    private fun getBitmapFormDrawable(@DrawableRes drawableId: Int): Bitmap {
+        val drawable = requireNotNull(ContextCompat.getDrawable(context, drawableId))
+        val bitmap = Bitmap.createBitmap(
+            frame.width(),
+            frame.height(),
+            if (drawable.opacity != PixelFormat.OPAQUE) Bitmap.Config.ARGB_8888 else Bitmap.Config.RGB_565,
+        )
+        val canvas = Canvas(bitmap)
+        drawable.setBounds(0, 0, frame.width(), frame.height())
+        drawable.draw(canvas)
+        return bitmap
+    }
+
+
     private val displayMetrics: DisplayMetrics
         private get() = resources.displayMetrics
 
@@ -546,42 +558,12 @@ class ViewfinderView @JvmOverloads constructor(
         }
     }
 
-    private fun getBitmap(vectorDrawable: VectorDrawable): Bitmap? {
-        val bitmap = Bitmap.createBitmap(
-            vectorDrawable.intrinsicWidth,
-            vectorDrawable.intrinsicHeight,
-            Bitmap.Config.ARGB_8888,
-        )
-        val canvas = Canvas(bitmap)
-        vectorDrawable.setBounds(0, 0, frame.width(), frame.width())
-        vectorDrawable.draw(canvas)
-        return bitmap
-    }
-
-    private fun getBitmap(context: Context, @DrawableRes drawableId: Int): Bitmap? {
-        return when (val drawable = ContextCompat.getDrawable(context, drawableId)) {
-            is BitmapDrawable -> {
-                BitmapFactory.decodeResource(context.resources, drawableId).run {
-                    Bitmap.createScaledBitmap(this, frame.width(), frame.width(), true)
-                }
-            }
-
-            is VectorDrawable -> {
-                getBitmap(drawable)
-            }
-
-            else -> {
-                throw IllegalArgumentException("unsupported drawable type")
-            }
-        }
-    }
-
     private val radarGrid by lazy {
-        getBitmap(context, R.drawable.scan_grid)
+        getBitmapFormDrawable(R.drawable.scan_grid)
     }
 
     private val radarFrame by lazy {
-        getBitmap(context, R.drawable.scan_frame)
+        getBitmapFormDrawable(R.drawable.scan_frame)
     }
 
     private fun drawLaserScanner(canvas: Canvas, frame: Rect) {
