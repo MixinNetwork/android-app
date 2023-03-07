@@ -41,12 +41,12 @@ import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.notificationManager
 import one.mixin.android.extension.putBoolean
-import one.mixin.android.extension.putLong
 import one.mixin.android.job.BlazeMessageService
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.session.Session
 import one.mixin.android.ui.PipVideoView
 import one.mixin.android.ui.call.CallActivity
+import one.mixin.android.ui.common.AppAuthActivity
 import one.mixin.android.ui.conversation.location.useMapbox
 import one.mixin.android.ui.landing.InitializeActivity
 import one.mixin.android.ui.landing.LandingActivity
@@ -281,7 +281,9 @@ open class MixinApplication :
     }
 
     override fun onActivityStarted(activity: Activity) {
-        activityReferences += 1
+        if (activity is AppAuthActivity) {
+            activityReferences += 1
+        }
     }
 
     override fun onActivityResumed(activity: Activity) {
@@ -309,9 +311,8 @@ open class MixinApplication :
         if (contextWrapper.baseContext == activity) {
             contextWrapper.baseContext = this@MixinApplication
         }
-        activityReferences--
-        if (activityReferences == 0 && !isActivityChangingConfigurations) {
-            defaultSharedPreferences.putLong(Constants.Account.PREF_APP_ENTER_BACKGROUND, System.currentTimeMillis())
+        if (activity is AppAuthActivity) {
+            activityReferences -= 1
         }
     }
 

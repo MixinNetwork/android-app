@@ -4,21 +4,25 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
+import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
+import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.extension.checkUserOrApp
+import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.handleSchemeSend
 import one.mixin.android.extension.toast
 import one.mixin.android.session.Session
-import one.mixin.android.ui.common.AppAuthActivity
+import one.mixin.android.ui.common.AppAuthDialogFragment
+import one.mixin.android.ui.common.BaseActivity
 import one.mixin.android.ui.conversation.TransferFragment
 import one.mixin.android.ui.conversation.link.LinkBottomSheetDialogFragment
 import one.mixin.android.ui.device.ConfirmBottomFragment
 import timber.log.Timber
 
 @AndroidEntryPoint
-class UrlInterpreterActivity : AppAuthActivity() {
+class UrlInterpreterActivity : BaseActivity() {
     companion object {
         private const val CODE = "codes"
         private const val PAY = "pay"
@@ -39,6 +43,8 @@ class UrlInterpreterActivity : AppAuthActivity() {
             }
         }
     }
+
+    private var appAuthDialog: DialogFragment? = null
 
     override fun getDefaultThemeId(): Int {
         return R.style.AppTheme_Transparent
@@ -68,9 +74,20 @@ class UrlInterpreterActivity : AppAuthActivity() {
         }
     }
 
+    override fun onStart() {
+        super.onStart()
+        checkAndShowAppAuth()
+    }
+
     override fun onPause() {
         super.onPause()
         overridePendingTransition(0, 0)
+    }
+
+    override fun onStop() {
+        super.onStop()
+        appAuthDialog?.dismissAllowingStateLoss()
+        appAuthDialog = null
     }
 
     private fun interpretIntent(uri: Uri) {
@@ -108,5 +125,35 @@ class UrlInterpreterActivity : AppAuthActivity() {
                 )
             }
         }
+    }
+
+    private fun checkAndShowAppAuth(): Boolean {
+        val appAuth = defaultSharedPreferences.getInt(Constants.Account.PREF_APP_AUTH, -1)
+        if (appAuth != -1) {
+            if (appAuth == 0) {
+                if (appAuthDialog == null) {
+                    appAuthDialog = AppAuthDialogFragment()
+                }
+                appAuthDialog?.show(supportFragmentManager, AppAuthDialogFragment.TAG)
+                return true
+            } else {
+                val enterBackground =
+                    defaultSharedPreferences.getLong(Constants.Account.PREF_APP_ENTER_BACKGROUND, 0)
+                val now = System.currentTimeMillis()
+                val offset = if (appAuth == 1) {
+                    Constants.INTERVAL_1_MIN
+                } else {
+                    Constants.INTERVAL_30_MINS
+                }
+                if (now - enterBackground > offset) {
+                    if (appAuthDialog == null) {
+                        appAuthDialog = AppAuthDialogFragment()
+                    }
+                    appAuthDialog?.show(supportFragmentManager, AppAuthDialogFragment.TAG)
+                    return true
+                }
+            }
+        }
+        return false
     }
 }

@@ -99,6 +99,8 @@ class AppAuthDialogFragment : DialogFragment() {
         val activity = requireActivity()
         if (!success) {
             activity.moveTaskToBack(true)
+        } else {
+            defaultSharedPreferences.putLong(Constants.Account.PREF_APP_ENTER_BACKGROUND, System.currentTimeMillis())
         }
         MixinApplication.get().appAuthShown = false
     }
