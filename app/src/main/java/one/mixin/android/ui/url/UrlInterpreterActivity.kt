@@ -11,14 +11,14 @@ import one.mixin.android.extension.checkUserOrApp
 import one.mixin.android.extension.handleSchemeSend
 import one.mixin.android.extension.toast
 import one.mixin.android.session.Session
-import one.mixin.android.ui.common.BaseActivity
+import one.mixin.android.ui.common.AppAuthActivity
 import one.mixin.android.ui.conversation.TransferFragment
 import one.mixin.android.ui.conversation.link.LinkBottomSheetDialogFragment
 import one.mixin.android.ui.device.ConfirmBottomFragment
 import timber.log.Timber
 
 @AndroidEntryPoint
-class UrlInterpreterActivity : BaseActivity() {
+class UrlInterpreterActivity : AppAuthActivity() {
     companion object {
         private const val CODE = "codes"
         private const val PAY = "pay"

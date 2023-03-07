@@ -33,7 +33,7 @@ import one.mixin.android.extension.openAsUrl
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.shareFile
 import one.mixin.android.extension.toast
-import one.mixin.android.ui.common.BaseActivity
+import one.mixin.android.ui.common.AppAuthActivity
 import one.mixin.android.ui.conversation.link.LinkBottomSheetDialogFragment
 import one.mixin.android.ui.forward.ForwardActivity
 import one.mixin.android.ui.web.WebActivity
@@ -57,7 +57,7 @@ import org.intellij.markdown.parser.MarkdownParser
 import java.nio.charset.Charset
 
 @AndroidEntryPoint
-class MarkdownActivity : BaseActivity() {
+class MarkdownActivity : AppAuthActivity() {
     private lateinit var binding: ActivityMarkdownBinding
 
     @SuppressLint("NotifyDataSetChanged")

@@ -16,7 +16,7 @@ import one.mixin.android.extension.isDarkColor
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.supportsS
 import one.mixin.android.session.Session
-import one.mixin.android.ui.common.BaseActivity
+import one.mixin.android.ui.common.AppAuthActivity
 import one.mixin.android.util.SystemUIManager
 import one.mixin.android.vo.App
 import one.mixin.android.vo.AppCardData
@@ -24,7 +24,7 @@ import one.mixin.android.vo.generateConversationId
 import one.mixin.android.widget.SixLayout
 
 @AndroidEntryPoint
-class WebActivity : BaseActivity() {
+class WebActivity : AppAuthActivity() {
 
     companion object {
         fun show(context: Context) {

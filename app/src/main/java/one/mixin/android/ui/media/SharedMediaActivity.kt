@@ -10,12 +10,12 @@ import one.mixin.android.Constants.ARGS_CONVERSATION_ID
 import one.mixin.android.R
 import one.mixin.android.databinding.ActivityContactBinding
 import one.mixin.android.extension.replaceFragment
-import one.mixin.android.ui.common.BaseActivity
+import one.mixin.android.ui.common.AppAuthActivity
 import one.mixin.android.util.AudioPlayer
 import one.mixin.android.util.viewBinding
 
 @AndroidEntryPoint
-class SharedMediaActivity : BaseActivity() {
+class SharedMediaActivity : AppAuthActivity() {
     companion object {
         const val FROM_CHAT = "from_chat"
         fun show(context: Context, conversationId: String, fromChat: Boolean) {

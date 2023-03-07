@@ -6,7 +6,7 @@ import one.mixin.android.job.BlazeMessageService.Companion.ACTION_ACTIVITY_RESUM
 import one.mixin.android.job.BlazeMessageService.Companion.startService
 import one.mixin.android.session.Session
 
-abstract class BlazeBaseActivity : BaseActivity() {
+abstract class BlazeBaseActivity : AppAuthActivity() {
 
     override fun onResume() {
         super.onResume()

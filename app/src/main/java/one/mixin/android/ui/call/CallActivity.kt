@@ -5,10 +5,10 @@ import android.content.Intent
 import android.os.Bundle
 import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.R
-import one.mixin.android.ui.common.BaseActivity
+import one.mixin.android.ui.common.AppAuthActivity
 
 @AndroidEntryPoint
-class CallActivity : BaseActivity() {
+class CallActivity : AppAuthActivity() {
 
     override fun getDefaultThemeId(): Int {
         return R.style.AppTheme_Call

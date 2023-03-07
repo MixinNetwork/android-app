@@ -31,7 +31,7 @@ import one.mixin.android.ui.web.getScreenshot
 import one.mixin.android.ui.web.refreshScreenshot
 import one.mixin.android.widget.AvatarTransform
 
-class AvatarActivity : BaseActivity() {
+class AvatarActivity : AppAuthActivity() {
 
     companion object {
         const val TAG = "AvatarActivity"
