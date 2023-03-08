@@ -53,8 +53,9 @@ class VerifyBottomSheetDialogFragment : BiometricBottomSheetDialogFragment() {
         }
         binding.biometricLayout.measureAllChildren = false
         callback = object : Callback() {
-            override fun onSuccess() {
+            override fun onSuccess(): Boolean {
                 continueCallback?.invoke(this@VerifyBottomSheetDialogFragment)
+                return false
             }
         }
     }

@@ -144,10 +144,9 @@ class AddressAddFragment() : BaseFragment(R.layout.fragment_address_add) {
 
             bottomSheet.showNow(parentFragmentManager, PinAddrBottomSheetDialogFragment.TAG)
             bottomSheet.callback = object : BiometricBottomSheetDialogFragment.Callback() {
-                override fun onSuccess() {
-                    if (viewDestroyed()) return
-
-                    view.navigateUp()
+                override fun onSuccess(): Boolean {
+                    if (!viewDestroyed()) view.navigateUp()
+                    return true
                 }
             }
         }

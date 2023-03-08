@@ -53,7 +53,9 @@ abstract class BiometricBottomSheetDialogFragment : MixinBottomSheetDialogFragme
         super.onDestroyView()
         dialog?.window?.clearFlags(WindowManager.LayoutParams.FLAG_SECURE)
         if (isSuccess) {
-            callback?.onSuccess()
+            if (callback?.onSuccess() == true) {
+                callback = null
+            }
         }
         biometricDialog?.callback = null
     }
@@ -112,7 +114,9 @@ abstract class BiometricBottomSheetDialogFragment : MixinBottomSheetDialogFragme
         biometricLayout.showDone(returnTo) {
             dismiss()
             isSuccess = true
-            callback?.onSuccess()
+            if (callback?.onSuccess() == true) {
+                callback = null
+            }
             dialog?.window?.clearFlags(WindowManager.LayoutParams.FLAG_SECURE)
         }
     }
@@ -173,7 +177,13 @@ abstract class BiometricBottomSheetDialogFragment : MixinBottomSheetDialogFragme
                 if (autoDismiss) {
                     dismiss()
                 }
-                callback?.onSuccess() ?: toast(R.string.Successful)
+                if (callback != null) {
+                    if (callback?.onSuccess() == true) {
+                        callback = null
+                    }
+                } else {
+                    toast(R.string.Successful)
+                }
             }
         } else {
             handleWithErrorCodeAndDesc(pin, requireNotNull(response.error))
@@ -241,7 +251,9 @@ abstract class BiometricBottomSheetDialogFragment : MixinBottomSheetDialogFragme
     var callback: Callback? = null
 
     open class Callback {
-        open fun onSuccess() {}
+        open fun onSuccess(): Boolean { // Whether to call it only once
+            return true
+        }
         open fun onDismiss() {}
     }
 }
