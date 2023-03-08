@@ -173,13 +173,17 @@ class AppAuthDialogFragment : DialogFragment() {
     }
 
     private val resetSwirlRunnable = Runnable {
-        binding.info.text = getString(R.string.Confirm_fingerprint)
-        binding.info.setTextColor(requireContext().colorFromAttribute(R.attr.text_minor))
-        binding.swirl.setState(SwirlView.State.ON)
+        if (isAdded) {
+            binding.info.text = getString(R.string.Confirm_fingerprint)
+            binding.info.setTextColor(requireContext().colorFromAttribute(R.attr.text_minor))
+            binding.swirl.setState(SwirlView.State.ON)
+        }
     }
 
     private val showPromptRunnable = Runnable {
-        showPrompt()
+        if (isAdded) {
+            showPrompt()
+        }
     }
 
     private val biometricCallback = object : BiometricPrompt.AuthenticationCallback() {
