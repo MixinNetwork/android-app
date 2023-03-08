@@ -37,6 +37,7 @@ class AppearanceFragment : BaseFragment(R.layout.fragment_appearance) {
         const val POS_RUSSIAN = 5
         const val POS_INDONESIA = 6
         const val POS_Malay = 7
+        const val POS_Spanish = 8
 
         fun newInstance() = AppearanceFragment()
     }
@@ -136,6 +137,7 @@ class AppearanceFragment : BaseFragment(R.layout.fragment_appearance) {
                             POS_RUSSIAN -> Constants.Locale.Russian.Language
                             POS_INDONESIA -> Constants.Locale.Indonesian.Language
                             POS_Malay -> Constants.Locale.Malay.Language
+                            POS_Spanish -> Constants.Locale.Spanish.Language
                             else -> Locale.US.language
                         }
                         val selectedCountry = when (newSelectItem) {
@@ -145,6 +147,7 @@ class AppearanceFragment : BaseFragment(R.layout.fragment_appearance) {
                             POS_RUSSIAN -> Constants.Locale.Russian.Country
                             POS_INDONESIA -> Constants.Locale.Indonesian.Country
                             POS_Malay -> Constants.Locale.Malay.Country
+                            POS_Spanish -> Constants.Locale.Spanish.Country
                             else -> Locale.US.country
                         }
                         val newLocale = Locale(selectedLang, selectedCountry)
@@ -185,6 +188,9 @@ fun getLanguagePos() = when (getLanguage()) {
     }
     Constants.Locale.Malay.Language -> {
         AppearanceFragment.POS_Malay
+    }
+    Constants.Locale.Spanish.Language -> {
+        AppearanceFragment.POS_Spanish
     }
     else -> {
         AppearanceFragment.POS_FOLLOW_SYSTEM
