@@ -8,9 +8,12 @@ import android.content.DialogInterface
 import android.content.res.Configuration
 import android.hardware.fingerprint.FingerprintManager
 import android.os.Build
+import android.os.Bundle
 import android.view.ViewGroup
 import android.view.WindowManager
 import android.widget.RelativeLayout
+import androidx.activity.ComponentDialog
+import androidx.activity.OnBackPressedCallback
 import androidx.biometric.BiometricManager
 import androidx.biometric.BiometricPrompt
 import androidx.core.hardware.fingerprint.FingerprintManagerCompat
@@ -48,6 +51,16 @@ class AppAuthDialogFragment : DialogFragment() {
     private var cancellationSignal: CancellationSignal? = null
 
     override fun getTheme() = R.style.AppTheme_AppAuthDialog
+
+    override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
+        return super.onCreateDialog(savedInstanceState).also { dialog ->
+            (dialog as ComponentDialog).onBackPressedDispatcher.addCallback(object : OnBackPressedCallback(true) {
+                override fun handleOnBackPressed() {
+                    failureDismiss()
+                }
+            })
+        }
+    }
 
     @SuppressLint("RestrictedApi")
     override fun setupDialog(dialog: Dialog, style: Int) {
@@ -98,7 +111,7 @@ class AppAuthDialogFragment : DialogFragment() {
         super.onDismiss(dialog)
         val activity = requireActivity()
         if (!success) {
-            activity.moveTaskToBack(true)
+            failureDismiss()
         } else {
             defaultSharedPreferences.putLong(Constants.Account.PREF_APP_ENTER_BACKGROUND, System.currentTimeMillis())
         }
@@ -161,6 +174,10 @@ class AppAuthDialogFragment : DialogFragment() {
         dismiss()
     }
 
+    private fun failureDismiss() {
+        activity?.moveTaskToBack(true)
+    }
+
     private fun showVerifyBottomSheet() {
         VerifyBottomSheetDialogFragment.newInstance(disableBiometric = true, systemAlertLevel = true)
             .setOnPinSuccess {
@@ -192,7 +209,7 @@ class AppAuthDialogFragment : DialogFragment() {
 
             when (errorCode) {
                 BiometricPrompt.ERROR_CANCELED, BiometricPrompt.ERROR_USER_CANCELED, BiometricPrompt.ERROR_NEGATIVE_BUTTON -> {
-                    dismiss()
+                    failureDismiss()
                 }
                 BiometricPrompt.ERROR_LOCKOUT, BiometricPrompt.ERROR_LOCKOUT_PERMANENT -> {
                     showError(errString)
@@ -221,7 +238,7 @@ class AppAuthDialogFragment : DialogFragment() {
 
             when (errorCode) {
                 FingerprintManager.FINGERPRINT_ERROR_CANCELED, FingerprintManager.FINGERPRINT_ERROR_USER_CANCELED, 1010 -> {
-                    dismiss()
+                    failureDismiss()
                 }
                 FingerprintManager.FINGERPRINT_ERROR_LOCKOUT, FingerprintManager.FINGERPRINT_ERROR_LOCKOUT_PERMANENT -> {
                     showError(errString)
@@ -245,13 +262,6 @@ class AppAuthDialogFragment : DialogFragment() {
 
         override fun onAuthenticationHelp(helpMsgId: Int, helpString: CharSequence?) {
             refreshSwirl(helpString.toString(), true)
-        }
-    }
-
-    override fun dismiss() {
-        try {
-            super.dismiss()
-        } catch (_: IllegalStateException) {
         }
     }
 }
