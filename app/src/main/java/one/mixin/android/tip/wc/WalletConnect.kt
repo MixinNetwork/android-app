@@ -29,6 +29,10 @@ abstract class WalletConnect {
         V1, V2
     }
 
+    enum class RequestType {
+        SessionProposal, SessionRequest, SwitchNetwork,
+    }
+
     sealed class WCSignData<T>(
         open val requestId: Long,
         open val signMessage: T,

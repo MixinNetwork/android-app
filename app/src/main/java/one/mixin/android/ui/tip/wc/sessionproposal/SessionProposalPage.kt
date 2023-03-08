@@ -39,6 +39,7 @@ import one.mixin.android.ui.tip.wc.connections.Loading
 fun SessionProposalPage(
     version: WalletConnect.Version,
     step: WalletConnectBottomSheetDialogFragment.Step,
+    requestType: WalletConnect.RequestType,
     errorInfo: String?,
     onDismissRequest: () -> Unit,
     onBiometricClick: (() -> Unit),
@@ -50,6 +51,12 @@ fun SessionProposalPage(
         Loading()
         return
     }
+
+    val chainName = if (requestType == WalletConnect.RequestType.SwitchNetwork) {
+        viewModel.getTargetSwitchNetworks() ?: sessionProposalUI.chain
+    } else {
+        sessionProposalUI.chain
+    }.name
 
     Column(
         modifier = Modifier
@@ -102,7 +109,7 @@ fun SessionProposalPage(
                 desc = stringResource(id = R.string.Allow_dapp_ask_permission),
             )
         }
-        Network(name = sessionProposalUI.chain.name)
+        Network(name = chainName)
         WCPinBoard(
             step = step,
             errorInfo = errorInfo,

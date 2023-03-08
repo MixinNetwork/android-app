@@ -11,7 +11,6 @@ import okhttp3.OkHttpClient
 import one.mixin.android.MixinApplication
 import one.mixin.android.RxBus
 import one.mixin.android.event.WCEvent
-import one.mixin.android.ui.tip.wc.WalletConnectBottomSheetDialogFragment
 import org.web3j.crypto.Credentials
 import org.web3j.crypto.ECKeyPair
 import org.web3j.crypto.Keys
@@ -32,7 +31,7 @@ object WalletConnectV1 : WalletConnect() {
             wcc.session?.let {
                 currentSession = WCV1Session(it, chain.chainReference, peer, null)
             }
-            RxBus.publish(WCEvent.V1(Version.V1, WalletConnectBottomSheetDialogFragment.RequestType.SessionProposal, id))
+            RxBus.publish(WCEvent.V1(Version.V1, RequestType.SessionProposal, id))
         }
         wcc.onGetAccounts = { id ->
             Timber.d("$TAG onGetAccounts id: $id")
@@ -44,7 +43,7 @@ object WalletConnectV1 : WalletConnect() {
                 rejectRequest(id, "Network not supported")
             } else {
                 targetNetwork = chain
-                RxBus.publish(WCEvent.V1(Version.V1, WalletConnectBottomSheetDialogFragment.RequestType.SwitchNetwork, id))
+                RxBus.publish(WCEvent.V1(Version.V1, RequestType.SwitchNetwork, id))
             }
         }
         wcc.onWalletAddNetwork = { id, network ->
@@ -53,17 +52,17 @@ object WalletConnectV1 : WalletConnect() {
         wcc.onEthSign = { id, message ->
             Timber.d("$TAG onEthSign id: $id, message: $message")
             currentSignData = WCSignData.V1SignData(id, message)
-            RxBus.publish(WCEvent.V1(Version.V1, WalletConnectBottomSheetDialogFragment.RequestType.SessionRequest, id))
+            RxBus.publish(WCEvent.V1(Version.V1, RequestType.SessionRequest, id))
         }
         wcc.onEthSignTransaction = { id, transaction ->
             Timber.d("$TAG onEthSignTransaction id: $id, transaction: $transaction")
             currentSignData = WCSignData.V1SignData(id, transaction)
-            RxBus.publish(WCEvent.V1(Version.V1, WalletConnectBottomSheetDialogFragment.RequestType.SessionRequest, id))
+            RxBus.publish(WCEvent.V1(Version.V1, RequestType.SessionRequest, id))
         }
         wcc.onEthSendTransaction = { id, transaction ->
             Timber.d("$TAG onEthSendTransaction id: $id, transaction: $transaction")
             currentSignData = WCSignData.V1SignData(id, transaction)
-            RxBus.publish(WCEvent.V1(Version.V1, WalletConnectBottomSheetDialogFragment.RequestType.SessionRequest, id))
+            RxBus.publish(WCEvent.V1(Version.V1, RequestType.SessionRequest, id))
         }
         wcc.onSignTransaction = { id, transaction ->
             Timber.d("$TAG onSignTransaction id: $id, transaction: $transaction")

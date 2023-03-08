@@ -14,6 +14,7 @@ import one.mixin.android.tip.Tip
 import one.mixin.android.tip.exception.TipNetworkException
 import one.mixin.android.tip.tipPrivToPrivateKey
 import one.mixin.android.tip.wc.WalletConnect
+import one.mixin.android.tip.wc.WalletConnect.RequestType
 import one.mixin.android.tip.wc.WalletConnectV1
 import one.mixin.android.tip.wc.WalletConnectV2
 import one.mixin.android.ui.common.BaseActivity
@@ -58,27 +59,27 @@ class WalletConnectActivity : BaseActivity() {
                 val wc = WalletConnectV1
                 event as WCEvent.V1
                 when (event.requestType) {
-                    WalletConnectBottomSheetDialogFragment.RequestType.SessionProposal -> {
+                    RequestType.SessionProposal -> {
                         showWalletConnectBottomSheet(
-                            WalletConnectBottomSheetDialogFragment.RequestType.SessionProposal,
+                            RequestType.SessionProposal,
                             WalletConnect.Version.V1,
                             { wc.rejectSession() },
                         ) { priv ->
                             wc.approveSession(priv)
                         }
                     }
-                    WalletConnectBottomSheetDialogFragment.RequestType.SwitchNetwork -> {
+                    RequestType.SwitchNetwork -> {
                         showWalletConnectBottomSheet(
-                            WalletConnectBottomSheetDialogFragment.RequestType.SwitchNetwork,
+                            RequestType.SwitchNetwork,
                             WalletConnect.Version.V1,
                             { wc.rejectRequest(event.id) },
                         ) { priv ->
                             wc.walletChangeNetwork(priv, event.id)
                         }
                     }
-                    WalletConnectBottomSheetDialogFragment.RequestType.SessionRequest -> {
+                    RequestType.SessionRequest -> {
                         showWalletConnectBottomSheet(
-                            WalletConnectBottomSheetDialogFragment.RequestType.SessionRequest,
+                            RequestType.SessionRequest,
                             WalletConnect.Version.V1,
                             { wc.rejectRequest(event.id) },
                         ) { priv ->
@@ -89,20 +90,20 @@ class WalletConnectActivity : BaseActivity() {
             }
             WalletConnect.Version.V2 -> {
                 when (event.requestType) {
-                    WalletConnectBottomSheetDialogFragment.RequestType.SessionProposal -> {
+                    RequestType.SessionProposal -> {
                         showWalletConnectBottomSheet(
-                            WalletConnectBottomSheetDialogFragment.RequestType.SessionProposal,
+                            RequestType.SessionProposal,
                             WalletConnect.Version.V2,
                             { WalletConnectV2.rejectSession() },
                         ) { priv ->
                             WalletConnectV2.approveSession(priv)
                         }
                     }
-                    WalletConnectBottomSheetDialogFragment.RequestType.SwitchNetwork -> {
+                    RequestType.SwitchNetwork -> {
                     }
-                    WalletConnectBottomSheetDialogFragment.RequestType.SessionRequest -> {
+                    RequestType.SessionRequest -> {
                         showWalletConnectBottomSheet(
-                            WalletConnectBottomSheetDialogFragment.RequestType.SessionRequest,
+                            RequestType.SessionRequest,
                             WalletConnect.Version.V2,
                             { WalletConnectV2.rejectRequest() },
                             { priv ->
@@ -116,7 +117,7 @@ class WalletConnectActivity : BaseActivity() {
     }
 
     private fun showWalletConnectBottomSheet(
-        requestType: WalletConnectBottomSheetDialogFragment.RequestType,
+        requestType: RequestType,
         version: WalletConnect.Version,
         onReject: () -> Unit,
         callback: suspend (ByteArray) -> Unit,

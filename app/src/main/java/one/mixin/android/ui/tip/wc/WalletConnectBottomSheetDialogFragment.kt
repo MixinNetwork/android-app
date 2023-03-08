@@ -37,6 +37,7 @@ import one.mixin.android.extension.realSize
 import one.mixin.android.extension.statusBarHeight
 import one.mixin.android.extension.withArgs
 import one.mixin.android.tip.wc.WalletConnect
+import one.mixin.android.tip.wc.WalletConnect.RequestType
 import one.mixin.android.tip.wc.WalletConnectException
 import one.mixin.android.tip.wc.WalletConnectV1
 import one.mixin.android.tip.wc.WalletConnectV2
@@ -46,7 +47,6 @@ import one.mixin.android.ui.common.biometric.BiometricInfo
 import one.mixin.android.ui.preview.TextPreviewActivity
 import one.mixin.android.ui.tip.wc.sessionproposal.SessionProposalPage
 import one.mixin.android.ui.tip.wc.sessionrequest.SessionRequestPage
-import one.mixin.android.ui.tip.wc.switchnetwork.SwitchNetworkPage
 import one.mixin.android.util.BiometricUtil
 import one.mixin.android.util.SystemUIManager
 import one.mixin.android.vo.Asset
@@ -69,10 +69,6 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
             putInt(ARGS_REQUEST_TYPE, requestType.ordinal)
             putInt(ARGS_VERSION, version.ordinal)
         }
-    }
-
-    enum class RequestType {
-        SessionProposal, SessionRequest, SwitchNetwork,
     }
 
     enum class Step {
@@ -126,10 +122,11 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
         }
         setContent {
             when (requestType) {
-                RequestType.SessionProposal -> {
+                RequestType.SessionProposal, RequestType.SwitchNetwork -> {
                     SessionProposalPage(
                         version,
                         step,
+                        requestType,
                         errorInfo,
                         onDismissRequest = { dismiss() },
                         onBiometricClick = { showBiometricPrompt() },
@@ -157,15 +154,6 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
                                 step = Step.Done
                             }
                         },
-                        onBiometricClick = { showBiometricPrompt() },
-                        onPinComplete = { pin -> doAfterPinComplete(pin) },
-                    )
-                }
-                RequestType.SwitchNetwork -> {
-                    SwitchNetworkPage(
-                        version,
-                        step,
-                        onDismissRequest = { dismiss() },
                         onBiometricClick = { showBiometricPrompt() },
                         onPinComplete = { pin -> doAfterPinComplete(pin) },
                     )
