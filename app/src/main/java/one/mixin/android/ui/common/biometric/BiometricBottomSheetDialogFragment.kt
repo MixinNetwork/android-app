@@ -163,9 +163,9 @@ abstract class BiometricBottomSheetDialogFragment : MixinBottomSheetDialogFragme
                 System.currentTimeMillis(),
             )
             context?.updatePinCheck()
+            isSuccess = true
 
             if (doWhenInvokeNetworkSuccess(response, pin)) {
-                isSuccess = true
                 dismiss()
                 toast(R.string.Successful)
             }
