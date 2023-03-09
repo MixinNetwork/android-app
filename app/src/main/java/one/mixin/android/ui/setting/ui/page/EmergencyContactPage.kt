@@ -334,11 +334,11 @@ private fun PinEmergencyBottomSheetDialog(
                     onConfirm(pinCode)
                 }
             }
-            callback = object : BiometricBottomSheetDialogFragment.Callback() {
+            setCallback(object : BiometricBottomSheetDialogFragment.Callback() {
                 override fun onDismiss() {
                     onDismissRequest()
                 }
-            }
+            })
         }
     })
 }

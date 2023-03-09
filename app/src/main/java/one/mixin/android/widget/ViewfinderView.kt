@@ -301,7 +301,6 @@ class ViewfinderView @JvmOverloads constructor(
         return bitmap
     }
 
-
     private val displayMetrics: DisplayMetrics
         private get() = resources.displayMetrics
 

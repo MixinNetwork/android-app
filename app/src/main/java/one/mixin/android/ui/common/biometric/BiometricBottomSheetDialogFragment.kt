@@ -248,7 +248,11 @@ abstract class BiometricBottomSheetDialogFragment : MixinBottomSheetDialogFragme
         }
     }
 
-    var callback: Callback? = null
+    private var callback: Callback? = null
+
+    fun setCallback(cb: Callback) {
+        callback = cb
+    }
 
     open class Callback {
         open fun onSuccess(): Boolean { // Whether to call it only once

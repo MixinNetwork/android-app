@@ -113,12 +113,12 @@ class PinSettingFragment : BaseFragment(R.layout.fragment_pin_setting) {
         } else {
             val bottomSheet =
                 PinBiometricsBottomSheetDialogFragment.newInstance(true)
-            bottomSheet.callback = object : BiometricBottomSheetDialogFragment.Callback() {
+            bottomSheet.setCallback(object : BiometricBottomSheetDialogFragment.Callback() {
                 override fun onSuccess(): Boolean {
                     updateWhenSuccess()
                     return false
                 }
-            }
+            })
             bottomSheet.showNow(
                 parentFragmentManager,
                 PinBiometricsBottomSheetDialogFragment.TAG,

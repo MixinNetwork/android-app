@@ -52,12 +52,12 @@ class VerifyBottomSheetDialogFragment : BiometricBottomSheetDialogFragment() {
             binding.biometricLayout.biometricTv.setText(R.string.Verify_by_Biometric)
         }
         binding.biometricLayout.measureAllChildren = false
-        callback = object : Callback() {
+        setCallback(object : Callback() {
             override fun onSuccess(): Boolean {
                 continueCallback?.invoke(this@VerifyBottomSheetDialogFragment)
                 return false
             }
-        }
+        })
     }
 
     override suspend fun invokeNetwork(pin: String): MixinResponse<*> {
