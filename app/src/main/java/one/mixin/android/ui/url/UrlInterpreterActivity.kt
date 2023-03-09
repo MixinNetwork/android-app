@@ -88,6 +88,7 @@ class UrlInterpreterActivity : BaseActivity() {
                             .showNow(supportFragmentManager, TransferFragment.TAG)
                     } else {
                         toast(R.string.transfer_without_pin)
+                        finish()
                     }
                 }
             }
