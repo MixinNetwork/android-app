@@ -16,7 +16,6 @@ import one.mixin.android.databinding.ItemAddressBinding
 import one.mixin.android.extension.containsIgnoreCase
 import one.mixin.android.extension.equalsIgnoreCase
 import one.mixin.android.extension.navigate
-import one.mixin.android.extension.navigateUp
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.session.Session
@@ -101,7 +100,10 @@ class AddressManagementFragment : BaseFragment(R.layout.fragment_address_managem
                         override fun onSuccess() {
                             if (viewDestroyed()) return
 
-                            view.navigateUp()
+                            view.navigate(
+                                R.id.action_address_management_to_transactions,
+                                Bundle().apply { putParcelable(ARGS_ASSET, asset) },
+                            )
                         }
                     }
                 } else {
