@@ -263,6 +263,21 @@ interface MessageDao : BaseDao<Message> {
     @Query("SELECT conversation_id, user_id, status FROM messages WHERE id = :messageId")
     fun findMessageStatusById(messageId: String): ConversationWithStatus?
 
+    @Query(
+        """
+        SELECT m.* FROM messages m 
+        WHERE m.rowid < :rowId AND m.category IN ("SIGNAL_TEXT", "PLAIN_TEXT", "ENCRYPTED_TEXT", "SIGNAL_TRANSCRIPT", "PLAIN_TRANSCRIPT", "ENCRYPTED_TRANSCRIPT", 
+        "SIGNAL_POST", "PLAIN_POST", "ENCRYPTED_POST", "SIGNAL_DATA", "PLAIN_DATA", "ENCRYPTED_DATA", "SIGNAL_CONTACT", "PLAIN_CONTACT", "ENCRYPTED_CONTACT", "APP_CARD")
+        AND m.status != 'FAILED' AND m.status != 'UNKNOWN'
+        ORDER BY m.rowid DESC
+        LIMIT 1000
+    """,
+    )
+    fun findFtsMessages(rowId: Long): List<Message>
+
+    @Query("SELECT rowid FROM messages ORDER BY rowid DESC LIMIT 1")
+    fun getLastMessageRowId(): Long?
+
     // id not null means message exists
     @Query("SELECT id FROM messages WHERE id = :messageId")
     fun findMessageIdById(messageId: String): String?
@@ -369,6 +384,9 @@ interface MessageDao : BaseDao<Message> {
 
     @Query("SELECT rowid FROM messages ORDER BY rowid DESC LIMIT 1")
     fun getLastMessageRowid(): Long
+
+    @Query("SELECT rowid FROM messages WHERE id = :messageId")
+    fun getMessageRowid(messageId: String): Long?
 
     @Query("SELECT id FROM messages WHERE id = :messageId")
     suspend fun exists(messageId: String): String?
@@ -552,4 +570,7 @@ interface MessageDao : BaseDao<Message> {
 
     @Query("DELETE FROM messages WHERE id IN (SELECT id FROM messages WHERE conversation_id = :conversationId LIMIT :limit)")
     suspend fun deleteMessageByConversationId(conversationId: String, limit: Int)
+
+    @Query("DELETE FROM messages_fts4 WHERE rowid IN (SELECT rowid FROM messages_fts4 LIMIT 1000)")
+    fun deleteFts(): Int
 }

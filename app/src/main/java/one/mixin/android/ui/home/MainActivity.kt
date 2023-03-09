@@ -88,6 +88,8 @@ import one.mixin.android.extension.toast
 import one.mixin.android.job.AttachmentMigrationJob
 import one.mixin.android.job.BackupJob
 import one.mixin.android.job.CleanCacheJob
+import one.mixin.android.job.ClearFts4Job
+import one.mixin.android.job.MigratedFts4Job
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshAccountJob
 import one.mixin.android.job.RefreshAssetsJob
@@ -361,6 +363,12 @@ class MainActivity : BlazeBaseActivity() {
 
         PropertyHelper.checkBackupMigrated {
             jobManager.addJobInBackground(BackupJob(force = true, delete = true))
+        }
+        PropertyHelper.checkFtsMigrated {
+            jobManager.addJobInBackground(MigratedFts4Job())
+        }
+        PropertyHelper.checkFtsReduced {
+            jobManager.addJobInBackground(ClearFts4Job())
         }
 
         jobManager.addJobInBackground(RefreshContactJob())

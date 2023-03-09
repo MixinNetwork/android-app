@@ -19,4 +19,7 @@ interface MessageMetaDao {
 
     @Query("DELETE FROM messages_metas WHERE conversation_id = :conversationId")
     fun deleteMessageMetasByConversationId(conversationId: String): Int
+
+    @Query("SELECT EXISTS (SELECT 1 AS _c1 FROM messages_metas WHERE message_id = :messageId)")
+    fun checkMessageMetaExists(messageId: String): Boolean
 }
