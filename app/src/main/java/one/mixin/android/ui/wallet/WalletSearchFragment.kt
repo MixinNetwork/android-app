@@ -221,7 +221,7 @@ class WalletSearchFragment : BaseFragment() {
     private val callback = object : WalletSearchCallback {
         override fun onAssetClick(assetId: String, assetItem: AssetItem?) {
             binding.searchEt.hideKeyboard()
-            if (assetItem != null) {
+            if (assetItem != null && assetItem.getDestination().isNotBlank()) {
                 view?.navigate(
                     R.id.action_wallet_search_to_transactions,
                     Bundle().apply { putParcelable(ARGS_ASSET, assetItem) },
