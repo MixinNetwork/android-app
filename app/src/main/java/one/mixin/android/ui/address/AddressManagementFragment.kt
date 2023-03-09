@@ -120,9 +120,8 @@ class AddressManagementFragment : BaseFragment(R.layout.fragment_address_managem
                         val bottomSheet = showBottomSheet(addr, asset)
                         parentFragmentManager.executePendingTransactions()
                         bottomSheet.setCallback(object : BiometricBottomSheetDialogFragment.Callback() {
-                            override fun onSuccess(): Boolean {
+                            override fun onSuccess() {
                                 deleteSuccess = true
-                                return false
                             }
 
                             override fun onDismiss() {

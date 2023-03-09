@@ -31,7 +31,6 @@ import javax.inject.Inject
 
 abstract class BiometricBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     private var biometricDialog: BiometricDialog? = null
-    var autoDismiss: Boolean = true
 
     @Inject
     lateinit var pinCipher: PinCipher
@@ -52,16 +51,14 @@ abstract class BiometricBottomSheetDialogFragment : MixinBottomSheetDialogFragme
     override fun onDestroyView() {
         super.onDestroyView()
         dialog?.window?.clearFlags(WindowManager.LayoutParams.FLAG_SECURE)
-        if (isSuccess) {
-            if (callback?.onSuccess() == true) {
-                callback = null
-            }
-        }
         biometricDialog?.callback = null
     }
 
     override fun onDismiss(dialog: DialogInterface) {
         super.onDismiss(dialog)
+        if (isSuccess) {
+            callback?.onSuccess()
+        }
         callback?.onDismiss()
     }
 
@@ -114,9 +111,6 @@ abstract class BiometricBottomSheetDialogFragment : MixinBottomSheetDialogFragme
         biometricLayout.showDone(returnTo) {
             dismiss()
             isSuccess = true
-            if (callback?.onSuccess() == true) {
-                callback = null
-            }
             dialog?.window?.clearFlags(WindowManager.LayoutParams.FLAG_SECURE)
         }
     }
@@ -174,16 +168,9 @@ abstract class BiometricBottomSheetDialogFragment : MixinBottomSheetDialogFragme
             context?.updatePinCheck()
 
             if (doWhenInvokeNetworkSuccess(response, pin)) {
-                if (autoDismiss) {
-                    dismiss()
-                }
-                if (callback != null) {
-                    if (callback?.onSuccess() == true) {
-                        callback = null
-                    }
-                } else {
-                    toast(R.string.Successful)
-                }
+                isSuccess = true
+                dismiss()
+                toast(R.string.Successful)
             }
         } else {
             handleWithErrorCodeAndDesc(pin, requireNotNull(response.error))
@@ -254,10 +241,9 @@ abstract class BiometricBottomSheetDialogFragment : MixinBottomSheetDialogFragme
         callback = cb
     }
 
+    // Keeping these callback methods can only be called at most once.
     open class Callback {
-        open fun onSuccess(): Boolean { // Whether to call it only once
-            return true
-        }
+        open fun onSuccess() {}
         open fun onDismiss() {}
     }
 }

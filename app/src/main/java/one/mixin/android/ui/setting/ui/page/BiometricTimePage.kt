@@ -101,11 +101,10 @@ fun BiometricTimePage() {
                     createDialog = {
                         PinBiometricsBottomSheetDialogFragment.newInstance(false).apply {
                             setCallback(object : BiometricBottomSheetDialogFragment.Callback() {
-                                override fun onSuccess(): Boolean {
+                                override fun onSuccess() {
                                     val intervalMillis = (presetDurations[index] * X_HOUR).toLong()
                                     biometricInterval = intervalMillis
                                     Timber.d("set biometric interval $intervalMillis")
-                                    return false
                                 }
 
                                 override fun onDismiss() {
