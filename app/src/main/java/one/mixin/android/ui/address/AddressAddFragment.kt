@@ -143,13 +143,13 @@ class AddressAddFragment() : BaseFragment(R.layout.fragment_address_add) {
                 )
 
             bottomSheet.showNow(parentFragmentManager, PinAddrBottomSheetDialogFragment.TAG)
-            bottomSheet.callback = object : BiometricBottomSheetDialogFragment.Callback() {
-                override fun onSuccess() {
-                    if (viewDestroyed()) return
-
-                    view.navigateUp()
+            bottomSheet.setCallback(object : BiometricBottomSheetDialogFragment.Callback() {
+                override fun onDismiss(success: Boolean) {
+                    if (success && !viewDestroyed()) {
+                        view.navigateUp()
+                    }
                 }
-            }
+            })
         }
 
         if (asset.assetId == RIPPLE_CHAIN_ID) {

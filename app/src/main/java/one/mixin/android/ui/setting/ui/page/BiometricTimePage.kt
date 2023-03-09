@@ -100,17 +100,17 @@ fun BiometricTimePage() {
                 MixinBottomSheetDialog(
                     createDialog = {
                         PinBiometricsBottomSheetDialogFragment.newInstance(false).apply {
-                            callback = object : BiometricBottomSheetDialogFragment.Callback() {
-                                override fun onSuccess() {
-                                    val intervalMillis = (presetDurations[index] * X_HOUR).toLong()
-                                    biometricInterval = intervalMillis
-                                    Timber.d("set biometric interval $intervalMillis")
+                            setCallback(object : BiometricBottomSheetDialogFragment.Callback() {
+                                override fun onDismiss(success: Boolean) {
+                                    if (success) {
+                                        val intervalMillis = (presetDurations[index] * X_HOUR).toLong()
+                                        biometricInterval = intervalMillis
+                                        Timber.d("set biometric interval $intervalMillis")
+                                    } else {
+                                        showDialog = false
+                                    }
                                 }
-
-                                override fun onDismiss() {
-                                    showDialog = false
-                                }
-                            }
+                            })
                         }
                     },
                     tag = PinBiometricsBottomSheetDialogFragment.TAG,

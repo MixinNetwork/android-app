@@ -16,7 +16,6 @@ import one.mixin.android.databinding.ItemAddressBinding
 import one.mixin.android.extension.containsIgnoreCase
 import one.mixin.android.extension.equalsIgnoreCase
 import one.mixin.android.extension.navigate
-import one.mixin.android.extension.navigateUp
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.session.Session
@@ -38,7 +37,6 @@ class AddressManagementFragment : BaseFragment(R.layout.fragment_address_managem
 
     private val addressViewModel by viewModels<AddressViewModel>()
 
-    private var deleteSuccess = false
     private val asset: AssetItem by lazy {
         requireArguments().getParcelable(ARGS_ASSET)!!
     }
@@ -102,7 +100,10 @@ class AddressManagementFragment : BaseFragment(R.layout.fragment_address_managem
                         override fun onSuccess() {
                             if (viewDestroyed()) return
 
-                            view.navigateUp()
+                            view.navigate(
+                                R.id.action_address_management_to_transactions,
+                                Bundle().apply { putParcelable(ARGS_ASSET, asset) },
+                            )
                         }
                     }
                 } else {
@@ -119,18 +120,13 @@ class AddressManagementFragment : BaseFragment(R.layout.fragment_address_managem
                         val deleteItem = adapter.removeItem(viewHolder.bindingAdapterPosition)!!
                         val bottomSheet = showBottomSheet(addr, asset)
                         parentFragmentManager.executePendingTransactions()
-                        bottomSheet.callback = object : BiometricBottomSheetDialogFragment.Callback() {
-                            override fun onSuccess() {
-                                deleteSuccess = true
-                            }
-
-                            override fun onDismiss() {
-                                bottomSheet.dismiss()
-                                if (!deleteSuccess) {
+                        bottomSheet.setCallback(object : BiometricBottomSheetDialogFragment.Callback() {
+                            override fun onDismiss(success: Boolean) {
+                                if (!success) {
                                     adapter.restoreItem(deleteItem, deletePos)
                                 }
                             }
-                        }
+                        })
                     }
                 },
             ),

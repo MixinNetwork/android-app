@@ -45,18 +45,14 @@ class PinBiometricsBottomSheetDialogFragment : BiometricBottomSheetDialogFragmen
     }
 
     override fun doWhenInvokeNetworkSuccess(response: MixinResponse<*>, pin: String): Boolean {
-        response.data?.let {
-            if (fromWalletSetting) {
-                val success = BiometricUtil.savePin(
-                    requireContext(),
-                    pin,
-                    this@PinBiometricsBottomSheetDialogFragment,
-                )
-                if (success) callback?.onSuccess() else dismiss()
-            } else {
-                callback?.onSuccess()
-            }
+        if (fromWalletSetting) {
+            BiometricUtil.savePin(
+                requireContext(),
+                pin,
+                this@PinBiometricsBottomSheetDialogFragment,
+            )
         }
+
         return true
     }
 

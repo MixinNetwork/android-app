@@ -621,12 +621,14 @@ class TransferFragment() : MixinBottomSheetDialogFragment() {
 
     private fun showTransferBottom(biometricItem: BiometricItem) {
         val bottom = OutputBottomSheetDialogFragment.newInstance(biometricItem)
-        bottom.callback = object : BiometricBottomSheetDialogFragment.Callback() {
-            override fun onSuccess() {
-                dialog?.dismiss()
-                callback?.onSuccess()
+        bottom.setCallback(object : BiometricBottomSheetDialogFragment.Callback() {
+            override fun onDismiss(success: Boolean) {
+                if (success) {
+                    dialog?.dismiss()
+                    callback?.onSuccess()
+                }
             }
-        }
+        })
         bottom.onDestroyListener = object : OutputBottomSheetDialogFragment.OnDestroyListener {
             override fun onDestroy() {
                 transferBottomOpened = false

@@ -206,6 +206,14 @@
             app:destination="@id/address_add_fragment"
             app:enterAnim="@anim/slide_in_right"
             app:popExitAnim="@anim/slide_out_right"/>
+
+        <action
+            android:id="@+id/action_address_management_to_transactions"
+            app:destination="@id/transactions_fragment"
+            app:enterAnim="@null"
+            app:popExitAnim="@anim/slide_out_right"
+            app:popUpTo="@id/transactions_fragment"
+            app:popUpToInclusive="true"/>
     </fragment>
 
     <fragment

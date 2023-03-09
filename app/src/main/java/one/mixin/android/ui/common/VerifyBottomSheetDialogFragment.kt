@@ -29,10 +29,6 @@ class VerifyBottomSheetDialogFragment : BiometricBottomSheetDialogFragment() {
 
     private val binding by viewBinding(FragmentVerifyBottomSheetBinding::inflate)
 
-    init {
-        autoDismiss = false
-    }
-
     @SuppressLint("RestrictedApi")
     override fun setupDialog(dialog: Dialog, style: Int) {
         super.setupDialog(dialog, style)
@@ -52,11 +48,13 @@ class VerifyBottomSheetDialogFragment : BiometricBottomSheetDialogFragment() {
             binding.biometricLayout.biometricTv.setText(R.string.Verify_by_Biometric)
         }
         binding.biometricLayout.measureAllChildren = false
-        callback = object : Callback() {
-            override fun onSuccess() {
-                continueCallback?.invoke(this@VerifyBottomSheetDialogFragment)
+        setCallback(object : Callback() {
+            override fun onDismiss(success: Boolean) {
+                if (success) {
+                    continueCallback?.invoke(this@VerifyBottomSheetDialogFragment)
+                }
             }
-        }
+        })
     }
 
     override suspend fun invokeNetwork(pin: String): MixinResponse<*> {

@@ -31,7 +31,6 @@ import javax.inject.Inject
 
 abstract class BiometricBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     private var biometricDialog: BiometricDialog? = null
-    var autoDismiss: Boolean = true
 
     @Inject
     lateinit var pinCipher: PinCipher
@@ -52,15 +51,12 @@ abstract class BiometricBottomSheetDialogFragment : MixinBottomSheetDialogFragme
     override fun onDestroyView() {
         super.onDestroyView()
         dialog?.window?.clearFlags(WindowManager.LayoutParams.FLAG_SECURE)
-        if (isSuccess) {
-            callback?.onSuccess()
-        }
         biometricDialog?.callback = null
     }
 
     override fun onDismiss(dialog: DialogInterface) {
         super.onDismiss(dialog)
-        callback?.onDismiss()
+        callback?.onDismiss(isSuccess)
     }
 
     abstract fun getBiometricInfo(): BiometricInfo
@@ -110,9 +106,8 @@ abstract class BiometricBottomSheetDialogFragment : MixinBottomSheetDialogFragme
     protected fun showDone(returnTo: String? = null) {
         if (!isAdded) return
         biometricLayout.showDone(returnTo) {
-            dismiss()
             isSuccess = true
-            callback?.onSuccess()
+            dismiss()
             dialog?.window?.clearFlags(WindowManager.LayoutParams.FLAG_SECURE)
         }
     }
@@ -168,12 +163,11 @@ abstract class BiometricBottomSheetDialogFragment : MixinBottomSheetDialogFragme
                 System.currentTimeMillis(),
             )
             context?.updatePinCheck()
+            isSuccess = true
 
             if (doWhenInvokeNetworkSuccess(response, pin)) {
-                if (autoDismiss) {
-                    dismiss()
-                }
-                callback?.onSuccess() ?: toast(R.string.Successful)
+                dismiss()
+                toast(R.string.Successful)
             }
         } else {
             handleWithErrorCodeAndDesc(pin, requireNotNull(response.error))
@@ -238,10 +232,14 @@ abstract class BiometricBottomSheetDialogFragment : MixinBottomSheetDialogFragme
         }
     }
 
-    var callback: Callback? = null
+    private var callback: Callback? = null
 
+    fun setCallback(cb: Callback) {
+        callback = cb
+    }
+
+    // Keeping these callback methods can only be called at most once.
     open class Callback {
-        open fun onSuccess() {}
-        open fun onDismiss() {}
+        open fun onDismiss(success: Boolean) {}
     }
 }
