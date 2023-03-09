@@ -38,7 +38,6 @@ class AddressManagementFragment : BaseFragment(R.layout.fragment_address_managem
 
     private val addressViewModel by viewModels<AddressViewModel>()
 
-    private var deleteSuccess = false
     private val asset: AssetItem by lazy {
         requireArguments().getParcelable(ARGS_ASSET)!!
     }
@@ -120,13 +119,8 @@ class AddressManagementFragment : BaseFragment(R.layout.fragment_address_managem
                         val bottomSheet = showBottomSheet(addr, asset)
                         parentFragmentManager.executePendingTransactions()
                         bottomSheet.setCallback(object : BiometricBottomSheetDialogFragment.Callback() {
-                            override fun onSuccess() {
-                                deleteSuccess = true
-                            }
-
-                            override fun onDismiss() {
-                                bottomSheet.dismiss()
-                                if (!deleteSuccess) {
+                            override fun onDismiss(success: Boolean) {
+                                if (!success) {
                                     adapter.restoreItem(deleteItem, deletePos)
                                 }
                             }

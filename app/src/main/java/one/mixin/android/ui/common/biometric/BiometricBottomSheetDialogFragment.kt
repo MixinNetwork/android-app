@@ -56,10 +56,7 @@ abstract class BiometricBottomSheetDialogFragment : MixinBottomSheetDialogFragme
 
     override fun onDismiss(dialog: DialogInterface) {
         super.onDismiss(dialog)
-        if (isSuccess) {
-            callback?.onSuccess()
-        }
-        callback?.onDismiss()
+        callback?.onDismiss(isSuccess)
     }
 
     abstract fun getBiometricInfo(): BiometricInfo
@@ -243,7 +240,6 @@ abstract class BiometricBottomSheetDialogFragment : MixinBottomSheetDialogFragme
 
     // Keeping these callback methods can only be called at most once.
     open class Callback {
-        open fun onSuccess() {}
-        open fun onDismiss() {}
+        open fun onDismiss(success: Boolean) {}
     }
 }

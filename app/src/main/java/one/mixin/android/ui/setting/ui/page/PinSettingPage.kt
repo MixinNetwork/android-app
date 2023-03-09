@@ -170,16 +170,16 @@ fun PinSettingPage() {
             MixinBottomSheetDialog(createDialog = {
                 PinBiometricsBottomSheetDialogFragment.newInstance(true).apply {
                     setCallback(object : BiometricBottomSheetDialogFragment.Callback() {
-                        override fun onSuccess() {
-                            enableBiometrics = true
-                            context.defaultSharedPreferences.putLong(
-                                Constants.BIOMETRIC_PIN_CHECK,
-                                System.currentTimeMillis(),
-                            )
-                        }
-
-                        override fun onDismiss() {
-                            showBiometricsDialog = false
+                        override fun onDismiss(success: Boolean) {
+                            if (success) {
+                                enableBiometrics = true
+                                context.defaultSharedPreferences.putLong(
+                                    Constants.BIOMETRIC_PIN_CHECK,
+                                    System.currentTimeMillis(),
+                                )
+                            } else {
+                                showBiometricsDialog = false
+                            }
                         }
                     })
                 }

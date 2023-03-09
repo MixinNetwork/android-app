@@ -335,8 +335,10 @@ private fun PinEmergencyBottomSheetDialog(
                 }
             }
             setCallback(object : BiometricBottomSheetDialogFragment.Callback() {
-                override fun onDismiss() {
-                    onDismissRequest()
+                override fun onDismiss(success: Boolean) {
+                    if (!success) {
+                        onDismissRequest()
+                    }
                 }
             })
         }
