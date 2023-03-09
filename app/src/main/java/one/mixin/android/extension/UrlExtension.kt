@@ -26,6 +26,7 @@ import one.mixin.android.ui.conversation.link.LinkBottomSheetDialogFragment
 import one.mixin.android.ui.device.ConfirmBottomFragment
 import one.mixin.android.ui.forward.ForwardActivity
 import one.mixin.android.ui.qr.donateSupported
+import one.mixin.android.ui.url.UrlInterpreterActivity
 import one.mixin.android.ui.web.WebActivity
 import one.mixin.android.vo.App
 import one.mixin.android.vo.AppCardData
@@ -205,6 +206,9 @@ fun String.checkUserOrApp(
                         app.homeUri
                     }
                     WebActivity.show(context, url, null, app)
+                    if (context is UrlInterpreterActivity) {
+                        context.finish()
+                    }
                     return@launch
                 }
             }
