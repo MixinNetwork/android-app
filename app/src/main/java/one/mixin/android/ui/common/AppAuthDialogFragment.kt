@@ -184,8 +184,6 @@ class AppAuthDialogFragment : DialogFragment() {
                 defaultSharedPreferences.putInt(Constants.Account.PREF_APP_AUTH, -1)
                 defaultSharedPreferences.putLong(Constants.Account.PREF_APP_ENTER_BACKGROUND, 0)
                 successDismiss()
-            }.apply {
-                autoDismiss = true
             }.showNow(parentFragmentManager, VerifyBottomSheetDialogFragment.TAG)
     }
 
