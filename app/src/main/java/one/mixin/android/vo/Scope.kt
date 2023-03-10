@@ -52,7 +52,7 @@ data class Scope(val source: String, val name: String, val desc: String) :
                 )
                 SCOPES[3] -> Pair(
                     ctx.getString(R.string.Read_your_contacts),
-                    ctx.getString(R.string.Read_your_contacts),
+                    ctx.getString(R.string.Allow_bot_access_contact),
                 )
                 SCOPES[4] -> Pair(
                     ctx.getString(R.string.Read_your_assets),
