@@ -11,6 +11,7 @@ import one.mixin.android.tip.bip44.Bip44Path
 import one.mixin.android.tip.bip44.generateBip44Key
 import org.web3j.crypto.Bip32ECKeyPair
 import org.web3j.crypto.ECKeyPair
+import org.web3j.crypto.Keys
 import org.web3j.crypto.Sign
 import org.web3j.utils.Numeric
 import java.security.MessageDigest
@@ -96,4 +97,11 @@ fun tipPrivToPrivateKey(priv: ByteArray): ByteArray {
     val masterKeyPair = Bip32ECKeyPair.generateKeyPair(seed)
     val bip44KeyPair = generateBip44Key(masterKeyPair, Bip44Path.Ethereum) // hardcode Ethereum for now
     return Numeric.toBytesPadded(bip44KeyPair.privateKey, 32)
+}
+
+fun tipPrivToAddress(priv: ByteArray): String {
+    val seed = priv.sha3Sum256()
+    val masterKeyPair = Bip32ECKeyPair.generateKeyPair(seed)
+    val bip44KeyPair = generateBip44Key(masterKeyPair, Bip44Path.Ethereum)
+    return Keys.toChecksumAddress(Keys.getAddress(bip44KeyPair.publicKey))
 }

@@ -1197,4 +1197,5 @@
     <string name="Message">Message</string>
     <string name="Balance_Change">Balance Changes (estimate)</string>
     <string name="Success">Success</string>
+    <string name="TIP_Wallet">TIP Wallet</string>
 </resources>

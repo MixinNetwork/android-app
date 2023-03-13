@@ -4,7 +4,9 @@ import android.os.Bundle
 import android.view.View
 import androidx.annotation.IdRes
 import androidx.appcompat.view.ContextThemeWrapper
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
+import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.databinding.ViewWalletTransactionsSendBottomBinding
 import one.mixin.android.extension.defaultSharedPreferences
@@ -18,6 +20,7 @@ class SendBottomSheet(
     private val fragment: Fragment,
     @IdRes private val navContactAction: Int,
     @IdRes private val navAddressAction: Int,
+    private val navTipAction: (() -> Unit)? = null,
 ) {
     private var _bottomSendBinding: ViewWalletTransactionsSendBottomBinding? = null
     private val bottomSendBinding get() = requireNotNull(_bottomSendBinding)
@@ -47,6 +50,12 @@ class SendBottomSheet(
                         putParcelable(TransactionsFragment.ARGS_ASSET, asset)
                     },
                 )
+            }
+            tipWallet.isVisible = navTipAction != null &&
+                fragment.requireContext().defaultSharedPreferences.getBoolean(Constants.Debug.WALLET_CONNECT_DEBUG, false)
+            tipWallet.setOnClickListener {
+                bottomSheet.dismiss()
+                navTipAction?.invoke()
             }
             sendCancel.setOnClickListener { bottomSheet.dismiss() }
         }

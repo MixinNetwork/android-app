@@ -234,4 +234,7 @@ internal constructor(
 
     suspend fun findSnapshot(snapshotId: String): SnapshotItem? =
         assetRepository.findSnapshotById(snapshotId)
+
+    suspend fun getExternalAddressFee(assetId: String, destination: String, tag: String?) =
+        accountRepository.getExternalAddressFee(assetId, destination, tag)
 }
