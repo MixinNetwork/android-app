@@ -433,6 +433,13 @@ dependencies {
     // ML Kit
     implementation 'com.google.mlkit:entity-extraction:16.0.0-beta4'
 
+    testImplementation "org.bitcoinj:bitcoinj-core:0.16.2"
+    testImplementation("com.google.protobuf:protobuf-javalite") {
+        version {
+            strictly '3.11.0'
+        }
+    }
+
     // Leak Canary
     debugImplementation "com.squareup.leakcanary:leakcanary-android:$leakcanaryVerison"
     implementation "com.squareup.leakcanary:leakcanary-android-process:$leakcanaryVerison"
