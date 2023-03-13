@@ -3,6 +3,8 @@ package one.mixin.android.tip.wc
 import com.trustwallet.walletconnect.models.ethereum.WCEthereumSignMessage
 import com.trustwallet.walletconnect.models.ethereum.WCEthereumTransaction
 import com.walletconnect.web3.wallet.client.Wallet
+import org.web3j.abi.TypeDecoder
+import org.web3j.abi.datatypes.Address
 import org.web3j.crypto.ECKeyPair
 import org.web3j.crypto.Sign
 import org.web3j.crypto.StructuredDataEncoder
@@ -148,6 +150,15 @@ abstract class WalletConnect {
         System.arraycopy(signature.s, 0, b, 32, 32)
         System.arraycopy(signature.v, 0, b, 64, 1)
         return Numeric.toHexString(b)
+    }
+
+    fun decodeData(data: String) {
+        val method = data.substring(0, 10)
+        println(method)
+        val to = data.substring(10, 74)
+        val value = data.substring(74)
+        val address = TypeDecoder.decode(to, Address::class.java)
+        Timber.d("$TAG data: $data, address: $address")
     }
 
     protected fun throwError(error: Response.Error, msgAction: ((String) -> Unit)? = null) {

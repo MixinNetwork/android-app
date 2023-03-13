@@ -6,6 +6,7 @@ import one.mixin.android.extension.stripAmountZero
 import one.mixin.android.pay.erc681.scientificNumberRegEx
 import one.mixin.android.pay.erc681.toERC681
 import one.mixin.android.vo.AssetPrecision
+import org.web3j.utils.Convert
 import java.math.BigDecimal
 
 data class EthereumURI(val uri: String)

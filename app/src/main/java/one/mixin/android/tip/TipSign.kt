@@ -7,8 +7,12 @@ import one.mixin.android.crypto.getPrivateKey
 import one.mixin.android.crypto.getPublicKey
 import one.mixin.android.crypto.sha3Sum256
 import one.mixin.android.extension.toHex
+import one.mixin.android.tip.bip44.Bip44Path
+import one.mixin.android.tip.bip44.generateBip44Key
+import org.web3j.crypto.Bip32ECKeyPair
 import org.web3j.crypto.ECKeyPair
 import org.web3j.crypto.Sign
+import org.web3j.utils.Numeric
 import java.security.MessageDigest
 
 const val TAG_TIP_SIGN = "TIP_sign"
@@ -87,4 +91,9 @@ private fun matchTipSignSpec(alg: String, crv: String): TipSignSpec? {
     }
 }
 
-fun tipPrivToPrivateKey(priv: ByteArray) = priv.sha3Sum256()
+fun tipPrivToPrivateKey(priv: ByteArray): ByteArray {
+    val seed = priv.sha3Sum256()
+    val masterKeyPair = Bip32ECKeyPair.generateKeyPair(seed)
+    val bip44KeyPair = generateBip44Key(masterKeyPair, Bip44Path.Ethereum) // hardcode Ethereum for now
+    return Numeric.toBytesPadded(bip44KeyPair.privateKey, 32)
+}
