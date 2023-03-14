@@ -3,12 +3,10 @@ package one.mixin.android.db.provider
 import android.annotation.SuppressLint
 import android.database.Cursor
 import android.os.CancellationSignal
-import androidx.core.database.getStringOrNull
 import androidx.paging.DataSource
 import androidx.room.CoroutinesRoom
 import androidx.room.RoomSQLiteQuery
 import androidx.room.getQueryDispatcher
-import androidx.sqlite.db.SimpleSQLiteQuery
 import kotlinx.coroutines.withContext
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.fts.FtsDataSource
@@ -22,7 +20,6 @@ import one.mixin.android.vo.AssetItem
 import one.mixin.android.vo.ChatHistoryMessageItem
 import one.mixin.android.vo.ChatMinimal
 import one.mixin.android.vo.ConversationItem
-import one.mixin.android.vo.FtsSearchResult
 import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.SearchMessageDetailItem
 import one.mixin.android.vo.SearchMessageItem
@@ -391,47 +388,7 @@ class DataProvider {
             db: MixinDatabase,
             cancellationSignal: CancellationSignal,
         ): List<SearchMessageItem> = withContext(db.getQueryDispatcher()) {
-            val newFtsResults = ftsDatabase.rawSearch(query, cancellationSignal)
-            val querySql = SimpleSQLiteQuery(
-                """
-                SELECT m.id as message_id, m.conversation_id , m.user_id, count(m.id) as count 
-                FROM messages m, (SELECT message_id FROM messages_fts4 WHERE content MATCH ?) fts4
-                WHERE m.id = fts4.message_id 
-                GROUP BY m.conversation_id
-                ORDER BY max(m.created_at) DESC
-                """,
-                arrayOf(query),
-            )
-            val oldFtsResults = db.query(querySql, cancellationSignal).use {
-                val results = mutableListOf<FtsSearchResult>()
-                while (it.moveToNext()) {
-                    val messageId = it.getStringOrNull(0) ?: continue
-                    val conversationId = it.getStringOrNull(1) ?: continue
-                    val userId = it.getStringOrNull(2) ?: continue
-                    val count = it.getInt(3)
-                    if (count > 0) {
-                        results.add(FtsSearchResult(messageId, conversationId, userId, count))
-                    }
-                }
-                return@use results
-            }
-            val resultMerge = fun(s: Iterable<FtsSearchResult>, o: Iterable<FtsSearchResult>): MutableMap<String, FtsSearchResult> {
-                val sourceMap = s.associateBy { it.conversationId }.toMutableMap()
-                val otherMap = o.associateBy { it.conversationId }
-                for (item in otherMap) {
-                    val key = item.key
-                    val contain = sourceMap.containsKey(key)
-                    if (contain) {
-                        val localItem = sourceMap[item.key] ?: continue
-                        localItem.messageCount += item.value.messageCount
-                    } else {
-                        sourceMap[key] = item.value
-                    }
-                }
-                return sourceMap
-            }
-            val result = resultMerge(newFtsResults, oldFtsResults)
-
+            val result = ftsDatabase.rawSearch(query, cancellationSignal)
             val sql = """
                 SELECT m.conversation_id AS conversationId, c.icon_url AS conversationAvatarUrl,
                 c.name AS conversationName, c.category AS conversationCategory, 0 as messageCount,
@@ -442,10 +399,10 @@ class DataProvider {
                 WHERE m.id IN (*)
                 ORDER BY m.created_at DESC
             """
-            val ids = result.values.joinToString(
+            val ids = result.joinToString(
                 prefix = "'",
                 postfix = "'",
-                separator = "', '",
+                separator = "', '"
             ) { it.messageId }
             val statement = RoomSQLiteQuery.acquire(sql.replace("*", ids), 0)
             return@withContext CoroutinesRoom.execute(
@@ -454,7 +411,10 @@ class DataProvider {
                 cancellationSignal,
                 callableSearchMessageItem(db, statement, cancellationSignal),
             ).map {
-                it.messageCount = result[it.conversationId]?.messageCount ?: 0
+                val obtained = result.find { item -> item.conversationId == it.conversationId }
+                if (obtained != null) {
+                    it.messageCount = obtained.messageCount
+                }
                 it
             }
         }

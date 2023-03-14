@@ -270,10 +270,10 @@ interface MessageDao : BaseDao<Message> {
         "SIGNAL_POST", "PLAIN_POST", "ENCRYPTED_POST", "SIGNAL_DATA", "PLAIN_DATA", "ENCRYPTED_DATA", "SIGNAL_CONTACT", "PLAIN_CONTACT", "ENCRYPTED_CONTACT", "APP_CARD")
         AND m.status != 'FAILED' AND m.status != 'UNKNOWN'
         ORDER BY m.rowid DESC
-        LIMIT 1000
+        LIMIT :limit
     """,
     )
-    fun findFtsMessages(rowId: Long): List<Message>
+    fun findFtsMessages(rowId: Long, limit: Int): List<Message>
 
     @Query("SELECT rowid FROM messages ORDER BY rowid DESC LIMIT 1")
     fun getLastMessageRowId(): Long?

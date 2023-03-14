@@ -16,6 +16,7 @@ import timber.log.Timber
 class MigratedFts4Job : BaseJob(Params(PRIORITY_LOWER).groupBy(GROUP_ID).persist()) {
     companion object {
         const val FTS_NEED_MIGRATED_LAST_ROW_ID = "fts_need_migrated_last_row_id"
+        private const val MIGRATED_LIMIT = 1000
         private var serialVersionUID: Long = 1L
         private const val GROUP_ID = "MigratedFts4Job"
     }
@@ -32,7 +33,7 @@ class MigratedFts4Job : BaseJob(Params(PRIORITY_LOWER).groupBy(GROUP_ID).persist
                 lastRowId = currentLastId
             }
         }
-        val messages = messageDao.findFtsMessages(lastRowId)
+        val messages = messageDao.findFtsMessages(lastRowId, MIGRATED_LIMIT)
         messages.forEach { message ->
             if (message.isTranscript()) {
                 val content = transcriptMessageDao.getTranscriptsById(message.messageId).filter { it.isText() || it.isPost() || it.isData() || it.isContact() }
@@ -52,14 +53,14 @@ class MigratedFts4Job : BaseJob(Params(PRIORITY_LOWER).groupBy(GROUP_ID).persist
                 ftsDatabase.insertOrReplaceMessageFts4(message)
             }
         }
-        if (messages.size < 1000) {
+        if (messages.size < MIGRATED_LIMIT) {
             PropertyHelper.updateKeyValue(FTS_NEED_MIGRATED_LAST_ROW_ID, "-1")
         } else {
             lastRowId = messageDao.getMessageRowid(messages.last().messageId) ?: lastRowId
             PropertyHelper.updateKeyValue(FTS_NEED_MIGRATED_LAST_ROW_ID, "$lastRowId")
             jobManager.addJobInBackground(MigratedFts4Job())
         }
-        Timber.e("SyncFts4Job: ${messages.size} $lastRowId")
+        Timber.e("Migrated size:${messages.size} - last id:$lastRowId")
         return@runBlocking
     }
 }

@@ -17,7 +17,6 @@ class FtsDataSource(
 ) :
     ItemKeyedDataSource<Int, SearchMessageDetailItem>() {
 
-    private var formOldData = false
     override fun loadInitial(
         params: LoadInitialParams<Int>,
         callback: LoadInitialCallback<SearchMessageDetailItem>,
@@ -67,26 +66,8 @@ class FtsDataSource(
             }
             return getData(ids)
         }
-        return if (formOldData) {
-            getOldData(size, key + 1)
-        } else {
-            getNewData(size, key + 1)
-        }
-    }
 
-    private val oldFtsCursor by lazy {
-        mixinDatabase.query(SimpleSQLiteQuery("SELECT m.id FROM messages m WHERE m.id IN (SELECT message_id FROM messages_fts4 WHERE messages_fts4 MATCH '$query') AND m.conversation_id = '$conversationId' ORDER BY m.created_at DESC"))
-    }
-
-    private fun getOldData(size: Int, startKey: Int): List<SearchMessageDetailItem> {
-        val ids = mutableListOf<String>()
-        var index = 0
-        while (oldFtsCursor.moveToNext() && index < size) {
-            val messageId = oldFtsCursor.getStringOrNull(0) ?: continue
-            ids.add(messageId)
-            index++
-        }
-        return getData(ids, startKey)
+        return getNewData(size, key + 1)
     }
 
     private val newFtsCursor by lazy {
@@ -106,11 +87,7 @@ class FtsDataSource(
             ids.add(messageId)
             index++
         }
-        val result = getData(ids, startKey)
-        if (result.size < size) { // If can't get the full-size data, will get it from the old fts.
-            formOldData = true
-        }
-        return result
+        return getData(ids, startKey)
     }
 
     private fun getData(ids: List<String>, startKey: Int? = null): List<SearchMessageDetailItem> {
