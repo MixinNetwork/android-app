@@ -357,11 +357,10 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                             )
                             MultisigsBottomSheetDialogFragment.newInstance(
                                 multisigsBiometricItem,
+                            ).showNow(
+                                parentFragmentManager,
+                                MultisigsBottomSheetDialogFragment.TAG,
                             )
-                                .showNow(
-                                    parentFragmentManager,
-                                    MultisigsBottomSheetDialogFragment.TAG,
-                                )
                             dismiss()
                         } else {
                             showError()
