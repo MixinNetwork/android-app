@@ -402,7 +402,7 @@ class DataProvider {
             val ids = result.joinToString(
                 prefix = "'",
                 postfix = "'",
-                separator = "', '"
+                separator = "', '",
             ) { it.messageId }
             val statement = RoomSQLiteQuery.acquire(sql.replace("*", ids), 0)
             return@withContext CoroutinesRoom.execute(
