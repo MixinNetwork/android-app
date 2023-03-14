@@ -22,7 +22,7 @@ import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.PropertyDao
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.nowInUtc
-import one.mixin.android.job.ClearFts4Job.Companion.FTS_REDUCE
+import one.mixin.android.job.ClearFts4Job.Companion.FTS_CLEAR
 import one.mixin.android.job.MigratedFts4Job.Companion.FTS_NEED_MIGRATED_LAST_ROW_ID
 import one.mixin.android.vo.Property
 
@@ -68,8 +68,8 @@ object PropertyHelper {
         }
     }
 
-    suspend fun checkFtsReduced(action: () -> Unit) {
-        val reduce = findValueByKey(FTS_REDUCE)?.toBooleanStrictOrNull() ?: true
+    suspend fun checkFtsClear(action: () -> Unit) {
+        val reduce = findValueByKey(FTS_CLEAR)?.toBooleanStrictOrNull() ?: true
         if (reduce) {
             action.invoke()
         }

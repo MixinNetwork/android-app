@@ -367,7 +367,7 @@ class MainActivity : BlazeBaseActivity() {
         PropertyHelper.checkFtsMigrated {
             jobManager.addJobInBackground(MigratedFts4Job())
         }
-        PropertyHelper.checkFtsReduced {
+        PropertyHelper.checkFtsClear {
             jobManager.addJobInBackground(ClearFts4Job())
         }
 

@@ -10,7 +10,7 @@ class ClearFts4Job :
     companion object {
         private var serialVersionUID: Long = 1L
         private const val GROUP_ID = "ClearFts4Job"
-        const val FTS_REDUCE = "fts_clear"
+        const val FTS_CLEAR = "fts_clear"
     }
 
     override fun onRun() = runBlocking {
@@ -18,7 +18,7 @@ class ClearFts4Job :
         if (count > 0) {
             jobManager.addJobInBackground(ClearFts4Job())
         } else {
-            PropertyHelper.updateKeyValue(FTS_REDUCE, "false")
+            PropertyHelper.updateKeyValue(FTS_CLEAR, "false")
         }
         Timber.e("DELETE fts count: $count")
         return@runBlocking
