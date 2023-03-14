@@ -69,7 +69,7 @@ object PropertyHelper {
     }
 
     suspend fun checkFtsClear(action: () -> Unit) {
-        val reduce = findValueByKey(FTS_CLEAR)?.toBooleanStrictOrNull() ?: true
+        val reduce = findValueByKey(FTS_CLEAR)?.toBooleanStrictOrNull() ?: false
         if (reduce) {
             action.invoke()
         }

@@ -55,6 +55,7 @@ class MigratedFts4Job : BaseJob(Params(PRIORITY_LOWER).groupBy(GROUP_ID).persist
         }
         if (messages.size < MIGRATED_LIMIT) {
             PropertyHelper.updateKeyValue(FTS_NEED_MIGRATED_LAST_ROW_ID, "-1")
+            PropertyHelper.updateKeyValue(ClearFts4Job.FTS_CLEAR, "true")
         } else {
             lastRowId = messageDao.getMessageRowid(messages.last().messageId) ?: lastRowId
             PropertyHelper.updateKeyValue(FTS_NEED_MIGRATED_LAST_ROW_ID, "$lastRowId")
