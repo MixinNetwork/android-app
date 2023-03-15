@@ -392,9 +392,6 @@ dependencies {
     implementation "com.walletconnect:web3wallet"
     implementation "com.github.TrustWallet:wallet-connect-kotlin:1.5.6"
     implementation 'com.github.salomonbrys.kotson:kotson:2.5.0'
-    implementation('net.osslabz.evm:evm-abi-decoder:0.0.6', {
-        exclude group: 'org.bouncycastle', module: 'bcprov-jdk18on'
-    })
 
     ktlint "com.pinterest:ktlint:${ktlintVersion}"
 
