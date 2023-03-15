@@ -395,14 +395,14 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                         if (asset != null) {
                             if (paymentCodeResponse.receivers.isEmpty()) {
                                 showError()
-                            } else if (paymentCodeResponse.receivers.size == 1) { // Transfer when there is only one recipient
+                            } else if (paymentCodeResponse.receivers.size == 1 && paymentCodeResponse.threshold == 1) { // Transfer when there is only one recipient
                                 val user = linkViewModel.refreshUser(paymentCodeResponse.receivers.first())
                                 if (user == null) {
                                     showError(R.string.User_not_found)
                                     return@launch
                                 }
                                 showTransferBottom(user, paymentCodeResponse.amount, asset, paymentCodeResponse.traceId, paymentCodeResponse.status, paymentCodeResponse.memo, null)
-                            } else {
+                            } else if (paymentCodeResponse.receivers.size > 1) {
                                 val multisigsBiometricItem = One2MultiBiometricItem(
                                     threshold = paymentCodeResponse.threshold,
                                     senders = arrayOf(Session.getAccountId()!!),
