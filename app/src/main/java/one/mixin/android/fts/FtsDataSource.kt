@@ -73,7 +73,7 @@ class FtsDataSource(
     private val newFtsCursor by lazy {
         ftsDatabase.query(
             SimpleSQLiteQuery(
-                "SELECT message_id FROM messages_metas WHERE conversation_id = '$conversationId' AND doc_id IN (SELECT docid FROM messages_fts WHERE content MATCH '$query') ORDER BY created_at DESC",
+                "SELECT message_id FROM messages_metas WHERE conversation_id = '$conversationId' AND doc_id IN (SELECT docid FROM messages_fts WHERE content MATCH '$query') ORDER BY created_at DESC, rowid DESC",
             ),
             cancellationSignal,
         )
