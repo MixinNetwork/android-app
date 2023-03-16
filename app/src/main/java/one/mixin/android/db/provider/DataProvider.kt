@@ -394,8 +394,8 @@ class DataProvider {
                 c.name AS conversationName, c.category AS conversationCategory, 0 as messageCount,
                 u.user_id AS userId, u.avatar_url AS userAvatarUrl, u.full_name AS userFullName
                 FROM messages m
-                LEFT JOIN conversations c ON c.conversation_id = m.conversation_id
-				LEFT JOIN users u ON c.owner_id = u.user_id
+                INNER JOIN conversations c ON c.conversation_id = m.conversation_id
+				INNER JOIN users u ON c.owner_id = u.user_id
                 WHERE m.id IN (*)
                 ORDER BY m.created_at DESC
             """
