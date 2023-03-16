@@ -18,7 +18,7 @@ import one.mixin.android.vo.isData
 import one.mixin.android.vo.isFtsMessage
 
 fun FtsDatabase.deleteByMessageId(messageId: String) = runBlocking(FTS_THREAD) {
-    messageFtsDao().deleteMessageMetasByMessageId(messageId)
+    messageFtsDao().deleteMessageFtsByMessageId(messageId)
     messageMetaDao().deleteMessageMetasByMessageId(messageId)
 }
 

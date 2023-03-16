@@ -11,7 +11,7 @@ interface MessageFtsDao {
     fun insertMessageFts(fts: MessageFts): Long
 
     @Query("DELETE FROM messages_fts WHERE docid = (SELECT doc_id FROM messages_metas WHERE message_id = :messageId)")
-    fun deleteMessageMetasByMessageId(messageId: String)
+    fun deleteMessageFtsByMessageId(messageId: String)
 
     @Query("DELETE FROM messages_fts WHERE docid IN (SELECT doc_id FROM messages_metas WHERE message_id IN (:messageIds))")
     fun deleteMessageMetasByMessageIds(messageIds: List<String>)

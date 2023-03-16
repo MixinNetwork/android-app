@@ -42,7 +42,6 @@ import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.notificationManager
 import one.mixin.android.extension.putBoolean
 import one.mixin.android.extension.putLong
-import one.mixin.android.fts.FtsDatabase
 import one.mixin.android.job.BlazeMessageService
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.session.Session
@@ -271,7 +270,6 @@ open class MixinApplication :
         clearPrivacyPreferences(this)
         MixinDatabase.getDatabase(this).participantSessionDao().clearKey(sessionId)
         SignalDatabase.getDatabase(this).clearAllTables()
-        FtsDatabase.getDatabase(this).clearAllTables()
     }
 
     var activityInForeground = true
