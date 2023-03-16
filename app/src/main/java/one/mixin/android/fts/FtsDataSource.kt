@@ -7,6 +7,7 @@ import androidx.paging.ItemKeyedDataSource
 import androidx.sqlite.db.SimpleSQLiteQuery
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.vo.SearchMessageDetailItem
+import timber.log.Timber
 
 class FtsDataSource(
     val ftsDatabase: FtsDatabase,
@@ -82,12 +83,17 @@ class FtsDataSource(
     private fun getNewData(size: Int, startKey: Int): List<SearchMessageDetailItem> {
         val ids = mutableListOf<String>()
         var index = 0
-        while (newFtsCursor.moveToNext() && index < size) {
-            val messageId = newFtsCursor.getStringOrNull(0) ?: continue
-            ids.add(messageId)
-            index++
+        return try {
+            while (newFtsCursor.moveToNext() && index < size) {
+                val messageId = newFtsCursor.getStringOrNull(0) ?: continue
+                ids.add(messageId)
+                index++
+            }
+            getData(ids, startKey)
+        } catch (e: Exception) {
+            Timber.e(e)
+            emptyList()
         }
-        return getData(ids, startKey)
     }
 
     private fun getData(ids: List<String>, startKey: Int? = null): List<SearchMessageDetailItem> {
