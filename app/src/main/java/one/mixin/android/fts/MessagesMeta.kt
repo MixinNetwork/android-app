@@ -8,7 +8,7 @@ import androidx.room.PrimaryKey
 @Entity(
     tableName = "messages_metas",
     indices = [
-        Index(value = arrayOf("doc_id", "created_at")),
+        Index(value = arrayOf("doc_id", "created_at"), orders = [Index.Order.DESC, Index.Order.DESC]),
         Index(value = arrayOf("conversation_id", "user_id", "category")),
     ],
 )
