@@ -399,6 +399,7 @@ class DataProvider {
                 WHERE m.id IN (*)
                 ORDER BY m.created_at DESC
             """
+            if (result.isEmpty()) return@withContext emptyList()
             val ids = result.joinToString(
                 prefix = "'",
                 postfix = "'",
