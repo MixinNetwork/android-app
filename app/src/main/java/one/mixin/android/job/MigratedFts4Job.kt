@@ -30,7 +30,7 @@ class MigratedFts4Job : BaseJob(Params(PRIORITY_LOWER).groupBy(GROUP_ID).persist
                 PropertyHelper.updateKeyValue(FTS_NEED_MIGRATED_LAST_ROW_ID, "-1")
                 return@runBlocking
             } else {
-                lastRowId = currentLastId
+                lastRowId = currentLastId + 1 // It is easy to obtain data that is less than or equal to it.
             }
         }
         val messages = messageDao.findFtsMessages(lastRowId, MIGRATED_LIMIT)
