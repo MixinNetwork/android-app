@@ -17,8 +17,7 @@ object DatabaseMonitor {
 
     fun reset() {
         MixinApplication.get().applicationScope.launch {
-            enable = PropertyHelper.findValueByKey(Constants.Debug.DB_DEBUG_LOGS)
-                ?.toBoolean() ?: false
+            enable = PropertyHelper.findValueByKey(Constants.Debug.DB_DEBUG_LOGS, false)
         }
     }
 

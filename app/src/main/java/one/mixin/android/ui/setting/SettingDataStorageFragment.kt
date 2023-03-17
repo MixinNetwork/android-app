@@ -17,6 +17,7 @@ import one.mixin.android.Constants.Download.AUTO_DOWNLOAD_WIFI
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentStorageDataBinding
 import one.mixin.android.databinding.ViewStotageDataBinding
+import one.mixin.android.db.property.PropertyHelper
 import one.mixin.android.extension.addFragment
 import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.autoDownloadDocument
@@ -29,7 +30,6 @@ import one.mixin.android.extension.getAutoDownloadWifiValue
 import one.mixin.android.extension.layoutInflater
 import one.mixin.android.extension.putInt
 import one.mixin.android.ui.common.BaseFragment
-import one.mixin.android.db.property.PropertyHelper
 import one.mixin.android.util.viewBinding
 
 @AndroidEntryPoint

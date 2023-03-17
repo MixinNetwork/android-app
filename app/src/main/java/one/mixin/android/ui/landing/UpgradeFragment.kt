@@ -13,11 +13,11 @@ import kotlinx.coroutines.withContext
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentUpgradeBinding
+import one.mixin.android.db.property.PropertyHelper
 import one.mixin.android.db.runInTransaction
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.home.MainActivity
-import one.mixin.android.db.property.PropertyHelper
 import one.mixin.android.util.viewBinding
 
 @AndroidEntryPoint

@@ -18,6 +18,7 @@ import one.mixin.android.Constants.Account.PREF_STRANGER_TRANSFER
 import one.mixin.android.R
 import one.mixin.android.api.response.PaymentStatus
 import one.mixin.android.databinding.FragmentPreconditionBottomSheetBinding
+import one.mixin.android.db.property.PropertyHelper
 import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.dp
@@ -34,7 +35,6 @@ import one.mixin.android.ui.common.biometric.ValuableBiometricBottomSheetDialogF
 import one.mixin.android.ui.common.biometric.WithdrawBiometricItem
 import one.mixin.android.ui.common.biometric.displayAddress
 import one.mixin.android.ui.common.biometric.hasAddress
-import one.mixin.android.db.property.PropertyHelper
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.UserRelationship
@@ -262,11 +262,11 @@ class PreconditionBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     }
 
     private suspend fun isDuplicateTransferDisable() = withContext(Dispatchers.IO) {
-        !(PropertyHelper.findValueByKey(PREF_DUPLICATE_TRANSFER)?.toBoolean() ?: true)
+        !(PropertyHelper.findValueByKey(PREF_DUPLICATE_TRANSFER, true))
     }
 
     private suspend fun isStrangerTransferDisable() = withContext(Dispatchers.IO) {
-        !(PropertyHelper.findValueByKey(PREF_STRANGER_TRANSFER)?.toBoolean() ?: true)
+        !(PropertyHelper.findValueByKey(PREF_STRANGER_TRANSFER, true))
     }
 
     private fun startCountDown() {
