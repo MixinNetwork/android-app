@@ -37,7 +37,7 @@ class UrlInterpreterActivity : BaseActivity() {
         private const val CONVERSATIONS = "conversations"
         private const val DEVICE_TRANSFER = "device-transfer"
         private const val TIP = "tip"
-        private const val WC = "wc"
+        const val WC = "wc"
 
         fun show(context: Context, data: Uri) {
             Intent(context, UrlInterpreterActivity::class.java).apply {

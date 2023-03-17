@@ -27,6 +27,7 @@ import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
+import android.webkit.ConsoleMessage
 import android.webkit.JavascriptInterface
 import android.webkit.PermissionRequest
 import android.webkit.ValueCallback
@@ -58,6 +59,7 @@ import com.bumptech.glide.Glide
 import com.google.gson.Gson
 import com.google.gson.annotations.SerializedName
 import com.tbruyelle.rxpermissions2.RxPermissions
+import com.trustwallet.walletconnect.models.session.WCSession
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
@@ -100,6 +102,7 @@ import one.mixin.android.extension.toUri
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.session.Session
+import one.mixin.android.tip.wc.WalletConnectV1
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.BottomSheetViewModel
 import one.mixin.android.ui.common.info.createMenuLayout
@@ -462,7 +465,18 @@ class WebFragment : BaseFragment() {
                 },
             )
 
+        val wcEnable = defaultSharedPreferences.getBoolean(Constants.Debug.WALLET_CONNECT_DEBUG, false)
         webView.webChromeClient = object : WebChromeClient() {
+            override fun onConsoleMessage(consoleMessage: ConsoleMessage?): Boolean {
+                if (wcEnable && consoleMessage?.messageLevel() == ConsoleMessage.MessageLevel.LOG) {
+                    val wcUrl = consoleMessage.message()
+                    if (WCSession.from(wcUrl) != null) {
+                        WalletConnectV1.connect(wcUrl)
+                    }
+                }
+                return true
+            }
+
             override fun onShowCustomView(
                 view: View,
                 requestedOrientation: Int,
