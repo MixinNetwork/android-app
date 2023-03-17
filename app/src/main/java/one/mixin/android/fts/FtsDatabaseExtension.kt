@@ -42,7 +42,7 @@ private suspend fun FtsDatabase.insertMessageFts4(
 ) = withContext(FTS_THREAD) {
     if (messageMetaDao().checkMessageMetaExists(messageId)) return@withContext
     val docId = messageFtsDao().insertMessageFts(MessageFts(content))
-    messageMetaDao().insertMessageMate(
+    messageMetaDao().insertMessageMeta(
         MessagesMeta(docId, messageId, conversationId, category, userId, createdAt),
     )
 }

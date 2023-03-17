@@ -9,7 +9,7 @@ import androidx.room.Query
 interface MessageMetaDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun insertMessageMate(messagesMeta: MessagesMeta)
+    fun insertMessageMeta(messagesMeta: MessagesMeta)
 
     @Query("DELETE FROM messages_metas WHERE message_id = :messageId")
     fun deleteMessageMetasByMessageId(messageId: String)
