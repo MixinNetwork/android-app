@@ -4,9 +4,10 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import one.mixin.android.db.BaseDao
 
 @Dao
-interface MessageMetaDao {
+interface MessageMetaDao : BaseDao<MessagesMeta> {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insertMessageMeta(messagesMeta: MessagesMeta)

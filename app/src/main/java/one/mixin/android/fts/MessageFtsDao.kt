@@ -3,9 +3,10 @@ package one.mixin.android.fts
 import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.Query
+import one.mixin.android.db.BaseDao
 
 @Dao
-interface MessageFtsDao {
+interface MessageFtsDao : BaseDao<MessageFts> {
 
     @Insert
     fun insertMessageFts(fts: MessageFts): Long
