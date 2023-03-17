@@ -4,16 +4,18 @@ import androidx.lifecycle.LiveData
 import androidx.paging.DataSource
 import androidx.room.Dao
 import androidx.room.Query
+import androidx.room.RawQuery
 import androidx.room.RoomWarnings
+import androidx.sqlite.db.SupportSQLiteQuery
 import one.mixin.android.db.contants.AUDIOS
 import one.mixin.android.db.contants.DATA
 import one.mixin.android.db.contants.IMAGES
 import one.mixin.android.db.contants.LIVES
 import one.mixin.android.db.contants.TRANSCRIPTS
 import one.mixin.android.db.contants.VIDEOS
-import one.mixin.android.util.QueryMessage
 import one.mixin.android.vo.AttachmentMigration
 import one.mixin.android.vo.ConversationWithStatus
+import one.mixin.android.vo.FtsSearchResult
 import one.mixin.android.vo.HyperlinkItem
 import one.mixin.android.vo.MediaMessageMinimal
 import one.mixin.android.vo.Message
@@ -21,7 +23,7 @@ import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.MessageMedia
 import one.mixin.android.vo.MessageMinimal
 import one.mixin.android.vo.QuoteMessageItem
-import one.mixin.android.vo.SearchMessageItem
+import one.mixin.android.vo.SearchMessageDetailItem
 
 @Dao
 interface MessageDao : BaseDao<Message> {
@@ -226,21 +228,19 @@ interface MessageDao : BaseDao<Message> {
     @Query("SELECT count(id) FROM messages WHERE conversation_id = :conversationId AND quote_message_id = :messageId AND quote_content IS NULL")
     fun countMessageByQuoteId(conversationId: String, messageId: String): Int
 
+    @RawQuery
+    suspend fun fuzzySearchMessage(query: SupportSQLiteQuery): List<FtsSearchResult>
+
     @Query(
         """
-        SELECT m.conversation_id AS conversationId, c.icon_url AS conversationAvatarUrl,
-        c.name AS conversationName, c.category AS conversationCategory, count(m.id) as messageCount,
-        u.user_id AS userId, u.avatar_url AS userAvatarUrl, u.full_name AS userFullName
-        FROM messages m, (SELECT message_id FROM messages_fts4 WHERE messages_fts4 MATCH :query) fts
-        INNER JOIN users u ON c.owner_id = u.user_id
-        INNER JOIN conversations c ON c.conversation_id = m.conversation_id
-        WHERE m.id = fts.message_id
-        GROUP BY m.conversation_id
-        ORDER BY max(m.created_at) DESC
-        LIMIT :limit
-        """,
+        SELECT m.id AS messageId, u.user_id AS userId, u.avatar_url AS userAvatarUrl, u.full_name AS userFullName,
+        m.category AS type, m.content AS content, m.created_at AS createdAt, m.name AS mediaName 
+        FROM messages m INNER JOIN users u ON m.user_id = u.user_id 
+        WHERE  m.id IN (:ids)
+        ORDER BY m.created_at DESC
+    """,
     )
-    suspend fun fuzzySearchMessage(query: String, limit: Int): List<SearchMessageItem>
+    fun getSearchMessageDetailItemsByIds(ids: List<String>): List<SearchMessageDetailItem>
 
     @Query("SELECT m.category as type, m.id as messageId, m.media_url as mediaUrl FROM messages m WHERE m.conversation_id = :conversationId AND m.media_url IS NOT NULL AND m.media_status = 'DONE' LIMIT :limit OFFSET :offset")
     suspend fun getMediaMessageMinimalByConversationId(conversationId: String, limit: Int, offset: Int): List<MediaMessageMinimal>
@@ -262,6 +262,21 @@ interface MessageDao : BaseDao<Message> {
 
     @Query("SELECT conversation_id, user_id, status FROM messages WHERE id = :messageId")
     fun findMessageStatusById(messageId: String): ConversationWithStatus?
+
+    @Query(
+        """
+        SELECT m.* FROM messages m 
+        WHERE m.rowid < :rowId AND m.category IN ('SIGNAL_TEXT', 'PLAIN_TEXT', 'ENCRYPTED_TEXT', 'SIGNAL_TRANSCRIPT', 'PLAIN_TRANSCRIPT', 'ENCRYPTED_TRANSCRIPT', 
+        'SIGNAL_POST', 'PLAIN_POST', 'ENCRYPTED_POST', 'SIGNAL_DATA', 'PLAIN_DATA', 'ENCRYPTED_DATA', 'SIGNAL_CONTACT', 'PLAIN_CONTACT', 'ENCRYPTED_CONTACT', 'APP_CARD')
+        AND m.status != 'FAILED' AND m.status != 'UNKNOWN'
+        ORDER BY m.rowid DESC
+        LIMIT :limit
+    """,
+    )
+    fun findFtsMessages(rowId: Long, limit: Int): List<Message>
+
+    @Query("SELECT rowid FROM messages ORDER BY rowid DESC LIMIT 1")
+    fun getLastMessageRowId(): Long?
 
     // id not null means message exists
     @Query("SELECT id FROM messages WHERE id = :messageId")
@@ -357,16 +372,6 @@ interface MessageDao : BaseDao<Message> {
 
     @Query(
         """
-        SELECT id as message_id, content, name FROM messages 
-        WHERE category IN ('SIGNAL_TEXT', 'SIGNAL_DATA', 'SIGNAL_POST')
-        AND created_at > :after
-        LIMIT :limit OFFSET :offset
-        """,
-    )
-    suspend fun batchQueryMessages(limit: Int, offset: Int, after: Long): List<QueryMessage>
-
-    @Query(
-        """
         SELECT id, conversation_id, name, category, media_url, media_mine_type 
         FROM messages WHERE category IN ($IMAGES, $VIDEOS, $DATA, $AUDIOS) 
         AND media_status = 'DONE' AND rowid <= :rowId LIMIT :limit OFFSET :offset
@@ -379,6 +384,9 @@ interface MessageDao : BaseDao<Message> {
 
     @Query("SELECT rowid FROM messages ORDER BY rowid DESC LIMIT 1")
     fun getLastMessageRowid(): Long
+
+    @Query("SELECT rowid FROM messages WHERE id = :messageId")
+    fun getMessageRowid(messageId: String): Long?
 
     @Query("SELECT id FROM messages WHERE id = :messageId")
     suspend fun exists(messageId: String): String?
@@ -562,4 +570,7 @@ interface MessageDao : BaseDao<Message> {
 
     @Query("DELETE FROM messages WHERE id IN (SELECT id FROM messages WHERE conversation_id = :conversationId LIMIT :limit)")
     suspend fun deleteMessageByConversationId(conversationId: String, limit: Int)
+
+    @Query("DELETE FROM messages_fts4 WHERE rowid IN (SELECT rowid FROM messages_fts4 LIMIT 1000)")
+    fun deleteFts(): Int
 }

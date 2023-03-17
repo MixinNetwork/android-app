@@ -40,7 +40,7 @@ fun ICategory.isRecall() = type == MessageCategory.MESSAGE_RECALL.name
 fun ICategory.isPin() = type == MessageCategory.MESSAGE_PIN.name
 
 fun ICategory.isFtsMessage() =
-    type?.endsWith("_TEXT") == true || type?.endsWith("_DATA") == true || type?.endsWith("_POST") == true || type?.endsWith("_TRANSCRIPT") == true
+    type?.endsWith("_TEXT") == true || type?.endsWith("_DATA") == true || type?.endsWith("_POST") == true || type?.endsWith("_TRANSCRIPT") == true || type?.endsWith("_CONTACT") == true || type == MessageCategory.APP_CARD.name
 
 fun ICategory.isText() =
     type == MessageCategory.SIGNAL_TEXT.name || type == MessageCategory.PLAIN_TEXT.name || type == MessageCategory.ENCRYPTED_TEXT.name

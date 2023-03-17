@@ -46,7 +46,6 @@ import one.mixin.android.Constants.Account.PREF_BACKUP
 import one.mixin.android.Constants.Account.PREF_BATTERY_OPTIMIZE
 import one.mixin.android.Constants.Account.PREF_CHECK_STORAGE
 import one.mixin.android.Constants.Account.PREF_DEVICE_SDK
-import one.mixin.android.Constants.Account.PREF_FTS4_REDUCE
 import one.mixin.android.Constants.Account.PREF_SYNC_CIRCLE
 import one.mixin.android.Constants.CIRCLE.CIRCLE_ID
 import one.mixin.android.Constants.CIRCLE.CIRCLE_NAME
@@ -89,8 +88,8 @@ import one.mixin.android.extension.toast
 import one.mixin.android.job.AttachmentMigrationJob
 import one.mixin.android.job.BackupJob
 import one.mixin.android.job.CleanCacheJob
+import one.mixin.android.job.MigratedFts4Job
 import one.mixin.android.job.MixinJobManager
-import one.mixin.android.job.ReduceFts4Job
 import one.mixin.android.job.RefreshAccountJob
 import one.mixin.android.job.RefreshAssetsJob
 import one.mixin.android.job.RefreshCircleJob
@@ -342,12 +341,6 @@ class MainActivity : BlazeBaseActivity() {
             jobManager.addJobInBackground(RefreshFiatsJob())
         }
 
-        if (PropertyHelper.checkFts4Upgrade()) {
-            InitializeActivity.showFts(this@MainActivity)
-            finish()
-            return@launch
-        }
-
         val sdk = PropertyHelper.findValueByKey(PREF_DEVICE_SDK)?.toIntOrNull()
         if (sdk == null) {
             PropertyHelper.updateKeyValue(PREF_DEVICE_SDK, Build.VERSION.SDK_INT.toString())
@@ -370,10 +363,8 @@ class MainActivity : BlazeBaseActivity() {
         PropertyHelper.checkBackupMigrated {
             jobManager.addJobInBackground(BackupJob(force = true, delete = true))
         }
-
-        val ftsReduce = PropertyHelper.findValueByKey(PREF_FTS4_REDUCE)?.toBooleanStrictOrNull()
-        if (ftsReduce != false) {
-            jobManager.addJobInBackground(ReduceFts4Job())
+        PropertyHelper.checkFtsMigrated {
+            jobManager.addJobInBackground(MigratedFts4Job())
         }
 
         jobManager.addJobInBackground(RefreshContactJob())

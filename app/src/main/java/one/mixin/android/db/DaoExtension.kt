@@ -1,6 +1,5 @@
 package one.mixin.android.db
 
-import one.mixin.android.db.MixinDatabase.Companion.rawDelete
 import one.mixin.android.db.pending.PendingDatabase
 import one.mixin.android.session.Session
 import one.mixin.android.util.chat.InvalidateFlow
@@ -171,7 +170,7 @@ fun JobDao.insertNoReplace(job: Job) {
     }
 }
 
-// Delete SQL, Please use FtsDeleteJob to delete fts
+// Delete SQL
 fun MixinDatabase.deleteMessageById(messageId: String) {
     runInTransaction {
         pinMessageDao().deleteByMessageId(messageId)
@@ -257,12 +256,4 @@ fun MixinDatabase.insertMessage(message: Message) {
     messageDao().insert(message)
     conversationExtDao().increment(message.conversationId)
     conversationDao().updateLastMessageId(message.messageId, message.createdAt, message.conversationId)
-}
-
-fun deleteFtsByMessageId(messageId: String) {
-    rawDelete("messages_fts4", "message_id = ?", arrayOf(messageId))
-}
-
-fun deleteFtsByMessageIds(messageIds: List<String>) {
-    rawDelete("messages_fts4", "message_id IN (?)", arrayOf(messageIds.joinToString { it }))
 }

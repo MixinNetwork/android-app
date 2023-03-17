@@ -17,7 +17,6 @@ import one.mixin.android.crypto.Base64
 import one.mixin.android.crypto.SignalProtocol
 import one.mixin.android.crypto.requestResendKey
 import one.mixin.android.crypto.vo.RatchetStatus
-import one.mixin.android.db.deleteFtsByMessageId
 import one.mixin.android.db.insertMessage
 import one.mixin.android.db.insertNoReplace
 import one.mixin.android.db.insertUpdate
@@ -45,12 +44,14 @@ import one.mixin.android.extension.postOptimize
 import one.mixin.android.extension.putString
 import one.mixin.android.extension.toByteArray
 import one.mixin.android.extension.toSeconds
+import one.mixin.android.fts.deleteByMessageId
+import one.mixin.android.fts.insertFts4
+import one.mixin.android.fts.insertOrReplaceMessageFts4
 import one.mixin.android.job.BaseJob.Companion.PRIORITY_SEND_ATTACHMENT_MESSAGE
 import one.mixin.android.session.Session
 import one.mixin.android.ui.web.replaceApp
 import one.mixin.android.util.ColorUtil
 import one.mixin.android.util.GsonHelper
-import one.mixin.android.util.MessageFts4Helper
 import one.mixin.android.util.PENDING_DB_THREAD
 import one.mixin.android.util.chat.InvalidateFlow
 import one.mixin.android.util.hyperlink.parseHyperlink
@@ -286,6 +287,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
             }
         }
         insertMessage(message, data)
+        ftsDatabase.insertOrReplaceMessageFts4(message)
         updateRemoteMessageStatus(data.messageId, MessageStatus.DELIVERED)
         generateNotification(message, data)
     }
@@ -403,6 +405,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                 RxBus.publish(RecallEvent(msg.messageId))
                 messageDao.recallFailedMessage(msg.messageId)
                 messageDao.recallMessage(msg.messageId)
+                ftsDatabase.deleteByMessageId(msg.messageId)
                 messageDao.recallPinMessage(msg.messageId, msg.conversationId)
                 pinMessageDao.deleteByMessageId(msg.messageId)
                 messageMentionDao.deleteMessage(msg.messageId)
@@ -429,7 +432,6 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                     msg.createdAt,
                     msg.conversationId,
                 )
-                deleteFtsByMessageId(msg.messageId)
             }
             updateRemoteMessageStatus(data.messageId, MessageStatus.READ)
             messageHistoryDao.insert(MessageHistory(data.messageId))
@@ -618,7 +620,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                 }
                 val (mentions, mentionMe) = parseMentionData(plain, data.messageId, data.conversationId, userDao, messageMentionDao, data.userId)
                 insertMessage(message, data)
-                MessageFts4Helper.insertOrReplaceMessageFts4(message)
+                ftsDatabase.insertOrReplaceMessageFts4(message)
                 val userMap = mentions?.associate { it.identityNumber to it.fullName }
                 generateNotification(message, data, userMap, quoteMe || mentionMe)
             }
@@ -635,7 +637,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                     data.status,
                 )
                 insertMessage(message, data)
-                MessageFts4Helper.insertOrReplaceMessageFts4(message)
+                ftsDatabase.insertOrReplaceMessageFts4(message)
                 generateNotification(message, data)
             }
             data.category.endsWith("_LOCATION") -> {
@@ -714,7 +716,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                     )
                 }
                 insertMessage(message, data)
-                MessageFts4Helper.insertOrReplaceMessageFts4(message)
+                ftsDatabase.insertOrReplaceMessageFts4(message)
                 lifecycleScope.launch {
                     MixinApplication.appContext.autoDownload(autoDownloadDocument) {
                         jobManager.addJobInBackground(AttachmentDownloadJob(message))
@@ -781,7 +783,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                 insertMessage(message, data)
                 val fullName = user?.fullName
                 if (!fullName.isNullOrBlank()) {
-                    MessageFts4Helper.insertOrReplaceMessageFts4(message, fullName)
+                    ftsDatabase.insertOrReplaceMessageFts4(message)
                 }
                 generateNotification(message, data)
             }
@@ -859,7 +861,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                     }
                 }
             }
-        MessageFts4Helper.insertMessageFts4(data.messageId, stringBuilder.toString())
+        ftsDatabase.insertFts4(stringBuilder.toString(), data.conversationId, data.messageId, data.category, data.userId, data.createdAt)
 
         transcripts.filter { t -> t.isSticker() || t.isContact() }.forEach { transcript ->
             transcript.stickerId?.let { stickerId ->

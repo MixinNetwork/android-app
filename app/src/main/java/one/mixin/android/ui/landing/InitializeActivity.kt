@@ -10,7 +10,6 @@ import one.mixin.android.databinding.ActivityLandingBinding
 import one.mixin.android.extension.replaceFragment
 import one.mixin.android.ui.common.BaseActivity
 import one.mixin.android.ui.landing.UpgradeFragment.Companion.TYPE_DB
-import one.mixin.android.ui.landing.UpgradeFragment.Companion.TYPE_FTS
 import one.mixin.android.util.viewBinding
 
 @AndroidEntryPoint
@@ -23,14 +22,12 @@ class InitializeActivity : BaseActivity() {
         setContentView(binding.root)
         val setName = intent.getBooleanExtra(SET_NAME, false)
         val wrongTime = intent.getBooleanExtra(WRONG_TIME, false)
-        val ftsUpgrade = intent.getBooleanExtra(FTS_UPGRADE, false)
         val oldVersion = intent.getBooleanExtra(OLD_VERSION, false)
         val dbUpgrade = intent.getBooleanExtra(DB_UPGRADE, false)
         when {
             setName -> replaceFragment(SetupNameFragment.newInstance(), R.id.container)
             wrongTime -> replaceFragment(TimeFragment.newInstance(), R.id.container)
             oldVersion -> replaceFragment(OldVersionFragment.newInstance(), R.id.container)
-            ftsUpgrade -> replaceFragment(UpgradeFragment.newInstance(TYPE_FTS), R.id.container)
             dbUpgrade -> replaceFragment(UpgradeFragment.newInstance(TYPE_DB), R.id.container)
             else -> replaceFragment(
                 LoadingFragment.newInstance(),
@@ -46,7 +43,6 @@ class InitializeActivity : BaseActivity() {
     companion object {
         const val SET_NAME = "set_name"
         const val WRONG_TIME = "wrong_time"
-        const val FTS_UPGRADE = "fts_upgrade"
         const val OLD_VERSION = "old_version"
         const val DB_UPGRADE = "db_upgrade"
 
@@ -54,14 +50,12 @@ class InitializeActivity : BaseActivity() {
             context: Context,
             setName: Boolean = false,
             wrongTime: Boolean = false,
-            ftsUpgrade: Boolean = false,
             oldVersion: Boolean = false,
             dbUpgrade: Boolean = false,
         ): Intent {
             return Intent(context, InitializeActivity::class.java).apply {
                 this.putExtra(SET_NAME, setName)
                 this.putExtra(WRONG_TIME, wrongTime)
-                this.putExtra(FTS_UPGRADE, ftsUpgrade)
                 this.putExtra(OLD_VERSION, oldVersion)
                 this.putExtra(DB_UPGRADE, dbUpgrade)
             }
@@ -98,10 +92,6 @@ class InitializeActivity : BaseActivity() {
 
         fun showSetupName(context: Context) {
             context.startActivity(getIntent(context, setName = true))
-        }
-
-        fun showFts(context: Context) {
-            context.startActivity(getIntent(context, ftsUpgrade = true))
         }
 
         fun showDBUpgrade(context: Context) {

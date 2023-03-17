@@ -22,3 +22,7 @@ val FLOOD_THREAD by lazy {
 val SINGLE_THREAD by lazy {
     Executors.newSingleThreadExecutor().asCoroutineDispatcher()
 }
+
+val FTS_THREAD by lazy {
+    Executors.newSingleThreadExecutor().asCoroutineDispatcher()
+}

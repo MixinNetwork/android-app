@@ -4,7 +4,7 @@ import com.birbit.android.jobqueue.Params
 import kotlinx.coroutines.runBlocking
 import one.mixin.android.Constants.DB_DELETE_LIMIT
 import one.mixin.android.db.deleteMessageByIds
-import one.mixin.android.job.NotificationGenerator.conversationExtDao
+import one.mixin.android.fts.deleteByMessageIds
 import one.mixin.android.util.chat.InvalidateFlow
 
 class MessageDeleteJob(
@@ -30,7 +30,7 @@ class MessageDeleteJob(
                 lastRowId,
                 DB_DELETE_LIMIT,
             )
-            jobManager.addJobInBackground(MessageFtsDeleteJob(ids))
+            ftsDatabase.deleteByMessageIds(ids)
             appDatabase.deleteMessageByIds(ids)
         }
         val currentRowId = messageDao.findLastMessageRowId(conversationId)
