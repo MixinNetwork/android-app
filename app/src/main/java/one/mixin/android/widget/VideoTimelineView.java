@@ -15,6 +15,7 @@ import android.view.View;
 
 import java.util.ArrayList;
 
+import one.mixin.android.util.CrashExceptionReportKt;
 import timber.log.Timber;
 
 public class VideoTimelineView extends View {
@@ -137,9 +138,15 @@ public class VideoTimelineView extends View {
     public void setVideoPath(String path) {
         destroy();
         mediaMetadataRetriever = new MediaMetadataRetriever();
-        mediaMetadataRetriever.setDataSource(path);
-        videoLength = Long.valueOf(mediaMetadataRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION));
-        invalidate();
+        try {
+            mediaMetadataRetriever.setDataSource(path);
+            videoLength = Long.valueOf(mediaMetadataRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION));
+            invalidate();
+        } catch (IllegalArgumentException e) {
+            CrashExceptionReportKt.reportException(e);
+            videoLength = 0L;
+            invalidate();
+        }
     }
 
     public void setDelegate(VideoTimelineViewDelegate delegate) {

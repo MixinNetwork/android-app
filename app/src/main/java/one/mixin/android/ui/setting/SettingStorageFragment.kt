@@ -91,6 +91,7 @@ class SettingStorageFragment : BaseFragment(R.layout.fragment_storage) {
         }
         lifecycleScope.launch {
             val list = measureTimeMillis("StorageUsage") { viewModel.getConversationStorageUsage(requireContext()) }
+            if (viewDestroyed()) return@launch
             binding.progress.isVisible = false
             adapter.setData(list)
         }
