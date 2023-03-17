@@ -137,7 +137,7 @@ import one.mixin.android.ui.tip.TryConnecting
 import one.mixin.android.util.BiometricUtil
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.ErrorHandler.Companion.errorHandler
-import one.mixin.android.util.PropertyHelper
+import one.mixin.android.db.property.PropertyHelper
 import one.mixin.android.util.RomUtil
 import one.mixin.android.util.RootUtil
 import one.mixin.android.util.reportException
@@ -343,7 +343,7 @@ class MainActivity : BlazeBaseActivity() {
 
         val sdk = PropertyHelper.findValueByKey(PREF_DEVICE_SDK)?.toIntOrNull()
         if (sdk == null) {
-            PropertyHelper.updateKeyValue(PREF_DEVICE_SDK, Build.VERSION.SDK_INT.toString())
+            PropertyHelper.updateKeyValue(PREF_DEVICE_SDK, Build.VERSION.SDK_INT)
         } else if (sdk < Build.VERSION_CODES.Q && Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             PropertyHelper.migration()
         }

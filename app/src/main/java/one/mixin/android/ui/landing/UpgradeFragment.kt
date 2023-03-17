@@ -17,7 +17,7 @@ import one.mixin.android.db.runInTransaction
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.home.MainActivity
-import one.mixin.android.util.PropertyHelper
+import one.mixin.android.db.property.PropertyHelper
 import one.mixin.android.util.viewBinding
 
 @AndroidEntryPoint

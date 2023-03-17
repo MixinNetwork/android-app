@@ -19,7 +19,7 @@ import one.mixin.android.Constants.BackUp.BACKUP_PERIOD
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.extension.toast
-import one.mixin.android.util.PropertyHelper
+import one.mixin.android.db.property.PropertyHelper
 import one.mixin.android.util.backup.BackupLiveData
 import one.mixin.android.util.backup.BackupNotification
 import one.mixin.android.util.backup.Result
@@ -90,7 +90,7 @@ class BackupJob(private val force: Boolean = false, private val delete: Boolean 
                             this.launch {
                                 PropertyHelper.updateKeyValue(
                                     BACKUP_LAST_TIME,
-                                    System.currentTimeMillis().toString(),
+                                    System.currentTimeMillis(),
                                 )
                             }
                             toast(R.string.Backup_success)
@@ -108,7 +108,7 @@ class BackupJob(private val force: Boolean = false, private val delete: Boolean 
                             this.launch {
                                 PropertyHelper.updateKeyValue(
                                     BACKUP_LAST_TIME,
-                                    System.currentTimeMillis().toString(),
+                                    System.currentTimeMillis(),
                                 )
                             }
                             toast(R.string.Backup_success)

@@ -29,7 +29,7 @@ import one.mixin.android.extension.getAutoDownloadWifiValue
 import one.mixin.android.extension.layoutInflater
 import one.mixin.android.extension.putInt
 import one.mixin.android.ui.common.BaseFragment
-import one.mixin.android.util.PropertyHelper
+import one.mixin.android.db.property.PropertyHelper
 import one.mixin.android.util.viewBinding
 
 @AndroidEntryPoint
@@ -148,7 +148,7 @@ class SettingDataStorageFragment : BaseFragment(R.layout.fragment_storage_data) 
                     localValue += (AUTO_DOWNLOAD_DOCUMENT)
                 }
                 lifecycleScope.launch {
-                    PropertyHelper.updateKeyValue(key, localValue.toString())
+                    PropertyHelper.updateKeyValue(key, localValue)
                     defaultSharedPreferences.putInt(key, localValue)
                     refresh()
                     dialog.dismiss()

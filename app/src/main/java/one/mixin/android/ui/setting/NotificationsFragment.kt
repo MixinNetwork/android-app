@@ -24,7 +24,7 @@ import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.editDialog
 import one.mixin.android.util.ChannelManager
-import one.mixin.android.util.PropertyHelper
+import one.mixin.android.db.property.PropertyHelper
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.Fiats
 

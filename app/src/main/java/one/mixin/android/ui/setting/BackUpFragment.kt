@@ -39,7 +39,7 @@ import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.job.BackupJob
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.ui.common.BaseFragment
-import one.mixin.android.util.PropertyHelper
+import one.mixin.android.db.property.PropertyHelper
 import one.mixin.android.util.backup.Result
 import one.mixin.android.util.backup.canUserAccessBackupDirectory
 import one.mixin.android.util.backup.delete
@@ -199,7 +199,7 @@ class BackUpFragment : BaseFragment(R.layout.fragment_backup) {
         builder.setSingleChoiceItems(options, checkedItem) { dialog, which ->
             binding.backupAutoTv.text = options[which]
             lifecycleScope.launch {
-                PropertyHelper.updateKeyValue(BACKUP_PERIOD, which.toString())
+                PropertyHelper.updateKeyValue(BACKUP_PERIOD, which)
             }
             dialog.dismiss()
         }
@@ -222,7 +222,7 @@ class BackUpFragment : BaseFragment(R.layout.fragment_backup) {
         ) { _, _, isChecked ->
             checked = isChecked
             lifecycleScope.launch {
-                PropertyHelper.updateKeyValue(BACKUP_MEDIA, checked.toString())
+                PropertyHelper.updateKeyValue(BACKUP_MEDIA, checked)
             }
         }
         builder.setPositiveButton(R.string.Backup) { dialog, _ ->

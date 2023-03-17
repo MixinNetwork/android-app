@@ -5,7 +5,7 @@ import kotlinx.coroutines.runBlocking
 import one.mixin.android.extension.joinWhiteSpace
 import one.mixin.android.fts.insertFts4
 import one.mixin.android.fts.insertOrReplaceMessageFts4
-import one.mixin.android.util.PropertyHelper
+import one.mixin.android.db.property.PropertyHelper
 import one.mixin.android.vo.isContact
 import one.mixin.android.vo.isData
 import one.mixin.android.vo.isPost
@@ -27,7 +27,7 @@ class MigratedFts4Job : BaseJob(Params(PRIORITY_LOWER).groupBy(GROUP_ID).persist
         if (lastRowId == 0L) { // Get the rowid of the current last message
             val currentLastId = messageDao.getLastMessageRowId()
             if (currentLastId == null) { // No data, no migration required
-                PropertyHelper.updateKeyValue(FTS_NEED_MIGRATED_LAST_ROW_ID, "-1")
+                PropertyHelper.updateKeyValue(FTS_NEED_MIGRATED_LAST_ROW_ID, -1)
                 return@runBlocking
             } else {
                 lastRowId = currentLastId + 1 // It is easy to obtain data that is less than or equal to it.
@@ -54,11 +54,11 @@ class MigratedFts4Job : BaseJob(Params(PRIORITY_LOWER).groupBy(GROUP_ID).persist
             }
         }
         if (messages.size < MIGRATED_LIMIT) {
-            PropertyHelper.updateKeyValue(FTS_NEED_MIGRATED_LAST_ROW_ID, "-1")
-            PropertyHelper.updateKeyValue(ClearFts4Job.FTS_CLEAR, "true")
+            PropertyHelper.updateKeyValue(FTS_NEED_MIGRATED_LAST_ROW_ID, -1)
+            PropertyHelper.updateKeyValue(ClearFts4Job.FTS_CLEAR, true)
         } else {
             lastRowId = messageDao.getMessageRowid(messages.last().messageId) ?: lastRowId
-            PropertyHelper.updateKeyValue(FTS_NEED_MIGRATED_LAST_ROW_ID, "$lastRowId")
+            PropertyHelper.updateKeyValue(FTS_NEED_MIGRATED_LAST_ROW_ID, lastRowId)
             jobManager.addJobInBackground(MigratedFts4Job())
         }
         Timber.e("Migrated size:${messages.size} - last id:$lastRowId")

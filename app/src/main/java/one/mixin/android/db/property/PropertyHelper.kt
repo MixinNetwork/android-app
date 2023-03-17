@@ -1,4 +1,4 @@
-package one.mixin.android.util
+package one.mixin.android.db.property
 
 import android.os.Build
 import one.mixin.android.Constants.Account.Migration.PREF_MIGRATION_ATTACHMENT
@@ -87,6 +87,18 @@ object PropertyHelper {
     suspend fun updateKeyValue(key: String, value: String) {
         val propertyDao = MixinDatabase.getDatabase(MixinApplication.appContext).propertyDao()
         propertyDao.insertSuspend(Property(key, value, nowInUtc()))
+    }
+
+    suspend fun updateKeyValue(key: String, value: Long) {
+        updateKeyValue(key, value.toString())
+    }
+
+    suspend fun updateKeyValue(key: String, value: Int) {
+        updateKeyValue(key, value.toString())
+    }
+
+    suspend fun updateKeyValue(key: String, value: Boolean) {
+        updateKeyValue(key, value.toString())
     }
 
     suspend fun findValueByKey(key: String): String? {

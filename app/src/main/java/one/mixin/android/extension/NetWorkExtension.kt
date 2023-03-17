@@ -12,7 +12,7 @@ import one.mixin.android.Constants
 import one.mixin.android.Constants.Download.MOBILE_DEFAULT
 import one.mixin.android.Constants.Download.ROAMING_DEFAULT
 import one.mixin.android.Constants.Download.WIFI_DEFAULT
-import one.mixin.android.util.PropertyHelper
+import one.mixin.android.db.property.PropertyHelper
 import timber.log.Timber
 
 val autoDownloadPhoto: suspend (value: Int) -> Boolean = {

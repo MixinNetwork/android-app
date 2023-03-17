@@ -34,7 +34,7 @@ import one.mixin.android.ui.common.biometric.ValuableBiometricBottomSheetDialogF
 import one.mixin.android.ui.common.biometric.WithdrawBiometricItem
 import one.mixin.android.ui.common.biometric.displayAddress
 import one.mixin.android.ui.common.biometric.hasAddress
-import one.mixin.android.util.PropertyHelper
+import one.mixin.android.db.property.PropertyHelper
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.UserRelationship

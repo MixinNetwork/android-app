@@ -63,7 +63,7 @@ import one.mixin.android.ui.setting.ui.compose.MixinBottomSheetDialog
 import one.mixin.android.ui.setting.ui.compose.MixinTopAppBar
 import one.mixin.android.ui.setting.ui.theme.MixinAppTheme
 import one.mixin.android.util.ChannelManager
-import one.mixin.android.util.PropertyHelper
+import one.mixin.android.db.property.PropertyHelper
 import one.mixin.android.vo.Fiats
 import timber.log.Timber
 
@@ -126,7 +126,7 @@ fun NotificationsPage() {
                         duplicateTransferSelected = !duplicateTransferSelected
                         PropertyHelper.updateKeyValue(
                             Constants.Account.PREF_DUPLICATE_TRANSFER,
-                            duplicateTransferSelected.toString(),
+                            duplicateTransferSelected,
                         )
                     }
                 },
