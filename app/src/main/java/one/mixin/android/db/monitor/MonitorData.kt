@@ -11,8 +11,6 @@ class MonitorData(private var createdTime: Long, private var isDeferred: Boolean
             isDeferred = isDeferred.not()
         }
         statements.add(sql)
-        // if (args.isEmpty()) statements.add(sql)
-        // else statements.add("$sql $args")
     }
 
     override fun toString(): String {

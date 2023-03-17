@@ -27,7 +27,7 @@ abstract class FtsDatabase : RoomDatabase() {
                         context,
                         FtsDatabase::class.java,
                         "fts.db",
-                    ).enableMultiInstanceInvalidation().addCallback(
+                    ).addCallback(
                         object : Callback() {
                             override fun onOpen(db: SupportSQLiteDatabase) {
                                 super.onOpen(db)
