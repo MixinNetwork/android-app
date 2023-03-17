@@ -1,16 +1,11 @@
 package one.mixin.android.fts
 
 import androidx.room.Dao
-import androidx.room.Insert
-import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import one.mixin.android.db.BaseDao
 
 @Dao
 interface MessageMetaDao : BaseDao<MessagesMeta> {
-
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun insertMessageMeta(messagesMeta: MessagesMeta)
 
     @Query("DELETE FROM messages_metas WHERE message_id = :messageId")
     fun deleteMessageMetasByMessageId(messageId: String)
