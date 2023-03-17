@@ -101,7 +101,20 @@ object PropertyHelper {
         val propertyDao = MixinDatabase.getDatabase(MixinApplication.appContext).propertyDao()
         val value = propertyDao.findValueByKey(key) ?: return default
         return try {
-            value as T
+            when (default) {
+                is Int -> {
+                    value.toIntOrNull() ?: default
+                }
+                is Long -> {
+                    value.toIntOrNull() ?: default
+                }
+                is Boolean->{
+                    value.toBooleanStrictOrNull() ?: default
+                }
+                else -> {
+                    value
+                }
+            } as T
         } catch (e: Exception) {
             default
         }
