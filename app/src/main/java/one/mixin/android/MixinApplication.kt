@@ -129,11 +129,13 @@ open class MixinApplication :
     lateinit var applicationScope: CoroutineScope
 
     override fun onCreate() {
+        appContext = applicationContext
+        Timber.e("MX app onCreate")
         super.onCreate()
         init()
         registerActivityLifecycleCallbacks(this)
         SignalProtocolLoggerProvider.setProvider(MixinSignalProtocolLogger())
-        appContext = applicationContext
+        Timber.e("MX app SignalProtocolLoggerProvider")
         RxJavaPlugins.setErrorHandler {}
         AppCenter.start(
             this,
@@ -141,12 +143,14 @@ open class MixinApplication :
             Analytics::class.java,
             Crashes::class.java,
         )
+        Timber.e("MX app AppCenter")
         if (useMapbox()) {
             AppInitializer.getInstance(this)
                 .initializeComponent(MapboxMapsInitializer::class.java)
+            Timber.e("MX app Mapbox")
         }
-
         initNativeLibs(applicationContext)
+        Timber.e("MX app initNativeLibs")
 
         registerComponentCallbacks(MemoryCallback())
         Thread.setDefaultUncaughtExceptionHandler { thread, throwable ->
@@ -157,6 +161,7 @@ open class MixinApplication :
         applicationScope.launch {
             entityInitialize()
         }
+        Timber.e("MX app onCreate end")
     }
 
     override fun onConfigurationChanged(newConfig: android.content.res.Configuration) {
@@ -169,8 +174,11 @@ open class MixinApplication :
 
     @SuppressLint("DiscouragedPrivateApi")
     private fun init() {
+        Timber.e("MX app init")
         CronetProviderInstaller.installProvider(this)
+        Timber.e("MX app init installProvider")
         CursorWindowFixer.fix(this)
+        Timber.e("MX app init CursorWindowFixer")
         if (BuildConfig.DEBUG) {
             Timber.plant(Timber.DebugTree(), FileLogTree())
             // ignore known leaks
@@ -187,6 +195,7 @@ open class MixinApplication :
         } else {
             Timber.plant(FileLogTree())
         }
+        Timber.e("MX app init end")
     }
 
     override fun getWorkManagerConfiguration(): Configuration {
@@ -279,9 +288,11 @@ open class MixinApplication :
         MutableContextWrapper(this@MixinApplication)
     }
     override fun onActivityCreated(activity: Activity, savedInstanceState: Bundle?) {
+        Timber.e("MX app onActivityCreated ${activity.javaClass.simpleName}")
     }
 
     override fun onActivityStarted(activity: Activity) {
+        Timber.e("MX app onActivityStarted ${activity.javaClass.simpleName}")
         if (activity !is AppAuthActivity) {
             activityReferences += 1
         } else {
@@ -299,6 +310,7 @@ open class MixinApplication :
     }
 
     override fun onActivityResumed(activity: Activity) {
+        Timber.e("MX app onActivityResumed ${activity.javaClass.simpleName}")
         contextWrapper.baseContext = activity
         topActivity = activity
         activityInForeground = true
@@ -306,6 +318,7 @@ open class MixinApplication :
     }
 
     override fun onActivityPaused(activity: Activity) {
+        Timber.e("MX app onActivityPaused ${activity.javaClass.simpleName}")
         activityInForeground = false
         applicationScope.launch {
             delay(200)
@@ -320,6 +333,7 @@ open class MixinApplication :
     fun isAppAuthShown(): Boolean = appAuthShown
 
     override fun onActivityStopped(activity: Activity) {
+        Timber.e("MX app onActivityStopped ${activity.javaClass.simpleName}")
         isActivityChangingConfigurations = activity.isChangingConfigurations
         if (contextWrapper.baseContext == activity) {
             contextWrapper.baseContext = this@MixinApplication
@@ -338,6 +352,7 @@ open class MixinApplication :
     }
 
     override fun onActivityDestroyed(activity: Activity) {
+        Timber.e("MX app onActivityDestroyed ${activity.javaClass.simpleName}")
         if (activity == currentActivity) currentActivity = null
         if (activity == topActivity) topActivity = null
     }

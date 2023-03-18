@@ -13,6 +13,7 @@ import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.defaultThemeId
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.util.SystemUIManager
+import timber.log.Timber
 
 @SuppressLint("Registered")
 open class BaseActivity : AppCompatActivity() {
@@ -25,6 +26,7 @@ open class BaseActivity : AppCompatActivity() {
     protected var skipSystemUi: Boolean = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        Timber.e("MX BaseActivity onCreate")
         super.onCreate(savedInstanceState)
         if (isNightMode()) {
             setTheme(getNightThemeId())
@@ -34,6 +36,7 @@ open class BaseActivity : AppCompatActivity() {
         if (!skipSystemUi) {
             window.navigationBarColor = colorFromAttribute(R.attr.bg_white)
         }
+        Timber.e("MX BaseActivity onCreate end")
     }
 
     override fun setContentView(layoutResID: Int) {

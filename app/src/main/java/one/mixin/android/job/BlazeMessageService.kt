@@ -95,6 +95,7 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
         const val ACTION_ACTIVITY_PAUSE = "action_activity_pause"
 
         fun startService(ctx: Context, action: String? = null) {
+            Timber.e("MX BlazeMessageService startService")
             val intent = Intent(ctx, BlazeMessageService::class.java).apply {
                 this.action = action
             }
@@ -103,6 +104,7 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
             } catch (e: Exception) {
                 reportException(IllegalStateException("Can't start service, action:$action, ${e.message}"))
             }
+            Timber.e("MX BlazeMessageService end")
         }
 
         fun stopService(ctx: Context) {
@@ -179,6 +181,7 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
 
     @SuppressLint("AutoDispose")
     override fun onCreate() {
+        Timber.e("MX BlazeMessageService onCreate")
         super.onCreate()
         webSocket.setWebSocketObserver(this)
         webSocket.connect()
@@ -216,9 +219,11 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
                     }
                 }
         }
+        Timber.e("MX BlazeMessageService onCreate end")
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        Timber.e("MX BlazeMessageService onStartCommand")
         super.onStartCommand(intent, flags, startId)
         updateIgnoringBatteryOptimizations()
 
@@ -235,6 +240,7 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
         if (!isIgnoringBatteryOptimizations) {
             setForegroundIfNecessary()
         }
+        Timber.e("MX BlazeMessageService onStartCommand end")
         return START_STICKY
     }
 

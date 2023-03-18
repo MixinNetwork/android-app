@@ -149,6 +149,7 @@ import one.mixin.android.vo.Participant
 import one.mixin.android.vo.ParticipantRole
 import one.mixin.android.vo.isGroupConversation
 import one.mixin.android.widget.MaterialSearchView
+import timber.log.Timber
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -203,6 +204,7 @@ class MainActivity : BlazeBaseActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        Timber.e("MX MainActivity onCreate")
         navigationController = NavigationController(this)
 
         var deviceId = defaultSharedPreferences.getString(DEVICE_ID, null)
@@ -263,14 +265,16 @@ class MainActivity : BlazeBaseActivity() {
             finish()
             return
         }
-
+        Timber.e("MX MainActivity onCreate check end")
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        Timber.e("MX MainActivity onCreate setContentView")
+
 
         if (savedInstanceState == null) {
             navigationController.navigateToMessage()
         }
-
+        Timber.e("MX MainActivity onCreate navigateToMessage")
         val account = Session.getAccount()
         account?.let {
             FirebaseCrashlytics.getInstance().setUserId(it.userId)
@@ -278,9 +282,11 @@ class MainActivity : BlazeBaseActivity() {
         }
 
         initView()
+        Timber.e("MX MainActivity init view end")
         handlerCode(intent)
-
+        Timber.e("MX MainActivity handlerCode end")
         checkAsync()
+        Timber.e("MX MainActivity checkAsync end")
 
         RxBus.listen(TipEvent::class.java)
             .autoDispose(destroyScope)
@@ -295,6 +301,7 @@ class MainActivity : BlazeBaseActivity() {
             }
             checkUpdate()
         }
+        Timber.e("MX MainActivity onCreate end")
     }
 
     override fun onStart() {
