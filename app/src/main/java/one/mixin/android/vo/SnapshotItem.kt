@@ -67,10 +67,10 @@ data class SnapshotItem(
     val snapshotHash: String?,
     @SerializedName("opening_balance")
     @ColumnInfo(name = "opening_balance")
-    val openingBalance: String,
+    val openingBalance: String?,
     @SerializedName("closing_balance")
     @ColumnInfo(name = "closing_balance")
-    val closingBalance: String,
+    val closingBalance: String?,
 ) : Parcelable {
     companion object {
         val DIFF_CALLBACK = object : DiffUtil.ItemCallback<SnapshotItem>() {

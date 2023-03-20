@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 49,
-    "identityHash": "c704b126ff5e16615d1289e5faeb567e",
+    "identityHash": "cc8ffcc83210bd22e359e71f250d98fd",
     "entities": [
       {
         "tableName": "users",
@@ -768,7 +768,7 @@
       },
       {
         "tableName": "snapshots",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`snapshot_id` TEXT NOT NULL, `type` TEXT NOT NULL, `asset_id` TEXT NOT NULL, `amount` TEXT NOT NULL, `created_at` TEXT NOT NULL, `opponent_id` TEXT, `trace_id` TEXT, `transaction_hash` TEXT, `sender` TEXT, `receiver` TEXT, `memo` TEXT, `confirmations` INTEGER, `snapshot_hash` TEXT, `opening_balance` TEXT NOT NULL, `closing_balance` TEXT NOT NULL, PRIMARY KEY(`snapshot_id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`snapshot_id` TEXT NOT NULL, `type` TEXT NOT NULL, `asset_id` TEXT NOT NULL, `amount` TEXT NOT NULL, `created_at` TEXT NOT NULL, `opponent_id` TEXT, `trace_id` TEXT, `transaction_hash` TEXT, `sender` TEXT, `receiver` TEXT, `memo` TEXT, `confirmations` INTEGER, `snapshot_hash` TEXT, `opening_balance` TEXT, `closing_balance` TEXT, PRIMARY KEY(`snapshot_id`))",
         "fields": [
           {
             "fieldPath": "snapshotId",
@@ -852,13 +852,13 @@
             "fieldPath": "openingBalance",
             "columnName": "opening_balance",
             "affinity": "TEXT",
-            "notNull": true
+            "notNull": false
           },
           {
             "fieldPath": "closingBalance",
             "columnName": "closing_balance",
             "affinity": "TEXT",
-            "notNull": true
+            "notNull": false
           }
         ],
         "primaryKey": {
@@ -2298,7 +2298,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'c704b126ff5e16615d1289e5faeb567e')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'cc8ffcc83210bd22e359e71f250d98fd')"
     ]
   }
 }

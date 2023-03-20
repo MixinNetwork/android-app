@@ -303,9 +303,9 @@ interface TransactionInterface {
             transactionIdTv.text = snapshot.snapshotId
             transactionTypeTv.text = getSnapshotType(fragment, snapshot.type)
             memoTv.text = snapshot.memo
-            openingBalanceLayout.isVisible = snapshot.openingBalance.isNotBlank()
+            openingBalanceLayout.isVisible = !snapshot.openingBalance.isNullOrBlank()
             openingBalanceTv.text = "${snapshot.openingBalance} ${asset.symbol}"
-            closingBalanceLayout.isVisible = snapshot.openingBalance.isNotBlank()
+            closingBalanceLayout.isVisible = !snapshot.closingBalance.isNullOrBlank()
             closingBalanceTv.text = "${snapshot.closingBalance} ${asset.symbol}"
             snapshotHashLayout.isVisible = !snapshot.snapshotHash.isNullOrBlank()
             snapshotHashTv.text = snapshot.snapshotHash
