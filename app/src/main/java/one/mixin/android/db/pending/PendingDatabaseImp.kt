@@ -10,6 +10,7 @@ import androidx.room.InvalidationTracker
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.sqlite.db.SupportSQLiteDatabase
+import one.mixin.android.Constants.DataBase.PENDING_DB_NAME
 import one.mixin.android.db.FloodMessageDao
 import one.mixin.android.db.JobDao
 import one.mixin.android.db.insertNoReplace
@@ -44,7 +45,7 @@ abstract class PendingDatabaseImp : RoomDatabase(), PendingDatabase {
                     val builder = Room.databaseBuilder(
                         context,
                         PendingDatabaseImp::class.java,
-                        "pending.db",
+                        PENDING_DB_NAME,
                     ).enableMultiInstanceInvalidation().addCallback(
                         object : Callback() {
                             override fun onOpen(db: SupportSQLiteDatabase) {
