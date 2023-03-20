@@ -57,13 +57,6 @@ suspend fun clearDatabase(context: Context) = withContext(Dispatchers.IO) {
             File("$it${File.separator}${Constants.DataBase.DB_NAME}-journal").delete()
         }
         dbFile.delete()
-        withContext(Dispatchers.Main) {
-            val entryPoint = EntryPointAccessors.fromApplication(
-                MixinApplication.get(),
-                MixinApplication.AppEntryPoint::class.java,
-            )
-            entryPoint.inject(MixinApplication.get())
-        }
     } catch (e: Exception) {
         Timber.e(e)
     }
