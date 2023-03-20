@@ -23,12 +23,11 @@ import one.mixin.android.extension.heavyClickVibrate
 import one.mixin.android.extension.isServiceRunning
 import one.mixin.android.extension.notificationManager
 import one.mixin.android.extension.supportsOreo
-import one.mixin.android.job.BlazeMessageService
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.repository.ConversationRepository
 import one.mixin.android.session.Session
 import one.mixin.android.ui.call.CallNotificationBuilder
-import one.mixin.android.util.ChannelManager
+import one.mixin.android.ui.call.CallNotificationBuilder.Companion.CHANNEL_CALL
 import one.mixin.android.util.reportException
 import one.mixin.android.vo.CallStateLiveData
 import one.mixin.android.vo.Message
@@ -301,16 +300,14 @@ abstract class CallService : LifecycleService(), PeerConnectionClient.PeerConnec
 
         supportsOreo {
             val channel = NotificationChannel(
-                BlazeMessageService.CHANNEL_NODE,
-                MixinApplication.get().getString(R.string.Messaging_Node),
-                NotificationManager.IMPORTANCE_LOW,
+                CHANNEL_CALL,
+                MixinApplication.get().getString(R.string.Call),
+                NotificationManager.IMPORTANCE_HIGH,
             )
-            channel.lockscreenVisibility = Notification.VISIBILITY_SECRET
+            channel.lockscreenVisibility = Notification.VISIBILITY_PUBLIC
             channel.setSound(null, null)
             channel.setShowBadge(false)
-            supportsOreo {
-                ChannelManager.createNodeChannel(notificationManager)
-            }
+            notificationManager.createNotificationChannel(channel)
             CallNotificationBuilder.getCallNotification(this, callState)?.let {
                 try {
                     startForeground(CallNotificationBuilder.WEBRTC_NOTIFICATION, it)
