@@ -54,6 +54,7 @@ suspend fun clearDatabase(context: Context) = withContext(Dispatchers.IO) {
         dbFile.parent?.let {
             File("$it${File.separator}${Constants.DataBase.DB_NAME}-shm").delete()
             File("$it${File.separator}${Constants.DataBase.DB_NAME}-wal").delete()
+            File("$it${File.separator}${Constants.DataBase.DB_NAME}-journal").delete()
         }
         dbFile.delete()
         withContext(Dispatchers.Main) {
@@ -77,6 +78,7 @@ suspend fun clearPending(context: Context) = withContext(Dispatchers.IO) {
     dbFile.parent?.let {
         File("$it${File.separator}${Constants.DataBase.PENDING_DB_NAME}-shm").delete()
         File("$it${File.separator}${Constants.DataBase.PENDING_DB_NAME}-wal").delete()
+        File("$it${File.separator}${Constants.DataBase.PENDING_DB_NAME}-journal").delete()
     }
     dbFile.delete()
 }
@@ -89,6 +91,7 @@ suspend fun clearFts(context: Context) = withContext(Dispatchers.IO) {
     dbFile.parent?.let {
         File("$it${File.separator}${Constants.DataBase.FTS_DB_NAME}-shm").delete()
         File("$it${File.separator}${Constants.DataBase.FTS_DB_NAME}-wal").delete()
+        File("$it${File.separator}${Constants.DataBase.FTS_DB_NAME}-journal").delete()
     }
     dbFile.delete()
 }
