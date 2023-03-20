@@ -18,8 +18,8 @@ import one.mixin.android.Constants.BackUp.BACKUP_LAST_TIME
 import one.mixin.android.Constants.BackUp.BACKUP_PERIOD
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
+import one.mixin.android.db.property.PropertyHelper
 import one.mixin.android.extension.toast
-import one.mixin.android.util.PropertyHelper
 import one.mixin.android.util.backup.BackupLiveData
 import one.mixin.android.util.backup.BackupNotification
 import one.mixin.android.util.backup.Result
@@ -52,10 +52,10 @@ class BackupJob(private val force: Boolean = false, private val delete: Boolean 
         if (force) {
             internalBackup(context)
         } else if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q && propertyDao.findValueByKey(PREF_BACKUP)?.toBooleanStrictOrNull() == true) {
-            val option = PropertyHelper.findValueByKey(BACKUP_PERIOD)?.toIntOrNull() ?: 0
+            val option = PropertyHelper.findValueByKey(BACKUP_PERIOD, 0)
             if (option in 1..3) {
                 val currentTime = System.currentTimeMillis()
-                val lastTime = PropertyHelper.findValueByKey(BACKUP_LAST_TIME)?.toLongOrNull() ?: currentTime
+                val lastTime = PropertyHelper.findValueByKey(BACKUP_LAST_TIME, currentTime)
                 val timeDiff = currentTime - lastTime
                 if (timeDiff >= when (option) {
                         1 -> DAY_IN_MILLIS
@@ -90,7 +90,7 @@ class BackupJob(private val force: Boolean = false, private val delete: Boolean 
                             this.launch {
                                 PropertyHelper.updateKeyValue(
                                     BACKUP_LAST_TIME,
-                                    System.currentTimeMillis().toString(),
+                                    System.currentTimeMillis(),
                                 )
                             }
                             toast(R.string.Backup_success)
@@ -108,7 +108,7 @@ class BackupJob(private val force: Boolean = false, private val delete: Boolean 
                             this.launch {
                                 PropertyHelper.updateKeyValue(
                                     BACKUP_LAST_TIME,
-                                    System.currentTimeMillis().toString(),
+                                    System.currentTimeMillis(),
                                 )
                             }
                             toast(R.string.Backup_success)

@@ -27,6 +27,7 @@ import one.mixin.android.Constants.BackUp.BACKUP_MEDIA
 import one.mixin.android.Constants.BackUp.BACKUP_PERIOD
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentBackupBinding
+import one.mixin.android.db.property.PropertyHelper
 import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.getDisplayPath
@@ -39,7 +40,6 @@ import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.job.BackupJob
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.ui.common.BaseFragment
-import one.mixin.android.util.PropertyHelper
 import one.mixin.android.util.backup.Result
 import one.mixin.android.util.backup.canUserAccessBackupDirectory
 import one.mixin.android.util.backup.delete
@@ -189,7 +189,7 @@ class BackUpFragment : BaseFragment(R.layout.fragment_backup) {
     }
 
     private suspend fun loadBackupPeriod(): Int =
-        PropertyHelper.findValueByKey(BACKUP_PERIOD)?.toIntOrNull() ?: 0
+        PropertyHelper.findValueByKey(BACKUP_PERIOD, 0)
 
     private fun showBackupDialog() = lifecycleScope.launch {
         val builder = alertDialogBuilder()
@@ -199,7 +199,7 @@ class BackUpFragment : BaseFragment(R.layout.fragment_backup) {
         builder.setSingleChoiceItems(options, checkedItem) { dialog, which ->
             binding.backupAutoTv.text = options[which]
             lifecycleScope.launch {
-                PropertyHelper.updateKeyValue(BACKUP_PERIOD, which.toString())
+                PropertyHelper.updateKeyValue(BACKUP_PERIOD, which)
             }
             dialog.dismiss()
         }
@@ -214,7 +214,7 @@ class BackUpFragment : BaseFragment(R.layout.fragment_backup) {
         val builder = alertDialogBuilder()
         builder.setTitle(R.string.backup_dialog_title)
         val animals = arrayOf(getString(R.string.backup_media))
-        var checked = PropertyHelper.findValueByKey(BACKUP_MEDIA)?.toBooleanStrictOrNull() ?: true
+        var checked = PropertyHelper.findValueByKey(BACKUP_MEDIA, true)
         val checkedItems = booleanArrayOf(checked)
         builder.setMultiChoiceItems(
             animals,
@@ -222,7 +222,7 @@ class BackUpFragment : BaseFragment(R.layout.fragment_backup) {
         ) { _, _, isChecked ->
             checked = isChecked
             lifecycleScope.launch {
-                PropertyHelper.updateKeyValue(BACKUP_MEDIA, checked.toString())
+                PropertyHelper.updateKeyValue(BACKUP_MEDIA, checked)
             }
         }
         builder.setPositiveButton(R.string.Backup) { dialog, _ ->

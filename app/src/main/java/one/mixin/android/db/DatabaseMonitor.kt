@@ -5,7 +5,7 @@ import one.mixin.android.BuildConfig
 import one.mixin.android.Constants
 import one.mixin.android.MixinApplication
 import one.mixin.android.db.monitor.MonitorPrinter
-import one.mixin.android.util.PropertyHelper
+import one.mixin.android.db.property.PropertyHelper
 import timber.log.Timber
 
 object DatabaseMonitor {
@@ -17,8 +17,7 @@ object DatabaseMonitor {
 
     fun reset() {
         MixinApplication.get().applicationScope.launch {
-            enable = PropertyHelper.findValueByKey(Constants.Debug.DB_DEBUG_LOGS)
-                ?.toBoolean() ?: false
+            enable = PropertyHelper.findValueByKey(Constants.Debug.DB_DEBUG_LOGS, false)
         }
     }
 

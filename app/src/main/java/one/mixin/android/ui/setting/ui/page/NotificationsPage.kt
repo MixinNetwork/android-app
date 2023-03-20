@@ -52,6 +52,7 @@ import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.AccountUpdateRequest
+import one.mixin.android.db.property.PropertyHelper
 import one.mixin.android.extension.openNotificationSetting
 import one.mixin.android.extension.supportsOreo
 import one.mixin.android.extension.toast
@@ -63,7 +64,6 @@ import one.mixin.android.ui.setting.ui.compose.MixinBottomSheetDialog
 import one.mixin.android.ui.setting.ui.compose.MixinTopAppBar
 import one.mixin.android.ui.setting.ui.theme.MixinAppTheme
 import one.mixin.android.util.ChannelManager
-import one.mixin.android.util.PropertyHelper
 import one.mixin.android.vo.Fiats
 import timber.log.Timber
 
@@ -102,9 +102,9 @@ fun NotificationsPage() {
             LaunchedEffect(Unit) {
                 scope.launch {
                     duplicateTransferSelected =
-                        PropertyHelper.findValueByKey(Constants.Account.PREF_DUPLICATE_TRANSFER)?.toBoolean() ?: true
+                        PropertyHelper.findValueByKey(Constants.Account.PREF_DUPLICATE_TRANSFER, true)
                     strangerTransferChecked =
-                        PropertyHelper.findValueByKey(Constants.Account.PREF_STRANGER_TRANSFER)?.toBoolean() ?: true
+                        PropertyHelper.findValueByKey(Constants.Account.PREF_STRANGER_TRANSFER, true)
                 }
             }
 
@@ -126,7 +126,7 @@ fun NotificationsPage() {
                         duplicateTransferSelected = !duplicateTransferSelected
                         PropertyHelper.updateKeyValue(
                             Constants.Account.PREF_DUPLICATE_TRANSFER,
-                            duplicateTransferSelected.toString(),
+                            duplicateTransferSelected,
                         )
                     }
                 },

@@ -70,6 +70,7 @@ import one.mixin.android.databinding.ActivityMainBinding
 import one.mixin.android.db.ConversationDao
 import one.mixin.android.db.ParticipantDao
 import one.mixin.android.db.UserDao
+import one.mixin.android.db.property.PropertyHelper
 import one.mixin.android.event.TipEvent
 import one.mixin.android.extension.alert
 import one.mixin.android.extension.alertDialogBuilder
@@ -137,7 +138,6 @@ import one.mixin.android.ui.tip.TryConnecting
 import one.mixin.android.util.BiometricUtil
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.ErrorHandler.Companion.errorHandler
-import one.mixin.android.util.PropertyHelper
 import one.mixin.android.util.RomUtil
 import one.mixin.android.util.RootUtil
 import one.mixin.android.util.reportException
@@ -328,7 +328,7 @@ class MainActivity : BlazeBaseActivity() {
         }
 
         jobManager.addJobInBackground(RefreshOneTimePreKeysJob())
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q && PropertyHelper.findValueByKey(PREF_BACKUP)?.toBooleanStrictOrNull() == true) {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q && PropertyHelper.findValueByKey(PREF_BACKUP, false)) {
             jobManager.addJobInBackground(BackupJob())
         }
 
@@ -341,9 +341,9 @@ class MainActivity : BlazeBaseActivity() {
             jobManager.addJobInBackground(RefreshFiatsJob())
         }
 
-        val sdk = PropertyHelper.findValueByKey(PREF_DEVICE_SDK)?.toIntOrNull()
-        if (sdk == null) {
-            PropertyHelper.updateKeyValue(PREF_DEVICE_SDK, Build.VERSION.SDK_INT.toString())
+        val sdk = PropertyHelper.findValueByKey(PREF_DEVICE_SDK, -1)
+        if (sdk == -1) {
+            PropertyHelper.updateKeyValue(PREF_DEVICE_SDK, Build.VERSION.SDK_INT)
         } else if (sdk < Build.VERSION_CODES.Q && Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             PropertyHelper.migration()
         }

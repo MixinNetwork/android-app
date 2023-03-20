@@ -15,6 +15,7 @@ import one.mixin.android.R
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.AccountUpdateRequest
 import one.mixin.android.databinding.FragmentNotificationsBinding
+import one.mixin.android.db.property.PropertyHelper
 import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.openNotificationSetting
 import one.mixin.android.extension.supportsOreo
@@ -24,7 +25,6 @@ import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.editDialog
 import one.mixin.android.util.ChannelManager
-import one.mixin.android.util.PropertyHelper
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.Fiats
 
@@ -60,8 +60,8 @@ class NotificationsFragment : BaseFragment(R.layout.fragment_notifications) {
             refreshLargeAmount(Session.getAccount()!!.transferConfirmationThreshold)
 
             lifecycleScope.launch {
-                duplicateTransferSc.isChecked = PropertyHelper.findValueByKey(PREF_DUPLICATE_TRANSFER)?.toBoolean() ?: true
-                strangerTransferSc.isChecked = PropertyHelper.findValueByKey(PREF_STRANGER_TRANSFER)?.toBoolean() ?: true
+                duplicateTransferSc.isChecked = PropertyHelper.findValueByKey(PREF_DUPLICATE_TRANSFER, true)
+                strangerTransferSc.isChecked = PropertyHelper.findValueByKey(PREF_STRANGER_TRANSFER, true)
             }
             duplicateTransferSc.setOnCheckedChangeListener { _, isChecked ->
                 updateKeyValue(PREF_DUPLICATE_TRANSFER, isChecked.toString())

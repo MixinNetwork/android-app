@@ -2,7 +2,7 @@ package one.mixin.android.job
 
 import com.birbit.android.jobqueue.Params
 import kotlinx.coroutines.runBlocking
-import one.mixin.android.util.PropertyHelper
+import one.mixin.android.db.property.PropertyHelper
 import one.mixin.android.util.SINGLE_DB_THREAD
 import timber.log.Timber
 
@@ -19,7 +19,7 @@ class ClearFts4Job :
         if (count > 0) {
             jobManager.addJobInBackground(ClearFts4Job())
         } else {
-            PropertyHelper.updateKeyValue(FTS_CLEAR, "false")
+            PropertyHelper.updateKeyValue(FTS_CLEAR, false)
         }
         Timber.e("DELETE fts count: $count")
         return@runBlocking
