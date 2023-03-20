@@ -8,6 +8,8 @@ import android.os.Build
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import one.mixin.android.Constants
+import one.mixin.android.Constants.DataBase.FTS_DB_NAME
+import one.mixin.android.fts.FtsDatabase
 import one.mixin.android.util.reportException
 
 suspend fun getLastUserId(context: Context): String? = withContext(Dispatchers.IO) {
@@ -44,6 +46,10 @@ suspend fun clearDatabase(context: Context) = withContext(Dispatchers.IO) {
     val dbFile = context.getDatabasePath(Constants.DataBase.DB_NAME)
     if (!dbFile.exists()) {
         return@withContext
+    }
+    val ftsFile = context.getDatabasePath(FTS_DB_NAME)
+    if (ftsFile.exists()) {
+        FtsDatabase.getDatabase(context).clearAllTables()
     }
     var db: SQLiteDatabase? = null
     try {
