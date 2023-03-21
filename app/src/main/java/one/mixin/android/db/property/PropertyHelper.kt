@@ -108,7 +108,7 @@ object PropertyHelper {
                 is Long -> {
                     value.toIntOrNull() ?: default
                 }
-                is Boolean->{
+                is Boolean -> {
                     value.toBooleanStrictOrNull() ?: default
                 }
                 else -> {

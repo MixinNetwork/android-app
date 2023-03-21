@@ -8,4 +8,7 @@ import one.mixin.android.vo.Chain
 interface ChainDao : BaseDao<Chain> {
     @Query("SELECT chain_id FROM chains WHERE chain_id = :id")
     suspend fun checkExistsById(id: String): String?
+
+    @Query("SELECT * FROM chains")
+    suspend fun getChains(): List<Chain>
 }
