@@ -2,8 +2,10 @@ package one.mixin.android.job
 
 import com.birbit.android.jobqueue.Params
 import kotlinx.coroutines.runBlocking
+import one.mixin.android.util.debug.measureTimeMillis
 import one.mixin.android.vo.Asset
 import one.mixin.android.vo.Fiats
+import timber.log.Timber
 
 class RefreshAssetsJob(
     private val assetId: String? = null,
@@ -57,8 +59,12 @@ class RefreshAssetsJob(
     private suspend fun refreshChains() {
         val resp = assetService.getChains()
         if (resp.isSuccess) {
-            resp.data?.let { chains ->
-                chainDao.upsertList(chains)
+            resp.data?.let {chains->
+                measureTimeMillis("GGG subtract") {
+                    chains.subtract(chainDao.getAllChains().toSet()).let {
+                        chainDao.insertList(it.toList())
+                    }
+                }
             }
         }
     }
