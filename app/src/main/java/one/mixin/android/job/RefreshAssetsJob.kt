@@ -58,7 +58,7 @@ class RefreshAssetsJob(
         val resp = assetService.getChains()
         if (resp.isSuccess) {
             resp.data?.let { chains ->
-                chains.subtract(chainDao.getAllChains().toSet()).let {
+                chains.subtract(chainDao.getChains().toSet()).let {
                     chainDao.insertList(it.toList())
                 }
             }

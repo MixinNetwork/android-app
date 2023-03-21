@@ -10,5 +10,5 @@ interface ChainDao : BaseDao<Chain> {
     suspend fun checkExistsById(id: String): String?
 
     @Query("SELECT * FROM chains")
-    suspend fun getAllChains(): List<Chain>
+    suspend fun getChains(): List<Chain>
 }
