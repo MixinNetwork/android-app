@@ -23,7 +23,7 @@ object TipBody {
     private const val TIPProvisioningCreate = "TIP:PROVISIONING:UPDATE:"
 
     fun forVerify(timestamp: Long): ByteArray =
-        "$TIPVerify${String.format("%032d", timestamp)}".toByteArray()
+        String.format("%s%032d", TIPVerify, timestamp).toByteArray()
 
     fun forRawTransactionCreate(assetId: String, opponentKey: String, opponentReceivers: List<String>, opponentThreshold: Int, amount: String, traceId: String?, memo: String?): ByteArray {
         var body = assetId + opponentKey
