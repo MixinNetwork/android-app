@@ -2,7 +2,9 @@ package one.mixin.android.ui.call
 
 import android.content.Context
 import android.content.Intent
+import android.os.Build
 import android.os.Bundle
+import android.view.WindowManager
 import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.R
 import one.mixin.android.ui.common.BaseActivity
@@ -19,6 +21,7 @@ class CallActivity : BaseActivity() {
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        showWhenLockedAndTurnScreenOn()
         super.onCreate(savedInstanceState)
         CallBottomSheetDialogFragment.newInstance(intent.getBooleanExtra(EXTRA_JOIN, false))
             .show(supportFragmentManager, CallBottomSheetDialogFragment.TAG)
@@ -27,6 +30,19 @@ class CallActivity : BaseActivity() {
     override fun onPause() {
         super.onPause()
         overridePendingTransition(0, 0)
+    }
+
+    private fun showWhenLockedAndTurnScreenOn() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) {
+            setShowWhenLocked(true)
+            setTurnScreenOn(true)
+        } else {
+            @Suppress("DEPRECATION")
+            window.addFlags(
+                WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED
+                    or WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON,
+            )
+        }
     }
 
     companion object {
