@@ -2603,6 +2603,8 @@ class ConversationFragment() :
 
     @SuppressLint("NotifyDataSetChanged")
     private fun scrollToDown() {
+        if (viewDestroyed()) return
+
         binding.chatRv.layoutManager?.scrollToPosition(0)
         if (firstPosition > PAGE_SIZE * 6) {
             conversationAdapter.notifyDataSetChanged()
