@@ -326,6 +326,7 @@ class Tip @Inject internal constructor(
             signatureBase64 = sigBase64,
             timestamp = timestamp,
         )
+        Timber.e("generateAesKeyByPin before updateTipSecret")
         tipNetworkNullable { tipService.updateTipSecret(tipSecretRequest) }.getOrThrow()
         return aesKey
     }
@@ -346,6 +347,7 @@ class Tip @Inject internal constructor(
             signatureBase64 = sigBase64,
             timestamp = timestamp,
         )
+        Timber.e("getAesKey before updateTipSecret")
         val response = tipNetwork { tipService.readTipSecret(tipSecretReadRequest) }.getOrThrow()
         return response.seedBase64?.base64RawURLDecode() ?: throw TipNullException("Not get tip secret")
     }
@@ -358,7 +360,7 @@ class Tip @Inject internal constructor(
         val sig = engine.sign()
 
         val valid = Crypto.verifyEd25519(msg, sig, stPub.abyte)
-        Timber.e("verify go-ed25519 sig is valid: $valid")
+        Timber.e("verify go-ed25519 sig is valid: $valid\npub: ${stPub.abyte.base64RawURLEncode()}\nmsg: ${msg.base64RawURLEncode()}\nsig: ${sig.base64RawURLEncode()}")
 
         return sig.base64RawURLEncode()
     }
