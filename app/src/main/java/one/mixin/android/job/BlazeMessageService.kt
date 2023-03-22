@@ -451,7 +451,7 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
         }
     }
 
-    private fun processStatus(): Boolean {
+    private tailrec fun processStatus(): Boolean {
         val list = remoteMessageStatusDao.findRemoteMessageStatus()
         if (list.isEmpty()) {
             return false
