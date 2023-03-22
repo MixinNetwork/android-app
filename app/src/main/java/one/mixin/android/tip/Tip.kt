@@ -1,6 +1,7 @@
 package one.mixin.android.tip
 
 import android.content.Context
+import crypto.Crypto
 import net.i2p.crypto.eddsa.EdDSAEngine
 import net.i2p.crypto.eddsa.EdDSAPrivateKey
 import net.i2p.crypto.eddsa.EdDSAPublicKey
@@ -316,7 +317,7 @@ class Tip @Inject internal constructor(
         val secretBase64 = aesEncrypt(pinToken, stPub.abyte).base64RawURLEncode()
         val timestamp = nowInUtcNano()
 
-        val sigBase64 = signTimestamp(stPriv, timestamp)
+        val sigBase64 = signTimestamp(stPriv, stPub, timestamp)
 
         val tipSecretRequest = TipSecretRequest(
             action = TipSecretAction.UPDATE.name,
@@ -339,7 +340,7 @@ class Tip @Inject internal constructor(
         val stPriv = privateSpec.getPrivateKey()
         val timestamp = nowInUtcNano()
 
-        val sigBase64 = signTimestamp(stPriv, timestamp)
+        val sigBase64 = signTimestamp(stPriv, privateSpec.getPublicKey(), timestamp)
 
         val tipSecretReadRequest = TipSecretReadRequest(
             signatureBase64 = sigBase64,
@@ -349,11 +350,17 @@ class Tip @Inject internal constructor(
         return response.seedBase64?.base64RawURLDecode() ?: throw TipNullException("Not get tip secret")
     }
 
-    private fun signTimestamp(stPriv: EdDSAPrivateKey, timestamp: Long): String {
+    private fun signTimestamp(stPriv: EdDSAPrivateKey, stPub: EdDSAPublicKey, timestamp: Long): String {
         val engine = EdDSAEngine(MessageDigest.getInstance(ed25519.hashAlgorithm))
         engine.initSign(stPriv)
-        engine.update(TipBody.forVerify(timestamp))
-        return engine.sign().base64RawURLEncode()
+        val msg = TipBody.forVerify(timestamp)
+        engine.update(msg)
+        val sig = engine.sign()
+
+        val valid = Crypto.verifyEd25519(msg, sig, stPub.abyte)
+        Timber.e("verify go-ed25519 sig is valid: $valid")
+
+        return sig.base64RawURLEncode()
     }
 
     @Throws(TipCounterNotSyncedException::class)

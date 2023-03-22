@@ -1,6 +1,7 @@
 package crypto
 
 import (
+	"crypto/ed25519"
 	"encoding/hex"
 	"strings"
 
@@ -30,4 +31,9 @@ func RecoverSignature(partialStrings string, commitmentStrings string, assignor 
 	poly := share.NewPubPoly(suite, suite.Point().Base(), commitments)
 	sig, err := scheme.Recover(poly, assignor, partials, len(commitments), signersLen)
 	return sig, err
+}
+
+func VerifyEd25519(message, sig, pub []byte) bool {
+	pk := ed25519.PublicKey(pub)
+	return ed25519.Verify(pk, message, sig)
 }
