@@ -69,7 +69,8 @@ class RefreshAssetsJob(
         val resp = assetService.getChainById(chainId)
         if (resp.isSuccess) {
             resp.data?.let { chain ->
-                chainDao.upsert(chain)
+                val isExits = chainDao.isExits(chain.chainId, chain.name, chain.symbol, chain.iconUrl, chain.threshold) != null
+                if (!isExits) chainDao.upsert(chain)
             }
         }
     }
