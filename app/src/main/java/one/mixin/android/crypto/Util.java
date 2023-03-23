@@ -102,7 +102,6 @@ public class Util {
         Response response = client.newCall(request).execute();
         if (response.isSuccessful()) {
             return requestBody.getTransmittedDigest();
-        }
-        return null;
+        } else throw new IOException(response.message());
     }
 }
