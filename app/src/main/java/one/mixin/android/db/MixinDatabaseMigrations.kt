@@ -358,6 +358,14 @@ class MixinDatabaseMigrations private constructor() {
             }
         }
 
+        val MIGRATION_48_49: Migration = object : Migration(48, 49) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                database.execSQL("ALTER TABLE `snapshots` ADD COLUMN `snapshot_hash` TEXT")
+                database.execSQL("ALTER TABLE `snapshots` ADD COLUMN `opening_balance` TEXT")
+                database.execSQL("ALTER TABLE `snapshots` ADD COLUMN `closing_balance` TEXT")
+            }
+        }
+
         // If you add a new table, be sure to add a clear method to the DatabaseUtil
     }
 }
