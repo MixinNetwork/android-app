@@ -361,7 +361,7 @@ dependencies {
     implementation 'androidx.activity:activity-compose:1.6.1'
     androidTestImplementation "androidx.compose.ui:ui-test-junit4:${composeVersion}"
     implementation "com.google.accompanist:accompanist-pager:0.28.0"
-    implementation "com.google.accompanist:accompanist-pager-indicators:0.28.0"
+    implementation "com.google.accompanist:accompanist-pager-indicators:0.30.0"
 
     // accompanist
     implementation "com.google.accompanist:accompanist-navigation-animation:${accompanistVersion}"
