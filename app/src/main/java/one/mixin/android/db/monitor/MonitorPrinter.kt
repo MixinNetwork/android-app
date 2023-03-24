@@ -8,6 +8,7 @@ object MonitorPrinter {
 
     fun print(sqlQuery: String, args: List<Any?>) {
         if (!BuildConfig.DEBUG) return
+        if (sqlQuery.startsWith("SELECT")) return
         val sql = sqlQuery.trim()
         val currentThreadName = Thread.currentThread().name
         var monitorData = databaseMap[currentThreadName]

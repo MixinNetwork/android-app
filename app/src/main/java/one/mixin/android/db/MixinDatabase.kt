@@ -4,7 +4,6 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.database.Cursor
 import android.util.ArrayMap
-import androidx.arch.core.executor.ArchTaskExecutor
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
@@ -174,6 +173,7 @@ abstract class MixinDatabase : RoomDatabase() {
 
         private val lock = Any()
         private var supportSQLiteDatabase: SupportSQLiteDatabase? = null
+        private var dbIndex = 1
 
         @Suppress("UNUSED_ANONYMOUS_PARAMETER")
         @SuppressLint("RestrictedApi")
@@ -206,7 +206,9 @@ abstract class MixinDatabase : RoomDatabase() {
                                     2,
                                     min(Runtime.getRuntime().availableProcessors() - 1, 4),
                                 ),
-                            ),
+                            ) { r ->
+                                Thread(r, "DB_QUERY_EXECUTOR_${dbIndex++}")
+                            },
                         )
                         .setTransactionExecutor(SINGLE_DB_EXECUTOR)
                         .addCallback(CALLBACK)
@@ -217,9 +219,10 @@ abstract class MixinDatabase : RoomDatabase() {
                                     DatabaseMonitor.monitor(sqlQuery, bindArgs)
                                 }
                             },
-                            ArchTaskExecutor.getIOThreadExecutor(),
+                            Executors.newSingleThreadExecutor { r -> Thread(r, "SINGLE_LOGS_EXECUTOR") },
                         )
                     }
+
                     INSTANCE = builder.build()
                 }
                 return INSTANCE as MixinDatabase

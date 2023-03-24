@@ -10,8 +10,6 @@ import timber.log.Timber
 
 object DatabaseMonitor {
 
-    private val logSet = HashMap<String, Long>()
-    private var str = StringBuffer()
     var enable = false
         private set
 
@@ -33,11 +31,5 @@ object DatabaseMonitor {
     fun log(log: String) {
         if (!BuildConfig.DEBUG || !enable) return
         Timber.wtf(log)
-    }
-}
-
-class SlowSqlExtension : Exception() {
-    companion object {
-        private const val serialVersionUID: Long = 1L
     }
 }
