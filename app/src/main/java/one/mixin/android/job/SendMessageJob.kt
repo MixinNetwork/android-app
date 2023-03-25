@@ -2,7 +2,6 @@ package one.mixin.android.job
 
 import com.birbit.android.jobqueue.Params
 import one.mixin.android.RxBus
-import one.mixin.android.db.deleteFtsByMessageId
 import one.mixin.android.db.insertMessage
 import one.mixin.android.event.RecallEvent
 import one.mixin.android.extension.base64Encode
@@ -12,9 +11,10 @@ import one.mixin.android.extension.decodeBase64
 import one.mixin.android.extension.findLastUrl
 import one.mixin.android.extension.getFilePath
 import one.mixin.android.extension.notNullWithElse
+import one.mixin.android.fts.deleteByMessageId
+import one.mixin.android.fts.insertOrReplaceMessageFts4
 import one.mixin.android.session.Session
 import one.mixin.android.util.GsonHelper
-import one.mixin.android.util.MessageFts4Helper
 import one.mixin.android.util.chat.InvalidateFlow
 import one.mixin.android.util.hyperlink.parseHyperlink
 import one.mixin.android.util.mention.parseMentionData
@@ -96,7 +96,7 @@ open class SendMessageJob(
                 if (!message.isTranscript()) {
                     mixinDatabase.insertMessage(message)
                     InvalidateFlow.emit(message.conversationId)
-                    MessageFts4Helper.insertOrReplaceMessageFts4(message, message.name)
+                    ftsDatabase.insertOrReplaceMessageFts4(message)
                 }
 
                 conversation.expireIn?.let { e ->
@@ -145,7 +145,7 @@ open class SendMessageJob(
             jobManager.cancelJobByMixinJobId(msg.messageId)
         }
         InvalidateFlow.emit(conversationId)
-        deleteFtsByMessageId(recallMessageId)
+        ftsDatabase.deleteByMessageId(recallMessageId)
     }
 
     override fun onCancel(cancelReason: Int, throwable: Throwable?) {

@@ -2,12 +2,10 @@ package one.mixin.android.job
 
 import com.birbit.android.jobqueue.Params
 import kotlinx.coroutines.runBlocking
-import one.mixin.android.db.deleteFtsByMessageIds
 
+@Deprecated("Deprecated in favor of JobManager", replaceWith = ReplaceWith("FtsDbHelper"))
 class MessageFtsDeleteJob(private val messageIds: List<String>) :
     BaseJob(Params(PRIORITY_LOWER).addTags(GROUP).groupBy("message_delete").persist()) {
-
-    private val TAG = MessageFtsDeleteJob::class.java.simpleName
 
     companion object {
         const val GROUP = "MessageFtsDeleteJob"
@@ -15,8 +13,5 @@ class MessageFtsDeleteJob(private val messageIds: List<String>) :
     }
 
     override fun onRun() = runBlocking {
-        messageIds.chunked(100).forEach {
-            deleteFtsByMessageIds(it)
-        }
     }
 }

@@ -42,6 +42,7 @@ import one.mixin.android.extension.joinStar
 import one.mixin.android.extension.putBoolean
 import one.mixin.android.extension.replaceQuotationMark
 import one.mixin.android.extension.sharedPreferences
+import one.mixin.android.fts.FtsDatabase
 import one.mixin.android.job.GenerateAvatarJob
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshConversationJob
@@ -68,6 +69,7 @@ import one.mixin.android.vo.Participant
 import one.mixin.android.vo.ParticipantRole
 import one.mixin.android.vo.ParticipantSession
 import one.mixin.android.vo.PinMessage
+import one.mixin.android.vo.SearchMessageDetailItem
 import one.mixin.android.vo.SearchMessageItem
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -91,6 +93,7 @@ internal constructor(
     private val conversationService: ConversationService,
     private val userService: UserService,
     private val jobManager: MixinJobManager,
+    private val ftsDbHelper: FtsDatabase,
 ) {
 
     @SuppressLint("RestrictedApi")
@@ -141,10 +144,17 @@ internal constructor(
         conversationDao.findConversationById(conversationId)
 
     suspend fun fuzzySearchMessage(query: String, limit: Int, cancellationSignal: CancellationSignal): List<SearchMessageItem> =
-        DataProvider.fuzzySearchMessage(query.joinStar().replaceQuotationMark(), limit, appDatabase, cancellationSignal)
+        if (query.isBlank()) {
+            emptyList<SearchMessageItem>()
+        } else {
+            val queryString = query.joinStar().replaceQuotationMark()
+            DataProvider.fuzzySearchMessage(ftsDbHelper, queryString, appDatabase, cancellationSignal)
+        }
 
-    fun fuzzySearchMessageDetail(query: String, conversationId: String, cancellationSignal: CancellationSignal) =
-        DataProvider.fuzzySearchMessageDetail(query.joinStar().replaceQuotationMark(), conversationId, appDatabase, cancellationSignal)
+    fun fuzzySearchMessageDetail(query: String, conversationId: String, cancellationSignal: CancellationSignal): DataSource.Factory<Int, SearchMessageDetailItem> {
+        val queryString = query.joinStar().replaceQuotationMark()
+        return DataProvider.fuzzySearchMessageDetail(ftsDbHelper, queryString, conversationId, appDatabase, cancellationSignal)
+    }
 
     suspend fun fuzzySearchChat(query: String, cancellationSignal: CancellationSignal): List<ChatMinimal> =
         DataProvider.fuzzySearchChat(query, appDatabase, cancellationSignal)

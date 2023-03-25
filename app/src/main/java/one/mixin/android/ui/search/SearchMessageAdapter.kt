@@ -12,7 +12,10 @@ import one.mixin.android.extension.dp
 import one.mixin.android.extension.highLight
 import one.mixin.android.extension.timeAgoDate
 import one.mixin.android.ui.common.recyclerview.SafePagedListAdapter
+import one.mixin.android.util.GsonHelper
+import one.mixin.android.vo.AppCardData
 import one.mixin.android.vo.SearchMessageDetailItem
+import one.mixin.android.vo.isAppCard
 import one.mixin.android.vo.isContact
 import one.mixin.android.vo.isData
 import one.mixin.android.vo.isTranscript
@@ -43,6 +46,12 @@ class SearchMessageHolder(val binding: ItemSearchMessageBinding) : RecyclerView.
         }
     }
 
+    private val appIcon: Drawable? by lazy {
+        AppCompatResources.getDrawable(itemView.context, R.drawable.ic_type_touch_app).apply {
+            this?.setBounds(0, 0, 12f.dp, 12f.dp)
+        }
+    }
+
     private val contactIcon: Drawable? by lazy {
         AppCompatResources.getDrawable(itemView.context, R.drawable.ic_type_contact).apply {
             this?.setBounds(0, 0, 12f.dp, 12f.dp)
@@ -58,6 +67,17 @@ class SearchMessageHolder(val binding: ItemSearchMessageBinding) : RecyclerView.
         if (message.isData()) {
             TextViewCompat.setCompoundDrawablesRelative(binding.searchMsgTv, fileIcon, null, null, null)
             binding.searchMsgTv.text = message.mediaName
+        } else if (message.isAppCard()) {
+            TextViewCompat.setCompoundDrawablesRelative(binding.searchMsgTv, appIcon, null, null, null)
+            val cardData = try {
+                GsonHelper.customGson.fromJson(
+                    message.content,
+                    AppCardData::class.java,
+                )
+            } catch (e: Exception) {
+                null
+            }
+            binding.searchMsgTv.text = "[${cardData?.title}]"
         } else if (message.isContact()) {
             TextViewCompat.setCompoundDrawablesRelative(binding.searchMsgTv, contactIcon, null, null, null)
             binding.searchMsgTv.text = message.mediaName

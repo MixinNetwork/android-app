@@ -159,10 +159,6 @@ object AppModule {
     @Provides
     fun provideOkHttp(resolver: ContentResolver, httpLoggingInterceptor: HttpLoggingInterceptor?, engine: CronetEngine?): OkHttpClient {
         val builder = OkHttpClient.Builder()
-        builder.addInterceptor(HostSelectionInterceptor.get())
-        httpLoggingInterceptor?.let { interceptor ->
-            builder.addInterceptor(interceptor)
-        }
         builder.connectTimeout(10, TimeUnit.SECONDS)
         builder.writeTimeout(10, TimeUnit.SECONDS)
         builder.readTimeout(10, TimeUnit.SECONDS)
@@ -170,7 +166,7 @@ object AppModule {
         builder.retryOnConnectionFailure(false)
         builder.followRedirects(false)
         builder.dns(DNS)
-
+        // Interceptor
         builder.addInterceptor { chain ->
             val requestId = UUID.randomUUID().toString()
             val sourceRequest = chain.request()
@@ -250,6 +246,10 @@ object AppModule {
             } else {
                 throw NetworkException()
             }
+        }
+        builder.addInterceptor(HostSelectionInterceptor.get())
+        httpLoggingInterceptor?.let { interceptor ->
+            builder.addInterceptor(interceptor)
         }
         if (engine != null) {
             builder.addInterceptor(MixinCronetInterceptor.newBuilder(engine).build())

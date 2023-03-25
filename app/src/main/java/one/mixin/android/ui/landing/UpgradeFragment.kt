@@ -10,16 +10,14 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import one.mixin.android.Constants.Account.PREF_FTS4_UPGRADE
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentUpgradeBinding
+import one.mixin.android.db.property.PropertyHelper
 import one.mixin.android.db.runInTransaction
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.home.MainActivity
-import one.mixin.android.util.MessageFts4Helper
-import one.mixin.android.util.PropertyHelper
 import one.mixin.android.util.viewBinding
 
 @AndroidEntryPoint
@@ -30,7 +28,6 @@ class UpgradeFragment : BaseFragment(R.layout.fragment_upgrade) {
 
         const val ARGS_TYPE = "args_type"
         const val TYPE_DB = 0
-        const val TYPE_FTS = 1
 
         fun newInstance(type: Int) = UpgradeFragment().withArgs {
             putInt(ARGS_TYPE, type)
@@ -47,29 +44,15 @@ class UpgradeFragment : BaseFragment(R.layout.fragment_upgrade) {
         super.onViewCreated(view, savedInstanceState)
         requireActivity().window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         MixinApplication.get().isOnline.set(true)
-        if (type == TYPE_FTS) {
-            lifecycleScope.launch {
-                val done = MessageFts4Helper.syncMessageFts4(preProcess = true) { progress ->
-                    binding.pb.progress = progress
-                    binding.progressTv.text = "$progress%"
-                }
-                if (!done) {
-                    viewModel.startSyncFts4Job()
-                }
-                PropertyHelper.updateKeyValue(PREF_FTS4_UPGRADE, true.toString())
-                MainActivity.show(requireContext())
-                activity?.finish()
+
+        lifecycleScope.launch {
+            binding.pb.isIndeterminate = true
+            withContext(Dispatchers.IO) {
+                PropertyHelper.checkMigrated()
+                runInTransaction { }
             }
-        } else {
-            lifecycleScope.launch {
-                binding.pb.isIndeterminate = true
-                withContext(Dispatchers.IO) {
-                    PropertyHelper.checkMigrated()
-                    runInTransaction { }
-                }
-                MainActivity.show(requireContext())
-                activity?.finish()
-            }
+            MainActivity.show(requireContext())
+            activity?.finish()
         }
     }
 

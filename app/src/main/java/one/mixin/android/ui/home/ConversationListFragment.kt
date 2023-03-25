@@ -376,7 +376,7 @@ class ConversationListFragment : LinkFragment() {
     private val observer by lazy {
         Observer<PagedList<ConversationItem>> { pagedList ->
             messageAdapter.submitList(pagedList)
-            if (pagedList == null || pagedList.isEmpty()) {
+            if (pagedList.isEmpty()) {
                 if (circleId == null) {
                     binding.emptyView.infoTv.setText(R.string.chat_list_empty_info)
                     binding.emptyView.startBn.setText(R.string.Start_Messaging)

@@ -1,4 +1,4 @@
-package one.mixin.android.util
+package one.mixin.android.db.property
 
 import android.os.Build
 import one.mixin.android.Constants.Account.Migration.PREF_MIGRATION_ATTACHMENT
@@ -7,9 +7,7 @@ import one.mixin.android.Constants.Account.Migration.PREF_MIGRATION_TRANSCRIPT_A
 import one.mixin.android.Constants.Account.Migration.PREF_MIGRATION_TRANSCRIPT_ATTACHMENT_LAST
 import one.mixin.android.Constants.Account.PREF_BACKUP
 import one.mixin.android.Constants.Account.PREF_DUPLICATE_TRANSFER
-import one.mixin.android.Constants.Account.PREF_FTS4_UPGRADE
 import one.mixin.android.Constants.Account.PREF_STRANGER_TRANSFER
-import one.mixin.android.Constants.Account.PREF_SYNC_FTS4_OFFSET
 import one.mixin.android.Constants.BackUp.BACKUP_LAST_TIME
 import one.mixin.android.Constants.BackUp.BACKUP_PERIOD
 import one.mixin.android.Constants.Download.AUTO_DOWNLOAD_MOBILE
@@ -19,49 +17,56 @@ import one.mixin.android.Constants.Download.MOBILE_DEFAULT
 import one.mixin.android.Constants.Download.ROAMING_DEFAULT
 import one.mixin.android.Constants.Download.WIFI_DEFAULT
 import one.mixin.android.MixinApplication
-import one.mixin.android.db.MessageDao
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.PropertyDao
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.nowInUtc
+import one.mixin.android.job.ClearFts4Job.Companion.FTS_CLEAR
+import one.mixin.android.job.MigratedFts4Job.Companion.FTS_NEED_MIGRATED_LAST_ROW_ID
 import one.mixin.android.vo.Property
 
 object PropertyHelper {
 
     private const val PREF_PROPERTY_MIGRATED = "pref_property_migrated"
 
-    suspend fun checkFts4Upgrade(): Boolean {
-        val propertyDao = checkMigrated()
-        return propertyDao.findValueByKey(PREF_FTS4_UPGRADE)?.toBooleanStrictOrNull() != true
-    }
-
     suspend fun checkAttachmentMigrated(action: () -> Unit) {
-        val propertyDao = checkMigrated()
-        val value = propertyDao.findValueByKey(PREF_MIGRATION_ATTACHMENT)?.toBooleanStrictOrNull() ?: false
+        val value = findValueByKey(PREF_MIGRATION_ATTACHMENT, false)
         if (value) {
             action.invoke()
         }
     }
 
     suspend fun checkTranscriptAttachmentMigrated(action: () -> Unit) {
-        val propertyDao = checkMigrated()
-        val value = propertyDao.findValueByKey(PREF_MIGRATION_TRANSCRIPT_ATTACHMENT)?.toBooleanStrictOrNull() ?: false
+        val value = findValueByKey(PREF_MIGRATION_TRANSCRIPT_ATTACHMENT, false)
         if (value) {
             action.invoke()
         }
     }
 
     suspend fun checkTranscriptAttachmentUpdated(action: () -> Unit) {
-        val propertyDao = checkMigrated()
-        val value = propertyDao.findValueByKey(PREF_MIGRATION_TRANSCRIPT_ATTACHMENT_LAST)?.toLongOrNull() ?: 0
+        val value = findValueByKey(PREF_MIGRATION_TRANSCRIPT_ATTACHMENT_LAST, 0L)
         if (value > 0) {
             action.invoke()
         }
     }
 
     suspend fun checkBackupMigrated(action: () -> Unit) {
-        val backupMigrated = findValueByKey(PREF_MIGRATION_BACKUP)?.toBooleanStrictOrNull()
-        if (backupMigrated == false) {
+        val backupMigrated = findValueByKey(PREF_MIGRATION_BACKUP, true)
+        if (!backupMigrated) {
+            action.invoke()
+        }
+    }
+
+    suspend fun checkFtsMigrated(action: () -> Unit) {
+        val lastRowId = findValueByKey(FTS_NEED_MIGRATED_LAST_ROW_ID, 0L)
+        if (lastRowId > -1) {
+            action.invoke()
+        }
+    }
+
+    suspend fun checkFtsClear(action: () -> Unit) {
+        val reduce = findValueByKey(FTS_CLEAR, false)
+        if (reduce) {
             action.invoke()
         }
     }
@@ -70,7 +75,7 @@ object PropertyHelper {
         val propertyDao = MixinDatabase.getDatabase(MixinApplication.appContext).propertyDao()
         val messageDao = MixinDatabase.getDatabase(MixinApplication.appContext).messageDao()
         if (!hasMigrated(propertyDao)) {
-            migrateProperties(propertyDao, messageDao)
+            migrateProperties(propertyDao)
         }
         return propertyDao
     }
@@ -80,18 +85,44 @@ object PropertyHelper {
         propertyDao.insertSuspend(Property(key, value, nowInUtc()))
     }
 
-    suspend fun findValueByKey(key: String): String? {
-        val propertyDao = MixinDatabase.getDatabase(MixinApplication.appContext).propertyDao()
-        return propertyDao.findValueByKey(key)
+    suspend fun updateKeyValue(key: String, value: Long) {
+        updateKeyValue(key, value.toString())
     }
 
-    private suspend fun migrateProperties(propertyDao: PropertyDao, messageDao: MessageDao) {
+    suspend fun updateKeyValue(key: String, value: Int) {
+        updateKeyValue(key, value.toString())
+    }
+
+    suspend fun updateKeyValue(key: String, value: Boolean) {
+        updateKeyValue(key, value.toString())
+    }
+
+    suspend fun <T> findValueByKey(key: String, default: T): T {
+        val propertyDao = MixinDatabase.getDatabase(MixinApplication.appContext).propertyDao()
+        val value = propertyDao.findValueByKey(key) ?: return default
+        return try {
+            when (default) {
+                is Int -> {
+                    value.toIntOrNull() ?: default
+                }
+                is Long -> {
+                    value.toIntOrNull() ?: default
+                }
+                is Boolean -> {
+                    value.toBooleanStrictOrNull() ?: default
+                }
+                else -> {
+                    value
+                }
+            } as T
+        } catch (e: Exception) {
+            default
+        }
+    }
+
+    private suspend fun migrateProperties(propertyDao: PropertyDao) {
         val pref = MixinApplication.appContext.defaultSharedPreferences
         val updatedAt = nowInUtc()
-        val fts4Upgrade = pref.getBoolean(PREF_FTS4_UPGRADE, messageDao.hasMessage() == null)
-        propertyDao.insertSuspend(Property(PREF_FTS4_UPGRADE, fts4Upgrade.toString(), updatedAt))
-        val syncFtsOffset = pref.getInt(PREF_SYNC_FTS4_OFFSET, 0)
-        propertyDao.insertSuspend(Property(PREF_SYNC_FTS4_OFFSET, syncFtsOffset.toString(), updatedAt))
 
         val backup = pref.getBoolean(PREF_BACKUP, false)
         // Backup files need to be migrated

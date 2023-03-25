@@ -106,6 +106,33 @@
                 android:text="@string/Debug_database"
                 android:textColor="@color/colorBlue"
                 android:textSize="16sp" />
+
+            <RelativeLayout
+                android:id="@+id/database_debug_logs"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/bottom_button_height"
+                android:background="?attr/bg_white"
+                android:foreground="?android:attr/selectableItemBackground">
+
+                <TextView
+                    android:textColor="@color/colorBlue"
+                    android:textSize="16sp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:layout_marginStart="@dimen/activity_horizontal_margin"
+                    android:text="@string/Debug_database_logs"
+                    tools:ignore="RelativeOverlap" />
+
+                <androidx.appcompat.widget.SwitchCompat
+                    android:id="@+id/database_debug_logs_sc"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentEnd="true"
+                    android:layout_centerVertical="true"
+                    android:layout_marginEnd="@dimen/activity_horizontal_margin"
+                    tools:ignore="RelativeOverlap" />
+            </RelativeLayout>
         </LinearLayout>
     </ScrollView>
 </LinearLayout>

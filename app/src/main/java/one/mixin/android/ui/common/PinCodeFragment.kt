@@ -20,6 +20,7 @@ import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.getDeviceId
 import one.mixin.android.extension.putString
 import one.mixin.android.extension.tickVibrate
+import one.mixin.android.fts.FtsDatabase
 import one.mixin.android.session.Session
 import one.mixin.android.session.decryptPinToken
 import one.mixin.android.ui.landing.InitializeActivity
@@ -98,6 +99,7 @@ abstract class PinCodeFragment(@LayoutRes contentLayoutId: Int) : FabLoadingFrag
         } else {
             showLoading()
             clearDatabase(requireContext())
+            FtsDatabase.getDatabase(requireContext()).clearAllTables()
             defaultSharedPreferences.clear()
         }
         val privateKey = sessionKey.private as EdDSAPrivateKey

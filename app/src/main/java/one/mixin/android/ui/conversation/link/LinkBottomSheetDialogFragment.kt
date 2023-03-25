@@ -357,11 +357,10 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                             )
                             MultisigsBottomSheetDialogFragment.newInstance(
                                 multisigsBiometricItem,
+                            ).showNow(
+                                parentFragmentManager,
+                                MultisigsBottomSheetDialogFragment.TAG,
                             )
-                                .showNow(
-                                    parentFragmentManager,
-                                    MultisigsBottomSheetDialogFragment.TAG,
-                                )
                             dismiss()
                         } else {
                             showError()
@@ -394,24 +393,34 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                         val paymentCodeResponse = result.second as PaymentCodeResponse
                         val asset = checkAsset(paymentCodeResponse.assetId)
                         if (asset != null) {
-                            val multisigsBiometricItem = One2MultiBiometricItem(
-                                threshold = paymentCodeResponse.threshold,
-                                senders = arrayOf(Session.getAccountId()!!),
-                                receivers = paymentCodeResponse.receivers,
-                                asset = asset,
-                                amount = paymentCodeResponse.amount,
-                                pin = null,
-                                traceId = paymentCodeResponse.traceId,
-                                memo = paymentCodeResponse.memo,
-                                state = paymentCodeResponse.status,
-                            )
-                            MultisigsBottomSheetDialogFragment.newInstance(
-                                multisigsBiometricItem,
-                            )
-                                .showNow(
+                            if (paymentCodeResponse.receivers.isEmpty()) {
+                                showError()
+                            } else if (paymentCodeResponse.receivers.size == 1 && paymentCodeResponse.threshold == 1) { // Transfer when there is only one recipient
+                                val user = linkViewModel.refreshUser(paymentCodeResponse.receivers.first())
+                                if (user == null) {
+                                    showError(R.string.User_not_found)
+                                    return@launch
+                                }
+                                showTransferBottom(user, paymentCodeResponse.amount, asset, paymentCodeResponse.traceId, paymentCodeResponse.status, paymentCodeResponse.memo, null)
+                            } else if (paymentCodeResponse.receivers.size > 1) {
+                                val multisigsBiometricItem = One2MultiBiometricItem(
+                                    threshold = paymentCodeResponse.threshold,
+                                    senders = arrayOf(Session.getAccountId()!!),
+                                    receivers = paymentCodeResponse.receivers,
+                                    asset = asset,
+                                    amount = paymentCodeResponse.amount,
+                                    pin = null,
+                                    traceId = paymentCodeResponse.traceId,
+                                    memo = paymentCodeResponse.memo,
+                                    state = paymentCodeResponse.status,
+                                )
+                                MultisigsBottomSheetDialogFragment.newInstance(
+                                    multisigsBiometricItem,
+                                ).showNow(
                                     parentFragmentManager,
                                     MultisigsBottomSheetDialogFragment.TAG,
                                 )
+                            }
                             dismiss()
                         } else {
                             showError()

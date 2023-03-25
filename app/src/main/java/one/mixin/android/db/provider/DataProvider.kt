@@ -6,7 +6,12 @@ import android.os.CancellationSignal
 import androidx.paging.DataSource
 import androidx.room.CoroutinesRoom
 import androidx.room.RoomSQLiteQuery
+import androidx.room.getQueryDispatcher
+import kotlinx.coroutines.withContext
 import one.mixin.android.db.MixinDatabase
+import one.mixin.android.fts.FtsDataSource
+import one.mixin.android.fts.FtsDatabase
+import one.mixin.android.fts.rawSearch
 import one.mixin.android.ui.search.CancellationLimitOffsetDataSource
 import one.mixin.android.util.chat.FastLimitOffsetDataSource
 import one.mixin.android.util.chat.MixinLimitOffsetDataSource
@@ -377,81 +382,54 @@ class DataProvider {
             )
         }
 
-        @Suppress("LocalVariableName", "JoinDeclarationAndAssignment")
         suspend fun fuzzySearchMessage(
-            query: String?,
-            limit: Int,
+            ftsDatabase: FtsDatabase,
+            query: String,
             db: MixinDatabase,
             cancellationSignal: CancellationSignal,
-        ): List<SearchMessageItem> {
-            val _sql =
-                """
+        ): List<SearchMessageItem> = withContext(db.getQueryDispatcher()) {
+            val result = ftsDatabase.rawSearch(query, cancellationSignal)
+            val sql = """
                 SELECT m.conversation_id AS conversationId, c.icon_url AS conversationAvatarUrl,
-                c.name AS conversationName, c.category AS conversationCategory, count(m.id) as messageCount,
+                c.name AS conversationName, c.category AS conversationCategory, 0 as messageCount,
                 u.user_id AS userId, u.avatar_url AS userAvatarUrl, u.full_name AS userFullName
-                FROM messages m, (SELECT message_id FROM messages_fts4 WHERE messages_fts4 MATCH ?) fts
-                INNER JOIN users u ON c.owner_id = u.user_id
+                FROM messages m
                 INNER JOIN conversations c ON c.conversation_id = m.conversation_id
-                WHERE m.id = fts.message_id
-                GROUP BY m.conversation_id
-                ORDER BY max(m.created_at) DESC
-                LIMIT ?
-                """
-            val _statement = RoomSQLiteQuery.acquire(_sql, 2)
-            var _argIndex = 1
-            if (query == null) {
-                _statement.bindNull(_argIndex)
-            } else {
-                _statement.bindString(_argIndex, query)
-            }
-            _argIndex = 2
-            _statement.bindLong(_argIndex, limit.toLong())
-            return CoroutinesRoom.execute(
+				INNER JOIN users u ON c.owner_id = u.user_id
+                WHERE m.id IN (*)
+                ORDER BY m.created_at DESC
+            """
+            if (result.isEmpty()) return@withContext emptyList()
+            val ids = result.joinToString(
+                prefix = "'",
+                postfix = "'",
+                separator = "', '",
+            ) { it.messageId }
+            val statement = RoomSQLiteQuery.acquire(sql.replace("*", ids), 0)
+            return@withContext CoroutinesRoom.execute(
                 db,
                 true,
                 cancellationSignal,
-                callableSearchMessageItem(db, _statement, cancellationSignal),
-            )
+                callableSearchMessageItem(db, statement, cancellationSignal),
+            ).map {
+                val obtained = result.find { item -> item.conversationId == it.conversationId }
+                if (obtained != null) {
+                    it.messageCount = obtained.messageCount
+                }
+                it
+            }
         }
 
-        fun fuzzySearchMessageDetail(query: String?, conversationId: String?, database: MixinDatabase, cancellationSignal: CancellationSignal) =
+        fun fuzzySearchMessageDetail(
+            ftsDatabase: FtsDatabase,
+            query: String,
+            conversationId: String,
+            database: MixinDatabase,
+            cancellationSignal: CancellationSignal,
+        ) =
             object : DataSource.Factory<Int, SearchMessageDetailItem>() {
                 override fun create(): DataSource<Int, SearchMessageDetailItem> {
-                    val sql =
-                        """
-                            SELECT m.id AS messageId, u.user_id AS userId, u.avatar_url AS userAvatarUrl, u.full_name AS userFullName,
-                            m.category AS type, m.content AS content, m.created_at AS createdAt, m.name AS mediaName 
-                            FROM messages m INNER JOIN users u ON m.user_id = u.user_id 
-                            WHERE m.id IN (SELECT message_id FROM messages_fts4 WHERE messages_fts4 MATCH ?) 
-                            AND m.conversation_id = ?
-                            ORDER BY m.created_at DESC
-                        """
-                    val countSql =
-                        """
-                            SELECT count(1) FROM messages m 
-                            INNER JOIN users u ON m.user_id = u.user_id 
-                            WHERE m.id IN (SELECT message_id FROM messages_fts4 WHERE messages_fts4 MATCH ?) 
-                            AND m.conversation_id = ?
-                        """
-                    val countStatement = RoomSQLiteQuery.acquire(countSql, 2)
-                    val statement = RoomSQLiteQuery.acquire(sql, 2)
-                    var argIndex = 1
-                    if (query == null) {
-                        statement.bindNull(argIndex)
-                        countStatement.bindNull(argIndex)
-                    } else {
-                        statement.bindString(argIndex, query)
-                        countStatement.bindString(argIndex, query)
-                    }
-                    argIndex = 2
-                    if (conversationId == null) {
-                        statement.bindNull(argIndex)
-                        countStatement.bindNull(argIndex)
-                    } else {
-                        statement.bindString(argIndex, conversationId)
-                        countStatement.bindString(argIndex, conversationId)
-                    }
-                    return CancellationMessageDetailItemLimitOffsetDataSource(database, statement, countStatement, cancellationSignal)
+                    return FtsDataSource(ftsDatabase, database, query, conversationId, cancellationSignal)
                 }
             }
 

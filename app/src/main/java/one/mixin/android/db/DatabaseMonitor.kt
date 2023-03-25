@@ -1,41 +1,43 @@
 package one.mixin.android.db
 
+import kotlinx.coroutines.launch
 import one.mixin.android.BuildConfig
+import one.mixin.android.Constants
+import one.mixin.android.MixinApplication
+import one.mixin.android.db.monitor.MonitorPrinter
+import one.mixin.android.db.property.PropertyHelper
 import timber.log.Timber
 
 object DatabaseMonitor {
 
     private val logSet = HashMap<String, Long>()
     private var str = StringBuffer()
+    var enable = false
+        private set
 
-    fun monitor(sqlQuery: String) {
-        if (!BuildConfig.DEBUG) return
-        val sql = sqlQuery.trim()
-        val currentThreadName = Thread.currentThread().name
-        if (sql.startsWith("BEGIN")) {
-            str.append("-------<BEGIN>-------($currentThreadName)\n")
-            if (logSet[currentThreadName] == null) {
-                logSet[currentThreadName] = System.currentTimeMillis()
-            }
-            // Timber.e("$currentThreadName $sql")
-        } else if (sql.startsWith("END TRANSACTION") || sql.startsWith("TRANSACTION SUCCESSFUL")) {
-            logSet[currentThreadName]?.let {
-                val time = System.currentTimeMillis() - it
-                if (time > 50) {
-                    Timber.e("$currentThreadName It takes $time milliseconds")
-                    str.append("$sql\n")
-                    str.append("It takes $time milliseconds\n")
-                    str.append("--------<END>--------($currentThreadName)\n\n")
-                    Timber.e(str.toString())
-                    // reportException("It takes $time milliseconds\n $str", LogExtension())
-                    str = StringBuffer()
-                }
-                logSet.remove(currentThreadName)
-            }
-        } else if (!sql.startsWith("SELECT")) {
-            str.append("$currentThreadName[$sql]\n")
-        } else {
-            // Timber.w("$currentThreadName[$sql]")
+    fun reset() {
+        MixinApplication.get().applicationScope.launch {
+            enable = PropertyHelper.findValueByKey(Constants.Debug.DB_DEBUG_LOGS, false)
         }
+    }
+
+    init {
+        reset()
+    }
+
+    fun monitor(sqlQuery: String, args: List<Any?>) {
+        if (!BuildConfig.DEBUG || !enable) return
+        MonitorPrinter.print(sqlQuery, args)
+    }
+
+    fun log(log: String) {
+        if (!BuildConfig.DEBUG || !enable) return
+        Timber.wtf(log)
+    }
+}
+
+class SlowSqlExtension : Exception() {
+    companion object {
+        private const val serialVersionUID: Long = 1L
     }
 }

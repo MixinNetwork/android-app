@@ -9,6 +9,7 @@ import one.mixin.android.crypto.db.SignalDatabase
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.pending.PendingDatabase
 import one.mixin.android.db.pending.PendingDatabaseImp
+import one.mixin.android.fts.FtsDatabase
 import javax.inject.Singleton
 
 @InstallIn(SingletonComponent::class)
@@ -18,6 +19,10 @@ internal object BaseDbModule {
     @Singleton
     @Provides
     fun provideSignalDb(app: Application) = SignalDatabase.getDatabase(app)
+
+    @Singleton
+    @Provides
+    fun provideFtsDb(app: Application) = FtsDatabase.getDatabase(app)
 
     @Singleton
     @Provides
@@ -123,10 +128,6 @@ internal object BaseDbModule {
     @Singleton
     @Provides
     fun providesMentionMessageDao(db: MixinDatabase) = db.mentionMessageDao()
-
-    @Singleton
-    @Provides
-    fun providesMessageFts4Dao(db: MixinDatabase) = db.messageFts4Dao()
 
     @Singleton
     @Provides

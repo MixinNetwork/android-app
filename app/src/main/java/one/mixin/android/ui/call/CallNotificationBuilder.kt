@@ -6,7 +6,6 @@ import android.content.Context
 import android.content.Intent
 import androidx.core.app.NotificationCompat
 import one.mixin.android.R
-import one.mixin.android.job.BlazeMessageService.Companion.CHANNEL_NODE
 import one.mixin.android.vo.CallStateLiveData
 import one.mixin.android.vo.CallType
 import one.mixin.android.webrtc.ACTION_CALL_ANSWER
@@ -26,6 +25,7 @@ class CallNotificationBuilder {
 
     companion object {
         const val WEBRTC_NOTIFICATION = 313388
+        const val CHANNEL_CALL = "channel_call"
 
         fun getCallNotification(context: Context, callState: CallStateLiveData): Notification? {
             val callType = callState.callType
@@ -44,11 +44,14 @@ class CallNotificationBuilder {
                 PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,
             )
 
-            val builder = NotificationCompat.Builder(context, CHANNEL_NODE)
+            val builder = NotificationCompat.Builder(context, CHANNEL_CALL)
                 .setSmallIcon(R.drawable.ic_msg_default)
-                .setContentIntent(pendingCallIntent)
                 .setOngoing(true)
                 .setContentTitle(user?.fullName)
+                .setFullScreenIntent(pendingCallIntent, true)
+                .setPriority(NotificationCompat.PRIORITY_HIGH)
+                .setCategory(NotificationCompat.CATEGORY_CALL)
+                .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
 
             val isGroupCall = callType == CallType.Group
             val clazz = if (isGroupCall) {

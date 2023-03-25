@@ -51,6 +51,8 @@ import one.mixin.android.extension.currentTimeSeconds
 import one.mixin.android.extension.networkConnected
 import one.mixin.android.extension.notificationManager
 import one.mixin.android.extension.supportsOreo
+import one.mixin.android.fts.FtsDatabase
+import one.mixin.android.fts.deleteByMessageId
 import one.mixin.android.job.BaseJob.Companion.PRIORITY_ACK_MESSAGE
 import one.mixin.android.job.NotificationGenerator.conversationDao
 import one.mixin.android.job.NotificationGenerator.conversationExtDao
@@ -114,6 +116,9 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
 
     @Inject
     lateinit var database: MixinDatabase
+
+    @Inject
+    lateinit var ftsDatabase: FtsDatabase
 
     @Inject
     lateinit var pendingDatabase: PendingDatabase
@@ -446,7 +451,7 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
         }
     }
 
-    private fun processStatus(): Boolean {
+    private tailrec fun processStatus(): Boolean {
         val list = remoteMessageStatusDao.findRemoteMessageStatus()
         if (list.isEmpty()) {
             return false
@@ -539,6 +544,7 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
                 }
                 pendingDatabase.deletePendingMessageById(messageId)
                 database.deleteMessageById(messageId)
+                ftsDatabase.deleteByMessageId(messageId)
             }
             cIds.forEach { id ->
                 conversationDao.refreshLastMessageId(id)

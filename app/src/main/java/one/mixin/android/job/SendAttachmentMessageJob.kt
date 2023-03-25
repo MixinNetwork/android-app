@@ -175,12 +175,19 @@ class SendAttachmentMessageJob(
                 RxBus.publish(loadingEvent(message.messageId, pg))
             }
         val digest = try {
-            if (message.isPlain()) {
-                uploadPlainAttachment(attachResponse.upload_url!!, message.mediaSize, attachmentData)
-                null
-            } else {
-                uploadAttachment(attachResponse.upload_url!!, attachmentData) // SHA256
-            }
+            val transmittedDigest = Util.uploadAttachment(
+                attachResponse.upload_url!!,
+                attachmentData.data,
+                if (message.isPlain()) {
+                    message.mediaSize
+                } else {
+                    AttachmentCipherOutputStream.getCiphertextLength(attachmentData.dataSize)
+                },
+                attachmentData.outputStreamFactory,
+                attachmentData.listener,
+            ) { isCancelled }
+            if (key != null && transmittedDigest == null) { throw IllegalStateException("Digest is null") }
+            transmittedDigest
         } catch (e: Exception) {
             Timber.e(e)
             if (e is SocketTimeoutException) {
@@ -218,14 +225,5 @@ class SendAttachmentMessageJob(
         messageDao.updateMessageContent(GsonHelper.customGson.toJson(AttachmentExtra(attachmentId = attachmentId, messageId = message.messageId, createdAt = attachResponse.created_at)), message.messageId)
         jobManager.addJobInBackground(SendMessageJob(message, null, true))
         return true
-    }
-
-    private fun uploadPlainAttachment(url: String, size: Long, attachment: PushAttachmentData) {
-        Util.uploadAttachment(url, attachment.data, size, attachment.outputStreamFactory, attachment.listener, { isCancelled })
-    }
-
-    private fun uploadAttachment(url: String, attachment: PushAttachmentData): ByteArray {
-        val dataSize = AttachmentCipherOutputStream.getCiphertextLength(attachment.dataSize)
-        return Util.uploadAttachment(url, attachment.data, dataSize, attachment.outputStreamFactory, attachment.listener, { isCancelled })
     }
 }
