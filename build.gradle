@@ -69,7 +69,7 @@ buildscript {
         ext.emojiVerison = '1.3.0'
         ext.cronetOkhttpVersion = '0.1.0'
         ext.diffUtilsVersion = '4.12'
-        ext.argon2ktVersion = '1.3.0'
+        ext.argon2ktVersion = '1.4.0'
         ext.keccakVersion = '1.1.1'
 
         ext.mapboxSdkVersion= '10.10.0'
