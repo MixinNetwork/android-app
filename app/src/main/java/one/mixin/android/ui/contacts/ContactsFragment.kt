@@ -36,6 +36,7 @@ import one.mixin.android.ui.common.profile.ProfileBottomSheetDialogFragment
 import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.group.GroupActivity
 import one.mixin.android.ui.setting.SettingActivity
+import one.mixin.android.ui.transfer.TransferActivity
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.User
 import one.mixin.android.vo.UserRelationship
@@ -82,7 +83,8 @@ class ContactsFragment : BaseFragment(R.layout.fragment_contacts) {
             contactAdapter.setContactListener(mContactListener)
             titleView.leftIb.setOnClickListener { activity?.onBackPressedDispatcher?.onBackPressed() }
             titleView.rightAnimator.setOnClickListener {
-                SettingActivity.show(requireContext(), compose = false)
+                TransferActivity.show(requireContext())
+                // SettingActivity.show(requireContext(), compose = false)
             }
             titleView.rightAnimator.setOnLongClickListener {
                 SettingActivity.show(requireContext())

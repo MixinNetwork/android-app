@@ -275,6 +275,17 @@ interface MessageDao : BaseDao<Message> {
     )
     fun findFtsMessages(rowId: Long, limit: Int): List<Message>
 
+    @Query(
+        """
+        SELECT m.* FROM messages m 
+        WHERE m.rowid < :rowId 
+        AND m.status != 'FAILED' AND m.status != 'UNKNOWN'
+        ORDER BY m.rowid DESC
+        LIMIT :limit
+    """,
+    )
+    fun findMessages(rowId: Long, limit: Int): List<Message>
+
     @Query("SELECT rowid FROM messages ORDER BY rowid DESC LIMIT 1")
     fun getLastMessageRowId(): Long?
 
