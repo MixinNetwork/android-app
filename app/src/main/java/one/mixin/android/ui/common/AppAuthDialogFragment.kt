@@ -31,7 +31,6 @@ import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.isLandscape
-import one.mixin.android.extension.putInt
 import one.mixin.android.extension.putLong
 import one.mixin.android.ui.auth.showAppAuthPrompt
 import one.mixin.android.util.viewBinding
@@ -180,8 +179,6 @@ class AppAuthDialogFragment : DialogFragment() {
     private fun showVerifyBottomSheet() {
         VerifyBottomSheetDialogFragment.newInstance(disableBiometric = true, systemAlertLevel = true)
             .setOnPinSuccess {
-                defaultSharedPreferences.putInt(Constants.Account.PREF_APP_AUTH, -1)
-                defaultSharedPreferences.putLong(Constants.Account.PREF_APP_ENTER_BACKGROUND, 0)
                 successDismiss()
             }.showNow(parentFragmentManager, VerifyBottomSheetDialogFragment.TAG)
     }

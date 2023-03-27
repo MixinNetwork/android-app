@@ -262,7 +262,8 @@
         <item name="android:windowContentOverlay">@null</item>
         <item name="android:windowIsTranslucent">true</item>
         <item name="android:backgroundDimAmount">0.6</item>
-        <item name="android:windowAnimationStyle">@style/BottomSheet.Animation</item>
+        <item name="android:windowEnterAnimation">@null</item>
+        <item name="android:windowExitAnimation">@null</item>
         <item name="android:colorBackgroundCacheHint">@null</item>
     </style>
 
