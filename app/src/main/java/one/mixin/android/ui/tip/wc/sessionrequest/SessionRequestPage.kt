@@ -106,9 +106,10 @@ fun SessionRequestPage(
         )
         Box(modifier = Modifier.height(16.dp))
         if (sessionRequestUI.data is WCEthereumSignMessage) {
-            Message(content = viewModel.getContent(version, gson, sessionRequestUI.data)) {
-                onPreviewMessage.invoke(it)
-            }
+            MessageNoPreview()
+//            Message(content = viewModel.getContent(version, gson, sessionRequestUI.data)) {
+//                onPreviewMessage.invoke(it)
+//            }
         } else if (sessionRequestUI.data is WCEthereumTransaction) {
             Transaction(balance = Convert.fromWei(Numeric.toBigInt(sessionRequestUI.data.value ?: "0").toBigDecimal(), Convert.Unit.ETHER).multiply(asset.priceUSD()), sessionRequestUI.chain, asset)
         }
@@ -232,6 +233,47 @@ private fun Message(
 }
 
 @Composable
+private fun MessageNoPreview() {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 20.dp)
+            .clip(RoundedCornerShape(8.dp))
+            .background(MixinAppTheme.colors.backgroundWindow)
+            .padding(horizontal = 8.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Image(
+            painter = painterResource(R.drawable.ic_warning),
+            modifier = Modifier
+                .size(40.dp, 40.dp)
+                .padding(horizontal = 8.dp),
+            contentDescription = null,
+        )
+        Box(modifier = Modifier.width(8.dp))
+        Column(
+            modifier = Modifier
+                .fillMaxWidth(),
+            verticalArrangement = Arrangement.Center,
+        ) {
+            Text(
+                modifier = Modifier.padding(top = 16.dp),
+                text = stringResource(id = R.string.Preview_unavailable),
+                color = MixinAppTheme.colors.textPrimary,
+                fontSize = 14.sp,
+            )
+            Text(
+                modifier = Modifier.padding(top = 6.dp, bottom = 16.dp),
+                text = stringResource(id = R.string.preview_unavailable_desc),
+                color = MixinAppTheme.colors.textSubtitle,
+                fontSize = 14.sp,
+            )
+        }
+        Box(modifier = Modifier.width(16.dp))
+    }
+}
+
+@Composable
 private fun NetworkInfo(
     name: String,
     fee: String,
@@ -308,4 +350,10 @@ private fun Warning() {
 @Composable
 private fun TransactionPreview() {
     Transaction(balance = BigDecimal(0.134), chain = Chain.Ethereum, null)
+}
+
+@Preview
+@Composable
+private fun MessageNoPreviewPreview() {
+    MessageNoPreview()
 }
