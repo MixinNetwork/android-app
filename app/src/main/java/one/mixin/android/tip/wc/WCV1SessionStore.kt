@@ -11,6 +11,8 @@ data class WCV1Session(
     val session: WCSession,
     val chainId: Int,
     val remotePeerMeta: WCPeerMeta,
+    val peerId: String,
+    val remotePeerId: String?,
     val address: String?,
     val date: Date = Date(),
 )

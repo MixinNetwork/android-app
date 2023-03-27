@@ -29,7 +29,7 @@ object WalletConnectV1 : WalletConnect() {
         wcc.onSessionRequest = { id, peer ->
             Timber.d("$TAG onSessionRequest id: $id, peer: $peer")
             wcc.session?.let {
-                currentSession = WCV1Session(it, chain.chainReference, peer, null)
+                currentSession = WCV1Session(it, chain.chainReference, peer, requireNotNull(wcc.peerId), null, null)
             }
             RxBus.publish(WCEvent.V1(Version.V1, RequestType.SessionProposal, id))
         }
@@ -76,6 +76,11 @@ object WalletConnectV1 : WalletConnect() {
         }
         wcc.onFailure = {
             Timber.d("$TAG onFailure ${it.stackTraceToString()}")
+            if (it is IllegalStateException && it.message == "session can't be null on connection open") {
+                connectSession?.let { s ->
+                    wcc.connect(s, peerMeta)
+                }
+            }
         }
     }
 
@@ -87,14 +92,25 @@ object WalletConnectV1 : WalletConnect() {
         MixinApplication.appContext.getSharedPreferences("wallet_connect_v1_session_store", Context.MODE_PRIVATE),
     )
 
+    private val peerMeta = WCPeerMeta(
+        name = "Mixin Messenger",
+        url = "https://messenger.mixin.one",
+        description = "An open source cryptocurrency wallet with Signal messaging. Fully non-custodial and recoverable with phone number and TIP.",
+    )
+
+    private var connectSession: WCSession? = null
+
+    init {
+        sessionStore.load()?.lastOrNull()?.let { lastSession ->
+            currentSession = lastSession
+            wcClient.connect(lastSession.session, peerMeta, lastSession.peerId, lastSession.remotePeerId)
+        }
+    }
+
     fun connect(url: String): Boolean {
-        val peerMeta = WCPeerMeta(
-            name = "Mixin Messenger",
-            url = "https://mixin.one",
-            description = "Mixin Messenger Wallet",
-        )
         val wcSession = WCSession.from(url) ?: return false
 
+        connectSession = wcSession
         wcClient.connect(wcSession, peerMeta)
         return true
     }
@@ -119,8 +135,10 @@ object WalletConnectV1 : WalletConnect() {
         this.address = address
 
         val session = currentSession ?: return
-        WCV1Session(session.session, chain.chainReference, session.remotePeerMeta, address, session.date).apply {
+        val peerId = wcClient.peerId ?: return
+        WCV1Session(session.session, chain.chainReference, session.remotePeerMeta, peerId, wcClient.remotePeerId, address, session.date).apply {
             currentSession = this
+            connectSession = null
             sessionStore.store(this)
         }
     }

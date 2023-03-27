@@ -389,9 +389,7 @@ class MainActivity : BlazeBaseActivity() {
         jobManager.addJobInBackground(RefreshContactJob())
         jobManager.addJobInBackground(RefreshFcmJob())
 
-        // TODO init
-        WalletConnectV1
-        WalletConnectV2
+        initWalletConnect()
     }
 
     private fun handleTipEvent(e: TipEvent, deviceId: String) {
@@ -583,6 +581,13 @@ class MainActivity : BlazeBaseActivity() {
             setActionTextColor(getColor(R.color.colorAccent))
             show()
         }
+    }
+
+    private fun initWalletConnect() {
+        if (!defaultSharedPreferences.getBoolean(Constants.Debug.WALLET_CONNECT_DEBUG, false)) return
+
+        WalletConnectV1
+        WalletConnectV2
     }
 
     override fun onNewIntent(intent: Intent) {

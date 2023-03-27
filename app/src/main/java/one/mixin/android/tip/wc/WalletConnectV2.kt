@@ -49,9 +49,9 @@ object WalletConnectV2 : WalletConnect() {
         val relayUrl = "relay.walletconnect.com"
         val serverUrl = "wss://$relayUrl?projectId=$projectId"
         val appMetaData = Core.Model.AppMetaData(
-            name = "Mixin Wallet",
-            url = "https://mixin.one",
-            description = "Mixin Wallet",
+            name = "Mixin Messenger",
+            url = "https://messenger.mixin.one",
+            description = "An open source cryptocurrency wallet with Signal messaging. Fully non-custodial and recoverable with phone number and TIP.",
             icons = emptyList(),
             redirect = null,
         )
