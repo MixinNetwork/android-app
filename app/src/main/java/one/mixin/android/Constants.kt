@@ -97,6 +97,10 @@ object Constants {
         const val DB_NAME = "mixin.db"
         const val MINI_VERSION = 15
         const val CURRENT_VERSION = 48
+
+        const val FTS_DB_NAME = "fts.db"
+        const val PENDING_DB_NAME = "pending.db"
+
     }
 
     object Storage {
