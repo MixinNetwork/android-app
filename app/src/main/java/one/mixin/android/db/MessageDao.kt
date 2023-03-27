@@ -13,6 +13,7 @@ import one.mixin.android.db.contants.IMAGES
 import one.mixin.android.db.contants.LIVES
 import one.mixin.android.db.contants.TRANSCRIPTS
 import one.mixin.android.db.contants.VIDEOS
+import one.mixin.android.ui.transfer.vo.TransferMessage
 import one.mixin.android.vo.AttachmentMigration
 import one.mixin.android.vo.ConversationWithStatus
 import one.mixin.android.vo.FtsSearchResult
@@ -278,13 +279,13 @@ interface MessageDao : BaseDao<Message> {
     @Query(
         """
         SELECT m.* FROM messages m 
-        WHERE m.rowid < :rowId 
+        WHERE m.rowid < :rowId  
         AND m.status != 'FAILED' AND m.status != 'UNKNOWN'
         ORDER BY m.rowid DESC
         LIMIT :limit
     """,
     )
-    fun findMessages(rowId: Long, limit: Int): List<Message>
+    fun findMessages(rowId: Long, limit: Int): List<TransferMessage>
 
     @Query("SELECT rowid FROM messages ORDER BY rowid DESC LIMIT 1")
     fun getLastMessageRowId(): Long?

@@ -4,17 +4,35 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import one.mixin.android.MixinApplication
 import one.mixin.android.db.MixinDatabase
+import one.mixin.android.ui.transfer.vo.Data
+import one.mixin.android.ui.transfer.vo.TransferData
 import one.mixin.android.util.GsonHelper
 import timber.log.Timber
 import java.io.BufferedReader
 import java.io.InputStreamReader
 import java.io.OutputStreamWriter
 import java.net.Socket
-import kotlin.random.Random
 
-class SocketHandler(private val socket: Socket, private val isServer: Boolean) : Runnable {
+class SocketHandler(
+    private val socket: Socket,
+    private val isServer: Boolean,
+    private val finishListener: (String) -> Unit,
+) : Runnable {
 
     private var quit = false
+    private var startTime = System.currentTimeMillis()
+    private val db by lazy {
+        MixinDatabase.getDatabase(MixinApplication.appContext)
+    }
+
+    private val messageDao by lazy {
+        db.messageDao()
+    }
+
+    private val conversationDao by lazy {
+        db.conversationDao()
+    }
+
     override fun run() {
         if (isServer) {
             val messageDao = MixinDatabase.getDatabase(MixinApplication.appContext).messageDao()
@@ -26,12 +44,13 @@ class SocketHandler(private val socket: Socket, private val isServer: Boolean) :
                         val messages = messageDao.findMessages(lastId!!, 100)
                         if (messages.isEmpty()) {
                             sendMessage("FINISH")
-                            Timber.e("FINISH")
-                            quit = true
+                            exit()
                             return@launch
                         }
                         Timber.e("$lastId size:${messages.size}")
-                        messages.forEach {
+                        messages.map {
+                            TransferData("message", Data(it))
+                        }.forEach {
                             sendMessage(GsonHelper.customGson.toJson(it))
                         }
                         lastId = messageDao.getMessageRowid(messages.last().messageId)
@@ -42,13 +61,18 @@ class SocketHandler(private val socket: Socket, private val isServer: Boolean) :
             }
         } else {
             MixinApplication.get().applicationScope.launch(Dispatchers.IO) {
-                do {
-                    val message = bufferedReader.readLine()
-                    if (message==null){
-                        quit = true
-                    }
-                    Timber.e("${count++}" + message)
-                } while (!quit)
+                try {
+                    do {
+                        val message = bufferedReader.readLine()
+                        if (message == null || message == "FINISH") {
+                            finishListener("Finish Synchronized $count messages, ${System.currentTimeMillis() - startTime} ms")
+                            exit()
+                        }
+                        Timber.e("${count++}" + message)
+                    } while (!quit)
+                } catch (e: Exception) {
+                    Timber.e(e)
+                }
             }
         }
     }

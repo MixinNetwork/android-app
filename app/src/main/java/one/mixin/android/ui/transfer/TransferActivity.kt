@@ -3,14 +3,14 @@ package one.mixin.android.ui.transfer
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import androidx.core.view.isVisible
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import one.mixin.android.databinding.ActivityContactBinding
 import one.mixin.android.databinding.ActivityTransferBinding
+import one.mixin.android.extension.toast
 import one.mixin.android.ui.common.BaseActivity
-import one.mixin.android.ui.setting.SettingActivity
 import one.mixin.android.util.NetworkUtils
 import one.mixin.android.util.viewBinding
 
@@ -18,7 +18,7 @@ class TransferActivity : BaseActivity() {
     companion object {
         fun show(context: Context) {
             context.startActivity(
-                Intent(context, TransferActivity::class.java)
+                Intent(context, TransferActivity::class.java),
             )
         }
     }
@@ -31,19 +31,23 @@ class TransferActivity : BaseActivity() {
         binding.start.setOnClickListener {
             lifecycleScope.launch(Dispatchers.IO) {
                 withContext(Dispatchers.Main) {
-                    binding.info.text = "server ${NetworkUtils.getWifiIpAddress(this@TransferActivity)}"
+                    toast("Sever IP: ${NetworkUtils.getWifiIpAddress(this@TransferActivity)}")
+                    binding.startClient.isVisible = false
                 }
-                TransferServer().startServer()
+                TransferServer(finishListener).startServer()
             }
         }
 
         binding.startClient.setOnClickListener {
             lifecycleScope.launch(Dispatchers.IO) {
-                withContext(Dispatchers.Main) {
-                    binding.info.text = NetworkUtils.getWifiIpAddress(this@TransferActivity)
-                }
-                TransferClient().connectToServer("192.168.12.29")
+                TransferClient(finishListener).connectToServer("192.168.12.29")
             }
+        }
+    }
+
+    private val finishListener: (String) -> Unit = { msg ->
+        lifecycleScope.launch(Dispatchers.Main) {
+            toast(msg)
         }
     }
 }

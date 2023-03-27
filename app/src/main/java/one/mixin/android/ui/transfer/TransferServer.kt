@@ -6,7 +6,7 @@ import timber.log.Timber
 import java.net.ServerSocket
 import java.net.Socket
 
-class TransferServer {
+class TransferServer(private val finishListener: (String) -> Unit) {
 
     private var serverSocket: ServerSocket? = null
     private var socket: Socket? = null
@@ -16,7 +16,7 @@ class TransferServer {
             serverSocket = ServerSocket(TransferClient.SERVER_PORT) // todo replace port
             socket = serverSocket!!.accept()
             Timber.e("RUNNING")
-            Thread(SocketHandler(socket!!, true)).start()
+            Thread(SocketHandler(socket!!, true, finishListener)).start()
         } catch (e: Exception) {
             Timber.e(e)
         }

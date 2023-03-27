@@ -1122,4 +1122,5 @@
     <string name="your_pin_has_been_created">Your PIN has been created</string>
     <string name="text_size">Text Size</string>
     <string name="from_system">From system</string>
+    <string name="Migration_and_backup">Migration and backup</string>
 </resources>
