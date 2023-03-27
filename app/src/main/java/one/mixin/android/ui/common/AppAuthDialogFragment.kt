@@ -109,7 +109,6 @@ class AppAuthDialogFragment : DialogFragment() {
 
     override fun onDismiss(dialog: DialogInterface) {
         super.onDismiss(dialog)
-        val activity = requireActivity()
         if (!success) {
             failureDismiss()
         } else {

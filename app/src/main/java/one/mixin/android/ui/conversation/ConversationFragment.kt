@@ -2471,6 +2471,7 @@ class ConversationFragment() :
                                 { granted ->
                                     if (granted) {
                                         selectDocument()
+                                        (activity as? ConversationActivity)?.waitIntentResult = true
                                     } else {
                                         context?.openPermissionSetting()
                                     }
@@ -2782,6 +2783,7 @@ class ConversationFragment() :
                         imageUri = createImageUri()
                         imageUri?.let {
                             openCamera(it)
+                            (activity as? ConversationActivity)?.waitIntentResult = true
                         }
                     } else {
                         context?.openPermissionSetting()

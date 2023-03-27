@@ -52,6 +52,11 @@ class ConversationActivity : BlazeBaseActivity() {
         showConversation(intent)
     }
 
+    override fun onStart() {
+        super.onStart()
+        waitIntentResult = false
+    }
+
     override fun finish() {
         if (intent.getBooleanExtra(ARGS_SHORTCUT, false)) {
             MainActivity.show(this)
@@ -118,6 +123,10 @@ class ConversationActivity : BlazeBaseActivity() {
             )
         }
     }
+
+    var waitIntentResult = false
+
+    override fun ignoreCheck(): Boolean = waitIntentResult
 
     companion object {
         private const val ARGS_FAST_SHOW = "args_fast_show"

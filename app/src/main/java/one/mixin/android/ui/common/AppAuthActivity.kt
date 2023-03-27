@@ -29,6 +29,8 @@ open class AppAuthActivity : BaseActivity() {
     }
 
     private fun checkAndShowAppAuth(): Boolean {
+        if (ignoreCheck()) return false
+
         val appAuth = defaultSharedPreferences.getInt(Constants.Account.PREF_APP_AUTH, -1)
         if (appAuth != -1) {
             if (appAuth == 0) {
@@ -65,4 +67,6 @@ open class AppAuthActivity : BaseActivity() {
             window.clearFlags(WindowManager.LayoutParams.FLAG_SECURE)
         }
     }
+
+    protected open fun ignoreCheck() = false
 }
