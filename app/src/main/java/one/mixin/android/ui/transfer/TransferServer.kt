@@ -1,11 +1,10 @@
 package one.mixin.android.ui.transfer
 
-import com.google.gson.JsonParser
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import one.mixin.android.MixinApplication
 import one.mixin.android.db.MixinDatabase
-import one.mixin.android.ui.transfer.vo.TransferData
+import one.mixin.android.ui.transfer.vo.TransferSendData
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.NetworkUtils
 import timber.log.Timber
@@ -49,33 +48,16 @@ class TransferServer(private val finishListener: (String) -> Unit) {
     }
 
     fun run() {
-        val messageDao = MixinDatabase.getDatabase(MixinApplication.appContext).messageDao()
-        var lastId = messageDao.getLastMessageRowId()
         MixinApplication.get().applicationScope.launch(Dispatchers.IO) {
             try {
-                do {
-                    lastId ?: return@launch
-                    val messages = messageDao.findMessages(lastId!!, 100)
-                    if (messages.isEmpty()) {
-                        sendMessage("FINISH")
-                        exit()
-                        return@launch
-                    }
-                    Timber.e("$lastId size:${messages.size}")
-                    messages.map {
-                        val s = gson.toJson(it)
-                        TransferData("message", JsonParser.parseString(s).asJsonObject)
-                    }.forEach {
-                        sendMessage(gson.toJson(it))
-                    }
-                    lastId = messageDao.getMessageRowid(messages.last().messageId)
-                    // sendMessage("hello")
-                    // sendMessage("world")
-                    // sendMessage("你好")
-                    // sendMessage("你好，world")
-                    // sendMessage("FINISH")
-                    quit = true
-                } while (!quit)
+                syncConversation()
+                syncUser()
+                syncAsset()
+                syncSnapshot()
+                syncSticker()
+                syncMessage()
+                sendMessage("FINISH")
+                exit()
             } catch (e: Exception) {
                 Timber.e(e)
             }
@@ -90,9 +72,45 @@ class TransferServer(private val finishListener: (String) -> Unit) {
         socket.getOutputStream()
     }
 
+    private var count = 0
     fun sendMessage(message: String) {
         protocol.write(outputStream, message)
         outputStream.flush()
+        Timber.e("send(${count++}) $message")
+    }
+
+    private fun syncConversation() {
+    }
+
+    private fun syncUser() {
+    }
+
+    private fun syncAsset() {
+    }
+
+    private fun syncSticker() {
+    }
+
+    private fun syncSnapshot() {
+    }
+
+    private fun syncMessage() {
+        var lastId = messageDao.getLastMessageRowId() ?: return
+        while (!quit) {
+            val messages = messageDao.findMessages(lastId, 100)
+            if (messages.isEmpty()) {
+                return
+            }
+            messages.map {
+                TransferSendData("message", it)
+            }.forEach {
+                sendMessage(gson.toJson(it))
+            }
+            if (messages.size < 100) {
+                return
+            }
+            lastId = messageDao.getMessageRowid(messages.last().messageId) ?: return
+        }
     }
 
     val protocol = TransferProtocol()

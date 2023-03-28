@@ -1,18 +1,21 @@
 package one.mixin.android.ui.transfer
 
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import one.mixin.android.MixinApplication
 import one.mixin.android.db.MixinDatabase
+import one.mixin.android.ui.transfer.vo.TransferData
+import one.mixin.android.ui.transfer.vo.TransferMessage
 import one.mixin.android.util.GsonHelper
 import timber.log.Timber
-import java.io.IOException
 import java.net.Socket
+import java.net.SocketException
 import java.net.UnknownHostException
 
 class TransferClient(private val finishListener: (String) -> Unit) {
 
-    private lateinit var socket:Socket
+    private lateinit var socket: Socket
     private var quit = false
     private var startTime = System.currentTimeMillis()
     private val db by lazy {
@@ -48,7 +51,6 @@ class TransferClient(private val finishListener: (String) -> Unit) {
 
     val protocol = TransferProtocol()
 
-
     fun connectToServer(ip: String) {
         try {
             socket = Socket(ip, SERVER_PORT)
@@ -60,31 +62,40 @@ class TransferClient(private val finishListener: (String) -> Unit) {
         }
     }
 
-    private fun run(){
+    private fun run() {
         MixinApplication.get().applicationScope.launch(Dispatchers.IO) {
             try {
                 do {
+                    if (inputStream.available() <= 0) delay(1000)
                     val content = protocol.read(inputStream)
                     if (content == "FINISH") {
                         finishListener("Finish Synchronized $count messages, ${System.currentTimeMillis() - startTime} ms")
                         exit()
                     } else {
-                        // val transferData = gson.fromJson<TransferData<JsonObject?>>(content, TransferData::class.java)
-                        // when (transferData.type) {
-                        //     "message" -> {
-                        //         Timber.e(content)
-                        //     }
-                        //     else -> Timber.e("No support")
-                        // }
-                        Timber.e(content)
+                        val transferData = gson.fromJson(content, TransferData::class.java)
+                        when (transferData.type) {
+                            "message" -> {
+                                Timber.e(
+                                    "receiver(${count++}) ${
+                                        gson.fromJson(
+                                            transferData.data,
+                                            TransferMessage::class.java,
+                                        ).messageId
+                                    }",
+                                )
+                            }
+
+                            else -> Timber.e("No support")
+                        }
                     }
-                    Timber.e("${count++}")
                 } while (!quit)
+            } catch (e: SocketException) {
+                // Todo
+                Timber.e(e)
             } catch (e: Exception) {
                 Timber.e(e)
             }
         }
-
     }
 
     fun exit() {

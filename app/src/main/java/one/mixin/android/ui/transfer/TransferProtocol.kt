@@ -1,10 +1,8 @@
 package one.mixin.android.ui.transfer
 
-import timber.log.Timber
 import java.io.File
 import java.io.InputStream
 import java.io.OutputStream
-import java.lang.IllegalStateException
 import java.nio.ByteBuffer
 import kotlin.experimental.xor
 import kotlin.text.Charsets.UTF_8
@@ -21,7 +19,6 @@ class TransferProtocol {
         inputStream.read(packageData)
         val type = packageData[0]
         val size = byteArrayToInt(packageData.copyOfRange(1, 5))
-        if (size <= 0) return 
         if (type == TYPE_STRING) {
             return readDynamicLengthString(inputStream, size)
         } else if (type == TYPE_FILE) { // File
@@ -41,7 +38,7 @@ class TransferProtocol {
         // outputStream.write(byteArrayOf(checksum(TYPE_STRING, data)))
     }
 
-    fun write(outputStream: OutputStream, file: File){
+    fun write(outputStream: OutputStream, file: File) {
         outputStream.write(byteArrayOf(TYPE_FILE))
         outputStream.write(intToByteArray(file.length().toInt()))
         // todo write file
