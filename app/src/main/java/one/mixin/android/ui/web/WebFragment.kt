@@ -763,7 +763,9 @@ class WebFragment : BaseFragment() {
                         closeSelf()
                     }
                 },
-                getTipAddressAction = { getTipAddress(it) },
+                getTipAddressAction = { chainId, callback ->
+                    getTipAddress(chainId, callback)
+                },
             )
             webAppInterface?.let { webView.addJavascriptInterface(it, "MixinContext") }
             val extraHeaders = HashMap<String, String>()
@@ -816,7 +818,7 @@ class WebFragment : BaseFragment() {
         }
     }
 
-    private fun getTipAddress(callbackFunction: String) {
+    private fun getTipAddress(chainId: String, callbackFunction: String) {
         if (viewDestroyed()) return
 
         lifecycleScope.launch {
@@ -826,7 +828,11 @@ class WebFragment : BaseFragment() {
                 lifecycleScope.launch {
                     val result = tip.getOrRecoverTipPriv(requireContext(), pin)
                     if (result.isSuccess) {
-                        val address = tipPrivToAddress(result.getOrThrow())
+                        val address = try {
+                            tipPrivToAddress(result.getOrThrow(), chainId)
+                        } catch (e: IllegalArgumentException) {
+                            e.message
+                        }
                         webView.evaluateJavascript("$callbackFunction('$address')") {}
                     }
                 }
@@ -1390,7 +1396,7 @@ class WebFragment : BaseFragment() {
         var reloadThemeAction: (() -> Unit)? = null,
         var playlistAction: ((Array<String>) -> Unit)? = null,
         var closeAction: (() -> Unit)? = null,
-        var getTipAddressAction: ((String) -> Unit)? = null,
+        var getTipAddressAction: ((String, String) -> Unit)? = null,
     ) {
         @JavascriptInterface
         fun showToast(toast: String) {
@@ -1426,8 +1432,8 @@ class WebFragment : BaseFragment() {
         }
 
         @JavascriptInterface
-        fun getTipAddress(callbackFunction: String) {
-            getTipAddressAction?.invoke(callbackFunction)
+        fun getTipAddress(chainId: String, callbackFunction: String) {
+            getTipAddressAction?.invoke(chainId, callbackFunction)
         }
     }
 

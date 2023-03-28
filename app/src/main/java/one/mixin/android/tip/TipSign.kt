@@ -2,6 +2,7 @@ package one.mixin.android.tip
 
 import net.i2p.crypto.eddsa.EdDSAEngine
 import net.i2p.crypto.eddsa.spec.EdDSAPrivateKeySpec
+import one.mixin.android.Constants
 import one.mixin.android.crypto.ed25519
 import one.mixin.android.crypto.getPrivateKey
 import one.mixin.android.crypto.getPublicKey
@@ -99,9 +100,13 @@ fun tipPrivToPrivateKey(priv: ByteArray): ByteArray {
     return Numeric.toBytesPadded(bip44KeyPair.privateKey, 32)
 }
 
-fun tipPrivToAddress(priv: ByteArray): String {
+fun tipPrivToAddress(priv: ByteArray, chainId: String): String {
     val seed = priv.sha3Sum256()
     val masterKeyPair = Bip32ECKeyPair.generateKeyPair(seed)
-    val bip44KeyPair = generateBip44Key(masterKeyPair, Bip44Path.Ethereum)
+    val bip44KeyPair = when (chainId) {
+        Constants.ChainId.BITCOIN_CHAIN_ID -> generateBip44Key(masterKeyPair, Bip44Path.Bitcoin)
+        Constants.ChainId.ETHEREUM_CHAIN_ID -> generateBip44Key(masterKeyPair, Bip44Path.Ethereum)
+        else -> throw IllegalArgumentException("Not supported chainId")
+    }
     return Keys.toChecksumAddress(Keys.getAddress(bip44KeyPair.publicKey))
 }

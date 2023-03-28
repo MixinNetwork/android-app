@@ -406,7 +406,7 @@ class TransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>>()
 
         val result = tip.getOrRecoverTipPriv(requireContext(), pin)
         if (result.isSuccess) {
-            val destination = tipPrivToAddress(result.getOrThrow())
+            val destination = tipPrivToAddress(result.getOrThrow(), Constants.ChainId.ETHEREUM_CHAIN_ID)
             val addressFeeResponse = handleMixinResponse(
                 invokeNetwork = {
                     walletViewModel.getExternalAddressFee(asset.assetId, destination, null)
