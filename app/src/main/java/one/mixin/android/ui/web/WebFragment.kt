@@ -102,9 +102,12 @@ import one.mixin.android.extension.toUri
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.session.Session
+import one.mixin.android.tip.Tip
+import one.mixin.android.tip.tipPrivToAddress
 import one.mixin.android.tip.wc.WalletConnectV1
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.BottomSheetViewModel
+import one.mixin.android.ui.common.VerifyBottomSheetDialogFragment
 import one.mixin.android.ui.common.info.createMenuLayout
 import one.mixin.android.ui.common.info.menu
 import one.mixin.android.ui.common.info.menuList
@@ -140,6 +143,7 @@ import timber.log.Timber
 import java.io.ByteArrayInputStream
 import java.io.FileInputStream
 import java.util.concurrent.TimeUnit
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class WebFragment : BaseFragment() {
@@ -199,6 +203,9 @@ class WebFragment : BaseFragment() {
             this.index = -1
         }
     }
+
+    @Inject
+    lateinit var tip: Tip
 
     private lateinit var getPermissionResult: ActivityResultLauncher<Pair<App, AuthorizationResponse>>
 
@@ -756,6 +763,7 @@ class WebFragment : BaseFragment() {
                         closeSelf()
                     }
                 },
+                getTipAddressAction = { getTipAddress(it) },
             )
             webAppInterface?.let { webView.addJavascriptInterface(it, "MixinContext") }
             val extraHeaders = HashMap<String, String>()
@@ -805,6 +813,24 @@ class WebFragment : BaseFragment() {
             webView.evaluateJavascript(themeColorScript) {
                 setStatusBarColor(it)
             }
+        }
+    }
+
+    private fun getTipAddress(callbackFunction: String) {
+        if (viewDestroyed()) return
+
+        lifecycleScope.launch {
+            VerifyBottomSheetDialogFragment.newInstance().setOnPinSuccess { pin ->
+                if (viewDestroyed()) return@setOnPinSuccess
+
+                lifecycleScope.launch {
+                    val result = tip.getOrRecoverTipPriv(requireContext(), pin)
+                    if (result.isSuccess) {
+                        val address = tipPrivToAddress(result.getOrThrow())
+                        webView.evaluateJavascript("$callbackFunction('$address')") {}
+                    }
+                }
+            }.showNow(parentFragmentManager, VerifyBottomSheetDialogFragment.TAG)
         }
     }
 
@@ -1364,6 +1390,7 @@ class WebFragment : BaseFragment() {
         var reloadThemeAction: (() -> Unit)? = null,
         var playlistAction: ((Array<String>) -> Unit)? = null,
         var closeAction: (() -> Unit)? = null,
+        var getTipAddressAction: ((String) -> Unit)? = null,
     ) {
         @JavascriptInterface
         fun showToast(toast: String) {
@@ -1396,6 +1423,11 @@ class WebFragment : BaseFragment() {
         @JavascriptInterface
         fun close() {
             closeAction?.invoke()
+        }
+
+        @JavascriptInterface
+        fun getTipAddress(callbackFunction: String) {
+            getTipAddressAction?.invoke(callbackFunction)
         }
     }
 
