@@ -45,7 +45,7 @@ class TransferActivity : BaseActivity() {
                     binding.startClient.isVisible = false
                     binding.start.isVisible = false
                 }
-                TransferClient(finishListener).connectToServer("192.168.12.29")
+                TransferClient(finishListener).connectToServer("192.168.98.29")
             }
         }
     }

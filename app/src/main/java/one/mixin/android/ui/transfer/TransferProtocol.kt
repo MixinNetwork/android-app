@@ -1,10 +1,11 @@
 package one.mixin.android.ui.transfer
 
+import timber.log.Timber
 import java.io.File
 import java.io.InputStream
 import java.io.OutputStream
 import java.nio.ByteBuffer
-import kotlin.experimental.xor
+import java.util.zip.CRC32
 import kotlin.text.Charsets.UTF_8
 
 class TransferProtocol {
@@ -35,7 +36,7 @@ class TransferProtocol {
         outputStream.write(byteArrayOf(TYPE_STRING))
         outputStream.write(intToByteArray(data.size))
         outputStream.write(data)
-        // outputStream.write(byteArrayOf(checksum(TYPE_STRING, data)))
+        outputStream.write(checksum(data))
     }
 
     fun write(outputStream: OutputStream, file: File) {
@@ -45,16 +46,16 @@ class TransferProtocol {
         // outputStream.write(byteArrayOf(checksum(TYPE_STRING, data)))
     }
 
-    private fun checksum(type: Byte, data: ByteArray): Byte {
-        return type xor data.hashCode().toByte()
+    private fun checksum(data: ByteArray): ByteArray {
+        return calculateCrc32(data)
     }
 
     private fun readDynamicLengthString(inputStream: InputStream, expectedLength: Int): String {
         val data = ByteArray(expectedLength)
         inputStream.read(data)
-        // val checksum = ByteArray(1)
-        // inputStream.read(checksum)
-        // Timber.e("$checksum")
+        val checksum = ByteArray(8)
+        inputStream.read(checksum)
+        Timber.e("checksum ${bytesToLong(checksum)} ${bytesToLong(checksum(data))}")
         return String(data, UTF_8)
     }
 
@@ -71,5 +72,19 @@ class TransferProtocol {
         val byteBuffer = ByteBuffer.allocate(4)
         byteBuffer.putInt(intValue)
         return byteBuffer.array()
+    }
+
+    private fun longToBytes(longValue: Long): ByteArray {
+        return ByteBuffer.allocate(java.lang.Long.BYTES).putLong(longValue).array()
+    }
+
+    private fun bytesToLong(byteArray: ByteArray): Long {
+        return ByteBuffer.wrap(byteArray).long
+    }
+
+    private fun calculateCrc32(bytes: ByteArray): ByteArray {
+        val crc = CRC32()
+        crc.update(bytes)
+        return longToBytes(crc.value)
     }
 }
