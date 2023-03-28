@@ -55,6 +55,7 @@ class TransferProtocol {
         inputStream.read(data)
         val checksum = ByteArray(8)
         inputStream.read(checksum)
+        // todo check and throw error
         Timber.e("checksum ${bytesToLong(checksum)} ${bytesToLong(checksum(data))}")
         return String(data, UTF_8)
     }
