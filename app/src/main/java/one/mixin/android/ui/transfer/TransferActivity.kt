@@ -33,6 +33,7 @@ class TransferActivity : BaseActivity() {
                 withContext(Dispatchers.Main) {
                     toast("Sever IP: ${NetworkUtils.getWifiIpAddress(this@TransferActivity)}")
                     binding.startClient.isVisible = false
+                    binding.start.isVisible = false
                 }
                 TransferServer(finishListener).startServer()
             }
@@ -40,6 +41,10 @@ class TransferActivity : BaseActivity() {
 
         binding.startClient.setOnClickListener {
             lifecycleScope.launch(Dispatchers.IO) {
+                withContext(Dispatchers.Main) {
+                    binding.startClient.isVisible = false
+                    binding.start.isVisible = false
+                }
                 TransferClient(finishListener).connectToServer("192.168.12.29")
             }
         }
@@ -48,6 +53,8 @@ class TransferActivity : BaseActivity() {
     private val finishListener: (String) -> Unit = { msg ->
         lifecycleScope.launch(Dispatchers.Main) {
             toast(msg)
+            binding.startClient.isVisible = true
+            binding.start.isVisible = true
         }
     }
 }
