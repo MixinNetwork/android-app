@@ -51,6 +51,7 @@ class ConnectionsViewModel @Inject internal constructor() : ViewModel() {
             WalletConnect.Version.V2 -> {
                 WalletConnectV2.disconnect(topic)
             }
+            WalletConnect.Version.TIP -> {}
         }
     }
 

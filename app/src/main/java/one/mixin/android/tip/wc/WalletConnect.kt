@@ -27,7 +27,7 @@ abstract class WalletConnect {
     }
 
     enum class Version {
-        V1, V2
+        V1, V2, TIP
     }
 
     enum class RequestType {

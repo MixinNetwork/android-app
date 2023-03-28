@@ -4,6 +4,7 @@ import androidx.core.net.toUri
 import androidx.lifecycle.ViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import one.mixin.android.tip.wc.WalletConnect
+import one.mixin.android.tip.wc.WalletConnectTIP
 import one.mixin.android.tip.wc.WalletConnectV1
 import one.mixin.android.tip.wc.WalletConnectV2
 import javax.inject.Inject
@@ -15,6 +16,7 @@ class SessionProposalViewModel @Inject internal constructor() : ViewModel() {
         when (version) {
             WalletConnect.Version.V1 -> { WalletConnectV1.rejectSession() }
             WalletConnect.Version.V2 -> { WalletConnectV2.rejectSession() }
+            WalletConnect.Version.TIP -> {}
         }
     }
 
@@ -48,6 +50,17 @@ class SessionProposalViewModel @Inject internal constructor() : ViewModel() {
                 } else {
                     null
                 }
+            }
+            WalletConnect.Version.TIP -> {
+                return SessionProposalUI(
+                    peer = PeerUI(
+                        icon = "",
+                        name = "TIP Wallet",
+                        desc = "TIP Wallet Description",
+                        uri = "7000101002",
+                    ),
+                    chain = WalletConnectTIP.chain,
+                )
             }
         }
     }

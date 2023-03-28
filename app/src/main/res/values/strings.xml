@@ -1184,8 +1184,8 @@
     <string name="Switch_Network">Switch Network</string>
     <string name="Read_your_public_address">Read your public address</string>
     <string name="Allow_app_access_wallet_balance_activity">Allow app to access your wallet balance and activity.</string>
-    <string name="Request_permission">Request permission</string>
-    <string name="Allow_dapp_ask_permission">allow dapp to ask for your permission to make a transaction.</string>
+    <string name="Request_approval">Request approval</string>
+    <string name="Allow_dapp_ask_permission">allow dapp to ask for your approval to make a transaction.</string>
     <string name="Signature_Request">Signature Request</string>
     <string name="Transaction_Request">Transaction Request</string>
     <string name="signature_request_warning">We cannot verify this signature request. Make sure you trust this app before sending this request.</string>

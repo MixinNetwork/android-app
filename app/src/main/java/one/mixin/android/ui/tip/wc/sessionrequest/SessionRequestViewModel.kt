@@ -23,6 +23,7 @@ class SessionRequestViewModel @Inject internal constructor() : ViewModel() {
             WalletConnect.Version.V2 -> {
                 WalletConnectV2.rejectRequest(msg)
             }
+            WalletConnect.Version.TIP -> {}
         }
     }
 
@@ -62,6 +63,9 @@ class SessionRequestViewModel @Inject internal constructor() : ViewModel() {
                     chain = WalletConnectV2.chain,
                 )
             }
+            WalletConnect.Version.TIP -> {
+                return null
+            }
         }
     }
 
@@ -73,6 +77,7 @@ class SessionRequestViewModel @Inject internal constructor() : ViewModel() {
             WalletConnect.Version.V2 -> {
                 WalletConnectV2.sendTransaction(id)
             }
+            WalletConnect.Version.TIP -> {}
         }
     }
 
@@ -92,7 +97,7 @@ class SessionRequestViewModel @Inject internal constructor() : ViewModel() {
                 else -> "Invalid data"
             }
         }
-        WalletConnect.Version.V2 -> {
+        WalletConnect.Version.V2, WalletConnect.Version.TIP -> {
             gson.toJson(data)
         }
     }

@@ -6,19 +6,15 @@ import android.os.Build
 import android.os.Bundle
 import android.view.WindowManager
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import one.mixin.android.R
 import one.mixin.android.event.WCEvent
 import one.mixin.android.tip.Tip
-import one.mixin.android.tip.exception.TipNetworkException
 import one.mixin.android.tip.tipPrivToPrivateKey
 import one.mixin.android.tip.wc.WalletConnect
 import one.mixin.android.tip.wc.WalletConnect.RequestType
 import one.mixin.android.tip.wc.WalletConnectV1
 import one.mixin.android.tip.wc.WalletConnectV2
 import one.mixin.android.ui.common.BaseActivity
-import timber.log.Timber
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -113,6 +109,7 @@ class WalletConnectActivity : BaseActivity() {
                     }
                 }
             }
+            WalletConnect.Version.TIP -> {}
         }
     }
 
@@ -122,26 +119,16 @@ class WalletConnectActivity : BaseActivity() {
         onReject: () -> Unit,
         callback: suspend (ByteArray) -> Unit,
     ) {
-        val wcBottomSheet = WalletConnectBottomSheetDialogFragment.newInstance(requestType, version)
-        wcBottomSheet.setOnPinComplete { pin ->
-            val result = tip.getOrRecoverTipPriv(this, pin)
-            if (result.isSuccess) {
-                withContext(Dispatchers.IO) {
-                    callback(tipPrivToPrivateKey(result.getOrThrow()))
-                }
-                return@setOnPinComplete null
-            } else {
-                val e = result.exceptionOrNull()
-                val errorInfo = e?.stackTraceToString()
-                Timber.d("${if (version == WalletConnect.Version.V2) WalletConnectV2.TAG else WalletConnectV1.TAG} $errorInfo")
-                return@setOnPinComplete if (e is TipNetworkException) {
-                    "code: ${e.error.code}, message: ${e.error.description}"
-                } else {
-                    errorInfo
-                }
-            }
-        }.setOnReject { onReject() }
-            .showNow(supportFragmentManager, WalletConnectBottomSheetDialogFragment.TAG)
+        showWalletConnectBottomSheetDialogFragment(
+            tip,
+            this,
+            requestType,
+            version,
+            onReject,
+            callback = {
+                callback(tipPrivToPrivateKey(it))
+            },
+        )
     }
 
     companion object {

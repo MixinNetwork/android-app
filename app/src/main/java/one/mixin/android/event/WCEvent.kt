@@ -23,4 +23,10 @@ sealed class WCEvent(
         override val version: WalletConnect.Version,
         override val requestType: RequestType,
     ) : WCEvent(version, requestType)
+
+    @Parcelize
+    data class TIP(
+        override val version: WalletConnect.Version,
+        override val requestType: RequestType,
+    ) : WCEvent(version, requestType)
 }

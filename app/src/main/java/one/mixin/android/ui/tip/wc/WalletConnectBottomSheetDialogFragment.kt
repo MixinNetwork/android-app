@@ -17,6 +17,7 @@ import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.view.doOnPreDraw
+import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.bottomsheet.BottomSheetBehavior
@@ -36,9 +37,12 @@ import one.mixin.android.extension.navigationBarHeight
 import one.mixin.android.extension.realSize
 import one.mixin.android.extension.statusBarHeight
 import one.mixin.android.extension.withArgs
+import one.mixin.android.tip.Tip
+import one.mixin.android.tip.exception.TipNetworkException
 import one.mixin.android.tip.wc.WalletConnect
 import one.mixin.android.tip.wc.WalletConnect.RequestType
 import one.mixin.android.tip.wc.WalletConnectException
+import one.mixin.android.tip.wc.WalletConnectTIP
 import one.mixin.android.tip.wc.WalletConnectV1
 import one.mixin.android.tip.wc.WalletConnectV2
 import one.mixin.android.tip.wc.walletConnectChainIdMap
@@ -84,7 +88,13 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
 
     private val requestType by lazy { RequestType.values()[requireArguments().getInt(ARGS_REQUEST_TYPE)] }
     private val version by lazy { WalletConnect.Version.values()[requireArguments().getInt(ARGS_VERSION)] }
-    private val wc by lazy { if (version == WalletConnect.Version.V1) WalletConnectV1 else WalletConnectV2 }
+    private val wc by lazy {
+        when (version) {
+            WalletConnect.Version.V1 -> WalletConnectV1
+            WalletConnect.Version.V2 -> WalletConnectV2
+            else -> WalletConnectTIP
+        }
+    }
 
     private var step by mutableStateOf(Step.Input)
     private var errorInfo: String? by mutableStateOf(null)
@@ -216,7 +226,7 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 } catch (e: IllegalStateException) {
                     Timber.w(e)
                 } finally {
-                    if (activity?.isFinishing == false) {
+                    if (activity is WalletConnectActivity && activity?.isFinishing == false) {
                         activity?.finish()
                     }
                 }
@@ -227,7 +237,7 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
             } catch (e: IllegalStateException) {
                 Timber.w(e)
             } finally {
-                if (activity?.isFinishing == false) {
+                if (activity is WalletConnectActivity && activity?.isFinishing == false) {
                     activity?.finish()
                 }
             }
@@ -353,4 +363,43 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
 
         override fun onCancel() {}
     }
+}
+
+fun showWalletConnectBottomSheetDialogFragment(
+    tip: Tip,
+    fragmentActivity: FragmentActivity,
+    requestType: RequestType,
+    version: WalletConnect.Version,
+    onReject: () -> Unit,
+    callback: suspend (ByteArray) -> Unit,
+) {
+    val wcBottomSheet = WalletConnectBottomSheetDialogFragment.newInstance(requestType, version)
+    wcBottomSheet.setOnPinComplete { pin ->
+        val result = tip.getOrRecoverTipPriv(fragmentActivity, pin)
+        if (result.isSuccess) {
+            callback(result.getOrThrow())
+            return@setOnPinComplete null
+        } else {
+            val e = result.exceptionOrNull()
+            val errorInfo = e?.stackTraceToString()
+            Timber.d(
+                "${
+                    when (version) {
+                        WalletConnect.Version.V2 -> WalletConnectV2.TAG
+                        WalletConnect.Version.V1 -> WalletConnectV1.TAG
+                        else -> WalletConnectTIP.TAG
+                    }
+                } $errorInfo",
+            )
+            return@setOnPinComplete if (e is TipNetworkException) {
+                "code: ${e.error.code}, message: ${e.error.description}"
+            } else {
+                errorInfo
+            }
+        }
+    }.setOnReject { onReject() }
+        .showNow(
+            fragmentActivity.supportFragmentManager,
+            WalletConnectBottomSheetDialogFragment.TAG,
+        )
 }

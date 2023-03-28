@@ -104,10 +104,10 @@ import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.session.Session
 import one.mixin.android.tip.Tip
 import one.mixin.android.tip.tipPrivToAddress
+import one.mixin.android.tip.wc.WalletConnect
 import one.mixin.android.tip.wc.WalletConnectV1
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.BottomSheetViewModel
-import one.mixin.android.ui.common.VerifyBottomSheetDialogFragment
 import one.mixin.android.ui.common.info.createMenuLayout
 import one.mixin.android.ui.common.info.menu
 import one.mixin.android.ui.common.info.menuList
@@ -124,6 +124,7 @@ import one.mixin.android.ui.player.MusicService.Companion.MUSIC_PLAYLIST
 import one.mixin.android.ui.qr.QRCodeProcessor
 import one.mixin.android.ui.setting.SettingActivity
 import one.mixin.android.ui.setting.SettingActivity.Companion.ARGS_SUCCESS
+import one.mixin.android.ui.tip.wc.showWalletConnectBottomSheetDialogFragment
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.SystemUIManager
 import one.mixin.android.util.getCountry
@@ -822,21 +823,21 @@ class WebFragment : BaseFragment() {
         if (viewDestroyed()) return
 
         lifecycleScope.launch {
-            VerifyBottomSheetDialogFragment.newInstance().setOnPinSuccess { pin ->
-                if (viewDestroyed()) return@setOnPinSuccess
-
-                lifecycleScope.launch {
-                    val result = tip.getOrRecoverTipPriv(requireContext(), pin)
-                    if (result.isSuccess) {
-                        val address = try {
-                            tipPrivToAddress(result.getOrThrow(), chainId)
-                        } catch (e: IllegalArgumentException) {
-                            e.message
-                        }
-                        webView.evaluateJavascript("$callbackFunction('$address')") {}
+            showWalletConnectBottomSheetDialogFragment(
+                tip,
+                requireActivity(),
+                WalletConnect.RequestType.SessionProposal,
+                WalletConnect.Version.TIP,
+                onReject = {},
+                callback = {
+                    val address = try {
+                        tipPrivToAddress(it, chainId)
+                    } catch (e: IllegalArgumentException) {
+                        e.message
                     }
-                }
-            }.showNow(parentFragmentManager, VerifyBottomSheetDialogFragment.TAG)
+                    webView.evaluateJavascript("$callbackFunction('$address')") {}
+                },
+            )
         }
     }
 

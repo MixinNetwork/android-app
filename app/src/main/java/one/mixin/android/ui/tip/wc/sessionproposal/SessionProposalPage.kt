@@ -105,7 +105,7 @@ fun SessionProposalPage(
                 desc = stringResource(id = R.string.Allow_app_access_wallet_balance_activity),
             )
             Scope(
-                name = stringResource(id = R.string.Request_permission),
+                name = stringResource(id = R.string.Request_approval),
                 desc = stringResource(id = R.string.Allow_dapp_ask_permission),
             )
         }
