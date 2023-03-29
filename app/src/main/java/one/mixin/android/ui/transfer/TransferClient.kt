@@ -5,7 +5,13 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import one.mixin.android.MixinApplication
 import one.mixin.android.db.MixinDatabase
+import one.mixin.android.ui.transfer.vo.TransferData
+import one.mixin.android.ui.transfer.vo.TransferMessage
 import one.mixin.android.util.GsonHelper
+import one.mixin.android.vo.Conversation
+import one.mixin.android.vo.Snapshot
+import one.mixin.android.vo.Sticker
+import one.mixin.android.vo.User
 import timber.log.Timber
 import java.net.Socket
 import java.net.SocketException
@@ -71,20 +77,42 @@ class TransferClient(private val finishListener: (String) -> Unit) {
                         exit()
                     } else {
                         Timber.e("sync $content")
-                        // val transferData = gson.fromJson(content, TransferData::class.java)
-                        // when (transferData.type) {
-                        //     "message" -> {
-                        //         Timber.e(
-                        //             "receiver(${count++}) ${
-                        //                 gson.fromJson(
-                        //                     transferData.data,
-                        //                     TransferMessage::class.java,
-                        //                 ).messageId
-                        //             }",
-                        //         )
-                        //     }
-                        //     else -> Timber.e("No support")
-                        // }
+                        val transferData = gson.fromJson(content, TransferData::class.java)
+                        when (transferData.type) {
+                            "message" -> {
+                                Timber.e(
+                                    "receiver(${count++}) ${
+                                        gson.fromJson(
+                                            transferData.data,
+                                            TransferMessage::class.java,
+                                        ).messageId
+                                    }",
+                                )
+                            }
+                            "user" -> {
+                                val user = gson.fromJson(transferData.data, User::class.java)
+                                Timber.e("User ID: ${user.userId}")
+                                count++
+                            }
+                            "conversation" -> {
+                                val conversation = gson.fromJson(transferData.data, Conversation::class.java)
+                                Timber.e("Conversation ID: ${conversation.conversationId}")
+                                count++
+                            }
+                            "snapshot" -> {
+                                val snapshot = gson.fromJson(transferData.data, Snapshot::class.java)
+                                Timber.e("Snapshot ID: ${snapshot.snapshotId}")
+                                count++
+                            }
+                            "sticker" -> {
+                                val sticker = gson.fromJson(transferData.data, Sticker::class.java)
+                                Timber.e("Sticker ID: ${sticker.stickerId}")
+                                count++
+                            }
+                            else -> {
+                                Timber.e("No support")
+                            }
+                        }
                     }
                 } while (!quit)
             } catch (e: SocketException) {
