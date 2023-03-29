@@ -1190,7 +1190,7 @@
     <string name="Transaction_Request">Transaction Request</string>
     <string name="signature_request_warning">We cannot verify this signature request. Make sure you trust this app before sending this request.</string>
     <string name="Preview_unavailable">Preview unavailable</string>
-    <string name="preview_unavailable_desc">Unable to estimate asset changes. Please make sure you trust this dapp.</string>
+    <string name="preview_unavailable_tip">Unable to estimate asset changes. Please make sure you trust this dapp.</string>
     <string name="Sign_by_PIN">Sign by PIN</string>
     <string name="Discard">Discard</string>
     <string name="signed_success_tip">The message has been signed successfully, click the button above to send or discard the signed message.</string>
@@ -1200,4 +1200,8 @@
     <string name="Balance_Change">Balance Changes (estimate)</string>
     <string name="Success">Success</string>
     <string name="TIP_Wallet">TIP Wallet</string>
+    <string name="Cancel_transaction">Cancel transaction</string>
+    <string name="cancel_transaction_tip">if the transaction is too far along cancellation may bot be possible.</string>
+    <string name="Speed_up_transaction">Cancel transaction</string>
+    <string name="speed_up_transaction_tip">if the transaction is too far along cancellation may bot be possible.</string>
 </resources>

@@ -105,13 +105,17 @@ fun SessionRequestPage(
             icon = sessionRequestUI.peerUI.icon,
         )
         Box(modifier = Modifier.height(16.dp))
-        if (sessionRequestUI.data is WCEthereumSignMessage) {
-            MessageNoPreview()
-        } else if (sessionRequestUI.data is WCEthereumTransaction) {
-            Transaction(balance = Convert.fromWei(Numeric.toBigInt(sessionRequestUI.data.value ?: "0").toBigDecimal(), Convert.Unit.ETHER).multiply(asset.priceUSD()), sessionRequestUI.chain, asset)
-        } else {
-            Message(content = viewModel.getContent(version, gson, sessionRequestUI.data)) {
-                onPreviewMessage.invoke(it)
+        when (sessionRequestUI.data) {
+            is WCEthereumSignMessage -> {
+                Hint(hint = Hint.NoPreview)
+            }
+            is WCEthereumTransaction -> {
+                Transaction(balance = Convert.fromWei(Numeric.toBigInt(sessionRequestUI.data.value ?: "0").toBigDecimal(), Convert.Unit.ETHER).multiply(asset.priceUSD()), sessionRequestUI.chain, asset)
+            }
+            else -> {
+                Message(content = viewModel.getContent(version, gson, sessionRequestUI.data)) {
+                    onPreviewMessage.invoke(it)
+                }
             }
         }
         NetworkInfo(name = sessionRequestUI.chain.name, fee = (fee ?: BigDecimal.ZERO).multiply(asset.priceUSD()).toPlainString())
@@ -233,8 +237,12 @@ private fun Message(
     }
 }
 
+private enum class Hint {
+    NoPreview, Cancel, SpeedUp
+}
+
 @Composable
-private fun MessageNoPreview() {
+private fun Hint(hint: Hint) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -245,7 +253,13 @@ private fun MessageNoPreview() {
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Image(
-            painter = painterResource(R.drawable.ic_warning),
+            painter = painterResource(
+                when (hint) {
+                    Hint.NoPreview -> R.drawable.ic_warning
+                    Hint.Cancel -> R.drawable.ic_transaction_cancel
+                    Hint.SpeedUp -> R.drawable.ic_transaction_speed
+                },
+            ),
             modifier = Modifier
                 .size(40.dp, 40.dp)
                 .padding(horizontal = 8.dp),
@@ -259,13 +273,25 @@ private fun MessageNoPreview() {
         ) {
             Text(
                 modifier = Modifier.padding(top = 16.dp),
-                text = stringResource(id = R.string.Preview_unavailable),
+                text = stringResource(
+                    id = when (hint) {
+                        Hint.NoPreview -> R.string.Preview_unavailable
+                        Hint.Cancel -> R.string.Cancel_transaction
+                        Hint.SpeedUp -> R.string.Speed_up_transaction
+                    },
+                ),
                 color = MixinAppTheme.colors.textPrimary,
                 fontSize = 14.sp,
             )
             Text(
                 modifier = Modifier.padding(top = 6.dp, bottom = 16.dp),
-                text = stringResource(id = R.string.preview_unavailable_desc),
+                text = stringResource(
+                    id = when (hint) {
+                        Hint.NoPreview -> R.string.preview_unavailable_tip
+                        Hint.Cancel -> R.string.cancel_transaction_tip
+                        Hint.SpeedUp -> R.string.speed_up_transaction_tip
+                    },
+                ),
                 color = MixinAppTheme.colors.textSubtitle,
                 fontSize = 14.sp,
             )
@@ -355,6 +381,8 @@ private fun TransactionPreview() {
 
 @Preview
 @Composable
-private fun MessageNoPreviewPreview() {
-    MessageNoPreview()
+private fun HintPreview() {
+    Hint(Hint.NoPreview)
+    Hint(Hint.Cancel)
+    Hint(Hint.SpeedUp)
 }

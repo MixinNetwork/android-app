@@ -770,8 +770,8 @@ class WebFragment : BaseFragment() {
                 getTipAddressAction = { chainId, callback ->
                     getTipAddress(chainId, callback)
                 },
-                signTipAction = { chainId, message, callback ->
-                    signTip(chainId, message, callback)
+                tipSignAction = { chainId, message, callback ->
+                    tipSign(chainId, message, callback)
                 },
             )
             webAppInterface?.let { webView.addJavascriptInterface(it, "MixinContext") }
@@ -847,7 +847,7 @@ class WebFragment : BaseFragment() {
         }
     }
 
-    private fun signTip(chainId: String, message: String, callbackFunction: String) {
+    private fun tipSign(chainId: String, message: String, callbackFunction: String) {
         if (viewDestroyed()) return
 
         lifecycleScope.launch {
@@ -1423,7 +1423,7 @@ class WebFragment : BaseFragment() {
         var playlistAction: ((Array<String>) -> Unit)? = null,
         var closeAction: (() -> Unit)? = null,
         var getTipAddressAction: ((String, String) -> Unit)? = null,
-        var signTipAction: ((String, String, String) -> Unit)? = null,
+        var tipSignAction: ((String, String, String) -> Unit)? = null,
     ) {
         @JavascriptInterface
         fun showToast(toast: String) {
@@ -1459,13 +1459,13 @@ class WebFragment : BaseFragment() {
         }
 
         @JavascriptInterface
-        fun getAddress(chainId: String, callbackFunction: String) {
+        fun getTipAddress(chainId: String, callbackFunction: String) {
             getTipAddressAction?.invoke(chainId, callbackFunction)
         }
 
         @JavascriptInterface
-        fun sign(chainId: String, message: String, callbackFunction: String) {
-            signTipAction?.invoke(chainId, message, callbackFunction)
+        fun tipSign(chainId: String, message: String, callbackFunction: String) {
+            tipSignAction?.invoke(chainId, message, callbackFunction)
         }
     }
 
