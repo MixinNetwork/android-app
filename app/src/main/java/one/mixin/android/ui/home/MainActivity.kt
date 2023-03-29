@@ -107,6 +107,7 @@ import one.mixin.android.repository.AccountRepository
 import one.mixin.android.repository.UserRepository
 import one.mixin.android.session.Session
 import one.mixin.android.tip.Tip
+import one.mixin.android.ui.auth.AppAuthActivity
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.BatteryOptimizationDialogActivity
 import one.mixin.android.ui.common.BlazeBaseActivity
@@ -713,6 +714,9 @@ class MainActivity : BlazeBaseActivity() {
                     {
                         it?.let { intent ->
                             this.startActivity(intent)
+                            if (MixinApplication.get().checkAndShowAppAuth(this)) {
+                                AppAuthActivity.show(this)
+                            }
                         }
                     },
                     {
