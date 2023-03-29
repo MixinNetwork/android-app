@@ -7,6 +7,7 @@ import com.trustwallet.walletconnect.models.ethereum.WCEthereumSignMessage
 import com.trustwallet.walletconnect.models.ethereum.WCEthereumTransaction
 import dagger.hilt.android.lifecycle.HiltViewModel
 import one.mixin.android.tip.wc.WalletConnect
+import one.mixin.android.tip.wc.WalletConnectTIP
 import one.mixin.android.tip.wc.WalletConnectV1
 import one.mixin.android.tip.wc.WalletConnectV2
 import one.mixin.android.ui.tip.wc.sessionproposal.PeerUI
@@ -64,7 +65,7 @@ class SessionRequestViewModel @Inject internal constructor() : ViewModel() {
                 )
             }
             WalletConnect.Version.TIP -> {
-                return null
+                return WalletConnectTIP.getSessionRequestUI()
             }
         }
     }
@@ -97,8 +98,11 @@ class SessionRequestViewModel @Inject internal constructor() : ViewModel() {
                 else -> "Invalid data"
             }
         }
-        WalletConnect.Version.V2, WalletConnect.Version.TIP -> {
+        WalletConnect.Version.V2 -> {
             gson.toJson(data)
+        }
+        WalletConnect.Version.TIP -> {
+            data as String
         }
     }
 }

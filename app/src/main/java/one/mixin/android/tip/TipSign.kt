@@ -93,10 +93,14 @@ private fun matchTipSignSpec(alg: String, crv: String): TipSignSpec? {
     }
 }
 
-fun tipPrivToPrivateKey(priv: ByteArray): ByteArray {
+fun tipPrivToPrivateKey(priv: ByteArray, chainId: String = Constants.ChainId.ETHEREUM_CHAIN_ID): ByteArray {
     val seed = priv.sha3Sum256()
     val masterKeyPair = Bip32ECKeyPair.generateKeyPair(seed)
-    val bip44KeyPair = generateBip44Key(masterKeyPair, Bip44Path.Ethereum) // hardcode Ethereum for now
+    val bip44KeyPair = when (chainId) {
+        Constants.ChainId.BITCOIN_CHAIN_ID -> generateBip44Key(masterKeyPair, Bip44Path.Bitcoin)
+        Constants.ChainId.ETHEREUM_CHAIN_ID -> generateBip44Key(masterKeyPair, Bip44Path.Ethereum)
+        else -> throw IllegalArgumentException("Not supported chainId")
+    }
     return Numeric.toBytesPadded(bip44KeyPair.privateKey, 32)
 }
 

@@ -48,6 +48,10 @@ abstract class WalletConnect {
             override val signMessage: T,
             val sessionRequest: Wallet.Model.SessionRequest,
         ) : WCSignData<T>(requestId, signMessage)
+
+        data class TIPSignData(
+            override val signMessage: String,
+        ) : WCSignData<String>(0L, signMessage)
     }
 
     var chain: Chain = Chain.Polygon

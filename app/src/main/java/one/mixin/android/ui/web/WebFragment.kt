@@ -103,8 +103,11 @@ import one.mixin.android.extension.toast
 import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.session.Session
 import one.mixin.android.tip.Tip
+import one.mixin.android.tip.TipSignSpec
 import one.mixin.android.tip.tipPrivToAddress
+import one.mixin.android.tip.tipPrivToPrivateKey
 import one.mixin.android.tip.wc.WalletConnect
+import one.mixin.android.tip.wc.WalletConnectTIP
 import one.mixin.android.tip.wc.WalletConnectV1
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.BottomSheetViewModel
@@ -767,6 +770,9 @@ class WebFragment : BaseFragment() {
                 getTipAddressAction = { chainId, callback ->
                     getTipAddress(chainId, callback)
                 },
+                signTipAction = { chainId, message, callback ->
+                    signTip(chainId, message, callback)
+                },
             )
             webAppInterface?.let { webView.addJavascriptInterface(it, "MixinContext") }
             val extraHeaders = HashMap<String, String>()
@@ -836,6 +842,25 @@ class WebFragment : BaseFragment() {
                         e.message
                     }
                     webView.evaluateJavascript("$callbackFunction('$address')") {}
+                },
+            )
+        }
+    }
+
+    private fun signTip(chainId: String, message: String, callbackFunction: String) {
+        if (viewDestroyed()) return
+
+        lifecycleScope.launch {
+            WalletConnectTIP.currentSignData = WalletConnect.WCSignData.TIPSignData(message)
+            showWalletConnectBottomSheetDialogFragment(
+                tip,
+                requireActivity(),
+                WalletConnect.RequestType.SessionRequest,
+                WalletConnect.Version.TIP,
+                onReject = {},
+                callback = {
+                    val sig = TipSignSpec.Ecdsa.Secp256k1.sign(tipPrivToPrivateKey(it, chainId), message.toByteArray())
+                    webView.evaluateJavascript("$callbackFunction('$sig')") {}
                 },
             )
         }
@@ -1398,6 +1423,7 @@ class WebFragment : BaseFragment() {
         var playlistAction: ((Array<String>) -> Unit)? = null,
         var closeAction: (() -> Unit)? = null,
         var getTipAddressAction: ((String, String) -> Unit)? = null,
+        var signTipAction: ((String, String, String) -> Unit)? = null,
     ) {
         @JavascriptInterface
         fun showToast(toast: String) {
@@ -1433,8 +1459,13 @@ class WebFragment : BaseFragment() {
         }
 
         @JavascriptInterface
-        fun getTipAddress(chainId: String, callbackFunction: String) {
+        fun getAddress(chainId: String, callbackFunction: String) {
             getTipAddressAction?.invoke(chainId, callbackFunction)
+        }
+
+        @JavascriptInterface
+        fun sign(chainId: String, message: String, callbackFunction: String) {
+            signTipAction?.invoke(chainId, message, callbackFunction)
         }
     }
 

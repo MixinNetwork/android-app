@@ -52,15 +52,7 @@ class SessionProposalViewModel @Inject internal constructor() : ViewModel() {
                 }
             }
             WalletConnect.Version.TIP -> {
-                return SessionProposalUI(
-                    peer = PeerUI(
-                        icon = "",
-                        name = "TIP Wallet",
-                        desc = "TIP Wallet Description",
-                        uri = "7000101002",
-                    ),
-                    chain = WalletConnectTIP.chain,
-                )
+                return WalletConnectTIP.sessionProposalUI
             }
         }
     }
