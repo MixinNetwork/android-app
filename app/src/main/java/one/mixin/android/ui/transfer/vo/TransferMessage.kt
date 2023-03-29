@@ -6,7 +6,7 @@ import com.google.gson.annotations.SerializedName
 
 class TransferMessage(
     @PrimaryKey
-    @SerializedName("id")
+    @SerializedName("message_id")
     @ColumnInfo(name = "id")
     var messageId: String,
 

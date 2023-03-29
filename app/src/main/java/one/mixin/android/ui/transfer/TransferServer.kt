@@ -73,7 +73,7 @@ class TransferServer(private val finishListener: (String) -> Unit) {
                 syncSnapshot()
                 syncSticker()
                 syncMessage()
-                // syncFile()
+                syncFile()
                 sendMessage("FINISH")
                 exit()
             } catch (e: Exception) {
