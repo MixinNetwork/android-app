@@ -14,7 +14,6 @@ import java.io.OutputStream
 import java.lang.IllegalStateException
 import java.nio.ByteBuffer
 import java.util.zip.CRC32
-import javax.crypto.IllegalBlockSizeException
 import kotlin.text.Charsets.UTF_8
 
 class TransferProtocol {

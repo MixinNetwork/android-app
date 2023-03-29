@@ -5,6 +5,7 @@ import kotlinx.coroutines.launch
 import one.mixin.android.MixinApplication
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.extension.getMediaPath
+import one.mixin.android.job.NotificationGenerator.userDao
 import one.mixin.android.ui.transfer.vo.TransferSendData
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.NetworkUtils
@@ -29,8 +30,20 @@ class TransferServer(private val finishListener: (String) -> Unit) {
         db.messageDao()
     }
 
+    private val assetDao by lazy {
+        db.assetDao()
+    }
+
     private val conversationDao by lazy {
         db.conversationDao()
+    }
+
+    private val stickerDao by lazy {
+        db.stickerDao()
+    }
+
+    private val snapshotDao by lazy {
+        db.snapshotDao()
     }
 
     private val gson by lazy {
@@ -59,8 +72,8 @@ class TransferServer(private val finishListener: (String) -> Unit) {
                 syncAsset()
                 syncSnapshot()
                 syncSticker()
-                // syncMessage()
-                syncFile()
+                syncMessage()
+                // syncFile()
                 sendMessage("FINISH")
                 exit()
             } catch (e: Exception) {
@@ -81,22 +94,101 @@ class TransferServer(private val finishListener: (String) -> Unit) {
     fun sendMessage(message: String) {
         protocol.write(outputStream, message)
         outputStream.flush()
-        Timber.e("send(${count++}) $message")
     }
 
     private fun syncConversation() {
+        var offset = 0
+        while (!quit) {
+            val list = conversationDao.getConversationsByLimitAndOffset(100, offset)
+            if (list.isEmpty()) {
+                return
+            }
+            list.map {
+                TransferSendData("conversation", it)
+            }.forEach {
+                sendMessage(gson.toJson(it))
+            }
+            if (list.size < 100) {
+                return
+            }
+            offset += 100
+        }
     }
 
     private fun syncUser() {
+        var offset = 0
+        while (!quit) {
+            val list = userDao.getUsersByLimitAndOffset(100, offset)
+            if (list.isEmpty()) {
+                return
+            }
+            list.map {
+                TransferSendData("user", it)
+            }.forEach {
+                sendMessage(gson.toJson(it))
+            }
+            if (list.size < 100) {
+                return
+            }
+            offset += 100
+        }
     }
 
     private fun syncAsset() {
+        var offset = 0
+        while (!quit) {
+            val list = assetDao.getAssetByLimitAndOffset(100, offset)
+            if (list.isEmpty()) {
+                return
+            }
+            list.map {
+                TransferSendData("asset", it)
+            }.forEach {
+                sendMessage(gson.toJson(it))
+            }
+            if (list.size < 100) {
+                return
+            }
+            offset += 100
+        }
     }
 
     private fun syncSticker() {
+        var offset = 0
+        while (!quit) {
+            val list = stickerDao.getStickersByLimitAndOffset(100, offset)
+            if (list.isEmpty()) {
+                return
+            }
+            list.map {
+                TransferSendData("asset", it)
+            }.forEach {
+                sendMessage(gson.toJson(it))
+            }
+            if (list.size < 100) {
+                return
+            }
+            offset += 100
+        }
     }
 
     private fun syncSnapshot() {
+        var offset = 0
+        while (!quit) {
+            val list = snapshotDao.getSnapshotByLimitAndOffset(100, offset)
+            if (list.isEmpty()) {
+                return
+            }
+            list.map {
+                TransferSendData("asset", it)
+            }.forEach {
+                sendMessage(gson.toJson(it))
+            }
+            if (list.size < 100) {
+                return
+            }
+            offset += 100
+        }
     }
 
     private fun syncMessage() {

@@ -117,4 +117,7 @@ interface AssetDao : BaseDao<Asset> {
 
     @Query("SELECT asset_id FROM assets WHERE asset_key = :assetKey COLLATE NOCASE")
     suspend fun findAssetIdByAssetKey(assetKey: String): String?
+
+    @Query("SELECT a.* FROM assets a ORDER BY a.rowid LIMIT :limit OFFSET :offset")
+    fun getAssetByLimitAndOffset(limit: Int, offset: Int): List<Asset>
 }

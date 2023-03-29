@@ -101,6 +101,9 @@ interface ConversationDao : BaseDao<Conversation> {
     @Query("SELECT c.* FROM conversations c WHERE c.conversation_id = :conversationId")
     fun getConversationById(conversationId: String): LiveData<Conversation>
 
+    @Query("SELECT c.* FROM conversations c ORDER BY c.rowid LIMIT :limit OFFSET :offset")
+    fun getConversationsByLimitAndOffset(limit: Int, offset: Int): List<Conversation>
+
     @Query("SELECT unseen_message_count FROM conversations WHERE conversation_id = :conversationId")
     suspend fun indexUnread(conversationId: String): Int?
 
