@@ -110,7 +110,7 @@ fun SessionRequestPage(
                 Hint(hint = Hint.NoPreview)
             }
             is WCEthereumTransaction -> {
-                Transaction(balance = Convert.fromWei(Numeric.toBigInt(sessionRequestUI.data.value ?: "0").toBigDecimal(), Convert.Unit.ETHER).multiply(asset.priceUSD()), sessionRequestUI.chain, asset)
+                Transaction(balance = Convert.fromWei(Numeric.toBigInt(sessionRequestUI.data.value ?: "0").toBigDecimal(), Convert.Unit.ETHER), sessionRequestUI.chain, asset)
             }
             else -> {
                 Message(content = viewModel.getContent(version, gson, sessionRequestUI.data)) {
