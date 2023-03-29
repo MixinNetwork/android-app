@@ -2,6 +2,7 @@ package one.mixin.android.ui.transfer
 
 import UUIDUtils
 import one.mixin.android.MixinApplication
+import one.mixin.android.api.ChecksumException
 import one.mixin.android.extension.getMediaPath
 import one.mixin.android.extension.newTempFile
 import timber.log.Timber
@@ -13,6 +14,7 @@ import java.io.OutputStream
 import java.lang.IllegalStateException
 import java.nio.ByteBuffer
 import java.util.zip.CRC32
+import javax.crypto.IllegalBlockSizeException
 import kotlin.text.Charsets.UTF_8
 
 class TransferProtocol {
@@ -61,15 +63,11 @@ class TransferProtocol {
             val fileInputStream = FileInputStream(file)
             val buffer = ByteArray(1024)
             // Read data from file into buffer and write to socket
-            try {
-                var bytesRead = fileInputStream.read(buffer, 0, 1024)
-                while (bytesRead != -1) {
-                    outputStream.write(buffer, 0, bytesRead)
-                    crc.update((buffer.copyOfRange(0, bytesRead)))
-                    bytesRead = fileInputStream.read(buffer, 0, 1024)
-                }
-            } catch (e: Exception) {
-                Timber.e("@@@@ ${e.message}")
+            var bytesRead = fileInputStream.read(buffer, 0, 1024)
+            while (bytesRead != -1) {
+                outputStream.write(buffer, 0, bytesRead)
+                crc.update((buffer.copyOfRange(0, bytesRead)))
+                bytesRead = fileInputStream.read(buffer, 0, 1024)
             }
             fileInputStream.close()
             outputStream.write(longToBytes(crc.value))
@@ -86,8 +84,9 @@ class TransferProtocol {
         inputStream.read(data)
         val checksum = ByteArray(8)
         inputStream.read(checksum)
-        // todo check and throw error
-        Timber.e("checksum ${bytesToLong(checksum)} ${bytesToLong(checksum(data))}")
+        if (bytesToLong(checksum) != bytesToLong(checksum(data))) {
+            throw ChecksumException()
+        }
         return String(data, UTF_8)
     }
 
@@ -114,6 +113,10 @@ class TransferProtocol {
         fos.close()
         val checksum = ByteArray(8)
         inputStream.read(checksum)
+        val checksumLong = bytesToLong(checksum)
+        if (checksumLong != crc.value) {
+            throw ChecksumException()
+        }
         Timber.e("Receive file: ${outFile.name} ${outFile.length()} checksum ${bytesToLong(checksum)} -- ${crc.value}")
         return outFile
     }
