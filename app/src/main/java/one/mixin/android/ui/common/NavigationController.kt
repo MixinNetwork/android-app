@@ -16,6 +16,7 @@ import one.mixin.android.ui.tip.TipActivity
 import one.mixin.android.ui.tip.TipBundle
 import one.mixin.android.ui.tip.TipType
 import one.mixin.android.ui.tip.TryConnecting
+import one.mixin.android.ui.transfer.TransferActivity
 import one.mixin.android.ui.wallet.WalletActivity
 
 class NavigationController
@@ -25,7 +26,8 @@ constructor(mainActivity: MainActivity) {
     private val context = mainActivity
 
     fun pushContacts() {
-        ContactsActivity.show(context)
+        TransferActivity.show(context)
+        // ContactsActivity.show(context)
     }
 
     fun pushWallet(deviceId: String ? = null) {

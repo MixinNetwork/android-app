@@ -11,6 +11,7 @@ import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.NetworkUtils
 import timber.log.Timber
 import java.io.File
+import java.net.InetSocketAddress
 import java.net.ServerSocket
 import java.net.Socket
 import java.util.UUID
@@ -55,7 +56,12 @@ class TransferServer(private val finishListener: (String) -> Unit) {
             try {
                 serverSocket = ServerSocket(TransferClient.SERVER_PORT) // todo replace port
                 socket = serverSocket.accept()
-                Timber.e("RUNNING")
+                val remoteAddr = socket.remoteSocketAddress
+                if (remoteAddr is InetSocketAddress) {
+                    val inetAddr = remoteAddr.address
+                    val ip = inetAddr.hostAddress
+                    Timber.e("Connected to $ip")
+                }
                 run()
             } catch (e: Exception) {
                 Timber.e(e)

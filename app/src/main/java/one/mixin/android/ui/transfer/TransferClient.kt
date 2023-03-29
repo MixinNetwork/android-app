@@ -80,14 +80,8 @@ class TransferClient(private val finishListener: (String) -> Unit) {
                         val transferData = gson.fromJson(content, TransferData::class.java)
                         when (transferData.type) {
                             "message" -> {
-                                Timber.e(
-                                    "receiver(${count++}) ${
-                                        gson.fromJson(
-                                            transferData.data,
-                                            TransferMessage::class.java,
-                                        ).messageId
-                                    }",
-                                )
+                                val message = gson.fromJson(transferData.data, TransferMessage::class.java)
+                                Timber.e("Message ID: ${message.messageId}")
                             }
                             "user" -> {
                                 val user = gson.fromJson(transferData.data, User::class.java)

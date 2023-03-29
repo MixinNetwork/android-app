@@ -135,6 +135,7 @@ import one.mixin.android.ui.tip.TipActivity
 import one.mixin.android.ui.tip.TipBundle
 import one.mixin.android.ui.tip.TipType
 import one.mixin.android.ui.tip.TryConnecting
+import one.mixin.android.ui.transfer.TransferActivity
 import one.mixin.android.util.BiometricUtil
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.ErrorHandler.Companion.errorHandler
@@ -294,6 +295,9 @@ class MainActivity : BlazeBaseActivity() {
                 return@launch
             }
             checkUpdate()
+        }
+        if (Session.getAccount()?.identityNumber == "37189829") {
+            TransferActivity.show(this)
         }
     }
 
