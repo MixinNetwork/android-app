@@ -1,9 +1,16 @@
 package one.mixin.android.ui.transfer
 
+import UUIDUtils
+import one.mixin.android.MixinApplication
+import one.mixin.android.extension.getMediaPath
+import one.mixin.android.extension.newTempFile
 import timber.log.Timber
 import java.io.File
+import java.io.FileInputStream
+import java.io.FileOutputStream
 import java.io.InputStream
 import java.io.OutputStream
+import java.lang.IllegalStateException
 import java.nio.ByteBuffer
 import java.util.zip.CRC32
 import kotlin.text.Charsets.UTF_8
@@ -20,14 +27,18 @@ class TransferProtocol {
         inputStream.read(packageData)
         val type = packageData[0]
         val size = byteArrayToInt(packageData.copyOfRange(1, 5))
-        if (type == TYPE_STRING) {
-            return readDynamicLengthString(inputStream, size)
-        } else if (type == TYPE_FILE) { // File
-            // Todo
-            return "File"
-        } else {
-            //
-            return "Unknown"
+        return when (type) {
+            TYPE_STRING -> {
+                readString(inputStream, size)
+            }
+
+            TYPE_FILE -> { // File
+                readFile(inputStream, size).absolutePath
+            }
+
+            else -> {
+                throw IllegalStateException("Unknown")
+            }
         }
     }
 
@@ -39,18 +50,36 @@ class TransferProtocol {
         outputStream.write(checksum(data))
     }
 
-    fun write(outputStream: OutputStream, file: File) {
-        outputStream.write(byteArrayOf(TYPE_FILE))
-        outputStream.write(intToByteArray(file.length().toInt()))
-        // todo write file
-        // outputStream.write(byteArrayOf(checksum(TYPE_STRING, data)))
+    fun write(outputStream: OutputStream, file: File, messageId: String) {
+        if (file.exists() && file.length() > 0) {
+            outputStream.write(byteArrayOf(TYPE_FILE))
+            outputStream.write(intToByteArray(file.length().toInt()))
+            outputStream.write(UUIDUtils.toByteArray(messageId))
+            val fileInputStream = FileInputStream(file)
+            val buffer = ByteArray(1024)
+            val crc = CRC32()
+            // Read data from file into buffer and write to socket
+            try {
+                var bytesRead = fileInputStream.read(buffer, 0, 1024)
+                while (bytesRead != -1) {
+                    outputStream.write(buffer, 0, bytesRead)
+                    crc.update((buffer.copyOfRange(0, bytesRead)))
+                    bytesRead = fileInputStream.read(buffer, 0, 1024)
+                }
+            } catch (e: Exception) {
+                Timber.e("@@@@ ${e.message}")
+            }
+            fileInputStream.close()
+            outputStream.write(longToBytes(crc.value))
+            Timber.e("Send file: ${file.name} ${file.length()} ${crc.value}")
+        }
     }
 
     private fun checksum(data: ByteArray): ByteArray {
         return calculateCrc32(data)
     }
 
-    private fun readDynamicLengthString(inputStream: InputStream, expectedLength: Int): String {
+    private fun readString(inputStream: InputStream, expectedLength: Int): String {
         val data = ByteArray(expectedLength)
         inputStream.read(data)
         val checksum = ByteArray(8)
@@ -58,6 +87,32 @@ class TransferProtocol {
         // todo check and throw error
         Timber.e("checksum ${bytesToLong(checksum)} ${bytesToLong(checksum(data))}")
         return String(data, UTF_8)
+    }
+
+    private fun readFile(inputStream: InputStream, expectedLength: Int): File {
+        val uuidByteArray = ByteArray(16)
+        inputStream.read(uuidByteArray)
+        val uuid = UUIDUtils.fromByteArray(uuidByteArray)
+        // Todo replace real path
+        val outFile = MixinApplication.get().getMediaPath()!!.newTempFile(uuid, "", false)
+        val buffer = ByteArray(1024)
+        val crc = CRC32()
+        var bytesRead = 0
+        var bytesLeft = expectedLength
+        val fos = FileOutputStream(outFile)
+        while (bytesRead != -1 && bytesLeft > 0) {
+            bytesRead = inputStream.read(buffer, 0, bytesLeft.coerceAtMost(1024))
+            if (bytesRead > 0) {
+                fos.write(buffer, 0, bytesRead)
+                crc.update(buffer.copyOfRange(0, bytesRead))
+                bytesLeft -= bytesRead
+            }
+        }
+        fos.close()
+        val checksum = ByteArray(8)
+        inputStream.read(checksum)
+        Timber.e("Receive file: ${outFile.name} ${outFile.length()} checksum ${bytesToLong(checksum)} -- ${crc.value}")
+        return outFile
     }
 
     private fun byteArrayToInt(byteArray: ByteArray): Int {

@@ -4,12 +4,16 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import one.mixin.android.MixinApplication
 import one.mixin.android.db.MixinDatabase
+import one.mixin.android.extension.getMediaPath
 import one.mixin.android.ui.transfer.vo.TransferSendData
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.NetworkUtils
 import timber.log.Timber
+import java.io.File
 import java.net.ServerSocket
 import java.net.Socket
+import java.util.UUID
+import kotlin.random.Random
 
 class TransferServer(private val finishListener: (String) -> Unit) {
 
@@ -55,7 +59,8 @@ class TransferServer(private val finishListener: (String) -> Unit) {
                 syncAsset()
                 syncSnapshot()
                 syncSticker()
-                syncMessage()
+                // syncMessage()
+                syncFile()
                 sendMessage("FINISH")
                 exit()
             } catch (e: Exception) {
@@ -110,6 +115,31 @@ class TransferServer(private val finishListener: (String) -> Unit) {
                 return
             }
             lastId = messageDao.getMessageRowid(messages.last().messageId) ?: return
+        }
+    }
+
+    private fun syncFile() {
+        val context = MixinApplication.get()
+        val path = context.getMediaPath()
+        for (i in 1..2) {
+            // 随机确定文件大小（200KB ~ 300KB）
+            val size = Random.nextInt(150 * 1024) + 100 * 1024
+
+            // 生成随机 UUID 作为文件名
+            val fileName = "${UUID.randomUUID()}"
+
+            // 创建输出流并写入数据
+            val file = File(path, fileName)
+            val fos = file.outputStream()
+            val buffer = ByteArray(1024)
+            var remaining = size
+            while (remaining > 0) {
+                val len = buffer.size.coerceAtMost(remaining).also { remaining -= it }
+                fos.write(buffer, 0, len)
+            }
+            fos.close()
+
+            protocol.write(outputStream, file, fileName)
         }
     }
 
