@@ -7,22 +7,23 @@ import one.mixin.android.ui.tip.wc.sessionrequest.SessionRequestUI
 object WalletConnectTIP : WalletConnect() {
     const val TAG = "WalletConnectTIP"
 
-    val peer = PeerUI(
-        icon = "",
-        name = "TIP Wallet",
-        desc = "TIP Wallet Description",
-        uri = "7000101002",
-    )
+    var peer: PeerUI? = null
 
-    val sessionProposalUI = SessionProposalUI(
-        peer = peer,
-        chain = chain,
-    )
+    fun getSessionProposalUI(): SessionProposalUI? {
+        val p = peer ?: return null
+        return SessionProposalUI(
+            peer = p,
+            chain = chain,
+        )
+    }
 
-    fun getSessionRequestUI() = SessionRequestUI(
-        peerUI = peer,
-        requestId = 0L,
-        data = currentSignData?.signMessage,
-        chain = chain,
-    )
+    fun getSessionRequestUI(): SessionRequestUI<String?>? {
+        val p = peer ?: return null
+        return SessionRequestUI(
+            peerUI = p,
+            requestId = 0L,
+            data = currentSignData?.signMessage as? String,
+            chain = chain,
+        )
+    }
 }

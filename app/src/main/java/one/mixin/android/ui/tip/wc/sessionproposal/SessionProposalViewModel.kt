@@ -52,7 +52,7 @@ class SessionProposalViewModel @Inject internal constructor() : ViewModel() {
                 }
             }
             WalletConnect.Version.TIP -> {
-                return WalletConnectTIP.sessionProposalUI
+                return WalletConnectTIP.getSessionProposalUI()
             }
         }
     }

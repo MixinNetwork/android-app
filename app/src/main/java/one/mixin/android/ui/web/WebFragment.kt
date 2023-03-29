@@ -127,6 +127,7 @@ import one.mixin.android.ui.player.MusicService.Companion.MUSIC_PLAYLIST
 import one.mixin.android.ui.qr.QRCodeProcessor
 import one.mixin.android.ui.setting.SettingActivity
 import one.mixin.android.ui.setting.SettingActivity.Companion.ARGS_SUCCESS
+import one.mixin.android.ui.tip.wc.sessionproposal.PeerUI
 import one.mixin.android.ui.tip.wc.showWalletConnectBottomSheetDialogFragment
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.SystemUIManager
@@ -829,6 +830,7 @@ class WebFragment : BaseFragment() {
         if (viewDestroyed()) return
 
         lifecycleScope.launch {
+            WalletConnectTIP.peer = getPeerUI()
             showWalletConnectBottomSheetDialogFragment(
                 tip,
                 requireActivity(),
@@ -851,6 +853,7 @@ class WebFragment : BaseFragment() {
         if (viewDestroyed()) return
 
         lifecycleScope.launch {
+            WalletConnectTIP.peer = getPeerUI()
             WalletConnectTIP.currentSignData = WalletConnect.WCSignData.TIPSignData(message)
             showWalletConnectBottomSheetDialogFragment(
                 tip,
@@ -862,6 +865,25 @@ class WebFragment : BaseFragment() {
                     val sig = TipSignSpec.Ecdsa.Secp256k1.sign(tipPrivToPrivateKey(it, chainId), message.toByteArray())
                     webView.evaluateJavascript("$callbackFunction('$sig')") {}
                 },
+            )
+        }
+    }
+
+    private fun getPeerUI(): PeerUI {
+        val a = app
+        return if (a != null) {
+            PeerUI(
+                uri = a.homeUri,
+                name = a.name,
+                icon = a.iconUrl,
+                desc = a.description,
+            )
+        } else {
+            PeerUI(
+                uri = webView.url ?: url,
+                name = webView.title ?: "",
+                icon = "",
+                desc = "",
             )
         }
     }
