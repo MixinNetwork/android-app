@@ -53,11 +53,13 @@ class TransferProtocol {
     fun write(outputStream: OutputStream, file: File, messageId: String) {
         if (file.exists() && file.length() > 0) {
             outputStream.write(byteArrayOf(TYPE_FILE))
-            outputStream.write(intToByteArray(file.length().toInt()))
-            outputStream.write(UUIDUtils.toByteArray(messageId))
+            outputStream.write(intToByteArray(file.length().toInt() + 16))
+            val crc = CRC32()
+            val uuidByteArray = UUIDUtils.toByteArray(messageId)
+            outputStream.write(uuidByteArray)
+            crc.update(uuidByteArray)
             val fileInputStream = FileInputStream(file)
             val buffer = ByteArray(1024)
-            val crc = CRC32()
             // Read data from file into buffer and write to socket
             try {
                 var bytesRead = fileInputStream.read(buffer, 0, 1024)
@@ -91,14 +93,15 @@ class TransferProtocol {
 
     private fun readFile(inputStream: InputStream, expectedLength: Int): File {
         val uuidByteArray = ByteArray(16)
+        val crc = CRC32()
         inputStream.read(uuidByteArray)
+        crc.update(uuidByteArray)
         val uuid = UUIDUtils.fromByteArray(uuidByteArray)
         // Todo replace real path
         val outFile = MixinApplication.get().getMediaPath()!!.newTempFile(uuid, "", false)
         val buffer = ByteArray(1024)
-        val crc = CRC32()
         var bytesRead = 0
-        var bytesLeft = expectedLength
+        var bytesLeft = expectedLength - 16
         val fos = FileOutputStream(outFile)
         while (bytesRead != -1 && bytesLeft > 0) {
             bytesRead = inputStream.read(buffer, 0, bytesLeft.coerceAtMost(1024))
