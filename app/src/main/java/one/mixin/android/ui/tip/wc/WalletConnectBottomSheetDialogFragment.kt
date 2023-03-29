@@ -54,7 +54,6 @@ import one.mixin.android.ui.tip.wc.sessionrequest.SessionRequestPage
 import one.mixin.android.util.BiometricUtil
 import one.mixin.android.util.SystemUIManager
 import one.mixin.android.vo.Asset
-import one.mixin.android.widget.MixinBottomSheetDialog
 import org.web3j.utils.Convert
 import timber.log.Timber
 import java.math.BigDecimal
@@ -110,12 +109,6 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
                     dialog?.window?.clearFlags(WindowManager.LayoutParams.FLAG_SECURE)
                 }
             }
-        }
-    }
-
-    override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
-        return MixinBottomSheetDialog(requireContext(), theme).apply {
-            dismissWithAnimation = true
         }
     }
 
