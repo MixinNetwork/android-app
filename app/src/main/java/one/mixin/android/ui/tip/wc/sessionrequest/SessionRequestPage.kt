@@ -148,7 +148,7 @@ private fun Transaction(
     chain: Chain,
     asset: Asset?,
 ) {
-    Box(
+    Column(
         modifier = Modifier
             .fillMaxWidth()
             .height(100.dp)
@@ -156,17 +156,18 @@ private fun Transaction(
             .clip(RoundedCornerShape(12.dp))
             .background(MixinAppTheme.colors.backgroundWindow)
             .padding(horizontal = 16.dp),
+        horizontalAlignment = Alignment.Start,
     ) {
+        Box(modifier = Modifier.height(16.dp))
         Text(
-            modifier = Modifier.padding(top = 16.dp),
             text = stringResource(id = R.string.Balance_Change),
             color = MixinAppTheme.colors.textPrimary,
             fontSize = 14.sp,
         )
+        Box(modifier = Modifier.height(6.dp))
         Row(
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 44.dp, bottom = 2.dp),
+                .fillMaxWidth(),
             verticalAlignment = Alignment.Bottom,
         ) {
             Text(
@@ -190,12 +191,13 @@ private fun Transaction(
                 placeHolderPainter = painterResource(id = R.drawable.ic_avatar_place_holder),
             )
         }
+        Box(modifier = Modifier.height(4.dp))
         Text(
-            modifier = Modifier.padding(top = 76.dp),
             text = "≈ $${balance.multiply(asset.priceUSD()).toPlainString()}",
             color = MixinAppTheme.colors.textMinor,
             fontSize = 12.sp,
         )
+        Box(modifier = Modifier.height(10.dp))
     }
 }
 

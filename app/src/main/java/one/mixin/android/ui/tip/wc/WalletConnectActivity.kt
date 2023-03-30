@@ -7,9 +7,9 @@ import android.os.Bundle
 import android.view.WindowManager
 import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.R
-import one.mixin.android.event.WCEvent
 import one.mixin.android.tip.Tip
 import one.mixin.android.tip.tipPrivToPrivateKey
+import one.mixin.android.tip.wc.WCEvent
 import one.mixin.android.tip.wc.WalletConnect
 import one.mixin.android.tip.wc.WalletConnect.RequestType
 import one.mixin.android.tip.wc.WalletConnectV1

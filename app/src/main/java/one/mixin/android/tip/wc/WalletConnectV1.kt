@@ -10,7 +10,6 @@ import com.trustwallet.walletconnect.models.session.WCSession
 import okhttp3.OkHttpClient
 import one.mixin.android.MixinApplication
 import one.mixin.android.RxBus
-import one.mixin.android.event.WCEvent
 import org.web3j.crypto.Credentials
 import org.web3j.crypto.ECKeyPair
 import org.web3j.crypto.Keys

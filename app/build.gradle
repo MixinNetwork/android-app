@@ -392,7 +392,6 @@ dependencies {
     implementation "com.walletconnect:android-core"
     implementation "com.walletconnect:web3wallet"
     implementation "com.github.TrustWallet:wallet-connect-kotlin:1.5.6"
-    implementation 'com.github.salomonbrys.kotson:kotson:2.5.0'
 
     ktlint "com.pinterest:ktlint:${ktlintVersion}"
 

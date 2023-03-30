@@ -22,7 +22,6 @@ import com.walletconnect.web3.wallet.utils.CacaoSigner
 import one.mixin.android.BuildConfig
 import one.mixin.android.MixinApplication
 import one.mixin.android.RxBus
-import one.mixin.android.event.WCEvent
 import org.web3j.crypto.Credentials
 import org.web3j.crypto.ECKeyPair
 import org.web3j.crypto.Keys

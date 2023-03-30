@@ -1,8 +1,7 @@
-package one.mixin.android.event
+package one.mixin.android.tip.wc
 
 import android.os.Parcelable
 import kotlinx.parcelize.Parcelize
-import one.mixin.android.tip.wc.WalletConnect
 import one.mixin.android.tip.wc.WalletConnect.RequestType
 
 @Parcelize
