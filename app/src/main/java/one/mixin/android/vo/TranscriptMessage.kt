@@ -40,6 +40,7 @@ class TranscriptMessage(
     @ColumnInfo(name = "content")
     val content: String?,
     @ColumnInfo(name = "media_url")
+    @SerializedName("media_url")
     var mediaUrl: String? = null,
     @SerializedName("media_name")
     @ColumnInfo(name = "media_name")
@@ -60,6 +61,7 @@ class TranscriptMessage(
     @ColumnInfo(name = "media_duration")
     val mediaDuration: Long? = null,
     @ColumnInfo(name = "media_status")
+    @SerializedName("media_status")
     var mediaStatus: String? = null,
     @SerializedName("media_waveform")
     @ColumnInfo(name = "media_waveform")
@@ -70,8 +72,8 @@ class TranscriptMessage(
     @SerializedName("thumb_url")
     @ColumnInfo(name = "thumb_url")
     val thumbUrl: String? = null,
-    @SerializedName("media_key")
     @ColumnInfo(name = "media_key")
+    @SerializedName("media_key")
     val mediaKey: ByteArray? = null,
     @SerializedName("media_digest")
     @ColumnInfo(name = "media_digest")

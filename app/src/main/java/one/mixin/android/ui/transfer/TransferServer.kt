@@ -1,16 +1,25 @@
 package one.mixin.android.ui.transfer
 
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import one.mixin.android.MixinApplication
+import one.mixin.android.crypto.generateAesKey
 import one.mixin.android.db.MixinDatabase
+import one.mixin.android.extension.base64RawURLEncode
+import one.mixin.android.extension.getDeviceId
 import one.mixin.android.extension.getMediaPath
 import one.mixin.android.job.NotificationGenerator.userDao
+import one.mixin.android.ui.transfer.vo.TransferCommandAction
+import one.mixin.android.ui.transfer.vo.TransferCommandData
+import one.mixin.android.ui.transfer.vo.TransferData
+import one.mixin.android.ui.transfer.vo.TransferDataType
 import one.mixin.android.ui.transfer.vo.TransferSendData
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.NetworkUtils
 import timber.log.Timber
 import java.io.File
+import java.net.BindException
 import java.net.InetSocketAddress
 import java.net.ServerSocket
 import java.net.Socket
@@ -47,44 +56,124 @@ class TransferServer(private val finishListener: (String) -> Unit) {
         db.snapshotDao()
     }
 
+    private val transcriptMessageDao by lazy {
+        db.transcriptDao()
+    }
+
     private val gson by lazy {
         GsonHelper.customGson
     }
 
-    fun startServer(): String? {
+    fun setClientIp(ip: String) {
+        clientIp = ip
+    }
+
+    private var clientIp: String? = null
+    private var code = 0
+        private set
+    private var port = 0
+        private set
+
+    fun startServer(toDesktop: Boolean, callback: (TransferCommandData) -> Unit) {
         MixinApplication.get().applicationScope.launch(Dispatchers.IO) {
             try {
-                serverSocket = ServerSocket(TransferClient.SERVER_PORT) // todo replace port
+                serverSocket = createSocket(port = Random.nextInt(100))
+                code = Random.nextInt(10000)
+                callback(
+                    TransferCommandData(
+                        MixinApplication.appContext.getDeviceId(),
+                        TransferCommandAction.PUSH.value,
+                        1,
+                        NetworkUtils.getWifiIpAddress(MixinApplication.appContext),
+                        this@TransferServer.port,
+                        generateAesKey().base64RawURLEncode(), // todo
+                        this@TransferServer.code
+                    )
+                )
                 socket = serverSocket.accept()
+
                 val remoteAddr = socket.remoteSocketAddress
                 if (remoteAddr is InetSocketAddress) {
                     val inetAddr = remoteAddr.address
                     val ip = inetAddr.hostAddress
-                    Timber.e("Connected to $ip")
+                    if (toDesktop) {
+                        run()
+                    } else {
+                        run()
+                        Timber.e("Connected to $ip")
+                    }
                 }
-                run()
             } catch (e: Exception) {
                 Timber.e(e)
             }
         }
-        return NetworkUtils.getWifiIpAddress(MixinApplication.appContext)
+    }
+
+    private fun createSocket(port: Int): ServerSocket {
+        var newPort = port
+        while (!isPortAvailable(newPort)) {
+            newPort++
+            if (newPort >= 65535) {
+                throw RuntimeException("No available port found")
+            }
+        }
+        this.port = newPort
+        return ServerSocket(newPort)
+    }
+
+    private fun isPortAvailable(port: Int): Boolean {
+        if (port in 1024..49151) { // Exclude common ports
+            try {
+                ServerSocket(port).use { return true }
+            } catch (e: BindException) {
+                return false
+            }
+        } else {
+            return false
+        }
     }
 
     fun run() {
         MixinApplication.get().applicationScope.launch(Dispatchers.IO) {
-            try {
-                syncConversation()
-                syncUser()
-                syncAsset()
-                syncSnapshot()
-                syncSticker()
-                syncMessage()
-                syncFile()
-                sendMessage("FINISH")
-                exit()
-            } catch (e: Exception) {
-                Timber.e(e)
-            }
+            do {
+                if (inputStream.available() <= 0) delay(1000)
+                val content = protocol.read(inputStream)
+                try {
+                    val transferData = gson.fromJson(content, TransferData::class.java)
+                    if (transferData.type == TransferDataType.COMMAND.value) {
+                        val commandData =
+                            gson.fromJson(transferData.data, TransferCommandData::class.java)
+                        if (commandData.code == code) {
+                            Timber.e("Verification passed, start transmission")
+                            transfer()
+                        } else {
+                            Timber.e("Validation failed, close")
+                            exit()
+                        }
+                    }
+                } catch (e: Exception) {
+                    Timber.e(e)
+                    exit()
+                }
+            } while (!quit)
+        }
+    }
+
+    fun transfer() {
+        try {
+            syncConversation()
+            syncUser()
+            syncAsset()
+            syncSnapshot()
+            syncSticker()
+            syncTranscriptMessage()
+            syncMessage()
+            syncFile()
+            // send Finish
+            exit()
+            finishListener("Finish")
+        } catch (e: Exception) {
+            Timber.e(e)
         }
     }
 
@@ -96,7 +185,6 @@ class TransferServer(private val finishListener: (String) -> Unit) {
         socket.getOutputStream()
     }
 
-    private var count = 0
     fun sendMessage(message: String) {
         protocol.write(outputStream, message)
         outputStream.flush()
@@ -105,111 +193,137 @@ class TransferServer(private val finishListener: (String) -> Unit) {
     private fun syncConversation() {
         var offset = 0
         while (!quit) {
-            val list = conversationDao.getConversationsByLimitAndOffset(100, offset)
+            val list = conversationDao.getConversationsByLimitAndOffset(LIMIT, offset)
             if (list.isEmpty()) {
                 return
             }
             list.map {
-                TransferSendData("conversation", it)
+                TransferSendData(TransferDataType.CONVERSATION.value, it)
             }.forEach {
+                Timber.e("send conversation ${it.data.conversationId}")
                 sendMessage(gson.toJson(it))
             }
-            if (list.size < 100) {
+            if (list.size < LIMIT) {
                 return
             }
-            offset += 100
+            offset += LIMIT
         }
     }
 
     private fun syncUser() {
         var offset = 0
         while (!quit) {
-            val list = userDao.getUsersByLimitAndOffset(100, offset)
+            val list = userDao.getUsersByLimitAndOffset(LIMIT, offset)
             if (list.isEmpty()) {
                 return
             }
             list.map {
-                TransferSendData("user", it)
+                TransferSendData(TransferDataType.USER.value, it)
             }.forEach {
+                Timber.e("send user ${it.data.userId}")
                 sendMessage(gson.toJson(it))
             }
-            if (list.size < 100) {
+            if (list.size < LIMIT) {
                 return
             }
-            offset += 100
+            offset += LIMIT
         }
     }
 
     private fun syncAsset() {
         var offset = 0
         while (!quit) {
-            val list = assetDao.getAssetByLimitAndOffset(100, offset)
+            val list = assetDao.getAssetByLimitAndOffset(LIMIT, offset)
             if (list.isEmpty()) {
                 return
             }
             list.map {
-                TransferSendData("asset", it)
+                TransferSendData(TransferDataType.ASSET.value, it)
             }.forEach {
+                Timber.e("send asset ${it.data.assetId}")
                 sendMessage(gson.toJson(it))
             }
-            if (list.size < 100) {
+            if (list.size < LIMIT) {
                 return
             }
-            offset += 100
+            offset += LIMIT
         }
     }
 
     private fun syncSticker() {
         var offset = 0
         while (!quit) {
-            val list = stickerDao.getStickersByLimitAndOffset(100, offset)
+            val list = stickerDao.getStickersByLimitAndOffset(LIMIT, offset)
             if (list.isEmpty()) {
                 return
             }
             list.map {
-                TransferSendData("asset", it)
+                TransferSendData(TransferDataType.STICKER.value, it)
             }.forEach {
+                Timber.e("send sticker ${it.data.stickerId}")
                 sendMessage(gson.toJson(it))
             }
-            if (list.size < 100) {
+            if (list.size < LIMIT) {
                 return
             }
-            offset += 100
+            offset += LIMIT
         }
     }
 
     private fun syncSnapshot() {
         var offset = 0
         while (!quit) {
-            val list = snapshotDao.getSnapshotByLimitAndOffset(100, offset)
+            val list = snapshotDao.getSnapshotByLimitAndOffset(LIMIT, offset)
             if (list.isEmpty()) {
                 return
             }
             list.map {
-                TransferSendData("asset", it)
+                TransferSendData(TransferDataType.SNAPSHOT.value, it)
             }.forEach {
                 sendMessage(gson.toJson(it))
+                Timber.e("send snapshot ${it.data.snapshotId}")
             }
-            if (list.size < 100) {
+            if (list.size < LIMIT) {
                 return
             }
-            offset += 100
+            offset += LIMIT
+        }
+    }
+
+    private fun syncTranscriptMessage() {
+        var offset = 0
+        while (!quit) {
+            val list = transcriptMessageDao.getTranscriptMessageByLimitAndOffset(LIMIT, offset)
+            if (list.isEmpty()) {
+                return
+            }
+            list.map {
+                TransferSendData(TransferDataType.TRANSCRIPT_MESSAGE.value, it)
+            }.forEach {
+                sendMessage(gson.toJson(it))
+                Timber.e("send transcript ${it.data.transcriptId}")
+            }
+            if (list.size < LIMIT) {
+                return
+            }
+            offset += LIMIT
         }
     }
 
     private fun syncMessage() {
         var lastId = messageDao.getLastMessageRowId() ?: return
         while (!quit) {
-            val messages = messageDao.findMessages(lastId, 100)
+            val messages = messageDao.findMessages(lastId, LIMIT)
             if (messages.isEmpty()) {
                 return
             }
             messages.map {
-                TransferSendData("message", it)
+                TransferSendData(TransferDataType.MESSAGE.value, it)
             }.forEach {
+                Timber.e("send message: ${it.data.messageId}")
                 sendMessage(gson.toJson(it))
             }
-            if (messages.size < 100) {
+            if (messages.size < LIMIT) {
                 return
             }
             lastId = messageDao.getMessageRowid(messages.last().messageId) ?: return
@@ -218,26 +332,11 @@ class TransferServer(private val finishListener: (String) -> Unit) {
 
     private fun syncFile() {
         val context = MixinApplication.get()
-        val path = context.getMediaPath()
-        for (i in 1..2) {
-            // 随机确定文件大小（200KB ~ 300KB）
-            val size = Random.nextInt(150 * 1024) + 100 * 1024
-
-            // 生成随机 UUID 作为文件名
-            val fileName = "${UUID.randomUUID()}"
-
-            // 创建输出流并写入数据
-            val file = File(path, fileName)
-            val fos = file.outputStream()
-            val buffer = ByteArray(1024)
-            var remaining = size
-            while (remaining > 0) {
-                val len = buffer.size.coerceAtMost(remaining).also { remaining -= it }
-                fos.write(buffer, 0, len)
+        val folder = context.getMediaPath() ?: return
+        folder.walkTopDown().forEach { f ->
+            if (f.isFile && f.length() > 0) {
+                protocol.write(outputStream, f, f.nameWithoutExtension)
             }
-            fos.close()
-
-            protocol.write(outputStream, file, fileName)
         }
     }
 
@@ -248,5 +347,9 @@ class TransferServer(private val finishListener: (String) -> Unit) {
         inputStream.close()
         outputStream.close()
         socket.close()
+    }
+
+    companion object {
+        private const val LIMIT = 100
     }
 }

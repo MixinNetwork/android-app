@@ -11,6 +11,7 @@ import one.mixin.android.db.contants.LIVES
 import one.mixin.android.db.contants.TRANSCRIPTS
 import one.mixin.android.db.contants.VIDEOS
 import one.mixin.android.vo.ChatHistoryMessageItem
+import one.mixin.android.vo.Snapshot
 import one.mixin.android.vo.TranscriptAttachmentMigration
 import one.mixin.android.vo.TranscriptMessage
 
@@ -140,4 +141,7 @@ interface TranscriptMessageDao : BaseDao<TranscriptMessage> {
 
     @Query("UPDATE transcript_messages SET media_url = :mediaUrl WHERE message_id = :messageId")
     suspend fun updateMediaUrl(mediaUrl: String, messageId: String)
+
+    @Query("SELECT tm.* FROM transcript_messages tm ORDER BY tm.rowid LIMIT :limit OFFSET :offset")
+    fun getTranscriptMessageByLimitAndOffset(limit: Int, offset: Int): List<TranscriptMessage>
 }

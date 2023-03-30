@@ -49,6 +49,7 @@ import one.mixin.android.fts.insertFts4
 import one.mixin.android.fts.insertOrReplaceMessageFts4
 import one.mixin.android.job.BaseJob.Companion.PRIORITY_SEND_ATTACHMENT_MESSAGE
 import one.mixin.android.session.Session
+import one.mixin.android.ui.transfer.vo.TransferCommandData
 import one.mixin.android.ui.web.replaceApp
 import one.mixin.android.util.ColorUtil
 import one.mixin.android.util.GsonHelper
@@ -450,6 +451,10 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                 processResendMessage(data, plainData)
             } else if (plainData.action == PlainDataAction.NO_KEY.name) {
                 ratchetSenderKeyDao.delete(data.conversationId, SignalProtocolAddress(data.userId, data.sessionId.getDeviceId()).toString())
+            } else if (plainData.action == PlainDataAction.DEVICE_TRANSFER.name) {
+                val content = plainData.content?:return
+                val command = gson.fromJson(content, TransferCommandData::class.java)
+                RxBus.publish(command)
             } else if (plainData.action == PlainDataAction.ACKNOWLEDGE_MESSAGE_RECEIPTS.name) {
                 plainData.ackMessages?.let { ackMessages ->
                     val updateExpiredMessageList = arrayListOf<Pair<String, Long?>>()

@@ -3,6 +3,7 @@ package one.mixin.android.ui.transfer.vo
 import androidx.room.ColumnInfo
 import androidx.room.PrimaryKey
 import com.google.gson.annotations.SerializedName
+import one.mixin.android.vo.Message
 
 class TransferMessage(
     @PrimaryKey
@@ -63,12 +64,15 @@ class TransferMessage(
     val thumbUrl: String?,
 
     @ColumnInfo(name = "media_key", typeAffinity = ColumnInfo.BLOB)
+    @SerializedName("media_key")
     val mediaKey: ByteArray? = null,
 
     @ColumnInfo(name = "media_digest", typeAffinity = ColumnInfo.BLOB)
+    @SerializedName("media_digest")
     val mediaDigest: ByteArray? = null,
 
     @ColumnInfo(name = "media_status")
+    @SerializedName("media_status")
     var mediaStatus: String? = null,
 
     @SerializedName("status")
@@ -112,6 +116,7 @@ class TransferMessage(
     val sharedUserId: String? = null,
 
     @ColumnInfo(name = "media_waveform", typeAffinity = ColumnInfo.BLOB)
+    @SerializedName("media_waveform")
     val mediaWaveform: ByteArray? = null,
 
     @SerializedName("quote_message_id")
@@ -126,3 +131,39 @@ class TransferMessage(
     @ColumnInfo(name = "caption")
     var caption: String? = null,
 )
+
+fun TransferMessage.toMessage(): Message {
+    return Message(
+        messageId = this.messageId,
+        conversationId = this.conversationId,
+        userId = this.userId,
+        category = this.category,
+        content = this.content,
+        mediaUrl = this.mediaUrl,
+        mediaMimeType = this.mediaMimeType,
+        mediaSize = this.mediaSize,
+        mediaDuration = this.mediaDuration,
+        mediaWidth = this.mediaWidth,
+        mediaHeight = this.mediaHeight,
+        mediaHash = this.mediaHash,
+        thumbImage = this.thumbImage,
+        thumbUrl = this.thumbUrl,
+        mediaKey = this.mediaKey,
+        mediaDigest = this.mediaDigest,
+        mediaStatus = this.mediaStatus,
+        status = this.status,
+        createdAt = this.createdAt,
+        action = this.action,
+        participantId = this.participantId,
+        snapshotId = this.snapshotId,
+        hyperlink = this.hyperlink,
+        name = this.name,
+        albumId = this.albumId,
+        stickerId = this.stickerId,
+        sharedUserId = this.sharedUserId,
+        mediaWaveform = this.mediaWaveform,
+        quoteMessageId = this.quoteMessageId,
+        quoteContent = this.quoteContent,
+        caption = this.caption
+    )
+}

@@ -16,6 +16,8 @@ data class PlainJsonMessagePayload(
     val session_id: String? = null,
     @SerializedName("ack_messages")
     val ackMessages: List<BlazeAckMessage>? = null,
+    @SerializedName("content")
+    val content: String? = null,
 ) : Serializable {
     companion object {
         private const val serialVersionUID: Long = 7L
@@ -32,4 +34,4 @@ data class ResendData(
     }
 }
 
-enum class PlainDataAction { RESEND_KEY, NO_KEY, RESEND_MESSAGES, ACKNOWLEDGE_MESSAGE_RECEIPTS }
+enum class PlainDataAction { RESEND_KEY, NO_KEY, RESEND_MESSAGES, ACKNOWLEDGE_MESSAGE_RECEIPTS, DEVICE_TRANSFER }

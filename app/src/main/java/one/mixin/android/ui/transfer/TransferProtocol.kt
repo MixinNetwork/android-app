@@ -1,10 +1,23 @@
 package one.mixin.android.ui.transfer
 
 import UUIDUtils
+import com.google.protobuf.Mixin
+import one.mixin.android.MixinApp
 import one.mixin.android.MixinApplication
 import one.mixin.android.api.ChecksumException
+import one.mixin.android.db.MixinDatabase
+import one.mixin.android.extension.createDocumentTemp
+import one.mixin.android.extension.getAudioPath
+import one.mixin.android.extension.getDocumentPath
+import one.mixin.android.extension.getExtensionName
+import one.mixin.android.extension.getImagePath
 import one.mixin.android.extension.getMediaPath
+import one.mixin.android.extension.getVideoPath
 import one.mixin.android.extension.newTempFile
+import one.mixin.android.vo.isAudio
+import one.mixin.android.vo.isImage
+import one.mixin.android.vo.isTranscript
+import one.mixin.android.vo.isVideo
 import timber.log.Timber
 import java.io.File
 import java.io.FileInputStream
@@ -23,6 +36,10 @@ class TransferProtocol {
         const val TYPE_FILE = 0x02.toByte()
     }
 
+    private val messageDao by lazy {
+        MixinDatabase.getDatabase(MixinApplication.appContext).messageDao()
+    }
+
     fun read(inputStream: InputStream): String {
         val packageData = ByteArray(5)
         inputStream.read(packageData)
@@ -34,7 +51,11 @@ class TransferProtocol {
             }
 
             TYPE_FILE -> { // File
-                readFile(inputStream, size).absolutePath
+                val file = readFile(inputStream, size)
+                if (file?.exists() == true){
+                    return "file"
+                }
+                "file exists"
             }
 
             else -> {
@@ -80,23 +101,40 @@ class TransferProtocol {
 
     private fun readString(inputStream: InputStream, expectedLength: Int): String {
         val data = ByteArray(expectedLength)
-        inputStream.read(data)
+        var readLength = 0
+        while (readLength < expectedLength) {
+            readLength += inputStream.read(data, readLength, expectedLength - readLength)
+        }
         val checksum = ByteArray(8)
         inputStream.read(checksum)
         if (bytesToLong(checksum) != bytesToLong(checksum(data))) {
+            Timber.e("ChecksumException $expectedLength ${bytesToLong(checksum)} ${bytesToLong(checksum(data))}")
             throw ChecksumException()
         }
         return String(data, UTF_8)
     }
 
-    private fun readFile(inputStream: InputStream, expectedLength: Int): File {
+    private fun readFile(inputStream: InputStream, expectedLength: Int): File? {
         val uuidByteArray = ByteArray(16)
         val crc = CRC32()
         inputStream.read(uuidByteArray)
         crc.update(uuidByteArray)
         val uuid = UUIDUtils.fromByteArray(uuidByteArray)
-        // Todo replace real path
-        val outFile = MixinApplication.get().getMediaPath()!!.newTempFile(uuid, "", false)
+        val message = messageDao.findMessageById(uuid) ?:return null
+        val extensionName = message.name?.getExtensionName()
+        val outFile = MixinApplication.get().let {
+            if(message.isTranscript()){
+                return null
+            }else if (message.isImage()) {
+                it.getImagePath()
+            } else if (message.isAudio()) {
+                it.getAudioPath()
+            } else if (message.isVideo()) {
+                it.getVideoPath()
+            } else {
+                it.getDocumentPath()
+            }
+        }.createDocumentTemp(message.conversationId, message.messageId, extensionName)
         val buffer = ByteArray(1024)
         var bytesRead = 0
         var bytesLeft = expectedLength - 16
@@ -113,10 +151,10 @@ class TransferProtocol {
         val checksum = ByteArray(8)
         inputStream.read(checksum)
         val checksumLong = bytesToLong(checksum)
+        Timber.e("Receive file: ${outFile.name} ${outFile.length()} checksum ${bytesToLong(checksum)} -- ${crc.value}")
         if (checksumLong != crc.value) {
             throw ChecksumException()
         }
-        Timber.e("Receive file: ${outFile.name} ${outFile.length()} checksum ${bytesToLong(checksum)} -- ${crc.value}")
         return outFile
     }
 

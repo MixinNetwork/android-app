@@ -694,7 +694,7 @@ class MainActivity : BlazeBaseActivity() {
                 if (conversation?.isGroupConversation() == true) {
                     innerIntent = ConversationActivity.putIntent(this, conversationId)
                 } else {
-                    var user = userDao.findPlainUserByConversationId(conversationId)
+                    var user = userDao.findOwnerByConversationId(conversationId)
                     if (user == null) {
                         val response =
                             userService.getUsers(arrayListOf(conversation!!.ownerId!!)).execute()
