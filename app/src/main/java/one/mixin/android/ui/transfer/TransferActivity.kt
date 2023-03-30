@@ -71,11 +71,15 @@ class TransferActivity : BaseActivity() {
         binding.start.setOnClickListener {
             lifecycleScope.launch(Dispatchers.IO) {
                 transferServer.startServer(false) { transferCommandData ->
-                    val qrCode = GsonHelper.customGson.toJson(transferCommandData).generateQRCode(240.dp).first
+                    val qrCode = GsonHelper.customGson.toJson(transferCommandData)
+                        .base64Encode()
+                        .generateQRCode(240.dp).first
                     lifecycleScope.launch(Dispatchers.Main) {
                         toast("Sever IP: ${transferCommandData.ip} ${transferCommandData.action}")
                         binding.startClient.isVisible = false
                         binding.start.isVisible = false
+                        binding.pushToDesktop.isVisible = false
+                        binding.pullFromDesktop.isVisible = false
                         binding.qr.setImageBitmap(qrCode)
                         binding.qr.fadeIn()
                     }
@@ -173,15 +177,18 @@ class TransferActivity : BaseActivity() {
     }
 
     private fun callbackScan(data: Intent?) {
-        val url = data?.getStringExtra(CaptureActivity.ARGS_FOR_SCAN_RESULT)
-        url?.let {
+        val qrContent = data?.getStringExtra(CaptureActivity.ARGS_FOR_SCAN_RESULT)
+        qrContent?.let { content ->
             lifecycleScope.launch(Dispatchers.IO) {
                 withContext(Dispatchers.Main) {
                     binding.startClient.isVisible = false
                     binding.start.isVisible = false
                 }
-                val transferCommandData = GsonHelper.customGson.fromJson(it, TransferCommandData::class.java)
-                Timber.e("qrcode:$it")
+                val transferCommandData = gson.fromJson(
+                    content.base64Encode(),
+                    TransferCommandData::class.java
+                )
+                Timber.e("qrcode:$content")
                 TransferClient(finishListener).connectToServer(
                     transferCommandData.ip!!,
                     transferCommandData.port!!,
@@ -201,6 +208,9 @@ class TransferActivity : BaseActivity() {
             toast(msg)
             binding.startClient.isVisible = true
             binding.start.isVisible = true
+            binding.pushToDesktop.isVisible = true
+            binding.pullFromDesktop.isVisible = true
+            binding.qr.isVisible = false
         }
     }
 
@@ -270,5 +280,4 @@ class TransferActivity : BaseActivity() {
             }
         }
     }
-
 }
