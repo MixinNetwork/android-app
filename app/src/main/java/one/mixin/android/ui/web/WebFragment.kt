@@ -836,12 +836,15 @@ class WebFragment : BaseFragment() {
                 requireActivity(),
                 WalletConnect.RequestType.SessionProposal,
                 WalletConnect.Version.TIP,
-                onReject = {},
+                onReject = {
+                    webView.evaluateJavascript("$callbackFunction('')") {}
+                },
                 callback = {
                     val address = try {
                         tipPrivToAddress(it, chainId)
                     } catch (e: IllegalArgumentException) {
-                        e.message
+                        Timber.d("${WalletConnectTIP.TAG} ${e.stackTraceToString()}")
+                        ""
                     }
                     webView.evaluateJavascript("$callbackFunction('$address')") {}
                 },
@@ -860,7 +863,9 @@ class WebFragment : BaseFragment() {
                 requireActivity(),
                 WalletConnect.RequestType.SessionRequest,
                 WalletConnect.Version.TIP,
-                onReject = {},
+                onReject = {
+                    webView.evaluateJavascript("$callbackFunction('')") {}
+                },
                 callback = {
                     val sig = TipSignSpec.Ecdsa.Secp256k1.sign(tipPrivToPrivateKey(it, chainId), message.toByteArray())
                     webView.evaluateJavascript("$callbackFunction('$sig')") {}
