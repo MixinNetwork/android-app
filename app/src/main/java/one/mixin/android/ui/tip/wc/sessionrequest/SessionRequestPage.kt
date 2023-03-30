@@ -164,13 +164,14 @@ private fun Transaction(
             color = MixinAppTheme.colors.textPrimary,
             fontSize = 14.sp,
         )
-        Box(modifier = Modifier.height(6.dp))
+        Box(modifier = Modifier.height(12.dp))
         Row(
             modifier = Modifier
                 .fillMaxWidth(),
             verticalAlignment = Alignment.Bottom,
         ) {
             Text(
+                modifier = Modifier.alignByBaseline(),
                 text = "-$balance",
                 color = Color(0xFFE86B67),
                 fontFamily = FontFamily(Font(R.font.mixin_font)),
@@ -178,6 +179,7 @@ private fun Transaction(
             )
             Box(modifier = Modifier.width(4.dp))
             Text(
+                modifier = Modifier.alignByBaseline(),
                 text = chain.symbol,
                 color = MixinAppTheme.colors.textPrimary,
                 fontSize = 12.sp,
@@ -191,7 +193,6 @@ private fun Transaction(
                 placeHolderPainter = painterResource(id = R.drawable.ic_avatar_place_holder),
             )
         }
-        Box(modifier = Modifier.height(4.dp))
         Text(
             text = "≈ $${balance.multiply(asset.priceUSD()).toPlainString()}",
             color = MixinAppTheme.colors.textMinor,
