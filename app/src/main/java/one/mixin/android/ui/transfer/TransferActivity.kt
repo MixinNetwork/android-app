@@ -72,7 +72,7 @@ class TransferActivity : BaseActivity() {
             lifecycleScope.launch(Dispatchers.IO) {
                 transferServer.startServer(false) { transferCommandData ->
                     val qrCode = GsonHelper.customGson.toJson(transferCommandData).generateQRCode(240.dp).first
-                    lifecycleScope.launch (Dispatchers.Main) {
+                    lifecycleScope.launch(Dispatchers.Main) {
                         toast("Sever IP: ${transferCommandData.ip} ${transferCommandData.action}")
                         binding.startClient.isVisible = false
                         binding.start.isVisible = false
@@ -128,12 +128,14 @@ class TransferActivity : BaseActivity() {
                             loadingDismiss()
                             lifecycleScope.launch(Dispatchers.IO) {
                                 TransferClient(finishListener).connectToServer(
-                                    it.ip!!, it.port!!, TransferCommandData(
+                                    it.ip!!,
+                                    it.port!!,
+                                    TransferCommandData(
                                         this@TransferActivity.getDeviceId(),
                                         TransferCommandAction.CONNECT.value,
                                         1,
-                                        code = it.code
-                                    )
+                                        code = it.code,
+                                    ),
                                 )
                             }
                         }
@@ -180,12 +182,14 @@ class TransferActivity : BaseActivity() {
                 val transferCommandData = GsonHelper.customGson.fromJson(it, TransferCommandData::class.java)
                 Timber.e("qrcode:$it")
                 TransferClient(finishListener).connectToServer(
-                    transferCommandData.ip!!, transferCommandData.port!!, TransferCommandData(
+                    transferCommandData.ip!!,
+                    transferCommandData.port!!,
+                    TransferCommandData(
                         this@TransferActivity.getDeviceId(),
                         TransferCommandAction.CONNECT.value,
                         1,
-                        code = transferCommandData.code
-                    )
+                        code = transferCommandData.code,
+                    ),
                 )
             }
         }
@@ -217,15 +221,18 @@ class TransferActivity : BaseActivity() {
                 val plainText = gson.toJson(
                     PlainJsonMessagePayload(
                         action = PlainDataAction.DEVICE_TRANSFER.name,
-                        content = content
+                        content = content,
                     ),
                 )
                 val encoded = plainText.toByteArray().base64Encode()
                 val bm = createParamBlazeMessage(
                     createPlainJsonParam(
                         MixinDatabase.getDatabase(this@TransferActivity).participantDao()
-                            .joinedConversationId(accountId), accountId, encoded, sessionId
-                    )
+                            .joinedConversationId(accountId),
+                        accountId,
+                        encoded,
+                        sessionId,
+                    ),
                 )
                 jobManager.addJobInBackground(SendPlaintextJob(bm, BaseJob.PRIORITY_ACK_MESSAGE))
             } catch (e: Exception) {
@@ -239,10 +246,10 @@ class TransferActivity : BaseActivity() {
             TransferCommandData(
                 this.getDeviceId(),
                 TransferCommandAction.PULL.value,
-                1
+                1,
             ).apply {
                 Timber.e("pull ${gson.toJson(this)}")
-            }
+            },
         )
         sendMessage(encodeText)
     }
@@ -256,7 +263,7 @@ class TransferActivity : BaseActivity() {
             transferServer.startServer(true) { transferData ->
                 Timber.e("push ${gson.toJson(transferData)}")
                 val encodeText = gson.toJson(
-                    transferData
+                    transferData,
                 )
                 sendMessage(encodeText)
             }

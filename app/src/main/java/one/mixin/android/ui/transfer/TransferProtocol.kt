@@ -1,8 +1,6 @@
 package one.mixin.android.ui.transfer
 
 import UUIDUtils
-import com.google.protobuf.Mixin
-import one.mixin.android.MixinApp
 import one.mixin.android.MixinApplication
 import one.mixin.android.api.ChecksumException
 import one.mixin.android.db.MixinDatabase
@@ -11,9 +9,7 @@ import one.mixin.android.extension.getAudioPath
 import one.mixin.android.extension.getDocumentPath
 import one.mixin.android.extension.getExtensionName
 import one.mixin.android.extension.getImagePath
-import one.mixin.android.extension.getMediaPath
 import one.mixin.android.extension.getVideoPath
-import one.mixin.android.extension.newTempFile
 import one.mixin.android.vo.isAudio
 import one.mixin.android.vo.isImage
 import one.mixin.android.vo.isTranscript
@@ -52,7 +48,7 @@ class TransferProtocol {
 
             TYPE_FILE -> { // File
                 val file = readFile(inputStream, size)
-                if (file?.exists() == true){
+                if (file?.exists() == true) {
                     return "file"
                 }
                 "file exists"
@@ -120,12 +116,12 @@ class TransferProtocol {
         inputStream.read(uuidByteArray)
         crc.update(uuidByteArray)
         val uuid = UUIDUtils.fromByteArray(uuidByteArray)
-        val message = messageDao.findMessageById(uuid) ?:return null
+        val message = messageDao.findMessageById(uuid) ?: return null
         val extensionName = message.name?.getExtensionName()
         val outFile = MixinApplication.get().let {
-            if(message.isTranscript()){
+            if (message.isTranscript()) {
                 return null
-            }else if (message.isImage()) {
+            } else if (message.isImage()) {
                 it.getImagePath()
             } else if (message.isAudio()) {
                 it.getAudioPath()

@@ -11,7 +11,6 @@ import one.mixin.android.db.contants.LIVES
 import one.mixin.android.db.contants.TRANSCRIPTS
 import one.mixin.android.db.contants.VIDEOS
 import one.mixin.android.vo.ChatHistoryMessageItem
-import one.mixin.android.vo.Snapshot
 import one.mixin.android.vo.TranscriptAttachmentMigration
 import one.mixin.android.vo.TranscriptMessage
 

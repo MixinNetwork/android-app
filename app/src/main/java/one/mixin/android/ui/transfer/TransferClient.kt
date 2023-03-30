@@ -14,6 +14,7 @@ import one.mixin.android.ui.transfer.vo.toMessage
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.vo.Asset
 import one.mixin.android.vo.Conversation
+import one.mixin.android.vo.Participant
 import one.mixin.android.vo.Snapshot
 import one.mixin.android.vo.Sticker
 import one.mixin.android.vo.User
@@ -45,6 +46,10 @@ class TransferClient(private val finishListener: (String) -> Unit) {
 
     private val messageDao by lazy {
         db.messageDao()
+    }
+
+    private val participantDao by lazy {
+        db.participantDao()
     }
 
     private val assData by lazy {
@@ -112,6 +117,12 @@ class TransferClient(private val finishListener: (String) -> Unit) {
                                 val message = gson.fromJson(transferData.data, TransferMessage::class.java)
                                 messageDao.insert(message.toMessage())
                                 Timber.e("Message ID: ${message.messageId}")
+                                count++
+                            }
+                            TransferDataType.PARTICIPANT.value -> {
+                                val participant = gson.fromJson(transferData.data, Participant::class.java)
+                                participantDao.insert(participant)
+                                Timber.e("Participant ID: ${participant.conversationId} ${participant.userId}")
                                 count++
                             }
                             TransferDataType.USER.value -> {

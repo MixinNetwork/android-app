@@ -164,6 +164,6 @@ fun TransferMessage.toMessage(): Message {
         mediaWaveform = this.mediaWaveform,
         quoteMessageId = this.quoteMessageId,
         quoteContent = this.quoteContent,
-        caption = this.caption
+        caption = this.caption,
     )
 }

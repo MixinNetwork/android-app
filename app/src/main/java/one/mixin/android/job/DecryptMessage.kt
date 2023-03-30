@@ -452,7 +452,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
             } else if (plainData.action == PlainDataAction.NO_KEY.name) {
                 ratchetSenderKeyDao.delete(data.conversationId, SignalProtocolAddress(data.userId, data.sessionId.getDeviceId()).toString())
             } else if (plainData.action == PlainDataAction.DEVICE_TRANSFER.name) {
-                val content = plainData.content?:return
+                val content = plainData.content ?: return
                 val command = gson.fromJson(content, TransferCommandData::class.java)
                 RxBus.publish(command)
             } else if (plainData.action == PlainDataAction.ACKNOWLEDGE_MESSAGE_RECEIPTS.name) {

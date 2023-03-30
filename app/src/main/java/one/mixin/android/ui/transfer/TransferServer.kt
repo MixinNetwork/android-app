@@ -18,12 +18,10 @@ import one.mixin.android.ui.transfer.vo.TransferSendData
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.NetworkUtils
 import timber.log.Timber
-import java.io.File
 import java.net.BindException
 import java.net.InetSocketAddress
 import java.net.ServerSocket
 import java.net.Socket
-import java.util.UUID
 import kotlin.random.Random
 
 class TransferServer(private val finishListener: (String) -> Unit) {
@@ -46,6 +44,10 @@ class TransferServer(private val finishListener: (String) -> Unit) {
 
     private val conversationDao by lazy {
         db.conversationDao()
+    }
+
+    private val participantDao by lazy {
+        db.participantDao()
     }
 
     private val stickerDao by lazy {
@@ -87,8 +89,8 @@ class TransferServer(private val finishListener: (String) -> Unit) {
                         NetworkUtils.getWifiIpAddress(MixinApplication.appContext),
                         this@TransferServer.port,
                         generateAesKey().base64RawURLEncode(), // todo
-                        this@TransferServer.code
-                    )
+                        this@TransferServer.code,
+                    ),
                 )
                 socket = serverSocket.accept()
 
@@ -162,6 +164,7 @@ class TransferServer(private val finishListener: (String) -> Unit) {
     fun transfer() {
         try {
             syncConversation()
+            syncParticipant()
             syncUser()
             syncAsset()
             syncSnapshot()
@@ -201,6 +204,26 @@ class TransferServer(private val finishListener: (String) -> Unit) {
                 TransferSendData(TransferDataType.CONVERSATION.value, it)
             }.forEach {
                 Timber.e("send conversation ${it.data.conversationId}")
+                sendMessage(gson.toJson(it))
+            }
+            if (list.size < LIMIT) {
+                return
+            }
+            offset += LIMIT
+        }
+    }
+
+    private fun syncParticipant() {
+        var offset = 0
+        while (!quit) {
+            val list = participantDao.getParticipantsByLimitAndOffset(LIMIT, offset)
+            if (list.isEmpty()) {
+                return
+            }
+            list.map {
+                TransferSendData(TransferDataType.PARTICIPANT.value, it)
+            }.forEach {
+                Timber.e("send Participant ${it.data.conversationId} ${it.data.userId}")
                 sendMessage(gson.toJson(it))
             }
             if (list.size < LIMIT) {
