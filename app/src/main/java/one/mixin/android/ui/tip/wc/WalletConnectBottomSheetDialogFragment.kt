@@ -20,6 +20,7 @@ import androidx.core.view.doOnPreDraw
 import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
+import com.bumptech.glide.manager.SupportRequestManagerFragment
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.google.gson.GsonBuilder
@@ -206,35 +207,23 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
         super.onDismiss(dialog)
     }
 
-    override fun dismiss() {
-        safeDismiss()
-    }
-
-    private fun safeDismiss() {
-        if (isAdded) {
-            dialog?.dismiss()
-            dialog?.setOnDismissListener {
-                try {
-                    super.dismissAllowingStateLoss()
-                } catch (e: IllegalStateException) {
-                    Timber.w(e)
-                } finally {
-                    if (activity is WalletConnectActivity && activity?.isFinishing == false) {
-                        activity?.finish()
-                    }
+    override fun onDetach() {
+        super.onDetach()
+        if (activity is WalletConnectActivity) {
+            var realFragmentCount = 0
+            parentFragmentManager.fragments.forEach { f ->
+                if (f !is SupportRequestManagerFragment) {
+                    realFragmentCount++
                 }
             }
-        } else {
-            try {
-                super.dismissAllowingStateLoss()
-            } catch (e: IllegalStateException) {
-                Timber.w(e)
-            } finally {
-                if (activity is WalletConnectActivity && activity?.isFinishing == false) {
-                    activity?.finish()
-                }
+            if (realFragmentCount <= 0) {
+                activity?.finish()
             }
         }
+    }
+
+    override fun dismiss() {
+        dismissAllowingStateLoss()
     }
 
     private fun refreshEstimatedGasAndAsset() {
@@ -303,7 +292,7 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
 
         override fun onStateChanged(bottomSheet: View, newState: Int) {
             when (newState) {
-                BottomSheetBehavior.STATE_HIDDEN -> safeDismiss()
+                BottomSheetBehavior.STATE_HIDDEN -> dismiss()
                 else -> {}
             }
         }
