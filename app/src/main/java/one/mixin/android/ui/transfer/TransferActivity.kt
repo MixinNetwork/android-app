@@ -120,8 +120,7 @@ class TransferActivity : BaseActivity() {
                     Timber.e("Rx ${gson.toJson(it)}")
                     when (it.action) {
                         TransferCommandAction.CONNECT.value -> {
-                            loadingDismiss()
-                            transferServer.setClientIp(it.ip!!)
+                            // This message is received from websocket
                         }
 
                         TransferCommandAction.PUSH.value -> {
@@ -141,7 +140,9 @@ class TransferActivity : BaseActivity() {
                         }
 
                         TransferCommandAction.PULL.value -> {
-                            loadingDismiss()
+                            // Todo display loading and delayed shutdown
+                            // Wait for the server push
+                            loading()
                         }
 
                         else -> {}
@@ -270,16 +271,4 @@ class TransferActivity : BaseActivity() {
         }
     }
 
-    // private fun pushConnect(code: Int) {
-    //     val encodeText = gson.toJson(
-    //         TransferCommandData(
-    //             this.getDeviceId(),
-    //             TransferCommandAction.CONNECT.value,
-    //             1,
-    //             NetworkUtils.getWifiIpAddress(MixinApplication.appContext),
-    //             code = code
-    //         )
-    //     )
-    //     sendMessage(encodeText)
-    // }
 }

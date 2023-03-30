@@ -66,11 +66,6 @@ class TransferServer(private val finishListener: (String) -> Unit) {
         GsonHelper.customGson
     }
 
-    fun setClientIp(ip: String) {
-        clientIp = ip
-    }
-
-    private var clientIp: String? = null
     private var code = 0
         private set
     private var port = 0
