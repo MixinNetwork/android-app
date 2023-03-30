@@ -1,6 +1,5 @@
 package one.mixin.android.tip.wc
 
-import abi.Abi
 import com.trustwallet.walletconnect.models.ethereum.WCEthereumSignMessage
 import com.trustwallet.walletconnect.models.ethereum.WCEthereumTransaction
 import com.walletconnect.web3.wallet.client.Wallet
@@ -153,15 +152,6 @@ abstract class WalletConnect {
         System.arraycopy(signature.s, 0, b, 32, 32)
         System.arraycopy(signature.v, 0, b, 64, 1)
         return Numeric.toHexString(b)
-    }
-
-    fun decodeData(data: String, abiJson: String) {
-        try {
-            val result = Abi.decodeMethod(abiJson, data)
-            Timber.d("$TAG $result")
-        } catch (e: Exception) {
-            Timber.e(e)
-        }
     }
 
     protected fun throwError(error: Response.Error, msgAction: ((String) -> Unit)? = null) {
