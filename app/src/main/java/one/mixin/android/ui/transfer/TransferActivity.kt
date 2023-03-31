@@ -98,7 +98,7 @@ class TransferActivity : BaseActivity() {
         binding.pushToDesktop.isVisible = isComputer
         binding.startServer.setOnClickListener {
             lifecycleScope.launch(Dispatchers.IO) {
-                transferServer.startServer(false) { transferCommandData ->
+                transferServer.startServer { transferCommandData ->
                     lifecycleScope.launch(Dispatchers.Main) {
                         val qrCode = gson.toJson(transferCommandData)
                             .base64Encode()
@@ -334,7 +334,7 @@ class TransferActivity : BaseActivity() {
 
     private fun pushRequest() {
         lifecycleScope.launch {
-            transferServer.startServer(true) { transferData ->
+            transferServer.startServer { transferData ->
                 Timber.e("push ${gson.toJson(transferData)}")
                 val encodeText = gson.toJson(
                     transferData,

@@ -9,5 +9,5 @@ enum class TransferStatus {
     VERIFICATION_COMPLETED,
     SENDING,
     ERROR,
-    FINISHED
+    FINISHED,
 }

@@ -1,5 +1,6 @@
 package one.mixin.android.ui.transfer
 
+import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
@@ -28,10 +29,14 @@ import one.mixin.android.ui.transfer.vo.TransferStatusLiveData
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.NetworkUtils
 import timber.log.Timber
+import java.io.InputStream
+import java.io.OutputStream
 import java.net.BindException
 import java.net.InetSocketAddress
 import java.net.ServerSocket
 import java.net.Socket
+import java.net.SocketException
+import java.net.UnknownHostException
 import javax.inject.Inject
 import kotlin.random.Random
 
@@ -48,8 +53,8 @@ class TransferServer @Inject internal constructor(
     val userDao: UserDao,
 ) {
 
-    private lateinit var serverSocket: ServerSocket
-    private lateinit var socket: Socket
+    private var serverSocket: ServerSocket? = null
+    private var socket: Socket? = null
 
     private var quit = false
 
@@ -61,10 +66,27 @@ class TransferServer @Inject internal constructor(
     private var code = 0
     private var port = 0
 
-    suspend fun startServer(toDesktop: Boolean, createdSuccessCallback: (TransferCommandData) -> Unit) =
-        withContext(transferExceptionHandler) {
-            serverSocket = createSocket(port = Random.nextInt(100))
-            status.status = TransferStatus.CREATED
+    suspend fun startServer(createdSuccessCallback: (TransferCommandData) -> Unit) =
+        withContext(
+            CoroutineExceptionHandler { _, exception ->
+                when (exception) {
+                    is UnknownHostException -> {
+                    }
+
+                    is SocketException -> {
+                    }
+
+                    else -> {
+                    }
+                }
+                status.value = TransferStatus.ERROR
+                exit()
+                Timber.e(exception)
+            } + Dispatchers.IO,
+        ) {
+            val serverSocket = createSocket(port = Random.nextInt(100))
+            this@TransferServer.serverSocket = serverSocket
+            status.value = TransferStatus.CREATED
             code = Random.nextInt(10000)
             createdSuccessCallback(
                 TransferCommandData(
@@ -75,21 +97,29 @@ class TransferServer @Inject internal constructor(
                     this@TransferServer.code,
                 ),
             )
-            status.status = TransferStatus.WAITING_FOR_CONNECTION
-            socket = serverSocket.accept()
-            status.status = TransferStatus.WAITING_FOR_VERIFICATION
+            status.value = TransferStatus.WAITING_FOR_CONNECTION
+            val socket = withContext(Dispatchers.IO) {
+                serverSocket.accept()
+            }
+            this@TransferServer.socket = socket
+            status.value = TransferStatus.WAITING_FOR_VERIFICATION
             socket.soTimeout = 10000
 
             val remoteAddr = socket.remoteSocketAddress
             if (remoteAddr is InetSocketAddress) {
                 val inetAddr = remoteAddr.address
                 val ip = inetAddr.hostAddress
-                if (toDesktop) {
-                    run()
-                } else {
-                    run()
-                    Timber.e("Connected to $ip")
-                }
+                run(
+                    withContext(Dispatchers.IO) {
+                        socket.getInputStream()
+                    },
+                    withContext(Dispatchers.IO) {
+                        socket.getOutputStream()
+                    },
+                )
+                Timber.e("Connected to $ip")
+            } else {
+                exit()
             }
         }
 
@@ -117,7 +147,7 @@ class TransferServer @Inject internal constructor(
         }
     }
 
-    suspend fun run() {
+    suspend fun run(inputStream: InputStream, outputStream: OutputStream) {
         do {
             if (withContext(Dispatchers.IO) { inputStream.available() <= 0 }) {
                 delay(300)
@@ -131,12 +161,18 @@ class TransferServer @Inject internal constructor(
                 if (commandData.action == TransferCommandAction.CONNECT.value) {
                     if (commandData.code == code) {
                         Timber.e("Verification passed, start transmission")
-                        status.status = TransferStatus.VERIFICATION_COMPLETED
-                        transfer()
+                        status.value = TransferStatus.VERIFICATION_COMPLETED
+                        transfer(outputStream)
                     } else {
                         Timber.e("Validation failed, close")
-                        status.status = TransferStatus.ERROR
+                        status.value = TransferStatus.ERROR
                         exit()
+                    }
+                } else if (commandData.action == TransferCommandAction.FINISH.value) {
+                    if (status.value == TransferStatus.FINISHED) {
+                        exit()
+                    } else {
+                        Timber.e("No finish")
                     }
                 } else {
                     Timber.e("Unsupported command")
@@ -145,39 +181,34 @@ class TransferServer @Inject internal constructor(
         } while (!quit)
     }
 
-    fun transfer() {
-        status.status = TransferStatus.SENDING
-        sendStart()
-        syncConversation()
-        syncParticipant()
-        syncUser()
-        syncAsset()
-        syncSnapshot()
-        syncSticker()
-        syncPinMessage()
-        syncTranscriptMessage()
-        syncMessage()
-        syncExpiredMessage()
-        syncMediaFile()
-        sendClose()
-        status.status = TransferStatus.FINISHED
-        exit()
+    fun transfer(outputStream: OutputStream) {
+        status.value = TransferStatus.SENDING
+        sendStart(outputStream)
+        syncConversation(outputStream)
+        syncParticipant(outputStream)
+        syncUser(outputStream)
+        syncAsset(outputStream)
+        syncSnapshot(outputStream)
+        syncSticker(outputStream)
+        syncPinMessage(outputStream)
+        syncTranscriptMessage(outputStream)
+        syncMessage(outputStream)
+        syncExpiredMessage(outputStream)
+        syncMediaFile(outputStream)
+        sendFinish(outputStream)
+        status.value = TransferStatus.FINISHED
     }
 
-    private val inputStream by lazy {
-        socket.getInputStream()
+    private fun sendCommand(
+        outputStream: OutputStream,
+        transferSendData: TransferSendData<TransferCommandData>,
+    ) {
+        sendJsonContent(outputStream, gson.toJson(transferSendData))
     }
 
-    private val outputStream by lazy {
-        socket.getOutputStream()
-    }
-
-    private fun sendCommand(transferSendData: TransferSendData<TransferCommandData>) {
-        sendJsonContent(gson.toJson(transferSendData))
-    }
-
-    private fun sendStart() {
+    private fun sendStart(outputStream: OutputStream) {
         sendCommand(
+            outputStream,
             TransferSendData(
                 TransferDataType.COMMAND.value,
                 TransferCommandData(TransferCommandAction.START.value, total = totalCount()),
@@ -192,21 +223,22 @@ class TransferServer @Inject internal constructor(
             transcriptMessageDao.countTranscriptMessages() + userDao.countUsers()
     }
 
-    private fun sendClose() {
+    private fun sendFinish(outputStream: OutputStream) {
         sendCommand(
+            outputStream,
             TransferSendData(
                 TransferDataType.COMMAND.value,
-                TransferCommandData(TransferCommandAction.CLOSE.value),
+                TransferCommandData(TransferCommandAction.FINISH.value),
             ),
         )
     }
 
-    private fun sendJsonContent(message: String) {
+    private fun sendJsonContent(outputStream: OutputStream, message: String) {
         protocol.write(outputStream, message)
         outputStream.flush()
     }
 
-    private fun syncConversation() {
+    private fun syncConversation(outputStream: OutputStream) {
         var offset = 0
         while (!quit) {
             val list = conversationDao.getConversationsByLimitAndOffset(LIMIT, offset)
@@ -217,7 +249,7 @@ class TransferServer @Inject internal constructor(
                 TransferSendData(TransferDataType.CONVERSATION.value, it)
             }.forEach {
                 Timber.e("send conversation ${it.data.conversationId}")
-                sendJsonContent(gson.toJson(it))
+                sendJsonContent(outputStream, gson.toJson(it))
             }
             if (list.size < LIMIT) {
                 return
@@ -226,7 +258,7 @@ class TransferServer @Inject internal constructor(
         }
     }
 
-    private fun syncParticipant() {
+    private fun syncParticipant(outputStream: OutputStream) {
         var offset = 0
         while (!quit) {
             val list = participantDao.getParticipantsByLimitAndOffset(LIMIT, offset)
@@ -237,7 +269,7 @@ class TransferServer @Inject internal constructor(
                 TransferSendData(TransferDataType.PARTICIPANT.value, it)
             }.forEach {
                 Timber.e("send Participant ${it.data.conversationId} ${it.data.userId}")
-                sendJsonContent(gson.toJson(it))
+                sendJsonContent(outputStream, gson.toJson(it))
             }
             if (list.size < LIMIT) {
                 return
@@ -246,7 +278,7 @@ class TransferServer @Inject internal constructor(
         }
     }
 
-    private fun syncUser() {
+    private fun syncUser(outputStream: OutputStream) {
         var offset = 0
         while (!quit) {
             val list = userDao.getUsersByLimitAndOffset(LIMIT, offset)
@@ -257,7 +289,7 @@ class TransferServer @Inject internal constructor(
                 TransferSendData(TransferDataType.USER.value, it)
             }.forEach {
                 Timber.e("send user ${it.data.userId}")
-                sendJsonContent(gson.toJson(it))
+                sendJsonContent(outputStream, gson.toJson(it))
             }
             if (list.size < LIMIT) {
                 return
@@ -266,7 +298,7 @@ class TransferServer @Inject internal constructor(
         }
     }
 
-    private fun syncAsset() {
+    private fun syncAsset(outputStream: OutputStream) {
         var offset = 0
         while (!quit) {
             val list = assetDao.getAssetByLimitAndOffset(LIMIT, offset)
@@ -277,7 +309,7 @@ class TransferServer @Inject internal constructor(
                 TransferSendData(TransferDataType.ASSET.value, it)
             }.forEach {
                 Timber.e("send asset ${it.data.assetId}")
-                sendJsonContent(gson.toJson(it))
+                sendJsonContent(outputStream, gson.toJson(it))
             }
             if (list.size < LIMIT) {
                 return
@@ -286,7 +318,7 @@ class TransferServer @Inject internal constructor(
         }
     }
 
-    private fun syncSticker() {
+    private fun syncSticker(outputStream: OutputStream) {
         var offset = 0
         while (!quit) {
             val list = stickerDao.getStickersByLimitAndOffset(LIMIT, offset)
@@ -297,7 +329,7 @@ class TransferServer @Inject internal constructor(
                 TransferSendData(TransferDataType.STICKER.value, it)
             }.forEach {
                 Timber.e("send sticker ${it.data.stickerId}")
-                sendJsonContent(gson.toJson(it))
+                sendJsonContent(outputStream, gson.toJson(it))
             }
             if (list.size < LIMIT) {
                 return
@@ -306,7 +338,7 @@ class TransferServer @Inject internal constructor(
         }
     }
 
-    private fun syncSnapshot() {
+    private fun syncSnapshot(outputStream: OutputStream) {
         var offset = 0
         while (!quit) {
             val list = snapshotDao.getSnapshotByLimitAndOffset(LIMIT, offset)
@@ -316,7 +348,7 @@ class TransferServer @Inject internal constructor(
             list.map {
                 TransferSendData(TransferDataType.SNAPSHOT.value, it)
             }.forEach {
-                sendJsonContent(gson.toJson(it))
+                sendJsonContent(outputStream, gson.toJson(it))
                 Timber.e("send snapshot ${it.data.snapshotId}")
             }
             if (list.size < LIMIT) {
@@ -326,7 +358,7 @@ class TransferServer @Inject internal constructor(
         }
     }
 
-    private fun syncTranscriptMessage() {
+    private fun syncTranscriptMessage(outputStream: OutputStream) {
         var offset = 0
         while (!quit) {
             val list = transcriptMessageDao.getTranscriptMessageByLimitAndOffset(LIMIT, offset)
@@ -336,7 +368,7 @@ class TransferServer @Inject internal constructor(
             list.map {
                 TransferSendData(TransferDataType.TRANSCRIPT_MESSAGE.value, it)
             }.forEach {
-                sendJsonContent(gson.toJson(it))
+                sendJsonContent(outputStream, gson.toJson(it))
                 Timber.e("send transcript ${it.data.transcriptId}")
             }
             if (list.size < LIMIT) {
@@ -346,7 +378,7 @@ class TransferServer @Inject internal constructor(
         }
     }
 
-    private fun syncPinMessage() {
+    private fun syncPinMessage(outputStream: OutputStream) {
         var offset = 0
         while (!quit) {
             val list = pinMessageDao.getPinMessageByLimitAndOffset(LIMIT, offset)
@@ -356,7 +388,7 @@ class TransferServer @Inject internal constructor(
             list.map {
                 TransferSendData(TransferDataType.PIN_MESSAGE.value, it)
             }.forEach {
-                sendJsonContent(gson.toJson(it))
+                sendJsonContent(outputStream, gson.toJson(it))
                 Timber.e("send pin message: ${it.data.messageId}")
             }
             if (list.size < LIMIT) {
@@ -366,7 +398,7 @@ class TransferServer @Inject internal constructor(
         }
     }
 
-    private fun syncMessage() {
+    private fun syncMessage(outputStream: OutputStream) {
         var lastId = messageDao.getLastMessageRowId() ?: return
         while (!quit) {
             val messages = messageDao.findMessages(lastId, LIMIT)
@@ -377,7 +409,7 @@ class TransferServer @Inject internal constructor(
                 TransferSendData(TransferDataType.MESSAGE.value, it)
             }.forEach {
                 Timber.e("send message: ${it.data.messageId}")
-                sendJsonContent(gson.toJson(it))
+                sendJsonContent(outputStream, gson.toJson(it))
             }
             if (messages.size < LIMIT) {
                 return
@@ -386,7 +418,7 @@ class TransferServer @Inject internal constructor(
         }
     }
 
-    private fun syncExpiredMessage() {
+    private fun syncExpiredMessage(outputStream: OutputStream) {
         var offset = 0
         while (!quit) {
             val list = expiredMessageDao.getExpiredMessageDaoByLimitAndOffset(LIMIT, offset)
@@ -396,7 +428,7 @@ class TransferServer @Inject internal constructor(
             list.map {
                 TransferSendData(TransferDataType.EXPIRED_MESSAGE.value, it)
             }.forEach {
-                sendJsonContent(gson.toJson(it))
+                sendJsonContent(outputStream, gson.toJson(it))
                 Timber.e("send pin message: ${it.data.messageId}")
             }
             if (list.size < LIMIT) {
@@ -406,7 +438,7 @@ class TransferServer @Inject internal constructor(
         }
     }
 
-    private fun syncMediaFile() {
+    private fun syncMediaFile(outputStream: OutputStream) {
         val context = MixinApplication.get()
         val folder = context.getMediaPath() ?: return
         folder.walkTopDown().forEach { f ->
@@ -423,9 +455,10 @@ class TransferServer @Inject internal constructor(
 
     fun exit() {
         quit = true
-        inputStream.close()
-        outputStream.close()
-        socket.close()
+        socket?.close()
+        socket = null
+        serverSocket?.close()
+        serverSocket = null
     }
 
     companion object {

@@ -1,5 +1,6 @@
 package one.mixin.android.ui.transfer
 
+import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
@@ -36,8 +37,12 @@ import one.mixin.android.vo.Sticker
 import one.mixin.android.vo.TranscriptMessage
 import one.mixin.android.vo.User
 import timber.log.Timber
+import java.io.InputStream
+import java.io.OutputStream
 import java.lang.Float.min
 import java.net.Socket
+import java.net.SocketException
+import java.net.UnknownHostException
 import javax.inject.Inject
 
 class TransferClient @Inject internal constructor(
@@ -54,7 +59,7 @@ class TransferClient @Inject internal constructor(
     val ftsDatabase: FtsDatabase,
 ) {
 
-    private lateinit var socket: Socket
+    private var socket: Socket? = null
     private var quit = false
 
     private val gson by lazy {
@@ -63,15 +68,7 @@ class TransferClient @Inject internal constructor(
 
     private var count = 0
 
-    private val inputStream by lazy {
-        socket.getInputStream()
-    }
-
-    private val outputStream by lazy {
-        socket.getOutputStream()
-    }
-
-    fun sendMessage(message: String) {
+    fun sendMessage(outputStream: OutputStream, message: String) {
         protocol.write(outputStream, message)
         outputStream.flush()
     }
@@ -80,23 +77,43 @@ class TransferClient @Inject internal constructor(
     private var status = TransferStatusLiveData()
 
     suspend fun connectToServer(ip: String, port: Int, commandData: TransferCommandData) =
-        withContext(transferExceptionHandler + Dispatchers.IO) {
-            status.status = TransferStatus.CONNECTING
-            socket = Socket(ip, port)
+        withContext(
+            CoroutineExceptionHandler { _, exception ->
+                when (exception) {
+                    is UnknownHostException -> {
+                    }
+
+                    is SocketException -> {
+                    }
+
+                    else -> {
+                    }
+                }
+                status.value = TransferStatus.ERROR
+                exit()
+                Timber.e(exception)
+            } + Dispatchers.IO,
+        ) {
+            status.value = TransferStatus.CONNECTING
+            val socket = withContext(Dispatchers.IO) {
+                Socket(ip, port)
+            }
+            this@TransferClient.socket = socket
             socket.soTimeout = 10000
-            status.status = TransferStatus.WAITING_FOR_VERIFICATION
-            sendMessage(gson.toJson(TransferSendData(TransferDataType.COMMAND.value, commandData)))
-            listen()
+            status.value = TransferStatus.WAITING_FOR_VERIFICATION
+            sendMessage(socket.outputStream, gson.toJson(TransferSendData(TransferDataType.COMMAND.value, commandData)))
+            listen(socket.inputStream, socket.outputStream)
         }
 
     private var total = 0L
-    private suspend fun listen() {
+
+    private suspend fun listen(inputStream: InputStream, outputStream: OutputStream) {
         do {
             if (withContext(Dispatchers.IO) { inputStream.available() } <= 0) {
                 delay(300)
                 continue
             }
-            status.status = TransferStatus.SENDING
+            status.value = TransferStatus.SENDING
             val content = protocol.read(inputStream)
             if (content.startsWith("file")) {
                 // do noting
@@ -109,12 +126,14 @@ class TransferClient @Inject internal constructor(
                         val transferCommandData =
                             gson.fromJson(content, TransferCommandData::class.java)
                         if (transferCommandData.action == TransferCommandAction.CLOSE.value) {
-                            status.status = TransferStatus.FINISHED
+                            status.value = TransferStatus.FINISHED
                             exit()
                         } else if (transferCommandData.action == TransferCommandAction.START.value) {
                             transferCommandData.total ?: 0L
                         } else if (transferCommandData.action == TransferCommandAction.PUSH.value && transferCommandData.action == TransferCommandAction.PULL.value && transferCommandData.action == TransferCommandAction.START.value) {
                             Timber.e("action ${transferCommandData.action}")
+                        } else if (transferCommandData.action == TransferCommandAction.FINISH.value) {
+                            sendFinish(outputStream)
                         } else {
                             // error
                             exit()
@@ -204,8 +223,29 @@ class TransferClient @Inject internal constructor(
 
     fun exit() {
         quit = true
-        inputStream.close()
-        outputStream.close()
-        socket.close()
+        socket?.close()
+        socket = null
+    }
+
+    private fun sendFinish(outputStream: OutputStream) {
+        sendCommand(
+            outputStream,
+            TransferSendData(
+                TransferDataType.COMMAND.value,
+                TransferCommandData(TransferCommandAction.FINISH.value),
+            ),
+        )
+    }
+
+    private fun sendJsonContent(outputStream: OutputStream, message: String) {
+        protocol.write(outputStream, message)
+        outputStream.flush()
+    }
+
+    private fun sendCommand(
+        outputStream: OutputStream,
+        transferSendData: TransferSendData<TransferCommandData>,
+    ) {
+        sendJsonContent(outputStream, gson.toJson(transferSendData))
     }
 }

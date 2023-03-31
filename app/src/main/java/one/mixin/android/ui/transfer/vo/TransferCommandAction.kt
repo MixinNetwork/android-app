@@ -6,4 +6,5 @@ enum class TransferCommandAction(val value: String) {
     CONNECT("connect"),
     START("start"),
     CLOSE("close"),
+    FINISH("finish"),
 }
