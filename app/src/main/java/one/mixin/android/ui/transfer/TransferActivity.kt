@@ -23,6 +23,8 @@ import one.mixin.android.databinding.ActivityTransferBinding
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.ParticipantDao
 import one.mixin.android.extension.base64Encode
+import one.mixin.android.extension.base64RawURLDecode
+import one.mixin.android.extension.base64RawURLEncode
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.fadeIn
 import one.mixin.android.extension.generateQRCode
@@ -81,13 +83,13 @@ class TransferActivity : BaseActivity() {
         binding.startServer.isVisible = !isComputer
         binding.pullFromDesktop.isVisible = isComputer
         binding.pushToDesktop.isVisible = isComputer
-        binding.clientScan.setOnClickListener {
+        binding.startServer.setOnClickListener {
             lifecycleScope.launch(Dispatchers.IO) {
                 transferServer.startServer(false) { transferCommandData ->
-                    val qrCode = GsonHelper.customGson.toJson(transferCommandData)
-                        .base64Encode()
-                        .generateQRCode(240.dp).first
                     lifecycleScope.launch(Dispatchers.Main) {
+                        val qrCode = gson.toJson(transferCommandData)
+                            .base64Encode()
+                            .generateQRCode(240.dp).first
                         toast("Sever IP: ${transferCommandData.ip} ${transferCommandData.action}")
                         binding.startServer.isVisible = false
                         binding.clientScan.isVisible = false
@@ -100,7 +102,7 @@ class TransferActivity : BaseActivity() {
             }
         }
 
-        binding.startServer.setOnClickListener {
+        binding.clientScan.setOnClickListener {
             handleClick()
         }
         binding.pushToDesktop.setOnClickListener {
@@ -204,10 +206,18 @@ class TransferActivity : BaseActivity() {
                     binding.startServer.isVisible = false
                     binding.clientScan.isVisible = false
                 }
-                val transferCommandData = gson.fromJson(
-                    content.base64Encode(),
-                    TransferCommandData::class.java,
-                )
+
+                val transferCommandData = try {
+                    gson.fromJson(
+                        String(content.base64RawURLDecode()),
+                        TransferCommandData::class.java,
+                    )
+                } catch (e: Exception) {
+                    withContext(Dispatchers.Main) {
+                        toast(R.string.Data_error)
+                    }
+                    return@launch
+                }
                 Timber.e("qrcode:$content")
                 transferClient.connectToServer(
                     transferCommandData.ip!!,
@@ -255,7 +265,7 @@ class TransferActivity : BaseActivity() {
                         content = content,
                     ),
                 )
-                val encoded = plainText.toByteArray().base64Encode()
+                val encoded = plainText.toByteArray().base64RawURLEncode()
                 val bm = createParamBlazeMessage(
                     createPlainJsonParam(
                         MixinDatabase.getDatabase(this@TransferActivity).participantDao()

@@ -16,7 +16,7 @@
         app:titleText="@string/Migration_and_Restore" />
 
     <LinearLayout
-        android:id="@+id/client_scan"
+        android:id="@+id/start_server"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_margin="16dp"
@@ -44,7 +44,7 @@
 
 
     <LinearLayout
-        android:id="@+id/start_server"
+        android:id="@+id/client_scan"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_margin="16dp"
@@ -54,7 +54,7 @@
         android:padding="16dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/client_scan">
+        app:layout_constraintTop_toBottomOf="@id/start_server">
 
         <TextView
             android:layout_width="wrap_content"
@@ -81,7 +81,7 @@
         android:padding="16dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/start_server">
+        app:layout_constraintTop_toBottomOf="@id/client_scan">
 
         <TextView
             android:layout_width="wrap_content"
