@@ -49,9 +49,13 @@ import javax.inject.Inject
 @AndroidEntryPoint
 class TransferActivity : BaseActivity() {
     companion object {
-        fun show(context: Context) {
+        const val ARGS_IS_COMPUTER = "args_is_computer"
+
+        fun show(context: Context, isComputer: Boolean) {
             context.startActivity(
-                Intent(context, TransferActivity::class.java),
+                Intent(context, TransferActivity::class.java).apply {
+                    putExtra(ARGS_IS_COMPUTER, isComputer)
+                },
             )
         }
     }
@@ -68,6 +72,11 @@ class TransferActivity : BaseActivity() {
         binding.titleView.leftIb.setOnClickListener {
             finish()
         }
+        val isComputer = intent.getBooleanExtra(ARGS_IS_COMPUTER, false)
+        binding.clientScan.isVisible = !isComputer
+        binding.startServer.isVisible = !isComputer
+        binding.pullFromDesktop.isVisible = isComputer
+        binding.pushToDesktop.isVisible = isComputer
         binding.clientScan.setOnClickListener {
             lifecycleScope.launch(Dispatchers.IO) {
                 transferServer.startServer(false) { transferCommandData ->

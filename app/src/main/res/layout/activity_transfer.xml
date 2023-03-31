@@ -13,7 +13,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:titleText="@string/Migration_and_backup" />
+        app:titleText="@string/Migration_and_Restore" />
 
     <LinearLayout
         android:id="@+id/client_scan"

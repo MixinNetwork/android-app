@@ -1098,5 +1098,8 @@
     <string name="your_pin_has_been_created">PIN 已创建</string>
     <string name="text_size">字体大小</string>
     <string name="from_system">跟随系统</string>
-    <string name="Migration_and_backup">Migration and backup</string>
+    <string name="Migration_and_Restore">聊天记录迁移和恢复</string>
+    <string name="Migrate_Chats_to_Another_Device">迁移聊天记录到另一台设备</string>
+    <string name="Backup_Chat_History_to_Computer">备份聊天记录到电脑</string>
+    <string name="Enable_Wifi_or_hotspot">将两台设备接入同一 Wi-Fi 或相同热点</string>
 </resources>

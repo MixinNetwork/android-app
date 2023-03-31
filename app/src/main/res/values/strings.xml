@@ -1122,5 +1122,8 @@
     <string name="your_pin_has_been_created">Your PIN has been created</string>
     <string name="text_size">Text Size</string>
     <string name="from_system">From system</string>
-    <string name="Migration_and_backup">Migration and backup</string>
+    <string name="Migration_and_Restore">Migration and Restore</string>
+    <string name="Migrate_Chats_to_Another_Device">Migrate Chats to Another Device</string>
+    <string name="Backup_Chat_History_to_Computer">Backup Chat History to Computer</string>
+    <string name="Enable_Wifi_or_hotspot">Enable Wi-Fi or hotspot for the two devices</string>
 </resources>

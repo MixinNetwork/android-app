@@ -8,6 +8,7 @@ import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.session.Session
+import one.mixin.android.ui.contacts.ContactsActivity
 import one.mixin.android.ui.home.ConversationListFragment
 import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.ui.search.SearchFragment
@@ -15,7 +16,6 @@ import one.mixin.android.ui.tip.TipActivity
 import one.mixin.android.ui.tip.TipBundle
 import one.mixin.android.ui.tip.TipType
 import one.mixin.android.ui.tip.TryConnecting
-import one.mixin.android.ui.transfer.TransferActivity
 import one.mixin.android.ui.wallet.WalletActivity
 
 class NavigationController
@@ -25,8 +25,7 @@ constructor(mainActivity: MainActivity) {
     private val context = mainActivity
 
     fun pushContacts() {
-        TransferActivity.show(context)
-        // ContactsActivity.show(context)
+        ContactsActivity.show(context)
     }
 
     fun pushWallet(deviceId: String ? = null) {

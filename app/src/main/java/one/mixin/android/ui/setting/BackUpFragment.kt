@@ -40,6 +40,7 @@ import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.job.BackupJob
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.ui.common.BaseFragment
+import one.mixin.android.ui.transfer.TransferActivity
 import one.mixin.android.util.backup.Result
 import one.mixin.android.util.backup.canUserAccessBackupDirectory
 import one.mixin.android.util.backup.delete
@@ -111,6 +112,8 @@ class BackUpFragment : BaseFragment(R.layout.fragment_backup) {
                 }
             }
             titleView.leftIb.setOnClickListener { activity?.onBackPressedDispatcher?.onBackPressed() }
+            anotherRl.setOnClickListener { TransferActivity.show(requireContext(), false) }
+            computerRl.setOnClickListener { TransferActivity.show(requireContext(), true) }
             backupBn.setOnClickListener {
                 RxPermissions(requireActivity())
                     .request(Manifest.permission.WRITE_EXTERNAL_STORAGE)

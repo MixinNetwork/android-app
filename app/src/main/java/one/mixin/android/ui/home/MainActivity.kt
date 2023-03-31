@@ -297,7 +297,7 @@ class MainActivity : BlazeBaseActivity() {
             checkUpdate()
         }
         if (Session.getAccount()?.identityNumber == "37189829") {
-            TransferActivity.show(this)
+            TransferActivity.show(this, false)
         }
     }
 
