@@ -23,7 +23,7 @@ import one.mixin.android.ui.transfer.vo.TransferCommandData
 import one.mixin.android.ui.transfer.vo.TransferData
 import one.mixin.android.ui.transfer.vo.TransferDataType
 import one.mixin.android.ui.transfer.vo.TransferSendData
-import one.mixin.android.ui.transfer.vo.TransferState
+import one.mixin.android.ui.transfer.vo.TransferStatus
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.NetworkUtils
 import timber.log.Timber
@@ -55,7 +55,7 @@ class TransferServer @Inject internal constructor(
     private val gson by lazy {
         GsonHelper.customGson
     }
-    private var status = TransferState.INITIALIZING
+    private var status = TransferStatus.INITIALIZING
 
     private var code = 0
     private var port = 0
@@ -63,7 +63,7 @@ class TransferServer @Inject internal constructor(
     suspend fun startServer(toDesktop: Boolean, createdSuccessCallback: (TransferCommandData) -> Unit) =
         withContext(transferExceptionHandler) {
             serverSocket = createSocket(port = Random.nextInt(100))
-            status = TransferState.CREATED
+            status = TransferStatus.CREATED
             code = Random.nextInt(10000)
             createdSuccessCallback(
                 TransferCommandData(
@@ -74,9 +74,9 @@ class TransferServer @Inject internal constructor(
                     this@TransferServer.code,
                 ),
             )
-            status = TransferState.WAITING_FOR_CONNECTION
+            status = TransferStatus.WAITING_FOR_CONNECTION
             socket = serverSocket.accept()
-            status = TransferState.WAITING_FOR_VERIFICATION
+            status = TransferStatus.WAITING_FOR_VERIFICATION
             socket.soTimeout = 10000
 
             val remoteAddr = socket.remoteSocketAddress
@@ -130,11 +130,11 @@ class TransferServer @Inject internal constructor(
                 if (commandData.action == TransferCommandAction.CONNECT.value) {
                     if (commandData.code == code) {
                         Timber.e("Verification passed, start transmission")
-                        status = TransferState.VERIFICATION_COMPLETED
+                        status = TransferStatus.VERIFICATION_COMPLETED
                         transfer()
                     } else {
                         Timber.e("Validation failed, close")
-                        status = TransferState.ERROR
+                        status = TransferStatus.ERROR
                         exit()
                     }
                 } else {
@@ -145,7 +145,7 @@ class TransferServer @Inject internal constructor(
     }
 
     fun transfer() {
-        status = TransferState.SENDING
+        status = TransferStatus.SENDING
         sendStart()
         syncConversation()
         syncParticipant()
@@ -159,7 +159,7 @@ class TransferServer @Inject internal constructor(
         syncExpiredMessage()
         syncMediaFile()
         sendClose()
-        status = TransferState.FINISHED
+        status = TransferStatus.FINISHED
         exit()
     }
 

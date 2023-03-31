@@ -23,7 +23,7 @@ import one.mixin.android.ui.transfer.vo.TransferData
 import one.mixin.android.ui.transfer.vo.TransferDataType
 import one.mixin.android.ui.transfer.vo.TransferMessage
 import one.mixin.android.ui.transfer.vo.TransferSendData
-import one.mixin.android.ui.transfer.vo.TransferState
+import one.mixin.android.ui.transfer.vo.TransferStatus
 import one.mixin.android.ui.transfer.vo.toMessage
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.vo.Asset
@@ -76,14 +76,14 @@ class TransferClient @Inject internal constructor(
     }
 
     val protocol = TransferProtocol()
-    private var status = TransferState.INITIALIZING
+    private var status = TransferStatus.INITIALIZING
 
     suspend fun connectToServer(ip: String, port: Int, commandData: TransferCommandData) =
         withContext(transferExceptionHandler + Dispatchers.IO) {
-            status = TransferState.CONNECTING
+            status = TransferStatus.CONNECTING
             socket = Socket(ip, port)
             socket.soTimeout = 10000
-            status = TransferState.WAITING_FOR_VERIFICATION
+            status = TransferStatus.WAITING_FOR_VERIFICATION
             sendMessage(gson.toJson(TransferSendData(TransferDataType.COMMAND.value, commandData)))
             listen()
         }
@@ -95,7 +95,7 @@ class TransferClient @Inject internal constructor(
                 delay(300)
                 continue
             }
-            status = TransferState.SENDING
+            status = TransferStatus.SENDING
             val content = protocol.read(inputStream)
             if (content.startsWith("file")) {
                 // do noting
@@ -108,7 +108,7 @@ class TransferClient @Inject internal constructor(
                         val transferCommandData =
                             gson.fromJson(content, TransferCommandData::class.java)
                         if (transferCommandData.action == TransferCommandAction.CLOSE.value) {
-                            status = TransferState.FINISHED
+                            status = TransferStatus.FINISHED
                             exit()
                         } else if (transferCommandData.action == TransferCommandAction.START.value) {
                             transferCommandData.total ?: 0L

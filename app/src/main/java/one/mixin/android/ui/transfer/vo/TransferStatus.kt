@@ -1,6 +1,6 @@
 package one.mixin.android.ui.transfer.vo
 
-enum class TransferState {
+enum class TransferStatus {
     INITIALIZING,
     CREATED,
     CONNECTING,
