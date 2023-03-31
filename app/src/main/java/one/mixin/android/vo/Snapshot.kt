@@ -44,6 +44,15 @@ data class Snapshot(
     @SerializedName("confirmations")
     @ColumnInfo(name = "confirmations")
     val confirmations: Int?,
+    @SerializedName("snapshot_hash")
+    @ColumnInfo(name = "snapshot_hash")
+    val snapshotHash: String?,
+    @SerializedName("opening_balance")
+    @ColumnInfo(name = "opening_balance")
+    val openingBalance: String?,
+    @SerializedName("closing_balance")
+    @ColumnInfo(name = "closing_balance")
+    val closingBalance: String?,
 )
 
 @Suppress("ktlint:enum-entry-name-case", "EnumEntryName")

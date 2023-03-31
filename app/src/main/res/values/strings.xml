@@ -231,6 +231,7 @@
     <string name="Click_to_retry">Click to retry</string>
     <string name="Click_to_unlock">Click to unlock</string>
     <string name="Close">Close</string>
+    <string name="Closing_Balance">Closing Balance</string>
     <string name="Combine_and_forward">Combine and forward</string>
     <string name="Confirm">Confirm</string>
     <string name="Confirm_fingerprint">Confirm fingerprint</string>
@@ -683,6 +684,7 @@
     <string name="Open_Home_page">Open Home page</string>
     <string name="Open_in_browser">Open in browser</string>
     <string name="Open_Link">Open Link: %1$s</string>
+    <string name="Opening_Balance">Opening Balance</string>
     <string name="Operator">Operator</string>
     <string name="OTHER">OTHER</string>
     <string name="Others">Others</string>
@@ -916,6 +918,7 @@
     <string name="Show">Show</string>
     <string name="Show_in_chat">Show in chat</string>
     <string name="Shown">Shown</string>
+    <string name="snapshot_Hash">Snapshot Hash</string>
     <string name="Sign_in">Sign in</string>
     <string name="Sign_in_desktop_app">Sign in desktop app</string>
     <string name="Sign_with_emergency_contact">Sign in with emergency contact</string>
