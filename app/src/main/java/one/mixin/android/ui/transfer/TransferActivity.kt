@@ -16,6 +16,7 @@ import io.reactivex.disposables.Disposable
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.RxBus
 import one.mixin.android.databinding.ActivityTransferBinding
@@ -61,6 +62,9 @@ class TransferActivity : BaseActivity() {
     }
 
     private val binding by viewBinding(ActivityTransferBinding::inflate)
+
+    var shouldLogout = false
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         getScanResult = registerForActivityResult(
@@ -169,6 +173,13 @@ class TransferActivity : BaseActivity() {
         super.onStop()
         disposable?.dispose()
         disposable = null
+    }
+
+    override fun finish() {
+        super.finish()
+        if (shouldLogout) {
+            MixinApplication.get().closeAndClear()
+        }
     }
 
     private lateinit var getScanResult: ActivityResultLauncher<Pair<String, Boolean>>

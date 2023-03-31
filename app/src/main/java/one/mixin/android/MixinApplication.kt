@@ -55,6 +55,7 @@ import one.mixin.android.ui.media.pager.MediaPagerActivity
 import one.mixin.android.ui.player.FloatingPlayer
 import one.mixin.android.ui.player.MusicActivity
 import one.mixin.android.ui.player.MusicService
+import one.mixin.android.ui.transfer.TransferActivity
 import one.mixin.android.ui.web.FloatingWebClip
 import one.mixin.android.ui.web.WebActivity
 import one.mixin.android.ui.web.clips
@@ -232,6 +233,12 @@ open class MixinApplication :
     }
 
     fun closeAndClear(force: Boolean = false) {
+        val activity = currentActivity
+        if (activity is TransferActivity) {
+            activity.shouldLogout = true
+            return
+        }
+
         if (force || isOnline.compareAndSet(true, false)) {
             val sessionId = Session.getSessionId()
             BlazeMessageService.stopService(this)
