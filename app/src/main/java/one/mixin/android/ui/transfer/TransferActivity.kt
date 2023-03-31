@@ -187,6 +187,12 @@ class TransferActivity : BaseActivity() {
         transferDisposable = null
     }
 
+    override fun onDestroy() {
+        super.onDestroy()
+        transferServer.exit()
+        transferClient.exit()
+    }
+
     override fun finish() {
         super.finish()
         if (shouldLogout) {
