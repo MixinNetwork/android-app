@@ -4,6 +4,7 @@ import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
 import one.mixin.android.MixinApplication
+import one.mixin.android.RxBus
 import one.mixin.android.crypto.generateAesKey
 import one.mixin.android.db.AssetDao
 import one.mixin.android.db.ConversationDao
@@ -15,6 +16,7 @@ import one.mixin.android.db.SnapshotDao
 import one.mixin.android.db.StickerDao
 import one.mixin.android.db.TranscriptMessageDao
 import one.mixin.android.db.UserDao
+import one.mixin.android.event.DeviceTransferProgressEvent
 import one.mixin.android.extension.base64RawURLEncode
 import one.mixin.android.extension.getMediaPath
 import one.mixin.android.extension.isUUID
@@ -31,6 +33,7 @@ import one.mixin.android.util.SINGLE_SOCKET_THREAD
 import timber.log.Timber
 import java.io.InputStream
 import java.io.OutputStream
+import java.lang.Float
 import java.net.BindException
 import java.net.InetSocketAddress
 import java.net.ServerSocket
@@ -65,6 +68,9 @@ class TransferServer @Inject internal constructor(
 
     private var code = 0
     private var port = 0
+
+    private var count = 0L
+    private var total = 0L
 
     suspend fun startServer(createdSuccessCallback: (TransferCommandData) -> Unit) =
         withContext(
@@ -208,10 +214,11 @@ class TransferServer @Inject internal constructor(
     }
 
     private fun totalCount(): Long {
-        return messageDao.countMediaMessages() + messageDao.countMessages() + conversationDao.countConversations() +
+        this.total =  messageDao.countMediaMessages() + messageDao.countMessages() + conversationDao.countConversations() +
             expiredMessageDao.countExpiredMessages() + participantDao.countParticipants() +
             pinMessageDao.countPinMessages() + snapshotDao.countSnapshots() + stickerDao.countStickers() +
             transcriptMessageDao.countTranscriptMessages() + userDao.countUsers()
+        return total
     }
 
     private fun sendFinish(outputStream: OutputStream) {
@@ -241,6 +248,8 @@ class TransferServer @Inject internal constructor(
             }.forEach {
                 Timber.e("send conversation ${it.data.conversationId}")
                 sendJsonContent(outputStream, gson.toJson(it))
+                count++
+                progress()
             }
             if (list.size < LIMIT) {
                 return
@@ -261,6 +270,8 @@ class TransferServer @Inject internal constructor(
             }.forEach {
                 Timber.e("send Participant ${it.data.conversationId} ${it.data.userId}")
                 sendJsonContent(outputStream, gson.toJson(it))
+                count++
+                progress()
             }
             if (list.size < LIMIT) {
                 return
@@ -281,6 +292,8 @@ class TransferServer @Inject internal constructor(
             }.forEach {
                 Timber.e("send user ${it.data.userId}")
                 sendJsonContent(outputStream, gson.toJson(it))
+                count++
+                progress()
             }
             if (list.size < LIMIT) {
                 return
@@ -301,6 +314,8 @@ class TransferServer @Inject internal constructor(
             }.forEach {
                 Timber.e("send asset ${it.data.assetId}")
                 sendJsonContent(outputStream, gson.toJson(it))
+                count++
+                progress()
             }
             if (list.size < LIMIT) {
                 return
@@ -321,6 +336,8 @@ class TransferServer @Inject internal constructor(
             }.forEach {
                 Timber.e("send sticker ${it.data.stickerId}")
                 sendJsonContent(outputStream, gson.toJson(it))
+                count++
+                progress()
             }
             if (list.size < LIMIT) {
                 return
@@ -341,6 +358,8 @@ class TransferServer @Inject internal constructor(
             }.forEach {
                 sendJsonContent(outputStream, gson.toJson(it))
                 Timber.e("send snapshot ${it.data.snapshotId}")
+                count++
+                progress()
             }
             if (list.size < LIMIT) {
                 return
@@ -361,6 +380,8 @@ class TransferServer @Inject internal constructor(
             }.forEach {
                 sendJsonContent(outputStream, gson.toJson(it))
                 Timber.e("send transcript ${it.data.transcriptId}")
+                count++
+                progress()
             }
             if (list.size < LIMIT) {
                 return
@@ -380,6 +401,8 @@ class TransferServer @Inject internal constructor(
                 TransferSendData(TransferDataType.PIN_MESSAGE.value, it)
             }.forEach {
                 sendJsonContent(outputStream, gson.toJson(it))
+                count++
+                progress()
                 Timber.e("send pin message: ${it.data.messageId}")
             }
             if (list.size < LIMIT) {
@@ -401,6 +424,8 @@ class TransferServer @Inject internal constructor(
             }.forEach {
                 Timber.e("send message: ${it.data.messageId}")
                 sendJsonContent(outputStream, gson.toJson(it))
+                count++
+                progress()
             }
             if (messages.size < LIMIT) {
                 return
@@ -421,6 +446,8 @@ class TransferServer @Inject internal constructor(
             }.forEach {
                 sendJsonContent(outputStream, gson.toJson(it))
                 Timber.e("send pin message: ${it.data.messageId}")
+                count++
+                progress()
             }
             if (list.size < LIMIT) {
                 return
@@ -437,6 +464,8 @@ class TransferServer @Inject internal constructor(
                 val name = f.nameWithoutExtension
                 if (name.isUUID()) {
                     protocol.write(outputStream, f, name)
+                    count++
+                    progress()
                 }
             }
         }
@@ -452,6 +481,12 @@ class TransferServer @Inject internal constructor(
         } catch (e: Exception) {
             Timber.e("exit server ${e.message}")
         }
+    }
+
+    private fun progress() {
+        if (total <= 0) return
+        val progress = Float.min((count++) / total.toFloat() * 100, 100f)
+        RxBus.publish(DeviceTransferProgressEvent(progress))
     }
 
     companion object {

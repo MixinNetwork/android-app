@@ -67,7 +67,7 @@ class TransferClient @Inject internal constructor(
         GsonHelper.customGson
     }
 
-    private var count = 0
+    private var count = 0L
 
     fun sendMessage(outputStream: OutputStream, message: String) {
         protocol.write(outputStream, message)
