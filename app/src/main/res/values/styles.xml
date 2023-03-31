@@ -250,6 +250,23 @@
         <item name="bottomSheetStyle">@style/BottomSheetModal</item>
     </style>
 
+    <style name="AppTheme.AppAuthDialog" parent="Theme.Design.Light.BottomSheetDialog">
+        <item name="android:statusBarColor">?attr/bg_white</item>
+        <item name="android:navigationBarColor">?attr/bg_white</item>
+        <item name="android:windowFrame">@null</item>
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:colorBackground">@android:color/transparent</item>
+        <item name="android:windowIsFloating">false</item>
+        <item name="android:windowContentOverlay">@null</item>
+        <item name="android:windowIsTranslucent">true</item>
+        <item name="android:backgroundDimAmount">0.6</item>
+        <item name="android:windowEnterAnimation">@null</item>
+        <item name="android:windowExitAnimation">@null</item>
+        <item name="android:colorBackgroundCacheHint">@null</item>
+    </style>
+
     <style name="AppTheme.Call" parent="AppTheme.NoActionBar">
         <item name="android:windowBackground">@android:color/transparent</item>
         <item name="android:windowIsTranslucent">true</item>

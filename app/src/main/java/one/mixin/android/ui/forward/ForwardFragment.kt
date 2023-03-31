@@ -663,10 +663,6 @@ class ForwardFragment : BaseFragment(R.layout.fragment_forward) {
             editAndSend(requireNotNull(editorPreserver?.forwardMessage))
             return@launch
         }
-
-        if (!MixinApplication.get().checkAndShowAppAuth(requireActivity())) {
-            sendAndGo2Chat(cid)
-        }
     }
 
     private suspend fun sendAndGo2Chat(cid: String) {
@@ -746,10 +742,6 @@ class ForwardFragment : BaseFragment(R.layout.fragment_forward) {
             shareImageData.url.toUri()
         }
         getEditorResult.launch(Pair(uri, getString(R.string.Share)))
-
-        if (action is ForwardAction.System && action.conversationId != null) {
-            MixinApplication.get().checkAndShowAppAuth(requireActivity())
-        }
     }
 
     private suspend fun sendImageByUri(uri: Uri) {

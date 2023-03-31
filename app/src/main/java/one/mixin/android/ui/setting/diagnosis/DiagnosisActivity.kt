@@ -7,11 +7,11 @@ import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.R
 import one.mixin.android.databinding.ActivityContactBinding
 import one.mixin.android.extension.replaceFragment
-import one.mixin.android.ui.common.BaseActivity
+import one.mixin.android.ui.common.AppAuthActivity
 import one.mixin.android.util.viewBinding
 
 @AndroidEntryPoint
-class DiagnosisActivity : BaseActivity() {
+class DiagnosisActivity : AppAuthActivity() {
 
     private val binding by viewBinding(ActivityContactBinding::inflate)
 

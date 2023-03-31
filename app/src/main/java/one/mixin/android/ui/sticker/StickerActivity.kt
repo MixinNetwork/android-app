@@ -6,10 +6,10 @@ import android.os.Bundle
 import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.R
 import one.mixin.android.extension.replaceFragment
-import one.mixin.android.ui.common.BaseActivity
+import one.mixin.android.ui.common.AppAuthActivity
 
 @AndroidEntryPoint
-class StickerActivity : BaseActivity() {
+class StickerActivity : AppAuthActivity() {
 
     companion object {
         const val TAG = "StickerActivity"

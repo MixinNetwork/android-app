@@ -58,7 +58,7 @@ import one.mixin.android.extension.notEmptyWithElse
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.showKeyboard
 import one.mixin.android.extension.toast
-import one.mixin.android.ui.common.BaseActivity
+import one.mixin.android.ui.common.AppAuthActivity
 import one.mixin.android.util.calculationByDistance
 import one.mixin.android.util.distanceFormat
 import one.mixin.android.websocket.LocationPayload
@@ -69,7 +69,7 @@ import kotlin.math.max
 import kotlin.math.min
 
 @AndroidEntryPoint
-class LocationActivity : BaseActivity(), OnMapReadyCallback {
+class LocationActivity : AppAuthActivity(), OnMapReadyCallback {
 
     @Inject
     lateinit var foursquareService: FoursquareService

@@ -290,7 +290,7 @@ class MainActivity : BlazeBaseActivity() {
 
         lifecycleScope.launch(Dispatchers.IO) {
             delay(10_000)
-            if (MixinApplication.get().isAppAuthShown()) {
+            if (MixinApplication.get().appAuthShown) {
                 return@launch
             }
             checkUpdate()

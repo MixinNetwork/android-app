@@ -56,7 +56,7 @@ import one.mixin.android.job.TranscriptAttachmentDownloadJob
 import one.mixin.android.repository.ConversationRepository
 import one.mixin.android.repository.UserRepository
 import one.mixin.android.session.Session
-import one.mixin.android.ui.common.BaseActivity
+import one.mixin.android.ui.common.AppAuthActivity
 import one.mixin.android.ui.common.message.SendMessageHelper
 import one.mixin.android.ui.common.showUserBottom
 import one.mixin.android.ui.conversation.chathistory.holder.BaseViewHolder
@@ -99,7 +99,7 @@ import java.util.UUID
 import javax.inject.Inject
 
 @AndroidEntryPoint
-class ChatHistoryActivity : BaseActivity() {
+class ChatHistoryActivity : AppAuthActivity() {
     private lateinit var binding: ActivityChatHistoryBinding
     override fun getNightThemeId(): Int = R.style.AppTheme_Night_NoActionBar
     override fun getDefaultThemeId(): Int = R.style.AppTheme_NoActionBar

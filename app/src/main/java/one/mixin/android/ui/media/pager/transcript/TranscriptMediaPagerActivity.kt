@@ -66,7 +66,7 @@ import one.mixin.android.extension.toast
 import one.mixin.android.repository.ConversationRepository
 import one.mixin.android.session.Session
 import one.mixin.android.ui.PipVideoView
-import one.mixin.android.ui.common.BaseActivity
+import one.mixin.android.ui.common.AppAuthActivity
 import one.mixin.android.ui.media.pager.MediaPagerActivity
 import one.mixin.android.ui.qr.QRCodeProcessor
 import one.mixin.android.util.AnimationProperties
@@ -92,7 +92,7 @@ import javax.inject.Inject
 import kotlin.math.min
 
 @AndroidEntryPoint
-class TranscriptMediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener, SensorOrientationChangeNotifier.Listener {
+class TranscriptMediaPagerActivity : AppAuthActivity(), DismissFrameLayout.OnDismissListener, SensorOrientationChangeNotifier.Listener {
     private lateinit var colorDrawable: ColorDrawable
 
     private val pipVideoView by lazy {

@@ -15,7 +15,7 @@ import one.mixin.android.extension.handleIgnoreBatteryOptimization
 import one.mixin.android.util.RomUtil
 import timber.log.Timber
 
-class BatteryOptimizationDialogActivity : BaseActivity() {
+class BatteryOptimizationDialogActivity : AppAuthActivity() {
     companion object {
         const val ARGS_NEW_TASK = "args_new_task"
 

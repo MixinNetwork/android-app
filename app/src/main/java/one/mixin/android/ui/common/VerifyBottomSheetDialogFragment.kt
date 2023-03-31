@@ -2,6 +2,8 @@ package one.mixin.android.ui.common
 
 import android.annotation.SuppressLint
 import android.app.Dialog
+import android.os.Build
+import android.view.WindowManager
 import androidx.core.view.isVisible
 import androidx.fragment.app.DialogFragment
 import dagger.hilt.android.AndroidEntryPoint
@@ -20,10 +22,12 @@ class VerifyBottomSheetDialogFragment : BiometricBottomSheetDialogFragment() {
     companion object {
         const val TAG = "VerifyBottomSheetDialogFragment"
         const val ARGS_DISABLE_BIOMETRIC = "args_disable_biometric"
+        const val ARGS_SYSTEM_ALERT_LEVEL = "args_system_alert_level"
 
-        fun newInstance(title: String? = null, disableBiometric: Boolean = false) = VerifyBottomSheetDialogFragment().withArgs {
+        fun newInstance(title: String? = null, disableBiometric: Boolean = false, systemAlertLevel: Boolean = false) = VerifyBottomSheetDialogFragment().withArgs {
             title?.let { putString(ARGS_TITLE, it) }
             putBoolean(ARGS_DISABLE_BIOMETRIC, disableBiometric)
+            putBoolean(ARGS_SYSTEM_ALERT_LEVEL, systemAlertLevel)
         }
     }
 
@@ -39,6 +43,16 @@ class VerifyBottomSheetDialogFragment : BiometricBottomSheetDialogFragment() {
         val title = arguments?.getString(ARGS_TITLE)
         if (!title.isNullOrBlank()) {
             binding.title.text = title
+        }
+
+        val systemAlertLevel = arguments?.getBoolean(ARGS_SYSTEM_ALERT_LEVEL) ?: false
+        if (systemAlertLevel) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                dialog.window?.setType(WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY)
+            } else {
+                @Suppress("DEPRECATION")
+                dialog.window?.setType(WindowManager.LayoutParams.TYPE_SYSTEM_ALERT)
+            }
         }
 
         val disableBiometric = arguments?.getBoolean(ARGS_DISABLE_BIOMETRIC) ?: false
