@@ -96,7 +96,8 @@ class TransferActivity : BaseActivity() {
                         binding.pushToDesktop.isVisible = false
                         binding.pullFromDesktop.isVisible = false
                         binding.qr.setImageBitmap(qrCode)
-                        binding.qr.fadeIn()
+                        binding.qrFl.fadeIn()
+                        binding.loginScanTv.fadeIn()
                     }
                 }
             }
