@@ -1,7 +1,6 @@
 package one.mixin.android.ui.transfer
 
 import kotlinx.coroutines.CoroutineExceptionHandler
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
 import one.mixin.android.MixinApplication
@@ -108,7 +107,7 @@ class TransferServer @Inject internal constructor(
             if (remoteAddr is InetSocketAddress) {
                 val inetAddr = remoteAddr.address
                 val ip = inetAddr.hostAddress
-                run(socket.getInputStream(), socket.getOutputStream(),)
+                run(socket.getInputStream(), socket.getOutputStream())
                 Timber.e("Connected to $ip")
             } else {
                 exit()

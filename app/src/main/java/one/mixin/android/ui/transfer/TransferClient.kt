@@ -1,7 +1,6 @@
 package one.mixin.android.ui.transfer
 
 import kotlinx.coroutines.CoroutineExceptionHandler
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
 import one.mixin.android.RxBus
@@ -128,7 +127,7 @@ class TransferClient @Inject internal constructor(
                             status.value = TransferStatus.FINISHED
                             exit()
                         } else if (transferCommandData.action == TransferCommandAction.START.value) {
-                            transferCommandData.total ?: 0L
+                            this.total = transferCommandData.total ?: 0L
                         } else if (transferCommandData.action == TransferCommandAction.PUSH.value && transferCommandData.action == TransferCommandAction.PULL.value && transferCommandData.action == TransferCommandAction.START.value) {
                             Timber.e("action ${transferCommandData.action}")
                         } else if (transferCommandData.action == TransferCommandAction.FINISH.value) {

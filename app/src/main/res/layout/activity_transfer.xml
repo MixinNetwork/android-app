@@ -19,7 +19,6 @@
         android:id="@+id/start_server"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_margin="16dp"
         android:background="@drawable/bg_round_white"
         android:foreground="?android:attr/selectableItemBackground"
         android:orientation="vertical"
@@ -42,46 +41,17 @@
             android:textColor="?attr/text_minor" />
     </LinearLayout>
 
-
     <LinearLayout
-        android:id="@+id/client_scan"
+        android:id="@+id/push_to_desktop"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_margin="16dp"
-        android:background="@drawable/bg_round_white"
+        android:background="?attr/bg_white"
         android:foreground="?android:attr/selectableItemBackground"
         android:orientation="vertical"
         android:padding="16dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/start_server">
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="恢复"
-            android:textColor="?attr/text_primary"
-            android:textSize="16sp" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="链接其他设备，将其聊天记录复制到本机，完成后将拥有其他设备上完整的聊天记录"
-            android:textColor="?attr/text_minor" />
-    </LinearLayout>
-
-    <LinearLayout
-        android:id="@+id/push_to_desktop"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_margin="16dp"
-        android:background="@drawable/bg_round_white"
-        android:foreground="?android:attr/selectableItemBackground"
-        android:orientation="vertical"
-        android:padding="16dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/client_scan">
 
         <TextView
             android:layout_width="wrap_content"
@@ -101,7 +71,6 @@
         android:id="@+id/pull_from_desktop"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_margin="16dp"
         android:background="@drawable/bg_round_white"
         android:foreground="?android:attr/selectableItemBackground"
         android:orientation="vertical"

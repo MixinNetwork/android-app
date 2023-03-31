@@ -1,23 +1,20 @@
 package one.mixin.android.ui.transfer
 
-import android.Manifest
 import android.app.Dialog
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
-import androidx.activity.result.ActivityResultLauncher
 import androidx.core.view.isVisible
 import androidx.lifecycle.lifecycleScope
-import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import one.mixin.android.Constants.Scheme.DEVICE_TRANSFER
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.RxBus
@@ -32,14 +29,12 @@ import one.mixin.android.extension.dp
 import one.mixin.android.extension.fadeIn
 import one.mixin.android.extension.generateQRCode
 import one.mixin.android.extension.indeterminateProgressDialog
-import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.toast
 import one.mixin.android.job.BaseJob
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.SendPlaintextJob
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseActivity
-import one.mixin.android.ui.qr.CaptureActivity
 import one.mixin.android.ui.transfer.vo.TransferCommandAction
 import one.mixin.android.ui.transfer.vo.TransferCommandData
 import one.mixin.android.ui.transfer.vo.TransferStatus
@@ -86,17 +81,11 @@ class TransferActivity : BaseActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        getScanResult = registerForActivityResult(
-            CaptureActivity.CaptureContract(),
-            activityResultRegistry,
-            ::callbackScan,
-        )
         setContentView(binding.root)
         binding.titleView.leftIb.setOnClickListener {
             finish()
         }
         val isComputer = intent.getBooleanExtra(ARGS_IS_COMPUTER, false)
-        binding.clientScan.isVisible = !isComputer
         binding.startServer.isVisible = !isComputer
         binding.pullFromDesktop.isVisible = isComputer
         binding.pushToDesktop.isVisible = isComputer
@@ -106,10 +95,12 @@ class TransferActivity : BaseActivity() {
                     lifecycleScope.launch(Dispatchers.Main) {
                         val qrCode = gson.toJson(transferCommandData)
                             .base64Encode()
+                            .run {
+                                "$DEVICE_TRANSFER?data=$this"
+                            }
                             .generateQRCode(240.dp).first
                         toast("Sever IP: ${transferCommandData.ip} ${transferCommandData.action}")
                         binding.startServer.isVisible = false
-                        binding.clientScan.isVisible = false
                         binding.pushToDesktop.isVisible = false
                         binding.pullFromDesktop.isVisible = false
                         binding.qr.setImageBitmap(qrCode)
@@ -120,9 +111,6 @@ class TransferActivity : BaseActivity() {
             }
         }
 
-        binding.clientScan.setOnClickListener {
-            handleClick()
-        }
         binding.pushToDesktop.setOnClickListener {
             // loading()
             pushRequest()
@@ -138,7 +126,6 @@ class TransferActivity : BaseActivity() {
 
         status.observe(this) { s ->
             binding.startServer.isVisible = false
-            binding.clientScan.isVisible = false
             binding.pushToDesktop.isVisible = false
             binding.pullFromDesktop.isVisible = false
 
@@ -148,20 +135,25 @@ class TransferActivity : BaseActivity() {
                 }
                 TransferStatus.CREATED -> {
                 }
-                TransferStatus.CONNECTING -> {
-                }
                 TransferStatus.WAITING_FOR_CONNECTION -> {
                 }
+                TransferStatus.CONNECTING -> {
+                    loading()
+                }
                 TransferStatus.WAITING_FOR_VERIFICATION -> {
+                    loading()
                 }
                 TransferStatus.VERIFICATION_COMPLETED -> {
+                    loading()
                 }
                 TransferStatus.SENDING -> {
+                    loadingDismiss()
                     binding.qrFl.isVisible = false
                     binding.loginScanTv.isVisible = false
                     binding.statusLl.isVisible = true
                 }
                 TransferStatus.ERROR -> {
+                    loadingDismiss()
                     binding.qrFl.isVisible = true
                     binding.loginScanTv.isVisible = true
                     binding.statusLl.isVisible = false
@@ -169,6 +161,7 @@ class TransferActivity : BaseActivity() {
                     status.value = TransferStatus.INITIALIZING
                 }
                 TransferStatus.FINISHED -> {
+                    loadingDismiss()
                     binding.statusTv.text = getString(R.string.Diagnosis_Complete)
                 }
             }
@@ -234,7 +227,7 @@ class TransferActivity : BaseActivity() {
                 .autoDispose(stopScope)
                 .subscribe {
                     if (status.value == TransferStatus.SENDING) {
-                        binding.descTv.text = getString(R.string.sending_desc, it.progress.toString())
+                        binding.descTv.text = getString(R.string.sending_desc, String.format("%.2f%", it.progress))
                     }
                     Timber.e("Device transfer ${it.progress}%")
                 }
@@ -264,24 +257,9 @@ class TransferActivity : BaseActivity() {
         }
     }
 
-    private lateinit var getScanResult: ActivityResultLauncher<Pair<String, Boolean>>
-    private fun handleClick() {
-        RxPermissions(this)
-            .request(Manifest.permission.CAMERA)
-            .autoDispose(stopScope)
-            .subscribe { granted ->
-                if (granted) {
-                    getScanResult.launch(Pair(CaptureActivity.ARGS_FOR_SCAN_RESULT, true))
-                } else {
-                    openPermissionSetting()
-                }
-            }
-    }
-
     private fun connectToQrCodeContent(content: String) = lifecycleScope.launch(SINGLE_SOCKET_THREAD) {
         withContext(Dispatchers.Main) {
             binding.startServer.isVisible = false
-            binding.clientScan.isVisible = false
         }
 
         val transferCommandData = try {
@@ -305,19 +283,10 @@ class TransferActivity : BaseActivity() {
             ),
         )
     }
-
-    private fun callbackScan(data: Intent?) {
-        val qrContent = data?.getStringExtra(CaptureActivity.ARGS_FOR_SCAN_RESULT)
-        qrContent?.let { content ->
-            connectToQrCodeContent(content)
-        }
-    }
-
     private val finishListener: (String) -> Unit = { msg ->
         lifecycleScope.launch(Dispatchers.Main) {
             toast(msg)
             binding.startServer.isVisible = true
-            binding.clientScan.isVisible = true
             binding.pushToDesktop.isVisible = true
             binding.pullFromDesktop.isVisible = true
             binding.qr.isVisible = false
