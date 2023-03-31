@@ -120,4 +120,7 @@ interface AssetDao : BaseDao<Asset> {
 
     @Query("SELECT a.* FROM assets a ORDER BY a.rowid LIMIT :limit OFFSET :offset")
     fun getAssetByLimitAndOffset(limit: Int, offset: Int): List<Asset>
+
+    @Query("SELECT count(1) FROM assets")
+    fun countAssets(): Long
 }

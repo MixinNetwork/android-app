@@ -143,4 +143,7 @@ interface TranscriptMessageDao : BaseDao<TranscriptMessage> {
 
     @Query("SELECT tm.* FROM transcript_messages tm ORDER BY tm.rowid LIMIT :limit OFFSET :offset")
     fun getTranscriptMessageByLimitAndOffset(limit: Int, offset: Int): List<TranscriptMessage>
+
+    @Query("SELECT count(1) FROM transcript_messages")
+    fun countTranscriptMessages(): Long
 }

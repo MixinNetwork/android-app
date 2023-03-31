@@ -150,9 +150,7 @@ class TransferActivity : BaseActivity() {
                                     it.ip!!,
                                     it.port!!,
                                     TransferCommandData(
-                                        this@TransferActivity.getDeviceId(),
                                         TransferCommandAction.CONNECT.value,
-                                        1,
                                         code = it.code,
                                     ),
                                 )
@@ -224,9 +222,7 @@ class TransferActivity : BaseActivity() {
                     transferCommandData.ip!!,
                     transferCommandData.port!!,
                     TransferCommandData(
-                        this@TransferActivity.getDeviceId(),
                         TransferCommandAction.CONNECT.value,
-                        1,
                         code = transferCommandData.code,
                     ),
                 )
@@ -286,9 +282,7 @@ class TransferActivity : BaseActivity() {
     private fun pullRequest() {
         val encodeText = gson.toJson(
             TransferCommandData(
-                this.getDeviceId(),
                 TransferCommandAction.PULL.value,
-                1,
             ).apply {
                 Timber.e("pull ${gson.toJson(this)}")
             },

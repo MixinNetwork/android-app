@@ -156,4 +156,7 @@ interface UserDao : BaseDao<User> {
 
     @Query("SELECT u.* FROM users u ORDER BY u.rowid LIMIT :limit OFFSET :offset")
     fun getUsersByLimitAndOffset(limit: Int, offset: Int): List<User>
+
+    @Query("SELECT count(1) FROM users")
+    fun countUsers(): Long
 }

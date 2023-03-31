@@ -585,4 +585,11 @@ interface MessageDao : BaseDao<Message> {
 
     @Query("DELETE FROM messages_fts4 WHERE rowid IN (SELECT rowid FROM messages_fts4 LIMIT 1000)")
     fun deleteFts(): Int
+
+    @Query("SELECT count(1) FROM messages")
+    fun countMessages(): Long
+
+    @Query("SELECT count(1) FROM messages WHERE (category IN ($DATA, $IMAGES, $AUDIOS, $VIDEOS)) ")
+    fun countMediaMessages(): Long
+
 }

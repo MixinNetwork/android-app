@@ -4,4 +4,6 @@ enum class TransferCommandAction(val value: String) {
     PUSH("push"),
     PULL("pull"),
     CONNECT("connect"),
+    START("start"),
+    CLOSE("close"),
 }

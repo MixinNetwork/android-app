@@ -249,4 +249,7 @@ interface ConversationDao : BaseDao<Conversation> {
         """,
     )
     suspend fun findSameConversations(selfId: String, userId: String): List<GroupMinimal>
+
+    @Query("SELECT count(1) FROM conversations")
+    fun countConversations(): Long
 }

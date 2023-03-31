@@ -120,4 +120,7 @@ interface ParticipantDao : BaseDao<Participant> {
 
     @Query("SELECT p.* FROM participants p ORDER BY p.rowid LIMIT :limit OFFSET :offset")
     fun getParticipantsByLimitAndOffset(limit: Int, offset: Int): List<Participant>
+
+    @Query("SELECT count(1) FROM participants")
+    fun countParticipants(): Long
 }

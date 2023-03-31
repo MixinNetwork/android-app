@@ -86,4 +86,7 @@ interface PinMessageDao : BaseDao<PinMessage> {
 
     @Query("SELECT pm.* FROM pin_messages pm ORDER BY pm.rowid LIMIT :limit OFFSET :offset")
     fun getPinMessageByLimitAndOffset(limit: Int, offset: Int): List<PinMessage>
+
+    @Query("SELECT count(1) FROM pin_messages")
+    fun countPinMessages(): Long
 }

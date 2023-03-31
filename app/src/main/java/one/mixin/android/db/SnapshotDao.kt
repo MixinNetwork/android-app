@@ -64,4 +64,7 @@ interface SnapshotDao : BaseDao<Snapshot> {
 
     @Query("SELECT sn.* FROM snapshots sn ORDER BY sn.rowid LIMIT :limit OFFSET :offset")
     fun getSnapshotByLimitAndOffset(limit: Int, offset: Int): List<Snapshot>
+
+    @Query("SELECT count(1) FROM snapshots")
+    fun countSnapshots(): Long
 }
