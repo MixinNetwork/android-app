@@ -22,6 +22,7 @@ import one.mixin.android.RxBus
 import one.mixin.android.databinding.ActivityTransferBinding
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.ParticipantDao
+import one.mixin.android.event.DeviceTransferProgressEvent
 import one.mixin.android.extension.base64Encode
 import one.mixin.android.extension.base64RawURLDecode
 import one.mixin.android.extension.base64RawURLEncode
@@ -129,6 +130,7 @@ class TransferActivity : BaseActivity() {
     }
 
     private var disposable: Disposable? = null
+    private var transferDisposable : Disposable? = null
 
     override fun onStart() {
         super.onStart()
@@ -168,12 +170,22 @@ class TransferActivity : BaseActivity() {
                     Timber.e("${it.action} ${it.deviceId} ${it.ip}")
                 }
         }
+        if (transferDisposable == null) {
+            transferDisposable = RxBus.listen(DeviceTransferProgressEvent::class.java)
+                .observeOn(AndroidSchedulers.mainThread())
+                .autoDispose(stopScope)
+                .subscribe {
+                    Timber.e("Device transfer ${it.progress}%")
+                }
+        }
     }
 
     override fun onStop() {
         super.onStop()
         disposable?.dispose()
         disposable = null
+        transferDisposable?.dispose()
+        transferDisposable = null
     }
 
     override fun finish() {

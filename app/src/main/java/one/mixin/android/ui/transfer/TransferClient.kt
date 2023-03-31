@@ -4,6 +4,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import one.mixin.android.MixinApplication
+import one.mixin.android.RxBus
 import one.mixin.android.db.AssetDao
 import one.mixin.android.db.ConversationDao
 import one.mixin.android.db.ExpiredMessageDao
@@ -14,6 +15,7 @@ import one.mixin.android.db.SnapshotDao
 import one.mixin.android.db.StickerDao
 import one.mixin.android.db.TranscriptMessageDao
 import one.mixin.android.db.UserDao
+import one.mixin.android.event.DeviceTransferProgressEvent
 import one.mixin.android.fts.FtsDatabase
 import one.mixin.android.fts.insertOrReplaceMessageFts4
 import one.mixin.android.ui.transfer.vo.TransferCommandAction
@@ -33,6 +35,7 @@ import one.mixin.android.vo.Sticker
 import one.mixin.android.vo.TranscriptMessage
 import one.mixin.android.vo.User
 import timber.log.Timber
+import java.lang.Float.min
 import java.net.Socket
 import java.net.SocketException
 import java.net.UnknownHostException
@@ -191,8 +194,8 @@ class TransferClient@Inject internal constructor(
 
     private fun progress() {
         if (total <= 0) return
-        val progress = (count++) / total.toFloat()
-        Timber.e("progress: ${progress * 100} %")
+        val progress = min((count++) / total.toFloat() * 100, 100f)
+        RxBus.publish(DeviceTransferProgressEvent(progress))
     }
 
     fun exit() {
