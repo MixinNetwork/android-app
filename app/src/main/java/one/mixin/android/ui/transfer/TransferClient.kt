@@ -4,7 +4,16 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import one.mixin.android.MixinApplication
-import one.mixin.android.db.MixinDatabase
+import one.mixin.android.db.AssetDao
+import one.mixin.android.db.ConversationDao
+import one.mixin.android.db.ExpiredMessageDao
+import one.mixin.android.db.MessageDao
+import one.mixin.android.db.ParticipantDao
+import one.mixin.android.db.PinMessageDao
+import one.mixin.android.db.SnapshotDao
+import one.mixin.android.db.StickerDao
+import one.mixin.android.db.TranscriptMessageDao
+import one.mixin.android.db.UserDao
 import one.mixin.android.ui.transfer.vo.TransferCommandData
 import one.mixin.android.ui.transfer.vo.TransferData
 import one.mixin.android.ui.transfer.vo.TransferDataType
@@ -15,54 +24,32 @@ import one.mixin.android.util.GsonHelper
 import one.mixin.android.vo.Asset
 import one.mixin.android.vo.Conversation
 import one.mixin.android.vo.Participant
+import one.mixin.android.vo.PinMessage
 import one.mixin.android.vo.Snapshot
 import one.mixin.android.vo.Sticker
+import one.mixin.android.vo.TranscriptMessage
 import one.mixin.android.vo.User
 import timber.log.Timber
 import java.net.Socket
 import java.net.SocketException
 import java.net.UnknownHostException
+import javax.inject.Inject
 
-class TransferClient(private val finishListener: (String) -> Unit) {
+class TransferClient@Inject internal constructor(
+    val assetDao: AssetDao,
+    val conversationDao: ConversationDao,
+    val expiredMessageDao: ExpiredMessageDao,
+    val messageDao: MessageDao,
+    val participantDao: ParticipantDao,
+    val pinMessageDao: PinMessageDao,
+    val snapshotDao: SnapshotDao,
+    val stickerDao: StickerDao,
+    val transcriptMessageDao: TranscriptMessageDao,
+    val userDao: UserDao,
+) {
 
     private lateinit var socket: Socket
     private var quit = false
-    private var startTime = System.currentTimeMillis()
-    private val db by lazy {
-        MixinDatabase.getDatabase(MixinApplication.appContext)
-    }
-
-    private val userDao by lazy {
-        db.userDao()
-    }
-
-    private val snapshotDao by lazy {
-        db.snapshotDao()
-    }
-
-    private val conversationDao by lazy {
-        db.conversationDao()
-    }
-
-    private val messageDao by lazy {
-        db.messageDao()
-    }
-
-    private val participantDao by lazy {
-        db.participantDao()
-    }
-
-    private val assData by lazy {
-        db.assetDao()
-    }
-
-    private val stickerDao by lazy {
-        db.stickerDao()
-    }
-
-    private val assetDao by lazy {
-        db.assetDao()
-    }
 
     private val gson by lazy {
         GsonHelper.customGson
@@ -85,7 +72,7 @@ class TransferClient(private val finishListener: (String) -> Unit) {
 
     val protocol = TransferProtocol()
 
-    fun connectToServer(ip: String, port: Int,commandData: TransferCommandData) {
+    fun connectToServer(ip: String, port: Int, commandData: TransferCommandData) {
         try {
             socket = Socket(ip, port)
             sendMessage(gson.toJson(TransferSendData(TransferDataType.COMMAND.value, commandData)))
@@ -104,15 +91,19 @@ class TransferClient(private val finishListener: (String) -> Unit) {
                     if (inputStream.available() <= 0) delay(1000)
                     val content = protocol.read(inputStream)
                     if (content == "FINISH") {
-                        finishListener("Finish Synchronized $count messages, ${System.currentTimeMillis() - startTime} ms")
+                        // finishListener("Finish Synchronized $count messages, ${System.currentTimeMillis() - startTime} ms")
                         exit()
-                    } else if(content.startsWith("file")){
+                    } else if (content.startsWith("file")) {
                         // do noting
+                        count++
                     } else {
                         Timber.e("sync $content")
                         val transferData = gson.fromJson(content, TransferData::class.java)
 
                         when (transferData.type) {
+                            TransferDataType.COMMAND.value -> {
+                                // Todo handle command
+                            }
                             TransferDataType.MESSAGE.value -> {
                                 val message = gson.fromJson(transferData.data, TransferMessage::class.java)
                                 messageDao.insert(message.toMessage())
@@ -156,6 +147,18 @@ class TransferClient(private val finishListener: (String) -> Unit) {
                                 Timber.e("Asset ID: ${asset.assetId}")
                                 count++
                             }
+                            TransferDataType.PIN_MESSAGE.value -> {
+                                val pinMessage = gson.fromJson(transferData.data, PinMessage::class.java)
+                                pinMessageDao.insert(pinMessage)
+                                Timber.e("PinMessage ID: ${pinMessage.messageId}")
+                                count++
+                            }
+                            TransferDataType.TRANSCRIPT_MESSAGE.value -> {
+                                val transcriptMessage = gson.fromJson(transferData.data, TranscriptMessage::class.java)
+                                transcriptMessageDao.insert(transcriptMessage)
+                                Timber.e("Transcript ID: ${transcriptMessage.messageId}")
+                                count++
+                            }
                             else -> {
                                 Timber.e("No support $content")
                             }
@@ -177,5 +180,4 @@ class TransferClient(private val finishListener: (String) -> Unit) {
         outputStream.close()
         socket.close()
     }
-
 }

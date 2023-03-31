@@ -100,7 +100,6 @@ object Constants {
 
         const val FTS_DB_NAME = "fts.db"
         const val PENDING_DB_NAME = "pending.db"
-
     }
 
     object Storage {

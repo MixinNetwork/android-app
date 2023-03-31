@@ -68,7 +68,7 @@ class TransferActivity : BaseActivity() {
         binding.titleView.leftIb.setOnClickListener {
             finish()
         }
-        binding.start.setOnClickListener {
+        binding.clientScan.setOnClickListener {
             lifecycleScope.launch(Dispatchers.IO) {
                 transferServer.startServer(false) { transferCommandData ->
                     val qrCode = GsonHelper.customGson.toJson(transferCommandData)
@@ -76,8 +76,8 @@ class TransferActivity : BaseActivity() {
                         .generateQRCode(240.dp).first
                     lifecycleScope.launch(Dispatchers.Main) {
                         toast("Sever IP: ${transferCommandData.ip} ${transferCommandData.action}")
-                        binding.startClient.isVisible = false
-                        binding.start.isVisible = false
+                        binding.startServer.isVisible = false
+                        binding.clientScan.isVisible = false
                         binding.pushToDesktop.isVisible = false
                         binding.pullFromDesktop.isVisible = false
                         binding.qr.setImageBitmap(qrCode)
@@ -87,7 +87,7 @@ class TransferActivity : BaseActivity() {
             }
         }
 
-        binding.startClient.setOnClickListener {
+        binding.startServer.setOnClickListener {
             handleClick()
         }
         binding.pushToDesktop.setOnClickListener {
@@ -130,7 +130,7 @@ class TransferActivity : BaseActivity() {
                         TransferCommandAction.PUSH.value -> {
                             loadingDismiss()
                             lifecycleScope.launch(Dispatchers.IO) {
-                                TransferClient(finishListener).connectToServer(
+                                transferClient.connectToServer(
                                     it.ip!!,
                                     it.port!!,
                                     TransferCommandData(
@@ -181,15 +181,15 @@ class TransferActivity : BaseActivity() {
         qrContent?.let { content ->
             lifecycleScope.launch(Dispatchers.IO) {
                 withContext(Dispatchers.Main) {
-                    binding.startClient.isVisible = false
-                    binding.start.isVisible = false
+                    binding.startServer.isVisible = false
+                    binding.clientScan.isVisible = false
                 }
                 val transferCommandData = gson.fromJson(
                     content.base64Encode(),
-                    TransferCommandData::class.java
+                    TransferCommandData::class.java,
                 )
                 Timber.e("qrcode:$content")
-                TransferClient(finishListener).connectToServer(
+                transferClient.connectToServer(
                     transferCommandData.ip!!,
                     transferCommandData.port!!,
                     TransferCommandData(
@@ -206,8 +206,8 @@ class TransferActivity : BaseActivity() {
     private val finishListener: (String) -> Unit = { msg ->
         lifecycleScope.launch(Dispatchers.Main) {
             toast(msg)
-            binding.startClient.isVisible = true
-            binding.start.isVisible = true
+            binding.startServer.isVisible = true
+            binding.clientScan.isVisible = true
             binding.pushToDesktop.isVisible = true
             binding.pullFromDesktop.isVisible = true
             binding.qr.isVisible = false
@@ -265,9 +265,11 @@ class TransferActivity : BaseActivity() {
         sendMessage(encodeText)
     }
 
-    private val transferServer: TransferServer by lazy {
-        TransferServer(finishListener)
-    }
+    @Inject
+    lateinit var transferServer: TransferServer
+
+    @Inject
+    lateinit var transferClient: TransferClient
 
     private fun pushRequest() {
         lifecycleScope.launch(Dispatchers.IO) {

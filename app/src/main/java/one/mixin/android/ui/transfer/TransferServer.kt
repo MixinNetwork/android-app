@@ -5,10 +5,20 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import one.mixin.android.MixinApplication
 import one.mixin.android.crypto.generateAesKey
-import one.mixin.android.db.MixinDatabase
+import one.mixin.android.db.AssetDao
+import one.mixin.android.db.ConversationDao
+import one.mixin.android.db.ExpiredMessageDao
+import one.mixin.android.db.MessageDao
+import one.mixin.android.db.ParticipantDao
+import one.mixin.android.db.PinMessageDao
+import one.mixin.android.db.SnapshotDao
+import one.mixin.android.db.StickerDao
+import one.mixin.android.db.TranscriptMessageDao
+import one.mixin.android.db.UserDao
 import one.mixin.android.extension.base64RawURLEncode
 import one.mixin.android.extension.getDeviceId
 import one.mixin.android.extension.getMediaPath
+import one.mixin.android.extension.isUUID
 import one.mixin.android.job.NotificationGenerator.userDao
 import one.mixin.android.ui.transfer.vo.TransferCommandAction
 import one.mixin.android.ui.transfer.vo.TransferCommandData
@@ -22,54 +32,33 @@ import java.net.BindException
 import java.net.InetSocketAddress
 import java.net.ServerSocket
 import java.net.Socket
+import javax.inject.Inject
 import kotlin.random.Random
 
-class TransferServer(private val finishListener: (String) -> Unit) {
+class TransferServer @Inject internal constructor(
+    val assetDao: AssetDao,
+    val conversationDao: ConversationDao,
+    val expiredMessageDao: ExpiredMessageDao,
+    val messageDao: MessageDao,
+    val participantDao: ParticipantDao,
+    val pinMessageDao: PinMessageDao,
+    val snapshotDao: SnapshotDao,
+    val stickerDao: StickerDao,
+    val transcriptMessageDao: TranscriptMessageDao,
+    val userDao: UserDao,
+) {
 
     private lateinit var serverSocket: ServerSocket
     private lateinit var socket: Socket
 
     private var quit = false
-    private val db by lazy {
-        MixinDatabase.getDatabase(MixinApplication.appContext)
-    }
-
-    private val messageDao by lazy {
-        db.messageDao()
-    }
-
-    private val assetDao by lazy {
-        db.assetDao()
-    }
-
-    private val conversationDao by lazy {
-        db.conversationDao()
-    }
-
-    private val participantDao by lazy {
-        db.participantDao()
-    }
-
-    private val stickerDao by lazy {
-        db.stickerDao()
-    }
-
-    private val snapshotDao by lazy {
-        db.snapshotDao()
-    }
-
-    private val transcriptMessageDao by lazy {
-        db.transcriptDao()
-    }
 
     private val gson by lazy {
         GsonHelper.customGson
     }
 
     private var code = 0
-        private set
     private var port = 0
-        private set
 
     fun startServer(toDesktop: Boolean, callback: (TransferCommandData) -> Unit) {
         MixinApplication.get().applicationScope.launch(Dispatchers.IO) {
@@ -165,11 +154,13 @@ class TransferServer(private val finishListener: (String) -> Unit) {
             syncSnapshot()
             syncSticker()
             syncTranscriptMessage()
+            syncPinMessage()
             syncMessage()
-            syncFile()
+            syncExpiredMessage()
+            syncMediaFile()
             // send Finish
             exit()
-            finishListener("Finish")
+            // finishListener("Finish")
         } catch (e: Exception) {
             Timber.e(e)
         }
@@ -328,6 +319,26 @@ class TransferServer(private val finishListener: (String) -> Unit) {
         }
     }
 
+    private fun syncPinMessage() {
+        var offset = 0
+        while (!quit) {
+            val list = pinMessageDao.getPinMessageByLimitAndOffset(LIMIT, offset)
+            if (list.isEmpty()) {
+                return
+            }
+            list.map {
+                TransferSendData(TransferDataType.PIN_MESSAGE.value, it)
+            }.forEach {
+                sendMessage(gson.toJson(it))
+                Timber.e("send pin message: ${it.data.messageId}")
+            }
+            if (list.size < LIMIT) {
+                return
+            }
+            offset += LIMIT
+        }
+    }
+
     private fun syncMessage() {
         var lastId = messageDao.getLastMessageRowId() ?: return
         while (!quit) {
@@ -348,12 +359,34 @@ class TransferServer(private val finishListener: (String) -> Unit) {
         }
     }
 
-    private fun syncFile() {
+    private fun syncExpiredMessage() {
+        var offset = 0
+        while (!quit) {
+            val list = expiredMessageDao.getExpiredMessageDaoByLimitAndOffset(LIMIT, offset)
+            if (list.isEmpty()) {
+                return
+            }
+            list.map {
+                TransferSendData(TransferDataType.EXPIRED_MESSAGE.value, it)
+            }.forEach {
+                sendMessage(gson.toJson(it))
+                Timber.e("send pin message: ${it.data.messageId}")
+            }
+            if (list.size < LIMIT) {
+                return
+            }
+            offset += LIMIT
+        }
+    }
+
+    private fun syncMediaFile() {
         val context = MixinApplication.get()
         val folder = context.getMediaPath() ?: return
         folder.walkTopDown().forEach { f ->
             if (f.isFile && f.length() > 0) {
-                protocol.write(outputStream, f, f.nameWithoutExtension)
+                val name = f.nameWithoutExtension
+                if (name.isUUID()) {
+                    protocol.write(outputStream, f, name) }
             }
         }
     }

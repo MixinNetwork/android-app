@@ -6,6 +6,8 @@ enum class TransferDataType(val value: String) {
     CONVERSATION("conversation"),
     PARTICIPANT("participant"),
     TRANSCRIPT_MESSAGE("transcript_message"),
+    PIN_MESSAGE("pin_message"),
+    EXPIRED_MESSAGE("expired_message"),
     SNAPSHOT("snapshot"),
     STICKER("sticker"),
     ASSET("asset"),
