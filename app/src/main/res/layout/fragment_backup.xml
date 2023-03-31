@@ -13,53 +13,6 @@
         android:layout_height="wrap_content"
         app:titleText="@string/Chat_Backup" />
 
-    <RelativeLayout
-        android:id="@+id/another_rl"
-        android:layout_width="match_parent"
-        android:layout_height="@dimen/item_contact_height"
-        android:background="?attr/bg_white"
-        android:foreground="?android:attr/selectableItemBackground">
-
-        <TextView
-            android:id="@+id/another_tv"
-            style="@style/NormalTextStyle"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_centerVertical="true"
-            android:layout_marginStart="@dimen/activity_horizontal_margin"
-            android:drawablePadding="@dimen/margin12"
-            android:gravity="center_vertical"
-            android:text="@string/Migrate_Chats_to_Another_Device"
-            app:drawableStartCompat="@drawable/ic_setting_notification"
-            tools:ignore="RelativeOverlap" />
-    </RelativeLayout>
-
-    <RelativeLayout
-        android:id="@+id/computer_rl"
-        android:layout_width="match_parent"
-        android:layout_height="@dimen/item_contact_height"
-        android:background="?attr/bg_white"
-        android:foreground="?android:attr/selectableItemBackground">
-
-        <TextView
-            android:id="@+id/computer_tv"
-            style="@style/NormalTextStyle"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_centerVertical="true"
-            android:layout_marginStart="@dimen/activity_horizontal_margin"
-            android:drawablePadding="@dimen/margin12"
-            android:gravity="center_vertical"
-            android:text="@string/Backup_Chat_History_to_Computer"
-            app:drawableStartCompat="@drawable/ic_setting_notification"
-            tools:ignore="RelativeOverlap" />
-    </RelativeLayout>
-
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="@dimen/setting_divider"
-        android:background="?attr/bg_window" />
-
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
