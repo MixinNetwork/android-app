@@ -591,5 +591,4 @@ interface MessageDao : BaseDao<Message> {
 
     @Query("SELECT count(1) FROM messages WHERE (category IN ($DATA, $IMAGES, $AUDIOS, $VIDEOS)) ")
     fun countMediaMessages(): Long
-
 }

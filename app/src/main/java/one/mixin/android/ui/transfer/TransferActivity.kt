@@ -29,7 +29,6 @@ import one.mixin.android.extension.base64RawURLEncode
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.fadeIn
 import one.mixin.android.extension.generateQRCode
-import one.mixin.android.extension.getDeviceId
 import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.toast
@@ -130,7 +129,7 @@ class TransferActivity : BaseActivity() {
     }
 
     private var disposable: Disposable? = null
-    private var transferDisposable : Disposable? = null
+    private var transferDisposable: Disposable? = null
 
     override fun onStart() {
         super.onStart()
@@ -309,7 +308,7 @@ class TransferActivity : BaseActivity() {
     lateinit var transferClient: TransferClient
 
     private fun pushRequest() {
-        lifecycleScope.launch(Dispatchers.IO) {
+        lifecycleScope.launch {
             transferServer.startServer(true) { transferData ->
                 Timber.e("push ${gson.toJson(transferData)}")
                 val encodeText = gson.toJson(

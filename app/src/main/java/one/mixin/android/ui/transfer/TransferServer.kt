@@ -2,7 +2,7 @@ package one.mixin.android.ui.transfer
 
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import one.mixin.android.MixinApplication
 import one.mixin.android.crypto.generateAesKey
 import one.mixin.android.db.AssetDao
@@ -58,39 +58,34 @@ class TransferServer @Inject internal constructor(
     private var code = 0
     private var port = 0
 
-    fun startServer(toDesktop: Boolean, callback: (TransferCommandData) -> Unit) {
-        MixinApplication.get().applicationScope.launch(Dispatchers.IO) {
-            try {
-                serverSocket = createSocket(port = Random.nextInt(100))
-                code = Random.nextInt(10000)
-                callback(
-                    TransferCommandData(
-                        TransferCommandAction.PUSH.value,
-                        NetworkUtils.getWifiIpAddress(MixinApplication.appContext),
-                        this@TransferServer.port,
-                        generateAesKey().base64RawURLEncode(), // todo
-                        this@TransferServer.code,
-                    ),
-                )
-                socket = serverSocket.accept()
-                socket.soTimeout = 10000
+    suspend fun startServer(toDesktop: Boolean, createdSuccessCallback: (TransferCommandData) -> Unit) =
+        withContext(transferExceptionHandler) {
+            serverSocket = createSocket(port = Random.nextInt(100))
+            code = Random.nextInt(10000)
+            createdSuccessCallback(
+                TransferCommandData(
+                    TransferCommandAction.PUSH.value,
+                    NetworkUtils.getWifiIpAddress(MixinApplication.appContext),
+                    this@TransferServer.port,
+                    generateAesKey().base64RawURLEncode(), // todo
+                    this@TransferServer.code,
+                ),
+            )
+            socket = serverSocket.accept()
+            socket.soTimeout = 10000
 
-                val remoteAddr = socket.remoteSocketAddress
-                if (remoteAddr is InetSocketAddress) {
-                    val inetAddr = remoteAddr.address
-                    val ip = inetAddr.hostAddress
-                    if (toDesktop) {
-                        run()
-                    } else {
-                        run()
-                        Timber.e("Connected to $ip")
-                    }
+            val remoteAddr = socket.remoteSocketAddress
+            if (remoteAddr is InetSocketAddress) {
+                val inetAddr = remoteAddr.address
+                val ip = inetAddr.hostAddress
+                if (toDesktop) {
+                    run()
+                } else {
+                    run()
+                    Timber.e("Connected to $ip")
                 }
-            } catch (e: Exception) {
-                Timber.e(e)
             }
         }
-    }
 
     private fun createSocket(port: Int): ServerSocket {
         var newPort = port
@@ -116,54 +111,47 @@ class TransferServer @Inject internal constructor(
         }
     }
 
-    fun run() {
-        MixinApplication.get().applicationScope.launch(Dispatchers.IO) {
-            do {
-                if (inputStream.available() <= 0) {
-                    delay(300)
-                    continue
-                }
-                val content = protocol.read(inputStream)
-                try {
-                    val transferData = gson.fromJson(content, TransferData::class.java)
-                    if (transferData.type == TransferDataType.COMMAND.value) {
-                        val commandData =
-                            gson.fromJson(transferData.data, TransferCommandData::class.java)
-                        if (commandData.code == code) {
-                            Timber.e("Verification passed, start transmission")
-                            transfer()
-                        } else {
-                            Timber.e("Validation failed, close")
-                            exit()
-                        }
+    suspend fun run() {
+        do {
+            if (withContext(Dispatchers.IO) { inputStream.available() <= 0 }) {
+                delay(300)
+                continue
+            }
+            val content = protocol.read(inputStream)
+            val transferData = gson.fromJson(content, TransferData::class.java)
+            if (transferData.type == TransferDataType.COMMAND.value) {
+                val commandData =
+                    gson.fromJson(transferData.data, TransferCommandData::class.java)
+                if (commandData.action == TransferCommandAction.CONNECT.value) {
+                    if (commandData.code == code) {
+                        Timber.e("Verification passed, start transmission")
+                        transfer()
+                    } else {
+                        Timber.e("Validation failed, close")
+                        exit()
                     }
-                } catch (e: Exception) {
-                    Timber.e(e)
-                    exit()
+                } else {
+                    Timber.e("Unsupported command")
                 }
-            } while (!quit)
-        }
+            }
+        } while (!quit)
     }
 
     fun transfer() {
-        try {
-            sendStart()
-            syncConversation()
-            syncParticipant()
-            syncUser()
-            syncAsset()
-            syncSnapshot()
-            syncSticker()
-            syncPinMessage()
-            syncTranscriptMessage()
-            syncMessage()
-            syncExpiredMessage()
-            syncMediaFile()
-            sendClose()
-            exit()
-        } catch (e: Exception) {
-            Timber.e(e)
-        }
+        sendStart()
+        syncConversation()
+        syncParticipant()
+        syncUser()
+        syncAsset()
+        syncSnapshot()
+        syncSticker()
+        syncPinMessage()
+        syncTranscriptMessage()
+        syncMessage()
+        syncExpiredMessage()
+        syncMediaFile()
+        sendClose()
+        exit()
     }
 
     private val inputStream by lazy {
@@ -179,7 +167,12 @@ class TransferServer @Inject internal constructor(
     }
 
     private fun sendStart() {
-        sendCommand(TransferSendData(TransferDataType.COMMAND.value, TransferCommandData(TransferCommandAction.START.value, total = totalCount())))
+        sendCommand(
+            TransferSendData(
+                TransferDataType.COMMAND.value,
+                TransferCommandData(TransferCommandAction.START.value, total = totalCount()),
+            ),
+        )
     }
 
     private fun totalCount(): Long {
@@ -190,7 +183,12 @@ class TransferServer @Inject internal constructor(
     }
 
     private fun sendClose() {
-        sendCommand(TransferSendData(TransferDataType.COMMAND.value, TransferCommandData(TransferCommandAction.CLOSE.value)))
+        sendCommand(
+            TransferSendData(
+                TransferDataType.COMMAND.value,
+                TransferCommandData(TransferCommandAction.CLOSE.value),
+            ),
+        )
     }
 
     private fun sendJsonContent(message: String) {
@@ -405,7 +403,8 @@ class TransferServer @Inject internal constructor(
             if (f.isFile && f.length() > 0) {
                 val name = f.nameWithoutExtension
                 if (name.isUUID()) {
-                    protocol.write(outputStream, f, name) }
+                    protocol.write(outputStream, f, name)
+                }
             }
         }
     }
