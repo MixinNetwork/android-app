@@ -1127,4 +1127,6 @@
     <string name="Backup_Chat_History_to_Computer">Backup Chat History to Computer</string>
     <string name="Enable_Wifi_or_hotspot">Enable Wi-Fi or hotspot for the two devices</string>
     <string name="login_and_scan">Login in to this account on other phone and scan the QR Code</string>
+    <string name="sending_desc">%1$s chat(s) backed up</string>
+    <string name="Complete">Complete</string>
 </resources>

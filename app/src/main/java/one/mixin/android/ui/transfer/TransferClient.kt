@@ -58,6 +58,7 @@ class TransferClient @Inject internal constructor(
     val transcriptMessageDao: TranscriptMessageDao,
     val userDao: UserDao,
     val ftsDatabase: FtsDatabase,
+    val status: TransferStatusLiveData,
 ) {
 
     private var socket: Socket? = null
@@ -75,7 +76,6 @@ class TransferClient @Inject internal constructor(
     }
 
     val protocol = TransferProtocol()
-    private var status = TransferStatusLiveData()
 
     suspend fun connectToServer(ip: String, port: Int, commandData: TransferCommandData) =
         withContext(

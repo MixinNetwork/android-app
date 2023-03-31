@@ -52,6 +52,7 @@ class TransferServer @Inject internal constructor(
     val stickerDao: StickerDao,
     val transcriptMessageDao: TranscriptMessageDao,
     val userDao: UserDao,
+    val status: TransferStatusLiveData,
 ) {
 
     private var serverSocket: ServerSocket? = null
@@ -62,7 +63,6 @@ class TransferServer @Inject internal constructor(
     private val gson by lazy {
         GsonHelper.customGson
     }
-    private var status = TransferStatusLiveData()
 
     private var code = 0
     private var port = 0

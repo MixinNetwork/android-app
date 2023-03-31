@@ -42,6 +42,8 @@ import one.mixin.android.ui.common.BaseActivity
 import one.mixin.android.ui.qr.CaptureActivity
 import one.mixin.android.ui.transfer.vo.TransferCommandAction
 import one.mixin.android.ui.transfer.vo.TransferCommandData
+import one.mixin.android.ui.transfer.vo.TransferStatus
+import one.mixin.android.ui.transfer.vo.TransferStatusLiveData
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.SINGLE_SOCKET_THREAD
 import one.mixin.android.util.viewBinding
@@ -133,6 +135,44 @@ class TransferActivity : BaseActivity() {
         intent.getStringExtra(ARGS_QR_CODE_CONTENT)?.let { qrCodeContent ->
             connectToQrCodeContent(qrCodeContent)
         }
+
+        status.observe(this) { s ->
+            binding.startServer.isVisible = false
+            binding.clientScan.isVisible = false
+            binding.pushToDesktop.isVisible = false
+            binding.pullFromDesktop.isVisible = false
+
+            binding.statusTv.text = s.name
+            when (s) {
+                TransferStatus.INITIALIZING -> {
+                }
+                TransferStatus.CREATED -> {
+                }
+                TransferStatus.CONNECTING -> {
+                }
+                TransferStatus.WAITING_FOR_CONNECTION -> {
+                }
+                TransferStatus.WAITING_FOR_VERIFICATION -> {
+                }
+                TransferStatus.VERIFICATION_COMPLETED -> {
+                }
+                TransferStatus.SENDING -> {
+                    binding.qrFl.isVisible = false
+                    binding.loginScanTv.isVisible = false
+                    binding.statusLl.isVisible = true
+                }
+                TransferStatus.ERROR -> {
+                    binding.qrFl.isVisible = true
+                    binding.loginScanTv.isVisible = true
+                    binding.statusLl.isVisible = false
+                    binding.statusTv.text = getString(R.string.Network_error)
+                    status.value = TransferStatus.INITIALIZING
+                }
+                TransferStatus.FINISHED -> {
+                    binding.statusTv.text = getString(R.string.Diagnosis_Complete)
+                }
+            }
+        }
     }
 
     private var pb: Dialog? = null
@@ -193,6 +233,9 @@ class TransferActivity : BaseActivity() {
                 .observeOn(AndroidSchedulers.mainThread())
                 .autoDispose(stopScope)
                 .subscribe {
+                    if (status.value == TransferStatus.SENDING) {
+                        binding.descTv.text = getString(R.string.sending_desc, it.progress.toString())
+                    }
                     Timber.e("Device transfer ${it.progress}%")
                 }
         }
@@ -207,8 +250,10 @@ class TransferActivity : BaseActivity() {
     }
 
     override fun onDestroy() {
-        transferServer.exit()
-        transferClient.exit()
+        MixinApplication.get().applicationScope.launch(SINGLE_SOCKET_THREAD) {
+            transferServer.exit()
+            transferClient.exit()
+        }
         super.onDestroy()
     }
 
@@ -334,8 +379,11 @@ class TransferActivity : BaseActivity() {
     @Inject
     lateinit var transferClient: TransferClient
 
+    @Inject
+    lateinit var status: TransferStatusLiveData
+
     private fun pushRequest() {
-        lifecycleScope.launch {
+        lifecycleScope.launch(SINGLE_SOCKET_THREAD) {
             transferServer.startServer { transferData ->
                 Timber.e("push ${gson.toJson(transferData)}")
                 val encodeText = gson.toJson(
