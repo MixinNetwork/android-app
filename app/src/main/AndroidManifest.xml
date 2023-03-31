@@ -85,6 +85,7 @@
                 <data android:host="address" />
                 <data android:host="snapshots" />
                 <data android:host="conversations" />
+                <data android:host="device-transfer" />
             </intent-filter>
 
             <intent-filter android:autoVerify="true">

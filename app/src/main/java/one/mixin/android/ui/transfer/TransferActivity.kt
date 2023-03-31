@@ -4,6 +4,7 @@ import android.Manifest
 import android.app.Dialog
 import android.content.Context
 import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import androidx.activity.result.ActivityResultLauncher
 import androidx.core.view.isVisible
@@ -53,13 +54,25 @@ import javax.inject.Inject
 class TransferActivity : BaseActivity() {
     companion object {
         const val ARGS_IS_COMPUTER = "args_is_computer"
+        const val ARGS_QR_CODE_CONTENT = "args_qr_code_content"
 
-        fun show(context: Context, isComputer: Boolean) {
+        fun show(context: Context, isComputer: Boolean, qrCodeContent: String? = null) {
             context.startActivity(
                 Intent(context, TransferActivity::class.java).apply {
                     putExtra(ARGS_IS_COMPUTER, isComputer)
+                    putExtra(ARGS_QR_CODE_CONTENT, qrCodeContent)
                 },
             )
+        }
+
+        fun parseUri(context: Context, isComputer: Boolean, uri: Uri, success: (() -> Unit)? = null, fallback: () -> Unit) {
+            val data = uri.getQueryParameter("data")
+            if (data == null) {
+                fallback.invoke()
+                return
+            }
+            show(context, isComputer, data)
+            success?.invoke()
         }
     }
 
@@ -113,6 +126,10 @@ class TransferActivity : BaseActivity() {
         binding.pullFromDesktop.setOnClickListener {
             // loading()
             pullRequest()
+        }
+
+        intent.getStringExtra(ARGS_QR_CODE_CONTENT)?.let { qrCodeContent ->
+            connectToQrCodeContent(qrCodeContent)
         }
     }
 
@@ -214,36 +231,38 @@ class TransferActivity : BaseActivity() {
             }
     }
 
+    private fun connectToQrCodeContent(content: String) = lifecycleScope.launch(Dispatchers.IO) {
+        withContext(Dispatchers.Main) {
+            binding.startServer.isVisible = false
+            binding.clientScan.isVisible = false
+        }
+
+        val transferCommandData = try {
+            gson.fromJson(
+                String(content.base64RawURLDecode()),
+                TransferCommandData::class.java,
+            )
+        } catch (e: Exception) {
+            withContext(Dispatchers.Main) {
+                toast(R.string.Data_error)
+            }
+            return@launch
+        }
+        Timber.e("qrcode:$content")
+        transferClient.connectToServer(
+            transferCommandData.ip!!,
+            transferCommandData.port!!,
+            TransferCommandData(
+                TransferCommandAction.CONNECT.value,
+                code = transferCommandData.code,
+            ),
+        )
+    }
+
     private fun callbackScan(data: Intent?) {
         val qrContent = data?.getStringExtra(CaptureActivity.ARGS_FOR_SCAN_RESULT)
         qrContent?.let { content ->
-            lifecycleScope.launch(Dispatchers.IO) {
-                withContext(Dispatchers.Main) {
-                    binding.startServer.isVisible = false
-                    binding.clientScan.isVisible = false
-                }
-
-                val transferCommandData = try {
-                    gson.fromJson(
-                        String(content.base64RawURLDecode()),
-                        TransferCommandData::class.java,
-                    )
-                } catch (e: Exception) {
-                    withContext(Dispatchers.Main) {
-                        toast(R.string.Data_error)
-                    }
-                    return@launch
-                }
-                Timber.e("qrcode:$content")
-                transferClient.connectToServer(
-                    transferCommandData.ip!!,
-                    transferCommandData.port!!,
-                    TransferCommandData(
-                        TransferCommandAction.CONNECT.value,
-                        code = transferCommandData.code,
-                    ),
-                )
-            }
+            connectToQrCodeContent(content)
         }
     }
 

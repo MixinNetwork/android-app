@@ -24,21 +24,19 @@ import one.mixin.android.extension.getFilePath
 import one.mixin.android.extension.heavyClickVibrate
 import one.mixin.android.extension.inTransaction
 import one.mixin.android.extension.isDonateUrl
-import one.mixin.android.extension.isExternalScheme
-import one.mixin.android.extension.isExternalTransferUrl
-import one.mixin.android.extension.isMixinUrl
 import one.mixin.android.extension.matchResourcePattern
 import one.mixin.android.extension.openGallery
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.putBoolean
+import one.mixin.android.extension.toUri
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.extension.withArgs
 import one.mixin.android.job.RefreshExternalSchemeJob
 import one.mixin.android.ui.conversation.ConversationActivity.Companion.ARGS_SHORTCUT
 import one.mixin.android.ui.device.ConfirmBottomFragment
-import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.ui.qr.CaptureActivity.Companion.ARGS_FOR_SCAN_RESULT
+import one.mixin.android.ui.transfer.TransferActivity
 import one.mixin.android.ui.web.WebActivity
 import one.mixin.android.util.mlkit.scan.BaseCameraScanFragment
 import one.mixin.android.util.mlkit.scan.analyze.AnalyzeResult
@@ -232,6 +230,17 @@ class ScanFragment : BaseCameraScanFragment<BarcodeResult>() {
             ConfirmBottomFragment.show(requireContext(), parentFragmentManager, analysisResult) {
                 activity?.finish()
             }
+        } else if (analysisResult.startsWith(Constants.Scheme.DEVICE_TRANSFER)) {
+            val uri = analysisResult.toUri()
+            if (uri == Uri.EMPTY) {
+                handleResult(requireActivity(), fromShortcut, analysisResult)
+                return
+            }
+            TransferActivity.parseUri(requireContext(), false, uri, {
+                activity?.finish()
+            }) {
+                handleResult(requireActivity(), fromShortcut, analysisResult)
+            }
         } else {
             val externalSchemes = requireContext().defaultSharedPreferences.getStringSet(
                 RefreshExternalSchemeJob.PREF_EXTERNAL_SCHEMES,
@@ -242,40 +251,7 @@ class ScanFragment : BaseCameraScanFragment<BarcodeResult>() {
                 activity?.finish()
                 return
             }
-            handleResult(analysisResult)
-        }
-    }
-
-    protected fun handleResult(content: String) {
-        val result = if (fromShortcut) {
-            Intent(requireContext(), MainActivity::class.java)
-        } else {
-            Intent()
-        }
-        if (content.isDonateUrl() || content.isExternalScheme(requireContext()) || content.isExternalTransferUrl()) {
-            result.putExtra(MainActivity.URL, content)
-        } else if (!content.isMixinUrl()) {
-            result.putExtra(MainActivity.SCAN, content)
-        } else if (content.startsWith(Constants.Scheme.TRANSFER, true) ||
-            content.startsWith(Constants.Scheme.HTTPS_TRANSFER, true)
-        ) {
-            val segments = Uri.parse(content).pathSegments
-            if (segments.isEmpty()) return
-
-            val userId = if (segments.size >= 2) {
-                segments[1]
-            } else {
-                segments[0]
-            }
-            result.putExtra(MainActivity.TRANSFER, userId)
-        } else {
-            result.putExtra(MainActivity.URL, content)
-        }
-        if (fromShortcut) {
-            MainActivity.showFromShortcut(requireActivity(), result)
-        } else {
-            requireActivity().setResult(Activity.RESULT_OK, result)
-            requireActivity().finish()
+            handleResult(requireActivity(), fromShortcut, analysisResult)
         }
     }
 }

@@ -15,6 +15,7 @@ import one.mixin.android.ui.common.BaseActivity
 import one.mixin.android.ui.conversation.TransferFragment
 import one.mixin.android.ui.conversation.link.LinkBottomSheetDialogFragment
 import one.mixin.android.ui.device.ConfirmBottomFragment
+import one.mixin.android.ui.transfer.TransferActivity
 import timber.log.Timber
 
 @AndroidEntryPoint
@@ -31,6 +32,7 @@ class UrlInterpreterActivity : BaseActivity() {
         private const val APPS = "apps"
         private const val SNAPSHOTS = "snapshots"
         private const val CONVERSATIONS = "conversations"
+        private const val DEVICE_TRANSFER = "device-transfer"
 
         fun show(context: Context, data: Uri) {
             Intent(context, UrlInterpreterActivity::class.java).apply {
@@ -106,6 +108,10 @@ class UrlInterpreterActivity : BaseActivity() {
                         Timber.e(IllegalStateException(err))
                     },
                 )
+            }
+
+            DEVICE_TRANSFER -> {
+                TransferActivity.parseUri(this, false, uri, { finish() }) { finish() }
             }
         }
     }

@@ -8,6 +8,7 @@ import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.hardware.display.DisplayManager
+import android.net.Uri
 import android.os.Bundle
 import android.util.DisplayMetrics
 import android.util.Size
@@ -56,10 +57,12 @@ import one.mixin.android.extension.matchResourcePattern
 import one.mixin.android.extension.openGallery
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.putBoolean
+import one.mixin.android.extension.toUri
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.job.RefreshExternalSchemeJob.Companion.PREF_EXTERNAL_SCHEMES
 import one.mixin.android.ui.device.ConfirmBottomFragment
+import one.mixin.android.ui.transfer.TransferActivity
 import one.mixin.android.ui.web.WebActivity
 import one.mixin.android.util.reportException
 import one.mixin.android.widget.gallery.ui.GalleryActivity
@@ -480,6 +483,17 @@ abstract class BaseCameraxFragment : VisionFragment() {
             ConfirmBottomFragment.show(requireContext(), parentFragmentManager, analysisResult) {
                 activity?.finish()
             }
+        } else if (analysisResult.startsWith(Constants.Scheme.DEVICE_TRANSFER)) {
+            val uri = analysisResult.toUri()
+            if (uri == Uri.EMPTY) {
+                handleResult(requireActivity(), fromShortcut, analysisResult)
+                return
+            }
+            TransferActivity.parseUri(requireContext(), false, uri, {
+                activity?.finish()
+            }) {
+                handleResult(requireActivity(), fromShortcut, analysisResult)
+            }
         } else {
             if (fromScan()) {
                 val externalSchemes = requireContext().defaultSharedPreferences.getStringSet(PREF_EXTERNAL_SCHEMES, emptySet())
@@ -488,7 +502,7 @@ abstract class BaseCameraxFragment : VisionFragment() {
                     activity?.finish()
                     return
                 }
-                handleResult(analysisResult)
+                handleResult(requireActivity(), fromShortcut, analysisResult)
             } else {
                 pseudoNotificationView?.addContent(analysisResult)
             }
