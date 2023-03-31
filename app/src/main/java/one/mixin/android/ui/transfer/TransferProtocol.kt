@@ -116,42 +116,56 @@ class TransferProtocol {
         inputStream.read(uuidByteArray)
         crc.update(uuidByteArray)
         val uuid = UUIDUtils.fromByteArray(uuidByteArray)
-        val message = messageDao.findMessageById(uuid) ?: return null
-        val extensionName = message.name?.getExtensionName()
-        val outFile = MixinApplication.get().let {
-            if (message.isTranscript()) {
-                return null
-            } else if (message.isImage()) {
-                it.getImagePath()
-            } else if (message.isAudio()) {
-                it.getAudioPath()
-            } else if (message.isVideo()) {
-                it.getVideoPath()
-            } else {
-                it.getDocumentPath()
-            }
-        }.createDocumentTemp(message.conversationId, message.messageId, extensionName)
-        val buffer = ByteArray(1024)
-        var bytesRead = 0
-        var bytesLeft = expectedLength - 16
-        val fos = FileOutputStream(outFile)
-        while (bytesRead != -1 && bytesLeft > 0) {
-            bytesRead = inputStream.read(buffer, 0, bytesLeft.coerceAtMost(1024))
-            if (bytesRead > 0) {
-                fos.write(buffer, 0, bytesRead)
-                crc.update(buffer.copyOfRange(0, bytesRead))
+        val message = messageDao.findMessageById(uuid)
+        if (message == null) {
+            val buffer = ByteArray(1024)
+            var bytesRead = 0
+            var bytesLeft = expectedLength - 16
+            while (bytesRead != -1 && bytesLeft > 0) {
+                bytesRead = inputStream.read(buffer, 0, bytesLeft.coerceAtMost(1024))
                 bytesLeft -= bytesRead
             }
+            val checksum = ByteArray(8)
+            inputStream.read(checksum)
+            // skip error file
+            return null
+        } else {
+            val extensionName = message.name?.getExtensionName()
+            val outFile = MixinApplication.get().let {
+                if (message.isTranscript()) {
+                    return null
+                } else if (message.isImage()) {
+                    it.getImagePath()
+                } else if (message.isAudio()) {
+                    it.getAudioPath()
+                } else if (message.isVideo()) {
+                    it.getVideoPath()
+                } else {
+                    it.getDocumentPath()
+                }
+            }.createDocumentTemp(message.conversationId, message.messageId, extensionName)
+            val buffer = ByteArray(1024)
+            var bytesRead = 0
+            var bytesLeft = expectedLength - 16
+            val fos = FileOutputStream(outFile)
+            while (bytesRead != -1 && bytesLeft > 0) {
+                bytesRead = inputStream.read(buffer, 0, bytesLeft.coerceAtMost(1024))
+                if (bytesRead > 0) {
+                    fos.write(buffer, 0, bytesRead)
+                    crc.update(buffer.copyOfRange(0, bytesRead))
+                    bytesLeft -= bytesRead
+                }
+            }
+            fos.close()
+            val checksum = ByteArray(8)
+            inputStream.read(checksum)
+            val checksumLong = bytesToLong(checksum)
+            Timber.e("Receive file: ${outFile.name} ${outFile.length()} checksum ${bytesToLong(checksum)} -- ${crc.value}")
+            if (checksumLong != crc.value) {
+                throw ChecksumException()
+            }
+            return outFile
         }
-        fos.close()
-        val checksum = ByteArray(8)
-        inputStream.read(checksum)
-        val checksumLong = bytesToLong(checksum)
-        Timber.e("Receive file: ${outFile.name} ${outFile.length()} checksum ${bytesToLong(checksum)} -- ${crc.value}")
-        if (checksumLong != crc.value) {
-            throw ChecksumException()
-        }
-        return outFile
     }
 
     private fun byteArrayToInt(byteArray: ByteArray): Int {

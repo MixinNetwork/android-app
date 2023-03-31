@@ -119,7 +119,10 @@ class TransferServer @Inject internal constructor(
     fun run() {
         MixinApplication.get().applicationScope.launch(Dispatchers.IO) {
             do {
-                if (inputStream.available() <= 0) delay(1000)
+                if (inputStream.available() <= 0) {
+                    delay(300)
+                    continue
+                }
                 val content = protocol.read(inputStream)
                 try {
                     val transferData = gson.fromJson(content, TransferData::class.java)
@@ -144,19 +147,19 @@ class TransferServer @Inject internal constructor(
 
     fun transfer() {
         try {
-            // sendStart()
+            sendStart()
             syncConversation()
             syncParticipant()
             syncUser()
             syncAsset()
             syncSnapshot()
             syncSticker()
-            syncTranscriptMessage()
             syncPinMessage()
+            syncTranscriptMessage()
             syncMessage()
             syncExpiredMessage()
             syncMediaFile()
-            // sendClose()
+            sendClose()
             exit()
         } catch (e: Exception) {
             Timber.e(e)
