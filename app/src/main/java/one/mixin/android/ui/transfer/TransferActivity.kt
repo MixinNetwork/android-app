@@ -15,6 +15,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.MixinApplication
@@ -42,6 +43,7 @@ import one.mixin.android.ui.qr.CaptureActivity
 import one.mixin.android.ui.transfer.vo.TransferCommandAction
 import one.mixin.android.ui.transfer.vo.TransferCommandData
 import one.mixin.android.util.GsonHelper
+import one.mixin.android.util.SINGLE_SOCKET_THREAD
 import one.mixin.android.util.viewBinding
 import one.mixin.android.websocket.PlainDataAction
 import one.mixin.android.websocket.PlainJsonMessagePayload
@@ -97,7 +99,7 @@ class TransferActivity : BaseActivity() {
         binding.pullFromDesktop.isVisible = isComputer
         binding.pushToDesktop.isVisible = isComputer
         binding.startServer.setOnClickListener {
-            lifecycleScope.launch(Dispatchers.IO) {
+            lifecycleScope.launch(SINGLE_SOCKET_THREAD) {
                 transferServer.startServer { transferCommandData ->
                     lifecycleScope.launch(Dispatchers.Main) {
                         val qrCode = gson.toJson(transferCommandData)
@@ -163,7 +165,7 @@ class TransferActivity : BaseActivity() {
 
                         TransferCommandAction.PUSH.value -> {
                             loadingDismiss()
-                            lifecycleScope.launch(Dispatchers.IO) {
+                            lifecycleScope.launch(SINGLE_SOCKET_THREAD) {
                                 transferClient.connectToServer(
                                     it.ip!!,
                                     it.port!!,
@@ -205,9 +207,9 @@ class TransferActivity : BaseActivity() {
     }
 
     override fun onDestroy() {
-        super.onDestroy()
         transferServer.exit()
         transferClient.exit()
+        super.onDestroy()
     }
 
     override fun finish() {
@@ -231,7 +233,7 @@ class TransferActivity : BaseActivity() {
             }
     }
 
-    private fun connectToQrCodeContent(content: String) = lifecycleScope.launch(Dispatchers.IO) {
+    private fun connectToQrCodeContent(content: String) = lifecycleScope.launch(SINGLE_SOCKET_THREAD) {
         withContext(Dispatchers.Main) {
             binding.startServer.isVisible = false
             binding.clientScan.isVisible = false
@@ -288,7 +290,7 @@ class TransferActivity : BaseActivity() {
     lateinit var participantDao: ParticipantDao
 
     private fun sendMessage(content: String) {
-        lifecycleScope.launch(Dispatchers.IO) {
+        lifecycleScope.launch(SINGLE_SOCKET_THREAD) {
             try {
                 val accountId = Session.getAccountId() ?: return@launch
                 val sessionId = Session.getExtensionSessionId() ?: return@launch

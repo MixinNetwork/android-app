@@ -26,3 +26,7 @@ val SINGLE_THREAD by lazy {
 val FTS_THREAD by lazy {
     Executors.newSingleThreadExecutor().asCoroutineDispatcher()
 }
+
+val SINGLE_SOCKET_THREAD by lazy {
+    Executors.newSingleThreadExecutor().asCoroutineDispatcher()
+}

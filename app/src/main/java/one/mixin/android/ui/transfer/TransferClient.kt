@@ -28,6 +28,7 @@ import one.mixin.android.ui.transfer.vo.TransferStatus
 import one.mixin.android.ui.transfer.vo.TransferStatusLiveData
 import one.mixin.android.ui.transfer.vo.toMessage
 import one.mixin.android.util.GsonHelper
+import one.mixin.android.util.SINGLE_SOCKET_THREAD
 import one.mixin.android.vo.Asset
 import one.mixin.android.vo.Conversation
 import one.mixin.android.vo.Participant
@@ -92,12 +93,10 @@ class TransferClient @Inject internal constructor(
                 status.value = TransferStatus.ERROR
                 exit()
                 Timber.e(exception)
-            } + Dispatchers.IO,
+            } + SINGLE_SOCKET_THREAD,
         ) {
             status.value = TransferStatus.CONNECTING
-            val socket = withContext(Dispatchers.IO) {
-                Socket(ip, port)
-            }
+            val socket = Socket(ip, port)
             this@TransferClient.socket = socket
             socket.soTimeout = 10000
             status.value = TransferStatus.WAITING_FOR_VERIFICATION
@@ -109,7 +108,7 @@ class TransferClient @Inject internal constructor(
 
     private suspend fun listen(inputStream: InputStream, outputStream: OutputStream) {
         do {
-            if (withContext(Dispatchers.IO) { inputStream.available() } <= 0) {
+            if (inputStream.available() <= 0) {
                 delay(300)
                 continue
             }
@@ -124,7 +123,7 @@ class TransferClient @Inject internal constructor(
                 when (transferData.type) {
                     TransferDataType.COMMAND.value -> {
                         val transferCommandData =
-                            gson.fromJson(content, TransferCommandData::class.java)
+                            gson.fromJson(transferData.data, TransferCommandData::class.java)
                         if (transferCommandData.action == TransferCommandAction.CLOSE.value) {
                             status.value = TransferStatus.FINISHED
                             exit()
@@ -135,8 +134,9 @@ class TransferClient @Inject internal constructor(
                         } else if (transferCommandData.action == TransferCommandAction.FINISH.value) {
                             sendFinish(outputStream)
                         } else {
+                            Timber.e(content)
                             // error
-                            exit()
+                            // exit()
                         }
                     }
 
@@ -222,9 +222,13 @@ class TransferClient @Inject internal constructor(
     }
 
     fun exit() {
-        quit = true
-        socket?.close()
-        socket = null
+        try {
+            quit = true
+            socket?.close()
+            socket = null
+        } catch (e: Exception) {
+            Timber.e("exit client ${e.message}")
+        }
     }
 
     private fun sendFinish(outputStream: OutputStream) {

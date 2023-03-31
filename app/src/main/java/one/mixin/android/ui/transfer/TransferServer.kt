@@ -28,6 +28,7 @@ import one.mixin.android.ui.transfer.vo.TransferStatus
 import one.mixin.android.ui.transfer.vo.TransferStatusLiveData
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.NetworkUtils
+import one.mixin.android.util.SINGLE_SOCKET_THREAD
 import timber.log.Timber
 import java.io.InputStream
 import java.io.OutputStream
@@ -82,7 +83,7 @@ class TransferServer @Inject internal constructor(
                 status.value = TransferStatus.ERROR
                 exit()
                 Timber.e(exception)
-            } + Dispatchers.IO,
+            } + SINGLE_SOCKET_THREAD,
         ) {
             val serverSocket = createSocket(port = Random.nextInt(100))
             this@TransferServer.serverSocket = serverSocket
@@ -98,9 +99,7 @@ class TransferServer @Inject internal constructor(
                 ),
             )
             status.value = TransferStatus.WAITING_FOR_CONNECTION
-            val socket = withContext(Dispatchers.IO) {
-                serverSocket.accept()
-            }
+            val socket = serverSocket.accept()
             this@TransferServer.socket = socket
             status.value = TransferStatus.WAITING_FOR_VERIFICATION
             socket.soTimeout = 10000
@@ -109,14 +108,7 @@ class TransferServer @Inject internal constructor(
             if (remoteAddr is InetSocketAddress) {
                 val inetAddr = remoteAddr.address
                 val ip = inetAddr.hostAddress
-                run(
-                    withContext(Dispatchers.IO) {
-                        socket.getInputStream()
-                    },
-                    withContext(Dispatchers.IO) {
-                        socket.getOutputStream()
-                    },
-                )
+                run(socket.getInputStream(), socket.getOutputStream(),)
                 Timber.e("Connected to $ip")
             } else {
                 exit()
@@ -149,7 +141,7 @@ class TransferServer @Inject internal constructor(
 
     suspend fun run(inputStream: InputStream, outputStream: OutputStream) {
         do {
-            if (withContext(Dispatchers.IO) { inputStream.available() <= 0 }) {
+            if (inputStream.available() <= 0) {
                 delay(300)
                 continue
             }
@@ -454,11 +446,13 @@ class TransferServer @Inject internal constructor(
     val protocol = TransferProtocol()
 
     fun exit() {
-        quit = true
-        socket?.close()
-        socket = null
-        serverSocket?.close()
-        serverSocket = null
+        try {
+            quit = true
+            serverSocket?.close()
+            serverSocket = null
+        } catch (e: Exception) {
+            Timber.e("exit server ${e.message}")
+        }
     }
 
     companion object {
