@@ -214,7 +214,7 @@ class TransferServer @Inject internal constructor(
     }
 
     private fun totalCount(): Long {
-        this.total =  messageDao.countMediaMessages() + messageDao.countMessages() + conversationDao.countConversations() +
+        this.total = messageDao.countMediaMessages() + messageDao.countMessages() + conversationDao.countConversations() +
             expiredMessageDao.countExpiredMessages() + participantDao.countParticipants() +
             pinMessageDao.countPinMessages() + snapshotDao.countSnapshots() + stickerDao.countStickers() +
             transcriptMessageDao.countTranscriptMessages() + userDao.countUsers()

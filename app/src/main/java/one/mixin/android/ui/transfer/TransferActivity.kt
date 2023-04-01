@@ -77,6 +77,15 @@ class TransferActivity : BaseActivity() {
 
     private val binding by viewBinding(ActivityTransferBinding::inflate)
 
+    @Inject
+    lateinit var transferServer: TransferServer
+
+    @Inject
+    lateinit var transferClient: TransferClient
+
+    @Inject
+    lateinit var status: TransferStatusLiveData
+
     var shouldLogout = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -248,6 +257,7 @@ class TransferActivity : BaseActivity() {
             transferServer.exit()
             transferClient.exit()
         }
+        status.value = TransferStatus.INITIALIZING
         super.onDestroy()
     }
 
@@ -342,15 +352,6 @@ class TransferActivity : BaseActivity() {
         )
         sendMessage(encodeText)
     }
-
-    @Inject
-    lateinit var transferServer: TransferServer
-
-    @Inject
-    lateinit var transferClient: TransferClient
-
-    @Inject
-    lateinit var status: TransferStatusLiveData
 
     private fun pushRequest() {
         lifecycleScope.launch(SINGLE_SOCKET_THREAD) {
