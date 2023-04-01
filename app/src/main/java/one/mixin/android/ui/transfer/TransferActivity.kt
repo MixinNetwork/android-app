@@ -121,11 +121,11 @@ class TransferActivity : BaseActivity() {
         }
 
         binding.pushToDesktop.setOnClickListener {
-            // loading()
+            loading() // todo timeout 
             pushRequest()
         }
         binding.pullFromDesktop.setOnClickListener {
-            // loading()
+            loading() // todo timeout
             pullRequest()
         }
 
@@ -293,15 +293,6 @@ class TransferActivity : BaseActivity() {
                 code = transferCommandData.code,
             ),
         )
-    }
-    private val finishListener: (String) -> Unit = { msg ->
-        lifecycleScope.launch(Dispatchers.Main) {
-            toast(msg)
-            binding.startServer.isVisible = true
-            binding.pushToDesktop.isVisible = true
-            binding.pullFromDesktop.isVisible = true
-            binding.qr.isVisible = false
-        }
     }
 
     private val gson by lazy {
