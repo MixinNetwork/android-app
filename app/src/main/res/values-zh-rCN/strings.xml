@@ -1102,7 +1102,7 @@
     <string name="Migrate_Chats_to_Another_Device">迁移聊天记录到另一台设备</string>
     <string name="Backup_Chat_History_to_Computer">备份聊天记录到电脑</string>
     <string name="Enable_Wifi_or_hotspot">将两台设备接入同一 Wi-Fi 或相同热点</string>
-    <string name="login_and_scan">请使用另一台设备登录此微信账号后扫描二维码</string>
+    <string name="login_and_scan">请使用另一台设备登录此 Mixin 账号后扫描二维码</string>
     <string name="sending_desc">正在备份 %1$s</string>
     <string name="Complete">完成</string>
 </resources>

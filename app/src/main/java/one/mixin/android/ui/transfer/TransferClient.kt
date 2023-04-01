@@ -112,11 +112,11 @@ class TransferClient @Inject internal constructor(
                 continue
             }
             status.value = TransferStatus.SENDING
-            val content = protocol.read(inputStream)
-            if (content.startsWith("file")) {
-                // do noting
+            val (content, file) = protocol.read(inputStream)
+            if (file != null) {
+                // read file
                 progress()
-            } else {
+            } else if (content != null) {
                 Timber.e("sync $content")
                 val transferData = gson.fromJson(content, TransferData::class.java)
                 when (transferData.type) {
@@ -210,6 +210,8 @@ class TransferClient @Inject internal constructor(
                         Timber.e("No support $content")
                     }
                 }
+            } else {
+                // do noting
             }
         } while (!quit)
     }
@@ -240,15 +242,12 @@ class TransferClient @Inject internal constructor(
         )
     }
 
-    private fun sendJsonContent(outputStream: OutputStream, message: String) {
-        protocol.write(outputStream, message)
-        outputStream.flush()
-    }
-
     private fun sendCommand(
         outputStream: OutputStream,
         transferSendData: TransferSendData<TransferCommandData>,
     ) {
-        sendJsonContent(outputStream, gson.toJson(transferSendData))
+        val content = gson.toJson(transferSendData)
+        protocol.write(outputStream, content)
+        outputStream.flush()
     }
 }

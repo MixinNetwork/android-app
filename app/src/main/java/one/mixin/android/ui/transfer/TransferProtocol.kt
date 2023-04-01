@@ -36,22 +36,22 @@ class TransferProtocol {
         MixinDatabase.getDatabase(MixinApplication.appContext).messageDao()
     }
 
-    fun read(inputStream: InputStream): String {
+    fun read(inputStream: InputStream): Pair<String?, File?> {
         val packageData = ByteArray(5)
         inputStream.read(packageData)
         val type = packageData[0]
         val size = byteArrayToInt(packageData.copyOfRange(1, 5))
         return when (type) {
             TYPE_STRING -> {
-                readString(inputStream, size)
+                Pair(readString(inputStream, size), null)
             }
 
             TYPE_FILE -> { // File
                 val file = readFile(inputStream, size)
                 if (file?.exists() == true) {
-                    return "file"
+                    Pair(null, file)
                 }
-                "file exists"
+                Pair(null, null)
             }
 
             else -> {

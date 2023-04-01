@@ -33,7 +33,6 @@ import one.mixin.android.util.SINGLE_SOCKET_THREAD
 import timber.log.Timber
 import java.io.InputStream
 import java.io.OutputStream
-import java.lang.Float
 import java.net.BindException
 import java.net.InetSocketAddress
 import java.net.ServerSocket
@@ -41,6 +40,7 @@ import java.net.Socket
 import java.net.SocketException
 import java.net.UnknownHostException
 import javax.inject.Inject
+import kotlin.math.min
 import kotlin.random.Random
 
 class TransferServer @Inject internal constructor(
@@ -150,30 +150,34 @@ class TransferServer @Inject internal constructor(
                 delay(300)
                 continue
             }
-            val content = protocol.read(inputStream)
-            val transferData = gson.fromJson(content, TransferData::class.java)
-            if (transferData.type == TransferDataType.COMMAND.value) {
-                val commandData =
-                    gson.fromJson(transferData.data, TransferCommandData::class.java)
-                if (commandData.action == TransferCommandAction.CONNECT.value) {
-                    if (commandData.code == code) {
-                        Timber.e("Verification passed, start transmission")
-                        status.value = TransferStatus.VERIFICATION_COMPLETED
-                        transfer(outputStream)
+            val (content, _) = protocol.read(inputStream)
+            if (content != null) {
+                val transferData = gson.fromJson(content, TransferData::class.java)
+                if (transferData.type == TransferDataType.COMMAND.value) {
+                    val commandData =
+                        gson.fromJson(transferData.data, TransferCommandData::class.java)
+                    if (commandData.action == TransferCommandAction.CONNECT.value) {
+                        if (commandData.code == code) {
+                            Timber.e("Verification passed, start transmission")
+                            status.value = TransferStatus.VERIFICATION_COMPLETED
+                            transfer(outputStream)
+                        } else {
+                            Timber.e("Validation failed, close")
+                            status.value = TransferStatus.ERROR
+                            exit()
+                        }
+                    } else if (commandData.action == TransferCommandAction.FINISH.value) {
+                        if (status.value == TransferStatus.FINISHED) {
+                            exit()
+                        } else {
+                            Timber.e("No finish")
+                        }
                     } else {
-                        Timber.e("Validation failed, close")
-                        status.value = TransferStatus.ERROR
-                        exit()
+                        Timber.e("Unsupported command")
                     }
-                } else if (commandData.action == TransferCommandAction.FINISH.value) {
-                    if (status.value == TransferStatus.FINISHED) {
-                        exit()
-                    } else {
-                        Timber.e("No finish")
-                    }
-                } else {
-                    Timber.e("Unsupported command")
                 }
+            } else {
+                // do noting
             }
         } while (!quit)
     }
@@ -196,15 +200,17 @@ class TransferServer @Inject internal constructor(
         status.value = TransferStatus.FINISHED
     }
 
-    private fun sendCommand(
+    private fun writeJson(
         outputStream: OutputStream,
-        transferSendData: TransferSendData<TransferCommandData>,
+        transferData: Any
     ) {
-        sendJsonContent(outputStream, gson.toJson(transferSendData))
+        val content =  gson.toJson(transferData)
+        protocol.write(outputStream, content)
+        outputStream.flush()
     }
 
     private fun sendStart(outputStream: OutputStream) {
-        sendCommand(
+        writeJson(
             outputStream,
             TransferSendData(
                 TransferDataType.COMMAND.value,
@@ -222,18 +228,13 @@ class TransferServer @Inject internal constructor(
     }
 
     private fun sendFinish(outputStream: OutputStream) {
-        sendCommand(
+        writeJson(
             outputStream,
             TransferSendData(
                 TransferDataType.COMMAND.value,
                 TransferCommandData(TransferCommandAction.FINISH.value),
             ),
         )
-    }
-
-    private fun sendJsonContent(outputStream: OutputStream, message: String) {
-        protocol.write(outputStream, message)
-        outputStream.flush()
     }
 
     private fun syncConversation(outputStream: OutputStream) {
@@ -247,7 +248,7 @@ class TransferServer @Inject internal constructor(
                 TransferSendData(TransferDataType.CONVERSATION.value, it)
             }.forEach {
                 Timber.e("send conversation ${it.data.conversationId}")
-                sendJsonContent(outputStream, gson.toJson(it))
+                writeJson(outputStream, it)
                 count++
                 progress()
             }
@@ -269,7 +270,7 @@ class TransferServer @Inject internal constructor(
                 TransferSendData(TransferDataType.PARTICIPANT.value, it)
             }.forEach {
                 Timber.e("send Participant ${it.data.conversationId} ${it.data.userId}")
-                sendJsonContent(outputStream, gson.toJson(it))
+                writeJson(outputStream, it)
                 count++
                 progress()
             }
@@ -291,7 +292,7 @@ class TransferServer @Inject internal constructor(
                 TransferSendData(TransferDataType.USER.value, it)
             }.forEach {
                 Timber.e("send user ${it.data.userId}")
-                sendJsonContent(outputStream, gson.toJson(it))
+                writeJson(outputStream, it)
                 count++
                 progress()
             }
@@ -313,7 +314,7 @@ class TransferServer @Inject internal constructor(
                 TransferSendData(TransferDataType.ASSET.value, it)
             }.forEach {
                 Timber.e("send asset ${it.data.assetId}")
-                sendJsonContent(outputStream, gson.toJson(it))
+                writeJson(outputStream, it)
                 count++
                 progress()
             }
@@ -335,7 +336,7 @@ class TransferServer @Inject internal constructor(
                 TransferSendData(TransferDataType.STICKER.value, it)
             }.forEach {
                 Timber.e("send sticker ${it.data.stickerId}")
-                sendJsonContent(outputStream, gson.toJson(it))
+                writeJson(outputStream, it)
                 count++
                 progress()
             }
@@ -356,7 +357,7 @@ class TransferServer @Inject internal constructor(
             list.map {
                 TransferSendData(TransferDataType.SNAPSHOT.value, it)
             }.forEach {
-                sendJsonContent(outputStream, gson.toJson(it))
+                writeJson(outputStream, it)
                 Timber.e("send snapshot ${it.data.snapshotId}")
                 count++
                 progress()
@@ -378,7 +379,7 @@ class TransferServer @Inject internal constructor(
             list.map {
                 TransferSendData(TransferDataType.TRANSCRIPT_MESSAGE.value, it)
             }.forEach {
-                sendJsonContent(outputStream, gson.toJson(it))
+                writeJson(outputStream, it)
                 Timber.e("send transcript ${it.data.transcriptId}")
                 count++
                 progress()
@@ -400,7 +401,7 @@ class TransferServer @Inject internal constructor(
             list.map {
                 TransferSendData(TransferDataType.PIN_MESSAGE.value, it)
             }.forEach {
-                sendJsonContent(outputStream, gson.toJson(it))
+                writeJson(outputStream, it)
                 count++
                 progress()
                 Timber.e("send pin message: ${it.data.messageId}")
@@ -423,7 +424,7 @@ class TransferServer @Inject internal constructor(
                 TransferSendData(TransferDataType.MESSAGE.value, it)
             }.forEach {
                 Timber.e("send message: ${it.data.messageId}")
-                sendJsonContent(outputStream, gson.toJson(it))
+                writeJson(outputStream, it)
                 count++
                 progress()
             }
@@ -444,7 +445,7 @@ class TransferServer @Inject internal constructor(
             list.map {
                 TransferSendData(TransferDataType.EXPIRED_MESSAGE.value, it)
             }.forEach {
-                sendJsonContent(outputStream, gson.toJson(it))
+                writeJson(outputStream, it)
                 Timber.e("send pin message: ${it.data.messageId}")
                 count++
                 progress()
@@ -485,7 +486,7 @@ class TransferServer @Inject internal constructor(
 
     private fun progress() {
         if (total <= 0) return
-        val progress = Float.min((count++) / total.toFloat() * 100, 100f)
+        val progress = min((count++) / total.toFloat() * 100, 100f)
         RxBus.publish(DeviceTransferProgressEvent(progress))
     }
 
