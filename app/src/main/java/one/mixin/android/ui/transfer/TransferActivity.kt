@@ -95,6 +95,14 @@ class TransferActivity : BaseActivity() {
 
     var shouldLogout = false
 
+    override fun onBackPressed() {
+        if (status.value in listOf(TransferStatus.INITIALIZING, TransferStatus.ERROR, TransferStatus.FINISHED)) {
+            super.onBackPressed()
+        } else {
+            toast(R.string.cannot_exit_in_backup)
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
@@ -286,11 +294,13 @@ class TransferActivity : BaseActivity() {
     }
 
     private fun connectToQrCodeContent(content: String) =
-        lifecycleScope.launch(SINGLE_SOCKET_THREAD + CoroutineExceptionHandler { _, throwable ->
-            lifecycleScope.launch(Dispatchers.Main) {
-                toast(R.string.Data_error)
-            }
-        }) {
+        lifecycleScope.launch(
+            SINGLE_SOCKET_THREAD + CoroutineExceptionHandler { _, throwable ->
+                lifecycleScope.launch(Dispatchers.Main) {
+                    toast(R.string.Data_error)
+                }
+            },
+        ) {
             withContext(Dispatchers.Main) {
                 binding.startServer.isVisible = false
             }

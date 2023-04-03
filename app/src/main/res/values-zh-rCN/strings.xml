@@ -1105,4 +1105,5 @@
     <string name="login_and_scan">请使用另一台设备登录此 Mixin 账号后扫描二维码</string>
     <string name="sending_desc">正在备份 %1$s</string>
     <string name="Complete">完成</string>
+    <string name="cannot_exit_in_backup">备份中无法退出</string>
 </resources>
