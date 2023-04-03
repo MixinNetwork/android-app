@@ -238,6 +238,7 @@ class TransferActivity : BaseActivity() {
                     if (status.value == TransferStatus.SENDING) {
                         loadingDismiss()
                         binding.descTv.text = getString(R.string.sending_desc, String.format("%.2f%%", it.progress))
+                        binding.pb.progress = (100 * it.progress).toInt()
                     }
                     Timber.e("Device transfer ${it.progress}%")
                 }
