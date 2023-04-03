@@ -151,6 +151,14 @@ class ConversationListFragment : LinkFragment() {
 
     private val messageAdapterDataObserver =
         object : RecyclerView.AdapterDataObserver() {
+            override fun onItemRangeInserted(positionStart: Int, itemCount: Int) {
+                if (viewDestroyed()) return
+
+                if (isTop) {
+                    (binding.messageRv.layoutManager as LinearLayoutManager).scrollToPosition(0)
+                }
+            }
+
             override fun onItemRangeChanged(positionStart: Int, itemCount: Int) {
                 if (viewDestroyed()) return
 
