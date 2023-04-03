@@ -1,6 +1,7 @@
 package one.mixin.android.ui.transfer
 
 import kotlinx.coroutines.CoroutineExceptionHandler
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.MixinApplication
@@ -41,7 +42,6 @@ import java.net.Socket
 import java.net.SocketException
 import java.net.UnknownHostException
 import javax.inject.Inject
-import kotlin.math.min
 import kotlin.random.Random
 
 class TransferServer @Inject internal constructor(
@@ -73,7 +73,9 @@ class TransferServer @Inject internal constructor(
     private var count = 0L
     private var total = 0L
 
-    suspend fun startServer(createdSuccessCallback: (TransferCommandData) -> Unit) =
+    suspend fun startServer(
+        createdSuccessCallback: (TransferCommandData) -> Unit,
+    ) =
         withContext(
             CoroutineExceptionHandler { _, exception ->
                 when (exception) {
@@ -146,45 +148,54 @@ class TransferServer @Inject internal constructor(
         }
     }
 
-    private suspend fun run(inputStream: InputStream, outputStream: OutputStream) {
-        do {
-            val (content, _) = protocol.read(inputStream)
-            if (content != null) {
-                val transferData = gson.fromJson(content, TransferData::class.java)
-                if (transferData.type == TransferDataType.COMMAND.value) {
-                    val commandData =
-                        gson.fromJson(transferData.data, TransferCommandData::class.java)
-                    if (commandData.action == TransferCommandAction.CONNECT.value) {
-                        // Todo
-                        // if (commandData.code == code && commandData.userId == Session.getAccountId()) {
-                        if (commandData.code == code) {
-                            Timber.e("Verification passed, start transmission")
-                            status.value = TransferStatus.VERIFICATION_COMPLETED
-                            transfer(outputStream)
+    private suspend fun run(inputStream: InputStream, outputStream: OutputStream) =
+        withContext(Dispatchers.IO) {
+            do {
+                val (content, _) = protocol.read(inputStream)
+                if (content != null) {
+                    val transferData = gson.fromJson(content, TransferData::class.java)
+                    if (transferData.type == TransferDataType.COMMAND.value) {
+                        Timber.e("command $content")
+                        val commandData =
+                            gson.fromJson(transferData.data, TransferCommandData::class.java)
+                        if (commandData.action == TransferCommandAction.CONNECT.value) {
+                            // Todo
+                            // if (commandData.code == code && commandData.userId == Session.getAccountId()) {
+                            if (commandData.code == code) {
+                                Timber.e("Verification passed, start transmission")
+                                status.value = TransferStatus.VERIFICATION_COMPLETED
+                                launch {
+                                    transfer(outputStream)
+                                }
+                            } else {
+                                Timber.e("Validation failed, close")
+                                status.value = TransferStatus.ERROR
+                                exit()
+                            }
+                        } else if (commandData.action == TransferCommandAction.FINISH.value) {
+                            if (status.value != TransferStatus.FINISHED) {
+                                Timber.e("FINISH CLOSE")
+                                status.value = TransferStatus.FINISHED
+                                exit()
+                            } else {
+                                Timber.e("No finish")
+                                exit()
+                                Timber.e("FINISH ERROR")
+                                status.value = TransferStatus.ERROR
+                            }
+                        } else if (commandData.action == TransferCommandAction.PROGRESS.value) {
+                            if (commandData.progress != null) {
+                                RxBus.publish(DeviceTransferProgressEvent(commandData.progress))
+                            }
                         } else {
-                            Timber.e("Validation failed, close")
-                            status.value = TransferStatus.ERROR
-                            exit()
+                            Timber.e("Unsupported command")
                         }
-                    } else if (commandData.action == TransferCommandAction.FINISH.value) {
-                        if (status.value == TransferStatus.FINISHED) {
-                            Timber.e("FINISH CLOSE")
-                            status.value = TransferStatus.FINISHED
-                            exit()
-                        } else {
-                            Timber.e("No finish")
-                            exit()
-                            status.value = TransferStatus.ERROR
-                        }
-                    } else {
-                        Timber.e("Unsupported command")
                     }
+                } else {
+                    // do noting
                 }
-            } else {
-                // do noting
-            }
-        } while (!quit)
-    }
+            } while (!quit)
+        }
 
     fun transfer(outputStream: OutputStream) {
         status.value = TransferStatus.SENDING
@@ -201,7 +212,6 @@ class TransferServer @Inject internal constructor(
         syncExpiredMessage(outputStream)
         syncMediaFile(outputStream)
         sendFinish(outputStream)
-        status.value = TransferStatus.FINISHED
     }
 
     private fun writeJson(
@@ -254,7 +264,6 @@ class TransferServer @Inject internal constructor(
                 Timber.e("send conversation ${it.data.conversationId}")
                 writeJson(outputStream, it)
                 count++
-                progress()
             }
             if (list.size < LIMIT) {
                 return
@@ -276,7 +285,6 @@ class TransferServer @Inject internal constructor(
                 Timber.e("send Participant ${it.data.conversationId} ${it.data.userId}")
                 writeJson(outputStream, it)
                 count++
-                progress()
             }
             if (list.size < LIMIT) {
                 return
@@ -298,7 +306,6 @@ class TransferServer @Inject internal constructor(
                 Timber.e("send user ${it.data.userId}")
                 writeJson(outputStream, it)
                 count++
-                progress()
             }
             if (list.size < LIMIT) {
                 return
@@ -320,7 +327,6 @@ class TransferServer @Inject internal constructor(
                 Timber.e("send asset ${it.data.assetId}")
                 writeJson(outputStream, it)
                 count++
-                progress()
             }
             if (list.size < LIMIT) {
                 return
@@ -342,7 +348,6 @@ class TransferServer @Inject internal constructor(
                 Timber.e("send sticker ${it.data.stickerId}")
                 writeJson(outputStream, it)
                 count++
-                progress()
             }
             if (list.size < LIMIT) {
                 return
@@ -364,7 +369,6 @@ class TransferServer @Inject internal constructor(
                 writeJson(outputStream, it)
                 Timber.e("send snapshot ${it.data.snapshotId}")
                 count++
-                progress()
             }
             if (list.size < LIMIT) {
                 return
@@ -386,7 +390,6 @@ class TransferServer @Inject internal constructor(
                 writeJson(outputStream, it)
                 Timber.e("send transcript ${it.data.transcriptId}")
                 count++
-                progress()
             }
             if (list.size < LIMIT) {
                 return
@@ -407,7 +410,7 @@ class TransferServer @Inject internal constructor(
             }.forEach {
                 writeJson(outputStream, it)
                 count++
-                progress()
+
                 Timber.e("send pin message: ${it.data.messageId}")
             }
             if (list.size < LIMIT) {
@@ -430,7 +433,6 @@ class TransferServer @Inject internal constructor(
                 Timber.e("send message: ${it.data.messageId}")
                 writeJson(outputStream, it)
                 count++
-                progress()
             }
             if (messages.size < LIMIT) {
                 return
@@ -452,7 +454,6 @@ class TransferServer @Inject internal constructor(
                 writeJson(outputStream, it)
                 Timber.e("send pin message: ${it.data.messageId}")
                 count++
-                progress()
             }
             if (list.size < LIMIT) {
                 return
@@ -471,7 +472,6 @@ class TransferServer @Inject internal constructor(
                     if (messageDao.findMessageById(name) != null) {
                         protocol.write(outputStream, f, name)
                         count++
-                        progress()
                     } else {
                         f.delete()
                     }
@@ -494,11 +494,11 @@ class TransferServer @Inject internal constructor(
         }
     }
 
-    private fun progress() {
-        if (total <= 0) return
-        val progress = min((count++) / total.toFloat() * 100, 100f)
-        RxBus.publish(DeviceTransferProgressEvent(progress))
-    }
+    // private fun progress() {
+    //     if (total <= 0) return
+    //     val progress = min((count++) / total.toFloat() * 100, 100f)
+    //     RxBus.publish(DeviceTransferProgressEvent(progress))
+    // }
 
     companion object {
         private const val LIMIT = 100

@@ -40,7 +40,6 @@ import one.mixin.android.ui.transfer.vo.TransferCommandAction
 import one.mixin.android.ui.transfer.vo.TransferCommandData
 import one.mixin.android.ui.transfer.vo.TransferStatus
 import one.mixin.android.ui.transfer.vo.TransferStatusLiveData
-import one.mixin.android.ui.web.releaseAll
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.viewBinding
 import one.mixin.android.websocket.PlainDataAction
@@ -252,7 +251,6 @@ class TransferActivity : BaseActivity() {
                             }
                         }
                         .show()
-
                 }
             }
 
