@@ -40,7 +40,6 @@ import one.mixin.android.ui.transfer.vo.TransferCommandData
 import one.mixin.android.ui.transfer.vo.TransferStatus
 import one.mixin.android.ui.transfer.vo.TransferStatusLiveData
 import one.mixin.android.util.GsonHelper
-import one.mixin.android.util.SINGLE_SOCKET_THREAD
 import one.mixin.android.util.viewBinding
 import one.mixin.android.websocket.PlainDataAction
 import one.mixin.android.websocket.PlainJsonMessagePayload
@@ -233,7 +232,7 @@ class TransferActivity : BaseActivity() {
                     if (status.value == TransferStatus.SENDING) {
                         binding.descTv.text = getString(R.string.sending_desc, String.format("%.2f%%", it.progress))
                         binding.pb.max = 100
-                        binding.pb.progress = (it.progress).toInt()
+                        binding.pb.progress = 40
                     }
                     Timber.e("Device transfer ${it.progress}%")
                 }
@@ -243,7 +242,7 @@ class TransferActivity : BaseActivity() {
     private fun handleCommand(commandData: TransferCommandData) {
         when (commandData.action) {
             TransferCommandAction.PUSH.value -> {
-                lifecycleScope.launch(SINGLE_SOCKET_THREAD) {
+                lifecycleScope.launch {
                     transferClient.connectToServer(
                         commandData.ip!!,
                         commandData.port!!,
@@ -274,10 +273,8 @@ class TransferActivity : BaseActivity() {
     }
 
     override fun onDestroy() {
-        MixinApplication.get().applicationScope.launch(SINGLE_SOCKET_THREAD) {
-            transferServer.exit()
-            transferClient.exit()
-        }
+        transferServer.exit()
+        transferClient.exit()
         status.value = TransferStatus.INITIALIZING
         super.onDestroy()
     }
@@ -291,7 +288,7 @@ class TransferActivity : BaseActivity() {
 
     private fun connectToQrCodeContent(content: String) =
         lifecycleScope.launch(
-            SINGLE_SOCKET_THREAD + CoroutineExceptionHandler { _, throwable ->
+            CoroutineExceptionHandler { _, throwable ->
                 lifecycleScope.launch(Dispatchers.Main) {
                     toast(R.string.Data_error)
                 }

@@ -1,7 +1,7 @@
 package one.mixin.android.ui.transfer
 
 import kotlinx.coroutines.CoroutineExceptionHandler
-import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.MixinApplication
 import one.mixin.android.RxBus
@@ -146,12 +146,8 @@ class TransferServer @Inject internal constructor(
         }
     }
 
-    suspend fun run(inputStream: InputStream, outputStream: OutputStream) {
+    private suspend fun run(inputStream: InputStream, outputStream: OutputStream) {
         do {
-            if (inputStream.available() <= 0) {
-                delay(300)
-                continue
-            }
             val (content, _) = protocol.read(inputStream)
             if (content != null) {
                 val transferData = gson.fromJson(content, TransferData::class.java)
@@ -472,9 +468,13 @@ class TransferServer @Inject internal constructor(
             if (f.isFile && f.length() > 0) {
                 val name = f.nameWithoutExtension
                 if (name.isUUID()) {
-                    protocol.write(outputStream, f, name)
-                    count++
-                    progress()
+                    if (messageDao.findMessageById(name) != null) {
+                        protocol.write(outputStream, f, name)
+                        count++
+                        progress()
+                    } else {
+                        f.delete()
+                    }
                 }
             }
         }
@@ -482,7 +482,7 @@ class TransferServer @Inject internal constructor(
 
     val protocol = TransferProtocol()
 
-    fun exit() {
+    fun exit() = MixinApplication.get().applicationScope.launch(SINGLE_SOCKET_THREAD) {
         try {
             quit = true
             socket?.close()

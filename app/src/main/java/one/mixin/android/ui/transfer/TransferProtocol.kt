@@ -1,6 +1,7 @@
 package one.mixin.android.ui.transfer
 
 import UUIDUtils
+import kotlinx.coroutines.delay
 import one.mixin.android.MixinApplication
 import one.mixin.android.api.ChecksumException
 import one.mixin.android.db.MixinDatabase
@@ -36,7 +37,11 @@ class TransferProtocol {
         MixinDatabase.getDatabase(MixinApplication.appContext).messageDao()
     }
 
-    fun read(inputStream: InputStream): Pair<String?, File?> {
+    suspend fun read(inputStream: InputStream): Pair<String?, File?> {
+        if (inputStream.available() < 5) {
+            delay(100)
+            return read(inputStream)
+        }
         val packageData = ByteArray(5)
         inputStream.read(packageData)
         val type = packageData[0]

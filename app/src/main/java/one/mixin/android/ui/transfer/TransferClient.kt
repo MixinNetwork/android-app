@@ -2,7 +2,9 @@ package one.mixin.android.ui.transfer
 
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import one.mixin.android.MixinApplication
 import one.mixin.android.RxBus
 import one.mixin.android.db.AssetDao
 import one.mixin.android.db.ConversationDao
@@ -76,41 +78,36 @@ class TransferClient @Inject internal constructor(
 
     val protocol = TransferProtocol()
 
-    suspend fun connectToServer(ip: String, port: Int, commandData: TransferCommandData) =
-        withContext(
-            CoroutineExceptionHandler { _, exception ->
-                when (exception) {
-                    is UnknownHostException -> {
-                    }
-
-                    is SocketException -> {
-                    }
-
-                    else -> {
-                    }
+    suspend fun connectToServer(ip: String, port: Int, commandData: TransferCommandData) = withContext(
+        CoroutineExceptionHandler { _, exception ->
+            when (exception) {
+                is UnknownHostException -> {
                 }
-                status.value = TransferStatus.ERROR
-                exit()
-                Timber.e(exception)
-            } + SINGLE_SOCKET_THREAD,
-        ) {
-            status.value = TransferStatus.CONNECTING
-            val socket = Socket(ip, port)
-            this@TransferClient.socket = socket
-            socket.soTimeout = 10000
-            status.value = TransferStatus.WAITING_FOR_VERIFICATION
-            sendMessage(socket.outputStream, gson.toJson(TransferSendData(TransferDataType.COMMAND.value, commandData)))
-            listen(socket.inputStream, socket.outputStream)
-        }
+
+                is SocketException -> {
+                }
+
+                else -> {
+                }
+            }
+            status.value = TransferStatus.ERROR
+            exit()
+            Timber.e(exception)
+        } + SINGLE_SOCKET_THREAD,
+    ) {
+        status.value = TransferStatus.CONNECTING
+        val socket = Socket(ip, port)
+        this@TransferClient.socket = socket
+        socket.soTimeout = 10000
+        status.value = TransferStatus.WAITING_FOR_VERIFICATION
+        sendMessage(socket.outputStream, gson.toJson(TransferSendData(TransferDataType.COMMAND.value, commandData)))
+        listen(socket.inputStream, socket.outputStream)
+    }
 
     private var total = 0L
 
     private suspend fun listen(inputStream: InputStream, outputStream: OutputStream) {
         do {
-            if (inputStream.available() <= 0) {
-                delay(300)
-                continue
-            }
             status.value = TransferStatus.SENDING
             val (content, file) = protocol.read(inputStream)
             if (file != null) {
@@ -221,7 +218,7 @@ class TransferClient @Inject internal constructor(
         RxBus.publish(DeviceTransferProgressEvent(progress))
     }
 
-    fun exit() {
+    fun exit() = MixinApplication.get().applicationScope.launch(SINGLE_SOCKET_THREAD) {
         try {
             quit = true
             socket?.close()
