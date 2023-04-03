@@ -123,15 +123,14 @@ class TransferClient @Inject internal constructor(
                     TransferDataType.COMMAND.value -> {
                         val transferCommandData =
                             gson.fromJson(transferData.data, TransferCommandData::class.java)
-                        if (transferCommandData.action == TransferCommandAction.CLOSE.value) {
-                            status.value = TransferStatus.FINISHED
-                            exit()
-                        } else if (transferCommandData.action == TransferCommandAction.START.value) {
+                        if (transferCommandData.action == TransferCommandAction.START.value) {
                             this.total = transferCommandData.total ?: 0L
                         } else if (transferCommandData.action == TransferCommandAction.PUSH.value && transferCommandData.action == TransferCommandAction.PULL.value && transferCommandData.action == TransferCommandAction.START.value) {
                             Timber.e("action ${transferCommandData.action}")
                         } else if (transferCommandData.action == TransferCommandAction.FINISH.value) {
                             sendFinish(outputStream)
+                            delay(3000)
+                            status.value = TransferStatus.FINISHED
                         } else {
                             Timber.e(content)
                             // error

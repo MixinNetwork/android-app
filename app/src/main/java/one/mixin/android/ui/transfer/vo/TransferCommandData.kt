@@ -1,9 +1,12 @@
 package one.mixin.android.ui.transfer.vo
 
+import android.os.Parcelable
 import com.google.gson.annotations.SerializedName
+import kotlinx.parcelize.Parcelize
 import one.mixin.android.MixinApplication
 import one.mixin.android.extension.getDeviceId
 
+@Parcelize
 data class TransferCommandData(
     val action: String,
     val ip: String? = null,
@@ -18,4 +21,4 @@ data class TransferCommandData(
     @SerializedName("device_id")
     val deviceId: String = MixinApplication.appContext.getDeviceId(),
     val platform: String = "Android",
-)
+) : Parcelable

@@ -49,6 +49,7 @@ import one.mixin.android.fts.insertFts4
 import one.mixin.android.fts.insertOrReplaceMessageFts4
 import one.mixin.android.job.BaseJob.Companion.PRIORITY_SEND_ATTACHMENT_MESSAGE
 import one.mixin.android.session.Session
+import one.mixin.android.ui.transfer.TransferActivity
 import one.mixin.android.ui.transfer.vo.TransferCommandData
 import one.mixin.android.ui.web.replaceApp
 import one.mixin.android.util.ColorUtil
@@ -454,7 +455,9 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
             } else if (plainData.action == PlainDataAction.DEVICE_TRANSFER.name) {
                 val content = plainData.content ?: return
                 val command = gson.fromJson(content, TransferCommandData::class.java)
-                RxBus.publish(command)
+                MixinApplication.get().currentActivity?.let { activity ->
+                    TransferActivity.show(activity, command, true)
+                }
             } else if (plainData.action == PlainDataAction.ACKNOWLEDGE_MESSAGE_RECEIPTS.name) {
                 plainData.ackMessages?.let { ackMessages ->
                     val updateExpiredMessageList = arrayListOf<Pair<String, Long?>>()

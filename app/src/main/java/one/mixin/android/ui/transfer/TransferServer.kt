@@ -114,8 +114,8 @@ class TransferServer @Inject internal constructor(
             if (remoteAddr is InetSocketAddress) {
                 val inetAddr = remoteAddr.address
                 val ip = inetAddr.hostAddress
-                run(socket.getInputStream(), socket.getOutputStream())
                 Timber.e("Connected to $ip")
+                run(socket.getInputStream(), socket.getOutputStream())
             } else {
                 exit()
             }
@@ -169,9 +169,13 @@ class TransferServer @Inject internal constructor(
                         }
                     } else if (commandData.action == TransferCommandAction.FINISH.value) {
                         if (status.value == TransferStatus.FINISHED) {
+                            Timber.e("FINISH CLOSE")
+                            status.value = TransferStatus.FINISHED
                             exit()
                         } else {
                             Timber.e("No finish")
+                            exit()
+                            status.value = TransferStatus.ERROR
                         }
                     } else {
                         Timber.e("Unsupported command")
@@ -478,6 +482,8 @@ class TransferServer @Inject internal constructor(
     fun exit() {
         try {
             quit = true
+            socket?.close()
+            socket = null
             serverSocket?.close()
             serverSocket = null
         } catch (e: Exception) {

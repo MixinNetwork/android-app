@@ -29,6 +29,7 @@ import one.mixin.android.extension.base64RawURLEncode
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.fadeIn
 import one.mixin.android.extension.generateQRCode
+import one.mixin.android.extension.getParcelableExtra
 import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.toast
 import one.mixin.android.job.BaseJob
@@ -55,12 +56,22 @@ class TransferActivity : BaseActivity() {
     companion object {
         const val ARGS_IS_COMPUTER = "args_is_computer"
         const val ARGS_QR_CODE_CONTENT = "args_qr_code_content"
+        const val ARGS_COMMAND = "args_command"
 
         fun show(context: Context, isComputer: Boolean, qrCodeContent: String? = null) {
             context.startActivity(
                 Intent(context, TransferActivity::class.java).apply {
                     putExtra(ARGS_IS_COMPUTER, isComputer)
                     putExtra(ARGS_QR_CODE_CONTENT, qrCodeContent)
+                },
+            )
+        }
+
+        fun show(context: Context, transferCommandData: TransferCommandData, isComputer: Boolean) {
+            context.startActivity(
+                Intent(context, TransferActivity::class.java).apply {
+                    putExtra(ARGS_IS_COMPUTER, isComputer)
+                    putExtra(ARGS_COMMAND, transferCommandData)
                 },
             )
         }
@@ -136,11 +147,9 @@ class TransferActivity : BaseActivity() {
         }
 
         binding.pushToDesktop.setOnClickListener {
-            loading() // todo timeout
             pushRequest()
         }
         binding.pullFromDesktop.setOnClickListener {
-            loading() // todo timeout
             pullRequest()
         }
 
@@ -165,51 +174,40 @@ class TransferActivity : BaseActivity() {
                 }
 
                 TransferStatus.CONNECTING -> {
-                    loading()
                 }
 
                 TransferStatus.WAITING_FOR_VERIFICATION -> {
-                    loading()
                 }
 
                 TransferStatus.VERIFICATION_COMPLETED -> {
-                    loading()
                 }
 
                 TransferStatus.SENDING -> {
-                    loadingDismiss()
                     binding.qrFl.isVisible = false
                     binding.loginScanTv.isVisible = false
                     binding.statusLl.isVisible = true
                 }
 
                 TransferStatus.ERROR -> {
-                    loadingDismiss()
                     binding.qrFl.isVisible = true
                     binding.loginScanTv.isVisible = true
                     binding.statusLl.isVisible = false
                     binding.statusTv.text = getString(R.string.Network_error)
                     status.value = TransferStatus.INITIALIZING
+                    toast("出错") // Todo replace
+                    finish()
                 }
 
                 TransferStatus.FINISHED -> {
-                    loadingDismiss()
                     binding.statusTv.text = getString(R.string.Diagnosis_Complete)
+                    toast(R.string.Backup_success) // todo replace string
+                    finish()
                 }
             }
         }
-    }
-
-    private var pb: Dialog? = null
-    private fun loading() {
-        pb = indeterminateProgressDialog(message = R.string.Please_wait_a_bit).apply {
-            setCancelable(false)
+        getParcelableExtra(intent, ARGS_COMMAND, TransferCommandData::class.java)?.apply {
+            handleCommand(this)
         }
-    }
-
-    private fun loadingDismiss() {
-        pb?.dismiss()
-        pb = null
     }
 
     private var disposable: Disposable? = null
@@ -223,34 +221,7 @@ class TransferActivity : BaseActivity() {
                 .autoDispose(stopScope)
                 .subscribe {
                     Timber.e("Rx ${gson.toJson(it)}")
-                    when (it.action) {
-                        TransferCommandAction.CONNECT.value -> {
-                            // This message is received from websocket
-                        }
-
-                        TransferCommandAction.PUSH.value -> {
-                            loadingDismiss()
-                            lifecycleScope.launch(SINGLE_SOCKET_THREAD) {
-                                transferClient.connectToServer(
-                                    it.ip!!,
-                                    it.port!!,
-                                    TransferCommandData(
-                                        TransferCommandAction.CONNECT.value,
-                                        code = it.code,
-                                    ),
-                                )
-                            }
-                        }
-
-                        TransferCommandAction.PULL.value -> {
-                            // Todo display loading and delayed shutdown
-                            // Wait for the server push
-                            loading()
-                        }
-
-                        else -> {}
-                    }
-                    Timber.e("${it.action} ${it.deviceId} ${it.ip}")
+                    handleCommand(it)
                 }
         }
         if (transferDisposable == null) {
@@ -259,13 +230,42 @@ class TransferActivity : BaseActivity() {
                 .autoDispose(stopScope)
                 .subscribe {
                     if (status.value == TransferStatus.SENDING) {
-                        loadingDismiss()
-                        binding.descTv.text =
-                            getString(R.string.sending_desc, String.format("%.2f%%", it.progress))
-                        binding.pb.progress = (100 * it.progress).toInt()
+                        binding.descTv.text = getString(R.string.sending_desc, String.format("%.2f%%", it.progress))
+                        binding.pb.max = 100
+                        binding.pb.progress = (it.progress).toInt()
                     }
                     Timber.e("Device transfer ${it.progress}%")
                 }
+        }
+    }
+
+    private fun handleCommand(commandData: TransferCommandData) {
+        when (commandData.action) {
+            TransferCommandAction.CONNECT.value -> {
+                // This message is received from websocket
+            }
+
+            TransferCommandAction.PUSH.value -> {
+                // loadingDismiss()
+                lifecycleScope.launch(SINGLE_SOCKET_THREAD) {
+                    transferClient.connectToServer(
+                        commandData.ip!!,
+                        commandData.port!!,
+                        TransferCommandData(
+                            TransferCommandAction.CONNECT.value,
+                            code = commandData.code,
+                        ),
+                    )
+                }
+            }
+
+            TransferCommandAction.PULL.value -> {
+                // Todo display loading and delayed shutdown
+                // Wait for the server push
+                pushRequest()
+            }
+
+            else -> {}
         }
     }
 
@@ -323,6 +323,7 @@ class TransferActivity : BaseActivity() {
                 TransferCommandData(
                     TransferCommandAction.CONNECT.value,
                     code = transferCommandData.code,
+                    userId = Session.getAccountId()
                 ),
             )
         }
@@ -337,31 +338,29 @@ class TransferActivity : BaseActivity() {
     @Inject
     lateinit var participantDao: ParticipantDao
 
-    private fun sendMessage(content: String) {
-        lifecycleScope.launch(SINGLE_SOCKET_THREAD) {
-            try {
-                val accountId = Session.getAccountId() ?: return@launch
-                val sessionId = Session.getExtensionSessionId() ?: return@launch
-                val plainText = gson.toJson(
-                    PlainJsonMessagePayload(
-                        action = PlainDataAction.DEVICE_TRANSFER.name,
-                        content = content,
-                    ),
-                )
-                val encoded = plainText.toByteArray().base64RawURLEncode()
-                val bm = createParamBlazeMessage(
-                    createPlainJsonParam(
-                        MixinDatabase.getDatabase(this@TransferActivity).participantDao()
-                            .joinedConversationId(accountId),
-                        accountId,
-                        encoded,
-                        sessionId,
-                    ),
-                )
-                jobManager.addJobInBackground(SendPlaintextJob(bm, BaseJob.PRIORITY_ACK_MESSAGE))
-            } catch (e: Exception) {
-                Timber.e(e)
-            }
+    private fun sendMessage(content: String) = lifecycleScope.launch(Dispatchers.IO) {
+        try {
+            val accountId = Session.getAccountId() ?: return@launch
+            val sessionId = Session.getExtensionSessionId() ?: return@launch
+            val plainText = gson.toJson(
+                PlainJsonMessagePayload(
+                    action = PlainDataAction.DEVICE_TRANSFER.name,
+                    content = content,
+                ),
+            )
+            val encoded = plainText.toByteArray().base64RawURLEncode()
+            val bm = createParamBlazeMessage(
+                createPlainJsonParam(
+                    MixinDatabase.getDatabase(this@TransferActivity).participantDao()
+                        .joinedConversationId(accountId),
+                    accountId,
+                    encoded,
+                    sessionId,
+                ),
+            )
+            jobManager.addJobInBackground(SendPlaintextJob(bm, BaseJob.PRIORITY_UI_HIGH))
+        } catch (e: Exception) {
+            Timber.e(e)
         }
     }
 
