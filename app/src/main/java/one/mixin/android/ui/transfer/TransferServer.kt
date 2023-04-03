@@ -20,6 +20,7 @@ import one.mixin.android.event.DeviceTransferProgressEvent
 import one.mixin.android.extension.base64RawURLEncode
 import one.mixin.android.extension.getMediaPath
 import one.mixin.android.extension.isUUID
+import one.mixin.android.session.Session
 import one.mixin.android.ui.transfer.vo.TransferCommandAction
 import one.mixin.android.ui.transfer.vo.TransferCommandData
 import one.mixin.android.ui.transfer.vo.TransferData
@@ -157,7 +158,7 @@ class TransferServer @Inject internal constructor(
                     val commandData =
                         gson.fromJson(transferData.data, TransferCommandData::class.java)
                     if (commandData.action == TransferCommandAction.CONNECT.value) {
-                        if (commandData.code == code) {
+                        if (commandData.code == code && commandData.userId == Session.getAccountId()) {
                             Timber.e("Verification passed, start transmission")
                             status.value = TransferStatus.VERIFICATION_COMPLETED
                             transfer(outputStream)
@@ -202,9 +203,9 @@ class TransferServer @Inject internal constructor(
 
     private fun writeJson(
         outputStream: OutputStream,
-        transferData: Any
+        transferData: Any,
     ) {
-        val content =  gson.toJson(transferData)
+        val content = gson.toJson(transferData)
         protocol.write(outputStream, content)
         outputStream.flush()
     }

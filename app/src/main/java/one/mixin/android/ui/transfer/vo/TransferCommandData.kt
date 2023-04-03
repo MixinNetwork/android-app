@@ -12,6 +12,8 @@ data class TransferCommandData(
     val secretKey: String? = null,
     val code: Int? = null,
     val total: Long? = null,
+    @SerializedName("user_id")
+    val userId: String? = null,
     val version: Int = 1,
     @SerializedName("device_id")
     val deviceId: String = MixinApplication.appContext.getDeviceId(),

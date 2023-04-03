@@ -11,6 +11,7 @@ import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
+import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -64,7 +65,13 @@ class TransferActivity : BaseActivity() {
             )
         }
 
-        fun parseUri(context: Context, isComputer: Boolean, uri: Uri, success: (() -> Unit)? = null, fallback: () -> Unit) {
+        fun parseUri(
+            context: Context,
+            isComputer: Boolean,
+            uri: Uri,
+            success: (() -> Unit)? = null,
+            fallback: () -> Unit,
+        ) {
             val data = uri.getQueryParameter("data")
             if (data == null) {
                 fallback.invoke()
@@ -121,7 +128,7 @@ class TransferActivity : BaseActivity() {
         }
 
         binding.pushToDesktop.setOnClickListener {
-            loading() // todo timeout 
+            loading() // todo timeout
             pushRequest()
         }
         binding.pullFromDesktop.setOnClickListener {
@@ -142,25 +149,32 @@ class TransferActivity : BaseActivity() {
             when (s) {
                 TransferStatus.INITIALIZING -> {
                 }
+
                 TransferStatus.CREATED -> {
                 }
+
                 TransferStatus.WAITING_FOR_CONNECTION -> {
                 }
+
                 TransferStatus.CONNECTING -> {
                     loading()
                 }
+
                 TransferStatus.WAITING_FOR_VERIFICATION -> {
                     loading()
                 }
+
                 TransferStatus.VERIFICATION_COMPLETED -> {
                     loading()
                 }
+
                 TransferStatus.SENDING -> {
                     loadingDismiss()
                     binding.qrFl.isVisible = false
                     binding.loginScanTv.isVisible = false
                     binding.statusLl.isVisible = true
                 }
+
                 TransferStatus.ERROR -> {
                     loadingDismiss()
                     binding.qrFl.isVisible = true
@@ -169,6 +183,7 @@ class TransferActivity : BaseActivity() {
                     binding.statusTv.text = getString(R.string.Network_error)
                     status.value = TransferStatus.INITIALIZING
                 }
+
                 TransferStatus.FINISHED -> {
                     loadingDismiss()
                     binding.statusTv.text = getString(R.string.Diagnosis_Complete)
@@ -237,7 +252,8 @@ class TransferActivity : BaseActivity() {
                 .subscribe {
                     if (status.value == TransferStatus.SENDING) {
                         loadingDismiss()
-                        binding.descTv.text = getString(R.string.sending_desc, String.format("%.2f%%", it.progress))
+                        binding.descTv.text =
+                            getString(R.string.sending_desc, String.format("%.2f%%", it.progress))
                         binding.pb.progress = (100 * it.progress).toInt()
                     }
                     Timber.e("Device transfer ${it.progress}%")
@@ -269,32 +285,37 @@ class TransferActivity : BaseActivity() {
         }
     }
 
-    private fun connectToQrCodeContent(content: String) = lifecycleScope.launch(SINGLE_SOCKET_THREAD) {
-        withContext(Dispatchers.Main) {
-            binding.startServer.isVisible = false
-        }
-
-        val transferCommandData = try {
-            gson.fromJson(
-                String(content.base64RawURLDecode()),
-                TransferCommandData::class.java,
-            )
-        } catch (e: Exception) {
-            withContext(Dispatchers.Main) {
+    private fun connectToQrCodeContent(content: String) =
+        lifecycleScope.launch(SINGLE_SOCKET_THREAD + CoroutineExceptionHandler { _, throwable ->
+            lifecycleScope.launch(Dispatchers.Main) {
                 toast(R.string.Data_error)
             }
-            return@launch
+        }) {
+            withContext(Dispatchers.Main) {
+                binding.startServer.isVisible = false
+            }
+
+            val transferCommandData = try {
+                gson.fromJson(
+                    String(content.base64RawURLDecode()),
+                    TransferCommandData::class.java,
+                )
+            } catch (e: Exception) {
+                withContext(Dispatchers.Main) {
+                    toast(R.string.Data_error)
+                }
+                return@launch
+            }
+            Timber.e("qrcode:$content")
+            transferClient.connectToServer(
+                transferCommandData.ip!!,
+                transferCommandData.port!!,
+                TransferCommandData(
+                    TransferCommandAction.CONNECT.value,
+                    code = transferCommandData.code,
+                ),
+            )
         }
-        Timber.e("qrcode:$content")
-        transferClient.connectToServer(
-            transferCommandData.ip!!,
-            transferCommandData.port!!,
-            TransferCommandData(
-                TransferCommandAction.CONNECT.value,
-                code = transferCommandData.code,
-            ),
-        )
-    }
 
     private val gson by lazy {
         GsonHelper.customGson
