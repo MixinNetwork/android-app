@@ -5,11 +5,9 @@ import android.content.Context
 import android.database.Cursor
 import android.database.sqlite.SQLiteDatabase
 import android.os.Build
-import dagger.hilt.android.EntryPointAccessors
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import one.mixin.android.Constants
-import one.mixin.android.MixinApplication
 import one.mixin.android.util.reportException
 import timber.log.Timber
 import java.io.File
@@ -122,4 +120,3 @@ suspend fun clearJobs(context: Context) = withContext(Dispatchers.IO) {
         db?.rawQuery("PRAGMA wal_checkpoint(FULL)", null)?.close()
     }
 }
-
