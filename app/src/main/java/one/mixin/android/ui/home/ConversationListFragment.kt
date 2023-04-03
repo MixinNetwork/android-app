@@ -154,15 +154,8 @@ class ConversationListFragment : LinkFragment() {
             override fun onItemRangeChanged(positionStart: Int, itemCount: Int) {
                 if (viewDestroyed()) return
 
-                if (scrollTop) {
+                if (scrollTop || isTop) {
                     scrollTop = false
-                    (binding.messageRv.layoutManager as LinearLayoutManager).scrollToPositionWithOffset(
-                        0,
-                        0,
-                    )
-                }
-
-                if (isTop) {
                     (binding.messageRv.layoutManager as LinearLayoutManager).scrollToPosition(0)
                 }
             }
