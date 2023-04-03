@@ -125,7 +125,7 @@ class TransferActivity : BaseActivity() {
         binding.pullFromDesktop.isVisible = isComputer
         binding.pushToDesktop.isVisible = isComputer
         binding.startServer.setOnClickListener {
-            lifecycleScope.launch(SINGLE_SOCKET_THREAD) {
+            lifecycleScope.launch {
                 transferServer.startServer { transferCommandData ->
                     lifecycleScope.launch(Dispatchers.Main) {
                         val qrCode = gson.toJson(transferCommandData)
@@ -165,6 +165,9 @@ class TransferActivity : BaseActivity() {
             binding.statusTv.text = s.name
             when (s) {
                 TransferStatus.INITIALIZING -> {
+                    binding.qrFl.isVisible = false
+                    binding.loginScanTv.isVisible = false
+                    binding.statusLl.isVisible = false
                 }
 
                 TransferStatus.CREATED -> {
@@ -241,12 +244,7 @@ class TransferActivity : BaseActivity() {
 
     private fun handleCommand(commandData: TransferCommandData) {
         when (commandData.action) {
-            TransferCommandAction.CONNECT.value -> {
-                // This message is received from websocket
-            }
-
             TransferCommandAction.PUSH.value -> {
-                // loadingDismiss()
                 lifecycleScope.launch(SINGLE_SOCKET_THREAD) {
                     transferClient.connectToServer(
                         commandData.ip!!,
@@ -317,6 +315,10 @@ class TransferActivity : BaseActivity() {
                 return@launch
             }
             Timber.e("qrcode:$content")
+            // Todo
+            // if (transferCommandData.userId != Session.getAccountId()){
+            //     finish()
+            // }
             transferClient.connectToServer(
                 transferCommandData.ip!!,
                 transferCommandData.port!!,
@@ -376,7 +378,7 @@ class TransferActivity : BaseActivity() {
     }
 
     private fun pushRequest() {
-        lifecycleScope.launch(SINGLE_SOCKET_THREAD) {
+        lifecycleScope.launch {
             transferServer.startServer { transferData ->
                 Timber.e("push ${gson.toJson(transferData)}")
                 val encodeText = gson.toJson(

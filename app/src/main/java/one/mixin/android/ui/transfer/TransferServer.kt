@@ -102,6 +102,7 @@ class TransferServer @Inject internal constructor(
                     this@TransferServer.port,
                     generateAesKey().base64RawURLEncode(), // todo
                     this@TransferServer.code,
+                    userId = Session.getAccountId()
                 ),
             )
             status.value = TransferStatus.WAITING_FOR_CONNECTION
@@ -158,7 +159,9 @@ class TransferServer @Inject internal constructor(
                     val commandData =
                         gson.fromJson(transferData.data, TransferCommandData::class.java)
                     if (commandData.action == TransferCommandAction.CONNECT.value) {
-                        if (commandData.code == code && commandData.userId == Session.getAccountId()) {
+                        // Todo
+                        // if (commandData.code == code && commandData.userId == Session.getAccountId()) {
+                        if (commandData.code == code) {
                             Timber.e("Verification passed, start transmission")
                             status.value = TransferStatus.VERIFICATION_COMPLETED
                             transfer(outputStream)

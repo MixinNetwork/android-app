@@ -1130,4 +1130,5 @@
     <string name="sending_desc">%1$s chat(s) backed up</string>
     <string name="Complete">Complete</string>
     <string name="cannot_exit_in_backup">Cannot exit in backup</string>
+    <string name="Chat">Chat</string>
 </resources>

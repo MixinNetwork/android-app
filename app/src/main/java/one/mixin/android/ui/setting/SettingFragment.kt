@@ -45,9 +45,6 @@ class SettingFragment : BaseFragment(R.layout.fragment_setting) {
                 navTo(SettingDataStorageFragment.newInstance(), SettingDataStorageFragment.TAG)
             }
             backupRl.setOnClickListener {
-                navTo(BackUpFragment.newInstance(), BackUpFragment.TAG)
-            }
-            migrateRl.setOnClickListener {
                 navTo(MigrateRestoreFragment.newInstance(), MigrateRestoreFragment.TAG)
             }
             accountRl.setOnClickListener {

@@ -14,9 +14,29 @@
         app:titleText="@string/Migration_and_Restore" />
 
     <RelativeLayout
+        android:id="@+id/back_rl"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/item_contact_height"
+        android:background="?attr/bg_white"
+        android:foreground="?android:attr/selectableItemBackground">
+
+        <TextView
+            android:id="@+id/back_tv"
+            style="@style/NormalTextStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:layout_marginStart="@dimen/activity_horizontal_margin"
+            android:gravity="center_vertical"
+            android:text="@string/Chat_Backup"
+            tools:ignore="RelativeOverlap" />
+    </RelativeLayout>
+
+    <RelativeLayout
         android:id="@+id/another_rl"
         android:layout_width="match_parent"
         android:layout_height="@dimen/item_contact_height"
+        android:layout_marginTop="16dp"
         android:background="?attr/bg_white"
         android:foreground="?android:attr/selectableItemBackground">
 
