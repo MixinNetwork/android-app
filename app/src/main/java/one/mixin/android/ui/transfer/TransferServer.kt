@@ -189,8 +189,8 @@ class TransferServer @Inject internal constructor(
     fun transfer(outputStream: OutputStream) {
         status.value = TransferStatus.SENDING
         sendStart(outputStream)
-        syncConversation(outputStream)
         syncParticipant(outputStream)
+        syncConversation(outputStream)
         syncUser(outputStream)
         syncAsset(outputStream)
         syncSnapshot(outputStream)

@@ -22,6 +22,7 @@ import one.mixin.android.databinding.ActivityTransferBinding
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.ParticipantDao
 import one.mixin.android.event.DeviceTransferProgressEvent
+import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.base64Encode
 import one.mixin.android.extension.base64RawURLDecode
 import one.mixin.android.extension.base64RawURLEncode
@@ -39,6 +40,7 @@ import one.mixin.android.ui.transfer.vo.TransferCommandAction
 import one.mixin.android.ui.transfer.vo.TransferCommandData
 import one.mixin.android.ui.transfer.vo.TransferStatus
 import one.mixin.android.ui.transfer.vo.TransferStatusLiveData
+import one.mixin.android.ui.web.releaseAll
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.viewBinding
 import one.mixin.android.websocket.PlainDataAction
@@ -210,20 +212,10 @@ class TransferActivity : BaseActivity() {
         }
     }
 
-    private var disposable: Disposable? = null
     private var transferDisposable: Disposable? = null
 
     override fun onStart() {
         super.onStart()
-        if (disposable == null) {
-            disposable = RxBus.listen(TransferCommandData::class.java)
-                .observeOn(AndroidSchedulers.mainThread())
-                .autoDispose(stopScope)
-                .subscribe {
-                    Timber.e("Rx ${gson.toJson(it)}")
-                    handleCommand(it)
-                }
-        }
         if (transferDisposable == null) {
             transferDisposable = RxBus.listen(DeviceTransferProgressEvent::class.java)
                 .observeOn(AndroidSchedulers.mainThread())
@@ -231,8 +223,7 @@ class TransferActivity : BaseActivity() {
                 .subscribe {
                     if (status.value == TransferStatus.SENDING) {
                         binding.descTv.text = getString(R.string.sending_desc, String.format("%.2f%%", it.progress))
-                        binding.pb.max = 100
-                        binding.pb.progress = 40
+                        binding.pb.progress = it.progress.toInt()
                     }
                     Timber.e("Device transfer ${it.progress}%")
                 }
@@ -243,14 +234,25 @@ class TransferActivity : BaseActivity() {
         when (commandData.action) {
             TransferCommandAction.PUSH.value -> {
                 lifecycleScope.launch {
-                    transferClient.connectToServer(
-                        commandData.ip!!,
-                        commandData.port!!,
-                        TransferCommandData(
-                            TransferCommandAction.CONNECT.value,
-                            code = commandData.code,
-                        ),
-                    )
+                    alertDialogBuilder()
+                        .setMessage(getString(R.string.sync_chat))
+                        .setNegativeButton(R.string.Cancel) { dialog, _ ->
+                            dialog.dismiss()
+                        }
+                        .setPositiveButton(R.string.Confirm) { _, _ ->
+                            lifecycleScope.launch {
+                                transferClient.connectToServer(
+                                    commandData.ip!!,
+                                    commandData.port!!,
+                                    TransferCommandData(
+                                        TransferCommandAction.CONNECT.value,
+                                        code = commandData.code,
+                                    ),
+                                )
+                            }
+                        }
+                        .show()
+
                 }
             }
 
@@ -266,8 +268,6 @@ class TransferActivity : BaseActivity() {
 
     override fun onStop() {
         super.onStop()
-        disposable?.dispose()
-        disposable = null
         transferDisposable?.dispose()
         transferDisposable = null
     }

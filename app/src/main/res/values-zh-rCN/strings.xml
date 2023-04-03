@@ -1107,4 +1107,5 @@
     <string name="Complete">完成</string>
     <string name="cannot_exit_in_backup">备份中无法退出</string>
     <string name="Chat">聊天记录</string>
+    <string name="sync_chat">同步聊天记录</string>
 </resources>

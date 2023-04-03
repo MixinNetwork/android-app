@@ -208,7 +208,8 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:visibility="gone"
-        android:orientation="vertical">
+        android:orientation="vertical"
+        tools:visibility="visible">
 
         <ImageView
             android:id="@+id/logo_iv"
@@ -250,9 +251,8 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="48dp"
             android:layout_marginEnd="48dp"
-            android:indeterminateOnly="false"
             android:max="100"
-            android:theme="@style/AppTheme.GrayProgress" />
+            android:theme="@style/AppTheme.BlueProgress" />
     </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

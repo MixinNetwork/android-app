@@ -125,9 +125,10 @@ class TransferClient @Inject internal constructor(
                         } else if (transferCommandData.action == TransferCommandAction.PUSH.value && transferCommandData.action == TransferCommandAction.PULL.value && transferCommandData.action == TransferCommandAction.START.value) {
                             Timber.e("action ${transferCommandData.action}")
                         } else if (transferCommandData.action == TransferCommandAction.FINISH.value) {
-                            sendFinish(outputStream)
-                            delay(3000)
                             status.value = TransferStatus.FINISHED
+                            sendFinish(outputStream)
+                            delay(100)
+                            exit()
                         } else {
                             Timber.e(content)
                             // error

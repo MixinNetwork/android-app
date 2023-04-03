@@ -100,7 +100,11 @@ class TransferProtocol {
         return calculateCrc32(data)
     }
 
-    private fun readString(inputStream: InputStream, expectedLength: Int): String {
+    private tailrec suspend fun readString(inputStream: InputStream, expectedLength: Int): String {
+        if (inputStream.available() < expectedLength) {
+            delay(50)
+            return readString(inputStream, expectedLength)
+        }
         val data = ByteArray(expectedLength)
         var readLength = 0
         while (readLength < expectedLength) {
@@ -115,7 +119,7 @@ class TransferProtocol {
         return String(data, UTF_8)
     }
 
-    private fun readFile(inputStream: InputStream, expectedLength: Int): File? {
+    private tailrec suspend fun readFile(inputStream: InputStream, expectedLength: Int): File? {
         val uuidByteArray = ByteArray(16)
         val crc = CRC32()
         inputStream.read(uuidByteArray)
