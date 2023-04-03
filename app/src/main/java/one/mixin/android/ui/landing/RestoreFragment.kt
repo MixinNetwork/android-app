@@ -51,7 +51,7 @@ class RestoreFragment : BaseFragment(R.layout.fragment_restore) {
         binding.apply {
             fromAnotherCl.setOnClickListener {
                 RxPermissions(requireActivity())
-                    .request(Manifest.permission.CAMERA)
+                    .request(Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE)
                     .autoDispose(stopScope)
                     .subscribe { granted ->
                         if (granted) {
@@ -62,7 +62,16 @@ class RestoreFragment : BaseFragment(R.layout.fragment_restore) {
                     }
             }
             fromLocalCl.setOnClickListener {
-                navTo(LocalRestoreFragment.newInstance(), LocalRestoreFragment.TAG)
+                RxPermissions(requireActivity())
+                    .request(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                    .autoDispose(stopScope)
+                    .subscribe { granted ->
+                        if (granted) {
+                            navTo(LocalRestoreFragment.newInstance(), LocalRestoreFragment.TAG)
+                        } else {
+                            requireActivity().openPermissionSetting()
+                        }
+                    }
             }
             skipTv.setOnClickListener {
                 InitializeActivity.showLoading(requireContext())
