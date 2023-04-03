@@ -101,10 +101,6 @@ class TransferProtocol {
     }
 
     private tailrec suspend fun readString(inputStream: InputStream, expectedLength: Int): String {
-        if (inputStream.available() < expectedLength) {
-            delay(50)
-            return readString(inputStream, expectedLength)
-        }
         val data = ByteArray(expectedLength)
         var readLength = 0
         while (readLength < expectedLength) {
