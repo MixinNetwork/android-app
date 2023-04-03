@@ -1,6 +1,5 @@
 package one.mixin.android.ui.transfer
 
-import android.app.Dialog
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
@@ -30,7 +29,6 @@ import one.mixin.android.extension.dp
 import one.mixin.android.extension.fadeIn
 import one.mixin.android.extension.generateQRCode
 import one.mixin.android.extension.getParcelableExtra
-import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.toast
 import one.mixin.android.job.BaseJob
 import one.mixin.android.job.MixinJobManager
@@ -325,7 +323,7 @@ class TransferActivity : BaseActivity() {
                 TransferCommandData(
                     TransferCommandAction.CONNECT.value,
                     code = transferCommandData.code,
-                    userId = Session.getAccountId()
+                    userId = Session.getAccountId(),
                 ),
             )
         }

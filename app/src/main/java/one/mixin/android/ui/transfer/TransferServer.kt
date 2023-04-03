@@ -102,7 +102,7 @@ class TransferServer @Inject internal constructor(
                     this@TransferServer.port,
                     generateAesKey().base64RawURLEncode(), // todo
                     this@TransferServer.code,
-                    userId = Session.getAccountId()
+                    userId = Session.getAccountId(),
                 ),
             )
             status.value = TransferStatus.WAITING_FOR_CONNECTION
