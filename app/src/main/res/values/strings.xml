@@ -1127,7 +1127,7 @@
     <string name="Transfer_to_PC">Transfer to PC</string>
     <string name="Enable_Wifi_or_hotspot">Enable Wi-Fi or hotspot for the two devices</string>
     <string name="login_and_scan">Login in to this account on other phone and scan the QR Code</string>
-    <string name="sending_desc">%1$s chat(s) backed up</string>
+    <string name="sending_desc">Transferring Chat (%1$s)</string>
     <string name="Complete">Complete</string>
     <string name="cannot_exit_in_backup">Cannot exit in backup</string>
     <string name="Chat">Chat</string>
@@ -1143,4 +1143,8 @@
     <string name="transfer_tips1">Log in to the current account on the new device and choose to recover from other phones</string>
     <string name="transfer_tips2">The new equipment scans the QR code above to establish a connection</string>
     <string name="transfer_tips3">Do not turn off the screen and keep Mixin running in the foreground</string>
+    <string name="Transfer_completed">Transfer completed</string>
+    <string name="transfer_waiting_desc">Please do not close the screen and keep Mixin running in the foreground when synchronizing.</string>
+    <string name="transfer_waiting_tips">Please open your Mixin Messenger desktop to confirm the operation.</string>
+    <string name="transfer_now">Transfer now</string>
 </resources>

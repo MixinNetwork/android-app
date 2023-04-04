@@ -78,30 +78,23 @@ class TransferClient @Inject internal constructor(
 
     val protocol = TransferProtocol()
 
-    suspend fun connectToServer(ip: String, port: Int, commandData: TransferCommandData) = withContext(
-        CoroutineExceptionHandler { _, exception ->
-            when (exception) {
-                is UnknownHostException -> {
-                }
-
-                is SocketException -> {
-                }
-
-                else -> {
-                }
-            }
+    suspend fun connectToServer(ip: String, port: Int, commandData: TransferCommandData) = withContext(SINGLE_SOCKET_THREAD) {
+        try {
+            status.value = TransferStatus.CONNECTING
+            val socket = Socket(ip, port)
+            this@TransferClient.socket = socket
+            socket.soTimeout = 10000
+            status.value = TransferStatus.WAITING_FOR_VERIFICATION
+            sendMessage(
+                socket.outputStream,
+                gson.toJson(TransferSendData(TransferDataType.COMMAND.value, commandData))
+            )
+            listen(socket.inputStream, socket.outputStream)
+        } catch (e: Exception) {
+            Timber.e(e)
             status.value = TransferStatus.ERROR
             exit()
-            Timber.e(exception)
-        } + SINGLE_SOCKET_THREAD,
-    ) {
-        status.value = TransferStatus.CONNECTING
-        val socket = Socket(ip, port)
-        this@TransferClient.socket = socket
-        socket.soTimeout = 10000
-        status.value = TransferStatus.WAITING_FOR_VERIFICATION
-        sendMessage(socket.outputStream, gson.toJson(TransferSendData(TransferDataType.COMMAND.value, commandData)))
-        listen(socket.inputStream, socket.outputStream)
+        }
     }
 
     private var total = 0L
@@ -230,9 +223,11 @@ class TransferClient @Inject internal constructor(
 
     fun exit() = MixinApplication.get().applicationScope.launch(SINGLE_SOCKET_THREAD) {
         try {
-            quit = true
-            socket?.close()
-            socket = null
+            if (socket != null) {
+                quit = true
+                socket?.close()
+                socket = null
+            }
         } catch (e: Exception) {
             Timber.e("exit client ${e.message}")
         }

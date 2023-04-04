@@ -65,6 +65,7 @@ class TransferActivity : BaseActivity() {
         fun showTransferToPhone(context: Context) {
             context.startActivity(
                 Intent(context, TransferActivity::class.java).apply {
+                    flags = Intent.FLAG_ACTIVITY_SINGLE_TOP
                     putExtra(ARGS_STATUS, ARGS_TRANSFER_TO_PHONE)
                 },
             )
@@ -73,6 +74,7 @@ class TransferActivity : BaseActivity() {
         fun showTransferToPC(context: Context) {
             context.startActivity(
                 Intent(context, TransferActivity::class.java).apply {
+                    flags = Intent.FLAG_ACTIVITY_SINGLE_TOP
                     putExtra(ARGS_STATUS, ARGS_RESTORE_FROM_PC)
                 },
             )
@@ -81,6 +83,7 @@ class TransferActivity : BaseActivity() {
         fun showRestoreToPC(context: Context) {
             context.startActivity(
                 Intent(context, TransferActivity::class.java).apply {
+                    flags = Intent.FLAG_ACTIVITY_SINGLE_TOP
                     putExtra(ARGS_STATUS, ARGS_RESTORE_FROM_PC)
                 },
             )
@@ -89,6 +92,7 @@ class TransferActivity : BaseActivity() {
         fun showRestoreToPhone(context: Context, transferCommandData: TransferCommandData) {
             context.startActivity(
                 Intent(context, TransferActivity::class.java).apply {
+                    flags = Intent.FLAG_ACTIVITY_SINGLE_TOP
                     putExtra(ARGS_STATUS, ARGS_RESTORE_FROM_PHONE)
                     putExtra(ARGS_COMMAND, transferCommandData)
                 },
@@ -98,6 +102,7 @@ class TransferActivity : BaseActivity() {
         fun show(context: Context, qrCodeContent: String) {
             context.startActivity(
                 Intent(context, TransferActivity::class.java).apply {
+                    flags = Intent.FLAG_ACTIVITY_SINGLE_TOP
                     putExtra(ARGS_STATUS, ARGS_RESTORE_FROM_PHONE)
                     putExtra(ARGS_QR_CODE_CONTENT, qrCodeContent)
                 },
@@ -114,6 +119,7 @@ class TransferActivity : BaseActivity() {
             } ?: return
             context.startActivity(
                 Intent(context, TransferActivity::class.java).apply {
+                    flags = Intent.FLAG_ACTIVITY_SINGLE_TOP
                     putExtra(ARGS_STATUS, status)
                     putExtra(ARGS_COMMAND, transferCommandData)
                 },
@@ -153,7 +159,6 @@ class TransferActivity : BaseActivity() {
         if (status.value in listOf(
                 TransferStatus.INITIALIZING,
                 TransferStatus.WAITING_MESSAGE,
-                TransferStatus.CREATED,
                 TransferStatus.ERROR,
                 TransferStatus.FINISHED
             )
@@ -168,7 +173,7 @@ class TransferActivity : BaseActivity() {
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
         binding.titleView.leftIb.setOnClickListener {
-            super.onBackPressed()
+            onBackPressed()
         }
         initView()
 
@@ -180,6 +185,9 @@ class TransferActivity : BaseActivity() {
 
                 TransferStatus.WAITING_MESSAGE -> {
                     binding.pb.isVisible = true
+                    Timber.e("pb ${binding.pb.isVisible}")
+                    binding.pbTips.isVisible = true
+                    binding.startTv.setText(R.string.Waiting)
                     binding.startTv.isEnabled = false
                     binding.start.isClickable = false
                 }
@@ -215,6 +223,7 @@ class TransferActivity : BaseActivity() {
                 }
 
                 TransferStatus.SENDING -> {
+                    binding.titleView.isVisible = false
                     binding.qrFl.isVisible = false
                     binding.initLl.isVisible = false
                     binding.waitingLl.isVisible = true
@@ -228,7 +237,7 @@ class TransferActivity : BaseActivity() {
                 }
 
                 TransferStatus.FINISHED -> {
-                    showConfirmDialog(getString(R.string.Successful)) {
+                    showConfirmDialog(getString(R.string.Transfer_completed)) {
                         finish()
                     }
                 }
@@ -244,7 +253,11 @@ class TransferActivity : BaseActivity() {
 
     private fun initView() {
         val status = intent.getIntExtra(ARGS_STATUS, ARGS_TRANSFER_TO_PHONE)
+        binding.titleView.isVisible = true
         binding.pb.isVisible = false
+        Timber.e("pb ${binding.pb.isVisible}")
+        binding.startTv.setText(R.string.transfer_now)
+        binding.pbTips.isVisible = false
         binding.startTv.isEnabled = true
         binding.start.isClickable = true
         binding.start.setOnClickListener {
@@ -270,11 +283,13 @@ class TransferActivity : BaseActivity() {
                 }
 
                 ARGS_TRANSFER_TO_PC -> {
-                    pushRequest()
+                    if (this@TransferActivity.status.value != TransferStatus.WAITING_MESSAGE)
+                        pushRequest()
                 }
 
                 ARGS_RESTORE_FROM_PC -> {
-                    pullRequest()
+                    if (this@TransferActivity.status.value != TransferStatus.WAITING_MESSAGE)
+                        pullRequest()
                 }
             }
         }
@@ -313,7 +328,7 @@ class TransferActivity : BaseActivity() {
                 .subscribe {
                     if (status.value == TransferStatus.SENDING) {
                         binding.progressTv.text =
-                            getString(R.string.sending_desc, String.format("%.2f%%", it.progress))
+                            getString(R.string.sending_desc, String.format("%.1f%%", it.progress))
                     }
                     Timber.e("Device transfer ${it.progress}%")
                 }
@@ -324,38 +339,19 @@ class TransferActivity : BaseActivity() {
         when (commandData.action) {
             TransferCommandAction.PUSH.value -> {
                 lifecycleScope.launch {
-                    alertDialogBuilder()
-                        .setMessage(getString(R.string.sync_chat))
-                        .setNegativeButton(R.string.Cancel) { dialog, _ ->
-                            dialog.dismiss()
-                        }
-                        .setPositiveButton(R.string.Confirm) { _, _ ->
-                            lifecycleScope.launch {
-                                transferClient.connectToServer(
-                                    commandData.ip!!,
-                                    commandData.port!!,
-                                    TransferCommandData(
-                                        TransferCommandAction.CONNECT.value,
-                                        code = commandData.code,
-                                    ),
-                                )
-                            }
-                        }
-                        .show()
+                    transferClient.connectToServer(
+                        commandData.ip!!,
+                        commandData.port!!,
+                        TransferCommandData(
+                            TransferCommandAction.CONNECT.value,
+                            code = commandData.code,
+                        ),
+                    )
                 }
             }
 
             TransferCommandAction.PULL.value -> {
-                // Todo display loading and delayed shutdown
-                alertDialogBuilder()
-                    .setMessage(getString(R.string.sync_chat))
-                    .setNegativeButton(R.string.Cancel) { dialog, _ ->
-                        dialog.dismiss()
-                    }
-                    .setPositiveButton(R.string.Confirm) { _, _ ->
-                        pushRequest()
-                    }
-                    .show()
+                pushRequest()
             }
 
             else -> {}
@@ -385,6 +381,7 @@ class TransferActivity : BaseActivity() {
     private fun connectToQrCodeContent(content: String) =
         lifecycleScope.launch(
             CoroutineExceptionHandler { _, throwable ->
+                Timber.e(throwable)
                 lifecycleScope.launch(Dispatchers.Main) {
                     toast(R.string.Data_error)
                 }
@@ -461,12 +458,14 @@ class TransferActivity : BaseActivity() {
                 Timber.e("pull ${gson.toJson(this)}")
             },
         )
+        status.value = TransferStatus.WAITING_MESSAGE
         sendMessage(encodeText)
     }
 
     private fun pushRequest() {
         lifecycleScope.launch {
             transferServer.startServer { transferData ->
+                status.value = TransferStatus.WAITING_MESSAGE
                 Timber.e("push ${gson.toJson(transferData)}")
                 val encodeText = gson.toJson(
                     transferData,

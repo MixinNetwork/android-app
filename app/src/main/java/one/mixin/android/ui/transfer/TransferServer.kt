@@ -76,55 +76,41 @@ class TransferServer @Inject internal constructor(
 
     suspend fun startServer(
         createdSuccessCallback: (TransferCommandData) -> Unit,
-    ) =
-        withContext(
-            CoroutineExceptionHandler { _, exception ->
-                when (exception) {
-                    is UnknownHostException -> {
-                    }
+    ) = withContext(SINGLE_SOCKET_THREAD) {
+            try {
+                val serverSocket = createSocket(port = Random.nextInt(100))
+                this@TransferServer.serverSocket = serverSocket
+                status.value = TransferStatus.CREATED
+                code = Random.nextInt(10000)
+                createdSuccessCallback(
+                    TransferCommandData(
+                        TransferCommandAction.PUSH.value,
+                        NetworkUtils.getWifiIpAddress(MixinApplication.appContext),
+                        this@TransferServer.port,
+                        generateAesKey().base64RawURLEncode(), // todo
+                        this@TransferServer.code,
+                        userId = Session.getAccountId(),
+                    ),
+                )
+                status.value = TransferStatus.WAITING_FOR_CONNECTION
+                val socket = serverSocket.accept()
+                this@TransferServer.socket = socket
+                status.value = TransferStatus.WAITING_FOR_VERIFICATION
+                socket.soTimeout = 10000
 
-                    is SocketException -> {
-                    }
-
-                    is ChecksumException ->{
-                    }
-
-                    else -> {
-                    }
+                val remoteAddr = socket.remoteSocketAddress
+                if (remoteAddr is InetSocketAddress) {
+                    val inetAddr = remoteAddr.address
+                    val ip = inetAddr.hostAddress
+                    Timber.e("Connected to $ip")
+                    run(socket.getInputStream(), socket.getOutputStream())
+                } else {
+                    exit()
                 }
+            } catch (e: Exception) {
                 status.value = TransferStatus.ERROR
                 exit()
-                Timber.e(exception)
-            } + SINGLE_SOCKET_THREAD,
-        ) {
-            val serverSocket = createSocket(port = Random.nextInt(100))
-            this@TransferServer.serverSocket = serverSocket
-            status.value = TransferStatus.CREATED
-            code = Random.nextInt(10000)
-            createdSuccessCallback(
-                TransferCommandData(
-                    TransferCommandAction.PUSH.value,
-                    NetworkUtils.getWifiIpAddress(MixinApplication.appContext),
-                    this@TransferServer.port,
-                    generateAesKey().base64RawURLEncode(), // todo
-                    this@TransferServer.code,
-                    userId = Session.getAccountId(),
-                ),
-            )
-            status.value = TransferStatus.WAITING_FOR_CONNECTION
-            val socket = serverSocket.accept()
-            this@TransferServer.socket = socket
-            status.value = TransferStatus.WAITING_FOR_VERIFICATION
-            socket.soTimeout = 10000
-
-            val remoteAddr = socket.remoteSocketAddress
-            if (remoteAddr is InetSocketAddress) {
-                val inetAddr = remoteAddr.address
-                val ip = inetAddr.hostAddress
-                Timber.e("Connected to $ip")
-                run(socket.getInputStream(), socket.getOutputStream())
-            } else {
-                exit()
+                Timber.e(e)
             }
         }
 
