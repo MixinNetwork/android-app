@@ -52,6 +52,7 @@ import one.mixin.android.ui.common.biometric.BiometricInfo
 import one.mixin.android.ui.preview.TextPreviewActivity
 import one.mixin.android.ui.tip.wc.sessionproposal.SessionProposalPage
 import one.mixin.android.ui.tip.wc.sessionrequest.SessionRequestPage
+import one.mixin.android.ui.url.UrlInterpreterActivity
 import one.mixin.android.util.BiometricUtil
 import one.mixin.android.util.SystemUIManager
 import one.mixin.android.vo.Asset
@@ -209,7 +210,7 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
 
     override fun onDetach() {
         super.onDetach()
-        if (activity is WalletConnectActivity) {
+        if (activity is WalletConnectActivity || activity is UrlInterpreterActivity) {
             var realFragmentCount = 0
             parentFragmentManager.fragments.forEach { f ->
                 if (f !is SupportRequestManagerFragment) {
