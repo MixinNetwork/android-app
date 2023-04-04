@@ -26,8 +26,9 @@ object WalletConnectV1 : WalletConnect() {
 
     private val wcClient = WCClient(GsonBuilder(), OkHttpClient.Builder().build()).also { wcc ->
         wcc.onSessionRequest = { id, peer ->
-            Timber.d("$TAG onSessionRequest id: $id, peer: $peer")
+            Timber.d("$TAG onSessionRequest id: $id, peer: $peer, chainId ${wcc.chainId}")
             wcc.session?.let {
+                wcc.chainId?.toIntOrNull()?.getChain()?.let { c -> chain = c }
                 currentSession = WCV1Session(it, chain.chainReference, peer, requireNotNull(wcc.peerId), null, null)
             }
             RxBus.publish(WCEvent.V1(Version.V1, RequestType.SessionProposal, id))
