@@ -16,14 +16,15 @@ import one.mixin.android.vo.isImage
 import one.mixin.android.vo.isTranscript
 import one.mixin.android.vo.isVideo
 import timber.log.Timber
+import java.io.EOFException
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
 import java.io.InputStream
 import java.io.OutputStream
-import java.lang.IllegalStateException
 import java.nio.ByteBuffer
 import java.util.zip.CRC32
+import kotlin.jvm.Throws
 import kotlin.text.Charsets.UTF_8
 
 class TransferProtocol {
@@ -37,13 +38,8 @@ class TransferProtocol {
         MixinDatabase.getDatabase(MixinApplication.appContext).messageDao()
     }
 
-    suspend fun read(inputStream: InputStream): Pair<String?, File?> {
-        if (inputStream.available() < 5) {
-            delay(100)
-            return read(inputStream)
-        }
-        val packageData = ByteArray(5)
-        inputStream.read(packageData)
+    fun read(inputStream: InputStream): Pair<String?, File?> {
+        val packageData = safeRead(inputStream, 5)
         val type = packageData[0]
         val size = byteArrayToInt(packageData.copyOfRange(1, 5))
         return when (type) {
@@ -100,14 +96,10 @@ class TransferProtocol {
         return calculateCrc32(data)
     }
 
-    private tailrec suspend fun readString(inputStream: InputStream, expectedLength: Int): String {
-        val data = ByteArray(expectedLength)
-        var readLength = 0
-        while (readLength < expectedLength) {
-            readLength += inputStream.read(data, readLength, expectedLength - readLength)
-        }
-        val checksum = ByteArray(8)
-        inputStream.read(checksum)
+    @Throws(ChecksumException::class)
+    private fun readString(inputStream: InputStream, expectedLength: Int): String {
+        val data = safeRead(inputStream, expectedLength)
+        val checksum = safeRead(inputStream, 8)
         if (bytesToLong(checksum) != bytesToLong(checksum(data))) {
             Timber.e("ChecksumException $expectedLength ${bytesToLong(checksum)} ${bytesToLong(checksum(data))}")
             throw ChecksumException()
@@ -115,10 +107,22 @@ class TransferProtocol {
         return String(data, UTF_8)
     }
 
-    private tailrec suspend fun readFile(inputStream: InputStream, expectedLength: Int): File? {
-        val uuidByteArray = ByteArray(16)
+    private fun safeRead(inputStream: InputStream, expectedLength:Int):ByteArray{
+        val data = ByteArray(expectedLength)
+        var readLength = 0
+        while (readLength < expectedLength) {
+            val count = inputStream.read(data, readLength, expectedLength - readLength)
+            if (count == -1) {
+                throw EOFException("Unexpected end of data")
+            }
+            readLength += count
+        }
+        return data
+    }
+
+    private fun readFile(inputStream: InputStream, expectedLength: Int): File? {
         val crc = CRC32()
-        inputStream.read(uuidByteArray)
+        val uuidByteArray = safeRead(inputStream, 16)
         crc.update(uuidByteArray)
         val uuid = UUIDUtils.fromByteArray(uuidByteArray)
         val message = messageDao.findMessageById(uuid)
@@ -162,8 +166,7 @@ class TransferProtocol {
                 }
             }
             fos.close()
-            val checksum = ByteArray(8)
-            inputStream.read(checksum)
+            val checksum = safeRead(inputStream, 8)
             val checksumLong = bytesToLong(checksum)
             Timber.e("Receive file: ${outFile.name} ${outFile.length()} checksum ${bytesToLong(checksum)} -- ${crc.value}")
             if (checksumLong != crc.value) {

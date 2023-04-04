@@ -215,7 +215,7 @@ class TransferClient @Inject internal constructor(
     private fun progress(outputStream: OutputStream) {
         if (total <= 0) return
         val progress = min((count++) / total.toFloat() * 100, 100f)
-        if (System.currentTimeMillis() - lastTime > 1000) {
+        if (System.currentTimeMillis() - lastTime > 200) {
             sendCommand(
                 outputStream,
                 TransferSendData(

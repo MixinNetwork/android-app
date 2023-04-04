@@ -6,6 +6,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.MixinApplication
 import one.mixin.android.RxBus
+import one.mixin.android.api.ChecksumException
 import one.mixin.android.crypto.generateAesKey
 import one.mixin.android.db.AssetDao
 import one.mixin.android.db.ConversationDao
@@ -83,6 +84,9 @@ class TransferServer @Inject internal constructor(
                     }
 
                     is SocketException -> {
+                    }
+
+                    is ChecksumException ->{
                     }
 
                     else -> {
@@ -173,16 +177,9 @@ class TransferServer @Inject internal constructor(
                                 exit()
                             }
                         } else if (commandData.action == TransferCommandAction.FINISH.value) {
-                            if (status.value != TransferStatus.FINISHED) {
-                                Timber.e("FINISH CLOSE")
-                                status.value = TransferStatus.FINISHED
-                                exit()
-                            } else {
-                                Timber.e("No finish")
-                                exit()
-                                Timber.e("Finish error")
-                                status.value = TransferStatus.ERROR
-                            }
+                            RxBus.publish(DeviceTransferProgressEvent(100f))
+                            status.value = TransferStatus.FINISHED
+                            exit()
                         } else if (commandData.action == TransferCommandAction.PROGRESS.value) {
                             // Get progress from client
                             if (commandData.progress != null) {
@@ -201,8 +198,8 @@ class TransferServer @Inject internal constructor(
     fun transfer(outputStream: OutputStream) {
         status.value = TransferStatus.SENDING
         sendStart(outputStream)
-        syncParticipant(outputStream)
         syncConversation(outputStream)
+        syncParticipant(outputStream)
         syncUser(outputStream)
         syncAsset(outputStream)
         syncSnapshot(outputStream)
@@ -243,6 +240,7 @@ class TransferServer @Inject internal constructor(
     }
 
     private fun sendFinish(outputStream: OutputStream) {
+        Timber.e("send finish")
         writeJson(
             outputStream,
             TransferSendData(
