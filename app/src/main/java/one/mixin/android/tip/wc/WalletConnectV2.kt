@@ -13,12 +13,9 @@ import com.trustwallet.walletconnect.models.ethereum.WCEthereumTransaction
 import com.trustwallet.walletconnect.models.ethereum.ethTransactionSerializer
 import com.walletconnect.android.Core
 import com.walletconnect.android.CoreClient
-import com.walletconnect.android.cacao.sign
-import com.walletconnect.android.cacao.signature.SignatureType
 import com.walletconnect.android.relay.ConnectionType
 import com.walletconnect.web3.wallet.client.Wallet
 import com.walletconnect.web3.wallet.client.Web3Wallet
-import com.walletconnect.web3.wallet.utils.CacaoSigner
 import one.mixin.android.BuildConfig
 import one.mixin.android.MixinApplication
 import one.mixin.android.RxBus
@@ -232,41 +229,6 @@ object WalletConnectV2 : WalletConnect() {
         Web3Wallet.rejectSession(rejectParams) { error ->
             Timber.d("$TAG rejectSession error: $error")
         }
-    }
-
-    fun approveAuthRequest(priv: ByteArray) {
-        val request = this.authRequest ?: return
-
-        val pub = ECKeyPair.create(priv).publicKey
-        val address = Keys.toChecksumAddress(Keys.getAddress(pub))
-        val issuer = Pair(Chain.Polygon, address).toIssuer()
-        val message = Web3Wallet.formatMessage(Wallet.Params.FormatMessage(request.payloadParams, issuer)) ?: throw Exception("Error formatting message")
-
-        Web3Wallet.respondAuthRequest(
-            Wallet.Params.AuthRequestResponse.Result(
-                id = request.id,
-                signature = CacaoSigner.sign(message, priv, SignatureType.EIP191),
-                issuer = issuer,
-            ),
-        ) { error ->
-            Timber.d("$TAG respondAuthRequest error $error")
-        }
-        this.authRequest = null
-    }
-
-    fun rejectAuthRequest() {
-        val request = this.authRequest ?: return
-
-        Web3Wallet.respondAuthRequest(
-            Wallet.Params.AuthRequestResponse.Error(
-                request.id,
-                12001,
-                "User Rejected Request",
-            ),
-        ) { error ->
-            Timber.d("$TAG rejectAuthRequest $error")
-        }
-        this.authRequest = null
     }
 
     private fun parseSessionRequest(request: Wallet.Model.SessionRequest) {
