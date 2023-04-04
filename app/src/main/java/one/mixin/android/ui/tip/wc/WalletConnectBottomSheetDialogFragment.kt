@@ -19,7 +19,9 @@ import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.view.doOnPreDraw
 import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import com.bumptech.glide.manager.SupportRequestManagerFragment
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
@@ -102,13 +104,16 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
     private var fee: BigDecimal? by mutableStateOf(null)
     private var asset: Asset? by mutableStateOf(null)
 
-    init {
-        lifecycleScope.launchWhenCreated {
-            snapshotFlow { step }.collect { value ->
-                if (value == Step.Input) {
-                    dialog?.window?.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
-                } else {
-                    dialog?.window?.clearFlags(WindowManager.LayoutParams.FLAG_SECURE)
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.CREATED) {
+                snapshotFlow { step }.collect { value ->
+                    if (value == Step.Input) {
+                        dialog?.window?.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
+                    } else {
+                        dialog?.window?.clearFlags(WindowManager.LayoutParams.FLAG_SECURE)
+                    }
                 }
             }
         }

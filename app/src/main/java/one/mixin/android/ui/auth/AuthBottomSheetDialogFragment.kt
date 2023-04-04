@@ -113,6 +113,8 @@ class AuthBottomSheetDialogFragment : BottomSheetDialogFragment() {
 
     private var step by mutableStateOf(AuthStep.DEFAULT)
 
+    private var errorContent by mutableStateOf("")
+    private var savedScopes: List<String>? = null
     init {
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.CREATED) {
@@ -126,9 +128,6 @@ class AuthBottomSheetDialogFragment : BottomSheetDialogFragment() {
             }
         }
     }
-
-    private var errorContent by mutableStateOf("")
-    private var savedScopes: List<String>? = null
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
