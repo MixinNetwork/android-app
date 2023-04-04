@@ -130,7 +130,11 @@ object WalletConnectV1 : WalletConnect() {
         val pub = ECKeyPair.create(priv).publicKey
         val address = Keys.toChecksumAddress(Keys.getAddress(pub))
         Timber.d("$TAG address: $address")
-        wcClient.approveSession(listOf(address), chain.chainReference)
+        try {
+            wcClient.approveSession(listOf(address), chain.chainReference)
+        } catch (e: IllegalStateException) {
+            wcClient.updateSession(listOf(address), chain.chainReference)
+        }
         this.address = address
 
         val session = currentSession ?: return
