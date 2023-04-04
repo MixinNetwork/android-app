@@ -180,10 +180,11 @@ class TransferServer @Inject internal constructor(
                             } else {
                                 Timber.e("No finish")
                                 exit()
-                                Timber.e("FINISH ERROR")
+                                Timber.e("Finish error")
                                 status.value = TransferStatus.ERROR
                             }
                         } else if (commandData.action == TransferCommandAction.PROGRESS.value) {
+                            // Get progress from client
                             if (commandData.progress != null) {
                                 RxBus.publish(DeviceTransferProgressEvent(commandData.progress))
                             }
@@ -493,12 +494,6 @@ class TransferServer @Inject internal constructor(
             Timber.e("exit server ${e.message}")
         }
     }
-
-    // private fun progress() {
-    //     if (total <= 0) return
-    //     val progress = min((count++) / total.toFloat() * 100, 100f)
-    //     RxBus.publish(DeviceTransferProgressEvent(progress))
-    // }
 
     companion object {
         private const val LIMIT = 100

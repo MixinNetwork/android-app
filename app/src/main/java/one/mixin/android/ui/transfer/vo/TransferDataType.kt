@@ -1,15 +1,15 @@
 package one.mixin.android.ui.transfer.vo
 
 enum class TransferDataType(val value: String) {
-    MESSAGE("message"),
-    USER("user"),
-    CONVERSATION("conversation"),
+    COMMAND("command"),
     PARTICIPANT("participant"),
-    TRANSCRIPT_MESSAGE("transcript_message"),
-    PIN_MESSAGE("pin_message"),
-    EXPIRED_MESSAGE("expired_message"),
+    CONVERSATION("conversation"),
+    USER("user"),
+    ASSET("asset"),
     SNAPSHOT("snapshot"),
     STICKER("sticker"),
-    ASSET("asset"),
-    COMMAND("command"),
+    PIN_MESSAGE("pin_message"),
+    TRANSCRIPT_MESSAGE("transcript_message"),
+    MESSAGE("message"),
+    EXPIRED_MESSAGE("expired_message"),
 }
