@@ -80,6 +80,8 @@ object WalletConnectV1 : WalletConnect() {
                 connectSession?.let { s ->
                     wcc.connect(s, peerMeta)
                 }
+            } else {
+                RxBus.publish(WCErrorEvent())
             }
         }
     }

@@ -73,7 +73,6 @@ import one.mixin.android.db.ParticipantDao
 import one.mixin.android.db.UserDao
 import one.mixin.android.db.property.PropertyHelper
 import one.mixin.android.event.TipEvent
-import one.mixin.android.extension.alert
 import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.areBubblesAllowedCompat
 import one.mixin.android.extension.checkStorageNotLow
@@ -109,7 +108,9 @@ import one.mixin.android.repository.AccountRepository
 import one.mixin.android.repository.UserRepository
 import one.mixin.android.session.Session
 import one.mixin.android.tip.Tip
+import one.mixin.android.tip.wc.WCErrorEvent
 import one.mixin.android.tip.wc.WCEvent
+import one.mixin.android.tip.wc.WalletConnect
 import one.mixin.android.tip.wc.WalletConnectV1
 import one.mixin.android.tip.wc.WalletConnectV2
 import one.mixin.android.ui.common.BaseFragment
@@ -296,7 +297,15 @@ class MainActivity : BlazeBaseActivity() {
         RxBus.listen(WCEvent::class.java)
             .autoDispose(destroyScope)
             .subscribe { e ->
+                if (e.requestType == WalletConnect.RequestType.SessionProposal) {
+                    dismissDialog()
+                }
                 WalletConnectActivity.show(this, e)
+            }
+        RxBus.listen(WCErrorEvent::class.java)
+            .autoDispose(destroyScope)
+            .subscribe {
+                dismissDialog()
             }
 
         lifecycleScope.launch(Dispatchers.IO) {
@@ -638,8 +647,7 @@ class MainActivity : BlazeBaseActivity() {
             }
             clearCodeAfterConsume(intent, TRANSFER)
         } else if (intent.extras != null && intent.extras!!.getString("conversation_id", null) != null) {
-            alertDialog?.dismiss()
-            alertDialog = alert(getString(R.string.Please_wait_a_bit)).show()
+            showDialog()
             val conversationId = intent.extras!!.getString("conversation_id")!!
             clearCodeAfterConsume(intent, "conversation_id")
             Maybe.just(conversationId).map {
@@ -734,7 +742,7 @@ class MainActivity : BlazeBaseActivity() {
                     }
                     innerIntent = ConversationActivity.putIntent(this, conversationId, user?.userId)
                 }
-                runOnUiThread { alertDialog?.dismiss() }
+                runOnUiThread { dismissDialog() }
                 innerIntent
             }.subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
                 .autoDispose(stopScope).subscribe(
@@ -744,7 +752,7 @@ class MainActivity : BlazeBaseActivity() {
                         }
                     },
                     {
-                        alertDialog?.dismiss()
+                        dismissDialog()
                         ErrorHandler.handleError(it)
                     },
                 )
@@ -752,10 +760,25 @@ class MainActivity : BlazeBaseActivity() {
             val wcUrl = requireNotNull(intent.getStringExtra(WALLET_CONNECT))
             if (WCSession.from(wcUrl) != null) {
                 WalletConnectV1.connect(wcUrl)
+                showDialog()
                 return
             }
+
             WalletConnectV2.pair(wcUrl)
+            showDialog()
         }
+    }
+
+    private fun showDialog() {
+        alertDialog?.dismiss()
+        alertDialog = indeterminateProgressDialog(message = R.string.Please_wait_a_bit).apply {
+            show()
+        }
+    }
+
+    private fun dismissDialog() {
+        alertDialog?.dismiss()
+        alertDialog = null
     }
 
     private fun clearCodeAfterConsume(intent: Intent, code: String) {

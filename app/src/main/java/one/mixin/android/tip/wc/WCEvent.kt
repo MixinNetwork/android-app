@@ -29,3 +29,5 @@ sealed class WCEvent(
         override val requestType: RequestType,
     ) : WCEvent(version, requestType)
 }
+
+class WCErrorEvent

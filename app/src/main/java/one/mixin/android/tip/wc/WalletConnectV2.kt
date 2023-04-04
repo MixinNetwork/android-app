@@ -86,6 +86,7 @@ object WalletConnectV2 : WalletConnect() {
 
             override fun onError(error: Wallet.Model.Error) {
                 Timber.d("$TAG onError $error")
+                RxBus.publish(WCErrorEvent())
             }
 
             override fun onSessionDelete(sessionDelete: Wallet.Model.SessionDelete) {
@@ -95,6 +96,7 @@ object WalletConnectV2 : WalletConnect() {
 
             override fun onSessionProposal(sessionProposal: Wallet.Model.SessionProposal) {
                 Timber.d("$TAG onSessionProposal $sessionProposal")
+                sessionProposal.requiredNamespaces.values.firstOrNull()?.chains?.firstOrNull()?.getChain()?.let { c -> chain = c }
                 RxBus.publish(WCEvent.V2(Version.V2, RequestType.SessionProposal))
             }
 
@@ -125,6 +127,7 @@ object WalletConnectV2 : WalletConnect() {
             Timber.d("$TAG pair success")
         }) { error ->
             Timber.d("$TAG pair $uri, error: $error")
+            RxBus.publish(WCErrorEvent())
         }
     }
 
