@@ -144,9 +144,9 @@ object WalletConnectV2 : WalletConnect() {
             Chain.Polygon to address,
         )
 
-        val selectedAccounts: Map<Chain, String> = chains.map { namespaceChainId ->
-            supportAccounts.firstOrNull { (chain, address) -> chain.chainId == namespaceChainId }
-        }.filterNotNull().toMap()
+        val selectedAccounts: Map<Chain, String> = chains.mapNotNull { namespaceChainId ->
+            supportAccounts.firstOrNull { (chain, _) -> chain.chainId == namespaceChainId }
+        }.toMap()
 
         val sessionNamespacesIndexedByNamespace: Map<String, Wallet.Model.Namespace.Session> =
             selectedAccounts.filter { (chain: Chain, _) ->
@@ -170,7 +170,7 @@ object WalletConnectV2 : WalletConnect() {
                         .filter { namespace -> namespace.chains != null }
                         .flatMap { it.events }
 
-                    val chains: List<String> =
+                    val chainList: List<String> =
                         sessionProposal.requiredNamespaces.values
                             .filter { namespace -> namespace.chains != null }
                             .flatMap { namespace -> namespace.chains!! }
@@ -179,7 +179,7 @@ object WalletConnectV2 : WalletConnect() {
                         accounts = accounts,
                         methods = methods,
                         events = events,
-                        chains = chains.ifEmpty { null },
+                        chains = chainList.ifEmpty { null },
                     )
                 }
 
