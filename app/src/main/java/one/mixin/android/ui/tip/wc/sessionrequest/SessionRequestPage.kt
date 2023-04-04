@@ -92,7 +92,7 @@ fun SessionRequestPage(
         )
         Box(modifier = Modifier.height(12.dp))
         Text(
-            text = stringResource(id = if (sessionRequestUI.data is WCEthereumSignMessage) R.string.Signature_Request else R.string.Transaction_Request),
+            text = stringResource(id = if (sessionRequestUI.data is WCEthereumSignMessage) R.string.signature_request else R.string.transaction_request),
             style = TextStyle(
                 color = MixinAppTheme.colors.textPrimary,
                 fontSize = 18.sp,
@@ -278,7 +278,7 @@ private fun Hint(hint: Hint) {
                 modifier = Modifier.padding(top = 16.dp),
                 text = stringResource(
                     id = when (hint) {
-                        Hint.NoPreview -> R.string.Preview_unavailable
+                        Hint.NoPreview -> R.string.preview_unavailable
                         Hint.Cancel -> R.string.Cancel_transaction
                         Hint.SpeedUp -> R.string.Speed_up_transaction
                     },
@@ -290,7 +290,7 @@ private fun Hint(hint: Hint) {
                 modifier = Modifier.padding(top = 6.dp, bottom = 16.dp),
                 text = stringResource(
                     id = when (hint) {
-                        Hint.NoPreview -> R.string.preview_unavailable_tip
+                        Hint.NoPreview -> R.string.preview_unavailable_description
                         Hint.Cancel -> R.string.cancel_transaction_tip
                         Hint.SpeedUp -> R.string.speed_up_transaction_tip
                     },
@@ -318,7 +318,7 @@ private fun NetworkInfo(
             horizontalArrangement = Arrangement.SpaceBetween,
         ) {
             Text(
-                text = stringResource(id = R.string.Network),
+                text = stringResource(id = R.string.network),
                 color = MixinAppTheme.colors.textSubtitle,
                 fontSize = 14.sp,
             )
@@ -334,7 +334,7 @@ private fun NetworkInfo(
             horizontalArrangement = Arrangement.SpaceBetween,
         ) {
             Text(
-                text = stringResource(id = R.string.Network_fee),
+                text = stringResource(id = R.string.network_fee),
                 color = MixinAppTheme.colors.textSubtitle,
                 fontSize = 14.sp,
             )

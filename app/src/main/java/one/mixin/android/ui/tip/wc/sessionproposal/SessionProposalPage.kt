@@ -80,7 +80,7 @@ fun SessionProposalPage(
         )
         Box(modifier = Modifier.height(12.dp))
         Text(
-            text = stringResource(id = R.string.Connect_Wallet),
+            text = stringResource(id = R.string.connect_wallet),
             style = TextStyle(
                 color = MixinAppTheme.colors.textPrimary,
                 fontSize = 18.sp,
@@ -101,12 +101,12 @@ fun SessionProposalPage(
                 .background(MixinAppTheme.colors.backgroundWindow),
         ) {
             Scope(
-                name = stringResource(id = R.string.Read_your_public_address),
-                desc = stringResource(id = R.string.Allow_app_access_wallet_balance_activity),
+                name = stringResource(id = R.string.read_your_public_address),
+                desc = stringResource(id = R.string.allow_dapp_access_public_address),
             )
             Scope(
-                name = stringResource(id = R.string.Request_approval),
-                desc = stringResource(id = R.string.Allow_dapp_ask_permission),
+                name = stringResource(id = R.string.request_approval),
+                desc = stringResource(id = R.string.allow_dapp_request_approval),
             )
         }
         Network(name = chainName)
@@ -201,7 +201,7 @@ private fun Network(
         horizontalArrangement = Arrangement.SpaceBetween,
     ) {
         Text(
-            text = stringResource(id = R.string.Network),
+            text = stringResource(id = R.string.network),
             color = MixinAppTheme.colors.textSubtitle,
             fontSize = 14.sp,
         )

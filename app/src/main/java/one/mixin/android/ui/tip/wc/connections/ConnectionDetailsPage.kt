@@ -108,7 +108,7 @@ private fun Content(
         )
         Box(modifier = Modifier.height(12.dp))
         Text(
-            text = stringResource(id = R.string.connected_desc),
+            text = stringResource(id = R.string.dapp_description),
             modifier = Modifier.padding(horizontal = 30.dp),
             textAlign = TextAlign.Center,
             fontSize = 14.sp,
@@ -128,7 +128,7 @@ private fun Content(
                 .clickable(onClick = onDisconnectClick),
         ) {
             Text(
-                text = stringResource(id = R.string.Disconnect),
+                text = stringResource(id = R.string.disconnect),
                 modifier = Modifier
                     .padding(horizontal = 20.dp, vertical = 22.dp)
                     .align(Alignment.CenterStart),
@@ -155,7 +155,7 @@ private fun Network(
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Text(
-            text = stringResource(id = R.string.Network),
+            text = stringResource(id = R.string.network),
             fontSize = 16.sp,
             color = MixinAppTheme.colors.textPrimary,
         )

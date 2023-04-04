@@ -185,7 +185,7 @@ fun WCPinBoard(
                     shape = RoundedCornerShape(40.dp),
                 ) {
                     Text(
-                        text = stringResource(id = R.string.Sign_by_PIN),
+                        text = stringResource(id = R.string.sign_by_pin),
                         color = Color.White,
                         fontSize = 16.sp,
                     )
@@ -222,8 +222,11 @@ fun WCPinBoard(
                         .padding(horizontal = 28.dp),
                 ) {
                     Text(
-                        text = stringResource(R.string.signed_success_tip),
+                        modifier = Modifier
+                            .fillMaxWidth(),
+                        text = stringResource(R.string.send_signed_message_confirmation),
                         color = MixinAppTheme.colors.textMinor,
+                        textAlign = TextAlign.Center,
                         fontSize = 14.sp,
                     )
                 }

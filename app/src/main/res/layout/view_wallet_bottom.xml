@@ -38,5 +38,5 @@
         android:paddingEnd="16dp"
         android:paddingStart="16dp"
         android:textColor="?attr/text_primary"
-        android:text="@string/Connected_dapps" />
+        android:text="@string/connected_dapps" />
 </LinearLayout>

@@ -54,7 +54,7 @@ fun ConnectionsPage(
     pop: () -> Unit,
 ) {
     WCPageScaffold(
-        title = stringResource(id = R.string.Connected_dapps),
+        title = stringResource(id = R.string.connected_dapps),
         verticalScrollable = true,
         pop = pop,
     ) {
@@ -63,7 +63,7 @@ fun ConnectionsPage(
         val text = rememberSaveable {
             mutableStateOf("")
         }
-        SearchTextField(text, stringResource(id = R.string.connected_dapp_search_hint))
+        SearchTextField(text, stringResource(id = R.string.search_placeholder_dapp))
 
         viewModel.refreshConnections()
         val connections by viewModel.connections.collectAsState(initial = emptyList())
@@ -173,7 +173,7 @@ private fun EmptyLayout() {
             )
             Box(modifier = Modifier.height(8.dp))
             Text(
-                text = stringResource(id = R.string.NO_CONNECTED_DAPPS),
+                text = stringResource(id = R.string.NO_DAPP),
                 fontSize = 16.sp,
                 color = MixinAppTheme.colors.textSubtitle,
             )
