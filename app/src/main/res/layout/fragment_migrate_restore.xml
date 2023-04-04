@@ -99,6 +99,25 @@
             android:text="@string/Restore_from_PC"
             tools:ignore="RelativeOverlap" />
     </RelativeLayout>
+    <!--Todo delete-->
+    <RelativeLayout
+        android:id="@+id/restore_from_phone_rl"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/item_contact_height"
+        android:background="?attr/bg_white"
+        android:foreground="?android:attr/selectableItemBackground">
+
+        <TextView
+            android:id="@+id/restore_phone_tv"
+            style="@style/NormalTextStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:layout_marginStart="@dimen/activity_horizontal_margin"
+            android:gravity="center_vertical"
+            android:text="@string/Restore_from_Another_Phone"
+            tools:ignore="RelativeOverlap" />
+    </RelativeLayout>
 
     <TextView
         android:layout_width="wrap_content"

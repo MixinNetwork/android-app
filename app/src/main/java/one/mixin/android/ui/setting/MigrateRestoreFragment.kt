@@ -56,6 +56,10 @@ class MigrateRestoreFragment : BaseFragment(R.layout.fragment_migrate_restore) {
                     TransferActivity.showRestoreFromPC(requireContext())
                 }
             }
+            // Todo delete
+            restoreFromPhoneRl.setOnClickListener {
+                TransferActivity.showRestoreFromPhone(requireContext())
+            }
         }
     }
 }

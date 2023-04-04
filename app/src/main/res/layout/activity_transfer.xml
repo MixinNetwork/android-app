@@ -64,7 +64,9 @@
         android:layout_height="match_parent"
         android:orientation="vertical"
         android:gravity="center_horizontal"
-        android:visibility="gone">
+        android:visibility="gone"
+        tools:visibility="visible">
+
         <ImageView
             android:id="@+id/progress_iv"
             android:layout_width="wrap_content"
@@ -85,9 +87,12 @@
             android:layout_height="wrap_content" />
 
         <TextView
-            android:layout_marginTop="16dp"
             android:id="@+id/progress_desc"
+            android:layout_marginTop="16dp"
             android:textColor="?attr/text_minor"
+            android:layout_marginStart="42dp"
+            android:layout_marginEnd="42dp"
+            android:gravity="center"
             android:text="@string/transfer_waiting_desc"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content" />

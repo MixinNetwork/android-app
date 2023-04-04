@@ -1108,7 +1108,8 @@
     <string name="cannot_exit_in_backup">备份中无法退出</string>
     <string name="Chat">聊天记录</string>
     <string name="sync_chat">同步聊天记录</string>
-    <string name="Please_log_in_to_the_desktop_first">Please log in to the desktop first</string>
+    <string name="Please_log_in_to_the_desktop_first">请先登录桌面</string>
+    <string name="Restore_from_Another_Phone">从另一部电话恢复</string>
     <string name="transfer_pc_desc">同步你的聊天记录到 Mixin Messenger 桌面端，请确保两台设备接入同一个 Wi-Fi 或热点。</string>
     <string name="transfer_phone_desc">同步你的聊天记录到新的设备，请确保两台设备接入同一个 Wi-Fi 或热点。</string>
     <string name="restore_desc">从 Mixin Messenger 桌面端同步你的聊天记录，同步不会覆盖本地记录只会增量同步，请确保两台设备接入同一个 Wi-Fi 或热点。</string>
@@ -1123,4 +1124,5 @@
     <string name="transfer_sub_title">将您的聊天记录转移到另一台设备</string>
     <string name="restore_sub_title">从PC恢复您的聊天历史记录</string>
     <string name="Scane_to_Restore">扫码还原</string>
+    <string name="Transfer_error">传输错误</string>
 </resources>

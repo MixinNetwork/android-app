@@ -31,20 +31,6 @@ class RestoreFragment : BaseFragment(R.layout.fragment_restore) {
 
     private val binding by viewBinding(FragmentRestoreBinding::bind)
 
-    lateinit var getScanResult: ActivityResultLauncher<Pair<String, Boolean>>
-
-    private val gson by lazy {
-        GsonHelper.customGson
-    }
-
-    override fun onAttach(context: Context) {
-        super.onAttach(context)
-        getScanResult = registerForActivityResult(
-            CaptureActivity.CaptureContract(),
-            requireActivity().activityResultRegistry,
-            ::callbackScan,
-        )
-    }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -55,7 +41,7 @@ class RestoreFragment : BaseFragment(R.layout.fragment_restore) {
                     .autoDispose(stopScope)
                     .subscribe { granted ->
                         if (granted) {
-                            getScanResult.launch(Pair(CaptureActivity.ARGS_FOR_SCAN_RESULT, true))
+                            TransferActivity.showRestoreFromPhone(requireContext())
                         } else {
                             requireActivity().openPermissionSetting()
                         }
@@ -84,20 +70,6 @@ class RestoreFragment : BaseFragment(R.layout.fragment_restore) {
     override fun onBackPressed(): Boolean {
         return true
     }
-
-    private fun callbackScan(intent: Intent?) {
-        val qrContent = intent?.getStringExtra(CaptureActivity.ARGS_FOR_SCAN_RESULT) ?: return
-        val transferCommandData = try {
-            val data = qrContent.toUri().getQueryParameter("data")?.base64RawURLDecode() ?: return
-            gson.fromJson(String(data), TransferCommandData::class.java)
-        } catch (e: Exception) {
-            Timber.e("Invalid TransferCommandData")
-            return
-        }
-        TransferActivity.show(requireContext(), transferCommandData)
-        requireActivity().finish()
-    }
-
     companion object {
         const val TAG = "RestoreFragment"
 

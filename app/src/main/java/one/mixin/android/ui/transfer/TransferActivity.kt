@@ -1,12 +1,16 @@
 package one.mixin.android.ui.transfer
 
+import android.Manifest
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.view.View
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.ActivityResultRegistry
 import androidx.core.view.isVisible
 import androidx.lifecycle.lifecycleScope
+import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -23,6 +27,7 @@ import one.mixin.android.databinding.ActivityTransferBinding
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.ParticipantDao
 import one.mixin.android.event.DeviceTransferProgressEvent
+import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.base64Encode
 import one.mixin.android.extension.base64RawURLDecode
 import one.mixin.android.extension.base64RawURLEncode
@@ -30,6 +35,7 @@ import one.mixin.android.extension.dp
 import one.mixin.android.extension.fadeIn
 import one.mixin.android.extension.generateQRCode
 import one.mixin.android.extension.getParcelableExtra
+import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.showConfirmDialog
 import one.mixin.android.extension.toast
 import one.mixin.android.job.BaseJob
@@ -37,10 +43,12 @@ import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.SendPlaintextJob
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseActivity
+import one.mixin.android.ui.qr.CaptureActivity
 import one.mixin.android.ui.transfer.vo.TransferCommandAction
 import one.mixin.android.ui.transfer.vo.TransferCommandData
 import one.mixin.android.ui.transfer.vo.TransferStatus
 import one.mixin.android.ui.transfer.vo.TransferStatusLiveData
+import one.mixin.android.ui.web.WebActivity
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.viewBinding
 import one.mixin.android.websocket.PlainDataAction
@@ -143,6 +151,8 @@ class TransferActivity : BaseActivity() {
         }
     }
 
+    private lateinit var getScanResult: ActivityResultLauncher<Pair<String, Boolean>>
+
     private val binding by viewBinding(ActivityTransferBinding::inflate)
 
     @Inject
@@ -172,9 +182,26 @@ class TransferActivity : BaseActivity() {
         }
     }
 
+    private fun callbackScan(data: Intent?) {
+        val text = data?.getStringExtra(CaptureActivity.ARGS_FOR_SCAN_RESULT) ?: return
+        val content = try {
+            Uri.parse(text).getQueryParameter("data")
+        } catch (e: Exception) {
+            toast(R.string.Data_error)
+            null
+        } ?: return
+        connectToQrCodeContent(content)
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
+
+        getScanResult = registerForActivityResult(
+            CaptureActivity.CaptureContract(),
+            activityResultRegistry,
+            ::callbackScan,
+        )
         binding.titleView.leftIb.setOnClickListener {
             onBackPressed()
         }
@@ -182,48 +209,51 @@ class TransferActivity : BaseActivity() {
 
         status.observe(this) { s ->
             when (s) {
-                TransferStatus.INITIALIZING -> {
+                null, TransferStatus.INITIALIZING -> {
                     initView()
                 }
 
-                TransferStatus.WAITING_MESSAGE -> {
-                    binding.pb.visibility = View.VISIBLE
-                    Timber.e("pb ${binding.pb.isVisible}")
-                    binding.qrFl.isVisible = false
-                    binding.pbTips.isVisible = true
+                TransferStatus.WAITING_MESSAGE,
+                TransferStatus.CREATED, TransferStatus.WAITING_FOR_CONNECTION,
+                -> {
+                    if (argsStatus == ARGS_TRANSFER_TO_PHONE) {
+                        binding.qrFl.isVisible = true
+                        binding.initLl.isVisible = false
+                        binding.waitingLl.isVisible = false
+                    } else {
+                        binding.qrFl.isVisible = false
+                        binding.initLl.isVisible = true
+                        binding.waitingLl.isVisible = false
+                        binding.pb.isVisible = false
+                        Timber.e("pb ${binding.pb.isVisible}")
+                    }
                     binding.startTv.setText(R.string.Waiting)
                     binding.startTv.isEnabled = false
                     binding.start.isClickable = false
-                }
-
-                TransferStatus.CREATED -> {
-                    binding.qrFl.isVisible = true
-                    binding.initLl.isVisible = false
-                    binding.waitingLl.isVisible = false
-                }
-
-                TransferStatus.WAITING_FOR_CONNECTION -> {
-                    binding.qrFl.isVisible = true
-                    binding.initLl.isVisible = false
-                    binding.waitingLl.isVisible = false
                 }
 
                 TransferStatus.CONNECTING -> {
                     binding.qrFl.isVisible = false
                     binding.initLl.isVisible = false
                     binding.waitingLl.isVisible = true
+                    binding.pb.isVisible = false
+                    Timber.e("pb ${binding.pb.isVisible}")
                 }
 
                 TransferStatus.WAITING_FOR_VERIFICATION -> {
                     binding.qrFl.isVisible = false
                     binding.initLl.isVisible = false
                     binding.waitingLl.isVisible = true
+                    binding.pb.isVisible = false
+                    Timber.e("pb ${binding.pb.isVisible}")
                 }
 
                 TransferStatus.VERIFICATION_COMPLETED -> {
                     binding.qrFl.isVisible = false
                     binding.initLl.isVisible = false
                     binding.waitingLl.isVisible = true
+                    binding.pb.isVisible = false
+                    Timber.e("pb ${binding.pb.isVisible}")
                 }
 
                 TransferStatus.SENDING -> {
@@ -234,16 +264,25 @@ class TransferActivity : BaseActivity() {
                 }
 
                 TransferStatus.ERROR -> {
-                    status.value = TransferStatus.INITIALIZING
-                    showConfirmDialog(getString(R.string.Data_error)) {
-                        finish()
-                    }
+                    alertDialogBuilder()
+                        .setTitle(R.string.Transfer_error)
+                        .setPositiveButton(R.string.OK) { dialog, _ ->
+                            dialog.dismiss()
+                            status.value = TransferStatus.INITIALIZING
+                            finish()
+                        }
+                        .show()
                 }
 
                 TransferStatus.FINISHED -> {
-                    showConfirmDialog(getString(R.string.Transfer_completed)) {
-                        finish()
-                    }
+                    alertDialogBuilder()
+                        .setTitle(R.string.Transfer_completed)
+                        .setPositiveButton(R.string.OK) { dialog, _ ->
+                            dialog.dismiss()
+                            status.value = TransferStatus.INITIALIZING
+                            finish()
+                        }
+                        .show()
                 }
             }
         }
@@ -255,17 +294,20 @@ class TransferActivity : BaseActivity() {
         }
     }
 
+    private val argsStatus by lazy {
+        intent.getIntExtra(ARGS_STATUS, ARGS_TRANSFER_TO_PHONE)
+    }
+
     private fun initView() {
-        val status = intent.getIntExtra(ARGS_STATUS, ARGS_TRANSFER_TO_PHONE)
         binding.titleView.isVisible = true
-        binding.pb.visibility = View.GONE
+        binding.pb.isVisible = true
         Timber.e("pb ${binding.pb.isVisible}")
         binding.startTv.setText(R.string.transfer_now)
         binding.pbTips.isVisible = false
         binding.startTv.isEnabled = true
         binding.start.isClickable = true
         binding.start.setOnClickListener {
-            when (status) {
+            when (argsStatus) {
                 ARGS_TRANSFER_TO_PHONE -> {
                     lifecycleScope.launch {
                         transferServer.startServer { transferCommandData ->
@@ -287,7 +329,7 @@ class TransferActivity : BaseActivity() {
                 }
 
                 ARGS_TRANSFER_TO_PC -> {
-                    if (this@TransferActivity.status.value != TransferStatus.WAITING_MESSAGE) {
+                    if (this@TransferActivity.status.value != TransferStatus.CREATED) {
                         pushRequest()
                     }
                 }
@@ -299,32 +341,47 @@ class TransferActivity : BaseActivity() {
                 }
 
                 ARGS_RESTORE_FROM_PHONE -> {
-                    // todo scan
+                    RxPermissions(this)
+                        .request(Manifest.permission.CAMERA)
+                        .autoDispose(stopScope)
+                        .subscribe { granted ->
+                            if (granted) {
+                                getScanResult.launch(
+                                    Pair(CaptureActivity.ARGS_FOR_SCAN_RESULT, true)
+                                )
+                            } else {
+                                openPermissionSetting()
+                            }
+                        }
                 }
             }
         }
-        when (status) {
+        when (argsStatus) {
             ARGS_TRANSFER_TO_PHONE -> {
                 binding.titleView.setSubTitle(getString(R.string.Transfer_to_Another_Phone), "")
                 binding.logoIv.setImageResource(R.drawable.ic_transfer)
+                binding.progressIv.setImageResource(R.drawable.ic_transfer)
                 binding.initDesc.setText(R.string.transfer_phone_desc)
             }
 
             ARGS_TRANSFER_TO_PC -> {
                 binding.titleView.setSubTitle(getString(R.string.Transfer_to_PC), "")
                 binding.logoIv.setImageResource(R.drawable.ic_transfer_to_pc)
+                binding.progressIv.setImageResource(R.drawable.ic_transfer_to_pc)
                 binding.initDesc.setText(R.string.transfer_pc_desc)
             }
 
             ARGS_RESTORE_FROM_PC -> {
                 binding.titleView.setSubTitle(getString(R.string.Restore_from_PC), "")
                 binding.logoIv.setImageResource(R.drawable.ic_restore_from_pc)
+                binding.progressIv.setImageResource(R.drawable.ic_restore_from_pc)
                 binding.initDesc.setText(R.string.restore_desc)
             }
 
             ARGS_RESTORE_FROM_PHONE -> {
                 binding.titleView.setSubTitle(getString(R.string.Restore_from_Another_Phone), "")
                 binding.logoIv.setImageResource(R.drawable.ic_transfer)
+                binding.progressIv.setImageResource(R.drawable.ic_transfer)
                 binding.initDesc.isVisible = false
                 binding.initScanDesc.isVisible = true
                 binding.startTv.setText(R.string.Scane_to_Restore)
@@ -348,12 +405,10 @@ class TransferActivity : BaseActivity() {
         if (transferDisposable == null) {
             transferDisposable = RxBus.listen(DeviceTransferProgressEvent::class.java)
                 .observeOn(AndroidSchedulers.mainThread())
-                .autoDispose(stopScope)
+                .autoDispose(destroyScope)
                 .subscribe {
-                    if (status.value == TransferStatus.SENDING) {
-                        binding.progressTv.text =
-                            getString(R.string.sending_desc, String.format("%.1f%%", it.progress))
-                    }
+                    binding.progressTv.text =
+                        getString(R.string.sending_desc, String.format("%.1f%%", it.progress))
                     Timber.e("Device transfer ${it.progress}%")
                 }
         }
