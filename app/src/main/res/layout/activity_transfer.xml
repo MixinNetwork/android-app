@@ -1,213 +1,81 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/container"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="?attr/bg_white"
+    android:orientation="vertical">
 
     <one.mixin.android.widget.TitleView
         android:id="@+id/title_view"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
         app:titleText="@string/Migration_and_Restore" />
 
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/start_server"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="?attr/bg_white"
-        android:foreground="?android:attr/selectableItemBackground"
-        android:orientation="vertical"
-        android:padding="16dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/title_view">
-
-        <ImageView
-            android:id="@+id/start_iv"
-            android:src="@drawable/ic_transfer_mobile"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent"
-            />
-
-        <TextView
-            android:id="@+id/start_title"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:text="迁移"
-            android:layout_marginStart="16dp"
-            android:textColor="?attr/text_primary"
-            app:layout_constraintHorizontal_bias="0"
-            app:layout_constraintStart_toEndOf="@id/start_iv"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintBottom_toTopOf="@id/start_content"
-            android:textSize="16sp" />
-
-        <TextView
-            android:id="@+id/start_content"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:text="将本机聊天记录复制到其他设备上，完成后其他设备将拥有本机完整的聊天记录"
-            android:layout_marginStart="16dp"
-            app:layout_constraintStart_toEndOf="@id/start_iv"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/start_title"
-            app:layout_constraintBottom_toBottomOf="parent"
-            android:textColor="?attr/text_minor" />
-    </androidx.constraintlayout.widget.ConstraintLayout>
-
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/push_to_desktop"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="?attr/bg_white"
-        android:foreground="?android:attr/selectableItemBackground"
-        android:orientation="vertical"
-        android:padding="16dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/start_server">
-
-        <ImageView
-            android:id="@+id/push_to_desktop_iv"
-            android:src="@drawable/ic_transfer_mobile"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent"
-            />
-
-        <TextView
-            android:id="@+id/push_to_desktop_title"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:text="迁移到桌面"
-            android:layout_marginStart="16dp"
-            android:textColor="?attr/text_primary"
-            app:layout_constraintHorizontal_bias="0"
-            app:layout_constraintStart_toEndOf="@id/push_to_desktop_iv"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintBottom_toTopOf="@id/push_to_desktop_content"
-            android:textSize="16sp" />
-
-        <TextView
-            android:id="@+id/push_to_desktop_content"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:text="链接桌面，将聊天记录迁移到桌面，完成后桌面将拥有完整的手机聊天记录"
-            android:layout_marginStart="16dp"
-            app:layout_constraintStart_toEndOf="@id/push_to_desktop_iv"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/push_to_desktop_title"
-            app:layout_constraintBottom_toBottomOf="parent"
-            android:textColor="?attr/text_minor" />
-    </androidx.constraintlayout.widget.ConstraintLayout>
-
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/pull_from_desktop"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="?attr/bg_white"
-        android:foreground="?android:attr/selectableItemBackground"
-        android:orientation="vertical"
-        android:padding="16dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/push_to_desktop">
-
-        <ImageView
-            android:id="@+id/pull_from_desktop_iv"
-            android:src="@drawable/ic_transfer_mobile"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent"
-            />
-
-        <TextView
-            android:id="@+id/pull_from_desktop_title"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:text="从桌面恢复"
-            android:layout_marginStart="16dp"
-            android:textColor="?attr/text_primary"
-            app:layout_constraintHorizontal_bias="0"
-            app:layout_constraintStart_toEndOf="@id/pull_from_desktop_iv"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintBottom_toTopOf="@id/pull_from_desktop_content"
-            android:textSize="16sp" />
-
-        <TextView
-            android:id="@+id/pull_from_desktop_content"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:text="链接桌面，将聊天记录迁移到本机，完成后手机将拥有完整的桌面聊天记录"
-            android:layout_marginStart="16dp"
-            app:layout_constraintStart_toEndOf="@id/pull_from_desktop_iv"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/pull_from_desktop_title"
-            app:layout_constraintBottom_toBottomOf="parent"
-            android:textColor="?attr/text_minor" />
-    </androidx.constraintlayout.widget.ConstraintLayout>
-
-    <FrameLayout
+    <LinearLayout
         android:id="@+id/qr_fl"
-        android:layout_width="240dp"
-        android:layout_height="240dp"
-        android:visibility="gone"
-        app:layout_constraintVertical_bias="0.3"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
-
-        <ImageView
-            android:id="@+id/qr"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            tools:ignore="ContentDescription"/>
-
-        <one.mixin.android.widget.CircleImageView
-            android:id="@+id/badge_view"
-            android:layout_width="70dp"
-            android:layout_height="70dp"
-            android:layout_gravity="center"
-            android:src="@mipmap/ic_launcher_foreground"/>
-    </FrameLayout>
-
-    <TextView
-        android:id="@+id/login_scan_tv"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="@string/login_and_scan"
-        android:textColor="?attr/text_primary"
-        android:textSize="14sp"
         android:gravity="center_horizontal"
-        android:layout_marginTop="40dp"
-        android:layout_marginStart="32dp"
-        android:layout_marginEnd="32dp"
-        android:visibility="gone"
-        app:layout_constraintTop_toBottomOf="@id/qr_fl"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"/>
+        android:orientation="vertical"
+        android:padding="32dp"
+        android:visibility="gone">
+
+        <FrameLayout
+            android:layout_width="240dp"
+            android:layout_height="240dp"
+            android:layout_marginTop="32dp">
+
+            <ImageView
+                android:id="@+id/qr"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                tools:ignore="ContentDescription" />
+
+            <one.mixin.android.widget.CircleImageView
+                android:id="@+id/badge_view"
+                android:layout_width="70dp"
+                android:layout_height="70dp"
+                android:layout_gravity="center"
+                android:src="@mipmap/ic_launcher_foreground" />
+        </FrameLayout>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/transfer_tips1" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/transfer_tips2" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/transfer_tips3" />
+    </LinearLayout>
 
     <LinearLayout
-        android:id="@+id/status_ll"
+        android:id="@+id/waiting_ll"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:visibility="gone"
+        android:orientation="vertical"
+        android:visibility="gone">
+
+        <TextView
+            android:id="@+id/progress_tv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/init_ll"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
         android:orientation="vertical"
         tools:visibility="visible">
 
@@ -216,43 +84,55 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
-            android:layout_marginTop="140dp"
             android:layout_marginStart="8dp"
+            android:layout_marginTop="140dp"
             android:layout_marginEnd="8dp"
-            android:src="@drawable/ic_desktop"
+            android:src="@drawable/ic_transfer"
             tools:ignore="ContentDescription" />
 
         <TextView
-            android:id="@+id/status_tv"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="32dp"
-            android:layout_marginEnd="32dp"
-            android:layout_marginTop="20dp"
             android:layout_gravity="center_horizontal"
-            android:textColor="?attr/text_primary"
-            android:textSize="16sp" />
-
-        <TextView
-            android:id="@+id/desc_tv"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
             android:layout_marginStart="32dp"
+            android:layout_marginTop="16dp"
             android:layout_marginEnd="32dp"
-            android:layout_marginTop="20dp"
-            android:layout_gravity="center_horizontal"
-            android:textColor="?attr/text_minor"
-            android:textSize="12sp" />
+            android:gravity="center_horizontal"
+            android:text="@string/transfer_desc"
+            android:textColor="?attr/text_minor" />
 
-        <ProgressBar
-            android:id="@+id/pb"
-            style="?android:attr/progressBarStyleHorizontal"
+        <RelativeLayout
+            android:id="@+id/start"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginStart="48dp"
-            android:layout_marginEnd="48dp"
-            android:max="100"
-            android:theme="@style/AppTheme.BlueProgress" />
+            android:layout_marginStart="32dp"
+            android:layout_marginTop="16dp"
+            android:layout_marginEnd="32dp"
+            android:foreground="?android:attr/selectableItemBackground"
+            android:background="@drawable/bg_round_8_solid_gray"
+            android:orientation="horizontal"
+            android:padding="12dp">
+
+            <TextView
+                android:id="@+id/start_tv"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentStart="true"
+                android:layout_centerVertical="true"
+                android:text="@string/Waiting"
+                android:textColor="@color/selector_blue_tv"
+                android:textSize="16sp" />
+
+            <ProgressBar
+                android:id="@+id/pb"
+                style="?android:attr/progressBarStyleSmall"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+                android:layout_centerVertical="true"
+                android:visibility="gone" />
+        </RelativeLayout>
+
     </LinearLayout>
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+</LinearLayout>

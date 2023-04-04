@@ -1099,8 +1099,8 @@
     <string name="text_size">字体大小</string>
     <string name="from_system">跟随系统</string>
     <string name="Migration_and_Restore">聊天记录迁移和恢复</string>
-    <string name="Migrate_Chats_to_Another_Device">迁移聊天记录到另一台设备</string>
-    <string name="Backup_Chat_History_to_Computer">备份聊天记录到电脑</string>
+    <string name="Transfer_to_Another_Phone">迁移聊天记录到其他手机</string>
+    <string name="Transfer_to_PC">迁移到电脑</string>
     <string name="Enable_Wifi_or_hotspot">将两台设备接入同一 Wi-Fi 或相同热点</string>
     <string name="login_and_scan">请使用另一台设备登录此 Mixin 账号后扫描二维码</string>
     <string name="sending_desc">正在备份 %1$s</string>
@@ -1108,4 +1108,10 @@
     <string name="cannot_exit_in_backup">备份中无法退出</string>
     <string name="Chat">聊天记录</string>
     <string name="sync_chat">同步聊天记录</string>
+    <string name="Please_log_in_to_the_desktop_first">Please log in to the desktop first</string>
+    <string name="transfer_desc">同步你的聊天记录到 Mixin Messenger 桌面端，请确保两台设备接入同一个 Wi-Fi 或热点。</string>
+    <string name="Restore_from_PC">从桌面端还原</string>
+    <string name="transfer_tips1">在新设备上登录当前账户并选择从其他手机恢复</string>
+    <string name="transfer_tips2">新设备扫上面的二维码建立连接</string>
+    <string name="transfer_tips3">不要关闭屏幕并保持 Mixin 在前台运行</string>
 </resources>

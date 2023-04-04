@@ -111,7 +111,7 @@ class UrlInterpreterActivity : BaseActivity() {
             }
 
             DEVICE_TRANSFER -> {
-                TransferActivity.parseUri(this, false, uri, { finish() }) { finish() }
+                TransferActivity.parseUri(this, uri, { finish() }) { finish() }
             }
         }
     }

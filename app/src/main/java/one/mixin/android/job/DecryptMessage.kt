@@ -456,7 +456,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                 val content = plainData.content ?: return
                 val command = gson.fromJson(content, TransferCommandData::class.java)
                 MixinApplication.get().currentActivity?.let { activity ->
-                    TransferActivity.show(activity, command, true)
+                    TransferActivity.show(activity, command)
                 }
             } else if (plainData.action == PlainDataAction.ACKNOWLEDGE_MESSAGE_RECEIPTS.name) {
                 plainData.ackMessages?.let { ackMessages ->

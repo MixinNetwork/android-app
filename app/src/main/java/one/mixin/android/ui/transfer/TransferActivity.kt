@@ -30,6 +30,7 @@ import one.mixin.android.extension.dp
 import one.mixin.android.extension.fadeIn
 import one.mixin.android.extension.generateQRCode
 import one.mixin.android.extension.getParcelableExtra
+import one.mixin.android.extension.showConfirmDialog
 import one.mixin.android.extension.toast
 import one.mixin.android.job.BaseJob
 import one.mixin.android.job.MixinJobManager
@@ -52,23 +53,68 @@ import javax.inject.Inject
 @AndroidEntryPoint
 class TransferActivity : BaseActivity() {
     companion object {
-        const val ARGS_IS_COMPUTER = "args_is_computer"
+        const val ARGS_STATUS = "args_status"
         const val ARGS_QR_CODE_CONTENT = "args_qr_code_content"
         const val ARGS_COMMAND = "args_command"
 
-        fun show(context: Context, isComputer: Boolean, qrCodeContent: String? = null) {
+        private const val ARGS_TRANSFER_TO_PHONE = 1
+        private const val ARGS_TRANSFER_TO_PC = 2
+        private const val ARGS_RESTORE_FROM_PHONE = 3
+        private const val ARGS_RESTORE_FROM_PC = 4
+
+        fun showTransferToPhone(context: Context) {
             context.startActivity(
                 Intent(context, TransferActivity::class.java).apply {
-                    putExtra(ARGS_IS_COMPUTER, isComputer)
+                    putExtra(ARGS_STATUS, ARGS_TRANSFER_TO_PHONE)
+                },
+            )
+        }
+
+        fun showTransferToPC(context: Context) {
+            context.startActivity(
+                Intent(context, TransferActivity::class.java).apply {
+                    putExtra(ARGS_STATUS, ARGS_RESTORE_FROM_PC)
+                },
+            )
+        }
+
+        fun showRestoreToPC(context: Context) {
+            context.startActivity(
+                Intent(context, TransferActivity::class.java).apply {
+                    putExtra(ARGS_STATUS, ARGS_RESTORE_FROM_PC)
+                },
+            )
+        }
+
+        fun showRestoreToPhone(context: Context, transferCommandData: TransferCommandData) {
+            context.startActivity(
+                Intent(context, TransferActivity::class.java).apply {
+                    putExtra(ARGS_STATUS, ARGS_RESTORE_FROM_PHONE)
+                    putExtra(ARGS_COMMAND, transferCommandData)
+                },
+            )
+        }
+
+        fun show(context: Context, qrCodeContent: String) {
+            context.startActivity(
+                Intent(context, TransferActivity::class.java).apply {
+                    putExtra(ARGS_STATUS, ARGS_RESTORE_FROM_PHONE)
                     putExtra(ARGS_QR_CODE_CONTENT, qrCodeContent)
                 },
             )
         }
 
-        fun show(context: Context, transferCommandData: TransferCommandData, isComputer: Boolean) {
+        fun show(context: Context, transferCommandData: TransferCommandData) {
+            val status = if (transferCommandData.action == TransferCommandAction.PULL.value) {
+                ARGS_RESTORE_FROM_PC
+            } else if (transferCommandData.action == TransferCommandAction.PUSH.value) {
+                ARGS_TRANSFER_TO_PC
+            } else {
+                null
+            } ?: return
             context.startActivity(
                 Intent(context, TransferActivity::class.java).apply {
-                    putExtra(ARGS_IS_COMPUTER, isComputer)
+                    putExtra(ARGS_STATUS, status)
                     putExtra(ARGS_COMMAND, transferCommandData)
                 },
             )
@@ -76,7 +122,6 @@ class TransferActivity : BaseActivity() {
 
         fun parseUri(
             context: Context,
-            isComputer: Boolean,
             uri: Uri,
             success: (() -> Unit)? = null,
             fallback: () -> Unit,
@@ -86,7 +131,7 @@ class TransferActivity : BaseActivity() {
                 fallback.invoke()
                 return
             }
-            show(context, isComputer, data)
+            show(context, data)
             success?.invoke()
         }
     }
@@ -105,7 +150,14 @@ class TransferActivity : BaseActivity() {
     var shouldLogout = false
 
     override fun onBackPressed() {
-        if (status.value in listOf(TransferStatus.INITIALIZING, TransferStatus.ERROR, TransferStatus.FINISHED)) {
+        if (status.value in listOf(
+                TransferStatus.INITIALIZING,
+                TransferStatus.WAITING_MESSAGE,
+                TransferStatus.CREATED,
+                TransferStatus.ERROR,
+                TransferStatus.FINISHED
+            )
+        ) {
             super.onBackPressed()
         } else {
             toast(R.string.cannot_exit_in_backup)
@@ -116,98 +168,137 @@ class TransferActivity : BaseActivity() {
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
         binding.titleView.leftIb.setOnClickListener {
-            finish()
+            super.onBackPressed()
         }
-        val isComputer = intent.getBooleanExtra(ARGS_IS_COMPUTER, false)
-        binding.startServer.isVisible = !isComputer
-        binding.pullFromDesktop.isVisible = isComputer
-        binding.pushToDesktop.isVisible = isComputer
-        binding.startServer.setOnClickListener {
-            lifecycleScope.launch {
-                transferServer.startServer { transferCommandData ->
-                    lifecycleScope.launch(Dispatchers.Main) {
-                        val qrCode = gson.toJson(transferCommandData)
-                            .base64Encode()
-                            .run {
-                                "$DEVICE_TRANSFER?data=$this"
-                            }
-                            .generateQRCode(240.dp).first
-                        toast("Sever IP: ${transferCommandData.ip} ${transferCommandData.action}")
-                        binding.startServer.isVisible = false
-                        binding.pushToDesktop.isVisible = false
-                        binding.pullFromDesktop.isVisible = false
-                        binding.qr.setImageBitmap(qrCode)
-                        binding.qrFl.fadeIn()
-                        binding.loginScanTv.fadeIn()
-                    }
-                }
-            }
-        }
-
-        binding.pushToDesktop.setOnClickListener {
-            pushRequest()
-        }
-        binding.pullFromDesktop.setOnClickListener {
-            pullRequest()
-        }
-
-        intent.getStringExtra(ARGS_QR_CODE_CONTENT)?.let { qrCodeContent ->
-            connectToQrCodeContent(qrCodeContent)
-        }
+        initView()
 
         status.observe(this) { s ->
-            binding.startServer.isVisible = false
-            binding.pushToDesktop.isVisible = false
-            binding.pullFromDesktop.isVisible = false
-
-            binding.statusTv.text = s.name
             when (s) {
                 TransferStatus.INITIALIZING -> {
-                    binding.qrFl.isVisible = false
-                    binding.loginScanTv.isVisible = false
-                    binding.statusLl.isVisible = false
+                    initView()
+                }
+
+                TransferStatus.WAITING_MESSAGE -> {
+                    binding.pb.isVisible = true
+                    binding.startTv.isEnabled = false
+                    binding.start.isClickable = false
                 }
 
                 TransferStatus.CREATED -> {
+                    binding.qrFl.isVisible = true
+                    binding.initLl.isVisible = false
+                    binding.waitingLl.isVisible = false
                 }
 
                 TransferStatus.WAITING_FOR_CONNECTION -> {
+                    binding.qrFl.isVisible = true
+                    binding.initLl.isVisible = false
+                    binding.waitingLl.isVisible = false
                 }
 
                 TransferStatus.CONNECTING -> {
+                    binding.qrFl.isVisible = false
+                    binding.initLl.isVisible = false
+                    binding.waitingLl.isVisible = true
                 }
 
                 TransferStatus.WAITING_FOR_VERIFICATION -> {
+                    binding.qrFl.isVisible = false
+                    binding.initLl.isVisible = false
+                    binding.waitingLl.isVisible = true
                 }
 
                 TransferStatus.VERIFICATION_COMPLETED -> {
+                    binding.qrFl.isVisible = false
+                    binding.initLl.isVisible = false
+                    binding.waitingLl.isVisible = true
                 }
 
                 TransferStatus.SENDING -> {
                     binding.qrFl.isVisible = false
-                    binding.loginScanTv.isVisible = false
-                    binding.statusLl.isVisible = true
+                    binding.initLl.isVisible = false
+                    binding.waitingLl.isVisible = true
                 }
 
                 TransferStatus.ERROR -> {
-                    binding.qrFl.isVisible = true
-                    binding.loginScanTv.isVisible = true
-                    binding.statusLl.isVisible = false
-                    binding.statusTv.text = getString(R.string.Network_error)
                     status.value = TransferStatus.INITIALIZING
-                    toast("出错") // Todo replace
-                    finish()
+                    showConfirmDialog(getString(R.string.Data_error)) {
+                        finish()
+                    }
                 }
 
                 TransferStatus.FINISHED -> {
-                    binding.statusTv.text = getString(R.string.Diagnosis_Complete)
-                    toast(R.string.Backup_success) // todo replace string
-                    finish()
+                    showConfirmDialog(getString(R.string.Successful)) {
+                        finish()
+                    }
                 }
             }
         }
         getParcelableExtra(intent, ARGS_COMMAND, TransferCommandData::class.java)?.apply {
             handleCommand(this)
+        }
+        intent.getStringExtra(ARGS_QR_CODE_CONTENT)?.let { qrCodeContent ->
+            connectToQrCodeContent(qrCodeContent)
+        }
+    }
+
+    private fun initView() {
+        val status = intent.getIntExtra(ARGS_STATUS, ARGS_TRANSFER_TO_PHONE)
+        binding.pb.isVisible = false
+        binding.startTv.isEnabled = true
+        binding.start.isClickable = true
+        binding.start.setOnClickListener {
+            when (status) {
+                ARGS_TRANSFER_TO_PHONE -> {
+                    lifecycleScope.launch {
+                        transferServer.startServer { transferCommandData ->
+                            lifecycleScope.launch(Dispatchers.Main) {
+                                val qrCode = gson.toJson(transferCommandData)
+                                    .base64Encode()
+                                    .run {
+                                        "$DEVICE_TRANSFER?data=$this"
+                                    }
+                                    .generateQRCode(240.dp).first
+                                toast("Sever IP: ${transferCommandData.ip} ${transferCommandData.action}")
+                                binding.qr.setImageBitmap(qrCode)
+                                binding.qrFl.fadeIn()
+                                binding.initLl.isVisible = false
+                                binding.waitingLl.isVisible = false
+                            }
+                        }
+                    }
+                }
+
+                ARGS_TRANSFER_TO_PC -> {
+                    pushRequest()
+                }
+
+                ARGS_RESTORE_FROM_PC -> {
+                    pullRequest()
+                }
+            }
+        }
+        when (status) {
+            ARGS_TRANSFER_TO_PHONE -> {
+            }
+
+            ARGS_TRANSFER_TO_PC -> {
+            }
+
+            ARGS_RESTORE_FROM_PC -> {
+            }
+
+            ARGS_RESTORE_FROM_PHONE -> {
+            }
+        }
+    }
+
+    override fun onNewIntent(intent: Intent?) {
+        super.onNewIntent(intent)
+        intent?.let {
+            getParcelableExtra(it, ARGS_COMMAND, TransferCommandData::class.java)?.apply {
+                handleCommand(this)
+            }
         }
     }
 
@@ -221,8 +312,8 @@ class TransferActivity : BaseActivity() {
                 .autoDispose(stopScope)
                 .subscribe {
                     if (status.value == TransferStatus.SENDING) {
-                        binding.descTv.text = getString(R.string.sending_desc, String.format("%.2f%%", it.progress))
-                        binding.pb.progress = it.progress.toInt()
+                        binding.progressTv.text =
+                            getString(R.string.sending_desc, String.format("%.2f%%", it.progress))
                     }
                     Timber.e("Device transfer ${it.progress}%")
                 }
@@ -256,8 +347,15 @@ class TransferActivity : BaseActivity() {
 
             TransferCommandAction.PULL.value -> {
                 // Todo display loading and delayed shutdown
-                // Wait for the server push
-                pushRequest()
+                alertDialogBuilder()
+                    .setMessage(getString(R.string.sync_chat))
+                    .setNegativeButton(R.string.Cancel) { dialog, _ ->
+                        dialog.dismiss()
+                    }
+                    .setPositiveButton(R.string.Confirm) { _, _ ->
+                        pushRequest()
+                    }
+                    .show()
             }
 
             else -> {}
@@ -292,10 +390,6 @@ class TransferActivity : BaseActivity() {
                 }
             },
         ) {
-            withContext(Dispatchers.Main) {
-                binding.startServer.isVisible = false
-            }
-
             val transferCommandData = try {
                 gson.fromJson(
                     String(content.base64RawURLDecode()),

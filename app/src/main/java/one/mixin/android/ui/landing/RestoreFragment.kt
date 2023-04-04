@@ -94,7 +94,7 @@ class RestoreFragment : BaseFragment(R.layout.fragment_restore) {
             Timber.e("Invalid TransferCommandData")
             return
         }
-        TransferActivity.show(requireContext(), transferCommandData, false)
+        TransferActivity.show(requireContext(), transferCommandData)
         requireActivity().finish()
     }
 

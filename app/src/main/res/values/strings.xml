@@ -1123,8 +1123,8 @@
     <string name="text_size">Text Size</string>
     <string name="from_system">From system</string>
     <string name="Migration_and_Restore">Migration and Restore</string>
-    <string name="Migrate_Chats_to_Another_Device">Migrate Chats to Another Device</string>
-    <string name="Backup_Chat_History_to_Computer">Backup Chat History to Computer</string>
+    <string name="Transfer_to_Another_Phone">Transfer to Another Phone</string>
+    <string name="Transfer_to_PC">Transfer to PC</string>
     <string name="Enable_Wifi_or_hotspot">Enable Wi-Fi or hotspot for the two devices</string>
     <string name="login_and_scan">Login in to this account on other phone and scan the QR Code</string>
     <string name="sending_desc">%1$s chat(s) backed up</string>
@@ -1137,4 +1137,10 @@
     <string name="Restore_from_Local">Restore from Local</string>
     <string name="Restore_from_Local_tip">Restore your chat history from you device backup.</string>
     <string name="sync_chat">Sync chats</string>
+    <string name="Please_log_in_to_the_desktop_first">Please log in to the desktop first</string>
+    <string name="transfer_desc">To synchronize your chat logs to the Mixin Messenger desktop, make sure both devices are connected to the same Wi-Fi or hotspot.</string>
+    <string name="Restore_from_PC">Restore from PC</string>
+    <string name="transfer_tips1">Log in to the current account on the new device and choose to recover from other phones</string>
+    <string name="transfer_tips2">The new equipment scans the QR code above to establish a connection</string>
+    <string name="transfer_tips3">Do not turn off the screen and keep Mixin running in the foreground</string>
 </resources>
