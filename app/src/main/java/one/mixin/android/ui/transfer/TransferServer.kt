@@ -1,12 +1,10 @@
 package one.mixin.android.ui.transfer
 
-import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.MixinApplication
 import one.mixin.android.RxBus
-import one.mixin.android.api.ChecksumException
 import one.mixin.android.crypto.generateAesKey
 import one.mixin.android.db.AssetDao
 import one.mixin.android.db.ConversationDao
@@ -40,8 +38,6 @@ import java.net.BindException
 import java.net.InetSocketAddress
 import java.net.ServerSocket
 import java.net.Socket
-import java.net.SocketException
-import java.net.UnknownHostException
 import javax.inject.Inject
 import kotlin.random.Random
 
@@ -77,42 +73,44 @@ class TransferServer @Inject internal constructor(
     suspend fun startServer(
         createdSuccessCallback: (TransferCommandData) -> Unit,
     ) = withContext(SINGLE_SOCKET_THREAD) {
-            try {
-                val serverSocket = createSocket(port = Random.nextInt(100))
-                this@TransferServer.serverSocket = serverSocket
-                status.value = TransferStatus.CREATED
-                code = Random.nextInt(10000)
-                createdSuccessCallback(
-                    TransferCommandData(
-                        TransferCommandAction.PUSH.value,
-                        NetworkUtils.getWifiIpAddress(MixinApplication.appContext),
-                        this@TransferServer.port,
-                        generateAesKey().base64RawURLEncode(), // todo
-                        this@TransferServer.code,
-                        userId = Session.getAccountId(),
-                    ),
-                )
-                status.value = TransferStatus.WAITING_FOR_CONNECTION
-                val socket = serverSocket.accept()
-                this@TransferServer.socket = socket
-                status.value = TransferStatus.WAITING_FOR_VERIFICATION
-                socket.soTimeout = 10000
+        try {
+            val serverSocket = createSocket(port = Random.nextInt(100))
+            this@TransferServer.serverSocket = serverSocket
+            status.value = TransferStatus.CREATED
+            code = Random.nextInt(10000)
+            createdSuccessCallback(
+                TransferCommandData(
+                    TransferCommandAction.PUSH.value,
+                    NetworkUtils.getWifiIpAddress(MixinApplication.appContext),
+                    this@TransferServer.port,
+                    generateAesKey().base64RawURLEncode(), // todo
+                    this@TransferServer.code,
+                    userId = Session.getAccountId(),
+                ),
+            )
+            status.value = TransferStatus.WAITING_FOR_CONNECTION
+            val socket = serverSocket.accept()
+            this@TransferServer.socket = socket
+            status.value = TransferStatus.WAITING_FOR_VERIFICATION
+            socket.soTimeout = 10000
 
-                val remoteAddr = socket.remoteSocketAddress
-                if (remoteAddr is InetSocketAddress) {
-                    val inetAddr = remoteAddr.address
-                    val ip = inetAddr.hostAddress
-                    Timber.e("Connected to $ip")
-                    run(socket.getInputStream(), socket.getOutputStream())
-                } else {
-                    exit()
-                }
-            } catch (e: Exception) {
-                status.value = TransferStatus.ERROR
+            val remoteAddr = socket.remoteSocketAddress
+            if (remoteAddr is InetSocketAddress) {
+                val inetAddr = remoteAddr.address
+                val ip = inetAddr.hostAddress
+                Timber.e("Connected to $ip")
+                run(socket.getInputStream(), socket.getOutputStream())
+            } else {
                 exit()
-                Timber.e(e)
             }
+        } catch (e: Exception) {
+            if (status.value != TransferStatus.FINISHED) {
+                status.value = TransferStatus.ERROR
+            }
+            exit()
+            Timber.e(e)
         }
+    }
 
     private fun createSocket(port: Int): ServerSocket {
         var newPort = port
@@ -218,7 +216,8 @@ class TransferServer @Inject internal constructor(
     }
 
     private fun totalCount(): Long {
-        this.total = messageDao.countMediaMessages() + messageDao.countMessages() + conversationDao.countConversations() +
+        this.total =
+            messageDao.countMediaMessages() + messageDao.countMessages() + conversationDao.countConversations() +
             expiredMessageDao.countExpiredMessages() + participantDao.countParticipants() +
             pinMessageDao.countPinMessages() + snapshotDao.countSnapshots() + stickerDao.countStickers() +
             transcriptMessageDao.countTranscriptMessages() + userDao.countUsers()

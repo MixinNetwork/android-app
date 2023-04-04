@@ -1,6 +1,5 @@
 package one.mixin.android.ui.transfer
 
-import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -43,8 +42,6 @@ import java.io.InputStream
 import java.io.OutputStream
 import java.lang.Float.min
 import java.net.Socket
-import java.net.SocketException
-import java.net.UnknownHostException
 import javax.inject.Inject
 
 class TransferClient @Inject internal constructor(
@@ -87,12 +84,14 @@ class TransferClient @Inject internal constructor(
             status.value = TransferStatus.WAITING_FOR_VERIFICATION
             sendMessage(
                 socket.outputStream,
-                gson.toJson(TransferSendData(TransferDataType.COMMAND.value, commandData))
+                gson.toJson(TransferSendData(TransferDataType.COMMAND.value, commandData)),
             )
             listen(socket.inputStream, socket.outputStream)
         } catch (e: Exception) {
             Timber.e(e)
-            status.value = TransferStatus.ERROR
+            if (status.value != TransferStatus.FINISHED) {
+                status.value = TransferStatus.ERROR
+            }
             exit()
         }
     }

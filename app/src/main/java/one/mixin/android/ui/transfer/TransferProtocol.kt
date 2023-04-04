@@ -1,7 +1,6 @@
 package one.mixin.android.ui.transfer
 
 import UUIDUtils
-import kotlinx.coroutines.delay
 import one.mixin.android.MixinApplication
 import one.mixin.android.api.ChecksumException
 import one.mixin.android.db.MixinDatabase
@@ -107,7 +106,7 @@ class TransferProtocol {
         return String(data, UTF_8)
     }
 
-    private fun safeRead(inputStream: InputStream, expectedLength:Int):ByteArray{
+    private fun safeRead(inputStream: InputStream, expectedLength: Int): ByteArray {
         val data = ByteArray(expectedLength)
         var readLength = 0
         while (readLength < expectedLength) {

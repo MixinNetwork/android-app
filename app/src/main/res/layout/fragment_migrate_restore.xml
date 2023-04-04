@@ -33,7 +33,7 @@
     </RelativeLayout>
 
     <RelativeLayout
-        android:id="@+id/computer_rl"
+        android:id="@+id/transfer_to_pc_rl"
         android:layout_width="match_parent"
         android:layout_height="@dimen/item_contact_height"
         android:layout_marginTop="16dp"
@@ -41,7 +41,6 @@
         android:foreground="?android:attr/selectableItemBackground">
 
         <TextView
-            android:id="@+id/computer_tv"
             style="@style/NormalTextStyle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -52,9 +51,38 @@
             tools:ignore="RelativeOverlap" />
     </RelativeLayout>
 
+    <RelativeLayout
+        android:id="@+id/transfer_to_phone_rl"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/item_contact_height"
+        android:background="?attr/bg_white"
+        android:foreground="?android:attr/selectableItemBackground">
+
+        <TextView
+            android:id="@+id/another_tv"
+            style="@style/NormalTextStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:layout_marginStart="@dimen/activity_horizontal_margin"
+            android:gravity="center_vertical"
+            android:text="@string/Transfer_to_Another_Phone"
+            tools:ignore="RelativeOverlap" />
+    </RelativeLayout>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/activity_horizontal_margin"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="@dimen/activity_horizontal_margin"
+        android:layout_marginBottom="@dimen/activity_vertical_margin"
+        android:text="@string/transfer_sub_title"
+        android:textColor="?attr/text_minor"
+        android:textSize="12sp" />
 
     <RelativeLayout
-        android:id="@+id/restore_rl"
+        android:id="@+id/restore_from_pc_rl"
         android:layout_width="match_parent"
         android:layout_height="@dimen/item_contact_height"
         android:background="?attr/bg_white"
@@ -72,22 +100,15 @@
             tools:ignore="RelativeOverlap" />
     </RelativeLayout>
 
-    <RelativeLayout
-        android:id="@+id/another_rl"
-        android:layout_width="match_parent"
-        android:layout_height="@dimen/item_contact_height"
-        android:background="?attr/bg_white"
-        android:foreground="?android:attr/selectableItemBackground">
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/activity_horizontal_margin"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="@dimen/activity_horizontal_margin"
+        android:layout_marginBottom="@dimen/activity_vertical_margin"
+        android:text="@string/restore_sub_title"
+        android:textColor="?attr/text_minor"
+        android:textSize="12sp" />
 
-        <TextView
-            android:id="@+id/another_tv"
-            style="@style/NormalTextStyle"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_centerVertical="true"
-            android:layout_marginStart="@dimen/activity_horizontal_margin"
-            android:gravity="center_vertical"
-            android:text="@string/Transfer_to_Another_Phone"
-            tools:ignore="RelativeOverlap" />
-    </RelativeLayout>
 </LinearLayout>

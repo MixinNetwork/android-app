@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
+import android.view.View
 import androidx.core.view.isVisible
 import androidx.lifecycle.lifecycleScope
 import com.uber.autodispose.autoDispose
@@ -22,7 +23,6 @@ import one.mixin.android.databinding.ActivityTransferBinding
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.ParticipantDao
 import one.mixin.android.event.DeviceTransferProgressEvent
-import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.base64Encode
 import one.mixin.android.extension.base64RawURLDecode
 import one.mixin.android.extension.base64RawURLEncode
@@ -75,12 +75,12 @@ class TransferActivity : BaseActivity() {
             context.startActivity(
                 Intent(context, TransferActivity::class.java).apply {
                     flags = Intent.FLAG_ACTIVITY_SINGLE_TOP
-                    putExtra(ARGS_STATUS, ARGS_RESTORE_FROM_PC)
+                    putExtra(ARGS_STATUS, ARGS_TRANSFER_TO_PC)
                 },
             )
         }
 
-        fun showRestoreToPC(context: Context) {
+        fun showRestoreFromPC(context: Context) {
             context.startActivity(
                 Intent(context, TransferActivity::class.java).apply {
                     flags = Intent.FLAG_ACTIVITY_SINGLE_TOP
@@ -89,12 +89,11 @@ class TransferActivity : BaseActivity() {
             )
         }
 
-        fun showRestoreToPhone(context: Context, transferCommandData: TransferCommandData) {
+        fun showRestoreFromPhone(context: Context) {
             context.startActivity(
                 Intent(context, TransferActivity::class.java).apply {
                     flags = Intent.FLAG_ACTIVITY_SINGLE_TOP
                     putExtra(ARGS_STATUS, ARGS_RESTORE_FROM_PHONE)
-                    putExtra(ARGS_COMMAND, transferCommandData)
                 },
             )
         }
@@ -112,11 +111,13 @@ class TransferActivity : BaseActivity() {
         fun show(context: Context, transferCommandData: TransferCommandData) {
             val status = if (transferCommandData.action == TransferCommandAction.PULL.value) {
                 ARGS_RESTORE_FROM_PC
-            } else if (transferCommandData.action == TransferCommandAction.PUSH.value) {
-                ARGS_TRANSFER_TO_PC
             } else {
-                null
-            } ?: return
+                if (transferCommandData.action == TransferCommandAction.PUSH.value) {
+                    ARGS_TRANSFER_TO_PC
+                } else {
+                    null
+                } ?: return
+            }
             context.startActivity(
                 Intent(context, TransferActivity::class.java).apply {
                     flags = Intent.FLAG_ACTIVITY_SINGLE_TOP
@@ -159,8 +160,10 @@ class TransferActivity : BaseActivity() {
         if (status.value in listOf(
                 TransferStatus.INITIALIZING,
                 TransferStatus.WAITING_MESSAGE,
+                TransferStatus.WAITING_FOR_CONNECTION,
+                TransferStatus.CREATED,
                 TransferStatus.ERROR,
-                TransferStatus.FINISHED
+                TransferStatus.FINISHED,
             )
         ) {
             super.onBackPressed()
@@ -184,8 +187,9 @@ class TransferActivity : BaseActivity() {
                 }
 
                 TransferStatus.WAITING_MESSAGE -> {
-                    binding.pb.isVisible = true
+                    binding.pb.visibility = View.VISIBLE
                     Timber.e("pb ${binding.pb.isVisible}")
+                    binding.qrFl.isVisible = false
                     binding.pbTips.isVisible = true
                     binding.startTv.setText(R.string.Waiting)
                     binding.startTv.isEnabled = false
@@ -254,7 +258,7 @@ class TransferActivity : BaseActivity() {
     private fun initView() {
         val status = intent.getIntExtra(ARGS_STATUS, ARGS_TRANSFER_TO_PHONE)
         binding.titleView.isVisible = true
-        binding.pb.isVisible = false
+        binding.pb.visibility = View.GONE
         Timber.e("pb ${binding.pb.isVisible}")
         binding.startTv.setText(R.string.transfer_now)
         binding.pbTips.isVisible = false
@@ -283,27 +287,47 @@ class TransferActivity : BaseActivity() {
                 }
 
                 ARGS_TRANSFER_TO_PC -> {
-                    if (this@TransferActivity.status.value != TransferStatus.WAITING_MESSAGE)
+                    if (this@TransferActivity.status.value != TransferStatus.WAITING_MESSAGE) {
                         pushRequest()
+                    }
                 }
 
                 ARGS_RESTORE_FROM_PC -> {
-                    if (this@TransferActivity.status.value != TransferStatus.WAITING_MESSAGE)
+                    if (this@TransferActivity.status.value != TransferStatus.WAITING_MESSAGE) {
                         pullRequest()
+                    }
+                }
+
+                ARGS_RESTORE_FROM_PHONE -> {
+                    // todo scan
                 }
             }
         }
         when (status) {
             ARGS_TRANSFER_TO_PHONE -> {
+                binding.titleView.setSubTitle(getString(R.string.Transfer_to_Another_Phone), "")
+                binding.logoIv.setImageResource(R.drawable.ic_transfer)
+                binding.initDesc.setText(R.string.transfer_phone_desc)
             }
 
             ARGS_TRANSFER_TO_PC -> {
+                binding.titleView.setSubTitle(getString(R.string.Transfer_to_PC), "")
+                binding.logoIv.setImageResource(R.drawable.ic_transfer_to_pc)
+                binding.initDesc.setText(R.string.transfer_pc_desc)
             }
 
             ARGS_RESTORE_FROM_PC -> {
+                binding.titleView.setSubTitle(getString(R.string.Restore_from_PC), "")
+                binding.logoIv.setImageResource(R.drawable.ic_restore_from_pc)
+                binding.initDesc.setText(R.string.restore_desc)
             }
 
             ARGS_RESTORE_FROM_PHONE -> {
+                binding.titleView.setSubTitle(getString(R.string.Restore_from_Another_Phone), "")
+                binding.logoIv.setImageResource(R.drawable.ic_transfer)
+                binding.initDesc.isVisible = false
+                binding.initScanDesc.isVisible = true
+                binding.startTv.setText(R.string.Scane_to_Restore)
             }
         }
     }
@@ -465,7 +489,6 @@ class TransferActivity : BaseActivity() {
     private fun pushRequest() {
         lifecycleScope.launch {
             transferServer.startServer { transferData ->
-                status.value = TransferStatus.WAITING_MESSAGE
                 Timber.e("push ${gson.toJson(transferData)}")
                 val encodeText = gson.toJson(
                     transferData,

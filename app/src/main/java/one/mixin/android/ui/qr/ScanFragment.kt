@@ -3,7 +3,6 @@ package one.mixin.android.ui.qr
 import android.app.Activity
 import android.content.Intent
 import android.graphics.Point
-import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -28,7 +27,6 @@ import one.mixin.android.extension.matchResourcePattern
 import one.mixin.android.extension.openGallery
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.putBoolean
-import one.mixin.android.extension.toUri
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.extension.withArgs
@@ -36,7 +34,6 @@ import one.mixin.android.job.RefreshExternalSchemeJob
 import one.mixin.android.ui.conversation.ConversationActivity.Companion.ARGS_SHORTCUT
 import one.mixin.android.ui.device.ConfirmBottomFragment
 import one.mixin.android.ui.qr.CaptureActivity.Companion.ARGS_FOR_SCAN_RESULT
-import one.mixin.android.ui.transfer.TransferActivity
 import one.mixin.android.ui.web.WebActivity
 import one.mixin.android.util.mlkit.scan.BaseCameraScanFragment
 import one.mixin.android.util.mlkit.scan.analyze.AnalyzeResult
@@ -230,17 +227,17 @@ class ScanFragment : BaseCameraScanFragment<BarcodeResult>() {
             ConfirmBottomFragment.show(requireContext(), parentFragmentManager, analysisResult) {
                 activity?.finish()
             }
-        // } else if (analysisResult.startsWith(Constants.Scheme.DEVICE_TRANSFER)) {
-        //     val uri = analysisResult.toUri()
-        //     if (uri == Uri.EMPTY) {
-        //         handleResult(requireActivity(), fromShortcut, analysisResult)
-        //         return
-        //     }
-        //     TransferActivity.parseUri(requireContext(), false, uri, {
-        //         activity?.finish()
-        //     }) {
-        //         handleResult(requireActivity(), fromShortcut, analysisResult)
-        //     }
+            // } else if (analysisResult.startsWith(Constants.Scheme.DEVICE_TRANSFER)) {
+            //     val uri = analysisResult.toUri()
+            //     if (uri == Uri.EMPTY) {
+            //         handleResult(requireActivity(), fromShortcut, analysisResult)
+            //         return
+            //     }
+            //     TransferActivity.parseUri(requireContext(), false, uri, {
+            //         activity?.finish()
+            //     }) {
+            //         handleResult(requireActivity(), fromShortcut, analysisResult)
+            //     }
         } else {
             val externalSchemes = requireContext().defaultSharedPreferences.getStringSet(
                 RefreshExternalSchemeJob.PREF_EXTERNAL_SCHEMES,

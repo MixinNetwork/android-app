@@ -1109,7 +1109,9 @@
     <string name="Chat">聊天记录</string>
     <string name="sync_chat">同步聊天记录</string>
     <string name="Please_log_in_to_the_desktop_first">Please log in to the desktop first</string>
-    <string name="transfer_desc">同步你的聊天记录到 Mixin Messenger 桌面端，请确保两台设备接入同一个 Wi-Fi 或热点。</string>
+    <string name="transfer_pc_desc">同步你的聊天记录到 Mixin Messenger 桌面端，请确保两台设备接入同一个 Wi-Fi 或热点。</string>
+    <string name="transfer_phone_desc">同步你的聊天记录到新的设备，请确保两台设备接入同一个 Wi-Fi 或热点。</string>
+    <string name="restore_desc">从 Mixin Messenger 桌面端同步你的聊天记录，同步不会覆盖本地记录只会增量同步，请确保两台设备接入同一个 Wi-Fi 或热点。</string>
     <string name="Restore_from_PC">从桌面端还原</string>
     <string name="transfer_tips1">在新设备上登录当前账户并选择从其他手机恢复</string>
     <string name="transfer_tips2">新设备扫上面的二维码建立连接</string>
@@ -1117,5 +1119,8 @@
     <string name="Transfer_completed">传输完成</string>
     <string name="transfer_waiting_desc">同步时请不要关闭屏幕并保持 Mixin 在前台运行。</string>
     <string name="transfer_waiting_tips">请打开您的MiXin Messenger桌面以确认操作。</string>
-    <string name="transfer_now">Transfer now</string>
+    <string name="transfer_now">传输数据</string>
+    <string name="transfer_sub_title">将您的聊天记录转移到另一台设备</string>
+    <string name="restore_sub_title">从PC恢复您的聊天历史记录</string>
+    <string name="Scane_to_Restore">扫码还原</string>
 </resources>

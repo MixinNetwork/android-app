@@ -1138,7 +1138,9 @@
     <string name="Restore_from_Local_tip">Restore your chat history from you device backup.</string>
     <string name="sync_chat">Sync chats</string>
     <string name="Please_log_in_to_the_desktop_first">Please log in to the desktop first</string>
-    <string name="transfer_desc">To synchronize your chat logs to the Mixin Messenger desktop, make sure both devices are connected to the same Wi-Fi or hotspot.</string>
+    <string name="transfer_pc_desc">To synchronize your chat logs to the Mixin Messenger desktop, make sure both devices are connected to the same Wi-Fi or hotspot.</string>
+    <string name="transfer_phone_desc">To synchronize your chat logs to the new device, make sure both devices are connected to the same Wi-Fi or hotspot.</string>
+    <string name="restore_desc">Synchronize your chat logs from the Mixin Messenger desktop. Synchronization will not overwrite local records but will only sync incrementally. Please make sure the two devices are connected to the same Wi-Fi or hotspot.</string>
     <string name="Restore_from_PC">Restore from PC</string>
     <string name="transfer_tips1">Log in to the current account on the new device and choose to recover from other phones</string>
     <string name="transfer_tips2">The new equipment scans the QR code above to establish a connection</string>
@@ -1147,4 +1149,10 @@
     <string name="transfer_waiting_desc">Please do not close the screen and keep Mixin running in the foreground when synchronizing.</string>
     <string name="transfer_waiting_tips">Please open your Mixin Messenger desktop to confirm the operation.</string>
     <string name="transfer_now">Transfer now</string>
+    <string name="transfer_sub_title">Transfer your chat history to another device</string>
+    <string name="restore_sub_title">Restore your chat history from PC</string>
+    <string name="transfer_scan_tips1">Make sure the old device is on the sync-waiting screen.</string>
+    <string name="transfer_scan_tips2">Tap the button below to scan and establish connection.</string>
+    <string name="transfer_scan_tips3">Do not turn off the screen and keep Mixin in the foreground.</string>
+    <string name="Scane_to_Restore">Scan to Restore</string>
 </resources>

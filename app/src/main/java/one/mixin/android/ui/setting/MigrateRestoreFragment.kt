@@ -5,7 +5,6 @@ import android.view.View
 import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentMigrateRestoreBinding
-import one.mixin.android.extension.alert
 import one.mixin.android.extension.navTo
 import one.mixin.android.extension.showConfirmDialog
 import one.mixin.android.session.Session
@@ -32,13 +31,13 @@ class MigrateRestoreFragment : BaseFragment(R.layout.fragment_migrate_restore) {
             backRl.setOnClickListener {
                 navTo(BackUpFragment.newInstance(), BackUpFragment.TAG)
             }
-            anotherRl.setOnClickListener {
+            transferToPhoneRl.setOnClickListener {
                 TransferActivity.showTransferToPhone(requireContext())
             }
-            computerRl.setOnClickListener {
+            transferToPcRl.setOnClickListener {
                 if (Session.getExtensionSessionId() == null) {
                     requireContext().showConfirmDialog(
-                        getString(R.string.Please_log_in_to_the_desktop_first)
+                        getString(R.string.Please_log_in_to_the_desktop_first),
                     ) {
                         // do noting
                     }
@@ -46,15 +45,15 @@ class MigrateRestoreFragment : BaseFragment(R.layout.fragment_migrate_restore) {
                     TransferActivity.showTransferToPC(requireContext())
                 }
             }
-            restoreRl.setOnClickListener {
+            restoreFromPcRl.setOnClickListener {
                 if (Session.getExtensionSessionId() == null) {
                     requireContext().showConfirmDialog(
-                        getString(R.string.Please_log_in_to_the_desktop_first)
+                        getString(R.string.Please_log_in_to_the_desktop_first),
                     ) {
                         // do noting
                     }
                 } else {
-                    TransferActivity.showRestoreToPC(requireContext())
+                    TransferActivity.showRestoreFromPC(requireContext())
                 }
             }
         }
