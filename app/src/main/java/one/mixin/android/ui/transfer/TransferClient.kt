@@ -40,6 +40,7 @@ import one.mixin.android.vo.Sticker
 import one.mixin.android.vo.TranscriptMessage
 import one.mixin.android.vo.User
 import timber.log.Timber
+import java.io.EOFException
 import java.io.InputStream
 import java.io.OutputStream
 import java.lang.Float.min
@@ -103,7 +104,11 @@ class TransferClient @Inject internal constructor(
     private suspend fun listen(inputStream: InputStream, outputStream: OutputStream) {
         do {
             status.value = TransferStatus.SENDING
-            val (content, file) = protocol.read(inputStream)
+            val (content, file) = try{
+                protocol.read(inputStream)
+            } catch (e: EOFException) {
+                Pair(null, null)
+            }
             if (file != null) {
                 // read file
                 progress(outputStream)
@@ -274,12 +279,9 @@ class TransferClient @Inject internal constructor(
         outputStream.flush()
     }
 
-    // Todo delete
-    private val skipInsert = true
     private suspend fun syncInsert(callback: () -> Unit) = withContext(Dispatchers.IO) {
         launch {
-            if (!skipInsert)
-                callback.invoke()
+            callback.invoke()
         }
     }
 }

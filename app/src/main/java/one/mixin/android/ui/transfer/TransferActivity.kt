@@ -41,6 +41,8 @@ import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.SendPlaintextJob
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseActivity
+import one.mixin.android.ui.home.MainActivity
+import one.mixin.android.ui.landing.InitializeActivity
 import one.mixin.android.ui.qr.CaptureActivity
 import one.mixin.android.ui.transfer.vo.TransferCommandAction
 import one.mixin.android.ui.transfer.vo.TransferCommandData
@@ -277,6 +279,7 @@ class TransferActivity : BaseActivity() {
                         .setPositiveButton(R.string.Confirm) { dialog, _ ->
                             dialog.dismiss()
                             status.value = TransferStatus.INITIALIZING
+                            InitializeActivity.showLoading(this)
                             finish()
                         }
                         .show()
