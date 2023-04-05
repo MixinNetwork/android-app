@@ -5,9 +5,8 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
-import android.view.View
+import android.view.WindowManager
 import androidx.activity.result.ActivityResultLauncher
-import androidx.activity.result.ActivityResultRegistry
 import androidx.core.view.isVisible
 import androidx.lifecycle.lifecycleScope
 import com.tbruyelle.rxpermissions2.RxPermissions
@@ -36,7 +35,6 @@ import one.mixin.android.extension.fadeIn
 import one.mixin.android.extension.generateQRCode
 import one.mixin.android.extension.getParcelableExtra
 import one.mixin.android.extension.openPermissionSetting
-import one.mixin.android.extension.showConfirmDialog
 import one.mixin.android.extension.toast
 import one.mixin.android.job.BaseJob
 import one.mixin.android.job.MixinJobManager
@@ -48,7 +46,6 @@ import one.mixin.android.ui.transfer.vo.TransferCommandAction
 import one.mixin.android.ui.transfer.vo.TransferCommandData
 import one.mixin.android.ui.transfer.vo.TransferStatus
 import one.mixin.android.ui.transfer.vo.TransferStatusLiveData
-import one.mixin.android.ui.web.WebActivity
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.viewBinding
 import one.mixin.android.websocket.PlainDataAction
@@ -224,8 +221,7 @@ class TransferActivity : BaseActivity() {
                         binding.qrFl.isVisible = false
                         binding.initLl.isVisible = true
                         binding.waitingLl.isVisible = false
-                        binding.pb.isVisible = false
-                        Timber.e("pb ${binding.pb.isVisible}")
+                        binding.pbFl.isVisible = true
                     }
                     binding.startTv.setText(R.string.Waiting)
                     binding.startTv.isEnabled = false
@@ -236,24 +232,21 @@ class TransferActivity : BaseActivity() {
                     binding.qrFl.isVisible = false
                     binding.initLl.isVisible = false
                     binding.waitingLl.isVisible = true
-                    binding.pb.isVisible = false
-                    Timber.e("pb ${binding.pb.isVisible}")
+                    binding.pbFl.isVisible = true
                 }
 
                 TransferStatus.WAITING_FOR_VERIFICATION -> {
                     binding.qrFl.isVisible = false
                     binding.initLl.isVisible = false
                     binding.waitingLl.isVisible = true
-                    binding.pb.isVisible = false
-                    Timber.e("pb ${binding.pb.isVisible}")
+                    binding.pbFl.isVisible = true
                 }
 
                 TransferStatus.VERIFICATION_COMPLETED -> {
                     binding.qrFl.isVisible = false
                     binding.initLl.isVisible = false
                     binding.waitingLl.isVisible = true
-                    binding.pb.isVisible = false
-                    Timber.e("pb ${binding.pb.isVisible}")
+                    binding.pbFl.isVisible = true
                 }
 
                 TransferStatus.SENDING -> {
@@ -266,7 +259,7 @@ class TransferActivity : BaseActivity() {
                 TransferStatus.ERROR -> {
                     alertDialogBuilder()
                         .setTitle(R.string.Transfer_error)
-                        .setPositiveButton(R.string.OK) { dialog, _ ->
+                        .setPositiveButton(R.string.Confirm) { dialog, _ ->
                             dialog.dismiss()
                             status.value = TransferStatus.INITIALIZING
                             finish()
@@ -277,7 +270,7 @@ class TransferActivity : BaseActivity() {
                 TransferStatus.FINISHED -> {
                     alertDialogBuilder()
                         .setTitle(R.string.Transfer_completed)
-                        .setPositiveButton(R.string.OK) { dialog, _ ->
+                        .setPositiveButton(R.string.Confirm) { dialog, _ ->
                             dialog.dismiss()
                             status.value = TransferStatus.INITIALIZING
                             finish()
@@ -300,10 +293,8 @@ class TransferActivity : BaseActivity() {
 
     private fun initView() {
         binding.titleView.isVisible = true
-        binding.pb.isVisible = true
-        Timber.e("pb ${binding.pb.isVisible}")
+        binding.pbFl.isVisible = false
         binding.startTv.setText(R.string.transfer_now)
-        binding.pbTips.isVisible = false
         binding.startTv.isEnabled = true
         binding.start.isClickable = true
         binding.start.setOnClickListener {
@@ -402,6 +393,7 @@ class TransferActivity : BaseActivity() {
 
     override fun onStart() {
         super.onStart()
+        window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         if (transferDisposable == null) {
             transferDisposable = RxBus.listen(DeviceTransferProgressEvent::class.java)
                 .observeOn(AndroidSchedulers.mainThread())
@@ -441,6 +433,7 @@ class TransferActivity : BaseActivity() {
         super.onStop()
         transferDisposable?.dispose()
         transferDisposable = null
+        window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
     }
 
     override fun onDestroy() {
