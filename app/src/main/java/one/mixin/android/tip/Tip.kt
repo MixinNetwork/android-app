@@ -319,11 +319,15 @@ class Tip @Inject internal constructor(
 
         val sigBase64 = signTimestamp(stPriv, stPub, timestamp)
 
+        val msg = TipBody.forVerify(timestamp)
+        val goSigBase64 = Crypto.signEd25519(msg, stSeed).base64RawURLEncode()
+        Timber.e("signature go-ed25519 $goSigBase64")
+
         val tipSecretRequest = TipSecretRequest(
             action = TipSecretAction.UPDATE.name,
             seedBase64 = seedBase64,
             secretBase64 = secretBase64,
-            signatureBase64 = sigBase64,
+            signatureBase64 = goSigBase64,
             timestamp = timestamp,
         )
         Timber.e("generateAesKeyByPin before updateTipSecret")
