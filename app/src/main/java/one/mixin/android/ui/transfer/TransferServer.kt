@@ -92,7 +92,6 @@ class TransferServer @Inject internal constructor(
             val socket = serverSocket.accept()
             this@TransferServer.socket = socket
             status.value = TransferStatus.WAITING_FOR_VERIFICATION
-            socket.soTimeout = 3000
 
             val remoteAddr = socket.remoteSocketAddress
             if (remoteAddr is InetSocketAddress) {
@@ -469,6 +468,8 @@ class TransferServer @Inject internal constructor(
     fun exit() = MixinApplication.get().applicationScope.launch(SINGLE_SOCKET_THREAD) {
         try {
             quit = true
+            socket?.close()
+            socket = null
             serverSocket?.close()
             serverSocket = null
         } catch (e: Exception) {

@@ -83,7 +83,6 @@ class TransferClient @Inject internal constructor(
                 status.value = TransferStatus.CONNECTING
                 val socket = Socket(ip, port)
                 this@TransferClient.socket = socket
-                socket.soTimeout = 3000
                 status.value = TransferStatus.WAITING_FOR_VERIFICATION
                 sendMessage(
                     socket.outputStream,
