@@ -303,6 +303,12 @@ interface TransactionInterface {
             transactionIdTv.text = snapshot.snapshotId
             transactionTypeTv.text = getSnapshotType(fragment, snapshot.type)
             memoTv.text = snapshot.memo
+            openingBalanceLayout.isVisible = !snapshot.openingBalance.isNullOrBlank()
+            openingBalanceTv.text = "${snapshot.openingBalance} ${asset.symbol}"
+            closingBalanceLayout.isVisible = !snapshot.closingBalance.isNullOrBlank()
+            closingBalanceTv.text = "${snapshot.closingBalance} ${asset.symbol}"
+            snapshotHashLayout.isVisible = !snapshot.snapshotHash.isNullOrBlank()
+            snapshotHashTv.text = snapshot.snapshotHash
             dateTv.text = snapshot.createdAt.fullDate()
             when (snapshot.type) {
                 SnapshotType.deposit.name -> {
@@ -335,7 +341,7 @@ interface TransactionInterface {
                         receiverTv.text = snapshot.opponentFullName
                     }
                 }
-                else -> {
+                else -> { // withdrawal, fee, rebate, raw
                     if (!asset.getTag().isNullOrEmpty()) {
                         receiverTitle.text = fragment.getString(R.string.Address)
                     } else {
@@ -357,7 +363,7 @@ interface TransactionInterface {
         snapshot: SnapshotItem,
         asset: AssetItem,
     ) {
-        if (snapshot.type == SnapshotType.withdrawal.name && snapshot.transactionHash.isNullOrBlank()) {
+        if (snapshot.snapshotHash.isNullOrBlank() || (snapshot.type == SnapshotType.withdrawal.name && snapshot.transactionHash.isNullOrBlank())) {
             lifecycleScope.launch {
                 walletViewModel.refreshSnapshot(snapshot.snapshotId)?.let {
                     updateUI(fragment, contentBinding, asset, snapshot)

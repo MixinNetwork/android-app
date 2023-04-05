@@ -62,6 +62,15 @@ data class SnapshotItem(
     @SerializedName("trace_id")
     @ColumnInfo(name = "trace_id")
     val traceId: String?,
+    @SerializedName("snapshot_hash")
+    @ColumnInfo(name = "snapshot_hash")
+    val snapshotHash: String?,
+    @SerializedName("opening_balance")
+    @ColumnInfo(name = "opening_balance")
+    val openingBalance: String?,
+    @SerializedName("closing_balance")
+    @ColumnInfo(name = "closing_balance")
+    val closingBalance: String?,
 ) : Parcelable {
     companion object {
         val DIFF_CALLBACK = object : DiffUtil.ItemCallback<SnapshotItem>() {
@@ -89,6 +98,9 @@ data class SnapshotItem(
             avatarUrl = avatarUrl,
             assetConfirmations = 0,
             traceId = snapshot.traceId,
+            snapshotHash = snapshot.snapshotHash,
+            openingBalance = snapshot.openingBalance,
+            closingBalance = snapshot.closingBalance,
         )
     }
 }

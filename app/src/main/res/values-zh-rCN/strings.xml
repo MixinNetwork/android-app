@@ -226,6 +226,7 @@
     <string name="Click_to_retry">点击重试</string>
     <string name="Click_to_unlock">点击解锁</string>
     <string name="Close">关闭</string>
+    <string name="Closing_Balance">期末余额</string>
     <string name="Combine_and_forward">合并转发</string>
     <string name="Confirm">确认</string>
     <string name="Confirm_fingerprint">确认指纹</string>
@@ -666,6 +667,7 @@
     <string name="Open_Home_page">打开主页</string>
     <string name="Open_in_browser">在浏览器中打开</string>
     <string name="Open_Link">打开链接：%1$s</string>
+    <string name="Opening_Balance">期初余额</string>
     <string name="Operator">运营商</string>
     <string name="OTHER">其他</string>
     <string name="Others">其他</string>
@@ -896,6 +898,7 @@
     <string name="Show">显示</string>
     <string name="Show_in_chat">在聊天中展示</string>
     <string name="Shown">显示</string>
+    <string name="snapshot_Hash">快照哈希</string>
     <string name="Sign_in">登录</string>
     <string name="Sign_in_desktop_app">登录桌面端</string>
     <string name="Sign_with_emergency_contact">通过紧急联系人登录</string>
