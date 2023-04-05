@@ -222,6 +222,7 @@ class TransferActivity : BaseActivity() {
                         binding.initLl.isVisible = true
                         binding.waitingLl.isVisible = false
                         binding.pbFl.isVisible = true
+                        binding.pbTips.isVisible = true
                     }
                     binding.startTv.setText(R.string.Waiting)
                     binding.startTv.isEnabled = false
@@ -233,6 +234,7 @@ class TransferActivity : BaseActivity() {
                     binding.initLl.isVisible = false
                     binding.waitingLl.isVisible = true
                     binding.pbFl.isVisible = true
+                    binding.pbTips.isVisible = true
                 }
 
                 TransferStatus.WAITING_FOR_VERIFICATION -> {
@@ -240,6 +242,7 @@ class TransferActivity : BaseActivity() {
                     binding.initLl.isVisible = false
                     binding.waitingLl.isVisible = true
                     binding.pbFl.isVisible = true
+                    binding.pbTips.isVisible = true
                 }
 
                 TransferStatus.VERIFICATION_COMPLETED -> {
@@ -247,6 +250,7 @@ class TransferActivity : BaseActivity() {
                     binding.initLl.isVisible = false
                     binding.waitingLl.isVisible = true
                     binding.pbFl.isVisible = true
+                    binding.pbTips.isVisible = true
                 }
 
                 TransferStatus.SENDING -> {
@@ -294,6 +298,7 @@ class TransferActivity : BaseActivity() {
     private fun initView() {
         binding.titleView.isVisible = true
         binding.pbFl.isVisible = false
+        binding.pbTips.isVisible = false
         binding.startTv.setText(R.string.transfer_now)
         binding.startTv.isEnabled = true
         binding.start.isClickable = true

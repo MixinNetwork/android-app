@@ -93,6 +93,7 @@
             android:layout_marginStart="42dp"
             android:layout_marginEnd="42dp"
             android:gravity="center"
+            android:textSize="12sp"
             android:text="@string/transfer_waiting_desc"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content" />
@@ -126,6 +127,7 @@
             android:layout_marginTop="16dp"
             android:layout_marginEnd="32dp"
             android:gravity="center_horizontal"
+            android:textSize="12sp"
             android:text="@string/transfer_pc_desc"
             android:textColor="?attr/text_minor" />
 
@@ -195,6 +197,7 @@
 
                 <ProgressBar
                     style="?android:attr/progressBarStyleSmall"
+                    android:progressTint="@color/gray_black"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:indeterminate="true" />
