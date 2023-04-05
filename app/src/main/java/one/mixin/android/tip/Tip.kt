@@ -46,6 +46,7 @@ import one.mixin.android.tip.exception.TipNodeException
 import one.mixin.android.tip.exception.TipNotAllWatcherSuccessException
 import one.mixin.android.tip.exception.TipNullException
 import one.mixin.android.util.ErrorHandler
+import one.mixin.android.util.reportException
 import timber.log.Timber
 import java.io.IOException
 import java.security.MessageDigest
@@ -319,19 +320,39 @@ class Tip @Inject internal constructor(
 
         val sigBase64 = signTimestamp(stPriv, stPub, timestamp)
 
-        val msg = TipBody.forVerify(timestamp)
-        val goSigBase64 = Crypto.signEd25519(msg, stSeed).base64RawURLEncode()
-        Timber.e("signature go-ed25519 $goSigBase64")
-
         val tipSecretRequest = TipSecretRequest(
             action = TipSecretAction.UPDATE.name,
             seedBase64 = seedBase64,
             secretBase64 = secretBase64,
-            signatureBase64 = goSigBase64,
+            signatureBase64 = sigBase64,
             timestamp = timestamp,
         )
         Timber.e("generateAesKeyByPin before updateTipSecret")
-        tipNetworkNullable { tipService.updateTipSecret(tipSecretRequest) }.getOrThrow()
+        val result = tipNetworkNullable {
+            tipService.updateTipSecret(tipSecretRequest)
+        }
+        val e = result.exceptionOrNull()
+        if (e != null) {
+            if (e is TipNetworkException && e.error.code == ErrorHandler.BAD_DATA) {
+                reportException("Tip tip/secret meet bad data", e)
+
+                val msg = TipBody.forVerify(timestamp)
+                val goSigBase64 = Crypto.signEd25519(msg, stSeed).base64RawURLEncode()
+                Timber.e("signature go-ed25519 $goSigBase64")
+
+                val request = TipSecretRequest(
+                    action = TipSecretAction.UPDATE.name,
+                    seedBase64 = seedBase64,
+                    secretBase64 = secretBase64,
+                    signatureBase64 = goSigBase64,
+                    timestamp = timestamp,
+                )
+                Timber.e("use go-ed25519 before updateTipSecret")
+                tipNetworkNullable { tipService.updateTipSecret(request) }.getOrThrow()
+            } else {
+                throw e
+            }
+        }
         return aesKey
     }
 
