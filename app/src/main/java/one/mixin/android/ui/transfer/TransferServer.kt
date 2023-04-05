@@ -212,6 +212,7 @@ class TransferServer @Inject internal constructor(
                 TransferCommandData(TransferCommandAction.START.value, total = totalCount()),
             ),
         )
+        RxBus.publish(DeviceTransferProgressEvent(0.0f))
     }
 
     private fun totalCount(): Long {
