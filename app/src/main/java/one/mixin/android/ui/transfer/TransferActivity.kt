@@ -5,7 +5,11 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
+import android.text.SpannableString
+import android.text.Spanned
+import android.text.style.RelativeSizeSpan
 import android.view.WindowManager
+import android.widget.TextView
 import androidx.activity.result.ActivityResultLauncher
 import androidx.core.view.isVisible
 import androidx.lifecycle.lifecycleScope
@@ -26,6 +30,7 @@ import one.mixin.android.databinding.ActivityTransferBinding
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.ParticipantDao
 import one.mixin.android.event.DeviceTransferProgressEvent
+import one.mixin.android.event.SpeedEvent
 import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.base64Encode
 import one.mixin.android.extension.base64RawURLDecode
@@ -41,7 +46,6 @@ import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.SendPlaintextJob
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseActivity
-import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.ui.landing.InitializeActivity
 import one.mixin.android.ui.qr.CaptureActivity
 import one.mixin.android.ui.transfer.vo.TransferCommandAction
@@ -265,10 +269,11 @@ class TransferActivity : BaseActivity() {
                 TransferStatus.ERROR -> {
                     alertDialogBuilder()
                         .setTitle(R.string.Transfer_error)
+                        .setCancelable(false)
                         .setPositiveButton(R.string.Confirm) { dialog, _ ->
                             dialog.dismiss()
-                            status.value = TransferStatus.INITIALIZING
                             finish()
+                            status.value = TransferStatus.INITIALIZING
                         }
                         .show()
                 }
@@ -276,11 +281,12 @@ class TransferActivity : BaseActivity() {
                 TransferStatus.FINISHED -> {
                     alertDialogBuilder()
                         .setTitle(R.string.Transfer_completed)
+                        .setCancelable(false)
                         .setPositiveButton(R.string.Confirm) { dialog, _ ->
                             dialog.dismiss()
-                            status.value = TransferStatus.INITIALIZING
                             InitializeActivity.showLoading(this)
                             finish()
+                            status.value = TransferStatus.INITIALIZING
                         }
                         .show()
                 }
@@ -317,7 +323,6 @@ class TransferActivity : BaseActivity() {
                                         "$DEVICE_TRANSFER?data=$this"
                                     }
                                     .generateQRCode(240.dp).first
-                                toast("Sever IP: ${transferCommandData.ip} ${transferCommandData.action}")
                                 binding.qr.setImageBitmap(qrCode)
                                 binding.qrFl.fadeIn()
                                 binding.initLl.isVisible = false
@@ -346,7 +351,7 @@ class TransferActivity : BaseActivity() {
                         .subscribe { granted ->
                             if (granted) {
                                 getScanResult.launch(
-                                    Pair(CaptureActivity.ARGS_FOR_SCAN_RESULT, true)
+                                    Pair(CaptureActivity.ARGS_FOR_SCAN_RESULT, true),
                                 )
                             } else {
                                 openPermissionSetting()
@@ -398,6 +403,7 @@ class TransferActivity : BaseActivity() {
     }
 
     private var transferDisposable: Disposable? = null
+    private var transferSpeedDisposable: Disposable? = null
 
     override fun onStart() {
         super.onStart()
@@ -410,6 +416,15 @@ class TransferActivity : BaseActivity() {
                     binding.progressTv.text =
                         getString(R.string.sending_desc, String.format("%.1f%%", it.progress))
                     Timber.e("Device transfer ${it.progress}%")
+                }
+        }
+
+        if (transferSpeedDisposable == null) {
+            transferSpeedDisposable = RxBus.listen(SpeedEvent::class.java)
+                .observeOn(AndroidSchedulers.mainThread())
+                .autoDispose(destroyScope)
+                .subscribe {
+                    Timber.e("Speed: ${it.speed}")
                 }
         }
     }
@@ -440,7 +455,9 @@ class TransferActivity : BaseActivity() {
     override fun onStop() {
         super.onStop()
         transferDisposable?.dispose()
+        transferSpeedDisposable?.dispose()
         transferDisposable = null
+        transferSpeedDisposable = null
         window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
     }
 

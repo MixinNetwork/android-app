@@ -3,7 +3,6 @@ package one.mixin.android.ui.transfer
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import one.mixin.android.MixinApplication
 import one.mixin.android.RxBus
@@ -65,6 +64,8 @@ class TransferClient @Inject internal constructor(
     private var socket: Socket? = null
     private var quit = false
 
+    fun isAvailable() = socket != null
+
     private val gson by lazy {
         GsonHelper.customGson
     }
@@ -104,7 +105,7 @@ class TransferClient @Inject internal constructor(
     private suspend fun listen(inputStream: InputStream, outputStream: OutputStream) {
         do {
             status.value = TransferStatus.SENDING
-            val (content, file) = try{
+            val (content, file) = try {
                 protocol.read(inputStream)
             } catch (e: EOFException) {
                 Pair(null, null)

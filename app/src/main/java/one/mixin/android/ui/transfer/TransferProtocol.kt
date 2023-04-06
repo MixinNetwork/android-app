@@ -2,8 +2,10 @@ package one.mixin.android.ui.transfer
 
 import UUIDUtils
 import one.mixin.android.MixinApplication
+import one.mixin.android.RxBus
 import one.mixin.android.api.ChecksumException
 import one.mixin.android.db.MixinDatabase
+import one.mixin.android.event.SpeedEvent
 import one.mixin.android.extension.createDocumentTemp
 import one.mixin.android.extension.getAudioPath
 import one.mixin.android.extension.getDocumentPath
@@ -114,9 +116,27 @@ class TransferProtocol {
             if (count == -1) {
                 throw EOFException("Unexpected end of data")
             }
+
             readLength += count
         }
+        calculateReadSpeed(expectedLength)
         return data
+    }
+
+    private var readCount: Long = 0
+    private var lastTimeTime: Long = 0
+
+    private fun calculateReadSpeed(bytesPerRead: Int) {
+        readCount += bytesPerRead
+        val currentTime = System.currentTimeMillis()
+        if (readCount > 1024 * 1024 && lastTimeTime > 0) {
+            val speed = readCount / ((currentTime - lastTimeTime) / 1000f) / 1024f / 1024f
+            RxBus.publish(SpeedEvent(String.format("%.2f MB/s", speed)))
+            readCount = 0
+            lastTimeTime = currentTime
+        } else if (lastTimeTime == 0L) {
+            lastTimeTime = currentTime
+        }
     }
 
     private fun readFile(inputStream: InputStream, expectedLength: Int): File? {
@@ -132,10 +152,10 @@ class TransferProtocol {
             while (bytesRead != -1 && bytesLeft > 0) {
                 bytesRead = inputStream.read(buffer, 0, bytesLeft.coerceAtMost(1024))
                 bytesLeft -= bytesRead
+                calculateReadSpeed(bytesRead)
             }
-            val checksum = ByteArray(8)
-            inputStream.read(checksum)
             // skip error file
+            safeRead(inputStream, 8)
             return null
         } else {
             val extensionName = message.name?.getExtensionName()
