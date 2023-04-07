@@ -284,7 +284,9 @@ class TransferActivity : BaseActivity() {
                         .setCancelable(false)
                         .setPositiveButton(R.string.Confirm) { dialog, _ ->
                             dialog.dismiss()
-                            InitializeActivity.showLoading(this)
+                            if (argsStatus == ARGS_RESTORE_FROM_PHONE || argsStatus == ARGS_RESTORE_FROM_PC) {
+                                InitializeActivity.showLoading(this)
+                            }
                             finish()
                             status.value = TransferStatus.INITIALIZING
                         }
