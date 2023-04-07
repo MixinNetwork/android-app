@@ -1,6 +1,7 @@
 package one.mixin.android.tip
 
 import android.content.Context
+import crypto.Crypto
 import net.i2p.crypto.eddsa.EdDSAEngine
 import net.i2p.crypto.eddsa.EdDSAPrivateKey
 import net.i2p.crypto.eddsa.EdDSAPublicKey
@@ -45,6 +46,7 @@ import one.mixin.android.tip.exception.TipNodeException
 import one.mixin.android.tip.exception.TipNotAllWatcherSuccessException
 import one.mixin.android.tip.exception.TipNullException
 import one.mixin.android.util.ErrorHandler
+import one.mixin.android.util.reportException
 import timber.log.Timber
 import java.io.IOException
 import java.security.MessageDigest
@@ -316,7 +318,7 @@ class Tip @Inject internal constructor(
         val secretBase64 = aesEncrypt(pinToken, stPub.abyte).base64RawURLEncode()
         val timestamp = nowInUtcNano()
 
-        val sigBase64 = signTimestamp(stPriv, timestamp)
+        val sigBase64 = signTimestamp(stPriv, stPub, timestamp)
 
         val tipSecretRequest = TipSecretRequest(
             action = TipSecretAction.UPDATE.name,
@@ -325,7 +327,32 @@ class Tip @Inject internal constructor(
             signatureBase64 = sigBase64,
             timestamp = timestamp,
         )
-        tipNetworkNullable { tipService.updateTipSecret(tipSecretRequest) }.getOrThrow()
+        Timber.e("generateAesKeyByPin before updateTipSecret")
+        val result = tipNetworkNullable {
+            tipService.updateTipSecret(tipSecretRequest)
+        }
+        val e = result.exceptionOrNull()
+        if (e != null) {
+            if (e is TipNetworkException && e.error.code == ErrorHandler.BAD_DATA) {
+                reportException("Tip tip/secret meet bad data", e)
+
+                val msg = TipBody.forVerify(timestamp)
+                val goSigBase64 = Crypto.signEd25519(msg, stSeed).base64RawURLEncode()
+                Timber.e("signature go-ed25519 $goSigBase64")
+
+                val request = TipSecretRequest(
+                    action = TipSecretAction.UPDATE.name,
+                    seedBase64 = seedBase64,
+                    secretBase64 = secretBase64,
+                    signatureBase64 = goSigBase64,
+                    timestamp = timestamp,
+                )
+                Timber.e("use go-ed25519 before updateTipSecret")
+                tipNetworkNullable { tipService.updateTipSecret(request) }.getOrThrow()
+            } else {
+                throw e
+            }
+        }
         return aesKey
     }
 
@@ -339,21 +366,28 @@ class Tip @Inject internal constructor(
         val stPriv = privateSpec.getPrivateKey()
         val timestamp = nowInUtcNano()
 
-        val sigBase64 = signTimestamp(stPriv, timestamp)
+        val sigBase64 = signTimestamp(stPriv, privateSpec.getPublicKey(), timestamp)
 
         val tipSecretReadRequest = TipSecretReadRequest(
             signatureBase64 = sigBase64,
             timestamp = timestamp,
         )
+        Timber.e("getAesKey before updateTipSecret")
         val response = tipNetwork { tipService.readTipSecret(tipSecretReadRequest) }.getOrThrow()
         return response.seedBase64?.base64RawURLDecode() ?: throw TipNullException("Not get tip secret")
     }
 
-    private fun signTimestamp(stPriv: EdDSAPrivateKey, timestamp: Long): String {
+    private fun signTimestamp(stPriv: EdDSAPrivateKey, stPub: EdDSAPublicKey, timestamp: Long): String {
         val engine = EdDSAEngine(MessageDigest.getInstance(ed25519.hashAlgorithm))
         engine.initSign(stPriv)
-        engine.update(TipBody.forVerify(timestamp))
-        return engine.sign().base64RawURLEncode()
+        val msg = TipBody.forVerify(timestamp)
+        engine.update(msg)
+        val sig = engine.sign()
+
+        val valid = Crypto.verifyEd25519(msg, sig, stPub.abyte)
+        Timber.e("verify go-ed25519 sig is valid: $valid\npub: ${stPub.abyte.base64RawURLEncode()}\nmsg: ${msg.base64RawURLEncode()}\nsig: ${sig.base64RawURLEncode()}")
+
+        return sig.base64RawURLEncode()
     }
 
     @Throws(TipCounterNotSyncedException::class)
