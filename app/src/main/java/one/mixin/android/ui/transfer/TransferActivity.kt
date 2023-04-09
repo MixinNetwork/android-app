@@ -5,11 +5,7 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
-import android.text.SpannableString
-import android.text.Spanned
-import android.text.style.RelativeSizeSpan
 import android.view.WindowManager
-import android.widget.TextView
 import androidx.activity.result.ActivityResultLauncher
 import androidx.core.view.isVisible
 import androidx.lifecycle.lifecycleScope
@@ -498,10 +494,10 @@ class TransferActivity : BaseActivity() {
                 return@launch
             }
             Timber.e("qrcode:$content")
-            // Todo
-            // if (transferCommandData.userId != Session.getAccountId()){
-            //     finish()
-            // }
+            if (transferCommandData.userId != Session.getAccountId()) {
+                toast(R.string.not_yours)
+                finish()
+            }
             transferClient.connectToServer(
                 transferCommandData.ip!!,
                 transferCommandData.port!!,

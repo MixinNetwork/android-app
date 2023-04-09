@@ -21,6 +21,8 @@ import one.mixin.android.extension.base64RawURLEncode
 import one.mixin.android.extension.getMediaPath
 import one.mixin.android.extension.isUUID
 import one.mixin.android.session.Session
+import one.mixin.android.ui.transfer.TransferProtocol.Companion.TYPE_COMMAND
+import one.mixin.android.ui.transfer.TransferProtocol.Companion.TYPE_JSON
 import one.mixin.android.ui.transfer.vo.TransferCommandAction
 import one.mixin.android.ui.transfer.vo.TransferCommandData
 import one.mixin.android.ui.transfer.vo.TransferData
@@ -146,9 +148,7 @@ class TransferServer @Inject internal constructor(
                         val commandData =
                             gson.fromJson(transferData.data, TransferCommandData::class.java)
                         if (commandData.action == TransferCommandAction.CONNECT.value) {
-                            // Todo
-                            // if (commandData.code == code && commandData.userId == Session.getAccountId()) {
-                            if (commandData.code == code) {
+                            if (commandData.code == code && commandData.userId == Session.getAccountId()) {
                                 Timber.e("Verification passed, start transmission")
                                 status.value = TransferStatus.VERIFICATION_COMPLETED
                                 launch {
@@ -200,12 +200,21 @@ class TransferServer @Inject internal constructor(
         transferData: Any,
     ) {
         val content = gson.toJson(transferData)
-        protocol.write(outputStream, content)
+        protocol.write(outputStream, TYPE_JSON, content)
+        outputStream.flush()
+    }
+
+    private fun writeCommand(
+        outputStream: OutputStream,
+        transferData: TransferSendData<TransferCommandData>,
+    ) {
+        val content = gson.toJson(transferData)
+        protocol.write(outputStream, TYPE_COMMAND, content)
         outputStream.flush()
     }
 
     private fun sendStart(outputStream: OutputStream) {
-        writeJson(
+        writeCommand(
             outputStream,
             TransferSendData(
                 TransferDataType.COMMAND.value,
@@ -226,7 +235,7 @@ class TransferServer @Inject internal constructor(
 
     private fun sendFinish(outputStream: OutputStream) {
         Timber.e("send finish")
-        writeJson(
+        writeCommand(
             outputStream,
             TransferSendData(
                 TransferDataType.COMMAND.value,

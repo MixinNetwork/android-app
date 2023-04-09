@@ -1131,4 +1131,5 @@
     <string name="transfer_scan_tips3">请勿关闭屏幕并保持 Mixin 应用在前台运行。</string>
     <string name="Scane_to_Restore">扫码还原</string>
     <string name="Transfer_error">传输错误</string>
+    <string name="not_yours">聊天记录不能在不同账户之间同步</string>
 </resources>

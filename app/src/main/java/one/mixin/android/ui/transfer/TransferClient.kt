@@ -72,11 +72,6 @@ class TransferClient @Inject internal constructor(
 
     private var count = 0L
 
-    fun sendMessage(outputStream: OutputStream, message: String) {
-        protocol.write(outputStream, message)
-        outputStream.flush()
-    }
-
     val protocol = TransferProtocol()
 
     suspend fun connectToServer(ip: String, port: Int, commandData: TransferCommandData) =
@@ -86,10 +81,9 @@ class TransferClient @Inject internal constructor(
                 val socket = Socket(ip, port)
                 this@TransferClient.socket = socket
                 status.value = TransferStatus.WAITING_FOR_VERIFICATION
-                sendMessage(
-                    socket.outputStream,
-                    gson.toJson(TransferSendData(TransferDataType.COMMAND.value, commandData)),
-                )
+                val outputStream = socket.getOutputStream()
+                protocol.write(outputStream, TransferProtocol.TYPE_COMMAND, gson.toJson(TransferSendData(TransferDataType.COMMAND.value, commandData)))
+                outputStream.flush()
                 listen(socket.inputStream, socket.outputStream)
             } catch (e: Exception) {
                 Timber.e(e)
@@ -276,7 +270,7 @@ class TransferClient @Inject internal constructor(
         transferSendData: TransferSendData<TransferCommandData>,
     ) {
         val content = gson.toJson(transferSendData)
-        protocol.write(outputStream, content)
+        protocol.write(outputStream, TransferProtocol.TYPE_COMMAND, content)
         outputStream.flush()
     }
 

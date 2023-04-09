@@ -31,8 +31,9 @@ import kotlin.text.Charsets.UTF_8
 class TransferProtocol {
 
     companion object {
-        const val TYPE_STRING = 0x01.toByte()
-        const val TYPE_FILE = 0x02.toByte()
+        const val TYPE_COMMAND = 0x01.toByte()
+        const val TYPE_JSON = 0x02.toByte()
+        const val TYPE_FILE = 0x03.toByte()
     }
 
     private val messageDao by lazy {
@@ -44,7 +45,7 @@ class TransferProtocol {
         val type = packageData[0]
         val size = byteArrayToInt(packageData.copyOfRange(1, 5))
         return when (type) {
-            TYPE_STRING -> {
+            TYPE_COMMAND, TYPE_JSON -> {
                 Pair(readString(inputStream, size), null)
             }
 
@@ -62,9 +63,9 @@ class TransferProtocol {
         }
     }
 
-    fun write(outputStream: OutputStream, content: String) {
+    fun write(outputStream: OutputStream, type: Byte, content: String) {
         val data = content.toByteArray(UTF_8)
-        outputStream.write(byteArrayOf(TYPE_STRING))
+        outputStream.write(byteArrayOf(type))
         outputStream.write(intToByteArray(data.size))
         outputStream.write(data)
         outputStream.write(checksum(data))
