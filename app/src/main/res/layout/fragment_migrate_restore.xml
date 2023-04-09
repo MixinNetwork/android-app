@@ -105,6 +105,7 @@
         android:layout_width="match_parent"
         android:layout_height="@dimen/item_contact_height"
         android:background="?attr/bg_white"
+        android:visibility="gone"
         android:foreground="?android:attr/selectableItemBackground">
 
         <TextView
