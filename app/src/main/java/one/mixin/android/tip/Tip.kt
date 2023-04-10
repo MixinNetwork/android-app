@@ -349,6 +349,7 @@ class Tip @Inject internal constructor(
                 )
                 Timber.e("use go-ed25519 before updateTipSecret")
                 tipNetworkNullable { tipService.updateTipSecret(request) }.getOrThrow()
+                reportException("Tip tip/secret go update success after bad data", e)
             } else {
                 throw e
             }
