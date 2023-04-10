@@ -69,6 +69,7 @@ fun SessionRequestPage(
         Loading()
         return
     }
+    val isEthSign = (sessionRequestUI.data as? WCEthereumSignMessage)?.type == WCEthereumSignMessage.WCSignType.MESSAGE
 
     MixinAppTheme {
         Column(
@@ -134,26 +135,28 @@ fun SessionRequestPage(
                 name = sessionRequestUI.chain.name,
                 fee = (fee ?: BigDecimal.ZERO).multiply(asset.priceUSD()).toPlainString(),
             )
-            Box(modifier = Modifier.width(16.dp))
             if (step == WalletConnectBottomSheetDialogFragment.Step.Input || step == WalletConnectBottomSheetDialogFragment.Step.Sign) {
-                Warning()
+                Warning(isEthSign)
             }
-            Box(modifier = Modifier.width(32.dp))
-            WCPinBoard(
-                step = step,
-                errorInfo = errorInfo,
-                allowBiometric = true,
-                onNegativeClick = { onDismissRequest() },
-                onPositiveClick = {
-                    if (step == WalletConnectBottomSheetDialogFragment.Step.Send) {
-                        viewModel.sendTransaction(version, sessionRequestUI.requestId)
-                    }
-                    onPositiveClick()
-                },
-                onDoneClick = { onDismissRequest() },
-                onBiometricClick = { onBiometricClick.invoke() },
-                onPinComplete = { pin -> onPinComplete.invoke(pin) },
-            )
+            if (!isEthSign) {
+                WCPinBoard(
+                    step = step,
+                    errorInfo = errorInfo,
+                    allowBiometric = true,
+                    onNegativeClick = { onDismissRequest() },
+                    onPositiveClick = {
+                        if (step == WalletConnectBottomSheetDialogFragment.Step.Send) {
+                            viewModel.sendTransaction(version, sessionRequestUI.requestId)
+                        }
+                        onPositiveClick()
+                    },
+                    onDoneClick = { onDismissRequest() },
+                    onBiometricClick = { onBiometricClick.invoke() },
+                    onPinComplete = { pin -> onPinComplete.invoke(pin) },
+                )
+            } else {
+                Box(modifier = Modifier.height(32.dp))
+            }
         }
     }
 }
@@ -364,7 +367,7 @@ private fun NetworkInfo(
 }
 
 @Composable
-private fun Warning() {
+private fun Warning(isEthSign: Boolean) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -384,8 +387,8 @@ private fun Warning() {
         Box(modifier = Modifier.width(8.dp))
         Text(
             modifier = Modifier.padding(vertical = 12.dp),
-            text = stringResource(id = R.string.signature_request_warning),
-            color = MixinAppTheme.colors.textPrimary,
+            text = if (isEthSign) stringResource(id = R.string.blocked_action, "eth_sign") else stringResource(id = R.string.signature_request_warning),
+            color = if (isEthSign) MixinAppTheme.colors.red else MixinAppTheme.colors.textPrimary,
             fontSize = 14.sp,
         )
         Box(modifier = Modifier.width(16.dp))
