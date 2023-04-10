@@ -240,15 +240,14 @@ fun PinKeyBoard(
                                 }
                             }
                             if (showBiometric) {
-                                Spacer(modifier = Modifier.height(4.dp))
                                 Row(
                                     verticalAlignment = Alignment.CenterVertically,
                                     modifier = Modifier
-                                        .padding(horizontal = 12.dp, vertical = 3.dp)
                                         .clip(
                                             shape = RoundedCornerShape(4.dp),
                                         )
-                                        .clickable { onBiometricClick?.invoke() },
+                                        .clickable { onBiometricClick?.invoke() }
+                                        .padding(start = 20.dp, end = 20.dp, top = 8.dp, bottom = 20.dp),
                                 ) {
                                     Image(
                                         painter = painterResource(R.drawable.ic_biometric),
@@ -260,9 +259,7 @@ fun PinKeyBoard(
                                         color = MixinAppTheme.colors.textBlue,
                                     )
                                 }
-                                Spacer(modifier = Modifier.height(8.dp))
                             }
-                            Spacer(modifier = Modifier.height(12.dp))
                         }
                     } else {
                         Box(

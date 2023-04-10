@@ -18,14 +18,16 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
             android:layout_marginTop="12dp"
-            android:layout_marginBottom="8dp"
             app:pin_tipVisible="false" />
 
         <TextView
             android:id="@+id/biometric_tv"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="20dp"
+            android:paddingStart="20dp"
+            android:paddingEnd="20dp"
+            android:paddingTop="10dp"
+            android:paddingBottom="20dp"
             android:drawablePadding="@dimen/padding8"
             android:text="@string/Verify_by_Biometric"
             android:textColor="@color/wallet_blue_secondary"
