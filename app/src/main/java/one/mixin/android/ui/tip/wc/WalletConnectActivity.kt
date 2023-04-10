@@ -46,7 +46,7 @@ class WalletConnectActivity : BaseActivity() {
 
     override fun finish() {
         super.finish()
-        overridePendingTransition(0, 0)
+        overridePendingTransition(R.anim.stay, R.anim.slide_out_bottom)
     }
 
     private fun handleWCEvent(event: WCEvent) {
