@@ -44,6 +44,7 @@ import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseActivity
 import one.mixin.android.ui.landing.InitializeActivity
 import one.mixin.android.ui.qr.CaptureActivity
+import one.mixin.android.ui.transfer.vo.CURRENT_TRANSFER_VERSION
 import one.mixin.android.ui.transfer.vo.TransferCommandAction
 import one.mixin.android.ui.transfer.vo.TransferCommandData
 import one.mixin.android.ui.transfer.vo.TransferStatus
@@ -496,6 +497,10 @@ class TransferActivity : BaseActivity() {
             Timber.e("qrcode:$content")
             if (transferCommandData.userId != Session.getAccountId()) {
                 toast(R.string.not_yours)
+                finish()
+            }
+            if (transferCommandData.version > CURRENT_TRANSFER_VERSION) {
+                toast(R.string.Version_not_supported)
                 finish()
             }
             transferClient.connectToServer(

@@ -1132,4 +1132,5 @@
     <string name="Scane_to_Restore">扫码还原</string>
     <string name="Transfer_error">传输错误</string>
     <string name="not_yours">聊天记录不能在不同账户之间同步</string>
+    <string name="Version_not_supported">版本不兼容，请升级新版本</string>
 </resources>

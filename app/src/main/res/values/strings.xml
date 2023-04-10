@@ -1160,4 +1160,5 @@
     <string name="Scane_to_Restore">Scan to Restore</string>
     <string name="Transfer_error">Transfer error</string>
     <string name="not_yours">Chat history cannot be synced between different accounts</string>
+    <string name="Version_not_supported">Version is not supported</string>
 </resources>
