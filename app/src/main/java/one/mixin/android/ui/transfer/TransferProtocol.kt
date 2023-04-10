@@ -6,7 +6,10 @@ import one.mixin.android.RxBus
 import one.mixin.android.api.ChecksumException
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.event.SpeedEvent
+import one.mixin.android.extension.createAudioTemp
 import one.mixin.android.extension.createDocumentTemp
+import one.mixin.android.extension.createImageTemp
+import one.mixin.android.extension.createVideoTemp
 import one.mixin.android.extension.getAudioPath
 import one.mixin.android.extension.getDocumentPath
 import one.mixin.android.extension.getExtensionName
@@ -159,33 +162,34 @@ class TransferProtocol {
             safeRead(inputStream, 8)
             return null
         } else {
-            val extensionName = message.name?.getExtensionName()
+            val extensionName = message.mediaUrl?.getExtensionName()
             val outFile = MixinApplication.get().let {
                 if (message.isTranscript()) {
                     return null
                 } else if (message.isImage()) {
-                    it.getImagePath()
+                    it.getImagePath().createImageTemp(message.conversationId, message.messageId, ".$extensionName")
                 } else if (message.isAudio()) {
-                    it.getAudioPath()
+                    it.getAudioPath().createAudioTemp(message.conversationId, message.messageId, "ogg")
                 } else if (message.isVideo()) {
-                    it.getVideoPath()
+                    it.getVideoPath().createVideoTemp(message.conversationId, message.messageId, extensionName?:"mp4")
                 } else {
-                    it.getDocumentPath()
+                    it.getDocumentPath().createDocumentTemp(message.conversationId, message.messageId, extensionName)
                 }
-            }.createDocumentTemp(message.conversationId, message.messageId, extensionName)
+            }
+            Timber.e("${outFile.absolutePath} $extensionName")
             val buffer = ByteArray(1024)
             var bytesRead = 0
             var bytesLeft = expectedLength - 16
-            val fos = FileOutputStream(outFile)
-            while (bytesRead != -1 && bytesLeft > 0) {
-                bytesRead = inputStream.read(buffer, 0, bytesLeft.coerceAtMost(1024))
-                if (bytesRead > 0) {
-                    fos.write(buffer, 0, bytesRead)
-                    crc.update(buffer.copyOfRange(0, bytesRead))
-                    bytesLeft -= bytesRead
+            outFile.outputStream().use {fos->
+                while (bytesRead != -1 && bytesLeft > 0) {
+                    bytesRead = inputStream.read(buffer, 0, bytesLeft.coerceAtMost(1024))
+                    if (bytesRead > 0) {
+                        fos.write(buffer, 0, bytesRead)
+                        crc.update(buffer.copyOfRange(0, bytesRead))
+                        bytesLeft -= bytesRead
+                    }
                 }
             }
-            fos.close()
             val checksum = safeRead(inputStream, 8)
             val checksumLong = bytesToLong(checksum)
             Timber.e("Receive file: ${outFile.name} ${outFile.length()} checksum ${bytesToLong(checksum)} -- ${crc.value}")

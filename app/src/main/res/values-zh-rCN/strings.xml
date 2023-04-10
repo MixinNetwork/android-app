@@ -1113,6 +1113,8 @@
     <string name="sync_chat">同步聊天记录</string>
     <string name="Please_log_in_to_the_desktop_first">请先登录桌面</string>
     <string name="Restore_from_Another_Phone">从另一部电话恢复</string>
+    <string name="Restore_from_Local">本地恢复</string>
+    <string name="Restore_from_Local_tip">从设备备份中恢复您的聊天历史记录。</string>
     <string name="transfer_pc_desc">同步你的聊天记录到 Mixin Messenger 桌面端，请确保两台设备接入同一个 Wi-Fi 或热点。</string>
     <string name="transfer_phone_desc">同步你的聊天记录到新的设备，请确保两台设备接入同一个 Wi-Fi 或热点。</string>
     <string name="restore_desc">从 Mixin Messenger 桌面端同步你的聊天记录，同步不会覆盖本地记录只会增量同步，请确保两台设备接入同一个 Wi-Fi 或热点。</string>

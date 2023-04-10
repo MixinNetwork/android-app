@@ -281,11 +281,11 @@ class TransferActivity : BaseActivity() {
                         .setCancelable(false)
                         .setPositiveButton(R.string.Confirm) { dialog, _ ->
                             dialog.dismiss()
-                            if (argsStatus == ARGS_RESTORE_FROM_PHONE || argsStatus == ARGS_RESTORE_FROM_PC) {
+                            if (argsStatus == ARGS_RESTORE_FROM_PHONE) {
                                 InitializeActivity.showLoading(this)
                             }
-                            finish()
                             status.value = TransferStatus.INITIALIZING
+                            finish()
                         }
                         .show()
                 }
