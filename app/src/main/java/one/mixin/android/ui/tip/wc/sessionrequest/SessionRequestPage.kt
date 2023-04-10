@@ -70,75 +70,91 @@ fun SessionRequestPage(
         return
     }
 
-    Column(
-        modifier = Modifier
-            .clip(shape = RoundedCornerShape(topStart = 8.dp, topEnd = 8.dp))
-            .fillMaxWidth()
-            .background(MixinAppTheme.colors.background),
-        horizontalAlignment = Alignment.CenterHorizontally,
-    ) {
-        Image(
-            painter = painterResource(R.drawable.ic_close_black_24dp),
+    MixinAppTheme {
+        Column(
             modifier = Modifier
-                .size(52.dp, 52.dp)
-                .align(alignment = Alignment.End)
-                .padding(horizontal = 14.dp, vertical = 14.dp)
-                .clip(CircleShape)
-                .clickable(onClick = {
-                    viewModel.rejectRequest(version, sessionRequestUI.requestId)
-                    onDismissRequest.invoke()
-                }),
-            contentDescription = null,
-        )
-        Box(modifier = Modifier.height(12.dp))
-        Text(
-            text = stringResource(id = if (sessionRequestUI.data is WCEthereumSignMessage) R.string.signature_request else R.string.transaction_request),
-            style = TextStyle(
-                color = MixinAppTheme.colors.textPrimary,
-                fontSize = 18.sp,
-                fontWeight = FontWeight.W600,
-            ),
-        )
-        Box(modifier = Modifier.height(8.dp))
-        DAppInfo(
-            info = sessionRequestUI.peerUI.name,
-            icon = sessionRequestUI.peerUI.icon,
-        )
-        Box(modifier = Modifier.height(16.dp))
-        when (sessionRequestUI.data) {
-            is WCEthereumSignMessage -> {
-                Hint(hint = Hint.NoPreview)
-            }
-            is WCEthereumTransaction -> {
-                Transaction(balance = Convert.fromWei(Numeric.toBigInt(sessionRequestUI.data.value ?: "0").toBigDecimal(), Convert.Unit.ETHER), sessionRequestUI.chain, asset)
-            }
-            else -> {
-                Message(content = viewModel.getContent(version, gson, sessionRequestUI.data)) {
-                    onPreviewMessage.invoke(it)
+                .clip(shape = RoundedCornerShape(topStart = 8.dp, topEnd = 8.dp))
+                .fillMaxWidth()
+                .background(MixinAppTheme.colors.background),
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            Image(
+                painter = painterResource(R.drawable.ic_close_black_24dp),
+                modifier = Modifier
+                    .size(52.dp, 52.dp)
+                    .align(alignment = Alignment.End)
+                    .padding(horizontal = 14.dp, vertical = 14.dp)
+                    .clip(CircleShape)
+                    .clickable(onClick = {
+                        viewModel.rejectRequest(version, sessionRequestUI.requestId)
+                        onDismissRequest.invoke()
+                    }),
+                contentDescription = null,
+            )
+            Box(modifier = Modifier.height(12.dp))
+            Text(
+                text = stringResource(id = if (sessionRequestUI.data is WCEthereumSignMessage) R.string.signature_request else R.string.transaction_request),
+                style = TextStyle(
+                    color = MixinAppTheme.colors.textPrimary,
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.W600,
+                ),
+            )
+            Box(modifier = Modifier.height(8.dp))
+            DAppInfo(
+                info = sessionRequestUI.peerUI.name,
+                icon = sessionRequestUI.peerUI.icon,
+            )
+            Box(modifier = Modifier.height(16.dp))
+            when (sessionRequestUI.data) {
+                is WCEthereumSignMessage -> {
+                    Hint(hint = Hint.NoPreview)
+                }
+
+                is WCEthereumTransaction -> {
+                    Transaction(
+                        balance = Convert.fromWei(
+                            Numeric.toBigInt(
+                                sessionRequestUI.data.value ?: "0",
+                            ).toBigDecimal(),
+                            Convert.Unit.ETHER,
+                        ),
+                        sessionRequestUI.chain,
+                        asset,
+                    )
+                }
+
+                else -> {
+                    Message(content = viewModel.getContent(version, gson, sessionRequestUI.data)) {
+                        onPreviewMessage.invoke(it)
+                    }
                 }
             }
+            NetworkInfo(
+                name = sessionRequestUI.chain.name,
+                fee = (fee ?: BigDecimal.ZERO).multiply(asset.priceUSD()).toPlainString(),
+            )
+            Box(modifier = Modifier.width(16.dp))
+            if (step == WalletConnectBottomSheetDialogFragment.Step.Input || step == WalletConnectBottomSheetDialogFragment.Step.Sign) {
+                Warning()
+            }
+            Box(modifier = Modifier.width(32.dp))
+            WCPinBoard(
+                step = step,
+                errorInfo = errorInfo,
+                allowBiometric = true,
+                onNegativeClick = { onDismissRequest() },
+                onPositiveClick = {
+                    if (step == WalletConnectBottomSheetDialogFragment.Step.Send) {
+                        viewModel.sendTransaction(version, sessionRequestUI.requestId)
+                    }
+                    onPositiveClick()
+                },
+                onDoneClick = { onDismissRequest() },
+                onBiometricClick = { onBiometricClick.invoke() },
+                onPinComplete = { pin -> onPinComplete.invoke(pin) },
+            )
         }
-        NetworkInfo(name = sessionRequestUI.chain.name, fee = (fee ?: BigDecimal.ZERO).multiply(asset.priceUSD()).toPlainString())
-        Box(modifier = Modifier.width(16.dp))
-        if (step == WalletConnectBottomSheetDialogFragment.Step.Input || step == WalletConnectBottomSheetDialogFragment.Step.Sign) {
-            Warning()
-        }
-        Box(modifier = Modifier.width(32.dp))
-        WCPinBoard(
-            step = step,
-            errorInfo = errorInfo,
-            allowBiometric = true,
-            onNegativeClick = { onDismissRequest() },
-            onPositiveClick = {
-                if (step == WalletConnectBottomSheetDialogFragment.Step.Send) {
-                    viewModel.sendTransaction(version, sessionRequestUI.requestId)
-                }
-                onPositiveClick()
-            },
-            onDoneClick = { onDismissRequest() },
-            onBiometricClick = { onBiometricClick.invoke() },
-            onPinComplete = { pin -> onPinComplete.invoke(pin) },
-        )
     }
 }
 

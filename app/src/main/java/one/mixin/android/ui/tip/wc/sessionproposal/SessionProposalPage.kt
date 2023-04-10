@@ -58,68 +58,70 @@ fun SessionProposalPage(
         sessionProposalUI.chain
     }.name
 
-    Column(
-        modifier = Modifier
-            .clip(shape = RoundedCornerShape(topStart = 8.dp, topEnd = 8.dp))
-            .fillMaxWidth()
-            .background(MixinAppTheme.colors.background),
-        horizontalAlignment = Alignment.CenterHorizontally,
-    ) {
-        Image(
-            painter = painterResource(R.drawable.ic_close_black_24dp),
-            modifier = Modifier
-                .size(52.dp, 52.dp)
-                .align(alignment = Alignment.End)
-                .padding(horizontal = 14.dp, vertical = 14.dp)
-                .clip(CircleShape)
-                .clickable(onClick = {
-                    viewModel.rejectSession(version)
-                    onDismissRequest.invoke()
-                }),
-            contentDescription = null,
-        )
-        Box(modifier = Modifier.height(12.dp))
-        Text(
-            text = stringResource(id = R.string.connect_wallet),
-            style = TextStyle(
-                color = MixinAppTheme.colors.textPrimary,
-                fontSize = 18.sp,
-                fontWeight = FontWeight.W600,
-            ),
-        )
-        Box(modifier = Modifier.height(8.dp))
-        DAppInfo(
-            info = "${sessionProposalUI.peer.name} (${sessionProposalUI.peer.uri})",
-            icon = sessionProposalUI.peer.icon,
-        )
-        Box(modifier = Modifier.height(16.dp))
+    MixinAppTheme {
         Column(
             modifier = Modifier
-                .padding(horizontal = 32.dp)
+                .clip(shape = RoundedCornerShape(topStart = 8.dp, topEnd = 8.dp))
                 .fillMaxWidth()
-                .clip(shape = RoundedCornerShape(8.dp))
-                .background(MixinAppTheme.colors.backgroundWindow),
+                .background(MixinAppTheme.colors.background),
+            horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            Scope(
-                name = stringResource(id = R.string.read_your_public_address),
-                desc = stringResource(id = R.string.allow_dapp_access_public_address),
+            Image(
+                painter = painterResource(R.drawable.ic_close_black_24dp),
+                modifier = Modifier
+                    .size(52.dp, 52.dp)
+                    .align(alignment = Alignment.End)
+                    .padding(horizontal = 14.dp, vertical = 14.dp)
+                    .clip(CircleShape)
+                    .clickable(onClick = {
+                        viewModel.rejectSession(version)
+                        onDismissRequest.invoke()
+                    }),
+                contentDescription = null,
             )
-            Scope(
-                name = stringResource(id = R.string.request_approval),
-                desc = stringResource(id = R.string.allow_dapp_request_approval),
+            Box(modifier = Modifier.height(12.dp))
+            Text(
+                text = stringResource(id = R.string.connect_wallet),
+                style = TextStyle(
+                    color = MixinAppTheme.colors.textPrimary,
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.W600,
+                ),
+            )
+            Box(modifier = Modifier.height(8.dp))
+            DAppInfo(
+                info = "${sessionProposalUI.peer.name} (${sessionProposalUI.peer.uri})",
+                icon = sessionProposalUI.peer.icon,
+            )
+            Box(modifier = Modifier.height(16.dp))
+            Column(
+                modifier = Modifier
+                    .padding(horizontal = 32.dp)
+                    .fillMaxWidth()
+                    .clip(shape = RoundedCornerShape(8.dp))
+                    .background(MixinAppTheme.colors.backgroundWindow),
+            ) {
+                Scope(
+                    name = stringResource(id = R.string.read_your_public_address),
+                    desc = stringResource(id = R.string.allow_dapp_access_public_address),
+                )
+                Scope(
+                    name = stringResource(id = R.string.request_approval),
+                    desc = stringResource(id = R.string.allow_dapp_request_approval),
+                )
+            }
+            Network(name = chainName)
+            WCPinBoard(
+                step = step,
+                errorInfo = errorInfo,
+                allowBiometric = true,
+                onNegativeClick = { },
+                onPositiveClick = { },
+                onDoneClick = { onDismissRequest() },
+                onBiometricClick = { onBiometricClick.invoke() },
+                onPinComplete = { pin -> onPinComplete.invoke(pin) },
             )
         }
-        Network(name = chainName)
-        WCPinBoard(
-            step = step,
-            errorInfo = errorInfo,
-            allowBiometric = true,
-            onNegativeClick = { },
-            onPositiveClick = { },
-            onDoneClick = { onDismissRequest() },
-            onBiometricClick = { onBiometricClick.invoke() },
-            onPinComplete = { pin -> onPinComplete.invoke(pin) },
-        )
     }
 }
 
