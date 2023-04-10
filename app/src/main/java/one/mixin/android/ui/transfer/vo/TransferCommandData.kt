@@ -18,8 +18,10 @@ data class TransferCommandData(
     @SerializedName("user_id")
     val userId: String? = null,
     val progress: Float? = null, // 0~100
-    val version: Int = 1,
+    val version: Int = CURRENT_TRANSFER_VERSION,
     @SerializedName("device_id")
     val deviceId: String = MixinApplication.appContext.getDeviceId(),
     val platform: String = "Android",
 ) : Parcelable
+
+const val CURRENT_TRANSFER_VERSION = 1

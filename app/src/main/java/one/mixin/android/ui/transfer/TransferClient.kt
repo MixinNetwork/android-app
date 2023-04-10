@@ -19,6 +19,7 @@ import one.mixin.android.db.UserDao
 import one.mixin.android.event.DeviceTransferProgressEvent
 import one.mixin.android.fts.FtsDatabase
 import one.mixin.android.fts.insertOrReplaceMessageFts4
+import one.mixin.android.ui.transfer.vo.CURRENT_TRANSFER_VERSION
 import one.mixin.android.ui.transfer.vo.TransferCommandAction
 import one.mixin.android.ui.transfer.vo.TransferCommandData
 import one.mixin.android.ui.transfer.vo.TransferData
@@ -116,7 +117,7 @@ class TransferClient @Inject internal constructor(
                         val transferCommandData =
                             gson.fromJson(transferData.data, TransferCommandData::class.java)
                         if (transferCommandData.action == TransferCommandAction.START.value) {
-                            if (transferCommandData.version > 1) {
+                            if (transferCommandData.version != CURRENT_TRANSFER_VERSION) {
                                 Timber.e("Version does not support")
                                 exit()
                                 return
