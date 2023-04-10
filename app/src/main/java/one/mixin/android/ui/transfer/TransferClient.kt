@@ -99,15 +99,16 @@ class TransferClient @Inject internal constructor(
     private suspend fun listen(inputStream: InputStream, outputStream: OutputStream) {
         do {
             status.value = TransferStatus.SENDING
-            val (content, file) = try {
+            val (type, result) = try {
                 protocol.read(inputStream)
             } catch (e: EOFException) {
                 Pair(null, null)
             }
-            if (file != null) {
+            if (type == TransferProtocol.TYPE_FILE) {
                 // read file
                 progress(outputStream)
-            } else if (content != null) {
+            } else if (type == TransferProtocol.TYPE_COMMAND || type == TransferProtocol.TYPE_JSON) {
+                val content = result as String
                 Timber.e("sync $content")
                 val transferData = gson.fromJson(content, TransferData::class.java)
                 when (transferData.type) {
@@ -115,6 +116,11 @@ class TransferClient @Inject internal constructor(
                         val transferCommandData =
                             gson.fromJson(transferData.data, TransferCommandData::class.java)
                         if (transferCommandData.action == TransferCommandAction.START.value) {
+                            if (transferCommandData.version > 1) {
+                                Timber.e("Version does not support")
+                                exit()
+                                return
+                            }
                             this.total = transferCommandData.total ?: 0L
                         } else if (transferCommandData.action == TransferCommandAction.PUSH.value && transferCommandData.action == TransferCommandAction.PULL.value && transferCommandData.action == TransferCommandAction.START.value) {
                             Timber.e("action ${transferCommandData.action}")

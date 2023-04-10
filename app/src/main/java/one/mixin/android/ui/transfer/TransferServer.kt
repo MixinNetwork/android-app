@@ -140,8 +140,9 @@ class TransferServer @Inject internal constructor(
     private suspend fun run(inputStream: InputStream, outputStream: OutputStream) =
         withContext(Dispatchers.IO) {
             do {
-                val (content, _) = protocol.read(inputStream)
-                if (content != null) {
+                val (type, result) = protocol.read(inputStream)
+                if (type == TYPE_JSON || type == TYPE_COMMAND) {
+                    val content = result as String
                     val transferData = gson.fromJson(content, TransferData::class.java)
                     if (transferData.type == TransferDataType.COMMAND.value) {
                         Timber.e("command $content")
