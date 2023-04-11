@@ -18,7 +18,6 @@ import one.mixin.android.db.TranscriptMessageDao
 import one.mixin.android.db.UserDao
 import one.mixin.android.event.DeviceTransferProgressEvent
 import one.mixin.android.extension.base64RawURLEncode
-import one.mixin.android.extension.getFileNameNoEx
 import one.mixin.android.extension.getMediaPath
 import one.mixin.android.extension.isUUID
 import one.mixin.android.session.Session

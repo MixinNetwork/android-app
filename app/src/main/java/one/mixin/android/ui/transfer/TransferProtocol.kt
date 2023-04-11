@@ -15,12 +15,10 @@ import one.mixin.android.extension.getAudioPath
 import one.mixin.android.extension.getDocumentPath
 import one.mixin.android.extension.getExtensionName
 import one.mixin.android.extension.getImagePath
-import one.mixin.android.extension.getTranscriptDirPath
 import one.mixin.android.extension.getTranscriptFile
 import one.mixin.android.extension.getVideoPath
 import one.mixin.android.vo.isAudio
 import one.mixin.android.vo.isImage
-import one.mixin.android.vo.isTranscript
 import one.mixin.android.vo.isVideo
 import timber.log.Timber
 import java.io.EOFException
@@ -141,6 +139,7 @@ class TransferProtocol {
         val currentTime = System.currentTimeMillis()
         if (readCount > 1024 * 1024 && lastTimeTime > 0) {
             val speed = readCount / ((currentTime - lastTimeTime) / 1000f) / 1024f / 128f
+            Timber.e(String.format("%.2f Mb/s", speed))
             RxBus.publish(SpeedEvent(String.format("%.2f Mb/s", speed)))
             readCount = 0
             lastTimeTime = currentTime
