@@ -11,8 +11,8 @@ plugins {
 
 def versionMajor = 0
 def versionMinor = 38
-def versionPatch = 10
-def versionBuild = 6
+def versionPatch = 12
+def versionBuild = 1
 
 android {
     compileSdkVersion 33
@@ -361,8 +361,8 @@ dependencies {
     implementation "androidx.compose.runtime:runtime-rxjava2:${composeVersion}"
     implementation 'androidx.activity:activity-compose:1.7.0'
     androidTestImplementation "androidx.compose.ui:ui-test-junit4:${composeVersion}"
-    implementation "com.google.accompanist:accompanist-pager:0.30.0"
-    implementation "com.google.accompanist:accompanist-pager-indicators:0.30.0"
+    implementation "com.google.accompanist:accompanist-pager:0.30.1"
+    implementation "com.google.accompanist:accompanist-pager-indicators:0.30.1"
 
     // accompanist
     implementation "com.google.accompanist:accompanist-navigation-animation:${accompanistVersion}"

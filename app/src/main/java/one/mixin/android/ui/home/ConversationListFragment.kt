@@ -65,6 +65,7 @@ import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.renderMessage
 import one.mixin.android.extension.timeAgo
 import one.mixin.android.extension.toast
+import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.job.GenerateAvatarJob
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.session.Session
@@ -150,20 +151,26 @@ class ConversationListFragment : LinkFragment() {
 
     private val messageAdapterDataObserver =
         object : RecyclerView.AdapterDataObserver() {
+            override fun onItemRangeInserted(positionStart: Int, itemCount: Int) {
+                if (viewDestroyed()) return
+
+                if (isTop) {
+                    (binding.messageRv.layoutManager as LinearLayoutManager).scrollToPosition(0)
+                }
+            }
+
             override fun onItemRangeChanged(positionStart: Int, itemCount: Int) {
-                super.onItemRangeChanged(positionStart, itemCount)
-                if (scrollTop) {
+                if (viewDestroyed()) return
+
+                if (scrollTop || isTop) {
                     scrollTop = false
-                    if (isAdded) {
-                        (binding.messageRv.layoutManager as LinearLayoutManager).scrollToPositionWithOffset(
-                            0,
-                            0,
-                        )
-                    }
+                    (binding.messageRv.layoutManager as LinearLayoutManager).scrollToPosition(0)
                 }
             }
         }
 
+    private var isTop = true
+    private var firstPosition = 0
     private var distance = 0
     private var shadowVisible = true
     private val touchSlop: Int by lazy {
@@ -224,6 +231,17 @@ class ConversationListFragment : LinkFragment() {
                     }
                     if ((dy > 0 && shadowVisible) || (dy < 0 && !shadowVisible)) {
                         distance += dy
+                    }
+
+                    firstPosition = (binding.messageRv.layoutManager as LinearLayoutManager).findFirstVisibleItemPosition()
+                    if (firstPosition > 0) {
+                        if (isTop) {
+                            isTop = false
+                        }
+                    } else {
+                        if (!isTop) {
+                            isTop = true
+                        }
                     }
                 }
             },
