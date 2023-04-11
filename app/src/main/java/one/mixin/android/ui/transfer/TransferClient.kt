@@ -41,11 +41,13 @@ import one.mixin.android.vo.TranscriptMessage
 import one.mixin.android.vo.User
 import timber.log.Timber
 import java.io.EOFException
+import java.io.File
 import java.io.InputStream
 import java.io.OutputStream
 import java.lang.Float.min
 import java.net.Socket
 import javax.inject.Inject
+import kotlin.text.Charsets.UTF_8
 
 class TransferClient @Inject internal constructor(
     val assetDao: AssetDao,
@@ -100,20 +102,15 @@ class TransferClient @Inject internal constructor(
     private suspend fun listen(inputStream: InputStream, outputStream: OutputStream) {
         do {
             status.value = TransferStatus.SYNCING
-            val (type, result) = try {
+            val result = try {
                 protocol.read(inputStream)
             } catch (e: EOFException) {
-                Pair(null, null)
+                null
             }
-            when (type) {
-                TransferProtocol.TYPE_FILE -> {
-                    // read file
-                    progress(outputStream)
-                }
-                TransferProtocol.TYPE_COMMAND -> {
-                    val content = result as String
-                    Timber.e("sync $content")
-                    val transferData = gson.fromJson(content, TransferData::class.java)
+            when (result) {
+                is String -> {
+                    Timber.e("sync $result")
+                    val transferData = gson.fromJson(result, TransferData::class.java)
                     when (transferData.type) {
                         TransferDataType.COMMAND.value -> {
                             val transferCommandData =
@@ -133,17 +130,21 @@ class TransferClient @Inject internal constructor(
                                 delay(100)
                                 exit()
                             } else {
-                                Timber.e(content)
+                                Timber.e(result)
                             }
                         }
 
                         else -> {
-                            Timber.e("No support $content")
+                            Timber.e("No support $result")
                         }
                     }
                 }
-                TransferProtocol.TYPE_JSON -> {
-                    processJson(result as String, outputStream)
+                is ByteArray -> {
+                    processJson(String(result, UTF_8), outputStream)
+                }
+                is File -> {
+                    // read file
+                    progress(outputStream)
                 }
                 else -> {
                     // do noting

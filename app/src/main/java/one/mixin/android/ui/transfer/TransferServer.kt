@@ -140,41 +140,43 @@ class TransferServer @Inject internal constructor(
     private suspend fun run(inputStream: InputStream, outputStream: OutputStream) =
         withContext(Dispatchers.IO) {
             do {
-                val (type, result) = protocol.read(inputStream)
-                if (type == TYPE_JSON || type == TYPE_COMMAND) {
-                    val content = result as String
-                    val transferData = gson.fromJson(content, TransferData::class.java)
-                    if (transferData.type == TransferDataType.COMMAND.value) {
-                        Timber.e("command $content")
-                        val commandData =
-                            gson.fromJson(transferData.data, TransferCommandData::class.java)
-                        if (commandData.action == TransferCommandAction.CONNECT.value) {
-                            if (commandData.code == code && commandData.userId == Session.getAccountId()) {
-                                Timber.e("Verification passed, start transmission")
-                                status.value = TransferStatus.VERIFICATION_COMPLETED
-                                launch {
-                                    transfer(outputStream)
+                when (val result = protocol.read(inputStream)) {
+                    is String -> {
+                        val transferData = gson.fromJson(result, TransferData::class.java)
+                        if (transferData.type == TransferDataType.COMMAND.value) {
+                            Timber.e("command $result")
+                            val commandData =
+                                gson.fromJson(transferData.data, TransferCommandData::class.java)
+                            if (commandData.action == TransferCommandAction.CONNECT.value) {
+                                if (commandData.code == code && commandData.userId == Session.getAccountId()) {
+                                    Timber.e("Verification passed, start transmission")
+                                    status.value = TransferStatus.VERIFICATION_COMPLETED
+                                    launch {
+                                        transfer(outputStream)
+                                    }
+                                } else {
+                                    Timber.e("Validation failed, close")
+                                    status.value = TransferStatus.ERROR
+                                    exit()
+                                }
+                            } else if (commandData.action == TransferCommandAction.FINISH.value) {
+                                RxBus.publish(DeviceTransferProgressEvent(100f))
+                                status.value = TransferStatus.FINISHED
+                                exit()
+                            } else if (commandData.action == TransferCommandAction.PROGRESS.value) {
+                                // Get progress from client
+                                if (commandData.progress != null) {
+                                    RxBus.publish(DeviceTransferProgressEvent(commandData.progress))
                                 }
                             } else {
-                                Timber.e("Validation failed, close")
-                                status.value = TransferStatus.ERROR
-                                exit()
+                                Timber.e("Unsupported command")
                             }
-                        } else if (commandData.action == TransferCommandAction.FINISH.value) {
-                            RxBus.publish(DeviceTransferProgressEvent(100f))
-                            status.value = TransferStatus.FINISHED
-                            exit()
-                        } else if (commandData.action == TransferCommandAction.PROGRESS.value) {
-                            // Get progress from client
-                            if (commandData.progress != null) {
-                                RxBus.publish(DeviceTransferProgressEvent(commandData.progress))
-                            }
-                        } else {
-                            Timber.e("Unsupported command")
                         }
                     }
-                } else {
-                    // do noting
+                    else -> {
+                        // File ByteArray null
+                        // do noting
+                    }
                 }
             } while (!quit)
         }

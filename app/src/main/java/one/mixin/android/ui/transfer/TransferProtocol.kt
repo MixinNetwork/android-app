@@ -31,6 +31,12 @@ import java.util.zip.CRC32
 import kotlin.jvm.Throws
 import kotlin.text.Charsets.UTF_8
 
+/*
+ * Data packet format:
+ * ----------------------------------------------------------------------
+ * | type (1 byte) | body_length（4 bytes） | body | crc（8 bytes） |
+ * ----------------------------------------------------------------------
+ */
 class TransferProtocol {
 
     companion object {
@@ -47,21 +53,25 @@ class TransferProtocol {
         MixinDatabase.getDatabase(MixinApplication.appContext).transcriptDao()
     }
 
-    fun read(inputStream: InputStream): Pair<Byte, Any?> {
+    fun read(inputStream: InputStream): Any? {
         val packageData = safeRead(inputStream, 5)
         val type = packageData[0]
         val size = byteArrayToInt(packageData.copyOfRange(1, 5))
         return when (type) {
-            TYPE_COMMAND, TYPE_JSON -> {
-                Pair(type, readString(inputStream, size))
+            TYPE_COMMAND -> {
+                readString(inputStream, size)
+            }
+
+            TYPE_JSON -> {
+                readByteArray(inputStream, size)
             }
 
             TYPE_FILE -> { // File
                 val file = readFile(inputStream, size)
                 if (file?.exists() == true) {
-                    Pair(type, file)
+                    file
                 }
-                Pair(type, null)
+                null
             }
 
             else -> {
@@ -107,13 +117,18 @@ class TransferProtocol {
 
     @Throws(ChecksumException::class)
     private fun readString(inputStream: InputStream, expectedLength: Int): String {
+        return String(readByteArray(inputStream, expectedLength), UTF_8)
+    }
+
+    @Throws(ChecksumException::class)
+    private fun readByteArray(inputStream: InputStream, expectedLength: Int): ByteArray {
         val data = safeRead(inputStream, expectedLength)
         val checksum = safeRead(inputStream, 8)
         if (bytesToLong(checksum) != bytesToLong(checksum(data))) {
             Timber.e("ChecksumException $expectedLength ${bytesToLong(checksum)} ${bytesToLong(checksum(data))}")
             throw ChecksumException()
         }
-        return String(data, UTF_8)
+        return data
     }
 
     private fun safeRead(inputStream: InputStream, expectedLength: Int): ByteArray {
