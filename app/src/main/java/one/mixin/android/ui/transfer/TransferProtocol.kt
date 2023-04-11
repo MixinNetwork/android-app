@@ -6,6 +6,7 @@ import one.mixin.android.RxBus
 import one.mixin.android.api.ChecksumException
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.event.SpeedEvent
+import one.mixin.android.extension.copy
 import one.mixin.android.extension.createAudioTemp
 import one.mixin.android.extension.createDocumentTemp
 import one.mixin.android.extension.createImageTemp
@@ -14,6 +15,8 @@ import one.mixin.android.extension.getAudioPath
 import one.mixin.android.extension.getDocumentPath
 import one.mixin.android.extension.getExtensionName
 import one.mixin.android.extension.getImagePath
+import one.mixin.android.extension.getTranscriptDirPath
+import one.mixin.android.extension.getTranscriptFile
 import one.mixin.android.extension.getVideoPath
 import one.mixin.android.vo.isAudio
 import one.mixin.android.vo.isImage
@@ -40,6 +43,10 @@ class TransferProtocol {
 
     private val messageDao by lazy {
         MixinDatabase.getDatabase(MixinApplication.appContext).messageDao()
+    }
+
+    private val transcriptMessageDao by lazy {
+        MixinDatabase.getDatabase(MixinApplication.appContext).transcriptDao()
     }
 
     fun read(inputStream: InputStream): Pair<Byte, Any?> {
@@ -147,8 +154,9 @@ class TransferProtocol {
         val uuidByteArray = safeRead(inputStream, 16)
         crc.update(uuidByteArray)
         val uuid = UUIDUtils.fromByteArray(uuidByteArray)
+        val transcriptMessage = transcriptMessageDao.getTranscriptByMessageId(uuid)
         val message = messageDao.findMessageById(uuid)
-        if (message == null) {
+        if (message == null && transcriptMessage == null) {
             val buffer = ByteArray(1024)
             var bytesRead = 0
             var bytesLeft = expectedLength - 16
@@ -161,21 +169,23 @@ class TransferProtocol {
             safeRead(inputStream, 8)
             return null
         } else {
-            val extensionName = message.mediaUrl?.getExtensionName()
-            val outFile = MixinApplication.get().let {
-                if (message.isTranscript()) {
-                    return null
-                } else if (message.isImage()) {
-                    it.getImagePath().createImageTemp(message.conversationId, message.messageId, ".$extensionName")
-                } else if (message.isAudio()) {
-                    it.getAudioPath().createAudioTemp(message.conversationId, message.messageId, "ogg")
-                } else if (message.isVideo()) {
-                    it.getVideoPath().createVideoTemp(message.conversationId, message.messageId, extensionName ?: "mp4")
-                } else {
-                    it.getDocumentPath().createDocumentTemp(message.conversationId, message.messageId, extensionName)
+            val outFile = if (message != null) {
+                val extensionName = message.mediaUrl?.getExtensionName()
+                MixinApplication.get().let {
+                    if (message.isImage()) {
+                        it.getImagePath().createImageTemp(message.conversationId, message.messageId, ".$extensionName")
+                    } else if (message.isAudio()) {
+                        it.getAudioPath().createAudioTemp(message.conversationId, message.messageId, "ogg")
+                    } else if (message.isVideo()) {
+                        it.getVideoPath().createVideoTemp(message.conversationId, message.messageId, extensionName ?: "mp4")
+                    } else {
+                        it.getDocumentPath().createDocumentTemp(message.conversationId, message.messageId, extensionName)
+                    }
                 }
+            } else {
+                val extensionName = transcriptMessage!!.mediaUrl?.getExtensionName()
+                MixinApplication.get().getTranscriptFile(uuid, ".$extensionName")
             }
-            Timber.e("${outFile.absolutePath} $extensionName")
             val buffer = ByteArray(1024)
             var bytesRead = 0
             var bytesLeft = expectedLength - 16
@@ -194,6 +204,13 @@ class TransferProtocol {
             Timber.e("Receive file: ${outFile.name} ${outFile.length()} checksum ${bytesToLong(checksum)} -- ${crc.value}")
             if (checksumLong != crc.value) {
                 throw ChecksumException()
+            }
+            if (message != null && transcriptMessage != null) {
+                val extensionName = transcriptMessage!!.mediaUrl?.getExtensionName()
+                val transcriptFile = MixinApplication.get().getTranscriptFile(uuid, ".$extensionName")
+                if (!transcriptFile.exists()) {
+                    outFile.copy(transcriptFile)
+                }
             }
             return outFile
         }

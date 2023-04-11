@@ -118,6 +118,9 @@ interface TranscriptMessageDao : BaseDao<TranscriptMessage> {
     @Query("SELECT * FROM transcript_messages WHERE transcript_id = :transcriptId AND message_id = :messageId")
     fun getTranscriptByIdSync(transcriptId: String, messageId: String): TranscriptMessage?
 
+    @Query("SELECT * FROM transcript_messages WHERE message_id = :messageId LIMIT 1")
+    fun getTranscriptByMessageId(messageId: String): TranscriptMessage?
+
     @Query("SELECT sum(media_size) FROM messages WHERE conversation_id = :conversationId AND category IN ($TRANSCRIPTS)")
     fun getMediaSizeTotalById(conversationId: String): Long?
 

@@ -18,6 +18,7 @@ import one.mixin.android.db.TranscriptMessageDao
 import one.mixin.android.db.UserDao
 import one.mixin.android.event.DeviceTransferProgressEvent
 import one.mixin.android.extension.base64RawURLEncode
+import one.mixin.android.extension.getFileNameNoEx
 import one.mixin.android.extension.getMediaPath
 import one.mixin.android.extension.isUUID
 import one.mixin.android.session.Session
@@ -463,7 +464,10 @@ class TransferServer @Inject internal constructor(
             if (f.isFile && f.length() > 0) {
                 val name = f.nameWithoutExtension
                 if (name.isUUID()) {
-                    if (messageDao.findMessageById(name) != null) {
+                    if (f.parentFile.name == "Transcripts" && transcriptMessageDao.countTranscriptByMessageId(name) > 0) {
+                        protocol.write(outputStream, f, name)
+                        count++
+                    } else if (messageDao.findMessageById(name) != null) {
                         protocol.write(outputStream, f, name)
                         count++
                     } else {
