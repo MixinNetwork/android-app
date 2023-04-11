@@ -334,13 +334,13 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
             if (transferPinData.action == PinAction.PIN.name) {
                 transferPinData.messageIds.forEachIndexed { index, messageId ->
                     val message = findMessage(messageId)
+                    val mid = if (index == 0) {
+                        data.messageId
+                    } else {
+                        UUID.randomUUID().toString()
+                    }
                     if (message != null) {
                         pinMessageDao.insert(PinMessage(messageId, message.conversationId, data.createdAt))
-                        val mid = if (index == 0) {
-                            data.messageId
-                        } else {
-                            UUID.randomUUID().toString()
-                        }
                         database.insertMessage(
                             createPinMessage(
                                 mid,
@@ -375,7 +375,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                         }
                     } else {
                         val m = createPinMessage(
-                            UUID.randomUUID().toString(),
+                            mid,
                             data.conversationId,
                             data.userId,
                             messageId, // quote pinned message id
