@@ -279,13 +279,12 @@ interface MessageDao : BaseDao<Message> {
     @Query(
         """
         SELECT m.* FROM messages m 
-        WHERE m.rowid < :rowId  
-        AND m.status != 'FAILED' AND m.status != 'UNKNOWN'
+        WHERE m.status != 'FAILED' AND m.status != 'UNKNOWN'
         ORDER BY m.rowid DESC
-        LIMIT :limit
+        LIMIT :limit OFFSET :offset
     """,
     )
-    fun findMessages(rowId: Long, limit: Int): List<TransferMessage>
+    fun getMessageByLimitAndOffset(limit: Int, offset: Int): List<TransferMessage>
 
     @Query("SELECT rowid FROM messages ORDER BY rowid DESC LIMIT 1")
     fun getLastMessageRowId(): Long?

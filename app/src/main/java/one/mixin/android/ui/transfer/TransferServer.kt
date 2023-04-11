@@ -415,30 +415,30 @@ class TransferServer @Inject internal constructor(
     }
 
     private fun syncMessage(outputStream: OutputStream) {
-        var lastId = messageDao.getLastMessageRowId() ?: return
+        var offset = 0
         while (!quit) {
-            val messages = messageDao.findMessages(lastId, LIMIT)
-            if (messages.isEmpty()) {
+            val list = messageDao.getMessageByLimitAndOffset(LIMIT, offset)
+            if (list.isEmpty()) {
                 return
             }
-            messages.map {
+            list.map {
                 TransferSendData(TransferDataType.MESSAGE.value, it)
             }.forEach {
-                Timber.e("send message: ${it.data.messageId}")
                 writeJson(outputStream, it)
+                Timber.e("send message: ${it.data.messageId}")
                 count++
             }
-            if (messages.size < LIMIT) {
+            if (list.size < LIMIT) {
                 return
             }
-            lastId = messageDao.getMessageRowid(messages.last().messageId) ?: return
+            offset += LIMIT
         }
     }
 
     private fun syncExpiredMessage(outputStream: OutputStream) {
         var offset = 0
         while (!quit) {
-            val list = expiredMessageDao.getExpiredMessageDaoByLimitAndOffset(LIMIT, offset)
+            val list = expiredMessageDao.getExpiredMessageByLimitAndOffset(LIMIT, offset)
             if (list.isEmpty()) {
                 return
             }
