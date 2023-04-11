@@ -61,7 +61,7 @@ class HiddenAssetsFragment : BaseFragment(R.layout.fragment_hidden_assets), Head
                                 walletViewModel.updateAssetHidden(asset.assetId, false)
                                 val anchorView = assetsRv
 
-                                snackbar = Snackbar.make(anchorView, getString(R.string.wallet_already_shown, asset.symbol), Snackbar.LENGTH_LONG)
+                                snackbar = Snackbar.make(anchorView, getString(R.string.wallet_already_shown, asset.symbol), 3500)
                                     .setAction(R.string.UNDO) {
                                         assetsAdapter.restoreItem(deleteItem, hiddenPos)
                                         lifecycleScope.launch(Dispatchers.IO) {
