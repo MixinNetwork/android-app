@@ -180,7 +180,7 @@ class TransferServer @Inject internal constructor(
         }
 
     fun transfer(outputStream: OutputStream) {
-        status.value = TransferStatus.SENDING
+        status.value = TransferStatus.SYNCING
         sendStart(outputStream)
         syncConversation(outputStream)
         syncParticipant(outputStream)
@@ -467,6 +467,7 @@ class TransferServer @Inject internal constructor(
                         protocol.write(outputStream, f, name)
                         count++
                     } else {
+                        // skip and delete not held file
                         f.delete()
                     }
                 }

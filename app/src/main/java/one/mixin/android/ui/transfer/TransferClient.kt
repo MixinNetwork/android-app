@@ -99,7 +99,7 @@ class TransferClient @Inject internal constructor(
 
     private suspend fun listen(inputStream: InputStream, outputStream: OutputStream) {
         do {
-            status.value = TransferStatus.SENDING
+            status.value = TransferStatus.SYNCING
             val (type, result) = try {
                 protocol.read(inputStream)
             } catch (e: EOFException) {

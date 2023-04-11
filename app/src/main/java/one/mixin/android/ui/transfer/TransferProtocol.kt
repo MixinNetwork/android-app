@@ -23,7 +23,6 @@ import timber.log.Timber
 import java.io.EOFException
 import java.io.File
 import java.io.FileInputStream
-import java.io.FileOutputStream
 import java.io.InputStream
 import java.io.OutputStream
 import java.nio.ByteBuffer
@@ -171,7 +170,7 @@ class TransferProtocol {
                 } else if (message.isAudio()) {
                     it.getAudioPath().createAudioTemp(message.conversationId, message.messageId, "ogg")
                 } else if (message.isVideo()) {
-                    it.getVideoPath().createVideoTemp(message.conversationId, message.messageId, extensionName?:"mp4")
+                    it.getVideoPath().createVideoTemp(message.conversationId, message.messageId, extensionName ?: "mp4")
                 } else {
                     it.getDocumentPath().createDocumentTemp(message.conversationId, message.messageId, extensionName)
                 }
@@ -180,7 +179,7 @@ class TransferProtocol {
             val buffer = ByteArray(1024)
             var bytesRead = 0
             var bytesLeft = expectedLength - 16
-            outFile.outputStream().use {fos->
+            outFile.outputStream().use { fos ->
                 while (bytesRead != -1 && bytesLeft > 0) {
                     bytesRead = inputStream.read(buffer, 0, bytesLeft.coerceAtMost(1024))
                     if (bytesRead > 0) {

@@ -256,7 +256,7 @@ class TransferActivity : BaseActivity() {
                     binding.pbTips.isVisible = true
                 }
 
-                TransferStatus.SENDING -> {
+                TransferStatus.SYNCING -> {
                     binding.titleView.isVisible = false
                     binding.qrFl.isVisible = false
                     binding.initLl.isVisible = false

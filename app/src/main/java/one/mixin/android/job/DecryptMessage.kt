@@ -336,7 +336,11 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                     val message = findMessage(messageId)
                     if (message != null) {
                         pinMessageDao.insert(PinMessage(messageId, message.conversationId, data.createdAt))
-                        val mid = UUID.randomUUID().toString()
+                        val mid = if (index == 0) {
+                            data.messageId
+                        } else {
+                            UUID.randomUUID().toString()
+                        }
                         database.insertMessage(
                             createPinMessage(
                                 mid,
@@ -352,7 +356,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                                         null
                                     },
                                 ),
-                                nowInUtc(),
+                                data.createdAt,
                                 MessageStatus.READ.name,
                             ),
                         )
