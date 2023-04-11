@@ -3,6 +3,8 @@ package one.mixin.android.tip.wc
 import com.trustwallet.walletconnect.models.ethereum.WCEthereumSignMessage
 import com.trustwallet.walletconnect.models.ethereum.WCEthereumTransaction
 import com.walletconnect.web3.wallet.client.Wallet
+import one.mixin.android.api.response.GasPriceType
+import one.mixin.android.api.response.TipGas
 import org.web3j.crypto.ECKeyPair
 import org.web3j.crypto.Sign
 import org.web3j.crypto.StructuredDataEncoder
@@ -40,12 +42,16 @@ abstract class WalletConnect {
         data class V1SignData<T>(
             override val requestId: Long,
             override val signMessage: T,
+            var tipGas: TipGas? = null,
+            var gasPriceType: GasPriceType = GasPriceType.Propose,
         ) : WCSignData<T>(requestId, signMessage)
 
         data class V2SignData<T>(
             override val requestId: Long,
             override val signMessage: T,
             val sessionRequest: Wallet.Model.SessionRequest,
+            var tipGas: TipGas? = null,
+            var gasPriceType: GasPriceType = GasPriceType.Propose,
         ) : WCSignData<T>(requestId, signMessage)
 
         data class TIPSignData(
@@ -55,7 +61,7 @@ abstract class WalletConnect {
 
     var chain: Chain = Chain.Polygon
         protected set
-    protected var web3j = Web3j.build(HttpService(chain.rpcServers[0]))
+    protected var web3j: Web3j = Web3j.build(HttpService(chain.rpcServers[0]))
 
     open var currentSignData: WCSignData<*>? = null
 

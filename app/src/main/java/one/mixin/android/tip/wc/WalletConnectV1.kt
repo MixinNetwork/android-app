@@ -16,6 +16,7 @@ import org.web3j.crypto.Keys
 import org.web3j.crypto.RawTransaction
 import org.web3j.crypto.TransactionEncoder
 import org.web3j.protocol.core.DefaultBlockParameterName
+import org.web3j.utils.Convert
 import org.web3j.utils.Numeric
 import timber.log.Timber
 import java.math.BigInteger
@@ -257,19 +258,23 @@ object WalletConnectV1 : WalletConnect() {
         }
         val nonce = transactionCount.transactionCount
         val v = Numeric.toBigInt(value)
-        val gasLimit = transaction.gasLimit?.let { Numeric.toBigInt(it) } ?: BigInteger(defaultGasLimit)
+//        val gasLimit = transaction.gasLimit?.let { Numeric.toBigInt(it) } ?: BigInteger(defaultGasLimit)
+        val signData = currentSignData as? WCSignData.V1SignData ?: return ""
+        val tipGas = signData.tipGas ?: return ""
+        val gasLimit = BigInteger(tipGas.gasLimit)
         Timber.d("$TAG nonce: $nonce, value $v wei, gasLimit: $gasLimit")
         val rawTransaction = if (maxFeePerGas == null && maxPriorityFeePerGas == null) {
-            val gasPrice = if (transaction.gasPrice != null) {
-                Numeric.toBigInt(transaction.gasPrice)
-            } else {
-                val ethGasPrice =
-                    web3j.ethGasPrice().sendAsync().get(web3jTimeout, TimeUnit.SECONDS)
-                if (ethGasPrice.hasError()) {
-                    throwError(ethGasPrice.error)
-                }
-                ethGasPrice.gasPrice
-            }
+//            val gasPrice = if (transaction.gasPrice != null) {
+//                Numeric.toBigInt(transaction.gasPrice)
+//            } else {
+//                val ethGasPrice =
+//                    web3j.ethGasPrice().sendAsync().get(web3jTimeout, TimeUnit.SECONDS)
+//                if (ethGasPrice.hasError()) {
+//                    throwError(ethGasPrice.error)
+//                }
+//                ethGasPrice.gasPrice
+//            }
+            val gasPrice = Convert.toWei(signData.gasPriceType.getGasPrice(tipGas), Convert.Unit.ETHER).toBigInteger()
             Timber.d("$TAG gasPrice $gasPrice")
             RawTransaction.createTransaction(
                 nonce,

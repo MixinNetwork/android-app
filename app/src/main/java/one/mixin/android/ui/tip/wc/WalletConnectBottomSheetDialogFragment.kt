@@ -28,12 +28,16 @@ import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.google.gson.GsonBuilder
 import com.trustwallet.walletconnect.models.ethereum.WCEthereumTransaction
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import one.mixin.android.R
+import one.mixin.android.api.response.GasPriceType
+import one.mixin.android.api.response.TipGas
 import one.mixin.android.extension.booleanFromAttribute
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.navigationBarHeight
@@ -58,9 +62,7 @@ import one.mixin.android.ui.url.UrlInterpreterActivity
 import one.mixin.android.util.BiometricUtil
 import one.mixin.android.util.SystemUIManager
 import one.mixin.android.vo.Asset
-import org.web3j.utils.Convert
 import timber.log.Timber
-import java.math.BigDecimal
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 
@@ -101,8 +103,9 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
 
     private var step by mutableStateOf(Step.Input)
     private var errorInfo: String? by mutableStateOf(null)
-    private var fee: BigDecimal? by mutableStateOf(null)
+    private var tipGas: TipGas? by mutableStateOf(null)
     private var asset: Asset? by mutableStateOf(null)
+    private var gasPriceType: GasPriceType by mutableStateOf(GasPriceType.Propose)
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -153,19 +156,22 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
                         version,
                         step,
                         asset,
-                        fee,
+                        tipGas,
+                        gasPriceType,
                         errorInfo,
                         onPreviewMessage = { TextPreviewActivity.show(requireContext(), it) },
                         onDismissRequest = { dismiss() },
-                        onPositiveClick = {
-                            if (step == Step.Sign) {
-                                step = Step.Input
-                            } else if (step == Step.Send) {
-                                step = Step.Done
-                            }
-                        },
+                        onPositiveClick = { onPositiveClick(it)},
                         onBiometricClick = { showBiometricPrompt() },
                         onPinComplete = { pin -> doAfterPinComplete(pin) },
+                        onGasItemClick = { type ->
+                            gasPriceType = type
+                            if (version == WalletConnect.Version.V1) {
+                                (wc.currentSignData as? WalletConnect.WCSignData.V1SignData)?.gasPriceType = type
+                            } else if (version == WalletConnect.Version.V2) {
+                                (wc.currentSignData as? WalletConnect.WCSignData.V2SignData)?.gasPriceType = type
+                            }
+                        },
                     )
                 }
             }
@@ -237,10 +243,14 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
         val tx = signData.signMessage
         if (tx !is WCEthereumTransaction) return
         val assetId = walletConnectChainIdMap[
-            if (version == WalletConnect.Version.V1) {
-                WalletConnectV1.chain.symbol
-            } else {
-                WalletConnectV2.chain.symbol
+            when (version) {
+                WalletConnect.Version.V1 -> {
+                    WalletConnectV1.chain.symbol
+                }
+                WalletConnect.Version.V2 -> {
+                    WalletConnectV2.chain.symbol
+                }
+                else -> return
             },
         ]
         if (assetId == null) {
@@ -250,12 +260,18 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
 
         tickerFlow(15.seconds)
             .onEach {
-                val estimateGas = try {
-                    wc.getEstimateGas(tx)
-                } catch (e: WalletConnectException) {
-                    return@onEach
+                tipGas = TipGas("43d61dcd-e413-450d-80b8-101d5e903357", "0.00000002", "0.00000003", "0.00000005", "250000")
+//                tipGas = handleMixinResponse(
+//                    invokeNetwork = { viewModel.getTipGas(assetId) },
+//                    successBlock = {
+//                        it.data
+//                    }
+//                )
+                if (version == WalletConnect.Version.V1) {
+                    (wc.currentSignData as? WalletConnect.WCSignData.V1SignData)?.tipGas = tipGas
+                } else if (version == WalletConnect.Version.V2) {
+                    (wc.currentSignData as? WalletConnect.WCSignData.V2SignData)?.tipGas = tipGas
                 }
-                fee = Convert.fromWei(estimateGas.toBigDecimal(), Convert.Unit.ETHER)
                 asset = viewModel.refreshAsset(assetId)
             }
             .launchIn(lifecycleScope)
@@ -272,7 +288,9 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
     private fun doAfterPinComplete(pin: String) = lifecycleScope.launch {
         step = Step.Loading
         try {
-            val error = onPinComplete?.invoke(pin)
+            val error = withContext(Dispatchers.IO) {
+                onPinComplete?.invoke(pin)
+            }
             if (error == null) {
                 pinCompleted = true
                 step = if (viewModel.isTransaction(version)) {
@@ -285,13 +303,38 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 step = Step.Error
             }
         } catch (e: Exception) {
-            errorInfo = if (e is WalletConnectException) {
-                "code: ${e.code}, message: ${e.message}"
-            } else {
-                e.stackTraceToString()
-            }
-            step = Step.Error
+            handleException(e)
         }
+    }
+
+    private fun onPositiveClick(requestId: Long?) {
+        if (step == Step.Sign) {
+            step = Step.Input
+        } else if (step == Step.Send) {
+            if (requestId != null) {
+                lifecycleScope.launch {
+                    try {
+                        withContext(Dispatchers.IO) {
+                            viewModel.sendTransaction(version, requestId)
+                        }
+                        step = Step.Done
+                    } catch (e: Exception) {
+                        handleException(e)
+                    }
+                }
+            } else {
+                step = Step.Done
+            }
+        }
+    }
+
+    private fun handleException(e: Exception) {
+        errorInfo = if (e is WalletConnectException) {
+            "code: ${e.code}, message: ${e.message}"
+        } else {
+            e.stackTraceToString()
+        }
+        step = Step.Error
     }
 
     private val bottomSheetBehaviorCallback = object : BottomSheetBehavior.BottomSheetCallback() {
