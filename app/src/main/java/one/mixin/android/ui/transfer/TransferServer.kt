@@ -76,7 +76,7 @@ class TransferServer @Inject internal constructor(
         createdSuccessCallback: (TransferCommandData) -> Unit,
     ) = withContext(SINGLE_SOCKET_THREAD) {
         try {
-            val serverSocket = createSocket(port = Random.nextInt(100))
+            val serverSocket = createSocket(port = Random.nextInt(1024, 1124))
             this@TransferServer.serverSocket = serverSocket
             status.value = TransferStatus.CREATED
             code = Random.nextInt(10000)

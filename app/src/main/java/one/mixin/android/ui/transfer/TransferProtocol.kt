@@ -70,8 +70,9 @@ class TransferProtocol {
                 val file = readFile(inputStream, size)
                 if (file?.exists() == true) {
                     file
+                } else {
+                    null
                 }
-                null
             }
 
             else -> {

@@ -498,10 +498,12 @@ class TransferActivity : BaseActivity() {
             if (transferCommandData.userId != Session.getAccountId()) {
                 toast(R.string.not_yours)
                 finish()
+                return@launch
             }
             if (transferCommandData.version > CURRENT_TRANSFER_VERSION) {
                 toast(R.string.Version_not_supported)
                 finish()
+                return@launch
             }
             transferClient.connectToServer(
                 transferCommandData.ip!!,

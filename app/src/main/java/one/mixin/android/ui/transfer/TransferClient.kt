@@ -122,7 +122,7 @@ class TransferClient @Inject internal constructor(
                                     return
                                 }
                                 this.total = transferCommandData.total ?: 0L
-                            } else if (transferCommandData.action == TransferCommandAction.PUSH.value && transferCommandData.action == TransferCommandAction.PULL.value && transferCommandData.action == TransferCommandAction.START.value) {
+                            } else if (transferCommandData.action == TransferCommandAction.PUSH.value || transferCommandData.action == TransferCommandAction.PULL.value || transferCommandData.action == TransferCommandAction.START.value) {
                                 Timber.e("action ${transferCommandData.action}")
                             } else if (transferCommandData.action == TransferCommandAction.FINISH.value) {
                                 status.value = TransferStatus.FINISHED
@@ -215,6 +215,7 @@ class TransferClient @Inject internal constructor(
                 TransferDataType.SNAPSHOT.value -> {
                     syncInsert {
                         val snapshot = gson.fromJson(transferData.data, Snapshot::class.java)
+                        snapshotDao.insertIgnore(snapshot)
                         Timber.e("Snapshot ID: ${snapshot.snapshotId}")
                     }
                     progress(outputStream)
