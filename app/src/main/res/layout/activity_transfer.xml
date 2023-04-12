@@ -179,8 +179,7 @@
             android:layout_marginStart="24dp"
             android:layout_marginTop="36dp"
             android:layout_marginEnd="24dp"
-            android:foreground="?android:attr/selectableItemBackground"
-            android:background="@drawable/bg_round_8_solid_gray"
+            android:background="@drawable/ripple_round_8"
             android:orientation="horizontal"
             android:padding="16dp">
 

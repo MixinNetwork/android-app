@@ -47,6 +47,7 @@ import java.io.InputStream
 import java.io.OutputStream
 import java.lang.Float.min
 import java.net.Socket
+import java.net.SocketException
 import javax.inject.Inject
 import kotlin.text.Charsets.UTF_8
 
@@ -305,8 +306,13 @@ class TransferClient @Inject internal constructor(
         transferSendData: TransferSendData<TransferCommandData>,
     ) {
         val content = gson.toJson(transferSendData)
-        protocol.write(outputStream, TransferProtocol.TYPE_COMMAND, content)
-        outputStream.flush()
+        try {
+            protocol.write(outputStream, TransferProtocol.TYPE_COMMAND, content)
+            outputStream.flush()
+        } catch (e: SocketException) {
+            exit()
+            status.value = TransferStatus.ERROR
+        }
     }
 
     private suspend fun syncInsert(callback: () -> Unit) = withContext(Dispatchers.IO) {
