@@ -36,10 +36,12 @@ import dagger.hilt.android.AndroidEntryPoint
 import io.reactivex.Maybe
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
+import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 import one.mixin.android.BuildConfig
 import one.mixin.android.Constants
 import one.mixin.android.Constants.Account.PREF_BACKUP
@@ -614,81 +616,63 @@ class MainActivity : BlazeBaseActivity() {
             alertDialog = alert(getString(R.string.Please_wait_a_bit)).show()
             val conversationId = intent.extras!!.getString("conversation_id")!!
             clearCodeAfterConsume(intent, "conversation_id")
-            Maybe.just(conversationId).map {
+            lifecycleScope.launch(Dispatchers.IO + CoroutineExceptionHandler { _, throwable ->
+                ErrorHandler.handleError(throwable)
+                alertDialog?.dismiss()
+            }) {
                 val innerIntent: Intent?
                 var conversation = conversationDao.findConversationById(conversationId)
                 if (conversation == null) {
-                    val response =
-                        conversationService.getConversation(conversationId).execute().body()
-                    if (response != null && response.isSuccess) {
-                        response.data?.let { data ->
-                            var ownerId: String = data.creatorId
-                            if (data.category == ConversationCategory.CONTACT.name) {
-                                ownerId =
-                                    data.participants.find { p -> p.userId != Session.getAccountId() }!!.userId
-                            } else if (data.category == ConversationCategory.GROUP.name) {
-                                ownerId = data.creatorId
-                            }
-                            var c = conversationDao.findConversationById(data.conversationId)
-                            if (c == null) {
-                                c = Conversation(
-                                    data.conversationId,
-                                    ownerId,
-                                    data.category,
-                                    data.name,
-                                    data.iconUrl,
-                                    data.announcement,
-                                    data.codeUrl,
-                                    "",
-                                    data.createdAt,
-                                    null,
-                                    null,
-                                    null,
-                                    0,
-                                    ConversationStatus.SUCCESS.ordinal,
-                                    null,
-                                )
-                                conversation = c
-                                conversationDao.insert(c)
-                            } else {
-                                conversationDao.updateConversation(
-                                    data.conversationId,
-                                    ownerId,
-                                    data.category,
-                                    data.name,
-                                    data.announcement,
-                                    data.muteUntil,
-                                    data.createdAt,
-                                    data.expireIn,
-                                    ConversationStatus.SUCCESS.ordinal,
-                                )
-                            }
+                    var ownerId: String
+                    val data = conversationService.findConversationSuspend(conversationId).data
+                        ?: return@launch
+                    if (data.category == ConversationCategory.CONTACT.name) {
+                        ownerId =
+                            data.participants.find { p -> p.userId != Session.getAccountId() }!!.userId
+                    } else {
+                        ownerId = data.creatorId
+                    }
+                    conversation = Conversation(
+                        data.conversationId,
+                        ownerId,
+                        data.category,
+                        data.name,
+                        data.iconUrl,
+                        data.announcement,
+                        data.codeUrl,
+                        "",
+                        data.createdAt,
+                        null,
+                        null,
+                        null,
+                        0,
+                        ConversationStatus.SUCCESS.ordinal,
+                        null,
+                    )
+                    conversationDao.insert(conversation)
+                    val participants = mutableListOf<Participant>()
+                    val userIdList = mutableListOf<String>()
+                    for (p in data.participants) {
+                        val item =
+                            Participant(conversationId, p.userId, p.role, p.createdAt!!)
+                        if (p.role == ParticipantRole.OWNER.name) {
+                            participants.add(0, item)
+                        } else {
+                            participants.add(item)
+                        }
 
-                            val participants = mutableListOf<Participant>()
-                            val userIdList = mutableListOf<String>()
-                            for (p in data.participants) {
-                                val item =
-                                    Participant(conversationId, p.userId, p.role, p.createdAt!!)
-                                if (p.role == ParticipantRole.OWNER.name) {
-                                    participants.add(0, item)
-                                } else {
-                                    participants.add(item)
-                                }
-
-                                val u = userDao.findUser(p.userId)
-                                if (u == null) {
-                                    userIdList.add(p.userId)
-                                }
-                            }
-                            if (userIdList.isNotEmpty()) {
-                                jobManager.addJobInBackground(RefreshUserJob(userIdList))
-                            }
-                            participantDao.insertList(participants)
+                        val u = userDao.findUser(p.userId)
+                        if (u == null) {
+                            userIdList.add(p.userId)
                         }
                     }
+                    if (userIdList.isNotEmpty()) {
+                        jobManager.addJobInBackground(RefreshUserJob(userIdList))
+                    }
+                    participantDao.insertList(participants)
                 }
                 if (conversation?.isGroupConversation() == true) {
-                    innerIntent = ConversationActivity.putIntent(this, conversationId)
+                    innerIntent = ConversationActivity.putIntent(this@MainActivity, conversationId)
                 } else {
                     var user = userDao.findPlainUserByConversationId(conversationId)
                     if (user == null) {
@@ -704,22 +688,17 @@ class MainActivity : BlazeBaseActivity() {
                             user = response.data?.get(0)
                         }
                     }
-                    innerIntent = ConversationActivity.putIntent(this, conversationId, user?.userId)
+                    innerIntent = ConversationActivity.putIntent(
+                        this@MainActivity,
+                        conversationId,
+                        user?.userId
+                    )
                 }
-                runOnUiThread { alertDialog?.dismiss() }
-                innerIntent
-            }.subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
-                .autoDispose(stopScope).subscribe(
-                    {
-                        it?.let { intent ->
-                            this.startActivity(intent)
-                        }
-                    },
-                    {
-                        alertDialog?.dismiss()
-                        ErrorHandler.handleError(it)
-                    },
-                )
+                withContext(Dispatchers.Main) {
+                    alertDialog?.dismiss()
+                    this@MainActivity.startActivity(innerIntent)
+                }
+            }
         }
     }
 
