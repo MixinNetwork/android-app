@@ -153,7 +153,7 @@ class TransferProtocol {
     private fun calculateReadSpeed(bytesPerRead: Int) {
         readCount += bytesPerRead
         val currentTime = System.currentTimeMillis()
-        if (readCount > 1024 * 1024 && lastTimeTime > 0) {
+        if (readCount > 128 * 1024 && lastTimeTime > 0) {
             val speed = readCount / ((currentTime - lastTimeTime) / 1000f) / 1024f / 128f
             Timber.e(String.format("%.2f Mb/s", speed))
             RxBus.publish(SpeedEvent(String.format("%.2f Mb/s", speed)))

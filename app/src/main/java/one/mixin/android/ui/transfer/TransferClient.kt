@@ -1,6 +1,7 @@
 package one.mixin.android.ui.transfer
 
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -77,6 +78,8 @@ class TransferClient @Inject internal constructor(
 
     val protocol = TransferProtocol()
 
+    private val syncChannel = Channel<ByteArray>()
+
     suspend fun connectToServer(ip: String, port: Int, commandData: TransferCommandData) =
         withContext(SINGLE_SOCKET_THREAD) {
             try {
@@ -87,7 +90,13 @@ class TransferClient @Inject internal constructor(
                 val outputStream = socket.getOutputStream()
                 protocol.write(outputStream, TransferProtocol.TYPE_COMMAND, gson.toJson(TransferSendData(TransferDataType.COMMAND.value, commandData)))
                 outputStream.flush()
-                listen(socket.inputStream, socket.outputStream)
+                launch(Dispatchers.IO) { listen(socket.inputStream, socket.outputStream) }
+                launch(Dispatchers.IO) {
+                    for (byteArray in syncChannel) {
+                        val content = String(byteArray, UTF_8)
+                        processJson(content, outputStream)
+                    }
+                }
             } catch (e: Exception) {
                 Timber.e(e)
                 if (status.value != TransferStatus.FINISHED) {
@@ -115,22 +124,27 @@ class TransferClient @Inject internal constructor(
                         TransferDataType.COMMAND.value -> {
                             val transferCommandData =
                                 gson.fromJson(transferData.data, TransferCommandData::class.java)
-                            if (transferCommandData.action == TransferCommandAction.START.value) {
-                                if (transferCommandData.version != CURRENT_TRANSFER_VERSION) {
-                                    Timber.e("Version does not support")
-                                    exit()
-                                    return
+                            when (transferCommandData.action) {
+                                TransferCommandAction.START.value -> {
+                                    if (transferCommandData.version != CURRENT_TRANSFER_VERSION) {
+                                        Timber.e("Version does not support")
+                                        exit()
+                                        return
+                                    }
+                                    this.total = transferCommandData.total ?: 0L
                                 }
-                                this.total = transferCommandData.total ?: 0L
-                            } else if (transferCommandData.action == TransferCommandAction.PUSH.value || transferCommandData.action == TransferCommandAction.PULL.value || transferCommandData.action == TransferCommandAction.START.value) {
-                                Timber.e("action ${transferCommandData.action}")
-                            } else if (transferCommandData.action == TransferCommandAction.FINISH.value) {
-                                status.value = TransferStatus.FINISHED
-                                sendFinish(outputStream)
-                                delay(100)
-                                exit()
-                            } else {
-                                Timber.e(result)
+                                TransferCommandAction.PUSH.value, TransferCommandAction.PULL.value -> {
+                                    Timber.e("action ${transferCommandData.action}")
+                                }
+                                TransferCommandAction.FINISH.value -> {
+                                    status.value = TransferStatus.FINISHED
+                                    sendFinish(outputStream)
+                                    delay(100)
+                                    exit()
+                                }
+                                else -> {
+                                    Timber.e(result)
+                                }
                             }
                         }
 
@@ -140,7 +154,7 @@ class TransferClient @Inject internal constructor(
                     }
                 }
                 is ByteArray -> {
-                    processJson(String(result, UTF_8), outputStream)
+                    syncChannel.send(result)
                 }
                 is File -> {
                     // read file
@@ -170,98 +184,96 @@ class TransferClient @Inject internal constructor(
         RxBus.publish(DeviceTransferProgressEvent(progress))
     }
 
-    private suspend fun processJson(content: String, outputStream: OutputStream) = withContext(Dispatchers.IO) {
-        launch {
-            val transferData = gson.fromJson(content, TransferData::class.java)
-            when (transferData.type) {
-                TransferDataType.MESSAGE.value -> {
-                    syncInsert {
-                        val message = gson.fromJson(transferData.data, TransferMessage::class.java).toMessage()
-                        messageDao.insertIgnore(message)
-                        ftsDatabase.insertOrReplaceMessageFts4(message)
-                        Timber.e("Message ID: ${message.messageId}")
-                    }
-                    progress(outputStream)
+    private suspend fun processJson(content: String, outputStream: OutputStream) {
+        val transferData = gson.fromJson(content, TransferData::class.java)
+        when (transferData.type) {
+            TransferDataType.MESSAGE.value -> {
+                syncInsert {
+                    val message = gson.fromJson(transferData.data, TransferMessage::class.java).toMessage()
+                    messageDao.insertIgnore(message)
+                    ftsDatabase.insertOrReplaceMessageFts4(message)
+                    Timber.e("Message ID: ${message.messageId}")
                 }
+                progress(outputStream)
+            }
 
-                TransferDataType.PARTICIPANT.value -> {
-                    syncInsert {
-                        val participant = gson.fromJson(transferData.data, Participant::class.java)
-                        participantDao.insertIgnore(participant)
-                        Timber.e("Participant ID: ${participant.conversationId} ${participant.userId}")
-                    }
-                    progress(outputStream)
+            TransferDataType.PARTICIPANT.value -> {
+                syncInsert {
+                    val participant = gson.fromJson(transferData.data, Participant::class.java)
+                    participantDao.insertIgnore(participant)
+                    Timber.e("Participant ID: ${participant.conversationId} ${participant.userId}")
                 }
+                progress(outputStream)
+            }
 
-                TransferDataType.USER.value -> {
-                    syncInsert {
-                        val user = gson.fromJson(transferData.data, User::class.java)
-                        userDao.insertIgnore(user)
-                        Timber.e("User ID: ${user.userId}")
-                    }
-                    progress(outputStream)
+            TransferDataType.USER.value -> {
+                syncInsert {
+                    val user = gson.fromJson(transferData.data, User::class.java)
+                    userDao.insertIgnore(user)
+                    Timber.e("User ID: ${user.userId}")
                 }
+                progress(outputStream)
+            }
 
-                TransferDataType.CONVERSATION.value -> {
-                    syncInsert {
-                        val conversation =
-                            gson.fromJson(transferData.data, Conversation::class.java)
-                        conversationDao.insertIgnore(conversation)
-                        Timber.e("Conversation ID: ${conversation.conversationId}")
-                    }
-                    progress(outputStream)
+            TransferDataType.CONVERSATION.value -> {
+                syncInsert {
+                    val conversation =
+                        gson.fromJson(transferData.data, Conversation::class.java)
+                    conversationDao.insertIgnore(conversation)
+                    Timber.e("Conversation ID: ${conversation.conversationId}")
                 }
+                progress(outputStream)
+            }
 
-                TransferDataType.SNAPSHOT.value -> {
-                    syncInsert {
-                        val snapshot = gson.fromJson(transferData.data, Snapshot::class.java)
-                        snapshotDao.insertIgnore(snapshot)
-                        Timber.e("Snapshot ID: ${snapshot.snapshotId}")
-                    }
-                    progress(outputStream)
+            TransferDataType.SNAPSHOT.value -> {
+                syncInsert {
+                    val snapshot = gson.fromJson(transferData.data, Snapshot::class.java)
+                    snapshotDao.insertIgnore(snapshot)
+                    Timber.e("Snapshot ID: ${snapshot.snapshotId}")
                 }
+                progress(outputStream)
+            }
 
-                TransferDataType.STICKER.value -> {
-                    syncInsert {
-                        val sticker = gson.fromJson(transferData.data, Sticker::class.java)
-                        stickerDao.insertIgnore(sticker)
-                        Timber.e("Sticker ID: ${sticker.stickerId}")
-                    }
-                    progress(outputStream)
+            TransferDataType.STICKER.value -> {
+                syncInsert {
+                    val sticker = gson.fromJson(transferData.data, Sticker::class.java)
+                    stickerDao.insertIgnore(sticker)
+                    Timber.e("Sticker ID: ${sticker.stickerId}")
                 }
+                progress(outputStream)
+            }
 
-                TransferDataType.ASSET.value -> {
-                    syncInsert {
-                        val asset = gson.fromJson(transferData.data, Asset::class.java)
-                        assetDao.insertIgnore(asset)
-                        Timber.e("Asset ID: ${asset.assetId}")
-                    }
-                    progress(outputStream)
+            TransferDataType.ASSET.value -> {
+                syncInsert {
+                    val asset = gson.fromJson(transferData.data, Asset::class.java)
+                    assetDao.insertIgnore(asset)
+                    Timber.e("Asset ID: ${asset.assetId}")
                 }
+                progress(outputStream)
+            }
 
-                TransferDataType.PIN_MESSAGE.value -> {
-                    syncInsert {
-                        val pinMessage =
-                            gson.fromJson(transferData.data, PinMessage::class.java)
-                        pinMessageDao.insertIgnore(pinMessage)
-                        Timber.e("PinMessage ID: ${pinMessage.messageId}")
-                    }
-                    progress(outputStream)
+            TransferDataType.PIN_MESSAGE.value -> {
+                syncInsert {
+                    val pinMessage =
+                        gson.fromJson(transferData.data, PinMessage::class.java)
+                    pinMessageDao.insertIgnore(pinMessage)
+                    Timber.e("PinMessage ID: ${pinMessage.messageId}")
                 }
+                progress(outputStream)
+            }
 
-                TransferDataType.TRANSCRIPT_MESSAGE.value -> {
-                    syncInsert {
-                        val transcriptMessage =
-                            gson.fromJson(transferData.data, TranscriptMessage::class.java)
-                        transcriptMessageDao.insertIgnore(transcriptMessage)
-                        Timber.e("Transcript ID: ${transcriptMessage.messageId}")
-                    }
-                    progress(outputStream)
+            TransferDataType.TRANSCRIPT_MESSAGE.value -> {
+                syncInsert {
+                    val transcriptMessage =
+                        gson.fromJson(transferData.data, TranscriptMessage::class.java)
+                    transcriptMessageDao.insertIgnore(transcriptMessage)
+                    Timber.e("Transcript ID: ${transcriptMessage.messageId}")
                 }
+                progress(outputStream)
+            }
 
-                else -> {
-                    Timber.e("No support $content")
-                }
+            else -> {
+                Timber.e("No support $content")
             }
         }
     }
@@ -298,8 +310,6 @@ class TransferClient @Inject internal constructor(
     }
 
     private suspend fun syncInsert(callback: () -> Unit) = withContext(Dispatchers.IO) {
-        launch {
-            callback.invoke()
-        }
+        callback.invoke()
     }
 }

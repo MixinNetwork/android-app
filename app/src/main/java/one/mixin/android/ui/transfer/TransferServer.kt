@@ -6,7 +6,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.MixinApplication
 import one.mixin.android.RxBus
-import one.mixin.android.crypto.generateAesKey
 import one.mixin.android.db.AssetDao
 import one.mixin.android.db.ConversationDao
 import one.mixin.android.db.ExpiredMessageDao
@@ -18,7 +17,6 @@ import one.mixin.android.db.StickerDao
 import one.mixin.android.db.TranscriptMessageDao
 import one.mixin.android.db.UserDao
 import one.mixin.android.event.DeviceTransferProgressEvent
-import one.mixin.android.extension.base64RawURLEncode
 import one.mixin.android.extension.getMediaPath
 import one.mixin.android.extension.isUUID
 import one.mixin.android.session.Session
@@ -88,7 +86,7 @@ class TransferServer @Inject internal constructor(
                     TransferCommandAction.PUSH.value,
                     NetworkUtils.getWifiIpAddress(MixinApplication.appContext),
                     this@TransferServer.port,
-                    generateAesKey().base64RawURLEncode(), // todo
+                    null,
                     this@TransferServer.code,
                     userId = Session.getAccountId(),
                 ),
