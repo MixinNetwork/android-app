@@ -1,6 +1,7 @@
 package one.mixin.android.ui.transfer
 
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.MixinApplication
@@ -40,6 +41,8 @@ import java.net.BindException
 import java.net.InetSocketAddress
 import java.net.ServerSocket
 import java.net.Socket
+import java.net.SocketException
+import java.util.concurrent.Executors
 import javax.inject.Inject
 import kotlin.random.Random
 
@@ -91,7 +94,9 @@ class TransferServer @Inject internal constructor(
                 ),
             )
             status.value = TransferStatus.WAITING_FOR_CONNECTION
-            val socket = serverSocket.accept()
+            val socket = withContext(ACCEPT_SINGLE_THREAD) {
+                serverSocket.accept()
+            }
             this@TransferServer.socket = socket
             status.value = TransferStatus.WAITING_FOR_VERIFICATION
 
@@ -105,7 +110,7 @@ class TransferServer @Inject internal constructor(
                 exit()
             }
         } catch (e: Exception) {
-            if (status.value != TransferStatus.FINISHED) {
+            if (status.value != TransferStatus.FINISHED && !(status.value == TransferStatus.INITIALIZING && e is SocketException)) {
                 status.value = TransferStatus.ERROR
             }
             exit()
@@ -498,3 +503,5 @@ class TransferServer @Inject internal constructor(
         private const val LIMIT = 100
     }
 }
+
+private val ACCEPT_SINGLE_THREAD = Executors.newSingleThreadExecutor { r -> Thread(r, "SINGLE_DB_EXECUTOR") }.asCoroutineDispatcher()
