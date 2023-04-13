@@ -52,7 +52,9 @@ import one.mixin.android.Constants.CIRCLE.CIRCLE_NAME
 import one.mixin.android.Constants.DEVICE_ID
 import one.mixin.android.Constants.DataBase.CURRENT_VERSION
 import one.mixin.android.Constants.DataBase.DB_NAME
+import one.mixin.android.Constants.DataBase.FTS_DB_NAME
 import one.mixin.android.Constants.DataBase.MINI_VERSION
+import one.mixin.android.Constants.DataBase.PENDING_DB_NAME
 import one.mixin.android.Constants.INTERVAL_24_HOURS
 import one.mixin.android.Constants.INTERVAL_7_DAYS
 import one.mixin.android.Constants.SAFETY_NET_INTERVAL_KEY
@@ -226,6 +228,12 @@ class MainActivity : BlazeBaseActivity() {
 
         if (Session.getAccount()?.fullName.isNullOrBlank()) {
             InitializeActivity.showSetupName(this)
+            finish()
+            return
+        }
+
+        if (getDatabasePath(DB_NAME).exists() || getDatabasePath(FTS_DB_NAME).exists() || getDatabasePath(PENDING_DB_NAME).exists()) {
+            InitializeActivity.showMigrationDb(this)
             finish()
             return
         }

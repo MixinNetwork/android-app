@@ -13,6 +13,7 @@ import androidx.room.withTransaction
 import androidx.sqlite.db.SupportSQLiteDatabase
 import androidx.sqlite.db.framework.FrameworkSQLiteOpenHelperFactory
 import one.mixin.android.BuildConfig
+import one.mixin.android.Constants
 import one.mixin.android.Constants.DataBase.CURRENT_VERSION
 import one.mixin.android.Constants.DataBase.DB_NAME
 import one.mixin.android.MixinApplication
@@ -55,6 +56,7 @@ import one.mixin.android.db.converter.MessageStatusConverter
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.SINGLE_DB_EXECUTOR
 import one.mixin.android.util.debug.getContent
+import one.mixin.android.util.getDbPath
 import one.mixin.android.util.reportException
 import one.mixin.android.vo.Address
 import one.mixin.android.vo.App
@@ -181,7 +183,7 @@ abstract class MixinDatabase : RoomDatabase() {
         fun getDatabase(context: Context): MixinDatabase {
             synchronized(lock) {
                 if (INSTANCE == null) {
-                    val builder = Room.databaseBuilder(context, MixinDatabase::class.java, DB_NAME)
+                    val builder = Room.databaseBuilder(context, MixinDatabase::class.java, getDbPath(context, DB_NAME))
                         .openHelperFactory(
                             MixinOpenHelperFactory(
                                 FrameworkSQLiteOpenHelperFactory(),

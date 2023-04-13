@@ -39,6 +39,7 @@ import java.io.BufferedReader
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.FileInputStream
+import java.io.FileNotFoundException
 import java.io.FileOutputStream
 import java.io.IOException
 import java.io.InputStream
@@ -721,6 +722,19 @@ fun File.moveChileFileToDir(dir: File, eachCallback: ((newFile: File, oldFile: F
                 eachCallback?.invoke(newFile, child)
             }
         }
+    }
+}
+
+fun File.moveTo(target: File) {
+    if (!exists()) {
+        throw FileNotFoundException("$absolutePath does not exist.")
+    }
+    if (target.exists()) {
+        throw IOException("Target file ${target.absolutePath} already exists.")
+    }
+    val renamed = renameTo(target)
+    if (!renamed) {
+        throw IOException("Failed to move file $absolutePath to ${target.absolutePath}.")
     }
 }
 

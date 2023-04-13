@@ -16,6 +16,7 @@ import one.mixin.android.db.JobDao
 import one.mixin.android.db.insertNoReplace
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.debug.getContent
+import one.mixin.android.util.getDbPath
 import one.mixin.android.vo.FloodMessage
 import one.mixin.android.vo.Job
 import one.mixin.android.vo.MessageMedia
@@ -45,7 +46,7 @@ abstract class PendingDatabaseImp : RoomDatabase(), PendingDatabase {
                     val builder = Room.databaseBuilder(
                         context,
                         PendingDatabaseImp::class.java,
-                        PENDING_DB_NAME,
+                        getDbPath(context, PENDING_DB_NAME),
                     ).enableMultiInstanceInvalidation().addCallback(
                         object : Callback() {
                             override fun onOpen(db: SupportSQLiteDatabase) {
