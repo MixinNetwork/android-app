@@ -32,6 +32,7 @@ import android.view.View.GONE
 import android.view.View.INVISIBLE
 import android.view.View.VISIBLE
 import android.view.ViewGroup
+import android.view.WindowManager
 import android.widget.PopupWindow
 import android.widget.TextView
 import androidx.activity.result.ActivityResultLauncher
@@ -1267,6 +1268,7 @@ class ConversationFragment() :
         if (aodWakeLock.isHeld) {
             aodWakeLock.release()
         }
+        activity?.window?.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         snackBar?.dismiss()
         binding.chatRv.let { rv ->
             rv.children.forEach {
@@ -2968,9 +2970,7 @@ class ConversationFragment() :
             MusicPlayer.pause()
             OpusAudioRecorder.get(conversationId).startRecording(this@ConversationFragment)
             if (!isNearToSensor) {
-                if (!aodWakeLock.isHeld) {
-                    aodWakeLock.acquire(10 * 60 * 1000L)
-                }
+                activity?.window?.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
             }
         }
 
@@ -2980,22 +2980,22 @@ class ConversationFragment() :
 
         override fun onRecordSend() {
             OpusAudioRecorder.get(conversationId).stopRecording(AudioEndStatus.SEND)
-            if (!isNearToSensor && aodWakeLock.isHeld) {
-                aodWakeLock.release()
+            if (!isNearToSensor) {
+                activity?.window?.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
             }
         }
 
         override fun onRecordPreview() {
             OpusAudioRecorder.get(conversationId).stopRecording(AudioEndStatus.PREVIEW)
-            if (!isNearToSensor && aodWakeLock.isHeld) {
-                aodWakeLock.release()
+            if (!isNearToSensor) {
+                activity?.window?.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
             }
         }
 
         override fun onRecordCancel() {
             OpusAudioRecorder.get(conversationId).stopRecording(AudioEndStatus.CANCEL)
-            if (!isNearToSensor && aodWakeLock.isHeld) {
-                aodWakeLock.release()
+            if (!isNearToSensor) {
+                activity?.window?.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
             }
         }
 
