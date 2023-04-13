@@ -98,6 +98,7 @@ object Constants {
         const val MINI_VERSION = 15
         const val CURRENT_VERSION = 49
 
+        const val SIGNAL_DB_NAME = "signal.db"
         const val FTS_DB_NAME = "fts.db"
         const val PENDING_DB_NAME = "pending.db"
     }

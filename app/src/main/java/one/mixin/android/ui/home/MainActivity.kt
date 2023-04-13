@@ -55,6 +55,7 @@ import one.mixin.android.Constants.DataBase.DB_NAME
 import one.mixin.android.Constants.DataBase.FTS_DB_NAME
 import one.mixin.android.Constants.DataBase.MINI_VERSION
 import one.mixin.android.Constants.DataBase.PENDING_DB_NAME
+import one.mixin.android.Constants.DataBase.SIGNAL_DB_NAME
 import one.mixin.android.Constants.INTERVAL_24_HOURS
 import one.mixin.android.Constants.INTERVAL_7_DAYS
 import one.mixin.android.Constants.SAFETY_NET_INTERVAL_KEY
@@ -232,7 +233,9 @@ class MainActivity : BlazeBaseActivity() {
             return
         }
 
-        if (getDatabasePath(DB_NAME).exists() || getDatabasePath(FTS_DB_NAME).exists() || getDatabasePath(PENDING_DB_NAME).exists()) {
+        if (getDatabasePath(DB_NAME).exists() || getDatabasePath(FTS_DB_NAME).exists() || getDatabasePath(PENDING_DB_NAME).exists() ||
+            getDatabasePath(SIGNAL_DB_NAME).exists()
+        ) {
             InitializeActivity.showMigrationDb(this)
             finish()
             return

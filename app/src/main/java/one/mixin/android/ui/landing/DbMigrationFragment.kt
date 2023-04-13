@@ -12,6 +12,7 @@ import kotlinx.coroutines.withContext
 import one.mixin.android.Constants.DataBase.DB_NAME
 import one.mixin.android.Constants.DataBase.FTS_DB_NAME
 import one.mixin.android.Constants.DataBase.PENDING_DB_NAME
+import one.mixin.android.Constants.DataBase.SIGNAL_DB_NAME
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentUpgradeBinding
 import one.mixin.android.extension.moveTo
@@ -48,7 +49,9 @@ class DbMigrationFragment : BaseFragment(R.layout.fragment_upgrade) {
                     toDir.mkdirs()
                 }
                 dbDir.listFiles().forEach { file ->
-                    if (file.name.startsWith(DB_NAME) || file.name.startsWith(FTS_DB_NAME) || file.name.startsWith(PENDING_DB_NAME)) {
+                    if (file.name.startsWith(DB_NAME) || file.name.startsWith(FTS_DB_NAME) || file.name.startsWith(PENDING_DB_NAME) ||
+                        file.name.startsWith(SIGNAL_DB_NAME)
+                    ) {
                         file.moveTo(File(toDir, file.name))
                     }
                 }
