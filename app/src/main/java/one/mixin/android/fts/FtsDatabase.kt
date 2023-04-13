@@ -5,12 +5,8 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.sqlite.db.SupportSQLiteDatabase
-import one.mixin.android.Constants
-import one.mixin.android.Constants.DataBase.DB_NAME
 import one.mixin.android.Constants.DataBase.FTS_DB_NAME
-import one.mixin.android.session.Session
-import one.mixin.android.util.getDbPath
-import java.io.File
+import one.mixin.android.util.database.getDbPath
 
 @Database(
     entities = [
@@ -29,11 +25,10 @@ abstract class FtsDatabase : RoomDatabase() {
         fun getDatabase(context: Context): FtsDatabase {
             synchronized(lock) {
                 if (INSTANCE == null) {
-
                     val builder = Room.databaseBuilder(
                         context,
                         FtsDatabase::class.java,
-                        getDbPath(context, FTS_DB_NAME)
+                        getDbPath(context, FTS_DB_NAME),
                     ).addCallback(
                         object : Callback() {
                             override fun onOpen(db: SupportSQLiteDatabase) {

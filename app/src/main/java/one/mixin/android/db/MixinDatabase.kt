@@ -13,7 +13,6 @@ import androidx.room.withTransaction
 import androidx.sqlite.db.SupportSQLiteDatabase
 import androidx.sqlite.db.framework.FrameworkSQLiteOpenHelperFactory
 import one.mixin.android.BuildConfig
-import one.mixin.android.Constants
 import one.mixin.android.Constants.DataBase.CURRENT_VERSION
 import one.mixin.android.Constants.DataBase.DB_NAME
 import one.mixin.android.MixinApplication
@@ -55,8 +54,8 @@ import one.mixin.android.db.converter.DepositEntryListConverter
 import one.mixin.android.db.converter.MessageStatusConverter
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.SINGLE_DB_EXECUTOR
+import one.mixin.android.util.database.getDbPath
 import one.mixin.android.util.debug.getContent
-import one.mixin.android.util.getDbPath
 import one.mixin.android.util.reportException
 import one.mixin.android.vo.Address
 import one.mixin.android.vo.App

@@ -8,6 +8,7 @@ import android.os.Build
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import one.mixin.android.Constants
+import one.mixin.android.session.Session
 import one.mixin.android.util.reportException
 import timber.log.Timber
 import java.io.File
@@ -119,4 +120,11 @@ suspend fun clearJobs(context: Context) = withContext(Dispatchers.IO) {
         }
         db?.rawQuery("PRAGMA wal_checkpoint(FULL)", null)?.close()
     }
+}
+
+fun getDbPath(context: Context, name: String): String {
+    val identityNumber = requireNotNull(Session.getAccount()?.identityNumber)
+    val toDir = File(context.getDatabasePath(Constants.DataBase.DB_NAME).parentFile, identityNumber)
+    if (!toDir.exists()) toDir.mkdirs()
+    return File(toDir, name).absolutePath
 }

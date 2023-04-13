@@ -9,7 +9,6 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import one.mixin.android.Constants
 import one.mixin.android.Constants.DataBase.DB_NAME
 import one.mixin.android.Constants.DataBase.FTS_DB_NAME
 import one.mixin.android.Constants.DataBase.PENDING_DB_NAME
@@ -20,7 +19,6 @@ import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.util.viewBinding
-import timber.log.Timber
 import java.io.File
 
 @AndroidEntryPoint
@@ -44,7 +42,7 @@ class DbMigrationFragment : BaseFragment(R.layout.fragment_upgrade) {
             withContext(Dispatchers.IO) {
                 val context = requireContext()
                 val identityNumber = Session.getAccount()?.identityNumber ?: return@withContext
-                val dbDir = context.getDatabasePath(FTS_DB_NAME).parentFile
+                val dbDir = context.getDatabasePath(DB_NAME).parentFile
                 val toDir = File(dbDir, identityNumber)
                 if (!toDir.exists()) {
                     toDir.mkdirs()

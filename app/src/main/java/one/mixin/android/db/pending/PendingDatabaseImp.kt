@@ -15,8 +15,8 @@ import one.mixin.android.db.FloodMessageDao
 import one.mixin.android.db.JobDao
 import one.mixin.android.db.insertNoReplace
 import one.mixin.android.util.GsonHelper
+import one.mixin.android.util.database.getDbPath
 import one.mixin.android.util.debug.getContent
-import one.mixin.android.util.getDbPath
 import one.mixin.android.vo.FloodMessage
 import one.mixin.android.vo.Job
 import one.mixin.android.vo.MessageMedia
