@@ -22,6 +22,7 @@ import one.mixin.android.ui.conversation.ConversationFragment.Companion.RECIPIEN
 import one.mixin.android.ui.conversation.ConversationFragment.Companion.RECIPIENT_ID
 import one.mixin.android.ui.conversation.ConversationFragment.Companion.UNREAD_COUNT
 import one.mixin.android.ui.home.MainActivity
+import one.mixin.android.util.reportException
 import one.mixin.android.vo.TranscriptData
 import one.mixin.android.vo.User
 import one.mixin.android.vo.generateConversationId
@@ -64,7 +65,8 @@ class ConversationActivity : BlazeBaseActivity() {
     private fun showConversation(intent: Intent) {
         val bundle = intent.extras ?: return
         lifecycleScope.launch(
-            CoroutineExceptionHandler { _, _ ->
+            CoroutineExceptionHandler { _, e ->
+                reportException(e)
                 replaceFragment(ConversationFragment.newInstance(intent.extras!!), R.id.container, ConversationFragment.TAG,)
             },
         ) {
