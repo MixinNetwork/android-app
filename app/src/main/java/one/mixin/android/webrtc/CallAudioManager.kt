@@ -61,7 +61,7 @@ class CallAudioManager(
             audioSwitch.start { audioDevices, selectedAudioDevice ->
                 Timber.d("$TAG_AUDIO audioDevices: $audioDevices, selectedAudioDevice: $selectedAudioDevice")
                 val bluetoothHeadset = audioDevices.find { it is AudioDevice.BluetoothHeadset }
-                if (bluetoothHeadset != null) {
+                if (bluetoothHeadset != null && audioSwitch.bluetoothHeadsetManager?.hasActivationError() == false) {
                     audioSwitch.selectDevice(bluetoothHeadset)
                     callback.customAudioDeviceAvailable(true)
                     return@start
