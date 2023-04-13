@@ -33,7 +33,7 @@ internal suspend fun parseEthereum(
         valueTmp = Convert.fromWei(BigDecimal(value), Convert.Unit.ETHER)
     }
 
-    val reqAsset = erc681.functionParams.find { pair ->  pair.first == "req-asset" }
+    val reqAsset = erc681.functionParams.find { pair -> pair.first == "req-asset" }
 
     if (reqAsset != null) {
         val assetKey = reqAsset.second.lowercase()
