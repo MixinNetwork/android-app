@@ -1112,7 +1112,9 @@
     <string name="Chat">聊天记录</string>
     <string name="sync_chat">同步聊天记录</string>
     <string name="Please_log_in_to_the_desktop_first">请先登录桌面</string>
+    <string name="Restore_Your_Chat_History">恢复您的聊天历史记录</string>
     <string name="Restore_from_Another_Phone">从另一部电话恢复</string>
+    <string name="Restore_from_Another_Phone_tip">从您的旧设备传输消息历史记录。</string>
     <string name="Restore_from_Local">本地恢复</string>
     <string name="Restore_from_Local_tip">从设备备份中恢复您的聊天历史记录。</string>
     <string name="transfer_pc_desc">同步你的聊天记录到 Mixin Messenger 桌面端，请确保两台设备接入同一个 Wi-Fi 或热点。</string>

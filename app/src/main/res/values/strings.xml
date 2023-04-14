@@ -1136,7 +1136,7 @@
     <string name="Chat">Chat</string>
     <string name="Restore_Your_Chat_History">Restore Your Chat History</string>
     <string name="Restore_from_Another_Phone">Restore from Another Phone</string>
-    <string name="Restore_from_Another_Phone_tip">Transfer your message history from your old Android device.</string>
+    <string name="Restore_from_Another_Phone_tip">Transfer your message history from your old device.</string>
     <string name="Restore_from_Local">Restore from Local</string>
     <string name="Restore_from_Local_tip">Restore your chat history from you device backup.</string>
     <string name="sync_chat">Sync chats</string>
