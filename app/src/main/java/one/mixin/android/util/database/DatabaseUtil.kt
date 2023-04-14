@@ -122,11 +122,14 @@ suspend fun clearJobs(context: Context) = withContext(Dispatchers.IO) {
     }
 }
 
-fun getDbPath(context: Context, name: String): String {
-    return getDbFile(context, name).absolutePath
+fun getDbPath(context: Context, name: String, optional: Boolean = false): String {
+    return getDbFile(context, name, optional).absolutePath
 }
 
-fun getDbFile(context: Context, name: String): File {
+fun getDbFile(context: Context, name: String, optional: Boolean = false): File {
+    if (optional && Session.getAccount() == null) {
+        return context.getDatabasePath(name)
+    }
     val identityNumber = requireNotNull(Session.getAccount()?.identityNumber)
     val toDir = File(context.getDatabasePath(Constants.DataBase.DB_NAME).parentFile, identityNumber)
     if (!toDir.exists()) toDir.mkdirs()

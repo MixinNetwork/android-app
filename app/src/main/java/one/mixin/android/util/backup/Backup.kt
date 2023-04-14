@@ -191,7 +191,7 @@ suspend fun backupApi29(context: Context, backupMedia: Boolean, callback: (Resul
             return@withContext
         }
         val dbFile = getDbFile(context, DB_NAME)
-        if (dbFile == null) {
+        if (!dbFile.exists()) {
             Timber.e("No database files found")
             withContext(Dispatchers.Main) {
                 callback(Result.NOT_FOUND)

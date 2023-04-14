@@ -4,10 +4,13 @@ import android.os.Bundle
 import android.view.View
 import android.widget.TextView
 import androidx.annotation.LayoutRes
+import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import net.i2p.crypto.eddsa.EdDSAPrivateKey
 import one.mixin.android.Constants.DEVICE_ID
+import one.mixin.android.Constants.DataBase.SIGNAL_DB_NAME
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.api.MixinResponse
@@ -18,6 +21,7 @@ import one.mixin.android.extension.clickVibrate
 import one.mixin.android.extension.decodeBase64
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.getDeviceId
+import one.mixin.android.extension.moveTo
 import one.mixin.android.extension.putString
 import one.mixin.android.extension.tickVibrate
 import one.mixin.android.session.Session
@@ -32,6 +36,7 @@ import one.mixin.android.vo.User
 import one.mixin.android.vo.toUser
 import one.mixin.android.widget.Keyboard
 import one.mixin.android.widget.VerificationCodeView
+import java.io.File
 import java.security.KeyPair
 
 abstract class PinCodeFragment(@LayoutRes contentLayoutId: Int) : FabLoadingFragment(contentLayoutId) {
@@ -110,21 +115,37 @@ abstract class PinCodeFragment(@LayoutRes contentLayoutId: Int) : FabLoadingFrag
 
         hideLoading()
         action.invoke()
-
-        when {
-            sameUser -> {
-                insertUser(account.toUser())
-                InitializeActivity.showLoading(requireContext())
+        lifecycleScope.launch {
+            // Move the initialization created Signal database to the account path
+            withContext(Dispatchers.IO) {
+                val context = requireContext()
+                val identityNumber = Session.getAccount()?.identityNumber ?: return@withContext
+                val dbDir = context.getDatabasePath(SIGNAL_DB_NAME).parentFile
+                val toDir = File(dbDir, identityNumber)
+                if (!toDir.exists()) {
+                    toDir.mkdirs()
+                }
+                dbDir.listFiles().forEach { file ->
+                    if (file.name.startsWith(SIGNAL_DB_NAME)) {
+                        file.moveTo(File(toDir, file.name))
+                    }
+                }
             }
-            account.fullName.isNullOrBlank() -> {
-                insertUser(account.toUser())
-                InitializeActivity.showSetupName(requireContext())
+            when {
+                sameUser -> {
+                    insertUser(account.toUser())
+                    InitializeActivity.showLoading(requireContext())
+                }
+                account.fullName.isNullOrBlank() -> {
+                    insertUser(account.toUser())
+                    InitializeActivity.showSetupName(requireContext())
+                }
+                else -> {
+                    RestoreActivity.show(requireContext())
+                }
             }
-            else -> {
-                RestoreActivity.show(requireContext())
-            }
+            activity?.finish()
         }
-        activity?.finish()
     }
 
     abstract fun clickNextFab()

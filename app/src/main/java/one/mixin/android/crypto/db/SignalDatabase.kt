@@ -56,7 +56,7 @@ abstract class SignalDatabase : RoomDatabase() {
 
         fun getDatabase(context: Context): SignalDatabase {
             if (INSTANCE == null) {
-                INSTANCE = Room.databaseBuilder(context, SignalDatabase::class.java, getDbPath(context, SIGNAL_DB_NAME))
+                INSTANCE = Room.databaseBuilder(context, SignalDatabase::class.java, getDbPath(context, SIGNAL_DB_NAME, true))
                     .addMigrations(MIGRATION_2_3)
                     .addCallback(CALLBACK)
                     .build()

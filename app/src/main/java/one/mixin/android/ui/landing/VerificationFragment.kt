@@ -234,6 +234,7 @@ class VerificationFragment : PinCodeFragment(R.layout.fragment_verification) {
     private fun handleLogin() = lifecycleScope.launch {
         showLoading()
 
+        // Here the Signal database is generated in the default path
         SignalProtocol.initSignal(requireContext().applicationContext)
         val registrationId = CryptoPreference.getLocalRegistrationId(requireContext())
         val sessionKey = generateEd25519KeyPair()
