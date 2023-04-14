@@ -42,6 +42,10 @@ abstract class FtsDatabase : RoomDatabase() {
             }
             return INSTANCE as FtsDatabase
         }
+
+        fun release() {
+            INSTANCE = null
+        }
     }
 
     abstract fun messageMetaDao(): MessageMetaDao

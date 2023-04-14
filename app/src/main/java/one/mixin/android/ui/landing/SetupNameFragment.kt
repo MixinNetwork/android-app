@@ -24,7 +24,6 @@ import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.request.AccountUpdateRequest
 import one.mixin.android.databinding.FragmentSetupNameBinding
 import one.mixin.android.db.MixinDatabase
-import one.mixin.android.db.UserDao
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.showKeyboard
 import one.mixin.android.job.InitializeJob
@@ -50,7 +49,6 @@ class SetupNameFragment : BaseFragment(R.layout.fragment_setup_name) {
     companion object {
         fun newInstance() = SetupNameFragment()
     }
-
 
     private val userDao by lazy {
         MixinDatabase.getDatabase(requireContext()).userDao()
@@ -79,7 +77,6 @@ class SetupNameFragment : BaseFragment(R.layout.fragment_setup_name) {
                                 lifecycleScope.launch(Dispatchers.IO) {
                                     userDao.upsert(data.toUser())
                                 }
-
                             }
 
                             nameEt.hideKeyboard()

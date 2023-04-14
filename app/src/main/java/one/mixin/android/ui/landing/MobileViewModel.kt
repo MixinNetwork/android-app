@@ -1,13 +1,11 @@
 package one.mixin.android.ui.landing
 
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.request.AccountRequest
@@ -18,10 +16,8 @@ import one.mixin.android.api.request.VerificationRequest
 import one.mixin.android.api.response.VerificationResponse
 import one.mixin.android.api.service.AccountService
 import one.mixin.android.crypto.PinCipher
-import one.mixin.android.db.UserDao
 import one.mixin.android.tip.TipBody
 import one.mixin.android.vo.Account
-import one.mixin.android.vo.User
 import javax.inject.Inject
 
 @HiltViewModel
@@ -59,5 +55,4 @@ constructor(
 
     fun update(request: AccountUpdateRequest): Observable<MixinResponse<Account>> =
         accountService.update(request).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
-
 }

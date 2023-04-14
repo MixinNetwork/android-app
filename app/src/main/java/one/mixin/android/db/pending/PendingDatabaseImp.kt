@@ -39,6 +39,9 @@ abstract class PendingDatabaseImp : RoomDatabase(), PendingDatabase {
         private var INSTANCE: PendingDatabaseImp? = null
 
         private val lock = Any()
+        fun release() {
+            INSTANCE = null
+        }
 
         fun getDatabase(context: Context, floodMessageDao: FloodMessageDao, jobDao: JobDao): PendingDatabaseImp {
             synchronized(lock) {

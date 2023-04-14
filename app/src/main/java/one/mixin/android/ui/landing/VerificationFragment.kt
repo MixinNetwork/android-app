@@ -32,7 +32,6 @@ import one.mixin.android.crypto.generateEd25519KeyPair
 import one.mixin.android.databinding.FragmentVerificationBinding
 import one.mixin.android.databinding.ViewVerificationBottomBinding
 import one.mixin.android.db.MixinDatabase
-import one.mixin.android.db.UserDao
 import one.mixin.android.extension.alert
 import one.mixin.android.extension.base64Encode
 import one.mixin.android.extension.defaultSharedPreferences
@@ -56,7 +55,6 @@ import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.User
 import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.CaptchaView
-import javax.inject.Inject
 
 @AndroidEntryPoint
 class VerificationFragment : PinCodeFragment(R.layout.fragment_verification) {

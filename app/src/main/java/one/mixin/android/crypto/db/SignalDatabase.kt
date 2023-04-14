@@ -64,6 +64,10 @@ abstract class SignalDatabase : RoomDatabase() {
             return INSTANCE as SignalDatabase
         }
 
+        fun release() {
+            INSTANCE = null
+        }
+
         private val CALLBACK = object : RoomDatabase.Callback() {
         }
     }

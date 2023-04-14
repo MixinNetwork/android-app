@@ -15,6 +15,9 @@ import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.ResponseError
+import one.mixin.android.crypto.db.SignalDatabase
+import one.mixin.android.db.MixinDatabase
+import one.mixin.android.db.pending.PendingDatabaseImp
 import one.mixin.android.extension.base64Encode
 import one.mixin.android.extension.clear
 import one.mixin.android.extension.clickVibrate
@@ -24,6 +27,7 @@ import one.mixin.android.extension.getDeviceId
 import one.mixin.android.extension.moveTo
 import one.mixin.android.extension.putString
 import one.mixin.android.extension.tickVibrate
+import one.mixin.android.fts.FtsDatabase
 import one.mixin.android.session.Session
 import one.mixin.android.session.decryptPinToken
 import one.mixin.android.ui.landing.InitializeActivity
@@ -101,6 +105,11 @@ abstract class PinCodeFragment(@LayoutRes contentLayoutId: Int) : FabLoadingFrag
             clearJobs(requireContext())
         } else {
             showLoading()
+            // Release the singleton and re-inject
+            MixinDatabase.release()
+            PendingDatabaseImp.release()
+            FtsDatabase.release()
+            SignalDatabase.release()
             defaultSharedPreferences.clear()
         }
         val privateKey = sessionKey.private as EdDSAPrivateKey
@@ -130,6 +139,7 @@ abstract class PinCodeFragment(@LayoutRes contentLayoutId: Int) : FabLoadingFrag
                         file.moveTo(File(toDir, file.name))
                     }
                 }
+                SignalDatabase.release()
             }
             when {
                 sameUser -> {
