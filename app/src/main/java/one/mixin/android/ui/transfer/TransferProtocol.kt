@@ -124,11 +124,6 @@ class TransferProtocol {
     }
 
     @Throws(ChecksumException::class)
-    private fun readString(inputStream: InputStream, expectedLength: Int): String {
-        return String(readByteArray(inputStream, expectedLength), UTF_8)
-    }
-
-    @Throws(ChecksumException::class)
     private fun readByteArray(inputStream: InputStream, expectedLength: Int): ByteArray {
         val data = safeRead(inputStream, expectedLength)
         val checksum = safeRead(inputStream, 8)

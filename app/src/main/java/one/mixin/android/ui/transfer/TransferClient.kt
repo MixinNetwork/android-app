@@ -1,8 +1,14 @@
 package one.mixin.android.ui.transfer
 
+import com.google.gson.Gson
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.decodeFromJsonElement
+import kotlinx.serialization.json.decodeFromStream
 import one.mixin.android.MixinApplication
 import one.mixin.android.RxBus
 import one.mixin.android.db.AppDao
@@ -25,12 +31,11 @@ import one.mixin.android.fts.insertOrReplaceMessageFts4
 import one.mixin.android.ui.transfer.vo.CURRENT_TRANSFER_VERSION
 import one.mixin.android.ui.transfer.vo.TransferCommandAction
 import one.mixin.android.ui.transfer.vo.TransferCommandData
-import one.mixin.android.ui.transfer.vo.TransferData
 import one.mixin.android.ui.transfer.vo.TransferDataType
 import one.mixin.android.ui.transfer.vo.TransferMessageMention
+import one.mixin.android.ui.transfer.vo.TransferSendData
 import one.mixin.android.ui.transfer.vo.TransferStatus
 import one.mixin.android.ui.transfer.vo.TransferStatusLiveData
-import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.SINGLE_SOCKET_THREAD
 import one.mixin.android.util.mention.parseMentionData
 import one.mixin.android.vo.App
@@ -49,13 +54,11 @@ import timber.log.Timber
 import java.io.ByteArrayInputStream
 import java.io.EOFException
 import java.io.InputStream
-import java.io.InputStreamReader
 import java.io.OutputStream
 import java.lang.Float.min
 import java.net.Socket
 import java.net.SocketException
 import javax.inject.Inject
-import kotlin.text.Charsets.UTF_8
 
 class TransferClient @Inject internal constructor(
     val assetDao: AssetDao,
@@ -73,19 +76,15 @@ class TransferClient @Inject internal constructor(
     val messageMentionDao: MessageMentionDao,
     val ftsDatabase: FtsDatabase,
     val status: TransferStatusLiveData,
+    val gson: Gson,
+    val serializationJson: Json,
 ) {
 
     private var socket: Socket? = null
     private var quit = false
-
-    private val gson by lazy {
-        GsonHelper.customGson
-    }
-
     private var count = 0L
 
     val protocol = TransferProtocol()
-
     private var startTime = 0L
 
     suspend fun connectToServer(ip: String, port: Int, commandData: TransferCommandData) =
@@ -179,45 +178,45 @@ class TransferClient @Inject internal constructor(
         RxBus.publish(DeviceTransferProgressEvent(progress))
     }
 
+    @OptIn(ExperimentalSerializationApi::class)
     private fun processJson(byteArray: ByteArray, outputStream: OutputStream) {
         if (runtime.freeMemory() < 5242880) {
             runtime.gc()
         }
-        val transferData = gson.fromJson(InputStreamReader(ByteArrayInputStream(byteArray), UTF_8), TransferData::class.java)
+        val transferData = serializationJson.decodeFromStream<TransferSendData<JsonElement>>(ByteArrayInputStream(byteArray))
         when (transferData.type) {
             TransferDataType.CONVERSATION.value -> {
-                val conversation =
-                    gson.fromJson(transferData.data, Conversation::class.java)
+                val conversation = serializationJson.decodeFromJsonElement<Conversation>(transferData.data)
                 conversationDao.insertIgnore(conversation)
             }
 
             TransferDataType.PARTICIPANT.value -> {
-                val participant = gson.fromJson(transferData.data, Participant::class.java)
+                val participant = serializationJson.decodeFromJsonElement<Participant>(transferData.data)
                 participantDao.insertIgnore(participant)
             }
 
             TransferDataType.USER.value -> {
-                val user = gson.fromJson(transferData.data, User::class.java)
+                val user = serializationJson.decodeFromJsonElement<User>(transferData.data)
                 userDao.insertIgnore(user)
             }
 
             TransferDataType.APP.value -> {
-                val app = gson.fromJson(transferData.data, App::class.java)
+                val app = serializationJson.decodeFromJsonElement<App>(transferData.data)
                 appDao.insertIgnore(app)
             }
 
             TransferDataType.ASSET.value -> {
-                val asset = gson.fromJson(transferData.data, Asset::class.java)
+                val asset = serializationJson.decodeFromJsonElement<Asset>(transferData.data)
                 assetDao.insertIgnore(asset)
             }
 
             TransferDataType.SNAPSHOT.value -> {
-                val snapshot = gson.fromJson(transferData.data, Snapshot::class.java)
+                val snapshot = serializationJson.decodeFromJsonElement<Snapshot>(transferData.data)
                 snapshotDao.insertIgnore(snapshot)
             }
 
             TransferDataType.STICKER.value -> {
-                val sticker = gson.fromJson(transferData.data, Sticker::class.java)
+                val sticker = serializationJson.decodeFromJsonElement<Sticker>(transferData.data)
                 sticker.lastUseAt?.let {
                     try {
                         sticker.lastUseAt = it.createAtToLong().toString()
@@ -229,38 +228,38 @@ class TransferClient @Inject internal constructor(
             }
 
             TransferDataType.PIN_MESSAGE.value -> {
-                val pinMessage =
-                    gson.fromJson(transferData.data, PinMessage::class.java)
+                val pinMessage = serializationJson.decodeFromJsonElement<PinMessage>(transferData.data)
                 pinMessageDao.insertIgnore(pinMessage)
             }
 
             TransferDataType.TRANSCRIPT_MESSAGE.value -> {
-                val transcriptMessage =
-                    gson.fromJson(transferData.data, TranscriptMessage::class.java)
+                val transcriptMessage = serializationJson.decodeFromJsonElement<TranscriptMessage>(transferData.data)
                 transcriptMessageDao.insertIgnore(transcriptMessage)
             }
 
             TransferDataType.MESSAGE.value -> {
-                val message = gson.fromJson(transferData.data, Message::class.java)
+                val message = serializationJson.decodeFromJsonElement<Message>(transferData.data)
                 val rowId = messageDao.insertIgnoreReturn(message)
                 if (rowId != -1L) { // If the row ID is valid (-1 indicates insertion failure)
                     ftsDatabase.insertOrReplaceMessageFts4(message)
                 }
-                message.content = null
             }
 
             TransferDataType.MESSAGE_MENTION.value -> {
-                val messageMention = gson.fromJson(transferData.data, TransferMessageMention::class.java).let {
-                    val messageContent = messageDao.findMessageContentById(it.conversationId, it.messageId) ?: return
-                    val mentionData = parseMentionData(messageContent, userDao) ?: return
-                    MessageMention(it.messageId, it.conversationId, mentionData, it.hasRead)
-                }
+                val messageMention =
+                    serializationJson.decodeFromJsonElement<TransferMessageMention>(transferData.data).let {
+                        val messageContent =
+                            messageDao.findMessageContentById(it.conversationId, it.messageId)
+                                ?: return
+                        val mentionData = parseMentionData(messageContent, userDao) ?: return
+                        MessageMention(it.messageId, it.conversationId, mentionData, it.hasRead)
+                    }
                 messageMentionDao.insertIgnoreReturn(messageMention)
             }
 
             TransferDataType.EXPIRED_MESSAGE.value -> {
                 val expiredMessage =
-                    gson.fromJson(transferData.data, ExpiredMessage::class.java)
+                    serializationJson.decodeFromJsonElement<ExpiredMessage>(transferData.data)
                 expiredMessageDao.insertIgnore(expiredMessage)
             }
 
