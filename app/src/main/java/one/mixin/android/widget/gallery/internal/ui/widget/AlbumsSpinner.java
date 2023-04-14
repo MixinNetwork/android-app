@@ -24,7 +24,7 @@ public class AlbumsSpinner {
     private AdapterView.OnItemSelectedListener mOnItemSelectedListener;
 
     public AlbumsSpinner(@NonNull Context context) {
-        mListPopupWindow = new ListPopupWindow(context, null, R.attr.listPopupWindowStyle);
+        mListPopupWindow = new ListPopupWindow(context, null, androidx.appcompat.R.attr.listPopupWindowStyle);
         mListPopupWindow.setModal(true);
         float density = context.getResources().getDisplayMetrics().density;
         mListPopupWindow.setContentWidth((int) (216 * density));

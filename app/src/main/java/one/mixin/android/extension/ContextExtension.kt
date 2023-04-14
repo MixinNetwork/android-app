@@ -294,7 +294,7 @@ fun Context.isTablet(): Boolean = resources.getBoolean(R.bool.isTablet)
 
 fun Context.appCompatActionBarHeight(): Int {
     val tv = TypedValue()
-    theme.resolveAttribute(R.attr.actionBarSize, tv, true)
+    theme.resolveAttribute(android.R.attr.actionBarSize, tv, true)
     return resources.getDimensionPixelSize(tv.resourceId)
 }
 
