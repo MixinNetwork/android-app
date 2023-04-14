@@ -187,7 +187,7 @@ class TransferClient @Inject internal constructor(
         when (transferData.type) {
             TransferDataType.MESSAGE.value -> {
                 syncInsert {
-                    val message = Json.decodeFromJsonElement<Message>(transferData.data)
+                    val message = Json{ignoreUnknownKeys = true}.decodeFromJsonElement<Message>(transferData.data)
                     messageDao.insertIgnore(message)
                     ftsDatabase.insertOrReplaceMessageFts4(message)
                     Timber.e("Message ID: ${message.messageId}")
@@ -197,7 +197,7 @@ class TransferClient @Inject internal constructor(
 
             TransferDataType.PARTICIPANT.value -> {
                 syncInsert {
-                    val participant = Json.decodeFromJsonElement<Participant>(transferData.data)
+                    val participant = Json{ignoreUnknownKeys = true}.decodeFromJsonElement<Participant>(transferData.data)
                     participantDao.insertIgnore(participant)
                     Timber.e("Participant ID: ${participant.conversationId} ${participant.userId}")
                 }
@@ -206,7 +206,7 @@ class TransferClient @Inject internal constructor(
 
             TransferDataType.USER.value -> {
                 syncInsert {
-                    val user = Json.decodeFromJsonElement<User>(transferData.data)
+                    val user = Json{ignoreUnknownKeys = true}.decodeFromJsonElement<User>(transferData.data)
                     userDao.insertIgnore(user)
                     Timber.e("User ID: ${user.userId}")
                 }
@@ -215,7 +215,7 @@ class TransferClient @Inject internal constructor(
 
             TransferDataType.CONVERSATION.value -> {
                 syncInsert {
-                    val conversation = Json.decodeFromJsonElement<Conversation>(transferData.data)
+                    val conversation = Json{ignoreUnknownKeys = true}.decodeFromJsonElement<Conversation>(transferData.data)
                     conversationDao.insertIgnore(conversation)
                     Timber.e("Conversation ID: ${conversation.conversationId}")
                 }
@@ -224,7 +224,7 @@ class TransferClient @Inject internal constructor(
 
             TransferDataType.SNAPSHOT.value -> {
                 syncInsert {
-                    val snapshot = Json.decodeFromJsonElement<Snapshot>(transferData.data)
+                    val snapshot = Json{ignoreUnknownKeys = true}.decodeFromJsonElement<Snapshot>(transferData.data)
                     snapshotDao.insertIgnore(snapshot)
                     Timber.e("Snapshot ID: ${snapshot.snapshotId}")
                 }
@@ -233,7 +233,7 @@ class TransferClient @Inject internal constructor(
 
             TransferDataType.STICKER.value -> {
                 syncInsert {
-                    val sticker = Json.decodeFromJsonElement<Sticker>(transferData.data)
+                    val sticker = Json{ignoreUnknownKeys = true}.decodeFromJsonElement<Sticker>(transferData.data)
                     stickerDao.insertIgnore(sticker)
                     Timber.e("Sticker ID: ${sticker.stickerId}")
                 }
@@ -242,7 +242,7 @@ class TransferClient @Inject internal constructor(
 
             TransferDataType.ASSET.value -> {
                 syncInsert {
-                    val asset = Json.decodeFromJsonElement<Asset>(transferData.data)
+                    val asset = Json{ignoreUnknownKeys = true}.decodeFromJsonElement<Asset>(transferData.data)
                     assetDao.insertIgnore(asset)
                     Timber.e("Asset ID: ${asset.assetId}")
                 }
@@ -251,7 +251,7 @@ class TransferClient @Inject internal constructor(
 
             TransferDataType.PIN_MESSAGE.value -> {
                 syncInsert {
-                    val pinMessage = Json.decodeFromJsonElement<PinMessage>(transferData.data)
+                    val pinMessage = Json{ignoreUnknownKeys = true}.decodeFromJsonElement<PinMessage>(transferData.data)
                     pinMessageDao.insertIgnore(pinMessage)
                     Timber.e("PinMessage ID: ${pinMessage.messageId}")
                 }
@@ -260,7 +260,7 @@ class TransferClient @Inject internal constructor(
 
             TransferDataType.TRANSCRIPT_MESSAGE.value -> {
                 syncInsert {
-                    val transcriptMessage = Json.decodeFromJsonElement<TranscriptMessage>(transferData.data)
+                    val transcriptMessage = Json{ignoreUnknownKeys = true}.decodeFromJsonElement<TranscriptMessage>(transferData.data)
                     transcriptMessageDao.insertIgnore(transcriptMessage)
                     Timber.e("Transcript ID: ${transcriptMessage.messageId}")
                 }

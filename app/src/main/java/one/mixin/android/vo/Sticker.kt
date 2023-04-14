@@ -17,26 +17,35 @@ data class Sticker(
     @ColumnInfo(name = "sticker_id")
     val stickerId: String,
     @SerializedName("album_id")
+    @SerialName("album_id")
     @ColumnInfo(name = "album_id")
     val albumId: String?,
     @SerializedName("name")
+    @SerialName("name")
     @ColumnInfo(name = "name")
     val name: String,
     @SerializedName("asset_url")
+    @SerialName("asset_url")
     @ColumnInfo(name = "asset_url")
     val assetUrl: String,
     @SerializedName("asset_type")
+    @SerialName("asset_type")
     @ColumnInfo(name = "asset_type")
     val assetType: String,
     @SerializedName("asset_width")
+    @SerialName("asset_width")
     @ColumnInfo(name = "asset_width")
     val assetWidth: Int,
     @SerializedName("asset_height")
+    @SerialName("asset_height")
     @ColumnInfo(name = "asset_height")
     val assetHeight: Int,
     @SerializedName("created_at")
+    @SerialName("created_at")
     @ColumnInfo(name = "created_at")
     var createdAt: String,
+    @SerializedName("last_use_at")
+    @SerialName("last_use_at")
     @ColumnInfo(name = "last_use_at")
     var lastUseAt: String?,
 ) {

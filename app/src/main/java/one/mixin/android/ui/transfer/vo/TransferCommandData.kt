@@ -3,6 +3,7 @@ package one.mixin.android.ui.transfer.vo
 import android.os.Parcelable
 import com.google.gson.annotations.SerializedName
 import kotlinx.parcelize.Parcelize
+import kotlinx.serialization.EncodeDefault
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import one.mixin.android.MixinApplication
@@ -30,11 +31,14 @@ data class TransferCommandData(
     @SerialName("progress")
     val progress: Float? = null, // 0~100
     @SerialName("version")
+    @EncodeDefault
     val version: Int = CURRENT_TRANSFER_VERSION,
     @SerializedName("device_id")
     @SerialName("device_id")
+    @EncodeDefault
     val deviceId: String = MixinApplication.appContext.getDeviceId(),
     @SerialName("platform")
+    @EncodeDefault
     val platform: String = "Android",
 ) : Parcelable
 
