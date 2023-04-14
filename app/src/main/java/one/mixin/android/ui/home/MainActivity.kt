@@ -224,9 +224,6 @@ class MainActivity : BlazeBaseActivity() {
             }
         }
 
-        super.onCreate(savedInstanceState)
-        navigationController = NavigationController(this)
-
         if (Session.getAccount()?.fullName.isNullOrBlank()) {
             InitializeActivity.showSetupName(this)
             finish()
@@ -240,6 +237,9 @@ class MainActivity : BlazeBaseActivity() {
             finish()
             return
         }
+
+        super.onCreate(savedInstanceState)
+        navigationController = NavigationController(this)
 
         if (defaultSharedPreferences.getBoolean(Constants.Account.PREF_RESTORE, false)) {
             RestoreActivity.show(this)

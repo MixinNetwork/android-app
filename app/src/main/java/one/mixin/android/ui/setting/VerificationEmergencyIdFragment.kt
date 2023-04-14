@@ -22,6 +22,7 @@ import one.mixin.android.extension.tickVibrate
 import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.FabLoadingFragment
+import one.mixin.android.ui.landing.MobileViewModel
 import one.mixin.android.ui.setting.VerificationEmergencyFragment.Companion.FROM_SESSION
 import one.mixin.android.util.viewBinding
 import one.mixin.android.widget.Keyboard
@@ -41,7 +42,7 @@ class VerificationEmergencyIdFragment : FabLoadingFragment(R.layout.fragment_ver
 
     private val phone by lazy { requireArguments().getString(ARGS_PHONE) }
 
-    private val viewModel by viewModels<EmergencyViewModel>()
+    private val viewModel by viewModels<MobileViewModel>()
 
     private val binding by viewBinding(FragmentVerificationEmergencyIdBinding::bind)
 

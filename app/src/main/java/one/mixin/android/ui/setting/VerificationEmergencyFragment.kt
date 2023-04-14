@@ -5,6 +5,7 @@ import android.view.View
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import net.i2p.crypto.eddsa.EdDSAPublicKey
 import one.mixin.android.Constants.ARGS_USER
@@ -17,6 +18,7 @@ import one.mixin.android.crypto.PinCipher
 import one.mixin.android.crypto.SignalProtocol
 import one.mixin.android.crypto.generateEd25519KeyPair
 import one.mixin.android.databinding.FragmentVerificationEmergencyBinding
+import one.mixin.android.db.MixinDatabase
 import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.base64Encode
 import one.mixin.android.extension.defaultSharedPreferences
@@ -27,6 +29,7 @@ import one.mixin.android.tip.TipBody
 import one.mixin.android.tip.exception.TipNetworkException
 import one.mixin.android.ui.common.PinCodeFragment
 import one.mixin.android.ui.landing.LandingActivity.Companion.ARGS_PIN
+import one.mixin.android.ui.landing.MobileViewModel
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.Account
 import one.mixin.android.vo.User
@@ -65,7 +68,7 @@ class VerificationEmergencyFragment : PinCodeFragment(R.layout.fragment_verifica
     private val from by lazy { requireArguments().getInt(ARGS_FROM) }
     private val userIdentityNumber: String? by lazy { requireArguments().getString(ARGS_IDENTITY_NUMBER) }
 
-    private val viewModel by viewModels<EmergencyViewModel>()
+    private val viewModel by viewModels<MobileViewModel>()
 
     private val binding by viewBinding(FragmentVerificationEmergencyBinding::bind)
 
@@ -88,8 +91,14 @@ class VerificationEmergencyFragment : PinCodeFragment(R.layout.fragment_verifica
         }
     }
 
+    private val userDao by lazy {
+        MixinDatabase.getDatabase(requireContext()).userDao()
+    }
+
     override fun insertUser(u: User) {
-        viewModel.upsertUser(u)
+        lifecycleScope.launch(Dispatchers.IO) {
+            userDao.upsert(u)
+        }
     }
 
     private fun createVerify() = lifecycleScope.launch {

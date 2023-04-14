@@ -11,10 +11,12 @@ import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.request.AccountRequest
 import one.mixin.android.api.request.AccountUpdateRequest
 import one.mixin.android.api.request.DeactivateVerificationRequest
+import one.mixin.android.api.request.EmergencyRequest
 import one.mixin.android.api.request.VerificationPurpose
 import one.mixin.android.api.request.VerificationRequest
 import one.mixin.android.api.response.VerificationResponse
 import one.mixin.android.api.service.AccountService
+import one.mixin.android.api.service.EmergencyService
 import one.mixin.android.crypto.PinCipher
 import one.mixin.android.tip.TipBody
 import one.mixin.android.vo.Account
@@ -24,6 +26,7 @@ import javax.inject.Inject
 class MobileViewModel @Inject internal
 constructor(
     private val accountService: AccountService,
+    private val emergencyService:EmergencyService,
     private val pinCipher: PinCipher,
 ) : ViewModel() {
 
@@ -46,6 +49,19 @@ constructor(
                 pin = pinCipher.encryptPin(pin, TipBody.forPhoneNumberUpdate(id, verificationCode)),
             ),
         )
+
+    suspend fun createEmergency(request: EmergencyRequest) = withContext(Dispatchers.IO) {
+        emergencyService.create(request)
+    }
+
+    suspend fun createVerifyEmergency(id: String, request: EmergencyRequest) = withContext(Dispatchers.IO) {
+        emergencyService.createVerify(id, request)
+    }
+
+    suspend fun loginVerifyEmergency(id: String, request: EmergencyRequest)  = withContext(Dispatchers.IO) {
+        emergencyService.loginVerify(id, request)
+    }
+
 
     fun deactiveVerification(id: String, code: String): Observable<MixinResponse<VerificationResponse>> =
         accountService.deactiveVerification(
