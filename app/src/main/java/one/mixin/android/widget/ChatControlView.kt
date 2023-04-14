@@ -47,6 +47,9 @@ import com.uber.autodispose.android.autoDispose
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.databinding.ViewChatControlBinding
 import one.mixin.android.extension.dp
@@ -55,6 +58,7 @@ import one.mixin.android.extension.fadeOut
 import one.mixin.android.extension.formatMillis
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.media.AudioEndStatus
+import one.mixin.android.media.OpusAudioRecorder
 import one.mixin.android.util.AudioPlayer
 import one.mixin.android.util.getLanguage
 import one.mixin.android.util.reportException
@@ -478,7 +482,7 @@ class ChatControlView : LinearLayout, ActionMode.Callback {
     }
 
     private var audioFile: File? = null
-    fun previewAudio(audioFile: File, waveForm: ByteArray, duration: Long, sendCallback: () -> Unit) {
+    fun previewAudio(conversationId: String, audioFile: File, waveForm: ByteArray, duration: Long, sendCallback: () -> Unit) {
         AudioPlayer.clear()
         binding.chatAudioWaveform.setWaveform(waveForm, true)
         binding.chatAudioWaveform.setBind(PREVIEW)
@@ -496,17 +500,25 @@ class ChatControlView : LinearLayout, ActionMode.Callback {
             AudioPlayer.seekTo(0)
             AudioPlayer.pause()
             sendCallback.invoke()
+            MixinApplication.get().applicationScope.launch(Dispatchers.IO) {
+                OpusAudioRecorder.deletePreviewAudio(context, conversationId)
+            }
             binding.chatAudioLayout.isVisible = false
         }
         binding.chatAudioDelete.setOnClickListener {
             AudioPlayer.seekTo(0)
             AudioPlayer.pause()
-            audioFile.deleteOnExit()
+            MixinApplication.get().applicationScope.launch(Dispatchers.IO) {
+                audioFile.deleteOnExit()
+                OpusAudioRecorder.deletePreviewAudio(context, conversationId)
+            }
             binding.chatAudioLayout.isVisible = false
         }
         binding.chatAudioDuration.text = duration.formatMillis()
         binding.chatAudioLayout.isVisible = true
     }
+
+    fun isPreviewAudio() = binding.chatAudioLayout.isVisible
 
     private fun updateRecordCircleAndSendIcon() {
         if (isRecording) {

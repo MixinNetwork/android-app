@@ -1251,13 +1251,30 @@ class ConversationFragment() :
         }
     }
 
+    override fun onStart() {
+        super.onStart()
+        if (!binding.chatControl.isPreviewAudio()) {
+            lifecycleScope.launch {
+                val previewAudio = withContext(Dispatchers.IO) {
+                    OpusAudioRecorder.getAudioPreview(requireContext(), conversationId)
+                } ?: return@launch
+                this@ConversationFragment.previewAudio(
+                    previewAudio.messageId,
+                    File(previewAudio.path),
+                    previewAudio.duration,
+                    previewAudio.waveForm,
+                )
+            }
+        }
+    }
+
     override fun onStop() {
         markRead()
         val draftText = binding.chatControl.chatEt.text?.toString() ?: ""
         chatRoomHelper.saveDraft(conversationId, draftText)
 
         if (OpusAudioRecorder.state != STATE_NOT_INIT) {
-            OpusAudioRecorder.get(conversationId).stop()
+            OpusAudioRecorder.get(conversationId).stopRecording(AudioEndStatus.PREVIEW, vibrate = false, false)
         }
         if (binding.chatControl.isRecording) {
             binding.chatControl.cancelExternal()
@@ -2063,7 +2080,7 @@ class ConversationFragment() :
             file.deleteOnExit()
         } else {
             audioFile = file
-            binding.chatControl.previewAudio(file, waveForm, duration) {
+            binding.chatControl.previewAudio(conversationId, file, waveForm, duration) {
                 sendAudio(messageId, file, duration, waveForm)
             }
         }
