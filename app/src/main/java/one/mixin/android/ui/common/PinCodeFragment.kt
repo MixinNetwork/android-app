@@ -102,7 +102,7 @@ abstract class PinCodeFragment(@LayoutRes contentLayoutId: Int) : FabLoadingFrag
         val pinToken = decryptPinToken(account.pinToken.decodeBase64(), privateKey) ?: return@withContext
         Session.storeEd25519Seed(privateKey.seed.base64Encode())
         Session.storePinToken(pinToken.base64Encode())
-        Session.storeAccount(account)
+        Session.storeAccount(account) // After that, you can use the database.
         defaultSharedPreferences.putString(DEVICE_ID, requireContext().getDeviceId())
 
         verificationKeyboard.animate().translationY(300f).start()

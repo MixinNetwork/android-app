@@ -9,8 +9,11 @@ import android.view.View.GONE
 import android.view.View.INVISIBLE
 import android.view.View.VISIBLE
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import one.mixin.android.Constants.MIXIN_BOTS_USER_ID
 import one.mixin.android.Constants.MIXIN_BOTS_USER_NAME
 import one.mixin.android.Constants.MIXIN_DATA_USER_ID
@@ -20,6 +23,8 @@ import one.mixin.android.R
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.request.AccountUpdateRequest
 import one.mixin.android.databinding.FragmentSetupNameBinding
+import one.mixin.android.db.MixinDatabase
+import one.mixin.android.db.UserDao
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.showKeyboard
 import one.mixin.android.job.InitializeJob
@@ -46,6 +51,11 @@ class SetupNameFragment : BaseFragment(R.layout.fragment_setup_name) {
         fun newInstance() = SetupNameFragment()
     }
 
+
+    private val userDao by lazy {
+        MixinDatabase.getDatabase(requireContext()).userDao()
+    }
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         MixinApplication.get().isOnline.set(true)
@@ -66,7 +76,10 @@ class SetupNameFragment : BaseFragment(R.layout.fragment_setup_name) {
                             }
                             r.data?.let { data ->
                                 Session.storeAccount(data)
-                                mobileViewModel.insertUser(data.toUser())
+                                lifecycleScope.launch(Dispatchers.IO) {
+                                    userDao.upsert(data.toUser())
+                                }
+
                             }
 
                             nameEt.hideKeyboard()

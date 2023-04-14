@@ -34,7 +34,6 @@ class UpgradeFragment : BaseFragment(R.layout.fragment_upgrade) {
         }
     }
 
-    private val viewModel by viewModels<MobileViewModel>()
     private val binding by viewBinding(FragmentUpgradeBinding::bind)
 
     private val type: Int by lazy { requireArguments().getInt(ARGS_TYPE) }
