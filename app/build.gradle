@@ -7,6 +7,7 @@ plugins {
     id 'com.google.firebase.firebase-perf'
     id "de.undercouch.download"
     id 'com.google.android.libraries.mapsplatform.secrets-gradle-plugin'
+    id 'kotlinx-serialization'
 }
 
 def versionMajor = 0
@@ -280,6 +281,9 @@ dependencies {
     implementation "com.google.net.cronet:cronet-okhttp:${cronetOkhttpVersion}"
 
     implementation "com.google.code.gson:gson:${gsonVersion}"
+
+    implementation "org.jetbrains.kotlinx:kotlinx-serialization-json:${serializationVersion}"
+    kapt "org.jetbrains.kotlinx:kotlinx-serialization-json:${serializationVersion}"
 
     implementation "com.google.firebase:firebase-messaging-ktx"
     implementation 'com.google.firebase:firebase-analytics-ktx'
