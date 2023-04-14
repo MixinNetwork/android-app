@@ -5,11 +5,15 @@ import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.google.gson.annotations.SerializedName
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 
 @Entity(tableName = "stickers")
+@Serializable
 data class Sticker(
     @PrimaryKey
     @SerializedName("sticker_id")
+    @SerialName("sticker_id")
     @ColumnInfo(name = "sticker_id")
     val stickerId: String,
     @SerializedName("album_id")
