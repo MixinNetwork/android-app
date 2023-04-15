@@ -6,6 +6,7 @@ import androidx.room.Index
 import androidx.room.PrimaryKey
 import com.google.gson.annotations.SerializedName
 import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 
 @Entity(
     tableName = "pin_messages",
@@ -13,6 +14,7 @@ import kotlinx.serialization.SerialName
         Index(value = arrayOf("conversation_id")),
     ],
 )
+@Serializable
 data class PinMessage(
     @PrimaryKey
     @ColumnInfo(name = "message_id")

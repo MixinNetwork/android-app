@@ -8,4 +8,5 @@ data class TransferSendData<T>(
     @SerialName("type")
     val type: String,
     @SerialName("data")
-    val data: T)
+    val data: T,
+)

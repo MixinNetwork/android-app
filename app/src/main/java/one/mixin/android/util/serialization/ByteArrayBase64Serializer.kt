@@ -8,10 +8,8 @@ import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 import one.mixin.android.crypto.Base64
 import one.mixin.android.extension.base64Encode
-
-object ByteArraySerializer : KSerializer<ByteArray> {
-    override val descriptor: SerialDescriptor =
-        PrimitiveSerialDescriptor("kotlin.ByteArray", PrimitiveKind.STRING)
+object ByteArrayBase64Serializer : KSerializer<ByteArray> {
+    override val descriptor: SerialDescriptor = PrimitiveSerialDescriptor("kotlinx.serialization.ByteArrayBase64Serializer", PrimitiveKind.STRING)
 
     override fun serialize(encoder: Encoder, value: ByteArray) {
         return encoder.encodeString(value.base64Encode())

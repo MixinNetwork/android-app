@@ -12,7 +12,7 @@ import kotlinx.serialization.SerialName
 import one.mixin.android.MixinApplication
 import one.mixin.android.extension.getMediaPath
 import one.mixin.android.extension.getTranscriptDirPath
-import one.mixin.android.util.serialization.ByteArraySerializer
+import one.mixin.android.util.serialization.ByteArrayBase64Serializer
 import java.io.File
 import java.io.Serializable
 
@@ -83,8 +83,8 @@ class TranscriptMessage(
     var mediaStatus: String? = null,
     @SerializedName("media_waveform")
     @SerialName("media_waveform")
-    @kotlinx.serialization.Serializable(with = ByteArraySerializer::class)
     @ColumnInfo(name = "media_waveform")
+    @kotlinx.serialization.Serializable(with = ByteArrayBase64Serializer::class)
     val mediaWaveform: ByteArray? = null,
     @SerializedName("thumb_image")
     @SerialName("thumb_image")
@@ -95,14 +95,14 @@ class TranscriptMessage(
     @ColumnInfo(name = "thumb_url")
     val thumbUrl: String? = null,
     @SerializedName("media_key")
+    @kotlinx.serialization.Serializable(with = ByteArrayBase64Serializer::class)
     @SerialName("media_key")
-    @kotlinx.serialization.Serializable(with = ByteArraySerializer::class)
     @ColumnInfo(name = "media_key")
     val mediaKey: ByteArray? = null,
     @SerializedName("media_digest")
     @SerialName("media_digest")
     @ColumnInfo(name = "media_digest")
-    @kotlinx.serialization.Serializable(with = ByteArraySerializer::class)
+    @kotlinx.serialization.Serializable(with = ByteArrayBase64Serializer::class)
     val mediaDigest: ByteArray? = null,
     @SerializedName("media_created_at")
     @SerialName("media_created_at")

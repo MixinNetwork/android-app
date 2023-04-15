@@ -12,7 +12,7 @@ import kotlinx.serialization.SerialName
 import one.mixin.android.MixinApplication
 import one.mixin.android.session.Session
 import one.mixin.android.util.GsonHelper
-import one.mixin.android.util.serialization.ByteArraySerializer
+import one.mixin.android.util.serialization.ByteArrayBase64Serializer
 import java.io.Serializable
 
 @Entity(
@@ -110,13 +110,13 @@ class Message(
     @SerializedName("media_key")
     @SerialName("media_key")
     @ColumnInfo(name = "media_key", typeAffinity = ColumnInfo.BLOB)
-    @kotlinx.serialization.Serializable(with = ByteArraySerializer::class)
+    @kotlinx.serialization.Serializable(with = ByteArrayBase64Serializer::class)
     val mediaKey: ByteArray? = null,
 
     @SerializedName("media_digest")
     @SerialName("media_digest")
     @ColumnInfo(name = "media_digest", typeAffinity = ColumnInfo.BLOB)
-    @kotlinx.serialization.Serializable(with = ByteArraySerializer::class)
+    @kotlinx.serialization.Serializable(with = ByteArrayBase64Serializer::class)
     val mediaDigest: ByteArray? = null,
 
     @SerializedName("media_status")
@@ -177,7 +177,7 @@ class Message(
     @ColumnInfo(name = "media_waveform", typeAffinity = ColumnInfo.BLOB)
     @SerializedName("media_waveform")
     @SerialName("media_waveform")
-    @kotlinx.serialization.Serializable(with = ByteArraySerializer::class)
+    @kotlinx.serialization.Serializable(with = ByteArrayBase64Serializer::class)
     val mediaWaveform: ByteArray? = null,
 
     @Deprecated(

@@ -5,7 +5,7 @@ import androidx.room.PrimaryKey
 import com.google.gson.annotations.SerializedName
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import one.mixin.android.util.serialization.ByteArraySerializer
+import one.mixin.android.util.serialization.ByteArrayBase64Serializer
 import one.mixin.android.vo.Message
 
 @Serializable
@@ -23,17 +23,17 @@ class TransferMessage(
 
     @SerializedName("user_id")
     @SerialName("user_id")
-    @ColumnInfo(name="user_id")
+    @ColumnInfo(name = "user_id")
     var userId: String,
 
     @SerializedName("category")
     @SerialName("category")
-    @ColumnInfo(name="category")
+    @ColumnInfo(name = "category")
     var category: String,
 
     @SerializedName("content")
     @SerialName("content")
-    @ColumnInfo(name="content")
+    @ColumnInfo(name = "content")
     var content: String?,
 
     @SerializedName("media_url")
@@ -84,13 +84,13 @@ class TransferMessage(
     @ColumnInfo(name = "media_key", typeAffinity = ColumnInfo.BLOB)
     @SerializedName("media_key")
     @SerialName("media_key")
-    @Serializable(with = ByteArraySerializer::class)
+    @Serializable(with = ByteArrayBase64Serializer::class)
     val mediaKey: ByteArray? = null,
 
     @ColumnInfo(name = "media_digest", typeAffinity = ColumnInfo.BLOB)
     @SerializedName("media_digest")
     @SerialName("media_digest")
-    @Serializable(with = ByteArraySerializer::class)
+    @Serializable(with = ByteArrayBase64Serializer::class)
     val mediaDigest: ByteArray? = null,
 
     @SerializedName("media_status")
@@ -151,7 +151,7 @@ class TransferMessage(
     @ColumnInfo(name = "media_waveform", typeAffinity = ColumnInfo.BLOB)
     @SerializedName("media_waveform")
     @SerialName("media_waveform")
-    @Serializable(with = ByteArraySerializer::class)
+    @Serializable(with = ByteArrayBase64Serializer::class)
     val mediaWaveform: ByteArray? = null,
 
     @SerializedName("quote_message_id")

@@ -35,6 +35,7 @@ import one.mixin.android.ui.transfer.vo.TransferStatusLiveData
 import one.mixin.android.util.SINGLE_SOCKET_THREAD
 import one.mixin.android.vo.Asset
 import one.mixin.android.vo.Conversation
+import one.mixin.android.vo.ExpiredMessage
 import one.mixin.android.vo.Message
 import one.mixin.android.vo.Participant
 import one.mixin.android.vo.PinMessage
@@ -79,6 +80,10 @@ class TransferClient @Inject internal constructor(
 
     private val syncChannel = Channel<ByteArray>()
 
+    private val json by lazy {
+        Json { ignoreUnknownKeys = true; explicitNulls = false; encodeDefaults = false }
+    }
+
     suspend fun connectToServer(ip: String, port: Int, commandData: TransferCommandData) =
         withContext(SINGLE_SOCKET_THREAD) {
             try {
@@ -118,7 +123,8 @@ class TransferClient @Inject internal constructor(
             when (result) {
                 is String -> {
                     Timber.e("sync $result")
-                    val transferData: TransferSendData<TransferCommandData> = Json.decodeFromString(result)
+                    val transferData: TransferSendData<TransferCommandData> =
+                        Json.decodeFromString(result)
                     when (transferData.type) {
                         TransferDataType.COMMAND.value -> {
                             val transferCommandData = transferData.data
@@ -131,15 +137,18 @@ class TransferClient @Inject internal constructor(
                                     }
                                     this.total = transferCommandData.total ?: 0L
                                 }
+
                                 TransferCommandAction.PUSH.value, TransferCommandAction.PULL.value -> {
                                     Timber.e("action ${transferCommandData.action}")
                                 }
+
                                 TransferCommandAction.FINISH.value -> {
                                     status.value = TransferStatus.FINISHED
                                     sendFinish(outputStream)
                                     delay(100)
                                     exit()
                                 }
+
                                 else -> {
                                     Timber.e(result)
                                 }
@@ -151,13 +160,16 @@ class TransferClient @Inject internal constructor(
                         }
                     }
                 }
+
                 is ByteArray -> {
                     syncChannel.send(result)
                 }
+
                 is File -> {
                     // read file
                     progress(outputStream)
                 }
+
                 else -> {
                     // do noting
                 }
@@ -183,21 +195,22 @@ class TransferClient @Inject internal constructor(
     }
 
     private suspend fun processJson(content: String, outputStream: OutputStream) {
-        val transferData = Json.decodeFromString<TransferSendData<JsonElement>>(content)
+        val transferData = json.decodeFromString<TransferSendData<JsonElement>>(content)
+        Timber.e("type-${transferData.type}")
+        Timber.e("$content")
         when (transferData.type) {
-            TransferDataType.MESSAGE.value -> {
+            TransferDataType.CONVERSATION.value -> {
                 syncInsert {
-                    val message = Json{ignoreUnknownKeys = true}.decodeFromJsonElement<Message>(transferData.data)
-                    messageDao.insertIgnore(message)
-                    ftsDatabase.insertOrReplaceMessageFts4(message)
-                    Timber.e("Message ID: ${message.messageId}")
+                    val conversation = json.decodeFromJsonElement<Conversation>(transferData.data)
+                    conversationDao.insertIgnore(conversation)
+                    Timber.e("Conversation ID: ${conversation.conversationId}")
                 }
                 progress(outputStream)
             }
 
             TransferDataType.PARTICIPANT.value -> {
                 syncInsert {
-                    val participant = Json{ignoreUnknownKeys = true}.decodeFromJsonElement<Participant>(transferData.data)
+                    val participant = json.decodeFromJsonElement<Participant>(transferData.data)
                     participantDao.insertIgnore(participant)
                     Timber.e("Participant ID: ${participant.conversationId} ${participant.userId}")
                 }
@@ -206,25 +219,25 @@ class TransferClient @Inject internal constructor(
 
             TransferDataType.USER.value -> {
                 syncInsert {
-                    val user = Json{ignoreUnknownKeys = true}.decodeFromJsonElement<User>(transferData.data)
+                    val user = json.decodeFromJsonElement<User>(transferData.data)
                     userDao.insertIgnore(user)
                     Timber.e("User ID: ${user.userId}")
                 }
                 progress(outputStream)
             }
 
-            TransferDataType.CONVERSATION.value -> {
+            TransferDataType.ASSET.value -> {
                 syncInsert {
-                    val conversation = Json{ignoreUnknownKeys = true}.decodeFromJsonElement<Conversation>(transferData.data)
-                    conversationDao.insertIgnore(conversation)
-                    Timber.e("Conversation ID: ${conversation.conversationId}")
+                    val asset = json.decodeFromJsonElement<Asset>(transferData.data)
+                    assetDao.insertIgnore(asset)
+                    Timber.e("Asset ID: ${asset.assetId}")
                 }
                 progress(outputStream)
             }
 
             TransferDataType.SNAPSHOT.value -> {
                 syncInsert {
-                    val snapshot = Json{ignoreUnknownKeys = true}.decodeFromJsonElement<Snapshot>(transferData.data)
+                    val snapshot = json.decodeFromJsonElement<Snapshot>(transferData.data)
                     snapshotDao.insertIgnore(snapshot)
                     Timber.e("Snapshot ID: ${snapshot.snapshotId}")
                 }
@@ -233,25 +246,16 @@ class TransferClient @Inject internal constructor(
 
             TransferDataType.STICKER.value -> {
                 syncInsert {
-                    val sticker = Json{ignoreUnknownKeys = true}.decodeFromJsonElement<Sticker>(transferData.data)
+                    val sticker = json.decodeFromJsonElement<Sticker>(transferData.data)
                     stickerDao.insertIgnore(sticker)
                     Timber.e("Sticker ID: ${sticker.stickerId}")
                 }
                 progress(outputStream)
             }
 
-            TransferDataType.ASSET.value -> {
-                syncInsert {
-                    val asset = Json{ignoreUnknownKeys = true}.decodeFromJsonElement<Asset>(transferData.data)
-                    assetDao.insertIgnore(asset)
-                    Timber.e("Asset ID: ${asset.assetId}")
-                }
-                progress(outputStream)
-            }
-
             TransferDataType.PIN_MESSAGE.value -> {
                 syncInsert {
-                    val pinMessage = Json{ignoreUnknownKeys = true}.decodeFromJsonElement<PinMessage>(transferData.data)
+                    val pinMessage = json.decodeFromJsonElement<PinMessage>(transferData.data)
                     pinMessageDao.insertIgnore(pinMessage)
                     Timber.e("PinMessage ID: ${pinMessage.messageId}")
                 }
@@ -260,9 +264,31 @@ class TransferClient @Inject internal constructor(
 
             TransferDataType.TRANSCRIPT_MESSAGE.value -> {
                 syncInsert {
-                    val transcriptMessage = Json{ignoreUnknownKeys = true}.decodeFromJsonElement<TranscriptMessage>(transferData.data)
+                    val transcriptMessage = Json {
+                        ignoreUnknownKeys = true; explicitNulls = false
+                    }.decodeFromJsonElement<TranscriptMessage>(transferData.data)
                     transcriptMessageDao.insertIgnore(transcriptMessage)
                     Timber.e("Transcript ID: ${transcriptMessage.messageId}")
+                }
+                progress(outputStream)
+            }
+
+            TransferDataType.MESSAGE.value -> {
+                syncInsert {
+                    val message = json.decodeFromJsonElement<Message>(transferData.data)
+                    messageDao.insertIgnore(message)
+                    ftsDatabase.insertOrReplaceMessageFts4(message)
+                    Timber.e("Message ID: ${message.messageId}")
+                }
+                progress(outputStream)
+            }
+
+            TransferDataType.EXPIRED_MESSAGE.name -> {
+                syncInsert {
+                    val expiredMessage =
+                        json.decodeFromJsonElement<ExpiredMessage>(transferData.data)
+                    expiredMessageDao.insertIgnore(expiredMessage)
+                    Timber.e("ExpiredMessage ID: ${expiredMessage.messageId}")
                 }
                 progress(outputStream)
             }
