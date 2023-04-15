@@ -33,8 +33,6 @@ import one.mixin.android.session.decryptPinToken
 import one.mixin.android.ui.landing.InitializeActivity
 import one.mixin.android.ui.landing.RestoreActivity
 import one.mixin.android.util.ErrorHandler
-import one.mixin.android.util.database.clearJobs
-import one.mixin.android.util.database.getLastUserId
 import one.mixin.android.vo.Account
 import one.mixin.android.vo.User
 import one.mixin.android.vo.toUser
@@ -98,20 +96,15 @@ abstract class PinCodeFragment(@LayoutRes contentLayoutId: Int) : FabLoadingFrag
 
         val account = response.data as Account
 
-        val lastUserId = getLastUserId(requireContext())
-        val sameUser = lastUserId != null && lastUserId == account.userId
-        if (sameUser) {
-            showLoading()
-            clearJobs(requireContext())
-        } else {
-            showLoading()
-            // Release the singleton and re-inject
-            MixinDatabase.release()
-            PendingDatabaseImp.release()
-            FtsDatabase.release()
-            SignalDatabase.release()
-            defaultSharedPreferences.clear()
-        }
+
+        showLoading()
+        // Release the singleton and re-inject
+        MixinDatabase.release()
+        PendingDatabaseImp.release()
+        FtsDatabase.release()
+        SignalDatabase.release()
+        defaultSharedPreferences.clear()
+
         val privateKey = sessionKey.private as EdDSAPrivateKey
         val pinToken = decryptPinToken(account.pinToken.decodeBase64(), privateKey) ?: return@withContext
         Session.storeEd25519Seed(privateKey.seed.base64Encode())
@@ -142,10 +135,6 @@ abstract class PinCodeFragment(@LayoutRes contentLayoutId: Int) : FabLoadingFrag
                 SignalDatabase.release()
             }
             when {
-                sameUser -> {
-                    insertUser(account.toUser())
-                    InitializeActivity.showLoading(requireContext())
-                }
                 account.fullName.isNullOrBlank() -> {
                     insertUser(account.toUser())
                     InitializeActivity.showSetupName(requireContext())

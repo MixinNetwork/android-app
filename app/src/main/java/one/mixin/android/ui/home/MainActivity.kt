@@ -205,6 +205,8 @@ class MainActivity : BlazeBaseActivity() {
     private lateinit var binding: ActivityMainBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
         var deviceId = defaultSharedPreferences.getString(DEVICE_ID, null)
         if (deviceId == null) {
             deviceId = this.getDeviceId()
@@ -224,6 +226,7 @@ class MainActivity : BlazeBaseActivity() {
             }
         }
 
+
         if (Session.getAccount()?.fullName.isNullOrBlank()) {
             InitializeActivity.showSetupName(this)
             finish()
@@ -237,9 +240,6 @@ class MainActivity : BlazeBaseActivity() {
             finish()
             return
         }
-
-        super.onCreate(savedInstanceState)
-        navigationController = NavigationController(this)
 
         if (defaultSharedPreferences.getBoolean(Constants.Account.PREF_RESTORE, false)) {
             RestoreActivity.show(this)
@@ -274,6 +274,7 @@ class MainActivity : BlazeBaseActivity() {
             finish()
             return
         }
+        navigationController = NavigationController(this)
 
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
