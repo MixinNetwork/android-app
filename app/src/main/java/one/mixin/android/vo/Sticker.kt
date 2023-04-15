@@ -33,6 +33,7 @@ data class Sticker(
     @SerializedName("created_at")
     @ColumnInfo(name = "created_at")
     var createdAt: String,
+    @SerializedName("last_use_at")
     @ColumnInfo(name = "last_use_at")
     var lastUseAt: String?,
 ) {

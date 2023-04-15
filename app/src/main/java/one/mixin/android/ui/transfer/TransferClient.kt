@@ -34,6 +34,7 @@ import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.SINGLE_SOCKET_THREAD
 import one.mixin.android.vo.Asset
 import one.mixin.android.vo.Conversation
+import one.mixin.android.vo.ExpiredMessage
 import one.mixin.android.vo.Participant
 import one.mixin.android.vo.PinMessage
 import one.mixin.android.vo.Snapshot
@@ -188,12 +189,12 @@ class TransferClient @Inject internal constructor(
     private suspend fun processJson(content: String, outputStream: OutputStream) {
         val transferData = gson.fromJson(content, TransferData::class.java)
         when (transferData.type) {
-            TransferDataType.MESSAGE.value -> {
+            TransferDataType.CONVERSATION.value -> {
                 syncInsert {
-                    val message = gson.fromJson(transferData.data, TransferMessage::class.java).toMessage()
-                    messageDao.insertIgnore(message)
-                    ftsDatabase.insertOrReplaceMessageFts4(message)
-                    Timber.e("Message ID: ${message.messageId}")
+                    val conversation =
+                        gson.fromJson(transferData.data, Conversation::class.java)
+                    conversationDao.insertIgnore(conversation)
+                    Timber.e("Conversation ID: ${conversation.conversationId}")
                 }
                 progress(outputStream)
             }
@@ -216,12 +217,11 @@ class TransferClient @Inject internal constructor(
                 progress(outputStream)
             }
 
-            TransferDataType.CONVERSATION.value -> {
+            TransferDataType.ASSET.value -> {
                 syncInsert {
-                    val conversation =
-                        gson.fromJson(transferData.data, Conversation::class.java)
-                    conversationDao.insertIgnore(conversation)
-                    Timber.e("Conversation ID: ${conversation.conversationId}")
+                    val asset = gson.fromJson(transferData.data, Asset::class.java)
+                    assetDao.insertIgnore(asset)
+                    Timber.e("Asset ID: ${asset.assetId}")
                 }
                 progress(outputStream)
             }
@@ -244,15 +244,6 @@ class TransferClient @Inject internal constructor(
                 progress(outputStream)
             }
 
-            TransferDataType.ASSET.value -> {
-                syncInsert {
-                    val asset = gson.fromJson(transferData.data, Asset::class.java)
-                    assetDao.insertIgnore(asset)
-                    Timber.e("Asset ID: ${asset.assetId}")
-                }
-                progress(outputStream)
-            }
-
             TransferDataType.PIN_MESSAGE.value -> {
                 syncInsert {
                     val pinMessage =
@@ -269,6 +260,26 @@ class TransferClient @Inject internal constructor(
                         gson.fromJson(transferData.data, TranscriptMessage::class.java)
                     transcriptMessageDao.insertIgnore(transcriptMessage)
                     Timber.e("Transcript ID: ${transcriptMessage.messageId}")
+                }
+                progress(outputStream)
+            }
+
+            TransferDataType.MESSAGE.value -> {
+                syncInsert {
+                    val message = gson.fromJson(transferData.data, TransferMessage::class.java).toMessage()
+                    messageDao.insertIgnore(message)
+                    ftsDatabase.insertOrReplaceMessageFts4(message)
+                    Timber.e("Message ID: ${message.messageId}")
+                }
+                progress(outputStream)
+            }
+
+            TransferDataType.EXPIRED_MESSAGE.name -> {
+                syncInsert {
+                    val expiredMessage =
+                        gson.fromJson(transferData.data, ExpiredMessage::class.java)
+                    expiredMessageDao.insertIgnore(expiredMessage)
+                    Timber.e("ExpiredMessage ID: ${expiredMessage.messageId}")
                 }
                 progress(outputStream)
             }
