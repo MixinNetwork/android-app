@@ -82,6 +82,8 @@ class TransferClient @Inject internal constructor(
 
     private val syncChannel = Channel<ByteArray>()
 
+    private var startTime = 0L
+
     suspend fun connectToServer(ip: String, port: Int, commandData: TransferCommandData) =
         withContext(SINGLE_SOCKET_THREAD) {
             try {
@@ -133,6 +135,7 @@ class TransferClient @Inject internal constructor(
                                         exit()
                                         return
                                     }
+                                    startTime = System.currentTimeMillis()
                                     this.total = transferCommandData.total ?: 0L
                                 }
                                 TransferCommandAction.PUSH.value, TransferCommandAction.PULL.value -> {
@@ -143,6 +146,7 @@ class TransferClient @Inject internal constructor(
                                     sendFinish(outputStream)
                                     delay(100)
                                     exit()
+                                    Timber.e("It takes a total of ${System.currentTimeMillis() - startTime} milliseconds to synchronize ${this.total} data")
                                 }
                                 else -> {
                                     Timber.e(result)
