@@ -196,8 +196,6 @@ class TransferClient @Inject internal constructor(
 
     private suspend fun processJson(content: String, outputStream: OutputStream) {
         val transferData = json.decodeFromString<TransferSendData<JsonElement>>(content)
-        Timber.e("type-${transferData.type}")
-        Timber.e("$content")
         when (transferData.type) {
             TransferDataType.CONVERSATION.value -> {
                 syncInsert {
