@@ -84,6 +84,8 @@ class TransferClient @Inject internal constructor(
         Json { ignoreUnknownKeys = true; explicitNulls = false; encodeDefaults = false }
     }
 
+    private var startTime = 0L
+
     suspend fun connectToServer(ip: String, port: Int, commandData: TransferCommandData) =
         withContext(SINGLE_SOCKET_THREAD) {
             try {
@@ -135,6 +137,7 @@ class TransferClient @Inject internal constructor(
                                         exit()
                                         return
                                     }
+                                    startTime = System.currentTimeMillis()
                                     this.total = transferCommandData.total ?: 0L
                                 }
 
@@ -147,6 +150,7 @@ class TransferClient @Inject internal constructor(
                                     sendFinish(outputStream)
                                     delay(100)
                                     exit()
+                                    Timber.e("It takes a total of ${System.currentTimeMillis() - startTime} milliseconds to synchronize ${this.total} data")
                                 }
 
                                 else -> {
