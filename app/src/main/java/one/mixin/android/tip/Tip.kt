@@ -2,10 +2,8 @@ package one.mixin.android.tip
 
 import android.content.Context
 import crypto.Crypto
-import net.i2p.crypto.eddsa.EdDSAEngine
-import net.i2p.crypto.eddsa.EdDSAPrivateKey
-import net.i2p.crypto.eddsa.EdDSAPublicKey
-import net.i2p.crypto.eddsa.spec.EdDSAPrivateKeySpec
+import okio.ByteString
+import okio.ByteString.Companion.toByteString
 import one.mixin.android.Constants
 import one.mixin.android.RxBus
 import one.mixin.android.api.request.PinRequest
@@ -18,10 +16,7 @@ import one.mixin.android.api.service.TipService
 import one.mixin.android.crypto.BasePinCipher
 import one.mixin.android.crypto.aesDecrypt
 import one.mixin.android.crypto.aesEncrypt
-import one.mixin.android.crypto.ed25519
 import one.mixin.android.crypto.generateAesKey
-import one.mixin.android.crypto.getPrivateKey
-import one.mixin.android.crypto.getPublicKey
 import one.mixin.android.crypto.sha3Sum256
 import one.mixin.android.event.TipEvent
 import one.mixin.android.extension.base64RawURLDecode
@@ -47,9 +42,10 @@ import one.mixin.android.tip.exception.TipNotAllWatcherSuccessException
 import one.mixin.android.tip.exception.TipNullException
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.reportException
+import one.mixin.eddsa.Ed25519Sign
+import one.mixin.eddsa.KeyPair
 import timber.log.Timber
 import java.io.IOException
-import java.security.MessageDigest
 import javax.inject.Inject
 
 class Tip @Inject internal constructor(
@@ -200,11 +196,11 @@ class Tip @Inject internal constructor(
 
         observers.forEach { it.onSyncingComplete() }
 
-        val privateSpec = EdDSAPrivateKeySpec(aggSig.copyOf(), ed25519)
-        val pub = privateSpec.getPublicKey()
+        val keyPair = KeyPair.newKeyPairFromSeed(aggSig.copyOf().toByteString())
+        val pub = keyPair.publicKey
 
         val localPub = Session.getTipPub()
-        if (!localPub.isNullOrBlank() && !localPub.base64RawURLDecode().contentEquals(pub.abyte)) {
+        if (!localPub.isNullOrBlank() && !localPub.base64RawURLDecode().contentEquals(pub.toByteArray())) {
             Timber.e("local pub not equals to new generated, PIN incorrect")
             throw PinIncorrectException()
         }
@@ -264,12 +260,12 @@ class Tip @Inject internal constructor(
 
     @Throws(IOException::class, TipNetworkException::class)
     private suspend fun replaceOldEncryptedPin(
-        pub: EdDSAPublicKey,
+        pub: ByteString,
         legacyPin: String? = null,
     ) {
         val pinToken = requireNotNull(Session.getPinToken()?.decodeBase64() ?: throw TipNullException("No pin token"))
         val oldEncryptedPin = if (legacyPin != null) { encryptPinInternal(pinToken, legacyPin.toByteArray()) } else null
-        val newPin = encryptPinInternal(pinToken, pub.abyte + 1L.toBeByteArray())
+        val newPin = encryptPinInternal(pinToken, pub.toByteArray() + 1L.toBeByteArray())
         val pinRequest = PinRequest(newPin, oldEncryptedPin)
         val account = tipNetwork { accountService.updatePinSuspend(pinRequest) }.getOrThrow()
         Session.storeAccount(account)
@@ -277,15 +273,15 @@ class Tip @Inject internal constructor(
 
     @Throws(IOException::class, TipNetworkException::class)
     private suspend fun replaceEncryptedPin(aggSig: ByteArray) {
-        val privateSpec = EdDSAPrivateKeySpec(aggSig.copyOf(), ed25519)
-        val pub = privateSpec.getPublicKey()
+        val keyPair = KeyPair.newKeyPairFromSeed(aggSig.copyOf().toByteString())
+        val pub = keyPair.publicKey
         val pinToken = requireNotNull(Session.getPinToken()?.decodeBase64() ?: throw TipNullException("No pin token"))
         val counter = requireNotNull(Session.getTipCounter()).toLong()
         val timestamp = TipBody.forVerify(counter)
         val oldPin = encryptTipPinInternal(pinToken, aggSig, timestamp)
         val newEncryptPin = encryptPinInternal(
             pinToken,
-            pub.abyte + (counter + 1).toBeByteArray(),
+            pub.toByteArray() + (counter + 1).toBeByteArray(),
         ) // TODO should use tip node counter?
         val pinRequest = PinRequest(newEncryptPin, oldPin)
         val account = tipNetwork { accountService.updatePinSuspend(pinRequest) }.getOrThrow()
@@ -309,13 +305,13 @@ class Tip @Inject internal constructor(
             Session.getPinToken()?.decodeBase64() ?: throw TipNullException("No pin token")
 
         val stSeed = (sessionPriv + pin.toByteArray()).sha3Sum256()
-        val privateSpec = EdDSAPrivateKeySpec(stSeed, ed25519)
-        val stPriv = privateSpec.getPrivateKey()
-        val stPub = privateSpec.getPublicKey()
+        val keyPair = KeyPair.newKeyPairFromSeed(stSeed.toByteString())
+        val stPriv = keyPair.privateKey
+        val stPub = keyPair.publicKey
         val aesKey = generateAesKey(32)
 
         val seedBase64 = aesEncrypt(pinToken, aesKey).base64RawURLEncode()
-        val secretBase64 = aesEncrypt(pinToken, stPub.abyte).base64RawURLEncode()
+        val secretBase64 = aesEncrypt(pinToken, stPub.toByteArray()).base64RawURLEncode()
         val timestamp = nowInUtcNano()
 
         val sigBase64 = signTimestamp(stPriv, stPub, timestamp)
@@ -363,11 +359,11 @@ class Tip @Inject internal constructor(
             Session.getEd25519Seed()?.decodeBase64() ?: throw TipNullException("No ed25519 key")
 
         val stSeed = (sessionPriv + pin.toByteArray()).sha3Sum256()
-        val privateSpec = EdDSAPrivateKeySpec(stSeed, ed25519)
-        val stPriv = privateSpec.getPrivateKey()
+        val keyPair = KeyPair.newKeyPairFromSeed(stSeed.toByteString())
+        val stPriv = keyPair.privateKey
         val timestamp = nowInUtcNano()
 
-        val sigBase64 = signTimestamp(stPriv, privateSpec.getPublicKey(), timestamp)
+        val sigBase64 = signTimestamp(stPriv, keyPair.publicKey, timestamp)
 
         val tipSecretReadRequest = TipSecretReadRequest(
             signatureBase64 = sigBase64,
@@ -378,15 +374,13 @@ class Tip @Inject internal constructor(
         return response.seedBase64?.base64RawURLDecode() ?: throw TipNullException("Not get tip secret")
     }
 
-    private fun signTimestamp(stPriv: EdDSAPrivateKey, stPub: EdDSAPublicKey, timestamp: Long): String {
-        val engine = EdDSAEngine(MessageDigest.getInstance(ed25519.hashAlgorithm))
-        engine.initSign(stPriv)
+    private fun signTimestamp(stPriv: ByteString, stPub: ByteString, timestamp: Long): String {
+        val signer = Ed25519Sign(stPriv)
         val msg = TipBody.forVerify(timestamp)
-        engine.update(msg)
-        val sig = engine.sign()
+        val sig = signer.sign(msg.toByteString()).toByteArray()
 
-        val valid = Crypto.verifyEd25519(msg, sig, stPub.abyte)
-        Timber.e("verify go-ed25519 sig is valid: $valid\npub: ${stPub.abyte.base64RawURLEncode()}\nmsg: ${msg.base64RawURLEncode()}\nsig: ${sig.base64RawURLEncode()}")
+        val valid = Crypto.verifyEd25519(msg, sig, stPub.toByteArray())
+        Timber.e("verify go-ed25519 sig is valid: $valid\npub: ${stPub.toByteArray().base64RawURLEncode()}\nmsg: ${msg.base64RawURLEncode()}\nsig: ${sig.base64RawURLEncode()}")
 
         return sig.base64RawURLEncode()
     }

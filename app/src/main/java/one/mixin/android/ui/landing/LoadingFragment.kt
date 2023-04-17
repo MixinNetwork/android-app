@@ -10,8 +10,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import net.i2p.crypto.eddsa.EdDSAPrivateKey
-import net.i2p.crypto.eddsa.EdDSAPublicKey
 import one.mixin.android.Constants.Account.PREF_TRIED_UPDATE_KEY
 import one.mixin.android.Constants.TEAM_BOT_ID
 import one.mixin.android.Constants.TEAM_BOT_NAME
@@ -25,6 +23,7 @@ import one.mixin.android.crypto.PrivacyPreference.getIsSyncSession
 import one.mixin.android.crypto.PrivacyPreference.putIsLoaded
 import one.mixin.android.crypto.PrivacyPreference.putIsSyncSession
 import one.mixin.android.crypto.generateEd25519KeyPair
+import one.mixin.android.crypto.seedFromPrivateKey
 import one.mixin.android.databinding.FragmentLoadingBinding
 import one.mixin.android.extension.base64Encode
 import one.mixin.android.extension.decodeBase64
@@ -104,9 +103,9 @@ class LoadingFragment : BaseFragment(R.layout.fragment_loading) {
 
     private suspend fun updateRsa2EdDsa() {
         val sessionKey = generateEd25519KeyPair()
-        val publicKey = sessionKey.public as EdDSAPublicKey
-        val privateKey = sessionKey.private as EdDSAPrivateKey
-        val sessionSecret = publicKey.abyte.base64Encode()
+        val publicKey = sessionKey.publicKey
+        val privateKey = sessionKey.privateKey
+        val sessionSecret = publicKey.base64()
 
         while (true) {
             try {
@@ -117,7 +116,7 @@ class LoadingFragment : BaseFragment(R.layout.fragment_loading) {
                         account?.let { acc ->
                             acc.pinToken = r.pinToken
                             val pinToken = decryptPinToken(r.pinToken.decodeBase64(), privateKey) ?: return
-                            Session.storeEd25519Seed(privateKey.seed.base64Encode())
+                            Session.storeEd25519Seed(seedFromPrivateKey(privateKey).base64Encode())
                             Session.storePinToken(pinToken.base64Encode())
                             Session.storeAccount(acc)
                         }

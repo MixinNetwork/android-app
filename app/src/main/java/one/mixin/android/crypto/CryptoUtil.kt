@@ -6,15 +6,13 @@ import android.os.Build
 import com.lambdapioneer.argon2kt.Argon2Kt
 import com.lambdapioneer.argon2kt.Argon2KtResult
 import com.lambdapioneer.argon2kt.Argon2Mode
-import net.i2p.crypto.eddsa.EdDSAEngine
-import net.i2p.crypto.eddsa.EdDSAPrivateKey
-import net.i2p.crypto.eddsa.EdDSAPublicKey
-import net.i2p.crypto.eddsa.math.FieldElement
-import net.i2p.crypto.eddsa.spec.EdDSANamedCurveTable
-import net.i2p.crypto.eddsa.spec.EdDSAPrivateKeySpec
-import net.i2p.crypto.eddsa.spec.EdDSAPublicKeySpec
+import io.jsonwebtoken.EdDSAPrivateKey
 import okhttp3.tls.HeldCertificate
+import okio.ByteString
+import okio.ByteString.Companion.toByteString
 import one.mixin.android.extension.base64Encode
+import one.mixin.eddsa.Ed25519Sign
+import one.mixin.eddsa.Field25519
 import org.komputing.khash.keccak.KeccakParameter
 import org.komputing.khash.keccak.extensions.digestKeccak
 import org.whispersystems.curve25519.Curve25519
@@ -36,7 +34,6 @@ import javax.crypto.spec.SecretKeySpec
 import kotlin.experimental.and
 import kotlin.experimental.or
 
-internal val ed25519 by lazy { EdDSANamedCurveTable.getByName(EdDSANamedCurveTable.ED_25519) }
 private val secureRandom: SecureRandom = SecureRandom()
 private const val GCM_IV_LENGTH = 12
 
@@ -46,8 +43,8 @@ fun generateRSAKeyPair(keyLength: Int = 2048): KeyPair {
     return kpg.genKeyPair()
 }
 
-fun generateEd25519KeyPair(): KeyPair {
-    return net.i2p.crypto.eddsa.KeyPairGenerator().generateKeyPair()
+fun generateEd25519KeyPair(): one.mixin.eddsa.KeyPair {
+    return one.mixin.eddsa.KeyPair.newKeyPair()
 }
 
 fun calculateAgreement(publicKey: ByteArray, privateKey: ByteArray): ByteArray {
@@ -55,34 +52,44 @@ fun calculateAgreement(publicKey: ByteArray, privateKey: ByteArray): ByteArray {
 }
 
 fun initFromSeedAndSign(seed: ByteArray, signTarget: ByteArray): ByteArray {
-    val privateSpec = EdDSAPrivateKeySpec(seed, ed25519)
-    return signWithSk(privateSpec, signTarget)
+    val keyPair = one.mixin.eddsa.KeyPair.newKeyPairFromSeed(seed.toByteString())
+    return signWithSk(EdDSAPrivateKey(keyPair.privateKey), signTarget)
 }
 
-private fun signWithSk(privateSpec: EdDSAPrivateKeySpec, signTarget: ByteArray): ByteArray {
-    val privateKey = EdDSAPrivateKey(privateSpec)
-    val engine = EdDSAEngine(MessageDigest.getInstance(ed25519.hashAlgorithm))
-    engine.initSign(privateKey)
-    engine.update(signTarget)
-    return engine.sign()
+private fun signWithSk(privateKey: EdDSAPrivateKey, signTarget: ByteArray): ByteArray {
+    val signer = Ed25519Sign(privateKey.privateKey)
+    return signer.sign(signTarget.toByteString()).toByteArray()
 }
 
-fun privateKeyToCurve25519(edSeed: ByteArray): ByteArray {
+fun privateKeyToCurve25519(privateKey: ByteArray): ByteArray {
     val md = MessageDigest.getInstance("SHA-512")
-    val h = md.digest(edSeed).sliceArray(IntRange(0, 31))
+    val h = md.digest(privateKey).sliceArray(IntRange(0, 31))
     h[0] = h[0] and 248.toByte()
     h[31] = h[31] and 127
     h[31] = h[31] or 64
     return h
 }
 
-fun EdDSAPrivateKeySpec.getPublicKey(): EdDSAPublicKey {
-    return EdDSAPublicKey(EdDSAPublicKeySpec(this.a, ed25519))
+fun publicKeyToCurve25519(publicKey: ByteArray): ByteArray {
+    val p = publicKey.map { it.toInt().toByte() }.toByteArray()
+    val x = edwardsToMontgomeryX(Field25519.expand(p))
+    return Field25519.contract(x)
+}
+private fun edwardsToMontgomeryX(y: LongArray): LongArray {
+    val oneMinusY = LongArray(Field25519.LIMB_CNT)
+    oneMinusY[0] = 1
+    Field25519.sub(oneMinusY, oneMinusY, y)
+    Field25519.inverse(oneMinusY, oneMinusY)
+
+    val outX = LongArray(Field25519.LIMB_CNT)
+    outX[0] = 1
+    Field25519.sum(outX, y)
+
+    Field25519.mult(outX, outX, oneMinusY)
+    return outX
 }
 
-fun EdDSAPrivateKeySpec.getPrivateKey(): EdDSAPrivateKey {
-    return EdDSAPrivateKey(this)
-}
+fun seedFromPrivateKey(privateKey: ByteString): ByteArray = privateKey.substring(0, 32).toByteArray()
 
 fun ByteArray.sha3Sum256(): ByteArray {
     return digestKeccak(KeccakParameter.SHA3_256)
@@ -112,25 +119,6 @@ fun generateAesKey(len: Int = 16): ByteArray {
     val key = ByteArray(len)
     secureRandom.nextBytes(key)
     return key
-}
-
-fun publicKeyToCurve25519(publicKey: EdDSAPublicKey): ByteArray {
-    val p = publicKey.abyte.map { it.toInt().toByte() }.toByteArray()
-    val public = EdDSAPublicKey(EdDSAPublicKeySpec(p, ed25519))
-    val groupElement = public.a
-    val x = edwardsToMontgomeryX(groupElement.y)
-    return x.toByteArray()
-}
-private fun edwardsToMontgomeryX(y: FieldElement): FieldElement {
-    val field = ed25519.curve.field
-    var oneMinusY = field.ONE
-    oneMinusY = oneMinusY.subtract(y)
-    oneMinusY = oneMinusY.invert()
-
-    var outX = field.ONE
-    outX = outX.add(y)
-
-    return oneMinusY.multiply(outX)
 }
 
 fun aesGcmEncrypt(plain: ByteArray, key: ByteArray): ByteArray {
