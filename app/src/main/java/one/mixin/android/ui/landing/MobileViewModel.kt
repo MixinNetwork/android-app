@@ -26,7 +26,7 @@ import javax.inject.Inject
 class MobileViewModel @Inject internal
 constructor(
     private val accountService: AccountService,
-    private val emergencyService:EmergencyService,
+    private val emergencyService: EmergencyService,
     private val pinCipher: PinCipher,
 ) : ViewModel() {
 
@@ -58,10 +58,9 @@ constructor(
         emergencyService.createVerify(id, request)
     }
 
-    suspend fun loginVerifyEmergency(id: String, request: EmergencyRequest)  = withContext(Dispatchers.IO) {
+    suspend fun loginVerifyEmergency(id: String, request: EmergencyRequest) = withContext(Dispatchers.IO) {
         emergencyService.loginVerify(id, request)
     }
-
 
     fun deactiveVerification(id: String, code: String): Observable<MixinResponse<VerificationResponse>> =
         accountService.deactiveVerification(

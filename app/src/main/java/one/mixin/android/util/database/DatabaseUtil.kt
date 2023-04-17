@@ -2,7 +2,6 @@ package one.mixin.android.util.database
 
 import android.annotation.SuppressLint
 import android.content.Context
-import android.database.Cursor
 import android.database.sqlite.SQLiteDatabase
 import android.os.Build
 import kotlinx.coroutines.Dispatchers
@@ -10,7 +9,6 @@ import kotlinx.coroutines.withContext
 import one.mixin.android.Constants
 import one.mixin.android.session.Session
 import one.mixin.android.util.reportException
-import timber.log.Timber
 import java.io.File
 
 @SuppressLint("ObsoleteSdkInt")

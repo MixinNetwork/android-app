@@ -18,6 +18,7 @@ import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.map
 import androidx.room.util.readVersion
 import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.GoogleApiAvailability
@@ -64,15 +65,16 @@ import one.mixin.android.R
 import one.mixin.android.RxBus
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.SessionRequest
+import one.mixin.android.api.service.AccountService
+import one.mixin.android.api.service.CircleService
 import one.mixin.android.api.service.ConversationService
 import one.mixin.android.api.service.UserService
 import one.mixin.android.crypto.Base64
 import one.mixin.android.crypto.PrivacyPreference.getIsLoaded
 import one.mixin.android.crypto.PrivacyPreference.getIsSyncSession
 import one.mixin.android.databinding.ActivityMainBinding
-import one.mixin.android.db.ConversationDao
-import one.mixin.android.db.ParticipantDao
-import one.mixin.android.db.UserDao
+import one.mixin.android.db.MixinDatabase
+import one.mixin.android.db.insertUpdateSuspend
 import one.mixin.android.db.property.PropertyHelper
 import one.mixin.android.event.TipEvent
 import one.mixin.android.extension.alert
@@ -106,8 +108,6 @@ import one.mixin.android.job.RefreshStickerAlbumJob
 import one.mixin.android.job.RefreshUserJob
 import one.mixin.android.job.TranscriptAttachmentMigrationJob
 import one.mixin.android.job.TranscriptAttachmentUpdateJob
-import one.mixin.android.repository.AccountRepository
-import one.mixin.android.repository.UserRepository
 import one.mixin.android.session.Session
 import one.mixin.android.tip.Tip
 import one.mixin.android.ui.common.BaseFragment
@@ -144,6 +144,7 @@ import one.mixin.android.util.ErrorHandler.Companion.errorHandler
 import one.mixin.android.util.RomUtil
 import one.mixin.android.util.RootUtil
 import one.mixin.android.util.reportException
+import one.mixin.android.vo.CircleName
 import one.mixin.android.vo.Conversation
 import one.mixin.android.vo.ConversationCategory
 import one.mixin.android.vo.ConversationStatus
@@ -168,20 +169,31 @@ class MainActivity : BlazeBaseActivity() {
     @Inject
     lateinit var userService: UserService
 
-    @Inject
-    lateinit var conversationDao: ConversationDao
+    private val db by lazy {
+        MixinDatabase.getDatabase(this)
+    }
+
+    private val conversationDao by lazy {
+        db.conversationDao()
+    }
+
+    private val userDao by lazy {
+        db.userDao()
+    }
+
+    private val circleDao by lazy {
+        db.circleDao()
+    }
+
+    private val participantDao by lazy {
+        db.participantDao()
+    }
 
     @Inject
-    lateinit var userDao: UserDao
+    lateinit var accountService: AccountService
 
     @Inject
-    lateinit var userRepo: UserRepository
-
-    @Inject
-    lateinit var accountRepo: AccountRepository
-
-    @Inject
-    lateinit var participantDao: ParticipantDao
+    lateinit var circleService: CircleService
 
     @Inject
     lateinit var tip: Tip
@@ -225,7 +237,6 @@ class MainActivity : BlazeBaseActivity() {
                 return
             }
         }
-
 
         if (Session.getAccount()?.fullName.isNullOrBlank()) {
             InitializeActivity.showSetupName(this)
@@ -483,7 +494,7 @@ class MainActivity : BlazeBaseActivity() {
             return
         }
         runIntervalTask(SAFETY_NET_INTERVAL_KEY, INTERVAL_24_HOURS) {
-            accountRepo.deviceCheck().subscribeOn(Schedulers.io())
+            accountService.deviceCheck().subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .autoDispose(stopScope)
                 .subscribe(
@@ -503,7 +514,7 @@ class MainActivity : BlazeBaseActivity() {
         val client = SafetyNet.getClient(this)
         val task = client.attest(nonce, BuildConfig.SAFETYNET_API_KEY)
         task.addOnSuccessListener { safetyResp ->
-            accountRepo.updateSession(SessionRequest(deviceCheckToken = safetyResp.jwsResult))
+            accountService.updateSession(SessionRequest(deviceCheckToken = safetyResp.jwsResult))
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .autoDispose(stopScope)
@@ -710,7 +721,7 @@ class MainActivity : BlazeBaseActivity() {
                         if (response != null && response.isSuccess) {
                             response.data?.let { data ->
                                 for (u in data) {
-                                    runBlocking { userRepo.upsert(u) }
+                                    runBlocking { userDao.upsert(u) }
                                 }
                             }
                             user = response.data?.get(0)
@@ -845,7 +856,7 @@ class MainActivity : BlazeBaseActivity() {
     fun openCircleEdit(circleId: String) {
         conversationDao
         lifecycleScope.launch {
-            userRepo.findCircleItemByCircleIdSuspend(circleId)?.let { circleItem ->
+            circleDao.findCircleItemByCircleIdSuspend(circleId)?.let { circleItem ->
                 val circlesFragment =
                     supportFragmentManager.findFragmentByTag(CirclesFragment.TAG) as CirclesFragment?
                 circlesFragment?.edit(circleItem)
@@ -868,7 +879,9 @@ class MainActivity : BlazeBaseActivity() {
             binding.searchBar.dot.isVisible = false
             return@launch
         }
-        dotLiveData = userRepo.hasUnreadMessage(circleId = circleId)
+        dotLiveData = conversationDao.hasUnreadMessage(circleId = circleId).map {
+            it != null && it > 0
+        }
         dotLiveData?.observe(this@MainActivity, dotObserver)
     }
 
@@ -893,11 +906,11 @@ class MainActivity : BlazeBaseActivity() {
             }
             handleMixinResponse(
                 invokeNetwork = {
-                    userRepo.createCircle(name)
+                    circleService.createCircle(CircleName(name))
                 },
                 successBlock = { response ->
                     response.data?.let { circle ->
-                        userRepo.insertCircle(circle)
+                        circleDao.insertUpdateSuspend(circle)
                         openCircleEdit(circle.circleId)
                     }
                 },

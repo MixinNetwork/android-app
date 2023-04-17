@@ -96,7 +96,6 @@ abstract class PinCodeFragment(@LayoutRes contentLayoutId: Int) : FabLoadingFrag
 
         val account = response.data as Account
 
-
         showLoading()
         // Release the singleton and re-inject
         MixinDatabase.release()
