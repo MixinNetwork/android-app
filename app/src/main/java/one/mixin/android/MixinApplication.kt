@@ -36,12 +36,15 @@ import one.mixin.android.crypto.MixinSignalProtocolLogger
 import one.mixin.android.crypto.PrivacyPreference.clearPrivacyPreferences
 import one.mixin.android.crypto.db.SignalDatabase
 import one.mixin.android.db.MixinDatabase
+import one.mixin.android.db.pending.PendingDatabase
+import one.mixin.android.db.pending.PendingDatabaseImp
 import one.mixin.android.di.ApplicationScope
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.notificationManager
 import one.mixin.android.extension.putBoolean
 import one.mixin.android.extension.putLong
+import one.mixin.android.fts.FtsDatabase
 import one.mixin.android.job.BlazeMessageService
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.session.Session
@@ -270,6 +273,11 @@ open class MixinApplication :
         clearPrivacyPreferences(this)
         MixinDatabase.getDatabase(this).participantSessionDao().clearKey(sessionId)
         SignalDatabase.getDatabase(this).clearAllTables()
+        SignalDatabase.release()
+        MixinDatabase.release()
+        PendingDatabaseImp.release()
+        FtsDatabase.release()
+        SignalDatabase.release()
     }
 
     var activityInForeground = true
