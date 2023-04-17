@@ -89,7 +89,7 @@ private fun edwardsToMontgomeryX(y: LongArray): LongArray {
     return outX
 }
 
-fun ByteString.seed(): ByteArray = substring(0, 32).toByteArray()
+fun seedFromPrivateKey(privateKey: ByteString): ByteArray = privateKey.substring(0, 32).toByteArray()
 
 fun ByteArray.sha3Sum256(): ByteArray {
     return digestKeccak(KeccakParameter.SHA3_256)

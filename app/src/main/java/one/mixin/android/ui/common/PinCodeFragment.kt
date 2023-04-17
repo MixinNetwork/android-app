@@ -11,7 +11,7 @@ import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.ResponseError
-import one.mixin.android.crypto.seed
+import one.mixin.android.crypto.seedFromPrivateKey
 import one.mixin.android.extension.base64Encode
 import one.mixin.android.extension.clear
 import one.mixin.android.extension.clickVibrate
@@ -102,7 +102,7 @@ abstract class PinCodeFragment(@LayoutRes contentLayoutId: Int) : FabLoadingFrag
         }
         val privateKey = sessionKey.privateKey
         val pinToken = decryptPinToken(account.pinToken.decodeBase64(), privateKey)
-        Session.storeEd25519Seed(privateKey.seed().base64Encode())
+        Session.storeEd25519Seed(seedFromPrivateKey(privateKey).base64Encode())
         Session.storePinToken(pinToken.base64Encode())
         Session.storeAccount(account)
         defaultSharedPreferences.putString(DEVICE_ID, requireContext().getDeviceId())
