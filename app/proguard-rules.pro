@@ -36,6 +36,16 @@
     volatile <fields>;
 }
 
+# OkHttp platform used only on JVM and when Conscrypt and other security providers are available.
+-dontwarn okhttp3.internal.platform.**
+-dontwarn org.conscrypt.**
+-dontwarn org.bouncycastle.**
+-dontwarn org.openjsse.**
+
+-dontwarn org.webrtc.**
+
+-dontwarn sun.net.spi.nameservice.**
+
 -keepclassmembers enum * {
     public static **[] values();
     public static ** valueOf(java.lang.String);

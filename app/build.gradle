@@ -294,6 +294,7 @@ dependencies {
     implementation "com.google.android.play:core:${playVersion}"
     implementation "com.google.android.gms:play-services-safetynet:${googlePlayServicesVersion}"
     implementation "com.google.android.gms:play-services-maps:${googlePlayServicesVersion}"
+    implementation "com.google.android.gms:play-services-location:21.0.1"
     implementation "com.google.android.gms:play-services-cronet:${googlePlayServicesVersion}"
     implementation "com.google.zxing:core:${zxingVersion}"
     implementation "com.github.tougee:sticky-headers-recyclerview:${stickyheadersrecyclerviewVersion}"

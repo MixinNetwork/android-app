@@ -79,7 +79,7 @@ object Session {
         val preference = MixinApplication.appContext.sharedPreferences(PREF_SESSION)
         preference.putString(PREF_ED25519_PRIVATE_KEY, token)
         seed = token
-        edKeyPair = null
+        this.edKeyPair = null
         initEdKeypair(token)
     }
 
@@ -98,7 +98,6 @@ object Session {
             return edKeyPair
         } else {
             val seed = getEd25519Seed() ?: return null
-
             return initEdKeypair(seed)
         }
     }
