@@ -2,6 +2,7 @@ package one.mixin.android.util.database
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.database.Cursor
 import android.database.sqlite.SQLiteDatabase
 import android.os.Build
 import kotlinx.coroutines.Dispatchers
@@ -9,7 +10,36 @@ import kotlinx.coroutines.withContext
 import one.mixin.android.Constants
 import one.mixin.android.session.Session
 import one.mixin.android.util.reportException
+import timber.log.Timber
 import java.io.File
+
+suspend fun getLastUserIdentityNumber(context: Context, dbFile: File): String? =
+    withContext(Dispatchers.IO) {
+        if (!dbFile.exists()) {
+            return@withContext null
+        }
+        var c: Cursor? = null
+        var db: SQLiteDatabase? = null
+
+        try {
+            db = SQLiteDatabase.openDatabase(
+                dbFile.absolutePath,
+                null,
+                SQLiteDatabase.OPEN_READONLY,
+            )
+            c = db.rawQuery("SELECT identity_number FROM users WHERE relationship = 'ME'", null)
+            var userId: String? = null
+            if (c.moveToFirst()) {
+                userId = c.getString(0)
+            }
+            return@withContext userId
+        } catch (e: Exception) {
+            return@withContext null
+        } finally {
+            c?.close()
+            db?.close()
+        }
+    }
 
 @SuppressLint("ObsoleteSdkInt")
 suspend fun clearJobs(context: Context) = withContext(Dispatchers.IO) {

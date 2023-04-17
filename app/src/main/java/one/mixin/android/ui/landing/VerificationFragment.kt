@@ -19,6 +19,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import net.i2p.crypto.eddsa.EdDSAPublicKey
+import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.handleMixinResponse
@@ -35,6 +36,7 @@ import one.mixin.android.db.MixinDatabase
 import one.mixin.android.extension.alert
 import one.mixin.android.extension.base64Encode
 import one.mixin.android.extension.defaultSharedPreferences
+import one.mixin.android.extension.moveTo
 import one.mixin.android.extension.navTo
 import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.putInt
@@ -51,10 +53,12 @@ import one.mixin.android.ui.setting.VerificationEmergencyIdFragment
 import one.mixin.android.ui.setting.delete.DeleteAccountPinBottomSheetDialogFragment
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.ErrorHandler.Companion.NEED_CAPTCHA
+import one.mixin.android.util.database.getLastUserIdentityNumber
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.User
 import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.CaptchaView
+import java.io.File
 
 @AndroidEntryPoint
 class VerificationFragment : PinCodeFragment(R.layout.fragment_verification) {
@@ -229,9 +233,47 @@ class VerificationFragment : PinCodeFragment(R.layout.fragment_verification) {
         )
     }
 
+    private suspend fun migrateOldDb() = withContext(Dispatchers.IO) {
+        val context = requireContext()
+        if (context.getDatabasePath(Constants.DataBase.DB_NAME).exists() || context.getDatabasePath(
+                Constants.DataBase.FTS_DB_NAME,
+            ).exists() || context.getDatabasePath(
+                Constants.DataBase.PENDING_DB_NAME,
+            ).exists()
+        ) {
+            val dbFile = context.getDatabasePath(Constants.DataBase.DB_NAME)
+            if (dbFile.exists()) {
+                val identityNumber = getLastUserIdentityNumber(context, dbFile) ?: return@withContext
+                val dbDir = context.getDatabasePath(Constants.DataBase.DB_NAME)?.parentFile
+                val toDir = File(dbDir, identityNumber)
+                if (!toDir.exists()) {
+                    toDir.mkdirs()
+                }
+                dbDir?.listFiles()?.forEach { file ->
+                    if (file.name.startsWith(Constants.DataBase.DB_NAME) || file.name.startsWith(Constants.DataBase.FTS_DB_NAME) ||
+                        file.name.startsWith(Constants.DataBase.PENDING_DB_NAME) || file.name.startsWith(Constants.DataBase.SIGNAL_DB_NAME)
+                    ) {
+                        file.moveTo(File(toDir, file.name))
+                    }
+                }
+            } else {
+                // Due to the inability to obtain the identity number information, delete data
+                val dbDir = context.getDatabasePath(Constants.DataBase.DB_NAME)?.parentFile
+                dbDir?.listFiles()?.forEach { file ->
+                    if (file.name.startsWith(Constants.DataBase.DB_NAME) || file.name.startsWith(Constants.DataBase.FTS_DB_NAME) ||
+                        file.name.startsWith(Constants.DataBase.PENDING_DB_NAME) || file.name.startsWith(Constants.DataBase.SIGNAL_DB_NAME)
+                    ) {
+                        file.delete()
+                    }
+                }
+            }
+        }
+    }
+
     private fun handleLogin() = lifecycleScope.launch {
         showLoading()
-
+        // Migrate old data
+        migrateOldDb()
         // Here the Signal database is generated in the default path
         SignalProtocol.initSignal(requireContext().applicationContext)
         val registrationId = CryptoPreference.getLocalRegistrationId(requireContext())
