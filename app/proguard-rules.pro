@@ -46,6 +46,8 @@
 
 -dontwarn sun.net.spi.nameservice.**
 
+-keep class com.birbit.android.jobqueue.** { *; }
+
 -keepclassmembers enum * {
     public static **[] values();
     public static ** valueOf(java.lang.String);
