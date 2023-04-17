@@ -131,7 +131,7 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
                                             walletViewModel.updateAssetHidden(asset.assetId, false)
                                         }
                                     }.setActionTextColor(ContextCompat.getColor(requireContext(), R.color.wallet_blue)).apply {
-                                        (this.view.findViewById(R.id.snackbar_text) as TextView)
+                                        (this.view.findViewById(com.google.android.material.R.id.snackbar_text) as TextView)
                                             .setTextColor(ContextCompat.getColor(requireContext(), R.color.white))
                                     }.apply {
                                         snackbar?.config(anchorView.context)

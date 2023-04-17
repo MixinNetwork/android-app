@@ -32,6 +32,7 @@ import android.view.View.GONE
 import android.view.View.INVISIBLE
 import android.view.View.VISIBLE
 import android.view.ViewGroup
+import android.view.WindowManager
 import android.widget.PopupWindow
 import android.widget.TextView
 import androidx.activity.result.ActivityResultLauncher
@@ -1250,13 +1251,30 @@ class ConversationFragment() :
         }
     }
 
+    override fun onStart() {
+        super.onStart()
+        if (!binding.chatControl.isPreviewAudio()) {
+            lifecycleScope.launch {
+                val previewAudio = withContext(Dispatchers.IO) {
+                    OpusAudioRecorder.getAudioPreview(requireContext(), conversationId)
+                } ?: return@launch
+                this@ConversationFragment.previewAudio(
+                    previewAudio.messageId,
+                    File(previewAudio.path),
+                    previewAudio.duration,
+                    previewAudio.waveForm,
+                )
+            }
+        }
+    }
+
     override fun onStop() {
         markRead()
         val draftText = binding.chatControl.chatEt.text?.toString() ?: ""
         chatRoomHelper.saveDraft(conversationId, draftText)
 
         if (OpusAudioRecorder.state != STATE_NOT_INIT) {
-            OpusAudioRecorder.get(conversationId).stop()
+            OpusAudioRecorder.get(conversationId).stopRecording(AudioEndStatus.PREVIEW, vibrate = false, false)
         }
         if (binding.chatControl.isRecording) {
             binding.chatControl.cancelExternal()
@@ -1267,6 +1285,7 @@ class ConversationFragment() :
         if (aodWakeLock.isHeld) {
             aodWakeLock.release()
         }
+        activity?.window?.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         snackBar?.dismiss()
         binding.chatRv.let { rv ->
             rv.children.forEach {
@@ -2061,7 +2080,7 @@ class ConversationFragment() :
             file.deleteOnExit()
         } else {
             audioFile = file
-            binding.chatControl.previewAudio(file, waveForm, duration) {
+            binding.chatControl.previewAudio(conversationId, file, waveForm, duration) {
                 sendAudio(messageId, file, duration, waveForm)
             }
         }
@@ -2968,9 +2987,7 @@ class ConversationFragment() :
             MusicPlayer.pause()
             OpusAudioRecorder.get(conversationId).startRecording(this@ConversationFragment)
             if (!isNearToSensor) {
-                if (!aodWakeLock.isHeld) {
-                    aodWakeLock.acquire(10 * 60 * 1000L)
-                }
+                activity?.window?.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
             }
         }
 
@@ -2980,22 +2997,22 @@ class ConversationFragment() :
 
         override fun onRecordSend() {
             OpusAudioRecorder.get(conversationId).stopRecording(AudioEndStatus.SEND)
-            if (!isNearToSensor && aodWakeLock.isHeld) {
-                aodWakeLock.release()
+            if (!isNearToSensor) {
+                activity?.window?.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
             }
         }
 
         override fun onRecordPreview() {
             OpusAudioRecorder.get(conversationId).stopRecording(AudioEndStatus.PREVIEW)
-            if (!isNearToSensor && aodWakeLock.isHeld) {
-                aodWakeLock.release()
+            if (!isNearToSensor) {
+                activity?.window?.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
             }
         }
 
         override fun onRecordCancel() {
             OpusAudioRecorder.get(conversationId).stopRecording(AudioEndStatus.CANCEL)
-            if (!isNearToSensor && aodWakeLock.isHeld) {
-                aodWakeLock.release()
+            if (!isNearToSensor) {
+                activity?.window?.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
             }
         }
 
@@ -3087,7 +3104,7 @@ class ConversationFragment() :
             .setAction(R.string.View) {
                 ConversationActivity.show(requireContext(), selectItem.conversationId, selectItem.userId)
             }.setActionTextColor(ContextCompat.getColor(requireContext(), R.color.wallet_blue)).apply {
-                (view.findViewById<TextView>(R.id.snackbar_text)).setTextColor(ContextCompat.getColor(requireContext(), R.color.white))
+                (view.findViewById<TextView>(com.google.android.material.R.id.snackbar_text)).setTextColor(ContextCompat.getColor(requireContext(), R.color.white))
             }.apply {
                 snackBar?.config(binding.barLayout.context)
             }

@@ -492,6 +492,16 @@ fun File.createAudioTemp(conversationId: String, messageId: String, type: String
     return path.newTempFile(messageId, ".$type", noMedia)
 }
 
+fun File.createAudioPreviewTemp(conversationId: String): File {
+    val path = generateConversationPath(conversationId)
+    return path.newTempFile("audio-preview", "", true)
+}
+
+fun File.getAudioPreviewTemp(conversationId: String): File {
+    val path = generateConversationPath(conversationId)
+    return File(path, "audio-preview")
+}
+
 fun File.newTempFile(name: String, type: String, noMedia: Boolean): File {
     if (!this.exists()) {
         this.mkdirs()
