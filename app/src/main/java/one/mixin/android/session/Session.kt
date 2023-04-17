@@ -3,19 +3,17 @@ package one.mixin.android.session
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import io.jsonwebtoken.Claims
+import io.jsonwebtoken.EdDSAPrivateKey
+import io.jsonwebtoken.EdDSAPublicKey
 import io.jsonwebtoken.ExpiredJwtException
 import io.jsonwebtoken.Jwts
-import net.i2p.crypto.eddsa.EdDSAPrivateKey
-import net.i2p.crypto.eddsa.EdDSAPublicKey
-import net.i2p.crypto.eddsa.spec.EdDSAPrivateKeySpec
 import okhttp3.Request
+import okio.ByteString
 import okio.ByteString.Companion.encode
+import okio.ByteString.Companion.toByteString
 import one.mixin.android.Constants.Account.PREF_TRIED_UPDATE_KEY
 import one.mixin.android.MixinApplication
 import one.mixin.android.crypto.calculateAgreement
-import one.mixin.android.crypto.ed25519
-import one.mixin.android.crypto.getPrivateKey
-import one.mixin.android.crypto.getPublicKey
 import one.mixin.android.crypto.getRSAPrivateKeyFromString
 import one.mixin.android.crypto.privateKeyToCurve25519
 import one.mixin.android.extension.bodyToString
@@ -30,6 +28,7 @@ import one.mixin.android.extension.remove
 import one.mixin.android.extension.sharedPreferences
 import one.mixin.android.util.reportException
 import one.mixin.android.vo.Account
+import one.mixin.eddsa.KeyPair
 import timber.log.Timber
 import java.security.Key
 import java.util.concurrent.ConcurrentHashMap
@@ -42,8 +41,7 @@ object Session {
     private var self: Account? = null
 
     private var seed: String? = null
-    private var edPrivateKey: EdDSAPrivateKey? = null
-    private var edPublicKey: EdDSAPublicKey? = null
+    private var edKeyPair: KeyPair? = null
 
     private const val PREF_PIN_ITERATOR = "pref_pin_iterator"
     private const val PREF_PIN_TOKEN = "pref_pin_token"
@@ -81,8 +79,7 @@ object Session {
         val preference = MixinApplication.appContext.sharedPreferences(PREF_SESSION)
         preference.putString(PREF_ED25519_PRIVATE_KEY, token)
         seed = token
-        edPrivateKey = null
-        edPublicKey = null
+        edKeyPair = null
         initEdKeypair(token)
     }
 
@@ -96,32 +93,20 @@ object Session {
         }
     }
 
-    fun getEd25519PrivateKey(): EdDSAPrivateKey? {
-        if (edPrivateKey != null) {
-            return edPrivateKey
+    fun getEd25519KeyPair(): KeyPair? {
+        if (edKeyPair != null) {
+            return edKeyPair
         } else {
             val seed = getEd25519Seed() ?: return null
 
-            initEdKeypair(seed)
-            return edPrivateKey
+            return initEdKeypair(seed)
         }
     }
 
-    fun getEd25519PublicKey(): EdDSAPublicKey? {
-        if (edPublicKey != null) {
-            return edPublicKey
-        } else {
-            val seed = getEd25519Seed() ?: return null
-
-            initEdKeypair(seed)
-            return edPublicKey
-        }
-    }
-
-    private fun initEdKeypair(seed: String) {
-        val privateSpec = EdDSAPrivateKeySpec(seed.decodeBase64(), ed25519)
-        edPrivateKey = privateSpec.getPrivateKey()
-        edPublicKey = privateSpec.getPublicKey()
+    private fun initEdKeypair(seed: String): KeyPair {
+        val edKeyPair = KeyPair.newKeyPairFromSeed(seed.decodeBase64().toByteString())
+        this.edKeyPair = edKeyPair
+        return edKeyPair
     }
 
     fun storeToken(token: String) {
@@ -247,7 +232,7 @@ object Session {
     fun getFiatCurrency() = getAccount()?.fiatCurrency ?: "USD"
 
     private fun getJwtKey(isSign: Boolean): Key? {
-        val edPrivateKey = getEd25519PrivateKey()
+        val edPrivateKey = getEd25519KeyPair()?.privateKey?.let { EdDSAPrivateKey(it) }
         if (edPrivateKey == null) {
             val token = getToken()
             if (token.isNullOrBlank()) {
@@ -258,12 +243,12 @@ object Session {
             if (isSign) {
                 return edPrivateKey
             }
-            return getEd25519PublicKey()
+            return getEd25519KeyPair()?.publicKey?.let { EdDSAPublicKey(it) }
         }
     }
 }
 
-fun decryptPinToken(serverPublicKey: ByteArray, privateKey: EdDSAPrivateKey): ByteArray {
-    val private = privateKeyToCurve25519(privateKey.seed)
+fun decryptPinToken(serverPublicKey: ByteArray, privateKey: ByteString): ByteArray {
+    val private = privateKeyToCurve25519(privateKey.toByteArray())
     return calculateAgreement(serverPublicKey, private)
 }

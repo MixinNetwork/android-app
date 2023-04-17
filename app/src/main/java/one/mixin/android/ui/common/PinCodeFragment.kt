@@ -6,12 +6,12 @@ import android.widget.TextView
 import androidx.annotation.LayoutRes
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import net.i2p.crypto.eddsa.EdDSAPrivateKey
 import one.mixin.android.Constants.DEVICE_ID
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.ResponseError
+import one.mixin.android.crypto.seed
 import one.mixin.android.extension.base64Encode
 import one.mixin.android.extension.clear
 import one.mixin.android.extension.clickVibrate
@@ -33,7 +33,7 @@ import one.mixin.android.vo.User
 import one.mixin.android.vo.toUser
 import one.mixin.android.widget.Keyboard
 import one.mixin.android.widget.VerificationCodeView
-import java.security.KeyPair
+import one.mixin.eddsa.KeyPair
 
 abstract class PinCodeFragment(@LayoutRes contentLayoutId: Int) : FabLoadingFragment(contentLayoutId) {
     companion object {
@@ -100,9 +100,9 @@ abstract class PinCodeFragment(@LayoutRes contentLayoutId: Int) : FabLoadingFrag
             clearDatabase(requireContext())
             defaultSharedPreferences.clear()
         }
-        val privateKey = sessionKey.private as EdDSAPrivateKey
-        val pinToken = decryptPinToken(account.pinToken.decodeBase64(), privateKey) ?: return@withContext
-        Session.storeEd25519Seed(privateKey.seed.base64Encode())
+        val privateKey = sessionKey.privateKey
+        val pinToken = decryptPinToken(account.pinToken.decodeBase64(), privateKey)
+        Session.storeEd25519Seed(privateKey.seed().base64Encode())
         Session.storePinToken(pinToken.base64Encode())
         Session.storeAccount(account)
         defaultSharedPreferences.putString(DEVICE_ID, requireContext().getDeviceId())
