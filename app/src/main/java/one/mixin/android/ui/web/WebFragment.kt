@@ -477,7 +477,7 @@ class WebFragment : BaseFragment() {
                 },
             )
 
-        val wcEnable = defaultSharedPreferences.getBoolean(Constants.Debug.WALLET_CONNECT_DEBUG, false)
+        val wcEnable = WalletConnect.isEnabled(requireContext())
         webView.webChromeClient = object : WebChromeClient() {
             override fun onConsoleMessage(consoleMessage: ConsoleMessage?): Boolean {
                 if (wcEnable && consoleMessage?.messageLevel() == ConsoleMessage.MessageLevel.LOG) {

@@ -593,7 +593,7 @@ class MainActivity : BlazeBaseActivity() {
     }
 
     private fun initWalletConnect() {
-        if (!defaultSharedPreferences.getBoolean(Constants.Debug.WALLET_CONNECT_DEBUG, false)) return
+        if (!WalletConnect.isEnabled(this)) return
 
         WalletConnectV1
         WalletConnectV2
