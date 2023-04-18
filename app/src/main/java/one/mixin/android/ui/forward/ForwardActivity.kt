@@ -27,7 +27,7 @@ class ForwardActivity : BlazeBaseActivity() {
 
         const val ARGS_RESULT = "args_result"
 
-        inline fun show(
+        fun show(
             context: Context,
             messages: ArrayList<ForwardMessage>,
             action: ForwardAction,
@@ -94,7 +94,7 @@ class ForwardActivity : BlazeBaseActivity() {
         setContentView(R.layout.activity_contact)
         val list = intent.getParcelableArrayListExtra<ForwardMessage>(ARGS_MESSAGES)
         val action = intent.getParcelableExtra<ForwardAction>(ARGS_ACTION)
-        if (action != null && list != null && list.isNotEmpty()) {
+        if (action != null && !list.isNullOrEmpty()) {
             val f = ForwardFragment.newInstance(list, action)
             replaceFragment(f, R.id.container, ForwardFragment.TAG)
         } else if (action is ForwardAction.Combine) {

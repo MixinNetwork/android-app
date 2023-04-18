@@ -1,8 +1,5 @@
 package one.mixin.android.util
 
-import net.i2p.crypto.eddsa.EdDSAPublicKey
-import net.i2p.crypto.eddsa.spec.EdDSAPublicKeySpec
-import one.mixin.android.crypto.ed25519
 import one.mixin.android.crypto.privateKeyToCurve25519
 import one.mixin.android.crypto.publicKeyToCurve25519
 import one.mixin.android.crypto.sha3Sum256
@@ -154,11 +151,9 @@ class CryptoUtilTest {
             47.toByte(),
         )
 
-        val publicKey = EdDSAPublicKey(EdDSAPublicKeySpec(public, ed25519))
-
         val curve25519PrivateKey = privateKeyToCurve25519(seed)
         assert(curve25519PrivateKey.contentEquals(targetPrivate))
-        val curve25519PublicKey = publicKeyToCurve25519(publicKey)
+        val curve25519PublicKey = publicKeyToCurve25519(public)
         assert(curve25519PublicKey.contentEquals(targetPublic))
     }
 

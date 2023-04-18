@@ -27,7 +27,7 @@ android {
         versionName "${versionMajor}.${versionMinor}.${versionPatch}"
         multiDexEnabled true
         testInstrumentationRunner "one.mixin.android.CustomTestRunner"
-        resConfigs 'en', 'es', 'in', 'ja', 'ms', 'ru', 'zh-rCN', 'zh-rTW'
+        resourceConfigurations += ['en', 'es', 'in', 'ja', 'ms', 'ru', 'zh-rCN', 'zh-rTW']
 
         javaCompileOptions {
             annotationProcessorOptions {
@@ -55,11 +55,11 @@ android {
         }
 
         kotlinOptions {
-            jvmTarget = '11'
+            jvmTarget = '17'
             freeCompilerArgs += ['-opt-in=kotlin.contracts.ExperimentalContracts']
             freeCompilerArgs += [
                     "-P",
-                    "plugin:androidx.compose.compiler.plugins.kotlin:suppressKotlinVersionCompatibilityCheck=true"
+                    "plugin:androidx.compose.compiler.plugins.kotlin:suppressKotlinVersionCompatibilityCheck=1.8.20"
             ]
         }
 
@@ -87,6 +87,7 @@ android {
     buildFeatures {
         viewBinding true
         compose true
+        buildConfig = true
     }
 
     sourceSets {
@@ -102,8 +103,8 @@ android {
 
     compileOptions {
         coreLibraryDesugaringEnabled true
-        targetCompatibility JavaVersion.VERSION_11
-        sourceCompatibility JavaVersion.VERSION_11
+        targetCompatibility JavaVersion.VERSION_17
+        sourceCompatibility JavaVersion.VERSION_17
     }
 
     dependenciesInfo {
@@ -177,7 +178,7 @@ android {
     }
 
     composeOptions {
-        kotlinCompilerExtensionVersion '1.4.3'
+        kotlinCompilerExtensionVersion '1.4.5'
     }
     lint {
         abortOnError false
@@ -190,8 +191,8 @@ android {
 }
 
 dependencies {
-    coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:1.2.2'
-    implementation platform("com.google.firebase:firebase-bom:31.4.0")
+    coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.0.3'
+    implementation platform("com.google.firebase:firebase-bom:31.5.0")
     implementation fileTree(include: ['*.aar'], dir: 'libs')
     implementation "androidx.fragment:fragment-ktx:${fragmentVersion}"
     implementation("androidx.activity:activity-ktx:$activity_version")
@@ -252,10 +253,13 @@ dependencies {
     // RxJava
     implementation "io.reactivex.rxjava2:rxjava:${rxJavaVersion}"
     implementation "io.reactivex.rxjava2:rxandroid:${rxAndroidVersion}"
-    implementation 'com.github.MixinNetwork.jjwt:jjwt-api:6ec4e61c24'
 
-    runtimeOnly 'com.github.MixinNetwork.jjwt:jjwt-impl:6ec4e61c24'
-    runtimeOnly('com.github.MixinNetwork.jjwt:jjwt-orgjson:6ec4e61c24') {
+    implementation "com.github.MixinNetwork:tink-eddsa:0.0.4"
+    implementation('com.github.MixinNetwork.jjwt:jjwt-api:50c2b66') {
+        exclude group: 'com.github.MixinNetwork', module: 'tink-eddsa'
+    }
+    runtimeOnly 'com.github.MixinNetwork.jjwt:jjwt-impl:50c2b66'
+    runtimeOnly('com.github.MixinNetwork.jjwt:jjwt-orgjson:50c2b66') {
         exclude group: 'org.json', module: 'json' //provided by Android natively
     }
     implementation "com.jakewharton.threetenabp:threetenabp:${threetenabpVersion}"
@@ -289,12 +293,13 @@ dependencies {
     implementation "com.google.mlkit:barcode-scanning:${mlkitBarcodeVersion}"
     implementation "com.google.android.play:core:${playVersion}"
     implementation "com.google.android.gms:play-services-safetynet:${googlePlayServicesVersion}"
-    implementation "com.google.android.gms:play-services-maps:${googlePlayServicesVersion}"
+    implementation "com.google.android.gms:play-services-maps:18.1.0"
+    implementation "com.google.android.gms:play-services-location:21.0.1"
     implementation "com.google.android.gms:play-services-cronet:${googlePlayServicesVersion}"
     implementation "com.google.zxing:core:${zxingVersion}"
     implementation "com.github.tougee:sticky-headers-recyclerview:${stickyheadersrecyclerviewVersion}"
     implementation "org.whispersystems:signal-protocol-android:${signalVersion}"
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:${kotlinVersion}"
+    implementation "org.jetbrains.kotlin:kotlin-stdlib:${kotlinVersion}"
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutinesVersion"
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:$coroutinesVersion"
     implementation "com.github.zjupure:webpdecoder:2.3.4.14.2"
