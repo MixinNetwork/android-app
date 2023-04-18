@@ -257,6 +257,7 @@ dependencies {
     implementation "com.github.MixinNetwork:tink-eddsa:0.0.4"
     implementation("com.github.MixinNetwork.jjwt:jjwt-api:e49d351") {
         exclude group: 'com.github.MixinNetwork', module: 'tink-eddsa'
+        exclude group: 'com.github.mixinnetwork', module: 'tink-eddsa'
     }
     runtimeOnly 'com.github.MixinNetwork.jjwt:jjwt-impl:e49d351'
     runtimeOnly('com.github.MixinNetwork.jjwt:jjwt-orgjson:e49d351') {
