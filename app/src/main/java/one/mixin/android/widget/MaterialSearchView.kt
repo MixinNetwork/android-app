@@ -171,10 +171,6 @@ class MaterialSearchView : FrameLayout {
             binding.avatar.setInfo(u.fullName, u.avatarUrl, u.userId)
             binding.avatar.setTextSize(14f)
         }
-        binding.avatar.setOnLongClickListener {
-            SettingActivity.showMigrateRestore(context)
-            return@setOnLongClickListener true
-        }
 
         // Don't auto dispose
         disposable = binding.searchEt.textChanges().debounce(SEARCH_DEBOUNCE, TimeUnit.MILLISECONDS)

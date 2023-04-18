@@ -282,7 +282,7 @@ class TransferActivity : BaseActivity() {
                         .setPositiveButton(R.string.Confirm) { dialog, _ ->
                             dialog.dismiss()
                             if (argsStatus == ARGS_RESTORE_FROM_PHONE) {
-                                InitializeActivity.showLoading(this)
+                                InitializeActivity.showLoading(this, clear = true)
                             }
                             status.value = TransferStatus.INITIALIZING
                             finish()
