@@ -11,6 +11,7 @@ import one.mixin.android.api.response.TipSecretResponse
 import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.POST
+import retrofit2.http.Path
 
 interface TipService {
     @GET("tip/identity")
@@ -28,6 +29,6 @@ interface TipService {
     @POST("tip/secret")
     suspend fun updateTipSecret(@Body request: TipSecretRequest): MixinResponse<Unit>
 
-    @GET("external/tip/gastracker")
-    suspend fun getTipGas(assetId: String): MixinResponse<TipGas>
+    @GET("external/gastracker/{id}")
+    suspend fun getTipGas(@Path("id") assetId: String): MixinResponse<TipGas>
 }

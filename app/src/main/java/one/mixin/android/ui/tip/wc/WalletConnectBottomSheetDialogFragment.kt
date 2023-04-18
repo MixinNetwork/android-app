@@ -36,6 +36,7 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.R
+import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.response.GasPriceType
 import one.mixin.android.api.response.TipGas
 import one.mixin.android.extension.booleanFromAttribute
@@ -161,7 +162,7 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
                         errorInfo,
                         onPreviewMessage = { TextPreviewActivity.show(requireContext(), it) },
                         onDismissRequest = { dismiss() },
-                        onPositiveClick = { onPositiveClick(it)},
+                        onPositiveClick = { onPositiveClick(it) },
                         onBiometricClick = { showBiometricPrompt() },
                         onPinComplete = { pin -> doAfterPinComplete(pin) },
                         onGasItemClick = { type ->
@@ -260,19 +261,18 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
 
         tickerFlow(15.seconds)
             .onEach {
-                tipGas = TipGas("43d61dcd-e413-450d-80b8-101d5e903357", "0.00000002", "0.00000003", "0.00000005", "250000")
-//                tipGas = handleMixinResponse(
-//                    invokeNetwork = { viewModel.getTipGas(assetId) },
-//                    successBlock = {
-//                        it.data
-//                    }
-//                )
+                asset = viewModel.refreshAsset(assetId)
+                tipGas = handleMixinResponse(
+                    invokeNetwork = { viewModel.getTipGas(assetId) },
+                    successBlock = {
+                        it.data
+                    },
+                )
                 if (version == WalletConnect.Version.V1) {
                     (wc.currentSignData as? WalletConnect.WCSignData.V1SignData)?.tipGas = tipGas
                 } else if (version == WalletConnect.Version.V2) {
                     (wc.currentSignData as? WalletConnect.WCSignData.V2SignData)?.tipGas = tipGas
                 }
-                asset = viewModel.refreshAsset(assetId)
             }
             .launchIn(lifecycleScope)
     }

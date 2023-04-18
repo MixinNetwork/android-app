@@ -115,6 +115,7 @@ fun SessionProposalPage(
                 step = step,
                 errorInfo = errorInfo,
                 allowBiometric = true,
+                signUnavailable = false,
                 onNegativeClick = { },
                 onPositiveClick = { },
                 onDoneClick = { onDismissRequest() },

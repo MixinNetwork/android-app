@@ -156,6 +156,7 @@ fun SessionRequestPage(
                     step = step,
                     errorInfo = errorInfo,
                     allowBiometric = true,
+                    signUnavailable = tipGas == null && sessionRequestUI.data is WCEthereumTransaction,
                     onNegativeClick = { onDismissRequest() },
                     onPositiveClick = {
                         onPositiveClick(sessionRequestUI.requestId)

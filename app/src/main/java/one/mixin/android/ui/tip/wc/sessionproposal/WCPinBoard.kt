@@ -31,6 +31,7 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
@@ -79,6 +80,7 @@ fun WCPinBoard(
     step: Step,
     errorInfo: String?,
     allowBiometric: Boolean,
+    signUnavailable: Boolean,
     onNegativeClick: () -> Unit,
     onPositiveClick: () -> Unit,
     onDoneClick: () -> Unit,
@@ -121,7 +123,7 @@ fun WCPinBoard(
         } else {
             (scaleIn() + fadeIn() with scaleOut() + fadeOut())
         }
-    }) { s ->
+    }, label = "") { s ->
         when (s) {
             Step.Error -> Column(
                 modifier = Modifier
@@ -177,18 +179,32 @@ fun WCPinBoard(
             ) {
                 Box(modifier = Modifier.height(20.dp))
                 Button(
-                    onClick = { onPositiveClick.invoke() },
+                    modifier = Modifier.widthIn(min = 100.dp),
+                    onClick = {
+                        if (signUnavailable) {
+                            onPositiveClick.invoke()
+                        }
+                    },
                     colors = ButtonDefaults.outlinedButtonColors(
                         backgroundColor = MixinAppTheme.colors.accent,
                     ),
                     contentPadding = PaddingValues(horizontal = 28.dp, vertical = 11.dp),
                     shape = RoundedCornerShape(40.dp),
                 ) {
-                    Text(
-                        text = stringResource(id = R.string.sign_by_pin),
-                        color = Color.White,
-                        fontSize = 16.sp,
-                    )
+                    if (signUnavailable) {
+                        CircularProgressIndicator(
+                            modifier = Modifier
+                                .size(16.dp),
+                            color = Color.White,
+                            strokeWidth = 2.dp,
+                        )
+                    } else {
+                        Text(
+                            text = stringResource(id = R.string.sign_by_pin),
+                            color = Color.White,
+                            fontSize = 16.sp,
+                        )
+                    }
                 }
                 Box(modifier = Modifier.height(24.dp))
                 TextButton(
@@ -262,7 +278,7 @@ fun WCPinBoard(
             else -> Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 AnimatedContent(targetState = step, transitionSpec = {
                     (fadeIn() with fadeOut())
-                }) {
+                }, label = "") {
                     if (step == Step.Input) {
                         Column(
                             horizontalAlignment = Alignment.CenterHorizontally,
@@ -295,6 +311,7 @@ fun WCPinBoard(
                                                     SizeTransform(clip = false),
                                                 )
                                             },
+                                            label = "",
                                         ) { b ->
                                             Text(
                                                 "*",
@@ -465,5 +482,5 @@ fun WCPinBoard(
 @Preview
 @Composable
 fun WCPinBoardPreview() {
-    WCPinBoard(Step.Input, null, false, {}, {}, {}, null, null)
+    WCPinBoard(Step.Input, null, allowBiometric = false, true, {}, {}, {}, null, null)
 }
