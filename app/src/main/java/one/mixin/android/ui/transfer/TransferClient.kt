@@ -18,6 +18,8 @@ import one.mixin.android.db.StickerDao
 import one.mixin.android.db.TranscriptMessageDao
 import one.mixin.android.db.UserDao
 import one.mixin.android.event.DeviceTransferProgressEvent
+import one.mixin.android.extension.createAtToLong
+import one.mixin.android.extension.toUtcTime
 import one.mixin.android.fts.FtsDatabase
 import one.mixin.android.fts.insertOrReplaceMessageFts4
 import one.mixin.android.ui.transfer.vo.CURRENT_TRANSFER_VERSION
@@ -242,6 +244,13 @@ class TransferClient @Inject internal constructor(
             TransferDataType.STICKER.value -> {
                 syncInsert {
                     val sticker = gson.fromJson(transferData.data, Sticker::class.java)
+                    sticker.lastUseAt?.let {
+                        try {
+                            sticker.lastUseAt = it.createAtToLong()?.toString()
+                        } catch (e: Exception) {
+                            Timber.e(e)
+                        }
+                    }
                     stickerDao.insertIgnore(sticker)
                     Timber.e("Sticker ID: ${sticker.stickerId}")
                 }

@@ -17,8 +17,10 @@ import one.mixin.android.db.StickerDao
 import one.mixin.android.db.TranscriptMessageDao
 import one.mixin.android.db.UserDao
 import one.mixin.android.event.DeviceTransferProgressEvent
+import one.mixin.android.extension.createAtToLong
 import one.mixin.android.extension.getMediaPath
 import one.mixin.android.extension.isUUID
+import one.mixin.android.extension.toUtcTime
 import one.mixin.android.session.Session
 import one.mixin.android.ui.transfer.TransferProtocol.Companion.TYPE_COMMAND
 import one.mixin.android.ui.transfer.TransferProtocol.Companion.TYPE_JSON
@@ -338,6 +340,17 @@ class TransferServer @Inject internal constructor(
         var offset = 0
         while (!quit) {
             val list = stickerDao.getStickersByLimitAndOffset(LIMIT, offset)
+                .map {
+                    it.lastUseAt = it.lastUseAt?.let { lastUseAt ->
+                        try {
+                            lastUseAt.toLong().toUtcTime()
+                        } catch (e: Exception) {
+                            Timber.e(e)
+                            lastUseAt
+                        }
+                    } ?: it.lastUseAt
+                    it
+                }
             if (list.isEmpty()) {
                 return
             }
