@@ -185,8 +185,11 @@ android {
         ignore 'Overdraw'
     }
 
-    configurations.all {
-        resolutionStrategy.force "com.android.tools.build.jetifier:jetifier-core:1.0.0-beta10"
+    configurations.configureEach {
+        resolutionStrategy {
+            force "com.android.tools.build.jetifier:jetifier-core:1.0.0-beta10"
+            force "com.github.mixinnetwork:tink-eddsa:0.0.7"
+        }
     }
 }
 
