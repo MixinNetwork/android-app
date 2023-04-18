@@ -8,7 +8,6 @@ import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import net.i2p.crypto.eddsa.EdDSAPrivateKey
 import one.mixin.android.Constants.DEVICE_ID
 import one.mixin.android.Constants.DataBase.SIGNAL_DB_NAME
 import one.mixin.android.MixinApplication
@@ -16,6 +15,7 @@ import one.mixin.android.R
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.ResponseError
 import one.mixin.android.crypto.db.SignalDatabase
+import one.mixin.android.crypto.seedFromPrivateKey
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.pending.PendingDatabaseImp
 import one.mixin.android.extension.base64Encode
@@ -38,8 +38,8 @@ import one.mixin.android.vo.User
 import one.mixin.android.vo.toUser
 import one.mixin.android.widget.Keyboard
 import one.mixin.android.widget.VerificationCodeView
+import one.mixin.eddsa.KeyPair
 import java.io.File
-import java.security.KeyPair
 
 abstract class PinCodeFragment(@LayoutRes contentLayoutId: Int) : FabLoadingFragment(contentLayoutId) {
     companion object {
@@ -104,9 +104,10 @@ abstract class PinCodeFragment(@LayoutRes contentLayoutId: Int) : FabLoadingFrag
         SignalDatabase.release()
         defaultSharedPreferences.clear()
 
-        val privateKey = sessionKey.private as EdDSAPrivateKey
-        val pinToken = decryptPinToken(account.pinToken.decodeBase64(), privateKey) ?: return@withContext
-        Session.storeEd25519Seed(privateKey.seed.base64Encode())
+        val privateKey = sessionKey.privateKey
+        val pinToken = decryptPinToken(account.pinToken.decodeBase64(), privateKey)
+        Session.storeEd25519Seed(seedFromPrivateKey(privateKey).base64Encode())
+
         Session.storePinToken(pinToken.base64Encode())
         Session.storeAccount(account) // After that, you can use the database.
         defaultSharedPreferences.putString(DEVICE_ID, requireContext().getDeviceId())

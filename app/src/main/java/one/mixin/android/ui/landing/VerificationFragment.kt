@@ -18,7 +18,6 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import net.i2p.crypto.eddsa.EdDSAPublicKey
 import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.api.MixinResponse
@@ -34,7 +33,6 @@ import one.mixin.android.databinding.FragmentVerificationBinding
 import one.mixin.android.databinding.ViewVerificationBottomBinding
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.extension.alert
-import one.mixin.android.extension.base64Encode
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.moveTo
 import one.mixin.android.extension.navTo
@@ -278,9 +276,9 @@ class VerificationFragment : PinCodeFragment(R.layout.fragment_verification) {
         SignalProtocol.initSignal(requireContext().applicationContext)
         val registrationId = CryptoPreference.getLocalRegistrationId(requireContext())
         val sessionKey = generateEd25519KeyPair()
-        val publicKey = sessionKey.public as EdDSAPublicKey
+        val publicKey = sessionKey.publicKey
 
-        val sessionSecret = publicKey.abyte.base64Encode()
+        val sessionSecret = publicKey.base64()
         val accountRequest = AccountRequest(
             binding.pinVerificationView.code(),
             registration_id = registrationId,

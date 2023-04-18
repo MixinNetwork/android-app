@@ -10,7 +10,6 @@ import kotlinx.coroutines.withContext
 import one.mixin.android.Constants
 import one.mixin.android.session.Session
 import one.mixin.android.util.reportException
-import timber.log.Timber
 import java.io.File
 
 suspend fun getLastUserIdentityNumber(context: Context, dbFile: File): String? =

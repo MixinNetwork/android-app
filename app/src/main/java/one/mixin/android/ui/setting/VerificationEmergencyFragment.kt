@@ -7,7 +7,6 @@ import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import net.i2p.crypto.eddsa.EdDSAPublicKey
 import one.mixin.android.Constants.ARGS_USER
 import one.mixin.android.R
 import one.mixin.android.api.handleMixinResponse
@@ -20,7 +19,6 @@ import one.mixin.android.crypto.generateEd25519KeyPair
 import one.mixin.android.databinding.FragmentVerificationEmergencyBinding
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.extension.alertDialogBuilder
-import one.mixin.android.extension.base64Encode
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.putInt
 import one.mixin.android.extension.withArgs
@@ -33,7 +31,7 @@ import one.mixin.android.ui.landing.MobileViewModel
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.Account
 import one.mixin.android.vo.User
-import java.security.KeyPair
+import one.mixin.eddsa.KeyPair
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -180,8 +178,7 @@ class VerificationEmergencyFragment : PinCodeFragment(R.layout.fragment_verifica
 
     private fun buildLoginEmergencyRequest(sessionKey: KeyPair): EmergencyRequest {
         val registrationId = CryptoPreference.getLocalRegistrationId(requireContext())
-        val publicKey = sessionKey.public as EdDSAPublicKey
-        val sessionSecret = publicKey.abyte.base64Encode()
+        val sessionSecret = sessionKey.publicKey.base64()
         return EmergencyRequest(
             phone = user?.phone,
             identityNumber = user?.identityNumber ?: userIdentityNumber,

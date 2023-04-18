@@ -245,14 +245,14 @@ open class SendMessageJob(
         val extensionSessionKey =
             Session.getExtensionSessionId().notNullWithElse({ participantSessionDao.getParticipantSessionKeyBySessionId(message.conversationId, accountId, it) }, null)
 
-        val privateKey = Session.getEd25519PrivateKey() ?: return
+        val keyPair = Session.getEd25519KeyPair() ?: return
         val plaintext = if (message.isAttachment() || message.isSticker() || message.isContact()) {
             message.content!!.decodeBase64()
         } else {
             message.content!!.toByteArray()
         }
         val encryptContent = encryptedProtocol.encryptMessage(
-            privateKey,
+            keyPair,
             plaintext,
             participantSessionKey.publicKey!!.base64RawURLDecode(),
             participantSessionKey.sessionId,
