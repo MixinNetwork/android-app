@@ -10,12 +10,13 @@ import android.widget.FrameLayout
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.isVisible
-import com.google.android.exoplayer2.C
-import com.google.android.exoplayer2.Player
-import com.google.android.exoplayer2.Timeline
-import com.google.android.exoplayer2.ui.TimeBar
-import com.google.android.exoplayer2.util.Assertions
-import com.google.android.exoplayer2.util.Util
+import androidx.media3.common.C
+import androidx.media3.common.Player
+import androidx.media3.common.Timeline
+import androidx.media3.common.util.Assertions
+import androidx.media3.common.util.UnstableApi
+import androidx.media3.common.util.Util
+import androidx.media3.ui.TimeBar
 import one.mixin.android.R
 import one.mixin.android.databinding.ViewPlayerControlBinding
 import one.mixin.android.extension.dp
@@ -27,7 +28,7 @@ import java.util.Formatter
 import java.util.Locale
 import kotlin.math.min
 
-class PlayerControlView(context: Context, attributeSet: AttributeSet) :
+@UnstableApi class PlayerControlView(context: Context, attributeSet: AttributeSet) :
     FrameLayout(context, attributeSet) {
 
     private val componentListener = ComponentListener()

@@ -14,7 +14,7 @@ import android.text.Editable
 import android.text.SpannableStringBuilder
 import android.text.style.BackgroundColorSpan
 import androidx.core.net.toUri
-import com.google.android.exoplayer2.util.Util
+import androidx.media3.common.util.Util
 import com.google.gson.Gson
 import com.google.gson.JsonElement
 import com.google.gson.JsonSyntaxException

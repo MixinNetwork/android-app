@@ -408,6 +408,7 @@
             android:enabled="true" />
         <service
             android:name=".ui.player.MusicService"
+            android:foregroundServiceType="mediaPlayback"
             tools:ignore="ExportedService" />
         <service
             android:name="androidx.sharetarget.ChooserTargetServiceCompat"

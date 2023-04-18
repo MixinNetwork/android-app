@@ -240,6 +240,12 @@ dependencies {
     implementation "androidx.room:room-ktx:${roomVersion}"
     androidTestImplementation "androidx.room:room-testing:${roomVersion}"
 
+    // media3
+    implementation "androidx.media3:media3-exoplayer:${media3Version}"
+    implementation "androidx.media3:media3-exoplayer-hls:${media3Version}"
+    implementation "androidx.media3:media3-ui:${media3Version}"
+    implementation "androidx.media3:media3-session:${media3Version}"
+
     // emoji
     implementation "androidx.emoji2:emoji2:${emojiVerison}"
     implementation "androidx.emoji2:emoji2-views:${emojiVerison}"
@@ -325,10 +331,6 @@ dependencies {
     implementation "com.uber.autodispose:autodispose-android:${autodisposeVersion}"
     implementation "com.uber.autodispose:autodispose-android-archcomponents:${autodisposeVersion}"
     implementation "com.uber.autodispose:autodispose-lifecycle:${autodisposeVersion}"
-    implementation "com.google.android.exoplayer:exoplayer-core:${exoplayerVersion}"
-    implementation "com.google.android.exoplayer:exoplayer-hls:${exoplayerVersion}"
-    implementation "com.google.android.exoplayer:exoplayer-ui:${exoplayerVersion}"
-    implementation "com.google.android.exoplayer:extension-mediasession:${exoplayerVersion}"
     implementation "com.googlecode.mp4parser:isoparser:${isoparserVersion}"
     implementation "io.noties.markwon:core:${markwonVersion}"
     implementation "io.noties.markwon:image:${markwonVersion}"

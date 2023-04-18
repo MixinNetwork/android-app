@@ -9,13 +9,14 @@ import android.view.LayoutInflater
 import android.view.View
 import android.widget.FrameLayout
 import androidx.core.view.isVisible
-import com.google.android.exoplayer2.C
-import com.google.android.exoplayer2.PlaybackParameters
-import com.google.android.exoplayer2.Player
-import com.google.android.exoplayer2.Timeline
-import com.google.android.exoplayer2.ui.TimeBar
-import com.google.android.exoplayer2.util.Assertions
-import com.google.android.exoplayer2.util.Util
+import androidx.media3.common.C
+import androidx.media3.common.PlaybackParameters
+import androidx.media3.common.Player
+import androidx.media3.common.Timeline
+import androidx.media3.common.util.Assertions
+import androidx.media3.common.util.UnstableApi
+import androidx.media3.common.util.Util
+import androidx.media3.ui.TimeBar
 import one.mixin.android.R
 import one.mixin.android.databinding.ViewPlayerBottomControlBinding
 import one.mixin.android.extension.colorFromAttribute
@@ -26,6 +27,7 @@ import java.util.Formatter
 import java.util.Locale
 import kotlin.math.min
 
+@UnstableApi
 class PlayerBottomControlView(context: Context, attributeSet: AttributeSet) :
     FrameLayout(context, attributeSet) {
 
