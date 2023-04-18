@@ -24,12 +24,18 @@
         android:layout_centerInParent="true"
         android:layout_toEndOf="@+id/icon" />
 
+    <Space
+        android:id="@+id/center"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerVertical="true"/>
+
     <TextView
         android:id="@+id/name"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_centerInParent="true"
-        android:layout_gravity="center_vertical"
+        android:layout_above="@id/center"
         android:layout_marginStart="16dp"
         android:layout_marginEnd="16dp"
         android:layout_toEndOf="@id/avatar"
@@ -37,5 +43,17 @@
         android:textAppearance="?android:attr/textAppearanceMedium"
         android:textColor="?attr/text_primary" />
 
+    <TextView
+        android:id="@+id/mixin_id_tv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="2dp"
+        android:layout_marginStart="16dp"
+        android:layout_below="@id/center"
+        android:layout_toEndOf="@id/avatar"
+        android:ellipsize="end"
+        android:singleLine="true"
+        android:textSize="12sp"
+        android:textColor="?attr/text_minor" />
 
 </RelativeLayout>
