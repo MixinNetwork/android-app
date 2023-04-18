@@ -18,6 +18,7 @@ import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import one.mixin.android.Constants
 import one.mixin.android.Constants.Scheme.DEVICE_TRANSFER
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
@@ -31,11 +32,13 @@ import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.base64Encode
 import one.mixin.android.extension.base64RawURLDecode
 import one.mixin.android.extension.base64RawURLEncode
+import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.fadeIn
 import one.mixin.android.extension.generateQRCode
 import one.mixin.android.extension.getParcelableExtra
 import one.mixin.android.extension.openPermissionSetting
+import one.mixin.android.extension.putBoolean
 import one.mixin.android.extension.toast
 import one.mixin.android.job.BaseJob
 import one.mixin.android.job.MixinJobManager
@@ -283,6 +286,7 @@ class TransferActivity : BaseActivity() {
                             dialog.dismiss()
                             if (argsStatus == ARGS_RESTORE_FROM_PHONE) {
                                 InitializeActivity.showLoading(this, clear = true)
+                                defaultSharedPreferences.putBoolean(Constants.Account.PREF_RESTORE, false)
                             }
                             status.value = TransferStatus.INITIALIZING
                             finish()
