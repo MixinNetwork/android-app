@@ -234,7 +234,6 @@ import one.mixin.android.vo.isText
 import one.mixin.android.vo.isTranscript
 import one.mixin.android.vo.mediaExists
 import one.mixin.android.vo.saveToLocal
-import one.mixin.android.vo.shareFile
 import one.mixin.android.vo.supportSticker
 import one.mixin.android.vo.toApp
 import one.mixin.android.vo.toTranscript
@@ -693,26 +692,7 @@ class ConversationFragment() :
                         true,
                     )
                 ) {
-                    RxPermissions(requireActivity())
-                        .request(Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                        .autoDispose(stopScope)
-                        .subscribe(
-                            { granted ->
-                                if (granted) {
-                                    lifecycleScope.launch {
-                                        messageItem.shareFile(
-                                            requireContext(),
-                                            "application/vnd.android.package-archive",
-                                        )
-                                    }
-                                } else {
-                                    requireContext().openPermissionSetting()
-                                }
-                            },
-                            {
-                                toast(R.string.Save_failure)
-                            },
-                        )
+                    showBottomSheet(messageItem)
                 } else if (MimeTypes.isAudio(messageItem.mediaMimeType)) {
                     showBottomSheet(messageItem)
                 } else {
@@ -2875,11 +2855,25 @@ class ConversationFragment() :
                 ),
             )
         }
+        if (!messageItem.mediaMimeType.equals(
+                "application/vnd.android.package-archive",
+                true,
+            )
+        ) {
+            items.add(
+                BottomSheetItem(
+                    getString(R.string.Open),
+                    {
+                        requireContext().openMedia(messageItem)
+                        bottomSheet?.dismiss()
+                    },
+                ),
+            )
+        }
         items.add(
             BottomSheetItem(
-                getString(R.string.Open),
+                getString(R.string.Cancel),
                 {
-                    requireContext().openMedia(messageItem)
                     bottomSheet?.dismiss()
                 },
             ),
