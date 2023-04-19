@@ -96,6 +96,9 @@ class MusicPlayer private constructor() {
                 id()?.let { id -> RxBus.publish(pauseEvent(id)) }
                 stopTimber()
                 status = STATUS_DONE
+                // Resume progress when player finished playing
+                seekTo(0)
+                pause()
                 if (MusicService.isRunning(MixinApplication.appContext)) {
                     FloatingPlayer.getInstance().stopAnim()
                 }
