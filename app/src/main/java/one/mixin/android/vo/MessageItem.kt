@@ -280,14 +280,17 @@ suspend fun MessageItem.saveToLocal(context: Context) {
         return
     }
 
+    var str = R.string.Save_to_Gallery
     val outFile = if (MimeTypes.isVideo(mediaMimeType) || mediaMimeType?.isImageSupport() == true) {
         val dir = context.getPublicPicturePath()
         dir.mkdirs()
         File(dir, mediaName ?: file.name)
     } else {
         val dir = if (MimeTypes.isAudio(mediaMimeType)) {
+            str = R.string.Save_to_Music
             context.getPublicMusicPath()
         } else {
+            str = R.string.Save_to_Downloads
             context.getPublicDownloadPath()
         }
         dir.mkdirs()
@@ -298,7 +301,7 @@ suspend fun MessageItem.saveToLocal(context: Context) {
         outFile.copyFromInputStream(file.inputStream())
     }
     MediaScannerConnection.scanFile(context, arrayOf(outFile.toString()), null, null)
-    toast(MixinApplication.appContext.getString(R.string.Save_to_Gallery))
+    toast(str)
 }
 
 fun MessageItem.loadVideoOrLive(actionAfterLoad: (() -> Unit)? = null) {
