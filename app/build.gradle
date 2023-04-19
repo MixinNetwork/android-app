@@ -364,7 +364,7 @@ dependencies {
     implementation "androidx.compose.runtime:runtime:${composeVersion}"
     implementation "androidx.compose.runtime:runtime-livedata:${composeVersion}"
     implementation "androidx.compose.runtime:runtime-rxjava2:${composeVersion}"
-    implementation 'androidx.activity:activity-compose:1.7.0'
+    implementation 'androidx.activity:activity-compose:1.7.1'
     androidTestImplementation "androidx.compose.ui:ui-test-junit4:${composeVersion}"
     implementation "com.google.accompanist:accompanist-pager:0.30.1"
     implementation "com.google.accompanist:accompanist-pager-indicators:0.30.1"
