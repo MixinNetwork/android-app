@@ -30,7 +30,8 @@ abstract class WalletConnect {
         internal const val web3jTimeout = 3L
         internal const val defaultGasLimit = "250000"
 
-        fun isEnabled(context: Context): Boolean = context.defaultSharedPreferences.getBoolean(Constants.Debug.WALLET_CONNECT_DEBUG, false) || Session.isTipDebuggable()
+        fun isEnabled(context: Context): Boolean = Session.getAccount()?.hasPin == true && !Session.getTipPub().isNullOrBlank() &&
+            (context.defaultSharedPreferences.getBoolean(Constants.Debug.WALLET_CONNECT_DEBUG, false) || Session.isTipDebuggable())
     }
 
     enum class Version {
