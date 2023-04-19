@@ -279,9 +279,11 @@ class TransferClient @Inject internal constructor(
             TransferDataType.MESSAGE.value -> {
                 syncInsert {
                     val message = gson.fromJson(transferData.data, TransferMessage::class.java).toMessage()
-                    messageDao.insertIgnore(message)
-                    ftsDatabase.insertOrReplaceMessageFts4(message)
-                    Timber.e("Message ID: ${message.messageId}")
+                    val rowId = messageDao.insertIgnoreReturn(message)
+                    if (rowId != -1L) { // If the row ID is valid (-1 indicates insertion failure)
+                        ftsDatabase.insertOrReplaceMessageFts4(message)
+                    }
+                    Timber.e("Message ID: $rowId ${message.messageId}")
                 }
                 progress(outputStream)
             }
