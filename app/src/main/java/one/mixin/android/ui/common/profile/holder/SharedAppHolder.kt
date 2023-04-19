@@ -8,6 +8,7 @@ class SharedAppHolder(private val itemBinding: ItemSharedAppBinding) : ItemViewH
         itemBinding.apply {
             avatar.setInfo(app.name, app.iconUrl, app.appId)
             name.text = app.name
+            mixinIdTv.text = app.appNumber
             icon.setOnClickListener {
                 appAction(app)
             }
