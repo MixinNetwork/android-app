@@ -181,7 +181,7 @@ fun WCPinBoard(
                 Button(
                     modifier = Modifier.widthIn(min = 100.dp),
                     onClick = {
-                        if (signUnavailable) {
+                        if (!signUnavailable) {
                             onPositiveClick.invoke()
                         }
                     },
