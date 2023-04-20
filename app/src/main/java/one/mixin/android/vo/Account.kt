@@ -50,8 +50,8 @@ open class Account(
     val transferNotificationThreshold: Double = 0.0,
     @SerializedName("transfer_confirmation_threshold")
     val transferConfirmationThreshold: Double = 100.0,
-    @SerializedName("debug")
-    val debug: ArrayList<String>? = null,
+    @SerializedName("features")
+    val features: ArrayList<String>? = null,
 )
 
 fun Account.toUser(): User {

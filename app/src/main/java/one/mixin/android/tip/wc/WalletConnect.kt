@@ -31,7 +31,7 @@ abstract class WalletConnect {
         internal const val defaultGasLimit = "250000"
 
         fun isEnabled(context: Context): Boolean = Session.getAccount()?.hasPin == true && !Session.getTipPub().isNullOrBlank() &&
-            (context.defaultSharedPreferences.getBoolean(Constants.Debug.WALLET_CONNECT_DEBUG, false) || Session.isTipDebuggable())
+            (context.defaultSharedPreferences.getBoolean(Constants.Debug.WALLET_CONNECT_DEBUG, false) || Session.isTipFeatureEnabled())
     }
 
     enum class Version {

@@ -183,7 +183,7 @@ object Session {
 
     fun getTipCounter(): Int = getAccount()?.tipCounter ?: 0
 
-    fun isTipDebuggable(): Boolean = getAccount()?.debug?.contains("tip") == true
+    fun isTipFeatureEnabled(): Boolean = getAccount()?.features?.contains("tip") == true
 
     fun checkToken() = getAccount() != null && !getPinToken().isNullOrBlank()
 
