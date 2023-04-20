@@ -43,7 +43,6 @@ import one.mixin.android.extension.translationX
 import one.mixin.android.extension.withAlpha
 import one.mixin.android.session.Session
 import one.mixin.android.ui.search.SearchFragment.Companion.SEARCH_DEBOUNCE
-import one.mixin.android.ui.setting.SettingActivity
 import one.mixin.android.vo.toUser
 import org.jetbrains.annotations.NotNull
 import java.util.concurrent.TimeUnit

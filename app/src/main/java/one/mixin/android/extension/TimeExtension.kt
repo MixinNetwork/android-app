@@ -220,7 +220,7 @@ fun Long.fullTime(): String {
     return Instant.ofEpochSecond(this).atZone(localeZone()).format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
 }
 
-fun Long.toUtcTime():String {
+fun Long.toUtcTime(): String {
     return Instant.ofEpochMilli(this).toString()
 }
 

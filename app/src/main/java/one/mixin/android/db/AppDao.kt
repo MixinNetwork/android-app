@@ -78,4 +78,10 @@ interface AppDao : BaseDao<App> {
         """,
     )
     suspend fun findAppByAppNumber(conversationId: String, appNumber: String): App?
+
+    @Query("SELECT a.* FROM apps a ORDER BY a.rowid LIMIT :limit OFFSET :offset")
+    fun getAppsByLimitAndOffset(limit: Int, offset: Int): List<App>
+
+    @Query("SELECT count(1) FROM apps")
+    fun countApps(): Long
 }

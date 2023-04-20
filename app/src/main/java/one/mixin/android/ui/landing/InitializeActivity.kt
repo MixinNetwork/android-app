@@ -83,16 +83,18 @@ class InitializeActivity : BaseActivity() {
             )
         }
 
-        fun showLoading(context: Context, load: Boolean = true, clear:Boolean = false) {
+        fun showLoading(context: Context, load: Boolean = true, clear: Boolean = false) {
             if (load) {
                 putIsLoaded(context, false)
             }
-            context.startActivity(getIntent(context).apply {
-                if (clear) {
-                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                    addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK)
-                }
-            })
+            context.startActivity(
+                getIntent(context).apply {
+                    if (clear) {
+                        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                        addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK)
+                    }
+                },
+            )
         }
 
         fun showSetupName(context: Context) {

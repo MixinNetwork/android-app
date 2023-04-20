@@ -6,6 +6,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.MixinApplication
 import one.mixin.android.RxBus
+import one.mixin.android.db.AppDao
 import one.mixin.android.db.AssetDao
 import one.mixin.android.db.ConversationDao
 import one.mixin.android.db.ExpiredMessageDao
@@ -17,7 +18,6 @@ import one.mixin.android.db.StickerDao
 import one.mixin.android.db.TranscriptMessageDao
 import one.mixin.android.db.UserDao
 import one.mixin.android.event.DeviceTransferProgressEvent
-import one.mixin.android.extension.createAtToLong
 import one.mixin.android.extension.getMediaPath
 import one.mixin.android.extension.isUUID
 import one.mixin.android.extension.toUtcTime
@@ -57,6 +57,7 @@ class TransferServer @Inject internal constructor(
     val stickerDao: StickerDao,
     val transcriptMessageDao: TranscriptMessageDao,
     val userDao: UserDao,
+    val appDao: AppDao,
     val status: TransferStatusLiveData,
 ) {
 
@@ -192,6 +193,7 @@ class TransferServer @Inject internal constructor(
         syncConversation(outputStream)
         syncParticipant(outputStream)
         syncUser(outputStream)
+        syncApp(outputStream)
         syncAsset(outputStream)
         syncSnapshot(outputStream)
         syncSticker(outputStream)
@@ -237,7 +239,7 @@ class TransferServer @Inject internal constructor(
             messageDao.countMediaMessages() + messageDao.countMessages() + conversationDao.countConversations() +
             expiredMessageDao.countExpiredMessages() + participantDao.countParticipants() +
             pinMessageDao.countPinMessages() + snapshotDao.countSnapshots() + stickerDao.countStickers() +
-            transcriptMessageDao.countTranscriptMessages() + userDao.countUsers()
+            transcriptMessageDao.countTranscriptMessages() + userDao.countUsers() + appDao.countApps()
         return total
     }
 
@@ -305,6 +307,27 @@ class TransferServer @Inject internal constructor(
                 TransferSendData(TransferDataType.USER.value, it)
             }.forEach {
                 Timber.e("send user ${it.data.userId}")
+                writeJson(outputStream, it)
+                count++
+            }
+            if (list.size < LIMIT) {
+                return
+            }
+            offset += LIMIT
+        }
+    }
+
+    private fun syncApp(outputStream: OutputStream) {
+        var offset = 0
+        while (!quit) {
+            val list = appDao.getAppsByLimitAndOffset(LIMIT, offset)
+            if (list.isEmpty()) {
+                return
+            }
+            list.map {
+                TransferSendData(TransferDataType.APP.value, it)
+            }.forEach {
+                Timber.e("send app ${it.data.appId}")
                 writeJson(outputStream, it)
                 count++
             }

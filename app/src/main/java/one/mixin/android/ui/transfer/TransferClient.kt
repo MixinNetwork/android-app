@@ -7,6 +7,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.MixinApplication
 import one.mixin.android.RxBus
+import one.mixin.android.db.AppDao
 import one.mixin.android.db.AssetDao
 import one.mixin.android.db.ConversationDao
 import one.mixin.android.db.ExpiredMessageDao
@@ -33,6 +34,7 @@ import one.mixin.android.ui.transfer.vo.TransferStatusLiveData
 import one.mixin.android.ui.transfer.vo.toMessage
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.SINGLE_SOCKET_THREAD
+import one.mixin.android.vo.App
 import one.mixin.android.vo.Asset
 import one.mixin.android.vo.Conversation
 import one.mixin.android.vo.ExpiredMessage
@@ -64,6 +66,7 @@ class TransferClient @Inject internal constructor(
     val stickerDao: StickerDao,
     val transcriptMessageDao: TranscriptMessageDao,
     val userDao: UserDao,
+    val appDao: AppDao,
     val ftsDatabase: FtsDatabase,
     val status: TransferStatusLiveData,
 ) {
@@ -218,6 +221,15 @@ class TransferClient @Inject internal constructor(
                     val user = gson.fromJson(transferData.data, User::class.java)
                     userDao.insertIgnore(user)
                     Timber.e("User ID: ${user.userId}")
+                }
+                progress(outputStream)
+            }
+
+            TransferDataType.APP.value -> {
+                syncInsert {
+                    val app = gson.fromJson(transferData.data, App::class.java)
+                    appDao.insertIgnore(app)
+                    Timber.e("App ID: ${app.appId}")
                 }
                 progress(outputStream)
             }
