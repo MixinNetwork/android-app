@@ -534,9 +534,6 @@ class TransferServer @Inject internal constructor(
                     } else if (messageDao.findMessageById(name) != null) {
                         protocol.write(outputStream, f, name)
                         count++
-                    } else {
-                        // skip and delete not held file
-                        f.delete()
                     }
                 }
             }
