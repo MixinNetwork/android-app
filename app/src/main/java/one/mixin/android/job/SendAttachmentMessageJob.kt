@@ -142,7 +142,8 @@ class SendAttachmentMessageJob(
     }
 
     private fun processAttachment(attachResponse: AttachmentResponse): Boolean {
-        val key = if (message.isPlain()) {
+        val isPlain = message.isPlain()
+        val key = if (isPlain) {
             null
         } else {
             Util.getSecretBytes(64)
@@ -160,7 +161,7 @@ class SendAttachmentMessageJob(
                 message.mediaMimeType,
                 inputStream,
                 message.mediaSize!!,
-                if (message.isPlain()) {
+                if (isPlain) {
                     null
                 } else {
                     AttachmentCipherOutputStreamFactory(key, null)
@@ -178,7 +179,7 @@ class SendAttachmentMessageJob(
             val transmittedDigest = Util.uploadAttachment(
                 attachResponse.upload_url!!,
                 attachmentData.data,
-                if (message.isPlain()) {
+                if (isPlain) {
                     message.mediaSize
                 } else {
                     AttachmentCipherOutputStream.getCiphertextLength(attachmentData.dataSize)
@@ -205,6 +206,11 @@ class SendAttachmentMessageJob(
         if (isCancelled) {
             removeJob()
             return true
+        }
+        if (!isPlain && (key == null || digest == null) || (key != null && digest == null) || (digest != null && key == null)) {
+            removeJob()
+            reportException(IllegalStateException("Encryption error"))
+            return false
         }
         val attachmentId = attachResponse.attachment_id
         val width = message.mediaWidth
