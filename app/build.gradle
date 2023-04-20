@@ -11,8 +11,8 @@ plugins {
 
 def versionMajor = 0
 def versionMinor = 38
-def versionPatch = 12
-def versionBuild = 1
+def versionPatch = 13
+def versionBuild = 2
 
 android {
     compileSdkVersion 33
@@ -185,8 +185,11 @@ android {
         ignore 'Overdraw'
     }
 
-    configurations.all {
-        resolutionStrategy.force "com.android.tools.build.jetifier:jetifier-core:1.0.0-beta10"
+    configurations.configureEach {
+        resolutionStrategy {
+            force "com.android.tools.build.jetifier:jetifier-core:1.0.0-beta10"
+            force "com.github.mixinnetwork:tink-eddsa:0.0.7"
+        }
     }
 }
 
@@ -254,12 +257,12 @@ dependencies {
     implementation "io.reactivex.rxjava2:rxjava:${rxJavaVersion}"
     implementation "io.reactivex.rxjava2:rxandroid:${rxAndroidVersion}"
 
-    implementation "com.github.MixinNetwork:tink-eddsa:0.0.4"
-    implementation('com.github.MixinNetwork.jjwt:jjwt-api:50c2b66') {
-        exclude group: 'com.github.MixinNetwork', module: 'tink-eddsa'
+    implementation "com.github.mixinnetwork:tink-eddsa:0.0.7"
+    implementation("com.github.mixinnetwork.jjwt:jjwt-api:a0d0a70922") {
+        exclude group: 'com.github.mixinnetwork', module: 'tink-eddsa'
     }
-    runtimeOnly 'com.github.MixinNetwork.jjwt:jjwt-impl:50c2b66'
-    runtimeOnly('com.github.MixinNetwork.jjwt:jjwt-orgjson:50c2b66') {
+    runtimeOnly 'com.github.mixinnetwork.jjwt:jjwt-impl:a0d0a70922'
+    runtimeOnly('com.github.mixinnetwork.jjwt:jjwt-orgjson:a0d0a70922') {
         exclude group: 'org.json', module: 'json' //provided by Android natively
     }
     implementation "com.jakewharton.threetenabp:threetenabp:${threetenabpVersion}"
@@ -364,7 +367,7 @@ dependencies {
     implementation "androidx.compose.runtime:runtime:${composeVersion}"
     implementation "androidx.compose.runtime:runtime-livedata:${composeVersion}"
     implementation "androidx.compose.runtime:runtime-rxjava2:${composeVersion}"
-    implementation 'androidx.activity:activity-compose:1.7.0'
+    implementation 'androidx.activity:activity-compose:1.7.1'
     androidTestImplementation "androidx.compose.ui:ui-test-junit4:${composeVersion}"
     implementation "com.google.accompanist:accompanist-pager:0.30.1"
     implementation "com.google.accompanist:accompanist-pager-indicators:0.30.1"
