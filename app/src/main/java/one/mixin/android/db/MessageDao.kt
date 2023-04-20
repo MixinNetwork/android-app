@@ -70,6 +70,9 @@ interface MessageDao : BaseDao<Message> {
     @Query("SELECT count(1) FROM messages WHERE conversation_id = :conversationId AND rowid > (SELECT rowid FROM messages WHERE id = :messageId)")
     suspend fun findMessageIndex(conversationId: String, messageId: String): Int
 
+    @Query("SELECT content FROM messages WHERE conversation_id = :conversationId AND id = :messageId")
+    fun findMessageContentById(conversationId: String, messageId: String): String?
+
     @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
     @Query(
         """

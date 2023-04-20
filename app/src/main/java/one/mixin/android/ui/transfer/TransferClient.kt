@@ -12,6 +12,7 @@ import one.mixin.android.db.AssetDao
 import one.mixin.android.db.ConversationDao
 import one.mixin.android.db.ExpiredMessageDao
 import one.mixin.android.db.MessageDao
+import one.mixin.android.db.MessageMentionDao
 import one.mixin.android.db.ParticipantDao
 import one.mixin.android.db.PinMessageDao
 import one.mixin.android.db.SnapshotDao
@@ -28,16 +29,19 @@ import one.mixin.android.ui.transfer.vo.TransferCommandData
 import one.mixin.android.ui.transfer.vo.TransferData
 import one.mixin.android.ui.transfer.vo.TransferDataType
 import one.mixin.android.ui.transfer.vo.TransferMessage
+import one.mixin.android.ui.transfer.vo.TransferMessageMention
 import one.mixin.android.ui.transfer.vo.TransferSendData
 import one.mixin.android.ui.transfer.vo.TransferStatus
 import one.mixin.android.ui.transfer.vo.TransferStatusLiveData
 import one.mixin.android.ui.transfer.vo.toMessage
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.SINGLE_SOCKET_THREAD
+import one.mixin.android.util.mention.parseMentionData
 import one.mixin.android.vo.App
 import one.mixin.android.vo.Asset
 import one.mixin.android.vo.Conversation
 import one.mixin.android.vo.ExpiredMessage
+import one.mixin.android.vo.MessageMention
 import one.mixin.android.vo.Participant
 import one.mixin.android.vo.PinMessage
 import one.mixin.android.vo.Snapshot
@@ -67,6 +71,7 @@ class TransferClient @Inject internal constructor(
     val transcriptMessageDao: TranscriptMessageDao,
     val userDao: UserDao,
     val appDao: AppDao,
+    val messageMentionDao: MessageMentionDao,
     val ftsDatabase: FtsDatabase,
     val status: TransferStatusLiveData,
 ) {
@@ -296,6 +301,24 @@ class TransferClient @Inject internal constructor(
                         ftsDatabase.insertOrReplaceMessageFts4(message)
                     }
                     Timber.e("Message ID: $rowId ${message.messageId}")
+                }
+                progress(outputStream)
+            }
+
+            TransferDataType.MESSAGE_MENTION.value -> {
+                syncInsert {
+                    val messageMention = gson.fromJson(transferData.data, TransferMessageMention::class.java).let {
+                        val mention = it.mentions
+                        if (mention != null) {
+                            MessageMention(it.messageId, it.conversationId, mention, it.hasRead)
+                        } else {
+                            val messageContent = messageDao.findMessageContentById(it.conversationId, it.messageId) ?: return@syncInsert
+                            val mentionData = parseMentionData(messageContent, userDao) ?: return@syncInsert
+                            MessageMention(it.messageId, it.conversationId, mentionData, it.hasRead)
+                        }
+                    }
+                    val rowId = messageMentionDao.insertIgnoreReturn(messageMention)
+                    Timber.e("MessageMention ID: $rowId ${messageMention.messageId}")
                 }
                 progress(outputStream)
             }

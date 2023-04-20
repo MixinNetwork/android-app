@@ -11,6 +11,7 @@ import one.mixin.android.db.AssetDao
 import one.mixin.android.db.ConversationDao
 import one.mixin.android.db.ExpiredMessageDao
 import one.mixin.android.db.MessageDao
+import one.mixin.android.db.MessageMentionDao
 import one.mixin.android.db.ParticipantDao
 import one.mixin.android.db.PinMessageDao
 import one.mixin.android.db.SnapshotDao
@@ -58,6 +59,7 @@ class TransferServer @Inject internal constructor(
     val transcriptMessageDao: TranscriptMessageDao,
     val userDao: UserDao,
     val appDao: AppDao,
+    val messageMentionDao: MessageMentionDao,
     val status: TransferStatusLiveData,
 ) {
 
@@ -200,6 +202,7 @@ class TransferServer @Inject internal constructor(
         syncPinMessage(outputStream)
         syncTranscriptMessage(outputStream)
         syncMessage(outputStream)
+        syncMessageMention(outputStream)
         syncExpiredMessage(outputStream)
         syncMediaFile(outputStream)
         sendFinish(outputStream)
@@ -239,7 +242,7 @@ class TransferServer @Inject internal constructor(
             messageDao.countMediaMessages() + messageDao.countMessages() + conversationDao.countConversations() +
             expiredMessageDao.countExpiredMessages() + participantDao.countParticipants() +
             pinMessageDao.countPinMessages() + snapshotDao.countSnapshots() + stickerDao.countStickers() +
-            transcriptMessageDao.countTranscriptMessages() + userDao.countUsers() + appDao.countApps()
+            transcriptMessageDao.countTranscriptMessages() + userDao.countUsers() + appDao.countApps() + messageMentionDao.countMessageMention()
         return total
     }
 
@@ -467,6 +470,27 @@ class TransferServer @Inject internal constructor(
             }.forEach {
                 writeJson(outputStream, it)
                 Timber.e("send message: ${it.data.messageId}")
+                count++
+            }
+            if (list.size < LIMIT) {
+                return
+            }
+            offset += LIMIT
+        }
+    }
+
+    private fun syncMessageMention(outputStream: OutputStream) {
+        var offset = 0
+        while (!quit) {
+            val list = messageMentionDao.getMessageMentionByLimitAndOffset(LIMIT, offset)
+            if (list.isEmpty()) {
+                return
+            }
+            list.map {
+                TransferSendData(TransferDataType.MESSAGE_MENTION.value, it)
+            }.forEach {
+                writeJson(outputStream, it)
+                Timber.e("send message mention: ${it.data.messageId}")
                 count++
             }
             if (list.size < LIMIT) {

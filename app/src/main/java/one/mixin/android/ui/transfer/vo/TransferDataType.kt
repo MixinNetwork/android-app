@@ -12,5 +12,6 @@ enum class TransferDataType(val value: String) {
     PIN_MESSAGE("pin_message"),
     TRANSCRIPT_MESSAGE("transcript_message"),
     MESSAGE("message"),
+    MESSAGE_MENTION("message_mention"),
     EXPIRED_MESSAGE("expired_message"),
 }

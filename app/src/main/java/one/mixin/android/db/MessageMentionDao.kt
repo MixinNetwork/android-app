@@ -41,4 +41,10 @@ interface MessageMentionDao : BaseDao<MessageMention> {
 
     @Query("SELECT * FROM message_mentions WHERE message_id = :id")
     fun findMessageMentionById(id: String): MessageMention?
+
+    @Query("SELECT mm.* FROM message_mentions mm ORDER BY mm.rowid LIMIT :limit OFFSET :offset")
+    fun getMessageMentionByLimitAndOffset(limit: Int, offset: Int): List<MessageMention>
+
+    @Query("SELECT count(1) FROM message_mentions")
+    fun countMessageMention(): Long
 }
