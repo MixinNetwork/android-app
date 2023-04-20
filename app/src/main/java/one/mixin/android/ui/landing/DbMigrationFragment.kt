@@ -48,7 +48,7 @@ class DbMigrationFragment : BaseFragment(R.layout.fragment_upgrade) {
                 if (!toDir.exists()) {
                     toDir.mkdirs()
                 }
-                dbDir.listFiles().forEach { file ->
+                dbDir?.listFiles()?.forEach { file ->
                     if (file.name.startsWith(DB_NAME) || file.name.startsWith(FTS_DB_NAME) || file.name.startsWith(PENDING_DB_NAME) ||
                         file.name.startsWith(SIGNAL_DB_NAME)
                     ) {

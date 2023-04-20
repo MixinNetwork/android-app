@@ -272,7 +272,6 @@ open class MixinApplication :
         clearPrivacyPreferences(this)
         MixinDatabase.getDatabase(this).participantSessionDao().clearKey(sessionId)
         SignalDatabase.getDatabase(this).clearAllTables()
-        SignalDatabase.release()
         MixinDatabase.release()
         PendingDatabaseImp.release()
         FtsDatabase.release()

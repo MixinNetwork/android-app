@@ -203,9 +203,7 @@ class VerificationFragment : PinCodeFragment(R.layout.fragment_verification) {
                     a?.let {
                         val phone = requireArguments().getString(ARGS_PHONE_NUM)
                             ?: return@withContext
-                        lifecycleScope.launch(Dispatchers.IO) {
-                            userDao.updatePhone(a.userId, phone)
-                        }
+                        userDao.updatePhone(a.userId, phone)
                         a.phone = phone
                         Session.storeAccount(a)
                     }
