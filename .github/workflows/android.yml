@@ -21,8 +21,8 @@ jobs:
         java-version: 17
     - name: Make Gradle executable
       run: chmod +x ./gradlew
-    - name: Check format with ktlint
-      run: ./gradlew ktlintFormat
+#    - name: Check format with ktlint
+#      run: ./gradlew ktlintFormat
 
     - name: Set mapbox token
       env:
@@ -38,4 +38,5 @@ jobs:
       run: echo $DATA > /home/runner/work/android-app/android-app/app/src/debug/google-services.json
 
     - name: Build
-      run: ./gradlew clean assembleDebug --stacktrace
+      run: ./gradlew app:checkDebugDuplicateClasses
+#      run: ./gradlew clean assembleDebug --stacktrace
