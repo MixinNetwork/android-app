@@ -12,6 +12,7 @@ import one.mixin.android.util.GsonHelper
 import one.mixin.android.vo.AppCardData
 import one.mixin.android.vo.FtsSearchResult
 import one.mixin.android.vo.Message
+import one.mixin.android.vo.MessageStatus
 import one.mixin.android.vo.isAppCard
 import one.mixin.android.vo.isContact
 import one.mixin.android.vo.isData
@@ -48,7 +49,8 @@ private suspend fun FtsDatabase.insertMessageFts4(
 }
 
 fun FtsDatabase.insertOrReplaceMessageFts4(message: Message) {
-    if (!message.isFtsMessage()) return
+    // If the message is not a full-text search message, or its status is "FAILED" or "UNKNOWN", do not perform subsequent operations
+    if (!message.isFtsMessage() || message.status == MessageStatus.FAILED.name || message.status == MessageStatus.UNKNOWN.name) return
     val content = if (message.isContact() || message.isData()) {
         message.name
     } else if (message.isAppCard()) {
