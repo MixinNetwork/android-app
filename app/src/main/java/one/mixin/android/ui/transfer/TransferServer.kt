@@ -528,7 +528,7 @@ class TransferServer @Inject internal constructor(
             if (f.isFile && f.length() > 0) {
                 val name = f.nameWithoutExtension
                 if (name.isUUID()) {
-                    if (f.parentFile.name == "Transcripts" && transcriptMessageDao.countTranscriptByMessageId(name) > 0) {
+                    if (f.parentFile?.name == "Transcripts" && transcriptMessageDao.countTranscriptByMessageId(name) > 0) {
                         protocol.write(outputStream, f, name)
                         count++
                     } else if (messageDao.findMessageById(name) != null) {
