@@ -258,7 +258,7 @@ dependencies {
     implementation "io.reactivex.rxjava2:rxandroid:${rxAndroidVersion}"
 
     implementation "com.github.mixinnetwork:tink-eddsa:0.0.7"
-    implementation("com.github.mixinnetwork.jjwt:jjwt-api:a0d0a70922") {
+    implementation("com.github.mixinnetwork.jjwt:jjwt-api:0.11.2") {
         exclude group: 'com.github.mixinnetwork', module: 'tink-eddsa'
     }
     runtimeOnly 'com.github.mixinnetwork.jjwt:jjwt-impl:a0d0a70922'
