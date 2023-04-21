@@ -30,7 +30,6 @@ import one.mixin.android.ui.transfer.vo.TransferData
 import one.mixin.android.ui.transfer.vo.TransferDataType
 import one.mixin.android.ui.transfer.vo.TransferMessage
 import one.mixin.android.ui.transfer.vo.TransferMessageMention
-import one.mixin.android.ui.transfer.vo.TransferSendData
 import one.mixin.android.ui.transfer.vo.TransferStatus
 import one.mixin.android.ui.transfer.vo.TransferStatusLiveData
 import one.mixin.android.ui.transfer.vo.toMessage
@@ -101,7 +100,7 @@ class TransferClient @Inject internal constructor(
                 this@TransferClient.socket = socket
                 status.value = TransferStatus.WAITING_FOR_VERIFICATION
                 val outputStream = socket.getOutputStream()
-                protocol.write(outputStream, TransferProtocol.TYPE_COMMAND, gson.toJson(TransferSendData(TransferDataType.COMMAND.value, commandData)))
+                protocol.write(outputStream, TransferProtocol.TYPE_COMMAND, gson.toJson(commandData))
                 outputStream.flush()
                 launch(Dispatchers.IO) { listen(socket.inputStream, socket.outputStream) }
                 launch(Dispatchers.IO) {
@@ -132,39 +131,32 @@ class TransferClient @Inject internal constructor(
             when (result) {
                 is String -> {
                     Timber.e("sync $result")
-                    val transferData = gson.fromJson(result, TransferData::class.java)
-                    when (transferData.type) {
-                        TransferDataType.COMMAND.value -> {
-                            val transferCommandData =
-                                gson.fromJson(transferData.data, TransferCommandData::class.java)
-                            when (transferCommandData.action) {
-                                TransferCommandAction.START.value -> {
-                                    if (transferCommandData.version != CURRENT_TRANSFER_VERSION) {
-                                        Timber.e("Version does not support")
-                                        exit()
-                                        return
-                                    }
-                                    startTime = System.currentTimeMillis()
-                                    this.total = transferCommandData.total ?: 0L
-                                }
-                                TransferCommandAction.PUSH.value, TransferCommandAction.PULL.value -> {
-                                    Timber.e("action ${transferCommandData.action}")
-                                }
-                                TransferCommandAction.FINISH.value -> {
-                                    status.value = TransferStatus.FINISHED
-                                    sendFinish(outputStream)
-                                    delay(100)
-                                    exit()
-                                    Timber.e("It takes a total of ${System.currentTimeMillis() - startTime} milliseconds to synchronize ${this.total} data")
-                                }
-                                else -> {
-                                    Timber.e(result)
-                                }
+                    val transferCommandData = gson.fromJson(result, TransferCommandData::class.java)
+
+                    when (transferCommandData.action) {
+                        TransferCommandAction.START.value -> {
+                            if (transferCommandData.version != CURRENT_TRANSFER_VERSION) {
+                                Timber.e("Version does not support")
+                                exit()
+                                return
                             }
+                            startTime = System.currentTimeMillis()
+                            this.total = transferCommandData.total ?: 0L
+                        }
+
+                        TransferCommandAction.PUSH.value, TransferCommandAction.PULL.value -> {
+                            Timber.e("action ${transferCommandData.action}")
+                        }
+
+                        TransferCommandAction.FINISH.value -> {
+                            status.value = TransferStatus.FINISHED
+                            sendFinish(outputStream)
+                            delay(100)
+                            exit()
+                            Timber.e("It takes a total of ${System.currentTimeMillis() - startTime} milliseconds to synchronize ${this.total} data")
                         }
 
                         else -> {
-                            Timber.e("No support $result")
                         }
                     }
                 }
@@ -189,10 +181,7 @@ class TransferClient @Inject internal constructor(
         if (System.currentTimeMillis() - lastTime > 200) {
             sendCommand(
                 outputStream,
-                TransferSendData(
-                    TransferDataType.COMMAND.value,
-                    TransferCommandData(TransferCommandAction.PROGRESS.value, progress = progress),
-                ),
+                TransferCommandData(TransferCommandAction.PROGRESS.value, progress = progress),
             )
             lastTime = System.currentTimeMillis()
         }
@@ -200,6 +189,7 @@ class TransferClient @Inject internal constructor(
     }
 
     private suspend fun processJson(content: String, outputStream: OutputStream) {
+        Timber.e("$content")
         val transferData = gson.fromJson(content, TransferData::class.java)
         when (transferData.type) {
             TransferDataType.CONVERSATION.value -> {
@@ -232,6 +222,7 @@ class TransferClient @Inject internal constructor(
 
             TransferDataType.APP.value -> {
                 syncInsert {
+                    Timber.e("$content ${transferData.data}")
                     val app = gson.fromJson(transferData.data, App::class.java)
                     appDao.insertIgnore(app)
                     Timber.e("App ID: ${app.appId}")
@@ -354,16 +345,13 @@ class TransferClient @Inject internal constructor(
     private fun sendFinish(outputStream: OutputStream) {
         sendCommand(
             outputStream,
-            TransferSendData(
-                TransferDataType.COMMAND.value,
-                TransferCommandData(TransferCommandAction.FINISH.value),
-            ),
+            TransferCommandData(TransferCommandAction.FINISH.value),
         )
     }
 
     private fun sendCommand(
         outputStream: OutputStream,
-        transferSendData: TransferSendData<TransferCommandData>,
+        transferSendData: TransferCommandData,
     ) {
         val content = gson.toJson(transferSendData)
         try {

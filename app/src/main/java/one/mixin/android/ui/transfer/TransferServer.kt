@@ -27,7 +27,6 @@ import one.mixin.android.ui.transfer.TransferProtocol.Companion.TYPE_COMMAND
 import one.mixin.android.ui.transfer.TransferProtocol.Companion.TYPE_JSON
 import one.mixin.android.ui.transfer.vo.TransferCommandAction
 import one.mixin.android.ui.transfer.vo.TransferCommandData
-import one.mixin.android.ui.transfer.vo.TransferData
 import one.mixin.android.ui.transfer.vo.TransferDataType
 import one.mixin.android.ui.transfer.vo.TransferSendData
 import one.mixin.android.ui.transfer.vo.TransferStatus
@@ -150,35 +149,30 @@ class TransferServer @Inject internal constructor(
             do {
                 when (val result = protocol.read(inputStream)) {
                     is String -> {
-                        val transferData = gson.fromJson(result, TransferData::class.java)
-                        if (transferData.type == TransferDataType.COMMAND.value) {
-                            Timber.e("command $result")
-                            val commandData =
-                                gson.fromJson(transferData.data, TransferCommandData::class.java)
-                            if (commandData.action == TransferCommandAction.CONNECT.value) {
-                                if (commandData.code == code && commandData.userId == Session.getAccountId()) {
-                                    Timber.e("Verification passed, start transmission")
-                                    status.value = TransferStatus.VERIFICATION_COMPLETED
-                                    launch {
-                                        transfer(outputStream)
-                                    }
-                                } else {
-                                    Timber.e("Validation failed, close")
-                                    status.value = TransferStatus.ERROR
-                                    exit()
-                                }
-                            } else if (commandData.action == TransferCommandAction.FINISH.value) {
-                                RxBus.publish(DeviceTransferProgressEvent(100f))
-                                status.value = TransferStatus.FINISHED
-                                exit()
-                            } else if (commandData.action == TransferCommandAction.PROGRESS.value) {
-                                // Get progress from client
-                                if (commandData.progress != null) {
-                                    RxBus.publish(DeviceTransferProgressEvent(commandData.progress))
+                        val commandData = gson.fromJson(result, TransferCommandData::class.java)
+                        if (commandData.action == TransferCommandAction.CONNECT.value) {
+                            if (commandData.code == code && commandData.userId == Session.getAccountId()) {
+                                Timber.e("Verification passed, start transmission")
+                                status.value = TransferStatus.VERIFICATION_COMPLETED
+                                launch {
+                                    transfer(outputStream)
                                 }
                             } else {
-                                Timber.e("Unsupported command")
+                                Timber.e("Validation failed, close")
+                                status.value = TransferStatus.ERROR
+                                exit()
                             }
+                        } else if (commandData.action == TransferCommandAction.FINISH.value) {
+                            RxBus.publish(DeviceTransferProgressEvent(100f))
+                            status.value = TransferStatus.FINISHED
+                            exit()
+                        } else if (commandData.action == TransferCommandAction.PROGRESS.value) {
+                            // Get progress from client
+                            if (commandData.progress != null) {
+                                RxBus.publish(DeviceTransferProgressEvent(commandData.progress))
+                            }
+                        } else {
+                            Timber.e("Unsupported command")
                         }
                     }
                     else -> {
@@ -219,7 +213,7 @@ class TransferServer @Inject internal constructor(
 
     private fun writeCommand(
         outputStream: OutputStream,
-        transferData: TransferSendData<TransferCommandData>,
+        transferData: TransferCommandData,
     ) {
         val content = gson.toJson(transferData)
         protocol.write(outputStream, TYPE_COMMAND, content)
@@ -229,10 +223,7 @@ class TransferServer @Inject internal constructor(
     private fun sendStart(outputStream: OutputStream) {
         writeCommand(
             outputStream,
-            TransferSendData(
-                TransferDataType.COMMAND.value,
-                TransferCommandData(TransferCommandAction.START.value, total = totalCount()),
-            ),
+            TransferCommandData(TransferCommandAction.START.value, total = totalCount()),
         )
         RxBus.publish(DeviceTransferProgressEvent(0.0f))
     }
@@ -250,10 +241,7 @@ class TransferServer @Inject internal constructor(
         Timber.e("send finish")
         writeCommand(
             outputStream,
-            TransferSendData(
-                TransferDataType.COMMAND.value,
-                TransferCommandData(TransferCommandAction.FINISH.value),
-            ),
+            TransferCommandData(TransferCommandAction.FINISH.value),
         )
     }
 

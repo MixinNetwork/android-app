@@ -1,7 +1,6 @@
 package one.mixin.android.ui.transfer.vo
 
 enum class TransferDataType(val value: String) {
-    COMMAND("command"),
     PARTICIPANT("participant"),
     CONVERSATION("conversation"),
     USER("user"),
