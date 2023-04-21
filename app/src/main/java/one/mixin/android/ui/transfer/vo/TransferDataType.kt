@@ -5,7 +5,7 @@ enum class TransferDataType(val value: String) {
     PARTICIPANT("participant"),
     CONVERSATION("conversation"),
     USER("user"),
-    APP("App"),
+    APP("app"),
     ASSET("asset"),
     SNAPSHOT("snapshot"),
     STICKER("sticker"),
