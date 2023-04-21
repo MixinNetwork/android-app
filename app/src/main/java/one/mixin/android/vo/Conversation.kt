@@ -4,6 +4,7 @@ import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.Index
 import androidx.room.PrimaryKey
+import com.google.gson.annotations.Expose
 import com.google.gson.annotations.SerializedName
 import one.mixin.android.extension.nowInUtc
 import java.util.UUID
@@ -29,7 +30,7 @@ open class Conversation(
     @SerializedName("name")
     val name: String?,
     @ColumnInfo(name = "icon_url")
-    @SerializedName("icon_url")
+    @Expose(deserialize = false, serialize = false)
     val iconUrl: String?,
     @ColumnInfo(name = "announcement")
     @SerializedName("announcement")
