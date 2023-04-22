@@ -101,7 +101,7 @@ class CaptureActivity : BlazeBaseActivity() {
         const val ARGS_SHOW_SCAN = "args_show_scan"
         const val ARGS_FOR_SCAN_RESULT = "args_for_scan_result"
 
-        const val MAX_DURATION = 15
+        const val MAX_DURATION = 30
         const val MIN_DURATION = 1
     }
 }
