@@ -319,6 +319,9 @@ class CaptureFragment() : BaseCameraxFragment() {
         val outputOptions = FileOutputOptions.Builder(videoFile).build()
         currentRecording = videoCapture.output
             .prepareRecording(requireContext(), outputOptions)
+            .apply {
+                withAudioEnabled()
+            }
             .start(mainExecutor, videoListener)
 
         binding.close.fadeOut()
