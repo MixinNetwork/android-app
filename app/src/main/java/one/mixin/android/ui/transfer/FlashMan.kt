@@ -19,7 +19,7 @@ import one.mixin.android.job.TransferSyncAttachmentJob
 import one.mixin.android.job.TransferSyncJob
 import java.io.File
 
-class FlashMan (
+class FlashMan(
     val deviceId: String,
     val context: Application,
     val assetDao: AssetDao,

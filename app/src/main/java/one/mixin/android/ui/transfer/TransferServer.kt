@@ -151,17 +151,17 @@ class TransferServer @Inject internal constructor(
                     is String -> {
                         val commandData: TransferCommandData = serializationJson.decodeFromString(result)
                         if (commandData.action == TransferCommandAction.CONNECT.value) {
-//                            if (commandData.code == code && commandData.userId == Session.getAccountId()) {
-//                                Timber.e("Verification passed, start transmission")
-                            status.value = TransferStatus.VERIFICATION_COMPLETED
-                            launch {
-                                transfer(outputStream)
+                            if (commandData.code == code && commandData.userId == Session.getAccountId()) {
+                                Timber.e("Verification passed, start transmission")
+                                status.value = TransferStatus.VERIFICATION_COMPLETED
+                                launch {
+                                    transfer(outputStream)
+                                }
+                            } else {
+                                Timber.e("Validation failed, close")
+                                status.value = TransferStatus.ERROR
+                                exit()
                             }
-//                            } else {
-//                                Timber.e("Validation failed, close")
-//                                status.value = TransferStatus.ERROR
-//                                exit()
-//                            }
                         } else if (commandData.action == TransferCommandAction.FINISH.value) {
                             RxBus.publish(DeviceTransferProgressEvent(100f))
                             status.value = TransferStatus.FINISHED

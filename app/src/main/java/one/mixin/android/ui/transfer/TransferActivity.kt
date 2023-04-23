@@ -499,11 +499,11 @@ class TransferActivity : BaseActivity() {
                 return@launch
             }
             Timber.e("qrcode:$content")
-//            if (transferCommandData.userId != Session.getAccountId()) {
-//                toast(R.string.not_yours)
-//                finish()
-//                return@launch
-//            }
+            if (transferCommandData.userId != Session.getAccountId()) {
+                toast(R.string.not_yours)
+                finish()
+                return@launch
+            }
             if (transferCommandData.version > CURRENT_TRANSFER_VERSION) {
                 toast(R.string.Version_not_supported)
                 finish()

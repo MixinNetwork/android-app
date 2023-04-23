@@ -111,11 +111,12 @@ class TransferClient @Inject internal constructor(
             status.value = TransferStatus.SYNCING
             val result = try {
                 protocol.read(
-                    inputStream, if (::flashMan.isInitialized) {
+                    inputStream,
+                    if (::flashMan.isInitialized) {
                         flashMan
                     } else {
                         null
-                    }
+                    },
                 )
             } catch (e: EOFException) {
                 null

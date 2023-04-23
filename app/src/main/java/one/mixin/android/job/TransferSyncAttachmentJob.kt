@@ -49,25 +49,25 @@ class TransferSyncAttachmentJob(private val filePath: String) :
                                 context.getImagePath().createImageTemp(
                                     message.conversationId,
                                     message.messageId,
-                                    ".$extensionName"
+                                    ".$extensionName",
                                 )
                             } else if (message.isAudio()) {
                                 context.getAudioPath().createAudioTemp(
                                     message.conversationId,
                                     message.messageId,
-                                    "ogg"
+                                    "ogg",
                                 )
                             } else if (message.isVideo()) {
                                 context.getVideoPath().createVideoTemp(
                                     message.conversationId,
                                     message.messageId,
-                                    extensionName ?: "mp4"
+                                    extensionName ?: "mp4",
                                 )
                             } else {
                                 context.getDocumentPath().createDocumentTemp(
                                     message.conversationId,
                                     message.messageId,
-                                    extensionName
+                                    extensionName,
                                 )
                             }
                         f.moveTo(outFile)
