@@ -1,10 +1,14 @@
 package one.mixin.android.job
 
+import android.app.ActivityManager
+import androidx.core.content.getSystemService
 import com.birbit.android.jobqueue.Params
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.decodeFromJsonElement
+import one.mixin.android.MixinApplication
 import one.mixin.android.extension.createAtToLong
 import one.mixin.android.fts.insertOrReplaceMessageFts4
 import one.mixin.android.ui.transfer.vo.TransferDataType
@@ -40,10 +44,15 @@ class TransferSyncJob(private val filePath: String) :
         Timber.e("run $filePath")
         try {
             val file = File(filePath)
+            val activityManager = MixinApplication.appContext.getSystemService<ActivityManager>()
+            val runtime = Runtime.getRuntime()
             val messageList = mutableListOf<Message>()
             if (file.exists() && file.length() > 0) {
                 file.inputStream().use { input ->
                     while (input.available() > 0) {
+                        while (activityManager != null && isMemoryLow(activityManager, runtime)) {
+                            delay(1000)
+                        }
                         val sizeData = ByteArray(4)
                         input.read(sizeData)
                         val data = ByteArray(byteArrayToInt(sizeData))
@@ -184,5 +193,34 @@ class TransferSyncJob(private val filePath: String) :
             result = result or (byteArray[i].toInt() and 0xff)
         }
         return result
+    }
+
+    /**
+     * Check if the memory is low and the app may be killed.
+     *
+     * @param activityManager The ActivityManager object to get memory info.
+     * @param runtime The Runtime object to get app memory usage info.
+     * @return true if memory is low and the app may be killed, false otherwise.
+     */
+    fun isMemoryLow(activityManager: ActivityManager, runtime: Runtime): Boolean {
+        val memoryInfo = ActivityManager.MemoryInfo()
+        activityManager.getMemoryInfo(memoryInfo)
+
+        val availableMemory = memoryInfo.availMem
+        val usedMemory = runtime.totalMemory() - runtime.freeMemory()
+        val maxMemory = runtime.maxMemory()
+        // Calculate memory utilization.
+        val memoryUtilization = usedMemory.toFloat() / availableMemory.toFloat()
+
+        // Check if memory is low and the app may be killed.
+        val isLowMemory = memoryUtilization > 0.7f && usedMemory > (maxMemory * 0.8f)
+        if (isLowMemory) {
+            Timber.e("Available memory: $availableMemory")
+            Timber.e("Used memory: $usedMemory")
+            Timber.e("Max memory: $maxMemory")
+            Timber.e("Memory utilization: $memoryUtilization")
+        }
+
+        return isLowMemory
     }
 }
