@@ -106,6 +106,10 @@ class AttachmentDownloadJob(
             return
         }
 
+        messageDao.updateMediaStatus(MediaStatus.PENDING.name, message.messageId)
+        InvalidateFlow.emit(message.conversationId)
+        RxBus.publish(loadingEvent(message.messageId, 0f))
+
         jobManager.saveJob(this)
         var shareable: Boolean? = null
         attachmentCall = conversationApi.getAttachment(
@@ -146,13 +150,6 @@ class AttachmentDownloadJob(
         InvalidateFlow.emit(message.conversationId)
         attachmentProcess.remove(message.messageId)
         removeJob()
-    }
-
-    override fun onAdded() {
-        super.onAdded()
-        messageDao.updateMediaStatus(MediaStatus.PENDING.name, message.messageId)
-        InvalidateFlow.emit(message.conversationId)
-        RxBus.publish(loadingEvent(message.messageId, 0f))
     }
 
     private fun decryptAttachment(url: String): Boolean {
