@@ -1,7 +1,6 @@
 package one.mixin.android.ui.transfer
 
 import android.app.Application
-import com.google.gson.Gson
 import one.mixin.android.db.AppDao
 import one.mixin.android.db.AssetDao
 import one.mixin.android.db.ConversationDao
@@ -16,12 +15,12 @@ import one.mixin.android.db.TranscriptMessageDao
 import one.mixin.android.db.UserDao
 import one.mixin.android.fts.FtsDatabase
 import one.mixin.android.job.MixinJobManager
+import one.mixin.android.job.TransferSyncAttachmentJob
 import one.mixin.android.job.TransferSyncJob
 import java.io.File
-import javax.inject.Inject
 
-class FlashMan @Inject internal constructor(
-    val gson: Gson,
+class FlashMan (
+    val deviceId: String,
     val context: Application,
     val assetDao: AssetDao,
     val conversationDao: ConversationDao,
@@ -38,16 +37,15 @@ class FlashMan @Inject internal constructor(
     val ftsDatabase: FtsDatabase,
     val jobManager: MixinJobManager,
 ) {
-    private var currentId: String = "cache"
-    fun init(deviceId: String) {
-        currentId = deviceId
-        if (cachePath.exists()) {
-            cachePath.delete()
-        }
-    }
 
     private val cachePath by lazy {
-        File("${(context.externalCacheDir ?: context.cacheDir).absolutePath}${File.separator}$currentId")
+        File("${(context.externalCacheDir ?: context.cacheDir).absolutePath}${File.separator}$deviceId")
+    }
+
+    fun getAttachmentPath(): File {
+        return File("${cachePath.absolutePath}${File.separator}attachment").also {
+            it.mkdirs()
+        }
     }
 
     private var index: Int = 0
@@ -73,5 +71,6 @@ class FlashMan @Inject internal constructor(
     fun finish() {
         currentOutputStream.close()
         jobManager.addJob(TransferSyncJob(currentFile.absolutePath))
+        jobManager.addJob(TransferSyncAttachmentJob(getAttachmentPath().absolutePath))
     }
 }

@@ -182,3 +182,8 @@ fun TranscriptMessage.absolutePath(context: Context = MixinApplication.appContex
         else -> File(context.getTranscriptDirPath(), url).toUri().toString()
     }
 }
+
+fun TranscriptMessage.getAttachmentFile(context: Context = MixinApplication.appContext): File? {
+    val url = mediaUrl ?: return null
+    return File(context.getTranscriptDirPath(), url)
+}

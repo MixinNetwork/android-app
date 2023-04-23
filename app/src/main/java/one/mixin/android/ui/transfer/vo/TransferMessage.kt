@@ -1,12 +1,21 @@
 package one.mixin.android.ui.transfer.vo
 
+import android.content.Context
 import androidx.room.ColumnInfo
 import androidx.room.PrimaryKey
 import com.google.gson.annotations.SerializedName
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import one.mixin.android.MixinApplication
+import one.mixin.android.extension.generateConversationPath
+import one.mixin.android.extension.getAudioPath
+import one.mixin.android.extension.getDocumentPath
+import one.mixin.android.extension.getImagePath
+import one.mixin.android.extension.getVideoPath
 import one.mixin.android.util.serialization.ByteArrayBase64Serializer
+import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.Message
+import java.io.File
 
 @Serializable
 class TransferMessage(
@@ -204,4 +213,48 @@ fun TransferMessage.toMessage(): Message {
         quoteContent = this.quoteContent,
         caption = this.caption,
     )
+}
+
+fun TransferMessage.getAttachmentFile(): File? {
+    val mediaUrl = mediaUrl ?: return null
+    if ((mediaStatus == MediaStatus.DONE.name || mediaStatus == MediaStatus.READ.name) && (
+            category.endsWith(
+                "_IMAGE",
+            ) || category.endsWith("_VIDEO") || category.endsWith("AUDIO") || category.endsWith("_DATA")
+            )
+    ) {
+        return generatePath(MixinApplication.appContext, conversationId, category, mediaUrl)
+    }
+    return null
+}
+
+private fun generatePath(
+    context: Context,
+    conversationId: String,
+    category: String,
+    mediaUrl: String,
+): File? {
+    return when {
+        category.endsWith("_IMAGE") -> File(
+            context.getImagePath().generateConversationPath(conversationId),
+            mediaUrl,
+        )
+
+        category.endsWith("_VIDEO") -> File(
+            context.getVideoPath().generateConversationPath(conversationId),
+            mediaUrl,
+        )
+
+        category.endsWith("AUDIO") -> File(
+            context.getAudioPath().generateConversationPath(conversationId),
+            mediaUrl,
+        )
+
+        category.endsWith("_DATA") -> File(
+            context.getDocumentPath().generateConversationPath(conversationId),
+            mediaUrl,
+        )
+
+        else -> null
+    }
 }

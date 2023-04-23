@@ -1,25 +1,9 @@
 package one.mixin.android.ui.transfer
 
 import UUIDUtils
-import one.mixin.android.MixinApplication
 import one.mixin.android.RxBus
 import one.mixin.android.api.ChecksumException
-import one.mixin.android.db.MixinDatabase
 import one.mixin.android.event.SpeedEvent
-import one.mixin.android.extension.copy
-import one.mixin.android.extension.createAudioTemp
-import one.mixin.android.extension.createDocumentTemp
-import one.mixin.android.extension.createImageTemp
-import one.mixin.android.extension.createVideoTemp
-import one.mixin.android.extension.getAudioPath
-import one.mixin.android.extension.getDocumentPath
-import one.mixin.android.extension.getExtensionName
-import one.mixin.android.extension.getImagePath
-import one.mixin.android.extension.getTranscriptFile
-import one.mixin.android.extension.getVideoPath
-import one.mixin.android.vo.isAudio
-import one.mixin.android.vo.isImage
-import one.mixin.android.vo.isVideo
 import timber.log.Timber
 import java.io.EOFException
 import java.io.File
@@ -44,15 +28,7 @@ class TransferProtocol {
         const val TYPE_FILE = 0x03.toByte()
     }
 
-    private val messageDao by lazy {
-        MixinDatabase.getDatabase(MixinApplication.appContext).messageDao()
-    }
-
-    private val transcriptMessageDao by lazy {
-        MixinDatabase.getDatabase(MixinApplication.appContext).transcriptDao()
-    }
-
-    fun read(inputStream: InputStream): Any? {
+    fun read(inputStream: InputStream, flashMan: FlashMan? = null): Any? {
         val packageData = safeRead(inputStream, 5)
         val type = packageData[0]
         val sizeData = packageData.copyOfRange(1, 5)
@@ -67,12 +43,8 @@ class TransferProtocol {
             }
 
             TYPE_FILE -> { // File
-                val file = readFile(inputStream, size)
-                if (file?.exists() == true) {
-                    file
-                } else {
-                    null
-                }
+                readFile(inputStream, size, flashMan)
+                null
             }
 
             else -> {
@@ -165,17 +137,18 @@ class TransferProtocol {
         }
     }
 
-    private fun readFile(inputStream: InputStream, expectedLength: Int): File? {
+    private fun readFile(inputStream: InputStream, expectedLength: Int, flashMan: FlashMan? = null): File? {
+        requireNotNull(flashMan) { "Server don't support file" }
         val crc = CRC32()
         val uuidByteArray = safeRead(inputStream, 16)
         crc.update(uuidByteArray)
         val uuid = UUIDUtils.fromByteArray(uuidByteArray)
-        val transcriptMessage = transcriptMessageDao.getTranscriptByMessageId(uuid)
-        val message = messageDao.findMessageById(uuid)
-        if (message == null && transcriptMessage == null) {
-            val buffer = ByteArray(1024)
-            var bytesRead = 0
-            var bytesLeft = expectedLength - 16
+        val outFile = File(flashMan.getAttachmentPath(), uuid)
+        val outFileExists = outFile.exists() && expectedLength.toLong() == outFile.length()
+        val buffer = ByteArray(1024)
+        var bytesRead = 0
+        var bytesLeft = expectedLength - 16
+        if (outFileExists) {
             while (bytesRead != -1 && bytesLeft > 0) {
                 bytesRead = inputStream.read(buffer, 0, bytesLeft.coerceAtMost(1024))
                 bytesLeft -= bytesRead
@@ -185,26 +158,6 @@ class TransferProtocol {
             safeRead(inputStream, 8)
             return null
         } else {
-            val outFile = if (message != null) {
-                val extensionName = message.mediaUrl?.getExtensionName() ?: ""
-                MixinApplication.get().let {
-                    if (message.isImage()) {
-                        it.getImagePath().createImageTemp(message.conversationId, message.messageId, ".$extensionName")
-                    } else if (message.isAudio()) {
-                        it.getAudioPath().createAudioTemp(message.conversationId, message.messageId, "ogg")
-                    } else if (message.isVideo()) {
-                        it.getVideoPath().createVideoTemp(message.conversationId, message.messageId, extensionName ?: "mp4")
-                    } else {
-                        it.getDocumentPath().createDocumentTemp(message.conversationId, message.messageId, extensionName)
-                    }
-                }
-            } else {
-                val extensionName = transcriptMessage!!.mediaUrl?.getExtensionName()
-                MixinApplication.get().getTranscriptFile(uuid, ".$extensionName")
-            }
-            val buffer = ByteArray(1024)
-            var bytesRead = 0
-            var bytesLeft = expectedLength - 16
             outFile.outputStream().use { fos ->
                 while (bytesRead != -1 && bytesLeft > 0) {
                     bytesRead = inputStream.read(buffer, 0, bytesLeft.coerceAtMost(1024))
@@ -215,21 +168,14 @@ class TransferProtocol {
                     }
                 }
             }
-            val checksum = safeRead(inputStream, 8)
-            val checksumLong = bytesToLong(checksum)
-            Timber.e("Receive file: ${outFile.name} ${outFile.length()} checksum ${bytesToLong(checksum)} -- ${crc.value}")
-            if (checksumLong != crc.value) {
-                throw ChecksumException()
-            }
-            if (message != null && transcriptMessage != null) {
-                val extensionName = transcriptMessage!!.mediaUrl?.getExtensionName()
-                val transcriptFile = MixinApplication.get().getTranscriptFile(uuid, ".$extensionName")
-                if (!transcriptFile.exists()) {
-                    outFile.copy(transcriptFile)
-                }
-            }
-            return outFile
         }
+        val checksum = safeRead(inputStream, 8)
+        val checksumLong = bytesToLong(checksum)
+        Timber.e("Receive file: ${outFile.name} ${outFile.length()} checksum ${bytesToLong(checksum)} -- ${crc.value}")
+        if (checksumLong != crc.value) {
+            throw ChecksumException()
+        }
+        return outFile
     }
 
     private fun byteArrayToInt(byteArray: ByteArray): Int {

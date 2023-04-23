@@ -1,5 +1,6 @@
 package one.mixin.android.ui.transfer
 
+import android.app.Application
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
@@ -10,7 +11,21 @@ import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import one.mixin.android.MixinApplication
 import one.mixin.android.RxBus
+import one.mixin.android.db.AppDao
+import one.mixin.android.db.AssetDao
+import one.mixin.android.db.ConversationDao
+import one.mixin.android.db.ExpiredMessageDao
+import one.mixin.android.db.MessageDao
+import one.mixin.android.db.MessageMentionDao
+import one.mixin.android.db.ParticipantDao
+import one.mixin.android.db.PinMessageDao
+import one.mixin.android.db.SnapshotDao
+import one.mixin.android.db.StickerDao
+import one.mixin.android.db.TranscriptMessageDao
+import one.mixin.android.db.UserDao
 import one.mixin.android.event.DeviceTransferProgressEvent
+import one.mixin.android.fts.FtsDatabase
+import one.mixin.android.job.MixinJobManager
 import one.mixin.android.ui.transfer.vo.CURRENT_TRANSFER_VERSION
 import one.mixin.android.ui.transfer.vo.TransferCommandAction
 import one.mixin.android.ui.transfer.vo.TransferCommandData
@@ -30,6 +45,21 @@ import javax.inject.Inject
 class TransferClient @Inject internal constructor(
     val status: TransferStatusLiveData,
     private val serializationJson: Json,
+    val context: Application,
+    val assetDao: AssetDao,
+    val conversationDao: ConversationDao,
+    val expiredMessageDao: ExpiredMessageDao,
+    val messageDao: MessageDao,
+    val participantDao: ParticipantDao,
+    val pinMessageDao: PinMessageDao,
+    val snapshotDao: SnapshotDao,
+    val stickerDao: StickerDao,
+    val transcriptMessageDao: TranscriptMessageDao,
+    val userDao: UserDao,
+    val appDao: AppDao,
+    val messageMentionDao: MessageMentionDao,
+    val ftsDatabase: FtsDatabase,
+    val jobManager: MixinJobManager,
 ) {
 
     private var socket: Socket? = null
@@ -37,8 +67,7 @@ class TransferClient @Inject internal constructor(
 
     fun isAvailable() = socket != null
 
-    @Inject
-    lateinit var flashMan: FlashMan
+    private lateinit var flashMan: FlashMan
 
     private var count = 0L
 
@@ -81,7 +110,13 @@ class TransferClient @Inject internal constructor(
         do {
             status.value = TransferStatus.SYNCING
             val result = try {
-                protocol.read(inputStream)
+                protocol.read(
+                    inputStream, if (::flashMan.isInitialized) {
+                        flashMan
+                    } else {
+                        null
+                    }
+                )
             } catch (e: EOFException) {
                 null
             }
@@ -96,7 +131,7 @@ class TransferClient @Inject internal constructor(
                                 exit()
                                 return
                             }
-                            flashMan.init(transferCommandData.deviceId)
+                            flashMan = FlashMan(transferCommandData.deviceId, context, assetDao, conversationDao, expiredMessageDao, messageDao, participantDao, pinMessageDao, snapshotDao, stickerDao, transcriptMessageDao, userDao, appDao, messageMentionDao, ftsDatabase, jobManager)
                             this.total = transferCommandData.total ?: 0L
                         }
 

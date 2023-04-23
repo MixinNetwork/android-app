@@ -22,8 +22,6 @@ import one.mixin.android.db.StickerDao
 import one.mixin.android.db.TranscriptMessageDao
 import one.mixin.android.db.UserDao
 import one.mixin.android.event.DeviceTransferProgressEvent
-import one.mixin.android.extension.getMediaPath
-import one.mixin.android.extension.isUUID
 import one.mixin.android.extension.toUtcTime
 import one.mixin.android.session.Session
 import one.mixin.android.ui.transfer.TransferProtocol.Companion.TYPE_COMMAND
@@ -34,9 +32,12 @@ import one.mixin.android.ui.transfer.vo.TransferDataType
 import one.mixin.android.ui.transfer.vo.TransferSendData
 import one.mixin.android.ui.transfer.vo.TransferStatus
 import one.mixin.android.ui.transfer.vo.TransferStatusLiveData
+import one.mixin.android.ui.transfer.vo.getAttachmentFile
 import one.mixin.android.util.NetworkUtils
 import one.mixin.android.util.SINGLE_SOCKET_THREAD
+import one.mixin.android.vo.getAttachmentFile
 import timber.log.Timber
+import java.io.File
 import java.io.InputStream
 import java.io.OutputStream
 import java.net.BindException
@@ -185,7 +186,7 @@ class TransferServer @Inject internal constructor(
     fun transfer(outputStream: OutputStream) {
         status.value = TransferStatus.SYNCING
         sendStart(outputStream)
-//        syncConversation(outputStream)
+        syncConversation(outputStream)
         syncParticipant(outputStream)
         syncUser(outputStream)
         syncApp(outputStream)
@@ -197,13 +198,12 @@ class TransferServer @Inject internal constructor(
         syncMessage(outputStream)
         syncMessageMention(outputStream)
         syncExpiredMessage(outputStream)
-        syncMediaFile(outputStream)
         sendFinish(outputStream)
     }
 
     private fun writeJsonString(
         outputStream: OutputStream,
-        jsonString: String
+        jsonString: String,
     ) {
         protocol.write(outputStream, TYPE_JSON, jsonString)
         outputStream.flush()
@@ -410,9 +410,14 @@ class TransferServer @Inject internal constructor(
             }
             list.map {
                 TransferSendData(TransferDataType.TRANSCRIPT_MESSAGE.value, it)
-            }.forEach {
-                writeJsonString(outputStream, serializationJson.encodeToString(it))
-                Timber.e("send transcript ${it.data.transcriptId}")
+            }.forEach { sendData ->
+                writeJsonString(outputStream, serializationJson.encodeToString(sendData))
+                sendData.data.getAttachmentFile()?.let { file ->
+                    if (file.exists() && file.length() > 0) {
+                        sendMediaFile(outputStream, file, sendData.data.messageId)
+                    }
+                }
+                Timber.e("send transcript ${sendData.data.transcriptId}")
                 count++
             }
             if (list.size < LIMIT) {
@@ -451,14 +456,16 @@ class TransferServer @Inject internal constructor(
             if (list.isEmpty()) {
                 return
             }
-            list.filter {
-                // filter large message
-                it.content?.length ?: 0 <= 10240L
-            }.map {
+            list.map {
                 TransferSendData(TransferDataType.MESSAGE.value, it)
-            }.forEach {
-                writeJsonString(outputStream, serializationJson.encodeToString(it))
-                Timber.e("send message: ${it.data.messageId}")
+            }.forEach { sendData ->
+                writeJsonString(outputStream, serializationJson.encodeToString(sendData))
+                sendData.data.getAttachmentFile()?.let { file ->
+                    if (file.exists() && file.length() > 0) {
+                        sendMediaFile(outputStream, file, sendData.data.messageId)
+                    }
+                }
+                Timber.e("send message: ${sendData.data.messageId}")
                 count++
             }
             if (list.size < LIMIT) {
@@ -510,23 +517,8 @@ class TransferServer @Inject internal constructor(
         }
     }
 
-    private fun syncMediaFile(outputStream: OutputStream) {
-        val context = MixinApplication.get()
-        val folder = context.getMediaPath() ?: return
-        folder.walkTopDown().forEach { f ->
-            if (f.isFile && f.length() > 0) {
-                val name = f.nameWithoutExtension
-                if (name.isUUID()) {
-                    if (f.parentFile?.name == "Transcripts" && transcriptMessageDao.countTranscriptByMessageId(name) > 0) {
-                        protocol.write(outputStream, f, name)
-                        count++
-                    } else if (messageDao.findMessageById(name) != null) {
-                        protocol.write(outputStream, f, name)
-                        count++
-                    }
-                }
-            }
-        }
+    private fun sendMediaFile(outputStream: OutputStream, file: File, name: String) {
+        protocol.write(outputStream, file, name)
     }
 
     val protocol = TransferProtocol()

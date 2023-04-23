@@ -417,7 +417,7 @@ class TransferActivity : BaseActivity() {
                 .autoDispose(destroyScope)
                 .subscribe {
                     binding.progressTv.text =
-                        getString(R.string.sending_desc, String.format("%.1f%%", it.progress))
+                        getString(R.string.sending_desc, String.format("%.2f%%", it.progress))
                     Timber.e("Device transfer ${it.progress}%")
                 }
         }
