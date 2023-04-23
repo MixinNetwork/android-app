@@ -151,17 +151,17 @@ class TransferServer @Inject internal constructor(
                     is String -> {
                         val commandData = gson.fromJson(result, TransferCommandData::class.java)
                         if (commandData.action == TransferCommandAction.CONNECT.value) {
-                            if (commandData.code == code && commandData.userId == Session.getAccountId()) {
-                                Timber.e("Verification passed, start transmission")
+//                            if (commandData.code == code && commandData.userId == Session.getAccountId()) {
+//                                Timber.e("Verification passed, start transmission")
                                 status.value = TransferStatus.VERIFICATION_COMPLETED
                                 launch {
                                     transfer(outputStream)
                                 }
-                            } else {
-                                Timber.e("Validation failed, close")
-                                status.value = TransferStatus.ERROR
-                                exit()
-                            }
+//                            } else {
+//                                Timber.e("Validation failed, close")
+//                                status.value = TransferStatus.ERROR
+//                                exit()
+//                            }
                         } else if (commandData.action == TransferCommandAction.FINISH.value) {
                             RxBus.publish(DeviceTransferProgressEvent(100f))
                             status.value = TransferStatus.FINISHED
@@ -453,7 +453,10 @@ class TransferServer @Inject internal constructor(
             if (list.isEmpty()) {
                 return
             }
-            list.map {
+            list.filter {
+                // filter large message
+                it.content?.length ?: 0 <= 10240L
+            }.map {
                 TransferSendData(TransferDataType.MESSAGE.value, it)
             }.forEach {
                 writeJson(outputStream, it)

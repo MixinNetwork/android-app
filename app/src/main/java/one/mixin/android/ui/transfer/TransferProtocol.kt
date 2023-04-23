@@ -28,7 +28,6 @@ import java.io.InputStream
 import java.io.OutputStream
 import java.nio.ByteBuffer
 import java.util.zip.CRC32
-import kotlin.jvm.Throws
 import kotlin.text.Charsets.UTF_8
 
 /*
@@ -56,14 +55,15 @@ class TransferProtocol {
     fun read(inputStream: InputStream): Any? {
         val packageData = safeRead(inputStream, 5)
         val type = packageData[0]
-        val size = byteArrayToInt(packageData.copyOfRange(1, 5))
+        val sizeData = packageData.copyOfRange(1, 5)
+        val size = byteArrayToInt(sizeData)
         return when (type) {
             TYPE_COMMAND -> {
                 readString(inputStream, size)
             }
 
             TYPE_JSON -> {
-                readByteArray(inputStream, size)
+                readByteArray(inputStream, size, sizeData)
             }
 
             TYPE_FILE -> { // File
@@ -122,12 +122,15 @@ class TransferProtocol {
     }
 
     @Throws(ChecksumException::class)
-    private fun readByteArray(inputStream: InputStream, expectedLength: Int): ByteArray {
+    private fun readByteArray(inputStream: InputStream, expectedLength: Int, sizeData: ByteArray? =null): ByteArray {
         val data = safeRead(inputStream, expectedLength)
         val checksum = safeRead(inputStream, 8)
         if (bytesToLong(checksum) != bytesToLong(checksum(data))) {
             Timber.e("ChecksumException $expectedLength ${bytesToLong(checksum)} ${bytesToLong(checksum(data))}")
             throw ChecksumException()
+        }
+        if (sizeData != null) {
+            return sizeData + data
         }
         return data
     }
@@ -148,18 +151,16 @@ class TransferProtocol {
     }
 
     private var readCount: Long = 0
-    private var lastTimeTime: Long = 0
+    private var lastTimeTime: Long = System.currentTimeMillis()
 
     private fun calculateReadSpeed(bytesPerRead: Int) {
         readCount += bytesPerRead
         val currentTime = System.currentTimeMillis()
-        if (readCount > 128 * 1024 && lastTimeTime > 0) {
+        if (currentTime - lastTimeTime > 1000) {
             val speed = readCount / ((currentTime - lastTimeTime) / 1000f) / 1024f / 128f
             Timber.e(String.format("%.2f Mb/s", speed))
             RxBus.publish(SpeedEvent(String.format("%.2f Mb/s", speed)))
             readCount = 0
-            lastTimeTime = currentTime
-        } else if (lastTimeTime == 0L) {
             lastTimeTime = currentTime
         }
     }
@@ -185,7 +186,7 @@ class TransferProtocol {
             return null
         } else {
             val outFile = if (message != null) {
-                val extensionName = message.mediaUrl?.getExtensionName()
+                val extensionName = message.mediaUrl?.getExtensionName() ?: ""
                 MixinApplication.get().let {
                     if (message.isImage()) {
                         it.getImagePath().createImageTemp(message.conversationId, message.messageId, ".$extensionName")
