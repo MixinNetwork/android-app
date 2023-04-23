@@ -272,7 +272,10 @@ class ChatWebSocket(
         if (blazeMessage.action == ACKNOWLEDGE_MESSAGE_RECEIPT) {
             mixinDatabase.makeMessageStatus(data.status, data.messageId) // Ack of the server, conversationId is ""
             pendingDatabase.makeMessageStatus(data.status, data.messageId)
-            offsetDao.insert(Offset(STATUS_OFFSET, data.updatedAt))
+            val offset = offsetDao.getStatusOffset()
+            if (offset == null || offset != data.updatedAt) {
+                offsetDao.insert(Offset(STATUS_OFFSET, data.updatedAt))
+            }
         } else if (blazeMessage.action == CREATE_MESSAGE || blazeMessage.action == CREATE_CALL || blazeMessage.action == CREATE_KRAKEN) {
             if (data.userId == accountId && data.category.isEmpty()) { // Ack of the create message
                 mixinDatabase.makeMessageStatus(data.status, data.messageId)
