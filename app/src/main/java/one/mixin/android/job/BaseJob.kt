@@ -8,6 +8,7 @@ import dagger.hilt.EntryPoint
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.serialization.json.Json
 import one.mixin.android.api.ClientErrorException
 import one.mixin.android.api.ExpiredTokenException
 import one.mixin.android.api.LocalJobException
@@ -289,6 +290,10 @@ abstract class BaseJob(params: Params) : Job(params) {
     @Transient
     @Inject
     lateinit var jobSenderKey: JobSenderKey
+
+    @Transient
+    @Inject
+    lateinit var serializationJson: Json
 
     open fun shouldRetry(throwable: Throwable): Boolean {
         if (throwable is SocketTimeoutException) {

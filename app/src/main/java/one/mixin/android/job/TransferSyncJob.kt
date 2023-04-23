@@ -3,7 +3,6 @@ package one.mixin.android.job
 import com.birbit.android.jobqueue.Params
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.decodeFromString
-import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.decodeFromJsonElement
 import one.mixin.android.extension.createAtToLong
@@ -42,8 +41,6 @@ class TransferSyncJob(private val filePath: String) :
         try {
             val file = File(filePath)
             val messageList = mutableListOf<Message>()
-            val json =
-                Json { ignoreUnknownKeys = true; explicitNulls = false; encodeDefaults = false }
             if (file.exists() && file.length() > 0) {
                 file.inputStream().use { input ->
                     while (input.available() > 0) {
@@ -52,7 +49,7 @@ class TransferSyncJob(private val filePath: String) :
                         val data = ByteArray(byteArrayToInt(sizeData))
                         input.read(data)
                         val content = String(data, UTF_8)
-                        processJson(json, content, messageList)
+                        processJson(content, messageList)
                     }
                 }
             }
@@ -66,48 +63,48 @@ class TransferSyncJob(private val filePath: String) :
         }
     }
 
-    private fun processJson(json: Json, content: String, messageList: MutableList<Message>) {
-        val transferData = json.decodeFromString<TransferSendData<JsonElement>>(content)
+    private fun processJson(content: String, messageList: MutableList<Message>) {
+        val transferData = serializationJson.decodeFromString<TransferSendData<JsonElement>>(content)
         when (transferData.type) {
             TransferDataType.CONVERSATION.value -> {
-                val conversation = json.decodeFromJsonElement<Conversation>(transferData.data)
+                val conversation = serializationJson.decodeFromJsonElement<Conversation>(transferData.data)
                 conversationDao.insertIgnore(conversation)
                 Timber.e("Conversation ID: ${conversation.conversationId}")
             }
 
             TransferDataType.PARTICIPANT.value -> {
-                val participant = json.decodeFromJsonElement<Participant>(transferData.data)
+                val participant = serializationJson.decodeFromJsonElement<Participant>(transferData.data)
                 participantDao.insertIgnore(participant)
                 Timber.e("Participant ID: ${participant.conversationId} ${participant.userId}")
             }
 
             TransferDataType.USER.value -> {
-                val user = json.decodeFromJsonElement<User>(transferData.data)
+                val user = serializationJson.decodeFromJsonElement<User>(transferData.data)
                 userDao.insertIgnore(user)
                 Timber.e("User ID: ${user.userId}")
             }
 
             TransferDataType.APP.value -> {
                 Timber.e("$content ${transferData.data}")
-                val app = json.decodeFromJsonElement<App>(transferData.data)
+                val app = serializationJson.decodeFromJsonElement<App>(transferData.data)
                 appDao.insertIgnore(app)
                 Timber.e("App ID: ${app.appId}")
             }
 
             TransferDataType.ASSET.value -> {
-                val asset = json.decodeFromJsonElement<Asset>(transferData.data)
+                val asset = serializationJson.decodeFromJsonElement<Asset>(transferData.data)
                 assetDao.insertIgnore(asset)
                 Timber.e("Asset ID: ${asset.assetId}")
             }
 
             TransferDataType.SNAPSHOT.value -> {
-                val snapshot = json.decodeFromJsonElement<Snapshot>(transferData.data)
+                val snapshot = serializationJson.decodeFromJsonElement<Snapshot>(transferData.data)
                 snapshotDao.insertIgnore(snapshot)
                 Timber.e("Snapshot ID: ${snapshot.snapshotId}")
             }
 
             TransferDataType.STICKER.value -> {
-                val sticker = json.decodeFromJsonElement<Sticker>(transferData.data)
+                val sticker = serializationJson.decodeFromJsonElement<Sticker>(transferData.data)
                 sticker.lastUseAt?.let {
                     try {
                         sticker.lastUseAt = it.createAtToLong().toString()
@@ -120,19 +117,19 @@ class TransferSyncJob(private val filePath: String) :
             }
 
             TransferDataType.PIN_MESSAGE.value -> {
-                val pinMessage = json.decodeFromJsonElement<PinMessage>(transferData.data)
+                val pinMessage = serializationJson.decodeFromJsonElement<PinMessage>(transferData.data)
                 pinMessageDao.insertIgnore(pinMessage)
                 Timber.e("PinMessage ID: ${pinMessage.messageId}")
             }
 
             TransferDataType.TRANSCRIPT_MESSAGE.value -> {
-                val transcriptMessage = json.decodeFromJsonElement<TranscriptMessage>(transferData.data)
+                val transcriptMessage = serializationJson.decodeFromJsonElement<TranscriptMessage>(transferData.data)
                 transcriptMessageDao.insertIgnore(transcriptMessage)
                 Timber.e("Transcript ID: ${transcriptMessage.messageId}")
             }
 
             TransferDataType.MESSAGE.value -> {
-                val message = json.decodeFromJsonElement<TransferMessage>(transferData.data)
+                val message = serializationJson.decodeFromJsonElement<TransferMessage>(transferData.data)
                 if (messageDao.findMessageIdById(message.messageId) == null) {
                     processMessage(message.toMessage(), messageList)
                 }
@@ -141,7 +138,7 @@ class TransferSyncJob(private val filePath: String) :
 
             TransferDataType.MESSAGE_MENTION.value -> {
                 val messageMention =
-                    json.decodeFromJsonElement<TransferMessageMention>(transferData.data).let {
+                    serializationJson.decodeFromJsonElement<TransferMessageMention>(transferData.data).let {
                         val mention = it.mentions
                         if (mention != null) {
                             MessageMention(it.messageId, it.conversationId, mention, it.hasRead)
@@ -159,7 +156,7 @@ class TransferSyncJob(private val filePath: String) :
 
             TransferDataType.EXPIRED_MESSAGE.name -> {
                 val expiredMessage =
-                    json.decodeFromJsonElement<ExpiredMessage>(transferData.data)
+                    serializationJson.decodeFromJsonElement<ExpiredMessage>(transferData.data)
                 expiredMessageDao.insertIgnore(expiredMessage)
                 Timber.e("ExpiredMessage ID: ${expiredMessage.messageId}")
             }

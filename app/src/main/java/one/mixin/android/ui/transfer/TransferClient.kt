@@ -29,6 +29,7 @@ import javax.inject.Inject
 
 class TransferClient @Inject internal constructor(
     val status: TransferStatusLiveData,
+    private val serializationJson: Json,
 ) {
 
     private var socket: Socket? = null
@@ -44,10 +45,6 @@ class TransferClient @Inject internal constructor(
     val protocol = TransferProtocol()
 
     private val syncChannel = Channel<ByteArray>()
-
-    private val json by lazy {
-        Json { ignoreUnknownKeys = true; explicitNulls = false; encodeDefaults = false }
-    }
 
     private var startTime = 0L
 
@@ -91,7 +88,7 @@ class TransferClient @Inject internal constructor(
             when (result) {
                 is String -> {
                     Timber.e("sync $result")
-                    val transferCommandData: TransferCommandData = json.decodeFromString(result)
+                    val transferCommandData: TransferCommandData = serializationJson.decodeFromString(result)
                     when (transferCommandData.action) {
                         TransferCommandAction.START.value -> {
                             if (transferCommandData.version != CURRENT_TRANSFER_VERSION) {
@@ -173,7 +170,7 @@ class TransferClient @Inject internal constructor(
         outputStream: OutputStream,
         transferSendData: TransferCommandData,
     ) {
-        val content = json.encodeToString(transferSendData)
+        val content = serializationJson.encodeToString(transferSendData)
         try {
             protocol.write(outputStream, TransferProtocol.TYPE_COMMAND, content)
             outputStream.flush()
