@@ -2,8 +2,10 @@ package one.mixin.android.job
 
 import com.birbit.android.jobqueue.Params
 import kotlinx.coroutines.runBlocking
+import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.decodeFromJsonElement
 import one.mixin.android.extension.createAtToLong
 import one.mixin.android.fts.insertOrReplaceMessageFts4
 import one.mixin.android.ui.transfer.vo.TransferDataType
@@ -40,6 +42,8 @@ class TransferSyncJob(private val filePath: String) :
         try {
             val file = File(filePath)
             val messageList = mutableListOf<Message>()
+            val json =
+                Json { ignoreUnknownKeys = true; explicitNulls = false; encodeDefaults = false }
             if (file.exists() && file.length() > 0) {
                 file.inputStream().use { input ->
                     while (input.available() > 0) {
@@ -63,7 +67,7 @@ class TransferSyncJob(private val filePath: String) :
     }
 
     private fun processJson(json: Json, content: String, messageList: MutableList<Message>) {
-        val transferData = json.decodeFromString<TransferSendData<JsonElement>>("")
+        val transferData = json.decodeFromString<TransferSendData<JsonElement>>(content)
         when (transferData.type) {
             TransferDataType.CONVERSATION.value -> {
                 val conversation = json.decodeFromJsonElement<Conversation>(transferData.data)
@@ -72,38 +76,38 @@ class TransferSyncJob(private val filePath: String) :
             }
 
             TransferDataType.PARTICIPANT.value -> {
-                val participant = gson.fromJson(transferData.data, Participant::class.java)
+                val participant = json.decodeFromJsonElement<Participant>(transferData.data)
                 participantDao.insertIgnore(participant)
                 Timber.e("Participant ID: ${participant.conversationId} ${participant.userId}")
             }
 
             TransferDataType.USER.value -> {
-                val user = gson.fromJson(transferData.data, User::class.java)
+                val user = json.decodeFromJsonElement<User>(transferData.data)
                 userDao.insertIgnore(user)
                 Timber.e("User ID: ${user.userId}")
             }
 
             TransferDataType.APP.value -> {
                 Timber.e("$content ${transferData.data}")
-                val app = gson.fromJson(transferData.data, App::class.java)
+                val app = json.decodeFromJsonElement<App>(transferData.data)
                 appDao.insertIgnore(app)
                 Timber.e("App ID: ${app.appId}")
             }
 
             TransferDataType.ASSET.value -> {
-                val asset = gson.fromJson(transferData.data, Asset::class.java)
+                val asset = json.decodeFromJsonElement<Asset>(transferData.data)
                 assetDao.insertIgnore(asset)
                 Timber.e("Asset ID: ${asset.assetId}")
             }
 
             TransferDataType.SNAPSHOT.value -> {
-                val snapshot = gson.fromJson(transferData.data, Snapshot::class.java)
+                val snapshot = json.decodeFromJsonElement<Snapshot>(transferData.data)
                 snapshotDao.insertIgnore(snapshot)
                 Timber.e("Snapshot ID: ${snapshot.snapshotId}")
             }
 
             TransferDataType.STICKER.value -> {
-                val sticker = gson.fromJson(transferData.data, Sticker::class.java)
+                val sticker = json.decodeFromJsonElement<Sticker>(transferData.data)
                 sticker.lastUseAt?.let {
                     try {
                         sticker.lastUseAt = it.createAtToLong().toString()
@@ -116,30 +120,28 @@ class TransferSyncJob(private val filePath: String) :
             }
 
             TransferDataType.PIN_MESSAGE.value -> {
-                val pinMessage =
-                    gson.fromJson(transferData.data, PinMessage::class.java)
+                val pinMessage = json.decodeFromJsonElement<PinMessage>(transferData.data)
                 pinMessageDao.insertIgnore(pinMessage)
                 Timber.e("PinMessage ID: ${pinMessage.messageId}")
             }
 
             TransferDataType.TRANSCRIPT_MESSAGE.value -> {
-                val transcriptMessage =
-                    gson.fromJson(transferData.data, TranscriptMessage::class.java)
+                val transcriptMessage = json.decodeFromJsonElement<TranscriptMessage>(transferData.data)
                 transcriptMessageDao.insertIgnore(transcriptMessage)
                 Timber.e("Transcript ID: ${transcriptMessage.messageId}")
             }
 
             TransferDataType.MESSAGE.value -> {
-                val message =
-                    gson.fromJson(transferData.data, TransferMessage::class.java).toMessage()
+                val message = json.decodeFromJsonElement<TransferMessage>(transferData.data)
                 if (messageDao.findMessageIdById(message.messageId) == null) {
-                    processMessage(message, messageList)
+                    processMessage(message.toMessage(), messageList)
                 }
+                Timber.e("Message ID: ${message.messageId}")
             }
 
             TransferDataType.MESSAGE_MENTION.value -> {
                 val messageMention =
-                    gson.fromJson(transferData.data, TransferMessageMention::class.java).let {
+                    json.decodeFromJsonElement<TransferMessageMention>(transferData.data).let {
                         val mention = it.mentions
                         if (mention != null) {
                             MessageMention(it.messageId, it.conversationId, mention, it.hasRead)
@@ -157,7 +159,7 @@ class TransferSyncJob(private val filePath: String) :
 
             TransferDataType.EXPIRED_MESSAGE.name -> {
                 val expiredMessage =
-                    gson.fromJson(transferData.data, ExpiredMessage::class.java)
+                    json.decodeFromJsonElement<ExpiredMessage>(transferData.data)
                 expiredMessageDao.insertIgnore(expiredMessage)
                 Timber.e("ExpiredMessage ID: ${expiredMessage.messageId}")
             }
