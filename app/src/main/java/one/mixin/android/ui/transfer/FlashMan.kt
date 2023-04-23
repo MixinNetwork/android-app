@@ -18,7 +18,6 @@ import one.mixin.android.fts.FtsDatabase
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.TransferSyncJob
 import java.io.File
-import java.util.UUID
 import javax.inject.Inject
 
 class FlashMan @Inject internal constructor(
@@ -39,7 +38,13 @@ class FlashMan @Inject internal constructor(
     val ftsDatabase: FtsDatabase,
     val jobManager: MixinJobManager,
 ) {
-    private val currentId: UUID = UUID.randomUUID()
+    private var currentId: String = "cache"
+    fun init(deviceId: String) {
+        currentId = deviceId
+        if (cachePath.exists()) {
+            cachePath.delete()
+        }
+    }
 
     private val cachePath by lazy {
         File("${(context.externalCacheDir ?: context.cacheDir).absolutePath}${File.separator}$currentId")
@@ -55,7 +60,7 @@ class FlashMan @Inject internal constructor(
     private var currentFile = getCacheFile()
     private var currentOutputStream = currentFile.outputStream()
     fun writeBytes(bytes: ByteArray) {
-        if (currentFile.length() + bytes.size > 10485760L) { // 10M
+        if (currentFile.length() + bytes.size > 5242880L) { // 5M
             jobManager.addJob(TransferSyncJob(currentFile.absolutePath))
             currentFile = getCacheFile()
             currentOutputStream.close()

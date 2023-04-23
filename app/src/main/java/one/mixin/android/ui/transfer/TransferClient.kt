@@ -96,6 +96,7 @@ class TransferClient @Inject internal constructor(
                                 exit()
                                 return
                             }
+                            flashMan.init(transferCommandData.deviceId)
                             this.total = transferCommandData.total ?: 0L
                         }
 
@@ -137,7 +138,7 @@ class TransferClient @Inject internal constructor(
     private fun progress(outputStream: OutputStream) {
         if (total <= 0) return
         val progress = min((count++) / total.toFloat() * 100, 100f)
-        if (System.currentTimeMillis() - lastTime > 200) {
+        if (System.currentTimeMillis() - lastTime > 1000) {
             sendCommand(
                 outputStream,
                 TransferCommandData(TransferCommandAction.PROGRESS.value, progress = progress),

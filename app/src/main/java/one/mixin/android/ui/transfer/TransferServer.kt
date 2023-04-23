@@ -4,6 +4,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 import one.mixin.android.MixinApplication
 import one.mixin.android.RxBus
 import one.mixin.android.db.AppDao
@@ -31,7 +34,6 @@ import one.mixin.android.ui.transfer.vo.TransferDataType
 import one.mixin.android.ui.transfer.vo.TransferSendData
 import one.mixin.android.ui.transfer.vo.TransferStatus
 import one.mixin.android.ui.transfer.vo.TransferStatusLiveData
-import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.NetworkUtils
 import one.mixin.android.util.SINGLE_SOCKET_THREAD
 import timber.log.Timber
@@ -60,16 +62,13 @@ class TransferServer @Inject internal constructor(
     val appDao: AppDao,
     val messageMentionDao: MessageMentionDao,
     val status: TransferStatusLiveData,
+    private val serializationJson: Json,
 ) {
 
     private var serverSocket: ServerSocket? = null
     private var socket: Socket? = null
 
     private var quit = false
-
-    private val gson by lazy {
-        GsonHelper.customGson
-    }
 
     private var code = 0
     private var port = 0
@@ -149,7 +148,7 @@ class TransferServer @Inject internal constructor(
             do {
                 when (val result = protocol.read(inputStream)) {
                     is String -> {
-                        val commandData = gson.fromJson(result, TransferCommandData::class.java)
+                        val commandData: TransferCommandData = serializationJson.decodeFromString(result)
                         if (commandData.action == TransferCommandAction.CONNECT.value) {
 //                            if (commandData.code == code && commandData.userId == Session.getAccountId()) {
 //                                Timber.e("Verification passed, start transmission")
@@ -186,7 +185,7 @@ class TransferServer @Inject internal constructor(
     fun transfer(outputStream: OutputStream) {
         status.value = TransferStatus.SYNCING
         sendStart(outputStream)
-        syncConversation(outputStream)
+//        syncConversation(outputStream)
         syncParticipant(outputStream)
         syncUser(outputStream)
         syncApp(outputStream)
@@ -202,12 +201,11 @@ class TransferServer @Inject internal constructor(
         sendFinish(outputStream)
     }
 
-    private fun writeJson(
+    private fun writeJsonString(
         outputStream: OutputStream,
-        transferData: Any,
+        jsonString: String
     ) {
-        val content = gson.toJson(transferData)
-        protocol.write(outputStream, TYPE_JSON, content)
+        protocol.write(outputStream, TYPE_JSON, jsonString)
         outputStream.flush()
     }
 
@@ -215,7 +213,7 @@ class TransferServer @Inject internal constructor(
         outputStream: OutputStream,
         transferData: TransferCommandData,
     ) {
-        val content = gson.toJson(transferData)
+        val content = serializationJson.encodeToString(transferData)
         protocol.write(outputStream, TYPE_COMMAND, content)
         outputStream.flush()
     }
@@ -256,7 +254,7 @@ class TransferServer @Inject internal constructor(
                 TransferSendData(TransferDataType.CONVERSATION.value, it)
             }.forEach {
                 Timber.e("send conversation ${it.data.conversationId}")
-                writeJson(outputStream, it)
+                writeJsonString(outputStream, serializationJson.encodeToString(it))
                 count++
             }
             if (list.size < LIMIT) {
@@ -277,7 +275,7 @@ class TransferServer @Inject internal constructor(
                 TransferSendData(TransferDataType.PARTICIPANT.value, it)
             }.forEach {
                 Timber.e("send Participant ${it.data.conversationId} ${it.data.userId}")
-                writeJson(outputStream, it)
+                writeJsonString(outputStream, serializationJson.encodeToString(it))
                 count++
             }
             if (list.size < LIMIT) {
@@ -298,7 +296,7 @@ class TransferServer @Inject internal constructor(
                 TransferSendData(TransferDataType.USER.value, it)
             }.forEach {
                 Timber.e("send user ${it.data.userId}")
-                writeJson(outputStream, it)
+                writeJsonString(outputStream, serializationJson.encodeToString(it))
                 count++
             }
             if (list.size < LIMIT) {
@@ -319,7 +317,7 @@ class TransferServer @Inject internal constructor(
                 TransferSendData(TransferDataType.APP.value, it)
             }.forEach {
                 Timber.e("send app ${it.data.appId}")
-                writeJson(outputStream, it)
+                writeJsonString(outputStream, serializationJson.encodeToString(it))
                 count++
             }
             if (list.size < LIMIT) {
@@ -340,7 +338,7 @@ class TransferServer @Inject internal constructor(
                 TransferSendData(TransferDataType.ASSET.value, it)
             }.forEach {
                 Timber.e("send asset ${it.data.assetId}")
-                writeJson(outputStream, it)
+                writeJsonString(outputStream, serializationJson.encodeToString(it))
                 count++
             }
             if (list.size < LIMIT) {
@@ -372,7 +370,7 @@ class TransferServer @Inject internal constructor(
                 TransferSendData(TransferDataType.STICKER.value, it)
             }.forEach {
                 Timber.e("send sticker ${it.data.stickerId}")
-                writeJson(outputStream, it)
+                writeJsonString(outputStream, serializationJson.encodeToString(it))
                 count++
             }
             if (list.size < LIMIT) {
@@ -392,7 +390,7 @@ class TransferServer @Inject internal constructor(
             list.map {
                 TransferSendData(TransferDataType.SNAPSHOT.value, it)
             }.forEach {
-                writeJson(outputStream, it)
+                writeJsonString(outputStream, serializationJson.encodeToString(it))
                 Timber.e("send snapshot ${it.data.snapshotId}")
                 count++
             }
@@ -413,7 +411,7 @@ class TransferServer @Inject internal constructor(
             list.map {
                 TransferSendData(TransferDataType.TRANSCRIPT_MESSAGE.value, it)
             }.forEach {
-                writeJson(outputStream, it)
+                writeJsonString(outputStream, serializationJson.encodeToString(it))
                 Timber.e("send transcript ${it.data.transcriptId}")
                 count++
             }
@@ -434,7 +432,7 @@ class TransferServer @Inject internal constructor(
             list.map {
                 TransferSendData(TransferDataType.PIN_MESSAGE.value, it)
             }.forEach {
-                writeJson(outputStream, it)
+                writeJsonString(outputStream, serializationJson.encodeToString(it))
                 count++
 
                 Timber.e("send pin message: ${it.data.messageId}")
@@ -459,7 +457,7 @@ class TransferServer @Inject internal constructor(
             }.map {
                 TransferSendData(TransferDataType.MESSAGE.value, it)
             }.forEach {
-                writeJson(outputStream, it)
+                writeJsonString(outputStream, serializationJson.encodeToString(it))
                 Timber.e("send message: ${it.data.messageId}")
                 count++
             }
@@ -480,7 +478,7 @@ class TransferServer @Inject internal constructor(
             list.map {
                 TransferSendData(TransferDataType.MESSAGE_MENTION.value, it)
             }.forEach {
-                writeJson(outputStream, it)
+                writeJsonString(outputStream, serializationJson.encodeToString(it))
                 Timber.e("send message mention: ${it.data.messageId}")
                 count++
             }
@@ -501,7 +499,7 @@ class TransferServer @Inject internal constructor(
             list.map {
                 TransferSendData(TransferDataType.EXPIRED_MESSAGE.value, it)
             }.forEach {
-                writeJson(outputStream, it)
+                writeJsonString(outputStream, serializationJson.encodeToString(it))
                 Timber.e("send pin message: ${it.data.messageId}")
                 count++
             }
