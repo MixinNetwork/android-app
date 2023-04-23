@@ -2,14 +2,15 @@ package one.mixin.android.job
 
 import com.birbit.android.jobqueue.Params
 import kotlinx.coroutines.runBlocking
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonElement
 import one.mixin.android.extension.createAtToLong
 import one.mixin.android.fts.insertOrReplaceMessageFts4
-import one.mixin.android.ui.transfer.vo.TransferData
 import one.mixin.android.ui.transfer.vo.TransferDataType
 import one.mixin.android.ui.transfer.vo.TransferMessage
 import one.mixin.android.ui.transfer.vo.TransferMessageMention
+import one.mixin.android.ui.transfer.vo.TransferSendData
 import one.mixin.android.ui.transfer.vo.toMessage
-import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.mention.parseMentionData
 import one.mixin.android.vo.App
 import one.mixin.android.vo.Asset
@@ -47,7 +48,7 @@ class TransferSyncJob(private val filePath: String) :
                         val data = ByteArray(byteArrayToInt(sizeData))
                         input.read(data)
                         val content = String(data, UTF_8)
-                        processJson(content, messageList)
+                        processJson(json, content, messageList)
                     }
                 }
             }
@@ -61,13 +62,11 @@ class TransferSyncJob(private val filePath: String) :
         }
     }
 
-    private fun processJson(content: String, messageList: MutableList<Message>) {
-        val gson = GsonHelper.customGson
-        val transferData = gson.fromJson(content, TransferData::class.java)
+    private fun processJson(json: Json, content: String, messageList: MutableList<Message>) {
+        val transferData = json.decodeFromString<TransferSendData<JsonElement>>("")
         when (transferData.type) {
             TransferDataType.CONVERSATION.value -> {
-                val conversation =
-                    gson.fromJson(transferData.data, Conversation::class.java)
+                val conversation = json.decodeFromJsonElement<Conversation>(transferData.data)
                 conversationDao.insertIgnore(conversation)
                 Timber.e("Conversation ID: ${conversation.conversationId}")
             }

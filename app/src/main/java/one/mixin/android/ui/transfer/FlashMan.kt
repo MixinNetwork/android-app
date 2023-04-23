@@ -42,9 +42,8 @@ class FlashMan @Inject internal constructor(
     private val currentId: UUID = UUID.randomUUID()
 
     private val cachePath by lazy {
-        File("${(context.externalCacheDir ?: context.cacheDir).absolutePath}${File.separator}${currentId}")
+        File("${(context.externalCacheDir ?: context.cacheDir).absolutePath}${File.separator}$currentId")
     }
-
 
     private var index: Int = 0
 
@@ -70,5 +69,4 @@ class FlashMan @Inject internal constructor(
         currentOutputStream.close()
         jobManager.addJob(TransferSyncJob(currentFile.absolutePath))
     }
-
 }

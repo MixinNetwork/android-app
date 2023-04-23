@@ -1,17 +1,21 @@
 package one.mixin.android.ui.transfer
 
-import com.google.gson.Gson
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonElement
 import one.mixin.android.MixinApplication
 import one.mixin.android.RxBus
 import one.mixin.android.event.DeviceTransferProgressEvent
 import one.mixin.android.ui.transfer.vo.CURRENT_TRANSFER_VERSION
 import one.mixin.android.ui.transfer.vo.TransferCommandAction
 import one.mixin.android.ui.transfer.vo.TransferCommandData
+import one.mixin.android.ui.transfer.vo.TransferSendData
 import one.mixin.android.ui.transfer.vo.TransferStatus
 import one.mixin.android.ui.transfer.vo.TransferStatusLiveData
 import one.mixin.android.util.SINGLE_SOCKET_THREAD
@@ -27,7 +31,6 @@ import javax.inject.Inject
 
 class TransferClient @Inject internal constructor(
     val status: TransferStatusLiveData,
-    val gson: Gson,
 ) {
 
     private var socket: Socket? = null
@@ -44,6 +47,10 @@ class TransferClient @Inject internal constructor(
 
     private val syncChannel = Channel<ByteArray>()
 
+    private val json by lazy {
+        Json { ignoreUnknownKeys = true; explicitNulls = false; encodeDefaults = false }
+    }
+
     private var startTime = 0L
 
     suspend fun connectToServer(ip: String, port: Int, commandData: TransferCommandData) =
@@ -54,7 +61,7 @@ class TransferClient @Inject internal constructor(
                 this@TransferClient.socket = socket
                 status.value = TransferStatus.WAITING_FOR_VERIFICATION
                 val outputStream = socket.getOutputStream()
-                protocol.write(outputStream, TransferProtocol.TYPE_COMMAND, gson.toJson(commandData))
+                sendCommand(outputStream, commandData)
                 outputStream.flush()
                 launch(Dispatchers.IO) { listen(socket.inputStream, socket.outputStream) }
                 launch(Dispatchers.IO) {
@@ -86,8 +93,7 @@ class TransferClient @Inject internal constructor(
             when (result) {
                 is String -> {
                     Timber.e("sync $result")
-                    val transferCommandData = gson.fromJson(result, TransferCommandData::class.java)
-
+                    val transferCommandData: TransferCommandData = json.decodeFromString(result)
                     when (transferCommandData.action) {
                         TransferCommandAction.START.value -> {
                             if (transferCommandData.version != CURRENT_TRANSFER_VERSION) {
@@ -95,7 +101,6 @@ class TransferClient @Inject internal constructor(
                                 exit()
                                 return
                             }
-                            startTime = System.currentTimeMillis()
                             this.total = transferCommandData.total ?: 0L
                         }
 
@@ -109,20 +114,23 @@ class TransferClient @Inject internal constructor(
                             flashMan.finish()
                             delay(100)
                             exit()
-                            Timber.e("It takes a total of ${System.currentTimeMillis() - startTime} milliseconds to synchronize ${this.total} data")
                         }
 
                         else -> {
+                            Timber.e(result)
                         }
                     }
                 }
+
                 is ByteArray -> {
                     syncChannel.send(result)
                 }
+
                 is File -> {
                     // read file
                     progress(outputStream)
                 }
+
                 else -> {
                     // do noting
                 }
@@ -167,7 +175,7 @@ class TransferClient @Inject internal constructor(
         outputStream: OutputStream,
         transferSendData: TransferCommandData,
     ) {
-        val content = gson.toJson(transferSendData)
+        val content = json.encodeToString(transferSendData)
         try {
             protocol.write(outputStream, TransferProtocol.TYPE_COMMAND, content)
             outputStream.flush()

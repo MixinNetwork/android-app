@@ -153,10 +153,10 @@ class TransferServer @Inject internal constructor(
                         if (commandData.action == TransferCommandAction.CONNECT.value) {
 //                            if (commandData.code == code && commandData.userId == Session.getAccountId()) {
 //                                Timber.e("Verification passed, start transmission")
-                                status.value = TransferStatus.VERIFICATION_COMPLETED
-                                launch {
-                                    transfer(outputStream)
-                                }
+                            status.value = TransferStatus.VERIFICATION_COMPLETED
+                            launch {
+                                transfer(outputStream)
+                            }
 //                            } else {
 //                                Timber.e("Validation failed, close")
 //                                status.value = TransferStatus.ERROR

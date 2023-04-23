@@ -9,6 +9,7 @@ import androidx.room.PrimaryKey
 import androidx.room.TypeConverters
 import com.google.gson.annotations.SerializedName
 import kotlinx.parcelize.Parcelize
+import kotlinx.serialization.Serializable
 
 interface BotInterface {
     fun getBotId(): String
@@ -18,6 +19,7 @@ interface BotInterface {
 @Parcelize
 @TypeConverters(ArrayConverters::class)
 @Entity(tableName = "apps")
+@Serializable
 data class App(
     @PrimaryKey
     @SerializedName("app_id")
