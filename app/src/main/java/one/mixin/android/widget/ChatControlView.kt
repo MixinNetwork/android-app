@@ -98,12 +98,12 @@ class ChatControlView : LinearLayout, ActionMode.Callback {
         COLLAPSED, // + ☺ i
     }
 
-    private enum class STICKER_STATUS {
+    private enum class StickerStatus {
         STICKER,
         KEYBOARD,
     }
 
-    private enum class MENU_STATUS {
+    private enum class MenuStatus {
         EXPANDED,
         COLLAPSED,
     }
@@ -133,8 +133,8 @@ class ChatControlView : LinearLayout, ActionMode.Callback {
 
             when (value) {
                 STATUS.EXPANDED_MENU -> {
-                    menuStatus = MENU_STATUS.EXPANDED
-                    stickerStatus = STICKER_STATUS.STICKER
+                    menuStatus = MenuStatus.EXPANDED
+                    stickerStatus = StickerStatus.STICKER
                     keyboardDrawable
                     binding.chatImgIv.setImageResource(R.drawable.ic_chat_img)
                     menuContainer.isVisible = true
@@ -142,32 +142,32 @@ class ChatControlView : LinearLayout, ActionMode.Callback {
                     galleryContainer.isVisible = false
                 }
                 STATUS.EXPANDED_KEYBOARD -> {
-                    menuStatus = MENU_STATUS.COLLAPSED
-                    stickerStatus = STICKER_STATUS.STICKER
+                    menuStatus = MenuStatus.COLLAPSED
+                    stickerStatus = StickerStatus.STICKER
                     binding.chatImgIv.setImageResource(R.drawable.ic_chat_img)
                     menuContainer.isVisible = false
                     stickerContainer.isVisible = false
                     galleryContainer.isVisible = false
                 }
                 STATUS.EXPANDED_STICKER -> {
-                    menuStatus = MENU_STATUS.COLLAPSED
-                    stickerStatus = STICKER_STATUS.KEYBOARD
+                    menuStatus = MenuStatus.COLLAPSED
+                    stickerStatus = StickerStatus.KEYBOARD
                     binding.chatImgIv.setImageResource(R.drawable.ic_chat_img)
                     menuContainer.isVisible = false
                     stickerContainer.isVisible = true
                     galleryContainer.isVisible = false
                 }
                 STATUS.EXPANDED_GALLERY -> {
-                    menuStatus = MENU_STATUS.COLLAPSED
-                    stickerStatus = STICKER_STATUS.STICKER
+                    menuStatus = MenuStatus.COLLAPSED
+                    stickerStatus = StickerStatus.STICKER
                     binding.chatImgIv.setImageResource(R.drawable.ic_chat_img_checked)
                     menuContainer.isVisible = false
                     stickerContainer.isVisible = false
                     galleryContainer.isVisible = true
                 }
                 STATUS.COLLAPSED -> {
-                    menuStatus = MENU_STATUS.COLLAPSED
-                    stickerStatus = STICKER_STATUS.STICKER
+                    menuStatus = MenuStatus.COLLAPSED
+                    stickerStatus = StickerStatus.STICKER
                     binding.chatImgIv.setImageResource(R.drawable.ic_chat_img)
                     menuContainer.isVisible = false
                     stickerContainer.isVisible = false
@@ -182,7 +182,7 @@ class ChatControlView : LinearLayout, ActionMode.Callback {
             field = value
             checkSend()
         }
-    private var stickerStatus = STICKER_STATUS.STICKER
+    private var stickerStatus = StickerStatus.STICKER
         set(value) {
             if (value == field) return
 
@@ -190,19 +190,19 @@ class ChatControlView : LinearLayout, ActionMode.Callback {
             checkSticker()
         }
 
-    private var menuStatus = MENU_STATUS.COLLAPSED
+    private var menuStatus = MenuStatus.COLLAPSED
         set(value) {
             if (value == field) return
 
             field = value
             val anim =
                 binding.chatMenuIv.animate()
-                    .rotation(if (value == MENU_STATUS.EXPANDED) 45f else -45f)
+                    .rotation(if (value == MenuStatus.EXPANDED) 45f else -45f)
             anim.setListener(
                 object : AnimatorListenerAdapter() {
                     override fun onAnimationEnd(animation: Animator) {
                         binding.chatMenuIv.rotation = 0f
-                        binding.chatMenuIv.setImageResource(if (value == MENU_STATUS.EXPANDED) R.drawable.ic_chat_more_checked else R.drawable.ic_chat_more)
+                        binding.chatMenuIv.setImageResource(if (value == MenuStatus.EXPANDED) R.drawable.ic_chat_more_checked else R.drawable.ic_chat_more)
                     }
                 },
             )
@@ -426,8 +426,8 @@ class ChatControlView : LinearLayout, ActionMode.Callback {
 
     private fun checkSticker() {
         val d = when (stickerStatus) {
-            STICKER_STATUS.STICKER -> stickerDrawable
-            STICKER_STATUS.KEYBOARD -> keyboardDrawable
+            StickerStatus.STICKER -> stickerDrawable
+            StickerStatus.KEYBOARD -> keyboardDrawable
         }
         d.setBounds(0, 0, d.intrinsicWidth, d.intrinsicHeight)
         startScaleAnim(binding.chatStickerIb, d)

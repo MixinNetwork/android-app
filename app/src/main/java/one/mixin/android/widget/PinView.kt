@@ -36,7 +36,7 @@ class PinView : LinearLayout {
     private var mid = count / 2
     private var index = 0
     private var listener: OnPinListener? = null
-    private var finishListener: onPinFinishListener? = null
+    private var finishListener: OnPinFinishListener? = null
     private val textSize = 26f
     private val starSize = 18f
 
@@ -163,11 +163,11 @@ class PinView : LinearLayout {
         fun onUpdate(index: Int)
     }
 
-    fun setOnPinFinishListener(listener: onPinFinishListener) {
+    fun setOnPinFinishListener(listener: OnPinFinishListener) {
         this.finishListener = listener
     }
 
-    interface onPinFinishListener {
+    interface OnPinFinishListener {
         fun onPinFinish()
     }
 }
