@@ -69,12 +69,13 @@ class DispatchQueue(threadName: String) : Thread() {
 
     override fun run() {
         Looper.prepare()
-        handler = @SuppressLint("HandlerLeak")
-        object : Handler() {
-            override fun handleMessage(msg: Message) {
-                this@DispatchQueue.handleMessage(msg)
+        handler =
+            @SuppressLint("HandlerLeak")
+            object : Handler() {
+                override fun handleMessage(msg: Message) {
+                    this@DispatchQueue.handleMessage(msg)
+                }
             }
-        }
         syncLatch.countDown()
         Looper.loop()
     }
