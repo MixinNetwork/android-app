@@ -10,6 +10,7 @@ import one.mixin.android.RxBus
 import one.mixin.android.db.AppDao
 import one.mixin.android.db.AssetDao
 import one.mixin.android.db.ConversationDao
+import one.mixin.android.db.ConversationExtDao
 import one.mixin.android.db.ExpiredMessageDao
 import one.mixin.android.db.MessageDao
 import one.mixin.android.db.MessageMentionDao
@@ -61,6 +62,7 @@ import kotlin.text.Charsets.UTF_8
 class TransferClient @Inject internal constructor(
     val assetDao: AssetDao,
     val conversationDao: ConversationDao,
+    val conversationExtDao: ConversationExtDao,
     val expiredMessageDao: ExpiredMessageDao,
     val messageDao: MessageDao,
     val participantDao: ParticipantDao,
@@ -270,6 +272,7 @@ class TransferClient @Inject internal constructor(
                 val message = gson.fromJson(transferData.data, TransferMessage::class.java).toMessage()
                 val rowId = messageDao.insertIgnoreReturn(message)
                 if (rowId != -1L) { // If the row ID is valid (-1 indicates insertion failure)
+                    conversationExtDao.increment(message.conversationId)
                     ftsDatabase.insertOrReplaceMessageFts4(message)
                 }
                 Timber.e("Message ID: $rowId ${message.messageId}")

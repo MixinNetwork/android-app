@@ -28,7 +28,6 @@ import java.io.InputStream
 import java.io.OutputStream
 import java.nio.ByteBuffer
 import java.util.zip.CRC32
-import kotlin.jvm.Throws
 import kotlin.text.Charsets.UTF_8
 
 /*
@@ -148,18 +147,16 @@ class TransferProtocol {
     }
 
     private var readCount: Long = 0
-    private var lastTimeTime: Long = 0
+    private var lastTimeTime: Long = System.currentTimeMillis()
 
     private fun calculateReadSpeed(bytesPerRead: Int) {
         readCount += bytesPerRead
         val currentTime = System.currentTimeMillis()
-        if (readCount > 128 * 1024 && lastTimeTime > 0) {
+        if (currentTime - lastTimeTime > 1000) {
             val speed = readCount / ((currentTime - lastTimeTime) / 1000f) / 1024f / 128f
             Timber.e(String.format("%.2f Mb/s", speed))
             RxBus.publish(SpeedEvent(String.format("%.2f Mb/s", speed)))
             readCount = 0
-            lastTimeTime = currentTime
-        } else if (lastTimeTime == 0L) {
             lastTimeTime = currentTime
         }
     }
@@ -185,7 +182,7 @@ class TransferProtocol {
             return null
         } else {
             val outFile = if (message != null) {
-                val extensionName = message.mediaUrl?.getExtensionName()
+                val extensionName = message.mediaUrl?.getExtensionName() ?: ""
                 MixinApplication.get().let {
                     if (message.isImage()) {
                         it.getImagePath().createImageTemp(message.conversationId, message.messageId, ".$extensionName")
