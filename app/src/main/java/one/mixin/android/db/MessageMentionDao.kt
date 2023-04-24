@@ -3,6 +3,7 @@ package one.mixin.android.db
 import androidx.lifecycle.LiveData
 import androidx.room.Dao
 import androidx.room.Query
+import one.mixin.android.ui.transfer.vo.TransferMessageMention
 import one.mixin.android.vo.MessageMention
 
 @Dao
@@ -43,7 +44,7 @@ interface MessageMentionDao : BaseDao<MessageMention> {
     fun findMessageMentionById(id: String): MessageMention?
 
     @Query("SELECT mm.* FROM message_mentions mm ORDER BY mm.rowid LIMIT :limit OFFSET :offset")
-    fun getMessageMentionByLimitAndOffset(limit: Int, offset: Int): List<MessageMention>
+    fun getMessageMentionByLimitAndOffset(limit: Int, offset: Int): List<TransferMessageMention>
 
     @Query("SELECT count(1) FROM message_mentions")
     fun countMessageMention(): Long

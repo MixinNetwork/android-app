@@ -280,14 +280,9 @@ class TransferClient @Inject internal constructor(
 
             TransferDataType.MESSAGE_MENTION.value -> {
                 val messageMention = gson.fromJson(transferData.data, TransferMessageMention::class.java).let {
-                    val mention = it.mentions
-                    if (mention != null) {
-                        MessageMention(it.messageId, it.conversationId, mention, it.hasRead)
-                    } else {
-                        val messageContent = messageDao.findMessageContentById(it.conversationId, it.messageId) ?: return
-                        val mentionData = parseMentionData(messageContent, userDao) ?: return
-                        MessageMention(it.messageId, it.conversationId, mentionData, it.hasRead)
-                    }
+                    val messageContent = messageDao.findMessageContentById(it.conversationId, it.messageId) ?: return
+                    val mentionData = parseMentionData(messageContent, userDao) ?: return
+                    MessageMention(it.messageId, it.conversationId, mentionData, it.hasRead)
                 }
                 val rowId = messageMentionDao.insertIgnoreReturn(messageMention)
                 Timber.e("MessageMention ID: $rowId ${messageMention.messageId}")
