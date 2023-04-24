@@ -83,7 +83,7 @@ class FlashMan(
     val messageMentionDao: MessageMentionDao,
     val ftsDatabase: FtsDatabase,
     val jobManager: MixinJobManager,
-    private val serializationJson: Json
+    private val serializationJson: Json,
 ) {
 
     private val cachePath by lazy {
@@ -121,7 +121,7 @@ class FlashMan(
         processFile(getAttachmentPath(), status)
     }
 
-    private suspend fun processData(file: File)= withContext(SINGLE_TRANSFER_THREAD) {
+    private suspend fun processData(file: File) = withContext(SINGLE_TRANSFER_THREAD) {
         try {
             val messageList = mutableListOf<Message>()
             if (file.exists() && file.length() > 0) {
@@ -147,101 +147,92 @@ class FlashMan(
     }
 
     private fun processJson(content: String, messageList: MutableList<Message>) {
-        val transferData = serializationJson.decodeFromString<TransferSendData<JsonElement>>(content)
-        when (transferData.type) {
-            TransferDataType.CONVERSATION.value -> {
-                val conversation = serializationJson.decodeFromJsonElement<Conversation>(transferData.data)
-                conversationDao.insertIgnore(conversation)
-                Timber.e("Conversation ID: ${conversation.conversationId}")
-            }
+        try {
+            val transferData = serializationJson.decodeFromString<TransferSendData<JsonElement>>(content)
+            when (transferData.type) {
+                TransferDataType.CONVERSATION.value -> {
+                    val conversation = serializationJson.decodeFromJsonElement<Conversation>(transferData.data)
+                    conversationDao.insertIgnore(conversation)
+                }
 
-            TransferDataType.PARTICIPANT.value -> {
-                val participant = serializationJson.decodeFromJsonElement<Participant>(transferData.data)
-                participantDao.insertIgnore(participant)
-                Timber.e("Participant ID: ${participant.conversationId} ${participant.userId}")
-            }
+                TransferDataType.PARTICIPANT.value -> {
+                    val participant = serializationJson.decodeFromJsonElement<Participant>(transferData.data)
+                    participantDao.insertIgnore(participant)
+                }
 
-            TransferDataType.USER.value -> {
-                val user = serializationJson.decodeFromJsonElement<User>(transferData.data)
-                userDao.insertIgnore(user)
-                Timber.e("User ID: ${user.userId}")
-            }
+                TransferDataType.USER.value -> {
+                    val user = serializationJson.decodeFromJsonElement<User>(transferData.data)
+                    userDao.insertIgnore(user)
+                }
 
-            TransferDataType.APP.value -> {
-                Timber.e("$content ${transferData.data}")
-                val app = serializationJson.decodeFromJsonElement<App>(transferData.data)
-                appDao.insertIgnore(app)
-                Timber.e("App ID: ${app.appId}")
-            }
+                TransferDataType.APP.value -> {
+                    val app = serializationJson.decodeFromJsonElement<App>(transferData.data)
+                    appDao.insertIgnore(app)
+                }
 
-            TransferDataType.ASSET.value -> {
-                val asset = serializationJson.decodeFromJsonElement<Asset>(transferData.data)
-                assetDao.insertIgnore(asset)
-                Timber.e("Asset ID: ${asset.assetId}")
-            }
+                TransferDataType.ASSET.value -> {
+                    val asset = serializationJson.decodeFromJsonElement<Asset>(transferData.data)
+                    assetDao.insertIgnore(asset)
+                }
 
-            TransferDataType.SNAPSHOT.value -> {
-                val snapshot = serializationJson.decodeFromJsonElement<Snapshot>(transferData.data)
-                snapshotDao.insertIgnore(snapshot)
-                Timber.e("Snapshot ID: ${snapshot.snapshotId}")
-            }
+                TransferDataType.SNAPSHOT.value -> {
+                    val snapshot = serializationJson.decodeFromJsonElement<Snapshot>(transferData.data)
+                    snapshotDao.insertIgnore(snapshot)
+                }
 
-            TransferDataType.STICKER.value -> {
-                val sticker = serializationJson.decodeFromJsonElement<Sticker>(transferData.data)
-                sticker.lastUseAt?.let {
-                    try {
-                        sticker.lastUseAt = it.createAtToLong().toString()
-                    } catch (e: Exception) {
-                        Timber.e(e)
+                TransferDataType.STICKER.value -> {
+                    val sticker = serializationJson.decodeFromJsonElement<Sticker>(transferData.data)
+                    sticker.lastUseAt?.let {
+                        try {
+                            sticker.lastUseAt = it.createAtToLong().toString()
+                        } catch (e: Exception) {
+                            Timber.e(e)
+                        }
+                    }
+                    stickerDao.insertIgnore(sticker)
+                }
+
+                TransferDataType.PIN_MESSAGE.value -> {
+                    val pinMessage = serializationJson.decodeFromJsonElement<PinMessage>(transferData.data)
+                    pinMessageDao.insertIgnore(pinMessage)
+                }
+
+                TransferDataType.TRANSCRIPT_MESSAGE.value -> {
+                    val transcriptMessage = serializationJson.decodeFromJsonElement<TranscriptMessage>(transferData.data)
+                    transcriptMessageDao.insertIgnore(transcriptMessage)
+                }
+
+                TransferDataType.MESSAGE.value -> {
+                    val message = serializationJson.decodeFromJsonElement<TransferMessage>(transferData.data)
+                    if (messageDao.findMessageIdById(message.messageId) == null) {
+                        processMessage(message.toMessage(), messageList)
                     }
                 }
-                stickerDao.insertIgnore(sticker)
-                Timber.e("Sticker ID: ${sticker.stickerId}")
-            }
 
-            TransferDataType.PIN_MESSAGE.value -> {
-                val pinMessage = serializationJson.decodeFromJsonElement<PinMessage>(transferData.data)
-                pinMessageDao.insertIgnore(pinMessage)
-                Timber.e("PinMessage ID: ${pinMessage.messageId}")
-            }
-
-            TransferDataType.TRANSCRIPT_MESSAGE.value -> {
-                val transcriptMessage = serializationJson.decodeFromJsonElement<TranscriptMessage>(transferData.data)
-                transcriptMessageDao.insertIgnore(transcriptMessage)
-                Timber.e("Transcript ID: ${transcriptMessage.messageId}")
-            }
-
-            TransferDataType.MESSAGE.value -> {
-                val message = serializationJson.decodeFromJsonElement<TransferMessage>(transferData.data)
-                if (messageDao.findMessageIdById(message.messageId) == null) {
-                    processMessage(message.toMessage(), messageList)
+                TransferDataType.MESSAGE_MENTION.value -> {
+                    val messageMention =
+                        serializationJson.decodeFromJsonElement<TransferMessageMention>(transferData.data).let {
+                            val messageContent =
+                                messageDao.findMessageContentById(it.conversationId, it.messageId)
+                                    ?: return
+                            val mentionData = parseMentionData(messageContent, userDao) ?: return
+                            MessageMention(it.messageId, it.conversationId, mentionData, it.hasRead)
+                        }
+                    messageMentionDao.insertIgnoreReturn(messageMention)
                 }
-                Timber.e("Message ID: ${message.messageId}")
-            }
 
-            TransferDataType.MESSAGE_MENTION.value -> {
-                val messageMention =
-                    serializationJson.decodeFromJsonElement<TransferMessageMention>(transferData.data).let {
-                        val messageContent =
-                            messageDao.findMessageContentById(it.conversationId, it.messageId)
-                                ?: return
-                        val mentionData = parseMentionData(messageContent, userDao) ?: return
-                        MessageMention(it.messageId, it.conversationId, mentionData, it.hasRead)
-                    }
-                val rowId = messageMentionDao.insertIgnoreReturn(messageMention)
-                Timber.e("MessageMention ID: $rowId ${messageMention.messageId}")
-            }
+                TransferDataType.EXPIRED_MESSAGE.value -> {
+                    val expiredMessage =
+                        serializationJson.decodeFromJsonElement<ExpiredMessage>(transferData.data)
+                    expiredMessageDao.insertIgnore(expiredMessage)
+                }
 
-            TransferDataType.EXPIRED_MESSAGE.value -> {
-                val expiredMessage =
-                    serializationJson.decodeFromJsonElement<ExpiredMessage>(transferData.data)
-                expiredMessageDao.insertIgnore(expiredMessage)
-                Timber.e("ExpiredMessage ID: ${expiredMessage.messageId}")
+                else -> {
+                    Timber.e("No support $content")
+                }
             }
-
-            else -> {
-                Timber.e("No support $content")
-            }
+        } catch (e: Exception) {
+            Timber.e("${e.message} $content")
         }
     }
 
@@ -252,7 +243,6 @@ class FlashMan(
             messageDao.insertList(list)
             list.clear()
         }
-        Timber.e("Message ID: ${message.messageId}")
     }
 
     private fun byteArrayToInt(byteArray: ByteArray): Int {
@@ -280,7 +270,7 @@ class FlashMan(
                     val transferMessage = transcriptMessageDao.findAttachmentMessage(messageId)
                     if (transferMessage?.mediaUrl != null) {
                         val dir = context.getTranscriptDirPath()
-                        if (!dir.exists()){
+                        if (!dir.exists()) {
                             dir.mkdirs()
                         }
                         f.copy(File(dir, transferMessage.mediaUrl!!))
@@ -293,19 +283,19 @@ class FlashMan(
                                 context.getImagePath().createImageTemp(
                                     message.conversationId,
                                     message.messageId,
-                                    extensionName?.run { ".$extensionName" } ?: ".jpg"
+                                    extensionName?.run { ".$extensionName" } ?: ".jpg",
                                 )
                             } else if (message.isAudio()) {
                                 context.getAudioPath().createAudioTemp(
                                     message.conversationId,
                                     message.messageId,
-                                    extensionName?: "ogg"
+                                    extensionName ?: "ogg",
                                 )
                             } else if (message.isVideo()) {
                                 context.getVideoPath().createVideoTemp(
                                     message.conversationId,
                                     message.messageId,
-                                    extensionName?: "mp4"
+                                    extensionName ?: "mp4",
                                 )
                             } else {
                                 context.getDocumentPath().createDocumentTemp(

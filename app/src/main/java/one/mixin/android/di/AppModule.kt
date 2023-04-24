@@ -496,7 +496,7 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideJson() = Json { ignoreUnknownKeys = true; explicitNulls = false; encodeDefaults = false }
+    fun provideJson() = Json { ignoreUnknownKeys = true; explicitNulls = false; encodeDefaults = false; coerceInputValues = true; }
 
     @Provides
     @Singleton
