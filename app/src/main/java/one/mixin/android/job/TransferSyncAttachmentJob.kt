@@ -31,6 +31,13 @@ class TransferSyncAttachmentJob(private val filePath: String) :
     }
 
     override fun onRun(): Unit = runBlocking {
+        // Final work
+        conversationDao.getAllConversationId().forEach { conversationId ->
+            conversationDao.refreshLastMessageId(conversationId)
+        }
+        conversationExtDao.getAllConversationId().forEach { conversationId ->
+            conversationExtDao.refreshCountByConversationId(conversationId)
+        }
         val context = MixinApplication.appContext
         val folder = File(filePath)
         folder.walkTopDown().forEach { f ->
