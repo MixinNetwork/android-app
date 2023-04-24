@@ -152,6 +152,7 @@ class TransferClient @Inject internal constructor(
 
                         TransferCommandAction.FINISH.value -> {
                             status.value = TransferStatus.FINISHED
+                            finalWork()
                             sendFinish(outputStream)
                             delay(100)
                             exit()
@@ -271,7 +272,6 @@ class TransferClient @Inject internal constructor(
                 val message = gson.fromJson(transferData.data, TransferMessage::class.java).toMessage()
                 val rowId = messageDao.insertIgnoreReturn(message)
                 if (rowId != -1L) { // If the row ID is valid (-1 indicates insertion failure)
-                    conversationExtDao.increment(message.conversationId)
                     ftsDatabase.insertOrReplaceMessageFts4(message)
                 }
                 Timber.e("Message ID: $rowId ${message.messageId}")
@@ -305,6 +305,15 @@ class TransferClient @Inject internal constructor(
             else -> {
                 Timber.e("No support $content")
             }
+        }
+    }
+
+    private fun finalWork() {
+        conversationDao.getAllConversationId().forEach { conversationId ->
+            conversationDao.refreshLastMessageId(conversationId)
+        }
+        conversationExtDao.getAllConversationId().forEach { conversationId ->
+            conversationExtDao.refreshCountByConversationId(conversationId)
         }
     }
 

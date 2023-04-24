@@ -153,6 +153,9 @@ interface ConversationDao : BaseDao<Conversation> {
     )
     fun getConversationsByUserId(userId: String): List<ParticipantSessionMinimal>
 
+    @Query("SELECT conversation_id FROM conversations")
+    fun getAllConversationId(): List<String>
+
     @Query("SELECT announcement FROM conversations WHERE conversation_id = :conversationId ")
     suspend fun getAnnouncementByConversationId(conversationId: String): String?
 

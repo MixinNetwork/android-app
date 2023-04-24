@@ -10,6 +10,9 @@ interface ConversationExtDao : BaseDao<ConversationExt> {
     @Query("SELECT count FROM conversation_ext WHERE conversation_id = :conversationId")
     fun getMessageCountByConversationId(conversationId: String): Int?
 
+    @Query("SELECT conversation_id FROM conversation_ext")
+    fun getAllConversationId(): List<String>
+
     @Query("DELETE FROM conversation_ext WHERE conversation_id = :conversationId")
     fun deleteConversationById(conversationId: String)
 
