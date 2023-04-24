@@ -114,10 +114,6 @@ abstract class PinCodeFragment(@LayoutRes contentLayoutId: Int) : FabLoadingFrag
         action.invoke()
 
         when {
-            sameUser -> {
-                insertUser(account.toUser())
-                InitializeActivity.showLoading(requireContext())
-            }
             account.fullName.isNullOrBlank() -> {
                 insertUser(account.toUser())
                 InitializeActivity.showSetupName(requireContext())

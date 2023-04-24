@@ -54,6 +54,7 @@ import one.mixin.android.ui.transfer.vo.TransferStatus
 import one.mixin.android.ui.transfer.vo.TransferStatusLiveData
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.viewBinding
+import one.mixin.android.vo.generateConversationId
 import one.mixin.android.websocket.PlainDataAction
 import one.mixin.android.websocket.PlainJsonMessagePayload
 import one.mixin.android.websocket.createParamBlazeMessage
@@ -544,7 +545,7 @@ class TransferActivity : BaseActivity() {
             val bm = createParamBlazeMessage(
                 createPlainJsonParam(
                     MixinDatabase.getDatabase(this@TransferActivity).participantDao()
-                        .joinedConversationId(accountId),
+                        .joinedConversationId(accountId) ?: generateConversationId(accountId, Constants.TEAM_MIXIN_USER_ID),
                     accountId,
                     encoded,
                     sessionId,

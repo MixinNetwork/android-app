@@ -148,22 +148,17 @@ class TransferSyncJob(private val filePath: String) :
             TransferDataType.MESSAGE_MENTION.value -> {
                 val messageMention =
                     serializationJson.decodeFromJsonElement<TransferMessageMention>(transferData.data).let {
-                        val mention = it.mentions
-                        if (mention != null) {
-                            MessageMention(it.messageId, it.conversationId, mention, it.hasRead)
-                        } else {
-                            val messageContent =
-                                messageDao.findMessageContentById(it.conversationId, it.messageId)
-                                    ?: return
-                            val mentionData = parseMentionData(messageContent, userDao) ?: return
-                            MessageMention(it.messageId, it.conversationId, mentionData, it.hasRead)
-                        }
+                        val messageContent =
+                            messageDao.findMessageContentById(it.conversationId, it.messageId)
+                                ?: return
+                        val mentionData = parseMentionData(messageContent, userDao) ?: return
+                        MessageMention(it.messageId, it.conversationId, mentionData, it.hasRead)
                     }
                 val rowId = messageMentionDao.insertIgnoreReturn(messageMention)
                 Timber.e("MessageMention ID: $rowId ${messageMention.messageId}")
             }
 
-            TransferDataType.EXPIRED_MESSAGE.name -> {
+            TransferDataType.EXPIRED_MESSAGE.value -> {
                 val expiredMessage =
                     serializationJson.decodeFromJsonElement<ExpiredMessage>(transferData.data)
                 expiredMessageDao.insertIgnore(expiredMessage)

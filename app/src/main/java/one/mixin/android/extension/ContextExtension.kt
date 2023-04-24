@@ -866,6 +866,25 @@ fun Context.showConfirmDialog(
         }.show()
 }
 
+fun Context.showConfirmDialog(
+    message: String,
+    cancelable: Boolean,
+    action: () -> Unit,
+) {
+    alertDialogBuilder()
+        .setMessage(message).setCancelable(cancelable)
+        .setNegativeButton(R.string.Cancel) { dialog, _ ->
+            dialog.dismiss()
+        }.setPositiveButton(R.string.Confirm) { dialog, _ ->
+            action.invoke()
+            dialog.dismiss()
+        }.create().apply {
+            setOnShowListener {
+                getButton(DialogInterface.BUTTON_POSITIVE).textColorResource = R.color.colorRed
+            }
+        }.show()
+}
+
 fun Context.isNightMode(): Boolean {
     return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
         val currentId = defaultSharedPreferences.getInt(
