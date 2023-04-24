@@ -190,8 +190,7 @@ class TransferClient @Inject internal constructor(
         RxBus.publish(DeviceTransferProgressEvent(progress))
     }
 
-    private suspend fun processJson(content: String, outputStream: OutputStream) {
-        Timber.e("$content")
+    private fun processJson(content: String, outputStream: OutputStream) {
         val transferData = gson.fromJson(content, TransferData::class.java)
         when (transferData.type) {
             TransferDataType.CONVERSATION.value -> {
@@ -295,7 +294,7 @@ class TransferClient @Inject internal constructor(
                 progress(outputStream)
             }
 
-            TransferDataType.EXPIRED_MESSAGE.name -> {
+            TransferDataType.EXPIRED_MESSAGE.value -> {
                 val expiredMessage =
                     gson.fromJson(transferData.data, ExpiredMessage::class.java)
                 expiredMessageDao.insertIgnore(expiredMessage)
