@@ -267,6 +267,16 @@ class TransferActivity : BaseActivity() {
                     binding.waitingLl.isVisible = true
                 }
 
+                TransferStatus.PARSING -> {
+                    binding.titleView.isVisible = false
+                    binding.qrFl.isVisible = false
+                    binding.initLl.isVisible = false
+                    binding.waitingLl.isVisible = true
+                    binding.pbProcessing.isVisible = true
+                    binding.progressTv.setText(R.string.transfer_process_title)
+                    binding.progressDesc.setText(R.string.transfer_process_tip)
+                }
+
                 TransferStatus.ERROR -> {
                     alertDialogBuilder()
                         .setTitle(R.string.Transfer_error)

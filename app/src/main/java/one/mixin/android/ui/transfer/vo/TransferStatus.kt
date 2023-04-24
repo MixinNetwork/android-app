@@ -10,5 +10,6 @@ enum class TransferStatus {
     VERIFICATION_COMPLETED,
     SYNCING,
     ERROR,
+    PARSING,
     FINISHED,
 }

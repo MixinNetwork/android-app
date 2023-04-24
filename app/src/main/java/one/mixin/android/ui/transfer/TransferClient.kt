@@ -14,6 +14,7 @@ import one.mixin.android.RxBus
 import one.mixin.android.db.AppDao
 import one.mixin.android.db.AssetDao
 import one.mixin.android.db.ConversationDao
+import one.mixin.android.db.ConversationExtDao
 import one.mixin.android.db.ExpiredMessageDao
 import one.mixin.android.db.MessageDao
 import one.mixin.android.db.MessageMentionDao
@@ -48,6 +49,7 @@ class TransferClient @Inject internal constructor(
     val context: Application,
     val assetDao: AssetDao,
     val conversationDao: ConversationDao,
+    val conversationExtDao: ConversationExtDao,
     val expiredMessageDao: ExpiredMessageDao,
     val messageDao: MessageDao,
     val participantDao: ParticipantDao,
@@ -65,7 +67,6 @@ class TransferClient @Inject internal constructor(
     private var socket: Socket? = null
     private var quit = false
 
-    fun isAvailable() = socket != null
 
     private lateinit var flashMan: FlashMan
 
@@ -74,8 +75,6 @@ class TransferClient @Inject internal constructor(
     val protocol = TransferProtocol()
 
     private val syncChannel = Channel<ByteArray>()
-
-    private var startTime = 0L
 
     suspend fun connectToServer(ip: String, port: Int, commandData: TransferCommandData) =
         withContext(SINGLE_SOCKET_THREAD) {
@@ -132,7 +131,7 @@ class TransferClient @Inject internal constructor(
                                 exit()
                                 return
                             }
-                            flashMan = FlashMan(transferCommandData.deviceId, context, assetDao, conversationDao, expiredMessageDao, messageDao, participantDao, pinMessageDao, snapshotDao, stickerDao, transcriptMessageDao, userDao, appDao, messageMentionDao, ftsDatabase, jobManager)
+                            flashMan = FlashMan(transferCommandData.deviceId, context, assetDao, conversationDao, conversationExtDao, expiredMessageDao, messageDao, participantDao, pinMessageDao, snapshotDao, stickerDao, transcriptMessageDao, userDao, appDao, messageMentionDao, ftsDatabase, jobManager, serializationJson)
                             this.total = transferCommandData.total ?: 0L
                         }
 
@@ -141,9 +140,9 @@ class TransferClient @Inject internal constructor(
                         }
 
                         TransferCommandAction.FINISH.value -> {
-                            status.value = TransferStatus.FINISHED
+                            status.value = TransferStatus.PARSING
                             sendFinish(outputStream)
-                            flashMan.finish()
+                            flashMan.finish(status)
                             delay(100)
                             exit()
                         }

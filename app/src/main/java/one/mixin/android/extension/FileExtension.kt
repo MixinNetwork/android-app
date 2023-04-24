@@ -680,7 +680,7 @@ fun File.moveTo(target: File) {
         throw FileNotFoundException("$absolutePath does not exist.")
     }
     if (target.exists()) {
-        // do noting
+        delete()
         return
     }
     val renamed = renameTo(target)
