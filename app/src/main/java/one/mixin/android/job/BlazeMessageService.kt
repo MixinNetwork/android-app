@@ -401,7 +401,7 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
                 ),
             )
             val encoded = plainText.toByteArray().base64Encode()
-            val bm = createParamBlazeMessage(createPlainJsonParam(participantDao.joinedConversationId(accountId)?: generateConversationId(accountId, TEAM_MIXIN_USER_ID), accountId, encoded, sessionId))
+            val bm = createParamBlazeMessage(createPlainJsonParam(participantDao.joinedConversationId(accountId) ?: generateConversationId(accountId, TEAM_MIXIN_USER_ID), accountId, encoded, sessionId))
             jobManager.addJobInBackground(SendPlaintextJob(bm, PRIORITY_ACK_MESSAGE))
             jobDao.deleteList(jobs)
         }

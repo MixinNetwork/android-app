@@ -545,7 +545,7 @@ class TransferActivity : BaseActivity() {
             val bm = createParamBlazeMessage(
                 createPlainJsonParam(
                     MixinDatabase.getDatabase(this@TransferActivity).participantDao()
-                        .joinedConversationId(accountId)?: generateConversationId(accountId, Constants.TEAM_MIXIN_USER_ID),
+                        .joinedConversationId(accountId) ?: generateConversationId(accountId, Constants.TEAM_MIXIN_USER_ID),
                     accountId,
                     encoded,
                     sessionId,

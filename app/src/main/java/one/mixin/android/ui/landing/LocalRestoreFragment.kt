@@ -5,8 +5,6 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.database.Cursor
-import android.database.sqlite.SQLiteDatabase
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -14,8 +12,6 @@ import android.view.View
 import androidx.activity.result.ActivityResultLauncher
 import androidx.annotation.RequiresPermission
 import androidx.core.app.ActivityCompat
-import androidx.core.database.getIntOrNull
-import androidx.core.database.getStringOrNull
 import androidx.lifecycle.lifecycleScope
 import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.autoDispose
@@ -28,7 +24,6 @@ import one.mixin.android.R
 import one.mixin.android.databinding.FragmentLocalRestoreBinding
 import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.defaultSharedPreferences
-import one.mixin.android.extension.fullDate
 import one.mixin.android.extension.getDisplayPath
 import one.mixin.android.extension.getLegacyBackupPath
 import one.mixin.android.extension.getRelativeTimeSpan
@@ -116,53 +111,12 @@ class LocalRestoreFragment : BaseFragment(R.layout.fragment_local_restore) {
                 null
             }
         }
-
-        if (backupInfo == null) {
-            withContext(Dispatchers.Main) {
-                showErrorAlert(Result.NOT_FOUND)
-            }
-            return@launch
-        }
-
-        val localData = getLocalDataInfo()
         withContext(Dispatchers.Main) {
-            initUI(backupInfo, localData)
-        }
-    }
-
-    private suspend fun getLocalDataInfo(): Pair<Int?, String?>? = withContext(Dispatchers.IO) {
-        val dbFile = requireContext().getDatabasePath(Constants.DataBase.DB_NAME)
-        if (!dbFile.exists()) {
-            return@withContext null
-        }
-        var c: Cursor? = null
-        var db: SQLiteDatabase? = null
-
-        try {
-            db = SQLiteDatabase.openDatabase(
-                dbFile.absolutePath,
-                null,
-                SQLiteDatabase.OPEN_READONLY,
-            )
-            c = db.rawQuery("SELECT count(1) FROM messages", null)
-            var count: Int? = null
-            if (c.moveToFirst()) {
-                count = c.getIntOrNull(0) ?: 0
+            if (backupInfo == null) {
+                showErrorAlert(Result.NOT_FOUND)
+            } else {
+                initUI(backupInfo)
             }
-            c?.close()
-
-            c = db.rawQuery("SELECT created_at FROM messages ORDER BY created_at DESC LIMIT 1", null)
-            var lastCreatedAt: String? = null
-            if (c.moveToFirst()) {
-                lastCreatedAt = c.getStringOrNull(0)?.fullDate()
-            }
-
-            return@withContext Pair(count, lastCreatedAt)
-        } catch (e: Exception) {
-            return@withContext null
-        } finally {
-            c?.close()
-            db?.close()
         }
     }
 
@@ -249,7 +203,7 @@ class LocalRestoreFragment : BaseFragment(R.layout.fragment_local_restore) {
     }
 
     @SuppressLint("MissingPermission")
-    private fun initUI(backupInfo: BackupInfo, localData: Pair<Int?, String?>?) {
+    private fun initUI(backupInfo: BackupInfo) {
         binding.restoreTime.text = backupInfo.lastModified.getRelativeTimeSpan()
         binding.restoreRestore.setOnClickListener {
             RxPermissions(this)
@@ -275,14 +229,6 @@ class LocalRestoreFragment : BaseFragment(R.layout.fragment_local_restore) {
             InitializeActivity.showLoading(requireContext())
             defaultSharedPreferences.putBoolean(Constants.Account.PREF_RESTORE, false)
             requireActivity().finish()
-        }
-
-        if (localData != null) {
-            val count = localData.first
-            val lastCreatedAt = localData.second
-            if (count == null || lastCreatedAt == null) return
-
-            binding.localExistsTv.text = getString(R.string.restore_local_exists, count, lastCreatedAt)
         }
     }
 
