@@ -173,10 +173,10 @@ class TransferClient @Inject internal constructor(
         if (total <= 0) return
         val progress = min((count++) / total.toFloat() * 100, 100f)
         if (System.currentTimeMillis() - lastTime > 1000) {
-//            sendCommand(
-//                outputStream,
-//                TransferCommandData(TransferCommandAction.PROGRESS.value, progress = progress),
-//            )
+            sendCommand(
+                outputStream,
+                TransferCommandData(TransferCommandAction.PROGRESS.value, progress = progress),
+            )
             lastTime = System.currentTimeMillis()
         }
         RxBus.publish(DeviceTransferProgressEvent(progress))
