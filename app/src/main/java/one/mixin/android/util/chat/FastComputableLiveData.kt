@@ -10,7 +10,7 @@ import java.util.concurrent.atomic.AtomicBoolean
 
 @SuppressLint("RestrictedApi")
 abstract class FastComputableLiveData<T> @JvmOverloads constructor(
-    /* synthetic access */
+    // synthetic access
     val mExecutor: Executor = ArchTaskExecutor.getIOThreadExecutor(),
 ) {
     val liveData: InnerLiveData<T> = object : InnerLiveData<T>() {
