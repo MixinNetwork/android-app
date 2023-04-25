@@ -38,12 +38,10 @@ import one.mixin.android.fts.FtsDatabase
 import one.mixin.android.fts.insertOrReplaceMessageFts4
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.ui.transfer.vo.TransferDataType
-import one.mixin.android.ui.transfer.vo.TransferMessage
 import one.mixin.android.ui.transfer.vo.TransferMessageMention
 import one.mixin.android.ui.transfer.vo.TransferSendData
 import one.mixin.android.ui.transfer.vo.TransferStatus
 import one.mixin.android.ui.transfer.vo.TransferStatusLiveData
-import one.mixin.android.ui.transfer.vo.toMessage
 import one.mixin.android.util.SINGLE_TRANSFER_THREAD
 import one.mixin.android.util.mention.parseMentionData
 import one.mixin.android.vo.App
@@ -123,7 +121,6 @@ class FlashMan(
 
     private suspend fun processData(file: File) = withContext(SINGLE_TRANSFER_THREAD) {
         try {
-            val messageList = mutableListOf<Message>()
             if (file.exists() && file.length() > 0) {
                 file.inputStream().use { input ->
                     while (input.available() > 0) {
@@ -132,7 +129,7 @@ class FlashMan(
                         val data = ByteArray(byteArrayToInt(sizeData))
                         input.read(data)
                         val content = String(data, StandardCharsets.UTF_8)
-                        processJson(content, messageList)
+                        processJson(content)
                     }
                 }
             }
@@ -146,7 +143,7 @@ class FlashMan(
         }
     }
 
-    private fun processJson(content: String, messageList: MutableList<Message>) {
+    private fun processJson(content: String) {
         try {
             val transferData = serializationJson.decodeFromString<TransferSendData<JsonElement>>(content)
             when (transferData.type) {
@@ -203,9 +200,9 @@ class FlashMan(
                 }
 
                 TransferDataType.MESSAGE.value -> {
-                    val message = serializationJson.decodeFromJsonElement<TransferMessage>(transferData.data)
+                    val message = serializationJson.decodeFromJsonElement<Message>(transferData.data)
                     if (messageDao.findMessageIdById(message.messageId) == null) {
-                        processMessage(message.toMessage(), messageList)
+                        processMessage(message)
                     }
                 }
 
@@ -236,12 +233,14 @@ class FlashMan(
         }
     }
 
-    private fun processMessage(message: Message, list: MutableList<Message>) {
-        list.add(message)
+    private val messageList = mutableListOf<Message>()
+
+    private fun processMessage(message: Message) {
+        messageList.add(message)
         ftsDatabase.insertOrReplaceMessageFts4(message)
-        if (list.size == 100) {
-            messageDao.insertList(list)
-            list.clear()
+        if (messageList.size == 100) {
+            messageDao.insertList(messageList)
+            messageList.clear()
         }
     }
 
@@ -255,7 +254,7 @@ class FlashMan(
     }
 
     private suspend fun processFile(folder: File, status: TransferStatusLiveData) = withContext(SINGLE_TRANSFER_THREAD) {
-        // Final work
+        // Final db work
         conversationDao.getAllConversationId().forEach { conversationId ->
             conversationDao.refreshLastMessageId(conversationId)
         }
@@ -305,6 +304,9 @@ class FlashMan(
                                 )
                             }
                         f.moveTo(outFile)
+                    } else {
+                        // Unable to Mapping to data, delete file
+                        f.delete()
                     }
                 }
             }
