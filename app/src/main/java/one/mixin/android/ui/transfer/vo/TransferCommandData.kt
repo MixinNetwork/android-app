@@ -18,6 +18,7 @@ data class TransferCommandData(
     @SerializedName("user_id")
     val userId: String? = null,
     val progress: Float? = null, // 0~100
+    val offset: Long? = null,
     val version: Int = CURRENT_TRANSFER_VERSION,
     @SerializedName("device_id")
     val deviceId: String = MixinApplication.appContext.getDeviceId(),
