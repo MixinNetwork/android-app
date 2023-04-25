@@ -71,11 +71,27 @@ class TransferServer @Inject internal constructor(
         GsonHelper.customGson
     }
 
+    val protocol = TransferProtocol().apply {
+        setTransferCallback(object :TransferProtocol.TransferCallback{
+            override fun onTransferWrite(dataSize: Int): Boolean {
+                sendOffset += dataSize
+                return true
+            }
+
+            override fun onTransferRead(dataSize: Int) {
+                // do noting
+            }
+        })
+    }
+
     private var code = 0
     private var port = 0
 
     private var count = 0L
     private var total = 0L
+
+    private var sendOffset = 0L
+    private var receiveOffset = 0L
 
     suspend fun startServer(
         createdSuccessCallback: (TransferCommandData) -> Unit,
@@ -163,6 +179,7 @@ class TransferServer @Inject internal constructor(
                                 exit()
                             }
                         } else if (commandData.action == TransferCommandAction.FINISH.value) {
+                            Timber.e("Server transfer finish ${commandData.offset} $sendOffset")
                             RxBus.publish(DeviceTransferProgressEvent(100f))
                             status.value = TransferStatus.FINISHED
                             exit()
@@ -170,7 +187,9 @@ class TransferServer @Inject internal constructor(
                             // Get progress from client
                             if (commandData.progress != null) {
                                 RxBus.publish(DeviceTransferProgressEvent(commandData.progress))
+                                receiveOffset = commandData.offset ?: 0
                             }
+                            Timber.e("Server transfer $receiveOffset $sendOffset")
                         } else {
                             Timber.e("Unsupported command")
                         }
@@ -238,7 +257,7 @@ class TransferServer @Inject internal constructor(
     }
 
     private fun sendFinish(outputStream: OutputStream) {
-        Timber.e("send finish")
+        Timber.e("send finish $receiveOffset $sendOffset")
         writeCommand(
             outputStream,
             TransferCommandData(TransferCommandAction.FINISH.value),
@@ -255,7 +274,6 @@ class TransferServer @Inject internal constructor(
             list.map {
                 TransferSendData(TransferDataType.CONVERSATION.value, it)
             }.forEach {
-                Timber.e("send conversation ${it.data.conversationId}")
                 writeJson(outputStream, it)
                 count++
             }
@@ -276,7 +294,6 @@ class TransferServer @Inject internal constructor(
             list.map {
                 TransferSendData(TransferDataType.PARTICIPANT.value, it)
             }.forEach {
-                Timber.e("send Participant ${it.data.conversationId} ${it.data.userId}")
                 writeJson(outputStream, it)
                 count++
             }
@@ -297,7 +314,6 @@ class TransferServer @Inject internal constructor(
             list.map {
                 TransferSendData(TransferDataType.USER.value, it)
             }.forEach {
-                Timber.e("send user ${it.data.userId}")
                 writeJson(outputStream, it)
                 count++
             }
@@ -318,7 +334,6 @@ class TransferServer @Inject internal constructor(
             list.map {
                 TransferSendData(TransferDataType.APP.value, it)
             }.forEach {
-                Timber.e("send app ${it.data.appId}")
                 writeJson(outputStream, it)
                 count++
             }
@@ -339,7 +354,6 @@ class TransferServer @Inject internal constructor(
             list.map {
                 TransferSendData(TransferDataType.ASSET.value, it)
             }.forEach {
-                Timber.e("send asset ${it.data.assetId}")
                 writeJson(outputStream, it)
                 count++
             }
@@ -371,7 +385,6 @@ class TransferServer @Inject internal constructor(
             list.map {
                 TransferSendData(TransferDataType.STICKER.value, it)
             }.forEach {
-                Timber.e("send sticker ${it.data.stickerId}")
                 writeJson(outputStream, it)
                 count++
             }
@@ -393,7 +406,6 @@ class TransferServer @Inject internal constructor(
                 TransferSendData(TransferDataType.SNAPSHOT.value, it)
             }.forEach {
                 writeJson(outputStream, it)
-                Timber.e("send snapshot ${it.data.snapshotId}")
                 count++
             }
             if (list.size < LIMIT) {
@@ -414,7 +426,6 @@ class TransferServer @Inject internal constructor(
                 TransferSendData(TransferDataType.TRANSCRIPT_MESSAGE.value, it)
             }.forEach {
                 writeJson(outputStream, it)
-                Timber.e("send transcript ${it.data.transcriptId}")
                 count++
             }
             if (list.size < LIMIT) {
@@ -436,8 +447,6 @@ class TransferServer @Inject internal constructor(
             }.forEach {
                 writeJson(outputStream, it)
                 count++
-
-                Timber.e("send pin message: ${it.data.messageId}")
             }
             if (list.size < LIMIT) {
                 return
@@ -457,7 +466,6 @@ class TransferServer @Inject internal constructor(
                 TransferSendData(TransferDataType.MESSAGE.value, it)
             }.forEach {
                 writeJson(outputStream, it)
-                Timber.e("send message: ${it.data.messageId}")
                 count++
             }
             if (list.size < LIMIT) {
@@ -478,7 +486,6 @@ class TransferServer @Inject internal constructor(
                 TransferSendData(TransferDataType.MESSAGE_MENTION.value, it)
             }.forEach {
                 writeJson(outputStream, it)
-                Timber.e("send message mention: ${it.data.messageId}")
                 count++
             }
             if (list.size < LIMIT) {
@@ -499,7 +506,6 @@ class TransferServer @Inject internal constructor(
                 TransferSendData(TransferDataType.EXPIRED_MESSAGE.value, it)
             }.forEach {
                 writeJson(outputStream, it)
-                Timber.e("send pin message: ${it.data.messageId}")
                 count++
             }
             if (list.size < LIMIT) {
@@ -527,8 +533,6 @@ class TransferServer @Inject internal constructor(
             }
         }
     }
-
-    val protocol = TransferProtocol()
 
     fun exit() = MixinApplication.get().applicationScope.launch(SINGLE_SOCKET_THREAD) {
         try {

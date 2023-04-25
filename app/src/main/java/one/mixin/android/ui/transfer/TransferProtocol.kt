@@ -32,9 +32,13 @@ import kotlin.text.Charsets.UTF_8
 
 /*
  * Data packet format:
- * ----------------------------------------------------------------------
+ * -----------------------------------------------------------------
  * | type (1 byte) | body_length（4 bytes） | body | crc（8 bytes） |
- * ----------------------------------------------------------------------
+ * -----------------------------------------------------------------
+ * File packet format:
+ * ----------------------------------------------------------------------------------
+ * | type (1 byte) | body_length（4 bytes） | uuid(16 bytes) | body | crc（8 bytes） |
+ * ----------------------------------------------------------------------------------
  */
 class TransferProtocol {
 
@@ -50,6 +54,17 @@ class TransferProtocol {
 
     private val transcriptMessageDao by lazy {
         MixinDatabase.getDatabase(MixinApplication.appContext).transcriptDao()
+    }
+
+    interface TransferCallback {
+        fun onTransferWrite(dataSize: Int): Boolean
+
+        fun onTransferRead(dataSize: Int)
+    }
+
+    private var transferCallback: TransferCallback? = null
+    fun setTransferCallback(callback: TransferCallback) {
+        transferCallback = callback
     }
 
     fun read(inputStream: InputStream): Any? {
@@ -85,6 +100,7 @@ class TransferProtocol {
         outputStream.write(byteArrayOf(type))
         outputStream.write(intToByteArray(data.size))
         outputStream.write(data)
+        transferCallback?.onTransferWrite(data.size)
         outputStream.write(checksum(data))
     }
 
@@ -102,6 +118,7 @@ class TransferProtocol {
             var bytesRead = fileInputStream.read(buffer, 0, 1024)
             while (bytesRead != -1) {
                 outputStream.write(buffer, 0, bytesRead)
+                transferCallback?.onTransferWrite(bytesRead)
                 crc.update((buffer.copyOfRange(0, bytesRead)))
                 bytesRead = fileInputStream.read(buffer, 0, 1024)
             }
@@ -123,6 +140,7 @@ class TransferProtocol {
     @Throws(ChecksumException::class)
     private fun readByteArray(inputStream: InputStream, expectedLength: Int): ByteArray {
         val data = safeRead(inputStream, expectedLength)
+        transferCallback?.onTransferRead(data.size)
         val checksum = safeRead(inputStream, 8)
         if (bytesToLong(checksum) != bytesToLong(checksum(data))) {
             Timber.e("ChecksumException $expectedLength ${bytesToLong(checksum)} ${bytesToLong(checksum(data))}")
@@ -174,8 +192,9 @@ class TransferProtocol {
             var bytesLeft = expectedLength - 16
             while (bytesRead != -1 && bytesLeft > 0) {
                 bytesRead = inputStream.read(buffer, 0, bytesLeft.coerceAtMost(1024))
-                bytesLeft -= bytesRead
+                transferCallback?.onTransferRead(bytesRead)
                 calculateReadSpeed(bytesRead)
+                bytesLeft -= bytesRead
             }
             // skip error file
             safeRead(inputStream, 8)
@@ -206,6 +225,8 @@ class TransferProtocol {
                     bytesRead = inputStream.read(buffer, 0, bytesLeft.coerceAtMost(1024))
                     if (bytesRead > 0) {
                         fos.write(buffer, 0, bytesRead)
+                        transferCallback?.onTransferRead(bytesRead)
+                        calculateReadSpeed(bytesRead)
                         crc.update(buffer.copyOfRange(0, bytesRead))
                         bytesLeft -= bytesRead
                     }

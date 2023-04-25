@@ -420,7 +420,6 @@ class TransferActivity : BaseActivity() {
                 .subscribe {
                     binding.progressTv.text =
                         getString(R.string.sending_desc, String.format("%.1f%%", it.progress))
-                    Timber.e("Device transfer ${it.progress}%")
                 }
         }
 
