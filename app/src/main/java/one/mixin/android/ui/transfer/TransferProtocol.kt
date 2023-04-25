@@ -46,6 +46,8 @@ class TransferProtocol {
         const val TYPE_COMMAND = 0x01.toByte()
         const val TYPE_JSON = 0x02.toByte()
         const val TYPE_FILE = 0x03.toByte()
+
+        const val MAX_DATA_OFFSET = 5242880L // 5MB
     }
 
     private val messageDao by lazy {
@@ -57,7 +59,7 @@ class TransferProtocol {
     }
 
     interface TransferCallback {
-        fun onTransferWrite(dataSize: Int): Boolean
+        suspend fun onTransferWrite(dataSize: Int): Boolean
 
         fun onTransferRead(dataSize: Int)
     }
@@ -95,7 +97,7 @@ class TransferProtocol {
         }
     }
 
-    fun write(outputStream: OutputStream, type: Byte, content: String) {
+    suspend fun write(outputStream: OutputStream, type: Byte, content: String) {
         val data = content.toByteArray(UTF_8)
         outputStream.write(byteArrayOf(type))
         outputStream.write(intToByteArray(data.size))
@@ -104,7 +106,7 @@ class TransferProtocol {
         outputStream.write(checksum(data))
     }
 
-    fun write(outputStream: OutputStream, file: File, messageId: String) {
+    suspend fun write(outputStream: OutputStream, file: File, messageId: String) {
         if (file.exists() && file.length() > 0) {
             outputStream.write(byteArrayOf(TYPE_FILE))
             outputStream.write(intToByteArray(file.length().toInt() + 16))

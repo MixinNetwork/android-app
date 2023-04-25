@@ -92,7 +92,7 @@ class TransferClient @Inject internal constructor(
 
     val protocol = TransferProtocol().apply {
         setTransferCallback(object :TransferProtocol.TransferCallback{
-            override fun onTransferWrite(dataSize: Int): Boolean {
+            override suspend fun onTransferWrite(dataSize: Int): Boolean {
                 return true
             }
 
@@ -191,7 +191,7 @@ class TransferClient @Inject internal constructor(
     }
 
     private var lastTime = 0L
-    private fun progress(outputStream: OutputStream) {
+    private suspend fun progress(outputStream: OutputStream) {
         if (total <= 0) return
         val progress = min((count++) / total.toFloat() * 100, 100f)
         if (System.currentTimeMillis() - lastTime > 200) {
@@ -205,7 +205,7 @@ class TransferClient @Inject internal constructor(
         RxBus.publish(DeviceTransferProgressEvent(progress))
     }
 
-    private fun processJson(content: String, outputStream: OutputStream) {
+    private suspend fun processJson(content: String, outputStream: OutputStream) {
         val transferData = gson.fromJson(content, TransferData::class.java)
         when (transferData.type) {
             TransferDataType.CONVERSATION.value -> {
@@ -325,7 +325,7 @@ class TransferClient @Inject internal constructor(
         }
     }
 
-    private fun sendFinish(outputStream: OutputStream) {
+    private suspend fun sendFinish(outputStream: OutputStream) {
         sendCommand(
             outputStream,
             TransferCommandData(TransferCommandAction.FINISH.value, offset = receiveOffset),
@@ -333,7 +333,7 @@ class TransferClient @Inject internal constructor(
         Timber.e(" Client transfer finish $receiveOffset")
     }
 
-    private fun sendCommand(
+    private suspend fun sendCommand(
         outputStream: OutputStream,
         transferSendData: TransferCommandData,
     ) {
