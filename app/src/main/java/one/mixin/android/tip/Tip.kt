@@ -93,17 +93,22 @@ class Tip @Inject internal constructor(
             val privTip = try {
                 readTipPriv(context)
             } catch (e: Exception) {
-                Timber.e("read tip priv meet $e")
+                Timber.e("read tip priv meet ${e.stackTraceToString()}")
                 clearTipPriv(context)
                 null
             }
             Timber.e("getOrRecoverTipPriv after readTipPriv privTip == null is ${privTip == null}")
-            if (privTip == null) {
+
+            suspend fun runCreateTipPriv(): ByteArray {
                 val deviceId = context.defaultSharedPreferences.getString(Constants.DEVICE_ID, null) ?: throw TipNullException("Device id is null")
-                createTipPriv(context, pin, deviceId, forRecover = true).getOrThrow()
+                return createTipPriv(context, pin, deviceId, forRecover = true).getOrThrow()
+            }
+
+            if (privTip == null) {
+                runCreateTipPriv()
             } else {
                 val aesKeyCipher = getAesKey(pin)
-                Timber.e("getOrRecoverTipPriv after getAesKey")
+                Timber.e("getOrRecoverTipPriv after getAesKey, aesKeyCipher isEmpty: ${aesKeyCipher.isEmpty()}")
                 val pinToken = Session.getPinToken()?.decodeBase64() ?: throw TipNullException("No pin token")
                 try {
                     val aesKey = aesDecrypt(pinToken, aesKeyCipher)
@@ -113,10 +118,11 @@ class Tip @Inject internal constructor(
                 } catch (e: Exception) {
                     // AES decrypt failure means the local priv does not match
                     // the AES key or the cipher AES key is invalid, clearing
-                    // the local priv so it can be recovered on the next try.
-                    Timber.e("aes decrypt local priv meet $e")
+                    // the local priv and run create TIP priv process.
+                    Timber.e("aes decrypt local priv meet ${e.stackTraceToString()}")
                     clearTipPriv(context)
-                    throw e
+
+                    runCreateTipPriv()
                 }
             }
         }
@@ -369,7 +375,7 @@ class Tip @Inject internal constructor(
             signatureBase64 = sigBase64,
             timestamp = timestamp,
         )
-        Timber.e("getAesKey before updateTipSecret")
+        Timber.e("getAesKey before readTipSecret")
         val response = tipNetwork { tipService.readTipSecret(tipSecretReadRequest) }.getOrThrow()
         return response.seedBase64?.base64RawURLDecode() ?: throw TipNullException("Not get tip secret")
     }
