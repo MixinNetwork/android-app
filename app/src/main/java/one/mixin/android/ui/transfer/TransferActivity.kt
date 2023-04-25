@@ -290,6 +290,8 @@ class TransferActivity : BaseActivity() {
                 }
 
                 TransferStatus.FINISHED -> {
+                    binding.progressTv.setText(R.string.Transfer_completed)
+                    binding.pbProcessing.isVisible = false
                     alertDialogBuilder()
                         .setTitle(R.string.Transfer_completed)
                         .setCancelable(false)

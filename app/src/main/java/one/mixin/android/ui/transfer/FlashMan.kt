@@ -42,6 +42,7 @@ import one.mixin.android.ui.transfer.vo.TransferMessageMention
 import one.mixin.android.ui.transfer.vo.TransferSendData
 import one.mixin.android.ui.transfer.vo.TransferStatus
 import one.mixin.android.ui.transfer.vo.TransferStatusLiveData
+import one.mixin.android.util.SINGLE_TRANSFER_FILE_THREAD
 import one.mixin.android.util.SINGLE_TRANSFER_THREAD
 import one.mixin.android.util.mention.parseMentionData
 import one.mixin.android.vo.App
@@ -85,7 +86,9 @@ class FlashMan(
 ) {
 
     private val cachePath by lazy {
-        File("${(context.externalCacheDir ?: context.cacheDir).absolutePath}${File.separator}$deviceId")
+        File("${(context.externalCacheDir ?: context.cacheDir).absolutePath}${File.separator}$deviceId").apply {
+            this.mkdirs()
+        }
     }
 
     fun getAttachmentPath(): File {
@@ -96,15 +99,15 @@ class FlashMan(
 
     private var index: Int = 0
 
-    private fun getCacheFile(): File {
+    private suspend fun getCacheFile(): File = withContext(SINGLE_TRANSFER_FILE_THREAD) {
         cachePath.mkdirs()
-        return File(cachePath, "${++index}.cache")
+        File(cachePath, "${++index}.cache")
     }
 
-    private var currentFile = getCacheFile()
+    private var currentFile = File(cachePath, "1.cache")
     private var currentOutputStream = currentFile.outputStream()
-    suspend fun writeBytes(bytes: ByteArray) {
-        if (currentFile.length() + bytes.size > 5242880L) { // 5M
+    suspend fun writeBytes(bytes: ByteArray) = withContext(SINGLE_TRANSFER_FILE_THREAD) {
+        if (currentFile.length() + bytes.size > TransferProtocol.MAX_DATA_OFFSET) {
             processData(currentFile)
             currentFile = getCacheFile()
             currentOutputStream.close()

@@ -72,23 +72,6 @@ class TransferServer @Inject internal constructor(
 
     private var quit = false
 
-    val protocol = TransferProtocol().apply {
-        setTransferCallback(object : TransferProtocol.TransferCallback {
-            override suspend fun onTransferWrite(dataSize: Int): Boolean {
-                sendOffset += dataSize
-                while (sendOffset - receiveOffset > TransferProtocol.MAX_DATA_OFFSET) {
-                    Timber.e("Waiting!!! sendOffset: $sendOffset, receiveOffset: $receiveOffset")
-                    delay(1000)
-                }
-                return true
-            }
-
-            override fun onTransferRead(dataSize: Int) {
-                // do noting
-            }
-        })
-    }
-
     private var code = 0
     private var port = 0
 
@@ -97,6 +80,22 @@ class TransferServer @Inject internal constructor(
 
     private var sendOffset = 0L
     private var receiveOffset = 0L
+
+    val protocol = TransferProtocol(true).apply {
+        setTransferCallback(object : TransferProtocol.TransferCallback {
+            override suspend fun onTransferWrite(dataSize: Int) {
+                sendOffset += dataSize
+                while (sendOffset - receiveOffset > TransferProtocol.MAX_DATA_OFFSET) {
+                    Timber.e("Waiting!!! sendOffset: $sendOffset, receiveOffset: $receiveOffset")
+                    delay(1000L)
+                }
+            }
+
+            override fun onTransferRead(dataSize: Int) {
+                // do noting
+            }
+        })
+    }
 
     suspend fun startServer(
         createdSuccessCallback: (TransferCommandData) -> Unit,
@@ -194,7 +193,6 @@ class TransferServer @Inject internal constructor(
                                 RxBus.publish(DeviceTransferProgressEvent(commandData.progress))
                                 receiveOffset = commandData.offset ?: 0
                             }
-                            Timber.e("Server transfer $receiveOffset $sendOffset ${(sendOffset - receiveOffset) / 1024 / 1024}MB")
                         } else {
                             Timber.e("Unsupported command")
                         }
@@ -434,7 +432,6 @@ class TransferServer @Inject internal constructor(
                         sendMediaFile(outputStream, file, sendData.data.messageId)
                     }
                 }
-                Timber.e("send transcript ${sendData.data.transcriptId}")
                 count++
             }
             if (list.size < LIMIT) {
@@ -480,7 +477,6 @@ class TransferServer @Inject internal constructor(
                         sendMediaFile(outputStream, file, sendData.data.messageId)
                     }
                 }
-                Timber.e("send message: ${sendData.data.messageId}")
                 count++
             }
             if (list.size < LIMIT) {

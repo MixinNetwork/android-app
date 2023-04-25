@@ -34,3 +34,11 @@ val SINGLE_SOCKET_THREAD by lazy {
 val SINGLE_TRANSFER_THREAD by lazy {
     Executors.newSingleThreadExecutor().asCoroutineDispatcher()
 }
+
+val SINGLE_TRANSFER_PROGRESS_THREAD by lazy {
+    Executors.newSingleThreadExecutor().asCoroutineDispatcher()
+}
+
+val SINGLE_TRANSFER_FILE_THREAD by lazy {
+    Executors.newSingleThreadExecutor().asCoroutineDispatcher()
+}

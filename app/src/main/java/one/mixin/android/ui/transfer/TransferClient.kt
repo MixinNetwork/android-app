@@ -33,9 +33,9 @@ import one.mixin.android.ui.transfer.vo.TransferCommandData
 import one.mixin.android.ui.transfer.vo.TransferStatus
 import one.mixin.android.ui.transfer.vo.TransferStatusLiveData
 import one.mixin.android.util.SINGLE_SOCKET_THREAD
+import one.mixin.android.util.SINGLE_TRANSFER_PROGRESS_THREAD
 import timber.log.Timber
 import java.io.EOFException
-import java.io.File
 import java.io.InputStream
 import java.io.OutputStream
 import java.lang.Float.min
@@ -73,14 +73,18 @@ class TransferClient @Inject internal constructor(
 
     private var receiveOffset = 0L
 
-    val protocol = TransferProtocol().apply {
+    val protocol = TransferProtocol(false).apply {
         setTransferCallback(object : TransferProtocol.TransferCallback {
-            override suspend fun onTransferWrite(dataSize: Int): Boolean {
-                return true
+            override suspend fun onTransferWrite(dataSize: Int) {
             }
 
             override fun onTransferRead(dataSize: Int) {
                 receiveOffset += dataSize
+                MixinApplication.get().applicationScope.launch(SINGLE_TRANSFER_PROGRESS_THREAD) {
+                    socket?.getOutputStream()?.let {
+                        progress(it)
+                    }
+                }
                 // do noting
             }
         })
@@ -103,7 +107,6 @@ class TransferClient @Inject internal constructor(
                     for (byteArray in syncChannel) {
                         // write to cache file
                         flashMan.writeBytes(byteArray)
-                        progress(outputStream)
                     }
                 }
             } catch (e: Exception) {
@@ -134,7 +137,6 @@ class TransferClient @Inject internal constructor(
             }
             when (result) {
                 is String -> {
-                    Timber.e("sync $result")
                     val transferCommandData: TransferCommandData = serializationJson.decodeFromString(result)
                     when (transferCommandData.action) {
                         TransferCommandAction.START.value -> {
@@ -166,15 +168,12 @@ class TransferClient @Inject internal constructor(
                 }
 
                 is ByteArray -> {
+                    count++
                     syncChannel.send(result)
                 }
 
-                is File -> {
-                    // read file
-                    progress(outputStream)
-                }
-
                 else -> {
+                    count++
                     // do noting
                 }
             }
@@ -184,14 +183,13 @@ class TransferClient @Inject internal constructor(
     private var lastTime = 0L
     private suspend fun progress(outputStream: OutputStream) {
         if (total <= 0) return
-        val progress = min((count++) / total.toFloat() * 100, 100f)
-        if (System.currentTimeMillis() - lastTime > 500) {
+        val progress = min(count / total.toFloat() * 100, 100f)
+        if (System.currentTimeMillis() - lastTime > 200) {
             sendCommand(
                 outputStream,
                 TransferCommandData(TransferCommandAction.PROGRESS.value, progress = progress, offset = receiveOffset),
             )
             lastTime = System.currentTimeMillis()
-            Timber.e("Client transfer $progress% $receiveOffset")
         }
         RxBus.publish(DeviceTransferProgressEvent(progress))
     }

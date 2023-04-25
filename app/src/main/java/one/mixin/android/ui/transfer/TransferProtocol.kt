@@ -24,17 +24,17 @@ import kotlin.text.Charsets.UTF_8
  * | type (1 byte) | body_length（4 bytes） | uuid(16 bytes) | body | crc（8 bytes） |
  * ----------------------------------------------------------------------------------
  */
-class TransferProtocol {
+class TransferProtocol(val server: Boolean) {
 
     companion object {
         const val TYPE_COMMAND = 0x01.toByte()
         const val TYPE_JSON = 0x02.toByte()
         const val TYPE_FILE = 0x03.toByte()
 
-        const val MAX_DATA_OFFSET = 5242880L // 5MB
+        const val MAX_DATA_OFFSET = 10485760L // 10MB
     }
     interface TransferCallback {
-        suspend fun onTransferWrite(dataSize: Int): Boolean
+        suspend fun onTransferWrite(dataSize: Int)
 
         fun onTransferRead(dataSize: Int)
     }
@@ -75,6 +75,9 @@ class TransferProtocol {
         outputStream.write(intToByteArray(data.size))
         outputStream.write(data)
         transferCallback?.onTransferWrite(data.size)
+        if (server) {
+            calculateReadSpeed(data.size)
+        }
         outputStream.write(checksum(data))
     }
 
@@ -93,6 +96,9 @@ class TransferProtocol {
             while (bytesRead != -1) {
                 outputStream.write(buffer, 0, bytesRead)
                 transferCallback?.onTransferWrite(bytesRead)
+                if (server) {
+                    calculateReadSpeed(bytesRead)
+                }
                 crc.update((buffer.copyOfRange(0, bytesRead)))
                 bytesRead = fileInputStream.read(buffer, 0, 1024)
             }
@@ -114,13 +120,13 @@ class TransferProtocol {
     @Throws(ChecksumException::class)
     private fun readByteArray(inputStream: InputStream, expectedLength: Int, sizeData: ByteArray? = null): ByteArray {
         val data = safeRead(inputStream, expectedLength)
-        transferCallback?.onTransferRead(data.size)
         val checksum = safeRead(inputStream, 8)
         if (bytesToLong(checksum) != bytesToLong(checksum(data))) {
             Timber.e("ChecksumException $expectedLength ${bytesToLong(checksum)} ${bytesToLong(checksum(data))}")
             throw ChecksumException()
         }
         if (sizeData != null) {
+            transferCallback?.onTransferRead(data.size)
             return sizeData + data
         }
         return data
@@ -137,7 +143,9 @@ class TransferProtocol {
 
             readLength += count
         }
-        calculateReadSpeed(expectedLength)
+        if (!server) {
+            calculateReadSpeed(expectedLength)
+        }
         return data
     }
 
@@ -170,7 +178,9 @@ class TransferProtocol {
             while (bytesRead != -1 && bytesLeft > 0) {
                 bytesRead = inputStream.read(buffer, 0, bytesLeft.coerceAtMost(1024))
                 transferCallback?.onTransferRead(bytesRead)
-                calculateReadSpeed(bytesRead)
+                if (!server) {
+                    calculateReadSpeed(bytesRead)
+                }
                 bytesLeft -= bytesRead
             }
             // skip error file
@@ -183,7 +193,9 @@ class TransferProtocol {
                     if (bytesRead > 0) {
                         fos.write(buffer, 0, bytesRead)
                         transferCallback?.onTransferRead(bytesRead)
-                        calculateReadSpeed(bytesRead)
+                        if (!server) {
+                            calculateReadSpeed(bytesRead)
+                        }
                         crc.update(buffer.copyOfRange(0, bytesRead))
                         bytesLeft -= bytesRead
                     }
