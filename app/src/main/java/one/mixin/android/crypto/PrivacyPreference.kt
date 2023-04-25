@@ -2,11 +2,16 @@ package one.mixin.android.crypto
 
 import android.content.Context
 import android.content.SharedPreferences
+import one.mixin.android.Constants.Tip.ALIAS_EPHEMERAL_SEED
+import one.mixin.android.Constants.Tip.ALIAS_TIP_PRIV
+import one.mixin.android.Constants.Tip.EPHEMERAL_SEED
+import one.mixin.android.Constants.Tip.TIP_PRIV
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.putBoolean
 import one.mixin.android.extension.putLong
 import one.mixin.android.extension.remove
 import one.mixin.android.extension.sharedPreferences
+import one.mixin.android.tip.deleteKeyByAlias
 
 object PrivacyPreference {
     private const val PREF_PIN_INTERVAL = "pref_pin_interval"
@@ -22,6 +27,11 @@ object PrivacyPreference {
         getPrivacyPreference(context).remove(IS_LOADED)
         context.defaultSharedPreferences.remove(IS_SYNC_SESSION)
         getPrivacyPreference(context).remove(IS_SYNC_SESSION)
+
+        context.defaultSharedPreferences.remove(TIP_PRIV)
+        deleteKeyByAlias(ALIAS_TIP_PRIV)
+        context.defaultSharedPreferences.remove(EPHEMERAL_SEED)
+        deleteKeyByAlias(ALIAS_EPHEMERAL_SEED)
     }
 
     private fun getPreference(context: Context, key: String): SharedPreferences {
