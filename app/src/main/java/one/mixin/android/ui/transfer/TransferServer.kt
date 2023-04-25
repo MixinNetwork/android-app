@@ -191,7 +191,7 @@ class TransferServer @Inject internal constructor(
                             // Get progress from client
                             if (commandData.progress != null) {
                                 RxBus.publish(DeviceTransferProgressEvent(commandData.progress))
-                                receiveOffset = commandData.offset ?: 0
+                                receiveOffset = commandData.offset ?: Long.MAX_VALUE
                             }
                         } else {
                             Timber.e("Unsupported command")
