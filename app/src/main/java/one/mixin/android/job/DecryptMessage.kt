@@ -50,6 +50,7 @@ import one.mixin.android.fts.insertOrReplaceMessageFts4
 import one.mixin.android.job.BaseJob.Companion.PRIORITY_SEND_ATTACHMENT_MESSAGE
 import one.mixin.android.session.Session
 import one.mixin.android.ui.transfer.TransferActivity
+import one.mixin.android.ui.transfer.vo.TransferCommandAction
 import one.mixin.android.ui.transfer.vo.TransferCommandData
 import one.mixin.android.ui.web.replaceApp
 import one.mixin.android.util.ColorUtil
@@ -459,8 +460,12 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
             } else if (plainData.action == PlainDataAction.DEVICE_TRANSFER.name) {
                 val content = plainData.content ?: return
                 val command = gson.fromJson(content, TransferCommandData::class.java)
-                MixinApplication.get().currentActivity?.let { activity ->
-                    TransferActivity.show(activity, command)
+                if (command.action == TransferCommandAction.CANCEL.value) {
+                    RxBus.publish(command)
+                } else {
+                    MixinApplication.get().currentActivity?.let { activity ->
+                        TransferActivity.show(activity, command)
+                    }
                 }
             } else if (plainData.action == PlainDataAction.ACKNOWLEDGE_MESSAGE_RECEIPTS.name) {
                 plainData.ackMessages?.let { ackMessages ->

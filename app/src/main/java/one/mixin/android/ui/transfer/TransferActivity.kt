@@ -418,6 +418,7 @@ class TransferActivity : BaseActivity() {
 
     private var transferDisposable: Disposable? = null
     private var transferSpeedDisposable: Disposable? = null
+    private var transferCommandDisposable: Disposable? = null
 
     override fun onStart() {
         super.onStart()
@@ -427,8 +428,7 @@ class TransferActivity : BaseActivity() {
                 .observeOn(AndroidSchedulers.mainThread())
                 .autoDispose(destroyScope)
                 .subscribe {
-                    binding.progressTv.text =
-                        getString(R.string.sending_desc, String.format("%.2f%%", it.progress))
+                    binding.progressTv.text = getString(R.string.sending_desc, String.format("%.2f%%", it.progress))
                 }
         }
 
@@ -438,6 +438,19 @@ class TransferActivity : BaseActivity() {
                 .autoDispose(destroyScope)
                 .subscribe {
                     Timber.e("Speed: ${it.speed}")
+                }
+        }
+
+        if (transferCommandDisposable == null) {
+            transferCommandDisposable = RxBus.listen(TransferCommandData::class.java)
+                .observeOn(AndroidSchedulers.mainThread())
+                .autoDispose(destroyScope)
+                .subscribe {
+                    if (argsStatus == ARGS_TRANSFER_TO_PC || argsStatus == ARGS_RESTORE_FROM_PC) {
+                        if (it.action == TransferCommandAction.CANCEL.value) {
+                            status.value = TransferStatus.INITIALIZING
+                        }
+                    }
                 }
         }
     }
@@ -469,8 +482,10 @@ class TransferActivity : BaseActivity() {
         super.onStop()
         transferDisposable?.dispose()
         transferSpeedDisposable?.dispose()
+        transferCommandDisposable?.dispose()
         transferDisposable = null
         transferSpeedDisposable = null
+        transferCommandDisposable = null
         window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
     }
 

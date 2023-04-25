@@ -16,9 +16,13 @@ import kotlin.text.Charsets.UTF_8
 
 /*
  * Data packet format:
- * ----------------------------------------------------------------------
+ * -----------------------------------------------------------------
  * | type (1 byte) | body_length（4 bytes） | body | crc（8 bytes） |
- * ----------------------------------------------------------------------
+ * -----------------------------------------------------------------
+ * File packet format:
+ * ----------------------------------------------------------------------------------
+ * | type (1 byte) | body_length（4 bytes） | uuid(16 bytes) | body | crc（8 bytes） |
+ * ----------------------------------------------------------------------------------
  */
 class TransferProtocol {
 
@@ -26,6 +30,18 @@ class TransferProtocol {
         const val TYPE_COMMAND = 0x01.toByte()
         const val TYPE_JSON = 0x02.toByte()
         const val TYPE_FILE = 0x03.toByte()
+
+        const val MAX_DATA_OFFSET = 5242880L // 5MB
+    }
+    interface TransferCallback {
+        suspend fun onTransferWrite(dataSize: Int): Boolean
+
+        fun onTransferRead(dataSize: Int)
+    }
+
+    private var transferCallback: TransferCallback? = null
+    fun setTransferCallback(callback: TransferCallback) {
+        transferCallback = callback
     }
 
     fun read(inputStream: InputStream, flashMan: FlashMan? = null): Any? {
@@ -53,15 +69,16 @@ class TransferProtocol {
         }
     }
 
-    fun write(outputStream: OutputStream, type: Byte, content: String) {
+    suspend fun write(outputStream: OutputStream, type: Byte, content: String) {
         val data = content.toByteArray(UTF_8)
         outputStream.write(byteArrayOf(type))
         outputStream.write(intToByteArray(data.size))
         outputStream.write(data)
+        transferCallback?.onTransferWrite(data.size)
         outputStream.write(checksum(data))
     }
 
-    fun write(outputStream: OutputStream, file: File, messageId: String) {
+    suspend fun write(outputStream: OutputStream, file: File, messageId: String) {
         if (file.exists() && file.length() > 0) {
             outputStream.write(byteArrayOf(TYPE_FILE))
             outputStream.write(intToByteArray(file.length().toInt() + 16))
@@ -75,6 +92,7 @@ class TransferProtocol {
             var bytesRead = fileInputStream.read(buffer, 0, 1024)
             while (bytesRead != -1) {
                 outputStream.write(buffer, 0, bytesRead)
+                transferCallback?.onTransferWrite(bytesRead)
                 crc.update((buffer.copyOfRange(0, bytesRead)))
                 bytesRead = fileInputStream.read(buffer, 0, 1024)
             }
@@ -96,6 +114,7 @@ class TransferProtocol {
     @Throws(ChecksumException::class)
     private fun readByteArray(inputStream: InputStream, expectedLength: Int, sizeData: ByteArray? = null): ByteArray {
         val data = safeRead(inputStream, expectedLength)
+        transferCallback?.onTransferRead(data.size)
         val checksum = safeRead(inputStream, 8)
         if (bytesToLong(checksum) != bytesToLong(checksum(data))) {
             Timber.e("ChecksumException $expectedLength ${bytesToLong(checksum)} ${bytesToLong(checksum(data))}")
@@ -150,8 +169,9 @@ class TransferProtocol {
         if (outFileExists) {
             while (bytesRead != -1 && bytesLeft > 0) {
                 bytesRead = inputStream.read(buffer, 0, bytesLeft.coerceAtMost(1024))
-                bytesLeft -= bytesRead
+                transferCallback?.onTransferRead(bytesRead)
                 calculateReadSpeed(bytesRead)
+                bytesLeft -= bytesRead
             }
             // skip error file
             safeRead(inputStream, 8)
@@ -162,6 +182,8 @@ class TransferProtocol {
                     bytesRead = inputStream.read(buffer, 0, bytesLeft.coerceAtMost(1024))
                     if (bytesRead > 0) {
                         fos.write(buffer, 0, bytesRead)
+                        transferCallback?.onTransferRead(bytesRead)
+                        calculateReadSpeed(bytesRead)
                         crc.update(buffer.copyOfRange(0, bytesRead))
                         bytesLeft -= bytesRead
                     }

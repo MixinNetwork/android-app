@@ -7,5 +7,5 @@ enum class TransferCommandAction(val value: String) {
     START("start"),
     PROGRESS("progress"),
     FINISH("finish"),
-    CLOSE("close"),
+    CANCEL("cancel"),
 }

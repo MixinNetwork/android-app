@@ -71,7 +71,20 @@ class TransferClient @Inject internal constructor(
 
     private var count = 0L
 
-    val protocol = TransferProtocol()
+    private var receiveOffset = 0L
+
+    val protocol = TransferProtocol().apply {
+        setTransferCallback(object : TransferProtocol.TransferCallback {
+            override suspend fun onTransferWrite(dataSize: Int): Boolean {
+                return true
+            }
+
+            override fun onTransferRead(dataSize: Int) {
+                receiveOffset += dataSize
+                // do noting
+            }
+        })
+    }
 
     private val syncChannel = Channel<ByteArray>()
 
@@ -169,15 +182,16 @@ class TransferClient @Inject internal constructor(
     }
 
     private var lastTime = 0L
-    private fun progress(outputStream: OutputStream) {
+    private suspend fun progress(outputStream: OutputStream) {
         if (total <= 0) return
         val progress = min((count++) / total.toFloat() * 100, 100f)
-        if (System.currentTimeMillis() - lastTime > 1000) {
+        if (System.currentTimeMillis() - lastTime > 500) {
             sendCommand(
                 outputStream,
-                TransferCommandData(TransferCommandAction.PROGRESS.value, progress = progress),
+                TransferCommandData(TransferCommandAction.PROGRESS.value, progress = progress, offset = receiveOffset),
             )
             lastTime = System.currentTimeMillis()
+            Timber.e("Client transfer $progress% $receiveOffset")
         }
         RxBus.publish(DeviceTransferProgressEvent(progress))
     }
@@ -194,14 +208,15 @@ class TransferClient @Inject internal constructor(
         }
     }
 
-    private fun sendFinish(outputStream: OutputStream) {
+    private suspend fun sendFinish(outputStream: OutputStream) {
         sendCommand(
             outputStream,
-            TransferCommandData(TransferCommandAction.FINISH.value),
+            TransferCommandData(TransferCommandAction.FINISH.value, offset = receiveOffset),
         )
+        Timber.e(" Client transfer finish $receiveOffset")
     }
 
-    private fun sendCommand(
+    private suspend fun sendCommand(
         outputStream: OutputStream,
         transferSendData: TransferCommandData,
     ) {
