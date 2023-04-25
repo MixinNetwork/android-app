@@ -1,11 +1,13 @@
 package one.mixin.android.ui.transfer
 
 import android.app.Application
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.decodeFromJsonElement
+import kotlinx.serialization.json.decodeFromStream
 import one.mixin.android.MixinApplication
 import one.mixin.android.db.AppDao
 import one.mixin.android.db.AssetDao
@@ -61,6 +63,7 @@ import one.mixin.android.vo.isAudio
 import one.mixin.android.vo.isImage
 import one.mixin.android.vo.isVideo
 import timber.log.Timber
+import java.io.ByteArrayInputStream
 import java.io.File
 import java.nio.charset.StandardCharsets
 
@@ -131,24 +134,26 @@ class FlashMan(
                         input.read(sizeData)
                         val data = ByteArray(byteArrayToInt(sizeData))
                         input.read(data)
-                        val content = String(data, StandardCharsets.UTF_8)
-                        processJson(content)
+                        processJson(data)
                     }
                 }
             }
             if (messageList.isNotEmpty()) {
                 messageDao.insertList(messageList)
             }
-            file.delete()
-            Timber.e("delete ${file.absolutePath}")
+            launch {
+                file.delete()
+                Timber.e("delete ${file.absolutePath}")
+            }
         } catch (e: Exception) {
             Timber.e("skip ${file.absolutePath} ${e.message}")
         }
     }
 
-    private fun processJson(content: String) {
+    @OptIn(ExperimentalSerializationApi::class)
+    private fun processJson(data: ByteArray) {
         try {
-            val transferData = serializationJson.decodeFromString<TransferSendData<JsonElement>>(content)
+            val transferData = serializationJson.decodeFromStream<TransferSendData<JsonElement>>(ByteArrayInputStream(data))
             when (transferData.type) {
                 TransferDataType.CONVERSATION.value -> {
                     val conversation = serializationJson.decodeFromJsonElement<Conversation>(transferData.data)
@@ -228,11 +233,11 @@ class FlashMan(
                 }
 
                 else -> {
-                    Timber.e("No support $content")
+                    Timber.e("No support ${transferData.type}")
                 }
             }
         } catch (e: Exception) {
-            Timber.e("${e.message} $content")
+            Timber.e("${e.message} ${StandardCharsets.UTF_8}")
         }
     }
 
