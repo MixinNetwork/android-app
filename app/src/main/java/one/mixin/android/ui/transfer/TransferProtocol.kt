@@ -34,6 +34,7 @@ import java.nio.ByteBuffer
 import java.util.zip.CRC32
 import kotlin.text.Charsets.UTF_8
 
+
 /*
  * Data packet format:
  * -----------------------------------------------------------------
@@ -86,7 +87,7 @@ class TransferProtocol {
             }
 
             TYPE_JSON -> {
-                readByteArray(inputStream, size)
+                readByteArray(inputStream, size, true)
             }
 
             TYPE_FILE -> { // File
@@ -110,6 +111,13 @@ class TransferProtocol {
         outputStream.write(intToByteArray(data.size))
         outputStream.write(data)
         transferCallback?.onTransferWrite(data.size)
+        outputStream.write(checksum(data))
+    }
+
+    fun writeCommand(outputStream: OutputStream, data: ByteArray){
+        outputStream.write(byteArrayOf(TYPE_COMMAND))
+        outputStream.write(intToByteArray(data.size))
+        outputStream.write(data)
         outputStream.write(checksum(data))
     }
 
@@ -142,18 +150,15 @@ class TransferProtocol {
     }
 
     @Throws(ChecksumException::class)
-    private fun readString(inputStream: InputStream, expectedLength: Int): String {
-        return String(readByteArray(inputStream, expectedLength), UTF_8)
-    }
-
-    @Throws(ChecksumException::class)
-    private fun readByteArray(inputStream: InputStream, expectedLength: Int): ByteArray {
+    private fun readByteArray(inputStream: InputStream, expectedLength: Int, isJson:Boolean = false): ByteArray {
         val data = safeRead(inputStream, expectedLength)
-        transferCallback?.onTransferRead(data.size)
         val checksum = safeRead(inputStream, 8)
         if (bytesToLong(checksum) != bytesToLong(checksum(data))) {
             Timber.e("ChecksumException $expectedLength ${bytesToLong(checksum)} ${bytesToLong(checksum(data))}")
             throw ChecksumException()
+        }
+        if (isJson) {
+            transferCallback?.onTransferRead(data.size)
         }
         return data
     }
@@ -248,7 +253,7 @@ class TransferProtocol {
                 throw ChecksumException()
             }
             if (message != null && transcriptMessage != null) {
-                val extensionName = transcriptMessage!!.mediaUrl?.getExtensionName()
+                val extensionName = transcriptMessage.mediaUrl?.getExtensionName()
                 val transcriptFile = MixinApplication.get().getTranscriptFile(uuid, ".$extensionName")
                 if (!transcriptFile.exists()) {
                     outFile.copy(transcriptFile)

@@ -1,5 +1,6 @@
 package one.mixin.android.ui.transfer
 
+import com.google.gson.stream.JsonWriter
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
@@ -36,6 +37,7 @@ import one.mixin.android.ui.transfer.vo.TransferStatusLiveData
 import one.mixin.android.ui.transfer.vo.toMessage
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.SINGLE_SOCKET_THREAD
+import one.mixin.android.util.SINGLE_TRANSFER_PROGRESS_THREAD
 import one.mixin.android.util.mention.parseMentionData
 import one.mixin.android.vo.App
 import one.mixin.android.vo.Asset
@@ -50,16 +52,19 @@ import one.mixin.android.vo.TranscriptMessage
 import one.mixin.android.vo.User
 import timber.log.Timber
 import java.io.ByteArrayInputStream
+import java.io.ByteArrayOutputStream
 import java.io.EOFException
 import java.io.File
 import java.io.InputStream
 import java.io.InputStreamReader
 import java.io.OutputStream
+import java.io.OutputStreamWriter
 import java.lang.Float.min
 import java.net.Socket
 import java.net.SocketException
 import javax.inject.Inject
 import kotlin.text.Charsets.UTF_8
+
 
 class TransferClient @Inject internal constructor(
     val assetDao: AssetDao,
@@ -99,7 +104,7 @@ class TransferClient @Inject internal constructor(
             override fun onTransferRead(dataSize: Int) {
                 receiveOffset += dataSize
                 socket?.getOutputStream()?.let { outputStream ->
-                    MixinApplication.get().applicationScope.launch {
+                    MixinApplication.get().applicationScope.launch(SINGLE_TRANSFER_PROGRESS_THREAD) {
                         progress(outputStream)
                     }
                 }
@@ -118,13 +123,12 @@ class TransferClient @Inject internal constructor(
                 val socket = Socket(ip, port)
                 this@TransferClient.socket = socket
                 status.value = TransferStatus.WAITING_FOR_VERIFICATION
-                val outputStream = socket.getOutputStream()
-                protocol.write(outputStream, TransferProtocol.TYPE_COMMAND, gson.toJson(commandData))
-                outputStream.flush()
-                launch(Dispatchers.IO) { listen(socket.inputStream, socket.outputStream) }
+                val outputStream = socket.outputStream
+                sendCommand(outputStream, commandData)
+                launch(Dispatchers.IO) { listen(socket.inputStream, outputStream) }
                 launch(Dispatchers.IO) {
                     for (byteArray in syncChannel) {
-                        processJson(byteArray, outputStream)
+                        processJson(byteArray)
                     }
                 }
             } catch (e: Exception) {
@@ -178,6 +182,7 @@ class TransferClient @Inject internal constructor(
                 }
                 is ByteArray -> {
                     syncChannel.send(result)
+                    count++
                 }
                 is File -> {
                     // read file
@@ -205,44 +210,38 @@ class TransferClient @Inject internal constructor(
         RxBus.publish(DeviceTransferProgressEvent(progress))
     }
 
-    private suspend fun processJson(byteArray: ByteArray, outputStream: OutputStream) {
+    private fun processJson(byteArray: ByteArray) {
         val transferData = gson.fromJson(InputStreamReader(ByteArrayInputStream(byteArray), UTF_8), TransferData::class.java)
         when (transferData.type) {
             TransferDataType.CONVERSATION.value -> {
                 val conversation =
                     gson.fromJson(transferData.data, Conversation::class.java)
                 conversationDao.insertIgnore(conversation)
-                count++
             }
 
             TransferDataType.PARTICIPANT.value -> {
                 val participant = gson.fromJson(transferData.data, Participant::class.java)
                 participantDao.insertIgnore(participant)
-                count++
             }
 
             TransferDataType.USER.value -> {
                 val user = gson.fromJson(transferData.data, User::class.java)
                 userDao.insertIgnore(user)
-                count++
             }
 
             TransferDataType.APP.value -> {
                 val app = gson.fromJson(transferData.data, App::class.java)
                 appDao.insertIgnore(app)
-                count++
             }
 
             TransferDataType.ASSET.value -> {
                 val asset = gson.fromJson(transferData.data, Asset::class.java)
                 assetDao.insertIgnore(asset)
-                count++
             }
 
             TransferDataType.SNAPSHOT.value -> {
                 val snapshot = gson.fromJson(transferData.data, Snapshot::class.java)
                 snapshotDao.insertIgnore(snapshot)
-                count++
             }
 
             TransferDataType.STICKER.value -> {
@@ -255,21 +254,18 @@ class TransferClient @Inject internal constructor(
                     }
                 }
                 stickerDao.insertIgnore(sticker)
-                count++
             }
 
             TransferDataType.PIN_MESSAGE.value -> {
                 val pinMessage =
                     gson.fromJson(transferData.data, PinMessage::class.java)
                 pinMessageDao.insertIgnore(pinMessage)
-                count++
             }
 
             TransferDataType.TRANSCRIPT_MESSAGE.value -> {
                 val transcriptMessage =
                     gson.fromJson(transferData.data, TranscriptMessage::class.java)
                 transcriptMessageDao.insertIgnore(transcriptMessage)
-                count++
             }
 
             TransferDataType.MESSAGE.value -> {
@@ -278,7 +274,6 @@ class TransferClient @Inject internal constructor(
                 if (rowId != -1L) { // If the row ID is valid (-1 indicates insertion failure)
                     ftsDatabase.insertOrReplaceMessageFts4(message)
                 }
-                count++
             }
 
             TransferDataType.MESSAGE_MENTION.value -> {
@@ -288,14 +283,12 @@ class TransferClient @Inject internal constructor(
                     MessageMention(it.messageId, it.conversationId, mentionData, it.hasRead)
                 }
                 messageMentionDao.insertIgnoreReturn(messageMention)
-                count++
             }
 
             TransferDataType.EXPIRED_MESSAGE.value -> {
                 val expiredMessage =
                     gson.fromJson(transferData.data, ExpiredMessage::class.java)
                 expiredMessageDao.insertIgnore(expiredMessage)
-                count++
             }
 
             else -> {
@@ -333,17 +326,23 @@ class TransferClient @Inject internal constructor(
         Timber.e(" Client transfer finish $receiveOffset")
     }
 
-    private suspend fun sendCommand(
+    private fun sendCommand(
         outputStream: OutputStream,
         transferSendData: TransferCommandData,
     ) {
-        val content = gson.toJson(transferSendData)
         try {
-            protocol.write(outputStream, TransferProtocol.TYPE_COMMAND, content)
+            val os = ByteArrayOutputStream()
+            val writer = JsonWriter(OutputStreamWriter(os, UTF_8))
+            writer.isLenient = true
+            gson.toJson(transferSendData, TransferCommandData::class.java, writer)
+            writer.flush()
+            writer.close()
+            protocol.writeCommand(outputStream, os.toByteArray())
             outputStream.flush()
         } catch (e: SocketException) {
             exit()
             status.value = TransferStatus.ERROR
         }
     }
+
 }
