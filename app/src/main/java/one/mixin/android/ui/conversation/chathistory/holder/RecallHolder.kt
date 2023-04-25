@@ -54,18 +54,18 @@ class RecallHolder constructor(val binding: ItemChatRecallBinding) : BaseViewHol
 
     override fun chatLayout(isMe: Boolean, isLast: Boolean, isBlink: Boolean) {
         super.chatLayout(isMe, isLast, isBlink)
-        val lp = (binding.chatLayout.layoutParams as ConstraintLayout.LayoutParams)
+        val lp = (binding.chatMsgLayout.layoutParams as ConstraintLayout.LayoutParams)
         if (isMe) {
             lp.horizontalBias = 1f
             if (isLast) {
                 setItemBackgroundResource(
-                    binding.chatLayout,
+                    binding.chatMsgLayout,
                     R.drawable.chat_bubble_me_last,
                     R.drawable.chat_bubble_me_last_night,
                 )
             } else {
                 setItemBackgroundResource(
-                    binding.chatLayout,
+                    binding.chatMsgLayout,
                     R.drawable.chat_bubble_me,
                     R.drawable.chat_bubble_me_night,
                 )
@@ -74,13 +74,13 @@ class RecallHolder constructor(val binding: ItemChatRecallBinding) : BaseViewHol
             lp.horizontalBias = 0f
             if (isLast) {
                 setItemBackgroundResource(
-                    binding.chatLayout,
+                    binding.chatMsgLayout,
                     R.drawable.chat_bubble_other_last,
                     R.drawable.chat_bubble_other_last_night,
                 )
             } else {
                 setItemBackgroundResource(
-                    binding.chatLayout,
+                    binding.chatMsgLayout,
                     R.drawable.chat_bubble_other,
                     R.drawable.chat_bubble_other_night,
                 )
