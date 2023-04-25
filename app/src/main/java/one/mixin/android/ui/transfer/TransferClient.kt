@@ -49,9 +49,11 @@ import one.mixin.android.vo.Sticker
 import one.mixin.android.vo.TranscriptMessage
 import one.mixin.android.vo.User
 import timber.log.Timber
+import java.io.ByteArrayInputStream
 import java.io.EOFException
 import java.io.File
 import java.io.InputStream
+import java.io.InputStreamReader
 import java.io.OutputStream
 import java.lang.Float.min
 import java.net.Socket
@@ -107,8 +109,7 @@ class TransferClient @Inject internal constructor(
                 launch(Dispatchers.IO) { listen(socket.inputStream, socket.outputStream) }
                 launch(Dispatchers.IO) {
                     for (byteArray in syncChannel) {
-                        val content = String(byteArray, UTF_8)
-                        processJson(content, outputStream)
+                        processJson(byteArray, outputStream)
                     }
                 }
             } catch (e: Exception) {
@@ -191,8 +192,8 @@ class TransferClient @Inject internal constructor(
         RxBus.publish(DeviceTransferProgressEvent(progress))
     }
 
-    private fun processJson(content: String, outputStream: OutputStream) {
-        val transferData = gson.fromJson(content, TransferData::class.java)
+    private fun processJson(byteArray: ByteArray, outputStream: OutputStream) {
+        val transferData = gson.fromJson(InputStreamReader(ByteArrayInputStream(byteArray), UTF_8), TransferData::class.java)
         when (transferData.type) {
             TransferDataType.CONVERSATION.value -> {
                 val conversation =
@@ -217,7 +218,6 @@ class TransferClient @Inject internal constructor(
             }
 
             TransferDataType.APP.value -> {
-                Timber.e("$content ${transferData.data}")
                 val app = gson.fromJson(transferData.data, App::class.java)
                 appDao.insertIgnore(app)
                 Timber.e("App ID: ${app.appId}")
@@ -298,7 +298,7 @@ class TransferClient @Inject internal constructor(
             }
 
             else -> {
-                Timber.e("No support $content")
+                Timber.e("No support ${transferData.type}")
             }
         }
     }
