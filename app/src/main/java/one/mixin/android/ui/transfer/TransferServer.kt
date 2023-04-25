@@ -148,10 +148,9 @@ class TransferServer @Inject internal constructor(
         withContext(Dispatchers.IO) {
             do {
                 when (val result = protocol.read(inputStream)) {
-                    is String -> {
-                        val commandData = gson.fromJson(result, TransferCommandData::class.java)
-                        if (commandData.action == TransferCommandAction.CONNECT.value) {
-                            if (commandData.code == code && commandData.userId == Session.getAccountId()) {
+                    is TransferCommandData -> {
+                        if (result.action == TransferCommandAction.CONNECT.value) {
+                            if (result.code == code && result.userId == Session.getAccountId()) {
                                 Timber.e("Verification passed, start transmission")
                                 status.value = TransferStatus.VERIFICATION_COMPLETED
                                 launch {
@@ -162,14 +161,14 @@ class TransferServer @Inject internal constructor(
                                 status.value = TransferStatus.ERROR
                                 exit()
                             }
-                        } else if (commandData.action == TransferCommandAction.FINISH.value) {
+                        } else if (result.action == TransferCommandAction.FINISH.value) {
                             RxBus.publish(DeviceTransferProgressEvent(100f))
                             status.value = TransferStatus.FINISHED
                             exit()
-                        } else if (commandData.action == TransferCommandAction.PROGRESS.value) {
+                        } else if (result.action == TransferCommandAction.PROGRESS.value) {
                             // Get progress from client
-                            if (commandData.progress != null) {
-                                RxBus.publish(DeviceTransferProgressEvent(commandData.progress))
+                            if (result.progress != null) {
+                                RxBus.publish(DeviceTransferProgressEvent(result.progress))
                             }
                         } else {
                             Timber.e("Unsupported command")

@@ -82,8 +82,6 @@ class TransferClient @Inject internal constructor(
     private var socket: Socket? = null
     private var quit = false
 
-    fun isAvailable() = socket != null
-
     private val gson by lazy {
         GsonHelper.customGson
     }
@@ -132,23 +130,20 @@ class TransferClient @Inject internal constructor(
                 null
             }
             when (result) {
-                is String -> {
-                    Timber.e("sync $result")
-                    val transferCommandData = gson.fromJson(result, TransferCommandData::class.java)
-
-                    when (transferCommandData.action) {
+                is TransferCommandData -> {
+                    when (result.action) {
                         TransferCommandAction.START.value -> {
-                            if (transferCommandData.version != CURRENT_TRANSFER_VERSION) {
+                            if (result.version != CURRENT_TRANSFER_VERSION) {
                                 Timber.e("Version does not support")
                                 exit()
                                 return
                             }
                             startTime = System.currentTimeMillis()
-                            this.total = transferCommandData.total ?: 0L
+                            this.total = result.total ?: 0L
                         }
 
                         TransferCommandAction.PUSH.value, TransferCommandAction.PULL.value -> {
-                            Timber.e("action ${transferCommandData.action}")
+                            Timber.e("action ${result.action}")
                         }
 
                         TransferCommandAction.FINISH.value -> {
@@ -242,7 +237,7 @@ class TransferClient @Inject internal constructor(
                 val sticker = gson.fromJson(transferData.data, Sticker::class.java)
                 sticker.lastUseAt?.let {
                     try {
-                        sticker.lastUseAt = it.createAtToLong()?.toString()
+                        sticker.lastUseAt = it.createAtToLong().toString()
                     } catch (e: Exception) {
                         Timber.e(e)
                     }

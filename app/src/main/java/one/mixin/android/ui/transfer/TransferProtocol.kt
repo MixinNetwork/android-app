@@ -17,14 +17,18 @@ import one.mixin.android.extension.getExtensionName
 import one.mixin.android.extension.getImagePath
 import one.mixin.android.extension.getTranscriptFile
 import one.mixin.android.extension.getVideoPath
+import one.mixin.android.ui.transfer.vo.TransferCommandData
+import one.mixin.android.util.GsonHelper
 import one.mixin.android.vo.isAudio
 import one.mixin.android.vo.isImage
 import one.mixin.android.vo.isVideo
 import timber.log.Timber
+import java.io.ByteArrayInputStream
 import java.io.EOFException
 import java.io.File
 import java.io.FileInputStream
 import java.io.InputStream
+import java.io.InputStreamReader
 import java.io.OutputStream
 import java.nio.ByteBuffer
 import java.util.zip.CRC32
@@ -52,13 +56,17 @@ class TransferProtocol {
         MixinDatabase.getDatabase(MixinApplication.appContext).transcriptDao()
     }
 
+    private val gson by lazy {
+        GsonHelper.customGson
+    }
+
     fun read(inputStream: InputStream): Any? {
         val packageData = safeRead(inputStream, 5)
         val type = packageData[0]
         val size = byteArrayToInt(packageData.copyOfRange(1, 5))
         return when (type) {
             TYPE_COMMAND -> {
-                readString(inputStream, size)
+                gson.fromJson(InputStreamReader(ByteArrayInputStream(readByteArray(inputStream, size)), UTF_8), TransferCommandData::class.java)
             }
 
             TYPE_JSON -> {
@@ -182,7 +190,7 @@ class TransferProtocol {
             return null
         } else {
             val outFile = if (message != null) {
-                val extensionName = message.mediaUrl?.getExtensionName() ?: ""
+                val extensionName = message.mediaUrl?.getExtensionName()
                 MixinApplication.get().let {
                     if (message.isImage()) {
                         it.getImagePath().createImageTemp(message.conversationId, message.messageId, ".$extensionName")
