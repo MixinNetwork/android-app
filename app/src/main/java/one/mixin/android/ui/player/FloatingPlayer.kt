@@ -1,4 +1,4 @@
-package one.mixin.android.ui.player
+@file:UnstableApi package one.mixin.android.ui.player
 
 import android.animation.Animator
 import android.animation.AnimatorSet
@@ -16,6 +16,7 @@ import android.view.WindowManager
 import android.view.animation.DecelerateInterpolator
 import android.widget.FrameLayout
 import androidx.annotation.Keep
+import androidx.media3.common.util.UnstableApi
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.extension.checkInlinePermissions

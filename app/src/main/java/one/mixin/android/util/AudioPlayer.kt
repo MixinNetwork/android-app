@@ -1,9 +1,10 @@
 package one.mixin.android.util
 
 import android.media.AudioManager
-import com.google.android.exoplayer2.ExoPlaybackException
-import com.google.android.exoplayer2.Player
-import com.google.android.exoplayer2.source.UnrecognizedInputFormatException
+import androidx.media3.common.Player
+import androidx.media3.common.util.UnstableApi
+import androidx.media3.exoplayer.ExoPlaybackException
+import androidx.media3.exoplayer.source.UnrecognizedInputFormatException
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
@@ -41,7 +42,7 @@ import org.threeten.bp.ZonedDateTime
 import timber.log.Timber
 import java.util.concurrent.TimeUnit
 
-class AudioPlayer private constructor() {
+@UnstableApi class AudioPlayer private constructor() {
     companion object {
         @Synchronized
         private fun get(): AudioPlayer {

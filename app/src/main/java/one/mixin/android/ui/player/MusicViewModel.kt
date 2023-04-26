@@ -2,6 +2,7 @@ package one.mixin.android.ui.player
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.media3.common.util.UnstableApi
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -14,7 +15,7 @@ import one.mixin.android.ui.player.internal.ConversationLoader
 import one.mixin.android.vo.MediaStatus
 import javax.inject.Inject
 
-@HiltViewModel
+@UnstableApi @HiltViewModel
 class MusicViewModel
 @Inject
 internal constructor(
