@@ -79,7 +79,7 @@ class TransferClient @Inject internal constructor(
 
             override fun onTransferRead(dataSize: Int) {
                 receiveOffset += dataSize
-                MixinApplication.get().applicationScope.launch(Dispatchers.IO){
+                MixinApplication.get().applicationScope.launch(Dispatchers.IO) {
                     socket?.getOutputStream()?.let {
                         launch(SINGLE_TRANSFER_PROGRESS_THREAD) {
                             progress(it)

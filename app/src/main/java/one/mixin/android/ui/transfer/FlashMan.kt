@@ -1,8 +1,6 @@
 package one.mixin.android.ui.transfer
 
 import android.app.Application
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.ExperimentalSerializationApi
@@ -114,7 +112,7 @@ class FlashMan(
 
     private var index: Int = 0
 
-    private fun getCacheFile(index:Int): File {
+    private fun getCacheFile(index: Int): File {
         cachePath.mkdirs()
         return File(cachePath, "$index.cache")
     }
@@ -122,14 +120,14 @@ class FlashMan(
     private var currentFile: File? = null
     private var currentOutputStream: OutputStream? = null
     private var lastName = ""
-    suspend fun writeBytes(bytes: ByteArray) = withContext(SINGLE_TRANSFER_FILE_THREAD){
-        val file = currentFile?: getCacheFile(++index).also {
+    suspend fun writeBytes(bytes: ByteArray) = withContext(SINGLE_TRANSFER_FILE_THREAD) {
+        val file = currentFile ?: getCacheFile(++index).also {
             currentOutputStream?.close()
             currentFile = it
             currentOutputStream = it.outputStream()
         }
         if (file.length() + bytes.size > MAX_FILE_SIZE) {
-            MixinApplication.get().applicationScope.launch(Dispatchers.IO){
+            MixinApplication.get().applicationScope.launch(SINGLE_TRANSFER_THREAD) {
                 processDataFile(file)
             }
             currentFile = null
@@ -144,7 +142,7 @@ class FlashMan(
         }
     }
 
-    suspend fun finish(status: TransferStatusLiveData) = withContext(SINGLE_TRANSFER_THREAD) {
+    suspend fun finish(status: TransferStatusLiveData) = MixinApplication.get().applicationScope.launch(SINGLE_TRANSFER_THREAD) {
         currentOutputStream?.close()
         currentFile?.let { file ->
             processDataFile(file)
@@ -152,7 +150,7 @@ class FlashMan(
         }
     }
 
-    private suspend fun processDataFile(file: File) = withContext(SINGLE_TRANSFER_THREAD){
+    private suspend fun processDataFile(file: File) = withContext(SINGLE_TRANSFER_THREAD) {
         Timber.e("Process data file: ${file.name}")
         try {
             if (file.exists() && file.length() > 0) {
@@ -176,29 +174,8 @@ class FlashMan(
         }
     }
 
-    private var lastProcessTime = 0L
-    private var processedBytes = 0L
-    private suspend fun processJson(byteArray: ByteArray) {
-        val currentTime = System.currentTimeMillis()
-        val processTime = currentTime - lastProcessTime
-        if (processTime < 1000) {
-            if ((byteArray.size + processedBytes) > MAX_PROCESS_BYTES) {
-                val delayTime = 1000L - processTime
-                delay(delayTime)
-                Timber.e("delay $delayTime $processedBytes ${byteArray.size}")
-                processedBytes = 0
-            }
-        } else {
-            Timber.e("processedBytes %.2f MB/s", processedBytes / 1024f / 1024)
-            processedBytes = 0
-        }
-        innerProcessJson(byteArray)
-        processedBytes += byteArray.size
-        lastProcessTime = System.currentTimeMillis()
-    }
-
     @OptIn(ExperimentalSerializationApi::class)
-    private fun innerProcessJson(data: ByteArray) {
+    private fun processJson(data: ByteArray) {
         try {
             if (runtime.freeMemory() < 5242880) {
                 runtime.gc()
