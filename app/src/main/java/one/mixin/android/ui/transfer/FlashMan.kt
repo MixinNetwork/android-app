@@ -126,11 +126,8 @@ class FlashMan(
         }
         if (file.length() + bytes.size > MAX_FILE_SIZE) {
             MixinApplication.get().applicationScope.launch(Dispatchers.IO){
-                Timber.e("process ${file.name}")
                 processDataFile(file)
-                Timber.e("process end ${file.name}")
             }
-            Timber.e("process launch end ${file.name}")
             currentFile = null
             currentOutputStream?.close()
             currentOutputStream = null
@@ -143,14 +140,12 @@ class FlashMan(
         }
     }
 
-    suspend fun finish(status: TransferStatusLiveData) = withContext(SINGLE_TRANSFER_FILE_THREAD) {
+    suspend fun finish(status: TransferStatusLiveData) = withContext(SINGLE_TRANSFER_THREAD) {
         currentOutputStream?.close()
         currentFile?.let { file ->
-            MixinApplication.get().applicationScope.launch(Dispatchers.IO) {
-                processDataFile(file)
-            }
+            processDataFile(file)
+            processFile(getAttachmentPath(), status)
         }
-        processFile(getAttachmentPath(), status)
     }
 
     private suspend fun processDataFile(file: File) = withContext(SINGLE_TRANSFER_THREAD){
