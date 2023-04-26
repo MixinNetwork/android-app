@@ -92,7 +92,7 @@ class FlashMan(
 ) {
 
     companion object {
-        private const val MAX_PROCESS_BYTES = 4194304L // 4M
+        private const val MAX_PROCESS_BYTES = 2097152L // 2M
         private const val MAX_FILE_SIZE = 10485760 // 10M
     }
 

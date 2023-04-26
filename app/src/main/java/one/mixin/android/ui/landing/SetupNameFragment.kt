@@ -1,6 +1,5 @@
 package one.mixin.android.ui.landing
 
-import android.content.Intent
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
@@ -26,7 +25,6 @@ import one.mixin.android.job.InitializeJob
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
-import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.Account
@@ -70,8 +68,8 @@ class SetupNameFragment : BaseFragment(R.layout.fragment_setup_name) {
                             }
 
                             nameEt.hideKeyboard()
-                            startActivity(Intent(context, MainActivity::class.java))
                             initializeBots()
+                            InitializeActivity.showLoading(requireContext(), false)
                             activity?.finish()
                         },
                         { t: Throwable ->
