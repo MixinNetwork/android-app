@@ -207,7 +207,8 @@ class SendAttachmentMessageJob(
             removeJob()
             return true
         }
-        if (!isPlain && (key == null || digest == null) || (key != null && digest == null) || (digest != null && key == null)) {
+
+        if (!isPlain && (key == null || key.isEmpty() || digest.isEmpty())) {
             removeJob()
             reportException(IllegalStateException("Encryption error"))
             return false
@@ -228,7 +229,22 @@ class SendAttachmentMessageJob(
         val plainText = GsonHelper.customGson.toJson(transferMediaData)
         val encoded = plainText.base64Encode()
         message.content = encoded
-        messageDao.updateMessageContent(GsonHelper.customGson.toJson(AttachmentExtra(attachmentId = attachmentId, messageId = message.messageId, createdAt = attachResponse.created_at)), message.messageId)
+        messageDao.updateAttachmentMessage(
+            messageId = message.messageId,
+            content = GsonHelper.customGson.toJson(AttachmentExtra(attachmentId = attachmentId, messageId = message.messageId, createdAt = attachResponse.created_at)),
+            mediaMimeType = mimeType,
+            mediaSize = size,
+            mediaWidth = width,
+            mediaHeight = height,
+            mediaDigest = digest,
+            mediaKey = key,
+            mediaDuration = message.mediaDuration,
+            mediaWaveform = waveform,
+            thumbImage = thumbnail,
+            name = name,
+            mediaStatus = message.mediaStatus ?: MediaStatus.PENDING.name,
+            status = message.status,
+        )
         jobManager.addJobInBackground(SendMessageJob(message, null, true))
         return true
     }

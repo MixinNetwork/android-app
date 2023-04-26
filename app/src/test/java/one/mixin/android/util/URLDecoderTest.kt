@@ -7,7 +7,7 @@ import java.net.URLDecoder
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets.UTF_8
 
-class URL_DecoderTest : TestCase() {
+class URLDecoderTest : TestCase() {
 
     @Test
     @Throws(Exception::class)

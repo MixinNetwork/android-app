@@ -106,8 +106,7 @@ internal constructor(
 
     fun addresses(id: String) = assetRepository.addresses(id)
 
-    fun allSnapshots(type: String? = null, otherType: String? = null, initialLoadKey: Int? = 0, orderByAmount: Boolean = false):
-        LiveData<PagedList<SnapshotItem>> =
+    fun allSnapshots(type: String? = null, otherType: String? = null, initialLoadKey: Int? = 0, orderByAmount: Boolean = false): LiveData<PagedList<SnapshotItem>> =
         LivePagedListBuilder(
             assetRepository.allSnapshots(type, otherType, orderByAmount = orderByAmount),
             PagedList.Config.Builder()

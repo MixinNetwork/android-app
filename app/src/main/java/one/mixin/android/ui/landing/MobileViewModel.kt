@@ -26,8 +26,7 @@ import one.mixin.android.vo.User
 import javax.inject.Inject
 
 @HiltViewModel
-class MobileViewModel @Inject internal
-constructor(
+class MobileViewModel @Inject internal constructor(
     private val accountRepository: AccountRepository,
     private val userRepository: UserRepository,
     private val jobManager: MixinJobManager,

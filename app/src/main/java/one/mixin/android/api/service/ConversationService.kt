@@ -46,8 +46,7 @@ interface ConversationService {
     ): Call<MixinResponse<ConversationResponse>>
 
     @POST("conversations/{id}")
-    fun update(@Path("id") id: String, @Body request: ConversationRequest):
-        Call<MixinResponse<ConversationResponse>>
+    fun update(@Path("id") id: String, @Body request: ConversationRequest): Call<MixinResponse<ConversationResponse>>
 
     @POST("conversations/{id}/exit")
     fun exit(@Path("id") id: String): Call<MixinResponse<ConversationResponse>>

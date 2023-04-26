@@ -1,6 +1,8 @@
 package one.mixin.android.job
 
 import com.birbit.android.jobqueue.Params
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import okhttp3.Call
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
@@ -8,6 +10,7 @@ import okhttp3.Request
 import okio.buffer
 import okio.sink
 import one.mixin.android.MixinApplication
+import one.mixin.android.R
 import one.mixin.android.RxBus
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.response.AttachmentResponse
@@ -28,6 +31,7 @@ import one.mixin.android.extension.getImagePath
 import one.mixin.android.extension.getVideoPath
 import one.mixin.android.extension.isImageSupport
 import one.mixin.android.extension.isNullOrEmpty
+import one.mixin.android.extension.toast
 import one.mixin.android.job.MixinJobManager.Companion.attachmentProcess
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.chat.InvalidateFlow
@@ -35,6 +39,8 @@ import one.mixin.android.util.okhttp.ProgressResponseBody
 import one.mixin.android.vo.AttachmentExtra
 import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.Message
+import one.mixin.android.vo.isEncrypted
+import one.mixin.android.vo.isSignal
 import one.mixin.android.widget.gallery.MimeType
 import org.whispersystems.libsignal.logging.Log
 import java.io.File
@@ -89,6 +95,17 @@ class AttachmentDownloadJob(
             removeJob()
             return
         }
+
+        if ((message.isSignal() || message.isEncrypted()) && (message.mediaKey == null || message.mediaKey.isEmpty() || message.mediaDigest == null || message.mediaDigest.isEmpty())) {
+            messageDao.updateMediaStatus(MediaStatus.CANCELED.name, message.messageId)
+            InvalidateFlow.emit(message.conversationId)
+            applicationScope.launch(Dispatchers.Main) {
+                toast(R.string.Data_error)
+            }
+            removeJob()
+            return
+        }
+
         jobManager.saveJob(this)
         var shareable: Boolean? = null
         attachmentCall = conversationApi.getAttachment(

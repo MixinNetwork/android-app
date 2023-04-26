@@ -82,6 +82,7 @@ import one.mixin.android.vo.copy
 import one.mixin.android.vo.generateConversationId
 import one.mixin.android.vo.isContactConversation
 import one.mixin.android.vo.isGroupConversation
+import one.mixin.android.vo.isPlain
 import one.mixin.android.vo.toCategory
 import one.mixin.android.vo.toUser
 import one.mixin.android.webrtc.SelectItem
@@ -563,7 +564,7 @@ class ForwardFragment : BaseFragment(R.layout.fragment_forward) {
             }
             val category = getCategory.invoke()
             val message = chatViewModel.findMessageById(messageId)
-            if (message == null || category != message.category) {
+            if (message == null || category != message.category || (!message.isPlain() && (message.mediaKey == null || message.mediaDigest == null))) {
                 fallbackAction.invoke()
                 return@withContext
             }
