@@ -27,7 +27,9 @@ import one.mixin.android.Constants.Storage.DATA
 import one.mixin.android.Constants.Storage.IMAGE
 import one.mixin.android.Constants.Storage.VIDEO
 import one.mixin.android.MixinApplication
+import one.mixin.android.R
 import one.mixin.android.session.Session
+import one.mixin.android.util.Attachment
 import one.mixin.android.util.blurhash.Base83
 import one.mixin.android.util.blurhash.BlurHashDecoder
 import one.mixin.android.util.blurhash.BlurHashEncoder
@@ -610,6 +612,39 @@ fun Uri.getFileName(context: Context = MixinApplication.appContext): String {
         Timber.e(e)
     }
     return ""
+}
+
+fun Uri.getFileSize(context: Context = MixinApplication.appContext): Long {
+    var size: Long = -1
+    try {
+        context.contentResolver.query(this, null, null, null, null).use { cursor ->
+            if (cursor != null && cursor.moveToFirst()) {
+                val sizeIndex = cursor.getColumnIndex(OpenableColumns.SIZE)
+                size = if (sizeIndex != -1) cursor.getLong(sizeIndex) else -1
+                cursor.close()
+            }
+        }
+    } catch (e: java.lang.Exception) {
+        e.printStackTrace()
+    }
+    return size
+}
+fun Uri.getAttachment(fileName: String, mimeType: String, context: Context = MixinApplication.appContext): Attachment? {
+    var cursor: Cursor? = null
+    try {
+        cursor = context.contentResolver.query(this, null, null, null, null)
+        return Attachment(
+            this,
+            fileName,
+            mimeType,
+            getFileSize(),
+        )
+    } catch (e: SecurityException) {
+        toast(R.string.File_does_not_exist)
+    } finally {
+        cursor?.close()
+    }
+    return null
 }
 
 fun Uri.copyFileUrlWithAuthority(context: Context, name: String? = null): String? {

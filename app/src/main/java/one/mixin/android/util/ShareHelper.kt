@@ -1,7 +1,9 @@
 package one.mixin.android.util
 
+import android.content.ClipData
 import android.content.Intent
 import android.net.Uri
+import one.mixin.android.extension.getAttachment
 import one.mixin.android.extension.getFileName
 import one.mixin.android.vo.ForwardCategory
 import one.mixin.android.vo.ForwardMessage
@@ -44,13 +46,29 @@ class ShareHelper {
                 val videoUri = intent.getParcelableExtra<Uri>(Intent.EXTRA_STREAM)
                 videoUri?.systemMediaToMessage(ForwardCategory.Video)?.addTo(result)
             } else if (type.startsWith("application/") || type.startsWith("audio/")) {
-                intent.getParcelableExtra<Uri>(Intent.EXTRA_STREAM)?.let {
-                    val fileName = it.getFileName()
-                    it.systemMediaToMessage(
-                        ForwardCategory.Data,
-                        fileName,
-                        type,
-                    ).addTo(result)
+                val clipData = intent.clipData
+                if (clipData != null) {
+                    for (i in 0 until clipData.itemCount) {
+                        val item: ClipData.Item = clipData.getItemAt(i)
+                        if (item.uri != null) {
+                            val fileName = item.uri.getFileName()
+                            ForwardMessage(
+                                ForwardCategory.Data,
+                                GsonHelper.customGson.toJson(
+                                    item.uri.getAttachment(fileName, type),
+                                ),
+                            ).addTo(result)
+                        }
+                    }
+                } else {
+                    intent.getParcelableExtra<Uri>(Intent.EXTRA_STREAM)?.let {
+                        val fileName = it.getFileName()
+                        it.systemMediaToMessage(
+                            ForwardCategory.Data,
+                            fileName,
+                            type,
+                        ).addTo(result)
+                    }
                 }
             } else {
                 val dataUri = intent.getParcelableExtra<Uri>(Intent.EXTRA_STREAM)

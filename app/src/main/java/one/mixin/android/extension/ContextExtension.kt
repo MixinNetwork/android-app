@@ -589,7 +589,12 @@ fun Context.getAttachment(local: Uri, mimeType: String? = null): Attachment? {
 
             val copyPath = uri.copyFileUrlWithAuthority(this, fileName)
             val resultUri = if (copyPath == null) {
-                return null
+                return Attachment(
+                    uri,
+                    fileName,
+                    mimeType ?: contentResolver.getType(uri) ?: "",
+                    uri.getFileSize(),
+                )
             } else {
                 getUriForFile(File(copyPath))
             }

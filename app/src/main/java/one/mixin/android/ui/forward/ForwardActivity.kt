@@ -1,13 +1,17 @@
 package one.mixin.android.ui.forward
 
+import android.Manifest
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
 import androidx.activity.result.contract.ActivityResultContract
+import com.tbruyelle.rxpermissions2.RxPermissions
+import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.R
+import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.replaceFragment
 import one.mixin.android.extension.toast
 import one.mixin.android.session.Session
@@ -113,25 +117,54 @@ class ForwardActivity : BlazeBaseActivity() {
                 finish()
                 return
             }
-            val forwardMessageList = ShareHelper.get().generateForwardMessageList(intent)
-            val conversationId = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q && intent.hasExtra(Intent.EXTRA_SHORTCUT_ID)) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                RxPermissions(this)
+                    .request(Manifest.permission.ACCESS_MEDIA_LOCATION)
+                    .autoDispose(stopScope)
+                    .subscribe(
+                        { granted ->
+                            if (granted) {
+                                generateForwardMessage()
+                            } else {
+                                openPermissionSetting()
+                            }
+                        },
+                        {
+                        },
+                    )
+            } else {
+                generateForwardMessage()
+            }
+        }
+    }
+
+    private fun generateForwardMessage() {
+        val forwardMessageList =
+            ShareHelper.get().generateForwardMessageList(intent)
+        val conversationId =
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q && intent.hasExtra(
+                    Intent.EXTRA_SHORTCUT_ID,
+                )
+            ) {
                 intent.getStringExtra(Intent.EXTRA_SHORTCUT_ID)
             } else {
                 null
             }
-            if (!forwardMessageList.isNullOrEmpty()) {
-                replaceFragment(
-                    ForwardFragment.newInstance(
-                        forwardMessageList,
-                        ForwardAction.System(conversationId, getString(R.string.Share)),
+        if (!forwardMessageList.isNullOrEmpty()) {
+            replaceFragment(
+                ForwardFragment.newInstance(
+                    forwardMessageList,
+                    ForwardAction.System(
+                        conversationId,
+                        getString(R.string.Share),
                     ),
-                    R.id.container,
-                    ForwardFragment.TAG,
-                )
-            } else {
-                toast(R.string.Share_error)
-                finish()
-            }
+                ),
+                R.id.container,
+                ForwardFragment.TAG,
+            )
+        } else {
+            toast(R.string.Share_error)
+            finish()
         }
     }
 }
