@@ -92,6 +92,7 @@ class ConfirmBottomFragment : BiometricBottomSheetDialogFragment() {
         } catch (t: Throwable) {
             toast(R.string.Link_desktop_failed)
             ErrorHandler.handleError(t)
+            dismiss()
             return@launch
         }
         if (response.isSuccess) {
@@ -102,6 +103,7 @@ class ConfirmBottomFragment : BiometricBottomSheetDialogFragment() {
             } catch (t: Throwable) {
                 toast(R.string.Link_desktop_failed)
                 ErrorHandler.handleError(t)
+                dismiss()
                 return@launch
             }
             confirmCallback?.invoke()

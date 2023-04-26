@@ -28,7 +28,7 @@ constructor(mainActivity: MainActivity) {
         ContactsActivity.show(context)
     }
 
-    fun pushWallet(deviceId: String ? = null) {
+    fun pushWallet(deviceId: String? = null) {
         if (Session.getAccount()?.hasPin == true) {
             WalletActivity.show(context)
         } else {

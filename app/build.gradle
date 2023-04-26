@@ -12,7 +12,7 @@ plugins {
 
 def versionMajor = 0
 def versionMinor = 38
-def versionPatch = 13
+def versionPatch = 14
 def versionBuild = 2
 
 android {
@@ -60,7 +60,7 @@ android {
             freeCompilerArgs += ['-opt-in=kotlin.contracts.ExperimentalContracts']
             freeCompilerArgs += [
                     "-P",
-                    "plugin:androidx.compose.compiler.plugins.kotlin:suppressKotlinVersionCompatibilityCheck=1.8.20"
+                    "plugin:androidx.compose.compiler.plugins.kotlin:suppressKotlinVersionCompatibilityCheck=1.8.21"
             ]
         }
 

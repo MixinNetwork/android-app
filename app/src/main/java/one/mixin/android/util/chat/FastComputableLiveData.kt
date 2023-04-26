@@ -9,7 +9,10 @@ import java.util.concurrent.Executor
 import java.util.concurrent.atomic.AtomicBoolean
 
 @SuppressLint("RestrictedApi")
-abstract class FastComputableLiveData<T> @JvmOverloads constructor( /* synthetic access */val mExecutor: Executor = ArchTaskExecutor.getIOThreadExecutor()) {
+abstract class FastComputableLiveData<T> @JvmOverloads constructor(
+    // synthetic access
+    val mExecutor: Executor = ArchTaskExecutor.getIOThreadExecutor(),
+) {
     val liveData: InnerLiveData<T> = object : InnerLiveData<T>() {
         override fun onActive() {
             mExecutor.execute(mRefreshRunnable)
