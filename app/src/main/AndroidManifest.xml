@@ -41,6 +41,7 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         android:localeConfig="@xml/locales_config"
+        android:largeHeap="true"
         tools:ignore="LockedOrientationActivity,UnusedAttribute"
         tools:replace="allowBackup">
         <activity

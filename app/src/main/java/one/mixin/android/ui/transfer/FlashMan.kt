@@ -96,6 +96,10 @@ class FlashMan(
         private const val MAX_FILE_SIZE = 10485760 // 10M
     }
 
+    private val runtime by lazy {
+        Runtime.getRuntime()
+    }
+
     private val cachePath by lazy {
         File("${(context.externalCacheDir ?: context.cacheDir).absolutePath}${File.separator}$deviceId").apply {
             this.mkdirs()
@@ -196,6 +200,9 @@ class FlashMan(
     @OptIn(ExperimentalSerializationApi::class)
     private fun innerProcessJson(data: ByteArray) {
         try {
+            if (runtime.freeMemory() < 5242880) {
+                runtime.gc()
+            }
             val transferData = serializationJson.decodeFromStream<TransferSendData<JsonElement>>(ByteArrayInputStream(data))
             when (transferData.type) {
                 TransferDataType.CONVERSATION.value -> {
