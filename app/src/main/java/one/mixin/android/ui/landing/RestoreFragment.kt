@@ -20,6 +20,7 @@ import one.mixin.android.databinding.FragmentRestoreBinding
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.fullDate
 import one.mixin.android.extension.navTo
+import one.mixin.android.extension.numberFormat
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.putBoolean
 import one.mixin.android.extension.showConfirmDialog
@@ -54,7 +55,7 @@ class RestoreFragment : BaseFragment(R.layout.fragment_restore) {
                     val lastCreatedAt = localData?.second
                     if (count != null && lastCreatedAt != null) {
                         requireContext().showConfirmDialog(
-                            getString(R.string.restore_local_exists, count, lastCreatedAt),
+                            getString(R.string.restore_local_exists, "$count".numberFormat(), lastCreatedAt),
                             cancelable = false,
                         ) {
                             fromLocal()
