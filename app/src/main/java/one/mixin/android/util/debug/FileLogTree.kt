@@ -41,7 +41,7 @@ class FileLogTree : Timber.Tree() {
                     directory.mkdirs()
                 }
 
-                val file = File("${directory.absolutePath}${File.separator}message")
+                val file = File("${directory.absolutePath}${File.separator}${LOG_FILE_NAME}")
                 file.createNewFile()
                 if (file.exists()) {
                     if (file.length() >= MAX_SIZE) {
@@ -64,7 +64,7 @@ class FileLogTree : Timber.Tree() {
         private const val MAX_SIZE = 512 * 1024 * 1024
         fun getLogFile(): File? {
             val directory = MixinApplication.appContext.cacheDir
-            val file = File("${directory.absolutePath}${File.separator}${LOG_LOCAL_FILE_NAME}")
+            val file = File("${directory.absolutePath}${File.separator}$LOG_LOCAL_FILE_NAME")
             return if (file.exists()) {
                 val result = File("${directory.absolutePath}${File.separator}message.log")
                 file.copyTo(result, true)

@@ -174,6 +174,10 @@ class TransferClient @Inject internal constructor(
     }
 
     private var lastTime = 0L
+    private val runtime by lazy {
+        Runtime.getRuntime()
+    }
+
     private fun progress(outputStream: OutputStream) {
         if (total <= 0) return
         val progress = min((count++) / total.toFloat() * 100, 100f)
@@ -188,48 +192,45 @@ class TransferClient @Inject internal constructor(
     }
 
     private fun processJson(byteArray: ByteArray, outputStream: OutputStream) {
+        if (runtime.freeMemory() < 5242880) {
+            runtime.gc()
+        }
         val transferData = gson.fromJson(InputStreamReader(ByteArrayInputStream(byteArray), UTF_8), TransferData::class.java)
         when (transferData.type) {
             TransferDataType.CONVERSATION.value -> {
                 val conversation =
                     gson.fromJson(transferData.data, Conversation::class.java)
                 conversationDao.insertIgnore(conversation)
-                Timber.e("Conversation ID: ${conversation.conversationId}")
                 progress(outputStream)
             }
 
             TransferDataType.PARTICIPANT.value -> {
                 val participant = gson.fromJson(transferData.data, Participant::class.java)
                 participantDao.insertIgnore(participant)
-                Timber.e("Participant ID: ${participant.conversationId} ${participant.userId}")
                 progress(outputStream)
             }
 
             TransferDataType.USER.value -> {
                 val user = gson.fromJson(transferData.data, User::class.java)
                 userDao.insertIgnore(user)
-                Timber.e("User ID: ${user.userId}")
                 progress(outputStream)
             }
 
             TransferDataType.APP.value -> {
                 val app = gson.fromJson(transferData.data, App::class.java)
                 appDao.insertIgnore(app)
-                Timber.e("App ID: ${app.appId}")
                 progress(outputStream)
             }
 
             TransferDataType.ASSET.value -> {
                 val asset = gson.fromJson(transferData.data, Asset::class.java)
                 assetDao.insertIgnore(asset)
-                Timber.e("Asset ID: ${asset.assetId}")
                 progress(outputStream)
             }
 
             TransferDataType.SNAPSHOT.value -> {
                 val snapshot = gson.fromJson(transferData.data, Snapshot::class.java)
                 snapshotDao.insertIgnore(snapshot)
-                Timber.e("Snapshot ID: ${snapshot.snapshotId}")
                 progress(outputStream)
             }
 
@@ -243,7 +244,6 @@ class TransferClient @Inject internal constructor(
                     }
                 }
                 stickerDao.insertIgnore(sticker)
-                Timber.e("Sticker ID: ${sticker.stickerId}")
                 progress(outputStream)
             }
 
@@ -251,7 +251,6 @@ class TransferClient @Inject internal constructor(
                 val pinMessage =
                     gson.fromJson(transferData.data, PinMessage::class.java)
                 pinMessageDao.insertIgnore(pinMessage)
-                Timber.e("PinMessage ID: ${pinMessage.messageId}")
                 progress(outputStream)
             }
 
@@ -259,7 +258,6 @@ class TransferClient @Inject internal constructor(
                 val transcriptMessage =
                     gson.fromJson(transferData.data, TranscriptMessage::class.java)
                 transcriptMessageDao.insertIgnore(transcriptMessage)
-                Timber.e("Transcript ID: ${transcriptMessage.messageId}")
                 progress(outputStream)
             }
 
@@ -269,7 +267,6 @@ class TransferClient @Inject internal constructor(
                 if (rowId != -1L) { // If the row ID is valid (-1 indicates insertion failure)
                     ftsDatabase.insertOrReplaceMessageFts4(message)
                 }
-                Timber.e("Message ID: $rowId ${message.messageId}")
                 progress(outputStream)
             }
 
@@ -280,7 +277,6 @@ class TransferClient @Inject internal constructor(
                     MessageMention(it.messageId, it.conversationId, mentionData, it.hasRead)
                 }
                 val rowId = messageMentionDao.insertIgnoreReturn(messageMention)
-                Timber.e("MessageMention ID: $rowId ${messageMention.messageId}")
                 progress(outputStream)
             }
 
@@ -288,7 +284,6 @@ class TransferClient @Inject internal constructor(
                 val expiredMessage =
                     gson.fromJson(transferData.data, ExpiredMessage::class.java)
                 expiredMessageDao.insertIgnore(expiredMessage)
-                Timber.e("ExpiredMessage ID: ${expiredMessage.messageId}")
                 progress(outputStream)
             }
 
@@ -315,7 +310,7 @@ class TransferClient @Inject internal constructor(
                 socket = null
             }
         } catch (e: Exception) {
-            Timber.e("exit client ${e.message}")
+            Timber.e("Exit client ${e.message}")
         }
     }
 
