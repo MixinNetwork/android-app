@@ -1,6 +1,8 @@
 package one.mixin.android.ui.transfer
 
 import android.app.Application
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.ExperimentalSerializationApi
@@ -65,6 +67,7 @@ import one.mixin.android.vo.isVideo
 import timber.log.Timber
 import java.io.ByteArrayInputStream
 import java.io.File
+import java.io.OutputStream
 import java.nio.charset.StandardCharsets
 
 class FlashMan(
@@ -88,6 +91,11 @@ class FlashMan(
     private val serializationJson: Json,
 ) {
 
+    companion object {
+        private const val MAX_PROCESS_BYTES = 4194304L // 4M
+        private const val MAX_FILE_SIZE = 10485760 // 10M
+    }
+
     private val cachePath by lazy {
         File("${(context.externalCacheDir ?: context.cacheDir).absolutePath}${File.separator}$deviceId").apply {
             this.mkdirs()
@@ -102,30 +110,51 @@ class FlashMan(
 
     private var index: Int = 0
 
-    private suspend fun getCacheFile(): File = withContext(SINGLE_TRANSFER_FILE_THREAD) {
+    private fun getCacheFile(index:Int): File {
         cachePath.mkdirs()
-        File(cachePath, "${++index}.cache")
+        return File(cachePath, "$index.cache")
     }
 
-    private var currentFile = File(cachePath, "1.cache")
-    private var currentOutputStream = currentFile.outputStream()
-    suspend fun writeBytes(bytes: ByteArray) = withContext(SINGLE_TRANSFER_FILE_THREAD) {
-        if (currentFile.length() + bytes.size > TransferProtocol.MAX_DATA_OFFSET) {
-            processData(currentFile)
-            currentFile = getCacheFile()
-            currentOutputStream.close()
-            currentOutputStream = currentFile.outputStream()
+    private var currentFile: File? = null
+    private var currentOutputStream: OutputStream? = null
+    private var lastName = ""
+    suspend fun writeBytes(bytes: ByteArray) = withContext(SINGLE_TRANSFER_FILE_THREAD){
+        val file = currentFile?: getCacheFile(++index).also {
+            currentOutputStream?.close()
+            currentFile = it
+            currentOutputStream = it.outputStream()
+        }
+        if (file.length() + bytes.size > MAX_FILE_SIZE) {
+            MixinApplication.get().applicationScope.launch(Dispatchers.IO){
+                Timber.e("process ${file.name}")
+                processDataFile(file)
+                Timber.e("process end ${file.name}")
+            }
+            Timber.e("process launch end ${file.name}")
+            currentFile = null
+            currentOutputStream?.close()
+            currentOutputStream = null
         } else {
-            currentOutputStream.write(bytes)
+            if (lastName != file.name) {
+                Timber.e("write bytes: ${file.name}")
+                lastName = file.name
+            }
+            currentOutputStream?.write(bytes)
         }
     }
-    suspend fun finish(status: TransferStatusLiveData) {
-        currentOutputStream.close()
-        processData(currentFile)
+
+    suspend fun finish(status: TransferStatusLiveData) = withContext(SINGLE_TRANSFER_FILE_THREAD) {
+        currentOutputStream?.close()
+        currentFile?.let { file ->
+            MixinApplication.get().applicationScope.launch(Dispatchers.IO) {
+                processDataFile(file)
+            }
+        }
         processFile(getAttachmentPath(), status)
     }
 
-    private suspend fun processData(file: File) = withContext(SINGLE_TRANSFER_THREAD) {
+    private suspend fun processDataFile(file: File) = withContext(SINGLE_TRANSFER_THREAD){
+        Timber.e("Process data file: ${file.name}")
         try {
             if (file.exists() && file.length() > 0) {
                 file.inputStream().use { input ->
@@ -141,17 +170,36 @@ class FlashMan(
             if (messageList.isNotEmpty()) {
                 messageDao.insertList(messageList)
             }
-            launch {
-                file.delete()
-                Timber.e("delete ${file.absolutePath}")
-            }
+            file.delete()
+            Timber.e("delete ${file.absolutePath}")
         } catch (e: Exception) {
             Timber.e("skip ${file.absolutePath} ${e.message}")
         }
     }
 
+    private var lastProcessTime = 0L
+    private var processedBytes = 0L
+    private suspend fun processJson(byteArray: ByteArray) {
+        val currentTime = System.currentTimeMillis()
+        val processTime = currentTime - lastProcessTime
+        if (processTime < 1000) {
+            if ((byteArray.size + processedBytes) > MAX_PROCESS_BYTES) {
+                val delayTime = 1000L - processTime
+                delay(delayTime)
+                Timber.e("delay $delayTime $processedBytes ${byteArray.size}")
+                processedBytes = 0
+            }
+        } else {
+            Timber.e("processedBytes %.2f MB/s", processedBytes / 1024f / 1024)
+            processedBytes = 0
+        }
+        innerProcessJson(byteArray)
+        processedBytes += byteArray.size
+        lastProcessTime = System.currentTimeMillis()
+    }
+
     @OptIn(ExperimentalSerializationApi::class)
-    private fun processJson(data: ByteArray) {
+    private fun innerProcessJson(data: ByteArray) {
         try {
             val transferData = serializationJson.decodeFromStream<TransferSendData<JsonElement>>(ByteArrayInputStream(data))
             when (transferData.type) {

@@ -2,7 +2,6 @@ package one.mixin.android.ui.transfer
 
 import android.app.Application
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -80,17 +79,17 @@ class TransferClient @Inject internal constructor(
 
             override fun onTransferRead(dataSize: Int) {
                 receiveOffset += dataSize
-                MixinApplication.get().applicationScope.launch(SINGLE_TRANSFER_PROGRESS_THREAD) {
+                MixinApplication.get().applicationScope.launch(Dispatchers.IO){
                     socket?.getOutputStream()?.let {
-                        progress(it)
+                        launch(SINGLE_TRANSFER_PROGRESS_THREAD) {
+                            progress(it)
+                        }
                     }
                 }
                 // do noting
             }
         })
     }
-
-    private val syncChannel = Channel<ByteArray>()
 
     suspend fun connectToServer(ip: String, port: Int, commandData: TransferCommandData) =
         withContext(SINGLE_SOCKET_THREAD) {
@@ -102,12 +101,8 @@ class TransferClient @Inject internal constructor(
                 val outputStream = socket.getOutputStream()
                 sendCommand(outputStream, commandData)
                 outputStream.flush()
-                launch(Dispatchers.IO) { listen(socket.inputStream, socket.outputStream) }
-                launch(Dispatchers.IO) {
-                    for (byteArray in syncChannel) {
-                        // write to cache file
-                        flashMan.writeBytes(byteArray)
-                    }
+                launch {
+                    listen(socket.inputStream, socket.outputStream)
                 }
             } catch (e: Exception) {
                 Timber.e(e)
@@ -169,7 +164,7 @@ class TransferClient @Inject internal constructor(
 
                 is ByteArray -> {
                     count++
-                    syncChannel.send(result)
+                    flashMan.writeBytes(result)
                 }
 
                 else -> {
