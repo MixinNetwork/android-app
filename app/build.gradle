@@ -59,7 +59,7 @@ android {
             freeCompilerArgs += ['-opt-in=kotlin.contracts.ExperimentalContracts']
             freeCompilerArgs += [
                     "-P",
-                    "plugin:androidx.compose.compiler.plugins.kotlin:suppressKotlinVersionCompatibilityCheck=1.8.20"
+                    "plugin:androidx.compose.compiler.plugins.kotlin:suppressKotlinVersionCompatibilityCheck=1.8.21"
             ]
         }
 
