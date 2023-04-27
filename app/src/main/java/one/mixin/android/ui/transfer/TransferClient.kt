@@ -1,6 +1,8 @@
 package one.mixin.android.ui.transfer
 
 import com.google.gson.Gson
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -84,10 +86,11 @@ class TransferClient @Inject internal constructor(
     private var socket: Socket? = null
     private var quit = false
     private var count = 0L
+    private var startTime = 0L
 
     val protocol = TransferProtocol()
 
-    private var startTime = 0L
+    private val syncChannel = Channel<ByteArray>()
 
     suspend fun connectToServer(ip: String, port: Int, commandData: TransferCommandData) =
         withContext(SINGLE_SOCKET_THREAD) {
@@ -99,7 +102,12 @@ class TransferClient @Inject internal constructor(
                 val outputStream = socket.getOutputStream()
                 protocol.write(outputStream, TransferProtocol.TYPE_COMMAND, gson.toJson(commandData))
                 outputStream.flush()
-                launch { listen(socket.inputStream, socket.outputStream) }
+                launch(Dispatchers.IO) { listen(socket.inputStream, socket.outputStream) }
+                launch(Dispatchers.IO) {
+                    for (byteArray in syncChannel) {
+                        processJson(byteArray)
+                    }
+                }
             } catch (e: Exception) {
                 Timber.e(e)
                 if (status.value != TransferStatus.FINISHED && status.value != TransferStatus.ERROR) {
@@ -149,7 +157,7 @@ class TransferClient @Inject internal constructor(
                     }
                 }
                 is ByteArray -> {
-                    processJson(result)
+                    syncChannel.send(result)
                     progress(outputStream)
                 }
                 else -> {
