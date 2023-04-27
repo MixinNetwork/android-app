@@ -1,4 +1,6 @@
-@file:UnstableApi package one.mixin.android.ui.player
+@file:UnstableApi
+
+package one.mixin.android.ui.player
 
 import android.animation.Animator
 import android.animation.AnimatorSet
