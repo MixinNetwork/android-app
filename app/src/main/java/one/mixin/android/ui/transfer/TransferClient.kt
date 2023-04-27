@@ -101,7 +101,7 @@ class TransferClient @Inject internal constructor(
                 launch { listen(socket.inputStream, socket.outputStream) }
             } catch (e: Exception) {
                 Timber.e(e)
-                if (status.value != TransferStatus.FINISHED) {
+                if (status.value != TransferStatus.FINISHED && status.value != TransferStatus.ERROR) {
                     status.value = TransferStatus.ERROR
                 }
                 exit()
@@ -168,6 +168,7 @@ class TransferClient @Inject internal constructor(
     private var lastProgress = 0f
     private fun progress(outputStream: OutputStream) {
         if (total <= 0) return
+        if (quit) return
         val progress = min((count++) / total.toFloat() * 100, 100f)
         if (lastProgress != progress && System.currentTimeMillis() - lastTime > 200) {
             sendCommand(
@@ -323,7 +324,9 @@ class TransferClient @Inject internal constructor(
             outputStream.flush()
         } catch (e: SocketException) {
             exit()
-            status.value = TransferStatus.ERROR
+            if (status.value != TransferStatus.FINISHED && status.value != TransferStatus.ERROR) {
+                status.value = TransferStatus.ERROR
+            }
         }
     }
 }
