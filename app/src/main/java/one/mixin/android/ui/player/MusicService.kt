@@ -11,7 +11,6 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ServiceLifecycleDispatcher
 import androidx.lifecycle.lifecycleScope
-import androidx.paging.PagedList
 import androidx.media3.common.Player
 import androidx.media3.common.Player.DISCONTINUITY_REASON_INTERNAL
 import androidx.media3.common.Player.DISCONTINUITY_REASON_REMOVE
@@ -19,6 +18,7 @@ import androidx.media3.common.Player.DISCONTINUITY_REASON_SEEK_ADJUSTMENT
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.session.MediaSession
 import androidx.media3.session.MediaSessionService
+import androidx.paging.PagedList
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import one.mixin.android.RxBus

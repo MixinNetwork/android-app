@@ -466,7 +466,7 @@ private fun File.createDocumentFile(
             ".$extensionName"
         }
     }"
-    val fileName = name ?: defaultName
+    val fileName = name?.toValidFileName() ?: defaultName
     if (!this.exists()) {
         this.mkdirs()
     }

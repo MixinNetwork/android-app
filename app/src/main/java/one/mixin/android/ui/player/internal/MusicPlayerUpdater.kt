@@ -1,11 +1,11 @@
 package one.mixin.android.ui.player.internal
 
 import android.support.v4.media.MediaMetadataCompat
+import androidx.media3.common.MediaItem
+import androidx.media3.exoplayer.ExoPlayer
 import com.github.difflib.DiffUtils
 import com.github.difflib.patch.AbstractDelta
 import com.github.difflib.patch.DeltaType
-import androidx.media3.common.MediaItem
-import androidx.media3.exoplayer.ExoPlayer
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import one.mixin.android.util.reportException
