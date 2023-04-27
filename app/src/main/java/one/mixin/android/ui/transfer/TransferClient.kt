@@ -165,33 +165,39 @@ class TransferClient @Inject internal constructor(
         Runtime.getRuntime()
     }
 
+    private var lastProgress = 0f
     private fun progress(outputStream: OutputStream) {
         if (total <= 0) return
         val progress = min((count++) / total.toFloat() * 100, 100f)
-        if (System.currentTimeMillis() - lastTime > 200) {
+        if (lastProgress != progress && System.currentTimeMillis() - lastTime > 200) {
             sendCommand(
                 outputStream,
                 TransferCommandData(TransferCommandAction.PROGRESS.value, progress = progress),
             )
+            lastProgress = progress
             lastTime = System.currentTimeMillis()
+            RxBus.publish(DeviceTransferProgressEvent(progress))
             Timber.e("Device transfer $progress")
         }
-        RxBus.publish(DeviceTransferProgressEvent(progress))
     }
 
     private suspend fun processJson(byteArray: ByteArray) {
         var freeMemory = runtime.freeMemory()
+        val dataLength = byteArray.size
         // Calculate the threshold for available memory based on the size of the data to be processed
-        val threshold = byteArray.size * 32
+        val threshold = dataLength * 32
         while (freeMemory < threshold) {
-            // If there is less memory available than 4 times the size of the data to be processed, wait longer
-            if (freeMemory <= byteArray.size * 4) {
+            if (freeMemory < dataLength) {
+                runtime.gc()
+            } else if (freeMemory <= dataLength * 4) {
+                // If there is less memory available than 4 times the size of the data to be processed, wait longer
                 delay(1000)
             } else {
                 delay(200)
             }
             freeMemory = runtime.freeMemory()
         }
+
         val transferData = gson.fromJson(InputStreamReader(ByteArrayInputStream(byteArray), UTF_8), TransferData::class.java)
         when (transferData.type) {
             TransferDataType.CONVERSATION.value -> {
