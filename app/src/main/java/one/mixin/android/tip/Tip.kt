@@ -107,7 +107,20 @@ class Tip @Inject internal constructor(
             if (privTip == null) {
                 runCreateTipPriv()
             } else {
-                val aesKeyCipher = getAesKey(pin)
+                val aesKeyCipher = try {
+                    getAesKey(pin)
+                } catch (e: TipNetworkException) {
+                    Timber.e("getOrRecoverTipPriv getAesKey meet ${e.getStackTraceString()}")
+
+                    // workaround with read AES key meet bad data,
+                    // clear local priv and run create TIP priv process.
+                    if (e.error.code == ErrorHandler.BAD_DATA) {
+                        clearTipPriv(context)
+
+                        return@runCatching runCreateTipPriv()
+                    }
+                    throw e
+                }
                 Timber.e("getOrRecoverTipPriv after getAesKey, aesKeyCipher isEmpty: ${aesKeyCipher.isEmpty()}")
                 val pinToken = Session.getPinToken()?.decodeBase64() ?: throw TipNullException("No pin token")
                 try {

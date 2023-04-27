@@ -1,17 +1,18 @@
 package one.mixin.android.util
 
 import android.support.v4.media.MediaMetadataCompat
-import com.google.android.exoplayer2.C
-import com.google.android.exoplayer2.C.AUDIO_CONTENT_TYPE_MUSIC
-import com.google.android.exoplayer2.ExoPlaybackException
-import com.google.android.exoplayer2.ExoPlaybackException.TYPE_SOURCE
-import com.google.android.exoplayer2.ExoPlayer
-import com.google.android.exoplayer2.PlaybackException
-import com.google.android.exoplayer2.PlaybackParameters
-import com.google.android.exoplayer2.Player
-import com.google.android.exoplayer2.Timeline
-import com.google.android.exoplayer2.audio.AudioAttributes
-import com.google.android.exoplayer2.source.UnrecognizedInputFormatException
+import androidx.media3.common.C
+import androidx.media3.common.C.AUDIO_CONTENT_TYPE_MUSIC
+import androidx.media3.common.PlaybackException
+import androidx.media3.common.PlaybackParameters
+import androidx.media3.common.Player
+import androidx.media3.common.Timeline
+import androidx.media3.common.AudioAttributes
+import androidx.media3.common.util.UnstableApi
+import androidx.media3.exoplayer.ExoPlaybackException
+import androidx.media3.exoplayer.ExoPlaybackException.TYPE_SOURCE
+import androidx.media3.exoplayer.ExoPlayer
+import androidx.media3.exoplayer.source.UnrecognizedInputFormatException
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
@@ -33,7 +34,7 @@ import one.mixin.android.widget.CircleProgress.Companion.STATUS_PAUSE
 import one.mixin.android.widget.CircleProgress.Companion.STATUS_PLAY
 import java.util.concurrent.TimeUnit
 
-class MusicPlayer private constructor() {
+@UnstableApi class MusicPlayer private constructor() {
     companion object {
         @Synchronized
         fun get(): MusicPlayer {
@@ -90,7 +91,7 @@ class MusicPlayer private constructor() {
 
     private val updater = MusicPlayerUpdater(exoPlayer)
 
-    private inner class PlayerListener : Player.Listener {
+    @UnstableApi private inner class PlayerListener : Player.Listener {
         override fun onPlaybackStateChanged(playbackState: Int) {
             if (playbackState == Player.STATE_ENDED) {
                 id()?.let { id -> RxBus.publish(pauseEvent(id)) }
