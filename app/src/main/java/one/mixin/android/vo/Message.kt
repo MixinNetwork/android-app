@@ -90,12 +90,15 @@ class Message(
     @ColumnInfo(name = "thumb_url")
     val thumbUrl: String?,
 
+    @SerializedName("media_key")
     @ColumnInfo(name = "media_key", typeAffinity = ColumnInfo.BLOB)
     val mediaKey: ByteArray? = null,
 
+    @SerializedName("media_digest")
     @ColumnInfo(name = "media_digest", typeAffinity = ColumnInfo.BLOB)
     val mediaDigest: ByteArray? = null,
 
+    @SerializedName("media_status")
     @ColumnInfo(name = "media_status")
     var mediaStatus: String? = null,
 
@@ -139,6 +142,7 @@ class Message(
     @ColumnInfo(name = "shared_user_id")
     val sharedUserId: String? = null,
 
+    @SerializedName("media_waveform")
     @ColumnInfo(name = "media_waveform", typeAffinity = ColumnInfo.BLOB)
     val mediaWaveform: ByteArray? = null,
 
