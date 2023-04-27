@@ -3,6 +3,8 @@ package one.mixin.android.ui.transfer
 import com.google.gson.Gson
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
@@ -148,8 +150,10 @@ class TransferClient @Inject internal constructor(
                     }
                 }
                 is ByteArray -> {
-                    processJson(result, outputStream)
-                    progress(outputStream)
+                    executeWithRateLimit {
+                        processJson(result)
+                        progress(outputStream)
+                    }
                 }
                 else -> {
                     // read file
@@ -178,9 +182,33 @@ class TransferClient @Inject internal constructor(
         RxBus.publish(DeviceTransferProgressEvent(progress))
     }
 
+    private var callCount = 0
+    private var lastCallTime = 0L
+    private val mutex = Mutex()
+    private var maxCallCount = 500
+    private suspend fun executeWithRateLimit(call: () -> Unit) {
+        mutex.withLock {
+            val now = System.currentTimeMillis()
+            val diff = now - lastCallTime
+            if (diff > 1000) {
+                // reset the counter if the interval has elapsed
+                callCount = 0
+                lastCallTime = now
+            }
+            if (callCount >= maxCallCount) {
+                delay(diff)
+            }
+            call()
+            callCount++
+        }
+    }
+
     @OptIn(ExperimentalSerializationApi::class)
-    private fun processJson(byteArray: ByteArray, outputStream: OutputStream) {
+    private fun processJson(byteArray: ByteArray) {
         if (runtime.freeMemory() < 5242880) {
+            if (maxCallCount >= 20) {
+                maxCallCount -= 10
+            }
             runtime.gc()
         }
         val transferData = serializationJson.decodeFromStream<TransferSendData<JsonElement>>(ByteArrayInputStream(byteArray))
