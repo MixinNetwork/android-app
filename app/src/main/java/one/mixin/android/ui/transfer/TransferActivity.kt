@@ -1,6 +1,7 @@
 package one.mixin.android.ui.transfer
 
 import android.Manifest
+import android.app.Dialog
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
@@ -197,6 +198,7 @@ class TransferActivity : BaseActivity() {
         connectToQrCodeContent(content)
     }
 
+    private var dialog : Dialog? =null
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
@@ -268,31 +270,38 @@ class TransferActivity : BaseActivity() {
                 }
 
                 TransferStatus.ERROR -> {
-                    alertDialogBuilder()
-                        .setTitle(R.string.Transfer_error)
-                        .setCancelable(false)
-                        .setPositiveButton(R.string.Confirm) { dialog, _ ->
-                            dialog.dismiss()
-                            finish()
-                            status.value = TransferStatus.INITIALIZING
-                        }
-                        .show()
+                    if (dialog == null) {
+                        dialog = alertDialogBuilder()
+                            .setTitle(R.string.Transfer_error)
+                            .setCancelable(false)
+                            .setPositiveButton(R.string.Confirm) { dialog, _ ->
+                                dialog.dismiss()
+                                finish()
+                                status.value = TransferStatus.INITIALIZING
+                            }.create()
+                        dialog?.show()
+                    }
                 }
 
                 TransferStatus.FINISHED -> {
-                    alertDialogBuilder()
-                        .setTitle(R.string.Transfer_completed)
-                        .setCancelable(false)
-                        .setPositiveButton(R.string.Confirm) { dialog, _ ->
-                            dialog.dismiss()
-                            if (argsStatus == ARGS_RESTORE_FROM_PHONE) {
-                                InitializeActivity.showLoading(this, clear = true)
-                                defaultSharedPreferences.putBoolean(Constants.Account.PREF_RESTORE, false)
-                            }
-                            status.value = TransferStatus.INITIALIZING
-                            finish()
-                        }
-                        .show()
+                    if (dialog == null) {
+                        dialog = alertDialogBuilder()
+                            .setTitle(R.string.Transfer_completed)
+                            .setCancelable(false)
+                            .setPositiveButton(R.string.Confirm) { dialog, _ ->
+                                dialog.dismiss()
+                                if (argsStatus == ARGS_RESTORE_FROM_PHONE) {
+                                    InitializeActivity.showLoading(this, clear = true)
+                                    defaultSharedPreferences.putBoolean(
+                                        Constants.Account.PREF_RESTORE,
+                                        false
+                                    )
+                                }
+                                status.value = TransferStatus.INITIALIZING
+                                finish()
+                            }.create()
+                        dialog?.show()
+                    }
                 }
             }
         }
@@ -481,6 +490,7 @@ class TransferActivity : BaseActivity() {
     }
 
     override fun onDestroy() {
+        dialog?.dismiss()
         transferServer.exit()
         transferClient.exit()
         status.value = TransferStatus.INITIALIZING

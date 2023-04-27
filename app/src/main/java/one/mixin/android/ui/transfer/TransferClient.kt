@@ -14,6 +14,7 @@ import one.mixin.android.db.MessageDao
 import one.mixin.android.db.MessageMentionDao
 import one.mixin.android.db.ParticipantDao
 import one.mixin.android.db.PinMessageDao
+import one.mixin.android.db.RemoteMessageStatusDao
 import one.mixin.android.db.SnapshotDao
 import one.mixin.android.db.StickerDao
 import one.mixin.android.db.TranscriptMessageDao
@@ -71,6 +72,7 @@ class TransferClient @Inject internal constructor(
     val userDao: UserDao,
     val appDao: AppDao,
     val messageMentionDao: MessageMentionDao,
+    val remoteMessageStatusDao: RemoteMessageStatusDao,
     val ftsDatabase: FtsDatabase,
     val status: TransferStatusLiveData,
 ) {
@@ -137,7 +139,6 @@ class TransferClient @Inject internal constructor(
 
                         TransferCommandAction.FINISH.value -> {
                             status.value = TransferStatus.FINISHED
-                            finalWork()
                             sendFinish(outputStream)
                             delay(100)
                             exit()
@@ -167,10 +168,9 @@ class TransferClient @Inject internal constructor(
 
     private var lastProgress = 0f
     private fun progress(outputStream: OutputStream) {
-        if (total <= 0) return
-        if (quit) return
+        if (quit || total <= 0 || status.value == TransferStatus.ERROR) return
         val progress = min((count++) / total.toFloat() * 100, 100f)
-        if (lastProgress != progress && System.currentTimeMillis() - lastTime > 200) {
+        if (lastProgress != progress && System.currentTimeMillis() - lastTime > 300) {
             sendCommand(
                 outputStream,
                 TransferCommandData(TransferCommandAction.PROGRESS.value, progress = progress),
@@ -289,6 +289,7 @@ class TransferClient @Inject internal constructor(
     private fun finalWork() {
         conversationDao.getAllConversationId().forEach { conversationId ->
             conversationDao.refreshLastMessageId(conversationId)
+            remoteMessageStatusDao.updateConversationUnseen(conversationId)
         }
         conversationExtDao.getAllConversationId().forEach { conversationId ->
             conversationExtDao.refreshCountByConversationId(conversationId)
@@ -302,6 +303,7 @@ class TransferClient @Inject internal constructor(
                 socket?.close()
                 socket = null
             }
+            finalWork()
         } catch (e: Exception) {
             Timber.e("Exit client ${e.message}")
         }
