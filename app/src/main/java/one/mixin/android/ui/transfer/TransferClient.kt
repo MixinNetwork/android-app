@@ -2,8 +2,6 @@ package one.mixin.android.ui.transfer
 
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import one.mixin.android.MixinApplication
 import one.mixin.android.RxBus
@@ -151,10 +149,8 @@ class TransferClient @Inject internal constructor(
                     }
                 }
                 is ByteArray -> {
-                    executeWithRateLimit {
-                        processJson(result)
-                        progress(outputStream)
-                    }
+                    processJson(result)
+                    progress(outputStream)
                 }
                 else -> {
                     // read file
@@ -183,35 +179,18 @@ class TransferClient @Inject internal constructor(
         RxBus.publish(DeviceTransferProgressEvent(progress))
     }
 
-    private var callCount = 0
-    private var lastCallTime = 0L
-    private val mutex = Mutex()
-    private var maxCallCount = 1000
-    private suspend fun executeWithRateLimit(call: () -> Unit) {
-        mutex.withLock {
-            val now = System.currentTimeMillis()
-            val diff = now - lastCallTime
-            if (diff > 1000) {
-                // reset the counter if the interval has elapsed
-                callCount = 0
-                lastCallTime = now
+    private suspend fun processJson(byteArray: ByteArray) {
+        var freeMemory = runtime.freeMemory()
+        // Calculate the threshold for available memory based on the size of the data to be processed
+        val threshold = byteArray.size * 32
+        while (freeMemory < threshold) {
+            // If there is less memory available than 4 times the size of the data to be processed, wait longer
+            if (freeMemory <= byteArray.size * 4) {
+                delay(1000)
+            } else {
+                delay(200)
             }
-            if (callCount >= maxCallCount) {
-                delay(diff)
-            }
-            call()
-            callCount++
-        }
-    }
-
-    private fun processJson(byteArray: ByteArray) {
-        if (runtime.freeMemory() < 5242880) {
-            if (maxCallCount >= 500) {
-                maxCallCount -= 100
-            } else if (maxCallCount >= 20) {
-                maxCallCount -= 10
-            }
-            runtime.gc()
+            freeMemory = runtime.freeMemory()
         }
         val transferData = gson.fromJson(InputStreamReader(ByteArrayInputStream(byteArray), UTF_8), TransferData::class.java)
         when (transferData.type) {
