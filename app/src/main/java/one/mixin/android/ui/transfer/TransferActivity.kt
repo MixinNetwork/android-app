@@ -201,6 +201,7 @@ class TransferActivity : BaseActivity() {
     private var dialog : Dialog? =null
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        status.value = TransferStatus.INITIALIZING
         setContentView(binding.root)
 
         getScanResult = registerForActivityResult(
