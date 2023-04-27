@@ -41,7 +41,7 @@ class FileLogTree : Timber.Tree() {
                     directory.mkdirs()
                 }
 
-                val file = File("${directory.absolutePath}${File.separator}${LOG_FILE_NAME}")
+                val file = File("${directory.absolutePath}${File.separator}$LOG_FILE_NAME")
                 file.createNewFile()
                 if (file.exists()) {
                     if (file.length() >= MAX_SIZE) {
