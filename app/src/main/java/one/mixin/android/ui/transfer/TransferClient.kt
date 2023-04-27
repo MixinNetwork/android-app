@@ -3,10 +3,7 @@ package one.mixin.android.ui.transfer
 import com.google.gson.Gson
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
-import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.decodeFromJsonElement
@@ -22,6 +19,7 @@ import one.mixin.android.db.MessageDao
 import one.mixin.android.db.MessageMentionDao
 import one.mixin.android.db.ParticipantDao
 import one.mixin.android.db.PinMessageDao
+import one.mixin.android.db.RemoteMessageStatusDao
 import one.mixin.android.db.SnapshotDao
 import one.mixin.android.db.StickerDao
 import one.mixin.android.db.TranscriptMessageDao
@@ -76,10 +74,11 @@ class TransferClient @Inject internal constructor(
     val userDao: UserDao,
     val appDao: AppDao,
     val messageMentionDao: MessageMentionDao,
+    val remoteMessageStatusDao: RemoteMessageStatusDao,
     val ftsDatabase: FtsDatabase,
     val status: TransferStatusLiveData,
     val gson: Gson,
-    val serializationJson: Json,
+    private val serializationJson: Json,
 ) {
 
     private var socket: Socket? = null
@@ -87,6 +86,7 @@ class TransferClient @Inject internal constructor(
     private var count = 0L
 
     val protocol = TransferProtocol()
+
     private var startTime = 0L
 
     suspend fun connectToServer(ip: String, port: Int, commandData: TransferCommandData) =
@@ -102,7 +102,7 @@ class TransferClient @Inject internal constructor(
                 launch { listen(socket.inputStream, socket.outputStream) }
             } catch (e: Exception) {
                 Timber.e(e)
-                if (status.value != TransferStatus.FINISHED) {
+                if (status.value != TransferStatus.FINISHED && status.value != TransferStatus.ERROR) {
                     status.value = TransferStatus.ERROR
                 }
                 exit()
@@ -138,7 +138,6 @@ class TransferClient @Inject internal constructor(
 
                         TransferCommandAction.FINISH.value -> {
                             status.value = TransferStatus.FINISHED
-                            finalWork()
                             sendFinish(outputStream)
                             delay(100)
                             exit()
@@ -150,10 +149,8 @@ class TransferClient @Inject internal constructor(
                     }
                 }
                 is ByteArray -> {
-                    executeWithRateLimit {
-                        processJson(result)
-                        progress(outputStream)
-                    }
+                    processJson(result)
+                    progress(outputStream)
                 }
                 else -> {
                     // read file
@@ -168,48 +165,37 @@ class TransferClient @Inject internal constructor(
         Runtime.getRuntime()
     }
 
+    private var lastProgress = 0f
     private fun progress(outputStream: OutputStream) {
-        if (total <= 0) return
+        if (quit || total <= 0 || status.value == TransferStatus.ERROR) return
         val progress = min((count++) / total.toFloat() * 100, 100f)
-        if (System.currentTimeMillis() - lastTime > 200) {
+        if (lastProgress != progress && System.currentTimeMillis() - lastTime > 300) {
             sendCommand(
                 outputStream,
                 TransferCommandData(TransferCommandAction.PROGRESS.value, progress = progress),
             )
+            lastProgress = progress
             lastTime = System.currentTimeMillis()
+            RxBus.publish(DeviceTransferProgressEvent(progress))
             Timber.e("Device transfer $progress")
         }
-        RxBus.publish(DeviceTransferProgressEvent(progress))
     }
 
-    private var callCount = 0
-    private var lastCallTime = 0L
-    private val mutex = Mutex()
-    private var maxCallCount = 500
-    private suspend fun executeWithRateLimit(call: () -> Unit) {
-        mutex.withLock {
-            val now = System.currentTimeMillis()
-            val diff = now - lastCallTime
-            if (diff > 1000) {
-                // reset the counter if the interval has elapsed
-                callCount = 0
-                lastCallTime = now
+    private suspend fun processJson(byteArray: ByteArray) {
+        var freeMemory = runtime.freeMemory()
+        val dataLength = byteArray.size
+        // Calculate the threshold for available memory based on the size of the data to be processed
+        val threshold = dataLength * 32
+        while (freeMemory < threshold) {
+            if (freeMemory < dataLength) {
+                runtime.gc()
+            } else if (freeMemory <= dataLength * 4) {
+                // If there is less memory available than 4 times the size of the data to be processed, wait longer
+                delay(1000)
+            } else {
+                delay(200)
             }
-            if (callCount >= maxCallCount) {
-                delay(diff)
-            }
-            call()
-            callCount++
-        }
-    }
-
-    @OptIn(ExperimentalSerializationApi::class)
-    private fun processJson(byteArray: ByteArray) {
-        if (runtime.freeMemory() < 5242880) {
-            if (maxCallCount >= 20) {
-                maxCallCount -= 10
-            }
-            runtime.gc()
+            freeMemory = runtime.freeMemory()
         }
         val transferData = serializationJson.decodeFromStream<TransferSendData<JsonElement>>(ByteArrayInputStream(byteArray))
         when (transferData.type) {
@@ -300,6 +286,7 @@ class TransferClient @Inject internal constructor(
     private fun finalWork() {
         conversationDao.getAllConversationId().forEach { conversationId ->
             conversationDao.refreshLastMessageId(conversationId)
+            remoteMessageStatusDao.updateConversationUnseen(conversationId)
         }
         conversationExtDao.getAllConversationId().forEach { conversationId ->
             conversationExtDao.refreshCountByConversationId(conversationId)
@@ -313,6 +300,7 @@ class TransferClient @Inject internal constructor(
                 socket?.close()
                 socket = null
             }
+            finalWork()
         } catch (e: Exception) {
             Timber.e("Exit client ${e.message}")
         }
@@ -335,7 +323,9 @@ class TransferClient @Inject internal constructor(
             outputStream.flush()
         } catch (e: SocketException) {
             exit()
-            status.value = TransferStatus.ERROR
+            if (status.value != TransferStatus.FINISHED && status.value != TransferStatus.ERROR) {
+                status.value = TransferStatus.ERROR
+            }
         }
     }
 }

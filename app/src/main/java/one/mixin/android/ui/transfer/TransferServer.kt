@@ -435,9 +435,9 @@ class TransferServer @Inject internal constructor(
     }
 
     private fun syncMessage(outputStream: OutputStream) {
-        var offset = 0
+        var rowid = -1L
         while (!quit) {
-            val list = messageDao.getMessageByLimitAndOffset(LIMIT, offset)
+            val list = messageDao.getMessageByLimitAndOffset(LIMIT, rowid)
             if (list.isEmpty()) {
                 return
             }
@@ -450,7 +450,7 @@ class TransferServer @Inject internal constructor(
             if (list.size < LIMIT) {
                 return
             }
-            offset += LIMIT
+            rowid = messageDao.getMessageRowid(list.last().messageId) ?: return
         }
     }
 

@@ -174,8 +174,8 @@ class Message(
     @ColumnInfo(name = "shared_user_id")
     val sharedUserId: String? = null,
 
-    @ColumnInfo(name = "media_waveform", typeAffinity = ColumnInfo.BLOB)
     @SerializedName("media_waveform")
+    @ColumnInfo(name = "media_waveform", typeAffinity = ColumnInfo.BLOB)
     @SerialName("media_waveform")
     @kotlinx.serialization.Serializable(with = ByteArrayBase64Serializer::class)
     val mediaWaveform: ByteArray? = null,
