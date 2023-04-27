@@ -16,10 +16,11 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.paging.PagedList
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.google.android.exoplayer2.MediaItem
-import com.google.android.exoplayer2.Player
-import com.google.android.exoplayer2.Player.MEDIA_ITEM_TRANSITION_REASON_PLAYLIST_CHANGED
-import com.google.android.exoplayer2.Player.MEDIA_ITEM_TRANSITION_REASON_REPEAT
+import androidx.media3.common.MediaItem
+import androidx.media3.common.Player
+import androidx.media3.common.Player.MEDIA_ITEM_TRANSITION_REASON_PLAYLIST_CHANGED
+import androidx.media3.common.Player.MEDIA_ITEM_TRANSITION_REASON_REPEAT
+import androidx.media3.common.util.UnstableApi
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.tbruyelle.rxpermissions2.RxPermissions
@@ -52,7 +53,7 @@ import one.mixin.android.widget.MixinBottomSheetDialog
 import kotlin.math.max
 import kotlin.math.min
 
-@AndroidEntryPoint
+@UnstableApi @AndroidEntryPoint
 class MusicBottomSheetDialogFragment : BottomSheetDialogFragment() {
     companion object {
         const val TAG = "MusicBottomSheetDialogFragment"

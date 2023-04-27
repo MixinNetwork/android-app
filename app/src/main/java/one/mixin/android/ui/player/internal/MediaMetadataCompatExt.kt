@@ -4,7 +4,7 @@ import android.graphics.Bitmap
 import android.net.Uri
 import android.support.v4.media.MediaMetadataCompat
 import androidx.recyclerview.widget.DiffUtil
-import com.google.android.exoplayer2.MediaItem
+import androidx.media3.common.MediaItem
 import one.mixin.android.extension.toUri
 
 /**

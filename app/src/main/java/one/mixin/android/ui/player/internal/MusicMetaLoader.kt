@@ -1,13 +1,14 @@
 package one.mixin.android.ui.player.internal
 
 import android.util.LruCache
-import com.google.android.exoplayer2.MediaItem
-import com.google.android.exoplayer2.MetadataRetriever
-import com.google.android.exoplayer2.metadata.Metadata
-import com.google.android.exoplayer2.metadata.flac.PictureFrame
-import com.google.android.exoplayer2.metadata.flac.VorbisComment
-import com.google.android.exoplayer2.metadata.id3.ApicFrame
-import com.google.android.exoplayer2.metadata.id3.TextInformationFrame
+import androidx.media3.common.MediaItem
+import androidx.media3.common.Metadata
+import androidx.media3.common.util.UnstableApi
+import androidx.media3.exoplayer.MetadataRetriever
+import androidx.media3.extractor.metadata.flac.PictureFrame
+import androidx.media3.extractor.metadata.id3.ApicFrame
+import androidx.media3.extractor.metadata.id3.TextInformationFrame
+import androidx.media3.extractor.metadata.vorbis.VorbisComment
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.extension.isLocalScheme
@@ -17,7 +18,7 @@ import java.io.FileNotFoundException
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.TimeoutException
 
-abstract class MusicMetaLoader {
+@UnstableApi abstract class MusicMetaLoader {
     val unknownString = MixinApplication.appContext.getString(R.string.Unknown)
 
     val ignoreSet = mutableSetOf<String>()

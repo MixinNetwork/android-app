@@ -1,8 +1,8 @@
 package one.mixin.android.util
 
 import androidx.collection.ArrayMap
-import com.google.android.exoplayer2.PlaybackException
-import com.google.android.exoplayer2.upstream.HttpDataSource
+import androidx.media3.common.PlaybackException
+import androidx.media3.datasource.HttpDataSource
 import com.google.firebase.crashlytics.FirebaseCrashlytics
 import com.microsoft.appcenter.crashes.Crashes
 import one.mixin.android.extension.getStackTraceString
