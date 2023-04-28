@@ -30,6 +30,7 @@ import one.mixin.android.Constants
 import one.mixin.android.Constants.ALLOW_INTERVAL
 import one.mixin.android.Constants.API.FOURSQUARE_URL
 import one.mixin.android.Constants.API.GIPHY_URL
+import one.mixin.android.Constants.API.Mixin_URL
 import one.mixin.android.Constants.API.URL
 import one.mixin.android.Constants.DNS
 import one.mixin.android.MixinApplication
@@ -69,6 +70,7 @@ import one.mixin.android.extension.getDeviceId
 import one.mixin.android.extension.isGooglePlayServicesAvailable
 import one.mixin.android.extension.networkConnected
 import one.mixin.android.extension.show
+import one.mixin.android.extension.toUri
 import one.mixin.android.job.BaseJob
 import one.mixin.android.job.JobLogger
 import one.mixin.android.job.JobNetworkUtil
@@ -139,22 +141,21 @@ object AppModule {
             return null
         }
 
-        return null
-//        return try {
-//            CronetEngine.Builder(ctx)
-//                .addQuicHint(URL.toUri().host, 443, 443)
-//                .addQuicHint(Mixin_URL.toUri().host, 443, 443)
-//                .enableQuic(true)
-//                .enableHttp2(true)
-//                .enableHttpCache(CronetEngine.Builder.HTTP_CACHE_IN_MEMORY, 10 * 1024)
-//                .build()
-//        } catch (e: UnsatisfiedLinkError) {
-//            reportException(e)
-//            null
-//        } catch (e: Exception) {
-//            reportException(e)
-//            null
-//        }
+        return try {
+            CronetEngine.Builder(ctx)
+                .addQuicHint(URL.toUri().host, 443, 443)
+                .addQuicHint(Mixin_URL.toUri().host, 443, 443)
+                .enableQuic(true)
+                .enableHttp2(true)
+                .enableHttpCache(CronetEngine.Builder.HTTP_CACHE_IN_MEMORY, 10 * 1024)
+                .build()
+        } catch (e: UnsatisfiedLinkError) {
+            reportException(e)
+            null
+        } catch (e: Exception) {
+            reportException(e)
+            null
+        }
     }
 
     @Singleton
