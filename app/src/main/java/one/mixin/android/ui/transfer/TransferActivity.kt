@@ -38,12 +38,10 @@ import one.mixin.android.extension.dp
 import one.mixin.android.extension.fadeIn
 import one.mixin.android.extension.generateQRCode
 import one.mixin.android.extension.getParcelableExtra
-import one.mixin.android.extension.notificationManager
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.putBoolean
 import one.mixin.android.extension.toast
 import one.mixin.android.job.BaseJob
-import one.mixin.android.job.BlazeMessageService
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.SendPlaintextJob
 import one.mixin.android.session.Session
@@ -203,8 +201,6 @@ class TransferActivity : BaseActivity() {
     private var dialog: Dialog? = null
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        notificationManager.cancelAll()
-        BlazeMessageService.stopService(this)
         status.value = TransferStatus.INITIALIZING
         setContentView(binding.root)
 
@@ -495,9 +491,6 @@ class TransferActivity : BaseActivity() {
     }
 
     override fun onDestroy() {
-        if (MixinApplication.get().isOnline.get()) {
-            BlazeMessageService.startService(this, BlazeMessageService.ACTION_TO_BACKGROUND)
-        }
         dialog?.dismiss()
         transferServer.exit()
         transferClient.exit()
