@@ -407,9 +407,9 @@ class TransferClient @Inject internal constructor(
 
                 val mediaHeight = message.mediaHeight
                 if (mediaHeight != null) {
-                    statement.bindLong(10, mediaHeight.toLong())
+                    statement.bindLong(11, mediaHeight.toLong())
                 } else {
-                    statement.bindNull(10)
+                    statement.bindNull(11)
                 }
 
                 val mediaHash = message.mediaHash
