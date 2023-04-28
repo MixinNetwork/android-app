@@ -526,7 +526,7 @@
     <string name="is_network_available">isNetworkAvailable</string>
     <string name="italic">italic</string>
     <string name="Join_group">Join Group</string>
-    <string name="Joined_in">Joined in %1$s</string>
+    <string name="Joined_in">Joined on %1$s</string>
     <string name="Label">Label</string>
     <string name="Landing_back">Landing back</string>
     <string name="landing_delete_content">Your account will be deleted on %1$s, if you continue to log in, the request to delete your account will be cancelled.</string>
