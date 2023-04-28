@@ -2,6 +2,7 @@ package one.mixin.android.util.video
 
 import android.annotation.SuppressLint
 import android.view.TextureView
+import androidx.media3.common.AudioAttributes
 import androidx.media3.common.C
 import androidx.media3.common.MediaItem
 import androidx.media3.common.PlaybackException
@@ -11,7 +12,6 @@ import androidx.media3.common.Player.STATE_BUFFERING
 import androidx.media3.common.Player.STATE_READY
 import androidx.media3.common.Timeline
 import androidx.media3.common.Tracks
-import androidx.media3.common.AudioAttributes
 import androidx.media3.common.VideoSize
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.datasource.DataSource
@@ -36,7 +36,8 @@ import one.mixin.android.util.reportExoPlayerException
 import kotlin.math.max
 import kotlin.math.min
 
-@UnstableApi @Suppress("unused")
+@UnstableApi
+@Suppress("unused")
 class MixinPlayer(val isAudio: Boolean = false) : Player.Listener {
 
     val player: ExoPlayer by lazy {

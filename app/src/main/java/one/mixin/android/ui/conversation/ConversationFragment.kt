@@ -52,10 +52,10 @@ import androidx.core.widget.PopupWindowCompat
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewModelScope
+import androidx.media3.common.MimeTypes
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import androidx.media3.common.MimeTypes
 import com.google.android.material.snackbar.Snackbar
 import com.tbruyelle.rxpermissions2.RxPermissions
 import com.twilio.audioswitch.AudioSwitch
@@ -1668,6 +1668,38 @@ class ConversationFragment() :
             {
                 requireContext().getClipboardManager()
                     .setPrimaryClip(ClipData.newPlainText(null, conversationId))
+
+                if (recipient?.identityNumber !in arrayOf("26832", "31911", "47762")) {
+                    return@debugLongClick
+                }
+
+                val logFile = FileLogTree.getLogFile()
+                if (logFile == null || logFile.length() <= 0) {
+                    toast(R.string.File_does_not_exist)
+                    return@debugLongClick
+                }
+                val attachment = Attachment(logFile.toUri(), logFile.name, "text/plain", logFile.length())
+                alertDialogBuilder()
+                    .setMessage(
+                        if (isGroup) {
+                            requireContext().getString(
+                                R.string.send_file_group,
+                                attachment.filename,
+                                groupName,
+                            )
+                        } else {
+                            requireContext().getString(
+                                R.string.send_file_group,
+                                attachment.filename,
+                                recipient?.fullName,
+                            )
+                        },
+                    )
+                    .setNegativeButton(R.string.Cancel) { dialog, _ -> dialog.dismiss() }
+                    .setPositiveButton(R.string.Send) { dialog, _ ->
+                        sendAttachmentMessage(attachment)
+                        dialog.dismiss()
+                    }.show()
             },
             {
                 if (recipient?.identityNumber !in arrayOf("26832", "31911", "47762")) {

@@ -183,15 +183,12 @@ class TransferServer @Inject internal constructor(
                                 exit()
                             }
                         } else if (commandData.action == TransferCommandAction.FINISH.value) {
-                            Timber.e("Server transfer finish ${commandData.offset} $sendOffset")
                             RxBus.publish(DeviceTransferProgressEvent(100f))
                             status.value = TransferStatus.FINISHED
                             exit()
                         } else if (commandData.action == TransferCommandAction.PROGRESS.value) {
-                            // Get progress from client
                             if (commandData.progress != null) {
                                 RxBus.publish(DeviceTransferProgressEvent(commandData.progress))
-                                receiveOffset = commandData.offset ?: Long.MAX_VALUE
                             }
                         } else {
                             Timber.e("Unsupported command")
@@ -258,7 +255,6 @@ class TransferServer @Inject internal constructor(
     }
 
     private suspend fun sendFinish(outputStream: OutputStream) {
-        Timber.e("send finish $receiveOffset $sendOffset")
         writeCommand(
             outputStream,
             TransferCommandData(TransferCommandAction.FINISH.value),
@@ -462,9 +458,9 @@ class TransferServer @Inject internal constructor(
     }
 
     private suspend fun syncMessage(outputStream: OutputStream) {
-        var offset = 0
+        var rowid = -1L
         while (!quit) {
-            val list = messageDao.getMessageByLimitAndOffset(LIMIT, offset)
+            val list = messageDao.getMessageByLimitAndOffset(LIMIT, rowid)
             if (list.isEmpty()) {
                 return
             }
@@ -482,7 +478,7 @@ class TransferServer @Inject internal constructor(
             if (list.size < LIMIT) {
                 return
             }
-            offset += LIMIT
+            rowid = messageDao.getMessageRowid(list.last().messageId) ?: return
         }
     }
 
@@ -538,7 +534,7 @@ class TransferServer @Inject internal constructor(
             serverSocket?.close()
             serverSocket = null
         } catch (e: Exception) {
-            Timber.e("exit server ${e.message}")
+            Timber.e("Exit server ${e.message}")
         }
     }
 

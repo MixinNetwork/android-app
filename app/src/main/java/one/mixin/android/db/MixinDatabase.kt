@@ -254,6 +254,10 @@ abstract class MixinDatabase : RoomDatabase() {
             supportSQLiteDatabase?.query("PRAGMA wal_checkpoint(FULL)")?.close()
         }
 
+        fun getWritableDatabase(): SupportSQLiteDatabase? {
+            return INSTANCE?.openHelper?.writableDatabase
+        }
+
         private val CALLBACK = object : RoomDatabase.Callback() {
             override fun onOpen(db: SupportSQLiteDatabase) {
                 super.onOpen(db)

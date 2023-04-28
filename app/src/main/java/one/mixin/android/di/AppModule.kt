@@ -3,6 +3,7 @@ package one.mixin.android.di
 import android.annotation.SuppressLint
 import android.app.Application
 import android.content.ContentResolver
+import androidx.core.net.toUri
 import com.birbit.android.jobqueue.config.Configuration
 import com.birbit.android.jobqueue.scheduling.FrameworkJobSchedulerService
 import com.google.android.gms.net.CronetProviderInstaller
@@ -70,7 +71,6 @@ import one.mixin.android.extension.getDeviceId
 import one.mixin.android.extension.isGooglePlayServicesAvailable
 import one.mixin.android.extension.networkConnected
 import one.mixin.android.extension.show
-import one.mixin.android.extension.toUri
 import one.mixin.android.job.BaseJob
 import one.mixin.android.job.JobLogger
 import one.mixin.android.job.JobNetworkUtil
@@ -496,7 +496,7 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideJson() = Json { ignoreUnknownKeys = true; explicitNulls = false; encodeDefaults = false; coerceInputValues = true; }
+    fun provideJson() = Json { ignoreUnknownKeys = true; explicitNulls = false; encodeDefaults = false; coerceInputValues = true; isLenient = true; }
 
     @Provides
     @Singleton

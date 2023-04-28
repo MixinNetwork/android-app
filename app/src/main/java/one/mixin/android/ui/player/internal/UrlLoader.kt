@@ -1,4 +1,6 @@
-@file:UnstableApi package one.mixin.android.ui.player.internal
+@file:UnstableApi
+
+package one.mixin.android.ui.player.internal
 
 import android.support.v4.media.MediaBrowserCompat
 import android.support.v4.media.MediaDescriptionCompat

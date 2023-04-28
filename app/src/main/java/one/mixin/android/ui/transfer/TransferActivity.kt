@@ -1,6 +1,7 @@
 package one.mixin.android.ui.transfer
 
 import android.Manifest
+import android.app.Dialog
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
@@ -37,10 +38,12 @@ import one.mixin.android.extension.dp
 import one.mixin.android.extension.fadeIn
 import one.mixin.android.extension.generateQRCode
 import one.mixin.android.extension.getParcelableExtra
+import one.mixin.android.extension.notificationManager
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.putBoolean
 import one.mixin.android.extension.toast
 import one.mixin.android.job.BaseJob
+import one.mixin.android.job.BlazeMessageService
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.SendPlaintextJob
 import one.mixin.android.session.Session
@@ -197,8 +200,12 @@ class TransferActivity : BaseActivity() {
         connectToQrCodeContent(content)
     }
 
+    private var dialog: Dialog? = null
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        notificationManager.cancelAll()
+        BlazeMessageService.stopService(this)
+        status.value = TransferStatus.INITIALIZING
         setContentView(binding.root)
 
         getScanResult = registerForActivityResult(
@@ -278,33 +285,40 @@ class TransferActivity : BaseActivity() {
                 }
 
                 TransferStatus.ERROR -> {
-                    alertDialogBuilder()
-                        .setTitle(R.string.Transfer_error)
-                        .setCancelable(false)
-                        .setPositiveButton(R.string.Confirm) { dialog, _ ->
-                            dialog.dismiss()
-                            finish()
-                            status.value = TransferStatus.INITIALIZING
-                        }
-                        .show()
+                    if (dialog == null) {
+                        dialog = alertDialogBuilder()
+                            .setTitle(R.string.Transfer_error)
+                            .setCancelable(false)
+                            .setPositiveButton(R.string.Confirm) { dialog, _ ->
+                                dialog.dismiss()
+                                finish()
+                                status.value = TransferStatus.INITIALIZING
+                            }.create()
+                        dialog?.show()
+                    }
                 }
 
                 TransferStatus.FINISHED -> {
                     binding.progressTv.setText(R.string.Transfer_completed)
                     binding.pbProcessing.isVisible = false
-                    alertDialogBuilder()
-                        .setTitle(R.string.Transfer_completed)
-                        .setCancelable(false)
-                        .setPositiveButton(R.string.Confirm) { dialog, _ ->
-                            dialog.dismiss()
-                            if (argsStatus == ARGS_RESTORE_FROM_PHONE) {
-                                InitializeActivity.showLoading(this, clear = true)
-                                defaultSharedPreferences.putBoolean(Constants.Account.PREF_RESTORE, false)
-                            }
-                            status.value = TransferStatus.INITIALIZING
-                            finish()
-                        }
-                        .show()
+                    if (dialog == null) {
+                        dialog = alertDialogBuilder()
+                            .setTitle(R.string.Transfer_completed)
+                            .setCancelable(false)
+                            .setPositiveButton(R.string.Confirm) { dialog, _ ->
+                                dialog.dismiss()
+                                if (argsStatus == ARGS_RESTORE_FROM_PHONE) {
+                                    InitializeActivity.showLoading(this, clear = true)
+                                    defaultSharedPreferences.putBoolean(
+                                        Constants.Account.PREF_RESTORE,
+                                        false,
+                                    )
+                                }
+                                status.value = TransferStatus.INITIALIZING
+                                finish()
+                            }.create()
+                        dialog?.show()
+                    }
                 }
             }
         }
@@ -492,6 +506,10 @@ class TransferActivity : BaseActivity() {
     }
 
     override fun onDestroy() {
+        if (MixinApplication.get().isOnline.get()) {
+            BlazeMessageService.startService(this, BlazeMessageService.ACTION_TO_BACKGROUND)
+        }
+        dialog?.dismiss()
         transferServer.exit()
         transferClient.exit()
         status.value = TransferStatus.INITIALIZING
