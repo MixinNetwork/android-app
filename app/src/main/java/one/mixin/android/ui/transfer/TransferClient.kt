@@ -189,23 +189,11 @@ class TransferClient @Inject internal constructor(
         }
     }
 
-    private suspend fun processJson(byteArray: ByteArray) {
-        var freeMemory = runtime.freeMemory()
-        val dataLength = byteArray.size
-        // Calculate the threshold for available memory based on the size of the data to be processed
-        val threshold = dataLength * 32
-        while (freeMemory < threshold) {
-            if (freeMemory < dataLength) {
-                runtime.gc()
-            } else if (freeMemory <= dataLength * 4) {
-                // If there is less memory available than 4 times the size of the data to be processed, wait longer
-                delay(1000)
-            } else {
-                delay(200)
-            }
-            freeMemory = runtime.freeMemory()
-        }
-        val transferData = serializationJson.decodeFromStream<TransferSendData<JsonElement>>(ByteArrayInputStream(byteArray))
+    private val mutableList:MutableList<Message> = mutableListOf()
+
+    private fun processJson(byteArray: ByteArray) {
+        val byteArrayInputStream = ByteArrayInputStream(byteArray)
+        val transferData = serializationJson.decodeFromStream<TransferSendData<JsonElement>>(byteArrayInputStream)
         when (transferData.type) {
             TransferDataType.CONVERSATION.value -> {
                 val conversation = serializationJson.decodeFromJsonElement<Conversation>(transferData.data)
@@ -261,13 +249,21 @@ class TransferClient @Inject internal constructor(
 
             TransferDataType.MESSAGE.value -> {
                 val message = serializationJson.decodeFromJsonElement<Message>(transferData.data)
-                val rowId = messageDao.insertIgnoreReturn(message)
-                if (rowId != -1L) { // If the row ID is valid (-1 indicates insertion failure)
+                if (messageDao.findMessageIdById(message.messageId) == null) {
+                    mutableList.add(message)
+                    if (mutableList.size >= 1000) {
+                        messageDao.insertList(mutableList)
+                        mutableList.clear()
+                    }
                     ftsDatabase.insertOrReplaceMessageFts4(message)
                 }
             }
 
             TransferDataType.MESSAGE_MENTION.value -> {
+                if (mutableList.isNotEmpty()) {
+                    messageDao.insertList(mutableList)
+                    mutableList.clear()
+                }
                 val messageMention =
                     serializationJson.decodeFromJsonElement<TransferMessageMention>(transferData.data).let {
                         val messageContent =
@@ -280,6 +276,10 @@ class TransferClient @Inject internal constructor(
             }
 
             TransferDataType.EXPIRED_MESSAGE.value -> {
+                if (mutableList.isNotEmpty()) {
+                    messageDao.insertList(mutableList)
+                    mutableList.clear()
+                }
                 val expiredMessage =
                     serializationJson.decodeFromJsonElement<ExpiredMessage>(transferData.data)
                 expiredMessageDao.insertIgnore(expiredMessage)
@@ -289,9 +289,13 @@ class TransferClient @Inject internal constructor(
                 Timber.e("No support ${transferData.type}")
             }
         }
+        byteArrayInputStream.close()
     }
 
     private fun finalWork() {
+        if (mutableList.isNotEmpty()) {
+            messageDao.insertList(mutableList)
+        }
         conversationDao.getAllConversationId().forEach { conversationId ->
             conversationDao.refreshLastMessageId(conversationId)
             remoteMessageStatusDao.updateConversationUnseen(conversationId)
@@ -299,6 +303,7 @@ class TransferClient @Inject internal constructor(
         conversationExtDao.getAllConversationId().forEach { conversationId ->
             conversationExtDao.refreshCountByConversationId(conversationId)
         }
+        mutableList.clear()
     }
 
     fun exit() = MixinApplication.get().applicationScope.launch(SINGLE_SOCKET_THREAD) {
