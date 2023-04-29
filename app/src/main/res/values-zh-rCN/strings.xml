@@ -1139,4 +1139,7 @@
     <string name="Version_not_supported">版本不兼容，请升级新版本</string>
     <string name="restore_local_exists">已经有 %1$s 条本地聊天记录，最后一条消息的时间是 %2$s，确定用备份的聊天数据覆盖本地数据吗？</string>
     <string name="Transfer_timeout">长时间未收到数据是否退出？</string>
+    <string name="transfer_process_title">正在导入</string>
+    <string name="transfer_process_desc">正在导入 (%1$s)</string>
+    <string name="transfer_process_tip">为了保证顺利迁移，请不要关闭 Mixin</string>
 </resources>

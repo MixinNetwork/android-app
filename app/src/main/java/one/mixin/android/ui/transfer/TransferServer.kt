@@ -182,13 +182,13 @@ class TransferServer @Inject internal constructor(
                                 exit()
                             }
                         } else if (result.action == TransferCommandAction.FINISH.value) {
-                            RxBus.publish(DeviceTransferProgressEvent(100f))
+                            RxBus.publish(DeviceTransferProgressEvent("100%"))
                             status.value = TransferStatus.FINISHED
                             exit()
                         } else if (result.action == TransferCommandAction.PROGRESS.value) {
                             // Get progress from client
                             if (result.progress != null) {
-                                RxBus.publish(DeviceTransferProgressEvent(result.progress))
+                                RxBus.publish(DeviceTransferProgressEvent(String.format("%.2f", result.progress)))
                             }
                         } else {
                             Timber.e("Unsupported command")
@@ -240,7 +240,7 @@ class TransferServer @Inject internal constructor(
 
     private fun sendStart(outputStream: OutputStream) {
         writeCommand(outputStream, TransferCommand(TransferCommandAction.START.value, total = totalCount()))
-        RxBus.publish(DeviceTransferProgressEvent(0.0f))
+        RxBus.publish(DeviceTransferProgressEvent("0.00%"))
         Timber.e("Started total: $total")
     }
 

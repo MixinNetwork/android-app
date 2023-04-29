@@ -11,6 +11,7 @@ import one.mixin.android.db.contants.LIVES
 import one.mixin.android.db.contants.TRANSCRIPTS
 import one.mixin.android.db.contants.VIDEOS
 import one.mixin.android.vo.ChatHistoryMessageItem
+import one.mixin.android.vo.Message
 import one.mixin.android.vo.TranscriptAttachmentMigration
 import one.mixin.android.vo.TranscriptMessage
 
@@ -27,6 +28,9 @@ interface TranscriptMessageDao : BaseDao<TranscriptMessage> {
 
     @Query("SELECT count(1) FROM transcript_messages WHERE transcript_id = :transcriptId AND category IN ($ATTACHMENT_CATEGORY) AND media_status IN ('PENDING', 'CANCELED')")
     suspend fun hasUploadedAttachmentSuspend(transcriptId: String): Int
+
+    @Query("SELECT * FROM messages WHERE id = :messageId AND category IN ($IMAGES, $VIDEOS, $DATA, $AUDIOS) AND media_status = 'DONE'")
+    fun findAttachmentMessage(messageId: String): Message?
 
     @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
     @Query("SELECT * FROM transcript_messages WHERE transcript_id = :transcriptId")
