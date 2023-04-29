@@ -270,7 +270,19 @@ class TransferActivity : BaseActivity() {
                     binding.waitingLl.isVisible = true
                 }
 
+                TransferStatus.PROCESSING -> {
+                    binding.titleView.isVisible = false
+                    binding.qrFl.isVisible = false
+                    binding.initLl.isVisible = false
+                    binding.waitingLl.isVisible = true
+                    binding.pbProcessing.isVisible = true
+                    binding.progressTv.setText(R.string.transfer_process_title)
+                    binding.progressDesc.setText(R.string.transfer_process_tip)
+                }
+
                 TransferStatus.ERROR -> {
+                    binding.pbProcessing.isVisible = false
+                    binding.progressTv.setText(R.string.Transfer_error)
                     if (dialog == null) {
                         dialog = alertDialogBuilder()
                             .setTitle(R.string.Transfer_error)
@@ -285,6 +297,8 @@ class TransferActivity : BaseActivity() {
                 }
 
                 TransferStatus.FINISHED -> {
+                    binding.pbProcessing.isVisible = false
+                    binding.progressTv.setText(R.string.Transfer_completed)
                     if (dialog == null) {
                         dialog = alertDialogBuilder()
                             .setTitle(R.string.Transfer_completed)
@@ -429,7 +443,13 @@ class TransferActivity : BaseActivity() {
                 .autoDispose(destroyScope)
                 .subscribe {
                     binding.progressTv.text =
-                        getString(R.string.sending_desc, String.format("%.1f%%", it.progress))
+                        getString(
+                            if (status.value == TransferStatus.PROCESSING) {
+                                R.string.transfer_process_desc
+                            } else {
+                                R.string.sending_desc
+                            }, it.progress
+                        )
                 }
         }
 

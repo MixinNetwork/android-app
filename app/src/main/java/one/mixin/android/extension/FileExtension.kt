@@ -39,6 +39,7 @@ import java.io.BufferedReader
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.FileInputStream
+import java.io.FileNotFoundException
 import java.io.FileOutputStream
 import java.io.IOException
 import java.io.InputStream
@@ -672,6 +673,19 @@ fun File.copy(destFile: File) {
     dest.transferFrom(src, 0, src.size())
     src.closeSilently()
     dest.closeSilently()
+}
+fun File.moveTo(target: File) {
+    if (!exists()) {
+        throw FileNotFoundException("$absolutePath does not exist.")
+    }
+    if (target.exists()) {
+        delete()
+        return
+    }
+    val renamed = renameTo(target)
+    if (!renamed) {
+        throw IOException("Failed to move file $absolutePath to ${target.absolutePath}.")
+    }
 }
 
 fun File.blurThumbnail(size: Size): Bitmap? {

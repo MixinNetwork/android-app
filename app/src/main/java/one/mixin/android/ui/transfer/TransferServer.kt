@@ -76,6 +76,8 @@ class TransferServer @Inject internal constructor(
     private val serializationJson: Json,
 ) {
 
+    val protocol = TransferProtocol()
+
     private var serverSocket: ServerSocket? = null
     private var socket: Socket? = null
 
@@ -154,6 +156,7 @@ class TransferServer @Inject internal constructor(
         }
     }
 
+    private lateinit var progressFormat: String
     private suspend fun run(inputStream: InputStream, outputStream: OutputStream) =
         withContext(Dispatchers.IO) {
             do {
@@ -172,13 +175,13 @@ class TransferServer @Inject internal constructor(
                                 exit()
                             }
                         } else if (result.action == TransferCommandAction.FINISH.value) {
-                            RxBus.publish(DeviceTransferProgressEvent(100f))
+                            RxBus.publish(DeviceTransferProgressEvent("100%"))
                             status.value = TransferStatus.FINISHED
                             exit()
                         } else if (result.action == TransferCommandAction.PROGRESS.value) {
                             // Get progress from client
                             if (result.progress != null) {
-                                RxBus.publish(DeviceTransferProgressEvent(result.progress))
+                                RxBus.publish(DeviceTransferProgressEvent(String.format(progressFormat, result.progress)))
                             }
                         } else {
                             Timber.e("Unsupported command")
@@ -230,7 +233,7 @@ class TransferServer @Inject internal constructor(
 
     private fun sendStart(outputStream: OutputStream) {
         writeCommand(outputStream, TransferCommand(TransferCommandAction.START.value, total = totalCount()))
-        RxBus.publish(DeviceTransferProgressEvent(0.0f))
+        RxBus.publish(DeviceTransferProgressEvent("0.00%"))
     }
 
     private fun totalCount(): Long {
@@ -239,6 +242,11 @@ class TransferServer @Inject internal constructor(
             expiredMessageDao.countExpiredMessages() + participantDao.countParticipants() +
             pinMessageDao.countPinMessages() + snapshotDao.countSnapshots() + stickerDao.countStickers() +
             transcriptMessageDao.countTranscriptMessages() + userDao.countUsers() + appDao.countApps() + messageMentionDao.countMessageMention()
+        progressFormat = if (total > 100000){
+            "%.2f%%"
+        }else{
+            "%.1f%%"
+        }
         return total
     }
 
@@ -518,8 +526,6 @@ class TransferServer @Inject internal constructor(
             }
         }
     }
-
-    val protocol = TransferProtocol()
 
     fun exit() = MixinApplication.get().applicationScope.launch(SINGLE_SOCKET_THREAD) {
         try {
