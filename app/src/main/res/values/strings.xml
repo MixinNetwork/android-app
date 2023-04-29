@@ -1166,4 +1166,7 @@
     <string name="restore_local_exists">There are already %1$s local chat records, and the time of the last message is %2$s. Are you sure you want to overwrite the local data with the backup chat data?</string>
     <string name="Transfer_timeout">Whether to quit if you haven\'t received data for a long time ?</string>
     <string name="LogAndDebug">Log and debug</string>
+    <string name="transfer_process_title">Importing</string>
+    <string name="transfer_process_desc">Importing (%1$s)</string>
+    <string name="transfer_process_tip">In order to ensure a smooth migration, please do not close Mixin</string>
 </resources>

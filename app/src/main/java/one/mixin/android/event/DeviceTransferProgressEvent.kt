@@ -1,3 +1,3 @@
 package one.mixin.android.event
 
-class DeviceTransferProgressEvent(val progress: Float)
+class DeviceTransferProgressEvent(val progress: String)
