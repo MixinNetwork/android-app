@@ -50,8 +50,8 @@ import one.mixin.android.fts.insertOrReplaceMessageFts4
 import one.mixin.android.job.BaseJob.Companion.PRIORITY_SEND_ATTACHMENT_MESSAGE
 import one.mixin.android.session.Session
 import one.mixin.android.ui.transfer.TransferActivity
+import one.mixin.android.ui.transfer.vo.TransferCommand
 import one.mixin.android.ui.transfer.vo.TransferCommandAction
-import one.mixin.android.ui.transfer.vo.TransferCommandData
 import one.mixin.android.ui.web.replaceApp
 import one.mixin.android.util.ColorUtil
 import one.mixin.android.util.GsonHelper
@@ -459,7 +459,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                 ratchetSenderKeyDao.delete(data.conversationId, SignalProtocolAddress(data.userId, data.sessionId.getDeviceId()).toString())
             } else if (plainData.action == PlainDataAction.DEVICE_TRANSFER.name) {
                 val content = plainData.content ?: return
-                val command = gson.fromJson(content, TransferCommandData::class.java)
+                val command = gson.fromJson(content, TransferCommand::class.java)
                 if (command.action == TransferCommandAction.CANCEL.value) {
                     RxBus.publish(command)
                 } else {

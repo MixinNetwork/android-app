@@ -1,4 +1,4 @@
-package one.mixin.android.ui.transfer.vo
+package one.mixin.android.ui.transfer.status
 
 enum class TransferStatus {
     INITIALIZING,

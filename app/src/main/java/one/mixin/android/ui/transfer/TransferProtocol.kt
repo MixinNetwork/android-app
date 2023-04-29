@@ -17,7 +17,7 @@ import one.mixin.android.extension.getExtensionName
 import one.mixin.android.extension.getImagePath
 import one.mixin.android.extension.getTranscriptFile
 import one.mixin.android.extension.getVideoPath
-import one.mixin.android.ui.transfer.vo.TransferCommandData
+import one.mixin.android.ui.transfer.vo.TransferCommand
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.vo.isAudio
 import one.mixin.android.vo.isImage
@@ -66,7 +66,7 @@ class TransferProtocol {
         val size = byteArrayToInt(packageData.copyOfRange(1, 5))
         return when (type) {
             TYPE_COMMAND -> {
-                gson.fromJson(InputStreamReader(ByteArrayInputStream(readByteArray(inputStream, size)), UTF_8), TransferCommandData::class.java)
+                gson.fromJson(InputStreamReader(ByteArrayInputStream(readByteArray(inputStream, size)), UTF_8), TransferCommand::class.java)
             }
 
             TYPE_JSON -> {

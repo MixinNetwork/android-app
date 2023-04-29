@@ -4,6 +4,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlinx.serialization.SerializationStrategy
+import kotlinx.serialization.json.Json
 import one.mixin.android.MixinApplication
 import one.mixin.android.RxBus
 import one.mixin.android.db.AppDao
@@ -25,15 +27,26 @@ import one.mixin.android.extension.toUtcTime
 import one.mixin.android.session.Session
 import one.mixin.android.ui.transfer.TransferProtocol.Companion.TYPE_COMMAND
 import one.mixin.android.ui.transfer.TransferProtocol.Companion.TYPE_JSON
+import one.mixin.android.ui.transfer.status.TransferStatus
+import one.mixin.android.ui.transfer.status.TransferStatusLiveData
+import one.mixin.android.ui.transfer.vo.TransferCommand
 import one.mixin.android.ui.transfer.vo.TransferCommandAction
-import one.mixin.android.ui.transfer.vo.TransferCommandData
+import one.mixin.android.ui.transfer.vo.TransferData
 import one.mixin.android.ui.transfer.vo.TransferDataType
-import one.mixin.android.ui.transfer.vo.TransferSendData
-import one.mixin.android.ui.transfer.vo.TransferStatus
-import one.mixin.android.ui.transfer.vo.TransferStatusLiveData
-import one.mixin.android.util.GsonHelper
+import one.mixin.android.ui.transfer.vo.compatible.TransferMessage
+import one.mixin.android.ui.transfer.vo.compatible.TransferMessageMention
 import one.mixin.android.util.NetworkUtils
 import one.mixin.android.util.SINGLE_SOCKET_THREAD
+import one.mixin.android.vo.App
+import one.mixin.android.vo.Asset
+import one.mixin.android.vo.Conversation
+import one.mixin.android.vo.ExpiredMessage
+import one.mixin.android.vo.Participant
+import one.mixin.android.vo.PinMessage
+import one.mixin.android.vo.Snapshot
+import one.mixin.android.vo.Sticker
+import one.mixin.android.vo.TranscriptMessage
+import one.mixin.android.vo.User
 import timber.log.Timber
 import java.io.InputStream
 import java.io.OutputStream
@@ -60,16 +73,13 @@ class TransferServer @Inject internal constructor(
     val appDao: AppDao,
     val messageMentionDao: MessageMentionDao,
     val status: TransferStatusLiveData,
+    private val serializationJson: Json,
 ) {
 
     private var serverSocket: ServerSocket? = null
     private var socket: Socket? = null
 
     private var quit = false
-
-    private val gson by lazy {
-        GsonHelper.customGson
-    }
 
     private var code = 0
     private var port = 0
@@ -78,7 +88,7 @@ class TransferServer @Inject internal constructor(
     private var total = 0L
 
     suspend fun startServer(
-        createdSuccessCallback: (TransferCommandData) -> Unit,
+        createdSuccessCallback: (TransferCommand) -> Unit,
     ) = withContext(SINGLE_SOCKET_THREAD) {
         try {
             val serverSocket = createSocket(port = Random.nextInt(1024, 1124))
@@ -86,7 +96,7 @@ class TransferServer @Inject internal constructor(
             status.value = TransferStatus.CREATED
             code = Random.nextInt(10000)
             createdSuccessCallback(
-                TransferCommandData(
+                TransferCommand(
                     TransferCommandAction.PUSH.value,
                     NetworkUtils.getWifiIpAddress(MixinApplication.appContext),
                     this@TransferServer.port,
@@ -148,7 +158,7 @@ class TransferServer @Inject internal constructor(
         withContext(Dispatchers.IO) {
             do {
                 when (val result = protocol.read(inputStream)) {
-                    is TransferCommandData -> {
+                    is TransferCommand -> {
                         if (result.action == TransferCommandAction.CONNECT.value) {
                             if (result.code == code && result.userId == Session.getAccountId()) {
                                 Timber.e("Verification passed, start transmission")
@@ -201,29 +211,25 @@ class TransferServer @Inject internal constructor(
         sendFinish(outputStream)
     }
 
-    private fun writeJson(
+    private fun <T> writeJson(
         outputStream: OutputStream,
-        transferData: Any,
+        serializer: SerializationStrategy<T>,
+        transferData: T,
+        type: Byte = TYPE_JSON,
     ) {
-        val content = gson.toJson(transferData)
-        protocol.write(outputStream, TYPE_JSON, content)
+        protocol.write(outputStream, type, serializationJson.encodeToString(serializer, transferData))
         outputStream.flush()
     }
 
     private fun writeCommand(
         outputStream: OutputStream,
-        transferData: TransferCommandData,
+        command: TransferCommand,
     ) {
-        val content = gson.toJson(transferData)
-        protocol.write(outputStream, TYPE_COMMAND, content)
-        outputStream.flush()
+        writeJson(outputStream, TransferCommand.serializer(), command, TYPE_COMMAND)
     }
 
     private fun sendStart(outputStream: OutputStream) {
-        writeCommand(
-            outputStream,
-            TransferCommandData(TransferCommandAction.START.value, total = totalCount()),
-        )
+        writeCommand(outputStream, TransferCommand(TransferCommandAction.START.value, total = totalCount()))
         RxBus.publish(DeviceTransferProgressEvent(0.0f))
     }
 
@@ -239,7 +245,7 @@ class TransferServer @Inject internal constructor(
     private fun sendFinish(outputStream: OutputStream) {
         writeCommand(
             outputStream,
-            TransferCommandData(TransferCommandAction.FINISH.value),
+            TransferCommand(TransferCommandAction.FINISH.value),
         )
     }
 
@@ -251,9 +257,9 @@ class TransferServer @Inject internal constructor(
                 return
             }
             list.map {
-                TransferSendData(TransferDataType.CONVERSATION.value, it)
-            }.forEach {
-                writeJson(outputStream, it)
+                TransferData(TransferDataType.CONVERSATION.value, it)
+            }.forEach { conversation ->
+                writeJson(outputStream, TransferData.serializer(Conversation.serializer()), conversation)
                 count++
             }
             if (list.size < LIMIT) {
@@ -271,9 +277,9 @@ class TransferServer @Inject internal constructor(
                 return
             }
             list.map {
-                TransferSendData(TransferDataType.PARTICIPANT.value, it)
-            }.forEach {
-                writeJson(outputStream, it)
+                TransferData(TransferDataType.PARTICIPANT.value, it)
+            }.forEach { participant ->
+                writeJson(outputStream, TransferData.serializer(Participant.serializer()), participant)
                 count++
             }
             if (list.size < LIMIT) {
@@ -291,9 +297,9 @@ class TransferServer @Inject internal constructor(
                 return
             }
             list.map {
-                TransferSendData(TransferDataType.USER.value, it)
-            }.forEach {
-                writeJson(outputStream, it)
+                TransferData(TransferDataType.USER.value, it)
+            }.forEach { user ->
+                writeJson(outputStream, TransferData.serializer(User.serializer()), user)
                 count++
             }
             if (list.size < LIMIT) {
@@ -311,9 +317,9 @@ class TransferServer @Inject internal constructor(
                 return
             }
             list.map {
-                TransferSendData(TransferDataType.APP.value, it)
-            }.forEach {
-                writeJson(outputStream, it)
+                TransferData(TransferDataType.APP.value, it)
+            }.forEach { app ->
+                writeJson(outputStream, TransferData.serializer(App.serializer()), app)
                 count++
             }
             if (list.size < LIMIT) {
@@ -331,9 +337,9 @@ class TransferServer @Inject internal constructor(
                 return
             }
             list.map {
-                TransferSendData(TransferDataType.ASSET.value, it)
-            }.forEach {
-                writeJson(outputStream, it)
+                TransferData(TransferDataType.ASSET.value, it)
+            }.forEach { asset ->
+                writeJson(outputStream, TransferData.serializer(Asset.serializer()), asset)
                 count++
             }
             if (list.size < LIMIT) {
@@ -362,9 +368,9 @@ class TransferServer @Inject internal constructor(
                 return
             }
             list.map {
-                TransferSendData(TransferDataType.STICKER.value, it)
-            }.forEach {
-                writeJson(outputStream, it)
+                TransferData(TransferDataType.STICKER.value, it)
+            }.forEach { sticker ->
+                writeJson(outputStream, TransferData.serializer(Sticker.serializer()), sticker)
                 count++
             }
             if (list.size < LIMIT) {
@@ -382,9 +388,9 @@ class TransferServer @Inject internal constructor(
                 return
             }
             list.map {
-                TransferSendData(TransferDataType.SNAPSHOT.value, it)
-            }.forEach {
-                writeJson(outputStream, it)
+                TransferData(TransferDataType.SNAPSHOT.value, it)
+            }.forEach { snapshot ->
+                writeJson(outputStream, TransferData.serializer(Snapshot.serializer()), snapshot)
                 count++
             }
             if (list.size < LIMIT) {
@@ -402,9 +408,9 @@ class TransferServer @Inject internal constructor(
                 return
             }
             list.map {
-                TransferSendData(TransferDataType.TRANSCRIPT_MESSAGE.value, it)
-            }.forEach {
-                writeJson(outputStream, it)
+                TransferData(TransferDataType.TRANSCRIPT_MESSAGE.value, it)
+            }.forEach { transferMessage ->
+                writeJson(outputStream, TransferData.serializer(TranscriptMessage.serializer()), transferMessage)
                 count++
             }
             if (list.size < LIMIT) {
@@ -422,9 +428,9 @@ class TransferServer @Inject internal constructor(
                 return
             }
             list.map {
-                TransferSendData(TransferDataType.PIN_MESSAGE.value, it)
-            }.forEach {
-                writeJson(outputStream, it)
+                TransferData(TransferDataType.PIN_MESSAGE.value, it)
+            }.forEach { pinMessage ->
+                writeJson(outputStream, TransferData.serializer(PinMessage.serializer()), pinMessage)
                 count++
             }
             if (list.size < LIMIT) {
@@ -442,9 +448,9 @@ class TransferServer @Inject internal constructor(
                 return
             }
             list.map {
-                TransferSendData(TransferDataType.MESSAGE.value, it)
-            }.forEach {
-                writeJson(outputStream, it)
+                TransferData(TransferDataType.MESSAGE.value, it)
+            }.forEach { transcriptMessage ->
+                writeJson(outputStream, TransferData.serializer(TransferMessage.serializer()), transcriptMessage)
                 count++
             }
             if (list.size < LIMIT) {
@@ -462,9 +468,9 @@ class TransferServer @Inject internal constructor(
                 return
             }
             list.map {
-                TransferSendData(TransferDataType.MESSAGE_MENTION.value, it)
-            }.forEach {
-                writeJson(outputStream, it)
+                TransferData(TransferDataType.MESSAGE_MENTION.value, it)
+            }.forEach { transferMessageMention ->
+                writeJson(outputStream, TransferData.serializer(TransferMessageMention.serializer()), transferMessageMention)
                 count++
             }
             if (list.size < LIMIT) {
@@ -482,9 +488,9 @@ class TransferServer @Inject internal constructor(
                 return
             }
             list.map {
-                TransferSendData(TransferDataType.EXPIRED_MESSAGE.value, it)
-            }.forEach {
-                writeJson(outputStream, it)
+                TransferData(TransferDataType.EXPIRED_MESSAGE.value, it)
+            }.forEach { expiredMessage ->
+                writeJson(outputStream, TransferData.serializer(ExpiredMessage.serializer()), expiredMessage)
                 count++
             }
             if (list.size < LIMIT) {
