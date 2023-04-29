@@ -1,7 +1,6 @@
 package one.mixin.android.ui.transfer
 
 import android.database.SQLException
-import com.google.gson.Gson
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
@@ -32,14 +31,14 @@ import one.mixin.android.event.DeviceTransferProgressEvent
 import one.mixin.android.extension.createAtToLong
 import one.mixin.android.fts.FtsDatabase
 import one.mixin.android.fts.insertOrReplaceMessageFts4
+import one.mixin.android.ui.transfer.status.TransferStatus
+import one.mixin.android.ui.transfer.status.TransferStatusLiveData
 import one.mixin.android.ui.transfer.vo.CURRENT_TRANSFER_VERSION
+import one.mixin.android.ui.transfer.vo.TransferCommand
 import one.mixin.android.ui.transfer.vo.TransferCommandAction
-import one.mixin.android.ui.transfer.vo.TransferCommandData
+import one.mixin.android.ui.transfer.vo.TransferData
 import one.mixin.android.ui.transfer.vo.TransferDataType
-import one.mixin.android.ui.transfer.vo.TransferMessageMention
-import one.mixin.android.ui.transfer.vo.TransferSendData
-import one.mixin.android.ui.transfer.vo.TransferStatus
-import one.mixin.android.ui.transfer.vo.TransferStatusLiveData
+import one.mixin.android.ui.transfer.vo.compatible.TransferMessageMention
 import one.mixin.android.util.SINGLE_SOCKET_THREAD
 import one.mixin.android.util.mention.parseMentionData
 import one.mixin.android.vo.App
@@ -81,7 +80,6 @@ class TransferClient @Inject internal constructor(
     val remoteMessageStatusDao: RemoteMessageStatusDao,
     val ftsDatabase: FtsDatabase,
     val status: TransferStatusLiveData,
-    val gson: Gson,
     private val serializationJson: Json,
 ) {
 
@@ -94,16 +92,15 @@ class TransferClient @Inject internal constructor(
 
     private val syncChannel = Channel<ByteArray>()
 
-    suspend fun connectToServer(ip: String, port: Int, commandData: TransferCommandData) =
+    suspend fun connectToServer(ip: String, port: Int, commandData: TransferCommand) =
         withContext(SINGLE_SOCKET_THREAD) {
             try {
                 status.value = TransferStatus.CONNECTING
                 val socket = Socket(ip, port)
                 this@TransferClient.socket = socket
                 status.value = TransferStatus.WAITING_FOR_VERIFICATION
-                val outputStream = socket.getOutputStream()
-                protocol.write(outputStream, TransferProtocol.TYPE_COMMAND, gson.toJson(commandData))
-                outputStream.flush()
+                // send connect command
+                sendCommand(socket.outputStream, commandData)
                 launch(Dispatchers.IO) { listen(socket.inputStream, socket.outputStream) }
                 launch(Dispatchers.IO) {
                     for (byteArray in syncChannel) {
@@ -130,7 +127,7 @@ class TransferClient @Inject internal constructor(
                 null
             }
             when (result) {
-                is TransferCommandData -> {
+                is TransferCommand -> {
                     when (result.action) {
                         TransferCommandAction.START.value -> {
                             if (result.version != CURRENT_TRANSFER_VERSION) {
@@ -148,7 +145,7 @@ class TransferClient @Inject internal constructor(
 
                         TransferCommandAction.FINISH.value -> {
                             status.value = TransferStatus.FINISHED
-                            sendFinish(outputStream)
+                            sendCommand(outputStream, TransferCommand(TransferCommandAction.FINISH.value))
                             delay(100)
                             exit()
                             Timber.e("It takes a total of ${System.currentTimeMillis() - startTime} milliseconds to synchronize ${this.total} data")
@@ -171,9 +168,6 @@ class TransferClient @Inject internal constructor(
     }
 
     private var lastTime = 0L
-    private val runtime by lazy {
-        Runtime.getRuntime()
-    }
 
     private var lastProgress = 0f
     private fun progress(outputStream: OutputStream) {
@@ -182,7 +176,7 @@ class TransferClient @Inject internal constructor(
         if (lastProgress != progress && System.currentTimeMillis() - lastTime > 300) {
             sendCommand(
                 outputStream,
-                TransferCommandData(TransferCommandAction.PROGRESS.value, progress = progress),
+                TransferCommand(TransferCommandAction.PROGRESS.value, progress = progress),
             )
             lastProgress = progress
             lastTime = System.currentTimeMillis()
@@ -195,7 +189,7 @@ class TransferClient @Inject internal constructor(
 
     private fun processJson(byteArray: ByteArray) {
         val byteArrayInputStream = ByteArrayInputStream(byteArray)
-        val transferData = serializationJson.decodeFromStream<TransferSendData<JsonElement>>(byteArrayInputStream)
+        val transferData = serializationJson.decodeFromStream<TransferData<JsonElement>>(byteArrayInputStream)
         when (transferData.type) {
             TransferDataType.CONVERSATION.value -> {
                 val conversation = serializationJson.decodeFromJsonElement<Conversation>(transferData.data)
@@ -324,20 +318,12 @@ class TransferClient @Inject internal constructor(
         }
     }
 
-    private fun sendFinish(outputStream: OutputStream) {
-        sendCommand(
-            outputStream,
-            TransferCommandData(TransferCommandAction.FINISH.value),
-        )
-    }
-
     private fun sendCommand(
         outputStream: OutputStream,
-        transferSendData: TransferCommandData,
+        command: TransferCommand,
     ) {
-        val content = gson.toJson(transferSendData)
         try {
-            protocol.write(outputStream, TransferProtocol.TYPE_COMMAND, content)
+            protocol.write(outputStream, TransferProtocol.TYPE_COMMAND, serializationJson.encodeToString(TransferCommand.serializer(), command))
             outputStream.flush()
         } catch (e: SocketException) {
             exit()
@@ -351,7 +337,7 @@ class TransferClient @Inject internal constructor(
         val writableDatabase = MixinDatabase.getWritableDatabase() ?: return
 
         val sql =
-            "INSERT OR IGNORE INTO messages (id,conversation_id,user_id,category,content,media_url,media_mime_type,media_size,media_duration,media_width,media_height,media_hash,thumb_image,thumb_url,media_key,media_digest,media_status,status,created_at,action,participant_id,snapshot_id,hyperlink,name,album_id,sticker_id,shared_user_id,media_waveform,media_mine_type,quote_message_id,quote_content,caption) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"
+            "INSERT OR IGNORE INTO messages (id, conversation_id, user_id, category, content, media_url, media_mime_type, media_size, media_duration, media_width, media_height, media_hash, thumb_image, thumb_url, media_key, media_digest, media_status, status, created_at, action, participant_id, snapshot_id, hyperlink, name, album_id, sticker_id, shared_user_id, media_waveform, media_mine_type, quote_message_id, quote_content, caption) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
 
         val statement = writableDatabase.compileStatement(sql)
 

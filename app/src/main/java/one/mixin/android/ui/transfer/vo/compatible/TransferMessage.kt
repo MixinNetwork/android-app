@@ -1,4 +1,4 @@
-package one.mixin.android.ui.transfer.vo
+package one.mixin.android.ui.transfer.vo.compatible
 
 import androidx.room.ColumnInfo
 import androidx.room.PrimaryKey
