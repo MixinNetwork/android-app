@@ -22,6 +22,7 @@ import one.mixin.android.ui.conversation.ConversationFragment.Companion.RECIPIEN
 import one.mixin.android.ui.conversation.ConversationFragment.Companion.RECIPIENT_ID
 import one.mixin.android.ui.conversation.ConversationFragment.Companion.UNREAD_COUNT
 import one.mixin.android.ui.home.MainActivity
+import one.mixin.android.util.reportException
 import one.mixin.android.vo.TranscriptData
 import one.mixin.android.vo.User
 import one.mixin.android.vo.generateConversationId
@@ -35,11 +36,7 @@ class ConversationActivity : BlazeBaseActivity() {
         WindowCompat.setDecorFitsSystemWindows(window, false)
         if (savedInstanceState == null) {
             if (intent.getBooleanExtra(ARGS_FAST_SHOW, false)) {
-                replaceFragment(
-                    ConversationFragment.newInstance(intent.extras!!),
-                    R.id.container,
-                    ConversationFragment.TAG,
-                )
+                replaceFragment(ConversationFragment.newInstance(intent.extras!!), R.id.container, ConversationFragment.TAG,)
             } else {
                 showConversation(intent)
             }
@@ -68,54 +65,43 @@ class ConversationActivity : BlazeBaseActivity() {
     private fun showConversation(intent: Intent) {
         val bundle = intent.extras ?: return
         lifecycleScope.launch(
-            CoroutineExceptionHandler { _, _ ->
-                replaceFragment(
-                    ConversationFragment.newInstance(intent.extras!!),
-                    R.id.container,
-                    ConversationFragment.TAG,
-                )
+            CoroutineExceptionHandler { _, e ->
+                reportException(e)
+                replaceFragment(ConversationFragment.newInstance(intent.extras!!), R.id.container, ConversationFragment.TAG,)
             },
         ) {
             val messageId = bundle.getString(MESSAGE_ID)
-            val conversationId = bundle.getString(CONVERSATION_ID)
+            var conversationId = bundle.getString(CONVERSATION_ID)
             val userId = bundle.getString(RECIPIENT_ID)
             var unreadCount = bundle.getInt(UNREAD_COUNT, -1)
-            val cid: String
             if (userId != null) {
                 val user = userRepository.suspendFindUserById(userId)
                 val accountId = Session.getAccountId() ?: return@launch
-                cid = conversationId ?: generateConversationId(accountId, userId)
-                require(user != null && userId != Session.getAccountId()) {
-                    "error data userId: $userId"
-                }
+                conversationId = conversationId ?: generateConversationId(accountId, userId)
+                require(user != null && userId != Session.getAccountId()) { "error data userId: $userId" }
                 bundle.putParcelable(RECIPIENT, user)
             } else {
-                val user = userRepository.suspendFindContactByConversationId(conversationId!!)
-                require(user?.userId != Session.getAccountId()) {
-                    "error data conversationId: $conversationId"
-                }
-                cid = conversationId
+                conversationId = checkNotNull(conversationId)
+                val user = userRepository.suspendFindContactByConversationId(conversationId)
+                require(user?.userId != Session.getAccountId()) { "error data conversationId: $conversationId" }
                 bundle.putParcelable(RECIPIENT, user)
             }
             if (unreadCount == -1) {
                 unreadCount = if (!messageId.isNullOrEmpty()) {
-                    conversationRepository.findMessageIndex(cid, messageId)
+                    conversationRepository.findMessageIndex(conversationId, messageId)
                 } else {
-                    conversationRepository.indexUnread(cid) ?: -1
+                    conversationRepository.indexUnread(conversationId) ?: -1
                 }
             }
-            bundle.putInt(UNREAD_COUNT, unreadCount)
+            bundle.putInt(UNREAD_COUNT, unreadCount) // Message offset
             val msgId = messageId ?: if (unreadCount <= 0) {
                 null
             } else {
-                conversationRepository.findFirstUnreadMessageId(cid, unreadCount - 1)
+                // If no message is specified, find the first unread message.
+                conversationRepository.findFirstUnreadMessageId(conversationId, unreadCount - 1)
             }
-            bundle.putString(INITIAL_POSITION_MESSAGE_ID, msgId)
-            replaceFragment(
-                ConversationFragment.newInstance(bundle),
-                R.id.container,
-                ConversationFragment.TAG,
-            )
+            bundle.putString(INITIAL_POSITION_MESSAGE_ID, msgId) // Message position
+            replaceFragment(ConversationFragment.newInstance(bundle), R.id.container, ConversationFragment.TAG,)
         }
     }
 
