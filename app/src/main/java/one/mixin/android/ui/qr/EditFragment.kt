@@ -220,7 +220,7 @@ class EditFragment : VisionFragment() {
                         lifecycleScope.launch innerLaunch@{
                             if (viewDestroyed()) return@innerLaunch
                             if (fromScan) {
-                                handleResult(content)
+                                handleResult(requireActivity(), fromShortcut, content)
                             } else {
                                 pseudoNotificationView?.addContent(content)
                             }
@@ -244,7 +244,7 @@ class EditFragment : VisionFragment() {
         if (!result.isNullOrBlank()) {
             withContext(Dispatchers.Main) {
                 if (fromScan) {
-                    handleResult(result)
+                    handleResult(requireActivity(), fromShortcut, result)
                 } else {
                     pseudoNotificationView?.addContent(result)
                 }

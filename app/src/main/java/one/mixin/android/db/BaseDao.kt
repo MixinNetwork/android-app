@@ -16,6 +16,12 @@ interface BaseDao<T> {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insert(vararg obj: T)
 
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    fun insertIgnore(vararg obj: T)
+
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    fun insertIgnoreReturn(obj: T): Long
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insertReturn(obj: T): Long
 

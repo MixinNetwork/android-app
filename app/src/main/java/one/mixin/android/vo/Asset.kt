@@ -7,55 +7,93 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.google.gson.annotations.SerializedName
 import kotlinx.parcelize.Parcelize
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 
 @SuppressLint("ParcelCreator")
 @Parcelize
 @Entity(tableName = "assets")
+@Serializable
 data class Asset(
     @PrimaryKey
     @ColumnInfo(name = "asset_id")
     @SerializedName("asset_id")
+    @SerialName("asset_id")
     val assetId: String,
+
     @ColumnInfo(name = "symbol")
+    @SerializedName("symbol")
+    @SerialName("symbol")
     val symbol: String,
+
     @ColumnInfo(name = "name")
+    @SerializedName("name")
+    @SerialName("name")
     val name: String,
+
     @ColumnInfo(name = "icon_url")
     @SerializedName("icon_url")
+    @SerialName("icon_url")
     val iconUrl: String,
+
     @ColumnInfo(name = "balance")
+    @SerializedName("balance")
+    @SerialName("balance")
     val balance: String,
-    @SerializedName("destination")
+
     @ColumnInfo(name = "destination")
+    @SerializedName("destination")
+    @SerialName("destination")
     val destination: String,
-    @SerializedName("tag")
+
     @ColumnInfo(name = "tag")
+    @SerializedName("tag")
+    @SerialName("tag")
     val tag: String?,
-    @SerializedName("price_btc")
+
     @ColumnInfo(name = "price_btc")
+    @SerializedName("price_btc")
+    @SerialName("price_btc")
     val priceBtc: String,
-    @SerializedName("price_usd")
+
     @ColumnInfo(name = "price_usd")
+    @SerializedName("price_usd")
+    @SerialName("price_usd")
     val priceUsd: String,
-    @SerializedName("chain_id")
+
     @ColumnInfo(name = "chain_id")
+    @SerializedName("chain_id")
+    @SerialName("chain_id")
     val chainId: String,
-    @SerializedName("change_usd")
+
     @ColumnInfo(name = "change_usd")
+    @SerializedName("change_usd")
+    @SerialName("change_usd")
     val changeUsd: String,
-    @SerializedName("change_btc")
+
     @ColumnInfo(name = "change_btc")
+    @SerializedName("change_btc")
+    @SerialName("change_btc")
     val changeBtc: String,
+
     @ColumnInfo(name = "confirmations")
+    @SerializedName("confirmations")
+    @SerialName("confirmations")
     val confirmations: Int,
-    @SerializedName("asset_key")
+
     @ColumnInfo(name = "asset_key")
+    @SerializedName("asset_key")
+    @SerialName("asset_key")
     val assetKey: String?,
-    @SerializedName("reserve")
+
     @ColumnInfo(name = "reserve")
+    @SerializedName("reserve")
+    @SerialName("reserve")
     val reserve: String?,
-    @SerializedName("deposit_entries")
+
     @ColumnInfo(name = "deposit_entries")
+    @SerializedName("deposit_entries")
+    @SerialName("deposit_entries")
     val depositEntries: List<DepositEntry>?,
 ) : Parcelable
 

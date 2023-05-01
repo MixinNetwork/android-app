@@ -41,6 +41,7 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         android:localeConfig="@xml/locales_config"
+        android:largeHeap="true"
         tools:ignore="LockedOrientationActivity,UnusedAttribute"
         tools:replace="allowBackup">
         <activity
@@ -85,6 +86,7 @@
                 <data android:host="address" />
                 <data android:host="snapshots" />
                 <data android:host="conversations" />
+                <data android:host="device-transfer" />
             </intent-filter>
 
             <intent-filter android:autoVerify="true">
@@ -290,6 +292,11 @@
             android:windowSoftInputMode="adjustResize|stateAlwaysHidden" />
         <activity
             android:name=".ui.setting.SettingActivity"
+            android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation"
+            android:theme="@style/AppTheme.NoActionBar"
+            android:windowSoftInputMode="adjustResize|stateAlwaysHidden" />
+        <activity
+            android:name=".ui.transfer.TransferActivity"
             android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation"
             android:theme="@style/AppTheme.NoActionBar"
             android:windowSoftInputMode="adjustResize|stateAlwaysHidden" />

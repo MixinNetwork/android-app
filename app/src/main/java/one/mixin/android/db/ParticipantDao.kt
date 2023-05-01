@@ -116,5 +116,11 @@ interface ParticipantDao : BaseDao<Participant> {
     @Query(
         "SELECT p.conversation_id FROM participants p, conversations c WHERE p.user_id = :userId AND p.conversation_id = c.conversation_id AND c.status = 2 LIMIT 1",
     )
-    fun joinedConversationId(userId: String): String
+    fun joinedConversationId(userId: String): String?
+
+    @Query("SELECT p.* FROM participants p ORDER BY p.rowid LIMIT :limit OFFSET :offset")
+    fun getParticipantsByLimitAndOffset(limit: Int, offset: Int): List<Participant>
+
+    @Query("SELECT count(1) FROM participants")
+    fun countParticipants(): Long
 }

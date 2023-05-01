@@ -13,6 +13,7 @@ import one.mixin.android.db.contants.IMAGES
 import one.mixin.android.db.contants.LIVES
 import one.mixin.android.db.contants.TRANSCRIPTS
 import one.mixin.android.db.contants.VIDEOS
+import one.mixin.android.ui.transfer.vo.TransferMessage
 import one.mixin.android.vo.AttachmentMigration
 import one.mixin.android.vo.ConversationWithStatus
 import one.mixin.android.vo.FtsSearchResult
@@ -68,6 +69,9 @@ interface MessageDao : BaseDao<Message> {
 
     @Query("SELECT count(1) FROM messages WHERE conversation_id = :conversationId AND rowid > (SELECT rowid FROM messages WHERE id = :messageId)")
     suspend fun findMessageIndex(conversationId: String, messageId: String): Int
+
+    @Query("SELECT content FROM messages WHERE conversation_id = :conversationId AND id = :messageId")
+    fun findMessageContentById(conversationId: String, messageId: String): String?
 
     @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
     @Query(
@@ -274,6 +278,16 @@ interface MessageDao : BaseDao<Message> {
     """,
     )
     fun findFtsMessages(rowId: Long, limit: Int): List<Message>
+
+    @Query(
+        """
+        SELECT m.* FROM messages m 
+        WHERE m.rowid > :rowId AND m.status != 'FAILED' AND m.status != 'UNKNOWN'
+        ORDER BY m.rowid ASC
+        LIMIT :limit 
+    """,
+    )
+    fun getMessageByLimitAndOffset(limit: Int, rowId: Long): List<TransferMessage>
 
     @Query("SELECT rowid FROM messages ORDER BY rowid DESC LIMIT 1")
     fun getLastMessageRowId(): Long?
@@ -573,4 +587,10 @@ interface MessageDao : BaseDao<Message> {
 
     @Query("DELETE FROM messages_fts4 WHERE rowid IN (SELECT rowid FROM messages_fts4 LIMIT 1000)")
     fun deleteFts(): Int
+
+    @Query("SELECT count(1) FROM messages")
+    fun countMessages(): Long
+
+    @Query("SELECT count(1) FROM messages WHERE (category IN ($DATA, $IMAGES, $AUDIOS, $VIDEOS)) ")
+    fun countMediaMessages(): Long
 }

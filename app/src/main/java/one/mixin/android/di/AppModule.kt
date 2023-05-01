@@ -21,6 +21,7 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.serialization.json.Json
 import okhttp3.OkHttpClient
 import okhttp3.ResponseBody.Companion.toResponseBody
 import okhttp3.logging.HttpLoggingInterceptor
@@ -83,6 +84,7 @@ import one.mixin.android.tip.Identity
 import one.mixin.android.tip.Tip
 import one.mixin.android.tip.TipConstants
 import one.mixin.android.tip.TipNode
+import one.mixin.android.ui.transfer.vo.TransferStatusLiveData
 import one.mixin.android.util.ErrorHandler.Companion.AUTHENTICATION
 import one.mixin.android.util.ErrorHandler.Companion.OLD_VERSION
 import one.mixin.android.util.GsonHelper
@@ -138,6 +140,7 @@ object AppModule {
         if (!CronetProviderInstaller.isInstalled()) {
             return null
         }
+
         return try {
             CronetEngine.Builder(ctx)
                 .addQuicHint(URL.toUri().host, 443, 443)
@@ -473,6 +476,10 @@ object AppModule {
     @Singleton
     fun provideTipCounterSynced() = TipCounterSyncedLiveData()
 
+    @Provides
+    @Singleton
+    fun provideTransferStatus() = TransferStatusLiveData()
+
     @DefaultDispatcher
     @Provides
     fun providesDefaultDispatcher(): CoroutineDispatcher = Dispatchers.Default
@@ -487,6 +494,10 @@ object AppModule {
     @Provides
     @Singleton
     fun provideGson() = GsonHelper.customGson
+
+    @Provides
+    @Singleton
+    fun provideJson() = Json { ignoreUnknownKeys = true; explicitNulls = false; encodeDefaults = false; coerceInputValues = true; isLenient = true; }
 
     @Provides
     @Singleton

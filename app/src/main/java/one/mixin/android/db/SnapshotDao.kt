@@ -61,4 +61,10 @@ interface SnapshotDao : BaseDao<Snapshot> {
 
     @Query("SELECT transaction_hash FROM snapshots WHERE asset_id = :assetId AND type = 'deposit' AND transaction_hash IN (:hashList)")
     suspend fun findSnapshotIdsByTransactionHashList(assetId: String, hashList: List<String>): List<String>
+
+    @Query("SELECT sn.* FROM snapshots sn ORDER BY sn.rowid LIMIT :limit OFFSET :offset")
+    fun getSnapshotByLimitAndOffset(limit: Int, offset: Int): List<Snapshot>
+
+    @Query("SELECT count(1) FROM snapshots")
+    fun countSnapshots(): Long
 }

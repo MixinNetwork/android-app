@@ -101,6 +101,9 @@ interface ConversationDao : BaseDao<Conversation> {
     @Query("SELECT c.* FROM conversations c WHERE c.conversation_id = :conversationId")
     fun getConversationById(conversationId: String): LiveData<Conversation>
 
+    @Query("SELECT c.* FROM conversations c ORDER BY c.rowid LIMIT :limit OFFSET :offset")
+    fun getConversationsByLimitAndOffset(limit: Int, offset: Int): List<Conversation>
+
     @Query("SELECT unseen_message_count FROM conversations WHERE conversation_id = :conversationId")
     suspend fun indexUnread(conversationId: String): Int?
 
@@ -149,6 +152,9 @@ interface ConversationDao : BaseDao<Conversation> {
         """,
     )
     fun getConversationsByUserId(userId: String): List<ParticipantSessionMinimal>
+
+    @Query("SELECT conversation_id FROM conversations")
+    fun getAllConversationId(): List<String>
 
     @Query("SELECT announcement FROM conversations WHERE conversation_id = :conversationId ")
     suspend fun getAnnouncementByConversationId(conversationId: String): String?
@@ -246,4 +252,7 @@ interface ConversationDao : BaseDao<Conversation> {
         """,
     )
     suspend fun findSameConversations(selfId: String, userId: String): List<GroupMinimal>
+
+    @Query("SELECT count(1) FROM conversations")
+    fun countConversations(): Long
 }

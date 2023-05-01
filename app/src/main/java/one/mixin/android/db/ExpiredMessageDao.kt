@@ -32,4 +32,10 @@ interface ExpiredMessageDao : BaseDao<ExpiredMessage> {
 
     @Query("DELETE FROM expired_messages WHERE message_id IN (:ids)")
     fun deleteByMessageId(ids: List<String>)
+
+    @Query("SELECT em.* FROM expired_messages em ORDER BY em.rowid LIMIT :limit OFFSET :offset")
+    fun getExpiredMessageByLimitAndOffset(limit: Int, offset: Int): List<ExpiredMessage>
+
+    @Query("SELECT count(1) FROM expired_messages")
+    fun countExpiredMessages(): Long
 }

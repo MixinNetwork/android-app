@@ -30,6 +30,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.Constants.DB_EXPIRED_LIMIT
 import one.mixin.android.Constants.MARK_REMOTE_LIMIT
+import one.mixin.android.Constants.TEAM_MIXIN_USER_ID
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.RxBus
@@ -71,6 +72,7 @@ import one.mixin.android.vo.CallStateLiveData
 import one.mixin.android.vo.MessageStatus
 import one.mixin.android.vo.absolutePath
 import one.mixin.android.vo.createAckJob
+import one.mixin.android.vo.generateConversationId
 import one.mixin.android.vo.isTranscript
 import one.mixin.android.websocket.ACKNOWLEDGE_MESSAGE_RECEIPTS
 import one.mixin.android.websocket.BlazeAckMessage
@@ -399,7 +401,7 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
                 ),
             )
             val encoded = plainText.toByteArray().base64Encode()
-            val bm = createParamBlazeMessage(createPlainJsonParam(participantDao.joinedConversationId(accountId), accountId, encoded, sessionId))
+            val bm = createParamBlazeMessage(createPlainJsonParam(participantDao.joinedConversationId(accountId) ?: generateConversationId(accountId, TEAM_MIXIN_USER_ID), accountId, encoded, sessionId))
             jobManager.addJobInBackground(SendPlaintextJob(bm, PRIORITY_ACK_MESSAGE))
             jobDao.deleteList(jobs)
         }

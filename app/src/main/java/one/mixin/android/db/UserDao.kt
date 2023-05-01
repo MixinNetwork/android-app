@@ -51,7 +51,7 @@ interface UserDao : BaseDao<User> {
     fun findUserByConversationId(conversationId: String): LiveData<User>
 
     @Query("SELECT u.* FROM users u, conversations c WHERE c.owner_id = u.user_id AND c.conversation_id = :conversationId")
-    fun findPlainUserByConversationId(conversationId: String): User?
+    fun findOwnerByConversationId(conversationId: String): User?
 
     @Query("SELECT u.user_id, u.app_id, a.capabilities FROM users u, conversations c LEFT JOIN apps a on u.app_id = a.app_id WHERE c.owner_id = u.user_id AND c.conversation_id = :conversationId AND c.category = 'CONTACT'")
     fun findContactByConversationId(conversationId: String): ForwardUser?
@@ -153,4 +153,10 @@ interface UserDao : BaseDao<User> {
 
     @Query("SELECT u.user_id, u.app_id, a.capabilities FROM users u LEFT JOIN apps a on a.app_id = u.app_id WHERE u.user_id = :id")
     fun findForwardUserById(id: String): ForwardUser?
+
+    @Query("SELECT u.* FROM users u ORDER BY u.rowid LIMIT :limit OFFSET :offset")
+    fun getUsersByLimitAndOffset(limit: Int, offset: Int): List<User>
+
+    @Query("SELECT count(1) FROM users")
+    fun countUsers(): Long
 }

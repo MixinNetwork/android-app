@@ -480,6 +480,17 @@ abstract class BaseCameraxFragment : VisionFragment() {
             ConfirmBottomFragment.show(requireContext(), parentFragmentManager, analysisResult) {
                 activity?.finish()
             }
+            // } else if (analysisResult.startsWith(Constants.Scheme.DEVICE_TRANSFER)) {
+            //     val uri = analysisResult.toUri()
+            //     if (uri == Uri.EMPTY) {
+            //         handleResult(requireActivity(), fromShortcut, analysisResult)
+            //         return
+            //     }
+            //     TransferActivity.parseUri(requireContext(), false, uri, {
+            //         activity?.finish()
+            //     }) {
+            //         handleResult(requireActivity(), fromShortcut, analysisResult)
+            //     }
         } else {
             if (fromScan()) {
                 val externalSchemes = requireContext().defaultSharedPreferences.getStringSet(PREF_EXTERNAL_SCHEMES, emptySet())
@@ -488,7 +499,7 @@ abstract class BaseCameraxFragment : VisionFragment() {
                     activity?.finish()
                     return
                 }
-                handleResult(analysisResult)
+                handleResult(requireActivity(), fromShortcut, analysisResult)
             } else {
                 pseudoNotificationView?.addContent(analysisResult)
             }

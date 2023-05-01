@@ -49,6 +49,9 @@ import one.mixin.android.fts.insertFts4
 import one.mixin.android.fts.insertOrReplaceMessageFts4
 import one.mixin.android.job.BaseJob.Companion.PRIORITY_SEND_ATTACHMENT_MESSAGE
 import one.mixin.android.session.Session
+import one.mixin.android.ui.transfer.TransferActivity
+import one.mixin.android.ui.transfer.vo.TransferCommandAction
+import one.mixin.android.ui.transfer.vo.TransferCommandData
 import one.mixin.android.ui.web.replaceApp
 import one.mixin.android.util.ColorUtil
 import one.mixin.android.util.GsonHelper
@@ -332,9 +335,13 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
             if (transferPinData.action == PinAction.PIN.name) {
                 transferPinData.messageIds.forEachIndexed { index, messageId ->
                     val message = findMessage(messageId)
+                    val mid = if (index == 0) {
+                        data.messageId
+                    } else {
+                        UUID.randomUUID().toString()
+                    }
                     if (message != null) {
                         pinMessageDao.insert(PinMessage(messageId, message.conversationId, data.createdAt))
-                        val mid = UUID.randomUUID().toString()
                         database.insertMessage(
                             createPinMessage(
                                 mid,
@@ -350,7 +357,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                                         null
                                     },
                                 ),
-                                nowInUtc(),
+                                data.createdAt,
                                 MessageStatus.READ.name,
                             ),
                         )
@@ -369,7 +376,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                         }
                     } else {
                         val m = createPinMessage(
-                            UUID.randomUUID().toString(),
+                            mid,
                             data.conversationId,
                             data.userId,
                             messageId, // quote pinned message id
@@ -450,6 +457,16 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                 processResendMessage(data, plainData)
             } else if (plainData.action == PlainDataAction.NO_KEY.name) {
                 ratchetSenderKeyDao.delete(data.conversationId, SignalProtocolAddress(data.userId, data.sessionId.getDeviceId()).toString())
+            } else if (plainData.action == PlainDataAction.DEVICE_TRANSFER.name) {
+                val content = plainData.content ?: return
+                val command = gson.fromJson(content, TransferCommandData::class.java)
+                if (command.action == TransferCommandAction.CANCEL.value) {
+                    RxBus.publish(command)
+                } else {
+                    MixinApplication.get().currentActivity?.let { activity ->
+                        TransferActivity.show(activity, command)
+                    }
+                }
             } else if (plainData.action == PlainDataAction.ACKNOWLEDGE_MESSAGE_RECEIPTS.name) {
                 plainData.ackMessages?.let { ackMessages ->
                     val updateExpiredMessageList = arrayListOf<Pair<String, Long?>>()
