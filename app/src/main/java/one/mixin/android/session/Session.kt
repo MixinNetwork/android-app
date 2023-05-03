@@ -28,6 +28,7 @@ import one.mixin.android.extension.remove
 import one.mixin.android.extension.sharedPreferences
 import one.mixin.android.util.reportException
 import one.mixin.android.vo.Account
+import one.mixin.eddsa.Ed25519
 import one.mixin.eddsa.KeyPair
 import timber.log.Timber
 import java.security.Key
@@ -103,7 +104,14 @@ object Session {
     }
 
     private fun initEdKeypair(seed: String): KeyPair {
-        val edKeyPair = KeyPair.newKeyPairFromSeed(seed.decodeBase64().toByteString())
+        val seedByteString = seed.decodeBase64().toByteString()
+        val edKeyPair = KeyPair.newKeyPairFromSeed(seedByteString)
+
+        val isOnCurve = Ed25519.scalarMultWithBase(Ed25519.getHashedScalar(seedByteString).toByteArray()).isOnCurve()
+        if (!isOnCurve) {
+            reportException(IllegalStateException("Init Ed25519 from seed not on curve"))
+        }
+
         this.edKeyPair = edKeyPair
         return edKeyPair
     }
