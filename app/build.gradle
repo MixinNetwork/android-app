@@ -188,7 +188,7 @@ android {
     configurations.configureEach {
         resolutionStrategy {
             force "com.android.tools.build.jetifier:jetifier-core:1.0.0-beta10"
-            force "com.github.mixinnetwork:tink-eddsa:0.0.7"
+            force "com.github.mixinnetwork:tink-eddsa:0.0.8"
         }
     }
 }
@@ -263,7 +263,7 @@ dependencies {
     implementation "io.reactivex.rxjava2:rxjava:${rxJavaVersion}"
     implementation "io.reactivex.rxjava2:rxandroid:${rxAndroidVersion}"
 
-    implementation "com.github.mixinnetwork:tink-eddsa:0.0.7"
+    implementation "com.github.mixinnetwork:tink-eddsa:0.0.8"
     implementation("com.github.mixinnetwork.jjwt:jjwt-api:a0d0a70922") {
         exclude group: 'com.github.mixinnetwork', module: 'tink-eddsa'
     }
