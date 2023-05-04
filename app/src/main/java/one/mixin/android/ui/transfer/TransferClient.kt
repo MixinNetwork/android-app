@@ -1,6 +1,5 @@
 package one.mixin.android.ui.transfer
 
-import android.database.SQLException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
@@ -20,7 +19,6 @@ import one.mixin.android.db.ConversationExtDao
 import one.mixin.android.db.ExpiredMessageDao
 import one.mixin.android.db.MessageDao
 import one.mixin.android.db.MessageMentionDao
-import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.ParticipantDao
 import one.mixin.android.db.PinMessageDao
 import one.mixin.android.db.RemoteMessageStatusDao
@@ -97,11 +95,12 @@ class TransferClient @Inject internal constructor(
                 Timber.e("Current type: $field")
             }
         }
-    private var currentId: String? = null // Save the currently inserted primary key id
 
     private var deviceId: String? = null
 
     private val syncChannel = Channel<ByteArray>()
+
+    private val transferInserter = TransferInserter()
 
     suspend fun connectToServer(ip: String, port: Int, commandData: TransferCommand) =
         withContext(SINGLE_SOCKET_THREAD) {
@@ -210,38 +209,32 @@ class TransferClient @Inject internal constructor(
         when (transferData.type) {
             TransferDataType.CONVERSATION.value -> {
                 val conversation = serializationJson.decodeFromJsonElement<Conversation>(transferData.data)
-                conversationDao.insertIgnore(conversation)
-                currentId = conversation.conversationId
+                transferInserter.insertIgnore(conversation)
             }
 
             TransferDataType.PARTICIPANT.value -> {
                 val participant = serializationJson.decodeFromJsonElement<Participant>(transferData.data)
-                participantDao.insertIgnore(participant)
-                currentId = "${participant.conversationId}+${participant.userId}"
+                transferInserter.insertIgnore(participant)
             }
 
             TransferDataType.USER.value -> {
                 val user = serializationJson.decodeFromJsonElement<User>(transferData.data)
-                userDao.insertIgnore(user)
-                currentId = user.userId
+                transferInserter.insertIgnore(user)
             }
 
             TransferDataType.APP.value -> {
                 val app = serializationJson.decodeFromJsonElement<App>(transferData.data)
-                appDao.insertIgnore(app)
-                currentId = app.appId
+                transferInserter.insertIgnore(app)
             }
 
             TransferDataType.ASSET.value -> {
                 val asset = serializationJson.decodeFromJsonElement<Asset>(transferData.data)
-                assetDao.insertIgnore(asset)
-                currentId = asset.assetId
+                transferInserter.insertIgnore(asset)
             }
 
             TransferDataType.SNAPSHOT.value -> {
                 val snapshot = serializationJson.decodeFromJsonElement<Snapshot>(transferData.data)
-                snapshotDao.insertIgnore(snapshot)
-                currentId = snapshot.snapshotId
+                transferInserter.insertIgnore(snapshot)
             }
 
             TransferDataType.STICKER.value -> {
@@ -253,20 +246,17 @@ class TransferClient @Inject internal constructor(
                         Timber.e(e)
                     }
                 }
-                stickerDao.insertIgnore(sticker)
-                currentId = sticker.stickerId
+                transferInserter.insertIgnore(sticker)
             }
 
             TransferDataType.PIN_MESSAGE.value -> {
                 val pinMessage = serializationJson.decodeFromJsonElement<PinMessage>(transferData.data)
-                pinMessageDao.insertIgnore(pinMessage)
-                currentId = pinMessage.messageId
+                transferInserter.insertIgnore(pinMessage)
             }
 
             TransferDataType.TRANSCRIPT_MESSAGE.value -> {
                 val transcriptMessage = serializationJson.decodeFromJsonElement<TranscriptMessage>(transferData.data)
-                transcriptMessageDao.insertIgnore(transcriptMessage)
-                currentId = "${transcriptMessage.transcriptId}+${transcriptMessage.messageId}"
+                transferInserter.insertIgnore(transcriptMessage)
             }
 
             TransferDataType.MESSAGE.value -> {
@@ -274,7 +264,7 @@ class TransferClient @Inject internal constructor(
                 if (messageDao.findMessageIdById(message.messageId) == null) {
                     mutableList.add(message)
                     if (mutableList.size >= 1000) {
-                        insertMessages(mutableList)
+                        transferInserter.insertMessages(mutableList)
 
                         mutableList.clear()
                     }
@@ -284,7 +274,7 @@ class TransferClient @Inject internal constructor(
 
             TransferDataType.MESSAGE_MENTION.value -> {
                 if (mutableList.isNotEmpty()) {
-                    insertMessages(mutableList)
+                    transferInserter.insertMessages(mutableList)
 
                     mutableList.clear()
                 }
@@ -296,20 +286,18 @@ class TransferClient @Inject internal constructor(
                         val mentionData = parseMentionData(messageContent, userDao) ?: return
                         MessageMention(it.messageId, it.conversationId, mentionData, it.hasRead)
                     }
-                messageMentionDao.insertIgnoreReturn(messageMention)
-                currentId = messageMention.messageId
+                transferInserter.insertIgnore(messageMention)
             }
 
             TransferDataType.EXPIRED_MESSAGE.value -> {
                 if (mutableList.isNotEmpty()) {
-                    insertMessages(mutableList)
+                    transferInserter.insertMessages(mutableList)
 
                     mutableList.clear()
                 }
                 val expiredMessage =
                     serializationJson.decodeFromJsonElement<ExpiredMessage>(transferData.data)
-                expiredMessageDao.insertIgnore(expiredMessage)
-                currentId = expiredMessage.messageId
+                transferInserter.insertIgnore(expiredMessage)
             }
 
             else -> {
@@ -321,7 +309,7 @@ class TransferClient @Inject internal constructor(
 
     private fun finalWork() {
         if (mutableList.isNotEmpty()) {
-            insertMessages(mutableList)
+            transferInserter.insertMessages(mutableList)
         }
         conversationDao.getAllConversationId().forEach { conversationId ->
             conversationDao.refreshLastMessageId(conversationId)
@@ -336,7 +324,7 @@ class TransferClient @Inject internal constructor(
     fun exit(finished: Boolean = false) = MixinApplication.get().applicationScope.launch(SINGLE_SOCKET_THREAD) {
         try {
             if (!finished) {
-                Timber.e("DeviceId: $deviceId type: $currentType id: $currentId current-time:${System.currentTimeMillis()}")
+                Timber.e("DeviceId: $deviceId type: $currentType id: ${transferInserter.currentId} current-time:${System.currentTimeMillis()}")
             } else {
                 Timber.e("Finish exit ${System.currentTimeMillis() - startTime}/1000 s")
             }
@@ -363,212 +351,6 @@ class TransferClient @Inject internal constructor(
             if (status.value != TransferStatus.FINISHED && status.value != TransferStatus.ERROR) {
                 status.value = TransferStatus.ERROR
             }
-        }
-    }
-
-    private fun insertMessages(messages: List<Message>) {
-        val writableDatabase = MixinDatabase.getWritableDatabase() ?: return
-
-        val sql =
-            "INSERT OR IGNORE INTO messages (id, conversation_id, user_id, category, content, media_url, media_mime_type, media_size, media_duration, media_width, media_height, media_hash, thumb_image, thumb_url, media_key, media_digest, media_status, status, created_at, action, participant_id, snapshot_id, hyperlink, name, album_id, sticker_id, shared_user_id, media_waveform, media_mine_type, quote_message_id, quote_content, caption) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
-
-        val statement = writableDatabase.compileStatement(sql)
-
-        writableDatabase.beginTransaction()
-        try {
-            for (message in messages) {
-                statement.bindString(1, message.messageId)
-                statement.bindString(2, message.conversationId)
-                statement.bindString(3, message.userId)
-                statement.bindString(4, message.category)
-
-                val content = message.content
-                if (content != null) {
-                    statement.bindString(5, content)
-                } else {
-                    statement.bindNull(5)
-                }
-
-                val mediaUrl = message.mediaUrl
-                if (mediaUrl != null) {
-                    statement.bindString(6, mediaUrl)
-                } else {
-                    statement.bindNull(6)
-                }
-
-                val mediaMimeType = message.mediaMimeType
-                if (mediaMimeType != null) {
-                    statement.bindString(7, mediaMimeType)
-                } else {
-                    statement.bindNull(7)
-                }
-
-                val mediaSize = message.mediaSize
-                if (mediaSize != null) {
-                    statement.bindLong(8, mediaSize)
-                } else {
-                    statement.bindNull(8)
-                }
-
-                val mediaDuration = message.mediaDuration
-                if (mediaDuration != null) {
-                    statement.bindString(9, mediaDuration)
-                } else {
-                    statement.bindNull(9)
-                }
-
-                val mediaWidth = message.mediaWidth
-                if (mediaWidth != null) {
-                    statement.bindLong(10, mediaWidth.toLong())
-                } else {
-                    statement.bindNull(10)
-                }
-
-                val mediaHeight = message.mediaHeight
-                if (mediaHeight != null) {
-                    statement.bindLong(11, mediaHeight.toLong())
-                } else {
-                    statement.bindNull(11)
-                }
-
-                val mediaHash = message.mediaHash
-                if (mediaHash != null) {
-                    statement.bindString(12, mediaHash)
-                } else {
-                    statement.bindNull(12)
-                }
-
-                val thumbImage = message.thumbImage
-                if (thumbImage != null) {
-                    statement.bindString(13, thumbImage)
-                } else {
-                    statement.bindNull(13)
-                }
-
-                val thumbUrl = message.thumbUrl
-                if (thumbUrl != null) {
-                    statement.bindString(14, thumbUrl)
-                } else {
-                    statement.bindNull(14)
-                }
-
-                val mediaKey = message.mediaKey
-                if (mediaKey != null) {
-                    statement.bindBlob(15, mediaKey)
-                } else {
-                    statement.bindNull(15)
-                }
-
-                val mediaDigest = message.mediaDigest
-                if (mediaDigest != null) {
-                    statement.bindBlob(16, mediaDigest)
-                } else {
-                    statement.bindNull(16)
-                }
-
-                val mediaStatus = message.mediaStatus
-                if (mediaStatus == null) {
-                    statement.bindNull(17)
-                } else {
-                    statement.bindString(17, mediaStatus)
-                }
-                statement.bindString(18, message.status)
-                statement.bindString(19, message.createdAt)
-                val action = message.action
-                if (action == null) {
-                    statement.bindNull(20)
-                } else {
-                    statement.bindString(20, action)
-                }
-
-                val participantId = message.participantId
-                if (participantId != null) {
-                    statement.bindString(21, participantId)
-                } else {
-                    statement.bindNull(21)
-                }
-
-                val snapshotId = message.snapshotId
-                if (snapshotId != null) {
-                    statement.bindString(22, snapshotId)
-                } else {
-                    statement.bindNull(22)
-                }
-
-                val hyperlink = message.hyperlink
-                if (hyperlink != null) {
-                    statement.bindString(23, hyperlink)
-                } else {
-                    statement.bindNull(23)
-                }
-
-                val name = message.name
-                if (name != null) {
-                    statement.bindString(24, name)
-                } else {
-                    statement.bindNull(24)
-                }
-
-                val albumId = message.albumId
-                if (albumId != null) {
-                    statement.bindString(25, albumId)
-                } else {
-                    statement.bindNull(25)
-                }
-
-                val stickerId = message.stickerId
-                if (stickerId != null) {
-                    statement.bindString(26, stickerId)
-                } else {
-                    statement.bindNull(26)
-                }
-
-                val sharedUserId = message.sharedUserId
-                if (sharedUserId != null) {
-                    statement.bindString(27, sharedUserId)
-                } else {
-                    statement.bindNull(27)
-                }
-
-                val mediaWaveform = message.mediaWaveform
-                if (mediaWaveform != null) {
-                    statement.bindBlob(28, mediaWaveform)
-                } else {
-                    statement.bindNull(28)
-                }
-
-                statement.bindNull(29)
-
-                val quoteMessageId = message.quoteMessageId
-                if (quoteMessageId != null) {
-                    statement.bindString(30, quoteMessageId)
-                } else {
-                    statement.bindNull(30)
-                }
-
-                val quoteContent = message.quoteContent
-                if (quoteContent != null) {
-                    statement.bindString(31, quoteContent)
-                } else {
-                    statement.bindNull(31)
-                }
-
-                val caption = message.caption
-                if (caption != null) {
-                    statement.bindString(32, caption)
-                } else {
-                    statement.bindNull(32)
-                }
-
-                statement.executeInsert()
-            }
-            writableDatabase.setTransactionSuccessful()
-            currentId = messages.last().messageId
-        } catch (e: SQLException) {
-            Timber.e(e)
-        } finally {
-            writableDatabase.endTransaction()
-            statement.close()
         }
     }
 }
