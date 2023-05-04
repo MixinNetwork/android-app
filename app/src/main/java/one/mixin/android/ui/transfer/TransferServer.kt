@@ -251,9 +251,9 @@ class TransferServer @Inject internal constructor(
     }
 
     private fun syncConversation(outputStream: OutputStream) {
-        var offset = 0
+        var rowId = -1L
         while (!quit) {
-            val list = conversationDao.getConversationsByLimitAndOffset(LIMIT, offset)
+            val list = conversationDao.getConversationsByLimitAndRowId(LIMIT, rowId)
             if (list.isEmpty()) {
                 return
             }
@@ -266,14 +266,14 @@ class TransferServer @Inject internal constructor(
             if (list.size < LIMIT) {
                 return
             }
-            offset += LIMIT
+            rowId = conversationDao.getConversationRowId(list.last().conversationId) ?: return
         }
     }
 
     private fun syncParticipant(outputStream: OutputStream) {
-        var offset = 0
+        var rowId = -1L
         while (!quit) {
-            val list = participantDao.getParticipantsByLimitAndOffset(LIMIT, offset)
+            val list = participantDao.getParticipantsByLimitAndRowId(LIMIT, rowId)
             if (list.isEmpty()) {
                 return
             }
@@ -286,14 +286,14 @@ class TransferServer @Inject internal constructor(
             if (list.size < LIMIT) {
                 return
             }
-            offset += LIMIT
+            rowId = participantDao.getParticipantRowId(list.last().conversationId, list.last().userId) ?: return
         }
     }
 
     private fun syncUser(outputStream: OutputStream) {
-        var offset = 0
+        var rowId = -1L
         while (!quit) {
-            val list = userDao.getUsersByLimitAndOffset(LIMIT, offset)
+            val list = userDao.getUsersByLimitAndRowId(LIMIT, rowId)
             if (list.isEmpty()) {
                 return
             }
@@ -306,14 +306,14 @@ class TransferServer @Inject internal constructor(
             if (list.size < LIMIT) {
                 return
             }
-            offset += LIMIT
+            rowId = userDao.getUserRowId(list.last().userId) ?: return
         }
     }
 
     private fun syncApp(outputStream: OutputStream) {
-        var offset = 0
+        var rowId = -1L
         while (!quit) {
-            val list = appDao.getAppsByLimitAndOffset(LIMIT, offset)
+            val list = appDao.getAppsByLimitAndRowId(LIMIT, rowId)
             if (list.isEmpty()) {
                 return
             }
@@ -326,14 +326,14 @@ class TransferServer @Inject internal constructor(
             if (list.size < LIMIT) {
                 return
             }
-            offset += LIMIT
+            rowId = appDao.getAppRowId(list.last().appId) ?: return
         }
     }
 
     private fun syncAsset(outputStream: OutputStream) {
-        var offset = 0
+        var rowId = -1L
         while (!quit) {
-            val list = assetDao.getAssetByLimitAndOffset(LIMIT, offset)
+            val list = assetDao.getAssetByLimitAndRowId(LIMIT, rowId)
             if (list.isEmpty()) {
                 return
             }
@@ -346,14 +346,14 @@ class TransferServer @Inject internal constructor(
             if (list.size < LIMIT) {
                 return
             }
-            offset += LIMIT
+            rowId = assetDao.getAssetRowId(list.last().assetId) ?: return
         }
     }
 
     private fun syncSticker(outputStream: OutputStream) {
-        var offset = 0
+        var rowId = -1L
         while (!quit) {
-            val list = stickerDao.getStickersByLimitAndOffset(LIMIT, offset)
+            val list = stickerDao.getStickersByLimitAndRowId(LIMIT, rowId)
                 .map {
                     it.lastUseAt = it.lastUseAt?.let { lastUseAt ->
                         try {
@@ -377,14 +377,14 @@ class TransferServer @Inject internal constructor(
             if (list.size < LIMIT) {
                 return
             }
-            offset += LIMIT
+            rowId = stickerDao.getStickerRowId(list.last().stickerId) ?: return
         }
     }
 
     private fun syncSnapshot(outputStream: OutputStream) {
-        var offset = 0
+        var rowId = -1L
         while (!quit) {
-            val list = snapshotDao.getSnapshotByLimitAndOffset(LIMIT, offset)
+            val list = snapshotDao.getSnapshotByLimitAndRowId(LIMIT, rowId)
             if (list.isEmpty()) {
                 return
             }
@@ -397,14 +397,14 @@ class TransferServer @Inject internal constructor(
             if (list.size < LIMIT) {
                 return
             }
-            offset += LIMIT
+            rowId = snapshotDao.getSnapshotRowId(list.last().snapshotId) ?: return
         }
     }
 
     private fun syncTranscriptMessage(outputStream: OutputStream) {
-        var offset = 0
+        var rowId = -1L
         while (!quit) {
-            val list = transcriptMessageDao.getTranscriptMessageByLimitAndOffset(LIMIT, offset)
+            val list = transcriptMessageDao.getTranscriptMessageByLimitAndRowId(LIMIT, rowId)
             if (list.isEmpty()) {
                 return
             }
@@ -417,14 +417,14 @@ class TransferServer @Inject internal constructor(
             if (list.size < LIMIT) {
                 return
             }
-            offset += LIMIT
+            rowId = transcriptMessageDao.getTranscriptMessageRowId(list.last().transcriptId, list.last().messageId) ?: return
         }
     }
 
     private fun syncPinMessage(outputStream: OutputStream) {
-        var offset = 0
+        var rowId = -1L
         while (!quit) {
-            val list = pinMessageDao.getPinMessageByLimitAndOffset(LIMIT, offset)
+            val list = pinMessageDao.getPinMessageByLimitAndRowId(LIMIT, rowId)
             if (list.isEmpty()) {
                 return
             }
@@ -437,14 +437,14 @@ class TransferServer @Inject internal constructor(
             if (list.size < LIMIT) {
                 return
             }
-            offset += LIMIT
+            rowId = pinMessageDao.getPinMessageRowId(list.last().messageId) ?: return
         }
     }
 
     private fun syncMessage(outputStream: OutputStream) {
-        var rowid = -1L
+        var rowId = -1L
         while (!quit) {
-            val list = messageDao.getMessageByLimitAndOffset(LIMIT, rowid)
+            val list = messageDao.getMessageByLimitAndRowId(LIMIT, rowId)
             if (list.isEmpty()) {
                 return
             }
@@ -457,14 +457,14 @@ class TransferServer @Inject internal constructor(
             if (list.size < LIMIT) {
                 return
             }
-            rowid = messageDao.getMessageRowid(list.last().messageId) ?: return
+            rowId = messageDao.getMessageRowid(list.last().messageId) ?: return
         }
     }
 
     private fun syncMessageMention(outputStream: OutputStream) {
-        var offset = 0
+        var rowId = -1L
         while (!quit) {
-            val list = messageMentionDao.getMessageMentionByLimitAndOffset(LIMIT, offset)
+            val list = messageMentionDao.getMessageMentionByLimitAndRowId(LIMIT, rowId)
             if (list.isEmpty()) {
                 return
             }
@@ -477,7 +477,7 @@ class TransferServer @Inject internal constructor(
             if (list.size < LIMIT) {
                 return
             }
-            offset += LIMIT
+            rowId = messageMentionDao.getMessageMentionRowId(list.last().messageId) ?: return
         }
     }
 

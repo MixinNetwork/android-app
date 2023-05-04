@@ -84,8 +84,11 @@ interface PinMessageDao : BaseDao<PinMessage> {
     @Query("SELECT count(1) FROM pin_messages pm INNER JOIN messages m ON m.id = pm.message_id WHERE pm.conversation_id = :conversationId")
     fun countPinMessages(conversationId: String): LiveData<Int>
 
-    @Query("SELECT pm.* FROM pin_messages pm ORDER BY pm.rowid LIMIT :limit OFFSET :offset")
-    fun getPinMessageByLimitAndOffset(limit: Int, offset: Int): List<PinMessage>
+    @Query("SELECT pm.* FROM pin_messages pm WHERE pm.rowid > :rowId ORDER BY pm.rowid ASC LIMIT :limit")
+    fun getPinMessageByLimitAndRowId(limit: Int, rowId: Long): List<PinMessage>
+
+    @Query("SELECT rowid FROM pin_messages WHERE message_id = :messageId")
+    fun getPinMessageRowId(messageId: String): Long?
 
     @Query("SELECT count(1) FROM pin_messages")
     fun countPinMessages(): Long

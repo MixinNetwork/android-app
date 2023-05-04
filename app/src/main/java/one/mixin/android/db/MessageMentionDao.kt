@@ -45,8 +45,11 @@ interface MessageMentionDao : BaseDao<MessageMention> {
     fun findMessageMentionById(id: String): MessageMention?
 
     @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
-    @Query("SELECT mm.* FROM message_mentions mm ORDER BY mm.rowid LIMIT :limit OFFSET :offset")
-    fun getMessageMentionByLimitAndOffset(limit: Int, offset: Int): List<TransferMessageMention>
+    @Query("SELECT mm.* FROM message_mentions mm WHERE mm.rowid > :rowId ORDER BY mm.rowid ASC LIMIT :limit")
+    fun getMessageMentionByLimitAndRowId(limit: Int, rowId: Long): List<TransferMessageMention>
+
+    @Query("SELECT rowid FROM message_mentions WHERE message_id = :messageId")
+    fun getMessageMentionRowId(messageId: String): Long?
 
     @Query("SELECT count(1) FROM message_mentions")
     fun countMessageMention(): Long

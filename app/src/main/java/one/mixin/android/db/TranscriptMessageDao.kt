@@ -144,8 +144,11 @@ interface TranscriptMessageDao : BaseDao<TranscriptMessage> {
     @Query("UPDATE transcript_messages SET media_url = :mediaUrl WHERE message_id = :messageId")
     suspend fun updateMediaUrl(mediaUrl: String, messageId: String)
 
-    @Query("SELECT tm.* FROM transcript_messages tm ORDER BY tm.rowid LIMIT :limit OFFSET :offset")
-    fun getTranscriptMessageByLimitAndOffset(limit: Int, offset: Int): List<TranscriptMessage>
+    @Query("SELECT tm.* FROM transcript_messages tm WHERE tm.rowid > :rowId ORDER BY tm.rowid ASC LIMIT :limit")
+    fun getTranscriptMessageByLimitAndRowId(limit: Int, rowId: Long): List<TranscriptMessage>
+
+    @Query("SELECT rowid FROM transcript_messages WHERE transcript_id = :transcriptId AND message_id = :messageId")
+    fun getTranscriptMessageRowId(transcriptId: String, messageId: String): Long?
 
     @Query("SELECT count(1) FROM transcript_messages")
     fun countTranscriptMessages(): Long

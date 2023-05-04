@@ -292,7 +292,7 @@ interface MessageDao : BaseDao<Message> {
         LIMIT :limit 
     """,
     )
-    fun getMessageByLimitAndOffset(limit: Int, rowId: Long): List<TransferMessage>
+    fun getMessageByLimitAndRowId(limit: Int, rowId: Long): List<TransferMessage>
 
     @Query("SELECT rowid FROM messages ORDER BY rowid DESC LIMIT 1")
     fun getLastMessageRowId(): Long?
