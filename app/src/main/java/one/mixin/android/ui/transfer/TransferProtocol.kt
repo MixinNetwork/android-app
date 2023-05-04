@@ -1,6 +1,9 @@
 package one.mixin.android.ui.transfer
 
 import UUIDUtils
+import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.decodeFromStream
 import one.mixin.android.MixinApplication
 import one.mixin.android.RxBus
 import one.mixin.android.api.ChecksumException
@@ -18,7 +21,6 @@ import one.mixin.android.extension.getImagePath
 import one.mixin.android.extension.getTranscriptFile
 import one.mixin.android.extension.getVideoPath
 import one.mixin.android.ui.transfer.vo.TransferCommand
-import one.mixin.android.util.GsonHelper
 import one.mixin.android.vo.isAudio
 import one.mixin.android.vo.isImage
 import one.mixin.android.vo.isVideo
@@ -28,7 +30,6 @@ import java.io.EOFException
 import java.io.File
 import java.io.FileInputStream
 import java.io.InputStream
-import java.io.InputStreamReader
 import java.io.OutputStream
 import java.nio.ByteBuffer
 import java.util.zip.CRC32
@@ -36,11 +37,16 @@ import kotlin.text.Charsets.UTF_8
 
 /*
  * Data packet format:
- * ----------------------------------------------------------------------
+ * -----------------------------------------------------------------
  * | type (1 byte) | body_length（4 bytes） | body | crc（8 bytes） |
- * ----------------------------------------------------------------------
+ * -----------------------------------------------------------------
+ * File packet format:
+ * ----------------------------------------------------------------------------------
+ * | type (1 byte) | body_length（4 bytes） | uuid(16 bytes) | body | crc（8 bytes） |
+ * ----------------------------------------------------------------------------------
  */
-class TransferProtocol {
+@ExperimentalSerializationApi
+class TransferProtocol(private val serializationJson: Json) {
 
     companion object {
         const val TYPE_COMMAND = 0x01.toByte()
@@ -56,17 +62,13 @@ class TransferProtocol {
         MixinDatabase.getDatabase(MixinApplication.appContext).transcriptDao()
     }
 
-    private val gson by lazy {
-        GsonHelper.customGson
-    }
-
     fun read(inputStream: InputStream): Any? {
         val packageData = safeRead(inputStream, 5)
         val type = packageData[0]
         val size = byteArrayToInt(packageData.copyOfRange(1, 5))
         return when (type) {
             TYPE_COMMAND -> {
-                gson.fromJson(InputStreamReader(ByteArrayInputStream(readByteArray(inputStream, size)), UTF_8), TransferCommand::class.java)
+                serializationJson.decodeFromStream<TransferCommand>(ByteArrayInputStream(readByteArray(inputStream, size)))
             }
 
             TYPE_JSON -> {
@@ -221,7 +223,7 @@ class TransferProtocol {
                 throw ChecksumException()
             }
             if (message != null && transcriptMessage != null) {
-                val extensionName = transcriptMessage!!.mediaUrl?.getExtensionName()
+                val extensionName = transcriptMessage.mediaUrl?.getExtensionName()
                 val transcriptFile = MixinApplication.get().getTranscriptFile(uuid, ".$extensionName")
                 if (!transcriptFile.exists()) {
                     outFile.copy(transcriptFile)

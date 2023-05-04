@@ -6,6 +6,7 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.decodeFromJsonElement
@@ -63,6 +64,7 @@ import java.net.Socket
 import java.net.SocketException
 import javax.inject.Inject
 
+@ExperimentalSerializationApi
 class TransferClient @Inject internal constructor(
     val assetDao: AssetDao,
     val conversationDao: ConversationDao,
@@ -82,6 +84,7 @@ class TransferClient @Inject internal constructor(
     val status: TransferStatusLiveData,
     private val serializationJson: Json,
 ) {
+    val protocol = TransferProtocol(serializationJson)
 
     private var socket: Socket? = null
     private var quit = false
@@ -89,7 +92,7 @@ class TransferClient @Inject internal constructor(
     private var startTime = 0L
     private var currentType: String? = null
         set(value) {
-            if (field != value){
+            if (field != value) {
                 field = value
                 Timber.e("Current type: $field")
             }
@@ -97,8 +100,6 @@ class TransferClient @Inject internal constructor(
     private var currentId: String? = null // Save the currently inserted primary key id
 
     private var deviceId: String? = null
-
-    val protocol = TransferProtocol()
 
     private val syncChannel = Channel<ByteArray>()
 

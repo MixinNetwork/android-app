@@ -75,6 +75,7 @@ class TransferServer @Inject internal constructor(
     val status: TransferStatusLiveData,
     private val serializationJson: Json,
 ) {
+    val protocol = TransferProtocol(serializationJson)
 
     private var serverSocket: ServerSocket? = null
     private var socket: Socket? = null
@@ -518,8 +519,6 @@ class TransferServer @Inject internal constructor(
             }
         }
     }
-
-    val protocol = TransferProtocol()
 
     fun exit() = MixinApplication.get().applicationScope.launch(SINGLE_SOCKET_THREAD) {
         try {
