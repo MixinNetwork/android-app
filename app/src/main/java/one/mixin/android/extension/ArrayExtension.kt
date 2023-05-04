@@ -1,7 +1,7 @@
 package one.mixin.android.extension
 
-fun isNullOrEmpty(byteArray: ByteArray?): Boolean {
-    return byteArray == null || byteArray.isEmpty()
+fun ByteArray?.isNullOrEmpty(): Boolean {
+    return this == null || this.isEmpty()
 }
 
 inline fun <T> Array<T>.forEachReversedWithIndex(f: (Int, T) -> Unit) {

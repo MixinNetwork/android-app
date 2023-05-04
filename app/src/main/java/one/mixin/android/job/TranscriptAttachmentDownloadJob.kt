@@ -147,7 +147,7 @@ class TranscriptAttachmentDownloadJob(
             sink.close()
             when {
                 transcriptMessage.type.endsWith("_IMAGE") -> {
-                    val attachmentCipherInputStream = if (!isNullOrEmpty(transcriptMessage.mediaKey) && !isNullOrEmpty(transcriptMessage.mediaDigest)) {
+                    val attachmentCipherInputStream = if (!transcriptMessage.mediaKey.isNullOrEmpty() && !transcriptMessage.mediaDigest.isNullOrEmpty()) {
                         AttachmentCipherInputStream.createForAttachment(destination, 0, transcriptMessage.mediaKey, transcriptMessage.mediaDigest)
                     } else {
                         FileInputStream(destination)
@@ -199,7 +199,7 @@ class TranscriptAttachmentDownloadJob(
                     )
                 }
                 transcriptMessage.type.endsWith("_DATA") -> {
-                    val attachmentCipherInputStream = if (!isNullOrEmpty(transcriptMessage.mediaKey) && !isNullOrEmpty(transcriptMessage.mediaDigest)) {
+                    val attachmentCipherInputStream = if (!transcriptMessage.mediaKey.isNullOrEmpty() && !transcriptMessage.mediaDigest.isNullOrEmpty()) {
                         AttachmentCipherInputStream.createForAttachment(destination, 0, transcriptMessage.mediaKey, transcriptMessage.mediaDigest)
                     } else {
                         FileInputStream(destination)
@@ -220,7 +220,7 @@ class TranscriptAttachmentDownloadJob(
                     )
                 }
                 transcriptMessage.type.endsWith("_VIDEO") -> {
-                    val attachmentCipherInputStream = if (!isNullOrEmpty(transcriptMessage.mediaKey) && !isNullOrEmpty(transcriptMessage.mediaDigest)) {
+                    val attachmentCipherInputStream = if (!transcriptMessage.mediaKey.isNullOrEmpty() && !transcriptMessage.mediaDigest.isNullOrEmpty()) {
                         AttachmentCipherInputStream.createForAttachment(destination, 0, transcriptMessage.mediaKey, transcriptMessage.mediaDigest)
                     } else {
                         FileInputStream(destination)
@@ -243,7 +243,7 @@ class TranscriptAttachmentDownloadJob(
                     )
                 }
                 transcriptMessage.type.endsWith("_AUDIO") -> {
-                    val attachmentCipherInputStream = if (!isNullOrEmpty(transcriptMessage.mediaKey) && !isNullOrEmpty(transcriptMessage.mediaDigest)) {
+                    val attachmentCipherInputStream = if (!transcriptMessage.mediaKey.isNullOrEmpty() && !transcriptMessage.mediaDigest.isNullOrEmpty()) {
                         AttachmentCipherInputStream.createForAttachment(destination, 0, transcriptMessage.mediaKey, transcriptMessage.mediaDigest)
                     } else {
                         FileInputStream(destination)
