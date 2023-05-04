@@ -87,6 +87,16 @@ class TransferClient @Inject internal constructor(
     private var quit = false
     private var count = 0L
     private var startTime = 0L
+    private var currentType: String? = null
+        set(value) {
+            if (field != value){
+                field = value
+                Timber.e("Current type: $field")
+            }
+        }
+    private var currentId: String? = null // Save the currently inserted primary key id
+
+    private var deviceId: String? = null
 
     val protocol = TransferProtocol()
 
@@ -124,6 +134,11 @@ class TransferClient @Inject internal constructor(
             val result = try {
                 protocol.read(inputStream)
             } catch (e: EOFException) {
+                if (status.value != TransferStatus.FINISHED && status.value != TransferStatus.ERROR) {
+                    status.value = TransferStatus.ERROR
+                }
+                Timber.e(e)
+                exit()
                 null
             }
             when (result) {
@@ -147,7 +162,7 @@ class TransferClient @Inject internal constructor(
                             status.value = TransferStatus.FINISHED
                             sendCommand(outputStream, TransferCommand(TransferCommandAction.FINISH.value))
                             delay(100)
-                            exit()
+                            exit(true)
                             Timber.e("It takes a total of ${System.currentTimeMillis() - startTime} milliseconds to synchronize ${this.total} data")
                         }
 
@@ -190,35 +205,42 @@ class TransferClient @Inject internal constructor(
     private fun processJson(byteArray: ByteArray) {
         val byteArrayInputStream = ByteArrayInputStream(byteArray)
         val transferData = serializationJson.decodeFromStream<TransferData<JsonElement>>(byteArrayInputStream)
+        currentType = transferData.type
         when (transferData.type) {
             TransferDataType.CONVERSATION.value -> {
                 val conversation = serializationJson.decodeFromJsonElement<Conversation>(transferData.data)
                 conversationDao.insertIgnore(conversation)
+                currentId = conversation.conversationId
             }
 
             TransferDataType.PARTICIPANT.value -> {
                 val participant = serializationJson.decodeFromJsonElement<Participant>(transferData.data)
                 participantDao.insertIgnore(participant)
+                currentId = "${participant.conversationId}+${participant.userId}"
             }
 
             TransferDataType.USER.value -> {
                 val user = serializationJson.decodeFromJsonElement<User>(transferData.data)
                 userDao.insertIgnore(user)
+                currentId = user.userId
             }
 
             TransferDataType.APP.value -> {
                 val app = serializationJson.decodeFromJsonElement<App>(transferData.data)
                 appDao.insertIgnore(app)
+                currentId = app.appId
             }
 
             TransferDataType.ASSET.value -> {
                 val asset = serializationJson.decodeFromJsonElement<Asset>(transferData.data)
                 assetDao.insertIgnore(asset)
+                currentId = asset.assetId
             }
 
             TransferDataType.SNAPSHOT.value -> {
                 val snapshot = serializationJson.decodeFromJsonElement<Snapshot>(transferData.data)
                 snapshotDao.insertIgnore(snapshot)
+                currentId = snapshot.snapshotId
             }
 
             TransferDataType.STICKER.value -> {
@@ -231,16 +253,19 @@ class TransferClient @Inject internal constructor(
                     }
                 }
                 stickerDao.insertIgnore(sticker)
+                currentId = sticker.stickerId
             }
 
             TransferDataType.PIN_MESSAGE.value -> {
                 val pinMessage = serializationJson.decodeFromJsonElement<PinMessage>(transferData.data)
                 pinMessageDao.insertIgnore(pinMessage)
+                currentId = pinMessage.messageId
             }
 
             TransferDataType.TRANSCRIPT_MESSAGE.value -> {
                 val transcriptMessage = serializationJson.decodeFromJsonElement<TranscriptMessage>(transferData.data)
                 transcriptMessageDao.insertIgnore(transcriptMessage)
+                currentId = "${transcriptMessage.transcriptId}+${transcriptMessage.messageId}"
             }
 
             TransferDataType.MESSAGE.value -> {
@@ -271,6 +296,7 @@ class TransferClient @Inject internal constructor(
                         MessageMention(it.messageId, it.conversationId, mentionData, it.hasRead)
                     }
                 messageMentionDao.insertIgnoreReturn(messageMention)
+                currentId = messageMention.messageId
             }
 
             TransferDataType.EXPIRED_MESSAGE.value -> {
@@ -282,6 +308,7 @@ class TransferClient @Inject internal constructor(
                 val expiredMessage =
                     serializationJson.decodeFromJsonElement<ExpiredMessage>(transferData.data)
                 expiredMessageDao.insertIgnore(expiredMessage)
+                currentId = expiredMessage.messageId
             }
 
             else -> {
@@ -305,8 +332,13 @@ class TransferClient @Inject internal constructor(
         mutableList.clear()
     }
 
-    fun exit() = MixinApplication.get().applicationScope.launch(SINGLE_SOCKET_THREAD) {
+    fun exit(finished: Boolean = false) = MixinApplication.get().applicationScope.launch(SINGLE_SOCKET_THREAD) {
         try {
+            if (!finished) {
+                Timber.e("DeviceId: $deviceId type: $currentType id: $currentId current-time:${System.currentTimeMillis()}")
+            } else {
+                Timber.e("Finish exit ${System.currentTimeMillis() - startTime}/1000 s")
+            }
             if (socket != null) {
                 quit = true
                 socket?.close()
@@ -530,6 +562,7 @@ class TransferClient @Inject internal constructor(
                 statement.executeInsert()
             }
             writableDatabase.setTransactionSuccessful()
+            currentId = messages.last().messageId
         } catch (e: SQLException) {
             Timber.e(e)
         } finally {
