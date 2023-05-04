@@ -13,37 +13,15 @@ import java.io.IOException
 class FileLogTree : Timber.Tree() {
 
     override fun log(priority: Int, tag: String?, message: String, t: Throwable?) {
-        if (priority == Log.ERROR) {
+        if (priority == Log.ERROR || priority == Log.ASSERT) {
             try {
                 val directory = MixinApplication.appContext.cacheDir
 
-                if (!directory.exists()) {
-                    directory.mkdirs()
+                val file = if (priority == Log.ERROR) {
+                    File("${directory.absolutePath}${File.separator}$LOG_LOCAL_FILE_NAME")
+                } else {
+                    File("${directory.absolutePath}${File.separator}$LOG_FILE_NAME")
                 }
-
-                val file = File("${directory.absolutePath}${File.separator}$LOG_LOCAL_FILE_NAME")
-                file.createNewFile()
-                if (file.exists()) {
-                    if (file.length() >= MAX_SIZE) {
-                        file.delete()
-                        file.createNewFile()
-                    }
-                    val fos = FileOutputStream(file, true)
-                    fos.write("${nowInUtc()} $message\n".toByteArray(Charsets.UTF_8))
-                    fos.close()
-                }
-            } catch (e: IOException) {
-                Log.println(Log.ERROR, "FileLogTree", "Error while logging into file: $e")
-            }
-        } else if (priority == Log.ASSERT) {
-            try {
-                val directory = MixinApplication.appContext.cacheDir
-
-                if (!directory.exists()) {
-                    directory.mkdirs()
-                }
-
-                val file = File("${directory.absolutePath}${File.separator}$LOG_FILE_NAME")
                 file.createNewFile()
                 if (file.exists()) {
                     if (file.length() >= MAX_SIZE) {
