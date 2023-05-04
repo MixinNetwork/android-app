@@ -50,11 +50,13 @@ import one.mixin.android.vo.User
 import timber.log.Timber
 import java.io.InputStream
 import java.io.OutputStream
+import java.math.RoundingMode
 import java.net.BindException
 import java.net.InetSocketAddress
 import java.net.ServerSocket
 import java.net.Socket
 import java.net.SocketException
+import java.text.DecimalFormat
 import java.util.concurrent.Executors
 import javax.inject.Inject
 import kotlin.random.Random
@@ -156,7 +158,7 @@ class TransferServer @Inject internal constructor(
         }
     }
 
-    private lateinit var progressFormat: String
+    private lateinit var progressFormat: DecimalFormat
     private suspend fun run(inputStream: InputStream, outputStream: OutputStream) =
         withContext(Dispatchers.IO) {
             do {
@@ -181,7 +183,7 @@ class TransferServer @Inject internal constructor(
                         } else if (result.action == TransferCommandAction.PROGRESS.value) {
                             // Get progress from client
                             if (result.progress != null) {
-                                RxBus.publish(DeviceTransferProgressEvent(String.format(progressFormat, result.progress)))
+                                RxBus.publish(DeviceTransferProgressEvent(progressFormat.format(result)))
                             }
                         } else {
                             Timber.e("Unsupported command")
@@ -243,10 +245,11 @@ class TransferServer @Inject internal constructor(
             pinMessageDao.countPinMessages() + snapshotDao.countSnapshots() + stickerDao.countStickers() +
             transcriptMessageDao.countTranscriptMessages() + userDao.countUsers() + appDao.countApps() + messageMentionDao.countMessageMention()
         progressFormat = if (total > 100000){
-            "%.2f%%"
+            DecimalFormat("0.00")
         }else{
-            "%.1f%%"
+            DecimalFormat("0.0")
         }
+        progressFormat.roundingMode = RoundingMode.DOWN
         return total
     }
 

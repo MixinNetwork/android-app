@@ -1106,7 +1106,7 @@
     <string name="Transfer_to_PC">迁移到电脑</string>
     <string name="Enable_Wifi_or_hotspot">将两台设备接入同一 Wi-Fi 或相同热点</string>
     <string name="login_and_scan">请使用另一台设备登录此 Mixin 账号后扫描二维码</string>
-    <string name="sending_desc">数据传输(%1$s)</string>
+    <string name="sending_desc">数据传输(%1$s %%)</string>
     <string name="Complete">完成</string>
     <string name="cannot_exit_in_backup">备份中无法退出</string>
     <string name="Chat">聊天记录</string>
@@ -1139,6 +1139,6 @@
     <string name="Version_not_supported">版本不兼容，请升级新版本</string>
     <string name="restore_local_exists">已经有 %1$s 条本地聊天记录，最后一条消息的时间是 %2$s，确定用备份的聊天数据覆盖本地数据吗？</string>
     <string name="transfer_process_title">正在导入</string>
-    <string name="transfer_process_desc">正在导入 (%1$s)</string>
+    <string name="transfer_process_desc">正在导入 (%1$s %%)</string>
     <string name="transfer_process_tip">为了保证顺利迁移，请不要关闭 Mixin</string>
 </resources>

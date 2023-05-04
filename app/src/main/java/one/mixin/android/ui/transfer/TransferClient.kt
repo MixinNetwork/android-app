@@ -80,8 +80,10 @@ import java.io.File
 import java.io.InputStream
 import java.io.OutputStream
 import java.lang.Float.min
+import java.math.RoundingMode
 import java.net.Socket
 import java.net.SocketException
+import java.text.DecimalFormat
 import java.util.concurrent.Executors
 import javax.inject.Inject
 
@@ -186,10 +188,11 @@ class TransferClient @Inject internal constructor(
                             startTime = System.currentTimeMillis()
                             this.total = result.total ?: 0L
                             progressFormat = if (total > 100000) {
-                                "%.2f%%"
+                                DecimalFormat("0.00")
                             } else {
-                                "%.1f%%"
+                                DecimalFormat("0.0")
                             }
+                            progressFormat.roundingMode = RoundingMode.DOWN
                             this.deviceId = result.deviceId
                             protocol.setCachePath(getAttachmentPath())
                         }
@@ -224,7 +227,7 @@ class TransferClient @Inject internal constructor(
 
     private var lastTime = 0L
     private var lastProgress = 0f
-    private lateinit var progressFormat: String
+    private lateinit var progressFormat: DecimalFormat
     private fun progress(outputStream: OutputStream) {
         if (quit || total <= 0 || status.value == TransferStatus.ERROR) return
         val progress = min((receiveCount++) / total.toFloat() * 100, 100f)
@@ -232,7 +235,7 @@ class TransferClient @Inject internal constructor(
             sendCommand(outputStream, TransferCommand(TransferCommandAction.PROGRESS.value, progress = progress))
             lastProgress = progress
             lastTime = System.currentTimeMillis()
-            RxBus.publish(DeviceTransferProgressEvent(String.format(progressFormat, progress)))
+            RxBus.publish(DeviceTransferProgressEvent(progressFormat.format(progress)))
             Timber.e("Device transfer $progress")
         }
     }
@@ -431,7 +434,7 @@ class TransferClient @Inject internal constructor(
         if (System.currentTimeMillis() - lastTime > 300) {
             val processProgress = min(processCount * 100f / total, 100f)
             lastTime = System.currentTimeMillis()
-            RxBus.publish(DeviceTransferProgressEvent(String.format(progressFormat, processProgress)))
+            RxBus.publish(DeviceTransferProgressEvent(progressFormat.format(processProgress)))
             Timber.e("Process $processProgress")
         }
     }
