@@ -39,6 +39,8 @@ import one.mixin.android.util.okhttp.ProgressResponseBody
 import one.mixin.android.vo.AttachmentExtra
 import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.Message
+import one.mixin.android.vo.isEncrypted
+import one.mixin.android.vo.isSignal
 import one.mixin.android.widget.gallery.MimeType
 import org.whispersystems.libsignal.logging.Log
 import java.io.File
@@ -94,7 +96,7 @@ class AttachmentDownloadJob(
             return
         }
 
-        if ((message.mediaKey != null && message.mediaDigest.isNullOrEmpty()) || (message.mediaKey.isNullOrEmpty() && message.mediaDigest != null)) {
+        if ((message.isSignal() || message.isEncrypted()) && (message.mediaKey == null || message.mediaKey.isEmpty() || message.mediaDigest == null || message.mediaDigest.isEmpty())) {
             messageDao.updateMediaStatus(MediaStatus.CANCELED.name, message.messageId)
             InvalidateFlow.emit(message.conversationId)
             applicationScope.launch(Dispatchers.Main) {

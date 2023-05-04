@@ -1,7 +1,5 @@
 package one.mixin.android.extension
 
-import kotlin.contracts.contract
-
 fun isNullOrEmpty(byteArray: ByteArray?): Boolean {
     return byteArray == null || byteArray.isEmpty()
 }
@@ -28,12 +26,4 @@ inline fun <T> List<T>.forEachWithIndex(f: (Int, T) -> Unit) {
         f(i, get(i))
         i++
     }
-}
-
-fun ByteArray?.isNullOrEmpty(): Boolean {
-    contract {
-        returns(false) implies (this@isNullOrEmpty != null)
-    }
-
-    return this == null || this.isEmpty()
 }
