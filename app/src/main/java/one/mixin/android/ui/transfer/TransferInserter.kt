@@ -231,7 +231,7 @@ class TransferInserter {
 
     fun insertIgnore(conversation: Conversation) {
         val stmt =
-            writableDatabase.compileStatement("INSERT OR IGNORE INTO `conversations` (`conversation_id`,`owner_id`,`category`,`name`,`icon_url`,`announcement`,`code_url`,`pay_type`,`created_at`,`pin_time`,`last_message_id`,`last_read_message_id`,`unseen_message_count`,`status`,`draft`,`mute_until`,`last_message_created_at`,`expire_in`) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)")
+            writableDatabase.compileStatement("INSERT OR IGNORE INTO `conversations` (`conversation_id`, `owner_id`, `category`, `name`, `icon_url`, `announcement`, `code_url`, `pay_type`, `created_at`, `pin_time`, `last_message_id`, `last_read_message_id`, `unseen_message_count`, `status`, `draft`, `mute_until`, `last_message_created_at`, `expire_in`) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")
         try {
             stmt.bindString(1, conversation.conversationId)
 
@@ -323,7 +323,7 @@ class TransferInserter {
 
     fun insertIgnore(participant: Participant) {
         val stmt =
-            writableDatabase.compileStatement("INSERT OR IGNORE INTO `participants` (`conversation_id`,`user_id`,`role`,`created_at`) VALUES (?,?,?,?)")
+            writableDatabase.compileStatement("INSERT OR IGNORE INTO `participants` (`conversation_id`, `user_id`, `role`, `created_at`) VALUES (?, ?, ?, ?)")
         try {
             stmt.bindString(1, participant.conversationId)
             stmt.bindString(1, participant.conversationId)
@@ -341,7 +341,7 @@ class TransferInserter {
 
     fun insertIgnore(user: User) {
         val stmt =
-            writableDatabase.compileStatement("INSERT OR IGNORE INTO `users` (`user_id`,`identity_number`,`relationship`,`biography`,`full_name`,`avatar_url`,`phone`,`is_verified`,`created_at`,`mute_until`,`has_pin`,`app_id`,`is_scam`) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)")
+            writableDatabase.compileStatement("INSERT OR IGNORE INTO `users` (`user_id`, `identity_number`, `relationship`, `biography`, `full_name`, `avatar_url`, `phone`, `is_verified`, `created_at`, `mute_until`, `has_pin`, `app_id`, `is_scam`) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")
         try {
             stmt.bindString(1, user.userId)
             stmt.bindString(2, user.identityNumber)
@@ -409,7 +409,7 @@ class TransferInserter {
 
     fun insertIgnore(app: App) {
         val stmt =
-            writableDatabase.compileStatement("INSERT OR IGNORE INTO `apps` (`app_id`,`app_number`,`home_uri`,`redirect_uri`,`name`,`icon_url`,`category`,`description`,`app_secret`,`capabilities`,`creator_id`,`resource_patterns`,`updated_at`) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)")
+            writableDatabase.compileStatement("INSERT OR IGNORE INTO `apps` (`app_id`, `app_number`, `home_uri`, `redirect_uri`, `name`, `icon_url`, `category`, `description`, `app_secret`, `capabilities`, `creator_id`, `resource_patterns`, `updated_at`) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")
         try {
             stmt.bindString(1, app.appId)
             stmt.bindString(2, app.appNumber)
@@ -455,7 +455,7 @@ class TransferInserter {
 
     fun insertIgnore(asset: Asset) {
         val stmt =
-            writableDatabase.compileStatement("INSERT OR IGNORE INTO `assets` (`asset_id`,`symbol`,`name`,`icon_url`,`balance`,`destination`,`tag`,`price_btc`,`price_usd`,`chain_id`,`change_usd`,`change_btc`,`confirmations`,`asset_key`,`reserve`,`deposit_entries`) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)")
+            writableDatabase.compileStatement("INSERT OR IGNORE INTO `assets` (`asset_id`, `symbol`, `name`, `icon_url`, `balance`, `destination`, `tag`, `price_btc`, `price_usd`, `chain_id`, `change_usd`, `change_btc`, `confirmations`, `asset_key`, `reserve`, `deposit_entries`) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")
         try {
             stmt.bindString(1, asset.assetId)
             stmt.bindString(2, asset.symbol)
@@ -501,7 +501,7 @@ class TransferInserter {
 
     fun insertIgnore(snapshot: Snapshot) {
         val stmt =
-            writableDatabase.compileStatement("INSERT OR IGNORE INTO `snapshots` (`snapshot_id`,`type`,`asset_id`,`amount`,`created_at`,`opponent_id`,`trace_id`,`transaction_hash`,`sender`,`receiver`,`memo`,`confirmations`,`snapshot_hash`,`opening_balance`,`closing_balance`) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)")
+            writableDatabase.compileStatement("INSERT OR IGNORE INTO `snapshots` (`snapshot_id`, `type`, `asset_id`, `amount`, `created_at`, `opponent_id`, `trace_id`, `transaction_hash`, `sender`, `receiver`, `memo`, `confirmations`, `snapshot_hash`, `opening_balance`, `closing_balance`) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")
         try {
             stmt.bindString(1, snapshot.snapshotId)
             stmt.bindString(2, snapshot.type)
@@ -569,7 +569,7 @@ class TransferInserter {
 
     fun insertIgnore(pinMessage: PinMessage) {
         val stmt =
-            writableDatabase.compileStatement("INSERT OR IGNORE INTO `pin_messages` (`message_id`,`conversation_id`,`created_at`) VALUES (?,?,?)")
+            writableDatabase.compileStatement("INSERT OR IGNORE INTO `pin_messages` (`message_id`, `conversation_id`, `created_at`) VALUES (?, ?, ?)")
         try {
             stmt.bindString(1, pinMessage.messageId)
             stmt.bindString(2, pinMessage.conversationId)
@@ -585,7 +585,7 @@ class TransferInserter {
 
     fun insertIgnore(sticker: Sticker) {
         val stmt =
-            writableDatabase.compileStatement("INSERT OR IGNORE INTO `stickers` (`sticker_id`,`album_id`,`name`,`asset_url`,`asset_type`,`asset_width`,`asset_height`,`created_at`,`last_use_at`) VALUES (?,?,?,?,?,?,?,?,?)")
+            writableDatabase.compileStatement("INSERT OR IGNORE INTO `stickers` (`sticker_id`, `album_id`, `name`, `asset_url`, `asset_type`, `asset_width`, `asset_height`, `created_at`, `last_use_at`) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)")
         try {
             stmt.bindString(1, sticker.stickerId)
             if (sticker.albumId == null) {
@@ -616,7 +616,7 @@ class TransferInserter {
 
     fun insertIgnore(transcriptMessage: TranscriptMessage) {
         val stmt =
-            writableDatabase.compileStatement("INSERT OR IGNORE INTO `transcript_messages` (`transcript_id`,`message_id`,`user_id`,`user_full_name`,`category`,`created_at`,`content`,`media_url`,`media_name`,`media_size`,`media_width`,`media_height`,`media_mime_type`,`media_duration`,`media_status`,`media_waveform`,`thumb_image`,`thumb_url`,`media_key`,`media_digest`,`media_created_at`,`sticker_id`,`shared_user_id`,`mentions`,`quote_id`,`quote_content`,`caption`) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)")
+            writableDatabase.compileStatement("INSERT OR IGNORE INTO `transcript_messages` (`transcript_id`, `message_id`, `user_id`, `user_full_name`, `category`, `created_at`, `content`, `media_url`, `media_name`, `media_size`, `media_width`, `media_height`, `media_mime_type`, `media_duration`, `media_status`, `media_waveform`, `thumb_image`, `thumb_url`, `media_key`, `media_digest`, `media_created_at`, `sticker_id`, `shared_user_id`, `mentions`, `quote_id`, `quote_content`, `caption`) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")
         try {
             stmt.bindString(1, transcriptMessage.transcriptId)
             stmt.bindString(2, transcriptMessage.messageId)
@@ -751,7 +751,7 @@ class TransferInserter {
 
     fun insertIgnore(messageMention: MessageMention) {
         val stmt =
-            writableDatabase.compileStatement("INSERT OR IGNORE INTO `message_mentions` (`message_id`,`conversation_id`,`mentions`,`has_read`) VALUES (?,?,?,?)")
+            writableDatabase.compileStatement("INSERT OR IGNORE INTO `message_mentions` (`message_id`, `conversation_id`, `mentions`, `has_read`) VALUES (?, ?, ?, ?)")
         try {
             stmt.bindString(1, messageMention.messageId)
             stmt.bindString(2, messageMention.conversationId)
@@ -769,7 +769,7 @@ class TransferInserter {
 
     fun insertIgnore(expiredMessage: ExpiredMessage) {
         val stmt =
-            writableDatabase.compileStatement("INSERT OR IGNORE INTO `expired_messages` (`message_id`,`expire_in`,`expire_at`) VALUES (?,?,?)")
+            writableDatabase.compileStatement("INSERT OR IGNORE INTO `expired_messages` (`message_id`, `expire_in`, `expire_at`) VALUES (?, ?, ?)")
         try {
             stmt.bindString(1, expiredMessage.messageId)
             stmt.bindLong(2, expiredMessage.expireIn)
