@@ -87,6 +87,13 @@ class TransferServer @Inject internal constructor(
 
     private var count = 0L
     private var total = 0L
+    private var currentType: String? = null
+        set(value) {
+            if (field != value) {
+                field = value
+                Timber.e("Current type: $field")
+            }
+        }
 
     suspend fun startServer(
         createdSuccessCallback: (TransferCommand) -> Unit,
@@ -251,6 +258,7 @@ class TransferServer @Inject internal constructor(
     }
 
     private fun syncConversation(outputStream: OutputStream) {
+        currentType = TransferDataType.CONVERSATION.value
         var rowId = -1L
         while (!quit) {
             val list = conversationDao.getConversationsByLimitAndRowId(LIMIT, rowId)
@@ -271,6 +279,7 @@ class TransferServer @Inject internal constructor(
     }
 
     private fun syncParticipant(outputStream: OutputStream) {
+        currentType = TransferDataType.PARTICIPANT.value
         var rowId = -1L
         while (!quit) {
             val list = participantDao.getParticipantsByLimitAndRowId(LIMIT, rowId)
@@ -291,6 +300,7 @@ class TransferServer @Inject internal constructor(
     }
 
     private fun syncUser(outputStream: OutputStream) {
+        currentType = TransferDataType.USER.value
         var rowId = -1L
         while (!quit) {
             val list = userDao.getUsersByLimitAndRowId(LIMIT, rowId)
@@ -311,6 +321,7 @@ class TransferServer @Inject internal constructor(
     }
 
     private fun syncApp(outputStream: OutputStream) {
+        currentType = TransferDataType.APP.value
         var rowId = -1L
         while (!quit) {
             val list = appDao.getAppsByLimitAndRowId(LIMIT, rowId)
@@ -331,6 +342,7 @@ class TransferServer @Inject internal constructor(
     }
 
     private fun syncAsset(outputStream: OutputStream) {
+        currentType = TransferDataType.ASSET.value
         var rowId = -1L
         while (!quit) {
             val list = assetDao.getAssetByLimitAndRowId(LIMIT, rowId)
@@ -351,6 +363,7 @@ class TransferServer @Inject internal constructor(
     }
 
     private fun syncSticker(outputStream: OutputStream) {
+        currentType = TransferDataType.STICKER.value
         var rowId = -1L
         while (!quit) {
             val list = stickerDao.getStickersByLimitAndRowId(LIMIT, rowId)
@@ -382,6 +395,7 @@ class TransferServer @Inject internal constructor(
     }
 
     private fun syncSnapshot(outputStream: OutputStream) {
+        currentType = TransferDataType.SNAPSHOT.value
         var rowId = -1L
         while (!quit) {
             val list = snapshotDao.getSnapshotByLimitAndRowId(LIMIT, rowId)
@@ -402,6 +416,7 @@ class TransferServer @Inject internal constructor(
     }
 
     private fun syncTranscriptMessage(outputStream: OutputStream) {
+        currentType = TransferDataType.TRANSCRIPT_MESSAGE.value
         var rowId = -1L
         while (!quit) {
             val list = transcriptMessageDao.getTranscriptMessageByLimitAndRowId(LIMIT, rowId)
@@ -422,6 +437,7 @@ class TransferServer @Inject internal constructor(
     }
 
     private fun syncPinMessage(outputStream: OutputStream) {
+        currentType = TransferDataType.PIN_MESSAGE.value
         var rowId = -1L
         while (!quit) {
             val list = pinMessageDao.getPinMessageByLimitAndRowId(LIMIT, rowId)
@@ -442,6 +458,7 @@ class TransferServer @Inject internal constructor(
     }
 
     private fun syncMessage(outputStream: OutputStream) {
+        currentType = TransferDataType.MESSAGE.value
         var rowId = -1L
         while (!quit) {
             val list = messageDao.getMessageByLimitAndRowId(LIMIT, rowId)
@@ -462,6 +479,7 @@ class TransferServer @Inject internal constructor(
     }
 
     private fun syncMessageMention(outputStream: OutputStream) {
+        currentType = TransferDataType.MESSAGE_MENTION.value
         var rowId = -1L
         while (!quit) {
             val list = messageMentionDao.getMessageMentionByLimitAndRowId(LIMIT, rowId)
@@ -482,6 +500,7 @@ class TransferServer @Inject internal constructor(
     }
 
     private fun syncExpiredMessage(outputStream: OutputStream) {
+        currentType = TransferDataType.EXPIRED_MESSAGE.value
         var offset = 0
         while (!quit) {
             val list = expiredMessageDao.getExpiredMessageByLimitAndOffset(LIMIT, offset)
