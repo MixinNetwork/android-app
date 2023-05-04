@@ -13,5 +13,4 @@ enum class TransferDataType(val value: String) {
     MESSAGE("message"),
     MESSAGE_MENTION("message_mention"),
     EXPIRED_MESSAGE("expired_message"),
-    UNKNOWN("unknown"),
 }
