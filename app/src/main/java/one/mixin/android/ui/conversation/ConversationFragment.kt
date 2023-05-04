@@ -110,6 +110,7 @@ import one.mixin.android.extension.getOtherPath
 import one.mixin.android.extension.getUriForFile
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.inTransaction
+import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.isBluetoothHeadsetOrWiredHeadset
 import one.mixin.android.extension.isImageSupport
 import one.mixin.android.extension.isStickerSupport
@@ -1668,50 +1669,36 @@ class ConversationFragment() :
             {
                 requireContext().getClipboardManager()
                     .setPrimaryClip(ClipData.newPlainText(null, conversationId))
-
-                if (recipient?.identityNumber !in arrayOf("26832", "31911", "47762")) {
-                    return@debugLongClick
-                }
-
-                val logFile = FileLogTree.getLogFile()
-                if (logFile == null || logFile.length() <= 0) {
-                    toast(R.string.File_does_not_exist)
-                    return@debugLongClick
-                }
-                val attachment = Attachment(logFile.toUri(), logFile.name, "text/plain", logFile.length())
-                alertDialogBuilder()
-                    .setMessage(
-                        if (isGroup) {
-                            requireContext().getString(
-                                R.string.send_file_group,
-                                attachment.filename,
-                                groupName,
-                            )
-                        } else {
-                            requireContext().getString(
-                                R.string.send_file_group,
-                                attachment.filename,
-                                recipient?.fullName,
-                            )
-                        },
-                    )
-                    .setNegativeButton(R.string.Cancel) { dialog, _ -> dialog.dismiss() }
-                    .setPositiveButton(R.string.Send) { dialog, _ ->
-                        sendAttachmentMessage(attachment)
-                        dialog.dismiss()
-                    }.show()
+                sendDebugFile()
             },
             {
                 if (recipient?.identityNumber !in arrayOf("26832", "31911", "47762")) {
                     return@debugLongClick
                 }
+                sendDebugFile()
+            },
+        )
+    }
 
-                val logFile = FileLogTree.getLogFile()
-                if (logFile == null || logFile.length() <= 0) {
-                    toast(R.string.File_does_not_exist)
-                    return@debugLongClick
-                }
-                val attachment = Attachment(logFile.toUri(), logFile.name, "text/plain", logFile.length())
+    private fun sendDebugFile() {
+        if (recipient?.identityNumber !in arrayOf("26832", "31911", "47762")) {
+            return
+        }
+        val dialog = indeterminateProgressDialog(message = R.string.Please_wait_a_bit).apply {
+            setCancelable(false)
+        }
+        dialog.show()
+        lifecycleScope.launch(Dispatchers.IO) {
+            val logFile = FileLogTree.getLogFile()
+            withContext(Dispatchers.Main) {
+                dialog.dismiss()
+            }
+            if (logFile.length() <= 0) {
+                toast(R.string.File_does_not_exist)
+            }
+            val attachment =
+                Attachment(logFile.toUri(), logFile.name, "application/zip", logFile.length())
+            withContext(Dispatchers.Main) {
                 alertDialogBuilder()
                     .setMessage(
                         if (isGroup) {
@@ -1733,8 +1720,8 @@ class ConversationFragment() :
                         sendAttachmentMessage(attachment)
                         dialog.dismiss()
                     }.show()
-            },
-        )
+            }
+        }
     }
 
     lateinit var itemTouchHelper: ItemTouchHelper
