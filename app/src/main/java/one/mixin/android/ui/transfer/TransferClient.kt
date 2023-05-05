@@ -1,5 +1,6 @@
 package one.mixin.android.ui.transfer
 
+import android.os.Handler
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
@@ -27,6 +28,7 @@ import one.mixin.android.db.StickerDao
 import one.mixin.android.db.TranscriptMessageDao
 import one.mixin.android.db.UserDao
 import one.mixin.android.event.DeviceTransferProgressEvent
+import one.mixin.android.event.TimeOutEvent
 import one.mixin.android.extension.createAtToLong
 import one.mixin.android.fts.FtsDatabase
 import one.mixin.android.fts.insertOrReplaceMessageFts4
@@ -152,6 +154,7 @@ class TransferClient @Inject internal constructor(
                             }
                             startTime = System.currentTimeMillis()
                             this.total = result.total ?: 0L
+                            this.deviceId = result.deviceId
                         }
 
                         TransferCommandAction.PUSH.value, TransferCommandAction.PULL.value -> {
@@ -171,15 +174,24 @@ class TransferClient @Inject internal constructor(
                     }
                 }
                 is ByteArray -> {
+                    handler.removeCallbacks(runnable)
                     syncChannel.send(result)
                     progress(outputStream)
+                    handler.postDelayed(runnable, 30000) // No data was received to perform the runnable
                 }
                 else -> {
+                    handler.removeCallbacks(runnable)
                     // read file
                     progress(outputStream)
                 }
             }
         } while (!quit)
+    }
+
+    private val handler = Handler()
+    private val runnable = Runnable {
+        Timber.e("Socket status: isConnected:${socket?.isConnected} isInputShutdown:${socket?.isInputShutdown} available:${socket?.getInputStream()?.available()}")
+        RxBus.publish(TimeOutEvent())
     }
 
     private var lastTime = 0L
@@ -201,11 +213,11 @@ class TransferClient @Inject internal constructor(
     }
 
     private val mutableList: MutableList<Message> = mutableListOf()
-
     private fun processJson(byteArray: ByteArray) {
         val byteArrayInputStream = ByteArrayInputStream(byteArray)
         val transferData = serializationJson.decodeFromStream<TransferData<JsonElement>>(byteArrayInputStream)
         currentType = transferData.type
+        Timber.e("process json size: ${byteArray.size}")
         when (transferData.type) {
             TransferDataType.CONVERSATION.value -> {
                 val conversation = serializationJson.decodeFromJsonElement<Conversation>(transferData.data)
@@ -324,7 +336,7 @@ class TransferClient @Inject internal constructor(
     fun exit(finished: Boolean = false) = MixinApplication.get().applicationScope.launch(SINGLE_SOCKET_THREAD) {
         try {
             if (!finished) {
-                Timber.e("DeviceId: $deviceId type: $currentType id: ${transferInserter.currentId} current-time:${System.currentTimeMillis()}")
+                Timber.e("DeviceId: $deviceId type: $currentType id: ${transferInserter.currentId} start-time:$startTime current-time:${System.currentTimeMillis()}")
             } else {
                 Timber.e("Finish exit ${System.currentTimeMillis() - startTime}/1000 s")
             }

@@ -29,6 +29,7 @@ import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.ParticipantDao
 import one.mixin.android.event.DeviceTransferProgressEvent
 import one.mixin.android.event.SpeedEvent
+import one.mixin.android.event.TimeOutEvent
 import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.base64Encode
 import one.mixin.android.extension.base64RawURLDecode
@@ -419,6 +420,7 @@ class TransferActivity : BaseActivity() {
     private var transferDisposable: Disposable? = null
     private var transferSpeedDisposable: Disposable? = null
     private var transferCommandDisposable: Disposable? = null
+    private var transferTimeoutDisposable: Disposable? = null
 
     override fun onStart() {
         super.onStart()
@@ -452,6 +454,26 @@ class TransferActivity : BaseActivity() {
                             status.value = TransferStatus.INITIALIZING
                         }
                     }
+                }
+        }
+
+        if (transferTimeoutDisposable == null) {
+            transferTimeoutDisposable = RxBus.listen(TimeOutEvent::class.java)
+                .observeOn(AndroidSchedulers.mainThread())
+                .autoDispose(destroyScope)
+                .subscribe {
+                   lifecycleScope.launch(Dispatchers.Main) {
+                       dialog = alertDialogBuilder()
+                           .setTitle(R.string.Transfer_error)
+                           .setMessage(R.string.Transfer_timeout)
+                           .setCancelable(false)
+                           .setPositiveButton(R.string.Confirm) { dialog, _ ->
+                               dialog.dismiss()
+                               finish()
+                               status.value = TransferStatus.INITIALIZING
+                           }.create()
+                       dialog?.show()
+                   }
                 }
         }
     }
