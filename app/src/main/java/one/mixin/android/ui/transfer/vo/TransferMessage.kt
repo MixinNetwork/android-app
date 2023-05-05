@@ -5,6 +5,7 @@ import androidx.room.PrimaryKey
 import com.google.gson.annotations.SerializedName
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import one.mixin.android.Constants
 import one.mixin.android.util.serialization.ByteArrayBase64Serializer
 import one.mixin.android.vo.Message
 
@@ -184,7 +185,11 @@ fun TransferMessage.toMessage(): Message {
         mediaWidth = this.mediaWidth,
         mediaHeight = this.mediaHeight,
         mediaHash = this.mediaHash,
-        thumbImage = this.thumbImage,
+        thumbImage = if ((this.thumbImage?.length ?: 0) > Constants.MAX_THUMB_IMAGE_LENGTH) {
+            Constants.DEFAULT_THUMB_IMAGE
+        } else {
+            this.thumbImage
+        },
         thumbUrl = this.thumbUrl,
         mediaKey = this.mediaKey,
         mediaDigest = this.mediaDigest,

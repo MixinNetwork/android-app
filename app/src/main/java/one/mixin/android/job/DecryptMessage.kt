@@ -426,6 +426,11 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                     }
                 }
                 messageDao.findMessageItemById(data.conversationId, msg.messageId)?.let { quoteMsg ->
+                    quoteMsg.thumbImage = if ((quoteMsg.thumbImage?.length ?: 0) > Constants.MAX_THUMB_IMAGE_LENGTH) {
+                        Constants.DEFAULT_THUMB_IMAGE
+                    } else {
+                        quoteMsg.thumbImage
+                    }
                     messageDao.updateQuoteContentByQuoteId(data.conversationId, msg.messageId, gson.toJson(quoteMsg))
                 }
 
@@ -598,7 +603,13 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
         pendingMessagesDao.findMessageById(quoteMessageId)?.let {
             messageDao.insert(it)
         }
-        return messageDao.findMessageItemById(conversationId, quoteMessageId)
+        val quoteMsg = messageDao.findMessageItemById(conversationId, quoteMessageId) ?: return null
+        quoteMsg.thumbImage = if ((quoteMsg.thumbImage?.length ?: 0) > Constants.MAX_THUMB_IMAGE_LENGTH) {
+            Constants.DEFAULT_THUMB_IMAGE
+        } else {
+            quoteMsg.thumbImage
+        }
+        return quoteMsg
     }
 
     private fun processDecryptSuccess(data: BlazeMessageData, plainText: String) {

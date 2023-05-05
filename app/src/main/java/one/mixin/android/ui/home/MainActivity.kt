@@ -102,7 +102,6 @@ import one.mixin.android.job.RefreshOneTimePreKeysJob
 import one.mixin.android.job.RefreshStickerAlbumJob
 import one.mixin.android.job.RefreshUserJob
 import one.mixin.android.job.TranscriptAttachmentMigrationJob
-import one.mixin.android.job.TranscriptAttachmentUpdateJob
 import one.mixin.android.repository.AccountRepository
 import one.mixin.android.repository.UserRepository
 import one.mixin.android.session.Session

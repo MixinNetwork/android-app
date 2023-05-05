@@ -267,6 +267,9 @@ object Constants {
     const val DB_DELETE_LIMIT = 500
     const val DB_EXPIRED_LIMIT = 20
 
+    const val MAX_THUMB_IMAGE_LENGTH = 5120
+    const val DEFAULT_THUMB_IMAGE = "K0OWvn_3fQ~qj[fQfQfQfQ"
+
     val DNS: Dns = SequentialDns(CustomDns("8.8.8.8"), CustomDns("1.1.1.1"), CustomDns("2001:4860:4860::8888"), Dns.SYSTEM)
 
     const val TEAM_MIXIN_USER_ID = "773e5e77-4107-45c2-b648-8fc722ed77f5"
