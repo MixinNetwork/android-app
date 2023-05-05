@@ -11,7 +11,7 @@ plugins {
 
 def versionMajor = 0
 def versionMinor = 38
-def versionPatch = 15
+def versionPatch = 16
 def versionBuild = 0
 
 android {
