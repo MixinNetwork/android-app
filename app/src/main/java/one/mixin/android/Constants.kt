@@ -60,6 +60,8 @@ object Constants {
         const val PREF_DEVICE_SDK = "pref_device_sdk"
         const val PREF_TEXT_SIZE = "pref_text_size"
         const val PREF_ATTACHMENT = "pref_attachment"
+        const val PREF_CLEANUP_THUMB = "pref_cleanup_thumb"
+
         object Migration {
             const val PREF_MIGRATION_ATTACHMENT = "pref_migration_attachment"
             const val PREF_MIGRATION_ATTACHMENT_OFFSET = "pref_migration_attachment_offset"

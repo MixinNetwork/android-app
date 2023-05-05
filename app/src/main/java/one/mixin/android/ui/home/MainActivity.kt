@@ -89,6 +89,7 @@ import one.mixin.android.extension.toast
 import one.mixin.android.job.AttachmentMigrationJob
 import one.mixin.android.job.BackupJob
 import one.mixin.android.job.CleanCacheJob
+import one.mixin.android.job.CleanupThumbJob
 import one.mixin.android.job.MigratedFts4Job
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshAccountJob
@@ -355,8 +356,8 @@ class MainActivity : BlazeBaseActivity() {
             jobManager.addJobInBackground(TranscriptAttachmentMigrationJob())
         }
 
-        PropertyHelper.checkTranscriptAttachmentUpdated {
-            jobManager.addJobInBackground(TranscriptAttachmentUpdateJob())
+        PropertyHelper.checkTranscriptAttachmentMigrated {
+            jobManager.addJobInBackground(TranscriptAttachmentMigrationJob())
         }
 
         PropertyHelper.checkBackupMigrated {
@@ -364,6 +365,10 @@ class MainActivity : BlazeBaseActivity() {
         }
         PropertyHelper.checkFtsMigrated {
             jobManager.addJobInBackground(MigratedFts4Job())
+        }
+
+        PropertyHelper.checkCleanupThumb {
+            jobManager.addJobInBackground(CleanupThumbJob())
         }
 
         jobManager.addJobInBackground(RefreshContactJob())

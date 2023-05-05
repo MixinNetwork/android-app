@@ -229,6 +229,9 @@ interface MessageDao : BaseDao<Message> {
     )
     fun findMessageItemById(conversationId: String, messageId: String): QuoteMessageItem?
 
+    @Query("UPDATE messages SET thumb_image = 'K0OWvn_3fQ~qj[fQfQfQfQ' WHERE LENGTH(thumb_image) > 5120")
+    fun cleanupBigThumb()
+
     @Query("SELECT count(id) FROM messages WHERE conversation_id = :conversationId AND quote_message_id = :messageId AND quote_content IS NULL")
     fun countMessageByQuoteId(conversationId: String, messageId: String): Int
 
