@@ -46,7 +46,7 @@ import kotlin.text.Charsets.UTF_8
  * ----------------------------------------------------------------------------------
  */
 @ExperimentalSerializationApi
-class TransferProtocol(private val serializationJson: Json) {
+class TransferProtocol(private val serializationJson: Json, private val server: Boolean = false) {
 
     companion object {
         const val TYPE_COMMAND = 0x01.toByte()
@@ -96,6 +96,7 @@ class TransferProtocol(private val serializationJson: Json) {
         outputStream.write(intToByteArray(data.size))
         outputStream.write(data)
         outputStream.write(checksum(data))
+        if (server) calculateReadSpeed(data.size + 13)
     }
 
     fun write(outputStream: OutputStream, file: File, messageId: String) {
@@ -114,10 +115,12 @@ class TransferProtocol(private val serializationJson: Json) {
                 outputStream.write(buffer, 0, bytesRead)
                 crc.update((buffer.copyOfRange(0, bytesRead)))
                 bytesRead = fileInputStream.read(buffer, 0, 1024)
+                if (server) calculateReadSpeed(bytesRead)
             }
             fileInputStream.close()
             outputStream.write(longToBytes(crc.value))
             Timber.e("Send file: ${file.name} ${file.length()} ${crc.value}")
+            if (server) calculateReadSpeed(29)
         }
     }
 
@@ -147,7 +150,7 @@ class TransferProtocol(private val serializationJson: Json) {
 
             readLength += count
         }
-        calculateReadSpeed(expectedLength)
+        if (!server) calculateReadSpeed(expectedLength)
         return data
     }
 
@@ -179,7 +182,7 @@ class TransferProtocol(private val serializationJson: Json) {
             while (bytesRead != -1 && bytesLeft > 0) {
                 bytesRead = inputStream.read(buffer, 0, bytesLeft.coerceAtMost(1024))
                 bytesLeft -= bytesRead
-                calculateReadSpeed(bytesRead)
+                if (!server) calculateReadSpeed(bytesRead)
             }
             // skip error file
             safeRead(inputStream, 8)
@@ -212,6 +215,7 @@ class TransferProtocol(private val serializationJson: Json) {
                         fos.write(buffer, 0, bytesRead)
                         crc.update(buffer.copyOfRange(0, bytesRead))
                         bytesLeft -= bytesRead
+                        if (!server) calculateReadSpeed(bytesRead)
                     }
                 }
             }
@@ -228,6 +232,7 @@ class TransferProtocol(private val serializationJson: Json) {
                     outFile.copy(transcriptFile)
                 }
             }
+            if (!server) calculateReadSpeed(29)
             return outFile
         }
     }

@@ -4,6 +4,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerializationStrategy
 import kotlinx.serialization.json.Json
 import one.mixin.android.MixinApplication
@@ -59,6 +60,7 @@ import java.util.concurrent.Executors
 import javax.inject.Inject
 import kotlin.random.Random
 
+@ExperimentalSerializationApi
 class TransferServer @Inject internal constructor(
     val assetDao: AssetDao,
     val conversationDao: ConversationDao,
@@ -75,7 +77,7 @@ class TransferServer @Inject internal constructor(
     val status: TransferStatusLiveData,
     private val serializationJson: Json,
 ) {
-    val protocol = TransferProtocol(serializationJson)
+    val protocol = TransferProtocol(serializationJson, true)
 
     private var serverSocket: ServerSocket? = null
     private var socket: Socket? = null
@@ -239,6 +241,7 @@ class TransferServer @Inject internal constructor(
     private fun sendStart(outputStream: OutputStream) {
         writeCommand(outputStream, TransferCommand(TransferCommandAction.START.value, total = totalCount()))
         RxBus.publish(DeviceTransferProgressEvent(0.0f))
+        Timber.e("Started total: $total")
     }
 
     private fun totalCount(): Long {
