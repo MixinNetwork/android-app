@@ -328,12 +328,12 @@ class TransferClient @Inject internal constructor(
             } else {
                 Timber.e("Finish exit ${System.currentTimeMillis() - startTime}/1000 s")
             }
+            finalWork()
             if (socket != null) {
                 quit = true
                 socket?.close()
                 socket = null
             }
-            finalWork()
         } catch (e: Exception) {
             Timber.e("Exit client ${e.message}")
         }
