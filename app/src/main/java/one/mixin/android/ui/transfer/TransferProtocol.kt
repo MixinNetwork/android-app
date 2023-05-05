@@ -52,6 +52,8 @@ class TransferProtocol(private val serializationJson: Json, private val server: 
         const val TYPE_COMMAND = 0x01.toByte()
         const val TYPE_JSON = 0x02.toByte()
         const val TYPE_FILE = 0x03.toByte()
+
+        private val MAX_DATA_SIZE = 512000 // 500K
     }
 
     private val messageDao by lazy {
@@ -92,6 +94,10 @@ class TransferProtocol(private val serializationJson: Json, private val server: 
 
     fun write(outputStream: OutputStream, type: Byte, content: String) {
         val data = content.toByteArray(UTF_8)
+        if (data.size >= MAX_DATA_SIZE) {
+            Timber.e(String(data))
+            return
+        }
         outputStream.write(byteArrayOf(type))
         outputStream.write(intToByteArray(data.size))
         outputStream.write(data)
@@ -129,12 +135,16 @@ class TransferProtocol(private val serializationJson: Json, private val server: 
     }
 
     @Throws(ChecksumException::class)
-    private fun readByteArray(inputStream: InputStream, expectedLength: Int): ByteArray {
+    private fun readByteArray(inputStream: InputStream, expectedLength: Int): ByteArray? {
         val data = safeRead(inputStream, expectedLength)
         val checksum = safeRead(inputStream, 8)
         if (bytesToLong(checksum) != bytesToLong(checksum(data))) {
             Timber.e("ChecksumException $expectedLength ${bytesToLong(checksum)} ${bytesToLong(checksum(data))}")
             throw ChecksumException()
+        }
+        if (expectedLength >= MAX_DATA_SIZE) {
+            Timber.e(String(data))
+            return null
         }
         return data
     }
