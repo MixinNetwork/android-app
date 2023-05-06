@@ -137,7 +137,7 @@ open class SendMessageJob(
                 }
             }
 
-            messageDao.findMessageItemById(message.conversationId, msg.messageId)?.let { quoteMsg ->
+            messageDao.findQuoteMessageItemById(message.conversationId, msg.messageId)?.let { quoteMsg ->
                 quoteMsg.thumbImage = if ((quoteMsg.thumbImage?.length ?: 0) > MAX_THUMB_IMAGE_LENGTH) {
                     DEFAULT_THUMB_IMAGE
                 } else {

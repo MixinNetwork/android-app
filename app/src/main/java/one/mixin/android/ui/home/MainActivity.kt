@@ -89,6 +89,7 @@ import one.mixin.android.extension.toast
 import one.mixin.android.job.AttachmentMigrationJob
 import one.mixin.android.job.BackupJob
 import one.mixin.android.job.CleanCacheJob
+import one.mixin.android.job.CleanupQuoteContentJob
 import one.mixin.android.job.CleanupThumbJob
 import one.mixin.android.job.MigratedFts4Job
 import one.mixin.android.job.MixinJobManager
@@ -369,6 +370,10 @@ class MainActivity : BlazeBaseActivity() {
 
         PropertyHelper.checkCleanupThumb {
             jobManager.addJobInBackground(CleanupThumbJob())
+        }
+
+        PropertyHelper.checkCleanupQuoteContent {
+            jobManager.addJobInBackground(CleanupQuoteContentJob(-1L))
         }
 
         jobManager.addJobInBackground(RefreshContactJob())

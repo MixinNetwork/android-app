@@ -425,7 +425,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                         }
                     }
                 }
-                messageDao.findMessageItemById(data.conversationId, msg.messageId)?.let { quoteMsg ->
+                messageDao.findQuoteMessageItemById(data.conversationId, msg.messageId)?.let { quoteMsg ->
                     quoteMsg.thumbImage = if ((quoteMsg.thumbImage?.length ?: 0) > Constants.MAX_THUMB_IMAGE_LENGTH) {
                         Constants.DEFAULT_THUMB_IMAGE
                     } else {
@@ -603,7 +603,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
         pendingMessagesDao.findMessageById(quoteMessageId)?.let {
             messageDao.insert(it)
         }
-        val quoteMsg = messageDao.findMessageItemById(conversationId, quoteMessageId) ?: return null
+        val quoteMsg = messageDao.findQuoteMessageItemById(conversationId, quoteMessageId) ?: return null
         quoteMsg.thumbImage = if ((quoteMsg.thumbImage?.length ?: 0) > Constants.MAX_THUMB_IMAGE_LENGTH) {
             Constants.DEFAULT_THUMB_IMAGE
         } else {
