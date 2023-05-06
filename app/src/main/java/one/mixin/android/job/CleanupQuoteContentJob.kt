@@ -27,7 +27,7 @@ class CleanupQuoteContentJob(private val rowId: Long) : BaseJob(Params(PRIORITY_
                     } else {
                         quoteMsg.thumbImage
                     }
-                messageDao.updateQuoteContentByQuoteMessageId(quoteMinimal.conversationId, quoteMinimal.quoteMessageId, gson.toJson(quoteMsg))
+                messageDao.updateQuoteContentByQuoteId(quoteMinimal.conversationId, quoteMinimal.quoteMessageId, gson.toJson(quoteMsg))
             }
         }
         Timber.e("process ${list.size}")

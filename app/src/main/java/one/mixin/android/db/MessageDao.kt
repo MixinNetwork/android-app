@@ -230,7 +230,7 @@ interface MessageDao : BaseDao<Message> {
     )
     fun findQuoteMessageItemById(conversationId: String, messageId: String): QuoteMessageItem?
 
-    @Query("SELECT rowid, conversation_id, quote_message_id FROM messages WHERE rowid > :rowId AND quote_message_id IS NOT NULL AND length(quote_content) > 10240 GROUP BY quote_message_id LIMIT :limit")
+    @Query("SELECT rowid, conversation_id, quote_message_id FROM messages WHERE rowid > :rowId AND quote_message_id IS NOT NULL AND quote_message_id != '' AND length(quote_content) > 10240 GROUP BY quote_message_id LIMIT :limit")
     fun findBigQuoteMessage(rowId: Long, limit: Int): List<QuoteMinimal>
 
     @Query("SELECT count(id) FROM messages WHERE conversation_id = :conversationId AND quote_message_id = :quoteMessageId AND quote_content IS NULL")
@@ -487,9 +487,6 @@ interface MessageDao : BaseDao<Message> {
 
     @Query("UPDATE messages SET quote_content = NULL WHERE conversation_id = :conversationId AND id = :quoteMessageId")
     fun updateQuoteContentNullByQuoteMessageId(conversationId: String, quoteMessageId: String)
-
-    @Query("UPDATE messages SET quote_content = :content WHERE conversation_id = :conversationId AND id = :quoteMessageId")
-    fun updateQuoteContentByQuoteMessageId(conversationId: String, quoteMessageId: String, content: String)
 
     @Query("UPDATE messages SET status = :status WHERE id = :id")
     fun updateMessageStatus(status: String, id: String)
