@@ -230,7 +230,7 @@ interface MessageDao : BaseDao<Message> {
     )
     fun findQuoteMessageItemById(conversationId: String, messageId: String): QuoteMessageItem?
 
-    @Query("SELECT rowid, conversation_id, quote_message_id FROM messages WHERE rowid > :rowId AND length(quote_content) > 10240 GROUP BY quote_message_id LIMIT :limit")
+    @Query("SELECT rowid, conversation_id, quote_message_id FROM messages WHERE rowid > :rowId AND quote_message_id IS NOT NULL AND length(quote_content) > 10240 GROUP BY quote_message_id LIMIT :limit")
     fun findBigQuoteMessage(rowId: Long, limit: Int): List<QuoteMinimal>
 
     @Query("SELECT count(id) FROM messages WHERE conversation_id = :conversationId AND quote_message_id = :quoteMessageId AND quote_content IS NULL")
