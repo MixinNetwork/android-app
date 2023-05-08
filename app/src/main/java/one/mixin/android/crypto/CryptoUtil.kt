@@ -13,6 +13,7 @@ import okio.ByteString.Companion.toByteString
 import one.mixin.android.extension.base64Encode
 import one.mixin.eddsa.Ed25519Sign
 import one.mixin.eddsa.Field25519
+import one.mixin.eddsa.Random
 import org.komputing.khash.keccak.KeccakParameter
 import org.komputing.khash.keccak.extensions.digestKeccak
 import org.whispersystems.curve25519.Curve25519
@@ -37,6 +38,9 @@ import kotlin.experimental.or
 private val secureRandom: SecureRandom = SecureRandom()
 private const val GCM_IV_LENGTH = 12
 
+// https://github.com/google/tink/issues/403
+fun shouldCheckOnCurve() = Build.VERSION.SDK_INT > Build.VERSION_CODES.N_MR1
+
 fun generateRSAKeyPair(keyLength: Int = 2048): KeyPair {
     val kpg = KeyPairGenerator.getInstance("RSA")
     kpg.initialize(keyLength)
@@ -44,7 +48,7 @@ fun generateRSAKeyPair(keyLength: Int = 2048): KeyPair {
 }
 
 fun generateEd25519KeyPair(): one.mixin.eddsa.KeyPair {
-    return one.mixin.eddsa.KeyPair.newKeyPair()
+    return one.mixin.eddsa.KeyPair.newKeyPairFromSeed(Random.randBytes(Field25519.FIELD_LEN), checkOnCurve = shouldCheckOnCurve())
 }
 
 fun calculateAgreement(publicKey: ByteArray, privateKey: ByteArray): ByteArray {
@@ -52,7 +56,7 @@ fun calculateAgreement(publicKey: ByteArray, privateKey: ByteArray): ByteArray {
 }
 
 fun initFromSeedAndSign(seed: ByteArray, signTarget: ByteArray): ByteArray {
-    val keyPair = one.mixin.eddsa.KeyPair.newKeyPairFromSeed(seed.toByteString())
+    val keyPair = one.mixin.eddsa.KeyPair.newKeyPairFromSeed(seed.toByteString(), checkOnCurve = shouldCheckOnCurve())
     return signWithSk(EdDSAPrivateKey(keyPair.privateKey), signTarget)
 }
 
