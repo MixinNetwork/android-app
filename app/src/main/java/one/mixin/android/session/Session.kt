@@ -16,6 +16,7 @@ import one.mixin.android.MixinApplication
 import one.mixin.android.crypto.calculateAgreement
 import one.mixin.android.crypto.getRSAPrivateKeyFromString
 import one.mixin.android.crypto.privateKeyToCurve25519
+import one.mixin.android.crypto.shouldCheckOnCurve
 import one.mixin.android.extension.bodyToString
 import one.mixin.android.extension.clear
 import one.mixin.android.extension.currentTimeSeconds
@@ -104,13 +105,13 @@ object Session {
     }
 
     private fun initEdKeypair(seed: String): KeyPair {
-        val seedByteString = seed.decodeBase64().toByteString()
-        val edKeyPair = KeyPair.newKeyPairFromSeed(seedByteString)
-
-        val isOnCurve = Ed25519.scalarMultWithBase(Ed25519.getHashedScalar(seedByteString).toByteArray()).isOnCurve()
-        if (!isOnCurve) {
+        val privateKey = seed.decodeBase64().toByteString()
+        val xyz = Ed25519.scalarMultWithBase(Ed25519.getHashedScalar(privateKey).toByteArray(), checkOnCurve = shouldCheckOnCurve())
+        if (!xyz.isOnCurve()) {
             reportException(IllegalStateException("Init Ed25519 from seed not on curve"))
         }
+        val publicKey = xyz.toBytes().toByteString()
+        val edKeyPair = KeyPair(publicKey, privateKey)
 
         this.edKeyPair = edKeyPair
         return edKeyPair

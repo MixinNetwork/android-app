@@ -18,6 +18,7 @@ import one.mixin.android.crypto.aesDecrypt
 import one.mixin.android.crypto.aesEncrypt
 import one.mixin.android.crypto.generateAesKey
 import one.mixin.android.crypto.sha3Sum256
+import one.mixin.android.crypto.shouldCheckOnCurve
 import one.mixin.android.event.TipEvent
 import one.mixin.android.extension.base64RawURLDecode
 import one.mixin.android.extension.base64RawURLEncode
@@ -215,7 +216,7 @@ class Tip @Inject internal constructor(
 
         observers.forEach { it.onSyncingComplete() }
 
-        val keyPair = KeyPair.newKeyPairFromSeed(aggSig.copyOf().toByteString())
+        val keyPair = KeyPair.newKeyPairFromSeed(aggSig.copyOf().toByteString(), checkOnCurve = shouldCheckOnCurve())
         val pub = keyPair.publicKey
 
         val localPub = Session.getTipPub()
@@ -292,7 +293,7 @@ class Tip @Inject internal constructor(
 
     @Throws(IOException::class, TipNetworkException::class)
     private suspend fun replaceEncryptedPin(aggSig: ByteArray) {
-        val keyPair = KeyPair.newKeyPairFromSeed(aggSig.copyOf().toByteString())
+        val keyPair = KeyPair.newKeyPairFromSeed(aggSig.copyOf().toByteString(), checkOnCurve = shouldCheckOnCurve())
         val pub = keyPair.publicKey
         val pinToken = requireNotNull(Session.getPinToken()?.decodeBase64() ?: throw TipNullException("No pin token"))
         val counter = requireNotNull(Session.getTipCounter()).toLong()
@@ -324,7 +325,7 @@ class Tip @Inject internal constructor(
             Session.getPinToken()?.decodeBase64() ?: throw TipNullException("No pin token")
 
         val stSeed = (sessionPriv + pin.toByteArray()).sha3Sum256()
-        val keyPair = KeyPair.newKeyPairFromSeed(stSeed.toByteString())
+        val keyPair = KeyPair.newKeyPairFromSeed(stSeed.toByteString(), checkOnCurve = shouldCheckOnCurve())
         val stPriv = keyPair.privateKey
         val stPub = keyPair.publicKey
         val aesKey = generateAesKey(32)
@@ -378,7 +379,7 @@ class Tip @Inject internal constructor(
             Session.getEd25519Seed()?.decodeBase64() ?: throw TipNullException("No ed25519 key")
 
         val stSeed = (sessionPriv + pin.toByteArray()).sha3Sum256()
-        val keyPair = KeyPair.newKeyPairFromSeed(stSeed.toByteString())
+        val keyPair = KeyPair.newKeyPairFromSeed(stSeed.toByteString(), checkOnCurve = shouldCheckOnCurve())
         val stPriv = keyPair.privateKey
         val timestamp = nowInUtcNano()
 
