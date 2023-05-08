@@ -24,6 +24,7 @@ import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.MessageMedia
 import one.mixin.android.vo.MessageMinimal
 import one.mixin.android.vo.QuoteMessageItem
+import one.mixin.android.vo.QuoteMinimal
 import one.mixin.android.vo.SearchMessageDetailItem
 
 @Dao
@@ -227,10 +228,13 @@ interface MessageDao : BaseDao<Message> {
         WHERE m.conversation_id = :conversationId AND m.id = :messageId AND m.status != 'FAILED'
         """,
     )
-    fun findMessageItemById(conversationId: String, messageId: String): QuoteMessageItem?
+    fun findQuoteMessageItemById(conversationId: String, messageId: String): QuoteMessageItem?
 
-    @Query("SELECT count(id) FROM messages WHERE conversation_id = :conversationId AND quote_message_id = :messageId AND quote_content IS NULL")
-    fun countMessageByQuoteId(conversationId: String, messageId: String): Int
+    @Query("SELECT rowid, conversation_id, quote_message_id FROM messages WHERE rowid > :rowId AND quote_message_id IS NOT NULL AND quote_message_id != '' AND length(quote_content) > 10240 GROUP BY quote_message_id LIMIT :limit")
+    fun findBigQuoteMessage(rowId: Long, limit: Int): List<QuoteMinimal>
+
+    @Query("SELECT count(id) FROM messages WHERE conversation_id = :conversationId AND quote_message_id = :quoteMessageId AND quote_content IS NULL")
+    fun countMessageByQuoteId(conversationId: String, quoteMessageId: String): Int
 
     @RawQuery
     suspend fun fuzzySearchMessage(query: SupportSQLiteQuery): List<FtsSearchResult>
@@ -478,8 +482,11 @@ interface MessageDao : BaseDao<Message> {
     fun findMessageMediaById(messageId: String): MessageMedia?
 
     // Update SQL
-    @Query("UPDATE messages SET quote_content = :content WHERE conversation_id = :conversationId AND quote_message_id = :messageId")
-    fun updateQuoteContentByQuoteId(conversationId: String, messageId: String, content: String)
+    @Query("UPDATE messages SET quote_content = :content WHERE conversation_id = :conversationId AND quote_message_id = :quoteMessageId")
+    fun updateQuoteContentByQuoteId(conversationId: String, quoteMessageId: String, content: String)
+
+    @Query("UPDATE messages SET quote_content = NULL WHERE conversation_id = :conversationId AND id = :quoteMessageId")
+    fun updateQuoteContentNullByQuoteMessageId(conversationId: String, quoteMessageId: String)
 
     @Query("UPDATE messages SET status = :status WHERE id = :id")
     fun updateMessageStatus(status: String, id: String)
@@ -565,6 +572,9 @@ interface MessageDao : BaseDao<Message> {
 
     @Query("UPDATE messages SET category = :category WHERE id = :messageId")
     fun updateCategoryById(messageId: String, category: String)
+
+    @Query("UPDATE messages SET thumb_image = 'K0OWvn_3fQ~qj[fQfQfQfQ' WHERE LENGTH(thumb_image) > 5120")
+    fun cleanupBigThumb()
 
     // Delete SQL
     @Query("DELETE FROM messages WHERE id = :id")

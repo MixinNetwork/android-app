@@ -22,6 +22,8 @@ import kotlinx.coroutines.withContext
 import kotlinx.parcelize.IgnoredOnParcel
 import kotlinx.parcelize.Parcelize
 import one.mixin.android.BuildConfig
+import one.mixin.android.Constants
+import one.mixin.android.Constants.DEFAULT_THUMB_IMAGE
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.extension.copyFromInputStream
@@ -364,7 +366,9 @@ class FixedMessageDataSource<T>(private val items: List<T>, private val totalCou
 }
 
 fun MessageItem.toTranscript(transcriptId: String): TranscriptMessage {
-    val thumb = if (thumbImage != null && !Base83.isValid(thumbImage)) {
+    val thumb = if ((thumbImage?.length ?: 0) > Constants.MAX_THUMB_IMAGE_LENGTH) {
+        DEFAULT_THUMB_IMAGE
+    } else if (thumbImage != null && !Base83.isValid(thumbImage)) {
         try {
             val bitmap = thumbImage.decodeBase64().encodeBitmap()
             BlurHashEncoder.encode(requireNotNull(bitmap))

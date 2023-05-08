@@ -89,6 +89,8 @@ import one.mixin.android.extension.toast
 import one.mixin.android.job.AttachmentMigrationJob
 import one.mixin.android.job.BackupJob
 import one.mixin.android.job.CleanCacheJob
+import one.mixin.android.job.CleanupQuoteContentJob
+import one.mixin.android.job.CleanupThumbJob
 import one.mixin.android.job.MigratedFts4Job
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshAccountJob
@@ -102,7 +104,6 @@ import one.mixin.android.job.RefreshOneTimePreKeysJob
 import one.mixin.android.job.RefreshStickerAlbumJob
 import one.mixin.android.job.RefreshUserJob
 import one.mixin.android.job.TranscriptAttachmentMigrationJob
-import one.mixin.android.job.TranscriptAttachmentUpdateJob
 import one.mixin.android.repository.AccountRepository
 import one.mixin.android.repository.UserRepository
 import one.mixin.android.session.Session
@@ -356,8 +357,8 @@ class MainActivity : BlazeBaseActivity() {
             jobManager.addJobInBackground(TranscriptAttachmentMigrationJob())
         }
 
-        PropertyHelper.checkTranscriptAttachmentUpdated {
-            jobManager.addJobInBackground(TranscriptAttachmentUpdateJob())
+        PropertyHelper.checkTranscriptAttachmentMigrated {
+            jobManager.addJobInBackground(TranscriptAttachmentMigrationJob())
         }
 
         PropertyHelper.checkBackupMigrated {
@@ -365,6 +366,14 @@ class MainActivity : BlazeBaseActivity() {
         }
         PropertyHelper.checkFtsMigrated {
             jobManager.addJobInBackground(MigratedFts4Job())
+        }
+
+        PropertyHelper.checkCleanupThumb {
+            jobManager.addJobInBackground(CleanupThumbJob())
+        }
+
+        PropertyHelper.checkCleanupQuoteContent {
+            jobManager.addJobInBackground(CleanupQuoteContentJob(-1L))
         }
 
         jobManager.addJobInBackground(RefreshContactJob())

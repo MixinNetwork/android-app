@@ -60,6 +60,9 @@ object Constants {
         const val PREF_DEVICE_SDK = "pref_device_sdk"
         const val PREF_TEXT_SIZE = "pref_text_size"
         const val PREF_ATTACHMENT = "pref_attachment"
+        const val PREF_CLEANUP_THUMB = "pref_cleanup_thumb"
+        const val PREF_CLEANUP_QUOTE_CONTENT = "pref_cleanup_quote_content"
+
         object Migration {
             const val PREF_MIGRATION_ATTACHMENT = "pref_migration_attachment"
             const val PREF_MIGRATION_ATTACHMENT_OFFSET = "pref_migration_attachment_offset"
@@ -266,6 +269,9 @@ object Constants {
     const val DB_DELETE_MEDIA_LIMIT = 100
     const val DB_DELETE_LIMIT = 500
     const val DB_EXPIRED_LIMIT = 20
+
+    const val MAX_THUMB_IMAGE_LENGTH = 5120
+    const val DEFAULT_THUMB_IMAGE = "K0OWvn_3fQ~qj[fQfQfQfQ"
 
     val DNS: Dns = SequentialDns(CustomDns("8.8.8.8"), CustomDns("1.1.1.1"), CustomDns("2001:4860:4860::8888"), Dns.SYSTEM)
 

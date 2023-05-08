@@ -1,6 +1,8 @@
 package one.mixin.android.job
 
 import com.birbit.android.jobqueue.Params
+import one.mixin.android.Constants.DEFAULT_THUMB_IMAGE
+import one.mixin.android.Constants.MAX_THUMB_IMAGE_LENGTH
 import one.mixin.android.RxBus
 import one.mixin.android.db.insertMessage
 import one.mixin.android.event.RecallEvent
@@ -135,7 +137,12 @@ open class SendMessageJob(
                 }
             }
 
-            messageDao.findMessageItemById(message.conversationId, msg.messageId)?.let { quoteMsg ->
+            messageDao.findQuoteMessageItemById(message.conversationId, msg.messageId)?.let { quoteMsg ->
+                quoteMsg.thumbImage = if ((quoteMsg.thumbImage?.length ?: 0) > MAX_THUMB_IMAGE_LENGTH) {
+                    DEFAULT_THUMB_IMAGE
+                } else {
+                    quoteMsg.thumbImage
+                }
                 messageDao.updateQuoteContentByQuoteId(
                     message.conversationId,
                     msg.messageId,
