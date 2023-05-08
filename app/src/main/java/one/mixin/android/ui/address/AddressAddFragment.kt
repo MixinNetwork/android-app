@@ -24,6 +24,7 @@ import one.mixin.android.Constants.ChainId.RIPPLE_CHAIN_ID
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentAddressAddBinding
 import one.mixin.android.extension.colorFromAttribute
+import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.highLight
 import one.mixin.android.extension.loadImage
@@ -90,7 +91,7 @@ class AddressAddFragment() : BaseFragment(R.layout.fragment_address_add) {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        asset = requireArguments().getParcelable(ARGS_ASSET)!!
+        asset = requireArguments().getParcelableCompat(ARGS_ASSET, AssetItem::class.java)!!
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {

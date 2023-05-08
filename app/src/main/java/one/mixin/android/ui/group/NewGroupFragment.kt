@@ -20,6 +20,7 @@ import one.mixin.android.databinding.FragmentNewGroupBinding
 import one.mixin.android.databinding.ItemContactNormalBinding
 import one.mixin.android.extension.createImageTemp
 import one.mixin.android.extension.getOtherPath
+import one.mixin.android.extension.getParcelableArrayListCompat
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.showKeyboard
@@ -72,7 +73,7 @@ class NewGroupFragment : BaseFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        val users: List<User> = requireArguments().getParcelableArrayList(ARGS_USERS)!!
+        val users: List<User> = requireArguments().getParcelableArrayListCompat(ARGS_USERS, User::class.java)!!
         binding.titleView.leftIb.setOnClickListener {
             binding.nameDescEt.hideKeyboard()
             activity?.onBackPressedDispatcher?.onBackPressed()

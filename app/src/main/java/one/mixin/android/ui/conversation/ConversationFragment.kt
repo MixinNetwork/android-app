@@ -107,6 +107,9 @@ import one.mixin.android.extension.getAttachment
 import one.mixin.android.extension.getClipboardManager
 import one.mixin.android.extension.getMimeType
 import one.mixin.android.extension.getOtherPath
+import one.mixin.android.extension.getParcelableArrayListCompat
+import one.mixin.android.extension.getParcelableCompat
+import one.mixin.android.extension.getParcelableExtraCompat
 import one.mixin.android.extension.getUriForFile
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.inTransaction
@@ -336,7 +339,7 @@ class ConversationFragment() :
     private val chatViewModel by viewModels<ConversationViewModel>()
 
     private val transcriptData: TranscriptData? by lazy {
-        requireArguments().getParcelable(TRANSCRIPT_DATA)
+        requireArguments().getParcelableCompat(TRANSCRIPT_DATA, TranscriptData::class.java)
     }
 
     private var unreadTipCount: Int = 0
@@ -1059,7 +1062,7 @@ class ConversationFragment() :
         if (!anyCallServiceRunning(requireContext())) {
             initAudioSwitch()
         }
-        recipient = requireArguments().getParcelable(RECIPIENT)
+        recipient = requireArguments().getParcelableCompat(RECIPIENT, User::class.java)
         messageId = requireArguments().getString(MESSAGE_ID, null)
         keyword = requireArguments().getString(KEY_WORD, null)
     }
@@ -3121,7 +3124,7 @@ class ConversationFragment() :
 
     private var snackBar: Snackbar? = null
     private fun callbackForward(data: Intent?) {
-        val selectItems = data?.getParcelableArrayListExtra<SelectItem>(ARGS_RESULT)
+        val selectItems = data?.getParcelableArrayListCompat(ARGS_RESULT, SelectItem::class.java)
         if (selectItems.isNullOrEmpty()) return
 
         val selectItem = selectItems[0]
@@ -3147,7 +3150,7 @@ class ConversationFragment() :
     }
 
     private fun callbackEditor(data: Intent?) {
-        val uri = data?.getParcelableExtra<Uri>(ImageEditorActivity.ARGS_EDITOR_RESULT)
+        val uri = data?.getParcelableExtraCompat(ImageEditorActivity.ARGS_EDITOR_RESULT, Uri::class.java)
         if (uri != null) {
             val notCompress = data.getBooleanExtra(ImageEditorActivity.ARGS_NOT_COMPRESS, false)
             sendImageMessage(uri, notCompress)

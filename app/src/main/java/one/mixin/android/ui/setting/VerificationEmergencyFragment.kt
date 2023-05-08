@@ -18,6 +18,7 @@ import one.mixin.android.crypto.generateEd25519KeyPair
 import one.mixin.android.databinding.FragmentVerificationEmergencyBinding
 import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.defaultSharedPreferences
+import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.putInt
 import one.mixin.android.extension.withArgs
 import one.mixin.android.session.Session
@@ -57,7 +58,7 @@ class VerificationEmergencyFragment : PinCodeFragment(R.layout.fragment_verifica
         }
     }
 
-    private val user: User? by lazy { requireArguments().getParcelable(ARGS_USER) }
+    private val user: User? by lazy { requireArguments().getParcelableCompat(ARGS_USER, User::class.java) }
     private val pin: String? by lazy { requireArguments().getString(ARGS_PIN) }
     private val verificationId by lazy { requireArguments().getString(ARGS_VERIFICATION_ID)!! }
     private val from by lazy { requireArguments().getInt(ARGS_FROM) }

@@ -302,7 +302,7 @@ class ViewfinderView @JvmOverloads constructor(
     }
 
     private val displayMetrics: DisplayMetrics
-        private get() = resources.displayMetrics
+        get() = resources.displayMetrics
 
     fun setLabelText(labelText: String?) {
         this.labelText = labelText
@@ -422,15 +422,17 @@ class ViewfinderView @JvmOverloads constructor(
             textPaint.color = labelTextColor
             textPaint.textSize = labelTextSize
             textPaint.textAlign = Paint.Align.CENTER
-            val staticLayout = StaticLayout(
-                labelText,
+            val source = this.labelText ?: ""
+            val staticLayout = StaticLayout.Builder.obtain(
+                source,
+                0,
+                source.length,
                 textPaint,
                 labelTextWidth,
-                Layout.Alignment.ALIGN_NORMAL,
-                1.2f,
-                0.0f,
-                true,
-            )
+            ).setAlignment(Layout.Alignment.ALIGN_NORMAL)
+                .setLineSpacing(0.0f, 1.2f)
+                .setIncludePad(true)
+                .build()
             if (labelTextLocation == TextLocation.BOTTOM) {
                 canvas.translate(
                     (frame.left + frame.width() / 2).toFloat(),
@@ -534,7 +536,7 @@ class ViewfinderView @JvmOverloads constructor(
             val save = canvas.save()
             canvas.clipPath(radarPath)
             paint.shader = null
-            radarGrid?.run {
+            radarGrid.run {
                 canvas.drawBitmap(this, rFrame.left, scannerStart.toFloat() - height, paint)
             }
             paint.shader = LinearGradient(
@@ -552,7 +554,7 @@ class ViewfinderView @JvmOverloads constructor(
         } else {
             scannerStart = frame.top
         }
-        radarFrame?.run {
+        radarFrame.run {
             canvas.drawBitmap(this, rFrame.left, rFrame.top, paint)
         }
     }

@@ -19,6 +19,7 @@ import kotlinx.coroutines.withContext
 import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentTransferOutBinding
+import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.hashForDate
 import one.mixin.android.extension.inflate
 import one.mixin.android.extension.notNullWithElse
@@ -65,7 +66,7 @@ class TransferOutViewFragment : MixinBottomSheetDialogFragment(), OnSnapshotList
     private val userId: String? by lazy { requireArguments().getString(Constants.ARGS_USER_ID) }
     private val avatarUrl: String? by lazy { requireArguments().getString(ARGS_USER_AVATAR_URL) }
     private val symbol: String? by lazy { requireArguments().getString(ARGS_SYMBOL) }
-    private val address: Address? by lazy { requireArguments().getParcelable(AddressAddFragment.ARGS_ADDRESS) }
+    private val address: Address? by lazy { requireArguments().getParcelableCompat(AddressAddFragment.ARGS_ADDRESS, Address::class.java) }
     private val adapter = SnapshotPagedAdapter()
 
     private val binding by viewBinding(FragmentTransferOutBinding::inflate)

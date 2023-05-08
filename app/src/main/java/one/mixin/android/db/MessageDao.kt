@@ -279,6 +279,7 @@ interface MessageDao : BaseDao<Message> {
     )
     fun findFtsMessages(rowId: Long, limit: Int): List<Message>
 
+    @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
     @Query(
         """
         SELECT m.* FROM messages m 

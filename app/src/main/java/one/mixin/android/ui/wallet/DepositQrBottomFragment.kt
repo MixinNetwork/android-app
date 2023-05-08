@@ -18,6 +18,7 @@ import one.mixin.android.R
 import one.mixin.android.databinding.FragmentDepositQrBottomBinding
 import one.mixin.android.extension.capture
 import one.mixin.android.extension.generateQRCode
+import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.toast
@@ -47,7 +48,7 @@ class DepositQrBottomFragment : MixinBottomSheetDialogFragment() {
 
     private val binding by viewBinding(FragmentDepositQrBottomBinding::inflate)
 
-    private val asset: AssetItem by lazy { requireArguments().getParcelable(ARGS_ASSET)!! }
+    private val asset: AssetItem by lazy { requireArguments().getParcelableCompat(ARGS_ASSET, AssetItem::class.java)!! }
     private val type: Int by lazy { requireArguments().getInt(ARGS_TYPE) }
 
     @SuppressLint("RestrictedApi")

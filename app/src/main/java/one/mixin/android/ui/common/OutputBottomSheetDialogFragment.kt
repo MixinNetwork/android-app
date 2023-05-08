@@ -17,6 +17,7 @@ import one.mixin.android.api.response.PaymentStatus
 import one.mixin.android.databinding.FragmentTransferBottomSheetBinding
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.formatPublicKey
+import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.nowInUtc
 import one.mixin.android.extension.putStringSet
 import one.mixin.android.extension.withArgs
@@ -53,7 +54,7 @@ class OutputBottomSheetDialogFragment : ValuableBiometricBottomSheetDialogFragme
     }
 
     private val t: AssetBiometricItem by lazy {
-        requireArguments().getParcelable(ARGS_BIOMETRIC_ITEM)!!
+        requireArguments().getParcelableCompat(ARGS_BIOMETRIC_ITEM, AssetBiometricItem::class.java)!!
     }
 
     var onDestroyListener: OnDestroyListener? = null

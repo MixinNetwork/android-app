@@ -67,7 +67,7 @@ class ConfirmBottomFragment : BiometricBottomSheetDialogFragment() {
                 toast(R.string.desktop_upgrade)
             } else if (Session.getAccount()?.hasPin == false) {
                 context.alert(context.getString(R.string.desktop_login_no_pin))
-                    .setPositiveButton(android.R.string.yes) { dialog, _ ->
+                    .setPositiveButton(android.R.string.ok) { dialog, _ ->
                         dialog.dismiss()
                     }
                     .show()

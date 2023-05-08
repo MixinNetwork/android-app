@@ -20,6 +20,7 @@ import one.mixin.android.RxBus
 import one.mixin.android.api.response.ConversationResponse
 import one.mixin.android.databinding.FragmentJoinGroupBottomSheetBinding
 import one.mixin.android.event.AvatarEvent
+import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.openAsUrlOrWeb
 import one.mixin.android.extension.screenHeight
 import one.mixin.android.session.Session
@@ -56,7 +57,7 @@ class JoinGroupBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragm
     }
 
     private val c: JoinGroupConversation by lazy {
-        requireArguments().getParcelable(ARGS_JOIN_GROUP_CONVERSATION)!!
+        requireArguments().getParcelableCompat(ARGS_JOIN_GROUP_CONVERSATION, JoinGroupConversation::class.java)!!
     }
     private val code: String by lazy { requireArguments().getString(CODE)!! }
 

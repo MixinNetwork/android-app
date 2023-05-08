@@ -17,6 +17,7 @@ import one.mixin.android.api.response.signature.SignatureAction
 import one.mixin.android.api.response.signature.SignatureState
 import one.mixin.android.databinding.FragmentNftBottomSheetBinding
 import one.mixin.android.extension.dp
+import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.round
 import one.mixin.android.extension.withArgs
@@ -45,7 +46,7 @@ class NftBottomSheetDialogFragment : BiometricBottomSheetDialogFragment() {
 
     private val binding by viewBinding(FragmentNftBottomSheetBinding::inflate)
     private val t: NftBiometricItem by lazy {
-        requireArguments().getParcelable(ARGS_BIOMETRIC_ITEM)!!
+        requireArguments().getParcelableCompat(ARGS_BIOMETRIC_ITEM, NftBiometricItem::class.java)!!
     }
 
     @SuppressLint("RestrictedApi", "SetTextI18n")

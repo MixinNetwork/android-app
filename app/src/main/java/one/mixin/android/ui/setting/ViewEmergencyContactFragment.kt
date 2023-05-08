@@ -7,6 +7,7 @@ import one.mixin.android.Constants
 import one.mixin.android.Constants.ARGS_USER
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentViewEmergencyContactBinding
+import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.highlightStarTag
 import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.withArgs
@@ -24,7 +25,7 @@ class ViewEmergencyContactFragment : BaseFragment(R.layout.fragment_view_emergen
         }
     }
 
-    private val user: User by lazy { requireArguments().getParcelable(ARGS_USER)!! }
+    private val user: User by lazy { requireArguments().getParcelableCompat(ARGS_USER, User::class.java)!! }
 
     private val binding by viewBinding(FragmentViewEmergencyContactBinding::bind)
 

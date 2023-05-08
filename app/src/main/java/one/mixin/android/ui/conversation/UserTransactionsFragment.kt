@@ -60,7 +60,7 @@ class UserTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem
         adapter.listener = this
         binding.transactionsRv.adapter = adapter
         dataObserver = Observer {
-            if (it != null && it.isNotEmpty()) {
+            if (it.isNotEmpty()) {
                 showEmpty(false)
             } else {
                 showEmpty(true)

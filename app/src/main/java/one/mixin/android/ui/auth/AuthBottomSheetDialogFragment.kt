@@ -36,6 +36,7 @@ import one.mixin.android.api.ServerErrorException
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.extension.booleanFromAttribute
 import one.mixin.android.extension.dp
+import one.mixin.android.extension.getParcelableArrayListCompat
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.isWebUrl
 import one.mixin.android.extension.withArgs
@@ -84,7 +85,7 @@ class AuthBottomSheetDialogFragment : BottomSheetDialogFragment() {
     }
 
     private val scopes: List<Scope> by lazy {
-        requireArguments().getParcelableArrayList(ARGS_SCOPES)!!
+        requireArguments().getParcelableArrayListCompat(ARGS_SCOPES, Scope::class.java)!!
     }
 
     private val authorizationId: String by lazy {

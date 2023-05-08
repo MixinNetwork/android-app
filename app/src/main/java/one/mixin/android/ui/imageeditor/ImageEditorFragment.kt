@@ -31,6 +31,7 @@ import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.createImageTemp
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.getImageCachePath
+import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.heavyClickVibrate
 import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.openPermissionSetting
@@ -73,7 +74,7 @@ class ImageEditorFragment : BaseFragment(), TextEntryDialogFragment.Controller {
     private var undoAvailable: Boolean = false
     private var redoAvailable: Boolean = false
 
-    private val imageUri: Uri by lazy { requireArguments().getParcelable(ARGS_IMAGE_URI)!! }
+    private val imageUri: Uri by lazy { requireArguments().getParcelableCompat(ARGS_IMAGE_URI, Uri::class.java)!! }
 
     private val deleteFadeDebouncer = ThrottledDebouncer(500)
     private var wasInTrashHitZone = false

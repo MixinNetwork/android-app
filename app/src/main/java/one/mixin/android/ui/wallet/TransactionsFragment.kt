@@ -27,6 +27,7 @@ import one.mixin.android.databinding.ViewTransactionsFragmentHeaderBinding
 import one.mixin.android.databinding.ViewWalletTransactionsBottomBinding
 import one.mixin.android.extension.buildAmountSymbol
 import one.mixin.android.extension.colorFromAttribute
+import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.mainThreadDelayed
 import one.mixin.android.extension.navigate
@@ -73,7 +74,7 @@ class TransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        asset = requireArguments().getParcelable(ARGS_ASSET)!!
+        asset = requireArguments().getParcelableCompat(ARGS_ASSET, AssetItem::class.java)!!
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -122,7 +123,7 @@ class TransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>>()
         }
 
         dataObserver = Observer { pagedList ->
-            if (pagedList != null && pagedList.isNotEmpty()) {
+            if (pagedList.isNotEmpty()) {
                 updateHeaderBottomLayout(false)
                 val opponentIds = pagedList.filter {
                     it?.opponentId != null

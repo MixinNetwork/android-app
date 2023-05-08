@@ -846,7 +846,7 @@
     <string name="share_message_description">%1$sから%2$sを送信しますか？</string>
     <string name="share_message_description_empty">%1$sを送信しますか？</string>
     <string name="Share_QR_Code">QRコードを共有</string>
-    <string name="share_to">共有する</string>
+    <string name="share_to">共有する %1$s</string>
     <string name="Shared_Media">共有されたメディア</string>
     <string name="Show">表示</string>
     <string name="Show_in_chat">チャット内で表示</string>
