@@ -160,6 +160,7 @@ fun decodeBitmapFromBase64(base64Data: String): Bitmap {
     return BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
 }
 
+@Suppress("DEPRECATION")
 fun Bitmap.blurBitmap(
     @IntRange(from = 0, to = 25) radius: Int,
 ): Bitmap {
@@ -174,7 +175,9 @@ fun Bitmap.blurBitmap(
     return result
 }
 
+@Suppress("DEPRECATION")
 private lateinit var rs: RenderScript
+@Suppress("DEPRECATION")
 fun initRenderScript(context: Context) {
     if (!::rs.isInitialized) {
         rs = RenderScript.create(context.applicationContext)
