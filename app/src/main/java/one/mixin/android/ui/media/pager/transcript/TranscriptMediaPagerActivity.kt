@@ -32,12 +32,15 @@ import androidx.appcompat.view.ContextThemeWrapper
 import androidx.core.net.toFile
 import androidx.core.view.doOnPreDraw
 import androidx.core.view.isVisible
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.media3.common.Player
 import androidx.viewpager2.widget.ViewPager2
 import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.databinding.ActivityMediaPagerBinding
 import one.mixin.android.databinding.ItemPagerVideoLayoutBinding
@@ -216,17 +219,20 @@ class TranscriptMediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismis
     }
 
     @SuppressLint("RestrictedApi")
-    private fun loadData() = lifecycleScope.launchWhenCreated {
-        val initialIndex = conversationRepository.indexTranscriptMediaMessages(transcriptId, messageId)
-        adapter.list = conversationRepository.getTranscriptMediaMessage(transcriptId)
-        adapter.initialPos = initialIndex
-        binding.viewPager.setCurrentItem(initialIndex, false)
+    private fun loadData() = lifecycleScope.launch {
+        repeatOnLifecycle(Lifecycle.State.CREATED) {
+            val initialIndex =
+                conversationRepository.indexTranscriptMediaMessages(transcriptId, messageId)
+            adapter.list = conversationRepository.getTranscriptMediaMessage(transcriptId)
+            adapter.initialPos = initialIndex
+            binding.viewPager.setCurrentItem(initialIndex, false)
 
-        val messageItem = adapter.getItem(initialIndex)
-        if (messageItem.isVideo() || messageItem.isLive()) {
-            checkPip()
-            messageItem.loadVideoOrLive {
-                VideoPlayer.player().start()
+            val messageItem = adapter.getItem(initialIndex)
+            if (messageItem.isVideo() || messageItem.isLive()) {
+                checkPip()
+                messageItem.loadVideoOrLive {
+                    VideoPlayer.player().start()
+                }
             }
         }
     }
