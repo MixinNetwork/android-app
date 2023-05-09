@@ -86,6 +86,17 @@
                 android:textSize="16sp" />
 
             <TextView
+                    android:id="@+id/logs"
+                    android:layout_width="match_parent"
+                    android:layout_height="@dimen/bottom_button_height"
+                    android:gravity="center_vertical"
+                    android:paddingStart="@dimen/activity_horizontal_margin"
+                    android:paddingEnd="@dimen/activity_horizontal_margin"
+                    android:text="@string/Share_Logs"
+                    android:textColor="@color/colorBlue"
+                    android:textSize="16sp" />
+
+            <TextView
                 android:id="@+id/checkUpdates"
                 android:layout_width="match_parent"
                 android:layout_height="@dimen/bottom_button_height"
