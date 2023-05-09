@@ -138,9 +138,9 @@ class TransferClient @Inject internal constructor(
             } catch (e: EOFException) {
                 if (status.value != TransferStatus.FINISHED && status.value != TransferStatus.ERROR) {
                     status.value = TransferStatus.ERROR
+                    exit() // If it is not finished, exit.
                 }
                 Timber.e(e)
-                exit()
                 null
             }
             when (result) {
