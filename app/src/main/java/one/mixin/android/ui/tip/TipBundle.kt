@@ -1,12 +1,13 @@
 package one.mixin.android.ui.tip
 
 import android.content.Intent
-import android.os.Build
 import android.os.Bundle
 import android.os.Parcelable
 import kotlinx.parcelize.Parcelize
 import one.mixin.android.api.response.TipSigner
 import one.mixin.android.event.TipEvent
+import one.mixin.android.extension.getParcelableCompat
+import one.mixin.android.extension.getParcelableExtraCompat
 
 @Parcelize
 enum class TipType : Parcelable {
@@ -52,19 +53,9 @@ data class TipBundle(
 }
 
 internal fun Intent.getTipBundle(): TipBundle = requireNotNull(
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-        getParcelableExtra(TipFragment.ARGS_TIP_BUNDLE, TipBundle::class.java)
-    } else {
-        @Suppress("DEPRECATION")
-        getParcelableExtra(TipFragment.ARGS_TIP_BUNDLE)
-    },
+    getParcelableExtraCompat(TipFragment.ARGS_TIP_BUNDLE, TipBundle::class.java),
 ) { "required TipBundle can not be null" }
 
 internal fun Bundle.getTipBundle(): TipBundle = requireNotNull(
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-        getParcelable(TipFragment.ARGS_TIP_BUNDLE, TipBundle::class.java)
-    } else {
-        @Suppress("DEPRECATION")
-        getParcelable(TipFragment.ARGS_TIP_BUNDLE)
-    },
+    getParcelableCompat(TipFragment.ARGS_TIP_BUNDLE, TipBundle::class.java),
 ) { "required TipBundle can not be null" }

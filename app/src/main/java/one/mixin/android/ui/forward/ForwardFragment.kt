@@ -41,6 +41,8 @@ import one.mixin.android.event.AppAuthEvent
 import one.mixin.android.extension.base64Encode
 import one.mixin.android.extension.copyFromInputStream
 import one.mixin.android.extension.getExtensionName
+import one.mixin.android.extension.getParcelableArrayListCompat
+import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.notNullWithElse
@@ -137,15 +139,15 @@ class ForwardFragment : BaseFragment(R.layout.fragment_forward) {
     }
 
     private val messages: ArrayList<ForwardMessage> by lazy {
-        requireNotNull(requireArguments().getParcelableArrayList(ARGS_MESSAGES))
+        requireNotNull(requireArguments().getParcelableArrayListCompat(ARGS_MESSAGES, ForwardMessage::class.java))
     }
 
     private val combineMessages: ArrayList<TranscriptMessage> by lazy {
-        requireNotNull(requireArguments().getParcelableArrayList(ARGS_COMBINE_MESSAGES))
+        requireNotNull(requireArguments().getParcelableArrayListCompat(ARGS_COMBINE_MESSAGES, TranscriptMessage::class.java))
     }
 
     private val action: ForwardAction by lazy {
-        requireNotNull(requireArguments().getParcelable(ARGS_ACTION))
+        requireNotNull(requireArguments().getParcelableCompat(ARGS_ACTION, ForwardAction::class.java))
     }
 
     private val sender = Session.getAccount()?.toUser()

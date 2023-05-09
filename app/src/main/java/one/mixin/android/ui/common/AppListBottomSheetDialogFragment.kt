@@ -13,6 +13,7 @@ import kotlinx.coroutines.launch
 import one.mixin.android.Constants.ARGS_TITLE
 import one.mixin.android.databinding.FragmentAppListBottomSheetBinding
 import one.mixin.android.databinding.ItemAppListBinding
+import one.mixin.android.extension.getParcelableArrayListCompat
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.withArgs
 import one.mixin.android.util.viewBinding
@@ -35,7 +36,7 @@ class AppListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     }
 
     private val appList by lazy {
-        requireArguments().getParcelableArrayList<App>(ARGS_APP_LIST)
+        requireArguments().getParcelableArrayListCompat(ARGS_APP_LIST, App::class.java)
     }
     private val title: String by lazy {
         requireArguments().getString(ARGS_TITLE)!!

@@ -19,6 +19,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentShareMessageBottomSheetBinding
+import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.isUUID
 import one.mixin.android.extension.openPermissionSetting
@@ -74,7 +75,7 @@ class ShareMessageBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     private val viewModel by viewModels<BottomSheetViewModel>()
 
     private val app by lazy {
-        arguments?.getParcelable<App>(APP)
+        arguments?.getParcelableCompat(APP, App::class.java)
     }
 
     private val host by lazy {
@@ -86,7 +87,7 @@ class ShareMessageBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     }
 
     private val shareMessage: ForwardMessage by lazy {
-        requireNotNull(arguments?.getParcelable(SHARE_MESSAGE)) {
+        requireNotNull(arguments?.getParcelableCompat(SHARE_MESSAGE, ForwardMessage::class.java)) {
             "error data"
         }
     }

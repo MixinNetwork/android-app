@@ -55,6 +55,7 @@ import one.mixin.android.extension.dp
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.getClipboardManager
 import one.mixin.android.extension.getOtherPath
+import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.localTime
 import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.openPermissionSetting
@@ -163,7 +164,7 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
 
     override fun setupDialog(dialog: Dialog, style: Int) {
         super.setupDialog(dialog, style)
-        user = requireArguments().getParcelable(ARGS_USER)!!
+        user = requireArguments().getParcelableCompat(ARGS_USER, User::class.java)!!
         botConversationId = requireArguments().getString(ARGS_CONVERSATION_ID)
         binding.title.rightIv.setOnClickListener { dismiss() }
         binding.avatar.setOnClickListener {

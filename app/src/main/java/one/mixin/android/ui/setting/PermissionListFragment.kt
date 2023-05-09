@@ -25,6 +25,7 @@ import one.mixin.android.databinding.ItemPermissionListBinding
 import one.mixin.android.databinding.LayoutPermissionListFootBinding
 import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.fullDate
+import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.BaseFragment
@@ -69,10 +70,10 @@ class PermissionListFragment : BaseFragment(R.layout.fragment_permission_list) {
     }
 
     private val app: App by lazy {
-        requireArguments().getParcelable(ARGS_APP)!!
+        requireArguments().getParcelableCompat(ARGS_APP, App::class.java)!!
     }
     private val auth: AuthorizationResponse by lazy {
-        requireArguments().getParcelable(ARGS_AUTHORIZATION)!!
+        requireArguments().getParcelableCompat(ARGS_AUTHORIZATION, AuthorizationResponse::class.java)!!
     }
 
     private val viewModel by viewModels<SettingViewModel>()

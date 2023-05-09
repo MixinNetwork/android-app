@@ -8,6 +8,7 @@ import androidx.navigation.NavArgument
 import androidx.navigation.fragment.NavHostFragment
 import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.R
+import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BlazeBaseActivity
@@ -50,7 +51,7 @@ class WalletActivity : BlazeBaseActivity() {
     }
 
     private val asset: AssetItem? by lazy {
-        intent.extras?.getParcelable(ASSET)
+        intent.extras?.getParcelableCompat(ASSET, AssetItem::class.java)
     }
 
     private val bottomAnim: Boolean by lazy {

@@ -15,6 +15,7 @@ import one.mixin.android.databinding.FragmentAddressManagementBinding
 import one.mixin.android.databinding.ItemAddressBinding
 import one.mixin.android.extension.containsIgnoreCase
 import one.mixin.android.extension.equalsIgnoreCase
+import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.navigate
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.viewDestroyed
@@ -38,7 +39,7 @@ class AddressManagementFragment : BaseFragment(R.layout.fragment_address_managem
     private val addressViewModel by viewModels<AddressViewModel>()
 
     private val asset: AssetItem by lazy {
-        requireArguments().getParcelable(ARGS_ASSET)!!
+        requireArguments().getParcelableCompat(ARGS_ASSET, AssetItem::class.java)!!
     }
     private var addresses: List<Address>? = null
 

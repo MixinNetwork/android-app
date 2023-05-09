@@ -20,6 +20,7 @@ import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.CircleConversationPayload
 import one.mixin.android.api.request.CircleConversationRequest
 import one.mixin.android.databinding.FragmentConversationCircleEditBinding
+import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.textColor
@@ -58,7 +59,7 @@ class ConversationCircleEditFragment : BaseFragment() {
     private val chatViewModel by viewModels<ConversationListViewModel>()
 
     private val circle: ConversationCircleItem by lazy {
-        requireArguments().getParcelable(ARGS_CIRCLE)!!
+        requireArguments().getParcelableCompat(ARGS_CIRCLE, ConversationCircleItem::class.java)!!
     }
 
     private val adapter = ForwardAdapter(true)

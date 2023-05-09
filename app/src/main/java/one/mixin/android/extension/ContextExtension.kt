@@ -17,6 +17,7 @@ import android.content.ContextWrapper
 import android.content.DialogInterface
 import android.content.Intent
 import android.content.Intent.FLAG_ACTIVITY_NEW_TASK
+import android.content.pm.PackageInfo
 import android.content.pm.PackageManager
 import android.content.res.Configuration
 import android.content.res.Resources
@@ -36,6 +37,7 @@ import android.os.VibrationEffect.EFFECT_DOUBLE_CLICK
 import android.os.VibrationEffect.EFFECT_HEAVY_CLICK
 import android.os.VibrationEffect.EFFECT_TICK
 import android.os.Vibrator
+import android.os.VibratorManager
 import android.os.storage.StorageManager
 import android.os.storage.StorageVolume
 import android.provider.Browser
@@ -84,7 +86,6 @@ import one.mixin.android.widget.gallery.MimeType
 import one.mixin.android.widget.gallery.engine.impl.GlideEngine
 import timber.log.Timber
 import java.io.File
-import java.io.Serializable
 import java.util.Locale
 import java.util.UUID
 import java.util.concurrent.ExecutorService
@@ -197,12 +198,20 @@ fun Context.isActivityNotDestroyed(): Boolean {
 }
 
 fun Context.vibrate(effect: VibrationEffect?, pattern: LongArray = longArrayOf(0, 20L)) {
-    if (effect != null && Build.VERSION.SDK_INT >= 26) {
-        (getSystemService(Context.VIBRATOR_SERVICE) as Vibrator).vibrate(effect)
-    } else if (Build.VERSION.SDK_INT >= 26) {
-        (getSystemService(Context.VIBRATOR_SERVICE) as Vibrator).vibrate(VibrationEffect.createWaveform(pattern, -1))
+    val vibrator = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+        val vibratorManager = getSystemService(Context.VIBRATOR_MANAGER_SERVICE) as VibratorManager
+        vibratorManager.defaultVibrator
     } else {
-        (getSystemService(Context.VIBRATOR_SERVICE) as Vibrator).vibrate(pattern, -1)
+        @Suppress("DEPRECATION")
+        getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
+    }
+    if (effect != null && Build.VERSION.SDK_INT >= 26) {
+        vibrator.vibrate(effect)
+    } else if (Build.VERSION.SDK_INT >= 26) {
+        vibrator.vibrate(VibrationEffect.createWaveform(pattern, -1))
+    } else {
+        @Suppress("DEPRECATION")
+        vibrator.vibrate(pattern, -1)
     }
 }
 fun Context.tickVibrate() {
@@ -263,7 +272,7 @@ var Context.displayMetrics: DisplayMetrics
     get() = resources.displayMetrics
 
     @Deprecated("Property does not have a setter")
-    private set(value) = error("Property does not have a setter")
+    private set(@Suppress("UNUSED_PARAMETER") value) = error("Property does not have a setter")
 
 @ColorInt
 fun Context.colorAttr(@AttrRes attribute: Int): Int = theme.color(attribute)
@@ -333,12 +342,8 @@ fun Context.displayRatio(): Float {
 }
 
 fun Context.getUriForFile(file: File): Uri {
-    return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-        val authority = String.format("%s.provider", this.packageName)
-        FileProvider.getUriForFile(this, authority, file)
-    } else {
-        Uri.fromFile(file)
-    }
+    val authority = String.format("%s.provider", this.packageName)
+    return FileProvider.getUriForFile(this, authority, file)
 }
 
 fun Context.maxItemWidth(): Int {
@@ -387,6 +392,8 @@ const val REQUEST_CAMERA = 0x03
 const val REQUEST_FILE = 0x04
 const val REQUEST_AUDIO = 0x05
 const val REQUEST_LOCATION = 0x06
+
+@Suppress("unused")
 fun Fragment.openImage(output: Uri) {
     val cameraIntents = ArrayList<Intent>()
     val captureIntent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
@@ -413,6 +420,7 @@ fun Fragment.openImage(output: Uri) {
     }
 }
 
+@SuppressLint("ObsoleteSdkInt")
 fun Fragment.openCamera(output: Uri) {
     val intent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
     if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) {
@@ -436,11 +444,11 @@ fun Fragment.openCamera(output: Uri) {
 }
 
 fun String.isFileUri(): Boolean {
-    try {
+    return try {
         val uri = Uri.parse(this)
-        return uri.scheme == ContentResolver.SCHEME_FILE
+        uri.scheme == ContentResolver.SCHEME_FILE
     } catch (e: Exception) {
-        return false
+        false
     }
 }
 
@@ -526,14 +534,14 @@ fun Fragment.selectMediaType(type: String, extraMimeType: Array<String>?, reques
     try {
         startActivityForResult(intent, requestCode)
         return
-    } catch (e: ActivityNotFoundException) {
+    } catch (_: ActivityNotFoundException) {
     }
 
     intent.action = Intent.ACTION_GET_CONTENT
     try {
         startActivityForResult(intent, requestCode)
-    } catch (e: ActivityNotFoundException) {
-    } catch (e: SecurityException) {
+    } catch (_: ActivityNotFoundException) {
+    } catch (_: SecurityException) {
     }
 }
 
@@ -818,6 +826,7 @@ fun supportsOreo(code: () -> Unit, elseAction: (() -> Unit)) {
     }
 }
 
+@SuppressLint("ObsoleteSdkInt")
 inline fun supportsNougat(code: () -> Unit) {
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
         code()
@@ -961,13 +970,20 @@ fun Context.checkInlinePermissions(showAlert: () -> Unit): Boolean {
 
 fun Context.isPlayStoreInstalled(): Boolean {
     return try {
-        packageManager
-            .getPackageInfo(GooglePlayServicesUtil.GOOGLE_PLAY_STORE_PACKAGE, 0)
+        packageManager.getPackageInfoCompat(GooglePlayServicesUtil.GOOGLE_PLAY_STORE_PACKAGE, 0)
         true
     } catch (e: PackageManager.NameNotFoundException) {
         false
     }
 }
+
+fun PackageManager.getPackageInfoCompat(packageName: String, flags: Int = 0): PackageInfo =
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+        getPackageInfo(packageName, PackageManager.PackageInfoFlags.of(flags.toLong()))
+    } else {
+        @Suppress("DEPRECATION")
+        getPackageInfo(packageName, flags)
+    }
 
 fun Context.openMarket() {
     if (isPlayStoreInstalled()) {
@@ -1196,22 +1212,4 @@ fun Context.findFragmentActivityOrNull(): FragmentActivity? {
         ctx = ctx.baseContext
     }
     return null
-}
-
-@SuppressWarnings("deprecation")
-fun <T : Serializable?> getSerializableExtra(intent: Intent, name: String, clazz: Class<T>): T? {
-    return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-        intent.getSerializableExtra(name, clazz)
-    } else {
-        intent.getSerializableExtra(name) as? T
-    }
-}
-
-@SuppressWarnings("deprecation")
-fun <T> getParcelableExtra(intent: Intent, name: String, clazz: Class<T>): T? {
-    return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-        intent.getParcelableExtra(name, clazz)
-    } else {
-        intent.getParcelableExtra(name) as T?
-    }
 }

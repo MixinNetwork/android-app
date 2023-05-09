@@ -19,6 +19,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentSearchMessageBinding
+import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.inTransaction
 import one.mixin.android.extension.observeOnceAtMost
@@ -53,7 +54,7 @@ class SearchMessageFragment : BaseFragment(R.layout.fragment_search_message) {
     private val searchViewModel by viewModels<SearchViewModel>()
 
     private val searchMessageItem: SearchMessageItem by lazy {
-        requireArguments().getParcelable(ARGS_SEARCH_MESSAGE)!!
+        requireArguments().getParcelableCompat(ARGS_SEARCH_MESSAGE, SearchMessageItem::class.java)!!
     }
 
     private val query by lazy { requireArguments().getString(ARGS_QUERY)!! }

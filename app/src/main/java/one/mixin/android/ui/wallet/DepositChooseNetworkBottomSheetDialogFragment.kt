@@ -12,6 +12,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentDepositChooseNetworkBottomSheetBinding
 import one.mixin.android.databinding.ItemChooseNetworkBinding
+import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
@@ -31,7 +32,7 @@ class DepositChooseNetworkBottomSheetDialogFragment : MixinBottomSheetDialogFrag
     }
 
     private val asset by lazy {
-        requireArguments().getParcelable<AssetItem>(ASSET)
+        requireArguments().getParcelableCompat(ASSET, AssetItem::class.java)
     }
 
     private val binding by viewBinding(FragmentDepositChooseNetworkBottomSheetBinding::inflate)

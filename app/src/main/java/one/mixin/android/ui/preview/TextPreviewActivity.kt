@@ -22,7 +22,7 @@ import one.mixin.android.Constants.Colors.LINK_COLOR
 import one.mixin.android.R
 import one.mixin.android.databinding.ActivityPreviewTextBinding
 import one.mixin.android.extension.callPhone
-import one.mixin.android.extension.getParcelableExtra
+import one.mixin.android.extension.getParcelableExtraCompat
 import one.mixin.android.extension.initChatMode
 import one.mixin.android.extension.openAsUrlOrWeb
 import one.mixin.android.extension.openEmail
@@ -41,7 +41,7 @@ class TextPreviewActivity : BlazeBaseActivity() {
     private lateinit var binding: ActivityPreviewTextBinding
 
     private val messageItem: MessageItem by lazy {
-        requireNotNull(getParcelableExtra(intent, ARGS_MESSAGE, MessageItem::class.java))
+        requireNotNull(intent.getParcelableExtraCompat(ARGS_MESSAGE, MessageItem::class.java))
     }
 
     private val viewModel by viewModels<TextPreviewViewModel>()

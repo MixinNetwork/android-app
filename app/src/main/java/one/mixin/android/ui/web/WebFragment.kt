@@ -81,6 +81,7 @@ import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.getClipboardManager
 import one.mixin.android.extension.getOtherPath
+import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.getPublicPicturePath
 import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.isDarkColor
@@ -179,7 +180,7 @@ class WebFragment : BaseFragment() {
     }
     private var app: App? = null
     private val appCard: AppCardData? by lazy {
-        requireArguments().getParcelable(ARGS_APP_CARD)
+        requireArguments().getParcelableCompat(ARGS_APP_CARD, AppCardData::class.java)
     }
     private val shareable: Boolean by lazy {
         requireArguments().getBoolean(ARGS_SHAREABLE, true)
@@ -331,7 +332,7 @@ class WebFragment : BaseFragment() {
             ),
         )
 
-        app = requireArguments().getParcelable(ARGS_APP)
+        app = requireArguments().getParcelableCompat(ARGS_APP, App::class.java)
 
         initView()
 

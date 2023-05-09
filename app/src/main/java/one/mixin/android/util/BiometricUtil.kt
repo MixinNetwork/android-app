@@ -2,9 +2,13 @@ package one.mixin.android.util
 
 import android.app.KeyguardManager
 import android.content.Context
+import android.os.Build
 import android.security.keystore.KeyGenParameterSpec
 import android.security.keystore.KeyInfo
 import android.security.keystore.KeyProperties
+import android.security.keystore.KeyProperties.AUTH_DEVICE_CREDENTIAL
+import android.security.keystore.KeyProperties.SECURITY_LEVEL_STRONGBOX
+import android.security.keystore.KeyProperties.SECURITY_LEVEL_TRUSTED_ENVIRONMENT
 import android.security.keystore.UserNotAuthenticatedException
 import androidx.biometric.BiometricManager
 import androidx.biometric.BiometricManager.Authenticators.BIOMETRIC_STRONG
@@ -175,8 +179,14 @@ object BiometricUtil {
                             KeyProperties.ENCRYPTION_PADDING_PKCS7,
                             KeyProperties.ENCRYPTION_PADDING_NONE,
                         )
-                        .setUserAuthenticationRequired(true)
-                        .setUserAuthenticationValidityDurationSeconds(2 * 60 * 60)
+                        .setUserAuthenticationRequired(true).apply {
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                                setUserAuthenticationParameters(2 * 60 * 60, AUTH_DEVICE_CREDENTIAL)
+                            } else {
+                                @Suppress("DEPRECATION")
+                                setUserAuthenticationValidityDurationSeconds(2 * 60 * 60)
+                            }
+                        }
                         .build(),
                 )
                 key = keyGenerator.generateKey()
@@ -206,6 +216,11 @@ object BiometricUtil {
 
         val factory = SecretKeyFactory.getInstance(key.algorithm, "AndroidKeyStore")
         val keyInfo = factory.getKeySpec(key, KeyInfo::class.java) as KeyInfo
-        return keyInfo.isInsideSecureHardware && keyInfo.isUserAuthenticationRequirementEnforcedBySecureHardware
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            keyInfo.securityLevel == SECURITY_LEVEL_TRUSTED_ENVIRONMENT || keyInfo.securityLevel == SECURITY_LEVEL_STRONGBOX
+        } else {
+            @Suppress("DEPRECATION")
+            keyInfo.isInsideSecureHardware
+        } && keyInfo.isUserAuthenticationRequirementEnforcedBySecureHardware
     }
 }

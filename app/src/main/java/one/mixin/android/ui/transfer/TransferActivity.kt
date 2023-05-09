@@ -37,7 +37,7 @@ import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.fadeIn
 import one.mixin.android.extension.generateQRCode
-import one.mixin.android.extension.getParcelableExtra
+import one.mixin.android.extension.getParcelableExtraCompat
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.putBoolean
 import one.mixin.android.extension.toast
@@ -306,7 +306,7 @@ class TransferActivity : BaseActivity() {
                 }
             }
         }
-        getParcelableExtra(intent, ARGS_COMMAND, TransferCommandData::class.java)?.apply {
+        intent.getParcelableExtraCompat(ARGS_COMMAND, TransferCommandData::class.java)?.apply {
             handleCommand(this)
         }
         intent.getStringExtra(ARGS_QR_CODE_CONTENT)?.let { qrCodeContent ->
@@ -410,7 +410,7 @@ class TransferActivity : BaseActivity() {
     override fun onNewIntent(intent: Intent?) {
         super.onNewIntent(intent)
         intent?.let {
-            getParcelableExtra(it, ARGS_COMMAND, TransferCommandData::class.java)?.apply {
+            it.getParcelableExtraCompat(ARGS_COMMAND, TransferCommandData::class.java)?.apply {
                 handleCommand(this)
             }
         }

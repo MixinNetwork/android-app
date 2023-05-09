@@ -15,6 +15,7 @@ import one.mixin.android.RxBus
 import one.mixin.android.databinding.FragmentDraggableRecyclerViewBinding
 import one.mixin.android.event.DragReleaseEvent
 import one.mixin.android.extension.dp
+import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.isWideScreen
 import one.mixin.android.extension.realSize
 import one.mixin.android.extension.withArgs
@@ -48,7 +49,7 @@ class GalleryItemFragment : Fragment(R.layout.fragment_draggable_recycler_view),
 
     private val stopScope = scope(Lifecycle.Event.ON_STOP)
 
-    private val album: Album by lazy { requireArguments().getParcelable(ARGS_ALBUM)!! }
+    private val album: Album by lazy { requireArguments().getParcelableCompat(ARGS_ALBUM, Album::class.java)!! }
     private val needCamera: Boolean by lazy { requireArguments().getBoolean(ARGS_NEED_CAMERA) }
 
     private val padding: Int by lazy {

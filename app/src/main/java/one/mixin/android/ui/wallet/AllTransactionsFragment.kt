@@ -60,7 +60,7 @@ class AllTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>
             transactionsRv.addItemDecoration(StickyRecyclerHeadersDecoration(adapter))
         }
         dataObserver = Observer { pagedList ->
-            if (pagedList != null && pagedList.isNotEmpty()) {
+            if (pagedList.isNotEmpty()) {
                 showEmpty(false)
                 val opponentIds = pagedList.filter {
                     it?.opponentId != null
