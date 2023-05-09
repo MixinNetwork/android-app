@@ -22,6 +22,7 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.GridLayoutManager
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
@@ -172,195 +173,214 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
         )
         dialog.window?.setGravity(Gravity.BOTTOM)
         join = requireArguments().getBoolean(EXTRA_JOIN, false)
-        lifecycleScope.launchWhenCreated {
-            val cid = callState.conversationId
-            val account = Session.getAccount()!!
-            self = if (cid == null) {
-                CallUser(account.userId, account.identityNumber, account.fullName, account.avatarUrl, "")
-            } else {
-                var callUser = viewModel.findSelfCallUser(cid, account.userId)
-                if (callUser == null) {
-                    callUser = CallUser(account.userId, account.identityNumber, account.fullName, account.avatarUrl, "")
-                    viewModel.refreshConversation(cid)
-                }
-                callUser
-            }
-            if (callState.isGroupCall()) {
-                withContext(Dispatchers.IO) {
-                    groupName = viewModel.getConversationNameById(requireNotNull(cid))
-                }
-                binding.title.text = "$groupName"
-                binding.avatarLl.isVisible = false
-                binding.usersRv.isVisible = true
-                binding.participants.isVisible = true
-                setAdapter()
-                refreshUsers()
-            } else {
-                binding.title.text = getString(R.string.Call)
-                binding.avatarLl.isVisible = true
-                binding.usersRv.isVisible = false
-                val callee = callState.user
-                if (callee != null) {
-                    binding.nameTv.text = callee.fullName
-                    binding.avatar.setInfo(callee.fullName, callee.avatarUrl, callee.userId)
-                    binding.avatar.setTextSize(48f)
-                    binding.avatar.clicks()
-                        .observeOn(AndroidSchedulers.mainThread())
-                        .throttleFirst(500, TimeUnit.MILLISECONDS)
-                        .autoDispose(stopScope)
-                        .subscribe {
-                            showUserBottom(parentFragmentManager, callee)
-                        }
-                    binding.nameTv.clicks()
-                        .observeOn(AndroidSchedulers.mainThread())
-                        .throttleFirst(500, TimeUnit.MILLISECONDS)
-                        .autoDispose(stopScope)
-                        .subscribe {
-                            showUserBottom(parentFragmentManager, callee)
-                        }
-                }
-            }
-
-            binding.hangupCb.setOnClickListener {
-                hangup()
-            }
-            binding.answerCb.setOnClickListener {
-                checkBlueToothConnectPermissions { handleAnswer() }
-            }
-            binding.closeIb.setOnClickListener {
-                hangup()
-            }
-            binding.minimizeIb.setOnClickListener {
-                if (!PipCallView.get().shown) {
-                    if (!checkPipPermission(requireActivity())) {
-                        return@setOnClickListener
-                    }
-                    PipCallView.get().show(callState.connectedTime, callState)
-                }
-                dismiss()
-            }
-            binding.declineTv.setOnClickListener {
-                hangup()
-            }
-            if (BuildConfig.DEBUG) {
-                binding.title.setOnClickListener {
-                    var curState = callDebugState.debugState
-                    curState = curState.next()
-                    callDebugState.debugState = curState
-                    toast("CallDebugState $curState")
-                }
-            }
-            binding.subTitle.setOnClickListener {
-                showE2EETip()
-            }
-            binding.muteCb.setOnCheckedChangeListener(
-                object : CallButton.OnCheckedChangeListener {
-                    override fun onCheckedChanged(id: Int, checked: Boolean) {
-                        if (callState.isGroupCall()) {
-                            muteAudio<GroupCallService>(requireContext(), checked)
-                        } else if (callState.isVoiceCall()) {
-                            muteAudio<VoiceCallService>(requireContext(), checked)
-                        }
-                    }
-                },
-            )
-            binding.voiceCb.setOnCheckedChangeListener(
-                object : CallButton.OnCheckedChangeListener {
-                    override fun onCheckedChanged(id: Int, checked: Boolean) {
-                        if (callState.isGroupCall()) {
-                            speakerPhone<GroupCallService>(requireContext(), checked)
-                        } else if (callState.isVoiceCall()) {
-                            speakerPhone<VoiceCallService>(requireContext(), checked)
-                        }
-                    }
-                },
-            )
-            binding.title.setOnLongClickListener {
-                if (callState.isGroupCall()) {
-                    logCallState<GroupCallService>(requireContext())
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.CREATED) {
+                val cid = callState.conversationId
+                val account = Session.getAccount()!!
+                self = if (cid == null) {
+                    CallUser(
+                        account.userId,
+                        account.identityNumber,
+                        account.fullName,
+                        account.avatarUrl,
+                        "",
+                    )
                 } else {
-                    logCallState<VoiceCallService>(requireContext())
+                    var callUser = viewModel.findSelfCallUser(cid, account.userId)
+                    if (callUser == null) {
+                        callUser = CallUser(
+                            account.userId,
+                            account.identityNumber,
+                            account.fullName,
+                            account.avatarUrl,
+                            "",
+                        )
+                        viewModel.refreshConversation(cid)
+                    }
+                    callUser
                 }
-                return@setOnLongClickListener true
-            }
-            updateUI()
-            callState.observe(
-                this@CallBottomSheetDialogFragment,
-                Observer { state ->
-                    // if plan to join a group voice, do not show self before answering
-                    if (join && state >= CallService.CallState.STATE_ANSWERING) {
-                        join = false
+                if (callState.isGroupCall()) {
+                    withContext(Dispatchers.IO) {
+                        groupName = viewModel.getConversationNameById(requireNotNull(cid))
                     }
+                    binding.title.text = "$groupName"
+                    binding.avatarLl.isVisible = false
+                    binding.usersRv.isVisible = true
+                    binding.participants.isVisible = true
+                    setAdapter()
+                    refreshUsers()
+                } else {
+                    binding.title.text = getString(R.string.Call)
+                    binding.avatarLl.isVisible = true
+                    binding.usersRv.isVisible = false
+                    val callee = callState.user
+                    if (callee != null) {
+                        binding.nameTv.text = callee.fullName
+                        binding.avatar.setInfo(callee.fullName, callee.avatarUrl, callee.userId)
+                        binding.avatar.setTextSize(48f)
+                        binding.avatar.clicks()
+                            .observeOn(AndroidSchedulers.mainThread())
+                            .throttleFirst(500, TimeUnit.MILLISECONDS)
+                            .autoDispose(stopScope)
+                            .subscribe {
+                                showUserBottom(parentFragmentManager, callee)
+                            }
+                        binding.nameTv.clicks()
+                            .observeOn(AndroidSchedulers.mainThread())
+                            .throttleFirst(500, TimeUnit.MILLISECONDS)
+                            .autoDispose(stopScope)
+                            .subscribe {
+                                showUserBottom(parentFragmentManager, callee)
+                            }
+                    }
+                }
 
-                    updateUI()
+                binding.hangupCb.setOnClickListener {
+                    hangup()
+                }
+                binding.answerCb.setOnClickListener {
+                    checkBlueToothConnectPermissions { handleAnswer() }
+                }
+                binding.closeIb.setOnClickListener {
+                    hangup()
+                }
+                binding.minimizeIb.setOnClickListener {
+                    if (!PipCallView.get().shown) {
+                        if (!checkPipPermission(requireActivity())) {
+                            return@setOnClickListener
+                        }
+                        PipCallView.get().show(callState.connectedTime, callState)
+                    }
+                    dismiss()
+                }
+                binding.declineTv.setOnClickListener {
+                    hangup()
+                }
+                if (BuildConfig.DEBUG) {
+                    binding.title.setOnClickListener {
+                        var curState = callDebugState.debugState
+                        curState = curState.next()
+                        callDebugState.debugState = curState
+                        toast("CallDebugState $curState")
+                    }
+                }
+                binding.subTitle.setOnClickListener {
+                    showE2EETip()
+                }
+                binding.muteCb.setOnCheckedChangeListener(
+                    object : CallButton.OnCheckedChangeListener {
+                        override fun onCheckedChanged(id: Int, checked: Boolean) {
+                            if (callState.isGroupCall()) {
+                                muteAudio<GroupCallService>(requireContext(), checked)
+                            } else if (callState.isVoiceCall()) {
+                                muteAudio<VoiceCallService>(requireContext(), checked)
+                            }
+                        }
+                    },
+                )
+                binding.voiceCb.setOnCheckedChangeListener(
+                    object : CallButton.OnCheckedChangeListener {
+                        override fun onCheckedChanged(id: Int, checked: Boolean) {
+                            if (callState.isGroupCall()) {
+                                speakerPhone<GroupCallService>(requireContext(), checked)
+                            } else if (callState.isVoiceCall()) {
+                                speakerPhone<VoiceCallService>(requireContext(), checked)
+                            }
+                        }
+                    },
+                )
+                binding.title.setOnLongClickListener {
                     if (callState.isGroupCall()) {
-                        refreshUsers()
-
-                        if ((
-                                state == CallService.CallState.STATE_IDLE ||
-                                    state == CallService.CallState.STATE_RINGING
-                                ) &&
-                            callState.needMuteWhenJoin(requireNotNull(cid))
-                        ) {
-                            updateTitle(getString(R.string.chat_group_call_mute))
-                        }
+                        logCallState<GroupCallService>(requireContext())
+                    } else {
+                        logCallState<VoiceCallService>(requireContext())
                     }
-                    if (state == CallService.CallState.STATE_IDLE) {
-                        if (callState.isNoneCallType()) {
-                            handleDisconnected()
-                        } else {
-                            cid?.let {
-                                val groupCallState = callState.getGroupCallStateOrNull(cid)
-                                if (groupCallState == null || groupCallState.users?.isEmpty() == true) {
-                                    toast(R.string.chat_group_call_end)
-                                    dismiss()
-                                }
+                    return@setOnLongClickListener true
+                }
+                updateUI()
+                callState.observe(
+                    this@CallBottomSheetDialogFragment,
+                    Observer { state ->
+                        // if plan to join a group voice, do not show self before answering
+                        if (join && state >= CallService.CallState.STATE_ANSWERING) {
+                            join = false
+                        }
+
+                        updateUI()
+                        if (callState.isGroupCall()) {
+                            refreshUsers()
+
+                            if ((
+                                    state == CallService.CallState.STATE_IDLE ||
+                                        state == CallService.CallState.STATE_RINGING
+                                    ) &&
+                                callState.needMuteWhenJoin(requireNotNull(cid))
+                            ) {
+                                updateTitle(getString(R.string.chat_group_call_mute))
                             }
                         }
-                        return@Observer
-                    }
-                    if (uiState >= state) {
-                        if (
-                            uiState == CallService.CallState.STATE_CONNECTED && state == CallService.CallState.STATE_CONNECTED
-                        ) {
-                            handleConnected(callState.disconnected)
-                        }
-                        return@Observer
-                    }
-
-                    uiState = state
-
-                    when (state) {
-                        CallService.CallState.STATE_DIALING -> {
-                            contentView.post { handleDialing() }
-                        }
-                        CallService.CallState.STATE_RINGING -> {
-                            contentView.post {
-                                if (join) {
-                                    handleJoin()
-                                } else {
-                                    handleRinging()
+                        if (state == CallService.CallState.STATE_IDLE) {
+                            if (callState.isNoneCallType()) {
+                                handleDisconnected()
+                            } else {
+                                cid?.let {
+                                    val groupCallState = callState.getGroupCallStateOrNull(cid)
+                                    if (groupCallState == null || groupCallState.users?.isEmpty() == true) {
+                                        toast(R.string.chat_group_call_end)
+                                        dismiss()
+                                    }
                                 }
                             }
+                            return@Observer
                         }
-                        CallService.CallState.STATE_ANSWERING -> {
-                            contentView.post { handleAnswering() }
+                        if (uiState >= state) {
+                            if (
+                                uiState == CallService.CallState.STATE_CONNECTED && state == CallService.CallState.STATE_CONNECTED
+                            ) {
+                                handleConnected(callState.disconnected)
+                            }
+                            return@Observer
                         }
-                        CallService.CallState.STATE_CONNECTED -> {
-                            contentView.post { handleConnected(callState.disconnected) }
+
+                        uiState = state
+
+                        when (state) {
+                            CallService.CallState.STATE_DIALING -> {
+                                contentView.post { handleDialing() }
+                            }
+
+                            CallService.CallState.STATE_RINGING -> {
+                                contentView.post {
+                                    if (join) {
+                                        handleJoin()
+                                    } else {
+                                        handleRinging()
+                                    }
+                                }
+                            }
+
+                            CallService.CallState.STATE_ANSWERING -> {
+                                contentView.post { handleAnswering() }
+                            }
+
+                            CallService.CallState.STATE_CONNECTED -> {
+                                contentView.post { handleConnected(callState.disconnected) }
+                            }
+
+                            CallService.CallState.STATE_BUSY -> {
+                                contentView.post { handleBusy() }
+                            }
+
+                            else -> {
+                                // Do nothing
+                            }
                         }
-                        CallService.CallState.STATE_BUSY -> {
-                            contentView.post { handleBusy() }
-                        }
-                        else -> {
-                            // Do nothing
-                        }
-                    }
-                },
-            )
-            if (callState.state == CallService.CallState.STATE_RINGING) {
-                binding.closeIb.isVisible = true
-                binding.minimizeIb.isVisible = false
+                    },
+                )
+                if (callState.state == CallService.CallState.STATE_RINGING) {
+                    binding.closeIb.isVisible = true
+                    binding.minimizeIb.isVisible = false
+                }
             }
         }
         dialog.setOnKeyListener { _, keyCode, _ ->
@@ -542,7 +562,7 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
         if (binding.usersRv.layoutManager == null) {
             binding.usersRv.layoutManager = GridLayoutManager(requireContext(), 4)
         }
-        if (calls.isNullOrEmpty()) {
+        if (calls.isEmpty()) {
             userAdapter?.submitList(null)
             binding.participants.text = requireContext().resources.getQuantityString(R.plurals.title_participants, 0, 0)
         } else {

@@ -931,9 +931,13 @@ class ConversationFragment() :
                             .show()
                     }
                 } else {
-                    checkVoicePermissions {
-                        initAudioSwitch()
-                        voiceCall()
+                    if (checkFloatingPermission()) {
+                        checkVoicePermissions {
+                            initAudioSwitch()
+                            voiceCall()
+                        }
+                    } else {
+                        requireActivity().showPipPermissionNotification(MusicActivity::class.java, getString(R.string.web_floating_permission))
                     }
                 }
             }
@@ -1651,9 +1655,13 @@ class ConversationFragment() :
                     .show()
                 return@setOnClickListener
             }
-            checkBlueToothConnectPermissions {
-                initAudioSwitch()
-                receiveInvite(requireContext(), conversationId, playRing = false)
+            if (checkFloatingPermission()) {
+                checkBlueToothConnectPermissions {
+                    initAudioSwitch()
+                    receiveInvite(requireContext(), conversationId, playRing = false)
+                }
+            } else {
+                requireActivity().showPipPermissionNotification(MusicActivity::class.java, getString(R.string.web_floating_permission))
             }
         }
         callState.observe(viewLifecycleOwner) { state ->
@@ -2549,9 +2557,13 @@ class ConversationFragment() :
                                     .show()
                             }
                         } else {
-                            checkVoicePermissions {
-                                initAudioSwitch()
-                                voiceCall()
+                            if (checkFloatingPermission()) {
+                                checkVoicePermissions {
+                                    initAudioSwitch()
+                                    voiceCall()
+                                }
+                            } else {
+                                requireActivity().showPipPermissionNotification(MusicActivity::class.java, getString(R.string.web_floating_permission))
                             }
                         }
                     }

@@ -20,7 +20,7 @@ class AmbientLightManager(context: Context) : SensorEventListener {
 
     init {
         sensorManager = context.getSystemService(Context.SENSOR_SERVICE) as SensorManager
-        lightSensor = sensorManager!!.getDefaultSensor(Sensor.TYPE_LIGHT)
+        lightSensor = sensorManager.getDefaultSensor(Sensor.TYPE_LIGHT)
         isLightSensorEnabled = true
     }
 

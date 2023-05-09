@@ -21,7 +21,9 @@ import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.view.doOnPreDraw
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import com.bumptech.glide.manager.SupportRequestManagerFragment
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
@@ -112,12 +114,14 @@ class AuthBottomSheetDialogFragment : BottomSheetDialogFragment() {
     private var step by mutableStateOf(AuthStep.DEFAULT)
 
     init {
-        lifecycleScope.launchWhenCreated {
-            snapshotFlow { step }.collect { value ->
-                if (value == AuthStep.INPUT) {
-                    dialog?.window?.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
-                } else {
-                    dialog?.window?.clearFlags(WindowManager.LayoutParams.FLAG_SECURE)
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.CREATED) {
+                snapshotFlow { step }.collect { value ->
+                    if (value == AuthStep.INPUT) {
+                        dialog?.window?.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
+                    } else {
+                        dialog?.window?.clearFlags(WindowManager.LayoutParams.FLAG_SECURE)
+                    }
                 }
             }
         }

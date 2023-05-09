@@ -10,7 +10,9 @@ import android.view.ViewGroup
 import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.view.doOnPreDraw
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.GridLayoutManager
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
@@ -99,25 +101,29 @@ class StickerAlbumBottomSheetFragment : BottomSheetDialogFragment() {
         )
         dialog.window?.setGravity(Gravity.BOTTOM)
 
-        lifecycleScope.launchWhenCreated {
-            val albumId = requireNotNull(requireArguments().getString(EXTRA_ALBUM_ID))
-            viewModel.observeAlbumById(albumId).observe(this@StickerAlbumBottomSheetFragment) { album ->
-                binding.title.titleTv.text = album?.name
-                if (album != null) {
-                    updateAction(album)
-                }
-            }
-            val stickers = viewModel.findStickersByAlbumId(albumId)
-            val padding = PADDING.dp
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.CREATED) {
+                val albumId = requireNotNull(requireArguments().getString(EXTRA_ALBUM_ID))
+                viewModel.observeAlbumById(albumId)
+                    .observe(this@StickerAlbumBottomSheetFragment) { album ->
+                        binding.title.titleTv.text = album?.name
+                        if (album != null) {
+                            updateAction(album)
+                        }
+                    }
+                val stickers = viewModel.findStickersByAlbumId(albumId)
+                val padding = PADDING.dp
 
-            val stickerAdapter = StickerAdapter()
-            binding.apply {
-                title.rightIv.setOnClickListener { dismiss() }
-                stickerRv.layoutManager = GridLayoutManager(context, COLUMN)
-                stickerRv.addItemDecoration(StickerSpacingItemDecoration(COLUMN, padding, true))
-                stickerAdapter.size = (requireContext().realSize().x - (COLUMN + 1) * padding) / COLUMN
-                stickerRv.adapter = stickerAdapter
-                stickerAdapter.submitList(stickers)
+                val stickerAdapter = StickerAdapter()
+                binding.apply {
+                    title.rightIv.setOnClickListener { dismiss() }
+                    stickerRv.layoutManager = GridLayoutManager(context, COLUMN)
+                    stickerRv.addItemDecoration(StickerSpacingItemDecoration(COLUMN, padding, true))
+                    stickerAdapter.size =
+                        (requireContext().realSize().x - (COLUMN + 1) * padding) / COLUMN
+                    stickerRv.adapter = stickerAdapter
+                    stickerAdapter.submitList(stickers)
+                }
             }
         }
     }
