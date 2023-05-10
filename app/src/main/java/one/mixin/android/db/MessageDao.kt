@@ -574,8 +574,11 @@ interface MessageDao : BaseDao<Message> {
     @Query("UPDATE messages SET category = :category WHERE id = :messageId")
     fun updateCategoryById(messageId: String, category: String)
 
-    @Query("UPDATE messages SET thumb_image = 'K0OWvn_3fQ~qj[fQfQfQfQ' WHERE LENGTH(thumb_image) > 5120")
-    fun cleanupBigThumb()
+    @Query("UPDATE messages SET thumb_image = 'K0OWvn_3fQ~qj[fQfQfQfQ' AND rowId IN (:rowIds)")
+    fun cleanupBigThumb(rowIds: List<Long>)
+
+    @Query("SELECT rowid FROM messages WHERE rowid <= :rowId AND LENGTH(thumb_image) > 5120 ORDER BY ROWID ASC LIMIT :limit")
+    fun findBigThumb(rowId:Long, limit: Int): List<Long>
 
     // Delete SQL
     @Query("DELETE FROM messages WHERE id = :id")
