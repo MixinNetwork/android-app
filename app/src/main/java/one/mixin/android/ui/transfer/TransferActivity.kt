@@ -19,7 +19,9 @@ import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlinx.serialization.ExperimentalSerializationApi
 import one.mixin.android.Constants
+import one.mixin.android.Constants.INTERVAL_24_HOURS
 import one.mixin.android.Constants.Scheme.DEVICE_TRANSFER
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
@@ -27,9 +29,9 @@ import one.mixin.android.RxBus
 import one.mixin.android.databinding.ActivityTransferBinding
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.ParticipantDao
+import one.mixin.android.db.property.PropertyHelper
 import one.mixin.android.event.DeviceTransferProgressEvent
 import one.mixin.android.event.SpeedEvent
-import one.mixin.android.event.TimeOutEvent
 import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.base64Encode
 import one.mixin.android.extension.base64RawURLDecode
@@ -37,6 +39,7 @@ import one.mixin.android.extension.base64RawURLEncode
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.fadeIn
+import one.mixin.android.extension.fullTime
 import one.mixin.android.extension.generateQRCode
 import one.mixin.android.extension.getParcelableExtraCompat
 import one.mixin.android.extension.openPermissionSetting
@@ -54,6 +57,7 @@ import one.mixin.android.ui.transfer.status.TransferStatusLiveData
 import one.mixin.android.ui.transfer.vo.CURRENT_TRANSFER_VERSION
 import one.mixin.android.ui.transfer.vo.TransferCommand
 import one.mixin.android.ui.transfer.vo.TransferCommandAction
+import one.mixin.android.ui.transfer.vo.TransferScene
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.generateConversationId
@@ -64,6 +68,7 @@ import one.mixin.android.websocket.createPlainJsonParam
 import timber.log.Timber
 import javax.inject.Inject
 
+@OptIn(ExperimentalSerializationApi::class)
 @AndroidEntryPoint
 class TransferActivity : BaseActivity() {
     companion object {
@@ -238,6 +243,7 @@ class TransferActivity : BaseActivity() {
                     binding.startTv.setText(R.string.Waiting)
                     binding.startTv.isEnabled = false
                     binding.start.isClickable = false
+                    binding.cancel.isVisible = false
                 }
 
                 TransferStatus.CONNECTING -> {
@@ -246,6 +252,7 @@ class TransferActivity : BaseActivity() {
                     binding.waitingLl.isVisible = true
                     binding.pbFl.isVisible = true
                     binding.pbTips.isVisible = true
+                    binding.cancel.isVisible = false
                 }
 
                 TransferStatus.WAITING_FOR_VERIFICATION -> {
@@ -254,6 +261,7 @@ class TransferActivity : BaseActivity() {
                     binding.waitingLl.isVisible = true
                     binding.pbFl.isVisible = true
                     binding.pbTips.isVisible = true
+                    binding.cancel.isVisible = false
                 }
 
                 TransferStatus.VERIFICATION_COMPLETED -> {
@@ -262,6 +270,7 @@ class TransferActivity : BaseActivity() {
                     binding.waitingLl.isVisible = true
                     binding.pbFl.isVisible = true
                     binding.pbTips.isVisible = true
+                    binding.cancel.isVisible = false
                 }
 
                 TransferStatus.SYNCING -> {
@@ -269,9 +278,12 @@ class TransferActivity : BaseActivity() {
                     binding.qrFl.isVisible = false
                     binding.initLl.isVisible = false
                     binding.waitingLl.isVisible = true
+                    binding.cancel.isVisible = true
                 }
 
                 TransferStatus.PROCESSING -> {
+                    cancelDialog.dismiss()
+                    binding.cancel.isVisible = true
                     binding.titleView.isVisible = false
                     binding.qrFl.isVisible = false
                     binding.initLl.isVisible = false
@@ -282,6 +294,8 @@ class TransferActivity : BaseActivity() {
                 }
 
                 TransferStatus.ERROR -> {
+                    cancelDialog.dismiss()
+                    binding.cancel.isVisible = true
                     binding.pbProcessing.isVisible = false
                     binding.progressTv.setText(R.string.Transfer_error)
                     if (dialog == null) {
@@ -298,6 +312,8 @@ class TransferActivity : BaseActivity() {
                 }
 
                 TransferStatus.FINISHED -> {
+                    cancelDialog.dismiss()
+                    binding.cancel.isVisible = true
                     binding.pbProcessing.isVisible = false
                     binding.progressTv.setText(R.string.Transfer_completed)
                     if (dialog == null) {
@@ -333,13 +349,31 @@ class TransferActivity : BaseActivity() {
         intent.getIntExtra(ARGS_STATUS, ARGS_TRANSFER_TO_PHONE)
     }
 
+    private val cancelDialog by lazy {
+        alertDialogBuilder()
+            .setTitle(R.string.Syncing_messages)
+            .setMessage(R.string.transfer_syncing_des)
+            .setPositiveButton(android.R.string.yes) { dialog, _ ->
+                dialog.dismiss()
+                finish()
+            }
+            .setNegativeButton(android.R.string.cancel) { dialog, _ ->
+                dialog.dismiss()
+            }
+            .create()
+    }
+
     private fun initView() {
+        binding.cancel.isVisible = false
         binding.titleView.isVisible = true
         binding.pbFl.isVisible = false
         binding.pbTips.isVisible = false
         binding.startTv.setText(R.string.transfer_now)
         binding.startTv.isEnabled = true
         binding.start.isClickable = true
+        binding.cancel.setOnClickListener {
+            cancelDialog.show()
+        }
         binding.start.setOnClickListener {
             when (argsStatus) {
                 ARGS_TRANSFER_TO_PHONE -> {
@@ -434,7 +468,6 @@ class TransferActivity : BaseActivity() {
     private var transferDisposable: Disposable? = null
     private var transferSpeedDisposable: Disposable? = null
     private var transferCommandDisposable: Disposable? = null
-    private var transferTimeoutDisposable: Disposable? = null
 
     override fun onStart() {
         super.onStart()
@@ -477,40 +510,13 @@ class TransferActivity : BaseActivity() {
                     }
                 }
         }
-
-        if (transferTimeoutDisposable == null) {
-            transferTimeoutDisposable = RxBus.listen(TimeOutEvent::class.java)
-                .observeOn(AndroidSchedulers.mainThread())
-                .autoDispose(destroyScope)
-                .subscribe {
-                    lifecycleScope.launch(Dispatchers.Main) {
-                        dialog = alertDialogBuilder()
-                            .setTitle(R.string.Transfer_error)
-                            .setMessage(R.string.Transfer_timeout)
-                            .setCancelable(false)
-                            .setPositiveButton(R.string.Confirm) { dialog, _ ->
-                                dialog.dismiss()
-                                finish()
-                                status.value = TransferStatus.INITIALIZING
-                            }.create()
-                        dialog?.show()
-                    }
-                }
-        }
     }
 
-    private fun handleCommand(commandData: TransferCommand) {
-        when (commandData.action) {
+    private fun handleCommand(transferCommandData: TransferCommand) {
+        when (transferCommandData.action) {
             TransferCommandAction.PUSH.value -> {
                 lifecycleScope.launch {
-                    transferClient.connectToServer(
-                        commandData.ip!!,
-                        commandData.port!!,
-                        TransferCommand(
-                            TransferCommandAction.CONNECT.value,
-                            code = commandData.code,
-                        ),
-                    )
+                    connect(transferCommandData)
                 }
             }
 
@@ -520,6 +526,61 @@ class TransferActivity : BaseActivity() {
 
             else -> {}
         }
+    }
+
+    private suspend fun connect(transferCommandData: TransferCommand) {
+        val sceneString = PropertyHelper.findValueByKey(Constants.Account.PREF_TRANSFER_SCENE, "")
+        if (sceneString.isNotBlank()) {
+            val transferScene = gson.fromJson(sceneString, TransferScene::class.java)
+            if (transferScene.deviceId == transferCommandData.deviceId && System.currentTimeMillis() - transferScene.startTime < INTERVAL_24_HOURS) {
+                alertDialogBuilder()
+                    .setTitle(getString(R.string.transfer_breakpoint_continuation))
+                    .setMessage(
+                        getString(
+                            R.string.transfer_breakpoint_continuation_desc,
+                            (transferScene.startTime / 1000).fullTime(),
+                        ),
+                    )
+                    .setNegativeButton(R.string.No_Need) { dialog, _ ->
+                        lifecycleScope.launch {
+                            connect(
+                                transferCommandData.ip!!,
+                                transferCommandData.port!!,
+                                TransferCommand(
+                                    TransferCommandAction.CONNECT.value,
+                                    code = transferCommandData.code,
+                                    userId = Session.getAccountId(),
+                                ),
+                            )
+                        }
+                        dialog.dismiss()
+                    }
+                    .setPositiveButton(R.string.Confirm) { dialog, _ ->
+                        lifecycleScope.launch {
+                            connect(
+                                transferCommandData.ip!!,
+                                transferCommandData.port!!,
+                                TransferCommand(
+                                    TransferCommandAction.CONNECT.value,
+                                    code = transferCommandData.code,
+                                    userId = Session.getAccountId(),
+                                    type = transferScene.type,
+                                    primaryId = transferScene.primaryId,
+                                    assistanceId = transferScene.assistanceId,
+                                ),
+                            )
+                        }
+                        dialog.dismiss()
+                    }.show()
+                // Display dialog, waiting for user to select
+                return
+            }
+        }
+        connect(transferCommandData.ip!!, transferCommandData.port!!, TransferCommand(TransferCommandAction.CONNECT.value, code = transferCommandData.code, userId = Session.getAccountId()))
+    }
+
+    private suspend fun connect(ip: String, port: Int, transferCommand: TransferCommand) {
+        transferClient.connectToServer(ip, port, transferCommand)
     }
 
     override fun onStop() {
@@ -579,15 +640,7 @@ class TransferActivity : BaseActivity() {
                 finish()
                 return@launch
             }
-            transferClient.connectToServer(
-                transferCommandData.ip!!,
-                transferCommandData.port!!,
-                TransferCommand(
-                    TransferCommandAction.CONNECT.value,
-                    code = transferCommandData.code,
-                    userId = Session.getAccountId(),
-                ),
-            )
+            connect(transferCommandData)
         }
 
     private val gson by lazy {

@@ -1,7 +1,6 @@
 package one.mixin.android.ui.transfer
 
 import android.app.Application
-import android.os.Handler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.asCoroutineDispatcher
@@ -14,6 +13,7 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.decodeFromJsonElement
 import kotlinx.serialization.json.decodeFromStream
+import one.mixin.android.Constants
 import one.mixin.android.RxBus
 import one.mixin.android.db.AppDao
 import one.mixin.android.db.AssetDao
@@ -29,9 +29,9 @@ import one.mixin.android.db.SnapshotDao
 import one.mixin.android.db.StickerDao
 import one.mixin.android.db.TranscriptMessageDao
 import one.mixin.android.db.UserDao
+import one.mixin.android.db.property.PropertyHelper
 import one.mixin.android.di.ApplicationScope
 import one.mixin.android.event.DeviceTransferProgressEvent
-import one.mixin.android.event.TimeOutEvent
 import one.mixin.android.extension.copy
 import one.mixin.android.extension.createAtToLong
 import one.mixin.android.extension.createAudioTemp
@@ -55,6 +55,7 @@ import one.mixin.android.ui.transfer.vo.TransferCommand
 import one.mixin.android.ui.transfer.vo.TransferCommandAction
 import one.mixin.android.ui.transfer.vo.TransferData
 import one.mixin.android.ui.transfer.vo.TransferDataType
+import one.mixin.android.ui.transfer.vo.TransferScene
 import one.mixin.android.ui.transfer.vo.compatible.TransferMessageMention
 import one.mixin.android.util.SINGLE_SOCKET_THREAD
 import one.mixin.android.util.mention.parseMentionData
@@ -125,7 +126,6 @@ class TransferClient @Inject internal constructor(
                 Timber.e("Current type: $field")
             }
         }
-    private var currentId: String? = null // Save the currently inserted primary key id
 
     private var deviceId: String? = null
 
@@ -173,10 +173,10 @@ class TransferClient @Inject internal constructor(
                 protocol.read(inputStream)
             } catch (e: EOFException) {
                 if (status.value != TransferStatus.FINISHED && status.value != TransferStatus.PROCESSING && status.value != TransferStatus.ERROR) {
-                    exit(false)
                     status.value = TransferStatus.ERROR
                     exit() // If it is not finished, exit.
                 }
+                quit = true
                 Timber.e(e)
                 null
             }
@@ -213,24 +213,15 @@ class TransferClient @Inject internal constructor(
                     }
                 }
                 is ByteArray -> {
-                    handler.removeCallbacks(runnable)
                     syncChannel.send(result)
                     progress(outputStream)
-                    handler.postDelayed(runnable, 30000) // No data was received to perform the runnable
                 }
                 else -> {
-                    handler.removeCallbacks(runnable)
                     // read file
                     progress(outputStream)
                 }
             }
         } while (!quit)
-    }
-
-    private val handler = Handler()
-    private val runnable = Runnable {
-        Timber.e("Socket status: isConnected:${socket?.isConnected} isInputShutdown:${socket?.isInputShutdown} available:${socket?.getInputStream()?.available()}")
-        RxBus.publish(TimeOutEvent())
     }
 
     private var lastTime = 0L
@@ -256,37 +247,31 @@ class TransferClient @Inject internal constructor(
             TransferDataType.CONVERSATION.value -> {
                 val conversation = serializationJson.decodeFromJsonElement<Conversation>(transferData.data)
                 transferInserter.insertIgnore(conversation)
-                currentId = conversation.conversationId
             }
 
             TransferDataType.PARTICIPANT.value -> {
                 val participant = serializationJson.decodeFromJsonElement<Participant>(transferData.data)
                 transferInserter.insertIgnore(participant)
-                currentId = "${participant.conversationId}+${participant.userId}"
             }
 
             TransferDataType.USER.value -> {
                 val user = serializationJson.decodeFromJsonElement<User>(transferData.data)
                 transferInserter.insertIgnore(user)
-                currentId = user.userId
             }
 
             TransferDataType.APP.value -> {
                 val app = serializationJson.decodeFromJsonElement<App>(transferData.data)
                 transferInserter.insertIgnore(app)
-                currentId = app.appId
             }
 
             TransferDataType.ASSET.value -> {
                 val asset = serializationJson.decodeFromJsonElement<Asset>(transferData.data)
                 transferInserter.insertIgnore(asset)
-                currentId = asset.assetId
             }
 
             TransferDataType.SNAPSHOT.value -> {
                 val snapshot = serializationJson.decodeFromJsonElement<Snapshot>(transferData.data)
                 transferInserter.insertIgnore(snapshot)
-                currentId = snapshot.snapshotId
             }
 
             TransferDataType.STICKER.value -> {
@@ -299,19 +284,16 @@ class TransferClient @Inject internal constructor(
                     }
                 }
                 transferInserter.insertIgnore(sticker)
-                currentId = sticker.stickerId
             }
 
             TransferDataType.PIN_MESSAGE.value -> {
                 val pinMessage = serializationJson.decodeFromJsonElement<PinMessage>(transferData.data)
                 transferInserter.insertIgnore(pinMessage)
-                currentId = pinMessage.messageId
             }
 
             TransferDataType.TRANSCRIPT_MESSAGE.value -> {
                 val transcriptMessage = serializationJson.decodeFromJsonElement<TranscriptMessage>(transferData.data)
                 transferInserter.insertIgnore(transcriptMessage)
-                currentId = "${transcriptMessage.transcriptId}+${transcriptMessage.messageId}"
             }
 
             TransferDataType.MESSAGE.value -> {
@@ -323,7 +305,6 @@ class TransferClient @Inject internal constructor(
                         mutableList.clear()
                     }
                     ftsDatabase.insertOrReplaceMessageFts4(message)
-                    currentId = transferInserter.currentId
                 }
             }
 
@@ -341,7 +322,6 @@ class TransferClient @Inject internal constructor(
                         MessageMention(it.messageId, it.conversationId, mentionData, it.hasRead)
                     }
                 transferInserter.insertIgnore(messageMention)
-                currentId = transferInserter.currentId
             }
 
             TransferDataType.EXPIRED_MESSAGE.value -> {
@@ -352,7 +332,6 @@ class TransferClient @Inject internal constructor(
                 val expiredMessage =
                     serializationJson.decodeFromJsonElement<ExpiredMessage>(transferData.data)
                 transferInserter.insertIgnore(expiredMessage)
-                currentId = transferInserter.currentId
             }
 
             else -> {
@@ -369,9 +348,6 @@ class TransferClient @Inject internal constructor(
             if (isFinal) return
             transferInserter.insertMessages(mutableList)
             currentOutputStream?.close()
-            currentFile?.let { file ->
-                processDataFile(file)
-            }
             // Final db work
             conversationDao.getAllConversationId().forEach { conversationId ->
                 conversationDao.refreshLastMessageId(conversationId)
@@ -380,22 +356,39 @@ class TransferClient @Inject internal constructor(
             conversationExtDao.getAllConversationId().forEach { conversationId ->
                 conversationExtDao.refreshCountByConversationId(conversationId)
             }
-            processAttachmentFile(getAttachmentPath())
+            if (status.value != TransferStatus.ERROR) {
+                currentFile?.let { file ->
+                    processDataFile(file)
+                }
+                processAttachmentFile(getAttachmentPath())
+            }
             isFinal = true
         }
     }
 
-    fun exit(finished: Boolean = false) = applicationScope.launch(SINGLE_SOCKET_THREAD) {
+    fun exit(finished: Boolean = false) = applicationScope.launch {
         try {
-            if (!finished) {
-                Timber.e("DeviceId: $deviceId type: $currentType id: ${transferInserter.currentId} start-time:$startTime current-time:${System.currentTimeMillis()}")
-            } else {
-                Timber.e("Finish exit ${(System.currentTimeMillis() - startTime) / 1000} s")
+            if (socket == null) return@launch
+            withContext(SINGLE_SOCKET_THREAD) {
+                synchronized(this) {
+                    socket?.close()
+                    socket = null
+                }
             }
-            if (socket != null) {
-                quit = true
-                socket?.close()
-                socket = null
+            quit = true
+            if (!finished) {
+                val scene = TransferScene.from(deviceId, startTime, currentType, transferInserter.primaryId, transferInserter.assistanceId)
+                if (scene != null) {
+                    PropertyHelper.updateKeyValue(
+                        Constants.Account.PREF_TRANSFER_SCENE,
+                        serializationJson.encodeToString(TransferScene.serializer(), scene),
+                    )
+                }
+
+                Timber.e("DeviceId: $deviceId type: $currentType id: ${transferInserter.primaryId} start-time:$startTime current-time:${System.currentTimeMillis()}")
+            } else {
+                PropertyHelper.deleteKeyValue(Constants.Account.PREF_TRANSFER_SCENE)
+                Timber.e("Finish exit ${(System.currentTimeMillis() - startTime) / 1000} s")
             }
             launch(singleTransferThread) {
                 finalWork()
@@ -444,7 +437,7 @@ class TransferClient @Inject internal constructor(
         if (System.currentTimeMillis() - lastTime > 300) {
             val processProgress = min(processCount * 100f / total, 100f)
             lastTime = System.currentTimeMillis()
-            RxBus.publish(DeviceTransferProgressEvent(String.format("%.2f", processProgress)))
+            RxBus.publish(DeviceTransferProgressEvent(String.format("%.2f%%", processProgress)))
             Timber.e("Process $processProgress")
         }
     }
@@ -477,6 +470,7 @@ class TransferClient @Inject internal constructor(
     private fun processDataFile(file: File) { // Read files, parse data
         synchronized(this) {
             try {
+                if (status.value == TransferStatus.ERROR) return
                 Timber.e("Process file ${file.absolutePath} ${Thread.currentThread().name}")
                 if (file.exists() && file.length() > 0) {
                     file.inputStream().use { input ->
@@ -499,17 +493,18 @@ class TransferClient @Inject internal constructor(
 
     private fun processAttachmentFile(folder: File) { // Processing attachment files
         folder.walkTopDown().forEach { f ->
+            if (status.value == TransferStatus.ERROR) return
             if (f.isFile && f.length() > 0) {
                 val messageId = f.name
                 if (messageId.isUUID()) {
                     processProgress()
                     val transferMessage = transcriptMessageDao.findAttachmentMessage(messageId)
-                    if (transferMessage?.mediaUrl != null) {
+                    transferMessage?.mediaUrl?.let { mediaUrl ->
                         val dir = context.getTranscriptDirPath()
                         if (!dir.exists()) {
                             dir.mkdirs()
                         }
-                        f.copy(File(dir, transferMessage.mediaUrl))
+                        f.copy(File(dir, mediaUrl))
                     }
                     val message = messageDao.findAttachmentMessage(messageId)
                     if (message?.mediaUrl != null) {
@@ -549,7 +544,9 @@ class TransferClient @Inject internal constructor(
             }
         }
         folder.deleteRecursively()
-        status.value = TransferStatus.FINISHED
+        if (status.value != TransferStatus.ERROR) {
+            status.value = TransferStatus.FINISHED
+        }
     }
 
     private fun byteArrayToInt(byteArray: ByteArray): Int {

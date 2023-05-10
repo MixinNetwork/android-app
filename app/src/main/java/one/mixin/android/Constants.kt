@@ -62,6 +62,7 @@ object Constants {
         const val PREF_ATTACHMENT = "pref_attachment"
         const val PREF_CLEANUP_THUMB = "pref_cleanup_thumb"
         const val PREF_CLEANUP_QUOTE_CONTENT = "pref_cleanup_quote_content"
+        const val PREF_TRANSFER_SCENE = "pref_transfer_scene"
 
         object Migration {
             const val PREF_MIGRATION_ATTACHMENT = "pref_migration_attachment"

@@ -648,6 +648,7 @@
     <string name="NO_MEDIA">NO MEDIA</string>
     <string name="No_media_yet">No media yet</string>
     <string name="No_Memo">No Memo</string>
+    <string name="No_Need">No Need</string>
     <string name="No_network_connection">No network connection</string>
     <string name="NO_POSTS">NO POSTS</string>
     <string name="No_raws">No raws</string>
@@ -1169,4 +1170,7 @@
     <string name="transfer_process_title">Importing</string>
     <string name="transfer_process_desc">Importing (%1$s)</string>
     <string name="transfer_process_tip">In order to ensure a smooth migration, please do not close Mixin</string>
+    <string name="transfer_breakpoint_continuation">Breakpoint continuation</string>
+    <string name="transfer_breakpoint_continuation_desc">Last sync time on this device was %1$s, do you want to resume from the last sync point?</string>
+    <string name="transfer_syncing_des">Transferring chat history, do you want to cancel ?</string>
 </resources>

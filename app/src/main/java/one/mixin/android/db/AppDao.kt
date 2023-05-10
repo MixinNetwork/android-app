@@ -87,4 +87,7 @@ interface AppDao : BaseDao<App> {
 
     @Query("SELECT count(1) FROM apps")
     fun countApps(): Long
+
+    @Query("SELECT count(1) FROM apps WHERE rowid > :rowId")
+    fun countApps(rowId: Long): Long
 }

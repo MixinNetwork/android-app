@@ -607,4 +607,10 @@ interface MessageDao : BaseDao<Message> {
 
     @Query("SELECT count(1) FROM messages WHERE (category IN ($DATA, $IMAGES, $AUDIOS, $VIDEOS)) ")
     fun countMediaMessages(): Long
+
+    @Query("SELECT count(1) FROM messages WHERE rowid > :rowId")
+    fun countMessages(rowId: Long): Long
+
+    @Query("SELECT count(1) FROM messages WHERE rowid > :rowId AND (category IN ($DATA, $IMAGES, $AUDIOS, $VIDEOS))")
+    fun countMediaMessages(rowId: Long): Long
 }

@@ -19,8 +19,11 @@ import one.mixin.android.vo.User
 import timber.log.Timber
 
 class TransferInserter {
-    var currentId: String? = null // Save the currently inserted primary key id
+    var primaryId: String? = null // Save the currently inserted primary key id
         private set
+    var assistanceId: String? = null
+        private set
+
     private val writableDatabase by lazy {
         requireNotNull(MixinDatabase.getWritableDatabase())
     }
@@ -221,7 +224,8 @@ class TransferInserter {
                 statement.executeInsert()
             }
             writableDatabase.setTransactionSuccessful()
-            currentId = messages.last().messageId
+            primaryId = messages.last().messageId
+            assistanceId = null
         } catch (e: SQLException) {
             Timber.e(e)
         } finally {
@@ -314,7 +318,8 @@ class TransferInserter {
                 stmt.bindLong(18, conversation.expireIn)
             }
             stmt.executeInsert()
-            currentId = conversation.conversationId
+            primaryId = conversation.conversationId
+            assistanceId = null
         } catch (e: Exception) {
             Timber.e(e)
         } finally {
@@ -332,7 +337,8 @@ class TransferInserter {
             stmt.bindString(3, participant.role)
             stmt.bindString(4, participant.createdAt)
             stmt.executeInsert()
-            currentId = "${participant.userId}+${participant.conversationId}"
+            primaryId = participant.userId
+            assistanceId = participant.conversationId
         } catch (e: Exception) {
             Timber.e(e)
         } finally {
@@ -400,7 +406,8 @@ class TransferInserter {
                 stmt.bindLong(13, userIsScam.toLong())
             }
             stmt.executeInsert()
-            currentId = user.userId
+            primaryId = user.userId
+            assistanceId = null
         } catch (e: Exception) {
             Timber.e(e)
         } finally {
@@ -444,7 +451,8 @@ class TransferInserter {
                 stmt.bindString(13, app.updatedAt)
             }
             stmt.executeInsert()
-            currentId = app.appId
+            primaryId = app.appId
+            assistanceId = null
         } catch (e: Exception) {
             Timber.e(e)
         } finally {
@@ -492,7 +500,8 @@ class TransferInserter {
                 stmt.bindString(16, depositEntryListConverter.converterDate(depositEntries))
             }
             stmt.executeInsert()
-            currentId = asset.assetId
+            primaryId = asset.assetId
+            assistanceId = null
         } catch (e: Exception) {
             Timber.e(e)
         } finally {
@@ -560,7 +569,8 @@ class TransferInserter {
                 stmt.bindString(15, snapshot.closingBalance)
             }
             stmt.executeInsert()
-            currentId = snapshot.snapshotId
+            primaryId = snapshot.snapshotId
+            assistanceId = null
         } catch (e: Exception) {
             Timber.e(e)
         } finally {
@@ -576,7 +586,8 @@ class TransferInserter {
             stmt.bindString(2, pinMessage.conversationId)
             stmt.bindString(3, pinMessage.createdAt)
             stmt.executeInsert()
-            currentId = pinMessage.messageId
+            primaryId = pinMessage.messageId
+            assistanceId = null
         } catch (e: Exception) {
             Timber.e(e)
         } finally {
@@ -607,7 +618,8 @@ class TransferInserter {
                 stmt.bindString(9, lastUserAt)
             }
             stmt.executeInsert()
-            currentId = sticker.stickerId
+            primaryId = sticker.stickerId
+            assistanceId = null
         } catch (e: Exception) {
             Timber.e(e)
         } finally {
@@ -742,7 +754,8 @@ class TransferInserter {
                 stmt.bindString(27, transcriptMessage.caption)
             }
             stmt.executeInsert()
-            currentId = "${transcriptMessage.transcriptId}+${transcriptMessage.messageId}"
+            primaryId = transcriptMessage.transcriptId
+            assistanceId = transcriptMessage.messageId
         } catch (e: Exception) {
             Timber.e(e)
         } finally {
@@ -760,7 +773,8 @@ class TransferInserter {
             val hasRead = if (messageMention.hasRead) 1 else 0
             stmt.bindLong(4, hasRead.toLong())
             stmt.executeInsert()
-            currentId = messageMention.messageId
+            primaryId = messageMention.messageId
+            assistanceId = null
         } catch (e: Exception) {
             Timber.e(e)
         } finally {
@@ -780,7 +794,8 @@ class TransferInserter {
                 stmt.bindLong(3, expiredMessage.expireAt)
             }
             stmt.executeInsert()
-            currentId = expiredMessage.messageId
+            primaryId = expiredMessage.messageId
+            assistanceId = null
         } catch (e: Exception) {
             Timber.e(e)
         } finally {

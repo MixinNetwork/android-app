@@ -4,10 +4,8 @@ import UUIDUtils
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.decodeFromStream
-import one.mixin.android.MixinApplication
 import one.mixin.android.RxBus
 import one.mixin.android.api.ChecksumException
-import one.mixin.android.db.MixinDatabase
 import one.mixin.android.event.SpeedEvent
 import one.mixin.android.ui.transfer.vo.TransferCommand
 import timber.log.Timber
@@ -42,14 +40,6 @@ class TransferProtocol(private val serializationJson: Json, private val server: 
         private val MAX_DATA_SIZE = 512000 // 500K
     }
 
-    private val messageDao by lazy {
-        MixinDatabase.getDatabase(MixinApplication.appContext).messageDao()
-    }
-
-    private val transcriptMessageDao by lazy {
-        MixinDatabase.getDatabase(MixinApplication.appContext).transcriptDao()
-    }
-
     fun read(inputStream: InputStream): Any? {
         val packageData = safeRead(inputStream, 5)
         val type = packageData[0]
@@ -78,7 +68,7 @@ class TransferProtocol(private val serializationJson: Json, private val server: 
     fun write(outputStream: OutputStream, type: Byte, content: String) {
         val data = content.toByteArray(UTF_8)
         if (data.size >= MAX_DATA_SIZE) {
-            Timber.e(String(data))
+            Timber.e(content)
             return
         }
         outputStream.write(byteArrayOf(type))

@@ -40,4 +40,7 @@ interface StickerDao : BaseDao<Sticker> {
 
     @Query("SELECT count(1) FROM stickers")
     fun countStickers(): Long
+
+    @Query("SELECT count(1) FROM stickers WHERE rowid > :rowId")
+    fun countStickers(rowId: Long): Long
 }
