@@ -1142,4 +1142,6 @@
     <string name="transfer_process_title">正在导入</string>
     <string name="transfer_process_desc">正在导入 (%1$s)</string>
     <string name="transfer_process_tip">为了保证顺利迁移，请不要关闭 Mixin</string>
+    <string name="transfer_breakpoint_continuation">Breakpoint continuation</string>
+    <string name="transfer_breakpoint_continuation_desc">Breakpoint continuation</string>
 </resources>

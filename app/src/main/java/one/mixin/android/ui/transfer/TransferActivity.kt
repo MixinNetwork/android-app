@@ -20,6 +20,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.Constants
+import one.mixin.android.Constants.INTERVAL_24_HOURS
 import one.mixin.android.Constants.Scheme.DEVICE_TRANSFER
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
@@ -27,6 +28,7 @@ import one.mixin.android.RxBus
 import one.mixin.android.databinding.ActivityTransferBinding
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.ParticipantDao
+import one.mixin.android.db.property.PropertyHelper
 import one.mixin.android.event.DeviceTransferProgressEvent
 import one.mixin.android.event.SpeedEvent
 import one.mixin.android.event.TimeOutEvent
@@ -54,6 +56,7 @@ import one.mixin.android.ui.transfer.status.TransferStatusLiveData
 import one.mixin.android.ui.transfer.vo.CURRENT_TRANSFER_VERSION
 import one.mixin.android.ui.transfer.vo.TransferCommand
 import one.mixin.android.ui.transfer.vo.TransferCommandAction
+import one.mixin.android.ui.transfer.vo.TransferScene
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.generateConversationId
@@ -483,34 +486,27 @@ class TransferActivity : BaseActivity() {
                 .observeOn(AndroidSchedulers.mainThread())
                 .autoDispose(destroyScope)
                 .subscribe {
-                   lifecycleScope.launch(Dispatchers.Main) {
-                       dialog = alertDialogBuilder()
-                           .setTitle(R.string.Transfer_error)
-                           .setMessage(R.string.Transfer_timeout)
-                           .setCancelable(false)
-                           .setPositiveButton(R.string.Confirm) { dialog, _ ->
-                               dialog.dismiss()
-                               finish()
-                               status.value = TransferStatus.INITIALIZING
-                           }.create()
-                       dialog?.show()
-                   }
+                    lifecycleScope.launch(Dispatchers.Main) {
+                        dialog = alertDialogBuilder()
+                            .setTitle(R.string.Transfer_error)
+                            .setMessage(R.string.Transfer_timeout)
+                            .setCancelable(false)
+                            .setPositiveButton(R.string.Confirm) { dialog, _ ->
+                                dialog.dismiss()
+                                finish()
+                                status.value = TransferStatus.INITIALIZING
+                            }.create()
+                        dialog?.show()
+                    }
                 }
         }
     }
 
-    private fun handleCommand(commandData: TransferCommand) {
-        when (commandData.action) {
+    private fun handleCommand(transferCommandData: TransferCommand) {
+        when (transferCommandData.action) {
             TransferCommandAction.PUSH.value -> {
                 lifecycleScope.launch {
-                    transferClient.connectToServer(
-                        commandData.ip!!,
-                        commandData.port!!,
-                        TransferCommand(
-                            TransferCommandAction.CONNECT.value,
-                            code = commandData.code,
-                        ),
-                    )
+                    connect(transferCommandData)
                 }
             }
 
@@ -520,6 +516,59 @@ class TransferActivity : BaseActivity() {
 
             else -> {}
         }
+    }
+
+    private suspend fun connect(transferCommandData: TransferCommand) {
+        val sceneString = PropertyHelper.findValueByKey(Constants.Account.PREF_TRANSFER_SCENE, "")
+        if (sceneString.isNotBlank()) {
+            val transferScene = gson.fromJson(sceneString, TransferScene::class.java)
+            if (transferScene.deviceId == transferCommandData.deviceId && System.currentTimeMillis() - transferScene.startTime < INTERVAL_24_HOURS) {
+                alertDialogBuilder()
+                    .setTitle(getString(R.string.transfer_breakpoint_continuation))
+                    .setMessage(getString(R.string.transfer_breakpoint_continuation_desc))
+                    .setNegativeButton(R.string.No_Need) { dialog, _ ->
+                        lifecycleScope.launch {
+                            connect(
+                                transferCommandData.ip!!,
+                                transferCommandData.port!!,
+                                TransferCommand(
+                                    TransferCommandAction.CONNECT.value,
+                                    code = transferCommandData.code,
+                                    userId = Session.getAccountId(),
+                                    type = transferScene.type,
+                                    primaryId = transferScene.primaryId,
+                                    assistanceId = transferScene.assistanceId,
+                                ),
+                            )
+                        }
+                        dialog.dismiss()
+                    }
+                    .setPositiveButton(R.string.Confirm) { dialog, _ ->
+                        lifecycleScope.launch {
+                            connect(
+                                transferCommandData.ip!!,
+                                transferCommandData.port!!,
+                                TransferCommand(
+                                    TransferCommandAction.CONNECT.value,
+                                    code = transferCommandData.code,
+                                    userId = Session.getAccountId(),
+                                ),
+                            )
+                        }
+                        dialog.dismiss()
+                    }.show()
+                return
+            }
+        }
+        connect(transferCommandData.ip!!, transferCommandData.port!!, TransferCommand(TransferCommandAction.CONNECT.value, code = transferCommandData.code, userId = Session.getAccountId()))
+    }
+
+    private suspend fun connect(ip: String, port: Int, transferCommand: TransferCommand) {
+        transferClient.connectToServer(
+            ip,
+            port,
+            transferCommand,
+        )
     }
 
     override fun onStop() {
@@ -579,15 +628,7 @@ class TransferActivity : BaseActivity() {
                 finish()
                 return@launch
             }
-            transferClient.connectToServer(
-                transferCommandData.ip!!,
-                transferCommandData.port!!,
-                TransferCommand(
-                    TransferCommandAction.CONNECT.value,
-                    code = transferCommandData.code,
-                    userId = Session.getAccountId(),
-                ),
-            )
+            connect(transferCommandData)
         }
 
     private val gson by lazy {

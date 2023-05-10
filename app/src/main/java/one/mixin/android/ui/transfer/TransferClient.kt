@@ -14,6 +14,7 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.decodeFromJsonElement
 import kotlinx.serialization.json.decodeFromStream
+import one.mixin.android.Constants
 import one.mixin.android.RxBus
 import one.mixin.android.db.AppDao
 import one.mixin.android.db.AssetDao
@@ -29,6 +30,7 @@ import one.mixin.android.db.SnapshotDao
 import one.mixin.android.db.StickerDao
 import one.mixin.android.db.TranscriptMessageDao
 import one.mixin.android.db.UserDao
+import one.mixin.android.db.property.PropertyHelper
 import one.mixin.android.di.ApplicationScope
 import one.mixin.android.event.DeviceTransferProgressEvent
 import one.mixin.android.event.TimeOutEvent
@@ -55,6 +57,7 @@ import one.mixin.android.ui.transfer.vo.TransferCommand
 import one.mixin.android.ui.transfer.vo.TransferCommandAction
 import one.mixin.android.ui.transfer.vo.TransferData
 import one.mixin.android.ui.transfer.vo.TransferDataType
+import one.mixin.android.ui.transfer.vo.TransferScene
 import one.mixin.android.ui.transfer.vo.compatible.TransferMessageMention
 import one.mixin.android.util.SINGLE_SOCKET_THREAD
 import one.mixin.android.util.mention.parseMentionData
@@ -125,7 +128,6 @@ class TransferClient @Inject internal constructor(
                 Timber.e("Current type: $field")
             }
         }
-    private var currentId: String? = null // Save the currently inserted primary key id
 
     private var deviceId: String? = null
 
@@ -173,7 +175,6 @@ class TransferClient @Inject internal constructor(
                 protocol.read(inputStream)
             } catch (e: EOFException) {
                 if (status.value != TransferStatus.FINISHED && status.value != TransferStatus.PROCESSING && status.value != TransferStatus.ERROR) {
-                    exit(false)
                     status.value = TransferStatus.ERROR
                     exit() // If it is not finished, exit.
                 }
@@ -256,37 +257,31 @@ class TransferClient @Inject internal constructor(
             TransferDataType.CONVERSATION.value -> {
                 val conversation = serializationJson.decodeFromJsonElement<Conversation>(transferData.data)
                 transferInserter.insertIgnore(conversation)
-                currentId = conversation.conversationId
             }
 
             TransferDataType.PARTICIPANT.value -> {
                 val participant = serializationJson.decodeFromJsonElement<Participant>(transferData.data)
                 transferInserter.insertIgnore(participant)
-                currentId = "${participant.conversationId}+${participant.userId}"
             }
 
             TransferDataType.USER.value -> {
                 val user = serializationJson.decodeFromJsonElement<User>(transferData.data)
                 transferInserter.insertIgnore(user)
-                currentId = user.userId
             }
 
             TransferDataType.APP.value -> {
                 val app = serializationJson.decodeFromJsonElement<App>(transferData.data)
                 transferInserter.insertIgnore(app)
-                currentId = app.appId
             }
 
             TransferDataType.ASSET.value -> {
                 val asset = serializationJson.decodeFromJsonElement<Asset>(transferData.data)
                 transferInserter.insertIgnore(asset)
-                currentId = asset.assetId
             }
 
             TransferDataType.SNAPSHOT.value -> {
                 val snapshot = serializationJson.decodeFromJsonElement<Snapshot>(transferData.data)
                 transferInserter.insertIgnore(snapshot)
-                currentId = snapshot.snapshotId
             }
 
             TransferDataType.STICKER.value -> {
@@ -299,19 +294,16 @@ class TransferClient @Inject internal constructor(
                     }
                 }
                 transferInserter.insertIgnore(sticker)
-                currentId = sticker.stickerId
             }
 
             TransferDataType.PIN_MESSAGE.value -> {
                 val pinMessage = serializationJson.decodeFromJsonElement<PinMessage>(transferData.data)
                 transferInserter.insertIgnore(pinMessage)
-                currentId = pinMessage.messageId
             }
 
             TransferDataType.TRANSCRIPT_MESSAGE.value -> {
                 val transcriptMessage = serializationJson.decodeFromJsonElement<TranscriptMessage>(transferData.data)
                 transferInserter.insertIgnore(transcriptMessage)
-                currentId = "${transcriptMessage.transcriptId}+${transcriptMessage.messageId}"
             }
 
             TransferDataType.MESSAGE.value -> {
@@ -323,7 +315,6 @@ class TransferClient @Inject internal constructor(
                         mutableList.clear()
                     }
                     ftsDatabase.insertOrReplaceMessageFts4(message)
-                    currentId = transferInserter.currentId
                 }
             }
 
@@ -341,7 +332,6 @@ class TransferClient @Inject internal constructor(
                         MessageMention(it.messageId, it.conversationId, mentionData, it.hasRead)
                     }
                 transferInserter.insertIgnore(messageMention)
-                currentId = transferInserter.currentId
             }
 
             TransferDataType.EXPIRED_MESSAGE.value -> {
@@ -352,7 +342,6 @@ class TransferClient @Inject internal constructor(
                 val expiredMessage =
                     serializationJson.decodeFromJsonElement<ExpiredMessage>(transferData.data)
                 transferInserter.insertIgnore(expiredMessage)
-                currentId = transferInserter.currentId
             }
 
             else -> {
@@ -388,7 +377,15 @@ class TransferClient @Inject internal constructor(
     fun exit(finished: Boolean = false) = applicationScope.launch(SINGLE_SOCKET_THREAD) {
         try {
             if (!finished) {
-                Timber.e("DeviceId: $deviceId type: $currentType id: ${transferInserter.currentId} start-time:$startTime current-time:${System.currentTimeMillis()}")
+                val scene = TransferScene.from(deviceId, startTime, currentType, transferInserter.primaryId, transferInserter.assistanceId)
+                if (scene != null) {
+                    PropertyHelper.updateKeyValue(
+                        Constants.Account.PREF_TRANSFER_SCENE,
+                        serializationJson.encodeToString(TransferScene.serializer(), scene),
+                    )
+                }
+
+                Timber.e("DeviceId: $deviceId type: $currentType id: ${transferInserter.primaryId} start-time:$startTime current-time:${System.currentTimeMillis()}")
             } else {
                 Timber.e("Finish exit ${(System.currentTimeMillis() - startTime) / 1000} s")
             }
