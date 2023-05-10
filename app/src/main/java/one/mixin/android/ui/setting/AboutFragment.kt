@@ -90,6 +90,7 @@ class AboutFragment : BaseFragment(R.layout.fragment_about) {
             helpCenter.setOnClickListener { context?.openUrl(Constants.HelpLink.CENTER) }
             terms.setOnClickListener { context?.openUrl(getString(R.string.landing_terms_url)) }
             privacy.setOnClickListener { context?.openUrl(getString(R.string.landing_privacy_policy_url)) }
+            logs.isVisible = defaultSharedPreferences.getBoolean(Constants.Debug.DB_DEBUG, false)
             logs.setOnClickListener {
                 shareLogsFile()
             }
