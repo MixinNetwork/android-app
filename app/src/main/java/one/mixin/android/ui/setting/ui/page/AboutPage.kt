@@ -179,42 +179,45 @@ fun AboutPage() {
                     context.openUrl(context.getString(R.string.landing_privacy_policy_url))
                 },
             )
-            AboutTile(
-                text = stringResource(id = R.string.Share_Logs),
-                onClick = {
-                    lifeScope.launch(Dispatchers.IO) {
-                        showProgressDialog = true
-                        val logFile = FileLogTree.getLogFile()
-                        showProgressDialog = false
-                        Intent().apply {
-                            val uri = logFile.absolutePath.toUri()
-                            action = Intent.ACTION_SEND
-                            putExtra(Intent.EXTRA_STREAM, uri)
-                            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-                            val extraMimeTypes = arrayOf("text/plain", "audio/*", "image/*", "video/*")
-                            putExtra(Intent.EXTRA_MIME_TYPES, extraMimeTypes)
-                            type = "application/*"
+            if (showDatabase.value) {
+                AboutTile(
+                    text = stringResource(id = R.string.Share_Logs),
+                    onClick = {
+                        lifeScope.launch(Dispatchers.IO) {
+                            showProgressDialog = true
+                            val logFile = FileLogTree.getLogFile()
+                            showProgressDialog = false
+                            Intent().apply {
+                                val uri = logFile.absolutePath.toUri()
+                                action = Intent.ACTION_SEND
+                                putExtra(Intent.EXTRA_STREAM, uri)
+                                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                                val extraMimeTypes =
+                                    arrayOf("text/plain", "audio/*", "image/*", "video/*")
+                                putExtra(Intent.EXTRA_MIME_TYPES, extraMimeTypes)
+                                type = "application/*"
 
-                            val resInfoList = context.packageManager.queryIntentActivities(
-                                this,
-                                PackageManager.MATCH_DEFAULT_ONLY
-                            )
-                            for (resolveInfo in resInfoList) {
-                                val packageName = resolveInfo.activityInfo.packageName
-                                context.grantUriPermission(
-                                    packageName,
-                                    uri,
-                                    Intent.FLAG_GRANT_READ_URI_PERMISSION
+                                val resInfoList = context.packageManager.queryIntentActivities(
+                                    this,
+                                    PackageManager.MATCH_DEFAULT_ONLY
                                 )
-                            }
-                            try {
-                                context.startActivity(Intent.createChooser(this, logFile.name))
-                            } catch (ignored: ActivityNotFoundException) {
+                                for (resolveInfo in resInfoList) {
+                                    val packageName = resolveInfo.activityInfo.packageName
+                                    context.grantUriPermission(
+                                        packageName,
+                                        uri,
+                                        Intent.FLAG_GRANT_READ_URI_PERMISSION
+                                    )
+                                }
+                                try {
+                                    context.startActivity(Intent.createChooser(this, logFile.name))
+                                } catch (ignored: ActivityNotFoundException) {
+                                }
                             }
                         }
-                    }
-                },
-            )
+                    },
+                )
+            }
             AboutTile(
                 text = stringResource(id = R.string.Version_Update),
                 onClick = {
