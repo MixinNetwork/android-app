@@ -178,6 +178,7 @@ class TransferClient @Inject internal constructor(
                     status.value = TransferStatus.ERROR
                     exit() // If it is not finished, exit.
                 }
+                quit = true
                 Timber.e(e)
                 null
             }

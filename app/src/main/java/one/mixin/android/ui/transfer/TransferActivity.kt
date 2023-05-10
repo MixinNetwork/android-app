@@ -39,6 +39,7 @@ import one.mixin.android.extension.base64RawURLEncode
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.fadeIn
+import one.mixin.android.extension.fullTime
 import one.mixin.android.extension.generateQRCode
 import one.mixin.android.extension.getParcelableExtraCompat
 import one.mixin.android.extension.openPermissionSetting
@@ -525,8 +526,27 @@ class TransferActivity : BaseActivity() {
             if (transferScene.deviceId == transferCommandData.deviceId && System.currentTimeMillis() - transferScene.startTime < INTERVAL_24_HOURS) {
                 alertDialogBuilder()
                     .setTitle(getString(R.string.transfer_breakpoint_continuation))
-                    .setMessage(getString(R.string.transfer_breakpoint_continuation_desc))
+                    .setMessage(
+                        getString(
+                            R.string.transfer_breakpoint_continuation_desc,
+                            (transferScene.startTime / 1000)?.fullTime()
+                        )
+                    )
                     .setNegativeButton(R.string.No_Need) { dialog, _ ->
+                        lifecycleScope.launch {
+                            connect(
+                                transferCommandData.ip!!,
+                                transferCommandData.port!!,
+                                TransferCommand(
+                                    TransferCommandAction.CONNECT.value,
+                                    code = transferCommandData.code,
+                                    userId = Session.getAccountId(),
+                                ),
+                            )
+                        }
+                        dialog.dismiss()
+                    }
+                    .setPositiveButton(R.string.Confirm) { dialog, _ ->
                         lifecycleScope.launch {
                             connect(
                                 transferCommandData.ip!!,
@@ -542,21 +562,8 @@ class TransferActivity : BaseActivity() {
                             )
                         }
                         dialog.dismiss()
-                    }
-                    .setPositiveButton(R.string.Confirm) { dialog, _ ->
-                        lifecycleScope.launch {
-                            connect(
-                                transferCommandData.ip!!,
-                                transferCommandData.port!!,
-                                TransferCommand(
-                                    TransferCommandAction.CONNECT.value,
-                                    code = transferCommandData.code,
-                                    userId = Session.getAccountId(),
-                                ),
-                            )
-                        }
-                        dialog.dismiss()
                     }.show()
+                // Display dialog, waiting for user to select
                 return
             }
         }

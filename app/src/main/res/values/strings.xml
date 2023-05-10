@@ -1168,5 +1168,5 @@
     <string name="transfer_process_desc">Importing (%1$s)</string>
     <string name="transfer_process_tip">In order to ensure a smooth migration, please do not close Mixin</string>
     <string name="transfer_breakpoint_continuation">Breakpoint continuation</string>
-    <string name="transfer_breakpoint_continuation_desc">Breakpoint continuation</string>
+    <string name="transfer_breakpoint_continuation_desc">Last sync time on this device was %1$s, do you want to resume from the last sync point?</string>
 </resources>
