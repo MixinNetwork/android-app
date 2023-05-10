@@ -29,6 +29,7 @@ import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.ParticipantDao
 import one.mixin.android.event.DeviceTransferProgressEvent
 import one.mixin.android.event.SpeedEvent
+import one.mixin.android.event.TimeOutEvent
 import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.base64Encode
 import one.mixin.android.extension.base64RawURLDecode
@@ -48,11 +49,11 @@ import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseActivity
 import one.mixin.android.ui.landing.InitializeActivity
 import one.mixin.android.ui.qr.CaptureActivity
+import one.mixin.android.ui.transfer.status.TransferStatus
+import one.mixin.android.ui.transfer.status.TransferStatusLiveData
 import one.mixin.android.ui.transfer.vo.CURRENT_TRANSFER_VERSION
+import one.mixin.android.ui.transfer.vo.TransferCommand
 import one.mixin.android.ui.transfer.vo.TransferCommandAction
-import one.mixin.android.ui.transfer.vo.TransferCommandData
-import one.mixin.android.ui.transfer.vo.TransferStatus
-import one.mixin.android.ui.transfer.vo.TransferStatusLiveData
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.generateConversationId
@@ -121,7 +122,7 @@ class TransferActivity : BaseActivity() {
             )
         }
 
-        fun show(context: Context, transferCommandData: TransferCommandData) {
+        fun show(context: Context, transferCommandData: TransferCommand) {
             val status = if (transferCommandData.action == TransferCommandAction.PULL.value) {
                 ARGS_RESTORE_FROM_PC
             } else {
@@ -306,7 +307,7 @@ class TransferActivity : BaseActivity() {
                 }
             }
         }
-        intent.getParcelableExtraCompat(ARGS_COMMAND, TransferCommandData::class.java)?.apply {
+        intent.getParcelableExtraCompat(ARGS_COMMAND, TransferCommand::class.java)?.apply {
             handleCommand(this)
         }
         intent.getStringExtra(ARGS_QR_CODE_CONTENT)?.let { qrCodeContent ->
@@ -410,7 +411,7 @@ class TransferActivity : BaseActivity() {
     override fun onNewIntent(intent: Intent?) {
         super.onNewIntent(intent)
         intent?.let {
-            it.getParcelableExtraCompat(ARGS_COMMAND, TransferCommandData::class.java)?.apply {
+            it.getParcelableExtraCompat(ARGS_COMMAND, TransferCommand::class.java)?.apply {
                 handleCommand(this)
             }
         }
@@ -419,6 +420,7 @@ class TransferActivity : BaseActivity() {
     private var transferDisposable: Disposable? = null
     private var transferSpeedDisposable: Disposable? = null
     private var transferCommandDisposable: Disposable? = null
+    private var transferTimeoutDisposable: Disposable? = null
 
     override fun onStart() {
         super.onStart()
@@ -429,7 +431,7 @@ class TransferActivity : BaseActivity() {
                 .autoDispose(destroyScope)
                 .subscribe {
                     binding.progressTv.text =
-                        getString(R.string.sending_desc, String.format("%.1f%%", it.progress))
+                        getString(R.string.sending_desc, String.format("%.2f%%", it.progress))
                 }
         }
 
@@ -443,7 +445,7 @@ class TransferActivity : BaseActivity() {
         }
 
         if (transferCommandDisposable == null) {
-            transferCommandDisposable = RxBus.listen(TransferCommandData::class.java)
+            transferCommandDisposable = RxBus.listen(TransferCommand::class.java)
                 .observeOn(AndroidSchedulers.mainThread())
                 .autoDispose(destroyScope)
                 .subscribe {
@@ -454,16 +456,36 @@ class TransferActivity : BaseActivity() {
                     }
                 }
         }
+
+        if (transferTimeoutDisposable == null) {
+            transferTimeoutDisposable = RxBus.listen(TimeOutEvent::class.java)
+                .observeOn(AndroidSchedulers.mainThread())
+                .autoDispose(destroyScope)
+                .subscribe {
+                   lifecycleScope.launch(Dispatchers.Main) {
+                       dialog = alertDialogBuilder()
+                           .setTitle(R.string.Transfer_error)
+                           .setMessage(R.string.Transfer_timeout)
+                           .setCancelable(false)
+                           .setPositiveButton(R.string.Confirm) { dialog, _ ->
+                               dialog.dismiss()
+                               finish()
+                               status.value = TransferStatus.INITIALIZING
+                           }.create()
+                       dialog?.show()
+                   }
+                }
+        }
     }
 
-    private fun handleCommand(commandData: TransferCommandData) {
+    private fun handleCommand(commandData: TransferCommand) {
         when (commandData.action) {
             TransferCommandAction.PUSH.value -> {
                 lifecycleScope.launch {
                     transferClient.connectToServer(
                         commandData.ip!!,
                         commandData.port!!,
-                        TransferCommandData(
+                        TransferCommand(
                             TransferCommandAction.CONNECT.value,
                             code = commandData.code,
                         ),
@@ -517,7 +539,7 @@ class TransferActivity : BaseActivity() {
             val transferCommandData = try {
                 gson.fromJson(
                     String(content.base64RawURLDecode()),
-                    TransferCommandData::class.java,
+                    TransferCommand::class.java,
                 )
             } catch (e: Exception) {
                 withContext(Dispatchers.Main) {
@@ -539,7 +561,7 @@ class TransferActivity : BaseActivity() {
             transferClient.connectToServer(
                 transferCommandData.ip!!,
                 transferCommandData.port!!,
-                TransferCommandData(
+                TransferCommand(
                     TransferCommandAction.CONNECT.value,
                     code = transferCommandData.code,
                     userId = Session.getAccountId(),
@@ -585,7 +607,7 @@ class TransferActivity : BaseActivity() {
 
     private fun pullRequest() {
         val encodeText = gson.toJson(
-            TransferCommandData(
+            TransferCommand(
                 TransferCommandAction.PULL.value,
             ).apply {
                 Timber.e("pull ${gson.toJson(this)}")

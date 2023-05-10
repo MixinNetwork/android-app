@@ -11,7 +11,7 @@ import one.mixin.android.extension.getDeviceId
 
 @Parcelize
 @Serializable
-data class TransferCommandData(
+data class TransferCommand(
     @SerialName("action")
     val action: String,
     @SerialName("ip")

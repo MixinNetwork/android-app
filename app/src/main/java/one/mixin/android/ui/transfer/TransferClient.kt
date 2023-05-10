@@ -1,12 +1,12 @@
 package one.mixin.android.ui.transfer
 
-import android.database.SQLException
-import com.google.gson.Gson
+import android.os.Handler
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.decodeFromJsonElement
@@ -20,7 +20,6 @@ import one.mixin.android.db.ConversationExtDao
 import one.mixin.android.db.ExpiredMessageDao
 import one.mixin.android.db.MessageDao
 import one.mixin.android.db.MessageMentionDao
-import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.ParticipantDao
 import one.mixin.android.db.PinMessageDao
 import one.mixin.android.db.RemoteMessageStatusDao
@@ -29,17 +28,18 @@ import one.mixin.android.db.StickerDao
 import one.mixin.android.db.TranscriptMessageDao
 import one.mixin.android.db.UserDao
 import one.mixin.android.event.DeviceTransferProgressEvent
+import one.mixin.android.event.TimeOutEvent
 import one.mixin.android.extension.createAtToLong
 import one.mixin.android.fts.FtsDatabase
 import one.mixin.android.fts.insertOrReplaceMessageFts4
+import one.mixin.android.ui.transfer.status.TransferStatus
+import one.mixin.android.ui.transfer.status.TransferStatusLiveData
 import one.mixin.android.ui.transfer.vo.CURRENT_TRANSFER_VERSION
+import one.mixin.android.ui.transfer.vo.TransferCommand
 import one.mixin.android.ui.transfer.vo.TransferCommandAction
-import one.mixin.android.ui.transfer.vo.TransferCommandData
+import one.mixin.android.ui.transfer.vo.TransferData
 import one.mixin.android.ui.transfer.vo.TransferDataType
-import one.mixin.android.ui.transfer.vo.TransferMessageMention
-import one.mixin.android.ui.transfer.vo.TransferSendData
-import one.mixin.android.ui.transfer.vo.TransferStatus
-import one.mixin.android.ui.transfer.vo.TransferStatusLiveData
+import one.mixin.android.ui.transfer.vo.compatible.TransferMessageMention
 import one.mixin.android.util.SINGLE_SOCKET_THREAD
 import one.mixin.android.util.mention.parseMentionData
 import one.mixin.android.vo.App
@@ -64,6 +64,7 @@ import java.net.Socket
 import java.net.SocketException
 import javax.inject.Inject
 
+@ExperimentalSerializationApi
 class TransferClient @Inject internal constructor(
     val assetDao: AssetDao,
     val conversationDao: ConversationDao,
@@ -81,29 +82,37 @@ class TransferClient @Inject internal constructor(
     val remoteMessageStatusDao: RemoteMessageStatusDao,
     val ftsDatabase: FtsDatabase,
     val status: TransferStatusLiveData,
-    val gson: Gson,
     private val serializationJson: Json,
 ) {
+    val protocol = TransferProtocol(serializationJson)
 
     private var socket: Socket? = null
     private var quit = false
     private var count = 0L
     private var startTime = 0L
+    private var currentType: String? = null
+        set(value) {
+            if (field != value) {
+                field = value
+                Timber.e("Current type: $field")
+            }
+        }
 
-    val protocol = TransferProtocol()
+    private var deviceId: String? = null
 
     private val syncChannel = Channel<ByteArray>()
 
-    suspend fun connectToServer(ip: String, port: Int, commandData: TransferCommandData) =
+    private val transferInserter = TransferInserter()
+
+    suspend fun connectToServer(ip: String, port: Int, commandData: TransferCommand) =
         withContext(SINGLE_SOCKET_THREAD) {
             try {
                 status.value = TransferStatus.CONNECTING
                 val socket = Socket(ip, port)
                 this@TransferClient.socket = socket
                 status.value = TransferStatus.WAITING_FOR_VERIFICATION
-                val outputStream = socket.getOutputStream()
-                protocol.write(outputStream, TransferProtocol.TYPE_COMMAND, gson.toJson(commandData))
-                outputStream.flush()
+                // send connect command
+                sendCommand(socket.outputStream, commandData)
                 launch(Dispatchers.IO) { listen(socket.inputStream, socket.outputStream) }
                 launch(Dispatchers.IO) {
                     for (byteArray in syncChannel) {
@@ -127,10 +136,15 @@ class TransferClient @Inject internal constructor(
             val result = try {
                 protocol.read(inputStream)
             } catch (e: EOFException) {
+                if (status.value != TransferStatus.FINISHED && status.value != TransferStatus.ERROR) {
+                    status.value = TransferStatus.ERROR
+                    exit() // If it is not finished, exit.
+                }
+                Timber.e(e)
                 null
             }
             when (result) {
-                is TransferCommandData -> {
+                is TransferCommand -> {
                     when (result.action) {
                         TransferCommandAction.START.value -> {
                             if (result.version != CURRENT_TRANSFER_VERSION) {
@@ -140,6 +154,7 @@ class TransferClient @Inject internal constructor(
                             }
                             startTime = System.currentTimeMillis()
                             this.total = result.total ?: 0L
+                            this.deviceId = result.deviceId
                         }
 
                         TransferCommandAction.PUSH.value, TransferCommandAction.PULL.value -> {
@@ -148,9 +163,9 @@ class TransferClient @Inject internal constructor(
 
                         TransferCommandAction.FINISH.value -> {
                             status.value = TransferStatus.FINISHED
-                            sendFinish(outputStream)
+                            sendCommand(outputStream, TransferCommand(TransferCommandAction.FINISH.value))
                             delay(100)
-                            exit()
+                            exit(true)
                             Timber.e("It takes a total of ${System.currentTimeMillis() - startTime} milliseconds to synchronize ${this.total} data")
                         }
 
@@ -159,10 +174,13 @@ class TransferClient @Inject internal constructor(
                     }
                 }
                 is ByteArray -> {
+                    handler.removeCallbacks(runnable)
                     syncChannel.send(result)
                     progress(outputStream)
+                    handler.postDelayed(runnable, 30000) // No data was received to perform the runnable
                 }
                 else -> {
+                    handler.removeCallbacks(runnable)
                     // read file
                     progress(outputStream)
                 }
@@ -170,10 +188,13 @@ class TransferClient @Inject internal constructor(
         } while (!quit)
     }
 
-    private var lastTime = 0L
-    private val runtime by lazy {
-        Runtime.getRuntime()
+    private val handler = Handler()
+    private val runnable = Runnable {
+        Timber.e("Socket status: isConnected:${socket?.isConnected} isInputShutdown:${socket?.isInputShutdown} available:${socket?.getInputStream()?.available()}")
+        RxBus.publish(TimeOutEvent())
     }
+
+    private var lastTime = 0L
 
     private var lastProgress = 0f
     private fun progress(outputStream: OutputStream) {
@@ -182,7 +203,7 @@ class TransferClient @Inject internal constructor(
         if (lastProgress != progress && System.currentTimeMillis() - lastTime > 300) {
             sendCommand(
                 outputStream,
-                TransferCommandData(TransferCommandAction.PROGRESS.value, progress = progress),
+                TransferCommand(TransferCommandAction.PROGRESS.value, progress = progress),
             )
             lastProgress = progress
             lastTime = System.currentTimeMillis()
@@ -192,39 +213,40 @@ class TransferClient @Inject internal constructor(
     }
 
     private val mutableList: MutableList<Message> = mutableListOf()
-
     private fun processJson(byteArray: ByteArray) {
         val byteArrayInputStream = ByteArrayInputStream(byteArray)
-        val transferData = serializationJson.decodeFromStream<TransferSendData<JsonElement>>(byteArrayInputStream)
+        val transferData = serializationJson.decodeFromStream<TransferData<JsonElement>>(byteArrayInputStream)
+        currentType = transferData.type
+        Timber.e("process json size: ${byteArray.size}")
         when (transferData.type) {
             TransferDataType.CONVERSATION.value -> {
                 val conversation = serializationJson.decodeFromJsonElement<Conversation>(transferData.data)
-                conversationDao.insertIgnore(conversation)
+                transferInserter.insertIgnore(conversation)
             }
 
             TransferDataType.PARTICIPANT.value -> {
                 val participant = serializationJson.decodeFromJsonElement<Participant>(transferData.data)
-                participantDao.insertIgnore(participant)
+                transferInserter.insertIgnore(participant)
             }
 
             TransferDataType.USER.value -> {
                 val user = serializationJson.decodeFromJsonElement<User>(transferData.data)
-                userDao.insertIgnore(user)
+                transferInserter.insertIgnore(user)
             }
 
             TransferDataType.APP.value -> {
                 val app = serializationJson.decodeFromJsonElement<App>(transferData.data)
-                appDao.insertIgnore(app)
+                transferInserter.insertIgnore(app)
             }
 
             TransferDataType.ASSET.value -> {
                 val asset = serializationJson.decodeFromJsonElement<Asset>(transferData.data)
-                assetDao.insertIgnore(asset)
+                transferInserter.insertIgnore(asset)
             }
 
             TransferDataType.SNAPSHOT.value -> {
                 val snapshot = serializationJson.decodeFromJsonElement<Snapshot>(transferData.data)
-                snapshotDao.insertIgnore(snapshot)
+                transferInserter.insertIgnore(snapshot)
             }
 
             TransferDataType.STICKER.value -> {
@@ -236,17 +258,17 @@ class TransferClient @Inject internal constructor(
                         Timber.e(e)
                     }
                 }
-                stickerDao.insertIgnore(sticker)
+                transferInserter.insertIgnore(sticker)
             }
 
             TransferDataType.PIN_MESSAGE.value -> {
                 val pinMessage = serializationJson.decodeFromJsonElement<PinMessage>(transferData.data)
-                pinMessageDao.insertIgnore(pinMessage)
+                transferInserter.insertIgnore(pinMessage)
             }
 
             TransferDataType.TRANSCRIPT_MESSAGE.value -> {
                 val transcriptMessage = serializationJson.decodeFromJsonElement<TranscriptMessage>(transferData.data)
-                transcriptMessageDao.insertIgnore(transcriptMessage)
+                transferInserter.insertIgnore(transcriptMessage)
             }
 
             TransferDataType.MESSAGE.value -> {
@@ -254,7 +276,7 @@ class TransferClient @Inject internal constructor(
                 if (messageDao.findMessageIdById(message.messageId) == null) {
                     mutableList.add(message)
                     if (mutableList.size >= 1000) {
-                        insertMessages(mutableList)
+                        transferInserter.insertMessages(mutableList)
 
                         mutableList.clear()
                     }
@@ -264,7 +286,7 @@ class TransferClient @Inject internal constructor(
 
             TransferDataType.MESSAGE_MENTION.value -> {
                 if (mutableList.isNotEmpty()) {
-                    insertMessages(mutableList)
+                    transferInserter.insertMessages(mutableList)
 
                     mutableList.clear()
                 }
@@ -276,18 +298,18 @@ class TransferClient @Inject internal constructor(
                         val mentionData = parseMentionData(messageContent, userDao) ?: return
                         MessageMention(it.messageId, it.conversationId, mentionData, it.hasRead)
                     }
-                messageMentionDao.insertIgnoreReturn(messageMention)
+                transferInserter.insertIgnore(messageMention)
             }
 
             TransferDataType.EXPIRED_MESSAGE.value -> {
                 if (mutableList.isNotEmpty()) {
-                    insertMessages(mutableList)
+                    transferInserter.insertMessages(mutableList)
 
                     mutableList.clear()
                 }
                 val expiredMessage =
                     serializationJson.decodeFromJsonElement<ExpiredMessage>(transferData.data)
-                expiredMessageDao.insertIgnore(expiredMessage)
+                transferInserter.insertIgnore(expiredMessage)
             }
 
             else -> {
@@ -299,7 +321,7 @@ class TransferClient @Inject internal constructor(
 
     private fun finalWork() {
         if (mutableList.isNotEmpty()) {
-            insertMessages(mutableList)
+            transferInserter.insertMessages(mutableList)
         }
         conversationDao.getAllConversationId().forEach { conversationId ->
             conversationDao.refreshLastMessageId(conversationId)
@@ -311,244 +333,36 @@ class TransferClient @Inject internal constructor(
         mutableList.clear()
     }
 
-    fun exit() = MixinApplication.get().applicationScope.launch(SINGLE_SOCKET_THREAD) {
+    fun exit(finished: Boolean = false) = MixinApplication.get().applicationScope.launch(SINGLE_SOCKET_THREAD) {
         try {
+            if (!finished) {
+                Timber.e("DeviceId: $deviceId type: $currentType id: ${transferInserter.currentId} start-time:$startTime current-time:${System.currentTimeMillis()}")
+            } else {
+                Timber.e("Finish exit ${System.currentTimeMillis() - startTime}/1000 s")
+            }
+            finalWork()
             if (socket != null) {
                 quit = true
                 socket?.close()
                 socket = null
             }
-            finalWork()
         } catch (e: Exception) {
             Timber.e("Exit client ${e.message}")
         }
     }
 
-    private fun sendFinish(outputStream: OutputStream) {
-        sendCommand(
-            outputStream,
-            TransferCommandData(TransferCommandAction.FINISH.value),
-        )
-    }
-
     private fun sendCommand(
         outputStream: OutputStream,
-        transferSendData: TransferCommandData,
+        command: TransferCommand,
     ) {
-        val content = gson.toJson(transferSendData)
         try {
-            protocol.write(outputStream, TransferProtocol.TYPE_COMMAND, content)
+            protocol.write(outputStream, TransferProtocol.TYPE_COMMAND, serializationJson.encodeToString(TransferCommand.serializer(), command))
             outputStream.flush()
         } catch (e: SocketException) {
             exit()
             if (status.value != TransferStatus.FINISHED && status.value != TransferStatus.ERROR) {
                 status.value = TransferStatus.ERROR
             }
-        }
-    }
-
-    private fun insertMessages(messages: List<Message>) {
-        val writableDatabase = MixinDatabase.getWritableDatabase() ?: return
-
-        val sql =
-            "INSERT OR IGNORE INTO messages (id,conversation_id,user_id,category,content,media_url,media_mime_type,media_size,media_duration,media_width,media_height,media_hash,thumb_image,thumb_url,media_key,media_digest,media_status,status,created_at,action,participant_id,snapshot_id,hyperlink,name,album_id,sticker_id,shared_user_id,media_waveform,media_mine_type,quote_message_id,quote_content,caption) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"
-
-        val statement = writableDatabase.compileStatement(sql)
-
-        writableDatabase.beginTransaction()
-        try {
-            for (message in messages) {
-                statement.bindString(1, message.messageId)
-                statement.bindString(2, message.conversationId)
-                statement.bindString(3, message.userId)
-                statement.bindString(4, message.category)
-
-                val content = message.content
-                if (content != null) {
-                    statement.bindString(5, content)
-                } else {
-                    statement.bindNull(5)
-                }
-
-                val mediaUrl = message.mediaUrl
-                if (mediaUrl != null) {
-                    statement.bindString(6, mediaUrl)
-                } else {
-                    statement.bindNull(6)
-                }
-
-                val mediaMimeType = message.mediaMimeType
-                if (mediaMimeType != null) {
-                    statement.bindString(7, mediaMimeType)
-                } else {
-                    statement.bindNull(7)
-                }
-
-                val mediaSize = message.mediaSize
-                if (mediaSize != null) {
-                    statement.bindLong(8, mediaSize)
-                } else {
-                    statement.bindNull(8)
-                }
-
-                val mediaDuration = message.mediaDuration
-                if (mediaDuration != null) {
-                    statement.bindString(9, mediaDuration)
-                } else {
-                    statement.bindNull(9)
-                }
-
-                val mediaWidth = message.mediaWidth
-                if (mediaWidth != null) {
-                    statement.bindLong(10, mediaWidth.toLong())
-                } else {
-                    statement.bindNull(10)
-                }
-
-                val mediaHeight = message.mediaHeight
-                if (mediaHeight != null) {
-                    statement.bindLong(11, mediaHeight.toLong())
-                } else {
-                    statement.bindNull(11)
-                }
-
-                val mediaHash = message.mediaHash
-                if (mediaHash != null) {
-                    statement.bindString(12, mediaHash)
-                } else {
-                    statement.bindNull(12)
-                }
-
-                val thumbImage = message.thumbImage
-                if (thumbImage != null) {
-                    statement.bindString(13, thumbImage)
-                } else {
-                    statement.bindNull(13)
-                }
-
-                val thumbUrl = message.thumbUrl
-                if (thumbUrl != null) {
-                    statement.bindString(14, thumbUrl)
-                } else {
-                    statement.bindNull(14)
-                }
-
-                val mediaKey = message.mediaKey
-                if (mediaKey != null) {
-                    statement.bindBlob(15, mediaKey)
-                } else {
-                    statement.bindNull(15)
-                }
-
-                val mediaDigest = message.mediaDigest
-                if (mediaDigest != null) {
-                    statement.bindBlob(16, mediaDigest)
-                } else {
-                    statement.bindNull(16)
-                }
-
-                val mediaStatus = message.mediaStatus
-                if (mediaStatus == null) {
-                    statement.bindNull(17)
-                } else {
-                    statement.bindString(17, mediaStatus)
-                }
-                statement.bindString(18, message.status)
-                statement.bindString(19, message.createdAt)
-                val action = message.action
-                if (action == null) {
-                    statement.bindNull(20)
-                } else {
-                    statement.bindString(20, action)
-                }
-
-                val participantId = message.participantId
-                if (participantId != null) {
-                    statement.bindString(21, participantId)
-                } else {
-                    statement.bindNull(21)
-                }
-
-                val snapshotId = message.snapshotId
-                if (snapshotId != null) {
-                    statement.bindString(22, snapshotId)
-                } else {
-                    statement.bindNull(22)
-                }
-
-                val hyperlink = message.hyperlink
-                if (hyperlink != null) {
-                    statement.bindString(23, hyperlink)
-                } else {
-                    statement.bindNull(23)
-                }
-
-                val name = message.name
-                if (name != null) {
-                    statement.bindString(24, name)
-                } else {
-                    statement.bindNull(24)
-                }
-
-                val albumId = message.albumId
-                if (albumId != null) {
-                    statement.bindString(25, albumId)
-                } else {
-                    statement.bindNull(25)
-                }
-
-                val stickerId = message.stickerId
-                if (stickerId != null) {
-                    statement.bindString(26, stickerId)
-                } else {
-                    statement.bindNull(26)
-                }
-
-                val sharedUserId = message.sharedUserId
-                if (sharedUserId != null) {
-                    statement.bindString(27, sharedUserId)
-                } else {
-                    statement.bindNull(27)
-                }
-
-                val mediaWaveform = message.mediaWaveform
-                if (mediaWaveform != null) {
-                    statement.bindBlob(28, mediaWaveform)
-                } else {
-                    statement.bindNull(28)
-                }
-
-                statement.bindNull(29)
-
-                val quoteMessageId = message.quoteMessageId
-                if (quoteMessageId != null) {
-                    statement.bindString(30, quoteMessageId)
-                } else {
-                    statement.bindNull(30)
-                }
-
-                val quoteContent = message.quoteContent
-                if (quoteContent != null) {
-                    statement.bindString(31, quoteContent)
-                } else {
-                    statement.bindNull(31)
-                }
-
-                val caption = message.caption
-                if (caption != null) {
-                    statement.bindString(32, caption)
-                } else {
-                    statement.bindNull(32)
-                }
-
-                statement.executeInsert()
-            }
-            writableDatabase.setTransactionSuccessful()
-        } catch (e: SQLException) {
-            Timber.e(e)
-        } finally {
-            writableDatabase.endTransaction()
-            statement.close()
         }
     }
 }

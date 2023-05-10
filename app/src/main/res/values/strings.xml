@@ -1162,4 +1162,5 @@
     <string name="not_yours">Chat history cannot be synced between different accounts</string>
     <string name="Version_not_supported">Version is not supported</string>
     <string name="restore_local_exists">There are already %1$s local chat records, and the time of the last message is %2$s. Are you sure you want to overwrite the local data with the backup chat data?</string>
+    <string name="Transfer_timeout">Whether to quit if you haven\'t received data for a long time ?</string>
 </resources>

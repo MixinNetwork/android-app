@@ -84,7 +84,7 @@ import one.mixin.android.tip.Identity
 import one.mixin.android.tip.Tip
 import one.mixin.android.tip.TipConstants
 import one.mixin.android.tip.TipNode
-import one.mixin.android.ui.transfer.vo.TransferStatusLiveData
+import one.mixin.android.ui.transfer.status.TransferStatusLiveData
 import one.mixin.android.util.ErrorHandler.Companion.AUTHENTICATION
 import one.mixin.android.util.ErrorHandler.Companion.OLD_VERSION
 import one.mixin.android.util.GsonHelper

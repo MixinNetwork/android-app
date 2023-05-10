@@ -59,7 +59,7 @@ enum class SettingDestination {
     Setting,
     Account,
     NotificationAndConfirm,
-    BackUp,
+    MigrateRestore,
     DataStorage,
     Appearance,
     About,
@@ -276,9 +276,9 @@ class SettingComposeFragment : BaseFragment() {
                                     SettingDataStorageFragment.newInstance()
                                 }
                             }
-                            composable(SettingDestination.BackUp.name) {
-                                MixinSettingFragment(BackUpFragment.TAG) {
-                                    BackUpFragment.newInstance()
+                            composable(SettingDestination.MigrateRestore.name) {
+                                MixinSettingFragment(MigrateRestoreFragment.TAG) {
+                                    MigrateRestoreFragment.newInstance()
                                 }
                             }
                             composable(SettingDestination.AccountPrivacy.name) {

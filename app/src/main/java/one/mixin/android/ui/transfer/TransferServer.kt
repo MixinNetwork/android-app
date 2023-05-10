@@ -4,6 +4,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.SerializationStrategy
+import kotlinx.serialization.json.Json
 import one.mixin.android.MixinApplication
 import one.mixin.android.RxBus
 import one.mixin.android.db.AppDao
@@ -25,15 +28,26 @@ import one.mixin.android.extension.toUtcTime
 import one.mixin.android.session.Session
 import one.mixin.android.ui.transfer.TransferProtocol.Companion.TYPE_COMMAND
 import one.mixin.android.ui.transfer.TransferProtocol.Companion.TYPE_JSON
+import one.mixin.android.ui.transfer.status.TransferStatus
+import one.mixin.android.ui.transfer.status.TransferStatusLiveData
+import one.mixin.android.ui.transfer.vo.TransferCommand
 import one.mixin.android.ui.transfer.vo.TransferCommandAction
-import one.mixin.android.ui.transfer.vo.TransferCommandData
+import one.mixin.android.ui.transfer.vo.TransferData
 import one.mixin.android.ui.transfer.vo.TransferDataType
-import one.mixin.android.ui.transfer.vo.TransferSendData
-import one.mixin.android.ui.transfer.vo.TransferStatus
-import one.mixin.android.ui.transfer.vo.TransferStatusLiveData
-import one.mixin.android.util.GsonHelper
+import one.mixin.android.ui.transfer.vo.compatible.TransferMessage
+import one.mixin.android.ui.transfer.vo.compatible.TransferMessageMention
 import one.mixin.android.util.NetworkUtils
 import one.mixin.android.util.SINGLE_SOCKET_THREAD
+import one.mixin.android.vo.App
+import one.mixin.android.vo.Asset
+import one.mixin.android.vo.Conversation
+import one.mixin.android.vo.ExpiredMessage
+import one.mixin.android.vo.Participant
+import one.mixin.android.vo.PinMessage
+import one.mixin.android.vo.Snapshot
+import one.mixin.android.vo.Sticker
+import one.mixin.android.vo.TranscriptMessage
+import one.mixin.android.vo.User
 import timber.log.Timber
 import java.io.InputStream
 import java.io.OutputStream
@@ -46,6 +60,7 @@ import java.util.concurrent.Executors
 import javax.inject.Inject
 import kotlin.random.Random
 
+@ExperimentalSerializationApi
 class TransferServer @Inject internal constructor(
     val assetDao: AssetDao,
     val conversationDao: ConversationDao,
@@ -60,25 +75,30 @@ class TransferServer @Inject internal constructor(
     val appDao: AppDao,
     val messageMentionDao: MessageMentionDao,
     val status: TransferStatusLiveData,
+    private val serializationJson: Json,
 ) {
+    val protocol = TransferProtocol(serializationJson, true)
 
     private var serverSocket: ServerSocket? = null
     private var socket: Socket? = null
 
     private var quit = false
 
-    private val gson by lazy {
-        GsonHelper.customGson
-    }
-
     private var code = 0
     private var port = 0
 
     private var count = 0L
     private var total = 0L
+    private var currentType: String? = null
+        set(value) {
+            if (field != value) {
+                field = value
+                Timber.e("Current type: $field")
+            }
+        }
 
     suspend fun startServer(
-        createdSuccessCallback: (TransferCommandData) -> Unit,
+        createdSuccessCallback: (TransferCommand) -> Unit,
     ) = withContext(SINGLE_SOCKET_THREAD) {
         try {
             val serverSocket = createSocket(port = Random.nextInt(1024, 1124))
@@ -86,7 +106,7 @@ class TransferServer @Inject internal constructor(
             status.value = TransferStatus.CREATED
             code = Random.nextInt(10000)
             createdSuccessCallback(
-                TransferCommandData(
+                TransferCommand(
                     TransferCommandAction.PUSH.value,
                     NetworkUtils.getWifiIpAddress(MixinApplication.appContext),
                     this@TransferServer.port,
@@ -148,7 +168,7 @@ class TransferServer @Inject internal constructor(
         withContext(Dispatchers.IO) {
             do {
                 when (val result = protocol.read(inputStream)) {
-                    is TransferCommandData -> {
+                    is TransferCommand -> {
                         if (result.action == TransferCommandAction.CONNECT.value) {
                             if (result.code == code && result.userId == Session.getAccountId()) {
                                 Timber.e("Verification passed, start transmission")
@@ -201,30 +221,27 @@ class TransferServer @Inject internal constructor(
         sendFinish(outputStream)
     }
 
-    private fun writeJson(
+    private fun <T> writeJson(
         outputStream: OutputStream,
-        transferData: Any,
+        serializer: SerializationStrategy<T>,
+        transferData: T,
+        type: Byte = TYPE_JSON,
     ) {
-        val content = gson.toJson(transferData)
-        protocol.write(outputStream, TYPE_JSON, content)
+        protocol.write(outputStream, type, serializationJson.encodeToString(serializer, transferData))
         outputStream.flush()
     }
 
     private fun writeCommand(
         outputStream: OutputStream,
-        transferData: TransferCommandData,
+        command: TransferCommand,
     ) {
-        val content = gson.toJson(transferData)
-        protocol.write(outputStream, TYPE_COMMAND, content)
-        outputStream.flush()
+        writeJson(outputStream, TransferCommand.serializer(), command, TYPE_COMMAND)
     }
 
     private fun sendStart(outputStream: OutputStream) {
-        writeCommand(
-            outputStream,
-            TransferCommandData(TransferCommandAction.START.value, total = totalCount()),
-        )
+        writeCommand(outputStream, TransferCommand(TransferCommandAction.START.value, total = totalCount()))
         RxBus.publish(DeviceTransferProgressEvent(0.0f))
+        Timber.e("Started total: $total")
     }
 
     private fun totalCount(): Long {
@@ -239,114 +256,120 @@ class TransferServer @Inject internal constructor(
     private fun sendFinish(outputStream: OutputStream) {
         writeCommand(
             outputStream,
-            TransferCommandData(TransferCommandAction.FINISH.value),
+            TransferCommand(TransferCommandAction.FINISH.value),
         )
     }
 
     private fun syncConversation(outputStream: OutputStream) {
-        var offset = 0
+        currentType = TransferDataType.CONVERSATION.value
+        var rowId = -1L
         while (!quit) {
-            val list = conversationDao.getConversationsByLimitAndOffset(LIMIT, offset)
+            val list = conversationDao.getConversationsByLimitAndRowId(LIMIT, rowId)
             if (list.isEmpty()) {
                 return
             }
             list.map {
-                TransferSendData(TransferDataType.CONVERSATION.value, it)
-            }.forEach {
-                writeJson(outputStream, it)
+                TransferData(TransferDataType.CONVERSATION.value, it)
+            }.forEach { conversation ->
+                writeJson(outputStream, TransferData.serializer(Conversation.serializer()), conversation)
                 count++
             }
             if (list.size < LIMIT) {
                 return
             }
-            offset += LIMIT
+            rowId = conversationDao.getConversationRowId(list.last().conversationId) ?: return
         }
     }
 
     private fun syncParticipant(outputStream: OutputStream) {
-        var offset = 0
+        currentType = TransferDataType.PARTICIPANT.value
+        var rowId = -1L
         while (!quit) {
-            val list = participantDao.getParticipantsByLimitAndOffset(LIMIT, offset)
+            val list = participantDao.getParticipantsByLimitAndRowId(LIMIT, rowId)
             if (list.isEmpty()) {
                 return
             }
             list.map {
-                TransferSendData(TransferDataType.PARTICIPANT.value, it)
-            }.forEach {
-                writeJson(outputStream, it)
+                TransferData(TransferDataType.PARTICIPANT.value, it)
+            }.forEach { participant ->
+                writeJson(outputStream, TransferData.serializer(Participant.serializer()), participant)
                 count++
             }
             if (list.size < LIMIT) {
                 return
             }
-            offset += LIMIT
+            rowId = participantDao.getParticipantRowId(list.last().conversationId, list.last().userId) ?: return
         }
     }
 
     private fun syncUser(outputStream: OutputStream) {
-        var offset = 0
+        currentType = TransferDataType.USER.value
+        var rowId = -1L
         while (!quit) {
-            val list = userDao.getUsersByLimitAndOffset(LIMIT, offset)
+            val list = userDao.getUsersByLimitAndRowId(LIMIT, rowId)
             if (list.isEmpty()) {
                 return
             }
             list.map {
-                TransferSendData(TransferDataType.USER.value, it)
-            }.forEach {
-                writeJson(outputStream, it)
+                TransferData(TransferDataType.USER.value, it)
+            }.forEach { user ->
+                writeJson(outputStream, TransferData.serializer(User.serializer()), user)
                 count++
             }
             if (list.size < LIMIT) {
                 return
             }
-            offset += LIMIT
+            rowId = userDao.getUserRowId(list.last().userId) ?: return
         }
     }
 
     private fun syncApp(outputStream: OutputStream) {
-        var offset = 0
+        currentType = TransferDataType.APP.value
+        var rowId = -1L
         while (!quit) {
-            val list = appDao.getAppsByLimitAndOffset(LIMIT, offset)
+            val list = appDao.getAppsByLimitAndRowId(LIMIT, rowId)
             if (list.isEmpty()) {
                 return
             }
             list.map {
-                TransferSendData(TransferDataType.APP.value, it)
-            }.forEach {
-                writeJson(outputStream, it)
+                TransferData(TransferDataType.APP.value, it)
+            }.forEach { app ->
+                writeJson(outputStream, TransferData.serializer(App.serializer()), app)
                 count++
             }
             if (list.size < LIMIT) {
                 return
             }
-            offset += LIMIT
+            rowId = appDao.getAppRowId(list.last().appId) ?: return
         }
     }
 
     private fun syncAsset(outputStream: OutputStream) {
-        var offset = 0
+        currentType = TransferDataType.ASSET.value
+        var rowId = -1L
         while (!quit) {
-            val list = assetDao.getAssetByLimitAndOffset(LIMIT, offset)
+            val list = assetDao.getAssetByLimitAndRowId(LIMIT, rowId)
             if (list.isEmpty()) {
                 return
             }
             list.map {
-                TransferSendData(TransferDataType.ASSET.value, it)
-            }.forEach {
-                writeJson(outputStream, it)
+                TransferData(TransferDataType.ASSET.value, it)
+            }.forEach { asset ->
+                writeJson(outputStream, TransferData.serializer(Asset.serializer()), asset)
                 count++
             }
             if (list.size < LIMIT) {
                 return
             }
-            offset += LIMIT
+            rowId = assetDao.getAssetRowId(list.last().assetId) ?: return
         }
     }
 
     private fun syncSticker(outputStream: OutputStream) {
-        var offset = 0
+        currentType = TransferDataType.STICKER.value
+        var rowId = -1L
         while (!quit) {
-            val list = stickerDao.getStickersByLimitAndOffset(LIMIT, offset)
+            val list = stickerDao.getStickersByLimitAndRowId(LIMIT, rowId)
                 .map {
                     it.lastUseAt = it.lastUseAt?.let { lastUseAt ->
                         try {
@@ -362,119 +385,125 @@ class TransferServer @Inject internal constructor(
                 return
             }
             list.map {
-                TransferSendData(TransferDataType.STICKER.value, it)
-            }.forEach {
-                writeJson(outputStream, it)
+                TransferData(TransferDataType.STICKER.value, it)
+            }.forEach { sticker ->
+                writeJson(outputStream, TransferData.serializer(Sticker.serializer()), sticker)
                 count++
             }
             if (list.size < LIMIT) {
                 return
             }
-            offset += LIMIT
+            rowId = stickerDao.getStickerRowId(list.last().stickerId) ?: return
         }
     }
 
     private fun syncSnapshot(outputStream: OutputStream) {
-        var offset = 0
+        currentType = TransferDataType.SNAPSHOT.value
+        var rowId = -1L
         while (!quit) {
-            val list = snapshotDao.getSnapshotByLimitAndOffset(LIMIT, offset)
+            val list = snapshotDao.getSnapshotByLimitAndRowId(LIMIT, rowId)
             if (list.isEmpty()) {
                 return
             }
             list.map {
-                TransferSendData(TransferDataType.SNAPSHOT.value, it)
-            }.forEach {
-                writeJson(outputStream, it)
+                TransferData(TransferDataType.SNAPSHOT.value, it)
+            }.forEach { snapshot ->
+                writeJson(outputStream, TransferData.serializer(Snapshot.serializer()), snapshot)
                 count++
             }
             if (list.size < LIMIT) {
                 return
             }
-            offset += LIMIT
+            rowId = snapshotDao.getSnapshotRowId(list.last().snapshotId) ?: return
         }
     }
 
     private fun syncTranscriptMessage(outputStream: OutputStream) {
-        var offset = 0
+        currentType = TransferDataType.TRANSCRIPT_MESSAGE.value
+        var rowId = -1L
         while (!quit) {
-            val list = transcriptMessageDao.getTranscriptMessageByLimitAndOffset(LIMIT, offset)
+            val list = transcriptMessageDao.getTranscriptMessageByLimitAndRowId(LIMIT, rowId)
             if (list.isEmpty()) {
                 return
             }
             list.map {
-                TransferSendData(TransferDataType.TRANSCRIPT_MESSAGE.value, it)
-            }.forEach {
-                writeJson(outputStream, it)
+                TransferData(TransferDataType.TRANSCRIPT_MESSAGE.value, it)
+            }.forEach { transferMessage ->
+                writeJson(outputStream, TransferData.serializer(TranscriptMessage.serializer()), transferMessage)
                 count++
             }
             if (list.size < LIMIT) {
                 return
             }
-            offset += LIMIT
+            rowId = transcriptMessageDao.getTranscriptMessageRowId(list.last().transcriptId, list.last().messageId) ?: return
         }
     }
 
     private fun syncPinMessage(outputStream: OutputStream) {
-        var offset = 0
+        currentType = TransferDataType.PIN_MESSAGE.value
+        var rowId = -1L
         while (!quit) {
-            val list = pinMessageDao.getPinMessageByLimitAndOffset(LIMIT, offset)
+            val list = pinMessageDao.getPinMessageByLimitAndRowId(LIMIT, rowId)
             if (list.isEmpty()) {
                 return
             }
             list.map {
-                TransferSendData(TransferDataType.PIN_MESSAGE.value, it)
-            }.forEach {
-                writeJson(outputStream, it)
+                TransferData(TransferDataType.PIN_MESSAGE.value, it)
+            }.forEach { pinMessage ->
+                writeJson(outputStream, TransferData.serializer(PinMessage.serializer()), pinMessage)
                 count++
             }
             if (list.size < LIMIT) {
                 return
             }
-            offset += LIMIT
+            rowId = pinMessageDao.getPinMessageRowId(list.last().messageId) ?: return
         }
     }
 
     private fun syncMessage(outputStream: OutputStream) {
-        var rowid = -1L
+        currentType = TransferDataType.MESSAGE.value
+        var rowId = -1L
         while (!quit) {
-            val list = messageDao.getMessageByLimitAndOffset(LIMIT, rowid)
+            val list = messageDao.getMessageByLimitAndRowId(LIMIT, rowId)
             if (list.isEmpty()) {
                 return
             }
             list.map {
-                TransferSendData(TransferDataType.MESSAGE.value, it)
-            }.forEach {
-                writeJson(outputStream, it)
+                TransferData(TransferDataType.MESSAGE.value, it)
+            }.forEach { transcriptMessage ->
+                writeJson(outputStream, TransferData.serializer(TransferMessage.serializer()), transcriptMessage)
                 count++
             }
             if (list.size < LIMIT) {
                 return
             }
-            rowid = messageDao.getMessageRowid(list.last().messageId) ?: return
+            rowId = messageDao.getMessageRowid(list.last().messageId) ?: return
         }
     }
 
     private fun syncMessageMention(outputStream: OutputStream) {
-        var offset = 0
+        currentType = TransferDataType.MESSAGE_MENTION.value
+        var rowId = -1L
         while (!quit) {
-            val list = messageMentionDao.getMessageMentionByLimitAndOffset(LIMIT, offset)
+            val list = messageMentionDao.getMessageMentionByLimitAndRowId(LIMIT, rowId)
             if (list.isEmpty()) {
                 return
             }
             list.map {
-                TransferSendData(TransferDataType.MESSAGE_MENTION.value, it)
-            }.forEach {
-                writeJson(outputStream, it)
+                TransferData(TransferDataType.MESSAGE_MENTION.value, it)
+            }.forEach { transferMessageMention ->
+                writeJson(outputStream, TransferData.serializer(TransferMessageMention.serializer()), transferMessageMention)
                 count++
             }
             if (list.size < LIMIT) {
                 return
             }
-            offset += LIMIT
+            rowId = messageMentionDao.getMessageMentionRowId(list.last().messageId) ?: return
         }
     }
 
     private fun syncExpiredMessage(outputStream: OutputStream) {
+        currentType = TransferDataType.EXPIRED_MESSAGE.value
         var offset = 0
         while (!quit) {
             val list = expiredMessageDao.getExpiredMessageByLimitAndOffset(LIMIT, offset)
@@ -482,9 +511,9 @@ class TransferServer @Inject internal constructor(
                 return
             }
             list.map {
-                TransferSendData(TransferDataType.EXPIRED_MESSAGE.value, it)
-            }.forEach {
-                writeJson(outputStream, it)
+                TransferData(TransferDataType.EXPIRED_MESSAGE.value, it)
+            }.forEach { expiredMessage ->
+                writeJson(outputStream, TransferData.serializer(ExpiredMessage.serializer()), expiredMessage)
                 count++
             }
             if (list.size < LIMIT) {
@@ -512,8 +541,6 @@ class TransferServer @Inject internal constructor(
             }
         }
     }
-
-    val protocol = TransferProtocol()
 
     fun exit() = MixinApplication.get().applicationScope.launch(SINGLE_SOCKET_THREAD) {
         try {

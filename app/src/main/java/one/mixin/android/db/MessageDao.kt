@@ -13,7 +13,7 @@ import one.mixin.android.db.contants.IMAGES
 import one.mixin.android.db.contants.LIVES
 import one.mixin.android.db.contants.TRANSCRIPTS
 import one.mixin.android.db.contants.VIDEOS
-import one.mixin.android.ui.transfer.vo.TransferMessage
+import one.mixin.android.ui.transfer.vo.compatible.TransferMessage
 import one.mixin.android.vo.AttachmentMigration
 import one.mixin.android.vo.ConversationWithStatus
 import one.mixin.android.vo.FtsSearchResult
@@ -292,7 +292,7 @@ interface MessageDao : BaseDao<Message> {
         LIMIT :limit 
     """,
     )
-    fun getMessageByLimitAndOffset(limit: Int, rowId: Long): List<TransferMessage>
+    fun getMessageByLimitAndRowId(limit: Int, rowId: Long): List<TransferMessage>
 
     @Query("SELECT rowid FROM messages ORDER BY rowid DESC LIMIT 1")
     fun getLastMessageRowId(): Long?

@@ -154,8 +154,11 @@ interface UserDao : BaseDao<User> {
     @Query("SELECT u.user_id, u.app_id, a.capabilities FROM users u LEFT JOIN apps a on a.app_id = u.app_id WHERE u.user_id = :id")
     fun findForwardUserById(id: String): ForwardUser?
 
-    @Query("SELECT u.* FROM users u ORDER BY u.rowid LIMIT :limit OFFSET :offset")
-    fun getUsersByLimitAndOffset(limit: Int, offset: Int): List<User>
+    @Query("SELECT u.* FROM users u WHERE u.rowid > :rowId ORDER BY u.rowid ASC LIMIT :limit ")
+    fun getUsersByLimitAndRowId(limit: Int, rowId: Long): List<User>
+
+    @Query("SELECT rowid FROM users WHERE user_id = :userId")
+    fun getUserRowId(userId: String): Long?
 
     @Query("SELECT count(1) FROM users")
     fun countUsers(): Long

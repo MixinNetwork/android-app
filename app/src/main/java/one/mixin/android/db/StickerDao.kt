@@ -32,8 +32,11 @@ interface StickerDao : BaseDao<Sticker> {
     @Query("UPDATE stickers SET album_id = :albumId WHERE sticker_id = :stickerId")
     suspend fun updateAlbumId(stickerId: String, albumId: String)
 
-    @Query("SELECT s.* FROM stickers s ORDER BY s.rowid LIMIT :limit OFFSET :offset")
-    fun getStickersByLimitAndOffset(limit: Int, offset: Int): List<Sticker>
+    @Query("SELECT s.* FROM stickers s WHERE s.rowid > :rowId ORDER BY s.rowid ASC LIMIT :limit")
+    fun getStickersByLimitAndRowId(limit: Int, rowId: Long): List<Sticker>
+
+    @Query("SELECT rowid FROM stickers WHERE sticker_id = :stickerId")
+    fun getStickerRowId(stickerId: String): Long?
 
     @Query("SELECT count(1) FROM stickers")
     fun countStickers(): Long
