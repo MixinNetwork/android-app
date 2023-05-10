@@ -910,6 +910,7 @@
     <string name="Share_Contact">Share Contact</string>
     <string name="Share_error">Share error.</string>
     <string name="Share_Link">Share Link</string>
+    <string name="Share_Logs">Share Logs</string>
     <string name="share_message_description">Are you sure you want to send a %2$s from %1$s?</string>
     <string name="share_message_description_empty">Are you sure you want to send the %1$s?</string>
     <string name="Share_QR_Code">Share QR Code</string>

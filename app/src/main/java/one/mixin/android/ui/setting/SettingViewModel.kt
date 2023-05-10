@@ -1,5 +1,8 @@
 package one.mixin.android.ui.setting
 
+import android.content.Context
+import android.content.Intent
+import androidx.core.net.toUri
 import androidx.lifecycle.ViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -17,6 +20,7 @@ import one.mixin.android.api.service.ContactService
 import one.mixin.android.repository.AccountRepository
 import one.mixin.android.repository.AssetRepository
 import one.mixin.android.repository.UserRepository
+import one.mixin.android.util.debug.FileLogTree
 import one.mixin.android.vo.LogResponse
 import one.mixin.android.vo.UserRelationship
 import javax.inject.Inject
@@ -71,4 +75,18 @@ internal constructor(
     suspend fun refreshUser(userId: String) = userRepository.refreshUser(userId)
 
     suspend fun findAllAssetIdSuspend() = assetRepository.findAllAssetIdSuspend()
+
+    suspend fun shareLogs(context: Context):Intent? = withContext(Dispatchers.IO){
+        val logFile = FileLogTree.getLogFile()
+        if (!logFile.exists() || logFile.length() <= 0 ) return@withContext null
+        return@withContext Intent().apply {
+            val uri = logFile.absolutePath.toUri()
+            action = Intent.ACTION_SEND
+            putExtra(Intent.EXTRA_STREAM, uri)
+            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            val extraMimeTypes = arrayOf("text/plain", "audio/*", "image/*", "video/*")
+            putExtra(Intent.EXTRA_MIME_TYPES, extraMimeTypes)
+            type = "application/*"
+        }
+    }
 }

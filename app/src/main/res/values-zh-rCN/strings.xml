@@ -890,6 +890,7 @@
     <string name="Share_Contact">分享他的名片</string>
     <string name="Share_error">分享出错</string>
     <string name="Share_Link">分享邀请链接</string>
+    <string name="Share_Logs">分享日志文件</string>
     <string name="share_message_description">你确定要发送来自%1$s的%2$s？</string>
     <string name="share_message_description_empty">你确定要发送该%1$s？</string>
     <string name="Share_QR_Code">分享二维码</string>
