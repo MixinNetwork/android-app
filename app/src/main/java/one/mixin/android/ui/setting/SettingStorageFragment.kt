@@ -79,11 +79,21 @@ class SettingStorageFragment : BaseFragment(R.layout.fragment_storage) {
                 val popMenu = PopupMenu(requireActivity(), it)
                 popMenu.menuInflater.inflate(R.menu.deep_clean, popMenu.menu)
                 popMenu.setOnMenuItemClickListener { menu ->
-                    if (menu.itemId == R.id.clean) {
-                        if (!StorageCleanJob.isRunning) {
-                            jobManager.addJobInBackground(StorageCleanJob())
+                    alertDialogBuilder()
+                        .setMessage(R.string.deep_clean_des)
+                        .setNegativeButton(R.string.Cancel) { dialog, _ ->
+                            dialog.dismiss()
                         }
-                    }
+                        .setPositiveButton(R.string.Confirm){dialog,_->
+                            if (menu.itemId == R.id.clean) {
+                                if (!StorageCleanJob.isRunning) {
+                                    jobManager.addJobInBackground(StorageCleanJob())
+                                }
+                            } else {
+                                toast(R.string.deep_cleaning)
+                            }
+                            dialog.dismiss()
+                        }
                     return@setOnMenuItemClickListener true
                 }
                 popMenu.show()
