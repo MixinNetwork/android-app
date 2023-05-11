@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="?attr/bg_white"
+        android:orientation="vertical">
+
+    <one.mixin.android.widget.TitleView
+            android:id="@+id/title_view"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:titleText="@string/app_name" />
+
+    <TextView
+            android:id="@+id/diagnosis"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/bottom_button_height"
+            android:gravity="center_vertical"
+            android:paddingStart="@dimen/activity_horizontal_margin"
+            android:paddingEnd="@dimen/activity_horizontal_margin"
+            android:text="@string/Net_Diagnosis"
+            android:textColor="@color/colorBlue"
+            android:textSize="16sp" />
+
+    <TextView
+            android:id="@+id/logs"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/bottom_button_height"
+            android:gravity="center_vertical"
+            android:paddingStart="@dimen/activity_horizontal_margin"
+            android:paddingEnd="@dimen/activity_horizontal_margin"
+            android:text="@string/Share_Logs"
+            android:textColor="@color/colorBlue"
+            android:textSize="16sp" />
+
+
+    <RelativeLayout
+            android:id="@+id/web_debug"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/bottom_button_height"
+            android:background="?attr/bg_white">
+
+        <TextView
+                android:textColor="@color/colorBlue"
+                android:textSize="16sp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:layout_marginStart="@dimen/activity_horizontal_margin"
+                android:text="@string/Web_debug"
+                tools:ignore="RelativeOverlap" />
+
+        <androidx.appcompat.widget.SwitchCompat
+                android:id="@+id/web_debug_sc"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+                android:layout_centerVertical="true"
+                android:layout_marginEnd="@dimen/activity_horizontal_margin"
+                tools:ignore="RelativeOverlap" />
+    </RelativeLayout>
+
+
+    <TextView
+            android:id="@+id/database"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/bottom_button_height"
+            android:gravity="center_vertical"
+            android:paddingStart="@dimen/activity_horizontal_margin"
+            android:paddingEnd="@dimen/activity_horizontal_margin"
+            android:text="@string/Debug_database"
+            android:textColor="@color/colorBlue"
+            android:textSize="16sp" />
+
+    <RelativeLayout
+            android:id="@+id/database_debug_logs"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/bottom_button_height"
+            android:background="?attr/bg_white">
+
+        <TextView
+                android:textColor="@color/colorBlue"
+                android:textSize="16sp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:layout_marginStart="@dimen/activity_horizontal_margin"
+                android:text="@string/Debug_database_logs"
+                tools:ignore="RelativeOverlap" />
+
+        <androidx.appcompat.widget.SwitchCompat
+                android:id="@+id/database_debug_logs_sc"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+                android:layout_centerVertical="true"
+                android:layout_marginEnd="@dimen/activity_horizontal_margin"
+                tools:ignore="RelativeOverlap" />
+    </RelativeLayout>
+</LinearLayout>
