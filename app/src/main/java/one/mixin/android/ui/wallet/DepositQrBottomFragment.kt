@@ -77,7 +77,11 @@ class DepositQrBottomFragment : MixinBottomSheetDialogFragment() {
 
             saveIv.setOnClickListener {
                 RxPermissions(requireActivity())
-                    .request(android.Manifest.permission.CAMERA, if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) android.Manifest.permission.WRITE_EXTERNAL_STORAGE else null)
+                    .request(
+                        *mutableListOf(android.Manifest.permission.CAMERA).apply {
+                            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) add(android.Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                        }.toTypedArray(),
+                    )
                     .autoDispose(stopScope)
                     .subscribe(
                         { granted ->

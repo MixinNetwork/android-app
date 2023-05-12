@@ -102,11 +102,12 @@ class StickerManagementFragment : BaseFragment() {
                     RxPermissions(activity!!)
                         .request(
                             *if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                                arrayOf(Manifest.permission.READ_MEDIA_IMAGES, Manifest.permission.READ_MEDIA_VIDEO)
+                                mutableListOf(Manifest.permission.READ_MEDIA_IMAGES, Manifest.permission.READ_MEDIA_VIDEO)
                             } else {
-                                arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE)
-                            },
-                            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) Manifest.permission.WRITE_EXTERNAL_STORAGE else null,
+                                mutableListOf(Manifest.permission.READ_EXTERNAL_STORAGE)
+                            }.apply {
+                                if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) add(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                            }.toTypedArray(),
                         )
                         .autoDispose(stopScope)
                         .subscribe(

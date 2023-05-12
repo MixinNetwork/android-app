@@ -309,7 +309,11 @@ class ProfileBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragmen
             pickMedia.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
         } else {
             RxPermissions(requireActivity())
-                .request(Manifest.permission.CAMERA, if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) Manifest.permission.WRITE_EXTERNAL_STORAGE else null)
+                .request(
+                    *mutableListOf(Manifest.permission.CAMERA).apply {
+                        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) add(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                    }.toTypedArray(),
+                )
                 .autoDispose(stopScope)
                 .subscribe { granted ->
                     if (granted) {

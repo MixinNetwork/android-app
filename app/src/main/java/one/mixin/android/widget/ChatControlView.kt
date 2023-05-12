@@ -1040,8 +1040,9 @@ class ChatControlView : LinearLayout, ActionMode.Callback {
             ) {
                 RxPermissions(fa)
                     .request(
-                        Manifest.permission.RECORD_AUDIO,
-                        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) Manifest.permission.WRITE_EXTERNAL_STORAGE else null,
+                        *mutableListOf(Manifest.permission.RECORD_AUDIO).apply {
+                            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) add(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                        }.toTypedArray(),
                     )
                     .autoDispose(this)
                     .subscribe({}, { reportException(it) })

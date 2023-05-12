@@ -267,7 +267,11 @@ class CaptureFragment() : BaseCameraxFragment() {
             } catch (ignored: SecurityException) {
             }
             RxPermissions(requireActivity())
-                .request(if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) Manifest.permission.WRITE_EXTERNAL_STORAGE else null, Manifest.permission.RECORD_AUDIO)
+                .request(
+                    *mutableListOf(Manifest.permission.RECORD_AUDIO).apply {
+                        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) add(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                    }.toTypedArray(),
+                )
                 .autoDispose(stopScope)
                 .subscribe(
                     { granted ->
