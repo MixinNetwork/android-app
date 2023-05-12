@@ -190,13 +190,13 @@ class TransferServer @Inject internal constructor(
                                 exit()
                             }
                         } else if (result.action == TransferCommandAction.FINISH.value) {
-                            RxBus.publish(DeviceTransferProgressEvent("100%"))
+                            RxBus.publish(DeviceTransferProgressEvent(100f))
                             status.value = TransferStatus.FINISHED
                             exit()
                         } else if (result.action == TransferCommandAction.PROGRESS.value) {
                             // Get progress from client
                             if (result.progress != null) {
-                                RxBus.publish(DeviceTransferProgressEvent(String.format("%.2f%%", result.progress)))
+                                RxBus.publish(DeviceTransferProgressEvent(result.progress))
                             }
                         } else {
                             Timber.e("Unsupported command")
@@ -248,7 +248,7 @@ class TransferServer @Inject internal constructor(
 
     private fun sendStart(outputStream: OutputStream, type: TransferDataType?, primaryId: String?, assistanceId: String?) {
         writeCommand(outputStream, TransferCommand(TransferCommandAction.START.value, total = totalCount(type, primaryId, assistanceId)))
-        RxBus.publish(DeviceTransferProgressEvent("0.00%"))
+        RxBus.publish(DeviceTransferProgressEvent(0f))
         Timber.e("Started total: $total")
     }
 
@@ -751,7 +751,7 @@ class TransferServer @Inject internal constructor(
             totalParticipantCount(transferDataType, primaryId, assistanceId) + totalUserCount(
                 transferDataType,
                 primaryId,
-            ) + totalAppCount(transferDataType, primaryId) + totalAppCount(transferDataType, primaryId) +
+            ) + totalAppCount(transferDataType, primaryId) + totalAssetCount(transferDataType, primaryId) +
             totalSnapshotCount(transferDataType, primaryId) + totalStickerCount(
                 transferDataType,
                 primaryId,

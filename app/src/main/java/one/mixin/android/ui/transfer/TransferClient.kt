@@ -233,7 +233,7 @@ class TransferClient @Inject internal constructor(
             sendCommand(outputStream, TransferCommand(TransferCommandAction.PROGRESS.value, progress = progress))
             lastProgress = progress
             lastTime = System.currentTimeMillis()
-            RxBus.publish(DeviceTransferProgressEvent(String.format("%.2f", progress)))
+            RxBus.publish(DeviceTransferProgressEvent(progress))
             Timber.e("Device transfer $progress")
         }
     }
@@ -366,35 +366,45 @@ class TransferClient @Inject internal constructor(
         }
     }
 
-    fun exit(finished: Boolean = false) = applicationScope.launch {
-        try {
-            if (socket == null) return@launch
-            withContext(SINGLE_SOCKET_THREAD) {
-                synchronized(this) {
+    fun exit(finished: Boolean = false) = applicationScope.launch(SINGLE_SOCKET_THREAD) {
+        synchronized(this) {
+            try {
+                launch(SINGLE_SOCKET_THREAD) {
+                    if (socket == null) return@launch
                     socket?.close()
                     socket = null
                 }
-            }
-            quit = true
-            if (!finished) {
-                val scene = TransferScene.from(deviceId, startTime, currentType, transferInserter.primaryId, transferInserter.assistanceId)
-                if (scene != null) {
-                    PropertyHelper.updateKeyValue(
-                        Constants.Account.PREF_TRANSFER_SCENE,
-                        serializationJson.encodeToString(TransferScene.serializer(), scene),
+                quit = true
+                if (!finished) {
+                    val scene = TransferScene.from(
+                        deviceId,
+                        startTime,
+                        currentType,
+                        transferInserter.primaryId,
+                        transferInserter.assistanceId,
                     )
-                }
+                    if (scene != null) {
+                        launch {
+                            PropertyHelper.updateKeyValue(
+                                Constants.Account.PREF_TRANSFER_SCENE,
+                                serializationJson.encodeToString(TransferScene.serializer(), scene),
+                            )
+                        }
+                    }
 
-                Timber.e("DeviceId: $deviceId type: $currentType id: ${transferInserter.primaryId} start-time:$startTime current-time:${System.currentTimeMillis()}")
-            } else {
-                PropertyHelper.deleteKeyValue(Constants.Account.PREF_TRANSFER_SCENE)
-                Timber.e("Finish exit ${(System.currentTimeMillis() - startTime) / 1000} s")
+                    Timber.e("DeviceId: $deviceId type: $currentType id: ${transferInserter.primaryId} start-time:$startTime current-time:${System.currentTimeMillis()}")
+                } else {
+                    launch {
+                        PropertyHelper.deleteKeyValue(Constants.Account.PREF_TRANSFER_SCENE)
+                    }
+                    Timber.e("Finish exit ${(System.currentTimeMillis() - startTime) / 1000}s")
+                }
+                launch(singleTransferThread) {
+                    finalWork()
+                }
+            } catch (e: Exception) {
+                Timber.e("Exit client ${e.message}")
             }
-            launch(singleTransferThread) {
-                finalWork()
-            }
-        } catch (e: Exception) {
-            Timber.e("Exit client ${e.message}")
         }
     }
 
@@ -437,8 +447,7 @@ class TransferClient @Inject internal constructor(
         if (System.currentTimeMillis() - lastTime > 300) {
             val processProgress = min(processCount * 100f / total, 100f)
             lastTime = System.currentTimeMillis()
-            RxBus.publish(DeviceTransferProgressEvent(String.format("%.2f%%", processProgress)))
-            Timber.e("Process $processProgress")
+            RxBus.publish(DeviceTransferProgressEvent(processProgress))
         }
     }
 

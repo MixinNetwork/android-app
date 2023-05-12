@@ -8,6 +8,7 @@ import android.net.Uri
 import android.os.Bundle
 import android.view.WindowManager
 import androidx.activity.result.ActivityResultLauncher
+import androidx.core.view.isInvisible
 import androidx.core.view.isVisible
 import androidx.lifecycle.lifecycleScope
 import com.tbruyelle.rxpermissions2.RxPermissions
@@ -274,21 +275,22 @@ class TransferActivity : BaseActivity() {
                 }
 
                 TransferStatus.SYNCING -> {
-                    binding.titleView.isVisible = false
+                    binding.titleView.isInvisible = true
                     binding.qrFl.isVisible = false
                     binding.initLl.isVisible = false
                     binding.waitingLl.isVisible = true
+                    binding.pbLl.isVisible = true
                     binding.cancel.isVisible = true
                 }
 
                 TransferStatus.PROCESSING -> {
+                    binding.titleView.isInvisible = true
                     cancelDialog.dismiss()
                     binding.cancel.isVisible = true
-                    binding.titleView.isVisible = false
                     binding.qrFl.isVisible = false
                     binding.initLl.isVisible = false
                     binding.waitingLl.isVisible = true
-                    binding.pbProcessing.isVisible = true
+                    binding.pbLl.isVisible = true
                     binding.progressTv.setText(R.string.transfer_process_title)
                     binding.progressDesc.setText(R.string.transfer_process_tip)
                 }
@@ -296,7 +298,7 @@ class TransferActivity : BaseActivity() {
                 TransferStatus.ERROR -> {
                     cancelDialog.dismiss()
                     binding.cancel.isVisible = true
-                    binding.pbProcessing.isVisible = false
+                    binding.pbLl.isVisible = false
                     binding.progressTv.setText(R.string.Transfer_error)
                     if (dialog == null) {
                         dialog = alertDialogBuilder()
@@ -314,7 +316,7 @@ class TransferActivity : BaseActivity() {
                 TransferStatus.FINISHED -> {
                     cancelDialog.dismiss()
                     binding.cancel.isVisible = true
-                    binding.pbProcessing.isVisible = false
+                    binding.pbLl.isVisible = false
                     binding.progressTv.setText(R.string.Transfer_completed)
                     if (dialog == null) {
                         dialog = alertDialogBuilder()
@@ -477,15 +479,11 @@ class TransferActivity : BaseActivity() {
                 .observeOn(AndroidSchedulers.mainThread())
                 .autoDispose(destroyScope)
                 .subscribe {
-                    binding.progressTv.text =
-                        getString(
-                            if (status.value == TransferStatus.PROCESSING) {
-                                R.string.transfer_process_desc
-                            } else {
-                                R.string.sending_desc
-                            },
-                            it.progress,
-                        )
+                    binding.progress.progress = it.progress.toInt()
+                    if (status.value == TransferStatus.PROCESSING) {
+                        Timber.e(String.format("%.2f%%", it.progress))
+                        binding.pbTv.text = getString(R.string.transfer_process_desc, String.format("%.2f%%", it.progress))
+                    }
                 }
         }
 
@@ -494,7 +492,9 @@ class TransferActivity : BaseActivity() {
                 .observeOn(AndroidSchedulers.mainThread())
                 .autoDispose(destroyScope)
                 .subscribe {
-                    Timber.e("Speed: ${it.speed}")
+                    if (status.value == TransferStatus.SYNCING) {
+                        binding.pbTv.text = it.speed
+                    }
                 }
         }
 
