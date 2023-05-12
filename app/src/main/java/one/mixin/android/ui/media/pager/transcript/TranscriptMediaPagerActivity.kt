@@ -255,21 +255,25 @@ class TranscriptMediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismis
         val bottomSheet = builder.create()
         binding.showInChat.isVisible = false
         binding.saveVideo.setOnClickListener {
-            RxPermissions(this)
-                .request(Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                .autoDispose(stopScope)
-                .subscribe(
-                    { granted ->
-                        if (granted) {
-                            messageItem.saveToLocal(this@TranscriptMediaPagerActivity)
-                        } else {
-                            openPermissionSetting()
-                        }
-                    },
-                    {
-                        toast(R.string.Save_failure)
-                    },
-                )
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
+                RxPermissions(this)
+                    .request(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                    .autoDispose(stopScope)
+                    .subscribe(
+                        { granted ->
+                            if (granted) {
+                                messageItem.saveToLocal(this@TranscriptMediaPagerActivity)
+                            } else {
+                                openPermissionSetting()
+                            }
+                        },
+                        {
+                            toast(R.string.Save_failure)
+                        },
+                    )
+            } else {
+                messageItem.saveToLocal(this@TranscriptMediaPagerActivity)
+            }
             bottomSheet.dismiss()
         }
         binding.share.setOnClickListener {
@@ -294,50 +298,25 @@ class TranscriptMediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismis
         val bottomSheet = builder.create()
         binding.showInChat.isVisible = false
         binding.save.setOnClickListener {
-            RxPermissions(this)
-                .request(Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                .autoDispose(stopScope)
-                .subscribe(
-                    { granted ->
-                        if (granted) {
-                            async {
-                                val path = item.absolutePath()
-                                if (path == null) {
-                                    toast(R.string.Save_failure)
-                                    return@async
-                                }
-                                val file = Uri.parse(path).toFile()
-                                if (!file.exists()) {
-                                    toast(R.string.File_does_not_exist)
-                                    return@async
-                                }
-                                val outFile = when {
-                                    item.mediaMimeType.equals(
-                                        MimeType.GIF.toString(),
-                                        true,
-                                    ) -> this@TranscriptMediaPagerActivity.getPublicPicturePath().createGifTemp(
-                                        false,
-                                    )
-                                    item.mediaMimeType.equals(MimeType.PNG.toString()) ->
-                                        this@TranscriptMediaPagerActivity.getPublicPicturePath().createPngTemp(
-                                            false,
-                                        )
-                                    else -> this@TranscriptMediaPagerActivity.getPublicPicturePath().createImageTemp(
-                                        noMedia = false,
-                                    )
-                                }
-                                outFile.copyFromInputStream(FileInputStream(file))
-                                MediaScannerConnection.scanFile(this@TranscriptMediaPagerActivity, arrayOf(outFile.toString()), null, null)
-                                runOnUiThread { toast(getString(R.string.Save_to, outFile.absolutePath)) }
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
+                RxPermissions(this)
+                    .request(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                    .autoDispose(stopScope)
+                    .subscribe(
+                        { granted ->
+                            if (granted) {
+                                save(item)
+                            } else {
+                                openPermissionSetting()
                             }
-                        } else {
-                            openPermissionSetting()
-                        }
-                    },
-                    {
-                        toast(R.string.Save_failure)
-                    },
-                )
+                        },
+                        {
+                            toast(R.string.Save_failure)
+                        },
+                    )
+            } else {
+                save(item)
+            }
             bottomSheet.dismiss()
         }
         binding.shareImage.setOnClickListener {
@@ -352,6 +331,56 @@ class TranscriptMediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismis
         }
         binding.cancel.setOnClickListener { bottomSheet.dismiss() }
         bottomSheet.show()
+    }
+
+    private fun save(item: ChatHistoryMessageItem) {
+        async {
+            val path = item.absolutePath()
+            if (path == null) {
+                toast(R.string.Save_failure)
+                return@async
+            }
+            val file = Uri.parse(path).toFile()
+            if (!file.exists()) {
+                toast(R.string.File_does_not_exist)
+                return@async
+            }
+            val outFile = when {
+                item.mediaMimeType.equals(
+                    MimeType.GIF.toString(),
+                    true,
+                ) -> this@TranscriptMediaPagerActivity.getPublicPicturePath()
+                    .createGifTemp(
+                        false,
+                    )
+
+                item.mediaMimeType.equals(MimeType.PNG.toString()) ->
+                    this@TranscriptMediaPagerActivity.getPublicPicturePath()
+                        .createPngTemp(
+                            false,
+                        )
+
+                else -> this@TranscriptMediaPagerActivity.getPublicPicturePath()
+                    .createImageTemp(
+                        noMedia = false,
+                    )
+            }
+            outFile.copyFromInputStream(FileInputStream(file))
+            MediaScannerConnection.scanFile(
+                this@TranscriptMediaPagerActivity,
+                arrayOf(outFile.toString()),
+                null,
+                null,
+            )
+            runOnUiThread {
+                toast(
+                    getString(
+                        R.string.Save_to,
+                        outFile.absolutePath,
+                    ),
+                )
+            }
+        }
     }
 
     @Suppress("DEPRECATION")

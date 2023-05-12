@@ -76,22 +76,26 @@ class LocalRestoreFragment : BaseFragment(R.layout.fragment_local_restore) {
                 requireActivity().finish()
             }
             .setPositiveButton(R.string.authorization) { dialog, _ ->
-                RxPermissions(this)
-                    .request(Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                    .autoDispose(stopScope)
-                    .subscribe(
-                        { granted ->
-                            if (!granted) {
-                                requireActivity().openPermissionSetting()
-                            } else {
-                                findBackupInfo()
-                            }
-                        },
-                        {
-                            InitializeActivity.showLoading(requireContext())
-                            requireActivity().finish()
-                        },
-                    )
+                if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
+                    RxPermissions(this)
+                        .request(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                        .autoDispose(stopScope)
+                        .subscribe(
+                            { granted ->
+                                if (!granted) {
+                                    requireActivity().openPermissionSetting()
+                                } else {
+                                    findBackupInfo()
+                                }
+                            },
+                            {
+                                InitializeActivity.showLoading(requireContext())
+                                requireActivity().finish()
+                            },
+                        )
+                } else {
+                    findBackupInfo()
+                }
                 dialog.dismiss()
             }.create().run {
                 this.setCanceledOnTouchOutside(false)
@@ -159,20 +163,24 @@ class LocalRestoreFragment : BaseFragment(R.layout.fragment_local_restore) {
                         ),
                     )
                 } else {
-                    RxPermissions(this)
-                        .request(Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                        .autoDispose(stopScope)
-                        .subscribe(
-                            { granted ->
-                                if (!granted) {
-                                    requireActivity().openPermissionSetting()
-                                } else {
-                                    findBackupInfo()
-                                }
-                            },
-                            {
-                            },
-                        )
+                    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
+                        RxPermissions(this)
+                            .request(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                            .autoDispose(stopScope)
+                            .subscribe(
+                                { granted ->
+                                    if (!granted) {
+                                        requireActivity().openPermissionSetting()
+                                    } else {
+                                        findBackupInfo()
+                                    }
+                                },
+                                {
+                                },
+                            )
+                    } else {
+                        findBackupInfo()
+                    }
                 }
                 dialog.dismiss()
             }
@@ -206,24 +214,31 @@ class LocalRestoreFragment : BaseFragment(R.layout.fragment_local_restore) {
     private fun initUI(backupInfo: BackupInfo) {
         binding.restoreTime.text = backupInfo.lastModified.getRelativeTimeSpan()
         binding.restoreRestore.setOnClickListener {
-            RxPermissions(this)
-                .request(Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                .autoDispose(stopScope)
-                .subscribe(
-                    { granted ->
-                        if (!granted) {
-                            requireActivity().openPermissionSetting()
-                        } else {
-                            showProgress()
-                            BackupNotification.show(false)
-                            internalRestore()
-                        }
-                    },
-                    {
-                        BackupNotification.cancel()
-                        hideProgress()
-                    },
-                )
+            fun afterGranted() {
+                showProgress()
+                BackupNotification.show(false)
+                internalRestore()
+            }
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
+                RxPermissions(this)
+                    .request(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                    .autoDispose(stopScope)
+                    .subscribe(
+                        { granted ->
+                            if (!granted) {
+                                requireActivity().openPermissionSetting()
+                            } else {
+                                afterGranted()
+                            }
+                        },
+                        {
+                            BackupNotification.cancel()
+                            hideProgress()
+                        },
+                    )
+            } else {
+                afterGranted()
+            }
         }
         binding.restoreSkip.setOnClickListener {
             InitializeActivity.showLoading(requireContext())

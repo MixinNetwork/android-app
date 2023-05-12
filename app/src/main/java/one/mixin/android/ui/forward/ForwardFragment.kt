@@ -1,6 +1,5 @@
 package one.mixin.android.ui.forward
 
-import android.Manifest.permission.READ_EXTERNAL_STORAGE
 import android.Manifest.permission.WRITE_EXTERNAL_STORAGE
 import android.app.Activity.RESULT_OK
 import android.app.Dialog
@@ -8,6 +7,7 @@ import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
@@ -372,22 +372,23 @@ class ForwardFragment : BaseFragment(R.layout.fragment_forward) {
     }
 
     private fun checkPermission(afterGranted: () -> Job) {
-        RxPermissions(requireActivity())
-            .request(
-                WRITE_EXTERNAL_STORAGE,
-                READ_EXTERNAL_STORAGE,
-            )
-            .autoDispose(stopScope)
-            .subscribe(
-                { granted ->
-                    if (granted) {
-                        afterGranted.invoke()
-                    } else {
-                        requireContext().openPermissionSetting()
-                    }
-                },
-                {},
-            )
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
+            RxPermissions(requireActivity())
+                .request(WRITE_EXTERNAL_STORAGE)
+                .autoDispose(stopScope)
+                .subscribe(
+                    { granted ->
+                        if (granted) {
+                            afterGranted.invoke()
+                        } else {
+                            requireContext().openPermissionSetting()
+                        }
+                    },
+                    {},
+                )
+        } else {
+            afterGranted.invoke()
+        }
     }
 
     private suspend fun sendMessageInternal(item: SelectItem): ArrayList<String>? {

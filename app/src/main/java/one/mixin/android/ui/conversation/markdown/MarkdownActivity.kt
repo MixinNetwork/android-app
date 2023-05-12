@@ -4,6 +4,7 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
+import android.os.Build
 import android.os.Bundle
 import android.print.PrintPdfCallback
 import android.print.printPdf
@@ -139,44 +140,53 @@ class MarkdownActivity : BaseActivity() {
             bottomSheet.dismiss()
         }
         viewBinding.pdf.setOnClickListener {
-            RxPermissions(this@MarkdownActivity)
-                .request(Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                .autoDispose(stopScope)
-                .subscribe(
-                    { granted ->
-                        if (granted) {
-                            savePdf {
-                                bottomSheet.dismiss()
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
+                RxPermissions(this@MarkdownActivity)
+                    .request(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                    .autoDispose(stopScope)
+                    .subscribe(
+                        { granted ->
+                            if (granted) {
+                                savePdf {
+                                    bottomSheet.dismiss()
+                                }
+                            } else {
+                                this@MarkdownActivity.openPermissionSetting()
                             }
-                        } else {
-                            this@MarkdownActivity.openPermissionSetting()
-                        }
-                    },
-                    {
-                        toast(R.string.Export_failed)
-                    },
-                )
+                        },
+                        {
+                            toast(R.string.Export_failed)
+                        },
+                    )
+            } else {
+                savePdf {
+                    bottomSheet.dismiss()
+                }
+            }
         }
         viewBinding.save.setOnClickListener {
-            RxPermissions(this)
-                .request(
-                    Manifest.permission.READ_EXTERNAL_STORAGE,
-                    Manifest.permission.WRITE_EXTERNAL_STORAGE,
-                )
-                .subscribe(
-                    { granted ->
-                        if (granted) {
-                            savePost {
-                                bottomSheet.dismiss()
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
+                RxPermissions(this)
+                    .request(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                    .subscribe(
+                        { granted ->
+                            if (granted) {
+                                savePost {
+                                    bottomSheet.dismiss()
+                                }
+                            } else {
+                                openPermissionSetting()
                             }
-                        } else {
-                            openPermissionSetting()
-                        }
-                    },
-                    {
-                        toast(R.string.Export_failed)
-                    },
-                )
+                        },
+                        {
+                            toast(R.string.Export_failed)
+                        },
+                    )
+            } else {
+                savePost {
+                    bottomSheet.dismiss()
+                }
+            }
         }
         bottomSheet.show()
     }

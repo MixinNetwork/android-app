@@ -3,6 +3,7 @@ package one.mixin.android.ui.group
 import android.annotation.SuppressLint
 import android.app.Dialog
 import android.graphics.Bitmap
+import android.os.Build
 import androidx.core.os.bundleOf
 import androidx.lifecycle.lifecycleScope
 import com.tbruyelle.rxpermissions2.RxPermissions
@@ -68,7 +69,7 @@ class InviteQrBottomFragment : MixinBottomSheetDialogFragment() {
             avatar.setGroup(iconUrl)
             saveIv.setOnClickListener {
                 RxPermissions(requireActivity())
-                    .request(android.Manifest.permission.CAMERA, android.Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                    .request(android.Manifest.permission.CAMERA, if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) android.Manifest.permission.WRITE_EXTERNAL_STORAGE else null)
                     .autoDispose(stopScope)
                     .subscribe(
                         { granted ->

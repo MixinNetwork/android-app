@@ -5,6 +5,7 @@ import android.app.Activity
 import android.content.Intent
 import android.graphics.Paint
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -204,16 +205,20 @@ class ImageEditorFragment : BaseFragment(), TextEntryDialogFragment.Controller {
     }
 
     private fun goNext(notCompress: Boolean) {
-        RxPermissions(requireActivity())
-            .request(Manifest.permission.WRITE_EXTERNAL_STORAGE)
-            .autoDispose(stopScope)
-            .subscribe { granted ->
-                if (granted) {
-                    renderAndSave(notCompress)
-                } else {
-                    context?.openPermissionSetting()
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
+            RxPermissions(requireActivity())
+                .request(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                .autoDispose(stopScope)
+                .subscribe { granted ->
+                    if (granted) {
+                        renderAndSave(notCompress)
+                    } else {
+                        context?.openPermissionSetting()
+                    }
                 }
-            }
+        } else {
+            renderAndSave(notCompress)
+        }
     }
 
     private fun showNotCompress() {

@@ -8,6 +8,7 @@ import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.hardware.display.DisplayManager
+import android.os.Build
 import android.os.Bundle
 import android.util.DisplayMetrics
 import android.util.Size
@@ -153,20 +154,24 @@ abstract class BaseCameraxFragment : VisionFragment() {
             flash.bounce()
         }
         galleryIv.setOnClickListener {
-            RxPermissions(requireActivity())
-                .request(Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                .autoDispose(stopScope)
-                .subscribe(
-                    { granted ->
-                        if (granted) {
-                            openGallery()
-                        } else {
-                            context?.openPermissionSetting()
-                        }
-                    },
-                    {
-                    },
-                )
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
+                RxPermissions(requireActivity())
+                    .request(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                    .autoDispose(stopScope)
+                    .subscribe(
+                        { granted ->
+                            if (granted) {
+                                openGallery()
+                            } else {
+                                context?.openPermissionSetting()
+                            }
+                        },
+                        {
+                        },
+                    )
+            } else {
+                openGallery()
+            }
         }
         checkFlash()
 

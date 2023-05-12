@@ -3,6 +3,7 @@ package one.mixin.android.ui.landing
 import android.Manifest
 import android.database.Cursor
 import android.database.sqlite.SQLiteDatabase
+import android.os.Build
 import android.os.Bundle
 import android.view.View
 import androidx.core.database.getIntOrNull
@@ -38,7 +39,7 @@ class RestoreFragment : BaseFragment(R.layout.fragment_restore) {
         binding.apply {
             fromAnotherCl.setOnClickListener {
                 RxPermissions(requireActivity())
-                    .request(Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                    .request(Manifest.permission.CAMERA, if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) Manifest.permission.WRITE_EXTERNAL_STORAGE else null)
                     .autoDispose(stopScope)
                     .subscribe { granted ->
                         if (granted) {
@@ -74,16 +75,20 @@ class RestoreFragment : BaseFragment(R.layout.fragment_restore) {
     }
 
     private fun fromLocal() {
-        RxPermissions(requireActivity())
-            .request(Manifest.permission.WRITE_EXTERNAL_STORAGE)
-            .autoDispose(stopScope)
-            .subscribe { granted ->
-                if (granted) {
-                    navTo(LocalRestoreFragment.newInstance(), LocalRestoreFragment.TAG)
-                } else {
-                    requireActivity().openPermissionSetting()
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
+            RxPermissions(requireActivity())
+                .request(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                .autoDispose(stopScope)
+                .subscribe { granted ->
+                    if (granted) {
+                        navTo(LocalRestoreFragment.newInstance(), LocalRestoreFragment.TAG)
+                    } else {
+                        requireActivity().openPermissionSetting()
+                    }
                 }
-            }
+        } else {
+            navTo(LocalRestoreFragment.newInstance(), LocalRestoreFragment.TAG)
+        }
     }
 
     private suspend fun getLocalDataInfo(): Pair<Int?, String?>? = withContext(Dispatchers.IO) {
