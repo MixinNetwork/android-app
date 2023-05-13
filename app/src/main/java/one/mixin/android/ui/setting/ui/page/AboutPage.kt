@@ -1,8 +1,5 @@
 package one.mixin.android.ui.setting.ui.page
 
-import android.content.ActivityNotFoundException
-import android.content.Intent
-import android.content.pm.PackageManager
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -16,12 +13,8 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
@@ -31,24 +24,17 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.core.net.toUri
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.openMarket
 import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.putBoolean
-import one.mixin.android.extension.toast
 import one.mixin.android.ui.setting.LocalSettingNav
 import one.mixin.android.ui.setting.SettingDestination
-import one.mixin.android.ui.setting.diagnosis.DiagnosisActivity
-import one.mixin.android.ui.setting.ui.compose.IndeterminateProgressDialog
 import one.mixin.android.ui.setting.ui.compose.MixinBackButton
 import one.mixin.android.ui.setting.ui.compose.MixinTopAppBar
 import one.mixin.android.ui.setting.ui.theme.MixinAppTheme
-import one.mixin.android.util.debug.FileLogTree
 import one.mixin.android.widget.DebugClickHandler
 
 private fun Modifier.debugClickable(
@@ -77,41 +63,16 @@ private fun Modifier.debugClickable(
 
 @Composable
 fun AboutPage() {
+    val settingNavController = LocalSettingNav.current
     val preferences = LocalContext.current.defaultSharedPreferences
-    val showDatabase =
-        remember { mutableStateOf(preferences.getBoolean(Constants.Debug.DB_DEBUG, false)) }
-
-    var showProgressDialog by remember {
-        mutableStateOf(false)
-    }
-
-    val lifeScope = rememberCoroutineScope()
-
-    LaunchedEffect(showDatabase.value) {
-        preferences.putBoolean(Constants.Debug.DB_DEBUG, showDatabase.value)
-        if (!showDatabase.value) {
-            preferences.putBoolean(Constants.Debug.DB_DEBUG_WARNING, true)
-        }
-    }
+    val showLogDebug =
+        remember { mutableStateOf(preferences.getBoolean(Constants.Debug.LOG_AND_DEBUG, false)) }
 
     Scaffold(
         backgroundColor = MixinAppTheme.colors.background,
         topBar = {
             val context = LocalContext.current
             MixinTopAppBar(
-                modifier = Modifier.debugClickable(
-                    onDebugClick = {
-                        showDatabase.value = !showDatabase.value
-                        if (showDatabase.value) {
-                            toast(R.string.Enable_db_debug)
-                        } else {
-                            toast(R.string.Disable_db_debug)
-                        }
-                    },
-                    onClick = {
-                        DiagnosisActivity.show(context)
-                    },
-                ),
                 navigationIcon = {
                     MixinBackButton()
                 },
@@ -137,12 +98,12 @@ fun AboutPage() {
             Image(
                 modifier = Modifier
                     .debugClickable {
-                        if (preferences.getBoolean(Constants.Debug.WEB_DEBUG, false)) {
-                            preferences.putBoolean(Constants.Debug.WEB_DEBUG, false)
-                            toast(R.string.Disable_web_debug)
+                        if (preferences.getBoolean(Constants.Debug.LOG_AND_DEBUG, false)) {
+                            preferences.putBoolean(Constants.Debug.LOG_AND_DEBUG, false)
+                            showLogDebug.value = false
                         } else {
-                            preferences.putBoolean(Constants.Debug.WEB_DEBUG, true)
-                            toast(R.string.Enable_web_debug)
+                            preferences.putBoolean(Constants.Debug.LOG_AND_DEBUG, true)
+                            showLogDebug.value = true
                         }
                     }
                     .align(Alignment.CenterHorizontally),
@@ -179,66 +140,21 @@ fun AboutPage() {
                     context.openUrl(context.getString(R.string.landing_privacy_policy_url))
                 },
             )
-            if (showDatabase.value) {
-                AboutTile(
-                    text = stringResource(id = R.string.Share_Logs),
-                    onClick = {
-                        lifeScope.launch(Dispatchers.IO) {
-                            showProgressDialog = true
-                            val logFile = FileLogTree.getLogFile()
-                            showProgressDialog = false
-                            Intent().apply {
-                                val uri = logFile.absolutePath.toUri()
-                                action = Intent.ACTION_SEND
-                                putExtra(Intent.EXTRA_STREAM, uri)
-                                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-                                val extraMimeTypes =
-                                    arrayOf("text/plain", "audio/*", "image/*", "video/*")
-                                putExtra(Intent.EXTRA_MIME_TYPES, extraMimeTypes)
-                                type = "application/*"
-
-                                val resInfoList = context.packageManager.queryIntentActivities(
-                                    this,
-                                    PackageManager.MATCH_DEFAULT_ONLY
-                                )
-                                for (resolveInfo in resInfoList) {
-                                    val packageName = resolveInfo.activityInfo.packageName
-                                    context.grantUriPermission(
-                                        packageName,
-                                        uri,
-                                        Intent.FLAG_GRANT_READ_URI_PERMISSION
-                                    )
-                                }
-                                try {
-                                    context.startActivity(Intent.createChooser(this, logFile.name))
-                                } catch (ignored: ActivityNotFoundException) {
-                                }
-                            }
-                        }
-                    },
-                )
-            }
             AboutTile(
                 text = stringResource(id = R.string.Version_Update),
                 onClick = {
                     context.openMarket()
                 },
             )
-            if (showDatabase.value) {
+            if (showLogDebug.value) {
                 AboutTile(
-                    text = stringResource(id = R.string.Debug_database),
+                    text = stringResource(id = R.string.LogAndDebug),
                     onClick = {
-                        navController.navigation(SettingDestination.DatabaseDebug)
+                        settingNavController.navigation(SettingDestination.LogAndDebug)
                     },
                 )
             }
         }
-    }
-
-    if (showProgressDialog) {
-        IndeterminateProgressDialog(
-            message = stringResource(R.string.Please_wait_a_bit),
-        )
     }
 }
 

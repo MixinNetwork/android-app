@@ -86,17 +86,6 @@
                 android:textSize="16sp" />
 
             <TextView
-                    android:id="@+id/logs"
-                    android:layout_width="match_parent"
-                    android:layout_height="@dimen/bottom_button_height"
-                    android:gravity="center_vertical"
-                    android:paddingStart="@dimen/activity_horizontal_margin"
-                    android:paddingEnd="@dimen/activity_horizontal_margin"
-                    android:text="@string/Share_Logs"
-                    android:textColor="@color/colorBlue"
-                    android:textSize="16sp" />
-
-            <TextView
                 android:id="@+id/checkUpdates"
                 android:layout_width="match_parent"
                 android:layout_height="@dimen/bottom_button_height"
@@ -108,42 +97,15 @@
                 android:textSize="16sp" />
 
             <TextView
-                android:id="@+id/database"
-                android:layout_width="match_parent"
-                android:layout_height="@dimen/bottom_button_height"
-                android:gravity="center_vertical"
-                android:paddingStart="@dimen/activity_horizontal_margin"
-                android:paddingEnd="@dimen/activity_horizontal_margin"
-                android:text="@string/Debug_database"
-                android:textColor="@color/colorBlue"
-                android:textSize="16sp" />
-
-            <RelativeLayout
-                android:id="@+id/database_debug_logs"
-                android:layout_width="match_parent"
-                android:layout_height="@dimen/bottom_button_height"
-                android:background="?attr/bg_white"
-                android:foreground="?android:attr/selectableItemBackground">
-
-                <TextView
+                    android:id="@+id/logAndDebug"
+                    android:layout_width="match_parent"
+                    android:layout_height="@dimen/bottom_button_height"
+                    android:gravity="center_vertical"
+                    android:paddingStart="@dimen/activity_horizontal_margin"
+                    android:paddingEnd="@dimen/activity_horizontal_margin"
+                    android:text="@string/LogAndDebug"
                     android:textColor="@color/colorBlue"
-                    android:textSize="16sp"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_centerVertical="true"
-                    android:layout_marginStart="@dimen/activity_horizontal_margin"
-                    android:text="@string/Debug_database_logs"
-                    tools:ignore="RelativeOverlap" />
-
-                <androidx.appcompat.widget.SwitchCompat
-                    android:id="@+id/database_debug_logs_sc"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_alignParentEnd="true"
-                    android:layout_centerVertical="true"
-                    android:layout_marginEnd="@dimen/activity_horizontal_margin"
-                    tools:ignore="RelativeOverlap" />
-            </RelativeLayout>
+                    android:textSize="16sp" />
         </LinearLayout>
     </ScrollView>
 </LinearLayout>

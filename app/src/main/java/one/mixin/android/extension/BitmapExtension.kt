@@ -177,6 +177,7 @@ fun Bitmap.blurBitmap(
 
 @Suppress("DEPRECATION")
 private lateinit var rs: RenderScript
+
 @Suppress("DEPRECATION")
 fun initRenderScript(context: Context) {
     if (!::rs.isInitialized) {

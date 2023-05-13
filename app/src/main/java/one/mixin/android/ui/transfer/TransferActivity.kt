@@ -462,18 +462,18 @@ class TransferActivity : BaseActivity() {
                 .observeOn(AndroidSchedulers.mainThread())
                 .autoDispose(destroyScope)
                 .subscribe {
-                   lifecycleScope.launch(Dispatchers.Main) {
-                       dialog = alertDialogBuilder()
-                           .setTitle(R.string.Transfer_error)
-                           .setMessage(R.string.Transfer_timeout)
-                           .setCancelable(false)
-                           .setPositiveButton(R.string.Confirm) { dialog, _ ->
-                               dialog.dismiss()
-                               finish()
-                               status.value = TransferStatus.INITIALIZING
-                           }.create()
-                       dialog?.show()
-                   }
+                    lifecycleScope.launch(Dispatchers.Main) {
+                        dialog = alertDialogBuilder()
+                            .setTitle(R.string.Transfer_error)
+                            .setMessage(R.string.Transfer_timeout)
+                            .setCancelable(false)
+                            .setPositiveButton(R.string.Confirm) { dialog, _ ->
+                                dialog.dismiss()
+                                finish()
+                                status.value = TransferStatus.INITIALIZING
+                            }.create()
+                        dialog?.show()
+                    }
                 }
         }
     }

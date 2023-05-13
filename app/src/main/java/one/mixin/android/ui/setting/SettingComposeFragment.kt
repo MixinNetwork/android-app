@@ -81,6 +81,7 @@ enum class SettingDestination {
     PinLogs,
     BiometricTime,
     Wallpaper,
+    LogAndDebug,
 }
 
 open class SettingNavigationController {
@@ -279,6 +280,11 @@ class SettingComposeFragment : BaseFragment() {
                             composable(SettingDestination.MigrateRestore.name) {
                                 MixinSettingFragment(MigrateRestoreFragment.TAG) {
                                     MigrateRestoreFragment.newInstance()
+                                }
+                            }
+                            composable(SettingDestination.LogAndDebug.name) {
+                                MixinSettingFragment(LogAndDebugFragment.TAG) {
+                                    LogAndDebugFragment.newInstance()
                                 }
                             }
                             composable(SettingDestination.AccountPrivacy.name) {
