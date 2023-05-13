@@ -222,6 +222,7 @@ class TransferClient @Inject internal constructor(
             TransferDataType.CONVERSATION.value -> {
                 val conversation = serializationJson.decodeFromJsonElement<Conversation>(transferData.data)
                 transferInserter.insertIgnore(conversation)
+                conversationExtDao.deleteConversationById(conversation.conversationId)
             }
 
             TransferDataType.PARTICIPANT.value -> {
