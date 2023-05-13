@@ -246,6 +246,7 @@ class TransferClient @Inject internal constructor(
             TransferDataType.CONVERSATION.value -> {
                 val conversation = serializationJson.decodeFromJsonElement<Conversation>(transferData.data)
                 transferInserter.insertIgnore(conversation)
+                conversationExtDao.deleteConversationById(conversation.conversationId)
             }
 
             TransferDataType.PARTICIPANT.value -> {
@@ -368,8 +369,8 @@ class TransferClient @Inject internal constructor(
     fun exit(finished: Boolean = false) = applicationScope.launch(SINGLE_SOCKET_THREAD) {
         synchronized(this) {
             try {
+                if (socket == null) return@launch
                 launch(SINGLE_SOCKET_THREAD) {
-                    if (socket == null) return@launch
                     socket?.close()
                     socket = null
                 }

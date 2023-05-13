@@ -26,7 +26,10 @@ import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.getColorCode
 import one.mixin.android.session.Session
 import one.mixin.android.ui.conversation.chathistory.ChatHistoryAdapter
+import one.mixin.android.util.GsonHelper
+import one.mixin.android.util.reportException
 import one.mixin.android.vo.ChatHistoryMessageItem
+import one.mixin.android.vo.QuoteMessageItem
 
 abstract class BaseViewHolder constructor(containerView: View) :
     RecyclerView.ViewHolder(containerView) {
@@ -159,6 +162,16 @@ abstract class BaseViewHolder constructor(containerView: View) :
                 endToStart = View.NO_ID
                 startToEnd = id
             }
+        }
+    }
+
+    protected fun fromJsonQuoteMessage(quoteContent: String?): QuoteMessageItem? {
+        quoteContent ?: return null
+        return try {
+            GsonHelper.customGson.fromJson(quoteContent, QuoteMessageItem::class.java)
+        } catch (e: Exception) {
+            reportException(e)
+            null
         }
     }
 }

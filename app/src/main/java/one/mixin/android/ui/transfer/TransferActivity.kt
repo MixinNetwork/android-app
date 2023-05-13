@@ -22,7 +22,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.ExperimentalSerializationApi
 import one.mixin.android.Constants
-import one.mixin.android.Constants.INTERVAL_24_HOURS
 import one.mixin.android.Constants.Scheme.DEVICE_TRANSFER
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
@@ -30,7 +29,6 @@ import one.mixin.android.RxBus
 import one.mixin.android.databinding.ActivityTransferBinding
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.ParticipantDao
-import one.mixin.android.db.property.PropertyHelper
 import one.mixin.android.event.DeviceTransferProgressEvent
 import one.mixin.android.event.SpeedEvent
 import one.mixin.android.extension.alertDialogBuilder
@@ -40,7 +38,6 @@ import one.mixin.android.extension.base64RawURLEncode
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.fadeIn
-import one.mixin.android.extension.fullTime
 import one.mixin.android.extension.generateQRCode
 import one.mixin.android.extension.getParcelableExtraCompat
 import one.mixin.android.extension.openPermissionSetting
