@@ -292,7 +292,7 @@ class OpusAudioRecorder private constructor(private val ctx: Context) {
                     val messageId = this.messageId ?: return@postRunnable
                     val recordingAudioFile = this.recordingAudioFile ?: return@postRunnable
 
-                    if (duration >= 500) {
+                    if (endStatus != AudioEndStatus.SEND && duration >= 500) {
                         val audioPreview = AudioPreview(
                             messageId,
                             recordingAudioFile.absolutePath,
