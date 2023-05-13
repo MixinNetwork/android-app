@@ -259,8 +259,7 @@ class ImageQuoteHolder constructor(val binding: ItemChatImageQuoteBinding) : Med
             binding.chatName.setCompoundDrawables(null, null, null, null)
         }
         binding.chatTime.load(isMe, messageItem.createdAt, messageItem.status, messageItem.isPin ?: false, isRepresentative, messageItem.isSecret(), true)
-        val quoteMessage = GsonHelper.customGson.fromJson(messageItem.quoteContent, QuoteMessageItem::class.java)
-        binding.chatQuote.bind(quoteMessage)
+        binding.chatQuote.bind(fromJsonQuoteMessage(messageItem.quoteContent))
         binding.chatQuote.setOnClickListener {
             if (!hasSelect) {
                 onItemListener.onQuoteMessageClick(messageItem.messageId, messageItem.quoteId)

@@ -171,7 +171,7 @@ class ImageQuoteHolder constructor(val binding: ItemChatImageQuoteBinding) : Med
             isWhite = true,
         )
 
-        binding.chatQuote.bind(GsonHelper.customGson.fromJson(messageItem.quoteContent, QuoteMessageItem::class.java))
+        binding.chatQuote.bind(fromJsonQuoteMessage(messageItem.quoteContent))
 
         binding.chatQuote.setOnClickListener {
             onItemListener.onQuoteMessageClick(messageItem.messageId, messageItem.quoteId)

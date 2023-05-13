@@ -166,7 +166,7 @@ class TextQuoteHolder constructor(val binding: ItemChatTextQuoteBinding) : BaseV
             isSecret = false,
         )
 
-        binding.chatQuote.bind(GsonHelper.customGson.fromJson(messageItem.quoteContent, QuoteMessageItem::class.java))
+        binding.chatQuote.bind(fromJsonQuoteMessage(messageItem.quoteContent))
 
         binding.chatContentLayout.setOnClickListener {
             onItemListener.onQuoteMessageClick(messageItem.messageId, messageItem.quoteId)

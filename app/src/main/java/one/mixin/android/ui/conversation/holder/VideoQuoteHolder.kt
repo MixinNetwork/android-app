@@ -299,8 +299,7 @@ class VideoQuoteHolder constructor(val binding: ItemChatVideoQuoteBinding) :
             isWhite = true,
         )
 
-        val quoteMessage = GsonHelper.customGson.fromJson(messageItem.quoteContent, QuoteMessageItem::class.java)
-        binding.chatQuote.bind(quoteMessage)
+        binding.chatQuote.bind(fromJsonQuoteMessage(messageItem.quoteContent))
         binding.chatQuote.setOnClickListener {
             if (!hasSelect) {
                 onItemListener.onQuoteMessageClick(messageItem.messageId, messageItem.quoteId)

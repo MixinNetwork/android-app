@@ -135,7 +135,7 @@ class ContactCardQuoteHolder constructor(val binding: ItemChatContactCardQuoteBi
                 true
             }
         }
-        val quoteMessage = GsonHelper.customGson.fromJson(messageItem.quoteContent, QuoteMessageItem::class.java)
+        binding.chatQuote.bind(fromJsonQuoteMessage(messageItem.quoteContent))
         binding.chatQuote.setOnClickListener {
             if (!hasSelect) {
                 onItemListener.onQuoteMessageClick(messageItem.messageId, messageItem.quoteId)
@@ -143,7 +143,6 @@ class ContactCardQuoteHolder constructor(val binding: ItemChatContactCardQuoteBi
                 onItemListener.onSelect(!isSelect, messageItem, absoluteAdapterPosition)
             }
         }
-        binding.chatQuote.bind(quoteMessage)
         binding.chatTime.load(
             isMe,
             messageItem.createdAt,
