@@ -336,13 +336,13 @@ class TransferClient @Inject internal constructor(
 
     fun exit(finished: Boolean = false) = MixinApplication.get().applicationScope.launch(SINGLE_SOCKET_THREAD) {
         try {
-            if (!finished) {
-                Timber.e("DeviceId: $deviceId type: $currentType id: ${transferInserter.currentId} start-time:$startTime current-time:${System.currentTimeMillis()}")
-            } else {
-                Timber.e("Finish exit ${System.currentTimeMillis() - startTime}/1000 s")
-            }
-            finalWork()
             if (socket != null) {
+                if (!finished) {
+                    Timber.e("DeviceId: $deviceId type: $currentType id: ${transferInserter.currentId} start-time:$startTime current-time:${System.currentTimeMillis()}")
+                } else {
+                    Timber.e("Finish exit ${(System.currentTimeMillis() - startTime) / 1000}s")
+                }
+                finalWork()
                 quit = true
                 socket?.close()
                 socket = null
