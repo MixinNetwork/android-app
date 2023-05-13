@@ -32,13 +32,8 @@ class DataProvider {
         fun getMessages(database: MixinDatabase, conversationId: String) =
             object : DataSource.Factory<Int, MessageItem>() {
                 private val fastCountCallback = fun(): Int {
-                    val conversationExtDao = database.conversationExtDao()
-                    val count = conversationExtDao.getMessageCountByConversationId(conversationId)
-                    if (count != null) {
-                        return count
-                    }
-                    conversationExtDao.refreshCountByConversationId(conversationId)
-                    return (conversationExtDao.getMessageCountByConversationId(conversationId) ?: 0)
+                    val messageDao = database.messageDao()
+                    return messageDao.getMessageCountByConversationId(conversationId)
                 }
                 override fun create(): DataSource<Int, MessageItem> {
                     val sql =
