@@ -60,7 +60,7 @@ buildscript {
         ext.googlePlayServicesVersion = '18.0.1'
         ext.svgVersion = '1.4'
         ext.reboundVersion = '0.3.8'
-        ext.ktlintVersion = '0.49.0'
+        ext.ktlintVersion = '0.49.1'
         ext.media3Version = '1.0.1'
         ext.perfVersion = '19.0.10'
         ext.markwonVersion = '4.6.2'
