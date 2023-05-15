@@ -20,9 +20,11 @@ import timber.log.Timber
 
 class TransferInserter {
     var primaryId: String? = null // Save the currently inserted primary key id
-        private set
-    var assistanceId: String? = null
-        private set
+        private set(value) {
+            field = value
+            Timber.e("Insert primaryId $primaryId")
+        }
+    private var assistanceId: String? = null
 
     private val writableDatabase by lazy {
         requireNotNull(MixinDatabase.getWritableDatabase())

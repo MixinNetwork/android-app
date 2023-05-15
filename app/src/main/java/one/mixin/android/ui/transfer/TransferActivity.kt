@@ -280,8 +280,6 @@ class TransferActivity : BaseActivity() {
                     binding.initLl.isVisible = false
                     binding.waitingLl.isVisible = true
                     binding.pbLl.isVisible = true
-                    binding.progressTv.setText(R.string.transfer_process_title)
-                    binding.progressDesc.setText(R.string.transfer_process_tip)
                 }
 
                 TransferStatus.ERROR -> {

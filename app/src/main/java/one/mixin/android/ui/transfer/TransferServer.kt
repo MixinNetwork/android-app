@@ -99,6 +99,13 @@ class TransferServer @Inject internal constructor(
                 Timber.e("Current type: $field")
             }
         }
+    private var currentId: Long? = null
+        set(value) {
+            if (field != value) {
+                field = value
+                Timber.e("Current id: $field")
+            }
+        }
 
     suspend fun startServer(
         createdSuccessCallback: (TransferCommand) -> Unit,
@@ -293,6 +300,7 @@ class TransferServer @Inject internal constructor(
                 return
             }
             rowId = conversationDao.getConversationRowId(list.last().conversationId) ?: return
+            currentId = rowId
         }
     }
 
@@ -334,6 +342,7 @@ class TransferServer @Inject internal constructor(
             rowId =
                 participantDao.getParticipantRowId(list.last().conversationId, list.last().userId)
                     ?: return
+            currentId = rowId
         }
     }
 
@@ -367,6 +376,7 @@ class TransferServer @Inject internal constructor(
                 return
             }
             rowId = userDao.getUserRowId(list.last().userId) ?: return
+            currentId = rowId
         }
     }
 
@@ -400,6 +410,7 @@ class TransferServer @Inject internal constructor(
                 return
             }
             rowId = appDao.getAppRowId(list.last().appId) ?: return
+            currentId = rowId
         }
     }
 
@@ -433,6 +444,7 @@ class TransferServer @Inject internal constructor(
                 return
             }
             rowId = assetDao.getAssetRowId(list.last().assetId) ?: return
+            currentId = rowId
         }
     }
 
@@ -477,6 +489,7 @@ class TransferServer @Inject internal constructor(
                 return
             }
             rowId = stickerDao.getStickerRowId(list.last().stickerId) ?: return
+            currentId = rowId
         }
     }
 
@@ -510,6 +523,7 @@ class TransferServer @Inject internal constructor(
                 return
             }
             rowId = snapshotDao.getSnapshotRowId(list.last().snapshotId) ?: return
+            currentId = rowId
         }
     }
 
@@ -553,6 +567,7 @@ class TransferServer @Inject internal constructor(
                 list.last().transcriptId,
                 list.last().messageId,
             ) ?: return
+            currentId = rowId
         }
     }
 
@@ -590,6 +605,7 @@ class TransferServer @Inject internal constructor(
                 return
             }
             rowId = pinMessageDao.getPinMessageRowId(list.last().messageId) ?: return
+            currentId = rowId
         }
     }
 
@@ -629,6 +645,7 @@ class TransferServer @Inject internal constructor(
                 return
             }
             rowId = messageDao.getMessageRowid(list.last().messageId) ?: return
+            currentId = rowId
         }
     }
 
@@ -666,6 +683,7 @@ class TransferServer @Inject internal constructor(
                 return
             }
             rowId = messageMentionDao.getMessageMentionRowId(list.last().messageId) ?: return
+            currentId = rowId
         }
     }
 
@@ -703,6 +721,7 @@ class TransferServer @Inject internal constructor(
                 return
             }
             rowId = expiredMessageDao.getExpiredMessageRowId(list.last().messageId) ?: return
+            currentId = rowId
         }
     }
 
@@ -711,6 +730,7 @@ class TransferServer @Inject internal constructor(
         val mediaMessage = message.toMessage()
         mediaMessage.absolutePath(context)?.let { path ->
             val f = File(path)
+            Timber.e(f.absolutePath)
             if (f.exists() && f.length() > 0) {
                 protocol.write(outputStream, f, message.messageId)
                 count++
@@ -723,6 +743,7 @@ class TransferServer @Inject internal constructor(
         if (!message.isAttachment()) return
         message.absolutePath(context)?.let { path ->
             val f = File(path)
+            Timber.e(f.absolutePath)
             if (f.exists() && f.length() > 0) {
                 protocol.write(outputStream, f, message.messageId)
                 count++
