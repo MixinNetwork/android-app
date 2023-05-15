@@ -1,5 +1,7 @@
 package one.mixin.android.ui.transfer
 
+import android.net.Uri
+import androidx.core.net.toFile
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.launch
@@ -729,8 +731,12 @@ class TransferServer @Inject internal constructor(
         val context = MixinApplication.get()
         val mediaMessage = message.toMessage()
         mediaMessage.absolutePath(context)?.let { path ->
-            val f = File(path)
-            Timber.e(f.absolutePath)
+            val f = try {
+                Uri.parse(path).toFile()
+            } catch (e: Exception) {
+                null
+            } ?: return
+            Timber.e("Sync ${f.absolutePath}")
             if (f.exists() && f.length() > 0) {
                 protocol.write(outputStream, f, message.messageId)
                 count++
@@ -742,8 +748,12 @@ class TransferServer @Inject internal constructor(
         val context = MixinApplication.get()
         if (!message.isAttachment()) return
         message.absolutePath(context)?.let { path ->
-            val f = File(path)
-            Timber.e(f.absolutePath)
+            val f = try {
+                Uri.parse(path).toFile()
+            } catch (e: Exception) {
+                null
+            } ?: return
+            Timber.e("Sync ${f.absolutePath}")
             if (f.exists() && f.length() > 0) {
                 protocol.write(outputStream, f, message.messageId)
                 count++
