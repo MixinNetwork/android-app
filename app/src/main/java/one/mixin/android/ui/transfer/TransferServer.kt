@@ -1,5 +1,7 @@
 package one.mixin.android.ui.transfer
 
+import android.net.Uri
+import androidx.core.net.toFile
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.launch
@@ -22,8 +24,6 @@ import one.mixin.android.db.StickerDao
 import one.mixin.android.db.TranscriptMessageDao
 import one.mixin.android.db.UserDao
 import one.mixin.android.event.DeviceTransferProgressEvent
-import one.mixin.android.extension.getMediaPath
-import one.mixin.android.extension.isUUID
 import one.mixin.android.extension.toUtcTime
 import one.mixin.android.session.Session
 import one.mixin.android.ui.transfer.TransferProtocol.Companion.TYPE_COMMAND
@@ -36,6 +36,8 @@ import one.mixin.android.ui.transfer.vo.TransferData
 import one.mixin.android.ui.transfer.vo.TransferDataType
 import one.mixin.android.ui.transfer.vo.compatible.TransferMessage
 import one.mixin.android.ui.transfer.vo.compatible.TransferMessageMention
+import one.mixin.android.ui.transfer.vo.compatible.toMessage
+import one.mixin.android.ui.transfer.vo.transferDataTypeFromValue
 import one.mixin.android.util.NetworkUtils
 import one.mixin.android.util.SINGLE_SOCKET_THREAD
 import one.mixin.android.vo.App
@@ -48,7 +50,10 @@ import one.mixin.android.vo.Snapshot
 import one.mixin.android.vo.Sticker
 import one.mixin.android.vo.TranscriptMessage
 import one.mixin.android.vo.User
+import one.mixin.android.vo.absolutePath
+import one.mixin.android.vo.isAttachment
 import timber.log.Timber
+import java.io.File
 import java.io.InputStream
 import java.io.OutputStream
 import java.net.BindException
@@ -94,6 +99,13 @@ class TransferServer @Inject internal constructor(
             if (field != value) {
                 field = value
                 Timber.e("Current type: $field")
+            }
+        }
+    private var currentId: Long? = null
+        set(value) {
+            if (field != value) {
+                field = value
+                Timber.e("Current id: $field")
             }
         }
 
@@ -174,7 +186,12 @@ class TransferServer @Inject internal constructor(
                                 Timber.e("Verification passed, start transmission")
                                 status.value = TransferStatus.VERIFICATION_COMPLETED
                                 launch {
-                                    transfer(outputStream)
+                                    transfer(
+                                        outputStream,
+                                        result.type,
+                                        result.primaryId,
+                                        result.assistanceId,
+                                    )
                                 }
                             } else {
                                 Timber.e("Validation failed, close")
@@ -202,22 +219,22 @@ class TransferServer @Inject internal constructor(
             } while (!quit)
         }
 
-    fun transfer(outputStream: OutputStream) {
+    private fun transfer(outputStream: OutputStream, type: String?, primaryId: String?, assistanceId: String?) {
         status.value = TransferStatus.SYNCING
-        sendStart(outputStream)
-        syncConversation(outputStream)
-        syncParticipant(outputStream)
-        syncUser(outputStream)
-        syncApp(outputStream)
-        syncAsset(outputStream)
-        syncSnapshot(outputStream)
-        syncSticker(outputStream)
-        syncPinMessage(outputStream)
-        syncTranscriptMessage(outputStream)
-        syncMessage(outputStream)
-        syncMessageMention(outputStream)
-        syncExpiredMessage(outputStream)
-        syncMediaFile(outputStream)
+        val transferDataType = transferDataTypeFromValue(type)
+        sendStart(outputStream, transferDataType, primaryId, assistanceId)
+        syncConversation(outputStream, transferDataType, primaryId)
+        syncParticipant(outputStream, transferDataType, primaryId, assistanceId)
+        syncUser(outputStream, transferDataType, primaryId)
+        syncApp(outputStream, transferDataType, primaryId)
+        syncAsset(outputStream, transferDataType, primaryId)
+        syncSnapshot(outputStream, transferDataType, primaryId)
+        syncSticker(outputStream, transferDataType, primaryId)
+        syncPinMessage(outputStream, transferDataType, primaryId)
+        syncTranscriptMessage(outputStream, transferDataType, primaryId, assistanceId)
+        syncMessage(outputStream, transferDataType, primaryId)
+        syncMessageMention(outputStream, transferDataType, primaryId)
+        syncExpiredMessage(outputStream, transferDataType, primaryId)
         sendFinish(outputStream)
     }
 
@@ -238,19 +255,10 @@ class TransferServer @Inject internal constructor(
         writeJson(outputStream, TransferCommand.serializer(), command, TYPE_COMMAND)
     }
 
-    private fun sendStart(outputStream: OutputStream) {
-        writeCommand(outputStream, TransferCommand(TransferCommandAction.START.value, total = totalCount()))
-        RxBus.publish(DeviceTransferProgressEvent(0.0f))
+    private fun sendStart(outputStream: OutputStream, type: TransferDataType?, primaryId: String?, assistanceId: String?) {
+        writeCommand(outputStream, TransferCommand(TransferCommandAction.START.value, total = totalCount(type, primaryId, assistanceId)))
+        RxBus.publish(DeviceTransferProgressEvent(0f))
         Timber.e("Started total: $total")
-    }
-
-    private fun totalCount(): Long {
-        this.total =
-            messageDao.countMediaMessages() + messageDao.countMessages() + conversationDao.countConversations() +
-            expiredMessageDao.countExpiredMessages() + participantDao.countParticipants() +
-            pinMessageDao.countPinMessages() + snapshotDao.countSnapshots() + stickerDao.countStickers() +
-            transcriptMessageDao.countTranscriptMessages() + userDao.countUsers() + appDao.countApps() + messageMentionDao.countMessageMention()
-        return total
     }
 
     private fun sendFinish(outputStream: OutputStream) {
@@ -260,9 +268,21 @@ class TransferServer @Inject internal constructor(
         )
     }
 
-    private fun syncConversation(outputStream: OutputStream) {
-        currentType = TransferDataType.CONVERSATION.value
+    private fun syncConversation(
+        outputStream: OutputStream,
+        transferDataType: TransferDataType?,
+        primaryId: String?,
+    ) {
         var rowId = -1L
+        if (transferDataType != null) {
+            if (transferDataType.ordinal > TransferDataType.CONVERSATION.ordinal) {
+                // skip
+                return
+            } else if (transferDataType == TransferDataType.CONVERSATION && primaryId != null) {
+                rowId = conversationDao.getConversationRowId(primaryId) ?: -1
+            }
+        }
+        currentType = TransferDataType.CONVERSATION.value
         while (!quit) {
             val list = conversationDao.getConversationsByLimitAndRowId(LIMIT, rowId)
             if (list.isEmpty()) {
@@ -271,19 +291,38 @@ class TransferServer @Inject internal constructor(
             list.map {
                 TransferData(TransferDataType.CONVERSATION.value, it)
             }.forEach { conversation ->
-                writeJson(outputStream, TransferData.serializer(Conversation.serializer()), conversation)
+                writeJson(
+                    outputStream,
+                    TransferData.serializer(Conversation.serializer()),
+                    conversation,
+                )
                 count++
             }
             if (list.size < LIMIT) {
                 return
             }
             rowId = conversationDao.getConversationRowId(list.last().conversationId) ?: return
+            currentId = rowId
         }
     }
 
-    private fun syncParticipant(outputStream: OutputStream) {
-        currentType = TransferDataType.PARTICIPANT.value
+    private fun syncParticipant(
+        outputStream: OutputStream,
+        transferDataType: TransferDataType?,
+        primaryId: String?,
+        assistanceId: String?,
+    ) {
         var rowId = -1L
+        if (transferDataType != null) {
+            if (transferDataType.ordinal > TransferDataType.PARTICIPANT.ordinal) {
+                // skip
+                return
+            } else if (transferDataType == TransferDataType.PARTICIPANT && primaryId != null && assistanceId != null) {
+                rowId = participantDao.getParticipantRowId(primaryId, assistanceId) ?: -1
+            }
+        }
+        currentType = TransferDataType.PARTICIPANT.value
+
         while (!quit) {
             val list = participantDao.getParticipantsByLimitAndRowId(LIMIT, rowId)
             if (list.isEmpty()) {
@@ -292,19 +331,38 @@ class TransferServer @Inject internal constructor(
             list.map {
                 TransferData(TransferDataType.PARTICIPANT.value, it)
             }.forEach { participant ->
-                writeJson(outputStream, TransferData.serializer(Participant.serializer()), participant)
+                writeJson(
+                    outputStream,
+                    TransferData.serializer(Participant.serializer()),
+                    participant,
+                )
                 count++
             }
             if (list.size < LIMIT) {
                 return
             }
-            rowId = participantDao.getParticipantRowId(list.last().conversationId, list.last().userId) ?: return
+            rowId =
+                participantDao.getParticipantRowId(list.last().conversationId, list.last().userId)
+                    ?: return
+            currentId = rowId
         }
     }
 
-    private fun syncUser(outputStream: OutputStream) {
-        currentType = TransferDataType.USER.value
+    private fun syncUser(
+        outputStream: OutputStream,
+        transferDataType: TransferDataType?,
+        primaryId: String?,
+    ) {
         var rowId = -1L
+        if (transferDataType != null) {
+            if (transferDataType.ordinal > TransferDataType.USER.ordinal) {
+                // skip
+                return
+            } else if (transferDataType == TransferDataType.USER && primaryId != null) {
+                rowId = userDao.getUserRowId(primaryId) ?: -1
+            }
+        }
+        currentType = TransferDataType.USER.value
         while (!quit) {
             val list = userDao.getUsersByLimitAndRowId(LIMIT, rowId)
             if (list.isEmpty()) {
@@ -320,12 +378,25 @@ class TransferServer @Inject internal constructor(
                 return
             }
             rowId = userDao.getUserRowId(list.last().userId) ?: return
+            currentId = rowId
         }
     }
 
-    private fun syncApp(outputStream: OutputStream) {
-        currentType = TransferDataType.APP.value
+    private fun syncApp(
+        outputStream: OutputStream,
+        transferDataType: TransferDataType?,
+        primaryId: String?,
+    ) {
         var rowId = -1L
+        if (transferDataType != null) {
+            if (transferDataType.ordinal > TransferDataType.APP.ordinal) {
+                // skip
+                return
+            } else if (transferDataType == TransferDataType.APP && primaryId != null) {
+                rowId = appDao.getAppRowId(primaryId) ?: -1
+            }
+        }
+        currentType = TransferDataType.APP.value
         while (!quit) {
             val list = appDao.getAppsByLimitAndRowId(LIMIT, rowId)
             if (list.isEmpty()) {
@@ -341,12 +412,25 @@ class TransferServer @Inject internal constructor(
                 return
             }
             rowId = appDao.getAppRowId(list.last().appId) ?: return
+            currentId = rowId
         }
     }
 
-    private fun syncAsset(outputStream: OutputStream) {
-        currentType = TransferDataType.ASSET.value
+    private fun syncAsset(
+        outputStream: OutputStream,
+        transferDataType: TransferDataType?,
+        primaryId: String?,
+    ) {
         var rowId = -1L
+        if (transferDataType != null) {
+            if (transferDataType.ordinal > TransferDataType.ASSET.ordinal) {
+                // skip
+                return
+            } else if (transferDataType == TransferDataType.ASSET && primaryId != null) {
+                rowId = assetDao.getAssetRowId(primaryId) ?: -1
+            }
+        }
+        currentType = TransferDataType.ASSET.value
         while (!quit) {
             val list = assetDao.getAssetByLimitAndRowId(LIMIT, rowId)
             if (list.isEmpty()) {
@@ -362,12 +446,25 @@ class TransferServer @Inject internal constructor(
                 return
             }
             rowId = assetDao.getAssetRowId(list.last().assetId) ?: return
+            currentId = rowId
         }
     }
 
-    private fun syncSticker(outputStream: OutputStream) {
-        currentType = TransferDataType.STICKER.value
+    private fun syncSticker(
+        outputStream: OutputStream,
+        transferDataType: TransferDataType?,
+        primaryId: String?,
+    ) {
         var rowId = -1L
+        if (transferDataType != null) {
+            if (transferDataType.ordinal > TransferDataType.STICKER.ordinal) {
+                // skip
+                return
+            } else if (transferDataType == TransferDataType.STICKER && primaryId != null) {
+                rowId = stickerDao.getStickerRowId(primaryId) ?: -1
+            }
+        }
+        currentType = TransferDataType.STICKER.value
         while (!quit) {
             val list = stickerDao.getStickersByLimitAndRowId(LIMIT, rowId)
                 .map {
@@ -394,12 +491,25 @@ class TransferServer @Inject internal constructor(
                 return
             }
             rowId = stickerDao.getStickerRowId(list.last().stickerId) ?: return
+            currentId = rowId
         }
     }
 
-    private fun syncSnapshot(outputStream: OutputStream) {
-        currentType = TransferDataType.SNAPSHOT.value
+    private fun syncSnapshot(
+        outputStream: OutputStream,
+        transferDataType: TransferDataType?,
+        primaryId: String?,
+    ) {
         var rowId = -1L
+        if (transferDataType != null) {
+            if (transferDataType.ordinal > TransferDataType.SNAPSHOT.ordinal) {
+                // skip
+                return
+            } else if (transferDataType == TransferDataType.SNAPSHOT && primaryId != null) {
+                rowId = snapshotDao.getSnapshotRowId(primaryId) ?: -1
+            }
+        }
+        currentType = TransferDataType.SNAPSHOT.value
         while (!quit) {
             val list = snapshotDao.getSnapshotByLimitAndRowId(LIMIT, rowId)
             if (list.isEmpty()) {
@@ -415,33 +525,66 @@ class TransferServer @Inject internal constructor(
                 return
             }
             rowId = snapshotDao.getSnapshotRowId(list.last().snapshotId) ?: return
+            currentId = rowId
         }
     }
 
-    private fun syncTranscriptMessage(outputStream: OutputStream) {
-        currentType = TransferDataType.TRANSCRIPT_MESSAGE.value
+    private fun syncTranscriptMessage(
+        outputStream: OutputStream,
+        transferDataType: TransferDataType?,
+        primaryId: String?,
+        assistanceId: String?,
+    ) {
         var rowId = -1L
+        if (transferDataType != null) {
+            if (transferDataType.ordinal > TransferDataType.TRANSCRIPT_MESSAGE.ordinal) {
+                // skip
+                return
+            } else if (transferDataType == TransferDataType.TRANSCRIPT_MESSAGE && primaryId != null && assistanceId != null) {
+                rowId = transcriptMessageDao.getTranscriptMessageRowId(primaryId, assistanceId) ?: -1
+            }
+        }
+        currentType = TransferDataType.TRANSCRIPT_MESSAGE.value
         while (!quit) {
             val list = transcriptMessageDao.getTranscriptMessageByLimitAndRowId(LIMIT, rowId)
             if (list.isEmpty()) {
                 return
             }
-            list.map {
-                TransferData(TransferDataType.TRANSCRIPT_MESSAGE.value, it)
-            }.forEach { transferMessage ->
-                writeJson(outputStream, TransferData.serializer(TranscriptMessage.serializer()), transferMessage)
+            list.forEach { transcriptMessage ->
+                writeJson(
+                    outputStream,
+                    TransferData.serializer(TranscriptMessage.serializer()),
+                    TransferData(TransferDataType.TRANSCRIPT_MESSAGE.value, transcriptMessage),
+                )
+                syncMediaFile(outputStream, transcriptMessage)
                 count++
             }
             if (list.size < LIMIT) {
                 return
             }
-            rowId = transcriptMessageDao.getTranscriptMessageRowId(list.last().transcriptId, list.last().messageId) ?: return
+            rowId = transcriptMessageDao.getTranscriptMessageRowId(
+                list.last().transcriptId,
+                list.last().messageId,
+            ) ?: return
+            currentId = rowId
         }
     }
 
-    private fun syncPinMessage(outputStream: OutputStream) {
-        currentType = TransferDataType.PIN_MESSAGE.value
+    private fun syncPinMessage(
+        outputStream: OutputStream,
+        transferDataType: TransferDataType?,
+        primaryId: String?,
+    ) {
         var rowId = -1L
+        if (transferDataType != null) {
+            if (transferDataType.ordinal > TransferDataType.PIN_MESSAGE.ordinal) {
+                // skip
+                return
+            } else if (transferDataType == TransferDataType.PIN_MESSAGE && primaryId != null) {
+                rowId = pinMessageDao.getPinMessageRowId(primaryId) ?: -1
+            }
+        }
+        currentType = TransferDataType.PIN_MESSAGE.value
         while (!quit) {
             val list = pinMessageDao.getPinMessageByLimitAndRowId(LIMIT, rowId)
             if (list.isEmpty()) {
@@ -450,40 +593,73 @@ class TransferServer @Inject internal constructor(
             list.map {
                 TransferData(TransferDataType.PIN_MESSAGE.value, it)
             }.forEach { pinMessage ->
-                writeJson(outputStream, TransferData.serializer(PinMessage.serializer()), pinMessage)
+                writeJson(
+                    outputStream,
+                    TransferData.serializer(PinMessage.serializer()),
+                    pinMessage,
+                )
                 count++
             }
             if (list.size < LIMIT) {
                 return
             }
             rowId = pinMessageDao.getPinMessageRowId(list.last().messageId) ?: return
+            currentId = rowId
         }
     }
 
-    private fun syncMessage(outputStream: OutputStream) {
-        currentType = TransferDataType.MESSAGE.value
+    private fun syncMessage(
+        outputStream: OutputStream,
+        transferDataType: TransferDataType?,
+        primaryId: String?,
+    ) {
         var rowId = -1L
+        if (transferDataType != null) {
+            if (transferDataType.ordinal > TransferDataType.MESSAGE.ordinal) {
+                // skip
+                return
+            } else if (transferDataType == TransferDataType.MESSAGE && primaryId != null) {
+                rowId = messageDao.getMessageRowid(primaryId) ?: -1
+            }
+        }
+        currentType = TransferDataType.MESSAGE.value
         while (!quit) {
             val list = messageDao.getMessageByLimitAndRowId(LIMIT, rowId)
             if (list.isEmpty()) {
                 return
             }
-            list.map {
-                TransferData(TransferDataType.MESSAGE.value, it)
-            }.forEach { transcriptMessage ->
-                writeJson(outputStream, TransferData.serializer(TransferMessage.serializer()), transcriptMessage)
+            list.forEach { transcriptMessage ->
+                writeJson(
+                    outputStream,
+                    TransferData.serializer(TransferMessage.serializer()),
+                    TransferData(TransferDataType.MESSAGE.value, transcriptMessage),
+                )
+                syncMediaFile(outputStream, transcriptMessage)
                 count++
             }
             if (list.size < LIMIT) {
                 return
             }
             rowId = messageDao.getMessageRowid(list.last().messageId) ?: return
+            currentId = rowId
         }
     }
 
-    private fun syncMessageMention(outputStream: OutputStream) {
-        currentType = TransferDataType.MESSAGE_MENTION.value
+    private fun syncMessageMention(
+        outputStream: OutputStream,
+        transferDataType: TransferDataType?,
+        primaryId: String?,
+    ) {
         var rowId = -1L
+        if (transferDataType != null) {
+            if (transferDataType.ordinal > TransferDataType.MESSAGE_MENTION.ordinal) {
+                // skip
+                return
+            } else if (transferDataType == TransferDataType.MESSAGE_MENTION && primaryId != null) {
+                rowId = messageMentionDao.getMessageMentionRowId(primaryId) ?: -1
+            }
+        }
+        currentType = TransferDataType.MESSAGE_MENTION.value
         while (!quit) {
             val list = messageMentionDao.getMessageMentionByLimitAndRowId(LIMIT, rowId)
             if (list.isEmpty()) {
@@ -492,52 +668,89 @@ class TransferServer @Inject internal constructor(
             list.map {
                 TransferData(TransferDataType.MESSAGE_MENTION.value, it)
             }.forEach { transferMessageMention ->
-                writeJson(outputStream, TransferData.serializer(TransferMessageMention.serializer()), transferMessageMention)
+                writeJson(
+                    outputStream,
+                    TransferData.serializer(TransferMessageMention.serializer()),
+                    transferMessageMention,
+                )
                 count++
             }
             if (list.size < LIMIT) {
                 return
             }
             rowId = messageMentionDao.getMessageMentionRowId(list.last().messageId) ?: return
+            currentId = rowId
         }
     }
 
-    private fun syncExpiredMessage(outputStream: OutputStream) {
+    private fun syncExpiredMessage(
+        outputStream: OutputStream,
+        transferDataType: TransferDataType?,
+        primaryId: String?,
+    ) {
+        var rowId = -1L
+        if (transferDataType != null) {
+            if (transferDataType.ordinal > TransferDataType.EXPIRED_MESSAGE.ordinal) {
+                // skip
+                return
+            } else if (transferDataType == TransferDataType.EXPIRED_MESSAGE && primaryId != null) {
+                rowId = expiredMessageDao.getExpiredMessageRowId(primaryId) ?: -1
+            }
+        }
         currentType = TransferDataType.EXPIRED_MESSAGE.value
-        var offset = 0
         while (!quit) {
-            val list = expiredMessageDao.getExpiredMessageByLimitAndOffset(LIMIT, offset)
+            val list = expiredMessageDao.getExpiredMessageByLimitAndRowId(LIMIT, rowId)
             if (list.isEmpty()) {
                 return
             }
             list.map {
                 TransferData(TransferDataType.EXPIRED_MESSAGE.value, it)
             }.forEach { expiredMessage ->
-                writeJson(outputStream, TransferData.serializer(ExpiredMessage.serializer()), expiredMessage)
+                writeJson(
+                    outputStream,
+                    TransferData.serializer(ExpiredMessage.serializer()),
+                    expiredMessage,
+                )
                 count++
             }
             if (list.size < LIMIT) {
                 return
             }
-            offset += LIMIT
+            rowId = expiredMessageDao.getExpiredMessageRowId(list.last().messageId) ?: return
+            currentId = rowId
         }
     }
 
-    private fun syncMediaFile(outputStream: OutputStream) {
+    private fun syncMediaFile(outputStream: OutputStream, message: TransferMessage) {
         val context = MixinApplication.get()
-        val folder = context.getMediaPath() ?: return
-        folder.walkTopDown().forEach { f ->
-            if (f.isFile && f.length() > 0) {
-                val name = f.nameWithoutExtension
-                if (name.isUUID()) {
-                    if (f.parentFile?.name == "Transcripts" && transcriptMessageDao.countTranscriptByMessageId(name) > 0) {
-                        protocol.write(outputStream, f, name)
-                        count++
-                    } else if (messageDao.findMessageById(name) != null) {
-                        protocol.write(outputStream, f, name)
-                        count++
-                    }
-                }
+        val mediaMessage = message.toMessage()
+        mediaMessage.absolutePath(context)?.let { path ->
+            val f = try {
+                Uri.parse(path).toFile()
+            } catch (e: Exception) {
+                null
+            } ?: return
+            Timber.e("Sync ${f.absolutePath}")
+            if (f.exists() && f.length() > 0) {
+                protocol.write(outputStream, f, message.messageId)
+                count++
+            }
+        }
+    }
+
+    private fun syncMediaFile(outputStream: OutputStream, message: TranscriptMessage) {
+        val context = MixinApplication.get()
+        if (!message.isAttachment()) return
+        message.absolutePath(context)?.let { path ->
+            val f = try {
+                Uri.parse(path).toFile()
+            } catch (e: Exception) {
+                null
+            } ?: return
+            Timber.e("Sync ${f.absolutePath}")
+            if (f.exists() && f.length() > 0) {
+                protocol.write(outputStream, f, message.messageId)
+                count++
             }
         }
     }
@@ -554,9 +767,169 @@ class TransferServer @Inject internal constructor(
         }
     }
 
+    private fun totalCount(
+        transferDataType: TransferDataType?,
+        primaryId: String?,
+        assistanceId: String?,
+    ): Long {
+        this.total = totalConversationCount(transferDataType, primaryId) +
+            totalParticipantCount(transferDataType, primaryId, assistanceId) + totalUserCount(
+                transferDataType,
+                primaryId,
+            ) + totalAppCount(transferDataType, primaryId) + totalAssetCount(transferDataType, primaryId) +
+            totalSnapshotCount(transferDataType, primaryId) + totalStickerCount(
+                transferDataType,
+                primaryId,
+            ) + totalPinMessageCount(transferDataType, primaryId) + totalTranscriptMessageCount(
+                transferDataType,
+                primaryId,
+                assistanceId,
+            ) + totalMessageCount(transferDataType, primaryId) + totalMessageMentionCount(transferDataType, primaryId) + totalExpiredMessageCount(
+                transferDataType,
+                primaryId,
+            )
+        return total
+    }
+
+    private fun totalConversationCount(transferDataType: TransferDataType?, primaryId: String?): Long {
+        return if (transferDataType == null || primaryId == null) {
+            conversationDao.countConversations()
+        } else if (transferDataType == TransferDataType.CONVERSATION) {
+            val rowId = conversationDao.getConversationRowId(primaryId) ?: -1L
+            conversationDao.countConversations(rowId)
+        } else {
+            0L
+        }
+    }
+
+    private fun totalSnapshotCount(transferDataType: TransferDataType?, primaryId: String?): Long {
+        return if (transferDataType == null || primaryId == null || transferDataType.ordinal < TransferDataType.SNAPSHOT.ordinal) {
+            snapshotDao.countSnapshots()
+        } else if (transferDataType == TransferDataType.SNAPSHOT) {
+            val rowId = snapshotDao.getSnapshotRowId(primaryId) ?: -1L
+            snapshotDao.countSnapshots(rowId)
+        } else {
+            0L
+        }
+    }
+
+    private fun totalStickerCount(transferDataType: TransferDataType?, primaryId: String?): Long {
+        return if (transferDataType == null || primaryId == null || transferDataType.ordinal < TransferDataType.STICKER.ordinal) {
+            stickerDao.countStickers()
+        } else if (transferDataType == TransferDataType.STICKER) {
+            val rowId = stickerDao.getStickerRowId(primaryId) ?: -1L
+            stickerDao.countStickers(rowId)
+        } else {
+            0L
+        }
+    }
+
+    private fun totalTranscriptMessageCount(transferDataType: TransferDataType?, primaryId: String?, assistanceId: String?): Long {
+        return if (transferDataType == null || primaryId == null || assistanceId == null || transferDataType.ordinal < TransferDataType.TRANSCRIPT_MESSAGE.ordinal) {
+            transcriptMessageDao.countTranscriptMessages()
+        } else if (transferDataType == TransferDataType.TRANSCRIPT_MESSAGE) {
+            val rowId = transcriptMessageDao.getTranscriptMessageRowId(primaryId, assistanceId) ?: -1L
+            transcriptMessageDao.countTranscriptMessages(rowId)
+        } else {
+            0L
+        }
+    }
+
+    private fun totalUserCount(transferDataType: TransferDataType?, primaryId: String?): Long {
+        return if (transferDataType == null || primaryId == null || transferDataType.ordinal < TransferDataType.USER.ordinal) {
+            userDao.countUsers()
+        } else if (transferDataType == TransferDataType.USER) {
+            val rowId = userDao.getUserRowId(primaryId) ?: -1L
+            userDao.countUsers(rowId)
+        } else {
+            0L
+        }
+    }
+
+    private fun totalAppCount(transferDataType: TransferDataType?, primaryId: String?): Long {
+        return if (transferDataType == null || primaryId == null || transferDataType.ordinal < TransferDataType.APP.ordinal) {
+            appDao.countApps()
+        } else if (transferDataType == TransferDataType.APP) {
+            val rowId = appDao.getAppRowId(primaryId) ?: -1L
+            appDao.countApps(rowId)
+        } else {
+            0L
+        }
+    } private fun totalAssetCount(transferDataType: TransferDataType?, primaryId: String?): Long {
+        return if (transferDataType == null || primaryId == null || transferDataType.ordinal < TransferDataType.ASSET.ordinal) {
+            assetDao.countAssets()
+        } else if (transferDataType == TransferDataType.ASSET) {
+            val rowId = assetDao.getAssetRowId(primaryId) ?: -1L
+            assetDao.countAssets(rowId)
+        } else {
+            0L
+        }
+    }
+
+    private fun totalMessageMentionCount(transferDataType: TransferDataType?, primaryId: String?): Long {
+        return if (transferDataType == null || transferDataType.ordinal < TransferDataType.MESSAGE_MENTION.ordinal) {
+            messageMentionDao.countMessageMention()
+        } else if (transferDataType == TransferDataType.MESSAGE_MENTION && primaryId != null) {
+            val rowId = messageMentionDao.getMessageMentionRowId(primaryId) ?: -1L
+            messageMentionDao.countMessageMention(rowId)
+        } else {
+            0L
+        }
+    }
+
+    private fun totalPinMessageCount(transferDataType: TransferDataType?, primaryId: String?): Long {
+        return if (transferDataType == null || primaryId == null || transferDataType.ordinal < TransferDataType.PIN_MESSAGE.ordinal) {
+            pinMessageDao.countPinMessages()
+        } else if (transferDataType == TransferDataType.PIN_MESSAGE) {
+            val rowId = pinMessageDao.getPinMessageRowId(primaryId) ?: -1L
+            pinMessageDao.countPinMessages(rowId)
+        } else {
+            0L
+        }
+    }
+
+    private fun totalExpiredMessageCount(transferDataType: TransferDataType?, primaryId: String?): Long {
+        return if (transferDataType == null || primaryId == null || transferDataType.ordinal < TransferDataType.EXPIRED_MESSAGE.ordinal) {
+            expiredMessageDao.countExpiredMessages()
+        } else if (transferDataType == TransferDataType.EXPIRED_MESSAGE) {
+            val rowId = expiredMessageDao.getExpiredMessageRowId(primaryId) ?: -1L
+            expiredMessageDao.countExpiredMessages(rowId)
+        } else {
+            0L
+        }
+    }
+
+    private fun totalParticipantCount(
+        transferDataType: TransferDataType?,
+        primaryId: String?,
+        assistanceId: String?,
+    ): Long {
+        return if (transferDataType == null || primaryId == null || assistanceId == null || transferDataType.ordinal < TransferDataType.PARTICIPANT.ordinal) {
+            participantDao.countParticipants()
+        } else if (transferDataType == TransferDataType.PARTICIPANT) {
+            val rowId = participantDao.getParticipantRowId(primaryId, assistanceId) ?: -1L
+            participantDao.countParticipants(rowId)
+        } else {
+            0L
+        }
+    }
+
+    private fun totalMessageCount(transferDataType: TransferDataType?, primaryId: String?): Long {
+        return if (transferDataType == null || primaryId == null || transferDataType.ordinal < TransferDataType.MESSAGE.ordinal) {
+            messageDao.countMediaMessages() + messageDao.countMessages()
+        } else if (transferDataType == TransferDataType.MESSAGE) {
+            val rowId = messageDao.getMessageRowid(primaryId) ?: -1L
+            messageDao.countMediaMessages(rowId) + messageDao.countMessages(rowId)
+        } else {
+            0L
+        }
+    }
+
     companion object {
         private const val LIMIT = 100
     }
 }
 
-private val ACCEPT_SINGLE_THREAD = Executors.newSingleThreadExecutor { r -> Thread(r, "SINGLE_DB_EXECUTOR") }.asCoroutineDispatcher()
+private val ACCEPT_SINGLE_THREAD =
+    Executors.newSingleThreadExecutor { r -> Thread(r, "SINGLE_DB_EXECUTOR") }
+        .asCoroutineDispatcher()

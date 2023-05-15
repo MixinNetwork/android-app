@@ -126,4 +126,7 @@ interface AssetDao : BaseDao<Asset> {
 
     @Query("SELECT count(1) FROM assets")
     fun countAssets(): Long
+
+    @Query("SELECT count(1) FROM assets WHERE rowid > :rowId")
+    fun countAssets(rowId: Long): Long
 }

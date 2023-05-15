@@ -53,4 +53,7 @@ interface MessageMentionDao : BaseDao<MessageMention> {
 
     @Query("SELECT count(1) FROM message_mentions")
     fun countMessageMention(): Long
+
+    @Query("SELECT count(1) FROM message_mentions  WHERE rowid > :rowId")
+    fun countMessageMention(rowId: Long): Long
 }

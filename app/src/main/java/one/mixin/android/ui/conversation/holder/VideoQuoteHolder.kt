@@ -17,10 +17,8 @@ import one.mixin.android.job.MixinJobManager.Companion.getAttachmentProcess
 import one.mixin.android.ui.conversation.adapter.ConversationAdapter
 import one.mixin.android.ui.conversation.holder.base.BaseViewHolder
 import one.mixin.android.ui.conversation.holder.base.Terminable
-import one.mixin.android.util.GsonHelper
 import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.MessageItem
-import one.mixin.android.vo.QuoteMessageItem
 import one.mixin.android.vo.absolutePath
 import one.mixin.android.vo.isSecret
 
@@ -299,8 +297,7 @@ class VideoQuoteHolder constructor(val binding: ItemChatVideoQuoteBinding) :
             isWhite = true,
         )
 
-        val quoteMessage = GsonHelper.customGson.fromJson(messageItem.quoteContent, QuoteMessageItem::class.java)
-        binding.chatQuote.bind(quoteMessage)
+        binding.chatQuote.bind(fromJsonQuoteMessage(messageItem.quoteContent))
         binding.chatQuote.setOnClickListener {
             if (!hasSelect) {
                 onItemListener.onQuoteMessageClick(messageItem.messageId, messageItem.quoteId)

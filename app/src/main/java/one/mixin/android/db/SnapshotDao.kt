@@ -70,4 +70,7 @@ interface SnapshotDao : BaseDao<Snapshot> {
 
     @Query("SELECT count(1) FROM snapshots")
     fun countSnapshots(): Long
+
+    @Query("SELECT count(1) FROM snapshots WHERE rowid > :rowId")
+    fun countSnapshots(rowId: Long): Long
 }

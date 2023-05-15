@@ -162,4 +162,7 @@ interface UserDao : BaseDao<User> {
 
     @Query("SELECT count(1) FROM users")
     fun countUsers(): Long
+
+    @Query("SELECT count(1) FROM users WHERE rowid > :rowId")
+    fun countUsers(rowId: Long): Long
 }

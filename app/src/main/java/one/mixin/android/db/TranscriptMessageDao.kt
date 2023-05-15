@@ -28,6 +28,9 @@ interface TranscriptMessageDao : BaseDao<TranscriptMessage> {
     @Query("SELECT count(1) FROM transcript_messages WHERE transcript_id = :transcriptId AND category IN ($ATTACHMENT_CATEGORY) AND media_status IN ('PENDING', 'CANCELED')")
     suspend fun hasUploadedAttachmentSuspend(transcriptId: String): Int
 
+    @Query("SELECT * FROM transcript_messages WHERE message_id = :messageId AND category IN ($IMAGES, $VIDEOS, $DATA, $AUDIOS) AND media_status = 'DONE'")
+    fun findAttachmentMessage(messageId: String): TranscriptMessage?
+
     @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
     @Query("SELECT * FROM transcript_messages WHERE transcript_id = :transcriptId")
     fun getTranscript(transcriptId: String): List<TranscriptMessage>
@@ -152,4 +155,7 @@ interface TranscriptMessageDao : BaseDao<TranscriptMessage> {
 
     @Query("SELECT count(1) FROM transcript_messages")
     fun countTranscriptMessages(): Long
+
+    @Query("SELECT count(1) FROM transcript_messages WHERE rowid > :rowId")
+    fun countTranscriptMessages(rowId: Long): Long
 }

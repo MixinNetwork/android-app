@@ -113,6 +113,11 @@ object PropertyHelper {
         updateKeyValue(key, value.toString())
     }
 
+    suspend fun deleteKeyValue(key: String) {
+        val propertyDao = MixinDatabase.getDatabase(MixinApplication.appContext).propertyDao()
+        propertyDao.deletePropertyByKey(key)
+    }
+
     suspend fun <T> findValueByKey(key: String, default: T): T {
         val propertyDao = MixinDatabase.getDatabase(MixinApplication.appContext).propertyDao()
         val value = propertyDao.findValueByKey(key) ?: return default

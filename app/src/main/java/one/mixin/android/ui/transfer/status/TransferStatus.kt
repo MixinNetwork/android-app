@@ -9,6 +9,7 @@ enum class TransferStatus {
     WAITING_FOR_VERIFICATION,
     VERIFICATION_COMPLETED,
     SYNCING,
+    PROCESSING,
     ERROR,
     FINISHED,
 }

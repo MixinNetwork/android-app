@@ -126,4 +126,7 @@ interface ParticipantDao : BaseDao<Participant> {
 
     @Query("SELECT count(1) FROM participants")
     fun countParticipants(): Long
+
+    @Query("SELECT count(1) FROM participants  WHERE rowid > :rowId")
+    fun countParticipants(rowId: Long): Long
 }
