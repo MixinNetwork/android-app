@@ -550,16 +550,13 @@ class TransferServer @Inject internal constructor(
             if (list.isEmpty()) {
                 return
             }
-            list.map { transcriptMessage ->
-                TransferData(TransferDataType.TRANSCRIPT_MESSAGE.value, transcriptMessage).also {
-                    syncMediaFile(outputStream, transcriptMessage)
-                }
-            }.forEach { transferMessage ->
+            list.forEach { transcriptMessage ->
                 writeJson(
                     outputStream,
                     TransferData.serializer(TranscriptMessage.serializer()),
-                    transferMessage,
+                    TransferData(TransferDataType.TRANSCRIPT_MESSAGE.value, transcriptMessage),
                 )
+                syncMediaFile(outputStream, transcriptMessage)
                 count++
             }
             if (list.size < LIMIT) {
@@ -631,16 +628,13 @@ class TransferServer @Inject internal constructor(
             if (list.isEmpty()) {
                 return
             }
-            list.map { transcriptMessage ->
-                TransferData(TransferDataType.MESSAGE.value, transcriptMessage).also {
-                    syncMediaFile(outputStream, transcriptMessage)
-                }
-            }.forEach { transcriptMessage ->
+            list.forEach { transcriptMessage ->
                 writeJson(
                     outputStream,
                     TransferData.serializer(TransferMessage.serializer()),
-                    transcriptMessage,
+                    TransferData(TransferDataType.MESSAGE.value, transcriptMessage),
                 )
+                syncMediaFile(outputStream, transcriptMessage)
                 count++
             }
             if (list.size < LIMIT) {
