@@ -30,6 +30,12 @@ data class TransferCommand(
     val userId: String? = null,
     @SerialName("progress")
     val progress: Float? = null, // 0~100
+    @SerialName("type")
+    val type: String? = null,
+    @SerialName("primary_id")
+    val primaryId: String? = null,
+    @SerialName("assistance_id")
+    val assistanceId: String? = null,
     @SerialName("version")
     @EncodeDefault
     val version: Int = CURRENT_TRANSFER_VERSION,

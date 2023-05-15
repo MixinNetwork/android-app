@@ -631,6 +631,7 @@
     <string name="NO_MEDIA">没有媒体</string>
     <string name="No_media_yet">还没有图片或视频</string>
     <string name="No_Memo">没有 Memo（备注）</string>
+    <string name="No_Need">不需要</string>
     <string name="No_network_connection">无网络连接</string>
     <string name="NO_POSTS">没有文章</string>
     <string name="No_raws">暂无其他记录</string>
@@ -1142,4 +1143,10 @@
     <string name="restore_local_exists">已经有 %1$s 条本地聊天记录，最后一条消息的时间是 %2$s，确定用备份的聊天数据覆盖本地数据吗？</string>
     <string name="Transfer_timeout">长时间未收到数据是否退出？</string>
     <string name="LogAndDebug">日志与调试</string>
+    <string name="transfer_process_title">正在导入</string>
+    <string name="transfer_process_desc">正在导入 (%1$s)</string>
+    <string name="transfer_process_tip">为了保证顺利迁移，请不要关闭 Mixin</string>
+    <string name="transfer_breakpoint_continuation">断点续传</string>
+    <string name="transfer_breakpoint_continuation_desc">上一次该设备同步时间是 %1$s，是否继续上次的同步？</string>
+    <string name="transfer_syncing_des">正在转移聊天记录，是否取消？</string>
 </resources>

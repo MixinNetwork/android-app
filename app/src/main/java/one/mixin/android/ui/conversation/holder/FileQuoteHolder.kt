@@ -19,11 +19,9 @@ import one.mixin.android.job.MixinJobManager.Companion.getAttachmentProcess
 import one.mixin.android.ui.conversation.adapter.ConversationAdapter
 import one.mixin.android.ui.conversation.holder.base.MediaHolder
 import one.mixin.android.ui.conversation.holder.base.Terminable
-import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.MusicPlayer
 import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.MessageItem
-import one.mixin.android.vo.QuoteMessageItem
 import one.mixin.android.vo.isSecret
 
 class FileQuoteHolder constructor(val binding: ItemChatFileQuoteBinding) : MediaHolder(binding.root), Terminable {
@@ -244,8 +242,7 @@ class FileQuoteHolder constructor(val binding: ItemChatFileQuoteBinding) : Media
                 true
             }
         }
-        val quoteMessage = GsonHelper.customGson.fromJson(messageItem.quoteContent, QuoteMessageItem::class.java)
-        binding.chatQuote.bind(quoteMessage)
+        binding.chatQuote.bind(fromJsonQuoteMessage(messageItem.quoteContent))
         binding.chatQuote.setOnClickListener {
             if (!hasSelect) {
                 onItemListener.onQuoteMessageClick(messageItem.messageId, messageItem.quoteId)

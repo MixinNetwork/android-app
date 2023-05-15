@@ -92,4 +92,7 @@ interface PinMessageDao : BaseDao<PinMessage> {
 
     @Query("SELECT count(1) FROM pin_messages")
     fun countPinMessages(): Long
+
+    @Query("SELECT count(1) FROM pin_messages WHERE rowid > :rowId")
+    fun countPinMessages(rowId: Long): Long
 }

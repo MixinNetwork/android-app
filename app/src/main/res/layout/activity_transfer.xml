@@ -78,7 +78,7 @@
             android:layout_marginStart="8dp"
             android:layout_marginTop="140dp"
             android:layout_marginEnd="8dp"
-            android:src="@drawable/ic_transfer_waiting"
+            android:src="@drawable/ic_transfer_to_pc"
             tools:ignore="ContentDescription" />
 
         <TextView
@@ -102,6 +102,33 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content" />
 
+        <LinearLayout
+            android:id="@+id/pb_ll"
+            android:layout_marginTop="16dp"
+            android:layout_width="200dp"
+            android:layout_height="wrap_content"
+            android:gravity="center_horizontal"
+            android:orientation="vertical"
+            android:visibility="gone">
+
+            <ProgressBar
+                android:id="@+id/progress"
+                style="?android:attr/progressBarStyleHorizontal"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:indeterminateOnly="false"
+                android:max="100" />
+
+            <TextView
+                android:layout_marginTop="12dp"
+                android:id="@+id/pb_tv"
+                android:textSize="12sp"
+                android:textColor="?attr/text_minor"
+                android:text="@string/sync_chat"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+        </LinearLayout>
+
     </LinearLayout>
 
     <LinearLayout
@@ -109,7 +136,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical"
-        tools:visibility="visible">
+        tools:visibility="gone">
 
         <ImageView
             android:id="@+id/logo_iv"

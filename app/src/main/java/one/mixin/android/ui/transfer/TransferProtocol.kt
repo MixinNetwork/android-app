@@ -4,26 +4,10 @@ import UUIDUtils
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.decodeFromStream
-import one.mixin.android.MixinApplication
 import one.mixin.android.RxBus
 import one.mixin.android.api.ChecksumException
-import one.mixin.android.db.MixinDatabase
 import one.mixin.android.event.SpeedEvent
-import one.mixin.android.extension.copy
-import one.mixin.android.extension.createAudioTemp
-import one.mixin.android.extension.createDocumentTemp
-import one.mixin.android.extension.createImageTemp
-import one.mixin.android.extension.createVideoTemp
-import one.mixin.android.extension.getAudioPath
-import one.mixin.android.extension.getDocumentPath
-import one.mixin.android.extension.getExtensionName
-import one.mixin.android.extension.getImagePath
-import one.mixin.android.extension.getTranscriptFile
-import one.mixin.android.extension.getVideoPath
 import one.mixin.android.ui.transfer.vo.TransferCommand
-import one.mixin.android.vo.isAudio
-import one.mixin.android.vo.isImage
-import one.mixin.android.vo.isVideo
 import timber.log.Timber
 import java.io.ByteArrayInputStream
 import java.io.EOFException
@@ -56,34 +40,22 @@ class TransferProtocol(private val serializationJson: Json, private val server: 
         private val MAX_DATA_SIZE = 512000 // 500K
     }
 
-    private val messageDao by lazy {
-        MixinDatabase.getDatabase(MixinApplication.appContext).messageDao()
-    }
-
-    private val transcriptMessageDao by lazy {
-        MixinDatabase.getDatabase(MixinApplication.appContext).transcriptDao()
-    }
-
     fun read(inputStream: InputStream): Any? {
         val packageData = safeRead(inputStream, 5)
         val type = packageData[0]
-        val size = byteArrayToInt(packageData.copyOfRange(1, 5))
+        val sizeData = packageData.copyOfRange(1, 5)
+        val size = byteArrayToInt(sizeData)
         return when (type) {
-            TYPE_COMMAND -> {
+            TYPE_COMMAND -> { // COMMAND
                 serializationJson.decodeFromStream<TransferCommand>(ByteArrayInputStream(readByteArray(inputStream, size)))
             }
 
-            TYPE_JSON -> {
-                readByteArray(inputStream, size)
+            TYPE_JSON -> { // JSON
+                return readByteArray(inputStream, size)
             }
 
-            TYPE_FILE -> { // File
-                val file = readFile(inputStream, size)
-                if (file?.exists() == true) {
-                    file
-                } else {
-                    null
-                }
+            TYPE_FILE -> { // FILE
+                readFile(inputStream, size)
             }
 
             else -> {
@@ -95,7 +67,7 @@ class TransferProtocol(private val serializationJson: Json, private val server: 
     fun write(outputStream: OutputStream, type: Byte, content: String) {
         val data = content.toByteArray(UTF_8)
         if (data.size >= MAX_DATA_SIZE) {
-            Timber.e(String(data))
+            Timber.e(content)
             return
         }
         outputStream.write(byteArrayOf(type))
@@ -170,7 +142,7 @@ class TransferProtocol(private val serializationJson: Json, private val server: 
     private fun calculateReadSpeed(bytesPerRead: Int) {
         readCount += bytesPerRead
         val currentTime = System.currentTimeMillis()
-        if (currentTime - lastTimeTime > 5000) {
+        if (currentTime - lastTimeTime > 1000) {
             val speed = readCount / ((currentTime - lastTimeTime) / 1000f) / 1024f / 128f
             RxBus.publish(SpeedEvent(String.format("%.2f Mb/s", speed)))
             readCount = 0
@@ -178,73 +150,38 @@ class TransferProtocol(private val serializationJson: Json, private val server: 
         }
     }
 
-    private fun readFile(inputStream: InputStream, expectedLength: Int): File? {
+    private lateinit var cachePath: File
+    fun setCachePath(cachePath: File) {
+        this.cachePath = cachePath
+    }
+    private fun readFile(inputStream: InputStream, expectedLength: Int): File {
         val crc = CRC32()
         val uuidByteArray = safeRead(inputStream, 16)
         crc.update(uuidByteArray)
         val uuid = UUIDUtils.fromByteArray(uuidByteArray)
-        val transcriptMessage = transcriptMessageDao.getTranscriptByMessageId(uuid)
-        val message = messageDao.findMessageById(uuid)
-        if (message == null && transcriptMessage == null) {
-            val buffer = ByteArray(1024)
-            var bytesRead = 0
-            var bytesLeft = expectedLength - 16
+        val outFile = File(cachePath, uuid)
+        val buffer = ByteArray(1024)
+        var bytesRead = 0
+        var bytesLeft = expectedLength - 16
+        outFile.outputStream().use { fos ->
             while (bytesRead != -1 && bytesLeft > 0) {
                 bytesRead = inputStream.read(buffer, 0, bytesLeft.coerceAtMost(1024))
-                bytesLeft -= bytesRead
-                if (!server) calculateReadSpeed(bytesRead)
-            }
-            // skip error file
-            safeRead(inputStream, 8)
-            return null
-        } else {
-            val outFile = if (message != null) {
-                val extensionName = message.mediaUrl?.getExtensionName()
-                MixinApplication.get().let {
-                    if (message.isImage()) {
-                        it.getImagePath().createImageTemp(message.conversationId, message.messageId, ".$extensionName")
-                    } else if (message.isAudio()) {
-                        it.getAudioPath().createAudioTemp(message.conversationId, message.messageId, "ogg")
-                    } else if (message.isVideo()) {
-                        it.getVideoPath().createVideoTemp(message.conversationId, message.messageId, extensionName ?: "mp4")
-                    } else {
-                        it.getDocumentPath().createDocumentTemp(message.conversationId, message.messageId, extensionName)
-                    }
-                }
-            } else {
-                val extensionName = transcriptMessage!!.mediaUrl?.getExtensionName()
-                MixinApplication.get().getTranscriptFile(uuid, ".$extensionName")
-            }
-            val buffer = ByteArray(1024)
-            var bytesRead = 0
-            var bytesLeft = expectedLength - 16
-            outFile.outputStream().use { fos ->
-                while (bytesRead != -1 && bytesLeft > 0) {
-                    bytesRead = inputStream.read(buffer, 0, bytesLeft.coerceAtMost(1024))
-                    if (bytesRead > 0) {
-                        fos.write(buffer, 0, bytesRead)
-                        crc.update(buffer.copyOfRange(0, bytesRead))
-                        bytesLeft -= bytesRead
-                        if (!server) calculateReadSpeed(bytesRead)
-                    }
+                if (bytesRead > 0) {
+                    fos.write(buffer, 0, bytesRead)
+                    crc.update(buffer.copyOfRange(0, bytesRead))
+                    bytesLeft -= bytesRead
+                    if (!server) calculateReadSpeed(bytesRead)
                 }
             }
-            val checksum = safeRead(inputStream, 8)
-            val checksumLong = bytesToLong(checksum)
-            Timber.e("Receive file: ${outFile.name} ${outFile.length()} checksum ${bytesToLong(checksum)} -- ${crc.value}")
-            if (checksumLong != crc.value) {
-                throw ChecksumException()
-            }
-            if (message != null && transcriptMessage != null) {
-                val extensionName = transcriptMessage.mediaUrl?.getExtensionName()
-                val transcriptFile = MixinApplication.get().getTranscriptFile(uuid, ".$extensionName")
-                if (!transcriptFile.exists()) {
-                    outFile.copy(transcriptFile)
-                }
-            }
-            if (!server) calculateReadSpeed(29)
-            return outFile
         }
+        val checksum = safeRead(inputStream, 8)
+        val checksumLong = bytesToLong(checksum)
+        Timber.e("Receive file: ${outFile.name} ${outFile.length()} checksum ${bytesToLong(checksum)} -- ${crc.value}")
+        if (checksumLong != crc.value) {
+            throw ChecksumException()
+        }
+        if (!server) calculateReadSpeed(29)
+        return outFile
     }
 
     private fun byteArrayToInt(byteArray: ByteArray): Int {

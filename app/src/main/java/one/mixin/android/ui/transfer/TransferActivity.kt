@@ -8,6 +8,7 @@ import android.net.Uri
 import android.os.Bundle
 import android.view.WindowManager
 import androidx.activity.result.ActivityResultLauncher
+import androidx.core.view.isInvisible
 import androidx.core.view.isVisible
 import androidx.lifecycle.lifecycleScope
 import com.tbruyelle.rxpermissions2.RxPermissions
@@ -19,6 +20,7 @@ import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlinx.serialization.ExperimentalSerializationApi
 import one.mixin.android.Constants
 import one.mixin.android.Constants.Scheme.DEVICE_TRANSFER
 import one.mixin.android.MixinApplication
@@ -29,7 +31,6 @@ import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.ParticipantDao
 import one.mixin.android.event.DeviceTransferProgressEvent
 import one.mixin.android.event.SpeedEvent
-import one.mixin.android.event.TimeOutEvent
 import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.base64Encode
 import one.mixin.android.extension.base64RawURLDecode
@@ -64,6 +65,7 @@ import one.mixin.android.websocket.createPlainJsonParam
 import timber.log.Timber
 import javax.inject.Inject
 
+@OptIn(ExperimentalSerializationApi::class)
 @AndroidEntryPoint
 class TransferActivity : BaseActivity() {
     companion object {
@@ -265,13 +267,24 @@ class TransferActivity : BaseActivity() {
                 }
 
                 TransferStatus.SYNCING -> {
-                    binding.titleView.isVisible = false
+                    binding.titleView.isInvisible = true
                     binding.qrFl.isVisible = false
                     binding.initLl.isVisible = false
                     binding.waitingLl.isVisible = true
+                    binding.pbLl.isVisible = true
+                }
+
+                TransferStatus.PROCESSING -> {
+                    binding.titleView.isInvisible = true
+                    binding.qrFl.isVisible = false
+                    binding.initLl.isVisible = false
+                    binding.waitingLl.isVisible = true
+                    binding.pbLl.isVisible = true
                 }
 
                 TransferStatus.ERROR -> {
+                    binding.pbLl.isVisible = false
+                    binding.progressTv.setText(R.string.Transfer_error)
                     if (dialog == null) {
                         dialog = alertDialogBuilder()
                             .setTitle(R.string.Transfer_error)
@@ -286,6 +299,8 @@ class TransferActivity : BaseActivity() {
                 }
 
                 TransferStatus.FINISHED -> {
+                    binding.pbLl.isVisible = false
+                    binding.progressTv.setText(R.string.Transfer_completed)
                     if (dialog == null) {
                         dialog = alertDialogBuilder()
                             .setTitle(R.string.Transfer_completed)
@@ -420,7 +435,6 @@ class TransferActivity : BaseActivity() {
     private var transferDisposable: Disposable? = null
     private var transferSpeedDisposable: Disposable? = null
     private var transferCommandDisposable: Disposable? = null
-    private var transferTimeoutDisposable: Disposable? = null
 
     override fun onStart() {
         super.onStart()
@@ -430,8 +444,11 @@ class TransferActivity : BaseActivity() {
                 .observeOn(AndroidSchedulers.mainThread())
                 .autoDispose(destroyScope)
                 .subscribe {
-                    binding.progressTv.text =
-                        getString(R.string.sending_desc, String.format("%.2f%%", it.progress))
+                    binding.progress.progress = it.progress.toInt()
+                    if (status.value == TransferStatus.PROCESSING) {
+                        Timber.e(String.format("%.2f%%", it.progress))
+                        binding.pbTv.text = getString(R.string.transfer_process_desc, String.format("%.2f%%", it.progress))
+                    }
                 }
         }
 
@@ -440,7 +457,9 @@ class TransferActivity : BaseActivity() {
                 .observeOn(AndroidSchedulers.mainThread())
                 .autoDispose(destroyScope)
                 .subscribe {
-                    Timber.e("Speed: ${it.speed}")
+                    if (status.value == TransferStatus.SYNCING) {
+                        binding.pbTv.text = it.speed
+                    }
                 }
         }
 
@@ -456,40 +475,13 @@ class TransferActivity : BaseActivity() {
                     }
                 }
         }
-
-        if (transferTimeoutDisposable == null) {
-            transferTimeoutDisposable = RxBus.listen(TimeOutEvent::class.java)
-                .observeOn(AndroidSchedulers.mainThread())
-                .autoDispose(destroyScope)
-                .subscribe {
-                    lifecycleScope.launch(Dispatchers.Main) {
-                        dialog = alertDialogBuilder()
-                            .setTitle(R.string.Transfer_error)
-                            .setMessage(R.string.Transfer_timeout)
-                            .setCancelable(false)
-                            .setPositiveButton(R.string.Confirm) { dialog, _ ->
-                                dialog.dismiss()
-                                finish()
-                                status.value = TransferStatus.INITIALIZING
-                            }.create()
-                        dialog?.show()
-                    }
-                }
-        }
     }
 
-    private fun handleCommand(commandData: TransferCommand) {
-        when (commandData.action) {
+    private fun handleCommand(transferCommandData: TransferCommand) {
+        when (transferCommandData.action) {
             TransferCommandAction.PUSH.value -> {
                 lifecycleScope.launch {
-                    transferClient.connectToServer(
-                        commandData.ip!!,
-                        commandData.port!!,
-                        TransferCommand(
-                            TransferCommandAction.CONNECT.value,
-                            code = commandData.code,
-                        ),
-                    )
+                    connect(transferCommandData)
                 }
             }
 
@@ -499,6 +491,14 @@ class TransferActivity : BaseActivity() {
 
             else -> {}
         }
+    }
+
+    private suspend fun connect(transferCommandData: TransferCommand) {
+        connect(transferCommandData.ip!!, transferCommandData.port!!, TransferCommand(TransferCommandAction.CONNECT.value, code = transferCommandData.code, userId = Session.getAccountId()))
+    }
+
+    private suspend fun connect(ip: String, port: Int, transferCommand: TransferCommand) {
+        transferClient.connectToServer(ip, port, transferCommand)
     }
 
     override fun onStop() {
@@ -558,15 +558,7 @@ class TransferActivity : BaseActivity() {
                 finish()
                 return@launch
             }
-            transferClient.connectToServer(
-                transferCommandData.ip!!,
-                transferCommandData.port!!,
-                TransferCommand(
-                    TransferCommandAction.CONNECT.value,
-                    code = transferCommandData.code,
-                    userId = Session.getAccountId(),
-                ),
-            )
+            connect(transferCommandData)
         }
 
     private val gson by lazy {

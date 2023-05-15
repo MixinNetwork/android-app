@@ -258,4 +258,7 @@ interface ConversationDao : BaseDao<Conversation> {
 
     @Query("SELECT count(1) FROM conversations")
     fun countConversations(): Long
+
+    @Query("SELECT count(1) FROM conversations WHERE rowid > :rowId")
+    fun countConversations(rowId: Long): Long
 }
