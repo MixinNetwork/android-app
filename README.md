@@ -13,3 +13,20 @@ Mixin Android messenger, crypto wallet and light node to the Mixin Network
  ### Code style
 
 This project uses [ktlint](https://github.com/shyiko/ktlint)
+
+## Build reproducibly
+
+* [Docker](https://www.docker.com/) ensure has at least 5 GB of RAM
+    ```shell
+    mkdir -p apk
+    docker build -t mixin-android .
+    docker run --rm -v "$PWD":/home/source mixin-android
+    ```
+
+## Verify installed mixin APK
+
+* [Docker](https://www.docker.com/) ensure has at least 5 GB of RAM
+* [ADB](https://developer.android.com/studio/releases/platform-tools)
+    ```shell
+    verify-mixin-apk.sh
+    ```
