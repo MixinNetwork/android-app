@@ -2673,4 +2673,6 @@
     <string name="wallet_home_privacy_wallet_reason_2">Avoid transfer errors caused by complex wallet addresses.</string>
     <string name="wallet_home_privacy_wallet_reason_3">Block malicious apps from gaining unsafe permissions.</string>
     <string name="no_tokens">No Tokens</string>
+    <string name="Translate">Translate</string>
+    <string name="translate_by_google">translate by Google</string>
 </resources>

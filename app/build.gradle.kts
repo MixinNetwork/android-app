@@ -579,6 +579,7 @@ dependencies {
 
     // ML Kit
     implementation("com.google.mlkit:entity-extraction:$entityExtractionVersion")
+    implementation("com.google.mlkit:translate:17.0.1")
 
     testImplementation("com.google.protobuf:protobuf-javalite") {
         version {

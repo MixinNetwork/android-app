@@ -61,6 +61,11 @@ import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.snackbar.Snackbar
+import com.google.mlkit.common.model.DownloadConditions
+import com.google.mlkit.nl.translate.TranslateLanguage
+import com.google.mlkit.nl.translate.Translation
+import com.google.mlkit.nl.translate.Translator
+import com.google.mlkit.nl.translate.TranslatorOptions
 import com.twilio.audioswitch.AudioSwitch
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
@@ -471,26 +476,30 @@ class ConversationFragment() :
                 when {
                     messageAdapter.selectSet.isEmpty() -> binding.toolView.fadeOut()
                     messageAdapter.selectSet.size == 1 -> {
+                        val firstItem = messageAdapter.selectSet.valueAt(0)
                         try {
-                            if (messageAdapter.selectSet.valueAt(0).isText()) {
+                            if (firstItem.isText()) {
                                 binding.toolView.copyIv.visibility = VISIBLE
+                                binding.toolView.translateIv.isVisible = messageAdapter.notTranslated(firstItem.messageId)
                             } else {
                                 binding.toolView.copyIv.visibility = GONE
+                                binding.toolView.translateIv.visibility = GONE
                             }
                         } catch (e: ArrayIndexOutOfBoundsException) {
                             binding.toolView.copyIv.visibility = GONE
+                            binding.toolView.translateIv.visibility = GONE
                         }
-                        if (messageAdapter.selectSet.valueAt(0).isData()) {
+                        if (firstItem.isData()) {
                             binding.toolView.shareIv.visibility = VISIBLE
                         } else {
                             binding.toolView.shareIv.visibility = GONE
                         }
-                        if (messageAdapter.selectSet.valueAt(0).supportSticker()) {
+                        if (firstItem.supportSticker()) {
                             binding.toolView.addStickerIv.visibility = VISIBLE
                         } else {
                             binding.toolView.addStickerIv.visibility = GONE
                         }
-                        if (messageAdapter.selectSet.valueAt(0).canNotReply()) {
+                        if (firstItem.canNotReply()) {
                             binding.toolView.replyIv.visibility = GONE
                         } else {
                             binding.toolView.replyIv.visibility = VISIBLE
@@ -501,6 +510,7 @@ class ConversationFragment() :
                         binding.toolView.forwardIv.visibility = VISIBLE
                         binding.toolView.replyIv.visibility = GONE
                         binding.toolView.copyIv.visibility = GONE
+                        binding.toolView.translateIv.visibility = GONE
                         binding.toolView.addStickerIv.visibility = GONE
                         binding.toolView.shareIv.visibility = GONE
                         binding.toolView.pinIv.visibility = GONE
@@ -524,8 +534,10 @@ class ConversationFragment() :
                 if (b) {
                     if (messageItem.isText()) {
                         binding.toolView.copyIv.visibility = VISIBLE
+                        binding.toolView.translateIv.isVisible = messageAdapter.notTranslated(messageItem.messageId)
                     } else {
                         binding.toolView.copyIv.visibility = GONE
+                        binding.toolView.translateIv.visibility = GONE
                     }
                     if (messageItem.isData()) {
                         binding.toolView.shareIv.visibility = VISIBLE
@@ -1633,6 +1645,11 @@ class ConversationFragment() :
             }
             closeTool()
         }
+        binding.toolView.translateIv.setOnClickListener {
+            if (messageAdapter.selectSet.isEmpty()) return@setOnClickListener
+            translate(messageAdapter.selectSet.valueAt(0))
+            closeTool()
+        }
         binding.toolView.forwardIv.setOnClickListener {
             showForwardDialog()
         }
@@ -1858,6 +1875,34 @@ class ConversationFragment() :
                 )
             }
         }
+
+    private var translator: Translator? = null
+
+    private fun translate(messageItem: MessageItem) {
+        val content = messageItem.content ?: return
+        if (translator == null) {
+            val options =
+                TranslatorOptions.Builder()
+                    .setSourceLanguage(TranslateLanguage.ENGLISH)
+                    .setTargetLanguage(TranslateLanguage.CHINESE)
+                    .build()
+            translator = Translation.getClient(options)
+            translator?.let { lifecycle.addObserver(it) }
+        }
+        val conditions = DownloadConditions.Builder().requireWifi().build()
+        translator?.downloadModelIfNeeded(conditions)
+            ?.addOnSuccessListener {
+                translator?.translate(content)
+                    ?.addOnSuccessListener { translated ->
+                        messageAdapter.updateTranslated(messageItem.messageId, translated)
+                    }?.addOnFailureListener { e ->
+                        Timber.w(e)
+                    }
+            }
+            ?.addOnFailureListener { e ->
+                Timber.w(e)
+            }
+    }
 
     private var deleteDialog: AlertDialog? = null
 
