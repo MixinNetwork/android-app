@@ -428,6 +428,7 @@ dependencies {
 
     // ML Kit
     implementation 'com.google.mlkit:entity-extraction:16.0.0-beta4'
+    implementation 'com.google.mlkit:translate:17.0.1'
 
     testImplementation "org.bitcoinj:bitcoinj-core:0.16.2"
     testImplementation("com.google.protobuf:protobuf-javalite") {

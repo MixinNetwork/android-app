@@ -1,11 +1,13 @@
 package one.mixin.android.ui.conversation.holder
 
+import android.content.ClipData
 import android.graphics.Color
 import android.util.TypedValue
 import android.view.GestureDetector
 import android.view.MotionEvent
 import android.view.View
 import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.core.view.isVisible
 import one.mixin.android.Constants
 import one.mixin.android.Constants.Colors.LINK_COLOR
 import one.mixin.android.Constants.Colors.SELECT_COLOR
@@ -16,6 +18,7 @@ import one.mixin.android.event.MentionReadEvent
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.doubleClickVibrate
 import one.mixin.android.extension.dp
+import one.mixin.android.extension.getClipboardManager
 import one.mixin.android.extension.initChatMode
 import one.mixin.android.extension.maxItemWidth
 import one.mixin.android.extension.renderMessage
@@ -36,11 +39,13 @@ class TextHolder constructor(val binding: ItemChatTextBinding) : BaseMentionHold
                 binding.chatTime.changeSize(textSize - 4f)
                 binding.chatName.setTextSize(TypedValue.COMPLEX_UNIT_DIP, textSize)
                 binding.chatTv.setTextSize(TypedValue.COMPLEX_UNIT_DIP, textSize)
+                binding.translateTv.setTextSize(TypedValue.COMPLEX_UNIT_DIP, textSize)
             }
         }
         binding.chatTv.initChatMode(LINK_COLOR)
         binding.chatTv.setSelectedStateColor(SELECT_COLOR)
         binding.chatLayout.setMaxWidth(itemView.context.maxItemWidth())
+        binding.translateRl.setMaxWidth(itemView.context.maxItemWidth())
     }
 
     override fun chatLayout(isMe: Boolean, isLast: Boolean, isBlink: Boolean) {
@@ -79,11 +84,31 @@ class TextHolder constructor(val binding: ItemChatTextBinding) : BaseMentionHold
         }
     }
 
+    private fun translatedLayout(isMe: Boolean) {
+        val lp = (binding.translateRl.layoutParams as ConstraintLayout.LayoutParams)
+        if (isMe) {
+            lp.horizontalBias = 1f
+            setItemBackgroundResource(
+                binding.translateRl,
+                R.drawable.chat_bubble_me,
+                R.drawable.chat_bubble_me_night,
+            )
+        } else {
+            lp.horizontalBias = 0f
+            setItemBackgroundResource(
+                binding.translateRl,
+                R.drawable.chat_bubble_other,
+                R.drawable.chat_bubble_other_night,
+            )
+        }
+    }
+
     private var onItemListener: ConversationAdapter.OnItemListener? = null
 
     fun bind(
         messageItem: MessageItem,
         keyword: String?,
+        translated: String? = null,
         isLast: Boolean,
         isFirst: Boolean = false,
         hasSelect: Boolean,
@@ -139,6 +164,13 @@ class TextHolder constructor(val binding: ItemChatTextBinding) : BaseMentionHold
             }
         }
 
+        binding.translateTv.setOnLongClickListener {
+            binding.root.context?.getClipboardManager()?.setPrimaryClip(
+                ClipData.newPlainText(null, binding.translateTv.text),
+            )
+            return@setOnLongClickListener true
+        }
+
         itemView.setOnClickListener {
             if (hasSelect) {
                 onItemListener.onSelect(!isSelect, messageItem, absoluteAdapterPosition)
@@ -176,6 +208,14 @@ class TextHolder constructor(val binding: ItemChatTextBinding) : BaseMentionHold
             binding.chatTv.renderMessage(messageItem.content, keyword)
         }
 
+        if (!translated.isNullOrBlank()) {
+            binding.translateTv.text = translated
+            binding.translateRl.isVisible = true
+        } else {
+            binding.translateTv.text = null
+            binding.translateRl.isVisible = false
+        }
+
         val isMe = meId == messageItem.userId
         if (isFirst && !isMe) {
             binding.chatName.visibility = View.VISIBLE
@@ -211,6 +251,7 @@ class TextHolder constructor(val binding: ItemChatTextBinding) : BaseMentionHold
         chatJumpLayout(binding.chatJump, isMe, messageItem.expireIn, messageItem.expireAt, R.id.chat_layout)
 
         chatLayout(isMe, isLast)
+        translatedLayout(isMe)
 
         attachAction = if (messageItem.mentionRead == false) {
             {

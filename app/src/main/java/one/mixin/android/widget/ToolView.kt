@@ -28,6 +28,7 @@ class ToolView constructor(context: Context, attrs: AttributeSet) : RelativeLayo
     val forwardIv = binding.forwardIv
     val shareIv = binding.shareIv
     val pinIv = binding.pinIv
+    val translateIv = binding.translateIv
 
     init {
         closeIv.setOnLongClickListener {
@@ -67,6 +68,10 @@ class ToolView constructor(context: Context, attrs: AttributeSet) : RelativeLayo
                     R.string.Unpin
                 },
             )
+            true
+        }
+        translateIv.setOnLongClickListener {
+            showTip(it, R.string.Translate)
             true
         }
     }
