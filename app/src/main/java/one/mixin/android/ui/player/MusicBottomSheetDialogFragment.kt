@@ -3,6 +3,7 @@ package one.mixin.android.ui.player
 import android.Manifest
 import android.annotation.SuppressLint
 import android.app.Dialog
+import android.os.Build
 import android.os.Bundle
 import android.support.v4.media.MediaMetadataCompat
 import android.view.View
@@ -250,21 +251,27 @@ class MusicBottomSheetDialogFragment : BottomSheetDialogFragment() {
     }
 
     private fun download(mediaId: String) {
-        RxPermissions(requireActivity())
-            .request(Manifest.permission.WRITE_EXTERNAL_STORAGE)
-            .autoDispose(stopScope)
-            .subscribe(
-                { granted ->
-                    if (granted) {
-                        lifecycleScope.launch {
-                            viewModel.download(mediaId)
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
+            RxPermissions(requireActivity())
+                .request(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                .autoDispose(stopScope)
+                .subscribe(
+                    { granted ->
+                        if (granted) {
+                            lifecycleScope.launch {
+                                viewModel.download(mediaId)
+                            }
+                        } else {
+                            context?.openPermissionSetting()
                         }
-                    } else {
-                        context?.openPermissionSetting()
-                    }
-                },
-                {},
-            )
+                    },
+                    {},
+                )
+        } else {
+            lifecycleScope.launch {
+                viewModel.download(mediaId)
+            }
+        }
     }
 
     private val playerListener = object : Player.Listener {

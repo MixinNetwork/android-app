@@ -4,6 +4,7 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Intent
+import android.os.Build
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -100,8 +101,13 @@ class StickerManagementFragment : BaseFragment() {
                 override fun onAddClick() {
                     RxPermissions(activity!!)
                         .request(
-                            Manifest.permission.WRITE_EXTERNAL_STORAGE,
-                            Manifest.permission.READ_EXTERNAL_STORAGE,
+                            *if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                                mutableListOf(Manifest.permission.READ_MEDIA_IMAGES, Manifest.permission.READ_MEDIA_VIDEO)
+                            } else {
+                                mutableListOf(Manifest.permission.READ_EXTERNAL_STORAGE)
+                            }.apply {
+                                if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) add(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                            }.toTypedArray(),
                         )
                         .autoDispose(stopScope)
                         .subscribe(

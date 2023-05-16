@@ -10,6 +10,7 @@ import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Context
 import android.graphics.drawable.Drawable
+import android.os.Build
 import android.text.Editable
 import android.text.TextWatcher
 import android.util.AttributeSet
@@ -729,8 +730,11 @@ class ChatControlView : LinearLayout, ActionMode.Callback {
     private val onChatImgClickListener = OnClickListener {
         RxPermissions(activity!! as FragmentActivity)
             .request(
-                Manifest.permission.READ_EXTERNAL_STORAGE,
-                Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                *if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                    arrayOf(Manifest.permission.READ_MEDIA_IMAGES, Manifest.permission.READ_MEDIA_VIDEO)
+                } else {
+                    arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE)
+                },
             )
             .subscribe(
                 { granted ->
@@ -1027,18 +1031,18 @@ class ChatControlView : LinearLayout, ActionMode.Callback {
             removeCallbacks(hideRecordTipRunnable)
             post(hideRecordTipRunnable)
 
-            if (activity == null || !currentAudio()) return@Runnable
+            val a = activity
+            if (a == null || !currentAudio()) return@Runnable
 
-            if (!RxPermissions(activity!! as FragmentActivity).isGranted(Manifest.permission.RECORD_AUDIO) || !RxPermissions(
-                    activity!! as FragmentActivity,
-                ).isGranted(
-                    Manifest.permission.WRITE_EXTERNAL_STORAGE,
-                )
+            val fa = a as FragmentActivity
+            if (!RxPermissions(fa).isGranted(Manifest.permission.RECORD_AUDIO) ||
+                (Build.VERSION.SDK_INT < Build.VERSION_CODES.R && !RxPermissions(fa).isGranted(Manifest.permission.WRITE_EXTERNAL_STORAGE))
             ) {
-                RxPermissions(activity!! as FragmentActivity)
+                RxPermissions(fa)
                     .request(
-                        Manifest.permission.RECORD_AUDIO,
-                        Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                        *mutableListOf(Manifest.permission.RECORD_AUDIO).apply {
+                            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) add(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                        }.toTypedArray(),
                     )
                     .autoDispose(this)
                     .subscribe({}, { reportException(it) })

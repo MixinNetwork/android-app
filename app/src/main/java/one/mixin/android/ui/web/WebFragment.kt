@@ -1153,49 +1153,62 @@ class WebFragment : BaseFragment() {
 
     private fun saveImageFromUrl(url: String?) {
         if (viewDestroyed()) return
-        RxPermissions(requireActivity())
-            .request(Manifest.permission.WRITE_EXTERNAL_STORAGE)
-            .autoDispose(stopScope)
-            .subscribe { granted ->
-                if (granted) {
-                    lifecycleScope.launch(Dispatchers.IO) {
-                        try {
-                            val outFile = requireContext().getPublicPicturePath()
-                                .createImageTemp(noMedia = false)
-                            val encodingPrefix = "base64,"
-                            val prefixIndex = url?.indexOf(encodingPrefix)
-                            if (url != null && prefixIndex != null && prefixIndex != -1) {
-                                val dataStartIndex = prefixIndex + encodingPrefix.length
-                                val imageData =
-                                    Base64.decode(url.substring(dataStartIndex), Base64.DEFAULT)
-                                outFile.copyFromInputStream(ByteArrayInputStream(imageData))
-                            } else {
-                                val file = Glide.with(MixinApplication.appContext)
-                                    .asFile()
-                                    .load(url)
-                                    .submit()
-                                    .get(10, TimeUnit.SECONDS)
-                                outFile.copyFromInputStream(FileInputStream(file))
-                            }
-                            MediaScannerConnection.scanFile(requireContext(), arrayOf(outFile.toString()), null, null)
-                            withContext(Dispatchers.Main) {
-                                if (isAdded) {
-                                    toast(
-                                        getString(
-                                            R.string.Save_to,
-                                            outFile.absolutePath,
-                                        ),
-                                    )
-                                }
-                            }
-                        } catch (e: Exception) {
-                            withContext(Dispatchers.Main) { if (isAdded) toast(R.string.Save_failure) }
+
+        fun afterGranted() {
+            lifecycleScope.launch(Dispatchers.IO) {
+                try {
+                    val outFile = requireContext().getPublicPicturePath()
+                        .createImageTemp(noMedia = false)
+                    val encodingPrefix = "base64,"
+                    val prefixIndex = url?.indexOf(encodingPrefix)
+                    if (url != null && prefixIndex != null && prefixIndex != -1) {
+                        val dataStartIndex = prefixIndex + encodingPrefix.length
+                        val imageData =
+                            Base64.decode(url.substring(dataStartIndex), Base64.DEFAULT)
+                        outFile.copyFromInputStream(ByteArrayInputStream(imageData))
+                    } else {
+                        val file = Glide.with(MixinApplication.appContext)
+                            .asFile()
+                            .load(url)
+                            .submit()
+                            .get(10, TimeUnit.SECONDS)
+                        outFile.copyFromInputStream(FileInputStream(file))
+                    }
+                    MediaScannerConnection.scanFile(
+                        requireContext(),
+                        arrayOf(outFile.toString()),
+                        null,
+                        null,
+                    )
+                    withContext(Dispatchers.Main) {
+                        if (isAdded) {
+                            toast(
+                                getString(
+                                    R.string.Save_to,
+                                    outFile.absolutePath,
+                                ),
+                            )
                         }
                     }
-                } else {
-                    context?.openPermissionSetting()
+                } catch (e: Exception) {
+                    withContext(Dispatchers.Main) { if (isAdded) toast(R.string.Save_failure) }
                 }
             }
+        }
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
+            RxPermissions(requireActivity())
+                .request(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                .autoDispose(stopScope)
+                .subscribe { granted ->
+                    if (granted) {
+                        afterGranted()
+                    } else {
+                        context?.openPermissionSetting()
+                    }
+                }
+        } else {
+            afterGranted()
+        }
     }
 
     private fun setStatusBarColor(content: String) {

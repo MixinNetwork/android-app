@@ -6,6 +6,7 @@ import android.graphics.BitmapFactory
 import android.graphics.Matrix
 import android.graphics.drawable.Drawable
 import android.media.MediaScannerConnection
+import android.os.Build
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -140,16 +141,20 @@ class EditFragment : VisionFragment() {
         }
         binding.closeIv.setOnClickListener { activity?.onBackPressedDispatcher?.onBackPressed() }
         binding.downloadIv.setOnClickListener {
-            RxPermissions(requireActivity())
-                .request(Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                .autoDispose(stopScope)
-                .subscribe { granted ->
-                    if (granted) {
-                        save()
-                    } else {
-                        context?.openPermissionSetting()
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
+                RxPermissions(requireActivity())
+                    .request(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                    .autoDispose(stopScope)
+                    .subscribe { granted ->
+                        if (granted) {
+                            save()
+                        } else {
+                            context?.openPermissionSetting()
+                        }
                     }
-                }
+            } else {
+                save()
+            }
             binding.downloadIv.bounce()
         }
         binding.sendFl.setOnClickListener {

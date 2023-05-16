@@ -151,7 +151,7 @@ class CallAudioManager(
             mediaPlayerStopped: $mediaPlayerStopped
             isSpeakerOn: $isSpeakerOn
             audioSwitch selectedAudioDevice: ${audioSwitch.selectedAudioDevice}, availableAudioDevices: ${audioSwitch.availableAudioDevices}
-            """.trimIndent()
+        """.trimIndent()
     }
 
     private fun setSpeaker(enable: Boolean) {

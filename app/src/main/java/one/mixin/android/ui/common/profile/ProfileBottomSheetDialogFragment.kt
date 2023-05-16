@@ -8,6 +8,7 @@ import android.content.Context
 import android.content.Intent
 import android.graphics.Color
 import android.net.Uri
+import android.os.Build
 import android.provider.MediaStore
 import android.text.method.LinkMovementMethod
 import android.util.Base64
@@ -308,7 +309,11 @@ class ProfileBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragmen
             pickMedia.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
         } else {
             RxPermissions(requireActivity())
-                .request(Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                .request(
+                    *mutableListOf(Manifest.permission.CAMERA).apply {
+                        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) add(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                    }.toTypedArray(),
+                )
                 .autoDispose(stopScope)
                 .subscribe { granted ->
                     if (granted) {

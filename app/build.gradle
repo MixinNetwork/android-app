@@ -16,14 +16,14 @@ def versionPatch = 15
 def versionBuild = 0
 
 android {
-    compileSdkVersion 33
-    buildToolsVersion "33.0.1"
+    compileSdk 33
+    buildToolsVersion = "33.0.1"
     ndkVersion "23.1.7779620"
     namespace "one.mixin.android"
     defaultConfig {
         applicationId "one.mixin.messenger"
         minSdkVersion 24
-        targetSdkVersion 31
+        targetSdkVersion 33
         versionCode versionMajor * 1000000 + versionMinor * 10000 + versionPatch * 100 + versionBuild
         versionName "${versionMajor}.${versionMinor}.${versionPatch}"
         multiDexEnabled true

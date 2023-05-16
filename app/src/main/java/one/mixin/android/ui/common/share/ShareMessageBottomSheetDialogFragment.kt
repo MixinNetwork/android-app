@@ -3,6 +3,7 @@ package one.mixin.android.ui.common.share
 import android.Manifest
 import android.annotation.SuppressLint
 import android.app.Dialog
+import android.os.Build
 import android.view.Gravity
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
@@ -132,20 +133,24 @@ class ShareMessageBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         }
         binding.send.setOnClickListener {
             if (shareMessage.category == ShareCategory.Image) {
-                RxPermissions(requireActivity())
-                    .request(Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                    .autoDispose(stopScope)
-                    .subscribe(
-                        { granted ->
-                            if (granted) {
-                                sendMessage()
-                            } else {
-                                context?.openPermissionSetting()
-                            }
-                        },
-                        {
-                        },
-                    )
+                if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
+                    RxPermissions(requireActivity())
+                        .request(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                        .autoDispose(stopScope)
+                        .subscribe(
+                            { granted ->
+                                if (granted) {
+                                    sendMessage()
+                                } else {
+                                    context?.openPermissionSetting()
+                                }
+                            },
+                            {
+                            },
+                        )
+                } else {
+                    sendMessage()
+                }
             } else if (shareMessage.category == ShareCategory.AppCard) {
                 val appCardData = GsonHelper.customGson.fromJson(shareMessage.content, AppCardData::class.java)
                 if (appCardData.title.length in 1..36 && appCardData.description.length in 1..128) {

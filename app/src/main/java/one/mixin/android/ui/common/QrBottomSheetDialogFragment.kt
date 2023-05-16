@@ -3,6 +3,7 @@ package one.mixin.android.ui.common
 import android.annotation.SuppressLint
 import android.app.Dialog
 import android.graphics.Bitmap
+import android.os.Build
 import android.view.View
 import androidx.appcompat.view.ContextThemeWrapper
 import androidx.core.net.toUri
@@ -134,34 +135,42 @@ class QrBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         builder.setCustomView(view)
         val bottomSheet = builder.create()
         viewBinding.save.setOnClickListener {
-            RxPermissions(requireActivity())
-                .request(android.Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                .autoDispose(stopScope)
-                .subscribe(
-                    { granted ->
-                        if (granted) {
-                            lifecycleScope.launch(Dispatchers.IO) {
-                                if (!isAdded) return@launch
-                                val path = binding.bottomLl.capture(requireContext()).getOrNull()
-                                withContext(Dispatchers.Main) {
-                                    if (path.isNullOrBlank()) {
-                                        toast(getString(R.string.Save_failure))
-                                    } else {
-                                        toast(getString(R.string.Save_to, path))
-                                    }
-                                }
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
+                RxPermissions(requireActivity())
+                    .request(android.Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                    .autoDispose(stopScope)
+                    .subscribe(
+                        { granted ->
+                            if (granted) {
+                                save()
+                            } else {
+                                requireContext().openPermissionSetting()
                             }
-                        } else {
-                            requireContext().openPermissionSetting()
-                        }
-                    },
-                    {
-                        toast(R.string.Save_failure)
-                    },
-                )
+                        },
+                        {
+                            toast(R.string.Save_failure)
+                        },
+                    )
+            } else {
+                save()
+            }
             bottomSheet.dismiss()
         }
         viewBinding.cancel.setOnClickListener { bottomSheet.dismiss() }
         bottomSheet.show()
+    }
+
+    private fun save() {
+        lifecycleScope.launch(Dispatchers.IO) {
+            if (!isAdded) return@launch
+            val path = binding.bottomLl.capture(requireContext()).getOrNull()
+            withContext(Dispatchers.Main) {
+                if (path.isNullOrBlank()) {
+                    toast(getString(R.string.Save_failure))
+                } else {
+                    toast(getString(R.string.Save_to, path))
+                }
+            }
+        }
     }
 }

@@ -420,20 +420,24 @@ class ChatHistoryActivity : BaseActivity() {
                                 )
                             }
                     } else {
-                        RxPermissions(this@ChatHistoryActivity)
-                            .request(Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                            .autoDispose(stopScope)
-                            .subscribe(
-                                { granted ->
-                                    if (granted) {
-                                        retryDownload(messageId)
-                                    } else {
-                                        this@ChatHistoryActivity.openPermissionSetting()
-                                    }
-                                },
-                                {
-                                },
-                            )
+                        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
+                            RxPermissions(this@ChatHistoryActivity)
+                                .request(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                                .autoDispose(stopScope)
+                                .subscribe(
+                                    { granted ->
+                                        if (granted) {
+                                            retryDownload(messageId)
+                                        } else {
+                                            this@ChatHistoryActivity.openPermissionSetting()
+                                        }
+                                    },
+                                    {
+                                    },
+                                )
+                        } else {
+                            retryDownload(messageId)
+                        }
                     }
                 }
             }
@@ -451,22 +455,28 @@ class ChatHistoryActivity : BaseActivity() {
                                 )
                             }
                     } else {
-                        RxPermissions(this@ChatHistoryActivity)
-                            .request(Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                            .autoDispose(stopScope)
-                            .subscribe(
-                                { granted ->
-                                    if (granted) {
-                                        retryUpload(messageId) {
-                                            toast(R.string.Retry_upload_failed)
+                        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
+                            RxPermissions(this@ChatHistoryActivity)
+                                .request(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                                .autoDispose(stopScope)
+                                .subscribe(
+                                    { granted ->
+                                        if (granted) {
+                                            retryUpload(messageId) {
+                                                toast(R.string.Retry_upload_failed)
+                                            }
+                                        } else {
+                                            this@ChatHistoryActivity.openPermissionSetting()
                                         }
-                                    } else {
-                                        this@ChatHistoryActivity.openPermissionSetting()
-                                    }
-                                },
-                                {
-                                },
-                            )
+                                    },
+                                    {
+                                    },
+                                )
+                        } else {
+                            retryUpload(messageId) {
+                                toast(R.string.Retry_upload_failed)
+                            }
+                        }
                     }
                 }
             }
@@ -720,20 +730,24 @@ class ChatHistoryActivity : BaseActivity() {
     }
 
     private fun checkWritePermissionAndSave(messageItem: ChatHistoryMessageItem) {
-        RxPermissions(this)
-            .request(Manifest.permission.WRITE_EXTERNAL_STORAGE)
-            .autoDispose(stopScope)
-            .subscribe(
-                { granted ->
-                    if (granted) {
-                        messageItem.saveToLocal(this)
-                    } else {
-                        openPermissionSetting()
-                    }
-                },
-                {
-                },
-            )
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
+            RxPermissions(this)
+                .request(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                .autoDispose(stopScope)
+                .subscribe(
+                    { granted ->
+                        if (granted) {
+                            messageItem.saveToLocal(this)
+                        } else {
+                            openPermissionSetting()
+                        }
+                    },
+                    {
+                    },
+                )
+        } else {
+            messageItem.saveToLocal(this)
+        }
     }
 
     @SuppressLint("AutoDispose")

@@ -598,40 +598,50 @@ class ConversationFragment() :
 
             @SuppressLint("MissingPermission")
             override fun onRetryDownload(messageId: String) {
-                RxPermissions(requireActivity())
-                    .request(Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                    .autoDispose(stopScope)
-                    .subscribe(
-                        { granted ->
-                            if (granted) {
-                                chatViewModel.retryDownload(messageId)
-                            } else {
-                                context?.openPermissionSetting()
-                            }
-                        },
-                        {
-                        },
-                    )
+                if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
+                    RxPermissions(requireActivity())
+                        .request(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                        .autoDispose(stopScope)
+                        .subscribe(
+                            { granted ->
+                                if (granted) {
+                                    chatViewModel.retryDownload(messageId)
+                                } else {
+                                    context?.openPermissionSetting()
+                                }
+                            },
+                            {
+                            },
+                        )
+                } else {
+                    chatViewModel.retryDownload(messageId)
+                }
             }
 
             @SuppressLint("MissingPermission")
             override fun onRetryUpload(messageId: String) {
-                RxPermissions(requireActivity())
-                    .request(Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                    .autoDispose(stopScope)
-                    .subscribe(
-                        { granted ->
-                            if (granted) {
-                                chatViewModel.retryUpload(messageId) {
-                                    toast(R.string.Retry_upload_failed)
+                if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
+                    RxPermissions(requireActivity())
+                        .request(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                        .autoDispose(stopScope)
+                        .subscribe(
+                            { granted ->
+                                if (granted) {
+                                    chatViewModel.retryUpload(messageId) {
+                                        toast(R.string.Retry_upload_failed)
+                                    }
+                                } else {
+                                    context?.openPermissionSetting()
                                 }
-                            } else {
-                                context?.openPermissionSetting()
-                            }
-                        },
-                        {
-                        },
-                    )
+                            },
+                            {
+                            },
+                        )
+                } else {
+                    chatViewModel.retryUpload(messageId) {
+                        toast(R.string.Retry_upload_failed)
+                    }
+                }
             }
 
             override fun onCancel(id: String) {
@@ -2443,7 +2453,17 @@ class ConversationFragment() :
                     }
                     MenuType.File -> {
                         RxPermissions(requireActivity())
-                            .request(Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                            .request(
+                                *if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                                    mutableListOf(Manifest.permission.READ_MEDIA_IMAGES, Manifest.permission.READ_MEDIA_VIDEO, Manifest.permission.READ_MEDIA_AUDIO)
+                                } else {
+                                    mutableListOf(Manifest.permission.READ_EXTERNAL_STORAGE)
+                                }.apply {
+                                    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
+                                        add(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                                    }
+                                }.toTypedArray(),
+                            )
                             .autoDispose(stopScope)
                             .subscribe(
                                 { granted ->
@@ -2868,22 +2888,25 @@ class ConversationFragment() :
     }
 
     private fun checkWritePermissionAndSave(messageItem: MessageItem) {
-        RxPermissions(requireActivity())
-            .request(Manifest.permission.WRITE_EXTERNAL_STORAGE)
-            .autoDispose(stopScope)
-            .subscribe(
-                { granted ->
-                    if (granted) {
-                        lifecycleScope.launch {
-                            messageItem.saveToLocal(requireContext())
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
+            RxPermissions(requireActivity())
+                .request(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                .autoDispose(stopScope)
+                .subscribe(
+                    { granted ->
+                        if (granted) {
+                        } else {
+                            context?.openPermissionSetting()
                         }
-                    } else {
-                        context?.openPermissionSetting()
-                    }
-                },
-                {
-                },
-            )
+                    },
+                    {
+                    },
+                )
+        } else {
+            lifecycleScope.launch {
+                messageItem.saveToLocal(requireContext())
+            }
+        }
     }
 
     private fun showRecordingAlert() {
@@ -3126,28 +3149,36 @@ class ConversationFragment() :
 
     private fun checkTranscript() {
         transcriptData?.let { _ ->
-            RxPermissions(requireActivity())
-                .request(Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                .autoDispose(stopScope)
-                .subscribe { granted ->
-                    if (granted) {
-                        transcriptDialog?.dismiss()
-                        val transcriptDialogLayoutBinding = generateTranscriptDialogLayout()
-                        transcriptDialog = alertDialogBuilder()
-                            .setMessage(getString(R.string.chat_import_content, groupName ?: conversationAdapter.recipient?.fullName ?: ""))
-                            .setView(transcriptDialogLayoutBinding.root)
-                            .create()
-                        transcriptDialogLayoutBinding.importChat.setOnClickListener {
-                            transcriptDialog?.dismiss()
-                        }
-                        transcriptDialogLayoutBinding.sendChat.setOnClickListener {
-                            transcriptDialog?.dismiss()
-                        }
-                        transcriptDialog?.show()
-                    } else {
-                        context?.openPermissionSetting()
-                    }
+            fun check() {
+                transcriptDialog?.dismiss()
+                val transcriptDialogLayoutBinding = generateTranscriptDialogLayout()
+                transcriptDialog = alertDialogBuilder()
+                    .setMessage(getString(R.string.chat_import_content, groupName ?: conversationAdapter.recipient?.fullName ?: ""))
+                    .setView(transcriptDialogLayoutBinding.root)
+                    .create()
+                transcriptDialogLayoutBinding.importChat.setOnClickListener {
+                    transcriptDialog?.dismiss()
                 }
+                transcriptDialogLayoutBinding.sendChat.setOnClickListener {
+                    transcriptDialog?.dismiss()
+                }
+                transcriptDialog?.show()
+            }
+
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
+                RxPermissions(requireActivity())
+                    .request(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                    .autoDispose(stopScope)
+                    .subscribe { granted ->
+                        if (granted) {
+                            check()
+                        } else {
+                            context?.openPermissionSetting()
+                        }
+                    }
+            } else {
+                check()
+            }
         }
     }
 

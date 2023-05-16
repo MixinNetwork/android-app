@@ -112,25 +112,32 @@ class BackUpFragment : BaseFragment(R.layout.fragment_backup) {
             }
             titleView.leftIb.setOnClickListener { activity?.onBackPressedDispatcher?.onBackPressed() }
             backupBn.setOnClickListener {
-                RxPermissions(requireActivity())
-                    .request(Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                    .autoDispose(stopScope)
-                    .subscribe(
-                        { granted ->
-                            if (granted) {
-                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                                    showBackupMediaDialog()
+                fun afterGranted() {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                        showBackupMediaDialog()
+                    } else {
+                        jobManager.addJobInBackground(BackupJob(true))
+                    }
+                }
+                if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
+                    RxPermissions(requireActivity())
+                        .request(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                        .autoDispose(stopScope)
+                        .subscribe(
+                            { granted ->
+                                if (granted) {
+                                    afterGranted()
                                 } else {
-                                    jobManager.addJobInBackground(BackupJob(true))
+                                    context?.openPermissionSetting()
                                 }
-                            } else {
+                            },
+                            {
                                 context?.openPermissionSetting()
-                            }
-                        },
-                        {
-                            context?.openPermissionSetting()
-                        },
-                    )
+                            },
+                        )
+                } else {
+                    afterGranted()
+                }
             }
             if (ContextCompat.checkSelfPermission(
                     requireContext(),

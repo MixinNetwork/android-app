@@ -3,6 +3,7 @@ package one.mixin.android.ui.qr
 import android.app.Activity
 import android.content.Intent
 import android.graphics.Point
+import android.os.Build
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -108,20 +109,24 @@ class ScanFragment : BaseCameraScanFragment<BarcodeResult>() {
                 flash.bounce()
             }
             galleryIv.setOnClickListener {
-                RxPermissions(requireActivity())
-                    .request(android.Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                    .autoDispose(stopScope)
-                    .subscribe(
-                        { granted ->
-                            if (granted) {
-                                openGallery()
-                            } else {
-                                context?.openPermissionSetting()
-                            }
-                        },
-                        {
-                        },
-                    )
+                if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
+                    RxPermissions(requireActivity())
+                        .request(android.Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                        .autoDispose(stopScope)
+                        .subscribe(
+                            { granted ->
+                                if (granted) {
+                                    openGallery()
+                                } else {
+                                    context?.openPermissionSetting()
+                                }
+                            },
+                            {
+                            },
+                        )
+                } else {
+                    openGallery()
+                }
             }
         }
     }

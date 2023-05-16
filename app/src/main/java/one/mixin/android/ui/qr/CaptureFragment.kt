@@ -229,28 +229,35 @@ class CaptureFragment() : BaseCameraxFragment() {
         val audioManager by lazy { requireContext().getSystemService(Context.AUDIO_SERVICE) as AudioManager }
         var oldStreamVolume = 0
         override fun onClick() {
-            RxPermissions(requireActivity())
-                .request(Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                .autoDispose(stopScope)
-                .subscribe(
-                    { granted ->
-                        if (granted) {
-                            onTakePicture()
-                            binding.captureBorderView.isVisible = true
-                            binding.captureBorderView.postDelayed(
-                                {
-                                    binding.captureBorderView
-                                        .isVisible = false
-                                },
-                                100,
-                            )
-                        } else {
-                            context?.openPermissionSetting()
-                        }
-                    },
+            fun afterGranted() {
+                onTakePicture()
+                binding.captureBorderView.isVisible = true
+                binding.captureBorderView.postDelayed(
                     {
+                        binding.captureBorderView
+                            .isVisible = false
                     },
+                    100,
                 )
+            }
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
+                RxPermissions(requireActivity())
+                    .request(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                    .autoDispose(stopScope)
+                    .subscribe(
+                        { granted ->
+                            if (granted) {
+                                afterGranted()
+                            } else {
+                                context?.openPermissionSetting()
+                            }
+                        },
+                        {
+                        },
+                    )
+            } else {
+                afterGranted()
+            }
         }
 
         override fun readyForProgress() {
@@ -260,7 +267,11 @@ class CaptureFragment() : BaseCameraxFragment() {
             } catch (ignored: SecurityException) {
             }
             RxPermissions(requireActivity())
-                .request(Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.RECORD_AUDIO)
+                .request(
+                    *mutableListOf(Manifest.permission.RECORD_AUDIO).apply {
+                        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) add(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                    }.toTypedArray(),
+                )
                 .autoDispose(stopScope)
                 .subscribe(
                     { granted ->

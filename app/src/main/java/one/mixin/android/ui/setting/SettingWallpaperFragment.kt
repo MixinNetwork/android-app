@@ -7,6 +7,7 @@ import android.content.Intent
 import android.graphics.Color
 import android.graphics.drawable.Drawable
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.provider.MediaStore
 import android.view.LayoutInflater
@@ -207,16 +208,20 @@ class SettingWallpaperFragment : BaseFragment(R.layout.fragment_setting_chat) {
     }
 
     private fun selectWallpaper() {
-        RxPermissions(requireActivity())
-            .request(Manifest.permission.WRITE_EXTERNAL_STORAGE)
-            .autoDispose(stopScope)
-            .subscribe { granted ->
-                if (granted) {
-                    openImageGallery(true)
-                } else {
-                    context?.openPermissionSetting()
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
+            RxPermissions(requireActivity())
+                .request(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                .autoDispose(stopScope)
+                .subscribe { granted ->
+                    if (granted) {
+                        openImageGallery(true)
+                    } else {
+                        context?.openPermissionSetting()
+                    }
                 }
-            }
+        } else {
+            openImageGallery(true)
+        }
     }
 
     private val imageUri: Uri by lazy {
