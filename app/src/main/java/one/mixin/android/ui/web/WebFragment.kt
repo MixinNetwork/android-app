@@ -828,6 +828,7 @@ class WebFragment : BaseFragment() {
 
     private fun getTipAddress(chainId: String, callbackFunction: String) {
         if (viewDestroyed()) return
+        if (!WalletConnect.isEnabled(requireContext())) return
 
         lifecycleScope.launch {
             WalletConnectTIP.peer = getPeerUI()
@@ -837,7 +838,9 @@ class WebFragment : BaseFragment() {
                 WalletConnect.RequestType.SessionProposal,
                 WalletConnect.Version.TIP,
                 onReject = {
-                    webView.evaluateJavascript("$callbackFunction('')") {}
+                    lifecycleScope.launch {
+                        webView.evaluateJavascript("$callbackFunction('')") {}
+                    }
                 },
                 callback = {
                     val address = try {
@@ -846,7 +849,9 @@ class WebFragment : BaseFragment() {
                         Timber.d("${WalletConnectTIP.TAG} ${e.stackTraceToString()}")
                         ""
                     }
-                    webView.evaluateJavascript("$callbackFunction('$address')") {}
+                    lifecycleScope.launch {
+                        webView.evaluateJavascript("$callbackFunction('$address')") {}
+                    }
                 },
             )
         }
@@ -854,6 +859,7 @@ class WebFragment : BaseFragment() {
 
     private fun tipSign(chainId: String, message: String, callbackFunction: String) {
         if (viewDestroyed()) return
+        if (!WalletConnect.isEnabled(requireContext())) return
 
         lifecycleScope.launch {
             WalletConnectTIP.peer = getPeerUI()
@@ -864,11 +870,15 @@ class WebFragment : BaseFragment() {
                 WalletConnect.RequestType.SessionRequest,
                 WalletConnect.Version.TIP,
                 onReject = {
-                    webView.evaluateJavascript("$callbackFunction('')") {}
+                    lifecycleScope.launch {
+                        webView.evaluateJavascript("$callbackFunction('')") {}
+                    }
                 },
                 callback = {
                     val sig = TipSignSpec.Ecdsa.Secp256k1.sign(tipPrivToPrivateKey(it, chainId), message.toByteArray())
-                    webView.evaluateJavascript("$callbackFunction('$sig')") {}
+                    lifecycleScope.launch {
+                        webView.evaluateJavascript("$callbackFunction('$sig')") {}
+                    }
                 },
             )
         }
