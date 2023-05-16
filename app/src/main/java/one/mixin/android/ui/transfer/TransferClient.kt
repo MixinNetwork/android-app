@@ -403,7 +403,7 @@ class TransferClient @Inject internal constructor(
             val processProgress = min(processCount * 100f / total, 100f)
             lastTime = System.currentTimeMillis()
             RxBus.publish(DeviceTransferProgressEvent(processProgress))
-            socket?.getOutputStream()?.let {outputStream->
+            socket?.getOutputStream()?.let { outputStream ->
                 sendCommand(outputStream, TransferCommand(TransferCommandAction.PROGRESS.value, progress = processProgress))
             }
         }
