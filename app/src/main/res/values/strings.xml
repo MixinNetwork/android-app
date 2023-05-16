@@ -1175,20 +1175,6 @@
     <string name="transfer_breakpoint_continuation_desc">Last sync time on this device was %1$s, do you want to resume from the last sync point?</string>
     <string name="transfer_syncing_des">Transferring chat history, do you want to cancel ?</string>
 
-    <string name="Connected_dapps">Connected dapps</string>
-    <string name="connected_dapp_search_hint">Name, URL</string>
-    <string name="NO_CONNECTED_DAPPS">NO CONNECTED DAPPS</string>
-    <string name="connected_desc">This dapp are connected to your wallet, it can view your wallet balance, activity and request approval for transactions.</string>
-    <string name="Disconnect">Disconnect</string>
-    <string name="Connect_Wallet">Connect Wallet</string>
-    <string name="Switch_Network">Switch Network</string>
-    <string name="Read_your_public_address">Read your public address</string>
-    <string name="Allow_app_access_wallet_balance_activity">Allow app to access your wallet balance and activity.</string>
-    <string name="Request_approval">Request approval</string>
-    <string name="Allow_dapp_ask_permission">allow dapp to ask for your approval to make a transaction.</string>
-    <string name="Signature_Request">Signature Request</string>
-    <string name="Transaction_Request">Transaction Request</string>
-
     <string name="connected_dapps">Connected dapps</string>
     <string name="search_placeholder_dapp">Name, URL</string>
     <string name="NO_DAPP">NO DAPP</string>

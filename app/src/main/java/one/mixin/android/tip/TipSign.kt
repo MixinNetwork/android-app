@@ -1,21 +1,19 @@
 package one.mixin.android.tip
 
-import net.i2p.crypto.eddsa.EdDSAEngine
-import net.i2p.crypto.eddsa.spec.EdDSAPrivateKeySpec
+import okio.ByteString.Companion.toByteString
 import one.mixin.android.Constants
-import one.mixin.android.crypto.ed25519
-import one.mixin.android.crypto.getPrivateKey
-import one.mixin.android.crypto.getPublicKey
 import one.mixin.android.crypto.sha3Sum256
+import one.mixin.android.crypto.shouldCheckOnCurve
 import one.mixin.android.extension.toHex
 import one.mixin.android.tip.bip44.Bip44Path
 import one.mixin.android.tip.bip44.generateBip44Key
+import one.mixin.eddsa.Ed25519Sign
 import org.web3j.crypto.Bip32ECKeyPair
 import org.web3j.crypto.ECKeyPair
 import org.web3j.crypto.Keys
 import org.web3j.crypto.Sign
 import org.web3j.utils.Numeric
-import java.security.MessageDigest
+import java.security.KeyPair
 
 const val TAG_TIP_SIGN = "TIP_sign"
 
@@ -47,18 +45,13 @@ sealed class TipSignSpec(
     sealed class Eddsa(override val curve: String) : TipSignSpec("eddsa", curve) {
         object Ed25519 : Eddsa("ed25519") {
             override fun public(priv: ByteArray): String {
-                val privateSpec = EdDSAPrivateKeySpec(priv, ed25519)
-                val pub = privateSpec.getPublicKey()
-                return pub.abyte.toHex()
+                val keypair = one.mixin.eddsa.KeyPair.newKeyPairFromSeed(priv.toByteString(), checkOnCurve = shouldCheckOnCurve())
+                return keypair.publicKey.toByteArray().toHex()
             }
 
             override fun sign(priv: ByteArray, data: ByteArray): String {
-                val privateSpec = EdDSAPrivateKeySpec(priv, ed25519)
-                val privateKey = privateSpec.getPrivateKey()
-                val engine = EdDSAEngine(MessageDigest.getInstance(ed25519.hashAlgorithm))
-                engine.initSign(privateKey)
-                engine.update(data)
-                return engine.sign().toHex()
+                val signer = Ed25519Sign(priv.toByteString())
+                return signer.sign(data.toByteString()).toByteArray().toHex()
             }
         }
     }

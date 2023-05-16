@@ -91,7 +91,7 @@ fun SessionRequestPage(
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             Image(
-                painter = painterResource(R.drawable.ic_close_black_24dp),
+                painter = painterResource(R.drawable.ic_close_black),
                 modifier = Modifier
                     .size(52.dp, 52.dp)
                     .clip(CircleShape)
@@ -450,7 +450,7 @@ private fun ChooseGasBottomSheet(
                     color = MixinAppTheme.colors.textPrimary,
                 )
                 Image(
-                    painter = painterResource(R.drawable.ic_close_black_24dp),
+                    painter = painterResource(R.drawable.ic_close_black),
                     modifier = Modifier
                         .size(52.dp, 52.dp)
                         .clip(CircleShape)

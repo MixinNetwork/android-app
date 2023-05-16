@@ -8,7 +8,6 @@ import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentAboutBinding
 import one.mixin.android.extension.defaultSharedPreferences
-import one.mixin.android.extension.multiChoice
 import one.mixin.android.extension.navTo
 import one.mixin.android.extension.openMarket
 import one.mixin.android.extension.openUrl

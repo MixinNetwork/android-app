@@ -16,8 +16,8 @@ import one.mixin.android.ui.common.BaseActivity
 import one.mixin.android.ui.conversation.TransferFragment
 import one.mixin.android.ui.conversation.link.LinkBottomSheetDialogFragment
 import one.mixin.android.ui.device.ConfirmBottomFragment
-import one.mixin.android.ui.transfer.TransferActivity
 import one.mixin.android.ui.home.MainActivity
+import one.mixin.android.ui.transfer.TransferActivity
 import timber.log.Timber
 
 @AndroidEntryPoint

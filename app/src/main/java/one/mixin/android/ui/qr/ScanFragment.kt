@@ -32,7 +32,6 @@ import one.mixin.android.extension.toast
 import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.extension.withArgs
 import one.mixin.android.job.RefreshExternalSchemeJob
-import one.mixin.android.tip.wc.WalletConnect
 import one.mixin.android.ui.conversation.ConversationActivity.Companion.ARGS_SHORTCUT
 import one.mixin.android.ui.device.ConfirmBottomFragment
 import one.mixin.android.ui.qr.CaptureActivity.Companion.ARGS_FOR_SCAN_RESULT
