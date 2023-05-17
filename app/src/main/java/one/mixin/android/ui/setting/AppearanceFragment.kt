@@ -13,6 +13,7 @@ import androidx.core.os.LocaleListCompat
 import androidx.fragment.app.viewModels
 import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.Constants
+import one.mixin.android.Constants.Account.PREF_SHOW_TRANSLATE_BUTTON
 import one.mixin.android.R
 import one.mixin.android.RxBus
 import one.mixin.android.databinding.FragmentAppearanceBinding
@@ -129,6 +130,11 @@ class AppearanceFragment : BaseFragment(R.layout.fragment_appearance) {
 
             textSizeRl.setOnClickListener {
                 navTo(SettingSizeFragment.newInstance(), SettingSizeFragment.TAG)
+            }
+            translateSv.setContent(R.string.Show_Translate_Button)
+            translateSv.isChecked = defaultSharedPreferences.getBoolean(PREF_SHOW_TRANSLATE_BUTTON, false)
+            translateSv.setOnCheckedChangeListener { _, isChecked ->
+                defaultSharedPreferences.putBoolean(PREF_SHOW_TRANSLATE_BUTTON, isChecked)
             }
             val quoteColor = requireContext().defaultSharedPreferences.getBoolean(Constants.Account.PREF_QUOTE_COLOR, false)
             quoteColorDescTv.setText(

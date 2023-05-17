@@ -122,7 +122,7 @@
             android:layout_toEndOf="@id/done_iv"
             android:textSize="12sp"
             android:textColor="?text_minor"
-            android:text="@string/translate_by_google"/>
+            android:text="@string/translation_done"/>
     </one.mixin.android.widget.MaxWidthRelativeLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>
 

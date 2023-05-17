@@ -2597,5 +2597,7 @@
     <string name="wallet_home_privacy_wallet_reason_3">拦截恶意授权，杜绝应用偷转资产</string>
     <string name="no_tokens">没有代币</string>
     <string name="Translate">翻译</string>
-    <string name="translate_by_google">由 Google 翻译</string>
+    <string name="translation_done">翻译完成</string>
+    <string name="Show_Translate_Button">显示翻译按钮</string>
+    <string name="show_translate_button_hint">\'翻译\'会在你长按一条文字消息时出现。\n\nGoogle 可能会获取到这条你要翻译的文字消息的内容。</string>
 </resources>

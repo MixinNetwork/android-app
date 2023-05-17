@@ -2674,5 +2674,7 @@
     <string name="wallet_home_privacy_wallet_reason_3">Block malicious apps from gaining unsafe permissions.</string>
     <string name="no_tokens">No Tokens</string>
     <string name="Translate">Translate</string>
-    <string name="translate_by_google">translate by Google</string>
+    <string name="translation_done">translation done</string>
+    <string name="Show_Translate_Button">Show Translate Button</string>
+    <string name="show_translate_button_hint">The \'Translate\' button will appear when you make a long press on a text message.\n\nGoogle may have access to the text of messages you translate.</string>
 </resources>
