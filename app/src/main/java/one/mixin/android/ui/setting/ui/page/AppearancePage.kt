@@ -46,6 +46,7 @@ import one.mixin.android.ui.setting.Currency
 import one.mixin.android.ui.setting.CurrencyBottomSheetDialogFragment
 import one.mixin.android.ui.setting.LocalSettingNav
 import one.mixin.android.ui.setting.SettingDestination
+import one.mixin.android.ui.setting.TranslateLanguageBottomSheetDialogFragment
 import one.mixin.android.ui.setting.getLanguagePos
 import one.mixin.android.ui.setting.ui.compose.MixinAlertDialog
 import one.mixin.android.ui.setting.ui.compose.MixinBackButton
@@ -54,6 +55,8 @@ import one.mixin.android.ui.setting.ui.compose.SettingTile
 import one.mixin.android.ui.setting.ui.compose.booleanValueAsState
 import one.mixin.android.ui.setting.ui.theme.MixinAppTheme
 import one.mixin.android.util.TimeCache
+import one.mixin.android.util.TranslateManager
+import one.mixin.android.util.getLanguageOrDefault
 import one.mixin.android.util.isFollowSystem
 import one.mixin.android.vo.Fiats
 import java.util.Locale
@@ -365,12 +368,33 @@ private fun CurrencyItem() {
 
 @Composable
 private fun TranslateItem() {
-    var showTranslateButton by LocalContext.current.defaultSharedPreferences
+    val context = LocalContext.current
+    var showTranslateButton by context.defaultSharedPreferences
         .booleanValueAsState(
             key = Constants.Account.PREF_SHOW_TRANSLATE_BUTTON,
             defaultValue = false,
         )
+    val targetLang = remember {
+        mutableStateOf(
+            context.defaultSharedPreferences.getString(Constants.Account.PREF_TRANSLATE_TARGET_LANG, getLanguageOrDefault())?.let {
+                TranslateManager.Language(it).nameInCurrentLanguage
+            } ?: "",
+        )
+    }
     Box(modifier = Modifier.height(16.dp))
+    AppearanceItem(
+        label = stringResource(id = R.string.Target_Language),
+        value = targetLang.value,
+    ) {
+        val activity = context.findFragmentActivityOrNull() ?: return@AppearanceItem
+        val languageBottom = TranslateLanguageBottomSheetDialogFragment.newInstance()
+        languageBottom.callback = object : TranslateLanguageBottomSheetDialogFragment.Callback {
+            override fun onLanguageClick(language: TranslateManager.Language) {
+                targetLang.value = language.nameInCurrentLanguage
+            }
+        }
+        languageBottom.showNow(activity.supportFragmentManager, TranslateLanguageBottomSheetDialogFragment.TAG)
+    }
     SettingTile(
         title = stringResource(R.string.Show_Translate_Button),
         description = stringResource(R.string.show_translate_button_hint),

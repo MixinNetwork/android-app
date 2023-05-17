@@ -138,17 +138,11 @@
 
     </RelativeLayout>
 
-    <one.mixin.android.widget.SwitchView
-        android:id="@+id/translate_sv"
-        android:layout_width="match_parent"
-        android:layout_marginTop="20dp"
-        android:background="?attr/bg_white"
-        android:layout_height="@dimen/item_contact_height" />
-
     <RelativeLayout
         android:id="@+id/target_rl"
         android:layout_width="match_parent"
         android:layout_height="@dimen/item_contact_height"
+        android:layout_marginTop="20dp"
         android:background="?attr/bg_white"
         android:foreground="?android:attr/selectableItemBackground">
 
@@ -172,6 +166,12 @@
             android:textColor="?attr/text_minor"
             tools:ignore="RelativeOverlap" />
     </RelativeLayout>
+
+    <one.mixin.android.widget.SwitchView
+        android:id="@+id/translate_sv"
+        android:layout_width="match_parent"
+        android:background="?attr/bg_white"
+        android:layout_height="@dimen/item_contact_height" />
 
     <TextView
         android:id="@+id/translate_desc_tv"

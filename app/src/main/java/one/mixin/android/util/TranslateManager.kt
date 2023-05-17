@@ -2,6 +2,7 @@ package one.mixin.android.util
 
 import android.content.Context
 import android.util.LruCache
+import androidx.recyclerview.widget.DiffUtil
 import com.google.mlkit.common.model.DownloadConditions
 import com.google.mlkit.nl.languageid.LanguageIdentification
 import com.google.mlkit.nl.languageid.LanguageIdentificationOptions
@@ -108,9 +109,9 @@ class TranslateManager {
     }
 
     class Language(val code: String) : Comparable<Language> {
-
-        val displayName: String
-            get() = Locale(code).displayName
+        private val locale = Locale(code)
+        val nameInCurrentLanguage: String = locale.getDisplayName(getLocale())
+        val nameInSelfLanguage: String = locale.getDisplayLanguage(locale)
 
         override fun equals(other: Any?): Boolean {
             if (other === this) {
@@ -126,15 +127,23 @@ class TranslateManager {
         }
 
         override fun toString(): String {
-            return displayName
+            return nameInCurrentLanguage
         }
 
         override fun compareTo(other: Language): Int {
-            return this.displayName.compareTo(other.displayName)
+            return this.nameInCurrentLanguage.compareTo(other.nameInCurrentLanguage)
         }
 
         override fun hashCode(): Int {
             return code.hashCode()
+        }
+
+        companion object {
+            val DIFF_CALLBACK = object : DiffUtil.ItemCallback<Language>() {
+                override fun areItemsTheSame(oldItem: Language, newItem: Language): Boolean = oldItem.code == newItem.code
+
+                override fun areContentsTheSame(oldItem: Language, newItem: Language): Boolean = oldItem == newItem
+            }
         }
     }
     companion object {

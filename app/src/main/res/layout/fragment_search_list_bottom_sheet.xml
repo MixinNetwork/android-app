@@ -48,7 +48,7 @@
         android:background="?attr/bg_window" />
 
     <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/currency_rv"
+        android:id="@+id/rv"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_below="@id/divider"

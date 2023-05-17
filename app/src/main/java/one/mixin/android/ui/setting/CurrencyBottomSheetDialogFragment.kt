@@ -16,7 +16,7 @@ import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.AccountUpdateRequest
-import one.mixin.android.databinding.FragmentCurrencyBottomSheetBinding
+import one.mixin.android.databinding.FragmentSearchListBottomSheetBinding
 import one.mixin.android.databinding.ItemCurrencyBinding
 import one.mixin.android.extension.appCompatActionBarHeight
 import one.mixin.android.extension.containsIgnoreCase
@@ -43,7 +43,7 @@ class CurrencyBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     private val currencyAdapter = CurrencyAdapter()
     private val currencies = arrayListOf<Currency>()
 
-    private val binding by viewBinding(FragmentCurrencyBottomSheetBinding::inflate)
+    private val binding by viewBinding(FragmentSearchListBottomSheetBinding::inflate)
 
     @SuppressLint("RestrictedApi")
     override fun setupDialog(dialog: Dialog, style: Int) {
@@ -70,7 +70,7 @@ class CurrencyBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                     savePreference(currency)
                 }
             }
-            currencyRv.adapter = currencyAdapter
+            rv.adapter = currencyAdapter
         }
         setListData()
     }

@@ -21,6 +21,7 @@ import one.mixin.android.extension.singleChoice
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.util.TimeCache
+import one.mixin.android.util.TranslateManager
 import one.mixin.android.util.getLanguage
 import one.mixin.android.util.getLanguageOrDefault
 import one.mixin.android.util.getLocaleString
@@ -124,12 +125,18 @@ class AppearanceFragment : BaseFragment(R.layout.fragment_appearance) {
                 defaultSharedPreferences.putBoolean(PREF_SHOW_TRANSLATE_BUTTON, isChecked)
                 targetRl.isVisible = isChecked
             }
-            targetLangTv.text = if (isFollowSystem()) {
-                getString(R.string.Follow_system)
-            } else {
-                defaultSharedPreferences.getString(PREF_TRANSLATE_TARGET_LANG, getLanguageOrDefault())
+            targetLangTv.text = defaultSharedPreferences.getString(PREF_TRANSLATE_TARGET_LANG, getLanguageOrDefault())?.let {
+                TranslateManager.Language(it).nameInCurrentLanguage
             }
-            targetLangTv.setOnClickListener { }
+            targetRl.setOnClickListener {
+                val languageBottom = TranslateLanguageBottomSheetDialogFragment.newInstance()
+                languageBottom.callback = object : TranslateLanguageBottomSheetDialogFragment.Callback {
+                    override fun onLanguageClick(language: TranslateManager.Language) {
+                        targetLangTv.text = language.nameInCurrentLanguage
+                    }
+                }
+                languageBottom.showNow(parentFragmentManager, TranslateLanguageBottomSheetDialogFragment.TAG)
+            }
         }
     }
 
