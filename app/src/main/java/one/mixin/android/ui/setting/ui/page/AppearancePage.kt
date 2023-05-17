@@ -382,18 +382,23 @@ private fun TranslateItem() {
         )
     }
     Box(modifier = Modifier.height(16.dp))
-    AppearanceItem(
-        label = stringResource(id = R.string.Target_Language),
-        value = targetLang.value,
-    ) {
-        val activity = context.findFragmentActivityOrNull() ?: return@AppearanceItem
-        val languageBottom = TranslateLanguageBottomSheetDialogFragment.newInstance()
-        languageBottom.callback = object : TranslateLanguageBottomSheetDialogFragment.Callback {
-            override fun onLanguageClick(language: TranslateManager.Language) {
-                targetLang.value = language.nameInCurrentLanguage
+    if (showTranslateButton) {
+        AppearanceItem(
+            label = stringResource(id = R.string.Target_Language),
+            value = targetLang.value,
+        ) {
+            val activity = context.findFragmentActivityOrNull() ?: return@AppearanceItem
+            val languageBottom = TranslateLanguageBottomSheetDialogFragment.newInstance()
+            languageBottom.callback = object : TranslateLanguageBottomSheetDialogFragment.Callback {
+                override fun onLanguageClick(language: TranslateManager.Language) {
+                    targetLang.value = language.nameInCurrentLanguage
+                }
             }
+            languageBottom.showNow(
+                activity.supportFragmentManager,
+                TranslateLanguageBottomSheetDialogFragment.TAG,
+            )
         }
-        languageBottom.showNow(activity.supportFragmentManager, TranslateLanguageBottomSheetDialogFragment.TAG)
     }
     SettingTile(
         title = stringResource(R.string.Show_Translate_Button),

@@ -3,9 +3,11 @@ package one.mixin.android.ui.setting
 import android.os.Build
 import android.os.Bundle
 import android.view.View
+import android.view.ViewGroup.MarginLayoutParams
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.os.LocaleListCompat
 import androidx.core.view.isVisible
+import androidx.core.view.updateLayoutParams
 import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.Constants
 import one.mixin.android.Constants.Account.PREF_SHOW_TRANSLATE_BUTTON
@@ -14,6 +16,7 @@ import one.mixin.android.R
 import one.mixin.android.databinding.FragmentAppearanceBinding
 import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.defaultSharedPreferences
+import one.mixin.android.extension.dp
 import one.mixin.android.extension.navTo
 import one.mixin.android.extension.putBoolean
 import one.mixin.android.extension.putInt
@@ -124,6 +127,9 @@ class AppearanceFragment : BaseFragment(R.layout.fragment_appearance) {
             translateSv.setOnCheckedChangeListener { _, isChecked ->
                 defaultSharedPreferences.putBoolean(PREF_SHOW_TRANSLATE_BUTTON, isChecked)
                 targetRl.isVisible = isChecked
+                translateSv.updateLayoutParams<MarginLayoutParams> {
+                    topMargin = if (isChecked) 0 else 20.dp
+                }
             }
             targetLangTv.text = defaultSharedPreferences.getString(PREF_TRANSLATE_TARGET_LANG, getLanguageOrDefault())?.let {
                 TranslateManager.Language(it).nameInCurrentLanguage
