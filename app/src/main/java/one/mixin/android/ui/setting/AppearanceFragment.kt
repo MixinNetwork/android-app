@@ -6,11 +6,13 @@ import android.os.Build
 import android.os.Bundle
 import android.view.Gravity
 import android.view.View
+import android.view.ViewGroup.MarginLayoutParams
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.appcompat.widget.ListPopupWindow
 import androidx.core.content.ContextCompat
 import androidx.core.os.LocaleListCompat
 import androidx.core.view.isVisible
+import androidx.core.view.updateLayoutParams
 import androidx.fragment.app.viewModels
 import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.Constants
@@ -22,6 +24,7 @@ import one.mixin.android.databinding.FragmentAppearanceBinding
 import one.mixin.android.event.QuoteColorEvent
 import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.defaultSharedPreferences
+import one.mixin.android.extension.dp
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.navTo
 import one.mixin.android.extension.putBoolean
@@ -136,10 +139,18 @@ class AppearanceFragment : BaseFragment(R.layout.fragment_appearance) {
                 navTo(SettingSizeFragment.newInstance(), SettingSizeFragment.TAG)
             }
             translateSv.setContent(R.string.Show_Translate_Button)
-            translateSv.isChecked = defaultSharedPreferences.getBoolean(PREF_SHOW_TRANSLATE_BUTTON, false)
+            val showTranslateButton = defaultSharedPreferences.getBoolean(PREF_SHOW_TRANSLATE_BUTTON, false)
+            translateSv.isChecked = showTranslateButton
+            targetRl.isVisible = showTranslateButton
+            translateSv.updateLayoutParams<MarginLayoutParams> {
+                topMargin = if (showTranslateButton) 0 else 20.dp
+            }
             translateSv.setOnCheckedChangeListener { _, isChecked ->
                 defaultSharedPreferences.putBoolean(PREF_SHOW_TRANSLATE_BUTTON, isChecked)
                 targetRl.isVisible = isChecked
+                translateSv.updateLayoutParams<MarginLayoutParams> {
+                    topMargin = if (isChecked) 0 else 20.dp
+                }
             }
             targetLangTv.text =
                 defaultSharedPreferences.getString(PREF_TRANSLATE_TARGET_LANG, getLanguageOrDefault())?.let {

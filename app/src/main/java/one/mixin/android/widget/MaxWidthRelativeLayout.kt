@@ -30,7 +30,10 @@ class MaxWidthRelativeLayout : RelativeLayout {
         }
     }
 
-    override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
+    override fun onMeasure(
+        widthMeasureSpec: Int,
+        heightMeasureSpec: Int,
+    ) {
         val measuredWidth = MeasureSpec.getSize(widthMeasureSpec)
         var wms = widthMeasureSpec
         if (maxWidth in 1 until measuredWidth) {

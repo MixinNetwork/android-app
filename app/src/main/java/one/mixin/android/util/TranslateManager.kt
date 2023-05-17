@@ -24,17 +24,17 @@ import java.util.concurrent.TimeUnit
 
 class TranslateManager {
     private val executor = Executors.newCachedThreadPool()
-    private val languageIdentifier = LanguageIdentification.getClient(
-        LanguageIdentificationOptions.Builder()
-            .setExecutor(executor)
-            .setConfidenceThreshold(0.5f)
-            .build(),
-    )
+    private val languageIdentifier =
+        LanguageIdentification.getClient(
+            LanguageIdentificationOptions
+                .Builder()
+                .setExecutor(executor)
+                .setConfidenceThreshold(0.5f)
+                .build(),
+        )
     private val translators =
         object : LruCache<TranslatorOptions, Translator>(3) {
-            override fun create(options: TranslatorOptions): Translator {
-                return Translation.getClient(options)
-            }
+            override fun create(options: TranslatorOptions): Translator = Translation.getClient(options)
 
             override fun entryRemoved(
                 evicted: Boolean,
@@ -58,9 +58,10 @@ class TranslateManager {
             return null
         }
         var latch = CountDownLatch(1)
-        val identifierTask = languageIdentifier.identifyLanguage(text).addOnCompleteListener {
-            latch.countDown()
-        }
+        val identifierTask =
+            languageIdentifier.identifyLanguage(text).addOnCompleteListener {
+                latch.countDown()
+            }
         val identifierDone = latch.await(TASK_TIMEOUT, TimeUnit.SECONDS)
         if (!identifierDone) {
             Timber.d("$TAG languageIdentifier timeout ${identifierTask.exception?.stackTraceToString()}")
@@ -73,19 +74,22 @@ class TranslateManager {
             return null
         }
 
-        val options = TranslatorOptions.Builder()
-            .setSourceLanguage(sourceLangCode)
-            .setTargetLanguage(targetLangCode)
-            .setExecutor(executor)
-            .build()
+        val options =
+            TranslatorOptions
+                .Builder()
+                .setSourceLanguage(sourceLangCode)
+                .setTargetLanguage(targetLangCode)
+                .setExecutor(executor)
+                .build()
         val translator = translators[options]
 
         val needDownload: Boolean
         var checkDownloadTask = isModelDownload(sourceLangCode)
         latch = CountDownLatch(1)
-        var checkDownloadResult = checkDownloadTask.addOnCompleteListener {
-            latch.countDown()
-        }
+        var checkDownloadResult =
+            checkDownloadTask.addOnCompleteListener {
+                latch.countDown()
+            }
         var checkResult = latch.await(TASK_TIMEOUT, TimeUnit.SECONDS)
         if (!checkResult || !checkDownloadResult.isSuccessful) {
             Timber.d("$TAG check source download timeout or failed")
@@ -95,9 +99,10 @@ class TranslateManager {
         if (checkDownloadResult.result) {
             checkDownloadTask = isModelDownload(targetLangCode)
             latch = CountDownLatch(1)
-            checkDownloadResult = checkDownloadTask.addOnCompleteListener {
-                latch.countDown()
-            }
+            checkDownloadResult =
+                checkDownloadTask.addOnCompleteListener {
+                    latch.countDown()
+                }
             checkResult = latch.await(TASK_TIMEOUT, TimeUnit.SECONDS)
             if (!checkResult || !checkDownloadResult.isSuccessful) {
                 Timber.d("$TAG check target download timeout or failed")
@@ -110,13 +115,16 @@ class TranslateManager {
 
         if (needDownload) {
             doWhenDownloadModel?.invoke(false)
-            val conditions = DownloadConditions.Builder()
-                .requireWifi()
-                .build()
+            val conditions =
+                DownloadConditions
+                    .Builder()
+                    .requireWifi()
+                    .build()
             latch = CountDownLatch(1)
-            val downloadTask = translator.downloadModelIfNeeded(conditions).addOnCompleteListener {
-                latch.countDown()
-            }
+            val downloadTask =
+                translator.downloadModelIfNeeded(conditions).addOnCompleteListener {
+                    latch.countDown()
+                }
             val downloaded = latch.await(TASK_TIMEOUT, TimeUnit.SECONDS)
             doWhenDownloadModel?.invoke(true)
             if (!downloaded || !downloadTask.isSuccessful) {
@@ -126,9 +134,10 @@ class TranslateManager {
         }
 
         latch = CountDownLatch(1)
-        val task = translator.translate(text).addOnCompleteListener {
-            latch.countDown()
-        }
+        val task =
+            translator.translate(text).addOnCompleteListener {
+                latch.countDown()
+            }
         val translated = latch.await(TASK_TIMEOUT, TimeUnit.SECONDS)
         if (!translated || !task.isSuccessful) {
             Timber.d("$TAG translate timeout or failed")
@@ -147,7 +156,9 @@ class TranslateManager {
         translators.evictAll()
     }
 
-    class Language(val code: String) : Comparable<Language> {
+    class Language(
+        val code: String,
+    ) : Comparable<Language> {
         private val locale = Locale(code)
         val nameInCurrentLanguage: String = locale.getDisplayName(getLocale())
         val nameInSelfLanguage: String = locale.getDisplayLanguage(locale)
@@ -165,26 +176,28 @@ class TranslateManager {
             return otherLang!!.code == code
         }
 
-        override fun toString(): String {
-            return nameInCurrentLanguage
-        }
+        override fun toString(): String = nameInCurrentLanguage
 
-        override fun compareTo(other: Language): Int {
-            return this.nameInCurrentLanguage.compareTo(other.nameInCurrentLanguage)
-        }
+        override fun compareTo(other: Language): Int = this.nameInCurrentLanguage.compareTo(other.nameInCurrentLanguage)
 
-        override fun hashCode(): Int {
-            return code.hashCode()
-        }
+        override fun hashCode(): Int = code.hashCode()
 
         companion object {
-            val DIFF_CALLBACK = object : DiffUtil.ItemCallback<Language>() {
-                override fun areItemsTheSame(oldItem: Language, newItem: Language): Boolean = oldItem.code == newItem.code
+            val DIFF_CALLBACK =
+                object : DiffUtil.ItemCallback<Language>() {
+                    override fun areItemsTheSame(
+                        oldItem: Language,
+                        newItem: Language,
+                    ): Boolean = oldItem.code == newItem.code
 
-                override fun areContentsTheSame(oldItem: Language, newItem: Language): Boolean = oldItem == newItem
-            }
+                    override fun areContentsTheSame(
+                        oldItem: Language,
+                        newItem: Language,
+                    ): Boolean = oldItem == newItem
+                }
         }
     }
+
     companion object {
         const val TAG = "TranslateManager"
 
