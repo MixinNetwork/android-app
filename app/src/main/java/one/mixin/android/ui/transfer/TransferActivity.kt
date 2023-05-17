@@ -40,6 +40,7 @@ import one.mixin.android.extension.dp
 import one.mixin.android.extension.fadeIn
 import one.mixin.android.extension.generateQRCode
 import one.mixin.android.extension.getParcelableExtraCompat
+import one.mixin.android.extension.isConnectedToWiFi
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.putBoolean
 import one.mixin.android.extension.toast
@@ -346,6 +347,15 @@ class TransferActivity : BaseActivity() {
         binding.startTv.isEnabled = true
         binding.start.isClickable = true
         binding.start.setOnClickListener {
+            if (!this@TransferActivity.isConnectedToWiFi()){
+                alertDialogBuilder()
+                    .setTitle(getString(R.string.Make_sure_WiFi))
+                    .setPositiveButton(R.string.Confirm) { dialog, _ ->
+                        dialog.dismiss()
+                    }
+                    .show()
+                return@setOnClickListener
+            }
             when (argsStatus) {
                 ARGS_TRANSFER_TO_PHONE -> {
                     lifecycleScope.launch {

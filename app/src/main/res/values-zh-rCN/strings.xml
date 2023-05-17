@@ -1150,4 +1150,5 @@
     <string name="transfer_breakpoint_continuation_desc">上一次该设备同步时间是 %1$s，是否继续上次的同步？</string>
     <string name="transfer_syncing_des">正在转移聊天记录，是否取消？</string>
     <string name="Unable_connect_desktop">无法连接到桌面，请稍后重试</string>
+    <string name="Make_sure_WiFi">请确保 WiFi 连接</string>
 </resources>
