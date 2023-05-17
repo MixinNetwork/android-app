@@ -1133,7 +1133,7 @@
     <string name="Transfer_to_PC">Transfer to PC</string>
     <string name="Enable_Wifi_or_hotspot">Enable Wi-Fi or hotspot for the two devices</string>
     <string name="login_and_scan">Login in to this account on other phone and scan the QR Code</string>
-    <string name="sending_desc">Transferring Chat (%1$s)</string>
+    <string name="transferring_chat_progress">Transferring Chat (%1$s)</string>
     <string name="Complete">Complete</string>
     <string name="cannot_exit_in_backup">Cannot exit in backup</string>
     <string name="Chat">Chat</string>
@@ -1173,5 +1173,5 @@
     <string name="transfer_breakpoint_continuation">Breakpoint continuation</string>
     <string name="transfer_breakpoint_continuation_desc">Last sync time on this device was %1$s, do you want to resume from the last sync point?</string>
     <string name="transfer_syncing_des">Transferring chat history, do you want to cancel ?</string>
-    <string name="Unable_connect_desktop">Unable to connect to the desktop, please wait a bit…</string>
+    <string name="Unable_connect_desktop">Unable to connect to the desktop，please try again later</string>
 </resources>

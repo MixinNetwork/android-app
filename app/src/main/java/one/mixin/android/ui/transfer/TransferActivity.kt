@@ -31,7 +31,6 @@ import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.ParticipantDao
 import one.mixin.android.event.DeviceTransferProgressEvent
 import one.mixin.android.event.SpeedEvent
-import one.mixin.android.extension.alert
 import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.base64Encode
 import one.mixin.android.extension.base64RawURLDecode
@@ -41,7 +40,6 @@ import one.mixin.android.extension.dp
 import one.mixin.android.extension.fadeIn
 import one.mixin.android.extension.generateQRCode
 import one.mixin.android.extension.getParcelableExtraCompat
-import one.mixin.android.extension.oneWeekAgo
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.putBoolean
 import one.mixin.android.extension.toast
@@ -472,6 +470,8 @@ class TransferActivity : BaseActivity() {
                     if (status.value == TransferStatus.PROCESSING) {
                         Timber.e(String.format("%.2f%%", it.progress))
                         binding.pbTv.text = getString(R.string.transfer_process_desc, String.format("%.2f%%", it.progress))
+                    } else if (status.value == TransferStatus.SYNCING){
+                        binding.progressTv.text = getString(R.string.transferring_chat_progress, String.format("%.2f%%", it.progress))
                     }
                 }
         }
