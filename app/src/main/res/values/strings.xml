@@ -1142,7 +1142,7 @@
     <string name="Restore_from_Another_Phone_tip">Transfer your message history from your old device.</string>
     <string name="Restore_from_Local">Restore from Local</string>
     <string name="Restore_from_Local_tip">Restore your chat history from you device backup.</string>
-    <string name="sync_chat">Sync chats</string>
+    <string name="transferring_chat">Transferring Chat</string>
     <string name="Please_log_in_to_the_desktop_first">Please log in to the desktop first</string>
     <string name="transfer_pc_desc">To synchronize your chat logs to the Mixin Messenger desktop, make sure both devices are connected to the same Wi-Fi or hotspot.</string>
     <string name="transfer_phone_desc">To synchronize your chat logs to the new device, make sure both devices are connected to the same Wi-Fi or hotspot.</string>
