@@ -4,6 +4,7 @@ import android.content.Context;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.text.format.Formatter;
+import timber.log.Timber;
 
 import java.net.InetAddress;
 import java.net.NetworkInterface;
@@ -42,5 +43,29 @@ public class NetworkUtils {
         }
 
         return ipAddressList;
+    }
+
+    public static void printWifiInfo(Context context) {
+        try {
+            WifiManager wifiManager = (WifiManager) context.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
+            if (wifiManager == null) {
+                return;
+            }
+            if (!wifiManager.isWifiEnabled()) {
+                wifiManager.setWifiEnabled(true);
+            }
+            WifiInfo wifiInfo = wifiManager.getConnectionInfo();
+            String ssid = wifiInfo.getSSID();
+            int signalStrength = wifiInfo.getRssi();
+            int linkSpeed = wifiInfo.getLinkSpeed();
+            int ip = wifiInfo.getIpAddress();
+            String ipAddress = Formatter.formatIpAddress(ip);
+            Timber.e("WiFi Info SSID: %s", ssid);
+            Timber.e("WiFi Info Signal Strength: %s", signalStrength);
+            Timber.e("WiFi Info Link Speed: %s", linkSpeed);
+            Timber.e("WiFi Info IP Address: %s", ipAddress);
+        } catch (Exception e) {
+            Timber.e(e);
+        }
     }
 }
