@@ -6,6 +6,7 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.annotation.TargetApi
 import android.app.Activity
+import android.app.ProgressDialog
 import android.content.ActivityNotFoundException
 import android.content.ClipData
 import android.content.ContentResolver
@@ -120,6 +121,7 @@ import one.mixin.android.extension.getParcelableExtraCompat
 import one.mixin.android.extension.getUriForFile
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.inTransaction
+import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.isAuto
 import one.mixin.android.extension.isBluetoothHeadsetOrWiredHeadset
 import one.mixin.android.extension.isGif
@@ -1652,7 +1654,16 @@ class ConversationFragment() :
             lifecycleScope.launch {
                 val translated =
                     withContext(Dispatchers.IO) {
-                        translateManager?.translate(requireContext(), content)
+                        translateManager?.translate(requireContext(), content) { complete ->
+                            lifecycleScope.launch {
+                                if (complete) {
+                                    translateDownloadModelDialog?.dismiss()
+                                } else {
+                                    translateDownloadModelDialog =
+                                        indeterminateProgressDialog(message = R.string.Please_wait_a_bit)
+                                }
+                            }
+                        }
                     }
                 if (translated != null) {
                     messageAdapter.updateTranslated(messageItem.messageId, translated)
@@ -1887,6 +1898,7 @@ class ConversationFragment() :
         }
 
     private var translateManager: TranslateManager? = null
+    private var translateDownloadModelDialog: ProgressDialog? = null
 
     private fun shouldShowTranslate(messageId: String): Boolean =
         defaultSharedPreferences.getBoolean(Constants.Account.PREF_SHOW_TRANSLATE_BUTTON, false) &&
