@@ -147,6 +147,7 @@ class TransferServer @Inject internal constructor(
             if (status.value != TransferStatus.FINISHED && !(status.value == TransferStatus.INITIALIZING && e is SocketException)) {
                 status.value = TransferStatus.ERROR
             }
+            NetworkUtils.printWifiInfo(MixinApplication.appContext)
             exit()
             Timber.e(e)
         }

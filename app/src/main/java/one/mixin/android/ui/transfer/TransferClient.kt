@@ -176,6 +176,7 @@ class TransferClient @Inject internal constructor(
                 }
                 quit = true
                 Timber.e(e)
+                NetworkUtils.printWifiInfo(MixinApplication.appContext)
                 null
             }
             status.value = TransferStatus.SYNCING
@@ -358,6 +359,7 @@ class TransferClient @Inject internal constructor(
                 quit = true
                 if (!finished) {
                     Timber.e("DeviceId: $deviceId type: $currentType id: ${transferInserter.primaryId} start-time:$startTime current-time:${System.currentTimeMillis()}")
+                    NetworkUtils.printWifiInfo(MixinApplication.appContext)
                 } else {
                     launch {
                         PropertyHelper.deleteKeyValue(Constants.Account.PREF_TRANSFER_SCENE)
