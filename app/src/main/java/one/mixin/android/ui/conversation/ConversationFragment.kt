@@ -4,6 +4,7 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.annotation.TargetApi
 import android.app.Activity
+import android.app.ProgressDialog
 import android.content.ActivityNotFoundException
 import android.content.ClipData
 import android.content.ContentResolver
@@ -58,7 +59,6 @@ import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.snackbar.Snackbar
-import com.google.mlkit.nl.translate.Translator
 import com.tbruyelle.rxpermissions2.RxPermissions
 import com.twilio.audioswitch.AudioSwitch
 import com.uber.autodispose.autoDispose
@@ -115,6 +115,7 @@ import one.mixin.android.extension.getParcelableExtraCompat
 import one.mixin.android.extension.getUriForFile
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.inTransaction
+import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.isBluetoothHeadsetOrWiredHeadset
 import one.mixin.android.extension.isImageSupport
 import one.mixin.android.extension.isStickerSupport
@@ -1557,7 +1558,17 @@ class ConversationFragment() :
             }
             lifecycleScope.launch {
                 val translated = withContext(Dispatchers.IO) {
-                    translateManager?.translate(requireContext(), content)
+                    translateManager?.translate(requireContext(), content) { complete ->
+                        lifecycleScope.launch {
+                            if (complete) {
+                                translateDownloadModelDialog?.dismiss()
+                            } else {
+                                translateDownloadModelDialog = indeterminateProgressDialog(message = R.string.Please_wait_a_bit).apply {
+                                    show()
+                                }
+                            }
+                        }
+                    }
                 }
                 if (translated != null) {
                     conversationAdapter.updateTranslated(messageItem.messageId, translated)
@@ -1787,8 +1798,8 @@ class ConversationFragment() :
         }
     }
 
-    private var translator: Translator? = null
     private var translateManager: TranslateManager? = null
+    private var translateDownloadModelDialog: ProgressDialog? = null
 
     private fun shouldShowTranslate(messageId: String): Boolean {
         return defaultSharedPreferences.getBoolean(Constants.Account.PREF_SHOW_TRANSLATE_BUTTON, false) && conversationAdapter.notTranslated(messageId)
