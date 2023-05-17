@@ -53,15 +53,12 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewModelScope
 import androidx.media3.common.MimeTypes
+import androidx.media3.common.util.UnstableApi
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.snackbar.Snackbar
-import com.google.mlkit.common.model.DownloadConditions
-import com.google.mlkit.nl.translate.TranslateLanguage
-import com.google.mlkit.nl.translate.Translation
 import com.google.mlkit.nl.translate.Translator
-import com.google.mlkit.nl.translate.TranslatorOptions
 import com.tbruyelle.rxpermissions2.RxPermissions
 import com.twilio.audioswitch.AudioSwitch
 import com.uber.autodispose.autoDispose
@@ -202,6 +199,7 @@ import one.mixin.android.util.ErrorHandler.Companion.FORBIDDEN
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.MusicPlayer
 import one.mixin.android.util.SINGLE_DB_THREAD
+import one.mixin.android.util.TranslateManager
 import one.mixin.android.util.chat.InvalidateFlow
 import one.mixin.android.util.debug.debugLongClick
 import one.mixin.android.util.mention.mentionDisplay
@@ -278,6 +276,7 @@ import kotlin.math.abs
 
 @AndroidEntryPoint
 @SuppressLint("InvalidWakeLockTag")
+@UnstableApi
 class ConversationFragment() :
     LinkFragment(),
     OnKeyboardShownListener,
@@ -1331,6 +1330,7 @@ class ConversationFragment() :
         AudioPlayer.pause()
         AudioPlayer.setStatusListener(null)
         AudioPlayer.release()
+        translateManager?.release()
         context?.let {
             if (!anyCallServiceRunning(it)) {
                 audioSwitch.safeStop()
@@ -1548,11 +1548,21 @@ class ConversationFragment() :
         }
 
         binding.toolView.translateIv.setOnClickListener {
-            if (conversationAdapter.selectSet.isEmpty()) {
-                return@setOnClickListener
-            }
+            if (conversationAdapter.selectSet.isEmpty()) return@setOnClickListener
             val messageItem = conversationAdapter.selectSet.valueAt(0) ?: return@setOnClickListener
-            translate(messageItem)
+            val content = messageItem.content ?: return@setOnClickListener
+
+            if (translateManager == null) {
+                translateManager = TranslateManager()
+            }
+            lifecycleScope.launch {
+                val translated = withContext(Dispatchers.IO) {
+                    translateManager?.translate(requireContext(), content)
+                }
+                if (translated != null) {
+                    conversationAdapter.updateTranslated(messageItem.messageId, translated)
+                }
+            }
             closeTool()
         }
 
@@ -1778,37 +1788,7 @@ class ConversationFragment() :
     }
 
     private var translator: Translator? = null
-
-    private fun translate(messageItem: MessageItem) {
-        val content = messageItem.content ?: return
-
-        if (translator == null) {
-            // TODO manager translation model
-            val options = TranslatorOptions.Builder()
-                .setSourceLanguage(TranslateLanguage.ENGLISH)
-                .setTargetLanguage(TranslateLanguage.CHINESE)
-                .build()
-            translator = Translation.getClient(options)
-            translator?.let { lifecycle.addObserver(it) }
-        }
-
-        val conditions = DownloadConditions.Builder()
-            .requireWifi()
-            .build()
-        // TODO check show loading if need download
-        translator?.downloadModelIfNeeded(conditions)
-            ?.addOnSuccessListener {
-                translator?.translate(content)
-                    ?.addOnSuccessListener { translated ->
-                        conversationAdapter.updateTranslated(messageItem.messageId, translated)
-                    }?.addOnFailureListener { e ->
-                        Timber.w(e)
-                    }
-            }
-            ?.addOnFailureListener { e ->
-                Timber.w(e)
-            }
-    }
+    private var translateManager: TranslateManager? = null
 
     private fun shouldShowTranslate(messageId: String): Boolean {
         return defaultSharedPreferences.getBoolean(Constants.Account.PREF_SHOW_TRANSLATE_BUTTON, false) && conversationAdapter.notTranslated(messageId)

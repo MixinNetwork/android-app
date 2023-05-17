@@ -1210,4 +1210,5 @@
     <string name="translation_done">translation done</string>
     <string name="Show_Translate_Button">Show Translate Button</string>
     <string name="show_translate_button_hint">The \'Translate\' button will appear when you make a long press on a text message.\n\nGoogle may have access to the text of messages you translate.</string>
+    <string name="Target_Language">Target Language</string>
 </resources>

@@ -392,6 +392,11 @@ dependencies {
     implementation "com.github.TrustWallet:wallet-connect-kotlin:1.5.6"
     implementation 'com.github.salomonbrys.kotson:kotson:2.5.0'
 
+    // ML Kit
+    implementation 'com.google.mlkit:entity-extraction:16.0.0-beta4'
+    implementation 'com.google.mlkit:translate:17.0.1'
+    implementation 'com.google.mlkit:language-id:17.0.4'
+
     ktlint "com.pinterest:ktlint:${ktlintVersion}"
 
     testImplementation 'org.jetbrains.kotlin:kotlin-test'
