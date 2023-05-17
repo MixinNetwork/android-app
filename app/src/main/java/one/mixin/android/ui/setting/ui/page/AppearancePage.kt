@@ -15,10 +15,14 @@ import androidx.compose.foundation.selection.selectable
 import androidx.compose.material.RadioButton
 import androidx.compose.material.RadioButtonDefaults
 import androidx.compose.material.Scaffold
+import androidx.compose.material.Switch
+import androidx.compose.material.SwitchDefaults
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -46,6 +50,8 @@ import one.mixin.android.ui.setting.getLanguagePos
 import one.mixin.android.ui.setting.ui.compose.MixinAlertDialog
 import one.mixin.android.ui.setting.ui.compose.MixinBackButton
 import one.mixin.android.ui.setting.ui.compose.MixinTopAppBar
+import one.mixin.android.ui.setting.ui.compose.SettingTile
+import one.mixin.android.ui.setting.ui.compose.booleanValueAsState
 import one.mixin.android.ui.setting.ui.theme.MixinAppTheme
 import one.mixin.android.util.TimeCache
 import one.mixin.android.util.isFollowSystem
@@ -98,6 +104,9 @@ fun AppearancePage() {
                     color = MixinAppTheme.colors.textPrimary,
                 )
             }
+
+            Box(modifier = Modifier.height(20.dp))
+            TranslateItem()
         }
     }
 }
@@ -351,6 +360,34 @@ private fun CurrencyItem() {
             activity.supportFragmentManager,
             CurrencyBottomSheetDialogFragment.TAG,
         )
+    }
+}
+
+@Composable
+private fun TranslateItem() {
+    var showTranslateButton by LocalContext.current.defaultSharedPreferences
+        .booleanValueAsState(
+            key = Constants.Account.PREF_SHOW_TRANSLATE_BUTTON,
+            defaultValue = false,
+        )
+    Box(modifier = Modifier.height(16.dp))
+    SettingTile(
+        title = stringResource(R.string.Show_Translate_Button),
+        description = stringResource(R.string.show_translate_button_hint),
+        trailing = {
+            Switch(
+                checked = showTranslateButton,
+                colors = SwitchDefaults.colors(
+                    checkedThumbColor = MixinAppTheme.colors.accent,
+                    uncheckedThumbColor = MixinAppTheme.colors.unchecked,
+                    checkedTrackColor = MixinAppTheme.colors.accent,
+                    uncheckedTrackColor = MixinAppTheme.colors.unchecked,
+                ),
+                onCheckedChange = null,
+            )
+        },
+    ) {
+        showTranslateButton = !showTranslateButton
     }
 }
 

@@ -65,6 +65,7 @@ object Constants {
         const val PREF_CLEANUP_THUMB = "pref_cleanup_thumb"
         const val PREF_CLEANUP_QUOTE_CONTENT = "pref_cleanup_quote_content"
         const val PREF_TRANSFER_SCENE = "pref_transfer_scene"
+        const val PREF_SHOW_TRANSLATE_BUTTON = "pref_show_translate_button"
 
         object Migration {
             const val PREF_MIGRATION_ATTACHMENT = "pref_migration_attachment"

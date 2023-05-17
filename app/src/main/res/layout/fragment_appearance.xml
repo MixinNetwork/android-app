@@ -137,4 +137,24 @@
                 tools:ignore="RelativeOverlap" />
 
     </RelativeLayout>
+
+    <one.mixin.android.widget.SwitchView
+        android:id="@+id/translate_sv"
+        android:layout_width="match_parent"
+        android:layout_marginTop="20dp"
+        android:background="?attr/bg_white"
+        android:layout_height="@dimen/item_contact_height" />
+
+
+    <TextView
+        android:id="@+id/translate_desc_tv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/activity_horizontal_margin"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="@dimen/activity_horizontal_margin"
+        android:layout_marginBottom="@dimen/activity_vertical_margin"
+        android:text="@string/show_translate_button_hint"
+        android:textColor="?attr/text_minor"
+        android:textSize="12sp" />
 </LinearLayout>

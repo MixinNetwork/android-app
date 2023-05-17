@@ -523,7 +523,7 @@ class ConversationFragment() :
                         try {
                             if (firstItem?.isText() == true) {
                                 binding.toolView.copyIv.visibility = VISIBLE
-                                binding.toolView.translateIv.isVisible = conversationAdapter.notTranslated(firstItem.messageId)
+                                binding.toolView.translateIv.isVisible = shouldShowTranslate(firstItem.messageId)
                             } else {
                                 binding.toolView.copyIv.visibility = GONE
                                 binding.toolView.translateIv.visibility = GONE
@@ -574,7 +574,7 @@ class ConversationFragment() :
                 if (b) {
                     if (messageItem.isText()) {
                         binding.toolView.copyIv.visibility = VISIBLE
-                        binding.toolView.translateIv.isVisible = conversationAdapter.notTranslated(messageItem.messageId)
+                        binding.toolView.translateIv.isVisible = shouldShowTranslate(messageItem.messageId)
                     } else {
                         binding.toolView.copyIv.visibility = GONE
                         binding.toolView.translateIv.visibility = GONE
@@ -1808,6 +1808,10 @@ class ConversationFragment() :
             ?.addOnFailureListener { e ->
                 Timber.w(e)
             }
+    }
+
+    private fun shouldShowTranslate(messageId: String): Boolean {
+        return defaultSharedPreferences.getBoolean(Constants.Account.PREF_SHOW_TRANSLATE_BUTTON, false) && conversationAdapter.notTranslated(messageId)
     }
 
     private var deleteDialog: AlertDialog? = null
