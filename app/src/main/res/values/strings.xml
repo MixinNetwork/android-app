@@ -1173,4 +1173,5 @@
     <string name="transfer_breakpoint_continuation">Breakpoint continuation</string>
     <string name="transfer_breakpoint_continuation_desc">Last sync time on this device was %1$s, do you want to resume from the last sync point?</string>
     <string name="transfer_syncing_des">Transferring chat history, do you want to cancel ?</string>
+    <string name="Unable_connect_desktop">Unable to connect to the desktop, please wait a bit…</string>
 </resources>

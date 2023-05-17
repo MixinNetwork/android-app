@@ -31,6 +31,7 @@ import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.ParticipantDao
 import one.mixin.android.event.DeviceTransferProgressEvent
 import one.mixin.android.event.SpeedEvent
+import one.mixin.android.extension.alert
 import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.base64Encode
 import one.mixin.android.extension.base64RawURLDecode
@@ -40,6 +41,7 @@ import one.mixin.android.extension.dp
 import one.mixin.android.extension.fadeIn
 import one.mixin.android.extension.generateQRCode
 import one.mixin.android.extension.getParcelableExtraCompat
+import one.mixin.android.extension.oneWeekAgo
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.putBoolean
 import one.mixin.android.extension.toast
@@ -58,6 +60,7 @@ import one.mixin.android.ui.transfer.vo.TransferCommandAction
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.generateConversationId
+import one.mixin.android.websocket.ChatWebSocket
 import one.mixin.android.websocket.PlainDataAction
 import one.mixin.android.websocket.PlainJsonMessagePayload
 import one.mixin.android.websocket.createParamBlazeMessage
@@ -171,6 +174,9 @@ class TransferActivity : BaseActivity() {
 
     @Inject
     lateinit var status: TransferStatusLiveData
+
+    @Inject
+    lateinit var chatWebSocket: ChatWebSocket
 
     var shouldLogout = false
 
@@ -364,13 +370,31 @@ class TransferActivity : BaseActivity() {
 
                 ARGS_TRANSFER_TO_PC -> {
                     if (this@TransferActivity.status.value != TransferStatus.CREATED) {
-                        pushRequest()
+                        if (chatWebSocket.connected) {
+                            pushRequest()
+                        } else {
+                            alertDialogBuilder()
+                                .setTitle(getString(R.string.Unable_connect_desktop))
+                                .setPositiveButton(R.string.Confirm) { dialog, _ ->
+                                    dialog.dismiss()
+                                }
+                                .show()
+                        }
                     }
                 }
 
                 ARGS_RESTORE_FROM_PC -> {
                     if (this@TransferActivity.status.value != TransferStatus.WAITING_MESSAGE) {
-                        pullRequest()
+                        if (chatWebSocket.connected) {
+                            pullRequest()
+                        } else {
+                            alertDialogBuilder()
+                                .setTitle(getString(R.string.Unable_connect_desktop))
+                                .setPositiveButton(R.string.Confirm) { dialog, _ ->
+                                    dialog.dismiss()
+                                }
+                                .show()
+                        }
                     }
                 }
 
