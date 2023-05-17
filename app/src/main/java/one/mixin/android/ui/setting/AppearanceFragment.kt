@@ -10,10 +10,12 @@ import androidx.appcompat.app.AppCompatDelegate
 import androidx.appcompat.widget.ListPopupWindow
 import androidx.core.content.ContextCompat
 import androidx.core.os.LocaleListCompat
+import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
 import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.Constants
 import one.mixin.android.Constants.Account.PREF_SHOW_TRANSLATE_BUTTON
+import one.mixin.android.Constants.Account.PREF_TRANSLATE_TARGET_LANG
 import one.mixin.android.R
 import one.mixin.android.RxBus
 import one.mixin.android.databinding.FragmentAppearanceBinding
@@ -29,6 +31,7 @@ import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.util.TimeCache
 import one.mixin.android.util.getLanguage
+import one.mixin.android.util.getLanguageOrDefault
 import one.mixin.android.util.getLocaleString
 import one.mixin.android.util.isFollowSystem
 import one.mixin.android.util.viewBinding
@@ -135,7 +138,15 @@ class AppearanceFragment : BaseFragment(R.layout.fragment_appearance) {
             translateSv.isChecked = defaultSharedPreferences.getBoolean(PREF_SHOW_TRANSLATE_BUTTON, false)
             translateSv.setOnCheckedChangeListener { _, isChecked ->
                 defaultSharedPreferences.putBoolean(PREF_SHOW_TRANSLATE_BUTTON, isChecked)
+                targetRl.isVisible = isChecked
             }
+            targetLangTv.text =
+                if (isFollowSystem()) {
+                    getString(R.string.Follow_system)
+                } else {
+                    defaultSharedPreferences.getString(PREF_TRANSLATE_TARGET_LANG, getLanguageOrDefault())
+                }
+            targetLangTv.setOnClickListener { }
             val quoteColor = requireContext().defaultSharedPreferences.getBoolean(Constants.Account.PREF_QUOTE_COLOR, false)
             quoteColorDescTv.setText(
                 if (quoteColor) {
