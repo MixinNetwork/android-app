@@ -283,19 +283,27 @@ class TransferFragment() : MixinBottomSheetDialogFragment() {
         currentAsset = requireArguments().getParcelableCompat(ARGS_ASSET, AssetItem::class.java)
         currentAsset?.let { updateAssetUI(it) }
 
-        address = requireArguments().getParcelableCompat(ARGS_ADDRESS, Address::class.java)
+        val address = requireArguments().getParcelableCompat(ARGS_ADDRESS, Address::class.java)
+        this.address = address
         if (address == null || currentAsset == null) return
 
-        chatViewModel.observeAddress(address!!.addressId).observe(
-            this,
-        ) {
-            address = it
+        if (address.addressId.isBlank()) { // mock address
             binding.titleView.setSubTitle(
-                getString(R.string.send_to, it.label),
-                it.displayAddress().formatPublicKey(),
+                getString(R.string.send_to, address.label),
+                address.displayAddress().formatPublicKey(),
             )
-
-            updateFeeUI(it)
+            updateFeeUI(address)
+        } else {
+            chatViewModel.observeAddress(address.addressId).observe(
+                this,
+            ) {
+                this.address = it
+                binding.titleView.setSubTitle(
+                    getString(R.string.send_to, it.label),
+                    it.displayAddress().formatPublicKey(),
+                )
+                updateFeeUI(it)
+            }
         }
     }
 

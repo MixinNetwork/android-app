@@ -17,7 +17,7 @@ def versionBuild = 0
 
 android {
     compileSdk 33
-    buildToolsVersion = "33.0.1"
+    buildToolsVersion "33.0.2"
     ndkVersion "23.1.7779620"
     namespace "one.mixin.android"
     defaultConfig {
@@ -375,11 +375,21 @@ dependencies {
     implementation "androidx.compose.runtime:runtime-rxjava2:${composeVersion}"
     implementation 'androidx.activity:activity-compose:1.7.1'
     androidTestImplementation "androidx.compose.ui:ui-test-junit4:${composeVersion}"
+    
+    // accompanist
+    implementation "com.google.accompanist:accompanist-navigation-animation:${accompanistVersion}"
     implementation "com.google.accompanist:accompanist-pager:0.30.1"
     implementation "com.google.accompanist:accompanist-pager-indicators:0.30.1"
 
-    // accompanist
-    implementation "com.google.accompanist:accompanist-navigation-animation:${accompanistVersion}"
+    // wallet connect && web3j
+    implementation "org.web3j:core:4.9.7"
+    implementation "org.web3j:crypto:4.9.7"
+    implementation platform("com.walletconnect:android-bom:1.7.0")
+    implementation "com.walletconnect:android-core"
+    implementation "com.walletconnect:web3wallet"
+
+    implementation "com.github.TrustWallet:wallet-connect-kotlin:1.5.6"
+    implementation 'com.github.salomonbrys.kotson:kotson:2.5.0'
 
     ktlint "com.pinterest:ktlint:${ktlintVersion}"
 
@@ -417,6 +427,13 @@ dependencies {
 
     // ML Kit
     implementation 'com.google.mlkit:entity-extraction:16.0.0-beta4'
+
+    testImplementation "org.bitcoinj:bitcoinj-core:0.16.2"
+    testImplementation("com.google.protobuf:protobuf-javalite") {
+        version {
+            strictly '3.11.0'
+        }
+    }
 
     // Leak Canary
     debugImplementation "com.squareup.leakcanary:leakcanary-android:$leakcanaryVerison"

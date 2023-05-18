@@ -31,14 +31,20 @@ import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.mainThreadDelayed
 import one.mixin.android.extension.navigate
+import one.mixin.android.extension.nowInUtc
 import one.mixin.android.extension.numberFormat
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.screenHeight
 import one.mixin.android.extension.viewDestroyed
+import one.mixin.android.tip.Tip
+import one.mixin.android.tip.tipPrivToAddress
 import one.mixin.android.ui.common.NonMessengerUserBottomSheetDialogFragment
 import one.mixin.android.ui.common.UserBottomSheetDialogFragment
+import one.mixin.android.ui.common.VerifyBottomSheetDialogFragment
+import one.mixin.android.ui.conversation.TransferFragment
 import one.mixin.android.ui.wallet.adapter.OnSnapshotListener
 import one.mixin.android.ui.wallet.adapter.TransactionsAdapter
+import one.mixin.android.vo.Address
 import one.mixin.android.vo.AssetItem
 import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.SnapshotItem
@@ -47,6 +53,7 @@ import one.mixin.android.vo.notMessengerUser
 import one.mixin.android.vo.toAssetItem
 import one.mixin.android.vo.toSnapshot
 import one.mixin.android.widget.BottomSheet
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class TransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>>(), OnSnapshotListener {
@@ -62,7 +69,14 @@ class TransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>>()
     private val headBinding get() = requireNotNull(_headBinding)
     private var _bottomBinding: ViewWalletTransactionsBottomBinding? = null
     private val bottomBinding get() = requireNotNull(_bottomBinding)
-    private val sendBottomSheet = SendBottomSheet(this, R.id.action_transactions_to_single_friend_select, R.id.action_transactions_to_address_management)
+    private val sendBottomSheet = SendBottomSheet(this, R.id.action_transactions_to_single_friend_select, R.id.action_transactions_to_address_management) {
+        VerifyBottomSheetDialogFragment.newInstance().setOnPinSuccess { pin ->
+            showTipWithdrawal(pin)
+        }.showNow(parentFragmentManager, VerifyBottomSheetDialogFragment.TAG)
+    }
+
+    @Inject
+    lateinit var tip: Tip
 
     private val adapter = TransactionsAdapter()
     lateinit var asset: AssetItem
@@ -385,5 +399,26 @@ class TransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>>()
 
     private fun updateHeaderBottomLayout(show: Boolean) {
         headBinding.bottomRl.isVisible = show
+    }
+
+    private fun showTipWithdrawal(pin: String) = lifecycleScope.launch {
+        if (viewDestroyed()) return@launch
+
+        val result = tip.getOrRecoverTipPriv(requireContext(), pin)
+        if (result.isSuccess) {
+            val destination = tipPrivToAddress(result.getOrThrow(), Constants.ChainId.ETHEREUM_CHAIN_ID)
+            val addressFeeResponse = handleMixinResponse(
+                invokeNetwork = {
+                    walletViewModel.getExternalAddressFee(asset.assetId, destination, null)
+                },
+                successBlock = {
+                    it.data
+                },
+            ) ?: return@launch
+
+            val mockAddress = Address("", "address", asset.assetId, addressFeeResponse.destination, "TIP Wallet", nowInUtc(), "0", addressFeeResponse.fee, null, null, asset.chainId)
+            val transferFragment = TransferFragment.newInstance(asset = asset, address = mockAddress)
+            transferFragment.showNow(parentFragmentManager, TransferFragment.TAG)
+        }
     }
 }

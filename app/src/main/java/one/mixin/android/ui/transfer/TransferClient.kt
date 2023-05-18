@@ -1,7 +1,6 @@
 package one.mixin.android.ui.transfer
 
 import android.app.Application
-import com.google.protobuf.Mixin
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.asCoroutineDispatcher

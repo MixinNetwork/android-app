@@ -131,7 +131,7 @@ class BottomSheetViewModel @Inject internal constructor(
             amount,
             pinCipher.encryptPin(
                 code,
-                TipBody.forWithdrawalCreate(addressId ?: generateAddressId(requireNotNull(Session.getAccountId()), assetId ?: "", destination ?: "", tag), amount, fee, traceId, memo),
+                TipBody.forWithdrawalCreate(if (addressId.isNullOrBlank()) generateAddressId(requireNotNull(Session.getAccountId()), assetId ?: "", destination ?: "", tag) else addressId, amount, fee, traceId, memo),
             ),
             traceId,
             memo,

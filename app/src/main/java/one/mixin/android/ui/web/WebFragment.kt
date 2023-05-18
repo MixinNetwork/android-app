@@ -27,6 +27,7 @@ import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
+import android.webkit.ConsoleMessage
 import android.webkit.JavascriptInterface
 import android.webkit.PermissionRequest
 import android.webkit.ValueCallback
@@ -58,6 +59,7 @@ import com.bumptech.glide.Glide
 import com.google.gson.Gson
 import com.google.gson.annotations.SerializedName
 import com.tbruyelle.rxpermissions2.RxPermissions
+import com.trustwallet.walletconnect.models.session.WCSession
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
@@ -100,6 +102,13 @@ import one.mixin.android.extension.toUri
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.session.Session
+import one.mixin.android.tip.Tip
+import one.mixin.android.tip.TipSignSpec
+import one.mixin.android.tip.tipPrivToAddress
+import one.mixin.android.tip.tipPrivToPrivateKey
+import one.mixin.android.tip.wc.WalletConnect
+import one.mixin.android.tip.wc.WalletConnectTIP
+import one.mixin.android.tip.wc.WalletConnectV1
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.BottomSheetViewModel
 import one.mixin.android.ui.common.info.createMenuLayout
@@ -118,6 +127,8 @@ import one.mixin.android.ui.player.MusicService.Companion.MUSIC_PLAYLIST
 import one.mixin.android.ui.qr.QRCodeProcessor
 import one.mixin.android.ui.setting.SettingActivity
 import one.mixin.android.ui.setting.SettingActivity.Companion.ARGS_SUCCESS
+import one.mixin.android.ui.tip.wc.sessionproposal.PeerUI
+import one.mixin.android.ui.tip.wc.showWalletConnectBottomSheetDialogFragment
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.SystemUIManager
 import one.mixin.android.util.getCountry
@@ -137,6 +148,7 @@ import timber.log.Timber
 import java.io.ByteArrayInputStream
 import java.io.FileInputStream
 import java.util.concurrent.TimeUnit
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class WebFragment : BaseFragment() {
@@ -196,6 +208,9 @@ class WebFragment : BaseFragment() {
             this.index = -1
         }
     }
+
+    @Inject
+    lateinit var tip: Tip
 
     private lateinit var getPermissionResult: ActivityResultLauncher<Pair<App, AuthorizationResponse>>
 
@@ -462,7 +477,18 @@ class WebFragment : BaseFragment() {
                 },
             )
 
+        val wcEnable = WalletConnect.isEnabled(requireContext())
         webView.webChromeClient = object : WebChromeClient() {
+            override fun onConsoleMessage(consoleMessage: ConsoleMessage?): Boolean {
+                if (wcEnable && consoleMessage?.messageLevel() == ConsoleMessage.MessageLevel.LOG) {
+                    val wcUrl = consoleMessage.message()
+                    if (WCSession.from(wcUrl) != null) {
+                        WalletConnectV1.connect(wcUrl)
+                    }
+                }
+                return true
+            }
+
             override fun onShowCustomView(
                 view: View,
                 requestedOrientation: Int,
@@ -742,6 +768,12 @@ class WebFragment : BaseFragment() {
                         closeSelf()
                     }
                 },
+                getTipAddressAction = { chainId, callback ->
+                    getTipAddress(chainId, callback)
+                },
+                tipSignAction = { chainId, message, callback ->
+                    tipSign(chainId, message, callback)
+                },
             )
             webAppInterface?.let { webView.addJavascriptInterface(it, "MixinContext") }
             val extraHeaders = HashMap<String, String>()
@@ -791,6 +823,83 @@ class WebFragment : BaseFragment() {
             webView.evaluateJavascript(themeColorScript) {
                 setStatusBarColor(it)
             }
+        }
+    }
+
+    private fun getTipAddress(chainId: String, callbackFunction: String) {
+        if (viewDestroyed()) return
+        if (!WalletConnect.isEnabled(requireContext())) return
+
+        lifecycleScope.launch {
+            WalletConnectTIP.peer = getPeerUI()
+            showWalletConnectBottomSheetDialogFragment(
+                tip,
+                requireActivity(),
+                WalletConnect.RequestType.SessionProposal,
+                WalletConnect.Version.TIP,
+                onReject = {
+                    lifecycleScope.launch {
+                        webView.evaluateJavascript("$callbackFunction('')") {}
+                    }
+                },
+                callback = {
+                    val address = try {
+                        tipPrivToAddress(it, chainId)
+                    } catch (e: IllegalArgumentException) {
+                        Timber.d("${WalletConnectTIP.TAG} ${e.stackTraceToString()}")
+                        ""
+                    }
+                    lifecycleScope.launch {
+                        webView.evaluateJavascript("$callbackFunction('$address')") {}
+                    }
+                },
+            )
+        }
+    }
+
+    private fun tipSign(chainId: String, message: String, callbackFunction: String) {
+        if (viewDestroyed()) return
+        if (!WalletConnect.isEnabled(requireContext())) return
+
+        lifecycleScope.launch {
+            WalletConnectTIP.peer = getPeerUI()
+            WalletConnectTIP.currentSignData = WalletConnect.WCSignData.TIPSignData(message)
+            showWalletConnectBottomSheetDialogFragment(
+                tip,
+                requireActivity(),
+                WalletConnect.RequestType.SessionRequest,
+                WalletConnect.Version.TIP,
+                onReject = {
+                    lifecycleScope.launch {
+                        webView.evaluateJavascript("$callbackFunction('')") {}
+                    }
+                },
+                callback = {
+                    val sig = TipSignSpec.Ecdsa.Secp256k1.sign(tipPrivToPrivateKey(it, chainId), message.toByteArray())
+                    lifecycleScope.launch {
+                        webView.evaluateJavascript("$callbackFunction('$sig')") {}
+                    }
+                },
+            )
+        }
+    }
+
+    private fun getPeerUI(): PeerUI {
+        val a = app
+        return if (a != null) {
+            PeerUI(
+                uri = a.homeUri,
+                name = a.name,
+                icon = a.iconUrl,
+                desc = a.description,
+            )
+        } else {
+            PeerUI(
+                uri = webView.url ?: url,
+                name = webView.title ?: "",
+                icon = "",
+                desc = "",
+            )
         }
     }
 
@@ -1350,6 +1459,8 @@ class WebFragment : BaseFragment() {
         var reloadThemeAction: (() -> Unit)? = null,
         var playlistAction: ((Array<String>) -> Unit)? = null,
         var closeAction: (() -> Unit)? = null,
+        var getTipAddressAction: ((String, String) -> Unit)? = null,
+        var tipSignAction: ((String, String, String) -> Unit)? = null,
     ) {
         @JavascriptInterface
         fun showToast(toast: String) {
@@ -1382,6 +1493,16 @@ class WebFragment : BaseFragment() {
         @JavascriptInterface
         fun close() {
             closeAction?.invoke()
+        }
+
+        @JavascriptInterface
+        fun getTipAddress(chainId: String, callbackFunction: String) {
+            getTipAddressAction?.invoke(chainId, callbackFunction)
+        }
+
+        @JavascriptInterface
+        fun tipSign(chainId: String, message: String, callbackFunction: String) {
+            tipSignAction?.invoke(chainId, message, callbackFunction)
         }
     }
 

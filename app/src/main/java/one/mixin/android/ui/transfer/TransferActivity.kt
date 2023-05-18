@@ -347,7 +347,7 @@ class TransferActivity : BaseActivity() {
         binding.startTv.isEnabled = true
         binding.start.isClickable = true
         binding.start.setOnClickListener {
-            if (!this@TransferActivity.isConnectedToWiFi()){
+            if (!this@TransferActivity.isConnectedToWiFi()) {
                 alertDialogBuilder()
                     .setTitle(getString(R.string.Make_sure_WiFi))
                     .setPositiveButton(R.string.Confirm) { dialog, _ ->
@@ -480,7 +480,7 @@ class TransferActivity : BaseActivity() {
                     if (status.value == TransferStatus.PROCESSING) {
                         Timber.e(String.format("%.2f%%", it.progress))
                         binding.pbTv.text = getString(R.string.transfer_process_desc, String.format("%.2f%%", it.progress))
-                    } else if (status.value == TransferStatus.SYNCING){
+                    } else if (status.value == TransferStatus.SYNCING) {
                         binding.progressTv.text = getString(R.string.transferring_chat_progress, String.format("%.2f%%", it.progress))
                     }
                 }

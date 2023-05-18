@@ -31,6 +31,7 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.ViewPropertyAnimatorListener
 import androidx.core.view.drawToBitmap
 import androidx.core.view.updateLayoutParams
+import androidx.navigation.NavController
 import androidx.navigation.NavOptions
 import androidx.navigation.findNavController
 import com.facebook.rebound.SimpleSpringListener
@@ -245,6 +246,17 @@ fun View.navigateUp() {
         // Workaround with https://issuetracker.google.com/issues/128881182
     } catch (e: IllegalStateException) {
         Timber.w("View $this does not have a NavController set")
+    }
+}
+
+fun NavController.safeNavigateUp(): Boolean {
+    return try {
+        navigateUp()
+    } catch (e: IllegalArgumentException) {
+        // Workaround with https://issuetracker.google.com/issues/128881182
+        false
+    } catch (e: IllegalStateException) {
+        false
     }
 }
 

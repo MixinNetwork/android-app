@@ -258,6 +258,10 @@ abstract class MixinDatabase : RoomDatabase() {
             return INSTANCE?.openHelper?.writableDatabase
         }
 
+        fun getReadableDatabase(): SupportSQLiteDatabase? {
+            return INSTANCE?.openHelper?.readableDatabase
+        }
+
         private val CALLBACK = object : RoomDatabase.Callback() {
             override fun onOpen(db: SupportSQLiteDatabase) {
                 super.onOpen(db)

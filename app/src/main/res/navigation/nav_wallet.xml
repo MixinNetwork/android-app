@@ -51,6 +51,12 @@
             app:destination="@id/address_management_fragment"
             app:enterAnim="@anim/slide_in_right"
             app:popExitAnim="@anim/slide_out_right"/>
+
+        <action
+            android:id="@+id/action_wallet_to_wallet_connect"
+            app:destination="@id/wallet_connect_fragment"
+            app:enterAnim="@anim/slide_in_right"
+            app:popExitAnim="@anim/slide_out_right" />
     </fragment>
 
     <fragment
@@ -237,4 +243,8 @@
             app:enterAnim="@anim/slide_in_right"
             app:popExitAnim="@anim/slide_out_right"/>
     </fragment>
+
+    <fragment
+        android:id="@+id/wallet_connect_fragment"
+        android:name="one.mixin.android.ui.tip.wc.WalletConnectFragment"/>
 </navigation>

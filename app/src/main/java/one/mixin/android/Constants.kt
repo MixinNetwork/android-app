@@ -16,6 +16,8 @@ object Constants {
 
         const val GIPHY_URL = "https://api.giphy.com/v1/"
         const val FOURSQUARE_URL = "https://api.foursquare.com/v2/"
+
+        const val DEFAULT_TIP_SIGN_ENDPOINT = "https://api.mixin.one/tip/notify"
     }
 
     object HelpLink {
@@ -88,6 +90,7 @@ object Constants {
         const val CONVERSATIONS = "mixin://conversations"
         const val INFO = "mixin://info"
         const val DEVICE_TRANSFER = "mixin://device-transfer"
+        const val TIP = "mixin://tip"
 
         const val HTTPS_CODES = "https://mixin.one/codes"
         const val HTTPS_PAY = "https://mixin.one/pay"
@@ -96,6 +99,8 @@ object Constants {
         const val HTTPS_ADDRESS = "https://mixin.one/address"
         const val HTTPS_WITHDRAWAL = "https://mixin.one/withdrawal"
         const val HTTPS_APPS = "https://mixin.one/apps"
+
+        const val WALLET_CONNECT_PREFIX = "wc:"
     }
 
     object DataBase {
@@ -161,6 +166,7 @@ object Constants {
         const val Dash = "6472e7e3-75fd-48b6-b1dc-28d294ee1476"
         const val Solana = "64692c23-8971-4cf4-84a7-4dd1271dd887"
         const val Polygon = "b7938396-3f94-4e0a-9179-d3440718156f"
+        const val BinanceSmartChain = "1949e683-6a08-49e2-b087-d6b72398588f"
     }
 
     object AssetId {
@@ -212,6 +218,7 @@ object Constants {
         const val DB_DEBUG_LOGS = "db_debug_logs"
         const val DB_DEBUG_WARNING = "db_debug_warning"
         const val LOG_AND_DEBUG = "log_and_debug"
+        const val WALLET_CONNECT_DEBUG = "wallet_connect_debug"
     }
 
     object Colors {

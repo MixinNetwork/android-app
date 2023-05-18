@@ -9,6 +9,7 @@ import com.google.gson.annotations.SerializedName
 import kotlinx.parcelize.Parcelize
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import java.math.BigDecimal
 
 @SuppressLint("ParcelCreator")
 @Parcelize
@@ -116,3 +117,13 @@ fun Asset.toAssetItem(chainIconUrl: String? = null): AssetItem = AssetItem(
 )
 
 fun Asset.toTopAssetItem(chainIconUrl: String?) = TopAssetItem(assetId, symbol, name, iconUrl, chainId, chainIconUrl, assetKey, priceUsd, changeUsd)
+
+fun Asset?.priceUSD(): BigDecimal = if (this == null) {
+    BigDecimal.ZERO
+} else {
+    if (priceUsd == "0") {
+        BigDecimal.ZERO
+    } else {
+        BigDecimal(priceUsd)
+    }
+}
