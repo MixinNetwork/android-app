@@ -7,6 +7,8 @@ import androidx.paging.DataSource
 import androidx.room.CoroutinesRoom
 import androidx.room.RoomSQLiteQuery
 import androidx.room.getQueryDispatcher
+import androidx.room.util.query
+import androidx.room.util.useCursor
 import kotlinx.coroutines.withContext
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.fts.FtsDataSource
@@ -29,13 +31,16 @@ import one.mixin.android.vo.User
 @SuppressLint("RestrictedApi")
 class DataProvider {
     companion object {
-
         fun getMessages(database: MixinDatabase, conversationId: String) =
             object : DataSource.Factory<Int, MessageItem>() {
                 private val fastCountCallback = fun(): Int {
-                    val messageDao = database.messageDao()
+                    val readableDatabase = MixinDatabase.getReadableDatabase() ?: return 0
                     return measureTimeMillis("count $conversationId") {
-                        messageDao.getMessageCountByConversationId(conversationId)
+                        val cursor = readableDatabase.query("SELECT count(1) FROM messages m WHERE conversation_id = '$conversationId'")
+                        cursor.useCursor {
+                            cursor.moveToFirst()
+                            it.getInt(0)
+                        }
                     }
                 }
                 override fun create(): DataSource<Int, MessageItem> {
