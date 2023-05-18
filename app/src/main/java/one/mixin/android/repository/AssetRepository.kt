@@ -390,4 +390,16 @@ constructor(
 
     suspend fun findAssetIdByAssetKey(assetKey: String): String? =
         assetDao.findAssetIdByAssetKey(assetKey)
+
+    suspend fun refreshAsset(assetId: String): Asset? =
+        handleMixinResponse(
+            invokeNetwork = { assetService.getAssetByIdSuspend(assetId) },
+            switchContext = Dispatchers.IO,
+            successBlock = {
+                it.data?.let { a ->
+                    assetDao.upsert(a)
+                    return@handleMixinResponse a
+                }
+            },
+        )
 }

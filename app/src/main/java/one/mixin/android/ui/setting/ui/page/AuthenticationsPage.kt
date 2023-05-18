@@ -3,7 +3,6 @@ package one.mixin.android.ui.setting.ui.page
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -15,26 +14,17 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.CircularProgressIndicator
-import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.focus.FocusRequester
-import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.ColorFilter
-import androidx.compose.ui.graphics.SolidColor
-import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
@@ -47,6 +37,7 @@ import one.mixin.android.R
 import one.mixin.android.api.response.AuthorizationResponse
 import one.mixin.android.extension.containsIgnoreCase
 import one.mixin.android.extension.equalsIgnoreCase
+import one.mixin.android.ui.common.compose.SearchTextField
 import one.mixin.android.ui.setting.LocalSettingNav
 import one.mixin.android.ui.setting.ui.compose.AppAvatarImage
 import one.mixin.android.ui.setting.ui.compose.HighlightText
@@ -65,7 +56,7 @@ fun AuthenticationsPage() {
         val text = rememberSaveable {
             mutableStateOf("")
         }
-        SearchTextFiled(text)
+        SearchTextField(text, stringResource(id = R.string.setting_auth_search_hint))
 
         val response by viewModel.authentications.collectAsState()
 
@@ -124,63 +115,6 @@ private fun Loading() {
             modifier = Modifier.size(48.dp),
             color = MixinAppTheme.colors.accent,
         )
-    }
-}
-
-@Suppress("OPT_IN_IS_NOT_ENABLED")
-@OptIn(ExperimentalComposeUiApi::class)
-@Composable
-private fun SearchTextFiled(text: MutableState<String>) {
-    val focusRequester = remember {
-        FocusRequester()
-    }
-
-    val keyboardController = LocalSoftwareKeyboardController.current
-
-    val interactionSource = remember { MutableInteractionSource() }
-
-    BasicTextField(
-        value = text.value,
-        onValueChange = { text.value = it },
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(60.dp)
-            .focusRequester(focusRequester)
-            .background(MixinAppTheme.colors.background)
-            .onFocusChanged {
-                if (it.isFocused) {
-                    keyboardController?.show()
-                }
-            },
-        interactionSource = interactionSource,
-        textStyle = TextStyle(
-            fontSize = 14.sp,
-            color = MixinAppTheme.colors.textPrimary,
-        ),
-        cursorBrush = SolidColor(MixinAppTheme.colors.accent),
-    ) { innerTextField ->
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Box(modifier = Modifier.width(16.dp))
-            Icon(
-                painter = painterResource(id = R.drawable.ic_search),
-                tint = MixinAppTheme.colors.textSubtitle,
-                contentDescription = null,
-            )
-            Box(modifier = Modifier.width(8.dp))
-            Box(contentAlignment = Alignment.CenterStart) {
-                innerTextField()
-                if (text.value.isEmpty()) {
-                    Text(
-                        text = stringResource(id = R.string.setting_auth_search_hint),
-                        fontSize = 14.sp,
-                        color = MixinAppTheme.colors.textSubtitle,
-                    )
-                }
-            }
-            Box(modifier = Modifier.width(16.dp))
-        }
     }
 }
 
@@ -269,7 +203,7 @@ fun EmptyLayoutPreview() {
 @Preview
 fun PreviewSearchTextFiled() {
     MixinAppTheme {
-        SearchTextFiled(text = remember { mutableStateOf("") })
+        SearchTextField(text = remember { mutableStateOf("") }, stringResource(id = R.string.setting_auth_search_hint))
     }
 }
 

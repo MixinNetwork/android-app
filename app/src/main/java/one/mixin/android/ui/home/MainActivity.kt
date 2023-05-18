@@ -31,6 +31,7 @@ import com.google.android.play.core.install.model.InstallStatus
 import com.google.android.play.core.install.model.UpdateAvailability
 import com.google.firebase.crashlytics.FirebaseCrashlytics
 import com.microsoft.appcenter.AppCenter
+import com.trustwallet.walletconnect.models.session.WCSession
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import io.reactivex.Maybe
@@ -72,7 +73,6 @@ import one.mixin.android.db.ParticipantDao
 import one.mixin.android.db.UserDao
 import one.mixin.android.db.property.PropertyHelper
 import one.mixin.android.event.TipEvent
-import one.mixin.android.extension.alert
 import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.areBubblesAllowedCompat
 import one.mixin.android.extension.checkStorageNotLow
@@ -108,6 +108,11 @@ import one.mixin.android.repository.AccountRepository
 import one.mixin.android.repository.UserRepository
 import one.mixin.android.session.Session
 import one.mixin.android.tip.Tip
+import one.mixin.android.tip.wc.WCErrorEvent
+import one.mixin.android.tip.wc.WCEvent
+import one.mixin.android.tip.wc.WalletConnect
+import one.mixin.android.tip.wc.WalletConnectV1
+import one.mixin.android.tip.wc.WalletConnectV2
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.BatteryOptimizationDialogActivity
 import one.mixin.android.ui.common.BlazeBaseActivity
@@ -136,6 +141,7 @@ import one.mixin.android.ui.tip.TipActivity
 import one.mixin.android.ui.tip.TipBundle
 import one.mixin.android.ui.tip.TipType
 import one.mixin.android.ui.tip.TryConnecting
+import one.mixin.android.ui.tip.wc.WalletConnectActivity
 import one.mixin.android.util.BiometricUtil
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.ErrorHandler.Companion.errorHandler
@@ -288,6 +294,19 @@ class MainActivity : BlazeBaseActivity() {
             .subscribe { e ->
                 handleTipEvent(e, deviceId)
             }
+        RxBus.listen(WCEvent::class.java)
+            .autoDispose(destroyScope)
+            .subscribe { e ->
+                if (e.requestType == WalletConnect.RequestType.SessionProposal) {
+                    dismissDialog()
+                }
+                WalletConnectActivity.show(this, e)
+            }
+        RxBus.listen(WCErrorEvent::class.java)
+            .autoDispose(destroyScope)
+            .subscribe {
+                dismissDialog()
+            }
 
         lifecycleScope.launch(Dispatchers.IO) {
             delay(10_000)
@@ -378,6 +397,8 @@ class MainActivity : BlazeBaseActivity() {
 
         jobManager.addJobInBackground(RefreshContactJob())
         jobManager.addJobInBackground(RefreshFcmJob())
+
+        initWalletConnect()
     }
 
     private fun handleTipEvent(e: TipEvent, deviceId: String) {
@@ -571,6 +592,13 @@ class MainActivity : BlazeBaseActivity() {
         }
     }
 
+    private fun initWalletConnect() {
+        if (!WalletConnect.isEnabled(this)) return
+
+        WalletConnectV1
+        WalletConnectV2
+    }
+
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         handlerCode(intent)
@@ -619,8 +647,7 @@ class MainActivity : BlazeBaseActivity() {
             }
             clearCodeAfterConsume(intent, TRANSFER)
         } else if (intent.extras != null && intent.extras!!.getString("conversation_id", null) != null) {
-            alertDialog?.dismiss()
-            alertDialog = alert(getString(R.string.Please_wait_a_bit)).show()
+            showDialog()
             val conversationId = intent.extras!!.getString("conversation_id")!!
             clearCodeAfterConsume(intent, "conversation_id")
             Maybe.just(conversationId).map {
@@ -715,7 +742,7 @@ class MainActivity : BlazeBaseActivity() {
                     }
                     innerIntent = ConversationActivity.putIntent(this, conversationId, user?.userId)
                 }
-                runOnUiThread { alertDialog?.dismiss() }
+                runOnUiThread { dismissDialog() }
                 innerIntent
             }.subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
                 .autoDispose(stopScope).subscribe(
@@ -725,11 +752,33 @@ class MainActivity : BlazeBaseActivity() {
                         }
                     },
                     {
-                        alertDialog?.dismiss()
+                        dismissDialog()
                         ErrorHandler.handleError(it)
                     },
                 )
+        } else if (intent.hasExtra(WALLET_CONNECT)) {
+            val wcUrl = requireNotNull(intent.getStringExtra(WALLET_CONNECT))
+            if (WCSession.from(wcUrl) != null) {
+                WalletConnectV1.connect(wcUrl)
+                showDialog()
+                return
+            }
+
+            WalletConnectV2.pair(wcUrl)
+            showDialog()
         }
+    }
+
+    private fun showDialog() {
+        alertDialog?.dismiss()
+        alertDialog = indeterminateProgressDialog(message = R.string.Please_wait_a_bit).apply {
+            show()
+        }
+    }
+
+    private fun dismissDialog() {
+        alertDialog?.dismiss()
+        alertDialog = null
     }
 
     private fun clearCodeAfterConsume(intent: Intent, code: String) {
@@ -757,11 +806,9 @@ class MainActivity : BlazeBaseActivity() {
             circlesFragment.cancelSort()
             binding.searchBar.actionVa.showPrevious()
         }
-
         binding.searchBar.setOnBackClickListener {
             binding.searchBar.closeSearch()
         }
-
         binding.searchBar.mOnQueryTextListener = object : MaterialSearchView.OnQueryTextListener {
             override fun onQueryTextChange(newText: String): Boolean {
                 (supportFragmentManager.findFragmentByTag(SearchFragment.TAG) as? SearchFragment)?.setQueryText(
@@ -949,6 +996,7 @@ class MainActivity : BlazeBaseActivity() {
         const val SCAN = "scan"
         const val TRANSFER = "transfer"
         private const val WALLET = "wallet"
+        const val WALLET_CONNECT = "wallet_connect"
 
         fun showWallet(context: Context) {
             Intent(context, MainActivity::class.java).apply {

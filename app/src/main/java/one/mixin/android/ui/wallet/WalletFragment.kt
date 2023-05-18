@@ -357,6 +357,10 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
             rootView?.navigate(R.id.action_wallet_fragment_to_all_transactions_fragment)
             bottomSheet.dismiss()
         }
+        bottomBinding.connectedTv.setOnClickListener {
+            rootView?.navigate(R.id.action_wallet_to_wallet_connect)
+            bottomSheet.dismiss()
+        }
 
         bottomSheet.show()
     }

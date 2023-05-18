@@ -18,6 +18,7 @@ import one.mixin.android.extension.isDonateUrl
 import one.mixin.android.extension.isExternalScheme
 import one.mixin.android.extension.isExternalTransferUrl
 import one.mixin.android.extension.isMixinUrl
+import one.mixin.android.tip.wc.WalletConnect
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.widget.PseudoNotificationView
@@ -61,6 +62,8 @@ fun handleResult(activity: FragmentActivity, fromShortcut: Boolean, content: Str
     }
     if (content.isDonateUrl() || content.isExternalScheme(activity) || content.isExternalTransferUrl()) {
         result.putExtra(MainActivity.URL, content)
+    } else if (content.startsWith(Constants.Scheme.WALLET_CONNECT_PREFIX) && WalletConnect.isEnabled(activity)) {
+        result.putExtra(MainActivity.WALLET_CONNECT, content)
     } else if (!content.isMixinUrl()) {
         result.putExtra(MainActivity.SCAN, content)
     } else if (content.startsWith(Constants.Scheme.TRANSFER, true) ||
