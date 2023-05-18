@@ -40,6 +40,7 @@ import one.mixin.android.extension.dp
 import one.mixin.android.extension.fadeIn
 import one.mixin.android.extension.generateQRCode
 import one.mixin.android.extension.getParcelableExtraCompat
+import one.mixin.android.extension.isConnectedToWiFi
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.putBoolean
 import one.mixin.android.extension.toast
@@ -58,6 +59,7 @@ import one.mixin.android.ui.transfer.vo.TransferCommandAction
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.generateConversationId
+import one.mixin.android.websocket.ChatWebSocket
 import one.mixin.android.websocket.PlainDataAction
 import one.mixin.android.websocket.PlainJsonMessagePayload
 import one.mixin.android.websocket.createParamBlazeMessage
@@ -171,6 +173,9 @@ class TransferActivity : BaseActivity() {
 
     @Inject
     lateinit var status: TransferStatusLiveData
+
+    @Inject
+    lateinit var chatWebSocket: ChatWebSocket
 
     var shouldLogout = false
 
@@ -342,6 +347,15 @@ class TransferActivity : BaseActivity() {
         binding.startTv.isEnabled = true
         binding.start.isClickable = true
         binding.start.setOnClickListener {
+            if (!this@TransferActivity.isConnectedToWiFi()) {
+                alertDialogBuilder()
+                    .setTitle(getString(R.string.Make_sure_WiFi))
+                    .setPositiveButton(R.string.Confirm) { dialog, _ ->
+                        dialog.dismiss()
+                    }
+                    .show()
+                return@setOnClickListener
+            }
             when (argsStatus) {
                 ARGS_TRANSFER_TO_PHONE -> {
                     lifecycleScope.launch {
@@ -364,13 +378,31 @@ class TransferActivity : BaseActivity() {
 
                 ARGS_TRANSFER_TO_PC -> {
                     if (this@TransferActivity.status.value != TransferStatus.CREATED) {
-                        pushRequest()
+                        if (chatWebSocket.connected) {
+                            pushRequest()
+                        } else {
+                            alertDialogBuilder()
+                                .setTitle(getString(R.string.Unable_connect_desktop))
+                                .setPositiveButton(R.string.Confirm) { dialog, _ ->
+                                    dialog.dismiss()
+                                }
+                                .show()
+                        }
                     }
                 }
 
                 ARGS_RESTORE_FROM_PC -> {
                     if (this@TransferActivity.status.value != TransferStatus.WAITING_MESSAGE) {
-                        pullRequest()
+                        if (chatWebSocket.connected) {
+                            pullRequest()
+                        } else {
+                            alertDialogBuilder()
+                                .setTitle(getString(R.string.Unable_connect_desktop))
+                                .setPositiveButton(R.string.Confirm) { dialog, _ ->
+                                    dialog.dismiss()
+                                }
+                                .show()
+                        }
                     }
                 }
 
@@ -448,6 +480,8 @@ class TransferActivity : BaseActivity() {
                     if (status.value == TransferStatus.PROCESSING) {
                         Timber.e(String.format("%.2f%%", it.progress))
                         binding.pbTv.text = getString(R.string.transfer_process_desc, String.format("%.2f%%", it.progress))
+                    } else if (status.value == TransferStatus.SYNCING) {
+                        binding.progressTv.text = getString(R.string.transferring_chat_progress, String.format("%.2f%%", it.progress))
                     }
                 }
         }

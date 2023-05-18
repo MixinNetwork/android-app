@@ -14,6 +14,7 @@ import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.decodeFromJsonElement
 import kotlinx.serialization.json.decodeFromStream
 import one.mixin.android.Constants
+import one.mixin.android.MixinApplication
 import one.mixin.android.RxBus
 import one.mixin.android.db.AppDao
 import one.mixin.android.db.AssetDao
@@ -56,6 +57,7 @@ import one.mixin.android.ui.transfer.vo.TransferCommandAction
 import one.mixin.android.ui.transfer.vo.TransferData
 import one.mixin.android.ui.transfer.vo.TransferDataType
 import one.mixin.android.ui.transfer.vo.compatible.TransferMessageMention
+import one.mixin.android.util.NetworkUtils
 import one.mixin.android.util.SINGLE_SOCKET_THREAD
 import one.mixin.android.util.mention.parseMentionData
 import one.mixin.android.vo.App
@@ -138,6 +140,7 @@ class TransferClient @Inject internal constructor(
     suspend fun connectToServer(ip: String, port: Int, commandData: TransferCommand) =
         withContext(SINGLE_SOCKET_THREAD) {
             try {
+                NetworkUtils.printWifiInfo(MixinApplication.appContext)
                 status.value = TransferStatus.CONNECTING
                 val socket = Socket(ip, port)
                 this@TransferClient.socket = socket
@@ -172,6 +175,7 @@ class TransferClient @Inject internal constructor(
                 }
                 quit = true
                 Timber.e(e)
+                NetworkUtils.printWifiInfo(MixinApplication.appContext)
                 null
             }
             status.value = TransferStatus.SYNCING
@@ -354,6 +358,7 @@ class TransferClient @Inject internal constructor(
                 quit = true
                 if (!finished) {
                     Timber.e("DeviceId: $deviceId type: $currentType id: ${transferInserter.primaryId} start-time:$startTime current-time:${System.currentTimeMillis()}")
+                    NetworkUtils.printWifiInfo(MixinApplication.appContext)
                 } else {
                     launch {
                         PropertyHelper.deleteKeyValue(Constants.Account.PREF_TRANSFER_SCENE)

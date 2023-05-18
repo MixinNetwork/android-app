@@ -1134,7 +1134,7 @@
     <string name="Transfer_to_PC">Transfer to PC</string>
     <string name="Enable_Wifi_or_hotspot">Enable Wi-Fi or hotspot for the two devices</string>
     <string name="login_and_scan">Login in to this account on other phone and scan the QR Code</string>
-    <string name="sending_desc">Transferring Chat (%1$s)</string>
+    <string name="transferring_chat_progress">Transferring Chat (%1$s)</string>
     <string name="Complete">Complete</string>
     <string name="cannot_exit_in_backup">Cannot exit in backup</string>
     <string name="Chat">Chat</string>
@@ -1143,7 +1143,7 @@
     <string name="Restore_from_Another_Phone_tip">Transfer your message history from your old device.</string>
     <string name="Restore_from_Local">Restore from Local</string>
     <string name="Restore_from_Local_tip">Restore your chat history from you device backup.</string>
-    <string name="sync_chat">Sync chats</string>
+    <string name="transferring_chat">Transferring Chat</string>
     <string name="Please_log_in_to_the_desktop_first">Please log in to the desktop first</string>
     <string name="transfer_pc_desc">To synchronize your chat logs to the Mixin Messenger desktop, make sure both devices are connected to the same Wi-Fi or hotspot.</string>
     <string name="transfer_phone_desc">To synchronize your chat logs to the new device, make sure both devices are connected to the same Wi-Fi or hotspot.</string>
@@ -1174,7 +1174,8 @@
     <string name="transfer_breakpoint_continuation">Breakpoint continuation</string>
     <string name="transfer_breakpoint_continuation_desc">Last sync time on this device was %1$s, do you want to resume from the last sync point?</string>
     <string name="transfer_syncing_des">Transferring chat history, do you want to cancel ?</string>
-
+    <string name="Unable_connect_desktop">Unable to connect to the desktop，please try again later</string>
+    <string name="Make_sure_WiFi">Make sure the WiFi is connected</string>
     <string name="connected_dapps">Connected dapps</string>
     <string name="search_placeholder_dapp">Name, URL</string>
     <string name="NO_DAPP">NO DAPP</string>

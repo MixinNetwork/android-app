@@ -100,7 +100,7 @@ class TransferServer @Inject internal constructor(
                 Timber.e("Current type: $field")
             }
         }
-    private var currentId: Long? = null
+    private var currentId: String? = null
         set(value) {
             if (field != value) {
                 field = value
@@ -112,6 +112,7 @@ class TransferServer @Inject internal constructor(
         createdSuccessCallback: (TransferCommand) -> Unit,
     ) = withContext(SINGLE_SOCKET_THREAD) {
         try {
+            NetworkUtils.printWifiInfo(MixinApplication.appContext)
             val serverSocket = createSocket(port = Random.nextInt(1024, 1124))
             this@TransferServer.serverSocket = serverSocket
             status.value = TransferStatus.CREATED
@@ -146,6 +147,7 @@ class TransferServer @Inject internal constructor(
             if (status.value != TransferStatus.FINISHED && !(status.value == TransferStatus.INITIALIZING && e is SocketException)) {
                 status.value = TransferStatus.ERROR
             }
+            NetworkUtils.printWifiInfo(MixinApplication.appContext)
             exit()
             Timber.e(e)
         }
@@ -300,8 +302,8 @@ class TransferServer @Inject internal constructor(
             if (list.size < LIMIT) {
                 return
             }
+            currentId = list.last().conversationId
             rowId = conversationDao.getConversationRowId(list.last().conversationId) ?: return
-            currentId = rowId
         }
     }
 
@@ -340,10 +342,8 @@ class TransferServer @Inject internal constructor(
             if (list.size < LIMIT) {
                 return
             }
-            rowId =
-                participantDao.getParticipantRowId(list.last().conversationId, list.last().userId)
-                    ?: return
-            currentId = rowId
+            currentId = list.last().userId
+            rowId = participantDao.getParticipantRowId(list.last().conversationId, list.last().userId) ?: return
         }
     }
 
@@ -376,8 +376,8 @@ class TransferServer @Inject internal constructor(
             if (list.size < LIMIT) {
                 return
             }
+            currentId = list.last().userId
             rowId = userDao.getUserRowId(list.last().userId) ?: return
-            currentId = rowId
         }
     }
 
@@ -410,8 +410,8 @@ class TransferServer @Inject internal constructor(
             if (list.size < LIMIT) {
                 return
             }
+            currentId = list.last().appId
             rowId = appDao.getAppRowId(list.last().appId) ?: return
-            currentId = rowId
         }
     }
 
@@ -444,8 +444,8 @@ class TransferServer @Inject internal constructor(
             if (list.size < LIMIT) {
                 return
             }
+            currentId = list.last().assetId
             rowId = assetDao.getAssetRowId(list.last().assetId) ?: return
-            currentId = rowId
         }
     }
 
@@ -489,8 +489,8 @@ class TransferServer @Inject internal constructor(
             if (list.size < LIMIT) {
                 return
             }
+            currentId = list.last().stickerId
             rowId = stickerDao.getStickerRowId(list.last().stickerId) ?: return
-            currentId = rowId
         }
     }
 
@@ -523,8 +523,8 @@ class TransferServer @Inject internal constructor(
             if (list.size < LIMIT) {
                 return
             }
+            currentId = list.last().snapshotId
             rowId = snapshotDao.getSnapshotRowId(list.last().snapshotId) ?: return
-            currentId = rowId
         }
     }
 
@@ -561,11 +561,11 @@ class TransferServer @Inject internal constructor(
             if (list.size < LIMIT) {
                 return
             }
+            currentId = list.last().transcriptId
             rowId = transcriptMessageDao.getTranscriptMessageRowId(
                 list.last().transcriptId,
                 list.last().messageId,
             ) ?: return
-            currentId = rowId
         }
     }
 
@@ -602,8 +602,8 @@ class TransferServer @Inject internal constructor(
             if (list.size < LIMIT) {
                 return
             }
+            currentId = list.last().messageId
             rowId = pinMessageDao.getPinMessageRowId(list.last().messageId) ?: return
-            currentId = rowId
         }
     }
 
@@ -639,8 +639,8 @@ class TransferServer @Inject internal constructor(
             if (list.size < LIMIT) {
                 return
             }
+            currentId = list.last().messageId
             rowId = messageDao.getMessageRowid(list.last().messageId) ?: return
-            currentId = rowId
         }
     }
 
@@ -677,8 +677,8 @@ class TransferServer @Inject internal constructor(
             if (list.size < LIMIT) {
                 return
             }
+            currentId = list.last().messageId
             rowId = messageMentionDao.getMessageMentionRowId(list.last().messageId) ?: return
-            currentId = rowId
         }
     }
 
@@ -715,8 +715,8 @@ class TransferServer @Inject internal constructor(
             if (list.size < LIMIT) {
                 return
             }
+            currentId = list.last().messageId
             rowId = expiredMessageDao.getExpiredMessageRowId(list.last().messageId) ?: return
-            currentId = rowId
         }
     }
 

@@ -86,7 +86,7 @@
             android:id="@+id/progress_tv"
             android:textSize="16sp"
             android:textColor="?attr/text_primary"
-            android:text="@string/sync_chat"
+            android:text="@string/transferring_chat"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content" />
 
@@ -124,7 +124,7 @@
                 android:id="@+id/pb_tv"
                 android:textSize="12sp"
                 android:textColor="?attr/text_minor"
-                android:text="@string/sync_chat"
+                android:text="@string/transferring_chat"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content" />
         </LinearLayout>
