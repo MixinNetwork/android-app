@@ -190,6 +190,7 @@ android {
         resolutionStrategy {
             force "com.android.tools.build.jetifier:jetifier-core:1.0.0-beta10"
             force "com.github.mixinnetwork:tink-eddsa:0.0.9"
+            exclude group: 'org.bouncycastle', module: 'bcprov-jdk18on'
         }
     }
 }
@@ -382,9 +383,9 @@ dependencies {
     implementation "com.google.accompanist:accompanist-pager-indicators:0.30.1"
 
     // wallet connect && web3j
-    implementation "org.web3j:core:4.9.7"
-    implementation "org.web3j:crypto:4.9.7"
-    implementation platform("com.walletconnect:android-bom:1.7.0")
+    implementation "org.web3j:core:4.10.0"
+    implementation "org.web3j:crypto:4.10.0"
+    implementation platform("com.walletconnect:android-bom:1.10.0")
     implementation "com.walletconnect:android-core"
     implementation "com.walletconnect:web3wallet"
 
