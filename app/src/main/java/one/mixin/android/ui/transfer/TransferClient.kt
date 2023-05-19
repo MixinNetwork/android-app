@@ -56,6 +56,7 @@ import one.mixin.android.ui.transfer.vo.TransferCommand
 import one.mixin.android.ui.transfer.vo.TransferCommandAction
 import one.mixin.android.ui.transfer.vo.TransferData
 import one.mixin.android.ui.transfer.vo.TransferDataType
+import one.mixin.android.ui.transfer.vo.TransferScene
 import one.mixin.android.ui.transfer.vo.compatible.TransferMessageMention
 import one.mixin.android.util.NetworkUtils
 import one.mixin.android.util.SINGLE_SOCKET_THREAD
@@ -380,6 +381,22 @@ class TransferClient @Inject internal constructor(
                 }
                 quit = true
                 if (!finished) {
+                    val scene = TransferScene.from(
+                        deviceId,
+                        startTime,
+                        currentType,
+                        transferInserter.primaryId,
+                        transferInserter.assistanceId,
+                    )
+                    if (scene != null) {
+                        launch {
+                            PropertyHelper.updateKeyValue(
+                                Constants.Account.PREF_TRANSFER_SCENE,
+                                serializationJson.encodeToString(TransferScene.serializer(), scene),
+                            )
+                        }
+                    }
+
                     Timber.e("DeviceId: $deviceId type: $currentType id: ${transferInserter.primaryId} start-time:$startTime current-time:${System.currentTimeMillis()}")
                     NetworkUtils.printWifiInfo(MixinApplication.appContext)
                 } else {
@@ -437,9 +454,7 @@ class TransferClient @Inject internal constructor(
             val processProgress = min(processCount * 100f / total, 100f)
             lastTime = System.currentTimeMillis()
             RxBus.publish(DeviceTransferProgressEvent(processProgress))
-            socket?.getOutputStream()?.let { outputStream ->
-                sendCommand(outputStream, TransferCommand(TransferCommandAction.PROGRESS.value, progress = processProgress))
-            }
+            Timber.e("$processProgress $processCount/$total")
         }
     }
 
