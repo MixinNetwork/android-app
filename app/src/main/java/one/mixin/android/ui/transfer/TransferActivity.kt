@@ -533,7 +533,7 @@ class TransferActivity : BaseActivity() {
         connect(transferCommandData.ip!!, transferCommandData.port!!, TransferCommand(TransferCommandAction.CONNECT.value, code = transferCommandData.code, userId = Session.getAccountId()), key = key)
     }
 
-    private suspend fun connect(ip: String, port: Int, transferCommand: TransferCommand, key:ByteArray) {
+    private suspend fun connect(ip: String, port: Int, transferCommand: TransferCommand, key: ByteArray) {
         transferClient.connectToServer(ip, port, transferCommand, key)
     }
 

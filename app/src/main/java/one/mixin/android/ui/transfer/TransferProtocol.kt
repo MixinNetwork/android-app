@@ -6,20 +6,19 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.decodeFromStream
 import one.mixin.android.RxBus
 import one.mixin.android.api.ChecksumException
-import one.mixin.android.crypto.aesDecrypt
-import one.mixin.android.crypto.aesEncrypt
 import one.mixin.android.event.SpeedEvent
 import one.mixin.android.ui.transfer.vo.TransferCommand
 import timber.log.Timber
 import java.io.ByteArrayInputStream
 import java.io.EOFException
 import java.io.File
-import java.io.FileInputStream
 import java.io.InputStream
 import java.io.OutputStream
 import java.nio.ByteBuffer
 import java.util.zip.CRC32
 import javax.crypto.Cipher
+import javax.crypto.CipherInputStream
+import javax.crypto.CipherOutputStream
 import javax.crypto.spec.SecretKeySpec
 import kotlin.text.Charsets.UTF_8
 
@@ -34,14 +33,14 @@ import kotlin.text.Charsets.UTF_8
  * ----------------------------------------------------------------------------------
  */
 @ExperimentalSerializationApi
-class TransferProtocol(private val serializationJson: Json, val aesKey:ByteArray, private val server: Boolean = false) {
+class TransferProtocol(private val serializationJson: Json, private val aesKey: ByteArray, private val server: Boolean = false) {
 
     companion object {
         const val TYPE_COMMAND = 0x01.toByte()
         const val TYPE_JSON = 0x02.toByte()
         const val TYPE_FILE = 0x03.toByte()
 
-        private val MAX_DATA_SIZE = 512000 // 500K
+        private const val MAX_DATA_SIZE = 512000 // 500K
     }
 
     fun read(inputStream: InputStream): Any? {
@@ -76,7 +75,7 @@ class TransferProtocol(private val serializationJson: Json, val aesKey:ByteArray
             Timber.e(content)
             return
         }
-        val writeData = if(type == TYPE_JSON){
+        val writeData = if (type == TYPE_JSON) {
             encrypt(data)
         } else {
             data
@@ -112,33 +111,36 @@ class TransferProtocol(private val serializationJson: Json, val aesKey:ByteArray
 
     fun write(outputStream: OutputStream, file: File, messageId: String) {
         if (file.exists() && file.length() > 0) {
-            outputStream.write(byteArrayOf(TYPE_FILE))
-            outputStream.write(intToByteArray(file.length().toInt() + 16))
-            val crc = CRC32()
-            val uuidByteArray = UUIDUtils.toByteArray(messageId)
-            outputStream.write(uuidByteArray)
-            crc.update(uuidByteArray)
-            val fileInputStream = FileInputStream(file)
-            val buffer = ByteArray(1024)
             // Read data from file into buffer and write to socket
-            var bytesRead = fileInputStream.read(buffer, 0, 1024)
-            while (bytesRead != -1) {
-                outputStream.write(buffer, 0, bytesRead)
-                crc.update((buffer.copyOfRange(0, bytesRead)))
-                bytesRead = fileInputStream.read(buffer, 0, 1024)
-                if (server) calculateReadSpeed(bytesRead)
+            outputStream.write(byteArrayOf(TYPE_FILE))
+
+            val uuid = UUIDUtils.toByteArray(messageId)
+            outputStream.write(intToByteArray(calculateEncryptedSize(file.length()) + 16))
+            outputStream.write(uuid)
+            val crc = CRC32()
+
+            file.inputStream().use { fileInputStream ->
+                val cis = CipherInputStream(fileInputStream, encodeCipher)
+                val buffer = ByteArray(1024)
+                var bufferSize = 0
+                var read: Int
+                while (cis.read(buffer).also { read = it } != -1) {
+                    outputStream.write(buffer, 0, read)
+                    bufferSize += read
+                    crc.update(buffer, 0, read)
+                }
+                cis.close()
+                Timber.e("$messageId ${file.length()} $bufferSize ${calculateEncryptedSize(file.length())}")
             }
-            fileInputStream.close()
             outputStream.write(longToBytes(crc.value))
-            Timber.e("Send file: ${file.name} ${file.length()} ${crc.value}")
             if (server) calculateReadSpeed(29)
         }
     }
 
-    private fun calculateFileEncryptSize(file: File): Int {
-        val fileSize = file.length().toInt()
-        val blockSize = 128
-        return if (fileSize % blockSize == 0) fileSize else (fileSize / blockSize + 1) * blockSize
+    private fun calculateEncryptedSize(fileLength: Long): Int {
+        val blockSize = 16
+        val padding = blockSize - (fileLength % blockSize)
+        return (fileLength + padding).toInt()
     }
 
     private fun checksum(data: ByteArray): ByteArray {
@@ -204,10 +206,11 @@ class TransferProtocol(private val serializationJson: Json, val aesKey:ByteArray
         var bytesRead = 0
         var bytesLeft = expectedLength - 16
         outFile.outputStream().use { fos ->
+            val cos = CipherOutputStream(fos, decodeCipher)
             while (bytesRead != -1 && bytesLeft > 0) {
                 bytesRead = inputStream.read(buffer, 0, bytesLeft.coerceAtMost(1024))
                 if (bytesRead > 0) {
-                    fos.write(buffer, 0, bytesRead)
+                    cos.write(buffer, 0, bytesRead)
                     crc.update(buffer.copyOfRange(0, bytesRead))
                     bytesLeft -= bytesRead
                     if (!server) calculateReadSpeed(bytesRead)
@@ -216,7 +219,7 @@ class TransferProtocol(private val serializationJson: Json, val aesKey:ByteArray
         }
         val checksum = safeRead(inputStream, 8)
         val checksumLong = bytesToLong(checksum)
-        Timber.e("Receive file: ${outFile.name} ${outFile.length()} checksum ${bytesToLong(checksum)} -- ${crc.value}")
+        Timber.e("Receive file: ${outFile.name} ${outFile.length()} checksum $checksumLong -- ${crc.value}")
         if (checksumLong != crc.value) {
             throw ChecksumException()
         }

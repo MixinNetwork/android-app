@@ -39,7 +39,6 @@ import one.mixin.android.extension.createAudioTemp
 import one.mixin.android.extension.createDocumentTemp
 import one.mixin.android.extension.createImageTemp
 import one.mixin.android.extension.createVideoTemp
-import one.mixin.android.extension.decodeBase64
 import one.mixin.android.extension.getAudioPath
 import one.mixin.android.extension.getDocumentPath
 import one.mixin.android.extension.getExtensionName
