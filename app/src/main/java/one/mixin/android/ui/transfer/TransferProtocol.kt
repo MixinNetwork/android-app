@@ -51,7 +51,8 @@ class TransferProtocol(private val serializationJson: Json, private val server: 
             }
 
             TYPE_JSON -> { // JSON
-                return readByteArray(inputStream, size)
+                val data = readByteArray(inputStream, size) ?: return null
+                return sizeData + data
             }
 
             TYPE_FILE -> { // FILE

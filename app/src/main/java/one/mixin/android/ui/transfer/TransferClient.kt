@@ -117,6 +117,7 @@ class TransferClient @Inject internal constructor(
 
     private var socket: Socket? = null
     private var quit = false
+    private var receiveCount = 0L
     private var processCount = 0L
     private var startTime = 0L
     private var currentType: String? = null
@@ -137,6 +138,10 @@ class TransferClient @Inject internal constructor(
         Executors.newSingleThreadExecutor { r -> Thread(r, "SINGLE_TRANSFER_THREAD") }.asCoroutineDispatcher()
     }
 
+    private val singleTransferFileThread by lazy {
+        Executors.newSingleThreadExecutor { r -> Thread(r, "SINGLE_TRANSFER_FILE_THREAD") }.asCoroutineDispatcher()
+    }
+
     suspend fun connectToServer(ip: String, port: Int, commandData: TransferCommand) =
         withContext(SINGLE_SOCKET_THREAD) {
             try {
@@ -150,7 +155,7 @@ class TransferClient @Inject internal constructor(
                 launch(Dispatchers.IO) { listen(socket.inputStream, socket.outputStream) }
                 launch(Dispatchers.IO) {
                     for (byteArray in syncChannel) {
-                        processJson(byteArray)
+                        writeBytes(byteArray)
                     }
                 }
             } catch (e: Exception) {
@@ -212,15 +217,29 @@ class TransferClient @Inject internal constructor(
                 }
                 is ByteArray -> {
                     syncChannel.send(result)
+                    progress(outputStream)
                 }
                 else -> {
                     // read file
+                    progress(outputStream)
                 }
             }
         } while (!quit)
     }
 
     private var lastTime = 0L
+    private var lastProgress = 0f
+    private fun progress(outputStream: OutputStream) {
+        if (quit || total <= 0 || status.value == TransferStatus.ERROR) return
+        val progress = min((receiveCount++) / total.toFloat() * 100, 100f)
+        if (lastProgress != progress && System.currentTimeMillis() - lastTime > 300) {
+            sendCommand(outputStream, TransferCommand(TransferCommandAction.PROGRESS.value, progress = progress))
+            lastProgress = progress
+            lastTime = System.currentTimeMillis()
+            RxBus.publish(DeviceTransferProgressEvent(progress))
+            Timber.e("Device transfer $progress")
+        }
+    }
 
     private val mutableList: MutableList<Message> = mutableListOf()
     private fun processJson(byteArray: ByteArray) {
@@ -332,6 +351,7 @@ class TransferClient @Inject internal constructor(
         synchronized(this) {
             if (isFinal) return
             transferInserter.insertMessages(mutableList)
+            currentOutputStream?.close()
             // Final db work
             conversationDao.getAllConversationId().forEach { conversationId ->
                 conversationDao.refreshLastMessageId(conversationId)
@@ -341,6 +361,9 @@ class TransferClient @Inject internal constructor(
                 conversationExtDao.refreshCountByConversationId(conversationId)
             }
             if (status.value != TransferStatus.ERROR) {
+                currentFile?.let { file ->
+                    processDataFile(file)
+                }
                 processAttachmentFile(getAttachmentPath())
             }
             isFinal = true
@@ -401,15 +424,70 @@ class TransferClient @Inject internal constructor(
         }
     }
 
+    private var index: Int = 0
+    private fun getCacheFile(index: Int): File {
+        cachePath.mkdirs()
+        return File(cachePath, "$index.cache")
+    }
+
     private fun processProgress() {
         processCount++
-        if (total <= 0) return
+        if (total <= 0 || status.value != TransferStatus.PROCESSING) return
         if (System.currentTimeMillis() - lastTime > 300) {
             val processProgress = min(processCount * 100f / total, 100f)
             lastTime = System.currentTimeMillis()
             RxBus.publish(DeviceTransferProgressEvent(processProgress))
             socket?.getOutputStream()?.let { outputStream ->
                 sendCommand(outputStream, TransferCommand(TransferCommandAction.PROGRESS.value, progress = processProgress))
+            }
+        }
+    }
+
+    private var currentFile: File? = null
+    private var currentOutputStream: OutputStream? = null
+    private var lastName = ""
+    private suspend fun writeBytes(bytes: ByteArray) = withContext(singleTransferFileThread) {
+        val file = currentFile ?: getCacheFile(++index).also {
+            currentOutputStream?.close()
+            currentFile = it
+            currentOutputStream = it.outputStream()
+        }
+        if (file.length() + bytes.size > MAX_FILE_SIZE) {
+            applicationScope.launch(singleTransferThread) {
+                processDataFile(file)
+            }
+            currentFile = null
+            currentOutputStream?.close()
+            currentOutputStream = null
+        } else {
+            if (lastName != file.name) {
+                Timber.e("Write bytes: ${file.name}")
+                lastName = file.name
+            }
+            currentOutputStream?.write(bytes)
+        }
+    }
+
+    private fun processDataFile(file: File) { // Read files, parse data
+        synchronized(this) {
+            try {
+                if (status.value == TransferStatus.ERROR) return
+                Timber.e("Process file ${file.absolutePath} ${Thread.currentThread().name}")
+                if (file.exists() && file.length() > 0) {
+                    file.inputStream().use { input ->
+                        while (input.available() > 0) {
+                            val sizeData = ByteArray(4)
+                            input.read(sizeData)
+                            val data = ByteArray(byteArrayToInt(sizeData))
+                            input.read(data)
+                            processJson(data)
+                        }
+                    }
+                }
+                file.delete()
+                Timber.e("Delete ${file.absolutePath}")
+            } catch (e: Exception) {
+                Timber.e("Skip ${file.absolutePath} ${e.message}")
             }
         }
     }
@@ -470,5 +548,14 @@ class TransferClient @Inject internal constructor(
         if (status.value != TransferStatus.ERROR) {
             status.value = TransferStatus.FINISHED
         }
+    }
+
+    private fun byteArrayToInt(byteArray: ByteArray): Int {
+        var result = 0
+        for (i in byteArray.indices) {
+            result = result shl 8
+            result = result or (byteArray[i].toInt() and 0xff)
+        }
+        return result
     }
 }
