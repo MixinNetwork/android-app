@@ -39,6 +39,7 @@ import one.mixin.android.extension.createAudioTemp
 import one.mixin.android.extension.createDocumentTemp
 import one.mixin.android.extension.createImageTemp
 import one.mixin.android.extension.createVideoTemp
+import one.mixin.android.extension.decodeBase64
 import one.mixin.android.extension.getAudioPath
 import one.mixin.android.extension.getDocumentPath
 import one.mixin.android.extension.getExtensionName
@@ -110,7 +111,7 @@ class TransferClient @Inject internal constructor(
     @ApplicationScope
     private val applicationScope: CoroutineScope,
 ) {
-    val protocol = TransferProtocol(serializationJson)
+    lateinit var protocol: TransferProtocol
     companion object {
         private const val MAX_FILE_SIZE = 5242880 // 5M
     }
@@ -137,9 +138,11 @@ class TransferClient @Inject internal constructor(
         Executors.newSingleThreadExecutor { r -> Thread(r, "SINGLE_TRANSFER_THREAD") }.asCoroutineDispatcher()
     }
 
-    suspend fun connectToServer(ip: String, port: Int, commandData: TransferCommand) =
+
+    suspend fun connectToServer(ip: String, port: Int, commandData: TransferCommand, key: ByteArray) =
         withContext(SINGLE_SOCKET_THREAD) {
             try {
+                protocol = TransferProtocol(serializationJson, key)
                 NetworkUtils.printWifiInfo(MixinApplication.appContext)
                 status.value = TransferStatus.CONNECTING
                 val socket = Socket(ip, port)

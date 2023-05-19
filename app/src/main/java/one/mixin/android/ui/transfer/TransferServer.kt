@@ -11,6 +11,7 @@ import kotlinx.serialization.SerializationStrategy
 import kotlinx.serialization.json.Json
 import one.mixin.android.MixinApplication
 import one.mixin.android.RxBus
+import one.mixin.android.crypto.generateAesKey
 import one.mixin.android.db.AppDao
 import one.mixin.android.db.AssetDao
 import one.mixin.android.db.ConversationDao
@@ -24,6 +25,7 @@ import one.mixin.android.db.StickerDao
 import one.mixin.android.db.TranscriptMessageDao
 import one.mixin.android.db.UserDao
 import one.mixin.android.event.DeviceTransferProgressEvent
+import one.mixin.android.extension.base64Encode
 import one.mixin.android.extension.toUtcTime
 import one.mixin.android.session.Session
 import one.mixin.android.ui.transfer.TransferProtocol.Companion.TYPE_COMMAND
@@ -81,7 +83,7 @@ class TransferServer @Inject internal constructor(
     val status: TransferStatusLiveData,
     private val serializationJson: Json,
 ) {
-    val protocol = TransferProtocol(serializationJson, true)
+    val protocol by lazy { TransferProtocol(serializationJson, aesKey, true) }
 
     private var serverSocket: ServerSocket? = null
     private var socket: Socket? = null
@@ -108,6 +110,10 @@ class TransferServer @Inject internal constructor(
             }
         }
 
+    private val aesKey by lazy {
+        generateAesKey()
+    }
+
     suspend fun startServer(
         createdSuccessCallback: (TransferCommand) -> Unit,
     ) = withContext(SINGLE_SOCKET_THREAD) {
@@ -122,7 +128,7 @@ class TransferServer @Inject internal constructor(
                     TransferCommandAction.PUSH.value,
                     NetworkUtils.getWifiIpAddress(MixinApplication.appContext),
                     this@TransferServer.port,
-                    null,
+                    aesKey.base64Encode(),
                     this@TransferServer.code,
                     userId = Session.getAccountId(),
                 ),

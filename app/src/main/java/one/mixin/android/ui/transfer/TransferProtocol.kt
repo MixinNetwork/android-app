@@ -6,6 +6,8 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.decodeFromStream
 import one.mixin.android.RxBus
 import one.mixin.android.api.ChecksumException
+import one.mixin.android.crypto.aesDecrypt
+import one.mixin.android.crypto.aesEncrypt
 import one.mixin.android.event.SpeedEvent
 import one.mixin.android.ui.transfer.vo.TransferCommand
 import timber.log.Timber
@@ -17,20 +19,22 @@ import java.io.InputStream
 import java.io.OutputStream
 import java.nio.ByteBuffer
 import java.util.zip.CRC32
+import javax.crypto.Cipher
+import javax.crypto.spec.SecretKeySpec
 import kotlin.text.Charsets.UTF_8
 
 /*
  * Data packet format:
  * -----------------------------------------------------------------
- * | type (1 byte) | body_length（4 bytes） | body | crc（8 bytes） |
+ * | type (1 byte) | body_length（4 bytes） | body(AES) | crc（8 bytes） |
  * -----------------------------------------------------------------
  * File packet format:
  * ----------------------------------------------------------------------------------
- * | type (1 byte) | body_length（4 bytes） | uuid(16 bytes) | body | crc（8 bytes） |
+ * | type (1 byte) | body_length（4 bytes） | uuid(16 bytes)(AES) | body(AES) | crc（8 bytes） |
  * ----------------------------------------------------------------------------------
  */
 @ExperimentalSerializationApi
-class TransferProtocol(private val serializationJson: Json, private val server: Boolean = false) {
+class TransferProtocol(private val serializationJson: Json, val aesKey:ByteArray, private val server: Boolean = false) {
 
     companion object {
         const val TYPE_COMMAND = 0x01.toByte()
@@ -51,7 +55,9 @@ class TransferProtocol(private val serializationJson: Json, private val server: 
             }
 
             TYPE_JSON -> { // JSON
-                return readByteArray(inputStream, size)
+                val ciphertext = readByteArray(inputStream, size) ?: return null
+                val data = decrypt(ciphertext)
+                return intToByteArray(data.size) + data
             }
 
             TYPE_FILE -> { // FILE
@@ -70,11 +76,38 @@ class TransferProtocol(private val serializationJson: Json, private val server: 
             Timber.e(content)
             return
         }
+        val writeData = if(type == TYPE_JSON){
+            encrypt(data)
+        } else {
+            data
+        }
         outputStream.write(byteArrayOf(type))
-        outputStream.write(intToByteArray(data.size))
-        outputStream.write(data)
-        outputStream.write(checksum(data))
-        if (server) calculateReadSpeed(data.size + 13)
+        outputStream.write(intToByteArray(writeData.size))
+        outputStream.write(writeData)
+        outputStream.write(checksum(writeData))
+        if (server) calculateReadSpeed(writeData.size + 13)
+    }
+
+    private val encodeCipher by lazy {
+        val cipher = Cipher.getInstance("AES/ECB/PKCS5Padding")
+        val secretKeySpec = SecretKeySpec(aesKey, "AES")
+        cipher.init(Cipher.ENCRYPT_MODE, secretKeySpec)
+        return@lazy cipher
+    }
+
+    private val decodeCipher by lazy {
+        val cipher = Cipher.getInstance("AES/ECB/PKCS5Padding")
+        val secretKeySpec = SecretKeySpec(aesKey, "AES")
+        cipher.init(Cipher.DECRYPT_MODE, secretKeySpec)
+        return@lazy cipher
+    }
+
+    private fun encrypt(input: ByteArray): ByteArray {
+        return encodeCipher.doFinal(input)
+    }
+
+    private fun decrypt(input: ByteArray): ByteArray {
+        return decodeCipher.doFinal(input)
     }
 
     fun write(outputStream: OutputStream, file: File, messageId: String) {
@@ -100,6 +133,12 @@ class TransferProtocol(private val serializationJson: Json, private val server: 
             Timber.e("Send file: ${file.name} ${file.length()} ${crc.value}")
             if (server) calculateReadSpeed(29)
         }
+    }
+
+    private fun calculateFileEncryptSize(file: File): Int {
+        val fileSize = file.length().toInt()
+        val blockSize = 128
+        return if (fileSize % blockSize == 0) fileSize else (fileSize / blockSize + 1) * blockSize
     }
 
     private fun checksum(data: ByteArray): ByteArray {
@@ -154,6 +193,7 @@ class TransferProtocol(private val serializationJson: Json, private val server: 
     fun setCachePath(cachePath: File) {
         this.cachePath = cachePath
     }
+
     private fun readFile(inputStream: InputStream, expectedLength: Int): File {
         val crc = CRC32()
         val uuidByteArray = safeRead(inputStream, 16)
