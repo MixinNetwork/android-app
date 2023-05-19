@@ -137,7 +137,6 @@ class TransferClient @Inject internal constructor(
         Executors.newSingleThreadExecutor { r -> Thread(r, "SINGLE_TRANSFER_THREAD") }.asCoroutineDispatcher()
     }
 
-
     suspend fun connectToServer(ip: String, port: Int, commandData: TransferCommand, key: ByteArray) =
         withContext(SINGLE_SOCKET_THREAD) {
             try {

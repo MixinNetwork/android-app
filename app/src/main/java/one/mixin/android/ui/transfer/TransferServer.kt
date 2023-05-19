@@ -11,7 +11,7 @@ import kotlinx.serialization.SerializationStrategy
 import kotlinx.serialization.json.Json
 import one.mixin.android.MixinApplication
 import one.mixin.android.RxBus
-import one.mixin.android.crypto.generateAesKey
+import one.mixin.android.crypto.Util.getSecretBytes
 import one.mixin.android.db.AppDao
 import one.mixin.android.db.AssetDao
 import one.mixin.android.db.ConversationDao
@@ -83,7 +83,7 @@ class TransferServer @Inject internal constructor(
     val status: TransferStatusLiveData,
     private val serializationJson: Json,
 ) {
-    val protocol by lazy { TransferProtocol(serializationJson, aesKey, true) }
+    val protocol by lazy { TransferProtocol(serializationJson, secretBytes, true) }
 
     private var serverSocket: ServerSocket? = null
     private var socket: Socket? = null
@@ -110,8 +110,8 @@ class TransferServer @Inject internal constructor(
             }
         }
 
-    private val aesKey by lazy {
-        generateAesKey()
+    private val secretBytes by lazy {
+        getSecretBytes(64)
     }
 
     suspend fun startServer(
@@ -128,7 +128,7 @@ class TransferServer @Inject internal constructor(
                     TransferCommandAction.PUSH.value,
                     NetworkUtils.getWifiIpAddress(MixinApplication.appContext),
                     this@TransferServer.port,
-                    aesKey.base64Encode(),
+                    secretBytes.base64Encode(),
                     this@TransferServer.code,
                     userId = Session.getAccountId(),
                 ),
