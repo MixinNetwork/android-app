@@ -7,8 +7,6 @@ import androidx.paging.DataSource
 import androidx.room.CoroutinesRoom
 import androidx.room.RoomSQLiteQuery
 import androidx.room.getQueryDispatcher
-import androidx.room.util.query
-import androidx.room.util.useCursor
 import kotlinx.coroutines.withContext
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.fts.FtsDataSource
@@ -18,7 +16,6 @@ import one.mixin.android.ui.search.CancellationLimitOffsetDataSource
 import one.mixin.android.util.chat.FastLimitOffsetDataSource
 import one.mixin.android.util.chat.MixinLimitOffsetDataSource
 import one.mixin.android.util.chat.NoCountLimitOffsetDataSource
-import one.mixin.android.util.debug.measureTimeMillis
 import one.mixin.android.vo.AssetItem
 import one.mixin.android.vo.ChatHistoryMessageItem
 import one.mixin.android.vo.ChatMinimal
@@ -31,22 +28,22 @@ import one.mixin.android.vo.User
 @SuppressLint("RestrictedApi")
 class DataProvider {
     companion object {
+
         fun getMessages(database: MixinDatabase, conversationId: String) =
             object : DataSource.Factory<Int, MessageItem>() {
                 private val fastCountCallback = fun(): Int {
-                    val readableDatabase = MixinDatabase.getReadableDatabase() ?: return 0
-                    return measureTimeMillis("count $conversationId") {
-                        val cursor = readableDatabase.query("SELECT count(1) FROM messages m WHERE conversation_id = '$conversationId'")
-                        cursor.useCursor {
-                            cursor.moveToFirst()
-                            it.getInt(0)
-                        }
+                    val conversationExtDao = database.conversationExtDao()
+                    val count = conversationExtDao.getMessageCountByConversationId(conversationId)
+                    if (count != null) {
+                        return count
                     }
+                    conversationExtDao.refreshCountByConversationId(conversationId)
+                    return (conversationExtDao.getMessageCountByConversationId(conversationId) ?: 0)
                 }
                 override fun create(): DataSource<Int, MessageItem> {
                     val sql =
                         """
-                        SELECT m.id AS messageId, m.conversation_id AS conversationId, m.user_id AS userId,
+                        SELECT m.id AS messageId, m.conversation_id AS conversationId, u.user_id AS userId,
                         u.full_name AS userFullName, u.identity_number AS userIdentityNumber, u.app_id AS appId, m.category AS type,
                         m.content AS content, m.created_at AS createdAt, m.status AS status, m.media_status AS mediaStatus, m.media_waveform AS mediaWaveform,
                         m.name AS mediaName, m.media_mime_type AS mediaMimeType, m.media_size AS mediaSize, m.media_width AS mediaWidth, m.media_height AS mediaHeight,
@@ -59,7 +56,7 @@ class DataProvider {
                         su.avatar_url AS sharedUserAvatarUrl, su.is_verified AS sharedUserIsVerified, su.app_id AS sharedUserAppId, mm.mentions AS mentions, mm.has_read as mentionRead, 
                         pm.message_id IS NOT NULL as isPin, c.name AS groupName, em.expire_in AS expireIn, em.expire_at AS expireAt   
                         FROM messages m
-                        LEFT JOIN users u ON m.user_id = u.user_id
+                        INNER JOIN users u ON m.user_id = u.user_id
                         LEFT JOIN users u1 ON m.participant_id = u1.user_id
                         LEFT JOIN snapshots s ON m.snapshot_id = s.snapshot_id
                         LEFT JOIN assets a ON s.asset_id = a.asset_id
