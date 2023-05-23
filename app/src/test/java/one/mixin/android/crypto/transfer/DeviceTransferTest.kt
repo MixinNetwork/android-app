@@ -1,6 +1,7 @@
 package one.mixin.android.crypto.transfer
 
 import one.mixin.android.crypto.Util
+import one.mixin.android.ui.transfer.TransferCipher
 import org.junit.Test
 import java.io.File
 import java.io.FileInputStream
@@ -107,7 +108,7 @@ class DeviceTransferTest {
 
     @Test
     fun testAesAndCrc() {
-        val secretBytes = Util.getSecretBytes(64)
+        val secretBytes = TransferCipher.generateKey()
         val aesKey = secretBytes.sliceArray(0..31)
         val hMac = secretBytes.sliceArray(32..63)
         val fileName = "test.dat"

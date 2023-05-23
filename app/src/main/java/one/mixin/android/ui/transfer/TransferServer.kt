@@ -111,7 +111,7 @@ class TransferServer @Inject internal constructor(
         }
 
     private val secretBytes by lazy {
-        getSecretBytes(64)
+        TransferCipher.generateKey()
     }
 
     suspend fun startServer(
