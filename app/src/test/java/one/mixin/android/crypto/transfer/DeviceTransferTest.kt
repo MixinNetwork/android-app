@@ -1,6 +1,5 @@
 package one.mixin.android.crypto.transfer
 
-import one.mixin.android.crypto.Util
 import one.mixin.android.ui.transfer.TransferCipher
 import org.junit.Test
 import java.io.File

@@ -16,6 +16,7 @@ import kotlinx.serialization.json.decodeFromStream
 import one.mixin.android.Constants
 import one.mixin.android.MixinApplication
 import one.mixin.android.RxBus
+import one.mixin.android.api.ChecksumException
 import one.mixin.android.db.AppDao
 import one.mixin.android.db.AssetDao
 import one.mixin.android.db.ConversationDao
@@ -60,6 +61,7 @@ import one.mixin.android.ui.transfer.vo.compatible.TransferMessageMention
 import one.mixin.android.util.NetworkUtils
 import one.mixin.android.util.SINGLE_SOCKET_THREAD
 import one.mixin.android.util.mention.parseMentionData
+import one.mixin.android.util.reportException
 import one.mixin.android.vo.App
 import one.mixin.android.vo.Asset
 import one.mixin.android.vo.Conversation
@@ -177,6 +179,20 @@ class TransferClient @Inject internal constructor(
                 quit = true
                 Timber.e(e)
                 NetworkUtils.printWifiInfo(MixinApplication.appContext)
+                null
+            } catch (e: ChecksumException) {
+                if (status.value != TransferStatus.FINISHED && status.value != TransferStatus.PROCESSING && status.value != TransferStatus.ERROR) {
+                    status.value = TransferStatus.ERROR
+                    exit()
+                }
+                quit = true
+                Timber.e(e)
+                reportException(e)
+                null
+            } catch (e: Exception) {
+                quit = true
+                Timber.e(e)
+                reportException(e)
                 null
             }
             status.value = TransferStatus.SYNCING

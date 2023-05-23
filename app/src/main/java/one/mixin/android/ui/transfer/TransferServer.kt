@@ -11,7 +11,6 @@ import kotlinx.serialization.SerializationStrategy
 import kotlinx.serialization.json.Json
 import one.mixin.android.MixinApplication
 import one.mixin.android.RxBus
-import one.mixin.android.crypto.Util.getSecretBytes
 import one.mixin.android.db.AppDao
 import one.mixin.android.db.AssetDao
 import one.mixin.android.db.ConversationDao

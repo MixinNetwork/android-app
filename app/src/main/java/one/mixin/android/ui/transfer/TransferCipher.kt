@@ -9,7 +9,7 @@ object TransferCipher {
         return HKDFv3().deriveSecrets(
             Util.getSecretBytes(32),
             INFO,
-            64
+            64,
         )
     }
 }
