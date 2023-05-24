@@ -496,8 +496,25 @@ object NotificationGenerator : Injector() {
                 if (conversation.isGroupConversation()) R.drawable.ic_group_place_holder else R.drawable.default_avatar,
             )
             notificationBuilder.setLargeIcon(resource)
+            notificationBuilder.setGroup(conversation.conversationId)
+
             buildBubble(context, conversation, notificationBuilder, message, resource, person)
-            notificationManager.notify(message.conversationId.hashCode(), notificationBuilder.build())
+            notificationManager.notify(message.messageId.hashCode(), notificationBuilder.build())
+
+            supportsNougat {
+                val summaryNotification = NotificationCompat.Builder(context, channelId)
+                    .setContentTitle(conversation.getConversationName())
+                    .setSmallIcon(R.drawable.ic_msg_default)
+                    .setStyle(
+                        NotificationCompat.InboxStyle()
+                            .addLine(conversation.content)
+                            .setSummaryText(conversation.getConversationName()),
+                    )
+                    .setGroup(conversation.conversationId)
+                    .setGroupSummary(true)
+                    .build()
+                notificationManager.notify(conversation.conversationId.hashCode(), summaryNotification)
+            }
         }
     }
 
