@@ -37,6 +37,8 @@ import one.mixin.android.ui.transfer.vo.TransferData
 import one.mixin.android.ui.transfer.vo.TransferDataType
 import one.mixin.android.ui.transfer.vo.compatible.TransferMessage
 import one.mixin.android.ui.transfer.vo.compatible.TransferMessageMention
+import one.mixin.android.ui.transfer.vo.compatible.isAttachment
+import one.mixin.android.ui.transfer.vo.compatible.markAttachmentAsPending
 import one.mixin.android.ui.transfer.vo.compatible.toMessage
 import one.mixin.android.ui.transfer.vo.transferDataTypeFromValue
 import one.mixin.android.util.NetworkUtils
@@ -53,6 +55,7 @@ import one.mixin.android.vo.TranscriptMessage
 import one.mixin.android.vo.User
 import one.mixin.android.vo.absolutePath
 import one.mixin.android.vo.isAttachment
+import one.mixin.android.vo.markAttachmentAsPending
 import timber.log.Timber
 import java.io.InputStream
 import java.io.OutputStream
@@ -554,13 +557,15 @@ class TransferServer @Inject internal constructor(
             if (list.isEmpty()) {
                 return
             }
-            list.forEach { transcriptMessage ->
+            list.map {
+                it.markAttachmentAsPending()
+            }.forEach { transcriptMessage ->
                 writeJson(
                     outputStream,
                     TransferData.serializer(TranscriptMessage.serializer()),
                     TransferData(TransferDataType.TRANSCRIPT_MESSAGE.value, transcriptMessage),
                 )
-                syncMediaFile(outputStream, transcriptMessage)
+                syncTranscriptMediaFile(outputStream, transcriptMessage)
                 count++
             }
             if (list.size < LIMIT) {
@@ -632,13 +637,15 @@ class TransferServer @Inject internal constructor(
             if (list.isEmpty()) {
                 return
             }
-            list.forEach { transcriptMessage ->
+            list.map {
+                it.markAttachmentAsPending()
+            }.forEach { transcriptMessage ->
                 writeJson(
                     outputStream,
                     TransferData.serializer(TransferMessage.serializer()),
                     TransferData(TransferDataType.MESSAGE.value, transcriptMessage),
                 )
-                syncMediaFile(outputStream, transcriptMessage)
+                syncMessageMediaFile(outputStream, transcriptMessage)
                 count++
             }
             if (list.size < LIMIT) {
@@ -725,7 +732,8 @@ class TransferServer @Inject internal constructor(
         }
     }
 
-    private fun syncMediaFile(outputStream: OutputStream, message: TransferMessage) {
+    private fun syncMessageMediaFile(outputStream: OutputStream, message: TransferMessage) {
+        if (!message.isAttachment()) return
         val context = MixinApplication.get()
         val mediaMessage = message.toMessage()
         mediaMessage.absolutePath(context)?.let { path ->
@@ -742,7 +750,7 @@ class TransferServer @Inject internal constructor(
         }
     }
 
-    private fun syncMediaFile(outputStream: OutputStream, message: TranscriptMessage) {
+    private fun syncTranscriptMediaFile(outputStream: OutputStream, message: TranscriptMessage) {
         val context = MixinApplication.get()
         if (!message.isAttachment()) return
         message.absolutePath(context)?.let { path ->

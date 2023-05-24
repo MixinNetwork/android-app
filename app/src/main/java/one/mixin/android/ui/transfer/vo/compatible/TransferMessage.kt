@@ -7,7 +7,11 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import one.mixin.android.Constants
 import one.mixin.android.util.serialization.ByteArrayBase64Serializer
+import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.Message
+import one.mixin.android.vo.MessageCategory
+import one.mixin.android.vo.TranscriptMessage
+import one.mixin.android.vo.isAttachment
 
 @Serializable
 class TransferMessage(
@@ -208,5 +212,31 @@ fun TransferMessage.toMessage(): Message {
         quoteMessageId = this.quoteMessageId,
         quoteContent = this.quoteContent,
         caption = this.caption,
+    )
+}
+
+fun TransferMessage.markAttachmentAsPending(): TransferMessage {
+    if (category in attachmentCategory && mediaStatus == MediaStatus.PENDING.name) {
+        mediaStatus = MediaStatus.CANCELED.name
+    }
+    return this
+}
+
+fun TransferMessage.isAttachment() = category in attachmentCategory
+
+private val attachmentCategory by lazy {
+    listOf(
+        MessageCategory.PLAIN_DATA.name,
+        MessageCategory.PLAIN_IMAGE.name,
+        MessageCategory.PLAIN_VIDEO.name,
+        MessageCategory.PLAIN_AUDIO.name,
+        MessageCategory.SIGNAL_DATA.name,
+        MessageCategory.SIGNAL_IMAGE.name,
+        MessageCategory.SIGNAL_VIDEO.name,
+        MessageCategory.SIGNAL_AUDIO.name,
+        MessageCategory.ENCRYPTED_DATA.name,
+        MessageCategory.ENCRYPTED_IMAGE.name,
+        MessageCategory.ENCRYPTED_VIDEO.name,
+        MessageCategory.ENCRYPTED_AUDIO.name,
     )
 }
