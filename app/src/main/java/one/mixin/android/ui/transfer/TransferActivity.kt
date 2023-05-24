@@ -37,6 +37,7 @@ import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.base64Encode
 import one.mixin.android.extension.base64RawURLDecode
 import one.mixin.android.extension.base64RawURLEncode
+import one.mixin.android.extension.decodeBase64
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.fadeIn
@@ -609,11 +610,12 @@ class TransferActivity : BaseActivity() {
                 return
             }
         }
-        connect(transferCommandData.ip!!, transferCommandData.port!!, TransferCommand(TransferCommandAction.CONNECT.value, code = transferCommandData.code, userId = Session.getAccountId()))
+        val key = requireNotNull(transferCommandData.secretKey).decodeBase64()
+        connect(transferCommandData.ip!!, transferCommandData.port!!, TransferCommand(TransferCommandAction.CONNECT.value, code = transferCommandData.code, userId = Session.getAccountId()), key = key)
     }
 
-    private suspend fun connect(ip: String, port: Int, transferCommand: TransferCommand) {
-        transferClient.connectToServer(ip, port, transferCommand)
+    private suspend fun connect(ip: String, port: Int, transferCommand: TransferCommand, key: ByteArray) {
+        transferClient.connectToServer(ip, port, transferCommand, key)
     }
 
     override fun onStop() {
