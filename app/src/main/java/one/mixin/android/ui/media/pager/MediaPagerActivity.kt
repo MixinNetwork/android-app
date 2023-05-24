@@ -192,8 +192,26 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
     override fun onStop() {
         super.onStop()
         binding.lockTv.removeCallbacks(hideLockRunnable)
-        if (!pipVideoView.shown) {
-            VideoPlayer.player().pause()
+
+        if ((isFinishing && manualFinish) || pipVideoView.shown) return
+
+        val currMessage = getMessageItemByPosition(binding.viewPager.currentItem)
+        fun pauseIfNotShown() {
+            if (!pipVideoView.shown) {
+                VideoPlayer.player().pause()
+            }
+        }
+        if (currMessage == null) {
+            pauseIfNotShown()
+            return
+        }
+        if (!VideoPlayer.player().isPlaying() || !(currMessage.isVideo() || currMessage.isLive())) return
+
+        if (checkInlinePermissions { pauseIfNotShown() }) {
+            val v: DismissFrameLayout = binding.viewPager.findViewWithTag("$PREFIX${currMessage.messageId}")
+            switchToPip(currMessage, v)
+        } else {
+            pauseIfNotShown()
         }
     }
 
@@ -208,7 +226,7 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
     }
 
     override fun dispatchTouchEvent(ev: MotionEvent?): Boolean {
-        val enable = ev?.pointerCount ?: 0 < 2
+        val enable = (ev?.pointerCount ?: 0) < 2
         binding.viewPager.isUserInputEnabled = enable
         return super.dispatchTouchEvent(ev)
     }
@@ -504,85 +522,83 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
     }
 
     private var pipAnimationInProgress = false
-    private fun switchToPip(messageItem: MessageItem, view: View) {
+    private fun switchToPip(messageItem: MessageItem, windowView: View) {
         if (!checkPipPermission() || pipAnimationInProgress) {
             return
         }
         pipAnimationInProgress = true
-        findViewPagerChildByTag { windowView ->
-            val videoAspectRatioLayout =
-                ItemPagerVideoLayoutBinding.bind(windowView).playerView.videoAspectRatio
-            val rect = PipVideoView.getPipRect(videoAspectRatioLayout.aspectRatio)
-            val isLandscape = isLandscape()
-            if (isLandscape) {
-                val screenHeight = realSize().y
-                if (rect.width > screenHeight) {
-                    val ratio = rect.width / rect.height
-                    rect.height = screenHeight / ratio
-                    rect.width = screenHeight.toFloat()
-                }
+        val videoAspectRatioLayout =
+            ItemPagerVideoLayoutBinding.bind(windowView).playerView.videoAspectRatio
+        val rect = PipVideoView.getPipRect(videoAspectRatioLayout.aspectRatio)
+        val isLandscape = isLandscape()
+        if (isLandscape) {
+            val screenHeight = realSize().y
+            if (rect.width > screenHeight) {
+                val ratio = rect.width / rect.height
+                rect.height = screenHeight / ratio
+                rect.width = screenHeight.toFloat()
             }
-            val width = if (isLandscape) windowView.height else windowView.width
-            val scale = (if (isLandscape) rect.height else rect.width) / width
-            val animatorSet = AnimatorSet()
-            val position = IntArray(2)
-            videoAspectRatioLayout.getLocationOnScreen(position)
-            val changedTextureView = pipVideoView.show(
-                videoAspectRatioLayout.aspectRatio,
-                videoAspectRatioLayout.videoRotation,
-                conversationId,
-                messageItem.messageId,
-                messageItem.isVideo(),
-                mediaSource,
-                messageItem.absolutePath(),
-            )
-
-            val videoTexture = view.findViewById<TextureView>(R.id.video_texture)
-            animatorSet.playTogether(
-                ObjectAnimator.ofInt(colorDrawable, AnimationProperties.COLOR_DRAWABLE_ALPHA, 0),
-                ObjectAnimator.ofFloat(videoTexture, View.SCALE_X, scale),
-                ObjectAnimator.ofFloat(videoTexture, View.SCALE_Y, scale),
-                ObjectAnimator.ofFloat(
-                    videoAspectRatioLayout,
-                    View.TRANSLATION_X,
-                    rect.x - videoAspectRatioLayout.x -
-                        this.realSize().x * (1f - scale) / 2,
-                ),
-                ObjectAnimator.ofFloat(
-                    videoAspectRatioLayout,
-                    View.TRANSLATION_Y,
-                    rect.y - videoAspectRatioLayout.y +
-                        this.statusBarHeight() - (videoAspectRatioLayout.height - rect.height) / 2,
-                ),
-            )
-            animatorSet.interpolator = DecelerateInterpolator()
-            animatorSet.duration = 250
-            animatorSet.addListener(
-                object : AnimatorListenerAdapter() {
-                    override fun onAnimationStart(animation: Animator) {
-                        windowView.findViewById<View>(R.id.pip_iv).fadeOut()
-                        windowView.findViewById<View>(R.id.close_iv).fadeOut()
-                        if (windowView.findViewById<View>(R.id.live_tv).isEnabled) {
-                            windowView.findViewById<View>(R.id.live_tv).fadeOut()
-                        }
-                    }
-
-                    override fun onAnimationEnd(animation: Animator) {
-                        pipAnimationInProgress = false
-                        if (messageItem.isVideo() && VideoPlayer.player().player.playbackState == Player.STATE_IDLE) {
-                            VideoPlayer.player()
-                                .loadVideo(messageItem.absolutePath()!!, messageItem.messageId, true)
-                            VideoPlayer.player().setVideoTextureView(changedTextureView)
-                            VideoPlayer.player().pause()
-                        } else {
-                            VideoPlayer.player().setVideoTextureView(changedTextureView)
-                        }
-                        dismiss()
-                    }
-                },
-            )
-            animatorSet.start()
         }
+        val width = if (isLandscape) windowView.height else windowView.width
+        val scale = (if (isLandscape) rect.height else rect.width) / width
+        val animatorSet = AnimatorSet()
+        val position = IntArray(2)
+        videoAspectRatioLayout.getLocationOnScreen(position)
+        val changedTextureView = pipVideoView.show(
+            videoAspectRatioLayout.aspectRatio,
+            videoAspectRatioLayout.videoRotation,
+            conversationId,
+            messageItem.messageId,
+            messageItem.isVideo(),
+            mediaSource,
+            messageItem.absolutePath(),
+        )
+
+        val videoTexture = windowView.findViewById<TextureView>(R.id.video_texture)
+        animatorSet.playTogether(
+            ObjectAnimator.ofInt(colorDrawable, AnimationProperties.COLOR_DRAWABLE_ALPHA, 0),
+            ObjectAnimator.ofFloat(videoTexture, View.SCALE_X, scale),
+            ObjectAnimator.ofFloat(videoTexture, View.SCALE_Y, scale),
+            ObjectAnimator.ofFloat(
+                videoAspectRatioLayout,
+                View.TRANSLATION_X,
+                rect.x - videoAspectRatioLayout.x -
+                    this.realSize().x * (1f - scale) / 2,
+            ),
+            ObjectAnimator.ofFloat(
+                videoAspectRatioLayout,
+                View.TRANSLATION_Y,
+                rect.y - videoAspectRatioLayout.y +
+                    this.statusBarHeight() - (videoAspectRatioLayout.height - rect.height) / 2,
+            ),
+        )
+        animatorSet.interpolator = DecelerateInterpolator()
+        animatorSet.duration = 250
+        animatorSet.addListener(
+            object : AnimatorListenerAdapter() {
+                override fun onAnimationStart(animation: Animator) {
+                    windowView.findViewById<View>(R.id.pip_iv).fadeOut()
+                    windowView.findViewById<View>(R.id.close_iv).fadeOut()
+                    if (windowView.findViewById<View>(R.id.live_tv).isEnabled) {
+                        windowView.findViewById<View>(R.id.live_tv).fadeOut()
+                    }
+                }
+
+                override fun onAnimationEnd(animation: Animator) {
+                    pipAnimationInProgress = false
+                    if (messageItem.isVideo() && VideoPlayer.player().player.playbackState == Player.STATE_IDLE) {
+                        VideoPlayer.player()
+                            .loadVideo(messageItem.absolutePath()!!, messageItem.messageId, true)
+                        VideoPlayer.player().setVideoTextureView(changedTextureView)
+                        VideoPlayer.player().pause()
+                    } else {
+                        VideoPlayer.player().setVideoTextureView(changedTextureView)
+                    }
+                    dismiss()
+                }
+            },
+        )
+        animatorSet.start()
     }
 
     private var permissionAlert: AlertDialog? = null
@@ -763,7 +779,10 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
         super.finishAfterTransition()
     }
 
+    private var manualFinish = false
+
     override fun finish() {
+        manualFinish = true
         super.finish()
         overridePendingTransition(0, R.anim.scale_out)
     }
