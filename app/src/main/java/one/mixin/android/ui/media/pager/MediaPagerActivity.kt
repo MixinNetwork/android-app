@@ -36,6 +36,7 @@ import androidx.core.view.doOnPreDraw
 import androidx.core.view.isVisible
 import androidx.lifecycle.lifecycleScope
 import androidx.media3.common.Player
+import androidx.media3.common.util.UnstableApi
 import androidx.paging.PagedList
 import androidx.viewpager2.widget.ViewPager2
 import com.tbruyelle.rxpermissions2.RxPermissions
@@ -96,7 +97,7 @@ import timber.log.Timber
 import java.io.FileInputStream
 import kotlin.math.min
 
-@AndroidEntryPoint
+@UnstableApi @AndroidEntryPoint
 class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener, SensorOrientationChangeNotifier.Listener {
     private lateinit var colorDrawable: ColorDrawable
 
@@ -191,10 +192,16 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
     override fun onStop() {
         super.onStop()
         binding.lockTv.removeCallbacks(hideLockRunnable)
+        if (!pipVideoView.shown) {
+            VideoPlayer.player().pause()
+        }
     }
 
     override fun onDestroy() {
         super.onDestroy()
+        if (!pipVideoView.shown) {
+            VideoPlayer.destroy()
+        }
         processor.close()
         SensorOrientationChangeNotifier.reset()
         binding.viewPager.unregisterOnPageChangeCallback(onPageChangeCallback)
@@ -603,9 +610,6 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
         }
 
     private fun dismiss() {
-        if (!pipVideoView.shown) {
-            VideoPlayer.destroy()
-        }
         binding.viewPager.visibility = View.INVISIBLE
         overridePendingTransition(0, 0)
         super.finish()
@@ -760,9 +764,6 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
     }
 
     override fun finish() {
-        if (!pipVideoView.shown) {
-            VideoPlayer.destroy()
-        }
         super.finish()
         overridePendingTransition(0, R.anim.scale_out)
     }
