@@ -16,7 +16,6 @@ import kotlinx.serialization.json.decodeFromStream
 import one.mixin.android.Constants
 import one.mixin.android.MixinApplication
 import one.mixin.android.RxBus
-import one.mixin.android.api.ChecksumException
 import one.mixin.android.db.AppDao
 import one.mixin.android.db.AssetDao
 import one.mixin.android.db.ConversationDao

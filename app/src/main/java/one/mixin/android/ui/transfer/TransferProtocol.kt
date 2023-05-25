@@ -96,7 +96,6 @@ class TransferProtocol(private val serializationJson: Json, private val secretBy
     fun write(outputStream: OutputStream, type: Byte, content: String) {
         val data = content.toByteArray(UTF_8)
         if (data.size >= MAX_DATA_SIZE) {
-            Timber.e(content)
             return
         }
         val writeData = encrypt(data)
@@ -178,7 +177,6 @@ class TransferProtocol(private val serializationJson: Json, private val secretBy
             throw ChecksumException()
         }
         if (expectedLength >= MAX_DATA_SIZE) {
-            Timber.e(String(data))
             return null
         }
         return data
