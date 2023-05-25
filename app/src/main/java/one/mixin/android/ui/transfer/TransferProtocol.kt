@@ -140,17 +140,17 @@ class TransferProtocol(private val serializationJson: Json, private val secretBy
             val cipher = Cipher.getInstance("AES/CBC/PKCS5Padding")
             cipher.init(Cipher.ENCRYPT_MODE, aesKey, IvParameterSpec(iv))
             file.inputStream().use { fileInputStream ->
-                val cis = CipherInputStream(fileInputStream, cipher)
-                val buffer = ByteArray(1024)
-                var read: Int
-                while (cis.read(buffer).also { read = it } != -1) {
-                    outputStream.write(buffer, 0, read)
-                    mac.update(buffer, 0, read)
+                CipherInputStream(fileInputStream, cipher).use { cis ->
+                    val buffer = ByteArray(1024)
+                    var read: Int
+                    while (cis.read(buffer).also { read = it } != -1) {
+                        outputStream.write(buffer, 0, read)
+                        mac.update(buffer, 0, read)
+                    }
                 }
-                cis.close()
             }
-            val a = mac.doFinal()
-            outputStream.write(a)
+            val hMac = mac.doFinal()
+            outputStream.write(hMac)
             if (server) calculateReadSpeed(FILE_EXT_LENGTH)
         }
     }
@@ -230,20 +230,21 @@ class TransferProtocol(private val serializationJson: Json, private val secretBy
         var bytesRead = 0
         var bytesLeft = expectedLength - IV_LENGTH - UUID_LENGTH
         outFile.outputStream().use { fos ->
-            val cos = CipherOutputStream(fos, cipher)
-            while (bytesRead != -1 && bytesLeft > 0) {
-                bytesRead = inputStream.read(buffer, 0, bytesLeft.coerceAtMost(1024))
-                if (bytesRead > 0) {
-                    cos.write(buffer, 0, bytesRead)
-                    mac.update(buffer, 0, bytesRead)
-                    bytesLeft -= bytesRead
-                    if (!server) calculateReadSpeed(bytesRead)
+            CipherOutputStream(fos, cipher).use { cos ->
+                while (bytesRead != -1 && bytesLeft > 0) {
+                    bytesRead = inputStream.read(buffer, 0, bytesLeft.coerceAtMost(1024))
+                    if (bytesRead > 0) {
+                        cos.write(buffer, 0, bytesRead)
+                        mac.update(buffer, 0, bytesRead)
+                        bytesLeft -= bytesRead
+                        if (!server) calculateReadSpeed(bytesRead)
+                    }
                 }
             }
         }
         val checksum = safeRead(inputStream, H_MAC_LENGTH)
         val decodeCheckSum = mac.doFinal()
-        Timber.e("Receive file: ${outFile.name} ${outFile.length()}")
+        Timber.e("Receive file: ${outFile.name} ${outFile.length()} ${expectedLength - IV_LENGTH - UUID_LENGTH} ")
         if (!decodeCheckSum.contentEquals(checksum)) {
             Timber.e("Checksum ${checksum.base64Encode()} -- ${decodeCheckSum.base64Encode()}")
             throw ChecksumException()

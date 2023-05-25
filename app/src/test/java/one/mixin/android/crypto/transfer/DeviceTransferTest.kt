@@ -1,5 +1,6 @@
 package one.mixin.android.crypto.transfer
 
+import one.mixin.android.extension.base64Encode
 import one.mixin.android.ui.transfer.TransferCipher
 import org.junit.Test
 import java.io.File
@@ -8,9 +9,11 @@ import java.io.FileOutputStream
 import java.io.IOException
 import java.io.RandomAccessFile
 import java.security.InvalidKeyException
+import java.security.MessageDigest
 import java.security.NoSuchAlgorithmException
 import java.security.SecureRandom
 import java.util.Random
+import java.util.UUID
 import javax.crypto.BadPaddingException
 import javax.crypto.Cipher
 import javax.crypto.CipherInputStream
@@ -107,26 +110,68 @@ class DeviceTransferTest {
 
     @Test
     fun testAesAndCrc() {
-        val secretBytes = TransferCipher.generateKey()
-        val aesKey = secretBytes.sliceArray(0..31)
-        val hMac = secretBytes.sliceArray(32..63)
-        val fileName = "test.dat"
-        val encFileName = "test.enc"
-        val decFileName = "test.dec"
-        // 5~10M random file
-        val fileSize = (5242880 + Random().nextInt(5242880)).toLong()
-        generateRandomFile(fileName, fileSize)
+        repeat(100) {
+            val secretBytes = TransferCipher.generateKey()
+            val aesKey = secretBytes.sliceArray(0..31)
+            val hMac = secretBytes.sliceArray(32..63)
+            println("secret key ${secretBytes.base64Encode()}")
+            val uuid = UUID.randomUUID().toString()
+            val fileName = "$uuid.dat"
+            val encFileName = "$uuid.enc"
+            val decFileName = "$uuid.dec"
+            // 5~10M random file
+            val fileSize = (5242880 + Random().nextInt(5242880)).toLong()
+            generateRandomFile(fileName, fileSize)
 
-        val (iv, checkSum) = encryptFile(fileName, encFileName, aesKey, hMac)
-        // test EncryptedSize
-        assertEquals(File(encFileName).length().toInt(), calculateEncryptedSize(File(fileName).length()))
+            val (iv, checkSum) = encryptFile(fileName, encFileName, aesKey, hMac)
+            println("iv ${iv.base64Encode()}")
+            // test EncryptedSize
+            assertEquals(
+                File(encFileName).length().toInt(),
+                calculateEncryptedSize(File(fileName).length())
+            )
 
-        val decryptCheckSum = decryptFile(encFileName, decFileName, aesKey, iv, hMac)
-        // test Encrypted checksum
-        assert(checkSum.contentEquals(decryptCheckSum))
+            val decryptCheckSum = decryptFile(encFileName, decFileName, aesKey, iv, hMac)
+            // test Encrypted checksum
+            assert(checkSum.contentEquals(decryptCheckSum))
 
-        File(fileName).delete()
-        File(encFileName).delete()
-        File(decFileName).delete()
+            val sourceMd5 = getFileMd5(File(fileName))
+            val decMd5 = getFileMd5(File(decFileName))
+            // test md5
+            assertEquals(sourceMd5, decMd5)
+
+            File(fileName).delete()
+            File(encFileName).delete()
+            File(decFileName).delete()
+        }
+    }
+
+    private fun getFileMd5(file: File): String? {
+        return try {
+            val messageDigest = MessageDigest.getInstance("MD5")
+
+            val fileInputStream = FileInputStream(file)
+            val buffer = ByteArray(1024)
+            var len = 0
+
+            while (fileInputStream.read(buffer).also { len = it } != -1) {
+                messageDigest.update(buffer, 0, len)
+            }
+            fileInputStream.close()
+
+            val md5Bytes = messageDigest.digest()
+            val sb = StringBuilder()
+            for (b in md5Bytes) {
+                val hexString = Integer.toHexString(0xFF and b.toInt())
+                if (hexString.length == 1) {
+                    sb.append('0')
+                }
+                sb.append(hexString)
+            }
+            sb.toString()
+        } catch (e: Exception) {
+            e.printStackTrace()
+            null
+        }
     }
 }
