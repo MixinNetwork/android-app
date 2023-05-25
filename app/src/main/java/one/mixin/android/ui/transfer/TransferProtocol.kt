@@ -30,15 +30,19 @@ import kotlin.text.Charsets.UTF_8
  * ---------------------------------------------------------------------------------------
  * | type (1 byte 01) | body_length（4 bytes） | [iv (16bytes) | body(AES)] | hMac（32 bytes） |
  * ---------------------------------------------------------------------------------------
+ *
  * Data packet format:
  * ---------------------------------------------------------------------------------------
  * | type (1 byte 02) | body_length（4 bytes） | [iv (16bytes) | body(AES)] | hMac（32 bytes） |
  * ---------------------------------------------------------------------------------------
+ *
  * File packet format:
  * ---------------------------------------------------------------------------------------------------------
  * | type (1 byte 03) | body_length（4 bytes）| [uuid(16 bytes) | iv (16bytes) | body(AES)] | hMac（32 bytes） |
  * ---------------------------------------------------------------------------------------------------------
- * [] indicates the data that needs to be verified
+ *
+ *  body_length equals to the content length within the "[]"
+ *  [] indicates the data that needs to be verified
  */
 @ExperimentalSerializationApi
 class TransferProtocol(private val serializationJson: Json, private val secretBytes: ByteArray, private val server: Boolean = false) {
@@ -50,8 +54,7 @@ class TransferProtocol(private val serializationJson: Json, private val secretBy
         private const val IV_LENGTH = 16
         private const val UUID_LENGTH = 16
         private const val H_MAC_LENGTH = 32
-        private const val JSON_EXT_LENGTH = 9
-        private const val FILE_EXT_LENGTH = 41
+        private const val EXT_LENGTH = 37 // type + body_length + hMac
         private const val MAX_DATA_SIZE = 512000 // 500K
     }
 
@@ -101,7 +104,7 @@ class TransferProtocol(private val serializationJson: Json, private val secretBy
         outputStream.write(intToByteArray(writeData.size))
         outputStream.write(writeData)
         outputStream.write(checksum(writeData))
-        if (server) calculateReadSpeed(writeData.size + JSON_EXT_LENGTH)
+        if (server) calculateSpeed(writeData.size + EXT_LENGTH)
     }
 
     private fun encrypt(input: ByteArray): ByteArray {
@@ -146,12 +149,13 @@ class TransferProtocol(private val serializationJson: Json, private val secretBy
                     while (cis.read(buffer).also { read = it } != -1) {
                         outputStream.write(buffer, 0, read)
                         mac.update(buffer, 0, read)
+                        if (server) calculateSpeed(read)
                     }
                 }
             }
             val hMac = mac.doFinal()
             outputStream.write(hMac)
-            if (server) calculateReadSpeed(FILE_EXT_LENGTH)
+            if (server) calculateSpeed(EXT_LENGTH)
         }
     }
 
@@ -191,14 +195,14 @@ class TransferProtocol(private val serializationJson: Json, private val secretBy
 
             readLength += count
         }
-        if (!server) calculateReadSpeed(expectedLength)
+        if (!server) calculateSpeed(expectedLength)
         return data
     }
 
     private var readCount: Long = 0
     private var lastTimeTime: Long = System.currentTimeMillis()
 
-    private fun calculateReadSpeed(bytesPerRead: Int) {
+    private fun calculateSpeed(bytesPerRead: Int) {
         readCount += bytesPerRead
         val currentTime = System.currentTimeMillis()
         if (currentTime - lastTimeTime > 1000) {
@@ -237,7 +241,7 @@ class TransferProtocol(private val serializationJson: Json, private val secretBy
                         cos.write(buffer, 0, bytesRead)
                         mac.update(buffer, 0, bytesRead)
                         bytesLeft -= bytesRead
-                        if (!server) calculateReadSpeed(bytesRead)
+                        if (!server) calculateSpeed(bytesRead)
                     }
                 }
             }
@@ -249,7 +253,7 @@ class TransferProtocol(private val serializationJson: Json, private val secretBy
             Timber.e("Checksum ${checksum.base64Encode()} -- ${decodeCheckSum.base64Encode()}")
             throw ChecksumException()
         }
-        if (!server) calculateReadSpeed(FILE_EXT_LENGTH)
+        if (!server) calculateSpeed(EXT_LENGTH)
         return outFile
     }
 
