@@ -1,12 +1,20 @@
 package one.mixin.android.crypto.transfer
 
-import one.mixin.android.extension.base64Encode
+import androidx.collection.arrayMapOf
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
+import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.json.Json
 import one.mixin.android.ui.transfer.TransferCipher
+import one.mixin.android.ui.transfer.TransferProtocol
 import org.junit.Test
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
 import java.io.IOException
+import java.io.PipedInputStream
+import java.io.PipedOutputStream
 import java.io.RandomAccessFile
 import java.security.InvalidKeyException
 import java.security.MessageDigest
@@ -50,7 +58,12 @@ class DeviceTransferTest {
         BadPaddingException::class,
         IllegalBlockSizeException::class,
     )
-    fun encryptFile(inFileName: String?, outFileName: String?, secretKey: ByteArray, hMac: ByteArray): Pair<ByteArray, ByteArray> {
+    fun encryptFile(
+        inFileName: String?,
+        outFileName: String?,
+        secretKey: ByteArray,
+        hMac: ByteArray,
+    ): Pair<ByteArray, ByteArray> {
         val iv = ByteArray(16)
         secureRandom.nextBytes(iv)
         val keySpec = SecretKeySpec(secretKey, "AES")
@@ -81,7 +94,13 @@ class DeviceTransferTest {
         BadPaddingException::class,
         IllegalBlockSizeException::class,
     )
-    fun decryptFile(inFileName: String?, outFileName: String?, secretKey: ByteArray, iv: ByteArray, hMacKey: ByteArray): ByteArray {
+    fun decryptFile(
+        inFileName: String?,
+        outFileName: String?,
+        secretKey: ByteArray,
+        iv: ByteArray,
+        hMacKey: ByteArray,
+    ): ByteArray {
         val keySpec = SecretKeySpec(secretKey, "AES")
         val cipher = Cipher.getInstance("AES/CBC/PKCS5Padding")
         cipher.init(Cipher.DECRYPT_MODE, keySpec, IvParameterSpec(iv))
@@ -108,13 +127,49 @@ class DeviceTransferTest {
         return (fileLength + padding).toInt()
     }
 
+    @OptIn(ExperimentalSerializationApi::class)
+    @Test
+    fun testProtocol(): Unit = runBlocking {
+        val secretBytes = TransferCipher.generateKey()
+        val outputStream = PipedOutputStream()
+        val inputStream = PipedInputStream(outputStream)
+        val json = Json {
+            ignoreUnknownKeys = true; explicitNulls = false; encodeDefaults =
+                false; coerceInputValues = true; isLenient = true
+        }
+        val server = TransferProtocol(json, secretBytes, true)
+        val client = TransferProtocol(json, secretBytes)
+        client.setCachePath(File("."))
+        val md5 = arrayMapOf<String, String>()
+        launch(Dispatchers.IO) {
+            repeat(100) {
+                val uuid = UUID.randomUUID().toString()
+                val fileName = "$uuid.data"
+                val sourceFile = File(fileName)
+                val fileSize = (5242880 + Random().nextInt(5242880)).toLong()
+                generateRandomFile(fileName, fileSize)
+                server.write(outputStream, sourceFile, uuid)
+                md5[uuid] = getFileMd5(sourceFile)
+                sourceFile.delete()
+            }
+        }
+        launch(Dispatchers.IO) {
+            repeat(100) {
+                val result = client.read(inputStream)
+                assert(result is File)
+                val file = result as File
+                assertEquals(md5[file.name], getFileMd5(file))
+                file.delete()
+            }
+        }
+    }
+
     @Test
     fun testAesAndCrc() {
         repeat(100) {
             val secretBytes = TransferCipher.generateKey()
             val aesKey = secretBytes.sliceArray(0..31)
             val hMac = secretBytes.sliceArray(32..63)
-            println("secret key ${secretBytes.base64Encode()}")
             val uuid = UUID.randomUUID().toString()
             val fileName = "$uuid.dat"
             val encFileName = "$uuid.enc"
@@ -124,11 +179,10 @@ class DeviceTransferTest {
             generateRandomFile(fileName, fileSize)
 
             val (iv, checkSum) = encryptFile(fileName, encFileName, aesKey, hMac)
-            println("iv ${iv.base64Encode()}")
             // test EncryptedSize
             assertEquals(
                 File(encFileName).length().toInt(),
-                calculateEncryptedSize(File(fileName).length())
+                calculateEncryptedSize(File(fileName).length()),
             )
 
             val decryptCheckSum = decryptFile(encFileName, decFileName, aesKey, iv, hMac)
