@@ -179,17 +179,12 @@ class TransferClient @Inject internal constructor(
                 Timber.e(e)
                 NetworkUtils.printWifiInfo(MixinApplication.appContext)
                 null
-            } catch (e: ChecksumException) {
+            } catch (e: Exception) { // Report exception and stop transfer
+                quit = true
                 if (status.value != TransferStatus.FINISHED && status.value != TransferStatus.PROCESSING && status.value != TransferStatus.ERROR) {
                     status.value = TransferStatus.ERROR
                     exit()
                 }
-                quit = true
-                Timber.e(e)
-                reportException(e)
-                null
-            } catch (e: Exception) {
-                quit = true
                 Timber.e(e)
                 reportException(e)
                 null
