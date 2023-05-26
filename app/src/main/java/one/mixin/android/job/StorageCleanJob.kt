@@ -9,6 +9,7 @@ import one.mixin.android.extension.getFileNameNoEx
 import one.mixin.android.extension.getMediaPath
 import one.mixin.android.extension.isUUID
 import one.mixin.android.util.clear.CleanNotification
+import one.mixin.android.util.getLocalString
 import timber.log.Timber
 
 class StorageCleanJob :
@@ -37,7 +38,7 @@ class StorageCleanJob :
                             size += file.length()
                             file.delete()
                             Timber.e("delete ${file.absolutePath} ${size.fileSize()}")
-                            CleanNotification.show(MixinApplication.appContext.getString(R.string.deep_cleaning_deleted, size.fileSize()))
+                            CleanNotification.show(getLocalString(MixinApplication.appContext, R.string.deep_cleaning_deleted, size.fileSize()))
                         }
                     }
                 }

@@ -13,13 +13,14 @@ import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.extension.isLocalScheme
 import one.mixin.android.extension.toUri
+import one.mixin.android.util.getLocalString
 import timber.log.Timber
 import java.io.FileNotFoundException
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.TimeoutException
 
 @UnstableApi abstract class MusicMetaLoader {
-    val unknownString = MixinApplication.appContext.getString(R.string.Unknown)
+    val unknownString = getLocalString(MixinApplication.appContext, R.string.Unknown)
 
     val ignoreSet = mutableSetOf<String>()
 

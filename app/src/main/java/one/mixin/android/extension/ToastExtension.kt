@@ -7,7 +7,6 @@ import android.view.Gravity
 import android.widget.TextView
 import android.widget.Toast
 import androidx.annotation.StringRes
-import androidx.appcompat.content.res.AppCompatResources
 import one.mixin.android.MixinApplication
 import one.mixin.android.util.getLocalString
 
@@ -28,7 +27,7 @@ inline fun toast(text: CharSequence, duration: ToastDuration = ToastDuration.Lon
 }
 
 inline fun toast(@StringRes resId: Int, duration: ToastDuration = ToastDuration.Long): Toast {
-    val text = getLocalString(MixinApplication.appContext,resId)
+    val text = getLocalString(MixinApplication.appContext, resId)
     return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
         Toast.makeText(MixinApplication.appContext, text, duration.value()).apply {
             show()
