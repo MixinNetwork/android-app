@@ -26,9 +26,9 @@ fun getLocalString(context: Context, @StringRes resId: Int): String {
 }
 
 fun getLocalString(context: Context, @StringRes resId: Int, vararg args: Any): String {
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU || isFollowSystem()) return context.getString(resId, args)
-    val locale = AppCompatDelegate.getApplicationLocales().get(0) ?: return context.getString(resId, args)
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU || isFollowSystem()) return context.getString(resId, *args)
+    val locale = AppCompatDelegate.getApplicationLocales().get(0) ?: return context.getString(resId, *args)
     val configuration = context.resources.configuration
     configuration.setLocales(LocaleList(locale))
-    return context.createConfigurationContext(configuration).getString(resId, args)
+    return context.createConfigurationContext(configuration).getString(resId, *args)
 }
