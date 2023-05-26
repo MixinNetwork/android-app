@@ -36,6 +36,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.media3.common.Player
+import androidx.media3.common.util.UnstableApi
 import androidx.viewpager2.widget.ViewPager2
 import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.autoDispose
@@ -94,7 +95,7 @@ import java.io.FileInputStream
 import javax.inject.Inject
 import kotlin.math.min
 
-@AndroidEntryPoint
+@UnstableApi @AndroidEntryPoint
 class TranscriptMediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener, SensorOrientationChangeNotifier.Listener {
     private lateinit var colorDrawable: ColorDrawable
 
@@ -170,10 +171,16 @@ class TranscriptMediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismis
     override fun onStop() {
         super.onStop()
         binding.lockTv.removeCallbacks(hideLockRunnable)
+        if (!pipVideoView.shown) {
+            VideoPlayer.player().pause()
+        }
     }
 
     override fun onDestroy() {
         super.onDestroy()
+        if (!pipVideoView.shown) {
+            VideoPlayer.destroy()
+        }
         processor.close()
         SensorOrientationChangeNotifier.reset()
         binding.viewPager.unregisterOnPageChangeCallback(onPageChangeCallback)
@@ -714,9 +721,6 @@ class TranscriptMediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismis
     }
 
     override fun finish() {
-        if (!pipVideoView.shown) {
-            VideoPlayer.destroy()
-        }
         super.finish()
         overridePendingTransition(0, R.anim.scale_out)
     }
