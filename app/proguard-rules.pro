@@ -71,3 +71,17 @@
 -keep class * extends com.google.gson.reflect.TypeToken
 
 -keep class kotlin.coroutines.Continuation
+
+# web3j
+-keepclassmembers class org.web3j.protocol.** { *; }
+-keepclassmembers class org.web3j.crypto.* { *; }
+
+-dontwarn com.fasterxml.jackson.databind.**
+-keep class com.fasterxml.jackson.core.** { *; }
+-keep interface com.fasterxml.jackson.core.* { *; }
+-keep class com.fasterxml.jackson.databind.** { *; }
+-keep interface com.fasterxml.jackson.databind.* { *; }
+-keep class com.fasterxml.jackson.annotation.** { *; }
+-keep interface com.fasterxml.jackson.annotation.** { *; }
+#-dontwarn java.lang.SafeVarargs
+-dontwarn org.slf4j.**
