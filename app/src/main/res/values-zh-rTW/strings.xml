@@ -11,7 +11,7 @@
     <string name="a_transcript">一個聊天記錄</string>
     <string name="a_video">一個影片</string>
     <string name="About">關於</string>
-    <string name="about_version">版本 %1$s</string>
+    <string name="about_version">版本 %1$s (%2$d)</string>
     <string name="Accept">接聽</string>
     <string name="Access_denied">禁止訪問</string>
     <string name="access_your_bots_list">訪問你的機器人列表</string>
