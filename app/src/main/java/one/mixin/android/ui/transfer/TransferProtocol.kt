@@ -204,8 +204,8 @@ class TransferProtocol(private val serializationJson: Json, private val secretBy
         readCount += bytesPerRead
         val currentTime = System.currentTimeMillis()
         if (currentTime - lastTimeTime > 1000) {
-            val speed = readCount / ((currentTime - lastTimeTime) / 1000f) / 1024f / 128f
-            RxBus.publish(SpeedEvent(String.format("%.2f Mb/s", speed)))
+            val speed = readCount / ((currentTime - lastTimeTime) / 1000f) / 1024f / 1024f
+            RxBus.publish(SpeedEvent(String.format("%.2f MB/s", speed)))
             readCount = 0
             lastTimeTime = currentTime
         }
