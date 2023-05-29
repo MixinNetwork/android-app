@@ -653,8 +653,8 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                 }
                 val (mentions, mentionMe) = parseMentionData(plain, data.messageId, data.conversationId, userDao, messageMentionDao, data.userId)
                 val userMap = mentions?.associate { it.identityNumber to it.fullName }
+                ftsDatabase.insertOrReplaceMessageFts4(message)
                 insertMessage(message, data) {
-                    ftsDatabase.insertOrReplaceMessageFts4(message)
                     generateNotification(message, data, userMap, quoteMe || mentionMe)
                 }
             }
@@ -670,8 +670,8 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                     data.createdAt,
                     data.status,
                 )
+                ftsDatabase.insertOrReplaceMessageFts4(message)
                 insertMessage(message, data) {
-                    ftsDatabase.insertOrReplaceMessageFts4(message)
                     generateNotification(message, data)
                 }
             }
@@ -820,11 +820,11 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                         quoteMessageItem?.messageId, quoteMessageItem.toJson(),
                     )
                 }
+                val fullName = user?.fullName
+                if (!fullName.isNullOrBlank()) {
+                    ftsDatabase.insertOrReplaceMessageFts4(message)
+                }
                 insertMessage(message, data) {
-                    val fullName = user?.fullName
-                    if (!fullName.isNullOrBlank()) {
-                        ftsDatabase.insertOrReplaceMessageFts4(message)
-                    }
                     generateNotification(message, data)
                 }
             }
