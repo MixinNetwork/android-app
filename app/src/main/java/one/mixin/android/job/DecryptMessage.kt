@@ -652,10 +652,11 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                     }
                 }
                 val (mentions, mentionMe) = parseMentionData(plain, data.messageId, data.conversationId, userDao, messageMentionDao, data.userId)
-                insertMessage(message, data)
-                ftsDatabase.insertOrReplaceMessageFts4(message)
                 val userMap = mentions?.associate { it.identityNumber to it.fullName }
-                generateNotification(message, data, userMap, quoteMe || mentionMe)
+                insertMessage(message, data) {
+                    ftsDatabase.insertOrReplaceMessageFts4(message)
+                    generateNotification(message, data, userMap, quoteMe || mentionMe)
+                }
             }
             data.category.endsWith("_POST") -> {
                 val plain = tryDecodePlain(data.category == MessageCategory.PLAIN_POST.name, plainText)
