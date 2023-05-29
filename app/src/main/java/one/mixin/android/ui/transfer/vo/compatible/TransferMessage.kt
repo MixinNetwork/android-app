@@ -10,8 +10,6 @@ import one.mixin.android.util.serialization.ByteArrayBase64Serializer
 import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.Message
 import one.mixin.android.vo.MessageCategory
-import one.mixin.android.vo.TranscriptMessage
-import one.mixin.android.vo.isAttachment
 
 @Serializable
 class TransferMessage(

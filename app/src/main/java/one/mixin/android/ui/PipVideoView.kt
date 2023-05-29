@@ -26,6 +26,7 @@ import androidx.media3.common.Player.STATE_BUFFERING
 import androidx.media3.common.Player.STATE_ENDED
 import androidx.media3.common.Player.STATE_IDLE
 import androidx.media3.common.Player.STATE_READY
+import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlaybackException
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
@@ -55,6 +56,7 @@ import timber.log.Timber
 import kotlin.math.abs
 import kotlin.math.round
 
+@UnstableApi
 @SuppressLint("InvalidWakeLockTag")
 class PipVideoView {
 

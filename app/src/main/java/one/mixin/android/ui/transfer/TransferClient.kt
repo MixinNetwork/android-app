@@ -16,7 +16,6 @@ import kotlinx.serialization.json.decodeFromStream
 import one.mixin.android.Constants
 import one.mixin.android.MixinApplication
 import one.mixin.android.RxBus
-import one.mixin.android.api.ChecksumException
 import one.mixin.android.db.AppDao
 import one.mixin.android.db.AssetDao
 import one.mixin.android.db.ConversationDao
@@ -186,17 +185,12 @@ class TransferClient @Inject internal constructor(
                 Timber.e(e)
                 NetworkUtils.printWifiInfo(MixinApplication.appContext)
                 null
-            } catch (e: ChecksumException) {
+            } catch (e: Exception) { // Report exception and stop transfer
+                quit = true
                 if (status.value != TransferStatus.FINISHED && status.value != TransferStatus.PROCESSING && status.value != TransferStatus.ERROR) {
                     status.value = TransferStatus.ERROR
                     exit()
                 }
-                quit = true
-                Timber.e(e)
-                reportException(e)
-                null
-            } catch (e: Exception) {
-                quit = true
                 Timber.e(e)
                 reportException(e)
                 null

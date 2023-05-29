@@ -31,6 +31,7 @@ import one.mixin.android.extension.runOnUiThread
 import one.mixin.android.extension.statusBarHeight
 import one.mixin.android.ui.Rect
 import one.mixin.android.ui.call.CallActivity
+import one.mixin.android.util.getLocalString
 import one.mixin.android.vo.CallStateLiveData
 import one.mixin.android.webrtc.TAG_CALL
 import timber.log.Timber
@@ -217,7 +218,7 @@ class PipCallView {
             if (connectedTime != null) {
                 startTimer(connectedTime)
             } else {
-                timeView?.text = appContext.getString(R.string.Waiting)
+                timeView?.text = getLocalString(appContext, R.string.Waiting)
             }
         } else {
             close()

@@ -398,7 +398,7 @@ interface MessageDao : BaseDao<Message> {
     )
     fun findAttachmentMigration(rowId: Long, limit: Int, offset: Long): List<AttachmentMigration>
 
-    @Query("SELECT * FROM messages WHERE id = :messageId AND category IN ($IMAGES, $VIDEOS, $DATA, $AUDIOS) AND media_status = 'DONE'")
+    @Query("SELECT * FROM messages WHERE id = :messageId AND category IN ($IMAGES, $VIDEOS, $DATA, $AUDIOS) AND (media_status = 'DONE' OR media_status = 'READ')")
     fun findAttachmentMessage(messageId: String): Message?
 
     @Query("SELECT rowid IS NOT NULL FROM messages WHERE category IN ($IMAGES, $VIDEOS, $DATA, $AUDIOS) AND media_status = 'DONE' LIMIT 1")

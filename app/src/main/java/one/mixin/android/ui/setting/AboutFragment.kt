@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.View
 import androidx.core.view.isVisible
 import dagger.hilt.android.AndroidEntryPoint
+import one.mixin.android.BuildConfig
 import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentAboutBinding
@@ -28,14 +29,10 @@ class AboutFragment : BaseFragment(R.layout.fragment_about) {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        val versionName = requireContext().packageManager.getPackageInfo(
-            requireContext().packageName,
-            0,
-        ).versionName
         binding.apply {
             titleView.setSubTitle(
                 getString(R.string.app_name),
-                getString(R.string.about_version, versionName),
+                getString(R.string.about_version, BuildConfig.VERSION_NAME, BuildConfig.VERSION_CODE),
             )
             titleView.leftIb.setOnClickListener { activity?.onBackPressedDispatcher?.onBackPressed() }
             logAndDebug.isVisible = defaultSharedPreferences.getBoolean(Constants.Debug.LOG_AND_DEBUG, false)

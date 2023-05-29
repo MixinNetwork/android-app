@@ -72,6 +72,7 @@ import one.mixin.android.ui.setting.ui.compose.booleanValueAsState
 import one.mixin.android.ui.setting.ui.theme.MixinAppTheme
 import one.mixin.android.util.BiometricUtil
 
+@OptIn(ExperimentalAnimationApi::class)
 @Composable
 fun PinKeyBoard(
     step: AuthStep,
@@ -118,7 +119,7 @@ fun PinKeyBoard(
         } else {
             (scaleIn() + fadeIn() with scaleOut() + fadeOut())
         }
-    }) { s ->
+    }, label = "") { s ->
         when (s) {
             AuthStep.DONE -> Column(
                 modifier = Modifier
@@ -193,7 +194,7 @@ fun PinKeyBoard(
             else -> Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 AnimatedContent(targetState = step, transitionSpec = {
                     (fadeIn() with fadeOut())
-                }) {
+                }, label = "") {
                     if (step == AuthStep.INPUT) {
                         Column(
                             horizontalAlignment = Alignment.CenterHorizontally,
@@ -210,10 +211,13 @@ fun PinKeyBoard(
                             ) {
                                 LazyRow(
                                     modifier = Modifier.height(20.dp),
-                                    verticalAlignment = Alignment.CenterVertically,
+                                    verticalAlignment = Alignment.Bottom,
                                 ) {
-                                    items(6) { index ->
-                                        val hasContent = index < pinCode.length
+                                    items(7) { index ->
+                                        if (index == 3) {
+                                            return@items Spacer(modifier = Modifier.width(20.dp))
+                                        }
+                                        val hasContent = (if (index > 3) index - 1 else index) < pinCode.length
                                         AnimatedContent(
                                             targetState = hasContent,
                                             transitionSpec = {
@@ -225,6 +229,7 @@ fun PinKeyBoard(
                                                     SizeTransform(clip = false),
                                                 )
                                             },
+                                            label = "",
                                         ) { b ->
                                             Text(
                                                 "*",
@@ -232,7 +237,7 @@ fun PinKeyBoard(
                                                     .width(24.dp),
                                                 fontWeight = FontWeight.Bold,
                                                 color = if (b) MixinAppTheme.colors.textPrimary else MixinAppTheme.colors.textMinor,
-                                                fontSize = if (b) 18.sp else 12.sp,
+                                                fontSize = if (b) 20.sp else 13.sp,
                                                 textAlign = TextAlign.Center,
                                             )
                                         }

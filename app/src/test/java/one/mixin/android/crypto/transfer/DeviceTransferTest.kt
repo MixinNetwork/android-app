@@ -1,16 +1,27 @@
 package one.mixin.android.crypto.transfer
 
+import androidx.collection.arrayMapOf
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
+import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.json.Json
 import one.mixin.android.ui.transfer.TransferCipher
+import one.mixin.android.ui.transfer.TransferProtocol
 import org.junit.Test
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
 import java.io.IOException
+import java.io.PipedInputStream
+import java.io.PipedOutputStream
 import java.io.RandomAccessFile
 import java.security.InvalidKeyException
+import java.security.MessageDigest
 import java.security.NoSuchAlgorithmException
 import java.security.SecureRandom
 import java.util.Random
+import java.util.UUID
 import javax.crypto.BadPaddingException
 import javax.crypto.Cipher
 import javax.crypto.CipherInputStream
@@ -47,7 +58,12 @@ class DeviceTransferTest {
         BadPaddingException::class,
         IllegalBlockSizeException::class,
     )
-    fun encryptFile(inFileName: String?, outFileName: String?, secretKey: ByteArray, hMac: ByteArray): Pair<ByteArray, ByteArray> {
+    fun encryptFile(
+        inFileName: String?,
+        outFileName: String?,
+        secretKey: ByteArray,
+        hMac: ByteArray,
+    ): Pair<ByteArray, ByteArray> {
         val iv = ByteArray(16)
         secureRandom.nextBytes(iv)
         val keySpec = SecretKeySpec(secretKey, "AES")
@@ -78,7 +94,13 @@ class DeviceTransferTest {
         BadPaddingException::class,
         IllegalBlockSizeException::class,
     )
-    fun decryptFile(inFileName: String?, outFileName: String?, secretKey: ByteArray, iv: ByteArray, hMacKey: ByteArray): ByteArray {
+    fun decryptFile(
+        inFileName: String?,
+        outFileName: String?,
+        secretKey: ByteArray,
+        iv: ByteArray,
+        hMacKey: ByteArray,
+    ): ByteArray {
         val keySpec = SecretKeySpec(secretKey, "AES")
         val cipher = Cipher.getInstance("AES/CBC/PKCS5Padding")
         cipher.init(Cipher.DECRYPT_MODE, keySpec, IvParameterSpec(iv))
@@ -105,28 +127,105 @@ class DeviceTransferTest {
         return (fileLength + padding).toInt()
     }
 
+    @OptIn(ExperimentalSerializationApi::class)
+    @Test
+    fun testProtocol(): Unit = runBlocking {
+        val secretBytes = TransferCipher.generateKey()
+        val outputStream = PipedOutputStream()
+        val inputStream = PipedInputStream(outputStream)
+        val json = Json {
+            ignoreUnknownKeys = true; explicitNulls = false; encodeDefaults =
+                false; coerceInputValues = true; isLenient = true
+        }
+        val server = TransferProtocol(json, secretBytes, true)
+        val client = TransferProtocol(json, secretBytes)
+        client.setCachePath(File("."))
+        val md5 = arrayMapOf<String, String>()
+        launch(Dispatchers.IO) {
+            repeat(100) {
+                val uuid = UUID.randomUUID().toString()
+                val fileName = "$uuid.data"
+                val sourceFile = File(fileName)
+                val fileSize = (5242880 + Random().nextInt(5242880)).toLong()
+                generateRandomFile(fileName, fileSize)
+                server.write(outputStream, sourceFile, uuid)
+                md5[uuid] = getFileMd5(sourceFile)
+                sourceFile.delete()
+            }
+        }
+        launch(Dispatchers.IO) {
+            repeat(100) {
+                val result = client.read(inputStream)
+                assert(result is File)
+                val file = result as File
+                assertEquals(md5[file.name], getFileMd5(file))
+                file.delete()
+            }
+        }
+    }
+
     @Test
     fun testAesAndCrc() {
-        val secretBytes = TransferCipher.generateKey()
-        val aesKey = secretBytes.sliceArray(0..31)
-        val hMac = secretBytes.sliceArray(32..63)
-        val fileName = "test.dat"
-        val encFileName = "test.enc"
-        val decFileName = "test.dec"
-        // 5~10M random file
-        val fileSize = (5242880 + Random().nextInt(5242880)).toLong()
-        generateRandomFile(fileName, fileSize)
+        repeat(100) {
+            val secretBytes = TransferCipher.generateKey()
+            val aesKey = secretBytes.sliceArray(0..31)
+            val hMac = secretBytes.sliceArray(32..63)
+            val uuid = UUID.randomUUID().toString()
+            val fileName = "$uuid.dat"
+            val encFileName = "$uuid.enc"
+            val decFileName = "$uuid.dec"
+            // 5~10M random file
+            val fileSize = (5242880 + Random().nextInt(5242880)).toLong()
+            generateRandomFile(fileName, fileSize)
 
-        val (iv, checkSum) = encryptFile(fileName, encFileName, aesKey, hMac)
-        // test EncryptedSize
-        assertEquals(File(encFileName).length().toInt(), calculateEncryptedSize(File(fileName).length()))
+            val (iv, checkSum) = encryptFile(fileName, encFileName, aesKey, hMac)
+            // test EncryptedSize
+            assertEquals(
+                File(encFileName).length().toInt(),
+                calculateEncryptedSize(File(fileName).length()),
+            )
 
-        val decryptCheckSum = decryptFile(encFileName, decFileName, aesKey, iv, hMac)
-        // test Encrypted checksum
-        assert(checkSum.contentEquals(decryptCheckSum))
+            val decryptCheckSum = decryptFile(encFileName, decFileName, aesKey, iv, hMac)
+            // test Encrypted checksum
+            assert(checkSum.contentEquals(decryptCheckSum))
 
-        File(fileName).delete()
-        File(encFileName).delete()
-        File(decFileName).delete()
+            val sourceMd5 = getFileMd5(File(fileName))
+            val decMd5 = getFileMd5(File(decFileName))
+            // test md5
+            assertEquals(sourceMd5, decMd5)
+
+            File(fileName).delete()
+            File(encFileName).delete()
+            File(decFileName).delete()
+        }
+    }
+
+    private fun getFileMd5(file: File): String? {
+        return try {
+            val messageDigest = MessageDigest.getInstance("MD5")
+
+            val fileInputStream = FileInputStream(file)
+            val buffer = ByteArray(1024)
+            var len = 0
+
+            while (fileInputStream.read(buffer).also { len = it } != -1) {
+                messageDigest.update(buffer, 0, len)
+            }
+            fileInputStream.close()
+
+            val md5Bytes = messageDigest.digest()
+            val sb = StringBuilder()
+            for (b in md5Bytes) {
+                val hexString = Integer.toHexString(0xFF and b.toInt())
+                if (hexString.length == 1) {
+                    sb.append('0')
+                }
+                sb.append(hexString)
+            }
+            sb.toString()
+        } catch (e: Exception) {
+            e.printStackTrace()
+            null
+        }
     }
 }
