@@ -564,6 +564,9 @@ class TransferActivity : BaseActivity() {
 
     private suspend fun connect(transferCommandData: TransferCommand) {
         val sceneString = PropertyHelper.findValueByKey(Constants.Account.PREF_TRANSFER_SCENE, "")
+        val ip = requireNotNull(transferCommandData.ip)
+        val port = requireNotNull(transferCommandData.port)
+        val key = requireNotNull(transferCommandData.secretKey).decodeBase64()
         if (sceneString.isNotBlank()) {
             val transferScene = gson.fromJson(sceneString, TransferScene::class.java)
             if (transferScene.deviceId == transferCommandData.deviceId && System.currentTimeMillis() - transferScene.startTime < INTERVAL_24_HOURS) {
@@ -578,13 +581,14 @@ class TransferActivity : BaseActivity() {
                     .setNegativeButton(R.string.No_Need) { dialog, _ ->
                         lifecycleScope.launch {
                             connect(
-                                transferCommandData.ip!!,
-                                transferCommandData.port!!,
+                                ip,
+                                port,
                                 TransferCommand(
                                     TransferCommandAction.CONNECT.value,
                                     code = transferCommandData.code,
                                     userId = Session.getAccountId(),
                                 ),
+                                key = key,
                             )
                         }
                         dialog.dismiss()
@@ -592,8 +596,8 @@ class TransferActivity : BaseActivity() {
                     .setPositiveButton(R.string.Confirm) { dialog, _ ->
                         lifecycleScope.launch {
                             connect(
-                                transferCommandData.ip!!,
-                                transferCommandData.port!!,
+                                ip,
+                                port,
                                 TransferCommand(
                                     TransferCommandAction.CONNECT.value,
                                     code = transferCommandData.code,
@@ -602,6 +606,7 @@ class TransferActivity : BaseActivity() {
                                     primaryId = transferScene.primaryId,
                                     assistanceId = transferScene.assistanceId,
                                 ),
+                                key = key,
                             )
                         }
                         dialog.dismiss()
@@ -610,8 +615,7 @@ class TransferActivity : BaseActivity() {
                 return
             }
         }
-        val key = requireNotNull(transferCommandData.secretKey).decodeBase64()
-        connect(transferCommandData.ip!!, transferCommandData.port!!, TransferCommand(TransferCommandAction.CONNECT.value, code = transferCommandData.code, userId = Session.getAccountId()), key = key)
+        connect(ip, port, TransferCommand(TransferCommandAction.CONNECT.value, code = transferCommandData.code, userId = Session.getAccountId()), key = key)
     }
 
     private suspend fun connect(ip: String, port: Int, transferCommand: TransferCommand, key: ByteArray) {
