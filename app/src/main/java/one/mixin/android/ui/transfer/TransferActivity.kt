@@ -292,9 +292,9 @@ class TransferActivity : BaseActivity() {
                 TransferStatus.ERROR -> {
                     binding.pbLl.isVisible = false
                     binding.progressTv.setText(R.string.Transfer_error)
-                    if (argsStatus == ARGS_TRANSFER_TO_PHONE){
+                    if (argsStatus == ARGS_TRANSFER_TO_PHONE) {
                         dialog?.dismiss()
-                        if (retryDialog == null){
+                        if (retryDialog == null) {
                             retryDialog = alertDialogBuilder()
                                 .setTitle(R.string.Transfer_error)
                                 .setCancelable(false)
