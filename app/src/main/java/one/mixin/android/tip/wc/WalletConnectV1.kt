@@ -10,17 +10,17 @@ import com.trustwallet.walletconnect.models.session.WCSession
 import okhttp3.OkHttpClient
 import one.mixin.android.MixinApplication
 import one.mixin.android.RxBus
+import org.kethereum.model.Address
+import org.kethereum.rpc.EthereumRPCException
 import org.web3j.crypto.Credentials
 import org.web3j.crypto.ECKeyPair
 import org.web3j.crypto.Keys
 import org.web3j.crypto.RawTransaction
 import org.web3j.crypto.TransactionEncoder
-import org.web3j.protocol.core.DefaultBlockParameterName
 import org.web3j.utils.Convert
 import org.web3j.utils.Numeric
 import timber.log.Timber
 import java.math.BigInteger
-import java.util.concurrent.TimeUnit
 
 object WalletConnectV1 : WalletConnect() {
     const val TAG = "WalletConnectV1"
@@ -215,16 +215,25 @@ object WalletConnectV1 : WalletConnect() {
     fun sendTransaction(id: Long) {
         val signedTransactionData = this.signedTransactionData ?: return
 
-        val raw = web3j.ethSendRawTransaction(signedTransactionData).sendAsync().get(web3jTimeout, TimeUnit.SECONDS)
-        val transactionHash = raw.transactionHash
-        if (raw.hasError()) {
-            throwError(raw.error) {
-                wcClient.rejectRequest(id, it)
-            }
-        } else {
+        try {
+            val transactionHash = rpc.sendRawTransaction(signedTransactionData)
             Timber.d("$TAG sendTransaction $transactionHash")
             wcClient.approveRequest(id, transactionHash)
+        } catch (e: EthereumRPCException) {
+            throwError(e) {
+                wcClient.rejectRequest(id, it)
+            }
         }
+//        val raw = web3j.ethSendRawTransaction(signedTransactionData).sendAsync().get(web3jTimeout, TimeUnit.SECONDS)
+//        val transactionHash = raw.transactionHash
+//        if (raw.hasError()) {
+//            throwError(raw.error) {
+//                wcClient.rejectRequest(id, it)
+//            }
+//        } else {
+//            Timber.d("$TAG sendTransaction $transactionHash")
+//            wcClient.approveRequest(id, transactionHash)
+//        }
     }
 
     fun ethSignMessage(priv: ByteArray, id: Long, message: WCEthereumSignMessage) {
@@ -250,13 +259,19 @@ object WalletConnectV1 : WalletConnect() {
 
         val keyPair = ECKeyPair.create(priv)
         val credential = Credentials.create(keyPair)
-        val transactionCount = web3j.ethGetTransactionCount(credential.address, DefaultBlockParameterName.LATEST)
-            .sendAsync()
-            .get(web3jTimeout, TimeUnit.SECONDS)
-        if (transactionCount.hasError()) {
-            throwError(transactionCount.error)
-        }
-        val nonce = transactionCount.transactionCount
+        val nonce: BigInteger = try {
+            rpc.getTransactionCount(Address(credential.address), "latest")
+        } catch (e: EthereumRPCException) {
+            throwError(e)
+            null
+        } ?: return ""
+//        val transactionCount = web3j.ethGetTransactionCount(credential.address, DefaultBlockParameterName.LATEST)
+//            .sendAsync()
+//            .get(web3jTimeout, TimeUnit.SECONDS)
+//        if (transactionCount.hasError()) {
+//            throwError(transactionCount.error)
+//        }
+//        val nonce = transactionCount.transactionCount
         val v = Numeric.toBigInt(value)
 //        val gasLimit = transaction.gasLimit?.let { Numeric.toBigInt(it) } ?: BigInteger(defaultGasLimit)
         val signData = currentSignData as? WCSignData.V1SignData ?: return ""
@@ -307,15 +322,24 @@ object WalletConnectV1 : WalletConnect() {
 
     fun ethSendTransaction(priv: ByteArray, id: Long, transaction: WCEthereumTransaction) {
         val hexMessage = ethSignTransaction(priv, id, transaction, false)
-        val raw = web3j.ethSendRawTransaction(hexMessage).sendAsync().get(web3jTimeout, TimeUnit.SECONDS)
-        val transactionHash = raw.transactionHash
-        if (raw.hasError()) {
-            throwError(raw.error) {
-                wcClient.rejectRequest(id, it)
-            }
-        } else {
+        try {
+            val transactionHash = rpc.sendRawTransaction(hexMessage)
             Timber.d("$TAG sendTransaction $transactionHash")
             wcClient.approveRequest(id, transactionHash)
+        } catch (e: EthereumRPCException) {
+            throwError(e) {
+                wcClient.rejectRequest(id, it)
+            }
         }
+//        val raw = web3j.ethSendRawTransaction(hexMessage).sendAsync().get(web3jTimeout, TimeUnit.SECONDS)
+//        val transactionHash = raw.transactionHash
+//        if (raw.hasError()) {
+//            throwError(raw.error) {
+//                wcClient.rejectRequest(id, it)
+//            }
+//        } else {
+//            Timber.d("$TAG sendTransaction $transactionHash")
+//            wcClient.approveRequest(id, transactionHash)
+//        }
     }
 }
