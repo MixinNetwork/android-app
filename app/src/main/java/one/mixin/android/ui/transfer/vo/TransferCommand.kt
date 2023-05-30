@@ -48,4 +48,4 @@ data class TransferCommand(
     val platform: String = "Android",
 ) : Parcelable
 
-const val CURRENT_TRANSFER_VERSION = 1
+const val CURRENT_TRANSFER_VERSION = 2

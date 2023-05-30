@@ -11,7 +11,7 @@
     <string name="a_transcript">стенограмма</string>
     <string name="a_video">видео</string>
     <string name="About">Про</string>
-    <string name="about_version">Версия %1$s</string>
+    <string name="about_version">Версия %1$s (%2$d)</string>
     <string name="Accept">Принять</string>
     <string name="Access_denied">В доступе отказано</string>
     <string name="access_your_bots_list">получить доступ к списку ботов</string>

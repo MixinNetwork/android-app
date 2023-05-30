@@ -182,3 +182,10 @@ fun TranscriptMessage.absolutePath(context: Context = MixinApplication.appContex
         else -> File(context.getTranscriptDirPath(), url).toUri().toString()
     }
 }
+
+fun TranscriptMessage.markAttachmentAsPending(): TranscriptMessage {
+    if (isAttachment() && mediaStatus == MediaStatus.PENDING.name) {
+        mediaStatus = MediaStatus.CANCELED.name
+    }
+    return this
+}

@@ -24,6 +24,7 @@ import one.mixin.android.db.StickerDao
 import one.mixin.android.db.TranscriptMessageDao
 import one.mixin.android.db.UserDao
 import one.mixin.android.event.DeviceTransferProgressEvent
+import one.mixin.android.extension.base64Encode
 import one.mixin.android.extension.toUtcTime
 import one.mixin.android.session.Session
 import one.mixin.android.ui.transfer.TransferProtocol.Companion.TYPE_COMMAND
@@ -36,6 +37,8 @@ import one.mixin.android.ui.transfer.vo.TransferData
 import one.mixin.android.ui.transfer.vo.TransferDataType
 import one.mixin.android.ui.transfer.vo.compatible.TransferMessage
 import one.mixin.android.ui.transfer.vo.compatible.TransferMessageMention
+import one.mixin.android.ui.transfer.vo.compatible.isAttachment
+import one.mixin.android.ui.transfer.vo.compatible.markAttachmentAsPending
 import one.mixin.android.ui.transfer.vo.compatible.toMessage
 import one.mixin.android.ui.transfer.vo.transferDataTypeFromValue
 import one.mixin.android.util.NetworkUtils
@@ -52,6 +55,7 @@ import one.mixin.android.vo.TranscriptMessage
 import one.mixin.android.vo.User
 import one.mixin.android.vo.absolutePath
 import one.mixin.android.vo.isAttachment
+import one.mixin.android.vo.markAttachmentAsPending
 import timber.log.Timber
 import java.io.InputStream
 import java.io.OutputStream
@@ -81,7 +85,7 @@ class TransferServer @Inject internal constructor(
     val status: TransferStatusLiveData,
     private val serializationJson: Json,
 ) {
-    val protocol = TransferProtocol(serializationJson, true)
+    val protocol by lazy { TransferProtocol(serializationJson, secretBytes, true) }
 
     private var serverSocket: ServerSocket? = null
     private var socket: Socket? = null
@@ -108,6 +112,10 @@ class TransferServer @Inject internal constructor(
             }
         }
 
+    private val secretBytes by lazy {
+        TransferCipher.generateKey()
+    }
+
     suspend fun startServer(
         createdSuccessCallback: (TransferCommand) -> Unit,
     ) = withContext(SINGLE_SOCKET_THREAD) {
@@ -122,7 +130,7 @@ class TransferServer @Inject internal constructor(
                     TransferCommandAction.PUSH.value,
                     NetworkUtils.getWifiIpAddress(MixinApplication.appContext),
                     this@TransferServer.port,
-                    null,
+                    secretBytes.base64Encode(),
                     this@TransferServer.code,
                     userId = Session.getAccountId(),
                 ),
@@ -549,13 +557,15 @@ class TransferServer @Inject internal constructor(
             if (list.isEmpty()) {
                 return
             }
-            list.forEach { transcriptMessage ->
+            list.map {
+                it.markAttachmentAsPending()
+            }.forEach { transcriptMessage ->
                 writeJson(
                     outputStream,
                     TransferData.serializer(TranscriptMessage.serializer()),
                     TransferData(TransferDataType.TRANSCRIPT_MESSAGE.value, transcriptMessage),
                 )
-                syncMediaFile(outputStream, transcriptMessage)
+                syncTranscriptMediaFile(outputStream, transcriptMessage)
                 count++
             }
             if (list.size < LIMIT) {
@@ -627,13 +637,15 @@ class TransferServer @Inject internal constructor(
             if (list.isEmpty()) {
                 return
             }
-            list.forEach { transcriptMessage ->
+            list.map {
+                it.markAttachmentAsPending()
+            }.forEach { transcriptMessage ->
                 writeJson(
                     outputStream,
                     TransferData.serializer(TransferMessage.serializer()),
                     TransferData(TransferDataType.MESSAGE.value, transcriptMessage),
                 )
-                syncMediaFile(outputStream, transcriptMessage)
+                syncMessageMediaFile(outputStream, transcriptMessage)
                 count++
             }
             if (list.size < LIMIT) {
@@ -720,7 +732,8 @@ class TransferServer @Inject internal constructor(
         }
     }
 
-    private fun syncMediaFile(outputStream: OutputStream, message: TransferMessage) {
+    private fun syncMessageMediaFile(outputStream: OutputStream, message: TransferMessage) {
+        if (!message.isAttachment()) return
         val context = MixinApplication.get()
         val mediaMessage = message.toMessage()
         mediaMessage.absolutePath(context)?.let { path ->
@@ -737,7 +750,7 @@ class TransferServer @Inject internal constructor(
         }
     }
 
-    private fun syncMediaFile(outputStream: OutputStream, message: TranscriptMessage) {
+    private fun syncTranscriptMediaFile(outputStream: OutputStream, message: TranscriptMessage) {
         val context = MixinApplication.get()
         if (!message.isAttachment()) return
         message.absolutePath(context)?.let { path ->

@@ -60,6 +60,7 @@ import one.mixin.android.ui.transfer.vo.compatible.TransferMessageMention
 import one.mixin.android.util.NetworkUtils
 import one.mixin.android.util.SINGLE_SOCKET_THREAD
 import one.mixin.android.util.mention.parseMentionData
+import one.mixin.android.util.reportException
 import one.mixin.android.vo.App
 import one.mixin.android.vo.Asset
 import one.mixin.android.vo.Conversation
@@ -110,7 +111,7 @@ class TransferClient @Inject internal constructor(
     @ApplicationScope
     private val applicationScope: CoroutineScope,
 ) {
-    val protocol = TransferProtocol(serializationJson)
+    lateinit var protocol: TransferProtocol
     companion object {
         private const val MAX_FILE_SIZE = 5242880 // 5M
     }
@@ -137,9 +138,10 @@ class TransferClient @Inject internal constructor(
         Executors.newSingleThreadExecutor { r -> Thread(r, "SINGLE_TRANSFER_THREAD") }.asCoroutineDispatcher()
     }
 
-    suspend fun connectToServer(ip: String, port: Int, commandData: TransferCommand) =
+    suspend fun connectToServer(ip: String, port: Int, commandData: TransferCommand, key: ByteArray) =
         withContext(SINGLE_SOCKET_THREAD) {
             try {
+                protocol = TransferProtocol(serializationJson, key)
                 NetworkUtils.printWifiInfo(MixinApplication.appContext)
                 status.value = TransferStatus.CONNECTING
                 val socket = Socket(ip, port)
@@ -176,6 +178,15 @@ class TransferClient @Inject internal constructor(
                 quit = true
                 Timber.e(e)
                 NetworkUtils.printWifiInfo(MixinApplication.appContext)
+                null
+            } catch (e: Exception) { // Report exception and stop transfer
+                quit = true
+                if (status.value != TransferStatus.FINISHED && status.value != TransferStatus.PROCESSING && status.value != TransferStatus.ERROR) {
+                    status.value = TransferStatus.ERROR
+                    exit()
+                }
+                Timber.e(e)
+                reportException(e)
                 null
             }
             status.value = TransferStatus.SYNCING
