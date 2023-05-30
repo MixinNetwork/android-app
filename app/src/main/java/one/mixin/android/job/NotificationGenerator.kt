@@ -29,6 +29,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
+import one.mixin.android.extension.createAtToLong
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.mainThread
 import one.mixin.android.extension.notificationManager
@@ -450,12 +451,12 @@ object NotificationGenerator : Injector() {
                 return@launch
             }
         }
-        val time = System.currentTimeMillis()
+        val time = message.createdAt.createAtToLong()
         notificationBuilder.setContentText(contentText)
             .setSmallIcon(R.drawable.ic_msg_default)
             .setColor(ContextCompat.getColor(context, R.color.colorLightBlue))
             .setAutoCancel(true)
-            .setWhen(time)
+            .setWhen(message.createdAt.createAtToLong())
             .setShowWhen(true)
             .setSortKey((Long.MAX_VALUE - time).toString())
 
