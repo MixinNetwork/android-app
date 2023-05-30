@@ -14,6 +14,7 @@ import one.mixin.android.db.pending.PendingDatabase
 import one.mixin.android.job.DecryptCallMessage
 import one.mixin.android.job.DecryptMessage
 import one.mixin.android.job.MixinJobManager
+import one.mixin.android.job.NotificationGenerator
 import one.mixin.android.job.RefreshUserJob
 import one.mixin.android.job.pendingMessageStatusMap
 import one.mixin.android.session.Session
@@ -209,6 +210,12 @@ class HedwigImp(
                         conversationDao.updateLastMessageId(message.messageId, message.createdAt, message.conversationId)
                     }
                     remoteMessageStatusDao.updateConversationUnseen(conversationId)
+                    messages.forEach { message ->
+                        pendingDatabase.notificationExtDao().findNotificationExtById(message.messageId)?.let { notificationExt ->
+                            NotificationGenerator.generate(lifecycleScope, message, notificationExt.userMap, notificationExt.force, notificationExt.silent)
+                            pendingDatabase.notificationExtDao().deleteById(notificationExt.messageId)
+                        }
+                    }
                     InvalidateFlow.emit(conversationId)
                 }
                 if (list.size == 100) {

@@ -47,4 +47,6 @@ interface PendingDatabase {
     fun floodMessageDao(): FloodMessageDao
 
     fun pendingMessageDao(): PendingMessageDao
+
+    fun notificationExtDao(): NotificationExtDao
 }

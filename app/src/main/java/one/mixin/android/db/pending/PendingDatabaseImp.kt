@@ -9,10 +9,13 @@ import androidx.room.Database
 import androidx.room.InvalidationTracker
 import androidx.room.Room
 import androidx.room.RoomDatabase
+import androidx.room.TypeConverters
+import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 import one.mixin.android.Constants.DataBase.PENDING_DB_NAME
 import one.mixin.android.db.FloodMessageDao
 import one.mixin.android.db.JobDao
+import one.mixin.android.db.converter.MapTypeConverter
 import one.mixin.android.db.insertNoReplace
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.debug.getContent
@@ -25,9 +28,11 @@ import one.mixin.android.vo.MessageMedia
         (FloodMessage::class),
         (PendingMessage::class),
         (Job::class),
+        (NotificationExt::class),
     ],
-    version = 1,
+    version = 2,
 )
+@TypeConverters(MapTypeConverter::class)
 abstract class PendingDatabaseImp : RoomDatabase(), PendingDatabase {
     abstract override fun floodMessageDao(): FloodMessageDao
     abstract override fun pendingMessageDao(): PendingMessageDao
@@ -89,6 +94,12 @@ abstract class PendingDatabaseImp : RoomDatabase(), PendingDatabase {
                                         break
                                     }
                                 }
+                            }
+                        },
+                    ).addMigrations(
+                        object : Migration(1, 2) {
+                            override fun migrate(database: SupportSQLiteDatabase) {
+                                database.execSQL("CREATE TABLE IF NOT EXISTS `notification_ext` (`message_id` TEXT NOT NULL, `user_map` TEXT, `force` INTEGER NOT NULL, `silent` INTEGER NOT NULL, PRIMARY KEY(`message_id`))")
                             }
                         },
                     )

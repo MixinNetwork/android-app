@@ -1,7 +1,6 @@
 package one.mixin.android.job
 
 import android.app.Activity
-import android.app.Notification
 import android.app.NotificationManager
 import androidx.collection.arrayMapOf
 import com.google.firebase.crashlytics.FirebaseCrashlytics
@@ -21,6 +20,7 @@ import one.mixin.android.crypto.vo.RatchetStatus
 import one.mixin.android.db.insertMessage
 import one.mixin.android.db.insertNoReplace
 import one.mixin.android.db.insertUpdate
+import one.mixin.android.db.pending.NotificationExt
 import one.mixin.android.db.pending.PendingMessage
 import one.mixin.android.db.runInTransaction
 import one.mixin.android.event.CircleDeleteEvent
@@ -250,8 +250,8 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
         for (item in appButton) {
             ColorUtil.parseColor(item.color.trim())
         }
-        insertMessage(message, data) {
-            generateNotification(message, data)
+        insertMessage(message, data) { pending ->
+            generateNotification(message, data, pending)
         }
         updateRemoteMessageStatus(data.messageId, MessageStatus.DELIVERED)
     }
@@ -293,8 +293,8 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                 }
             }
         }
-        insertMessage(message, data) {
-            generateNotification(message, data)
+        insertMessage(message, data) { pending ->
+            generateNotification(message, data, pending)
         }
         ftsDatabase.insertOrReplaceMessageFts4(message)
         updateRemoteMessageStatus(data.messageId, MessageStatus.DELIVERED)
@@ -655,7 +655,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                 val userMap = mentions?.associate { it.identityNumber to it.fullName }
                 ftsDatabase.insertOrReplaceMessageFts4(message)
                 insertMessage(message, data) {
-                    generateNotification(message, data, userMap, quoteMe || mentionMe)
+                    generateNotification(message, data, it, userMap, quoteMe || mentionMe)
                 }
             }
             data.category.endsWith("_POST") -> {
@@ -671,16 +671,16 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                     data.status,
                 )
                 ftsDatabase.insertOrReplaceMessageFts4(message)
-                insertMessage(message, data) {
-                    generateNotification(message, data)
+                insertMessage(message, data) { pending ->
+                    generateNotification(message, data, pending)
                 }
             }
             data.category.endsWith("_LOCATION") -> {
                 val plain = tryDecodePlain(data.category == MessageCategory.PLAIN_LOCATION.name, plainText)
                 if (checkLocationData(plain)) {
                     val message = createLocationMessage(data.messageId, data.conversationId, data.userId, data.category, plain, data.status, data.createdAt)
-                    insertMessage(message, data) {
-                        generateNotification(message, data)
+                    insertMessage(message, data) { pending ->
+                        generateNotification(message, data, pending)
                     }
                 }
             }
@@ -701,8 +701,8 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                         data.status, quoteMessageItem?.messageId, quoteMessageItem.toJson(),
                     )
                 }
-                insertMessage(message, data) {
-                    generateNotification(message, data)
+                insertMessage(message, data) { pending ->
+                    generateNotification(message, data, pending)
                 }
                 lifecycleScope.launch {
                     MixinApplication.appContext.autoDownload(autoDownloadPhoto) {
@@ -729,8 +729,8 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                         quoteMessageItem?.messageId, quoteMessageItem.toJson(),
                     )
                 }
-                insertMessage(message, data) {
-                    generateNotification(message, data)
+                insertMessage(message, data) { pending ->
+                    generateNotification(message, data, pending)
                 }
                 lifecycleScope.launch {
                     MixinApplication.appContext.autoDownload(autoDownloadVideo) {
@@ -752,8 +752,8 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                         quoteMessageItem?.messageId, quoteMessageItem.toJson(),
                     )
                 }
-                insertMessage(message, data) {
-                    generateNotification(message, data)
+                insertMessage(message, data) { pending ->
+                    generateNotification(message, data, pending)
                 }
                 ftsDatabase.insertOrReplaceMessageFts4(message)
                 lifecycleScope.launch {
@@ -775,8 +775,8 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                         quoteMessageItem?.messageId, quoteMessageItem.toJson(),
                     )
                 }
-                insertMessage(message, data) {
-                    generateNotification(message, data)
+                insertMessage(message, data) { pending ->
+                    generateNotification(message, data, pending)
                 }
                 jobManager.addJobInBackground(AttachmentDownloadJob(message))
             }
@@ -801,8 +801,8 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                     data.status,
                     data.createdAt,
                 )
-                insertMessage(message, data) {
-                    generateNotification(message, data)
+                insertMessage(message, data) { pending ->
+                    generateNotification(message, data, pending)
                 }
             }
             data.category.endsWith("_CONTACT") -> {
@@ -824,8 +824,8 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                 if (!fullName.isNullOrBlank()) {
                     ftsDatabase.insertOrReplaceMessageFts4(message)
                 }
-                insertMessage(message, data) {
-                    generateNotification(message, data)
+                insertMessage(message, data) { pending ->
+                    generateNotification(message, data, pending)
                 }
             }
             data.category.endsWith("_LIVE") -> {
@@ -843,8 +843,8 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                     data.messageId, data.conversationId, data.userId, data.category, plain,
                     liveData.width, liveData.height, liveData.url, liveData.thumbUrl, data.status, data.createdAt,
                 )
-                insertMessage(message, data) {
-                    generateNotification(message, data)
+                insertMessage(message, data) { pending ->
+                    generateNotification(message, data, pending)
                 }
             }
             data.category.endsWith("_TRANSCRIPT") -> {
@@ -856,8 +856,8 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                     plainText
                 }
                 val message = processTranscriptMessage(data, plain) ?: return
-                insertMessage(message, data) {
-                    generateNotification(message, data)
+                insertMessage(message, data) { pending ->
+                    generateNotification(message, data, pending)
                 }
             }
         }
@@ -1028,9 +1028,9 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
             snapshotDao.deletePendingSnapshotByHash(it)
         }
         snapshotDao.insert(snapshot)
-        insertMessage(message, data){
+        insertMessage(message, data) { pending ->
             if (snapshot.type == SnapshotType.transfer.name && snapshot.amount.toFloat() > 0) {
-                generateNotification(message, data)
+                generateNotification(message, data, pending)
             }
         }
         jobManager.addJobInBackground(RefreshAssetsJob(snapshot.assetId))
@@ -1091,8 +1091,8 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
         } else if (systemMessage.action == SystemConversationAction.EXPIRE.name) {
             jobManager.addJobInBackground(RefreshConversationJob(data.conversationId))
         }
-        insertMessage(message, data) {
-            generateNotification(message, data)
+        insertMessage(message, data) { pending ->
+            generateNotification(message, data, pending)
         }
     }
 
@@ -1426,7 +1426,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
             plainText
         }
 
-    private fun generateNotification(message: Message, data: BlazeMessageData, userMap: Map<String, String>? = null, force: Boolean = false) {
+    private fun generateNotification(message: Message, data: BlazeMessageData, pending: Boolean, userMap: Map<String, String>? = null, force: Boolean = false) {
         if (data.source == LIST_PENDING_MESSAGES) {
             return
         }
@@ -1436,10 +1436,14 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
         if (message.userId == accountId) {
             return
         }
-        NotificationGenerator.generate(lifecycleScope, message, userMap, force, data.silent ?: false)
+        if (pending) {
+            notificationExtDao.insert(NotificationExt(message.messageId, userMap, force, data.silent ?: false))
+        } else {
+            NotificationGenerator.generate(lifecycleScope, message, userMap, force, data.silent ?: false)
+        }
     }
 
-    private fun insertMessage(message: Message, data: BlazeMessageData, notificationCallback:()->Unit) {
+    private fun insertMessage(message: Message, data: BlazeMessageData, notificationCallback: (Boolean) -> Unit) {
         val expireIn = data.expireIn
         if (data.status != MessageStatus.FAILED.name && expireIn != null && expireIn > 0) {
             if (data.userId == accountId) {
@@ -1461,10 +1465,11 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
 
         if (database.inTransaction()) {
             pendingMessagesDao.insert(PendingMessage(message))
+            notificationCallback.invoke(true)
         } else {
             messageDao.insert(message)
+            notificationCallback.invoke(false)
         }
-        notificationCallback.invoke()
     }
     private fun findMessage(messageId: String): Message? {
         pendingMessagesDao.findMessageById(messageId).let { msg ->
