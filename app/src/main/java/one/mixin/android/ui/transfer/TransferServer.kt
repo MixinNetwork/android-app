@@ -116,6 +116,20 @@ class TransferServer @Inject internal constructor(
         TransferCipher.generateKey()
     }
 
+    suspend fun restartServer(createdSuccessCallback: (TransferCommand) -> Unit) = withContext(SINGLE_SOCKET_THREAD) {
+        try {
+            quit = true
+            socket?.close()
+            socket = null
+            serverSocket?.close()
+            serverSocket = null
+        } catch (e: Exception) {
+            Timber.e(e)
+        }
+        quit = false
+        startServer(createdSuccessCallback)
+    }
+
     suspend fun startServer(
         createdSuccessCallback: (TransferCommand) -> Unit,
     ) = withContext(SINGLE_SOCKET_THREAD) {

@@ -208,6 +208,7 @@ class TransferActivity : BaseActivity() {
     }
 
     private var dialog: Dialog? = null
+    private var retryDialog: Dialog? = null
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         status.value = TransferStatus.INITIALIZING
@@ -291,16 +292,51 @@ class TransferActivity : BaseActivity() {
                 TransferStatus.ERROR -> {
                     binding.pbLl.isVisible = false
                     binding.progressTv.setText(R.string.Transfer_error)
-                    if (dialog == null) {
-                        dialog = alertDialogBuilder()
-                            .setTitle(R.string.Transfer_error)
-                            .setCancelable(false)
-                            .setPositiveButton(R.string.Confirm) { dialog, _ ->
-                                dialog.dismiss()
-                                finish()
-                                status.value = TransferStatus.INITIALIZING
-                            }.create()
-                        dialog?.show()
+                    if (argsStatus == ARGS_TRANSFER_TO_PHONE) {
+                        dialog?.dismiss()
+                        if (retryDialog == null) {
+                            retryDialog = alertDialogBuilder()
+                                .setTitle(R.string.Transfer_error)
+                                .setCancelable(false)
+                                .setNegativeButton(R.string.Exit) { dialog, _ ->
+                                    dialog.dismiss()
+                                    finish()
+                                    status.value = TransferStatus.INITIALIZING
+                                }
+                                .setPositiveButton(R.string.Retry) { dialog, _ ->
+                                    dialog.dismiss()
+                                    status.value = TransferStatus.INITIALIZING
+                                    lifecycleScope.launch {
+                                        transferServer.restartServer { transferCommandData ->
+                                            lifecycleScope.launch(Dispatchers.Main) {
+                                                val qrCode = gson.toJson(transferCommandData)
+                                                    .base64Encode()
+                                                    .run {
+                                                        "$DEVICE_TRANSFER?data=$this"
+                                                    }
+                                                    .generateQRCode(240.dp).first
+                                                binding.qr.setImageBitmap(qrCode)
+                                                binding.qrFl.fadeIn()
+                                                binding.initLl.isVisible = false
+                                                binding.waitingLl.isVisible = false
+                                            }
+                                        }
+                                    }
+                                }.create()
+                        }
+                        retryDialog?.show()
+                    } else {
+                        if (dialog == null) {
+                            dialog = alertDialogBuilder()
+                                .setTitle(R.string.Transfer_error)
+                                .setCancelable(false)
+                                .setPositiveButton(R.string.Confirm) { dialog, _ ->
+                                    dialog.dismiss()
+                                    finish()
+                                    status.value = TransferStatus.INITIALIZING
+                                }.create()
+                            dialog?.show()
+                        }
                     }
                 }
 
