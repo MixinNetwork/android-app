@@ -22,7 +22,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.ExperimentalSerializationApi
 import one.mixin.android.Constants
-import one.mixin.android.Constants.INTERVAL_24_HOURS
 import one.mixin.android.Constants.Scheme.DEVICE_TRANSFER
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
@@ -30,7 +29,6 @@ import one.mixin.android.RxBus
 import one.mixin.android.databinding.ActivityTransferBinding
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.ParticipantDao
-import one.mixin.android.db.property.PropertyHelper
 import one.mixin.android.event.DeviceTransferProgressEvent
 import one.mixin.android.event.SpeedEvent
 import one.mixin.android.extension.alertDialogBuilder
@@ -41,7 +39,6 @@ import one.mixin.android.extension.decodeBase64
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.fadeIn
-import one.mixin.android.extension.fullTime
 import one.mixin.android.extension.generateQRCode
 import one.mixin.android.extension.getParcelableExtraCompat
 import one.mixin.android.extension.isConnectedToWiFi
@@ -60,7 +57,6 @@ import one.mixin.android.ui.transfer.status.TransferStatusLiveData
 import one.mixin.android.ui.transfer.vo.CURRENT_TRANSFER_VERSION
 import one.mixin.android.ui.transfer.vo.TransferCommand
 import one.mixin.android.ui.transfer.vo.TransferCommandAction
-import one.mixin.android.ui.transfer.vo.TransferScene
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.generateConversationId
@@ -599,58 +595,9 @@ class TransferActivity : BaseActivity() {
     }
 
     private suspend fun connect(transferCommandData: TransferCommand) {
-        val sceneString = PropertyHelper.findValueByKey(Constants.Account.PREF_TRANSFER_SCENE, "")
         val ip = requireNotNull(transferCommandData.ip)
         val port = requireNotNull(transferCommandData.port)
         val key = requireNotNull(transferCommandData.secretKey).decodeBase64()
-        if (sceneString.isNotBlank()) {
-            val transferScene = gson.fromJson(sceneString, TransferScene::class.java)
-            if (transferScene.deviceId == transferCommandData.deviceId && System.currentTimeMillis() - transferScene.startTime < INTERVAL_24_HOURS) {
-                alertDialogBuilder()
-                    .setTitle(getString(R.string.transfer_breakpoint_continuation))
-                    .setMessage(
-                        getString(
-                            R.string.transfer_breakpoint_continuation_desc,
-                            (transferScene.startTime / 1000).fullTime(),
-                        ),
-                    )
-                    .setNegativeButton(R.string.No_Need) { dialog, _ ->
-                        lifecycleScope.launch {
-                            connect(
-                                ip,
-                                port,
-                                TransferCommand(
-                                    TransferCommandAction.CONNECT.value,
-                                    code = transferCommandData.code,
-                                    userId = Session.getAccountId(),
-                                ),
-                                key = key,
-                            )
-                        }
-                        dialog.dismiss()
-                    }
-                    .setPositiveButton(R.string.Confirm) { dialog, _ ->
-                        lifecycleScope.launch {
-                            connect(
-                                ip,
-                                port,
-                                TransferCommand(
-                                    TransferCommandAction.CONNECT.value,
-                                    code = transferCommandData.code,
-                                    userId = Session.getAccountId(),
-                                    type = transferScene.type,
-                                    primaryId = transferScene.primaryId,
-                                    assistanceId = transferScene.assistanceId,
-                                ),
-                                key = key,
-                            )
-                        }
-                        dialog.dismiss()
-                    }.show()
-                // Display dialog, waiting for user to select
-                return
-            }
-        }
         connect(ip, port, TransferCommand(TransferCommandAction.CONNECT.value, code = transferCommandData.code, userId = Session.getAccountId()), key = key)
     }
 
