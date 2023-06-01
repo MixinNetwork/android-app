@@ -2196,6 +2196,7 @@ class ConversationFragment() :
         ).observe(
             viewLifecycleOwner,
         ) { info ->
+            info ?: return@observe
             binding.actionBar.setSubTitle(
                 info.name ?: "",
                 requireContext().resources.getQuantityString(
