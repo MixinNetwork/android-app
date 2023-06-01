@@ -39,6 +39,7 @@ import one.mixin.android.db.TraceDao
 import one.mixin.android.db.TranscriptMessageDao
 import one.mixin.android.db.UserDao
 import one.mixin.android.db.insertUpdate
+import one.mixin.android.db.pending.NotificationExtDao
 import one.mixin.android.db.pending.PendingMessageDao
 import one.mixin.android.di.ApplicationScope
 import one.mixin.android.fts.FtsDatabase
@@ -69,6 +70,9 @@ open class Injector {
 
     @Inject
     lateinit var pendingMessagesDao: PendingMessageDao
+
+    @Inject
+    lateinit var notificationExtDao: NotificationExtDao
 
     @Inject
     lateinit var messageHistoryDao: MessageHistoryDao

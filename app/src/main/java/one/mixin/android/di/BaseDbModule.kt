@@ -59,6 +59,11 @@ internal object BaseDbModule {
 
     @Singleton
     @Provides
+    fun provideNotificationExtDao(pendingDatabase: PendingDatabase) =
+        pendingDatabase.notificationExtDao()
+
+    @Singleton
+    @Provides
     fun provideParticipantDao(db: MixinDatabase) = db.participantDao()
 
     @Singleton
