@@ -2184,6 +2184,7 @@ class ConversationFragment() :
     }
 
     private var groupName: String? = null
+
     @SuppressLint("SetTextI18n")
     private fun renderGroup() {
         binding.actionBar.avatarIv.visibility = VISIBLE
@@ -2192,7 +2193,7 @@ class ConversationFragment() :
         }
         chatViewModel.getConversationInfoById(
             conversationId,
-            requireNotNull(Session.getAccountId())
+            requireNotNull(Session.getAccountId()),
         ).observe(
             viewLifecycleOwner,
         ) { info ->
@@ -2202,7 +2203,7 @@ class ConversationFragment() :
                 requireContext().resources.getQuantityString(
                     R.plurals.title_participants,
                     info.count,
-                    info.count
+                    info.count,
                 ),
             )
             binding.actionBar.avatarIv.setGroup(info.iconUrl)

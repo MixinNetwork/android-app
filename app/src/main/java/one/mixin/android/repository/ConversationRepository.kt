@@ -127,7 +127,7 @@ internal constructor(
     }
 
     fun getConversationInfoById(conversationId: String, userId: String): LiveData<GroupInfo?> =
-        conversationDao.getConversationInfoById(conversationId,userId)
+        conversationDao.getConversationInfoById(conversationId, userId)
     fun getConversationById(conversationId: String): LiveData<Conversation> =
         conversationDao.getConversationById(conversationId)
 

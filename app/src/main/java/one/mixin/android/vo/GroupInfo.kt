@@ -10,5 +10,5 @@ class GroupInfo(
     @ColumnInfo(name = "icon_url")
     val iconUrl: String?,
     @ColumnInfo(name = "is_exist")
-    val isExist: Boolean
+    val isExist: Boolean,
 )

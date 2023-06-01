@@ -103,7 +103,7 @@ interface ConversationDao : BaseDao<Conversation> {
     fun getConversationById(conversationId: String): LiveData<Conversation>
 
     @Query("SELECT COUNT(p.user_id) as count, c.name, c.icon_url, EXISTS(SELECT 1 FROM participants WHERE conversation_id = :conversationId AND user_id = :userId) AS is_exist FROM participants p INNER JOIN conversations c ON p.conversation_id = c.conversation_id WHERE c.conversation_id = :conversationId")
-    fun getConversationInfoById(conversationId: String,userId: String): LiveData<GroupInfo?>
+    fun getConversationInfoById(conversationId: String, userId: String): LiveData<GroupInfo?>
 
     @Query("SELECT c.* FROM conversations c WHERE c.rowid > :rowId ORDER BY c.rowid ASC LIMIT :limit")
     fun getConversationsByLimitAndRowId(limit: Int, rowId: Long): List<Conversation>
