@@ -2184,57 +2184,43 @@ class ConversationFragment() :
     }
 
     private var groupName: String? = null
-    private var groupNumber: Int = 0
-
     @SuppressLint("SetTextI18n")
     private fun renderGroup() {
         binding.actionBar.avatarIv.visibility = VISIBLE
         binding.actionBar.avatarIv.setOnClickListener {
             showGroupBottomSheet(false)
         }
-        chatViewModel.getConversationById(conversationId).observe(
+        chatViewModel.getConversationInfoById(
+            conversationId,
+            requireNotNull(Session.getAccountId())
+        ).observe(
             viewLifecycleOwner,
-        ) {
-            it?.let {
-                groupName = it.name
-                binding.actionBar.setSubTitle(
-                    groupName ?: "",
-                    requireContext().resources.getQuantityString(R.plurals.title_participants, groupNumber, groupNumber),
-                )
-                binding.actionBar.avatarIv.setGroup(it.iconUrl)
+        ) { info ->
+            binding.actionBar.setSubTitle(
+                info.name ?: "",
+                requireContext().resources.getQuantityString(
+                    R.plurals.title_participants,
+                    info.count,
+                    info.count
+                ),
+            )
+            binding.actionBar.avatarIv.setGroup(info.iconUrl)
+            inGroup = info.isExist
+            if (inGroup) {
+                binding.chatControl.visibility = VISIBLE
+                binding.bottomCantSend.visibility = GONE
+                binding.tapJoinView.root.isVisible = callState.isPendingGroupCall(conversationId)
+            } else {
+                binding.chatControl.visibility = INVISIBLE
+                binding.bottomCantSend.visibility = VISIBLE
+                binding.tapJoinView.root.isVisible = false
+                binding.chatControl.chatEt.hideKeyboard()
+            }
+
+            if (!inGroup && callState.conversationId == conversationId && callState.isNotIdle()) {
+                callState.handleHangup(requireContext())
             }
         }
-        chatViewModel.observeParticipantsCount(conversationId)
-            .observe(
-                viewLifecycleOwner,
-            ) { count ->
-                groupNumber = count
-                binding.actionBar.setSubTitle(
-                    groupName ?: "",
-                    requireContext().resources.getQuantityString(R.plurals.title_participants, groupNumber, groupNumber),
-                )
-
-                lifecycleScope.launch {
-                    val p = withContext(Dispatchers.IO) {
-                        chatViewModel.findParticipantById(conversationId, Session.getAccountId()!!)
-                    }
-                    if (p != null) {
-                        binding.chatControl.visibility = VISIBLE
-                        binding.bottomCantSend.visibility = GONE
-                        binding.tapJoinView.root.isVisible = callState.isPendingGroupCall(conversationId)
-                    } else {
-                        binding.chatControl.visibility = INVISIBLE
-                        binding.bottomCantSend.visibility = VISIBLE
-                        binding.tapJoinView.root.isVisible = false
-                        binding.chatControl.chatEt.hideKeyboard()
-                    }
-
-                    inGroup = p != null
-                    if (!inGroup && callState.conversationId == conversationId && callState.isNotIdle()) {
-                        callState.handleHangup(requireContext())
-                    }
-                }
-            }
     }
 
     @Suppress("SameParameterValue")

@@ -60,6 +60,7 @@ import one.mixin.android.vo.ConversationItem
 import one.mixin.android.vo.ConversationMinimal
 import one.mixin.android.vo.ConversationStatus
 import one.mixin.android.vo.ConversationStorageUsage
+import one.mixin.android.vo.GroupInfo
 import one.mixin.android.vo.Job
 import one.mixin.android.vo.Message
 import one.mixin.android.vo.MessageItem
@@ -125,6 +126,8 @@ internal constructor(
         }
     }
 
+    fun getConversationInfoById(conversationId: String, userId: String): LiveData<GroupInfo> =
+        conversationDao.getConversationInfoById(conversationId,userId)
     fun getConversationById(conversationId: String): LiveData<Conversation> =
         conversationDao.getConversationById(conversationId)
 
