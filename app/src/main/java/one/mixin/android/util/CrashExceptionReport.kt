@@ -4,6 +4,7 @@ import androidx.collection.ArrayMap
 import androidx.media3.common.PlaybackException
 import androidx.media3.datasource.HttpDataSource
 import com.google.firebase.crashlytics.FirebaseCrashlytics
+import com.microsoft.appcenter.analytics.Analytics
 import com.microsoft.appcenter.crashes.Crashes
 import one.mixin.android.extension.getStackTraceString
 
@@ -21,6 +22,10 @@ fun reportException(msg: String, e: Throwable) {
         },
         null,
     )
+}
+
+fun reportEvent(msg: String) {
+    Analytics.trackEvent(msg)
 }
 
 fun reportExoPlayerException(prefix: String, error: PlaybackException) {
