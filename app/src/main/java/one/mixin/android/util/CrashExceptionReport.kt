@@ -1,12 +1,15 @@
 package one.mixin.android.util
 
+import android.os.Build
 import androidx.collection.ArrayMap
 import androidx.media3.common.PlaybackException
 import androidx.media3.datasource.HttpDataSource
 import com.google.firebase.crashlytics.FirebaseCrashlytics
 import com.microsoft.appcenter.analytics.Analytics
 import com.microsoft.appcenter.crashes.Crashes
+import one.mixin.android.BuildConfig
 import one.mixin.android.extension.getStackTraceString
+import one.mixin.android.session.Session
 
 fun reportException(e: Throwable) {
     FirebaseCrashlytics.getInstance().recordException(e)
@@ -25,7 +28,16 @@ fun reportException(msg: String, e: Throwable) {
 }
 
 fun reportEvent(msg: String) {
-    Analytics.trackEvent(msg)
+    Analytics.trackEvent(
+        msg,
+        mutableMapOf<String, String>().apply {
+            put("User ID", Session.getAccountId() ?: "")
+            put("App Version", BuildConfig.VERSION_NAME)
+            put("OS Version", Build.VERSION.SDK_INT.toString())
+            put("Brand", Build.BRAND)
+            put("Model", Build.MODEL)
+        },
+    )
 }
 
 fun reportExoPlayerException(prefix: String, error: PlaybackException) {
