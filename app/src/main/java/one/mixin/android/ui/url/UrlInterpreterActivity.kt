@@ -5,19 +5,24 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import androidx.lifecycle.lifecycleScope
+import com.trustwallet.walletconnect.models.session.WCSession
 import dagger.hilt.android.AndroidEntryPoint
+import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.extension.checkUserOrApp
 import one.mixin.android.extension.handleSchemeSend
 import one.mixin.android.extension.toast
 import one.mixin.android.session.Session
 import one.mixin.android.tip.wc.WalletConnect
+import one.mixin.android.tip.wc.WalletConnectV1
+import one.mixin.android.tip.wc.WalletConnectV2
 import one.mixin.android.ui.common.BaseActivity
 import one.mixin.android.ui.conversation.TransferFragment
 import one.mixin.android.ui.conversation.link.LinkBottomSheetDialogFragment
 import one.mixin.android.ui.device.ConfirmBottomFragment
 import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.ui.transfer.TransferActivity
+import one.mixin.android.ui.web.WebActivity
 import timber.log.Timber
 
 @AndroidEntryPoint
@@ -71,11 +76,20 @@ class UrlInterpreterActivity : BaseActivity() {
             val bottomSheet = LinkBottomSheetDialogFragment.newInstance(data.toString())
             bottomSheet.showNow(supportFragmentManager, LinkBottomSheetDialogFragment.TAG)
         } else if (data.scheme == WC && WalletConnect.isEnabled(this)) {
-            startActivity(
-                Intent(this, MainActivity::class.java).apply {
-                    putExtra(MainActivity.WALLET_CONNECT, data.toString())
-                },
-            )
+            if (MixinApplication.get().topActivity is WebActivity) {
+                val url = data.toString()
+                if (WCSession.from(url) != null) {
+                    WalletConnectV1.connect(url)
+                } else {
+                    WalletConnectV2.pair(url)
+                }
+            } else {
+                startActivity(
+                    Intent(this, MainActivity::class.java).apply {
+                        putExtra(MainActivity.WALLET_CONNECT, data.toString())
+                    },
+                )
+            }
             finish()
         } else {
             interpretIntent(data)
