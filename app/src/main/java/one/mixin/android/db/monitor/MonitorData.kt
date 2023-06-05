@@ -1,6 +1,6 @@
 package one.mixin.android.db.monitor
 
-import one.mixin.android.util.reportException
+import one.mixin.android.util.reportEvent
 import timber.log.Timber
 
 class MonitorData(private var createdTime: Long, private var isDeferred: Boolean = false) {
@@ -17,7 +17,7 @@ class MonitorData(private var createdTime: Long, private var isDeferred: Boolean
         val timeDiff = (System.currentTimeMillis() - createdTime)
         val content = statements.joinToString("\n")
         if (timeDiff > 500) {
-            reportException("It takes $timeDiff milliseconds\n $content", SlowSqlExtension())
+            reportEvent("It takes $timeDiff milliseconds\n $content")
         }
         return "$content\n**** $timeDiff milliseconds****\n\n"
     }

@@ -136,6 +136,7 @@ open class MixinApplication :
         SignalProtocolLoggerProvider.setProvider(MixinSignalProtocolLogger())
         appContext = applicationContext
         RxJavaPlugins.setErrorHandler {}
+        Analytics.setTransmissionInterval(60)
         AppCenter.start(
             this,
             BuildConfig.APPCENTER_API_KEY,

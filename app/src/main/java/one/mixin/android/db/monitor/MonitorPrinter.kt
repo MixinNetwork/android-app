@@ -23,9 +23,3 @@ object MonitorPrinter {
         }
     }
 }
-
-class SlowSqlExtension : Exception() {
-    companion object {
-        private const val serialVersionUID: Long = 1L
-    }
-}
