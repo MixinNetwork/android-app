@@ -87,6 +87,7 @@ import java.io.OutputStream
 import java.lang.Float.min
 import java.net.Socket
 import java.net.SocketException
+import java.nio.ByteBuffer
 import java.util.concurrent.Executors
 import javax.inject.Inject
 
@@ -160,7 +161,8 @@ class TransferClient @Inject internal constructor(
                 launch(Dispatchers.IO) { listen(socket.inputStream, socket.outputStream) }
                 launch(Dispatchers.IO) {
                     for (byteArray in syncChannel) {
-                        writeBytes(byteArray)
+                        val dataLength = intToByteArray(byteArray.size)
+                        writeBytes(dataLength + byteArray)
                     }
                 }
             } catch (e: Exception) {
@@ -211,6 +213,7 @@ class TransferClient @Inject internal constructor(
                             this.total = result.total ?: 0L
                             this.deviceId = result.deviceId
                             protocol.setCachePath(getAttachmentPath())
+                            Timber.e("Transfer start:$startTime total:$total")
                         }
 
                         TransferCommandAction.PUSH.value, TransferCommandAction.PULL.value -> {
@@ -222,7 +225,7 @@ class TransferClient @Inject internal constructor(
                             sendCommand(outputStream, TransferCommand(TransferCommandAction.FINISH.value))
                             delay(100)
                             exit(true)
-                            Timber.e("It takes a total of ${System.currentTimeMillis() - startTime} milliseconds to synchronize ${this.total} data")
+                            Timber.e("It takes a total of ${System.currentTimeMillis() - startTime} milliseconds to synchronize $receiveCount / ${this.total} data")
                         }
 
                         else -> {
@@ -251,7 +254,18 @@ class TransferClient @Inject internal constructor(
             lastProgress = progress
             lastTime = System.currentTimeMillis()
             RxBus.publish(DeviceTransferProgressEvent(progress))
-            Timber.e("Device transfer $progress")
+            Timber.e("Device receive $progress")
+        }
+    }
+
+    private fun processProgress() {
+        processCount++
+        if (total <= 0 || status.value != TransferStatus.PROCESSING) return
+        val processProgress = min(processCount * 100f / receiveCount, 100f)
+        if (System.currentTimeMillis() - lastTime > 300) {
+            lastTime = System.currentTimeMillis()
+            RxBus.publish(DeviceTransferProgressEvent(processProgress))
+            Timber.e("Device process $processProgress $processCount/$receiveCount")
         }
     }
 
@@ -446,17 +460,6 @@ class TransferClient @Inject internal constructor(
         return File(cachePath, "$index.cache")
     }
 
-    private fun processProgress() {
-        processCount++
-        if (total <= 0 || status.value != TransferStatus.PROCESSING) return
-        if (System.currentTimeMillis() - lastTime > 300) {
-            val processProgress = min(processCount * 100f / total, 100f)
-            lastTime = System.currentTimeMillis()
-            RxBus.publish(DeviceTransferProgressEvent(processProgress))
-            Timber.e("$processProgress $processCount/$total")
-        }
-    }
-
     private var currentFile: File? = null
     private var currentOutputStream: OutputStream? = null
     private var lastName = ""
@@ -571,5 +574,11 @@ class TransferClient @Inject internal constructor(
             result = result or (byteArray[i].toInt() and 0xff)
         }
         return result
+    }
+
+    private fun intToByteArray(intValue: Int): ByteArray {
+        val byteBuffer = ByteBuffer.allocate(4)
+        byteBuffer.putInt(intValue)
+        return byteBuffer.array()
     }
 }
