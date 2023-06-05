@@ -49,6 +49,8 @@ import one.mixin.android.extension.isUUID
 import one.mixin.android.extension.moveTo
 import one.mixin.android.fts.FtsDatabase
 import one.mixin.android.fts.insertOrReplaceMessageFts4
+import one.mixin.android.job.AsyncProcessTransferAttachmentFileJob
+import one.mixin.android.job.MixinJobManager
 import one.mixin.android.ui.transfer.status.TransferStatus
 import one.mixin.android.ui.transfer.status.TransferStatusLiveData
 import one.mixin.android.ui.transfer.vo.CURRENT_TRANSFER_VERSION
@@ -110,6 +112,7 @@ class TransferClient @Inject internal constructor(
     private val serializationJson: Json,
     @ApplicationScope
     private val applicationScope: CoroutineScope,
+    private val jobManager: MixinJobManager,
 ) {
     lateinit var protocol: TransferProtocol
     companion object {
@@ -376,6 +379,8 @@ class TransferClient @Inject internal constructor(
                     processDataFile(file)
                 }
                 processAttachmentFile(getAttachmentPath())
+            } else {
+                jobManager.addJobInBackground(AsyncProcessTransferAttachmentFileJob(getAttachmentPath()))
             }
             isFinal = true
         }
