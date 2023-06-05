@@ -247,7 +247,6 @@ class TransferActivity : BaseActivity() {
                     binding.startTv.setText(R.string.Waiting)
                     binding.startTv.isEnabled = false
                     binding.start.isClickable = false
-                    binding.cancel.isVisible = false
                 }
 
                 TransferStatus.CONNECTING -> {
@@ -256,7 +255,6 @@ class TransferActivity : BaseActivity() {
                     binding.waitingLl.isVisible = true
                     binding.pbFl.isVisible = true
                     binding.pbTips.isVisible = true
-                    binding.cancel.isVisible = false
                 }
 
                 TransferStatus.WAITING_FOR_VERIFICATION -> {
@@ -265,7 +263,6 @@ class TransferActivity : BaseActivity() {
                     binding.waitingLl.isVisible = true
                     binding.pbFl.isVisible = true
                     binding.pbTips.isVisible = true
-                    binding.cancel.isVisible = false
                 }
 
                 TransferStatus.VERIFICATION_COMPLETED -> {
@@ -274,7 +271,6 @@ class TransferActivity : BaseActivity() {
                     binding.waitingLl.isVisible = true
                     binding.pbFl.isVisible = true
                     binding.pbTips.isVisible = true
-                    binding.cancel.isVisible = false
                 }
 
                 TransferStatus.SYNCING -> {
@@ -283,13 +279,10 @@ class TransferActivity : BaseActivity() {
                     binding.initLl.isVisible = false
                     binding.waitingLl.isVisible = true
                     binding.pbLl.isVisible = true
-                    binding.cancel.isVisible = true
                 }
 
                 TransferStatus.PROCESSING -> {
                     binding.titleView.isInvisible = true
-                    cancelDialog.dismiss()
-                    binding.cancel.isVisible = true
                     binding.qrFl.isVisible = false
                     binding.initLl.isVisible = false
                     binding.waitingLl.isVisible = true
@@ -299,8 +292,6 @@ class TransferActivity : BaseActivity() {
                 }
 
                 TransferStatus.ERROR -> {
-                    cancelDialog.dismiss()
-                    binding.cancel.isVisible = true
                     binding.pbLl.isVisible = false
                     binding.progressTv.setText(R.string.Transfer_error)
                     if (argsStatus == ARGS_TRANSFER_TO_PHONE) {
@@ -352,8 +343,6 @@ class TransferActivity : BaseActivity() {
                 }
 
                 TransferStatus.FINISHED -> {
-                    cancelDialog.dismiss()
-                    binding.cancel.isVisible = true
                     binding.pbLl.isVisible = false
                     binding.progressTv.setText(R.string.Transfer_completed)
                     if (dialog == null) {
@@ -389,31 +378,13 @@ class TransferActivity : BaseActivity() {
         intent.getIntExtra(ARGS_STATUS, ARGS_TRANSFER_TO_PHONE)
     }
 
-    private val cancelDialog by lazy {
-        alertDialogBuilder()
-            .setTitle(R.string.Syncing_messages)
-            .setMessage(R.string.transfer_syncing_des)
-            .setPositiveButton(android.R.string.yes) { dialog, _ ->
-                dialog.dismiss()
-                finish()
-            }
-            .setNegativeButton(android.R.string.cancel) { dialog, _ ->
-                dialog.dismiss()
-            }
-            .create()
-    }
-
     private fun initView() {
-        binding.cancel.isVisible = false
         binding.titleView.isVisible = true
         binding.pbFl.isVisible = false
         binding.pbTips.isVisible = false
         binding.startTv.setText(R.string.transfer_now)
         binding.startTv.isEnabled = true
         binding.start.isClickable = true
-        binding.cancel.setOnClickListener {
-            cancelDialog.show()
-        }
         binding.start.setOnClickListener {
             if (!this@TransferActivity.isConnectedToWiFi()) {
                 alertDialogBuilder()
