@@ -89,6 +89,9 @@ import java.net.Socket
 import java.net.SocketException
 import java.nio.ByteBuffer
 import java.util.concurrent.Executors
+import javax.crypto.Cipher
+import javax.crypto.spec.IvParameterSpec
+import javax.crypto.spec.SecretKeySpec
 import javax.inject.Inject
 
 @ExperimentalSerializationApi
@@ -116,6 +119,7 @@ class TransferClient @Inject internal constructor(
     private val jobManager: MixinJobManager,
 ) {
     lateinit var protocol: TransferProtocol
+    lateinit var aesKey: SecretKeySpec
     companion object {
         private const val MAX_FILE_SIZE = 5242880 // 5M
     }
@@ -147,10 +151,11 @@ class TransferClient @Inject internal constructor(
         Executors.newSingleThreadExecutor { r -> Thread(r, "SINGLE_TRANSFER_FILE_THREAD") }.asCoroutineDispatcher()
     }
 
-    suspend fun connectToServer(ip: String, port: Int, commandData: TransferCommand, key: ByteArray) =
+    suspend fun connectToServer(ip: String, port: Int, commandData: TransferCommand, secretBytes: ByteArray) =
         withContext(SINGLE_SOCKET_THREAD) {
             try {
-                protocol = TransferProtocol(serializationJson, key)
+                protocol = TransferProtocol(serializationJson, secretBytes)
+                aesKey = SecretKeySpec(secretBytes.sliceArray(0..31), "AES")
                 NetworkUtils.printWifiInfo(MixinApplication.appContext)
                 status.value = TransferStatus.CONNECTING
                 val socket = Socket(ip, port)
@@ -161,8 +166,7 @@ class TransferClient @Inject internal constructor(
                 launch(Dispatchers.IO) { listen(socket.inputStream, socket.outputStream) }
                 launch(Dispatchers.IO) {
                     for (byteArray in syncChannel) {
-                        val dataLength = intToByteArray(byteArray.size)
-                        writeBytes(dataLength + byteArray)
+                        writeBytes(byteArray)
                     }
                 }
             } catch (e: Exception) {
@@ -270,6 +274,13 @@ class TransferClient @Inject internal constructor(
     }
 
     private val mutableList: MutableList<Message> = mutableListOf()
+    private fun decrypt(ciphertext: ByteArray): ByteArray {
+        val iv = ciphertext.sliceArray(0..15)
+        val cipher = Cipher.getInstance("AES/CBC/PKCS5Padding")
+        cipher.init(Cipher.DECRYPT_MODE, aesKey, IvParameterSpec(iv))
+        return cipher.doFinal(ciphertext.sliceArray(16 until ciphertext.size))
+    }
+
     private fun processJson(byteArray: ByteArray) {
         val byteArrayInputStream = ByteArrayInputStream(byteArray)
         val transferData = serializationJson.decodeFromStream<TransferData<JsonElement>>(byteArrayInputStream)
@@ -497,7 +508,7 @@ class TransferClient @Inject internal constructor(
                             input.read(sizeData)
                             val data = ByteArray(byteArrayToInt(sizeData))
                             input.read(data)
-                            processJson(data)
+                            processJson(decrypt(data))
                         }
                     }
                 }
