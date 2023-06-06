@@ -57,6 +57,7 @@ import one.mixin.android.ui.transfer.status.TransferStatusLiveData
 import one.mixin.android.ui.transfer.vo.CURRENT_TRANSFER_VERSION
 import one.mixin.android.ui.transfer.vo.TransferCommand
 import one.mixin.android.ui.transfer.vo.TransferCommandAction
+import one.mixin.android.ui.web.WebFragment
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.generateConversationId
@@ -247,10 +248,12 @@ class TransferActivity : BaseActivity() {
                     binding.startTv.setText(R.string.Waiting)
                     binding.startTv.isEnabled = false
                     binding.start.isClickable = false
+                    binding.selectLl.isVisible = false
                 }
 
                 TransferStatus.CONNECTING -> {
                     binding.qrFl.isVisible = false
+                    binding.selectLl.isVisible = false
                     binding.initLl.isVisible = false
                     binding.waitingLl.isVisible = true
                     binding.pbFl.isVisible = true
@@ -259,6 +262,7 @@ class TransferActivity : BaseActivity() {
 
                 TransferStatus.WAITING_FOR_VERIFICATION -> {
                     binding.qrFl.isVisible = false
+                    binding.selectLl.isVisible = false
                     binding.initLl.isVisible = false
                     binding.waitingLl.isVisible = true
                     binding.pbFl.isVisible = true
@@ -267,6 +271,7 @@ class TransferActivity : BaseActivity() {
 
                 TransferStatus.VERIFICATION_COMPLETED -> {
                     binding.qrFl.isVisible = false
+                    binding.selectLl.isVisible = false
                     binding.initLl.isVisible = false
                     binding.waitingLl.isVisible = true
                     binding.pbFl.isVisible = true
@@ -275,6 +280,7 @@ class TransferActivity : BaseActivity() {
 
                 TransferStatus.SYNCING -> {
                     binding.titleView.isInvisible = true
+                    binding.selectLl.isVisible = false
                     binding.qrFl.isVisible = false
                     binding.initLl.isVisible = false
                     binding.waitingLl.isVisible = true
@@ -283,6 +289,7 @@ class TransferActivity : BaseActivity() {
 
                 TransferStatus.PROCESSING -> {
                     binding.titleView.isInvisible = true
+                    binding.selectLl.isVisible = false
                     binding.qrFl.isVisible = false
                     binding.initLl.isVisible = false
                     binding.waitingLl.isVisible = true
@@ -293,6 +300,7 @@ class TransferActivity : BaseActivity() {
 
                 TransferStatus.ERROR -> {
                     binding.pbLl.isVisible = false
+                    binding.selectLl.isVisible = false
                     binding.progressTv.setText(R.string.Transfer_error)
                     if (argsStatus == ARGS_TRANSFER_TO_PHONE) {
                         dialog?.dismiss()
@@ -381,6 +389,21 @@ class TransferActivity : BaseActivity() {
     private fun initView() {
         binding.titleView.isVisible = true
         binding.pbFl.isVisible = false
+        binding.selectLl.isVisible = true
+        binding.conversationRl.setOnClickListener {
+            supportFragmentManager.beginTransaction().add(
+                R.id.container,
+                SelectConversationFragment.newInstance(),
+                SelectConversationFragment.TAG,
+            ).commit()
+        }
+        binding.dataRl.setOnClickListener {
+            supportFragmentManager.beginTransaction().add(
+                R.id.container,
+                SelectDateFragment.newInstance(),
+                SelectDateFragment.TAG,
+            ).commit()
+        }
         binding.pbTips.isVisible = false
         binding.startTv.setText(R.string.transfer_now)
         binding.startTv.isEnabled = true
