@@ -95,14 +95,6 @@ class FloatingPlayer(private var isNightMode: Boolean) {
         appContext.defaultSharedPreferences
     }
     private var isShown = false
-    fun init() {
-        if (windowView == null) {
-            initWindowView()
-        }
-        if (!::windowLayoutParams.isInitialized) {
-            initWindowLayoutParams()
-        }
-    }
 
     fun show(conversationId: String? = null) {
         if (!appContext.checkInlinePermissions()) return
@@ -112,6 +104,7 @@ class FloatingPlayer(private var isNightMode: Boolean) {
         }
 
         if (isNightMode != appContext.isNightMode()) {
+            windowView?.let { windowManager.removeView(it) }
             recreate(appContext.isNightMode()).show(this.conversationId)
         } else {
             if (!isShown) {
@@ -125,6 +118,17 @@ class FloatingPlayer(private var isNightMode: Boolean) {
 
     fun reload() {
         animateToBoundsMaybe()
+    }
+
+    private fun init() {
+        val wv = windowView
+        if (wv != null) {
+            windowManager.removeView(wv)
+        }
+        initWindowView()
+        if (!::windowLayoutParams.isInitialized) {
+            initWindowLayoutParams()
+        }
     }
 
     private fun initWindowView() {
@@ -177,6 +181,7 @@ class FloatingPlayer(private var isNightMode: Boolean) {
                         windowLayoutParams.x = realX - windowLayoutParams.width + maxDiff
                     }
                     maxDiff = 0
+                    @Suppress("KotlinConstantConditions")
                     if (windowLayoutParams.y < -maxDiff) {
                         windowLayoutParams.y = -maxDiff
                     } else if (windowLayoutParams.y > realY - windowLayoutParams.height - appContext.navigationBarHeight() * 2 + maxDiff) {
@@ -265,6 +270,7 @@ class FloatingPlayer(private var isNightMode: Boolean) {
         if (Build.VERSION.SDK_INT >= 26) {
             windowLayoutParams.type = WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
         } else {
+            @Suppress("DEPRECATION")
             windowLayoutParams.type = WindowManager.LayoutParams.TYPE_SYSTEM_ALERT
         }
         windowLayoutParams.flags =
@@ -283,10 +289,7 @@ class FloatingPlayer(private var isNightMode: Boolean) {
         }
         preferences.putInt(FX, endX)
         preferences.putInt(FY, windowLayoutParams.y)
-        var animators: ArrayList<Animator>? = null
-        if (animators == null) {
-            animators = ArrayList()
-        }
+        val animators: ArrayList<Animator> = arrayListOf()
         animators.add(ObjectAnimator.ofInt(this, "x", windowLayoutParams.x, endX))
         if (decelerateInterpolator == null) {
             decelerateInterpolator = DecelerateInterpolator()
@@ -308,6 +311,7 @@ class FloatingPlayer(private var isNightMode: Boolean) {
         windowLayoutParams.y
     }
 
+    @Suppress("unused")
     @Keep
     fun setX(value: Int) {
         windowLayoutParams.x = value
@@ -315,6 +319,7 @@ class FloatingPlayer(private var isNightMode: Boolean) {
         windowView?.let { windowManager.updateViewLayout(it, windowLayoutParams) }
     }
 
+    @Suppress("unused")
     @Keep
     fun setY(value: Int) {
         windowLayoutParams.y = value

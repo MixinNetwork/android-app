@@ -87,19 +87,12 @@ class FloatingWebClip(private var isNightMode: Boolean) {
         appContext.defaultSharedPreferences
     }
     private var isShown = false
-    fun init() {
-        if (windowView == null) {
-            initWindowView()
-        }
-        if (!::windowLayoutParams.isInitialized) {
-            initWindowLayoutParams()
-        }
-    }
 
     fun show() {
         if (!appContext.checkInlinePermissions()) return
 
         if (isNightMode != appContext.isNightMode()) {
+            windowView?.let { windowManager.removeView(it) }
             recreate(appContext.isNightMode()).show()
         } else {
             if (!isShown) {
@@ -130,6 +123,17 @@ class FloatingWebClip(private var isNightMode: Boolean) {
         }
         windowLayoutParams.height = 64.dp
         windowView?.let { windowManager.updateViewLayout(it, windowLayoutParams) }
+    }
+
+    private fun init() {
+        val wv = windowView
+        if (wv != null) {
+            windowManager.removeView(wv)
+        }
+        initWindowView()
+        if (!::windowLayoutParams.isInitialized) {
+            initWindowLayoutParams()
+        }
     }
 
     private fun initWindowView() {
@@ -182,6 +186,7 @@ class FloatingWebClip(private var isNightMode: Boolean) {
                         windowLayoutParams.x = realX - windowLayoutParams.width + maxDiff
                     }
                     maxDiff = 0
+                    @Suppress("KotlinConstantConditions")
                     if (windowLayoutParams.y < -maxDiff) {
                         windowLayoutParams.y = -maxDiff
                     } else if (windowLayoutParams.y > realY - windowLayoutParams.height - appContext.navigationBarHeight() * 2 + maxDiff) {
@@ -248,6 +253,7 @@ class FloatingWebClip(private var isNightMode: Boolean) {
         if (Build.VERSION.SDK_INT >= 26) {
             windowLayoutParams.type = WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
         } else {
+            @Suppress("DEPRECATION")
             windowLayoutParams.type = WindowManager.LayoutParams.TYPE_SYSTEM_ALERT
         }
         windowLayoutParams.flags =
@@ -296,6 +302,7 @@ class FloatingWebClip(private var isNightMode: Boolean) {
         windowLayoutParams.y
     }
 
+    @Suppress("unused")
     @Keep
     fun setX(value: Int) {
         windowLayoutParams.x = value
@@ -303,6 +310,7 @@ class FloatingWebClip(private var isNightMode: Boolean) {
         windowView?.let { windowManager.updateViewLayout(it, windowLayoutParams) }
     }
 
+    @Suppress("unused")
     @Keep
     fun setY(value: Int) {
         windowLayoutParams.y = value

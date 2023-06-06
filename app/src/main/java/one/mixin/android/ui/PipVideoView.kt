@@ -171,6 +171,7 @@ class PipVideoView {
         mediaSource: MediaPagerActivity.MediaSource,
         mediaUrl: String?,
     ): TextureView {
+        windowView?.let { windowManager.removeView(it) }
         this.mediaUrl = mediaUrl
         val isLandscape = appContext.isLandscape()
         val realSize = appContext.realSize()
