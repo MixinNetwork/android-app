@@ -7,12 +7,11 @@ import android.view.ViewGroup
 import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentSelectConverstionBinding
-import one.mixin.android.databinding.FragmentSelectDateBinding
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.util.viewBinding
 
 @AndroidEntryPoint
-class SelectConversationFragment  : BaseFragment() {
+class SelectConversationFragment : BaseFragment() {
     companion object {
         const val TAG = "SelectConversationFragment"
 
@@ -29,6 +28,5 @@ class SelectConversationFragment  : BaseFragment() {
     private val binding by viewBinding(FragmentSelectConverstionBinding::bind)
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-
     }
 }

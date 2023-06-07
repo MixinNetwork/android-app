@@ -57,7 +57,6 @@ import one.mixin.android.ui.transfer.status.TransferStatusLiveData
 import one.mixin.android.ui.transfer.vo.CURRENT_TRANSFER_VERSION
 import one.mixin.android.ui.transfer.vo.TransferCommand
 import one.mixin.android.ui.transfer.vo.TransferCommandAction
-import one.mixin.android.ui.web.WebFragment
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.generateConversationId

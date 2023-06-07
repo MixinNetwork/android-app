@@ -1206,4 +1206,9 @@
     <string name="Speed_up_transaction">Speed up transaction</string>
     <string name="speed_up_transaction_tip">if the transaction is too far along cancellation may bot be possible.</string>
     <string name="blocked_action">Mixin has blocked a WalletConnect action %1$s</string>
+    <string name="all_time">All time</string>
+    <string name="Specified_time_period">Specified time period</string>
+    <string name="yrs">yrs</string>
+    <string name="mos">mos</string>
+    <string name="Lately">Lately</string>
 </resources>

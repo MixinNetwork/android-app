@@ -4,16 +4,13 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.compose.ui.platform.ComposeView
 import dagger.hilt.android.AndroidEntryPoint
-import one.mixin.android.R
-import one.mixin.android.databinding.FragmentConversationBinding
-import one.mixin.android.databinding.FragmentGroupBinding
-import one.mixin.android.databinding.FragmentSelectDateBinding
 import one.mixin.android.ui.common.BaseFragment
-import one.mixin.android.util.viewBinding
+import one.mixin.android.ui.transfer.compose.SelectDatePage
 
 @AndroidEntryPoint
-class SelectDateFragment  : BaseFragment() {
+class SelectDateFragment : BaseFragment() {
     companion object {
         const val TAG = "SelectDateFragment"
 
@@ -24,12 +21,13 @@ class SelectDateFragment  : BaseFragment() {
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?,
-    ): View? =
-        inflater.inflate(R.layout.fragment_select_date, container, false)
-
-    private val binding by viewBinding(FragmentSelectDateBinding::bind)
+    ): View =
+        ComposeView(requireContext()).apply {
+            setContent {
+                SelectDatePage()
+            }
+        }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-
     }
 }
