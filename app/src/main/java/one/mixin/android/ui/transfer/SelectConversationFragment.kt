@@ -11,8 +11,12 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
+import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentSelectConverstionBinding
+import one.mixin.android.extension.defaultSharedPreferences
+import one.mixin.android.extension.putInt
+import one.mixin.android.extension.tickVibrate
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.conversation.ConversationViewModel
 import one.mixin.android.util.viewBinding
@@ -36,7 +40,13 @@ class SelectConversationFragment : BaseFragment() {
     private val chatViewModel by viewModels<ConversationViewModel>()
 
     private val adapter by lazy {
-        SelectAdapter()
+        SelectAdapter {
+            if (it) {
+                binding.selectTv.setText(R.string.Deselect_all)
+            } else {
+                binding.selectTv.setText(R.string.Select_all)
+            }
+        }
     }
 
     @SuppressLint("NotifyDataSetChanged")
@@ -46,6 +56,9 @@ class SelectConversationFragment : BaseFragment() {
         }
         binding.recyclerView.adapter = adapter
         binding.searchEt.addTextChangedListener(mWatcher)
+        binding.titleView.rightTv.setOnClickListener {
+            callback?.invoke(adapter.selectItem)
+        }
         lifecycleScope.launch {
             adapter.conversations = chatViewModel.successConversationList()
             adapter.notifyDataSetChanged()
@@ -63,4 +76,6 @@ class SelectConversationFragment : BaseFragment() {
             adapter.keyword = s
         }
     }
+
+    var callback: ((Set<String>) -> Unit)? = null
 }

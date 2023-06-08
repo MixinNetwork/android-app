@@ -11,6 +11,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         app:titleText="@string/Conversation"
+        app:rightText="@string/Save"
+        app:rightTextColor="@color/colorBlue"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
@@ -44,18 +46,26 @@
         android:layout_height="match_parent"
         android:background="?attr/bg_white">
 
-        <LinearLayout
+        <RelativeLayout
             android:id="@+id/bottom"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_alignParentBottom="true">
 
             <TextView
+                android:id="@+id/select_tv"
                 android:padding="16dp"
-                android:text="@string/Conversation"
+                android:text="@string/Select_all"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content" />
-        </LinearLayout>
+
+            <TextView
+                android:id="@+id/show_tv"
+                android:padding="16dp"
+                android:text="@string/Select_all"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+        </RelativeLayout>
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/recycler_view"

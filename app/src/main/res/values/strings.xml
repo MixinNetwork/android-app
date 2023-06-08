@@ -1211,4 +1211,6 @@
     <string name="yrs">YRS</string>
     <string name="mos">MOS</string>
     <string name="Lately">Lately</string>
+    <string name="Select_all">Select all</string>
+    <string name="Deselect_all">Deselect all</string>
 </resources>

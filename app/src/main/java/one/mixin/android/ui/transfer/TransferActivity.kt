@@ -385,6 +385,7 @@ class TransferActivity : BaseActivity() {
         intent.getIntExtra(ARGS_STATUS, ARGS_TRANSFER_TO_PHONE)
     }
 
+    private var selectConversation:Set<String>? = null
     private fun initView() {
         binding.titleView.isVisible = true
         binding.pbFl.isVisible = false
@@ -392,7 +393,12 @@ class TransferActivity : BaseActivity() {
         binding.conversationRl.setOnClickListener {
             val ft = supportFragmentManager.beginTransaction().add(
                 R.id.container,
-                SelectConversationFragment.newInstance(),
+                SelectConversationFragment.newInstance().apply {
+                    this.callback = { result ->
+                        this@TransferActivity.selectConversation = result
+                        renderConversation()
+                    }
+                },
                 SelectConversationFragment.TAG,
             ).setCustomAnimations(R.anim.slide_in_right, 0, 0, R.anim.slide_out_right)
             ft.addToBackStack(null)
@@ -517,6 +523,14 @@ class TransferActivity : BaseActivity() {
                 binding.initScanDesc.isVisible = true
                 binding.startTv.setText(R.string.Scane_to_Restore)
             }
+        }
+    }
+
+    private fun renderConversation() {
+        if (selectConversation.isNullOrEmpty()){
+
+        } else{
+
         }
     }
 
