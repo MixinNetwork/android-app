@@ -9,6 +9,7 @@ import kotlinx.serialization.json.Json
 import one.mixin.android.ui.transfer.TransferCipher
 import one.mixin.android.ui.transfer.TransferProtocol
 import org.junit.Test
+import ulid.ULID
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
@@ -21,7 +22,6 @@ import java.security.MessageDigest
 import java.security.NoSuchAlgorithmException
 import java.security.SecureRandom
 import java.util.Random
-import java.util.UUID
 import javax.crypto.BadPaddingException
 import javax.crypto.Cipher
 import javax.crypto.CipherInputStream
@@ -143,7 +143,7 @@ class DeviceTransferTest {
         val md5 = arrayMapOf<String, String>()
         launch(Dispatchers.IO) {
             repeat(100) {
-                val uuid = UUID.randomUUID().toString()
+                val uuid = ULID.randomULID()
                 val fileName = "$uuid.data"
                 val sourceFile = File(fileName)
                 val fileSize = (5242880 + Random().nextInt(5242880)).toLong()
@@ -170,7 +170,7 @@ class DeviceTransferTest {
             val secretBytes = TransferCipher.generateKey()
             val aesKey = secretBytes.sliceArray(0..31)
             val hMac = secretBytes.sliceArray(32..63)
-            val uuid = UUID.randomUUID().toString()
+            val uuid = ULID.randomULID()
             val fileName = "$uuid.dat"
             val encFileName = "$uuid.enc"
             val decFileName = "$uuid.dec"

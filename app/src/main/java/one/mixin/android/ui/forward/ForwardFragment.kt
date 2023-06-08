@@ -95,9 +95,9 @@ import one.mixin.android.websocket.DataMessagePayload
 import one.mixin.android.websocket.LiveMessagePayload
 import one.mixin.android.websocket.LocationPayload
 import one.mixin.android.websocket.VideoMessagePayload
+import ulid.ULID
 import java.io.File
 import java.io.FileInputStream
-import java.util.UUID
 import java.util.concurrent.TimeUnit
 
 @AndroidEntryPoint
@@ -355,7 +355,7 @@ class ForwardFragment : BaseFragment(R.layout.fragment_forward) {
             chatViewModel.checkData(item) { conversationId: String, encryptCategory: EncryptCategory ->
                 var transcripts = chatViewModel.processTranscript(combineMessages)
                 val messageId = if (hasMultiple) {
-                    val id = UUID.randomUUID().toString()
+                    val id = ULID.randomULID()
                     transcripts = transcripts.map { it.copy(id) }
                     id
                 } else {
@@ -527,7 +527,7 @@ class ForwardFragment : BaseFragment(R.layout.fragment_forward) {
                     }
                     ForwardCategory.Transcript -> {
                         m.messageId?.let { messageId ->
-                            val id = UUID.randomUUID().toString()
+                            val id = ULID.randomULID()
                             val list = chatViewModel.getTranscripts(messageId, id)
                             chatViewModel.sendTranscriptMessage(conversationId, id, sender, list, encryptCategory)
                         }
@@ -622,7 +622,7 @@ class ForwardFragment : BaseFragment(R.layout.fragment_forward) {
             return
         }
         try {
-            val messageId = UUID.randomUUID().toString()
+            val messageId = ULID.randomULID()
             val outfile = File(file.parentFile?.parentFile, "$conversationId${File.separator}$messageId${file.name.getExtensionName().notNullWithElse({ ".$it" }, "")}")
             outfile.copyFromInputStream(FileInputStream(file))
             val message = Message(
@@ -640,7 +640,7 @@ class ForwardFragment : BaseFragment(R.layout.fragment_forward) {
 
     private fun buildAttachmentMessage(conversationId: String, sender: User, category: String, attachmentExtra: AttachmentExtra, message: Message): Message? {
         try {
-            val messageId = UUID.randomUUID().toString()
+            val messageId = ULID.randomULID()
             val attachmentMessagePayload = AttachmentMessagePayload(
                 message.mediaKey, message.mediaDigest, attachmentExtra.attachmentId, message.mediaMimeType!!, message.mediaSize ?: 0, message.name, message.mediaWidth,
                 message.mediaHeight, message.thumbImage, message.mediaDuration?.toLongOrNull(), message.mediaWaveform, createdAt = attachmentExtra.createdAt,

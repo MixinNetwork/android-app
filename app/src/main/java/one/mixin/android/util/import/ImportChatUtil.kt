@@ -14,11 +14,11 @@ import one.mixin.android.util.GsonHelper
 import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.TranscriptMessage
 import timber.log.Timber
+import ulid.ULID
 import java.io.BufferedReader
 import java.io.File
 import java.io.InputStream
 import java.io.InputStreamReader
-import java.util.UUID
 import java.util.regex.Pattern
 
 class ImportChatUtil {
@@ -86,7 +86,7 @@ class ImportChatUtil {
             val date = s.substring(0, dateEnd) // .toUtcTime()
             val name = s.substring(dateEnd + 3, nameEnd)
             val content = s.substring(nameEnd + 2, s.length)
-            TranscriptMessage(UUID.randomUUID().toString(), UUID.randomUUID().toString(), UUID.randomUUID().toString(), name, MessageCategory.PLAIN_TEXT.name, date, content)
+            TranscriptMessage(ULID.randomULID(), ULID.randomULID(), ULID.randomULID(), name, MessageCategory.PLAIN_TEXT.name, date, content)
         } else {
             null
         }

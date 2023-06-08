@@ -7,7 +7,7 @@ import one.mixin.android.event.SenderKeyChange
 import one.mixin.android.session.Session
 import one.mixin.android.vo.ParticipantSession
 import one.mixin.android.websocket.BlazeMessageData
-import java.util.UUID
+import ulid.ULID
 
 class SendProcessSignalKeyJob(
     val data: BlazeMessageData,
@@ -16,7 +16,7 @@ class SendProcessSignalKeyJob(
     priority: Int = PRIORITY_SEND_MESSAGE,
 ) : MixinJob(
     Params(priority).groupBy("send_message_group").requireWebSocketConnected().persist(),
-    UUID.randomUUID().toString(),
+    ULID.randomULID(),
 ) {
 
     companion object {

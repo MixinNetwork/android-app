@@ -26,7 +26,7 @@ import one.mixin.android.vo.ConversationCategory
 import one.mixin.android.vo.Participant
 import one.mixin.android.vo.ParticipantItem
 import one.mixin.android.vo.User
-import java.util.UUID
+import ulid.ULID
 import javax.inject.Inject
 
 @HiltViewModel
@@ -47,7 +47,7 @@ internal constructor(
         users: List<User>,
         sender: User,
     ): Conversation = withContext(Dispatchers.IO) {
-        val conversationId = UUID.randomUUID().toString()
+        val conversationId = ULID.randomULID()
         val createdAt = nowInUtc()
         val conversation = ConversationBuilder(conversationId, createdAt, 0)
             .setCategory(ConversationCategory.GROUP.name)

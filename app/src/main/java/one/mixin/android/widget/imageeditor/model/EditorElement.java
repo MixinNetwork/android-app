@@ -3,21 +3,13 @@ package one.mixin.android.widget.imageeditor.model;
 import android.graphics.Matrix;
 import android.os.Parcel;
 import android.os.Parcelable;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-
 import one.mixin.android.widget.imageeditor.MatrixUtils;
 import one.mixin.android.widget.imageeditor.Renderer;
 import one.mixin.android.widget.imageeditor.RendererContext;
+
+import java.util.*;
 
 
 /**
@@ -39,7 +31,7 @@ public final class EditorElement implements Parcelable {
 
   private static final Comparator<EditorElement> Z_ORDER_COMPARATOR = (e1, e2) -> Integer.compare(e1.zOrder, e2.zOrder);
 
-  private final UUID        id;
+  private final UUID id;
   private final EditorFlags flags;
   private final Matrix      localMatrix  = new Matrix();
   private final Matrix      editorMatrix = new Matrix();

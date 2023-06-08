@@ -13,7 +13,7 @@ import one.mixin.android.extension.base64Encode
 import one.mixin.android.extension.toByteArray
 import one.mixin.android.websocket.AttachmentMessagePayload
 import one.mixin.android.websocket.StickerMessagePayload
-import java.util.UUID
+import ulid.ULID
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -28,7 +28,7 @@ class EncryptedProtocolTest {
 
     @Test
     fun testSticker() {
-        val mockStickerId = UUID.randomUUID().toString()
+        val mockStickerId = ULID.randomULID()
         val mockStickerPayload = StickerMessagePayload(mockStickerId)
         val content = GsonHelper.customGson.toJson(mockStickerPayload).base64Encode().toByteArray()
         testEncryptAndDecrypt(content)
@@ -80,7 +80,7 @@ class EncryptedProtocolTest {
     }
 
     private fun testEncryptAndDecrypt(content: ByteArray) {
-        val otherSessionId = UUID.randomUUID().toString()
+        val otherSessionId = ULID.randomULID()
         val encryptedProtocol = EncryptedProtocol()
 
         val senderKeyPair = generateEd25519KeyPair()
@@ -91,7 +91,7 @@ class EncryptedProtocolTest {
 
         val encodedContent = encryptedProtocol.encryptMessage(senderKeyPair, content, receiverCurvePublicKey, otherSessionId)
 
-        val decryptedContent = encryptedProtocol.decryptMessage(receiverKeyPair, UUID.fromString(otherSessionId).toByteArray(), encodedContent)
+        val decryptedContent = encryptedProtocol.decryptMessage(receiverKeyPair, ULID.parseULID(otherSessionId).toByteArray(), encodedContent)
 
         assert(decryptedContent.contentEquals(content))
     }

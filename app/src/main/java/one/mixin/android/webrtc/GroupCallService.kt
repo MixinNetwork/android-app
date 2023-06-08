@@ -52,7 +52,7 @@ import org.webrtc.PeerConnection
 import org.webrtc.SessionDescription
 import org.whispersystems.libsignal.SignalProtocolAddress
 import timber.log.Timber
-import java.util.UUID
+import ulid.ULID
 import java.util.concurrent.Executors
 import java.util.concurrent.ScheduledFuture
 import java.util.concurrent.TimeUnit
@@ -195,7 +195,7 @@ class GroupCallService : CallService() {
                 val blazeMessageParam = BlazeMessageParam(
                     conversation_id = conversationId,
                     category = MessageCategory.KRAKEN_PUBLISH.name,
-                    message_id = UUID.randomUUID().toString(),
+                    message_id = ULID.randomULID(),
                     jsep = gson.toJson(Sdp(it.description, it.type.canonicalForm())).base64Encode(),
                 )
                 val bm = createKrakenMessage(blazeMessageParam)
@@ -246,7 +246,7 @@ class GroupCallService : CallService() {
         val blazeMessageParam = BlazeMessageParam(
             conversation_id = conversationId,
             category = MessageCategory.KRAKEN_SUBSCRIBE.name,
-            message_id = UUID.randomUUID().toString(),
+            message_id = ULID.randomULID(),
             track_id = trackId,
         )
         val bm = createKrakenMessage(blazeMessageParam)
@@ -268,7 +268,7 @@ class GroupCallService : CallService() {
                     val blazeMessageParam = BlazeMessageParam(
                         conversation_id = conversationId,
                         category = MessageCategory.KRAKEN_ANSWER.name,
-                        message_id = UUID.randomUUID().toString(),
+                        message_id = ULID.randomULID(),
                         jsep = gson.toJson(Sdp(it.description, it.type.canonicalForm())).base64Encode(),
                         track_id = krakenData.trackId,
                     )
@@ -335,7 +335,7 @@ class GroupCallService : CallService() {
         val blazeMessageParam = BlazeMessageParam(
             conversation_id = conversationId,
             category = MessageCategory.KRAKEN_LIST.name,
-            message_id = UUID.randomUUID().toString(),
+            message_id = ULID.randomULID(),
         )
         val bm = createListKrakenPeers(blazeMessageParam)
         val json = getJsonElement(bm) ?: return null
@@ -357,7 +357,7 @@ class GroupCallService : CallService() {
                     conversation_id = cid,
                     recipient_id = it,
                     category = MessageCategory.KRAKEN_DECLINE.name,
-                    message_id = UUID.randomUUID().toString(),
+                    message_id = ULID.randomULID(),
                 )
                 val bm = createKrakenMessage(blazeMessageParam)
                 val bmData = getBlazeMessageData(bm) ?: return
@@ -475,7 +475,7 @@ class GroupCallService : CallService() {
         val blazeMessageParam = BlazeMessageParam(
             conversation_id = cid,
             category = MessageCategory.KRAKEN_END.name,
-            message_id = UUID.randomUUID().toString(),
+            message_id = ULID.randomULID(),
             track_id = trackId,
         )
 
@@ -504,7 +504,7 @@ class GroupCallService : CallService() {
         val blazeMessageParam = BlazeMessageParam(
             conversation_id = cid,
             category = MessageCategory.KRAKEN_CANCEL.name,
-            message_id = UUID.randomUUID().toString(),
+            message_id = ULID.randomULID(),
         )
 
         audioManager.stop()
@@ -541,7 +541,7 @@ class GroupCallService : CallService() {
                 conversation_id = cid,
                 recipient_id = inviter,
                 category = MessageCategory.KRAKEN_DECLINE.name,
-                message_id = UUID.randomUUID().toString(),
+                message_id = ULID.randomULID(),
             )
             val bm = createKrakenMessage(blazeMessageParam)
             val bmData = getBlazeMessageData(bm) ?: return
@@ -667,7 +667,7 @@ class GroupCallService : CallService() {
                     val blazeMessageParam = BlazeMessageParam(
                         conversation_id = conversationId,
                         category = MessageCategory.KRAKEN_RESTART.name,
-                        message_id = UUID.randomUUID().toString(),
+                        message_id = ULID.randomULID(),
                         track_id = trackId,
                         jsep = gson.toJson(Sdp(it.description, it.type.canonicalForm())).base64Encode(),
                     )
@@ -732,7 +732,7 @@ class GroupCallService : CallService() {
             val blazeMessageParam = BlazeMessageParam(
                 conversation_id = cid,
                 category = MessageCategory.KRAKEN_TRICKLE.name,
-                message_id = UUID.randomUUID().toString(),
+                message_id = ULID.randomULID(),
                 candidate = gson.toJson(candidate).base64Encode(),
                 track_id = trackId,
             )
@@ -784,7 +784,7 @@ class GroupCallService : CallService() {
                 return null
             }
             SystemClock.sleep(SLEEP_MILLIS)
-            blazeMessage.id = UUID.randomUUID().toString()
+            blazeMessage.id = ULID.randomULID()
             return webSocketChannel(blazeMessage)
         } else if (bm.error != null) {
             Timber.d("$TAG_CALL $bm")
@@ -795,7 +795,7 @@ class GroupCallService : CallService() {
                         // send sender key
                         callSenderKey.checkSessionSenderKey(it)
                     }
-                    blazeMessage.id = UUID.randomUUID().toString()
+                    blazeMessage.id = ULID.randomULID()
                     webSocketChannel(blazeMessage)
                 }
                 FORBIDDEN -> {
@@ -837,7 +837,7 @@ class GroupCallService : CallService() {
                 }
                 else -> {
                     SystemClock.sleep(SLEEP_MILLIS)
-                    blazeMessage.id = UUID.randomUUID().toString()
+                    blazeMessage.id = ULID.randomULID()
                     webSocketChannel(blazeMessage)
                 }
             }
@@ -875,7 +875,7 @@ class GroupCallService : CallService() {
         if (!category.isGroupCallType()) return
 
         val message = createCallMessage(
-            UUID.randomUUID().toString(),
+            ULID.randomULID(),
             cid,
             userId,
             category,

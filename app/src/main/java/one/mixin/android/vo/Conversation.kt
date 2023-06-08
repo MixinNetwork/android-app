@@ -9,7 +9,7 @@ import com.google.gson.annotations.SerializedName
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import one.mixin.android.extension.nowInUtc
-import java.util.UUID
+import ulid.ULID
 
 @Entity(
     tableName = "conversations",
@@ -127,5 +127,5 @@ fun createConversation(conversationId: String, category: String?, recipientId: S
 
 fun generateConversationId(senderId: String, recipientId: String): String {
     val mix = minOf(senderId, recipientId) + maxOf(senderId, recipientId)
-    return UUID.nameUUIDFromBytes(mix.toByteArray()).toString()
+    return ULID.fromBytes(mix.toByteArray()).toString()
 }

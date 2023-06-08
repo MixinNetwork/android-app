@@ -3,7 +3,6 @@ package one.mixin.android.widget.imageeditor.model;
 import android.graphics.Matrix;
 import android.graphics.RectF;
 import android.os.Parcel;
-
 import androidx.annotation.NonNull;
 
 import java.util.UUID;
@@ -47,6 +46,7 @@ public final class ParcelUtils {
   }
 
   static UUID readUUID(@NonNull Parcel in) {
+    // todo replace
     return new UUID(in.readLong(), in.readLong());
   }
 

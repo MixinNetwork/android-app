@@ -105,8 +105,8 @@ import one.mixin.android.websocket.LocationPayload
 import one.mixin.android.websocket.PinAction
 import one.mixin.android.websocket.VideoMessagePayload
 import one.mixin.android.widget.gallery.MimeType
+import ulid.ULID
 import java.io.File
-import java.util.UUID
 import javax.inject.Inject
 
 @Suppress("NULLABILITY_MISMATCH_BASED_ON_JAVA_ANNOTATIONS")
@@ -160,7 +160,7 @@ internal constructor(
 
     // todo
     fun sendTranscriptMessage(conversationId: String, messageId: String?, sender: User, transcriptMessages: List<TranscriptMessage>, encryptCategory: EncryptCategory) {
-        messenger.sendTranscriptMessage(messageId ?: UUID.randomUUID().toString(), conversationId, sender, transcriptMessages, encryptCategory)
+        messenger.sendTranscriptMessage(messageId ?: ULID.randomULID(), conversationId, sender, transcriptMessages, encryptCategory)
     }
 
     fun sendPostMessage(conversationId: String, sender: User, content: String, encryptCategory: EncryptCategory) {
@@ -329,7 +329,7 @@ internal constructor(
         mime: String? = null,
         replyMessage: MessageItem? = null,
         fromInput: Boolean = false,
-        messageId: String = UUID.randomUUID().toString(),
+        messageId: String = ULID.randomULID(),
     ): Int {
         return messenger.sendImageMessage(conversationId, messageId, sender, uri, encryptCategory, notCompress, mime, replyMessage, fromInput)
     }

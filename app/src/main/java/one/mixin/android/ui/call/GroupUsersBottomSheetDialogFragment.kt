@@ -31,7 +31,7 @@ import one.mixin.android.vo.createCallMessage
 import one.mixin.android.webrtc.publish
 import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.SearchView
-import java.util.UUID
+import ulid.ULID
 import javax.inject.Inject
 
 @SuppressLint("NotifyDataSetChanged")
@@ -122,7 +122,7 @@ class GroupUsersBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 val users = arrayListOf<String>()
                 checkedUsers.mapTo(users) { it.userId }
                 val message = createCallMessage(
-                    UUID.randomUUID().toString(),
+                    ULID.randomULID(),
                     conversationId,
                     "",
                     MessageCategory.KRAKEN_INVITE.name,

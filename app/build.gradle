@@ -228,6 +228,8 @@ dependencies {
     implementation "androidx.navigation:navigation-ui-ktx:${navigationVersion}"
     implementation "androidx.navigation:navigation-compose:${navigationVersion}"
 
+    implementation "com.aallam.ulid:ulid-kotlin:${ulidVersion}"
+
     // Architecture components
     implementation "androidx.paging:paging-runtime-ktx:${pagingVersion}"
     implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:${lifecycleVersion}"

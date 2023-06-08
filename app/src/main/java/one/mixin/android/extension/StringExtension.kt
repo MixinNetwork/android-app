@@ -32,6 +32,7 @@ import okio.Source
 import okio.buffer
 import one.mixin.android.util.GzipException
 import org.threeten.bp.Instant
+import ulid.ULID
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.IOException
@@ -460,7 +461,7 @@ fun String.getColorCode(codeType: CodeType): Int {
     if (code != null) return code
 
     val hashcode = try {
-        UUID.fromString(this).hashCode()
+        ULID.parseULID(this).hashCode()
     } catch (e: IllegalArgumentException) {
         hashCode()
     }
@@ -518,7 +519,7 @@ inline fun String?.getDeviceId(): Int {
     return if (this == null || this.isEmpty()) {
         1
     } else {
-        UUID.fromString(this).hashCode()
+        ULID.parseULID(this).hashCode()
     }
 }
 

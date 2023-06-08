@@ -1,6 +1,6 @@
 package one.mixin.android.extension
 
-import java.util.UUID
+import ulid.ULID
 import java.util.regex.Pattern
 
 private val endAtPatter: Pattern by lazy { Pattern.compile("@(\\S*)(?<!\\s)\$") }
@@ -24,8 +24,9 @@ fun String.removeEnd(remove: String?): String {
 
 fun String.isUUID(): Boolean {
     return try {
-        return UUID.fromString(this) != null
-    } catch (exception: IllegalArgumentException) {
+        ULID.parseULID(this)
+        return true
+    } catch (exception: Exception) {
         false
     }
 }

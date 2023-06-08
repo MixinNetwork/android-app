@@ -20,8 +20,8 @@ import one.mixin.android.extension.heavyClickVibrate
 import one.mixin.android.util.DispatchQueue
 import one.mixin.android.util.GsonHelper
 import timber.log.Timber
+import ulid.ULID
 import java.io.File
-import java.util.UUID
 
 class OpusAudioRecorder private constructor(private val ctx: Context) {
     companion object {
@@ -200,7 +200,7 @@ class OpusAudioRecorder private constructor(private val ctx: Context) {
             return@Runnable
         }
 
-        messageId = UUID.randomUUID().toString()
+        messageId = ULID.randomULID()
         if (conversationId == null) throw IllegalArgumentException("Conversation id is NULL!!!")
         recordingAudioFile = ctx.getAudioPath().createAudioTemp(conversationId!!, messageId!!, "ogg")
 

@@ -92,9 +92,9 @@ import one.mixin.android.vo.displayAddress
 import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.SearchView
 import one.mixin.android.widget.getMaxCustomViewHeight
+import ulid.ULID
 import java.math.BigDecimal
 import java.math.RoundingMode
-import java.util.UUID
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -598,7 +598,7 @@ class TransferFragment() : MixinBottomSheetDialogFragment() {
             return@launch
         }
         binding.continueVa.displayedChild = POST_PB
-        val traceId = UUID.randomUUID().toString()
+        val traceId = ULID.randomULID()
         val pair = chatViewModel.findLatestTrace(user?.userId, address?.destination, address?.tag, amount, currentAsset!!.assetId)
         if (pair.second) {
             binding.continueVa.displayedChild = POST_TEXT

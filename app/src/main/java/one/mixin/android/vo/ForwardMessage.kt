@@ -17,7 +17,7 @@ import one.mixin.android.websocket.DataMessagePayload
 import one.mixin.android.websocket.LiveMessagePayload
 import one.mixin.android.websocket.VideoMessagePayload
 import one.mixin.android.websocket.toLocationData
-import java.util.UUID
+import ulid.ULID
 
 @SuppressLint("ParcelCreator")
 @Parcelize
@@ -235,7 +235,7 @@ fun generateForwardMessage(m: Message): ForwardMessage? {
             }
             val videoData = VideoMessagePayload(
                 requireNotNull(m.absolutePath()),
-                UUID.randomUUID().toString(),
+                ULID.randomULID(),
                 nowInUtc(),
                 m.content,
             )
@@ -256,7 +256,7 @@ fun generateForwardMessage(m: Message): ForwardMessage? {
             val duration = m.mediaDuration?.toLongOrNull() ?: return null
             val waveForm = m.mediaWaveform ?: return null
             val audioData = AudioMessagePayload(
-                UUID.randomUUID().toString(),
+                ULID.randomULID(),
                 requireNotNull(m.absolutePath()),
                 duration,
                 waveForm,

@@ -42,7 +42,6 @@ import one.mixin.android.extension.joinWhiteSpace
 import one.mixin.android.extension.nowInUtc
 import one.mixin.android.extension.postOptimize
 import one.mixin.android.extension.putString
-import one.mixin.android.extension.toByteArray
 import one.mixin.android.extension.toSeconds
 import one.mixin.android.fts.deleteByMessageId
 import one.mixin.android.fts.insertFts4
@@ -147,9 +146,9 @@ import org.threeten.bp.ZonedDateTime
 import org.whispersystems.libsignal.NoSessionException
 import org.whispersystems.libsignal.SignalProtocolAddress
 import timber.log.Timber
+import ulid.ULID
 import java.io.File
 import java.io.IOException
-import java.util.UUID
 
 class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
 
@@ -338,7 +337,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                     val mid = if (index == 0) {
                         data.messageId
                     } else {
-                        UUID.randomUUID().toString()
+                        ULID.randomULID()
                     }
                     if (message != null) {
                         pinMessageDao.insert(PinMessage(messageId, message.conversationId, data.createdAt))
@@ -571,7 +570,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
             if (pCreatedAt.isAfter(mCreatedAt)) {
                 continue
             }
-            needResendMessage.messageId = UUID.randomUUID().toString()
+            needResendMessage.messageId = ULID.randomULID()
             jobManager.addJobInBackground(
                 SendMessageJob(
                     needResendMessage,
@@ -1128,7 +1127,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
             data.userId = data.representativeId
         }
         try {
-            val decryptedContent = encryptedProtocol.decryptMessage(keyPair, UUID.fromString(sessionId).toByteArray(), data.data.decodeBase64())
+            val decryptedContent = encryptedProtocol.decryptMessage(keyPair, ULID.parseULID(sessionId).toBytes(), data.data.decodeBase64())
             val plaintext = String(decryptedContent)
             try {
                 processDecryptSuccess(data, plaintext)

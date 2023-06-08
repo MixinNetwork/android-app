@@ -18,7 +18,7 @@ import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.MessageStatus
 import one.mixin.android.vo.createMessage
 import one.mixin.android.vo.toCategory
-import java.util.UUID
+import ulid.ULID
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -54,7 +54,7 @@ class SendService : IntentService("SendService") {
             )
 
             val message = createMessage(
-                UUID.randomUUID().toString(),
+                ULID.randomULID(),
                 conversationId,
                 Session.getAccountId().toString(),
                 category,

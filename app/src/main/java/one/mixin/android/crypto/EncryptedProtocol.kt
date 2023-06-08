@@ -4,7 +4,7 @@ import one.mixin.android.extension.leByteArrayToInt
 import one.mixin.android.extension.toByteArray
 import one.mixin.android.extension.toLeByteArray
 import one.mixin.eddsa.KeyPair
-import java.util.UUID
+import ulid.ULID
 
 class EncryptedProtocol {
 
@@ -19,7 +19,7 @@ class EncryptedProtocol {
         val aesGcmKey = generateAesKey()
         val encryptedMessageData = aesGcmEncrypt(plaintext, aesGcmKey)
         val messageKey = encryptCipherMessageKey(keyPair.privateKey.toByteArray(), otherPublicKey, aesGcmKey)
-        val messageKeyWithSession = UUID.fromString(otherSessionId).toByteArray().plus(messageKey)
+        val messageKeyWithSession = ULID.parseULID(otherSessionId).toBytes().plus(messageKey)
         val senderPublicKey = publicKeyToCurve25519(keyPair.publicKey.toByteArray())
         val version = byteArrayOf(0x01)
 
@@ -28,7 +28,7 @@ class EncryptedProtocol {
             version.plus(toLeByteArray(2.toUInt())).plus(senderPublicKey).let {
                 val emergencyMessageKey =
                     encryptCipherMessageKey(keyPair.privateKey.toByteArray(), extensionSessionKey, aesGcmKey)
-                it.plus(UUID.fromString(extensionSessionId).toByteArray().plus(emergencyMessageKey))
+                it.plus(ULID.parseULID(extensionSessionId).toBytes().plus(emergencyMessageKey))
             }.plus(messageKeyWithSession).plus(encryptedMessageData)
         } else {
             version.plus(toLeByteArray(1.toUInt())).plus(senderPublicKey)

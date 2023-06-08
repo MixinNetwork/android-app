@@ -1,7 +1,7 @@
 package one.mixin.android.pay
 
+import ulid.ULID
 import java.math.BigDecimal
-import java.util.UUID
 
 data class ExternalTransfer(
     val destination: String,
@@ -12,5 +12,5 @@ data class ExternalTransfer(
 )
 
 fun generateAddressId(userId: String, assetId: String, destination: String, tag: String?): String {
-    return UUID.nameUUIDFromBytes((userId + assetId + destination + (tag ?: "")).toByteArray()).toString()
+    return ULID.fromBytes((userId + assetId + destination + (tag ?: "")).toByteArray()).toString()
 }

@@ -89,13 +89,13 @@ import one.mixin.android.vo.AssetItem
 import one.mixin.android.vo.User
 import one.mixin.android.vo.generateConversationId
 import timber.log.Timber
+import ulid.ULID
 import java.io.IOException
 import java.io.UnsupportedEncodingException
 import java.net.SocketTimeoutException
 import java.net.URLDecoder
 import java.net.UnknownHostException
 import java.nio.charset.StandardCharsets.UTF_8
-import java.util.UUID
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -785,7 +785,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 return
             }
 
-            val traceId = UUID.randomUUID().toString()
+            val traceId = ULID.randomULID()
             val amount = result.amount
             val destination = result.destination
             handleMixinResponse(
@@ -899,7 +899,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
         if (assetId == null || !assetId.isUUID()) {
             return false
         }
-        val trace = uri.getQueryParameter("trace") ?: UUID.randomUUID().toString()
+        val trace = uri.getQueryParameter("trace") ?: ULID.randomULID()
         val memo = uri.getQueryParameter("memo")?.run {
             Uri.decode(this)
         }

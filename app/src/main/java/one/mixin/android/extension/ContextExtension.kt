@@ -85,9 +85,9 @@ import one.mixin.android.widget.gallery.Gallery
 import one.mixin.android.widget.gallery.MimeType
 import one.mixin.android.widget.gallery.engine.impl.GlideEngine
 import timber.log.Timber
+import ulid.ULID
 import java.io.File
 import java.util.Locale
-import java.util.UUID
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Future
 import kotlin.math.roundToInt
@@ -1036,7 +1036,7 @@ fun getDeviceId(resolver: ContentResolver): String {
     if (deviceId == null || deviceId == "9774d56d682e549c") {
         deviceId = FirebaseInstallations.getInstance().id.result
     }
-    return UUID.nameUUIDFromBytes(deviceId.toByteArray()).toString()
+    return ULID.fromBytes(deviceId.toByteArray()).toString()
 }
 
 fun Context.getDeviceId(): String {

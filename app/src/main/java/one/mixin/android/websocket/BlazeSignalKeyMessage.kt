@@ -1,7 +1,7 @@
 package one.mixin.android.websocket
 
 import com.google.gson.annotations.SerializedName
-import java.util.UUID
+import ulid.ULID
 
 data class BlazeSignalKeyMessage(
     @SerializedName("message_id")
@@ -15,4 +15,4 @@ data class BlazeSignalKeyMessage(
 )
 
 fun createBlazeSignalKeyMessage(recipientId: String, data: String, sessionId: String? = null) =
-    BlazeSignalKeyMessage(UUID.randomUUID().toString(), recipientId, data, sessionId)
+    BlazeSignalKeyMessage(ULID.randomULID(), recipientId, data, sessionId)

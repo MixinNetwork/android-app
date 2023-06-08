@@ -3,8 +3,8 @@ package one.mixin.android.websocket
 import one.mixin.android.api.request.SignalKeyRequest
 import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.MessageStatus
+import ulid.ULID
 import java.io.Serializable
-import java.util.UUID
 
 data class BlazeMessageParam(
     val conversation_id: String? = null,
@@ -56,7 +56,7 @@ fun createPlainJsonParam(conversationId: String, userId: String, encoded: String
     BlazeMessageParam(
         conversationId,
         userId,
-        UUID.randomUUID().toString(),
+        ULID.randomULID(),
         MessageCategory.PLAIN_JSON.name,
         encoded,
         MessageStatus.SENDING.name,

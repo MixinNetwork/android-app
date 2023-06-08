@@ -44,7 +44,7 @@ import one.mixin.android.websocket.BlazeMessageData
 import one.mixin.android.websocket.LIST_PENDING_MESSAGES
 import org.webrtc.IceCandidate
 import timber.log.Timber
-import java.util.UUID
+import ulid.ULID
 import java.util.concurrent.Executors
 
 class DecryptCallMessage(
@@ -125,7 +125,7 @@ class DecryptCallMessage(
 
                                 val curData = pair.second
                                 val savedMessage = createCallMessage(
-                                    UUID.randomUUID().toString(),
+                                    ULID.randomULID(),
                                     curData.conversationId,
                                     curData.userId,
                                     MessageCategory.KRAKEN_INVITE.name,
@@ -189,7 +189,7 @@ class DecryptCallMessage(
                             if (entry.key != data.messageId && !job.isCancelled) {
                                 job.cancel()
                                 val m = createCallMessage(
-                                    UUID.randomUUID().toString(),
+                                    ULID.randomULID(),
                                     curData.conversationId,
                                     Session.getAccountId()!!,
                                     MessageCategory.WEBRTC_AUDIO_BUSY.name,

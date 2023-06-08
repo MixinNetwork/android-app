@@ -266,8 +266,8 @@ import one.mixin.android.widget.keyboard.KeyboardLayout.OnKeyboardHiddenListener
 import one.mixin.android.widget.keyboard.KeyboardLayout.OnKeyboardShownListener
 import one.mixin.android.widget.linktext.AutoLinkMode
 import timber.log.Timber
+import ulid.ULID
 import java.io.File
-import java.util.UUID
 import javax.inject.Inject
 import kotlin.math.abs
 
@@ -1996,7 +1996,7 @@ class ConversationFragment() :
         createConversation {
             lifecycleScope.launch {
                 val code = withContext(Dispatchers.IO) {
-                    val messageId = UUID.randomUUID().toString()
+                    val messageId = ULID.randomULID()
                     lastSendMessageId = messageId
                     chatViewModel.sendImageMessage(
                         conversationId,
@@ -3225,7 +3225,7 @@ class ConversationFragment() :
 
     private fun combineForward() {
         lifecycleScope.launch {
-            val transcriptId = UUID.randomUUID().toString()
+            val transcriptId = ULID.randomULID()
             val messages = conversationAdapter.selectSet.filter { m -> !m.canNotForward() }
                 .sortedWith(compareBy { it.createdAt })
                 .map { it.toTranscript(transcriptId) }

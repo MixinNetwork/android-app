@@ -98,8 +98,8 @@ import org.chromium.net.CronetEngine
 import retrofit2.Retrofit
 import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory
 import retrofit2.converter.gson.GsonConverterFactory
+import ulid.ULID
 import java.util.Locale
-import java.util.UUID
 import java.util.concurrent.TimeUnit
 import javax.inject.Singleton
 import kotlin.math.abs
@@ -171,7 +171,7 @@ object AppModule {
         builder.dns(DNS)
         // Interceptor
         builder.addInterceptor { chain ->
-            val requestId = UUID.randomUUID().toString()
+            val requestId = ULID.randomULID()
             val sourceRequest = chain.request()
             val request = sourceRequest.newBuilder()
                 .addHeader("User-Agent", API_UA)

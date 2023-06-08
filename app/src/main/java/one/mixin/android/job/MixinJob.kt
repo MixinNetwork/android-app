@@ -38,7 +38,7 @@ import one.mixin.android.websocket.createConsumeSignalKeysParam
 import one.mixin.android.websocket.createSignalKeyMessage
 import one.mixin.android.websocket.createSignalKeyMessageParam
 import timber.log.Timber
-import java.util.UUID
+import ulid.ULID
 
 abstract class MixinJob(
     params: Params,
@@ -151,12 +151,12 @@ abstract class MixinJob(
         val params = BlazeMessageParam(
             conversationId,
             recipientId,
-            UUID.randomUUID().toString(),
+            ULID.randomULID(),
             MessageCategory.PLAIN_JSON.name,
             encoded,
             MessageStatus.SENDING.name,
         )
-        val bm = BlazeMessage(UUID.randomUUID().toString(), CREATE_MESSAGE, params)
+        val bm = BlazeMessage(ULID.randomULID(), CREATE_MESSAGE, params)
         jobSenderKey.deliverNoThrow(bm)
     }
 

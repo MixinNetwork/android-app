@@ -25,7 +25,7 @@ import one.mixin.android.websocket.BlazeMessageData
 import org.webrtc.IceCandidate
 import org.webrtc.SessionDescription
 import timber.log.Timber
-import java.util.UUID
+import ulid.ULID
 import java.util.concurrent.TimeUnit
 
 @AndroidEntryPoint
@@ -73,7 +73,7 @@ class VoiceCallService : CallService() {
             val category = MessageCategory.WEBRTC_AUDIO_BUSY.name
             val bmd = intent.getSerializableExtraCompat(EXTRA_BLAZE, BlazeMessageData::class.java) ?: return
             val m = createCallMessage(
-                UUID.randomUUID().toString(),
+                ULID.randomULID(),
                 bmd.conversationId,
                 self.userId,
                 category,
@@ -263,7 +263,7 @@ class VoiceCallService : CallService() {
 
         val state = callState.state
         if (state == CallState.STATE_DIALING && peerConnectionClient.hasLocalSdp()) {
-            val mId = UUID.randomUUID().toString()
+            val mId = ULID.randomULID()
             val cid = callState.conversationId
             if (cid == null) {
                 Timber.e("$TAG_CALL try save WEBRTC_AUDIO_FAILED message, but conversation id is null")
@@ -345,7 +345,7 @@ class VoiceCallService : CallService() {
     private fun sendCallMessage(category: String, content: String? = null) {
         val quoteMessageId = callState.trackId
         val message = if (callState.isOffer) {
-            val messageId = UUID.randomUUID().toString()
+            val messageId = ULID.randomULID()
             val conversationId = callState.conversationId
             if (conversationId == null) {
                 Timber.e("$TAG_CALL try send call message but conversation id is null")
@@ -396,13 +396,13 @@ class VoiceCallService : CallService() {
                 }
                 val duration = System.currentTimeMillis() - connectedTime
                 createCallMessage(
-                    UUID.randomUUID().toString(), blazeMessageData.conversationId,
+                    ULID.randomULID(), blazeMessageData.conversationId,
                     self.userId, category, content, nowInUtc(), MessageStatus.SENDING.name, quoteMessageId,
                     duration.toString(),
                 )
             } else {
                 createCallMessage(
-                    UUID.randomUUID().toString(),
+                    ULID.randomULID(),
                     blazeMessageData.conversationId,
                     self.userId,
                     category,
@@ -465,7 +465,7 @@ class VoiceCallService : CallService() {
     private fun createNewReadMessage(m: Message, userId: String, status: MessageStatus): Message {
         var mId = callState.trackId ?: blazeMessageData?.quoteMessageId ?: blazeMessageData?.messageId
         if (mId.isNullOrBlank()) {
-            mId = UUID.randomUUID().toString()
+            mId = ULID.randomULID()
         }
         return createCallMessage(mId, m.conversationId, userId, m.category, m.content, m.createdAt, status.name, m.quoteMessageId, m.mediaDuration)
     }

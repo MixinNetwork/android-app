@@ -9,7 +9,7 @@ import one.mixin.android.extension.nowInUtc
 import one.mixin.android.job.BaseJob.Companion.PRIORITY_ACK_MESSAGE
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.websocket.BlazeAckMessage
-import java.util.UUID
+import ulid.ULID
 
 @Entity(
     tableName = "jobs",
@@ -53,7 +53,7 @@ data class Job(
 
 fun createAckJob(action: String, ackMessage: BlazeAckMessage, conversationId: String? = null) =
     Job(
-        UUID.nameUUIDFromBytes("${ackMessage.messageId}${ackMessage.status}$action".toByteArray()).toString(),
+        ULID.fromBytes("${ackMessage.messageId}${ackMessage.status}$action".toByteArray()).toString(),
         action,
         nowInUtc(),
         null,

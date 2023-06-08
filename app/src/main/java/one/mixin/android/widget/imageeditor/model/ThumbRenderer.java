@@ -1,9 +1,9 @@
 package one.mixin.android.widget.imageeditor.model;
 
-import java.util.UUID;
-
 import one.mixin.android.widget.imageeditor.Bounds;
 import one.mixin.android.widget.imageeditor.Renderer;
+
+import java.util.UUID;
 
 /**
  * A special {@link Renderer} that controls another {@link EditorElement}.

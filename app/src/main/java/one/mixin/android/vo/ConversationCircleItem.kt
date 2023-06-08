@@ -6,7 +6,7 @@ import androidx.room.ColumnInfo
 import kotlinx.parcelize.Parcelize
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
-import java.util.UUID
+import ulid.ULID
 import kotlin.math.abs
 
 @Parcelize
@@ -28,7 +28,7 @@ fun getCircleColor(circleId: String?): Int {
         Color.BLACK
     } else {
         val hashcode = try {
-            UUID.fromString(circleId).hashCode()
+            ULID.parseULID(circleId).hashCode()
         } catch (e: IllegalArgumentException) {
             circleId.hashCode()
         }

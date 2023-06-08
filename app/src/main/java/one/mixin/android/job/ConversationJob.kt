@@ -19,7 +19,7 @@ import one.mixin.android.vo.ConversationCategory
 import one.mixin.android.vo.ConversationStatus
 import one.mixin.android.vo.Participant
 import timber.log.Timber
-import java.util.UUID
+import ulid.ULID
 
 class ConversationJob(
     private val request: ConversationRequest? = null,
@@ -27,7 +27,7 @@ class ConversationJob(
     private val participantRequests: List<ParticipantRequest>? = null,
     private val type: Int,
     private val recipientId: String? = null,
-) : MixinJob(Params(PRIORITY_UI_HIGH).groupBy(GROUP), UUID.randomUUID().toString()) {
+) : MixinJob(Params(PRIORITY_UI_HIGH).groupBy(GROUP), ULID.randomULID()) {
 
     companion object {
         const val GROUP = "ConversationJob"

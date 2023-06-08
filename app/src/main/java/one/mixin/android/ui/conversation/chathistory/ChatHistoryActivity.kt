@@ -95,7 +95,7 @@ import one.mixin.android.widget.BottomSheetItem
 import one.mixin.android.widget.MixinHeadersDecoration
 import one.mixin.android.widget.buildBottomSheetView
 import timber.log.Timber
-import java.util.UUID
+import ulid.ULID
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -771,7 +771,7 @@ class ChatHistoryActivity : BaseActivity() {
                     bottomSheet.dismiss()
                     return@launch
                 }
-                val transcriptId = UUID.randomUUID().toString()
+                val transcriptId = ULID.randomULID()
                 ForwardActivity.combineForward(
                     this@ChatHistoryActivity,
                     arrayListOf<TranscriptMessage>().apply {

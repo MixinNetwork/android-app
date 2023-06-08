@@ -16,7 +16,7 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
-import java.util.UUID
+import ulid.ULID
 
 @RunWith(AndroidJUnit4::class)
 @HiltAndroidTest
@@ -32,7 +32,7 @@ class ConversationFragmentTest {
 
     @Test
     fun testGetForwardResult() {
-        val cid = UUID.randomUUID().toString()
+        val cid = ULID.randomULID()
         val bundle = ConversationFragment.putBundle(cid, null, null, null)
 
         val expectedResult = Intent().apply {
