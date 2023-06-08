@@ -31,6 +31,7 @@ import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.ParticipantDao
 import one.mixin.android.event.DeviceTransferProgressEvent
 import one.mixin.android.event.SpeedEvent
+import one.mixin.android.extension.addFragment
 import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.base64Encode
 import one.mixin.android.extension.base64RawURLDecode
@@ -390,18 +391,22 @@ class TransferActivity : BaseActivity() {
         binding.pbFl.isVisible = false
         binding.selectLl.isVisible = true
         binding.conversationRl.setOnClickListener {
-            supportFragmentManager.beginTransaction().add(
+            val ft = supportFragmentManager.beginTransaction().add(
                 R.id.container,
                 SelectConversationFragment.newInstance(),
                 SelectConversationFragment.TAG,
-            ).commit()
+            ).setCustomAnimations(R.anim.slide_in_right, 0, 0, R.anim.slide_out_right)
+            ft.addToBackStack(null)
+            ft.commitAllowingStateLoss()
         }
         binding.dataRl.setOnClickListener {
-            supportFragmentManager.beginTransaction().add(
+            val ft = supportFragmentManager.beginTransaction().add(
                 R.id.container,
                 SelectDateFragment.newInstance(),
                 SelectDateFragment.TAG,
-            ).commit()
+            ).setCustomAnimations(R.anim.slide_in_right, 0, 0, R.anim.slide_out_right)
+            ft.addToBackStack(null)
+            ft.commitAllowingStateLoss()
         }
         binding.pbTips.isVisible = false
         binding.startTv.setText(R.string.transfer_now)

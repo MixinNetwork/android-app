@@ -28,5 +28,8 @@ class SelectConversationFragment : BaseFragment() {
     private val binding by viewBinding(FragmentSelectConverstionBinding::bind)
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        binding.titleView.leftIb.setOnClickListener {
+            requireActivity().onBackPressedDispatcher.onBackPressed()
+        }
     }
 }
