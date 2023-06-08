@@ -116,6 +116,25 @@ class ConversationCheckView : LinearLayout, Checkable {
         }
     }
 
+    fun bind(item: ConversationMinimal, listener: (Boolean) -> Unit) {
+        binding.apply {
+            if (item.isGroupConversation()) {
+                normal.text = item.groupName
+                setConversationSubtitle(item)
+                avatar.setGroup(item.iconUrl())
+            } else {
+                normal.text = item.name
+                mixinIdTv.text = item.ownerIdentityNumber
+                avatar.setInfo(item.getConversationName(), item.iconUrl(), item.ownerId)
+            }
+            botIv.isVisible = item.isBot()
+            setOnClickListener {
+                toggle()
+                listener(isChecked)
+            }
+        }
+    }
+
     fun bind(item: User, listener: ForwardAdapter.ForwardListener?) {
         binding.apply {
             normal.text = item.fullName

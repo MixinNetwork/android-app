@@ -47,7 +47,6 @@ import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import one.mixin.android.R
-import one.mixin.android.ui.setting.ui.compose.MixinBackButton
 import one.mixin.android.ui.setting.ui.compose.MixinTopAppBar
 import one.mixin.android.ui.setting.ui.theme.MixinAppTheme
 import kotlin.math.max
@@ -84,11 +83,12 @@ fun SelectDatePage(onClick: () -> Unit) {
                 },
                 actions = {
                     TextButton(
-                        onClick = onClick, modifier = Modifier.padding(horizontal = 4.dp, vertical = 3.dp)
+                        onClick = onClick,
+                        modifier = Modifier.padding(horizontal = 4.dp, vertical = 3.dp),
                     ) {
                         Text(
                             stringResource(id = R.string.Save),
-                            color = MixinAppTheme.colors.accent
+                            color = MixinAppTheme.colors.accent,
                         )
                     }
                 },
@@ -227,8 +227,8 @@ fun YearMothSwitch() {
                     onClick =
                     {
                         booleanValue = !booleanValue
-
-                    }, indication = null
+                    },
+                    indication = null,
                 ),
             content = {
                 Box(
@@ -255,7 +255,8 @@ fun YearMothSwitch() {
             val width = max(secondPlaceable.width, thirdPlaceable.width)
             val height = max(secondPlaceable.height, thirdPlaceable.height)
             val itemConstraints = Constraints.fixed(
-                width, height
+                width,
+                height,
             )
             val firstPlaceable = measurables[0].measure(itemConstraints)
             val offset = (width - secondPlaceable.width) / 2
@@ -285,6 +286,5 @@ fun YearMothSwitch() {
 @Preview
 fun SelectDatePagePreview() {
     SelectDatePage(onClick = {
-
     })
 }

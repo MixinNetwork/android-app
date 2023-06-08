@@ -24,7 +24,7 @@ class SelectDateFragment : BaseFragment() {
     ): View =
         ComposeView(requireContext()).apply {
             setContent {
-                SelectDatePage{
+                SelectDatePage {
                     requireActivity().onBackPressedDispatcher.onBackPressed()
                 }
             }
