@@ -150,6 +150,9 @@ interface TranscriptMessageDao : BaseDao<TranscriptMessage> {
     @Query("SELECT tm.* FROM transcript_messages tm WHERE tm.rowid > :rowId ORDER BY tm.rowid ASC LIMIT :limit")
     fun getTranscriptMessageByLimitAndRowId(limit: Int, rowId: Long): List<TranscriptMessage>
 
+    @Query("SELECT tm.* FROM transcript_messages tm WHERE tm.rowid > :rowId AND message_id IN (SELECT id FROM messages WHERE conversation_id IN (:conversationIds)) ORDER BY tm.rowid ASC LIMIT :limit")
+    fun getTranscriptMessageByLimitAndRowId(limit: Int, rowId: Long, conversationIds: Collection<String>): List<TranscriptMessage>
+
     @Query("SELECT rowid FROM transcript_messages WHERE transcript_id = :transcriptId AND message_id = :messageId")
     fun getTranscriptMessageRowId(transcriptId: String, messageId: String): Long?
 
@@ -158,4 +161,10 @@ interface TranscriptMessageDao : BaseDao<TranscriptMessage> {
 
     @Query("SELECT count(1) FROM transcript_messages WHERE rowid > :rowId")
     fun countTranscriptMessages(rowId: Long): Long
+
+    @Query("SELECT count(1) FROM transcript_messages WHERE message_id IN (SELECT id FROM messages WHERE conversation_id IN (:conversationIds))")
+    fun countTranscriptMessages(conversationIds: Collection<String>): Long
+
+    @Query("SELECT count(1) FROM transcript_messages WHERE rowid > :rowId AND message_id IN (SELECT id FROM messages WHERE conversation_id IN (:conversationIds))")
+    fun countTranscriptMessages(rowId: Long, conversationIds: Collection<String>): Long
 }

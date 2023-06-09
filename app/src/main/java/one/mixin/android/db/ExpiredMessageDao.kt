@@ -36,12 +36,21 @@ interface ExpiredMessageDao : BaseDao<ExpiredMessage> {
     @Query("SELECT em.* FROM expired_messages em WHERE em.rowid > :rowId ORDER BY em.rowid ASC LIMIT :limit")
     fun getExpiredMessageByLimitAndRowId(limit: Int, rowId: Long): List<ExpiredMessage>
 
+    @Query("SELECT em.* FROM expired_messages em WHERE em.rowid > :rowId AND message_id IN (SELECT id FROM messages WHERE conversation_id IN (:conversationIds))ORDER BY em.rowid ASC LIMIT :limit")
+    fun getExpiredMessageByLimitAndRowId(limit: Int, rowId: Long, conversationIds: Collection<String>): List<ExpiredMessage>
+
     @Query("SELECT rowid FROM expired_messages WHERE message_id = :messageId")
     fun getExpiredMessageRowId(messageId: String): Long?
 
     @Query("SELECT count(1) FROM expired_messages")
     fun countExpiredMessages(): Long
 
-    @Query("SELECT count(1) FROM expired_messages  WHERE rowid > :rowId")
+    @Query("SELECT count(1) FROM expired_messages WHERE message_id IN (SELECT id FROM messages WHERE conversation_id IN (:conversationIds))")
+    fun countExpiredMessages(conversationIds: Collection<String>): Long
+
+    @Query("SELECT count(1) FROM expired_messages WHERE rowid > :rowId")
     fun countExpiredMessages(rowId: Long): Long
+
+    @Query("SELECT count(1) FROM expired_messages WHERE rowid > :rowId AND message_id IN (SELECT id FROM messages WHERE conversation_id IN (:conversationIds))")
+    fun countExpiredMessages(rowId: Long, conversationIds: Collection<String>): Long
 }

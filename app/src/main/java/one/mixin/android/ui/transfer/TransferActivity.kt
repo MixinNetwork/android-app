@@ -431,7 +431,7 @@ class TransferActivity : BaseActivity() {
             when (argsStatus) {
                 ARGS_TRANSFER_TO_PHONE -> {
                     lifecycleScope.launch {
-                        transferServer.startServer(generateWhereSql()) { transferCommandData ->
+                        transferServer.startServer(selectConversation) { transferCommandData ->
                             lifecycleScope.launch(Dispatchers.Main) {
                                 val qrCode = gson.toJson(transferCommandData)
                                     .base64Encode()
@@ -727,22 +727,13 @@ class TransferActivity : BaseActivity() {
 
     private fun pushRequest() {
         lifecycleScope.launch {
-            transferServer.startServer(generateWhereSql()) { transferData ->
+            transferServer.startServer(selectConversation) { transferData ->
                 Timber.e("push ${gson.toJson(transferData)}")
                 val encodeText = gson.toJson(
                     transferData,
                 )
                 sendMessage(encodeText)
             }
-        }
-    }
-
-    private fun generateWhereSql(): String {
-        val list = selectConversation
-        if (list.isNullOrEmpty()){
-            return ""
-        }else{
-            return "IN (${list.joinToString(postfix = "'", prefix = ",") { it }})"
         }
     }
 }

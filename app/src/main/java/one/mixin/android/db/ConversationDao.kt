@@ -105,8 +105,11 @@ interface ConversationDao : BaseDao<Conversation> {
     @Query("SELECT COUNT(p.user_id) as count, c.name, c.icon_url, EXISTS(SELECT 1 FROM participants WHERE conversation_id = :conversationId AND user_id = :userId) AS is_exist FROM participants p INNER JOIN conversations c ON p.conversation_id = c.conversation_id WHERE c.conversation_id = :conversationId")
     fun getConversationInfoById(conversationId: String, userId: String): LiveData<GroupInfo?>
 
-    @Query("SELECT c.* FROM conversations c WHERE c.rowid > :rowId AND :whereSql ORDER BY c.rowid ASC LIMIT :limit")
-    fun getConversationsByLimitAndRowId(whereSql:String, limit: Int, rowId: Long): List<Conversation>
+    @Query("SELECT c.* FROM conversations c WHERE c.rowid > :rowId AND conversation_id IN (:conversationIds) ORDER BY c.rowid ASC LIMIT :limit")
+    fun getConversationsByLimitAndRowId(limit: Int, rowId: Long, conversationIds: Collection<String>): List<Conversation>
+
+    @Query("SELECT c.* FROM conversations c WHERE c.rowid > :rowId ORDER BY c.rowid ASC LIMIT :limit")
+    fun getConversationsByLimitAndRowId(limit: Int, rowId: Long): List<Conversation>
 
     @Query("SELECT rowid FROM conversations WHERE conversation_id = :conversationId")
     fun getConversationRowId(conversationId: String): Long?
