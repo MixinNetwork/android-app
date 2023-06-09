@@ -1213,4 +1213,7 @@
     <string name="Lately">Lately</string>
     <string name="Select_all">Select all</string>
     <string name="Deselect_all">Deselect all</string>
+    <string name="Show_Selected">Show Selected (%1$d)</string>
+    <string name="All_chat">All chat</string>
+    <string name="Chats">%1$d chats</string>
 </resources>

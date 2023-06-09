@@ -385,7 +385,7 @@ class TransferActivity : BaseActivity() {
         intent.getIntExtra(ARGS_STATUS, ARGS_TRANSFER_TO_PHONE)
     }
 
-    private var selectConversation:Set<String>? = null
+    private var selectConversation: Set<String>? = null
     private fun initView() {
         binding.titleView.isVisible = true
         binding.pbFl.isVisible = false
@@ -417,6 +417,7 @@ class TransferActivity : BaseActivity() {
         binding.startTv.setText(R.string.transfer_now)
         binding.startTv.isEnabled = true
         binding.start.isClickable = true
+        binding.selectLl.isVisible = argsStatus == ARGS_TRANSFER_TO_PHONE || argsStatus == ARGS_TRANSFER_TO_PC
         binding.start.setOnClickListener {
             if (!this@TransferActivity.isConnectedToWiFi()) {
                 alertDialogBuilder()
@@ -430,7 +431,7 @@ class TransferActivity : BaseActivity() {
             when (argsStatus) {
                 ARGS_TRANSFER_TO_PHONE -> {
                     lifecycleScope.launch {
-                        transferServer.startServer { transferCommandData ->
+                        transferServer.startServer(generateWhereSql()) { transferCommandData ->
                             lifecycleScope.launch(Dispatchers.Main) {
                                 val qrCode = gson.toJson(transferCommandData)
                                     .base64Encode()
@@ -527,10 +528,10 @@ class TransferActivity : BaseActivity() {
     }
 
     private fun renderConversation() {
-        if (selectConversation.isNullOrEmpty()){
-
-        } else{
-
+        if (selectConversation.isNullOrEmpty()) {
+            binding.conversationTv.setText(R.string.All_Conversations)
+        } else {
+            binding.conversationTv.text = getString(R.string.Chats, selectConversation?.size ?: 0)
         }
     }
 
@@ -726,13 +727,22 @@ class TransferActivity : BaseActivity() {
 
     private fun pushRequest() {
         lifecycleScope.launch {
-            transferServer.startServer { transferData ->
+            transferServer.startServer(generateWhereSql()) { transferData ->
                 Timber.e("push ${gson.toJson(transferData)}")
                 val encodeText = gson.toJson(
                     transferData,
                 )
                 sendMessage(encodeText)
             }
+        }
+    }
+
+    private fun generateWhereSql(): String {
+        val list = selectConversation
+        if (list.isNullOrEmpty()){
+            return ""
+        }else{
+            return "IN (${list.joinToString(postfix = "'", prefix = ",") { it }})"
         }
     }
 }

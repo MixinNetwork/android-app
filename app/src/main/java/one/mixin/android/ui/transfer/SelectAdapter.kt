@@ -8,33 +8,46 @@ import androidx.collection.ArraySet
 import androidx.recyclerview.widget.RecyclerView
 import one.mixin.android.R
 import one.mixin.android.vo.ConversationMinimal
-import one.mixin.android.widget.ConversationCheckView
+import one.mixin.android.widget.ConversationSelectView
 
-class SelectAdapter(val allListener: (Boolean)->Unit) : RecyclerView.Adapter<SelectAdapter.ConversationViewHolder>() {
+class SelectAdapter(val allListener: (Boolean) -> Unit, val sizeChangeListener: (Int) -> Unit) :
+    RecyclerView.Adapter<SelectAdapter.ConversationViewHolder>() {
 
     var selectItem = ArraySet<String>()
 
     var conversations: List<ConversationMinimal>? = null
 
     var keyword: CharSequence? = null
-    private var isAll = false
+    var isAll = false
         private set(value) {
             field = value
             allListener.invoke(value)
         }
 
     @SuppressLint("NotifyDataSetChanged")
-    fun selectAll() {
+    private fun selectAll() {
         conversations?.let { list ->
             selectItem.addAll(list.map { it.conversationId })
         }
+        isAll = true
+        sizeChangeListener.invoke(selectItem.size)
         notifyDataSetChanged()
     }
 
     @SuppressLint("NotifyDataSetChanged")
-    fun deselect() {
+    private fun deselect() {
         selectItem.clear()
+        isAll = false
+        sizeChangeListener.invoke(selectItem.size)
         notifyDataSetChanged()
+    }
+
+    fun toggle() {
+        if (isAll) {
+            deselect()
+        } else {
+            selectAll()
+        }
     }
 
     override fun getItemCount(): Int {
@@ -49,13 +62,14 @@ class SelectAdapter(val allListener: (Boolean)->Unit) : RecyclerView.Adapter<Sel
         val conversationItem = conversations!![position]
         holder.bind(
             conversationItem,
-            selectItem.contains(conversationItem.conversationId)
+            selectItem.contains(conversationItem.conversationId),
         ) { check ->
             if (check) {
-                selectItem.remove(conversationItem.conversationId)
-            } else {
                 selectItem.add(conversationItem.conversationId)
+            } else {
+                selectItem.remove(conversationItem.conversationId)
             }
+            sizeChangeListener.invoke(selectItem.size)
             isAll = selectItem.size == conversations?.size
         }
     }
@@ -63,7 +77,7 @@ class SelectAdapter(val allListener: (Boolean)->Unit) : RecyclerView.Adapter<Sel
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ConversationViewHolder {
         return ConversationViewHolder(
             LayoutInflater.from(parent.context).inflate(
-                R.layout.item_forward_conversation,
+                R.layout.item_select_conversation,
                 parent,
                 false,
             ),
@@ -71,8 +85,9 @@ class SelectAdapter(val allListener: (Boolean)->Unit) : RecyclerView.Adapter<Sel
     }
 
     class ConversationViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+
         fun bind(item: ConversationMinimal, isCheck: Boolean, listener: (Boolean) -> Unit) {
-            (itemView as ConversationCheckView).let {
+            (itemView as ConversationSelectView).let {
                 it.isChecked = isCheck
                 it.bind(item, listener)
             }

@@ -11,12 +11,8 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
-import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentSelectConverstionBinding
-import one.mixin.android.extension.defaultSharedPreferences
-import one.mixin.android.extension.putInt
-import one.mixin.android.extension.tickVibrate
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.conversation.ConversationViewModel
 import one.mixin.android.util.viewBinding
@@ -40,13 +36,16 @@ class SelectConversationFragment : BaseFragment() {
     private val chatViewModel by viewModels<ConversationViewModel>()
 
     private val adapter by lazy {
-        SelectAdapter {
-            if (it) {
+        SelectAdapter({ isAll ->
+            if (isAll) {
                 binding.selectTv.setText(R.string.Deselect_all)
             } else {
                 binding.selectTv.setText(R.string.Select_all)
             }
-        }
+        }, { count ->
+            binding.showTv.text = getString(R.string.Show_Selected, count)
+            binding.showTv.isEnabled = count > 0
+        })
     }
 
     @SuppressLint("NotifyDataSetChanged")
@@ -56,12 +55,24 @@ class SelectConversationFragment : BaseFragment() {
         }
         binding.recyclerView.adapter = adapter
         binding.searchEt.addTextChangedListener(mWatcher)
+        binding.showTv.text = getString(R.string.Show_Selected, 0)
+        binding.showTv.isEnabled = false
         binding.titleView.rightTv.setOnClickListener {
-            callback?.invoke(adapter.selectItem)
+            callback?.invoke(
+                if (adapter.isAll) {
+                    null
+                } else {
+                    adapter.selectItem
+                },
+            )
+            requireActivity().onBackPressedDispatcher.onBackPressed()
         }
         lifecycleScope.launch {
             adapter.conversations = chatViewModel.successConversationList()
             adapter.notifyDataSetChanged()
+        }
+        binding.selectTv.setOnClickListener {
+            adapter.toggle()
         }
     }
 
@@ -77,5 +88,5 @@ class SelectConversationFragment : BaseFragment() {
         }
     }
 
-    var callback: ((Set<String>) -> Unit)? = null
+    var callback: ((Set<String>?) -> Unit)? = null
 }

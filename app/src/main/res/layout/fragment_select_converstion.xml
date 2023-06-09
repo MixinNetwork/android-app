@@ -56,14 +56,22 @@
                 android:id="@+id/select_tv"
                 android:padding="16dp"
                 android:text="@string/Select_all"
+                android:background="@drawable/mixin_ripple"
+                android:textColor="@color/selector_blue_tv"
+                android:layout_alignParentStart="true"
                 android:layout_width="wrap_content"
+                android:layout_centerVertical="true"
                 android:layout_height="wrap_content" />
 
             <TextView
                 android:id="@+id/show_tv"
                 android:padding="16dp"
-                android:text="@string/Select_all"
+                android:text="@string/Show_Selected"
+                android:background="@drawable/mixin_ripple"
+                android:textColor="@color/selector_blue_tv"
                 android:layout_width="wrap_content"
+                android:layout_alignParentEnd="true"
+                android:layout_centerVertical="true"
                 android:layout_height="wrap_content" />
         </RelativeLayout>
 

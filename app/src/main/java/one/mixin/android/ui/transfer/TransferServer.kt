@@ -127,10 +127,12 @@ class TransferServer @Inject internal constructor(
             Timber.e(e)
         }
         quit = false
-        startServer(createdSuccessCallback)
+        startServer(whereSql, createdSuccessCallback)
     }
 
+    private var whereSql: String = ""
     suspend fun startServer(
+        whereSql: String,
         createdSuccessCallback: (TransferCommand) -> Unit,
     ) = withContext(SINGLE_SOCKET_THREAD) {
         try {
@@ -139,6 +141,7 @@ class TransferServer @Inject internal constructor(
             this@TransferServer.serverSocket = serverSocket
             status.value = TransferStatus.CREATED
             code = Random.nextInt(10000)
+            this@TransferServer.whereSql = whereSql
             createdSuccessCallback(
                 TransferCommand(
                     TransferCommandAction.PUSH.value,
@@ -307,7 +310,7 @@ class TransferServer @Inject internal constructor(
         }
         currentType = TransferDataType.CONVERSATION.value
         while (!quit) {
-            val list = conversationDao.getConversationsByLimitAndRowId(LIMIT, rowId)
+            val list = conversationDao.getConversationsByLimitAndRowId(whereSql, LIMIT, rowId)
             if (list.isEmpty()) {
                 return
             }
