@@ -75,20 +75,22 @@ class UrlInterpreterActivity : BaseActivity() {
         if (data.toString().startsWith("https://", true)) {
             val bottomSheet = LinkBottomSheetDialogFragment.newInstance(data.toString())
             bottomSheet.showNow(supportFragmentManager, LinkBottomSheetDialogFragment.TAG)
-        } else if (data.scheme == WC && WalletConnect.isEnabled(this)) {
-            if (MixinApplication.get().topActivity is WebActivity) {
-                val url = data.toString()
-                if (WCSession.from(url) != null) {
-                    WalletConnectV1.connect(url)
+        } else if (data.scheme == WC) {
+            if (WalletConnect.isEnabled(this)) {
+                if (MixinApplication.get().topActivity is WebActivity) {
+                    val url = data.toString()
+                    if (WCSession.from(url) != null) {
+                        WalletConnectV1.connect(url)
+                    } else {
+                        WalletConnectV2.pair(url)
+                    }
                 } else {
-                    WalletConnectV2.pair(url)
+                    startActivity(
+                        Intent(this, MainActivity::class.java).apply {
+                            putExtra(MainActivity.WALLET_CONNECT, data.toString())
+                        },
+                    )
                 }
-            } else {
-                startActivity(
-                    Intent(this, MainActivity::class.java).apply {
-                        putExtra(MainActivity.WALLET_CONNECT, data.toString())
-                    },
-                )
             }
             finish()
         } else {
@@ -108,7 +110,6 @@ class UrlInterpreterActivity : BaseActivity() {
                 val bottomSheet = LinkBottomSheetDialogFragment.newInstance(uri.toString())
                 bottomSheet.showNow(supportFragmentManager, LinkBottomSheetDialogFragment.TAG)
             }
-
             TRANSFER -> {
                 uri.lastPathSegment?.let { lastPathSegment ->
                     if (Session.getAccount()?.hasPin == true) {
@@ -120,11 +121,9 @@ class UrlInterpreterActivity : BaseActivity() {
                     }
                 }
             }
-
             DEVICE -> {
                 ConfirmBottomFragment.show(this, supportFragmentManager, uri.toString())
             }
-
             SEND -> {
                 uri.handleSchemeSend(
                     this,
@@ -135,7 +134,6 @@ class UrlInterpreterActivity : BaseActivity() {
                     },
                 )
             }
-
             DEVICE_TRANSFER -> {
                 TransferActivity.parseUri(this, uri, { finish() }) { finish() }
             }
