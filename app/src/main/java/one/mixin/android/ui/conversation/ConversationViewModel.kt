@@ -144,7 +144,8 @@ internal constructor(
 
     suspend fun getConversationDraftById(id: String): String? = conversationRepository.getConversationDraftById(id)
 
-    fun getConversationById(id: String) = conversationRepository.getConversationById(id)
+    fun getConversationInfoById(id: String, userId: String) =
+        conversationRepository.getConversationInfoById(id, userId)
 
     suspend fun getConversation(id: String) = withContext(Dispatchers.IO) {
         conversationRepository.getConversation(id)

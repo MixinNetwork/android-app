@@ -12,8 +12,8 @@ plugins {
 
 def versionMajor = 0
 def versionMinor = 40
-def versionPatch = 0
-def versionBuild = 13
+def versionPatch = 1
+def versionBuild = 1
 
 android {
     compileSdk 33
@@ -60,7 +60,7 @@ android {
             freeCompilerArgs += ['-opt-in=kotlin.contracts.ExperimentalContracts']
             freeCompilerArgs += [
                     "-P",
-                    "plugin:androidx.compose.compiler.plugins.kotlin:suppressKotlinVersionCompatibilityCheck=1.8.21"
+                    "plugin:androidx.compose.compiler.plugins.kotlin:suppressKotlinVersionCompatibilityCheck=1.8.22"
             ]
         }
 
@@ -179,7 +179,7 @@ android {
     }
 
     composeOptions {
-        kotlinCompilerExtensionVersion '1.4.5'
+        kotlinCompilerExtensionVersion '1.4.7'
     }
     lint {
         abortOnError false
@@ -189,7 +189,7 @@ android {
     configurations.configureEach {
         resolutionStrategy {
             force "com.android.tools.build.jetifier:jetifier-core:1.0.0-beta10"
-            force "com.github.mixinnetwork:tink-eddsa:0.0.9"
+            force "com.github.mixinnetwork:tink-eddsa:0.0.11"
             exclude group: 'org.bouncycastle', module: 'bcprov-jdk18on'
         }
     }
@@ -265,12 +265,12 @@ dependencies {
     implementation "io.reactivex.rxjava2:rxjava:${rxJavaVersion}"
     implementation "io.reactivex.rxjava2:rxandroid:${rxAndroidVersion}"
 
-    implementation "com.github.mixinnetwork:tink-eddsa:0.0.9"
-    implementation("com.github.mixinnetwork.jjwt:jjwt-api:a0d0a70922") {
+    implementation "com.github.mixinnetwork:tink-eddsa:0.0.11"
+    implementation("com.github.mixinnetwork.jjwt:jjwt-api:574d64e79f") {
         exclude group: 'com.github.mixinnetwork', module: 'tink-eddsa'
     }
-    runtimeOnly 'com.github.mixinnetwork.jjwt:jjwt-impl:a0d0a70922'
-    runtimeOnly('com.github.mixinnetwork.jjwt:jjwt-orgjson:a0d0a70922') {
+    runtimeOnly 'com.github.mixinnetwork.jjwt:jjwt-impl:574d64e79f'
+    runtimeOnly('com.github.mixinnetwork.jjwt:jjwt-orgjson:574d64e79f') {
         exclude group: 'org.json', module: 'json' //provided by Android natively
     }
     implementation "com.jakewharton.threetenabp:threetenabp:${threetenabpVersion}"

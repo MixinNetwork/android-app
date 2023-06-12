@@ -28,6 +28,7 @@ import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.navigationBarHeight
 import one.mixin.android.extension.realSize
 import one.mixin.android.extension.runOnUiThread
+import one.mixin.android.extension.safeAddView
 import one.mixin.android.extension.statusBarHeight
 import one.mixin.android.ui.Rect
 import one.mixin.android.ui.call.CallActivity
@@ -208,7 +209,7 @@ class PipCallView {
                     WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED or
                     WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS
             }
-            windowView?.let { windowManager.addView(it, windowLayoutParams) }
+            windowManager.safeAddView(windowView, windowLayoutParams)
             shown = true
         } catch (e: Exception) {
             Timber.e(e)
