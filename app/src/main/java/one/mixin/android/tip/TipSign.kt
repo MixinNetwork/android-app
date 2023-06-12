@@ -50,7 +50,7 @@ sealed class TipSignSpec(
             }
 
             override fun sign(priv: ByteArray, data: ByteArray): String {
-                val signer = Ed25519Sign(priv.toByteString())
+                val signer = Ed25519Sign(priv.toByteString(), checkOnCurve = shouldCheckOnCurve())
                 return signer.sign(data.toByteString()).toByteArray().toHex()
             }
         }
