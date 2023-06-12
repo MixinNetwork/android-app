@@ -40,6 +40,7 @@ import one.mixin.android.extension.isLandscape
 import one.mixin.android.extension.navigationBarHeight
 import one.mixin.android.extension.realSize
 import one.mixin.android.extension.round
+import one.mixin.android.extension.safeAddView
 import one.mixin.android.extension.toast
 import one.mixin.android.ui.media.pager.MediaPagerActivity
 import one.mixin.android.util.RomUtil
@@ -427,7 +428,7 @@ class PipVideoView {
             }
             windowLayoutParams.flags =
                 WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED or WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS
-            windowView?.let { windowManager.addView(it, windowLayoutParams) }
+            windowManager.safeAddView(windowView, windowLayoutParams)
             shown = true
         } catch (e: Exception) {
             Timber.e(e)

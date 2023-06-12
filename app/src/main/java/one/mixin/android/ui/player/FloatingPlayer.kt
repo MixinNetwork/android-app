@@ -29,6 +29,7 @@ import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.navigationBarHeight
 import one.mixin.android.extension.putInt
 import one.mixin.android.extension.realSize
+import one.mixin.android.extension.safeAddView
 import one.mixin.android.util.MusicPlayer
 import one.mixin.android.widget.RLottieDrawable
 import one.mixin.android.widget.RLottieImageView
@@ -110,7 +111,7 @@ class FloatingPlayer(private var isNightMode: Boolean) {
             if (!isShown) {
                 init()
                 isShown = true
-                windowView?.let { windowManager.addView(it, windowLayoutParams) }
+                windowManager.safeAddView(windowView, windowLayoutParams)
             }
             reload()
         }
