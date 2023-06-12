@@ -91,6 +91,8 @@ class UrlInterpreterActivity : BaseActivity() {
                         },
                     )
                 }
+            } else {
+                toast(R.string.Not_recognized)
             }
             finish()
         } else {
