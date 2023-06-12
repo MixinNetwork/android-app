@@ -6,8 +6,10 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.compose.ui.platform.ComposeView
 import dagger.hilt.android.AndroidEntryPoint
+import one.mixin.android.extension.getTimeMonthsAgo
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.transfer.compose.SelectDatePage
+import timber.log.Timber
 
 @AndroidEntryPoint
 class SelectDateFragment : BaseFragment() {
@@ -24,12 +26,23 @@ class SelectDateFragment : BaseFragment() {
     ): View =
         ComposeView(requireContext()).apply {
             setContent {
-                SelectDatePage {
+                SelectDatePage({
                     requireActivity().onBackPressedDispatcher.onBackPressed()
-                }
+                }, { result ->
+                    requireActivity().onBackPressedDispatcher.onBackPressed()
+                    if (result == null) {
+                        Timber.e("All time")
+                        callback?.invoke(null)
+                    } else {
+                        Timber.e("${getTimeMonthsAgo(result)}")
+                        callback?.invoke(getTimeMonthsAgo(result).toString())
+                    }
+                })
             }
         }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
     }
+
+    var callback: ((String?) -> Unit)? = null
 }

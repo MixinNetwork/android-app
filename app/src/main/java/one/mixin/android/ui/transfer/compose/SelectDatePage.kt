@@ -1,13 +1,12 @@
 package one.mixin.android.ui.transfer.compose
 
-import androidx.annotation.ColorRes
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -15,22 +14,21 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
-import androidx.compose.material.OutlinedButton
 import androidx.compose.material.ProvideTextStyle
 import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
 import androidx.compose.material.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -39,30 +37,30 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.zIndex
 import one.mixin.android.R
 import one.mixin.android.ui.setting.ui.compose.MixinTopAppBar
 import one.mixin.android.ui.setting.ui.theme.MixinAppTheme
-import org.whispersystems.libsignal.logging.Log
 
 @Composable
-fun SelectDatePage(onClick: () -> Unit) {
+fun SelectDatePage(onExit: () -> Unit, onResult: (Int?) -> Unit) {
     var dateSelect by remember {
         mutableStateOf(false)
     }
-    val dateValue by remember {
-        mutableStateOf(6)
+
+    var unit by remember {
+        mutableStateOf(0)
+    }
+
+    var localText by remember {
+        mutableStateOf("1")
     }
 
     Scaffold(
@@ -70,7 +68,7 @@ fun SelectDatePage(onClick: () -> Unit) {
         topBar = {
             MixinTopAppBar(
                 navigationIcon = {
-                    IconButton(onClick = onClick) {
+                    IconButton(onClick = onExit) {
                         Icon(
                             painter = painterResource(id = R.drawable.ic_back),
                             contentDescription = null,
@@ -88,7 +86,24 @@ fun SelectDatePage(onClick: () -> Unit) {
                 },
                 actions = {
                     TextButton(
-                        onClick = onClick,
+                        onClick = {
+                            if (dateSelect) {
+                                val date = localText.toIntOrNull()
+                                if (date == null) {
+                                    onResult.invoke(null)
+                                } else {
+                                    onResult.invoke(
+                                        if (unit == 1) {
+                                            date
+                                        } else {
+                                            date * 12
+                                        },
+                                    )
+                                }
+                            } else {
+                                onResult.invoke(null)
+                            }
+                        },
                         modifier = Modifier.padding(horizontal = 4.dp, vertical = 3.dp),
                     ) {
                         Text(
@@ -121,7 +136,10 @@ fun SelectDatePage(onClick: () -> Unit) {
                 exit = slideOutVertically(targetOffsetY = { 0 }),
             ) {
                 Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.CenterEnd) {
-                    YearMothSwitch()
+                    YearMothSwitch { text, index ->
+                        localText = text ?: ""
+                        unit = index
+                    }
                 }
             }
         }
@@ -188,9 +206,14 @@ fun Tile(
 }
 
 @Composable
-fun YearMothSwitch() {
-    var booleanValue by remember { mutableStateOf(false) }
-    var number by remember { mutableStateOf("0") }
+fun YearMothSwitch(onTextChange: (String?, Int) -> Unit) {
+    var number by remember { mutableStateOf("1") }
+    var index by remember { mutableStateOf(0) }
+    DisposableEffect(Unit) {
+        onDispose {
+            onTextChange(number, index)
+        }
+    }
     Row(
         modifier = Modifier
             .wrapContentSize()
@@ -215,22 +238,21 @@ fun YearMothSwitch() {
             onValueChange = {
                 if (it.length <= 2 && it.all { char -> char.isDigit() }) {
                     number = it
+                    onTextChange(number, index)
                 }
             },
             keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
             maxLines = 1,
         )
         Spacer(modifier = Modifier.width(4.dp))
-        val genders2 =
-            listOf(stringResource(id = R.string.Year), stringResource(id = R.string.Month))
         SegmentedControl(
-            items = genders2,
-            defaultSelectedItemIndex = 0,
-            cornerRadius = 8,
-            color = R.color.colorAccent
-        ) {
-            Log.e("CustomToggle", "Selected item : ${genders2[it]}")
-        }
+            items = listOf(stringResource(id = R.string.Year), stringResource(id = R.string.Month)),
+            defaultSelectedItemIndex = index,
+            onItemSelection = {
+                index = it
+                onTextChange(number, index)
+            },
+        )
     }
 }
 
@@ -238,63 +260,39 @@ fun YearMothSwitch() {
 fun SegmentedControl(
     items: List<String>,
     defaultSelectedItemIndex: Int = 0,
-    cornerRadius: Int = 10,
-    @ColorRes color: Int = R.color.colorAccent,
-    onItemSelection: (selectedItemIndex: Int) -> Unit
+    onItemSelection: (selectedItemIndex: Int) -> Unit,
 ) {
     val selectedIndex = remember { mutableStateOf(defaultSelectedItemIndex) }
 
     Row(
         modifier = Modifier
+            .clip(RoundedCornerShape(4.dp))
+            .background(MixinAppTheme.colors.shadow)
+            .wrapContentHeight()
+            .padding(2.dp),
     ) {
         items.forEachIndexed { index, item ->
-            OutlinedButton(
-                modifier = when (index) {
-                    0 -> {
-                        Modifier
-                            .padding(1.dp)
-                            .wrapContentSize()
-                            .offset(0.dp, 0.dp)
-                            .zIndex(if (selectedIndex.value == index) 1f else 0f)
-                    }
-
-                    else -> {
-                        Modifier
-                            .padding(1.dp)
-                            .wrapContentSize()
-                            .offset((-1 * index).dp, 0.dp)
-                            .zIndex(if (selectedIndex.value == index) 1f else 0f)
-                    }
-                },
-                onClick = {
-                    selectedIndex.value = index
-                    onItemSelection(selectedIndex.value)
-                },
-                border = null,
-                shape = RoundedCornerShape(
-                        topStartPercent = cornerRadius,
-                        topEndPercent = cornerRadius,
-                        bottomStartPercent = cornerRadius,
-                        bottomEndPercent = cornerRadius),
-                colors = if (selectedIndex.value == index) {
-                    ButtonDefaults.outlinedButtonColors(
-                        backgroundColor = MixinAppTheme.colors.shadow
-                    )
-                } else {
-                    ButtonDefaults.outlinedButtonColors(backgroundColor = Color.Transparent)
-                },
-            ) {
-                val modifier = if(selectedIndex.value == index){
-                    Modifier.background(color = MixinAppTheme.colors.background, shape = RoundedCornerShape(8.dp))
-                } else {
-                    Modifier
-                }
-                Text(
-                    modifier = modifier,
-                    text = item,
-                    color = MixinAppTheme.colors.textPrimary,
-                )
+            val background = if (index == selectedIndex.value) {
+                MixinAppTheme.colors.background
+            } else {
+                Color.Transparent
             }
+            Text(
+                text = item,
+                color = MixinAppTheme.colors.textPrimary,
+                modifier = Modifier
+                    .clip(RoundedCornerShape(4.dp))
+                    .background(background)
+                    .padding(horizontal = 20.dp, vertical = 4.dp)
+                    .clickable(
+                        interactionSource = remember { MutableInteractionSource() },
+                        indication = null,
+                        onClick = {
+                            selectedIndex.value = index
+                            onItemSelection.invoke(selectedIndex.value)
+                        },
+                    ),
+            )
         }
     }
 }
@@ -302,5 +300,5 @@ fun SegmentedControl(
 @Composable
 @Preview
 fun SelectDatePagePreview() {
-    SelectDatePage(onClick = {})
+    SelectDatePage(onExit = {}, onResult = {})
 }
