@@ -16,6 +16,7 @@ import android.view.View.INVISIBLE
 import android.view.View.VISIBLE
 import android.view.ViewGroup
 import android.view.ViewOutlineProvider
+import android.view.WindowManager
 import android.view.animation.DecelerateInterpolator
 import android.view.animation.Interpolator
 import android.view.inputmethod.InputMethodManager
@@ -347,6 +348,19 @@ fun PopupMenu.showIcon() {
         menuHelper.javaClass.getDeclaredMethod("setForceShowIcon", *argTypes)
             .invoke(menuHelper, true)
     } catch (e: Exception) {
+    }
+}
+
+fun WindowManager.safeAddView(view: View?, params: ViewGroup.LayoutParams) {
+    if (view == null) return
+
+    try {
+        if (view.windowToken != null || view.parent != null) {
+            removeView(view)
+        }
+        addView(view, params)
+    } catch (e: Exception) {
+        Timber.e("add/remove view from windowManager meet ${e.stackTraceToString()}")
     }
 }
 

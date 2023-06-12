@@ -26,6 +26,7 @@ import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.navigationBarHeight
 import one.mixin.android.extension.putInt
 import one.mixin.android.extension.realSize
+import one.mixin.android.extension.safeAddView
 import one.mixin.android.extension.statusBarHeight
 import one.mixin.android.widget.FloatingAvatarsView
 import kotlin.math.abs
@@ -98,7 +99,7 @@ class FloatingWebClip(private var isNightMode: Boolean) {
             if (!isShown) {
                 isShown = true
                 init()
-                windowView?.let { windowManager.addView(it, windowLayoutParams) }
+                windowManager.safeAddView(windowView, windowLayoutParams)
             }
             reload()
         }
