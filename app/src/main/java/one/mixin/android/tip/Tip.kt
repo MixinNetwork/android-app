@@ -397,7 +397,7 @@ class Tip @Inject internal constructor(
     private fun signTimestamp(stPriv: ByteString, stPub: ByteString, timestamp: Long): String {
         val signer = Ed25519Sign(stPriv, checkOnCurve = shouldCheckOnCurve())
         val msg = TipBody.forVerify(timestamp)
-        val sig = signer.sign(msg.toByteString()).toByteArray()
+        val sig = signer.sign(msg.toByteString(), checkOnCurve = shouldCheckOnCurve()).toByteArray()
 
         val valid = Crypto.verifyEd25519(msg, sig, stPub.toByteArray())
         Timber.e("verify go-ed25519 sig is valid: $valid\npub: ${stPub.toByteArray().base64RawURLEncode()}\nmsg: ${msg.base64RawURLEncode()}\nsig: ${sig.base64RawURLEncode()}")

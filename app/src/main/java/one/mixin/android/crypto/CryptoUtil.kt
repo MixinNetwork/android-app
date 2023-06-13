@@ -62,7 +62,7 @@ fun initFromSeedAndSign(seed: ByteArray, signTarget: ByteArray): ByteArray {
 
 private fun signWithSk(privateKey: EdDSAPrivateKey, signTarget: ByteArray): ByteArray {
     val signer = Ed25519Sign(privateKey.privateKey, checkOnCurve = shouldCheckOnCurve())
-    return signer.sign(signTarget.toByteString()).toByteArray()
+    return signer.sign(signTarget.toByteString(), checkOnCurve = shouldCheckOnCurve()).toByteArray()
 }
 
 fun privateKeyToCurve25519(privateKey: ByteArray): ByteArray {
