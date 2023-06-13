@@ -93,7 +93,7 @@ interface PinMessageDao : BaseDao<PinMessage> {
     @Query("SELECT rowid FROM pin_messages WHERE message_id = :messageId")
     fun getPinMessageRowId(messageId: String): Long?
 
-    @Query("SELECT rowid FROM pin_messages WHERE created_at >= :createdAt")
+    @Query("SELECT rowid FROM pin_messages WHERE created_at >= :createdAt LIMIT 1")
     fun getMessageRowidByCreateAt(createdAt: String): Long?
 
     @Query("SELECT count(1) FROM pin_messages")

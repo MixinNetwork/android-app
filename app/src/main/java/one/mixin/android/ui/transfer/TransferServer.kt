@@ -686,7 +686,13 @@ class TransferServer @Inject internal constructor(
             if (list.isEmpty()) {
                 return
             }
-            list.map {
+            if (timestamp != null) {
+                list.filter {
+                    it.createdAt >= timestamp
+                }
+            } else {
+                list
+            }.map {
                 it.markAttachmentAsPending()
             }.forEach { transferMessage ->
                 if (transferMessage.isTranscript()) {
