@@ -1025,10 +1025,12 @@ class TransferServer @Inject internal constructor(
                 messageDao.countMediaMessages(collection) + messageDao.countMessages(collection) + transcriptMessageDao.countTranscriptMessages(collection)
             }
         } else {
-            if (collection.isNullOrEmpty()) {
-                messageDao.countMediaMessages(rowId) + messageDao.countMessages(rowId) + transcriptMessageDao.countTranscriptMessages(rowId)
-            } else {
+            if (!collection.isNullOrEmpty() && timestamp != null) {
+                messageDao.countMediaMessages(rowId, collection, timestamp) + messageDao.countMessages(rowId, collection, timestamp) + transcriptMessageDao.countTranscriptMessages(rowId, collection, timestamp)
+            } else if (!collection.isNullOrEmpty()) {
                 messageDao.countMediaMessages(rowId, collection) + messageDao.countMessages(rowId, collection) + transcriptMessageDao.countTranscriptMessages(rowId, collection)
+            } else {
+                messageDao.countMediaMessages(rowId) + messageDao.countMessages(rowId) + transcriptMessageDao.countTranscriptMessages(rowId)
             }
         }
     }

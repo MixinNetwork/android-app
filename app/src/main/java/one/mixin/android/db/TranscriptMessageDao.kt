@@ -158,4 +158,7 @@ interface TranscriptMessageDao : BaseDao<TranscriptMessage> {
 
     @Query("SELECT count(1) FROM transcript_messages WHERE transcript_id IN (SELECT id FROM messages WHERE rowid > :rowId AND conversation_id IN (:conversationIds))")
     fun countTranscriptMessages(rowId: Long, conversationIds: Collection<String>): Long
+
+    @Query("SELECT count(1) FROM transcript_messages WHERE transcript_id IN (SELECT id FROM messages WHERE rowid > :rowId AND conversation_id IN (:conversationIds) AND created_at >= :createdAt)")
+    fun countTranscriptMessages(rowId: Long, conversationIds: Collection<String>, createdAt: String): Long
 }

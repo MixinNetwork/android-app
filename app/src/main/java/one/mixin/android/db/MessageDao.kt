@@ -637,6 +637,12 @@ interface MessageDao : BaseDao<Message> {
     @Query("SELECT count(1) FROM messages WHERE rowid > :rowId AND conversation_id IN (:conversationIds)")
     fun countMessages(rowId: Long, conversationIds: Collection<String>): Long
 
+    @Query("SELECT count(1) FROM messages WHERE rowid > :rowId AND conversation_id IN (:conversationIds) AND created_at >= :createdAt")
+    fun countMessages(rowId: Long, conversationIds: Collection<String>, createdAt: String): Long
+
     @Query("SELECT count(1) FROM messages WHERE rowid > :rowId AND (category IN ($DATA, $IMAGES, $AUDIOS, $VIDEOS)) AND media_status IN ('DONE', 'READ') AND conversation_id IN (:conversationIds)")
     fun countMediaMessages(rowId: Long, conversationIds: Collection<String>): Long
+
+    @Query("SELECT count(1) FROM messages WHERE rowid > :rowId AND (category IN ($DATA, $IMAGES, $AUDIOS, $VIDEOS)) AND media_status IN ('DONE', 'READ') AND conversation_id IN (:conversationIds) AND created_at >= :createdAt")
+    fun countMediaMessages(rowId: Long, conversationIds: Collection<String>, createdAt: String): Long
 }
