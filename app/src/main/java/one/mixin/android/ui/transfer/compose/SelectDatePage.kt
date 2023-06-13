@@ -62,83 +62,84 @@ fun SelectDatePage(onExit: () -> Unit, onResult: (Int?) -> Unit) {
     var localText by remember {
         mutableStateOf("1")
     }
-
-    Scaffold(
-        backgroundColor = MixinAppTheme.colors.background,
-        topBar = {
-            MixinTopAppBar(
-                navigationIcon = {
-                    IconButton(onClick = onExit) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.ic_back),
-                            contentDescription = null,
-                            tint = MixinAppTheme.colors.icon,
-                        )
-                    }
-                },
-                title = {
-                    Column(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                    ) {
-                        Text(text = stringResource(id = R.string.Date))
-                    }
-                },
-                actions = {
-                    TextButton(
-                        onClick = {
-                            if (dateSelect) {
-                                val date = localText.toIntOrNull()
-                                if (date == null) {
-                                    onResult.invoke(null)
+    MixinAppTheme {
+        Scaffold(
+            backgroundColor = MixinAppTheme.colors.background,
+            topBar = {
+                MixinTopAppBar(
+                    navigationIcon = {
+                        IconButton(onClick = onExit) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.ic_back),
+                                contentDescription = null,
+                                tint = MixinAppTheme.colors.icon,
+                            )
+                        }
+                    },
+                    title = {
+                        Column(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                        ) {
+                            Text(text = stringResource(id = R.string.Date))
+                        }
+                    },
+                    actions = {
+                        TextButton(
+                            onClick = {
+                                if (dateSelect) {
+                                    val date = localText.toIntOrNull()
+                                    if (date == null) {
+                                        onResult.invoke(null)
+                                    } else {
+                                        onResult.invoke(
+                                            if (unit == 1) {
+                                                date
+                                            } else {
+                                                date * 12
+                                            },
+                                        )
+                                    }
                                 } else {
-                                    onResult.invoke(
-                                        if (unit == 1) {
-                                            date
-                                        } else {
-                                            date * 12
-                                        },
-                                    )
+                                    onResult.invoke(null)
                                 }
-                            } else {
-                                onResult.invoke(null)
-                            }
-                        },
-                        modifier = Modifier.padding(horizontal = 4.dp, vertical = 3.dp),
-                    ) {
-                        Text(
-                            stringResource(id = R.string.Save),
-                            color = MixinAppTheme.colors.accent,
-                        )
-                    }
-                },
-            )
-        },
-    ) { padding ->
-        Column(
-            modifier = Modifier
-                .padding(padding)
-                .fillMaxWidth()
-                .padding(16.dp)
-                .animateContentSize()
-                .clip(RoundedCornerShape(8.dp))
-                .background(MixinAppTheme.colors.backgroundGray),
-        ) {
-            SelectItem(stringResource(id = R.string.all_time), !dateSelect) {
-                dateSelect = false
-            }
-            SelectItem(stringResource(id = R.string.Specified_time_period), dateSelect) {
-                dateSelect = true
-            }
-            AnimatedVisibility(
-                visible = dateSelect,
-                enter = slideInVertically(initialOffsetY = { it }),
-                exit = slideOutVertically(targetOffsetY = { 0 }),
+                            },
+                            modifier = Modifier.padding(horizontal = 4.dp, vertical = 3.dp),
+                        ) {
+                            Text(
+                                stringResource(id = R.string.Save),
+                                color = MixinAppTheme.colors.accent,
+                            )
+                        }
+                    },
+                )
+            },
+        ) { padding ->
+            Column(
+                modifier = Modifier
+                    .padding(padding)
+                    .fillMaxWidth()
+                    .padding(16.dp)
+                    .animateContentSize()
+                    .clip(RoundedCornerShape(8.dp))
+                    .background(MixinAppTheme.colors.backgroundGray),
             ) {
-                Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.CenterEnd) {
-                    YearMothSwitch { text, index ->
-                        localText = text ?: ""
-                        unit = index
+                SelectItem(stringResource(id = R.string.all_time), !dateSelect) {
+                    dateSelect = false
+                }
+                SelectItem(stringResource(id = R.string.Specified_time_period), dateSelect) {
+                    dateSelect = true
+                }
+                AnimatedVisibility(
+                    visible = dateSelect,
+                    enter = slideInVertically(initialOffsetY = { it }),
+                    exit = slideOutVertically(targetOffsetY = { 0 }),
+                ) {
+                    Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.CenterEnd) {
+                        YearMothSwitch { text, index ->
+                            localText = text ?: ""
+                            unit = index
+                        }
                     }
                 }
             }
