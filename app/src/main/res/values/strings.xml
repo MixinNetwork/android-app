@@ -1216,4 +1216,6 @@
     <string name="Show_Selected">Show Selected (%1$d)</string>
     <string name="All_chat">All chat</string>
     <string name="Chats">%1$d chats</string>
+    <string name="months_ago">%1$d months ago</string>
+    <string name="years_ago">%1$d years ago</string>
 </resources>

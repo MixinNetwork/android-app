@@ -11,7 +11,6 @@ import androidx.appcompat.content.res.AppCompatResources
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.net.toUri
 import androidx.core.widget.TextViewCompat
-import com.google.gson.Gson
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.databinding.ViewQuoteBinding

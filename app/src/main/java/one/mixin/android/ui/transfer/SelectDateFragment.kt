@@ -35,14 +35,11 @@ class SelectDateFragment : BaseFragment() {
                         callback?.invoke(null)
                     } else {
                         Timber.e("${getTimeMonthsAgo(result)}")
-                        callback?.invoke(getTimeMonthsAgo(result).toString())
+                        callback?.invoke(result)
                     }
                 })
             }
         }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-    }
-
-    var callback: ((String?) -> Unit)? = null
+    var callback: ((Int?) -> Unit)? = null
 }

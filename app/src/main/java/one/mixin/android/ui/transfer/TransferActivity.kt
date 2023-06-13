@@ -386,6 +386,7 @@ class TransferActivity : BaseActivity() {
     }
 
     private var selectConversation: Set<String>? = null
+    private var selectDate: Int? = null
     private fun initView() {
         binding.titleView.isVisible = true
         binding.pbFl.isVisible = false
@@ -407,7 +408,12 @@ class TransferActivity : BaseActivity() {
         binding.dataRl.setOnClickListener {
             val ft = supportFragmentManager.beginTransaction().add(
                 R.id.container,
-                SelectDateFragment.newInstance(),
+                SelectDateFragment.newInstance().apply {
+                    this.callback = { result ->
+                        this@TransferActivity.selectDate = result
+                        renderDate()
+                    }
+                },
                 SelectDateFragment.TAG,
             ).setCustomAnimations(R.anim.slide_in_right, 0, 0, R.anim.slide_out_right)
             ft.addToBackStack(null)
@@ -431,7 +437,7 @@ class TransferActivity : BaseActivity() {
             when (argsStatus) {
                 ARGS_TRANSFER_TO_PHONE -> {
                     lifecycleScope.launch {
-                        transferServer.startServer(selectConversation) { transferCommandData ->
+                        transferServer.startServer(selectConversation, selectDate) { transferCommandData ->
                             lifecycleScope.launch(Dispatchers.Main) {
                                 val qrCode = gson.toJson(transferCommandData)
                                     .base64Encode()
@@ -532,6 +538,22 @@ class TransferActivity : BaseActivity() {
             binding.conversationTv.setText(R.string.All_Conversations)
         } else {
             binding.conversationTv.text = getString(R.string.Chats, selectConversation?.size ?: 0)
+        }
+    }
+
+    private fun renderDate() {
+        val dateOffset = selectDate
+        if (dateOffset == null || dateOffset == 0) {
+            binding.dateTv.setText(R.string.all_time)
+        } else {
+            // Maybe consider the local calendar for a year instead of 12 months.
+            if (dateOffset % 12 == 0) {
+                // year
+                binding.dateTv.text = getString(R.string.years_ago, dateOffset / 12)
+            } else {
+                // month
+                binding.dateTv.text = getString(R.string.months_ago, dateOffset)
+            }
         }
     }
 
@@ -727,7 +749,7 @@ class TransferActivity : BaseActivity() {
 
     private fun pushRequest() {
         lifecycleScope.launch {
-            transferServer.startServer(selectConversation) { transferData ->
+            transferServer.startServer(selectConversation, selectDate) { transferData ->
                 Timber.e("push ${gson.toJson(transferData)}")
                 val encodeText = gson.toJson(
                     transferData,
