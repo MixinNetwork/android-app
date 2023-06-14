@@ -678,10 +678,14 @@ class TransferServer @Inject internal constructor(
         }
         currentType = TransferDataType.MESSAGE.value
         while (!quit) {
-            val list = if (collection.isNullOrEmpty()) {
-                messageDao.getMessageByLimitAndRowId(LIMIT, rowId)
-            } else {
+            val list = if (timestamp != null && !collection.isNullOrEmpty()) {
+                messageDao.getMessageByLimitAndRowId(LIMIT, rowId, collection, timestamp)
+            } else if (timestamp != null) {
+                messageDao.getMessageByLimitAndRowId(LIMIT, rowId, timestamp)
+            } else if (!collection.isNullOrEmpty()) {
                 messageDao.getMessageByLimitAndRowId(LIMIT, rowId, collection)
+            } else {
+                messageDao.getMessageByLimitAndRowId(LIMIT, rowId)
             }
             if (list.isEmpty()) {
                 return

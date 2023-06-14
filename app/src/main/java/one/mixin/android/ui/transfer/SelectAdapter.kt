@@ -7,17 +7,57 @@ import android.view.ViewGroup
 import androidx.collection.ArraySet
 import androidx.recyclerview.widget.RecyclerView
 import one.mixin.android.R
+import one.mixin.android.extension.equalsIgnoreCase
 import one.mixin.android.vo.ConversationMinimal
+import one.mixin.android.vo.isGroupConversation
 import one.mixin.android.widget.ConversationSelectView
 
-class SelectAdapter(val allListener: (Boolean) -> Unit, val sizeChangeListener: (Int) -> Unit) :
+class SelectAdapter(private val allListener: (Boolean) -> Unit, private val sizeChangeListener: (Int) -> Unit) :
     RecyclerView.Adapter<SelectAdapter.ConversationViewHolder>() {
 
     var selectItem = ArraySet<String>()
 
     var conversations: List<ConversationMinimal>? = null
+        set(value) {
+            field = value
+            displayConversations = conversations
+        }
+
+    private var displayConversations: List<ConversationMinimal>? = null
+
+    fun getSelectedList(): List<ConversationMinimal>? {
+        return conversations?.filter {
+            selectItem.contains(it.conversationId)
+        }
+    }
+
+    @SuppressLint("NotifyDataSetChanged")
+    fun check(check: Boolean, conversationId: String) {
+        if (check) {
+            selectItem.add(conversationId)
+        } else {
+            selectItem.remove(conversationId) }
+        notifyDataSetChanged()
+    }
 
     var keyword: CharSequence? = null
+        @SuppressLint("NotifyDataSetChanged")
+        set(value) {
+            field = value
+            if (value.isNullOrBlank()) {
+                displayConversations = conversations
+            } else {
+                displayConversations = conversations?.filter {
+                    if (it.isGroupConversation()) {
+                        it.groupName.equalsIgnoreCase(value)
+                    } else {
+                        it.name.equalsIgnoreCase(value)
+                    }
+                }
+            }
+            notifyDataSetChanged()
+        }
+
     var isAll = false
         private set(value) {
             field = value
@@ -51,15 +91,15 @@ class SelectAdapter(val allListener: (Boolean) -> Unit, val sizeChangeListener: 
     }
 
     override fun getItemCount(): Int {
-        return conversations?.size ?: 0
+        return displayConversations?.size ?: 0
     }
 
     override fun onBindViewHolder(holder: ConversationViewHolder, position: Int) {
-        if (conversations.isNullOrEmpty()) {
+        if (displayConversations.isNullOrEmpty()) {
             return
         }
 
-        val conversationItem = conversations!![position]
+        val conversationItem = displayConversations!![position]
         holder.bind(
             conversationItem,
             selectItem.contains(conversationItem.conversationId),

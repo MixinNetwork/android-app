@@ -74,6 +74,16 @@ class SelectConversationFragment : BaseFragment() {
         binding.selectTv.setOnClickListener {
             adapter.toggle()
         }
+        binding.showTv.setOnClickListener {
+            val list = adapter.getSelectedList() ?: return@setOnClickListener
+            ShowConversationBottomSheetFragment.newInstance(list)
+                .apply {
+                    this?.selectListener = { check, conversationId ->
+                        adapter.check(check, conversationId)
+                    }
+                }
+                ?.showNow(parentFragmentManager, ShowConversationBottomSheetFragment.TAG)
+        }
     }
 
     private val mWatcher: TextWatcher = object : TextWatcher {

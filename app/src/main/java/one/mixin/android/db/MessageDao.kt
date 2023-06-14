@@ -287,7 +287,7 @@ interface MessageDao : BaseDao<Message> {
     @Query(
         """
         SELECT m.* FROM messages m 
-        WHERE m.rowid > :rowId AND m.status != 'FAILED' AND m.status != 'UNKNOWN'
+        WHERE m.rowid >= :rowId AND m.status != 'FAILED' AND m.status != 'UNKNOWN'
         ORDER BY m.rowid ASC
         LIMIT :limit 
     """,
@@ -298,12 +298,34 @@ interface MessageDao : BaseDao<Message> {
     @Query(
         """
         SELECT m.* FROM messages m 
-        WHERE m.rowid > :rowId AND m.status != 'FAILED' AND m.status != 'UNKNOWN' AND conversation_id IN (:conversationIds) 
+        WHERE m.rowid >= :rowId AND m.status != 'FAILED' AND m.status != 'UNKNOWN' AND m.conversation_id IN (:conversationIds) 
         ORDER BY m.rowid ASC
         LIMIT :limit 
     """,
     )
     fun getMessageByLimitAndRowId(limit: Int, rowId: Long, conversationIds: Collection<String>): List<TransferMessage>
+
+    @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
+    @Query(
+        """
+        SELECT m.* FROM messages m 
+        WHERE m.rowid >= :rowId AND m.status != 'FAILED' AND m.status != 'UNKNOWN' AND m.created_at >= :createdAt 
+        ORDER BY m.rowid ASC
+        LIMIT :limit 
+    """,
+    )
+    fun getMessageByLimitAndRowId(limit: Int, rowId: Long, createdAt: String): List<TransferMessage>
+
+    @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
+    @Query(
+        """
+        SELECT m.* FROM messages m 
+        WHERE m.rowid >= :rowId AND m.status != 'FAILED' AND m.status != 'UNKNOWN' AND m.conversation_id IN (:conversationIds) AND m.created_at >= :createdAt 
+        ORDER BY m.rowid ASC
+        LIMIT :limit 
+    """,
+    )
+    fun getMessageByLimitAndRowId(limit: Int, rowId: Long, conversationIds: Collection<String>, createdAt: String): List<TransferMessage>
 
     @Query("SELECT rowid FROM messages ORDER BY rowid DESC LIMIT 1")
     fun getLastMessageRowId(): Long?
