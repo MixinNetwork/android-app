@@ -32,7 +32,7 @@ class AboutFragment : BaseFragment(R.layout.fragment_about) {
         binding.apply {
             titleView.setSubTitle(
                 getString(R.string.app_name),
-                getString(R.string.about_version, BuildConfig.VERSION_NAME, BuildConfig.VERSION_CODE),
+                "${BuildConfig.VERSION_NAME}-${BuildConfig.VERSION_CODE}",
             )
             titleView.leftIb.setOnClickListener { activity?.onBackPressedDispatcher?.onBackPressed() }
             logAndDebug.isVisible = defaultSharedPreferences.getBoolean(Constants.Debug.LOG_AND_DEBUG, false)
