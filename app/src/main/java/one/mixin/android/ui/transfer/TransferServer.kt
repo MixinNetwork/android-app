@@ -659,6 +659,7 @@ class TransferServer @Inject internal constructor(
         var rowId = -1L
         val collection = conversationIds
         val timestamp = monthsAgoTimestamp
+        val tooMuchId = (collection?.size ?: 0) > 900
         if (transferDataType != null) {
             if (transferDataType.ordinal > TransferDataType.MESSAGE.ordinal) {
                 // skip
@@ -678,11 +679,13 @@ class TransferServer @Inject internal constructor(
         }
         currentType = TransferDataType.MESSAGE.value
         while (!quit) {
-            val list = if (timestamp != null && !collection.isNullOrEmpty()) {
+            val list = if (timestamp != null && !collection.isNullOrEmpty() && !tooMuchId) {
                 messageDao.getMessageByLimitAndRowId(LIMIT, rowId, collection, timestamp)
+            } else if (timestamp != null && !collection.isNullOrEmpty() && tooMuchId) {
+                messageDao.getMessageByLimitAndRowId(LIMIT, rowId, timestamp)
             } else if (timestamp != null) {
                 messageDao.getMessageByLimitAndRowId(LIMIT, rowId, timestamp)
-            } else if (!collection.isNullOrEmpty()) {
+            } else if (!collection.isNullOrEmpty() && !tooMuchId) {
                 messageDao.getMessageByLimitAndRowId(LIMIT, rowId, collection)
             } else {
                 messageDao.getMessageByLimitAndRowId(LIMIT, rowId)
@@ -690,10 +693,8 @@ class TransferServer @Inject internal constructor(
             if (list.isEmpty()) {
                 return
             }
-            if (timestamp != null) {
-                list.filter {
-                    it.createdAt >= timestamp
-                }
+            if (tooMuchId && !collection.isNullOrEmpty()) {
+                list.filter { collection.contains(it.conversationId) }
             } else {
                 list
             }.map {
@@ -714,7 +715,8 @@ class TransferServer @Inject internal constructor(
                 return
             }
             currentId = list.last().messageId
-            rowId = messageDao.getMessageRowid(list.last().messageId) ?: return
+            val lastRowId = messageDao.getMessageRowid(currentId!!) ?: return
+            rowId = lastRowId + 1
         }
     }
 

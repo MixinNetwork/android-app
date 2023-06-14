@@ -287,7 +287,7 @@ interface MessageDao : BaseDao<Message> {
     @Query(
         """
         SELECT m.* FROM messages m 
-        WHERE m.rowid >= :rowId AND m.status != 'FAILED' AND m.status != 'UNKNOWN'
+        WHERE m.rowid >= :rowId
         ORDER BY m.rowid ASC
         LIMIT :limit 
     """,
@@ -298,7 +298,7 @@ interface MessageDao : BaseDao<Message> {
     @Query(
         """
         SELECT m.* FROM messages m 
-        WHERE m.rowid >= :rowId AND m.status != 'FAILED' AND m.status != 'UNKNOWN' AND m.conversation_id IN (:conversationIds) 
+        WHERE m.rowid >= :rowId AND m.conversation_id IN (:conversationIds) 
         ORDER BY m.rowid ASC
         LIMIT :limit 
     """,
@@ -309,7 +309,7 @@ interface MessageDao : BaseDao<Message> {
     @Query(
         """
         SELECT m.* FROM messages m 
-        WHERE m.rowid >= :rowId AND m.status != 'FAILED' AND m.status != 'UNKNOWN' AND m.created_at >= :createdAt 
+        WHERE m.rowid >= :rowId AND m.created_at >= :createdAt 
         ORDER BY m.rowid ASC
         LIMIT :limit 
     """,
@@ -320,7 +320,7 @@ interface MessageDao : BaseDao<Message> {
     @Query(
         """
         SELECT m.* FROM messages m 
-        WHERE m.rowid >= :rowId AND m.status != 'FAILED' AND m.status != 'UNKNOWN' AND m.conversation_id IN (:conversationIds) AND m.created_at >= :createdAt 
+        WHERE m.rowid >= :rowId AND m.conversation_id IN (:conversationIds) AND m.created_at >= :createdAt 
         ORDER BY m.rowid ASC
         LIMIT :limit 
     """,
@@ -443,7 +443,7 @@ interface MessageDao : BaseDao<Message> {
     @Query("SELECT rowid FROM messages WHERE id = :messageId")
     fun getMessageRowid(messageId: String): Long?
 
-    @Query("SELECT rowid FROM messages WHERE created_at >= :createdAt LIMIT 1")
+    @Query("SELECT rowid FROM messages WHERE created_at >= :createdAt ORDER BY rowid ASC LIMIT 1")
     fun getMessageRowidByCreateAt(createdAt: String): Long?
 
     @Query("SELECT id FROM messages WHERE id = :messageId")

@@ -1191,4 +1191,6 @@
     <string name="Show_Selected">显示 (%1$d)</string>
     <string name="All_chat">所有聊天</string>
     <string name="Chats">%1$d 会话</string>
+    <string name="months_ago">%1$d 月内</string>
+    <string name="years_ago">%1$d 年内</string>
 </resources>
