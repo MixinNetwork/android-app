@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="64dp"
+    android:foreground="?android:attr/selectableItemBackground">
+
+    <Space
+        android:id="@+id/center"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerVertical="true" />
+
+    <ImageView
+        android:id="@+id/check_iv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerVertical="true"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="4dp"
+        android:src="@drawable/ic_asset_add_checked"
+        tools:ignore="ContentDescription" />
+
+    <TextView
+        android:id="@+id/name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_toEndOf="@id/check_iv"
+        android:layout_above="@id/center"
+        android:layout_marginBottom="2dp"
+        android:maxWidth="240dp"
+        android:singleLine="true"
+        android:textSize="16sp"
+        android:textColor="?attr/text_primary"
+        tools:text="name"/>
+
+    <TextView
+        android:id="@+id/desc"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_toEndOf="@id/check_iv"
+        android:layout_below="@id/center"
+        android:textColor="?attr/text_minor"
+        android:textSize="14sp"
+        tools:ignore="ContentDescription" />
+</RelativeLayout>

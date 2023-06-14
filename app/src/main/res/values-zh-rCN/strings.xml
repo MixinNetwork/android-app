@@ -1181,4 +1181,9 @@
     <string name="Speed_up_transaction">加速交易</string>
     <string name="speed_up_transaction_tip">if the transaction is too far along cancellation may bot be possible.</string>
     <string name="blocked_action">Mixin 已经禁止了 WalletConnect 的 %1$s 行为</string>
+    <string name="Translate">翻译</string>
+    <string name="translation_done">翻译完成</string>
+    <string name="Show_Translate_Button">显示翻译按钮</string>
+    <string name="show_translate_button_hint">\'翻译\'会在你长按一条文字消息时出现。\n\nGoogle 可能会获取到这条你要翻译的文字消息的内容。</string>
+    <string name="Target_Language">目标语言</string>
 </resources>

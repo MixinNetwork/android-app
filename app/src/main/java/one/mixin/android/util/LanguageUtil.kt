@@ -9,7 +9,11 @@ import java.util.Locale
 
 fun getLanguage(): String? = AppCompatDelegate.getApplicationLocales().get(0)?.language
 
+fun getLanguageOrDefault(): String = AppCompatDelegate.getApplicationLocales().get(0)?.language ?: Locale.getDefault().language
+
 fun getCountry(): String? = AppCompatDelegate.getApplicationLocales().get(0)?.country
+
+fun getLocale(): Locale = AppCompatDelegate.getApplicationLocales().get(0) ?: Locale.getDefault()
 
 fun getLocaleString(): String = AppCompatDelegate.getApplicationLocales().get(0).toString()
 

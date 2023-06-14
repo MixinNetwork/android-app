@@ -79,6 +79,51 @@
 
     </one.mixin.android.widget.GestureMessageLayout>
 
+    <one.mixin.android.widget.MaxWidthRelativeLayout
+        android:id="@+id/translate_rl"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="4dp"
+        android:layout_marginStart="4dp"
+        android:layout_marginTop="1.5dp"
+        android:visibility="gone"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/chat_layout"
+        app:layout_constraintVertical_bias="0"
+        app:layout_goneMarginBottom="0dp">
+
+        <TextView
+            android:id="@+id/translate_tv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentStart="true"
+            android:textColor="?attr/text_primary"
+            android:textSize="14sp"
+            tools:text="message"/>
+
+        <ImageView
+            android:id="@+id/done_iv"
+            android:layout_width="12dp"
+            android:layout_height="12dp"
+            android:layout_marginStart="4dp"
+            android:layout_alignParentStart="true"
+            android:layout_below="@id/translate_tv"
+            android:layout_alignBottom="@id/done_tv"
+            android:src="@drawable/ic_sticker_unchecked"
+            tools:ignore="ContentDescription"/>
+
+        <TextView
+            android:id="@+id/done_tv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="4dp"
+            android:layout_below="@id/translate_tv"
+            android:layout_toEndOf="@id/done_iv"
+            android:textSize="12sp"
+            android:textColor="?text_minor"
+            android:text="@string/translation_done"/>
+    </one.mixin.android.widget.MaxWidthRelativeLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>
 
 

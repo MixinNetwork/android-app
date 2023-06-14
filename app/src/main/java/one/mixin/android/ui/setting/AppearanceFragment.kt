@@ -3,21 +3,30 @@ package one.mixin.android.ui.setting
 import android.os.Build
 import android.os.Bundle
 import android.view.View
+import android.view.ViewGroup.MarginLayoutParams
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.os.LocaleListCompat
+import androidx.core.view.isVisible
+import androidx.core.view.updateLayoutParams
 import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.Constants
+import one.mixin.android.Constants.Account.PREF_SHOW_TRANSLATE_BUTTON
+import one.mixin.android.Constants.Account.PREF_TRANSLATE_TARGET_LANG
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentAppearanceBinding
 import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.defaultSharedPreferences
+import one.mixin.android.extension.dp
 import one.mixin.android.extension.navTo
+import one.mixin.android.extension.putBoolean
 import one.mixin.android.extension.putInt
 import one.mixin.android.extension.singleChoice
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.util.TimeCache
+import one.mixin.android.util.TranslateManager
 import one.mixin.android.util.getLanguage
+import one.mixin.android.util.getLanguageOrDefault
 import one.mixin.android.util.getLocaleString
 import one.mixin.android.util.isFollowSystem
 import one.mixin.android.util.viewBinding
@@ -111,6 +120,28 @@ class AppearanceFragment : BaseFragment(R.layout.fragment_appearance) {
 
             textSizeRl.setOnClickListener {
                 navTo(SettingSizeFragment.newInstance(), SettingSizeFragment.TAG)
+            }
+
+            translateSv.setContent(R.string.Show_Translate_Button)
+            translateSv.isChecked = defaultSharedPreferences.getBoolean(PREF_SHOW_TRANSLATE_BUTTON, false)
+            translateSv.setOnCheckedChangeListener { _, isChecked ->
+                defaultSharedPreferences.putBoolean(PREF_SHOW_TRANSLATE_BUTTON, isChecked)
+                targetRl.isVisible = isChecked
+                translateSv.updateLayoutParams<MarginLayoutParams> {
+                    topMargin = if (isChecked) 0 else 20.dp
+                }
+            }
+            targetLangTv.text = defaultSharedPreferences.getString(PREF_TRANSLATE_TARGET_LANG, getLanguageOrDefault())?.let {
+                TranslateManager.Language(it).nameInCurrentLanguage
+            }
+            targetRl.setOnClickListener {
+                val languageBottom = TranslateLanguageBottomSheetDialogFragment.newInstance()
+                languageBottom.callback = object : TranslateLanguageBottomSheetDialogFragment.Callback {
+                    override fun onLanguageClick(language: TranslateManager.Language) {
+                        targetLangTv.text = language.nameInCurrentLanguage
+                    }
+                }
+                languageBottom.showNow(parentFragmentManager, TranslateLanguageBottomSheetDialogFragment.TAG)
             }
         }
     }

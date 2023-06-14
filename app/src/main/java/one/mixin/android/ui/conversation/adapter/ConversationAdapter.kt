@@ -146,6 +146,8 @@ class ConversationAdapter(
             }
         }
 
+    private val translatedMap = mutableMapOf<String, String>()
+
     override fun hasAttachView(position: Int): Boolean = if (unreadMsgId != null) {
         getItem(position)?.messageId == unreadMsgId
     } else {
@@ -182,6 +184,13 @@ class ConversationAdapter(
                 },
             )
     }
+
+    fun updateTranslated(messageId: String, translated: String) {
+        translatedMap[messageId] = translated
+        notifyDataSetChanged()
+    }
+
+    fun notTranslated(messageId: String): Boolean = translatedMap[messageId] == null
 
     override fun onCreateAttach(parent: ViewGroup): View =
         LayoutInflater.from(parent.context).inflate(R.layout.item_chat_unread, parent, false)
@@ -221,6 +230,7 @@ class ConversationAdapter(
                     (holder as TextHolder).bind(
                         it,
                         keyword,
+                        translatedMap[it.messageId],
                         isLast(position),
                         isFirst(position),
                         selectSet.size > 0,

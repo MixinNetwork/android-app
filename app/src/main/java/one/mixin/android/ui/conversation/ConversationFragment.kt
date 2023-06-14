@@ -4,6 +4,7 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.annotation.TargetApi
 import android.app.Activity
+import android.app.ProgressDialog
 import android.content.ActivityNotFoundException
 import android.content.ClipData
 import android.content.ContentResolver
@@ -53,6 +54,7 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewModelScope
 import androidx.media3.common.MimeTypes
+import androidx.media3.common.util.UnstableApi
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -113,6 +115,7 @@ import one.mixin.android.extension.getParcelableExtraCompat
 import one.mixin.android.extension.getUriForFile
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.inTransaction
+import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.isBluetoothHeadsetOrWiredHeadset
 import one.mixin.android.extension.isImageSupport
 import one.mixin.android.extension.isStickerSupport
@@ -197,6 +200,7 @@ import one.mixin.android.util.ErrorHandler.Companion.FORBIDDEN
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.MusicPlayer
 import one.mixin.android.util.SINGLE_DB_THREAD
+import one.mixin.android.util.TranslateManager
 import one.mixin.android.util.chat.InvalidateFlow
 import one.mixin.android.util.debug.debugLongClick
 import one.mixin.android.util.mention.mentionDisplay
@@ -273,6 +277,7 @@ import kotlin.math.abs
 
 @AndroidEntryPoint
 @SuppressLint("InvalidWakeLockTag")
+@UnstableApi
 class ConversationFragment() :
     LinkFragment(),
     OnKeyboardShownListener,
@@ -514,26 +519,30 @@ class ConversationFragment() :
                 when {
                     conversationAdapter.selectSet.isEmpty() -> binding.toolView.fadeOut()
                     conversationAdapter.selectSet.size == 1 -> {
+                        val firstItem = conversationAdapter.selectSet.valueAt(0)
                         try {
-                            if (conversationAdapter.selectSet.valueAt(0)?.isText() == true) {
+                            if (firstItem?.isText() == true) {
                                 binding.toolView.copyIv.visibility = VISIBLE
+                                binding.toolView.translateIv.isVisible = shouldShowTranslate(firstItem.messageId)
                             } else {
                                 binding.toolView.copyIv.visibility = GONE
+                                binding.toolView.translateIv.visibility = GONE
                             }
                         } catch (e: ArrayIndexOutOfBoundsException) {
                             binding.toolView.copyIv.visibility = GONE
+                            binding.toolView.translateIv.visibility = GONE
                         }
-                        if (conversationAdapter.selectSet.valueAt(0)?.isData() == true) {
+                        if (firstItem?.isData() == true) {
                             binding.toolView.shareIv.visibility = VISIBLE
                         } else {
                             binding.toolView.shareIv.visibility = GONE
                         }
-                        if (conversationAdapter.selectSet.valueAt(0)?.supportSticker() == true) {
+                        if (firstItem?.supportSticker() == true) {
                             binding.toolView.addStickerIv.visibility = VISIBLE
                         } else {
                             binding.toolView.addStickerIv.visibility = GONE
                         }
-                        if (conversationAdapter.selectSet.valueAt(0)?.canNotReply() == true) {
+                        if (firstItem?.canNotReply() == true) {
                             binding.toolView.replyIv.visibility = GONE
                         } else {
                             binding.toolView.replyIv.visibility = VISIBLE
@@ -544,6 +553,7 @@ class ConversationFragment() :
                         binding.toolView.forwardIv.visibility = VISIBLE
                         binding.toolView.replyIv.visibility = GONE
                         binding.toolView.copyIv.visibility = GONE
+                        binding.toolView.translateIv.visibility = GONE
                         binding.toolView.addStickerIv.visibility = GONE
                         binding.toolView.shareIv.visibility = GONE
                         binding.toolView.pinIv.visibility = GONE
@@ -564,8 +574,10 @@ class ConversationFragment() :
                 if (b) {
                     if (messageItem.isText()) {
                         binding.toolView.copyIv.visibility = VISIBLE
+                        binding.toolView.translateIv.isVisible = shouldShowTranslate(messageItem.messageId)
                     } else {
                         binding.toolView.copyIv.visibility = GONE
+                        binding.toolView.translateIv.visibility = GONE
                     }
                     if (messageItem.isData()) {
                         binding.toolView.shareIv.visibility = VISIBLE
@@ -1319,6 +1331,7 @@ class ConversationFragment() :
         AudioPlayer.pause()
         AudioPlayer.setStatusListener(null)
         AudioPlayer.release()
+        translateManager?.release()
         context?.let {
             if (!anyCallServiceRunning(it)) {
                 audioSwitch.safeStop()
@@ -1534,6 +1547,36 @@ class ConversationFragment() :
             }
             closeTool()
         }
+
+        binding.toolView.translateIv.setOnClickListener {
+            if (conversationAdapter.selectSet.isEmpty()) return@setOnClickListener
+            val messageItem = conversationAdapter.selectSet.valueAt(0) ?: return@setOnClickListener
+            val content = messageItem.content ?: return@setOnClickListener
+
+            if (translateManager == null) {
+                translateManager = TranslateManager()
+            }
+            lifecycleScope.launch {
+                val translated = withContext(Dispatchers.IO) {
+                    translateManager?.translate(requireContext(), content) { complete ->
+                        lifecycleScope.launch {
+                            if (complete) {
+                                translateDownloadModelDialog?.dismiss()
+                            } else {
+                                translateDownloadModelDialog = indeterminateProgressDialog(message = R.string.Please_wait_a_bit).apply {
+                                    show()
+                                }
+                            }
+                        }
+                    }
+                }
+                if (translated != null) {
+                    conversationAdapter.updateTranslated(messageItem.messageId, translated)
+                }
+            }
+            closeTool()
+        }
+
         binding.toolView.forwardIv.setOnClickListener {
             showForwardDialog()
         }
@@ -1753,6 +1796,13 @@ class ConversationFragment() :
                 getString(R.string.Add_sticker_failed),
             )
         }
+    }
+
+    private var translateManager: TranslateManager? = null
+    private var translateDownloadModelDialog: ProgressDialog? = null
+
+    private fun shouldShowTranslate(messageId: String): Boolean {
+        return defaultSharedPreferences.getBoolean(Constants.Account.PREF_SHOW_TRANSLATE_BUTTON, false) && conversationAdapter.notTranslated(messageId)
     }
 
     private var deleteDialog: AlertDialog? = null

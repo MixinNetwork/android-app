@@ -78,6 +78,9 @@
         <attr name="max_width" format="dimension" />
         <attr name="content_padding" format="dimension" />
     </declare-styleable>
+    <declare-styleable name="MaxWidthRelativeLayout">
+        <attr name="mr_max_width" format="dimension" />
+    </declare-styleable>
     <declare-styleable name="AudioRecordView">
         <attr name="blink_color" format="color"/>
     </declare-styleable>
