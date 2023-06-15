@@ -1,6 +1,5 @@
 package one.mixin.android.tip
 
-import crypto.Crypto
 import one.mixin.android.Constants
 import one.mixin.android.crypto.newKeyPairFromSeed
 import one.mixin.android.crypto.sha3Sum256
@@ -48,7 +47,7 @@ sealed class TipSignSpec(
             }
 
             override fun sign(priv: ByteArray, data: ByteArray): String {
-                return Crypto.signEd25519(data, priv).toHex()
+                return ed25519.Ed25519.sign(data, priv).toHex()
             }
         }
     }

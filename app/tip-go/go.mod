@@ -1,4 +1,4 @@
-module tip
+module mixin
 
 go 1.20
 

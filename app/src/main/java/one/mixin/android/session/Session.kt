@@ -2,7 +2,7 @@ package one.mixin.android.session
 
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
-import crypto.Crypto
+import jwt.Jwt
 import okhttp3.Request
 import one.mixin.android.Constants.Account.PREF_TRIED_UPDATE_KEY
 import one.mixin.android.MixinApplication
@@ -188,14 +188,14 @@ object Session {
             }
         }
 
-        return Crypto.signToken(xRequestId, acct.userId, acct.sessionId, content.sha256().toHex(), key)
+        return Jwt.signToken(xRequestId, acct.userId, acct.sessionId, content.sha256().toHex(), key)
     }
 
     fun requestDelay(acct: Account?, string: String, offset: Int, key: ByteArray? = getJwtKey(false)): JwtResult {
         if (acct == null || key == null) {
             return JwtResult(false)
         }
-        val iat = Crypto.parseIat(string, key)
+        val iat = Jwt.parseIat(string, key)
         return when (iat) {
             -1L -> {
                 Timber.w("ErrTokenExpired")

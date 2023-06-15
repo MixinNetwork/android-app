@@ -5,7 +5,7 @@ package one.mixin.android.crypto
 import com.lambdapioneer.argon2kt.Argon2Kt
 import com.lambdapioneer.argon2kt.Argon2KtResult
 import com.lambdapioneer.argon2kt.Argon2Mode
-import crypto.Crypto
+import ed25519.Ed25519
 import okhttp3.tls.HeldCertificate
 import one.mixin.android.extension.base64Encode
 import org.komputing.khash.keccak.KeccakParameter
@@ -37,12 +37,12 @@ fun generateRSAKeyPair(keyLength: Int = 2048): KeyPair {
 }
 
 fun generateEd25519KeyPair(): EdKeyPair {
-    val priv = Crypto.generateKey()
+    val priv = Ed25519.generateKey()
     return EdKeyPair(priv.sliceArray(32..63), priv.sliceArray(0..31))
 }
 
 fun newKeyPairFromSeed(seed: ByteArray): EdKeyPair {
-    val priv = Crypto.newKeyFromSeed(seed)
+    val priv = Ed25519.newKeyFromSeed(seed)
     return EdKeyPair(priv.sliceArray(32..63), priv.sliceArray(0..31))
 }
 
@@ -51,7 +51,7 @@ fun calculateAgreement(publicKey: ByteArray, privateKey: ByteArray): ByteArray {
 }
 
 fun initFromSeedAndSign(seed: ByteArray, signTarget: ByteArray): ByteArray {
-    return Crypto.signEd25519(signTarget, seed)
+    return Ed25519.sign(signTarget, seed)
 }
 
 fun privateKeyToCurve25519(privateKey: ByteArray): ByteArray {
@@ -64,7 +64,7 @@ fun privateKeyToCurve25519(privateKey: ByteArray): ByteArray {
 }
 
 fun publicKeyToCurve25519(publicKey: ByteArray): ByteArray {
-    return Crypto.publicKeyToCurve25519(publicKey)
+    return Ed25519.publicKeyToCurve25519(publicKey)
 }
 
 fun ByteArray.sha3Sum256(): ByteArray {

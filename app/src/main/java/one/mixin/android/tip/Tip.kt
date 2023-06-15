@@ -1,7 +1,7 @@
 package one.mixin.android.tip
 
 import android.content.Context
-import crypto.Crypto
+import ed25519.Ed25519
 import one.mixin.android.Constants
 import one.mixin.android.RxBus
 import one.mixin.android.api.request.PinRequest
@@ -349,7 +349,7 @@ class Tip @Inject internal constructor(
                 reportException("Tip tip/secret meet bad data", e)
 
                 val msg = TipBody.forVerify(timestamp)
-                val goSigBase64 = Crypto.signEd25519(msg, stSeed).base64RawURLEncode()
+                val goSigBase64 = Ed25519.sign(msg, stSeed).base64RawURLEncode()
                 Timber.e("signature go-ed25519 $goSigBase64")
 
                 val request = TipSecretRequest(
@@ -392,7 +392,7 @@ class Tip @Inject internal constructor(
 
     private fun signTimestamp(stPriv: ByteArray, timestamp: Long): String {
         val msg = TipBody.forVerify(timestamp)
-        val sig = Crypto.signEd25519(msg, stPriv)
+        val sig = Ed25519.sign(msg, stPriv)
         return sig.base64RawURLEncode()
     }
 
