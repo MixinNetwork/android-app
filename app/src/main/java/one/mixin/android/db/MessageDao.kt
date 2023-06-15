@@ -650,21 +650,27 @@ interface MessageDao : BaseDao<Message> {
     @Query("SELECT count(1) FROM messages WHERE (category IN ($DATA, $IMAGES, $AUDIOS, $VIDEOS)) AND media_status IN ('DONE', 'READ') AND conversation_id IN (:conversationIds)")
     fun countMediaMessages(conversationIds: Collection<String>): Long
 
-    @Query("SELECT count(1) FROM messages WHERE rowid > :rowId")
+    @Query("SELECT count(1) FROM messages WHERE rowid >= :rowId")
     fun countMessages(rowId: Long): Long
 
-    @Query("SELECT count(1) FROM messages WHERE rowid > :rowId AND (category IN ($DATA, $IMAGES, $AUDIOS, $VIDEOS)) AND media_status IN ('DONE', 'READ')")
+    @Query("SELECT count(1) FROM messages WHERE rowid >= :rowId AND (category IN ($DATA, $IMAGES, $AUDIOS, $VIDEOS)) AND media_status IN ('DONE', 'READ')")
     fun countMediaMessages(rowId: Long): Long
 
-    @Query("SELECT count(1) FROM messages WHERE rowid > :rowId AND conversation_id IN (:conversationIds)")
+    @Query("SELECT count(1) FROM messages WHERE rowid >= :rowId AND conversation_id IN (:conversationIds)")
     fun countMessages(rowId: Long, conversationIds: Collection<String>): Long
 
-    @Query("SELECT count(1) FROM messages WHERE rowid > :rowId AND conversation_id IN (:conversationIds) AND created_at >= :createdAt")
+    @Query("SELECT count(1) FROM messages WHERE rowid >= :rowId AND created_at >= :createdAt")
+    fun countMessages(rowId: Long, createdAt: String): Long
+
+    @Query("SELECT count(1) FROM messages WHERE rowid >= :rowId AND conversation_id IN (:conversationIds) AND created_at >= :createdAt")
     fun countMessages(rowId: Long, conversationIds: Collection<String>, createdAt: String): Long
 
-    @Query("SELECT count(1) FROM messages WHERE rowid > :rowId AND (category IN ($DATA, $IMAGES, $AUDIOS, $VIDEOS)) AND media_status IN ('DONE', 'READ') AND conversation_id IN (:conversationIds)")
+    @Query("SELECT count(1) FROM messages WHERE rowid >= :rowId AND (category IN ($DATA, $IMAGES, $AUDIOS, $VIDEOS)) AND media_status IN ('DONE', 'READ') AND conversation_id IN (:conversationIds)")
     fun countMediaMessages(rowId: Long, conversationIds: Collection<String>): Long
 
-    @Query("SELECT count(1) FROM messages WHERE rowid > :rowId AND (category IN ($DATA, $IMAGES, $AUDIOS, $VIDEOS)) AND media_status IN ('DONE', 'READ') AND conversation_id IN (:conversationIds) AND created_at >= :createdAt")
+    @Query("SELECT count(1) FROM messages WHERE rowid >= :rowId AND (category IN ($DATA, $IMAGES, $AUDIOS, $VIDEOS)) AND media_status IN ('DONE', 'READ') AND created_at >= :createdAt")
+    fun countMediaMessages(rowId: Long, createdAt: String): Long
+
+    @Query("SELECT count(1) FROM messages WHERE rowid >= :rowId AND (category IN ($DATA, $IMAGES, $AUDIOS, $VIDEOS)) AND media_status IN ('DONE', 'READ') AND conversation_id IN (:conversationIds) AND created_at >= :createdAt")
     fun countMediaMessages(rowId: Long, conversationIds: Collection<String>, createdAt: String): Long
 }

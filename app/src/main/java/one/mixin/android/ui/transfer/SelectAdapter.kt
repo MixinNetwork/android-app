@@ -7,6 +7,7 @@ import android.view.ViewGroup
 import androidx.collection.ArraySet
 import androidx.recyclerview.widget.RecyclerView
 import one.mixin.android.R
+import one.mixin.android.extension.containsIgnoreCase
 import one.mixin.android.extension.equalsIgnoreCase
 import one.mixin.android.vo.ConversationMinimal
 import one.mixin.android.vo.isGroupConversation
@@ -44,15 +45,21 @@ class SelectAdapter(private val allListener: (Boolean) -> Unit, private val size
         @SuppressLint("NotifyDataSetChanged")
         set(value) {
             field = value
-            if (value.isNullOrBlank()) {
-                displayConversations = conversations
+            displayConversations = if (value.isNullOrBlank()) {
+                conversations
             } else {
-                displayConversations = conversations?.filter {
+                conversations?.filter {
                     if (it.isGroupConversation()) {
-                        it.groupName.equalsIgnoreCase(value)
+                        it.groupName.containsIgnoreCase(value)
                     } else {
-                        it.name.equalsIgnoreCase(value)
+                        it.name.containsIgnoreCase(value)
                     }
+                }
+            }?.sortedByDescending {
+                if (it.isGroupConversation()) {
+                    it.groupName.equalsIgnoreCase(keyword)
+                } else {
+                    it.name.equalsIgnoreCase(keyword)
                 }
             }
             notifyDataSetChanged()

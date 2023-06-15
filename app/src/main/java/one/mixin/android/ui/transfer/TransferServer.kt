@@ -1032,9 +1032,15 @@ class TransferServer @Inject internal constructor(
             }
         } else {
             if (!collection.isNullOrEmpty() && timestamp != null) {
-                messageDao.countMediaMessages(rowId, collection, timestamp) + messageDao.countMessages(rowId, collection, timestamp) + transcriptMessageDao.countTranscriptMessages(rowId, collection, timestamp)
+                collection.chunked(900).sumOf { ids ->
+                    messageDao.countMediaMessages(rowId, ids, timestamp) + messageDao.countMessages(rowId, ids, timestamp) + transcriptMessageDao.countTranscriptMessages(rowId, ids, timestamp)
+                }
             } else if (!collection.isNullOrEmpty()) {
-                messageDao.countMediaMessages(rowId, collection) + messageDao.countMessages(rowId, collection) + transcriptMessageDao.countTranscriptMessages(rowId, collection)
+                collection.chunked(900).sumOf { ids ->
+                    messageDao.countMediaMessages(rowId, ids) + messageDao.countMessages(rowId, ids) + transcriptMessageDao.countTranscriptMessages(rowId, ids)
+                }
+            } else if (timestamp != null) {
+                messageDao.countMediaMessages(rowId, timestamp) + messageDao.countMessages(rowId, timestamp) + transcriptMessageDao.countTranscriptMessages(rowId, timestamp)
             } else {
                 messageDao.countMediaMessages(rowId) + messageDao.countMessages(rowId) + transcriptMessageDao.countTranscriptMessages(rowId)
             }
