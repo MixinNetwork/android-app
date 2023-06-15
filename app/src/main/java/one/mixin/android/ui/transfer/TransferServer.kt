@@ -659,7 +659,7 @@ class TransferServer @Inject internal constructor(
         var rowId = -1L
         val collection = conversationIds
         val timestamp = monthsAgoTimestamp
-        val tooMuchId = (collection?.size ?: 0) > 900
+        val tooMuchId = (collection?.size ?: 0) > STRIDE_FOR_TRANSFER
         if (transferDataType != null) {
             if (transferDataType.ordinal > TransferDataType.MESSAGE.ordinal) {
                 // skip
@@ -1032,11 +1032,11 @@ class TransferServer @Inject internal constructor(
             }
         } else {
             if (!collection.isNullOrEmpty() && timestamp != null) {
-                collection.chunked(900).sumOf { ids ->
+                collection.chunked(STRIDE_FOR_TRANSFER).sumOf { ids ->
                     messageDao.countMediaMessages(rowId, ids, timestamp) + messageDao.countMessages(rowId, ids, timestamp) + transcriptMessageDao.countTranscriptMessages(rowId, ids, timestamp)
                 }
             } else if (!collection.isNullOrEmpty()) {
-                collection.chunked(900).sumOf { ids ->
+                collection.chunked(STRIDE_FOR_TRANSFER).sumOf { ids ->
                     messageDao.countMediaMessages(rowId, ids) + messageDao.countMessages(rowId, ids) + transcriptMessageDao.countTranscriptMessages(rowId, ids)
                 }
             } else if (timestamp != null) {
@@ -1049,6 +1049,7 @@ class TransferServer @Inject internal constructor(
 
     companion object {
         private const val LIMIT = 100
+        private const val STRIDE_FOR_TRANSFER = 900
     }
 }
 

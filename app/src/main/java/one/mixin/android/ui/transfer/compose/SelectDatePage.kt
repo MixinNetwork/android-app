@@ -284,7 +284,7 @@ fun SegmentedControl(
                 modifier = Modifier
                     .clip(RoundedCornerShape(4.dp))
                     .background(background)
-                    .padding(horizontal = 20.dp, vertical = 4.dp)
+                    .padding(horizontal = 20.dp, vertical = 3.dp)
                     .clickable(
                         interactionSource = remember { MutableInteractionSource() },
                         indication = null,
