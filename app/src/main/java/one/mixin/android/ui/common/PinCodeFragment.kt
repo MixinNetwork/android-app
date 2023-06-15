@@ -11,7 +11,7 @@ import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.ResponseError
-import one.mixin.android.crypto.seedFromPrivateKey
+import one.mixin.android.crypto.EdKeyPair
 import one.mixin.android.extension.base64Encode
 import one.mixin.android.extension.clear
 import one.mixin.android.extension.clickVibrate
@@ -33,7 +33,6 @@ import one.mixin.android.vo.User
 import one.mixin.android.vo.toUser
 import one.mixin.android.widget.Keyboard
 import one.mixin.android.widget.VerificationCodeView
-import one.mixin.eddsa.KeyPair
 
 abstract class PinCodeFragment(@LayoutRes contentLayoutId: Int) : FabLoadingFragment(contentLayoutId) {
     companion object {
@@ -79,7 +78,7 @@ abstract class PinCodeFragment(@LayoutRes contentLayoutId: Int) : FabLoadingFrag
 
     protected suspend fun handleAccount(
         response: MixinResponse<Account>,
-        sessionKey: KeyPair,
+        sessionKey: EdKeyPair,
         action: () -> Unit,
     ) = withContext(Dispatchers.Main) {
         if (!response.isSuccess) {
@@ -102,7 +101,7 @@ abstract class PinCodeFragment(@LayoutRes contentLayoutId: Int) : FabLoadingFrag
         }
         val privateKey = sessionKey.privateKey
         val pinToken = decryptPinToken(account.pinToken.decodeBase64(), privateKey)
-        Session.storeEd25519Seed(seedFromPrivateKey(privateKey).base64Encode())
+        Session.storeEd25519Seed(privateKey.base64Encode())
         Session.storePinToken(pinToken.base64Encode())
         Session.storeAccount(account)
         defaultSharedPreferences.putString(DEVICE_ID, requireContext().getDeviceId())

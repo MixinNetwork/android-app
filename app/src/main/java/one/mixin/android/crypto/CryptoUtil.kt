@@ -2,30 +2,22 @@
 
 package one.mixin.android.crypto
 
-import android.os.Build
 import com.lambdapioneer.argon2kt.Argon2Kt
 import com.lambdapioneer.argon2kt.Argon2KtResult
 import com.lambdapioneer.argon2kt.Argon2Mode
 import crypto.Crypto
-import io.jsonwebtoken.EdDSAPrivateKey
 import okhttp3.tls.HeldCertificate
-import okio.ByteString
-import okio.ByteString.Companion.toByteString
 import one.mixin.android.extension.base64Encode
-import one.mixin.eddsa.Ed25519Sign
-import one.mixin.eddsa.Field25519
 import org.komputing.khash.keccak.KeccakParameter
 import org.komputing.khash.keccak.extensions.digestKeccak
 import org.whispersystems.curve25519.Curve25519
 import org.whispersystems.curve25519.Curve25519.BEST
-import java.security.KeyFactory
 import java.security.KeyPair
 import java.security.KeyPairGenerator
 import java.security.MessageDigest
 import java.security.PrivateKey
 import java.security.SecureRandom
 import java.security.spec.MGF1ParameterSpec
-import java.security.spec.PKCS8EncodedKeySpec
 import javax.crypto.Cipher
 import javax.crypto.spec.GCMParameterSpec
 import javax.crypto.spec.IvParameterSpec
@@ -38,33 +30,20 @@ import kotlin.experimental.or
 private val secureRandom: SecureRandom = SecureRandom()
 private const val GCM_IV_LENGTH = 12
 
-// https://github.com/google/tink/issues/403
-fun shouldCheckOnCurve() = Build.VERSION.SDK_INT > Build.VERSION_CODES.N_MR1
-
 fun generateRSAKeyPair(keyLength: Int = 2048): KeyPair {
     val kpg = KeyPairGenerator.getInstance("RSA")
     kpg.initialize(keyLength)
     return kpg.genKeyPair()
 }
 
-fun generateEd25519KeyPair(): one.mixin.eddsa.KeyPair {
-    val shouldCheckOnCurve = shouldCheckOnCurve()
-    return if (shouldCheckOnCurve) {
-        one.mixin.eddsa.KeyPair.newKeyPair(checkOnCurve = true)
-    } else {
-        val priv = Crypto.generateKey()
-        one.mixin.eddsa.KeyPair(priv.sliceArray(32..63).toByteString(), priv.sliceArray(0..31).toByteString())
-    }
+fun generateEd25519KeyPair(): EdKeyPair {
+    val priv = Crypto.generateKey()
+    return EdKeyPair(priv.sliceArray(32..63), priv.sliceArray(0..31))
 }
 
-fun newKeyPairFromSeed(seed: ByteArray): one.mixin.eddsa.KeyPair {
-    val shouldCheckOnCurve = shouldCheckOnCurve()
-    return if (shouldCheckOnCurve) {
-        one.mixin.eddsa.KeyPair.newKeyPairFromSeed(seed.toByteString(), checkOnCurve = true)
-    } else {
-        val priv = Crypto.newKeyFromSeed(seed)
-        one.mixin.eddsa.KeyPair(priv.sliceArray(32..63).toByteString(), priv.sliceArray(0..31).toByteString())
-    }
+fun newKeyPairFromSeed(seed: ByteArray): EdKeyPair {
+    val priv = Crypto.newKeyFromSeed(seed)
+    return EdKeyPair(priv.sliceArray(32..63), priv.sliceArray(0..31))
 }
 
 fun calculateAgreement(publicKey: ByteArray, privateKey: ByteArray): ByteArray {
@@ -72,13 +51,7 @@ fun calculateAgreement(publicKey: ByteArray, privateKey: ByteArray): ByteArray {
 }
 
 fun initFromSeedAndSign(seed: ByteArray, signTarget: ByteArray): ByteArray {
-    val keyPair = newKeyPairFromSeed(seed)
-    return signWithSk(EdDSAPrivateKey(keyPair.privateKey), signTarget)
-}
-
-private fun signWithSk(privateKey: EdDSAPrivateKey, signTarget: ByteArray): ByteArray {
-    val signer = Ed25519Sign(privateKey.privateKey, checkOnCurve = shouldCheckOnCurve())
-    return signer.sign(signTarget.toByteString(), checkOnCurve = shouldCheckOnCurve()).toByteArray()
+    return Crypto.signEd25519(signTarget, seed)
 }
 
 fun privateKeyToCurve25519(privateKey: ByteArray): ByteArray {
@@ -91,25 +64,8 @@ fun privateKeyToCurve25519(privateKey: ByteArray): ByteArray {
 }
 
 fun publicKeyToCurve25519(publicKey: ByteArray): ByteArray {
-    val p = publicKey.map { it.toInt().toByte() }.toByteArray()
-    val x = edwardsToMontgomeryX(Field25519.expand(p))
-    return Field25519.contract(x)
+    return Crypto.publicKeyToCurve25519(publicKey)
 }
-private fun edwardsToMontgomeryX(y: LongArray): LongArray {
-    val oneMinusY = LongArray(Field25519.LIMB_CNT)
-    oneMinusY[0] = 1
-    Field25519.sub(oneMinusY, oneMinusY, y)
-    Field25519.inverse(oneMinusY, oneMinusY)
-
-    val outX = LongArray(Field25519.LIMB_CNT)
-    outX[0] = 1
-    Field25519.sum(outX, y)
-
-    Field25519.mult(outX, outX, oneMinusY)
-    return outX
-}
-
-fun seedFromPrivateKey(privateKey: ByteString): ByteArray = privateKey.substring(0, 32).toByteArray()
 
 fun ByteArray.sha3Sum256(): ByteArray {
     return digestKeccak(KeccakParameter.SHA3_256)
@@ -205,26 +161,4 @@ fun rsaDecrypt(privateKey: PrivateKey, iv: String, pinToken: String): String {
         ),
     )
     return deCipher.doFinal(Base64.decode(pinToken)).base64Encode()
-}
-
-fun getRSAPrivateKeyFromString(privateKeyPEM: String): PrivateKey {
-    val striped = stripRsaPrivateKeyHeaders(privateKeyPEM)
-    val keySpec = PKCS8EncodedKeySpec(Base64.decode(striped))
-    val kf = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-        KeyFactory.getInstance("RSA")
-    } else {
-        KeyFactory.getInstance("RSA", "BC")
-    }
-    return kf.generatePrivate(keySpec)
-}
-
-private fun stripRsaPrivateKeyHeaders(privatePem: String): String {
-    val strippedKey = StringBuilder()
-    val lines = privatePem.split("\n".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
-    lines.filter { line ->
-        !line.contains("BEGIN RSA PRIVATE KEY") &&
-            !line.contains("END RSA PRIVATE KEY") && !line.trim { it <= ' ' }.isEmpty()
-    }
-        .forEach { line -> strippedKey.append(line.trim { it <= ' ' }) }
-    return strippedKey.toString().trim { it <= ' ' }
 }

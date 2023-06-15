@@ -1,6 +1,10 @@
 package crypto
 
-import "crypto/ed25519"
+import (
+	"crypto/ed25519"
+
+	"filippo.io/edwards25519"
+)
 
 func SignEd25519(message, seed []byte) []byte {
 	priv := ed25519.NewKeyFromSeed(seed)
@@ -22,4 +26,13 @@ func GenerateKey() []byte {
 
 func NewKeyFromSeed(seed []byte) []byte {
 	return ed25519.NewKeyFromSeed(seed)
+}
+
+func PublicKeyToCurve25519(pub []byte) ([]byte, error) {
+	publicKey := ed25519.PublicKey(pub)
+	p, err := (&edwards25519.Point{}).SetBytes(publicKey[:])
+	if err != nil {
+		return nil, err
+	}
+	return p.BytesMontgomery(), nil
 }

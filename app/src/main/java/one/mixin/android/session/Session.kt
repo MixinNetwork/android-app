@@ -2,18 +2,12 @@ package one.mixin.android.session
 
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
-import io.jsonwebtoken.Claims
-import io.jsonwebtoken.EdDSAPrivateKey
-import io.jsonwebtoken.EdDSAPublicKey
-import io.jsonwebtoken.ExpiredJwtException
-import io.jsonwebtoken.Jwts
+import crypto.Crypto
 import okhttp3.Request
-import okio.ByteString
-import okio.ByteString.Companion.encode
 import one.mixin.android.Constants.Account.PREF_TRIED_UPDATE_KEY
 import one.mixin.android.MixinApplication
+import one.mixin.android.crypto.EdKeyPair
 import one.mixin.android.crypto.calculateAgreement
-import one.mixin.android.crypto.getRSAPrivateKeyFromString
 import one.mixin.android.crypto.newKeyPairFromSeed
 import one.mixin.android.crypto.privateKeyToCurve25519
 import one.mixin.android.extension.bodyToString
@@ -25,13 +19,12 @@ import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.putLong
 import one.mixin.android.extension.putString
 import one.mixin.android.extension.remove
+import one.mixin.android.extension.sha256
 import one.mixin.android.extension.sharedPreferences
+import one.mixin.android.extension.toHex
 import one.mixin.android.util.reportException
 import one.mixin.android.vo.Account
-import one.mixin.eddsa.KeyPair
 import timber.log.Timber
-import java.security.Key
-import java.util.concurrent.ConcurrentHashMap
 import kotlin.math.abs
 
 object Session {
@@ -41,7 +34,7 @@ object Session {
     private var self: Account? = null
 
     private var seed: String? = null
-    private var edKeyPair: KeyPair? = null
+    private var edKeyPair: EdKeyPair? = null
 
     private const val PREF_PIN_ITERATOR = "pref_pin_iterator"
     private const val PREF_PIN_TOKEN = "pref_pin_token"
@@ -93,7 +86,7 @@ object Session {
         }
     }
 
-    fun getEd25519KeyPair(): KeyPair? {
+    fun getEd25519KeyPair(): EdKeyPair? {
         if (edKeyPair != null) {
             return edKeyPair
         } else {
@@ -102,7 +95,7 @@ object Session {
         }
     }
 
-    private fun initEdKeypair(seed: String): KeyPair {
+    private fun initEdKeypair(seed: String): EdKeyPair {
         val edKeyPair = newKeyPairFromSeed(seed.decodeBase64())
 
         this.edKeyPair = edKeyPair
@@ -183,12 +176,10 @@ object Session {
         !MixinApplication.appContext.defaultSharedPreferences
             .getBoolean(PREF_TRIED_UPDATE_KEY, false)
 
-    fun signToken(acct: Account?, request: Request, xRequestId: String, key: Key? = getJwtKey(true)): String {
+    fun signToken(acct: Account?, request: Request, xRequestId: String, key: ByteArray? = getJwtKey(true)): String {
         if (acct == null || key == null) {
             return ""
         }
-        val expire = currentTimeSeconds() + 1800
-        val iat = currentTimeSeconds()
 
         var content = "${request.method}${request.url.cutOut()}"
         request.body?.apply {
@@ -197,60 +188,52 @@ object Session {
             }
         }
 
-        return Jwts.builder()
-            .setClaims(
-                ConcurrentHashMap<String, Any>().apply {
-                    put(Claims.ID, xRequestId)
-                    put(Claims.EXPIRATION, expire)
-                    put(Claims.ISSUED_AT, iat)
-                    put("uid", acct.userId)
-                    put("sid", acct.sessionId)
-                    put("sig", content.encode().sha256().hex())
-                    put("scp", "FULL")
-                },
-            )
-            .signWith(key)
-            .compact()
+        return Crypto.signToken(xRequestId, acct.userId, acct.sessionId, content.sha256().toHex(), key)
     }
 
-    fun requestDelay(acct: Account?, string: String, offset: Int, key: Key? = getJwtKey(false)): JwtResult {
+    fun requestDelay(acct: Account?, string: String, offset: Int, key: ByteArray? = getJwtKey(false)): JwtResult {
         if (acct == null || key == null) {
             return JwtResult(false)
         }
-        try {
-            val iat = Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(string).body[Claims.ISSUED_AT] as Int
-            return JwtResult(abs(currentTimeSeconds() - iat) > offset, requestTime = iat.toLong())
-        } catch (e: ExpiredJwtException) {
-            Timber.w(e)
-            reportException(e)
-            return JwtResult(true)
-        } catch (e: Exception) {
-            Timber.e(e)
-            reportException(e)
+        val iat = Crypto.parseIat(string, key)
+        return when (iat) {
+            -1L -> {
+                Timber.w("ErrTokenExpired")
+                reportException(IllegalArgumentException("ErrTokenExpired"))
+                JwtResult(true)
+            }
+            0L -> {
+                Timber.e("")
+                JwtResult(false)
+            }
+            else -> {
+                JwtResult(abs(currentTimeSeconds() - iat) > offset, requestTime = iat)
+            }
         }
-        return JwtResult(false)
     }
 
     fun getFiatCurrency() = getAccount()?.fiatCurrency ?: "USD"
 
-    private fun getJwtKey(isSign: Boolean): Key? {
-        val edPrivateKey = getEd25519KeyPair()?.privateKey?.let { EdDSAPrivateKey(it) }
+    private fun getJwtKey(isSign: Boolean): ByteArray? {
+        val edPrivateKey = getEd25519KeyPair()?.privateKey
         if (edPrivateKey == null) {
             val token = getToken()
             if (token.isNullOrBlank()) {
                 return null
             }
-            return getRSAPrivateKeyFromString(token)
+            return token.toByteArray()
         } else {
-            if (isSign) {
-                return edPrivateKey
+            val edPublicKey = getEd25519KeyPair()?.publicKey ?: return null
+            return if (isSign) {
+                edPrivateKey + edPublicKey
+            } else {
+                edPublicKey
             }
-            return getEd25519KeyPair()?.publicKey?.let { EdDSAPublicKey(it) }
         }
     }
 }
 
-fun decryptPinToken(serverPublicKey: ByteArray, privateKey: ByteString): ByteArray {
-    val private = privateKeyToCurve25519(privateKey.toByteArray())
+fun decryptPinToken(serverPublicKey: ByteArray, privateKey: ByteArray): ByteArray {
+    val private = privateKeyToCurve25519(privateKey)
     return calculateAgreement(serverPublicKey, private)
 }

@@ -3,10 +3,12 @@ module tip
 go 1.20
 
 require (
+	filippo.io/edwards25519 v1.0.0
 	github.com/btcsuite/btcd/btcutil v1.1.3
 	github.com/drand/kyber v1.1.18
 	github.com/stretchr/testify v1.8.1
 	golang.org/x/crypto v0.10.0
+	github.com/golang-jwt/jwt/v5 v5.0.0
 )
 
 require (
