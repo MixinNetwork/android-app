@@ -115,8 +115,8 @@ object AppModule {
     @SuppressLint("ConstantLocale")
     private val LOCALE = Locale.getDefault().language + "-" + Locale.getDefault().country
     private val API_UA = (
-        "Mixin/" + BuildConfig.VERSION_NAME +
-            " (Android " + android.os.Build.VERSION.RELEASE + "; " + android.os.Build.FINGERPRINT + "; " + LOCALE + ")"
+        "Mixin/" + "${BuildConfig.VERSION_NAME}" +
+            " (Android " + android.os.Build.VERSION.RELEASE + "; " + android.os.Build.FINGERPRINT + "; " + "${BuildConfig.VERSION_CODE}" + "; " + LOCALE + ")"
         ).filterNonAscii()
 
     @Singleton

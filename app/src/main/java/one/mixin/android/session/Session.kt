@@ -10,13 +10,12 @@ import io.jsonwebtoken.Jwts
 import okhttp3.Request
 import okio.ByteString
 import okio.ByteString.Companion.encode
-import okio.ByteString.Companion.toByteString
 import one.mixin.android.Constants.Account.PREF_TRIED_UPDATE_KEY
 import one.mixin.android.MixinApplication
 import one.mixin.android.crypto.calculateAgreement
 import one.mixin.android.crypto.getRSAPrivateKeyFromString
+import one.mixin.android.crypto.newKeyPairFromSeed
 import one.mixin.android.crypto.privateKeyToCurve25519
-import one.mixin.android.crypto.shouldCheckOnCurve
 import one.mixin.android.extension.bodyToString
 import one.mixin.android.extension.clear
 import one.mixin.android.extension.currentTimeSeconds
@@ -29,7 +28,6 @@ import one.mixin.android.extension.remove
 import one.mixin.android.extension.sharedPreferences
 import one.mixin.android.util.reportException
 import one.mixin.android.vo.Account
-import one.mixin.eddsa.Ed25519
 import one.mixin.eddsa.KeyPair
 import timber.log.Timber
 import java.security.Key
@@ -105,13 +103,7 @@ object Session {
     }
 
     private fun initEdKeypair(seed: String): KeyPair {
-        val privateKey = seed.decodeBase64().toByteString()
-        val xyz = Ed25519.scalarMultWithBase(Ed25519.getHashedScalar(privateKey).toByteArray(), checkOnCurve = shouldCheckOnCurve())
-        if (!xyz.isOnCurve()) {
-            reportException(IllegalStateException("Init Ed25519 from seed not on curve"))
-        }
-        val publicKey = xyz.toBytes().toByteString()
-        val edKeyPair = KeyPair(publicKey, privateKey)
+        val edKeyPair = newKeyPairFromSeed(seed.decodeBase64())
 
         this.edKeyPair = edKeyPair
         return edKeyPair

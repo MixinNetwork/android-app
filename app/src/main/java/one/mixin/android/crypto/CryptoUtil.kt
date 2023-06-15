@@ -6,6 +6,7 @@ import android.os.Build
 import com.lambdapioneer.argon2kt.Argon2Kt
 import com.lambdapioneer.argon2kt.Argon2KtResult
 import com.lambdapioneer.argon2kt.Argon2Mode
+import crypto.Crypto
 import io.jsonwebtoken.EdDSAPrivateKey
 import okhttp3.tls.HeldCertificate
 import okio.ByteString
@@ -13,7 +14,6 @@ import okio.ByteString.Companion.toByteString
 import one.mixin.android.extension.base64Encode
 import one.mixin.eddsa.Ed25519Sign
 import one.mixin.eddsa.Field25519
-import one.mixin.eddsa.Random
 import org.komputing.khash.keccak.KeccakParameter
 import org.komputing.khash.keccak.extensions.digestKeccak
 import org.whispersystems.curve25519.Curve25519
@@ -48,7 +48,23 @@ fun generateRSAKeyPair(keyLength: Int = 2048): KeyPair {
 }
 
 fun generateEd25519KeyPair(): one.mixin.eddsa.KeyPair {
-    return one.mixin.eddsa.KeyPair.newKeyPairFromSeed(Random.randBytes(Field25519.FIELD_LEN), checkOnCurve = shouldCheckOnCurve())
+    val shouldCheckOnCurve = shouldCheckOnCurve()
+    return if (shouldCheckOnCurve) {
+        one.mixin.eddsa.KeyPair.newKeyPair(checkOnCurve = true)
+    } else {
+        val priv = Crypto.generateKey()
+        one.mixin.eddsa.KeyPair(priv.sliceArray(32..63).toByteString(), priv.sliceArray(0..31).toByteString())
+    }
+}
+
+fun newKeyPairFromSeed(seed: ByteArray): one.mixin.eddsa.KeyPair {
+    val shouldCheckOnCurve = shouldCheckOnCurve()
+    return if (shouldCheckOnCurve) {
+        one.mixin.eddsa.KeyPair.newKeyPairFromSeed(seed.toByteString(), checkOnCurve = true)
+    } else {
+        val priv = Crypto.newKeyFromSeed(seed)
+        one.mixin.eddsa.KeyPair(priv.sliceArray(32..63).toByteString(), priv.sliceArray(0..31).toByteString())
+    }
 }
 
 fun calculateAgreement(publicKey: ByteArray, privateKey: ByteArray): ByteArray {
@@ -56,13 +72,13 @@ fun calculateAgreement(publicKey: ByteArray, privateKey: ByteArray): ByteArray {
 }
 
 fun initFromSeedAndSign(seed: ByteArray, signTarget: ByteArray): ByteArray {
-    val keyPair = one.mixin.eddsa.KeyPair.newKeyPairFromSeed(seed.toByteString(), checkOnCurve = shouldCheckOnCurve())
+    val keyPair = newKeyPairFromSeed(seed)
     return signWithSk(EdDSAPrivateKey(keyPair.privateKey), signTarget)
 }
 
 private fun signWithSk(privateKey: EdDSAPrivateKey, signTarget: ByteArray): ByteArray {
     val signer = Ed25519Sign(privateKey.privateKey, checkOnCurve = shouldCheckOnCurve())
-    return signer.sign(signTarget.toByteString()).toByteArray()
+    return signer.sign(signTarget.toByteString(), checkOnCurve = shouldCheckOnCurve()).toByteArray()
 }
 
 fun privateKeyToCurve25519(privateKey: ByteArray): ByteArray {
