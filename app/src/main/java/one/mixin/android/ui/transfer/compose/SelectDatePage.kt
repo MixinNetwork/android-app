@@ -37,6 +37,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
@@ -127,7 +128,7 @@ fun SelectDatePage(onExit: () -> Unit, onResult: (Int?) -> Unit) {
                 SelectItem(stringResource(id = R.string.all_time), !dateSelect) {
                     dateSelect = false
                 }
-                SelectItem(stringResource(id = R.string.Specified_time_period), dateSelect) {
+                SelectItem(stringResource(id = R.string.designated_time_frame), dateSelect) {
                     dateSelect = true
                 }
                 AnimatedVisibility(
@@ -222,9 +223,10 @@ fun YearMothSwitch(onTextChange: (String?, Int) -> Unit) {
         horizontalArrangement = Arrangement.End,
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Text(text = stringResource(id = R.string.Lately), color = MixinAppTheme.colors.textPrimary)
-        Spacer(modifier = Modifier.width(4.dp))
+        Text(text = stringResource(id = R.string.recent), color = MixinAppTheme.colors.textPrimary)
+        Spacer(modifier = Modifier.width(12.dp))
         BasicTextField(
+            cursorBrush = SolidColor(MixinAppTheme.colors.accent),
             modifier = Modifier
                 .width(56.dp)
                 .clip(RoundedCornerShape(4.dp))

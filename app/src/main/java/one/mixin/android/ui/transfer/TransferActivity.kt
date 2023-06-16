@@ -549,10 +549,12 @@ class TransferActivity : BaseActivity() {
             // Maybe consider the local calendar for a year instead of 12 months.
             if (dateOffset % 12 == 0) {
                 // year
-                binding.dateTv.text = getString(R.string.years_ago, dateOffset / 12)
+                binding.dateTv.text = resources.getQuantityString(R.plurals.last_year, if (dateOffset / 12 > 1) { 0 } else { 1 }, dateOffset / 12)
+                Timber.e(binding.dateTv.text.toString())
             } else {
                 // month
-                binding.dateTv.text = getString(R.string.months_ago, dateOffset)
+                binding.dateTv.text = resources.getQuantityString(R.plurals.last_month, if (dateOffset > 1) { 0 } else { 1 }, dateOffset)
+                Timber.e(binding.dateTv.text.toString())
             }
         }
     }

@@ -1207,15 +1207,25 @@
     <string name="speed_up_transaction_tip">if the transaction is too far along cancellation may bot be possible.</string>
     <string name="blocked_action">Mixin has blocked a WalletConnect action %1$s</string>
     <string name="all_time">All time</string>
-    <string name="Specified_time_period">Specified time period</string>
+    <string name="designated_time_frame">Designated time frame</string>
     <string name="Year">Year</string>
     <string name="Month">Month</string>
-    <string name="Lately">Lately</string>
+    <string name="recent">Recent</string>
     <string name="Select_all">Select all</string>
     <string name="Deselect_all">Deselect all</string>
     <string name="Show_Selected">Show Selected (%1$d)</string>
     <string name="All_chat">All chat</string>
     <string name="Chats">%1$d chats</string>
-    <string name="months_ago">%1$d months ago</string>
-    <string name="years_ago">%1$d years ago</string>
+    <plurals name="last_month">
+        <item quantity="one">Last %1$d month</item>
+        <item quantity="other">Last %1$d months</item>
+    </plurals>
+    <plurals name="last_year">
+        <item quantity="one">Last %1$d year</item>
+        <item quantity="other">Last %1$d years</item>
+    </plurals>
+    <plurals name="items_selected">
+        <item quantity="one">%1$d Item Selected</item>
+        <item quantity="other">%1$d Items Selected</item>
+    </plurals>
 </resources>
