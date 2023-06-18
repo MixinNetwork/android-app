@@ -33,6 +33,7 @@ import one.mixin.android.vo.AppButtonData
 import one.mixin.android.vo.AppCardData
 import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.QuoteMessageItem
+import timber.log.Timber
 import java.io.File
 
 class QuoteView constructor(context: Context, attrs: AttributeSet) :
@@ -241,14 +242,18 @@ class QuoteView constructor(context: Context, attrs: AttributeSet) :
                     16.dp
             }
             quoteMessageItem.type == MessageCategory.APP_BUTTON_GROUP.name || quoteMessageItem.type == MessageCategory.APP_CARD.name -> {
-                if (quoteMessageItem.type == MessageCategory.APP_CARD.name) {
-                    val appCard = GsonHelper.customGson.fromJson(quoteMessageItem.content, AppCardData::class.java)
-                    binding.replyContentTv.text = appCard.title
-                } else if (quoteMessageItem.type == MessageCategory.APP_BUTTON_GROUP.name) {
-                    val buttons = Gson().fromJson(quoteMessageItem.content, Array<AppButtonData>::class.java)
-                    var content = ""
-                    buttons.map { content += "[" + it.label + "]" }
-                    binding.replyContentTv.text = content
+                try {
+                    if (quoteMessageItem.type == MessageCategory.APP_CARD.name) {
+                        val appCard = GsonHelper.customGson.fromJson(quoteMessageItem.content, AppCardData::class.java)
+                        binding.replyContentTv.text = appCard.title
+                    } else if (quoteMessageItem.type == MessageCategory.APP_BUTTON_GROUP.name) {
+                        val buttons = GsonHelper.customGson.fromJson(quoteMessageItem.content, Array<AppButtonData>::class.java)
+                        var content = ""
+                        buttons.map { content += "[" + it.label + "]" }
+                        binding.replyContentTv.text = content
+                    }
+                } catch (e: Exception) {
+                    Timber.e(e)
                 }
                 setIcon(R.drawable.ic_type_touch_app)
                 binding.replyIv.visibility = View.GONE

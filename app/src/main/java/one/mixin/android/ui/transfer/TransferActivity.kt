@@ -287,6 +287,8 @@ class TransferActivity : BaseActivity() {
                     binding.initLl.isVisible = false
                     binding.waitingLl.isVisible = true
                     binding.pbLl.isVisible = true
+                    binding.progressTv.setText(R.string.transfer_process_title)
+                    binding.progressDesc.setText(R.string.transfer_process_tip)
                 }
 
                 TransferStatus.ERROR -> {
@@ -515,7 +517,6 @@ class TransferActivity : BaseActivity() {
                 .subscribe {
                     binding.progress.progress = it.progress.toInt()
                     if (status.value == TransferStatus.PROCESSING) {
-                        Timber.e(String.format("%.2f%%", it.progress))
                         binding.pbTv.text = getString(R.string.transfer_process_desc, String.format("%.2f%%", it.progress))
                     } else if (status.value == TransferStatus.SYNCING) {
                         binding.progressTv.text = getString(R.string.transferring_chat_progress, String.format("%.2f%%", it.progress))
@@ -565,8 +566,10 @@ class TransferActivity : BaseActivity() {
     }
 
     private suspend fun connect(transferCommandData: TransferCommand) {
+        val ip = requireNotNull(transferCommandData.ip)
+        val port = requireNotNull(transferCommandData.port)
         val key = requireNotNull(transferCommandData.secretKey).decodeBase64()
-        connect(transferCommandData.ip!!, transferCommandData.port!!, TransferCommand(TransferCommandAction.CONNECT.value, code = transferCommandData.code, userId = Session.getAccountId()), key = key)
+        connect(ip, port, TransferCommand(TransferCommandAction.CONNECT.value, code = transferCommandData.code, userId = Session.getAccountId()), key = key)
     }
 
     private suspend fun connect(ip: String, port: Int, transferCommand: TransferCommand, key: ByteArray) {
