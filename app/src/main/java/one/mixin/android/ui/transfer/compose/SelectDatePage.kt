@@ -128,7 +128,7 @@ fun SelectDatePage(onExit: () -> Unit, onResult: (Int?) -> Unit) {
                 SelectItem(stringResource(id = R.string.all_time), !dateSelect) {
                     dateSelect = false
                 }
-                SelectItem(stringResource(id = R.string.designated_time_frame), dateSelect) {
+                SelectItem(stringResource(id = R.string.designated_time_period), dateSelect) {
                     dateSelect = true
                 }
                 AnimatedVisibility(

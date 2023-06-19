@@ -1182,7 +1182,7 @@
     <string name="speed_up_transaction_tip">if the transaction is too far along cancellation may bot be possible.</string>
     <string name="blocked_action">Mixin 已经禁止了 WalletConnect 的 %1$s 行为</string>
     <string name="all_time">所有日期</string>
-    <string name="designated_time_frame">指定时间段</string>
+    <string name="designated_time_period">指定时间段</string>
     <string name="Year">年</string>
     <string name="Month">月</string>
     <string name="recent">最近</string>
