@@ -24,6 +24,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import one.mixin.android.BuildConfig
 import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.extension.defaultSharedPreferences
@@ -185,10 +186,7 @@ private fun VersionName() {
         )?.versionName ?: "Unknown"
     }
     Text(
-        text = stringResource(
-            R.string.about_version,
-            versionName,
-        ),
+        text = "${BuildConfig.VERSION_NAME}-${BuildConfig.VERSION_CODE}",
         color = MixinAppTheme.colors.textSubtitle,
         fontSize = 10.sp,
     )
