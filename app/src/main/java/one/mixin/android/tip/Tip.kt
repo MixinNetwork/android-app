@@ -17,6 +17,7 @@ import one.mixin.android.crypto.BasePinCipher
 import one.mixin.android.crypto.aesDecrypt
 import one.mixin.android.crypto.aesEncrypt
 import one.mixin.android.crypto.generateAesKey
+import one.mixin.android.crypto.newKeyPairFromSeed
 import one.mixin.android.crypto.sha3Sum256
 import one.mixin.android.crypto.shouldCheckOnCurve
 import one.mixin.android.event.TipEvent
@@ -44,7 +45,6 @@ import one.mixin.android.tip.exception.TipNullException
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.reportException
 import one.mixin.eddsa.Ed25519Sign
-import one.mixin.eddsa.KeyPair
 import timber.log.Timber
 import java.io.IOException
 import javax.inject.Inject
@@ -216,7 +216,7 @@ class Tip @Inject internal constructor(
 
         observers.forEach { it.onSyncingComplete() }
 
-        val keyPair = KeyPair.newKeyPairFromSeed(aggSig.copyOf().toByteString(), checkOnCurve = shouldCheckOnCurve())
+        val keyPair = newKeyPairFromSeed(aggSig.copyOf())
         val pub = keyPair.publicKey
 
         val localPub = Session.getTipPub()
@@ -293,7 +293,7 @@ class Tip @Inject internal constructor(
 
     @Throws(IOException::class, TipNetworkException::class)
     private suspend fun replaceEncryptedPin(aggSig: ByteArray) {
-        val keyPair = KeyPair.newKeyPairFromSeed(aggSig.copyOf().toByteString(), checkOnCurve = shouldCheckOnCurve())
+        val keyPair = newKeyPairFromSeed(aggSig.copyOf())
         val pub = keyPair.publicKey
         val pinToken = requireNotNull(Session.getPinToken()?.decodeBase64() ?: throw TipNullException("No pin token"))
         val counter = requireNotNull(Session.getTipCounter()).toLong()
@@ -325,7 +325,7 @@ class Tip @Inject internal constructor(
             Session.getPinToken()?.decodeBase64() ?: throw TipNullException("No pin token")
 
         val stSeed = (sessionPriv + pin.toByteArray()).sha3Sum256()
-        val keyPair = KeyPair.newKeyPairFromSeed(stSeed.toByteString(), checkOnCurve = shouldCheckOnCurve())
+        val keyPair = newKeyPairFromSeed(stSeed)
         val stPriv = keyPair.privateKey
         val stPub = keyPair.publicKey
         val aesKey = generateAesKey(32)
@@ -379,7 +379,7 @@ class Tip @Inject internal constructor(
             Session.getEd25519Seed()?.decodeBase64() ?: throw TipNullException("No ed25519 key")
 
         val stSeed = (sessionPriv + pin.toByteArray()).sha3Sum256()
-        val keyPair = KeyPair.newKeyPairFromSeed(stSeed.toByteString(), checkOnCurve = shouldCheckOnCurve())
+        val keyPair = newKeyPairFromSeed(stSeed)
         val stPriv = keyPair.privateKey
         val timestamp = nowInUtcNano()
 
@@ -395,13 +395,21 @@ class Tip @Inject internal constructor(
     }
 
     private fun signTimestamp(stPriv: ByteString, stPub: ByteString, timestamp: Long): String {
-        val signer = Ed25519Sign(stPriv, checkOnCurve = shouldCheckOnCurve())
         val msg = TipBody.forVerify(timestamp)
-        val sig = signer.sign(msg.toByteString()).toByteArray()
+        val sig = if (shouldCheckOnCurve()) {
+            val signer = Ed25519Sign(stPriv, checkOnCurve = shouldCheckOnCurve())
+            val sig = signer.sign(msg.toByteString(), checkOnCurve = shouldCheckOnCurve()).toByteArray()
 
-        val valid = Crypto.verifyEd25519(msg, sig, stPub.toByteArray())
-        Timber.e("verify go-ed25519 sig is valid: $valid\npub: ${stPub.toByteArray().base64RawURLEncode()}\nmsg: ${msg.base64RawURLEncode()}\nsig: ${sig.base64RawURLEncode()}")
-
+            val valid = Crypto.verifyEd25519(msg, sig, stPub.toByteArray())
+            Timber.e(
+                "verify go-ed25519 sig is valid: $valid\npub: ${
+                    stPub.toByteArray().base64RawURLEncode()
+                }\nmsg: ${msg.base64RawURLEncode()}\nsig: ${sig.base64RawURLEncode()}",
+            )
+            sig
+        } else {
+            Crypto.signEd25519(msg, stPriv.toByteArray())
+        }
         return sig.base64RawURLEncode()
     }
 

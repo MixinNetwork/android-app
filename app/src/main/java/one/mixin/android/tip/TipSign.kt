@@ -2,6 +2,7 @@ package one.mixin.android.tip
 
 import okio.ByteString.Companion.toByteString
 import one.mixin.android.Constants
+import one.mixin.android.crypto.newKeyPairFromSeed
 import one.mixin.android.crypto.sha3Sum256
 import one.mixin.android.crypto.shouldCheckOnCurve
 import one.mixin.android.extension.toHex
@@ -13,7 +14,6 @@ import org.web3j.crypto.ECKeyPair
 import org.web3j.crypto.Keys
 import org.web3j.crypto.Sign
 import org.web3j.utils.Numeric
-import java.security.KeyPair
 
 const val TAG_TIP_SIGN = "TIP_sign"
 
@@ -45,13 +45,13 @@ sealed class TipSignSpec(
     sealed class Eddsa(override val curve: String) : TipSignSpec("eddsa", curve) {
         object Ed25519 : Eddsa("ed25519") {
             override fun public(priv: ByteArray): String {
-                val keypair = one.mixin.eddsa.KeyPair.newKeyPairFromSeed(priv.toByteString(), checkOnCurve = shouldCheckOnCurve())
+                val keypair = newKeyPairFromSeed(priv)
                 return keypair.publicKey.toByteArray().toHex()
             }
 
             override fun sign(priv: ByteArray, data: ByteArray): String {
                 val signer = Ed25519Sign(priv.toByteString(), checkOnCurve = shouldCheckOnCurve())
-                return signer.sign(data.toByteString()).toByteArray().toHex()
+                return signer.sign(data.toByteString(), checkOnCurve = shouldCheckOnCurve()).toByteArray().toHex()
             }
         }
     }
