@@ -47,6 +47,7 @@ import one.mixin.android.extension.getTranscriptDirPath
 import one.mixin.android.extension.getVideoPath
 import one.mixin.android.extension.isUUID
 import one.mixin.android.extension.moveTo
+import one.mixin.android.extension.ungzip
 import one.mixin.android.fts.FtsDatabase
 import one.mixin.android.fts.insertOrReplaceMessageFts4
 import one.mixin.android.job.AsyncProcessTransferAttachmentFileJob
@@ -61,7 +62,6 @@ import one.mixin.android.ui.transfer.vo.TransferDataType
 import one.mixin.android.ui.transfer.vo.compatible.TransferMessageMention
 import one.mixin.android.util.NetworkUtils
 import one.mixin.android.util.SINGLE_SOCKET_THREAD
-import one.mixin.android.util.decompress
 import one.mixin.android.util.mention.parseMentionData
 import one.mixin.android.util.reportException
 import one.mixin.android.vo.App
@@ -509,7 +509,7 @@ class TransferClient @Inject internal constructor(
                             input.read(sizeData)
                             val data = ByteArray(byteArrayToInt(sizeData))
                             input.read(data)
-                            processJson(decrypt(decompress(data)))
+                            processJson(decrypt(data.ungzip()))
                         }
                     }
                 }
