@@ -2,6 +2,7 @@
 
 package one.mixin.android.crypto
 
+import android.os.Build
 import com.lambdapioneer.argon2kt.Argon2Kt
 import com.lambdapioneer.argon2kt.Argon2KtResult
 import com.lambdapioneer.argon2kt.Argon2Mode
@@ -12,12 +13,14 @@ import org.komputing.khash.keccak.KeccakParameter
 import org.komputing.khash.keccak.extensions.digestKeccak
 import org.whispersystems.curve25519.Curve25519
 import org.whispersystems.curve25519.Curve25519.BEST
+import java.security.KeyFactory
 import java.security.KeyPair
 import java.security.KeyPairGenerator
 import java.security.MessageDigest
 import java.security.PrivateKey
 import java.security.SecureRandom
 import java.security.spec.MGF1ParameterSpec
+import java.security.spec.PKCS8EncodedKeySpec
 import javax.crypto.Cipher
 import javax.crypto.spec.GCMParameterSpec
 import javax.crypto.spec.IvParameterSpec
@@ -29,6 +32,9 @@ import kotlin.experimental.or
 
 private val secureRandom: SecureRandom = SecureRandom()
 private const val GCM_IV_LENGTH = 12
+
+// https://github.com/google/tink/issues/403
+fun useGoJwt() = Build.VERSION.SDK_INT <= Build.VERSION_CODES.N_MR1
 
 fun generateRSAKeyPair(keyLength: Int = 2048): KeyPair {
     val kpg = KeyPairGenerator.getInstance("RSA")
@@ -161,4 +167,26 @@ fun rsaDecrypt(privateKey: PrivateKey, iv: String, pinToken: String): String {
         ),
     )
     return deCipher.doFinal(Base64.decode(pinToken)).base64Encode()
+}
+
+fun getRSAPrivateKeyFromString(privateKeyPEM: String): PrivateKey {
+    val striped = stripRsaPrivateKeyHeaders(privateKeyPEM)
+    val keySpec = PKCS8EncodedKeySpec(Base64.decode(striped))
+    val kf = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+        KeyFactory.getInstance("RSA")
+    } else {
+        KeyFactory.getInstance("RSA", "BC")
+    }
+    return kf.generatePrivate(keySpec)
+}
+
+private fun stripRsaPrivateKeyHeaders(privatePem: String): String {
+    val strippedKey = StringBuilder()
+    val lines = privatePem.split("\n".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
+    lines.filter { line ->
+        !line.contains("BEGIN RSA PRIVATE KEY") &&
+            !line.contains("END RSA PRIVATE KEY") && !line.trim { it <= ' ' }.isEmpty()
+    }
+        .forEach { line -> strippedKey.append(line.trim { it <= ' ' }) }
+    return strippedKey.toString().trim { it <= ' ' }
 }

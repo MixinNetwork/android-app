@@ -2,14 +2,23 @@ package one.mixin.android.session
 
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
+import io.jsonwebtoken.Claims
+import io.jsonwebtoken.EdDSAPrivateKey
+import io.jsonwebtoken.EdDSAPublicKey
+import io.jsonwebtoken.ExpiredJwtException
+import io.jsonwebtoken.Jwts
 import jwt.Jwt
 import okhttp3.Request
+import okio.ByteString.Companion.encode
+import okio.ByteString.Companion.toByteString
 import one.mixin.android.Constants.Account.PREF_TRIED_UPDATE_KEY
 import one.mixin.android.MixinApplication
 import one.mixin.android.crypto.EdKeyPair
 import one.mixin.android.crypto.calculateAgreement
+import one.mixin.android.crypto.getRSAPrivateKeyFromString
 import one.mixin.android.crypto.newKeyPairFromSeed
 import one.mixin.android.crypto.privateKeyToCurve25519
+import one.mixin.android.crypto.useGoJwt
 import one.mixin.android.extension.bodyToString
 import one.mixin.android.extension.clear
 import one.mixin.android.extension.currentTimeSeconds
@@ -25,6 +34,8 @@ import one.mixin.android.extension.toHex
 import one.mixin.android.util.reportException
 import one.mixin.android.vo.Account
 import timber.log.Timber
+import java.security.Key
+import java.util.concurrent.ConcurrentHashMap
 import kotlin.math.abs
 
 object Session {
@@ -176,7 +187,23 @@ object Session {
         !MixinApplication.appContext.defaultSharedPreferences
             .getBoolean(PREF_TRIED_UPDATE_KEY, false)
 
-    fun signToken(acct: Account?, request: Request, xRequestId: String, key: ByteArray? = getJwtKey(true)): String {
+    fun signToken(acct: Account?, request: Request, xRequestId: String): String {
+        return if (useGoJwt()) {
+            signGoToken(acct, request, xRequestId)
+        } else {
+            signLegacyToken(acct, request, xRequestId)
+        }
+    }
+
+    fun requestDelay(acct: Account?, string: String, offset: Int): JwtResult {
+        return if (useGoJwt()) {
+            requestGoDelay(acct, string, offset)
+        } else {
+            requestLegacyDelay(acct, string, offset)
+        }
+    }
+
+    fun signGoToken(acct: Account?, request: Request, xRequestId: String, key: ByteArray? = getGoJwtKey(true)): String {
         if (acct == null || key == null) {
             return ""
         }
@@ -191,12 +218,41 @@ object Session {
         return Jwt.signToken(xRequestId, acct.userId, acct.sessionId, content.sha256().toHex(), key)
     }
 
-    fun requestDelay(acct: Account?, string: String, offset: Int, key: ByteArray? = getJwtKey(false)): JwtResult {
+    fun signLegacyToken(acct: Account?, request: Request, xRequestId: String, key: Key? = getLegacyJwtKey(true)): String {
+        if (acct == null || key == null) {
+            return ""
+        }
+        val expire = currentTimeSeconds() + 1800
+        val iat = currentTimeSeconds()
+
+        var content = "${request.method}${request.url.cutOut()}"
+        request.body?.apply {
+            if (contentLength() > 0) {
+                content += bodyToString()
+            }
+        }
+
+        return Jwts.builder()
+            .setClaims(
+                ConcurrentHashMap<String, Any>().apply {
+                    put(Claims.ID, xRequestId)
+                    put(Claims.EXPIRATION, expire)
+                    put(Claims.ISSUED_AT, iat)
+                    put("uid", acct.userId)
+                    put("sid", acct.sessionId)
+                    put("sig", content.encode().sha256().hex())
+                    put("scp", "FULL")
+                },
+            )
+            .signWith(key)
+            .compact()
+    }
+
+    fun requestGoDelay(acct: Account?, string: String, offset: Int, key: ByteArray? = getGoJwtKey(false)): JwtResult {
         if (acct == null || key == null) {
             return JwtResult(false)
         }
-        val iat = Jwt.parseIat(string, key)
-        return when (iat) {
+        return when (val iat = Jwt.parseIat(string, key)) {
             -1L -> {
                 Timber.w("ErrTokenExpired")
                 reportException(IllegalArgumentException("ErrTokenExpired"))
@@ -212,9 +268,27 @@ object Session {
         }
     }
 
+    fun requestLegacyDelay(acct: Account?, string: String, offset: Int, key: Key? = getLegacyJwtKey(false)): JwtResult {
+        if (acct == null || key == null) {
+            return JwtResult(false)
+        }
+        try {
+            val iat = Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(string).body[Claims.ISSUED_AT] as Int
+            return JwtResult(abs(currentTimeSeconds() - iat) > offset, requestTime = iat.toLong())
+        } catch (e: ExpiredJwtException) {
+            Timber.w(e)
+            reportException(e)
+            return JwtResult(true)
+        } catch (e: Exception) {
+            Timber.e(e)
+            reportException(e)
+        }
+        return JwtResult(false)
+    }
+
     fun getFiatCurrency() = getAccount()?.fiatCurrency ?: "USD"
 
-    private fun getJwtKey(isSign: Boolean): ByteArray? {
+    private fun getGoJwtKey(isSign: Boolean): ByteArray? {
         val edPrivateKey = getEd25519KeyPair()?.privateKey
         if (edPrivateKey == null) {
             val token = getToken()
@@ -229,6 +303,22 @@ object Session {
             } else {
                 edPublicKey
             }
+        }
+    }
+
+    private fun getLegacyJwtKey(isSign: Boolean): Key? {
+        val edPrivateKey = getEd25519KeyPair()?.privateKey?.let { EdDSAPrivateKey(it.toByteString()) }
+        if (edPrivateKey == null) {
+            val token = getToken()
+            if (token.isNullOrBlank()) {
+                return null
+            }
+            return getRSAPrivateKeyFromString(token)
+        } else {
+            if (isSign) {
+                return edPrivateKey
+            }
+            return getEd25519KeyPair()?.publicKey?.let { EdDSAPublicKey(it.toByteString()) }
         }
     }
 }
