@@ -8,6 +8,7 @@ import com.lambdapioneer.argon2kt.Argon2KtResult
 import com.lambdapioneer.argon2kt.Argon2Mode
 import ed25519.Ed25519
 import okhttp3.tls.HeldCertificate
+import okio.ByteString.Companion.toByteString
 import one.mixin.android.extension.base64Encode
 import org.komputing.khash.keccak.KeccakParameter
 import org.komputing.khash.keccak.extensions.digestKeccak
@@ -34,7 +35,7 @@ private val secureRandom: SecureRandom = SecureRandom()
 private const val GCM_IV_LENGTH = 12
 
 // https://github.com/google/tink/issues/403
-fun useGoJwt() = Build.VERSION.SDK_INT <= Build.VERSION_CODES.N_MR1
+fun useGoEd() = Build.VERSION.SDK_INT <= Build.VERSION_CODES.N_MR1
 
 fun generateRSAKeyPair(keyLength: Int = 2048): KeyPair {
     val kpg = KeyPairGenerator.getInstance("RSA")
@@ -43,13 +44,23 @@ fun generateRSAKeyPair(keyLength: Int = 2048): KeyPair {
 }
 
 fun generateEd25519KeyPair(): EdKeyPair {
-    val priv = Ed25519.generateKey()
-    return EdKeyPair(priv.sliceArray(32..63), priv.sliceArray(0..31))
+    return if (useGoEd()) {
+        val priv = Ed25519.generateKey()
+        EdKeyPair(priv.sliceArray(32..63), priv.sliceArray(0..31))
+    } else {
+        val keyPair = one.mixin.eddsa.KeyPair.newKeyPair(true)
+        EdKeyPair(keyPair.publicKey.toByteArray(), keyPair.privateKey.toByteArray())
+    }
 }
 
 fun newKeyPairFromSeed(seed: ByteArray): EdKeyPair {
-    val priv = Ed25519.newKeyFromSeed(seed)
-    return EdKeyPair(priv.sliceArray(32..63), priv.sliceArray(0..31))
+    return if (useGoEd()) {
+        val priv = Ed25519.newKeyFromSeed(seed)
+        EdKeyPair(priv.sliceArray(32..63), priv.sliceArray(0..31))
+    } else {
+        val keyPair = one.mixin.eddsa.KeyPair.newKeyPairFromSeed(seed.toByteString(), checkOnCurve = true)
+        EdKeyPair(keyPair.publicKey.toByteArray(), keyPair.privateKey.toByteArray())
+    }
 }
 
 fun calculateAgreement(publicKey: ByteArray, privateKey: ByteArray): ByteArray {

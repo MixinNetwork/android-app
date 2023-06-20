@@ -18,7 +18,7 @@ import one.mixin.android.crypto.calculateAgreement
 import one.mixin.android.crypto.getRSAPrivateKeyFromString
 import one.mixin.android.crypto.newKeyPairFromSeed
 import one.mixin.android.crypto.privateKeyToCurve25519
-import one.mixin.android.crypto.useGoJwt
+import one.mixin.android.crypto.useGoEd
 import one.mixin.android.extension.bodyToString
 import one.mixin.android.extension.clear
 import one.mixin.android.extension.currentTimeSeconds
@@ -188,7 +188,7 @@ object Session {
             .getBoolean(PREF_TRIED_UPDATE_KEY, false)
 
     fun signToken(acct: Account?, request: Request, xRequestId: String): String {
-        return if (useGoJwt()) {
+        return if (useGoEd()) {
             signGoToken(acct, request, xRequestId)
         } else {
             signLegacyToken(acct, request, xRequestId)
@@ -196,7 +196,7 @@ object Session {
     }
 
     fun requestDelay(acct: Account?, string: String, offset: Int): JwtResult {
-        return if (useGoJwt()) {
+        return if (useGoEd()) {
             requestGoDelay(acct, string, offset)
         } else {
             requestLegacyDelay(acct, string, offset)
