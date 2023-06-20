@@ -4,7 +4,6 @@ import one.mixin.android.Constants
 import one.mixin.android.crypto.initFromSeedAndSign
 import one.mixin.android.crypto.newKeyPairFromSeed
 import one.mixin.android.crypto.sha3Sum256
-import one.mixin.android.crypto.useGoEd
 import one.mixin.android.extension.toHex
 import one.mixin.android.tip.bip44.Bip44Path
 import one.mixin.android.tip.bip44.generateBip44Key
@@ -49,11 +48,7 @@ sealed class TipSignSpec(
             }
 
             override fun sign(priv: ByteArray, data: ByteArray): String {
-                return if (useGoEd()) {
-                    ed25519.Ed25519.sign(data, priv).toHex()
-                } else {
-                    initFromSeedAndSign(priv, data).toHex()
-                }
+                return initFromSeedAndSign(priv, data).toHex()
             }
         }
     }
