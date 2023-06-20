@@ -9,6 +9,8 @@ import one.mixin.android.api.ChecksumException
 import one.mixin.android.event.SpeedEvent
 import one.mixin.android.extension.base64Encode
 import one.mixin.android.ui.transfer.vo.TransferCommand
+import one.mixin.android.util.compress
+import one.mixin.android.util.decompress
 import timber.log.Timber
 import java.io.ByteArrayInputStream
 import java.io.EOFException
@@ -74,7 +76,7 @@ class TransferProtocol(private val serializationJson: Json, private val secretBy
         val size = byteArrayToInt(sizeData)
         return when (type) {
             TYPE_COMMAND -> { // COMMAND
-                val ciphertext = readByteArray(inputStream, size) ?: return null
+                val ciphertext = readByteArray(inputStream, size)?.let { decompress(it) } ?: return null
                 serializationJson.decodeFromStream<TransferCommand>(ByteArrayInputStream(decrypt(ciphertext)))
             }
 
@@ -93,12 +95,17 @@ class TransferProtocol(private val serializationJson: Json, private val secretBy
         }
     }
 
-    fun write(outputStream: OutputStream, type: Byte, content: String) {
+    private fun preprocessingData(content: String): ByteArray? {
         val data = content.toByteArray(UTF_8)
         if (data.size >= MAX_DATA_SIZE) {
-            return
+            return null
         }
-        val writeData = encrypt(data)
+        val compressData = compress(content)
+        return encrypt(compressData)
+    }
+
+    fun write(outputStream: OutputStream, type: Byte, content: String) {
+        val writeData = preprocessingData(content) ?: return
         outputStream.write(byteArrayOf(type))
         outputStream.write(intToByteArray(writeData.size))
         outputStream.write(writeData)

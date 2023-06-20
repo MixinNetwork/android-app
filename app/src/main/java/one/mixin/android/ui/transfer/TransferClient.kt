@@ -61,6 +61,7 @@ import one.mixin.android.ui.transfer.vo.TransferDataType
 import one.mixin.android.ui.transfer.vo.compatible.TransferMessageMention
 import one.mixin.android.util.NetworkUtils
 import one.mixin.android.util.SINGLE_SOCKET_THREAD
+import one.mixin.android.util.decompress
 import one.mixin.android.util.mention.parseMentionData
 import one.mixin.android.util.reportException
 import one.mixin.android.vo.App
@@ -508,7 +509,7 @@ class TransferClient @Inject internal constructor(
                             input.read(sizeData)
                             val data = ByteArray(byteArrayToInt(sizeData))
                             input.read(data)
-                            processJson(decrypt(data))
+                            processJson(decrypt(decompress(data)))
                         }
                     }
                 }
