@@ -47,6 +47,7 @@ import one.mixin.android.extension.getTranscriptDirPath
 import one.mixin.android.extension.getVideoPath
 import one.mixin.android.extension.isUUID
 import one.mixin.android.extension.moveTo
+import one.mixin.android.extension.ungzip
 import one.mixin.android.fts.FtsDatabase
 import one.mixin.android.fts.insertOrReplaceMessageFts4
 import one.mixin.android.job.AsyncProcessTransferAttachmentFileJob
@@ -508,7 +509,7 @@ class TransferClient @Inject internal constructor(
                             input.read(sizeData)
                             val data = ByteArray(byteArrayToInt(sizeData))
                             input.read(data)
-                            processJson(decrypt(data))
+                            processJson(decrypt(data.ungzip()))
                         }
                     }
                 }

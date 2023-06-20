@@ -205,6 +205,23 @@ fun ByteString.ungzip(): String {
     return gzip.buffer().readUtf8()
 }
 
+@Throws(GzipException::class)
+fun ByteArray.ungzip(): ByteArray {
+    val buffer = Buffer().write(this)
+    val gzip = GzipSource(buffer as Source)
+    return gzip.buffer().readByteArray()
+}
+
+@Throws(IOException::class)
+fun ByteArray.gzip(): ByteArray {
+    val result = Buffer()
+    val sink = GzipSink(result).buffer()
+    sink.use {
+        sink.write(this)
+    }
+    return result.readByteArray()
+}
+
 inline fun String.md5(): String {
     val md = MessageDigest.getInstance("MD5")
     val digested = md.digest(toByteArray())
