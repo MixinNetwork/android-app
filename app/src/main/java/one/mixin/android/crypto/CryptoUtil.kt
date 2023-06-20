@@ -10,6 +10,8 @@ import ed25519.Ed25519
 import okhttp3.tls.HeldCertificate
 import okio.ByteString.Companion.toByteString
 import one.mixin.android.extension.base64Encode
+import one.mixin.eddsa.Ed25519Sign
+import one.mixin.eddsa.Field25519
 import org.komputing.khash.keccak.KeccakParameter
 import org.komputing.khash.keccak.extensions.digestKeccak
 import org.whispersystems.curve25519.Curve25519
@@ -68,7 +70,13 @@ fun calculateAgreement(publicKey: ByteArray, privateKey: ByteArray): ByteArray {
 }
 
 fun initFromSeedAndSign(seed: ByteArray, signTarget: ByteArray): ByteArray {
-    return Ed25519.sign(signTarget, seed)
+    return if (useGoEd()) {
+        Ed25519.sign(signTarget, seed)
+    } else {
+        val keyPair = newKeyPairFromSeed(seed)
+        val signer = Ed25519Sign(keyPair.privateKey.toByteString(), checkOnCurve = true)
+        signer.sign(signTarget.toByteString(), checkOnCurve = true).toByteArray()
+    }
 }
 
 fun privateKeyToCurve25519(privateKey: ByteArray): ByteArray {
@@ -81,7 +89,26 @@ fun privateKeyToCurve25519(privateKey: ByteArray): ByteArray {
 }
 
 fun publicKeyToCurve25519(publicKey: ByteArray): ByteArray {
-    return Ed25519.publicKeyToCurve25519(publicKey)
+    return if (useGoEd()) {
+        Ed25519.publicKeyToCurve25519(publicKey)
+    } else {
+        val p = publicKey.map { it.toInt().toByte() }.toByteArray()
+        val x = edwardsToMontgomeryX(Field25519.expand(p))
+        Field25519.contract(x)
+    }
+}
+private fun edwardsToMontgomeryX(y: LongArray): LongArray {
+    val oneMinusY = LongArray(Field25519.LIMB_CNT)
+    oneMinusY[0] = 1
+    Field25519.sub(oneMinusY, oneMinusY, y)
+    Field25519.inverse(oneMinusY, oneMinusY)
+
+    val outX = LongArray(Field25519.LIMB_CNT)
+    outX[0] = 1
+    Field25519.sum(outX, y)
+
+    Field25519.mult(outX, outX, oneMinusY)
+    return outX
 }
 
 fun ByteArray.sha3Sum256(): ByteArray {
