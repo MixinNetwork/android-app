@@ -1,14 +1,12 @@
 package one.mixin.android.tip
 
-import okio.ByteString.Companion.toByteString
 import one.mixin.android.Constants
+import one.mixin.android.crypto.initFromSeedAndSign
 import one.mixin.android.crypto.newKeyPairFromSeed
 import one.mixin.android.crypto.sha3Sum256
-import one.mixin.android.crypto.shouldCheckOnCurve
 import one.mixin.android.extension.toHex
 import one.mixin.android.tip.bip44.Bip44Path
 import one.mixin.android.tip.bip44.generateBip44Key
-import one.mixin.eddsa.Ed25519Sign
 import org.web3j.crypto.Bip32ECKeyPair
 import org.web3j.crypto.ECKeyPair
 import org.web3j.crypto.Keys
@@ -46,12 +44,11 @@ sealed class TipSignSpec(
         object Ed25519 : Eddsa("ed25519") {
             override fun public(priv: ByteArray): String {
                 val keypair = newKeyPairFromSeed(priv)
-                return keypair.publicKey.toByteArray().toHex()
+                return keypair.publicKey.toHex()
             }
 
             override fun sign(priv: ByteArray, data: ByteArray): String {
-                val signer = Ed25519Sign(priv.toByteString(), checkOnCurve = shouldCheckOnCurve())
-                return signer.sign(data.toByteString(), checkOnCurve = shouldCheckOnCurve()).toByteArray().toHex()
+                return initFromSeedAndSign(priv, data).toHex()
             }
         }
     }

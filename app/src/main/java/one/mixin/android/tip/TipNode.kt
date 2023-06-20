@@ -1,8 +1,6 @@
 package one.mixin.android.tip
 
 import com.google.gson.Gson
-import crypto.Crypto
-import crypto.Scalar
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -29,6 +27,8 @@ import one.mixin.android.tip.exception.NotEnoughPartialsException
 import one.mixin.android.tip.exception.TipNodeException
 import retrofit2.HttpException
 import timber.log.Timber
+import tip.Scalar
+import tip.Tip
 import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.atomic.AtomicInteger
 import javax.inject.Inject
@@ -54,7 +54,7 @@ class TipNode @Inject internal constructor(private val tipNodeService: TipNodeSe
         forRecover: Boolean = false,
         callback: Callback? = null,
     ): ByteArray {
-        val suite = Crypto.newSuiteBn256()
+        val suite = Tip.newSuiteBn256()
         val userSk = suite.scalar()
         userSk.setBytes(identityPriv)
 
@@ -112,7 +112,7 @@ class TipNode @Inject internal constructor(private val tipNodeService: TipNodeSe
 
         val hexSigs = partials.joinToString(",") { it.toHex() }
         val commitments = tipConfig.commitments.joinToString(",")
-        return Crypto.recoverSignature(hexSigs, commitments, assignor, nodeCount.toLong())
+        return Tip.recoverSignature(hexSigs, commitments, assignor, nodeCount.toLong())
     }
 
     suspend fun watch(watcher: ByteArray, callback: Callback? = null): Pair<List<TipNodeCounter>, String> {
@@ -233,7 +233,7 @@ class TipNode @Inject internal constructor(private val tipNodeService: TipNodeSe
             if (resError != null) {
                 return Pair(null, resError.code.toTipNodeError(tipSigner.index, requestId, resError.description))
             }
-            val signerPk = Crypto.pubKeyFromBase58(tipSigner.identity)
+            val signerPk = Tip.pubKeyFromBase58(tipSigner.identity)
             val msg = gson.toJson(tipSignResponse.data).toByteArray()
             try {
                 signerPk.verify(msg, tipSignResponse.signature.hexStringToByteArray())
@@ -274,8 +274,8 @@ class TipNode @Inject internal constructor(private val tipNodeService: TipNodeSe
     }
 
     private fun parseNodeSigResp(userSk: Scalar, signer: TipSigner, resp: TipSignResponse): TipSignRespData {
-        val signerPk = Crypto.pubKeyFromBase58(signer.identity)
-        val plain = Crypto.decrypt(signerPk, userSk, resp.data.cipher.hexStringToByteArray())
+        val signerPk = Tip.pubKeyFromBase58(signer.identity)
+        val plain = Tip.decrypt(signerPk, userSk, resp.data.cipher.hexStringToByteArray())
         val nonceBytes = plain.slice(0..7).toByteArray()
         var offset = 8
         val partial = plain.slice(offset..offset + 65).toByteArray()
@@ -300,7 +300,7 @@ class TipNode @Inject internal constructor(private val tipNodeService: TipNodeSe
     }
 
     private fun genTipSignRequest(userSk: Scalar, tipSigner: TipSigner, ephemeral: ByteArray, watcher: ByteArray, nonce: Long, grace: Long, assignee: ByteArray?): TipSignRequest {
-        val signerPk = Crypto.pubKeyFromBase58(tipSigner.identity)
+        val signerPk = Tip.pubKeyFromBase58(tipSigner.identity)
         val userPk = userSk.publicKey()
         val esum = (ephemeral + tipSigner.identity.toByteArray()).sha3Sum256()
         var msg = userPk.publicKeyBytes() + esum + nonce.toBeByteArray() + grace.toBeByteArray()
@@ -320,7 +320,7 @@ class TipNode @Inject internal constructor(private val tipNodeService: TipNodeSe
             grace = grace,
         )
         val dataJson = gson.toJson(data).toByteArray()
-        val cipher = Crypto.encrypt(signerPk, userSk, dataJson)
+        val cipher = Tip.encrypt(signerPk, userSk, dataJson)
         return TipSignRequest(sig, userPkStr, cipher.base64RawURLEncode(), watcherHex)
     }
 
