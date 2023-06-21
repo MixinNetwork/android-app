@@ -12,8 +12,8 @@ plugins {
 
 def versionMajor = 0
 def versionMinor = 40
-def versionPatch = 1
-def versionBuild = 1
+def versionPatch = 2
+def versionBuild = 4
 
 android {
     compileSdk 33
@@ -266,13 +266,12 @@ dependencies {
     implementation "io.reactivex.rxjava2:rxandroid:${rxAndroidVersion}"
 
     implementation "com.github.mixinnetwork:tink-eddsa:0.0.13"
-    implementation("com.github.mixinnetwork.jjwt:jjwt-api:2b1c61aa2f") {
-        exclude group: 'com.github.mixinnetwork', module: 'tink-eddsa'
-    }
+    implementation "com.github.mixinnetwork.jjwt:jjwt-api:2b1c61aa2f"
     runtimeOnly 'com.github.mixinnetwork.jjwt:jjwt-impl:2b1c61aa2f'
     runtimeOnly('com.github.mixinnetwork.jjwt:jjwt-orgjson:2b1c61aa2f') {
         exclude group: 'org.json', module: 'json' //provided by Android natively
     }
+
     implementation "com.jakewharton.threetenabp:threetenabp:${threetenabpVersion}"
 
     // retrofit
@@ -385,7 +384,7 @@ dependencies {
     // wallet connect && web3j
     implementation "org.web3j:core:4.10.0"
     implementation "org.web3j:crypto:4.10.0"
-    implementation platform("com.walletconnect:android-bom:1.10.0")
+    implementation platform("com.walletconnect:android-bom:1.11.0")
     implementation "com.walletconnect:android-core"
     implementation "com.walletconnect:web3wallet"
 

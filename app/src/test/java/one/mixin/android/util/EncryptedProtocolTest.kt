@@ -87,7 +87,7 @@ class EncryptedProtocolTest {
 
         val receiverKeyPair = generateEd25519KeyPair()
         val receiverPublicKey = receiverKeyPair.publicKey
-        val receiverCurvePublicKey = publicKeyToCurve25519(receiverPublicKey.toByteArray())
+        val receiverCurvePublicKey = publicKeyToCurve25519(receiverPublicKey)
 
         val encodedContent = encryptedProtocol.encryptMessage(senderKeyPair, content, receiverCurvePublicKey, otherSessionId)
 
@@ -106,13 +106,13 @@ class EncryptedProtocolTest {
         val receiverPrivateKey = receiverKeyPair.privateKey
         val receiverPublicKey = receiverKeyPair.publicKey
 
-        val senderPrivate = privateKeyToCurve25519(senderPrivateKey.toByteArray())
+        val senderPrivate = privateKeyToCurve25519(senderPrivateKey)
         val senderSecret =
-            calculateAgreement(publicKeyToCurve25519(receiverPublicKey.toByteArray()), senderPrivate)
+            calculateAgreement(publicKeyToCurve25519(receiverPublicKey), senderPrivate)
 
-        val receiverPrivate = privateKeyToCurve25519(receiverPrivateKey.toByteArray())
+        val receiverPrivate = privateKeyToCurve25519(receiverPrivateKey)
         val receiverSecret =
-            calculateAgreement(publicKeyToCurve25519(senderPublicKey.toByteArray()), receiverPrivate)
+            calculateAgreement(publicKeyToCurve25519(senderPublicKey), receiverPrivate)
 
         assert(senderSecret.contentEquals(receiverSecret))
     }

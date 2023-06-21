@@ -551,7 +551,7 @@ class WebFragment : BaseFragment() {
 
             override fun onReceivedIcon(view: WebView?, icon: Bitmap?) {
                 super.onReceivedIcon(view, icon)
-                if (!isBot()) {
+                if (!isBot() && _binding?.iconIv?.isVisible == false) {
                     icon?.let {
                         _binding?.apply {
                             iconIv.isVisible = true
@@ -748,11 +748,25 @@ class WebFragment : BaseFragment() {
                 }
             }
             app?.name?.let { binding.titleTv.text = it }
-            app?.iconUrl?.let {
+
+            fun setAppIcon(appIcon: String) {
                 binding.iconIv.isVisible = true
-                binding.iconIv.loadImage(it)
+                binding.iconIv.loadImage(appIcon)
                 binding.titleTv.updateLayoutParams<ViewGroup.MarginLayoutParams> {
                     marginStart = requireContext().dpToPx(10f)
+                }
+            }
+            val appIcon = app?.iconUrl
+            if (appIcon != null) {
+                setAppIcon(appIcon)
+            } else {
+                val host = url.toUri().host
+                if (host != null) {
+                    lifecycleScope.launch {
+                        bottomViewModel.searchAppByHost(host).firstOrNull()?.iconUrl?.let {
+                            setAppIcon(it)
+                        }
+                    }
                 }
             }
             binding.titleLl.isGone = immersive
