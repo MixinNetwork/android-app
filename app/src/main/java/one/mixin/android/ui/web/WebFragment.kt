@@ -3,6 +3,7 @@ package one.mixin.android.ui.web
 import android.Manifest
 import android.annotation.SuppressLint
 import android.app.Activity
+import android.app.Dialog
 import android.content.ActivityNotFoundException
 import android.content.ClipData
 import android.content.Context
@@ -48,6 +49,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.view.ContextThemeWrapper
 import androidx.core.app.ShareCompat
+import androidx.core.view.drawToBitmap
 import androidx.core.view.isGone
 import androidx.core.view.isInvisible
 import androidx.core.view.isVisible
@@ -980,6 +982,8 @@ class WebFragment : BaseFragment() {
                 }
             }
         }
+        progressDialog?.dismiss()
+        permissionAlert?.dismiss()
         unregisterForContextMenu(webView)
         binding.webLl.removeView(webView)
         processor.close()
@@ -1101,6 +1105,14 @@ class WebFragment : BaseFragment() {
                 bottomSheet.dismiss()
             }
         }
+        val scanMenu = menu {
+            title = getString(R.string.Scan_QR_Code)
+            icon = R.drawable.ic_bot_category_scan
+            action = {
+                tryScanQRCode()
+                bottomSheet.dismiss()
+            }
+        }
         val copyMenu = menu {
             title = getString(R.string.Copy_link)
             icon = R.drawable.ic_content_copy
@@ -1183,6 +1195,7 @@ class WebFragment : BaseFragment() {
                     menu(refreshMenu)
                 }
                 menuGroup {
+                    menu(scanMenu)
                     menu(copyMenu)
                     menu(openMenu)
                 }
@@ -1256,6 +1269,31 @@ class WebFragment : BaseFragment() {
                 showUserBottom(parentFragmentManager, u, conversationId)
             }
         }
+    }
+
+    private var progressDialog: Dialog? = null
+
+    private fun tryScanQRCode() {
+        progressDialog = indeterminateProgressDialog(message = R.string.Please_wait_a_bit).apply {
+            show()
+        }
+        val bitmap = webView.drawToBitmap()
+        processor.detect(
+            lifecycleScope,
+            bitmap,
+            onSuccess = { result ->
+                result.openAsUrlOrQrScan(
+                    requireActivity(),
+                    parentFragmentManager,
+                    lifecycleScope,
+                )
+                progressDialog?.dismiss()
+            },
+            onFailure = {
+                toast(R.string.can_not_recognize_qr_code)
+                progressDialog?.dismiss()
+            },
+        )
     }
 
     override fun onPause() {
