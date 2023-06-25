@@ -5,7 +5,7 @@ import (
 	"crypto/cipher"
 	"crypto/rand"
 	"io"
-
+    "bytes"
 	"github.com/drand/kyber/pairing/bn256"
 	"github.com/drand/kyber/util/random"
 	"golang.org/x/crypto/sha3"
@@ -53,40 +53,42 @@ func Encrypt(pub *Point, priv *Scalar, b []byte) []byte {
 	return append(nonce, cipher...)
 }
 
-func EncryptCBC(plaintext []byte, key []byte) []byte {
-	block, err := aes.NewCipher(key)
-	if err != nil {
-		return nil
-	}
-
-	iv := make([]byte, aes.BlockSize)
-	if _, err := io.ReadFull(rand.Reader, iv); err != nil {
-		return nil
-	}
-
-	ciphertext := make([]byte, len(plaintext))
-	mode := cipher.NewCBCEncrypter(block, iv)
-	mode.CryptBlocks(ciphertext, plaintext)
-
-	return append(iv, ciphertext...)
+func pkcs7Padding(src []byte, blockSize int) []byte {
+	padding := blockSize - len(src)%blockSize
+	padtext := bytes.Repeat([]byte{byte(padding)}, padding)
+	return append(src, padtext...)
 }
 
-func DecryptCBC(ciphertext []byte, key []byte) []byte {
-	if len(ciphertext) < aes.BlockSize {
-		return nil
-	}
+func pkcs7Unpadding(src []byte) []byte {
+	length := len(src)
+	unpadding := int(src[length-1])
+	return src[:(length - unpadding)]
+}
 
-	block, err := aes.NewCipher(key)
-	if err != nil {
-		return nil
-	}
+func EncryptCBC(plaintext, key []byte) []byte {
+	block, _ := aes.NewCipher(key)
+	blockSize := block.BlockSize()
 
-	iv := ciphertext[:aes.BlockSize]
-	ciphertext = ciphertext[aes.BlockSize:]
+	paddingText := pkcs7Padding(plaintext, blockSize)
+	ciphertext := make([]byte, blockSize+len(paddingText))
+	iv := ciphertext[:blockSize]
 
-	plaintext := make([]byte, len(ciphertext))
+	mode := cipher.NewCBCEncrypter(block, iv)
+	mode.CryptBlocks(ciphertext[blockSize:], paddingText)
+
+	return ciphertext
+}
+
+func DecryptCBC(ciphertext, key []byte) []byte {
+	block, _ := aes.NewCipher(key)
+	blockSize := block.BlockSize()
+
+	iv := ciphertext[:blockSize]
+	decrypted := make([]byte, len(ciphertext)-blockSize)
+
 	mode := cipher.NewCBCDecrypter(block, iv)
-	mode.CryptBlocks(plaintext, ciphertext)
+	mode.CryptBlocks(decrypted, ciphertext[blockSize:])
 
-	return plaintext
+	unpaddingText := pkcs7Unpadding(decrypted) 
+	return unpaddingText
 }
