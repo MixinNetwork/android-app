@@ -29,6 +29,7 @@ import org.web3j.utils.Convert
 import org.web3j.utils.Numeric
 import timber.log.Timber
 import java.math.BigInteger
+import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 
 object WalletConnectV2 : WalletConnect() {
@@ -222,9 +223,19 @@ object WalletConnectV2 : WalletConnect() {
             sessionProposal.proposerPublicKey,
             sessionNamespaces,
         )
-        Web3Wallet.approveSession(approveParams) { error ->
+
+        val latch = CountDownLatch(1)
+        Web3Wallet.approveSession(approveParams, onSuccess = {
+            latch.countDown()
+        }, onError = { error ->
             Timber.d("$TAG approveSession error: $error")
             RxBus.publish(WCErrorEvent(WCError(error.throwable)))
+            latch.countDown()
+        })
+        try {
+            latch.await(5, TimeUnit.SECONDS)
+        } catch (e: Exception) {
+            RxBus.publish(WCErrorEvent(WCError(e)))
         }
     }
 
