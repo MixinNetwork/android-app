@@ -82,7 +82,7 @@ object WalletConnectV1 : WalletConnect() {
                     wcc.connect(s, peerMeta)
                 }
             } else {
-                RxBus.publish(WCErrorEvent())
+                RxBus.publish(WCErrorEvent(WCError(it)))
             }
         }
     }

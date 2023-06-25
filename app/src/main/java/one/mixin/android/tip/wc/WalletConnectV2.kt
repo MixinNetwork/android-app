@@ -29,6 +29,7 @@ import org.web3j.utils.Convert
 import org.web3j.utils.Numeric
 import timber.log.Timber
 import java.math.BigInteger
+import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 
 object WalletConnectV2 : WalletConnect() {
@@ -36,6 +37,7 @@ object WalletConnectV2 : WalletConnect() {
 
     var authRequest: Wallet.Model.AuthRequest? = null
     var signedTransactionData: String? = null
+    private var sessionProposal: Wallet.Model.SessionProposal? = null
 
     private val gson = GsonBuilder()
         .serializeNulls()
@@ -60,11 +62,13 @@ object WalletConnectV2 : WalletConnect() {
             metaData = appMetaData,
             onError = { error ->
                 Timber.d("$TAG CoreClient init error: $error")
+                RxBus.publish(WCErrorEvent(WCError(error.throwable)))
             },
         )
         val initParams = Wallet.Params.Init(core = CoreClient)
         Web3Wallet.initialize(initParams) { error ->
             Timber.d("$TAG Web3Wallet init error: $error")
+            RxBus.publish(WCErrorEvent(WCError(error.throwable)))
         }
 
         val coreDelegate = object : CoreClient.CoreDelegate {
@@ -88,7 +92,7 @@ object WalletConnectV2 : WalletConnect() {
 
             override fun onError(error: Wallet.Model.Error) {
                 Timber.d("$TAG onError $error")
-                RxBus.publish(WCErrorEvent())
+                RxBus.publish(WCErrorEvent(WCError(error.throwable)))
             }
 
             override fun onSessionDelete(sessionDelete: Wallet.Model.SessionDelete) {
@@ -99,6 +103,7 @@ object WalletConnectV2 : WalletConnect() {
             override fun onSessionProposal(sessionProposal: Wallet.Model.SessionProposal) {
                 Timber.d("$TAG onSessionProposal $sessionProposal")
                 sessionProposal.requiredNamespaces.values.firstOrNull()?.chains?.firstOrNull()?.getChain()?.let { c -> chain = c }
+                this@WalletConnectV2.sessionProposal = sessionProposal
                 RxBus.publish(WCEvent.V2(Version.V2, RequestType.SessionProposal))
             }
 
@@ -129,12 +134,12 @@ object WalletConnectV2 : WalletConnect() {
             Timber.d("$TAG pair success")
         }) { error ->
             Timber.d("$TAG pair $uri, error: $error")
-            RxBus.publish(WCErrorEvent())
+            RxBus.publish(WCErrorEvent(WCError(error.throwable)))
         }
     }
 
     fun approveSession(priv: ByteArray) {
-        val sessionProposal = Web3Wallet.getSessionProposals().lastOrNull() ?: return
+        val sessionProposal = getSessionProposals().lastOrNull() ?: return
 
         val pub = ECKeyPair.create(priv).publicKey
         val address = Keys.toChecksumAddress(Keys.getAddress(pub))
@@ -220,13 +225,24 @@ object WalletConnectV2 : WalletConnect() {
             sessionProposal.proposerPublicKey,
             sessionNamespaces,
         )
-        Web3Wallet.approveSession(approveParams) { error ->
+
+        val latch = CountDownLatch(1)
+        Web3Wallet.approveSession(approveParams, onSuccess = {
+            latch.countDown()
+        }, onError = { error ->
             Timber.d("$TAG approveSession error: $error")
+            RxBus.publish(WCErrorEvent(WCError(error.throwable)))
+            latch.countDown()
+        })
+        try {
+            latch.await(5, TimeUnit.SECONDS)
+        } catch (e: Exception) {
+            RxBus.publish(WCErrorEvent(WCError(e)))
         }
     }
 
     fun rejectSession() {
-        val sessionProposal = Web3Wallet.getSessionProposals().lastOrNull() ?: return
+        val sessionProposal = getSessionProposals().lastOrNull() ?: return
 
         val rejectParams: Wallet.Params.SessionReject = Wallet.Params.SessionReject(
             sessionProposal.proposerPublicKey,
@@ -234,6 +250,7 @@ object WalletConnectV2 : WalletConnect() {
         )
         Web3Wallet.rejectSession(rejectParams) { error ->
             Timber.d("$TAG rejectSession error: $error")
+            RxBus.publish(WCErrorEvent(WCError(error.throwable)))
         }
     }
 
@@ -312,6 +329,7 @@ object WalletConnectV2 : WalletConnect() {
         )
         Web3Wallet.respondSessionRequest(result) { error ->
             Timber.d("$TAG rejectSessionRequest error: $error")
+            RxBus.publish(WCErrorEvent(WCError(error.throwable)))
         }
 
         Web3Wallet.getActiveSessionByTopic(request.topic)?.redirect?.toUri()
@@ -338,7 +356,10 @@ object WalletConnectV2 : WalletConnect() {
 
     fun getSessionProposals(): List<Wallet.Model.SessionProposal> {
         return try {
-            Web3Wallet.getSessionProposals()
+            val sessionProposals = Web3Wallet.getSessionProposals()
+            sessionProposals.ifEmpty {
+                return sessionProposal?.let { listOf(it) } ?: emptyList()
+            }
         } catch (e: IllegalStateException) {
             Timber.d("$TAG getSessionProposals ${e.stackTraceToString()}")
             emptyList()
@@ -353,6 +374,7 @@ object WalletConnectV2 : WalletConnect() {
             },
         ) { error ->
             Timber.d("$TAG disconnect error $error")
+            RxBus.publish(WCErrorEvent(WCError(error.throwable)))
         }
     }
 
@@ -367,6 +389,7 @@ object WalletConnectV2 : WalletConnect() {
         )
         Web3Wallet.respondSessionRequest(response) { error ->
             Timber.d("$TAG approveSessionRequest error: $error")
+            RxBus.publish(WCErrorEvent(WCError(error.throwable)))
         }
 
         // TODO remove?

@@ -306,6 +306,7 @@ class MainActivity : BlazeBaseActivity() {
             .autoDispose(destroyScope)
             .subscribe {
                 dismissDialog()
+                WalletConnectActivity.show(this, it.error)
             }
 
         lifecycleScope.launch(Dispatchers.IO) {
