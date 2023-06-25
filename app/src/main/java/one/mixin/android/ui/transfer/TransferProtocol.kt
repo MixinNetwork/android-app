@@ -10,6 +10,7 @@ import one.mixin.android.event.SpeedEvent
 import one.mixin.android.extension.base64Encode
 import one.mixin.android.ui.transfer.vo.TransferCommand
 import timber.log.Timber
+import tip.Tip
 import java.io.ByteArrayInputStream
 import java.io.EOFException
 import java.io.File
@@ -106,20 +107,15 @@ class TransferProtocol(private val serializationJson: Json, private val secretBy
         if (server) calculateSpeed(writeData.size + EXT_LENGTH)
     }
 
-    private fun encrypt(input: ByteArray): ByteArray {
+    private fun encrypt(plaintext: ByteArray): ByteArray {
         val iv = ByteArray(16)
         secureRandom.nextBytes(iv)
-        val cipher = Cipher.getInstance("AES/CBC/PKCS5Padding")
-        cipher.init(Cipher.ENCRYPT_MODE, aesKey, IvParameterSpec(iv))
-        val result = cipher.doFinal(input)
+        val result = Tip.encryptCBC(plaintext, secretBytes)
         return iv.plus(result)
     }
 
     private fun decrypt(ciphertext: ByteArray): ByteArray {
-        val iv = ciphertext.sliceArray(0..15)
-        val cipher = Cipher.getInstance("AES/CBC/PKCS5Padding")
-        cipher.init(Cipher.DECRYPT_MODE, aesKey, IvParameterSpec(iv))
-        return cipher.doFinal(ciphertext.sliceArray(16 until ciphertext.size))
+        return Tip.decryptCBC(ciphertext, secretBytes)
     }
 
     fun write(outputStream: OutputStream, file: File, messageId: String) {

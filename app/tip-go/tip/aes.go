@@ -52,3 +52,41 @@ func Encrypt(pub *Point, priv *Scalar, b []byte) []byte {
 	cipher := aead.Seal(nil, nonce, b, nil)
 	return append(nonce, cipher...)
 }
+
+func EncryptCBC(plaintext []byte, key []byte) []byte {
+	block, err := aes.NewCipher(key)
+	if err != nil {
+		return nil
+	}
+
+	iv := make([]byte, aes.BlockSize)
+	if _, err := io.ReadFull(rand.Reader, iv); err != nil {
+		return nil
+	}
+
+	ciphertext := make([]byte, len(plaintext))
+	mode := cipher.NewCBCEncrypter(block, iv)
+	mode.CryptBlocks(ciphertext, plaintext)
+
+	return append(iv, ciphertext...)
+}
+
+func DecryptCBC(ciphertext []byte, key []byte) []byte {
+	if len(ciphertext) < aes.BlockSize {
+		return nil
+	}
+
+	block, err := aes.NewCipher(key)
+	if err != nil {
+		return nil
+	}
+
+	iv := ciphertext[:aes.BlockSize]
+	ciphertext = ciphertext[aes.BlockSize:]
+
+	plaintext := make([]byte, len(ciphertext))
+	mode := cipher.NewCBCDecrypter(block, iv)
+	mode.CryptBlocks(plaintext, ciphertext)
+
+	return plaintext
+}
