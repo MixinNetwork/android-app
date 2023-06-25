@@ -37,6 +37,7 @@ object WalletConnectV2 : WalletConnect() {
 
     var authRequest: Wallet.Model.AuthRequest? = null
     var signedTransactionData: String? = null
+    private var sessionProposal: Wallet.Model.SessionProposal? = null
 
     private val gson = GsonBuilder()
         .serializeNulls()
@@ -102,6 +103,7 @@ object WalletConnectV2 : WalletConnect() {
             override fun onSessionProposal(sessionProposal: Wallet.Model.SessionProposal) {
                 Timber.d("$TAG onSessionProposal $sessionProposal")
                 sessionProposal.requiredNamespaces.values.firstOrNull()?.chains?.firstOrNull()?.getChain()?.let { c -> chain = c }
+                this@WalletConnectV2.sessionProposal = sessionProposal
                 RxBus.publish(WCEvent.V2(Version.V2, RequestType.SessionProposal))
             }
 
@@ -137,7 +139,7 @@ object WalletConnectV2 : WalletConnect() {
     }
 
     fun approveSession(priv: ByteArray) {
-        val sessionProposal = Web3Wallet.getSessionProposals().lastOrNull() ?: return
+        val sessionProposal = getSessionProposals().lastOrNull() ?: return
 
         val pub = ECKeyPair.create(priv).publicKey
         val address = Keys.toChecksumAddress(Keys.getAddress(pub))
@@ -240,7 +242,7 @@ object WalletConnectV2 : WalletConnect() {
     }
 
     fun rejectSession() {
-        val sessionProposal = Web3Wallet.getSessionProposals().lastOrNull() ?: return
+        val sessionProposal = getSessionProposals().lastOrNull() ?: return
 
         val rejectParams: Wallet.Params.SessionReject = Wallet.Params.SessionReject(
             sessionProposal.proposerPublicKey,
@@ -354,7 +356,10 @@ object WalletConnectV2 : WalletConnect() {
 
     fun getSessionProposals(): List<Wallet.Model.SessionProposal> {
         return try {
-            Web3Wallet.getSessionProposals()
+            val sessionProposals = Web3Wallet.getSessionProposals()
+            sessionProposals.ifEmpty {
+                return sessionProposal?.let { listOf(it) } ?: emptyList()
+            }
         } catch (e: IllegalStateException) {
             Timber.d("$TAG getSessionProposals ${e.stackTraceToString()}")
             emptyList()
