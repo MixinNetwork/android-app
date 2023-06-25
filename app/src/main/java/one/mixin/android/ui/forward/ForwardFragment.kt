@@ -95,6 +95,7 @@ import one.mixin.android.websocket.DataMessagePayload
 import one.mixin.android.websocket.LiveMessagePayload
 import one.mixin.android.websocket.LocationPayload
 import one.mixin.android.websocket.VideoMessagePayload
+import timber.log.Timber
 import java.io.File
 import java.io.FileInputStream
 import java.util.UUID
@@ -361,7 +362,11 @@ class ForwardFragment : BaseFragment(R.layout.fragment_forward) {
                 } else {
                     transcripts[0].transcriptId
                 }
-                chatViewModel.sendTranscriptMessage(conversationId, messageId, sender, transcripts, encryptCategory)
+                try {
+                    chatViewModel.sendTranscriptMessage(conversationId, messageId, sender, transcripts, encryptCategory)
+                } catch (e: Exception) {
+                    Timber.e(e)
+                }
             }
         }
         val result = Intent().apply {
@@ -529,7 +534,11 @@ class ForwardFragment : BaseFragment(R.layout.fragment_forward) {
                         m.messageId?.let { messageId ->
                             val id = UUID.randomUUID().toString()
                             val list = chatViewModel.getTranscripts(messageId, id)
-                            chatViewModel.sendTranscriptMessage(conversationId, id, sender, list, encryptCategory)
+                            try {
+                                chatViewModel.sendTranscriptMessage(conversationId, id, sender, list, encryptCategory)
+                            } catch (e: Exception) {
+                                Timber.e(e)
+                            }
                         }
                     }
                     else -> {
