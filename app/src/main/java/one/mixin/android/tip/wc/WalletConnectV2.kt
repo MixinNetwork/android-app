@@ -136,44 +136,42 @@ object WalletConnectV2 : WalletConnect() {
 
         val pub = ECKeyPair.create(priv).publicKey
         val address = Keys.toChecksumAddress(Keys.getAddress(pub))
-
-        // hardcode
-        val chains = listOf(Chain.Ethereum.chainId, Chain.Polygon.chainId)
-        val supportAccounts = listOf(
-            Chain.Ethereum to address,
-            Chain.Polygon to address,
-        )
+        val chains = supportChainList.map { c -> c.chainId }
+        val supportAccounts = supportChainList.map { c -> c to address }
 
         val selectedAccounts: Map<Chain, String> = chains.mapNotNull { namespaceChainId ->
             supportAccounts.firstOrNull { (chain, _) -> chain.chainId == namespaceChainId }
         }.toMap()
-
         val sessionNamespacesIndexedByNamespace: Map<String, Wallet.Model.Namespace.Session> =
             selectedAccounts.filter { (chain: Chain, _) ->
                 sessionProposal.requiredNamespaces
                     .filter { (_, namespace) -> namespace.chains != null }
                     .flatMap { (_, namespace) -> namespace.chains!! }
                     .contains(chain.chainId)
-            }.toList()
+            }.toList().plus(
+                selectedAccounts.filter { (chain: Chain, _) ->
+                    sessionProposal.optionalNamespaces
+                        .filter { (_, namespace) -> namespace.chains != null }
+                        .flatMap { (_, namespace) -> namespace.chains!! }
+                        .contains(chain.chainId)
+                }.toList(),
+            )
                 .groupBy { (chain: Chain, _: String) -> chain.chainNamespace }
                 .asIterable()
                 .associate { (key: String, chainData: List<Pair<Chain, String>>) ->
                     val accounts = chainData.map { (chain: Chain, accountAddress: String) ->
                         "${chain.chainNamespace}:${chain.chainReference}:$accountAddress"
                     }
-
-                    val methods = sessionProposal.requiredNamespaces.values
+                    val values = sessionProposal.requiredNamespaces.values + sessionProposal.optionalNamespaces.values
+                    val methods = values
                         .filter { namespace -> namespace.chains != null }
                         .flatMap { it.methods }
-
-                    val events = sessionProposal.requiredNamespaces.values
+                    val events = values
                         .filter { namespace -> namespace.chains != null }
                         .flatMap { it.events }
-
-                    val chainList: List<String> =
-                        sessionProposal.requiredNamespaces.values
-                            .filter { namespace -> namespace.chains != null }
-                            .flatMap { namespace -> namespace.chains!! }
+                    val chainList: List<String> = values
+                        .filter { namespace -> namespace.chains != null }
+                        .flatMap { namespace -> namespace.chains!! }
 
                     key to Wallet.Model.Namespace.Session(
                         accounts = accounts,
@@ -182,25 +180,30 @@ object WalletConnectV2 : WalletConnect() {
                         chains = chainList.ifEmpty { null },
                     )
                 }
+        Timber.d("$TAG $sessionNamespacesIndexedByNamespace")
 
         val sessionNamespacesIndexedByChain: Map<String, Wallet.Model.Namespace.Session> =
             selectedAccounts.filter { (chain: Chain, _) ->
                 sessionProposal.requiredNamespaces
                     .filter { (namespaceKey, namespace) -> namespace.chains == null && namespaceKey == chain.chainId }
                     .isNotEmpty()
-            }.toList()
-                .groupBy { (chain: Chain, _: String) -> chain.chainId }
+            }.toList().plus(
+                selectedAccounts.filter { (chain: Chain, _) ->
+                    sessionProposal.optionalNamespaces
+                        .filter { (namespaceKey, namespace) -> namespace.chains == null && namespaceKey == chain.chainId }
+                        .isNotEmpty()
+                }.toList(),
+            ).groupBy { (chain: Chain, _: String) -> chain.chainId }
                 .asIterable()
                 .associate { (key: String, chainData: List<Pair<Chain, String>>) ->
                     val accounts = chainData.map { (chain: Chain, accountAddress: String) ->
                         "${chain.chainNamespace}:${chain.chainReference}:$accountAddress"
                     }
-
-                    val methods = sessionProposal.requiredNamespaces.values
+                    val values = sessionProposal.requiredNamespaces.values + sessionProposal.optionalNamespaces.values
+                    val methods = values
                         .filter { namespace -> namespace.chains == null }
                         .flatMap { it.methods }
-
-                    val events = sessionProposal.requiredNamespaces.values
+                    val events = values
                         .filter { namespace -> namespace.chains == null }
                         .flatMap { it.events }
 
@@ -210,9 +213,7 @@ object WalletConnectV2 : WalletConnect() {
                         events = events,
                     )
                 }
-
         val sessionNamespaces = sessionNamespacesIndexedByNamespace.plus(sessionNamespacesIndexedByChain)
-
         val approveParams: Wallet.Params.SessionApprove = Wallet.Params.SessionApprove(
             sessionProposal.proposerPublicKey,
             sessionNamespaces,
