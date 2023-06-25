@@ -30,4 +30,7 @@ sealed class WCEvent(
     ) : WCEvent(version, requestType)
 }
 
-class WCErrorEvent
+class WCErrorEvent(val error: WCError)
+
+@Parcelize
+data class WCError(val throwable: Throwable) : Parcelable
