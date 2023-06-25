@@ -25,8 +25,10 @@ import org.web3j.crypto.Keys
 import org.web3j.crypto.RawTransaction
 import org.web3j.crypto.TransactionEncoder
 import org.web3j.protocol.core.DefaultBlockParameterName
+import org.web3j.utils.Convert
 import org.web3j.utils.Numeric
 import timber.log.Timber
+import java.math.BigInteger
 import java.util.concurrent.TimeUnit
 
 object WalletConnectV2 : WalletConnect() {
@@ -236,6 +238,7 @@ object WalletConnectV2 : WalletConnect() {
     }
 
     private fun parseSessionRequest(request: Wallet.Model.SessionRequest) {
+        request.chainId?.getChain()?.let { chain = it }
         when (request.request.method) {
             Method.ETHSign.name -> {
                 val array = JsonParser.parseString(request.request.params).asJsonArray
@@ -285,7 +288,6 @@ object WalletConnectV2 : WalletConnect() {
                     ethSignTransaction(priv, signData.requestId, signData.sessionRequest.topic, signMessage, true)
                 }
                 Method.ETHSendTransaction.name -> {
-//                    ethSendTransaction(priv, signData.requestId, signData.sessionRequest.topic, signMessage)
                     signedTransactionData = ethSignTransaction(priv, signData.requestId, signData.sessionRequest.topic, signMessage, false)
                 }
             }
@@ -367,6 +369,7 @@ object WalletConnectV2 : WalletConnect() {
             Timber.d("$TAG approveSessionRequest error: $error")
         }
 
+        // TODO remove?
         Web3Wallet.getActiveSessionByTopic(topic)?.redirect?.toUri()
             ?.let { deepLinkUri -> sendResponseDeepLink(deepLinkUri) }
     }
@@ -393,35 +396,47 @@ object WalletConnectV2 : WalletConnect() {
     }
 
     private fun ethSignTransaction(priv: ByteArray, id: Long, topic: String, transaction: WCEthereumTransaction, approve: Boolean): String {
-        val value = transaction.value
-        val maxFeePerGas = transaction.maxFeePerGas
-        val maxPriorityFeePerGas = transaction.maxPriorityFeePerGas
-        if (value == null || maxFeePerGas == null || maxPriorityFeePerGas == null) {
-            val msg = "value: $value maxFeePerGas: $maxFeePerGas, maxPriorityFeePerGas: $maxPriorityFeePerGas"
-            Timber.d("$TAG $msg")
-            rejectRequest(msg)
-            throw WalletConnectException(-1, msg)
-        }
-        val gasLimit = transaction.gasLimit ?: defaultGasLimit
-
+        val value = transaction.value ?: "0x0"
+        val maxFeePerGas = transaction.maxFeePerGas?.let { Numeric.toBigInt(it) }
+        val maxPriorityFeePerGas = transaction.maxPriorityFeePerGas?.let { Numeric.toBigInt(it) }
         val keyPair = ECKeyPair.create(priv)
         val credential = Credentials.create(keyPair)
         val transactionCount = web3j.ethGetTransactionCount(credential.address, DefaultBlockParameterName.LATEST)
             .sendAsync()
             .get(web3jTimeout, TimeUnit.SECONDS)
+        if (transactionCount.hasError()) {
+            throwError(transactionCount.error)
+        }
         val nonce = transactionCount.transactionCount
         val v = Numeric.toBigInt(value)
-        Timber.d("$TAG nonce: $nonce, value $v wei")
-        val rawTransaction = RawTransaction.createTransaction(
-            chain.chainReference.toLong(),
-            nonce,
-            Numeric.toBigInt(gasLimit),
-            transaction.to,
-            v,
-            transaction.data,
-            Numeric.toBigInt(maxPriorityFeePerGas),
-            Numeric.toBigInt(maxFeePerGas),
-        )
+        val signData = currentSignData as? WCSignData.V2SignData ?: return ""
+        val tipGas = signData.tipGas ?: return ""
+        val gasLimit = BigInteger(tipGas.gasLimit)
+        Timber.d("$TAG nonce: $nonce, value $v wei, gasLimit: $gasLimit")
+        val rawTransaction = if (maxFeePerGas == null && maxPriorityFeePerGas == null) {
+            val gasPrice = Convert.toWei(signData.gasPriceType.getGasPrice(tipGas), Convert.Unit.ETHER).toBigInteger()
+            Timber.d("$TAG gasPrice $gasPrice")
+            RawTransaction.createTransaction(
+                nonce,
+                gasPrice,
+                gasLimit,
+                transaction.to,
+                v,
+                transaction.data,
+            )
+        } else {
+            RawTransaction.createTransaction(
+                chain.chainReference.toLong(),
+                nonce,
+                gasLimit,
+                transaction.to,
+                v,
+                transaction.data,
+                maxPriorityFeePerGas,
+                maxFeePerGas,
+            )
+        }
+
         val signedMessage = TransactionEncoder.signMessage(rawTransaction, chain.chainReference.toLong(), credential)
         val hexMessage = Numeric.toHexString(signedMessage)
         Timber.d("$TAG signTransaction $hexMessage")
@@ -448,7 +463,11 @@ object WalletConnectV2 : WalletConnect() {
 
     private fun sendResponseDeepLink(sessionRequestDeeplinkUri: Uri) {
         try {
-            MixinApplication.appContext.startActivity(Intent(Intent.ACTION_VIEW, sessionRequestDeeplinkUri))
+            MixinApplication.appContext.startActivity(
+                Intent(Intent.ACTION_VIEW, sessionRequestDeeplinkUri).apply {
+                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                },
+            )
         } catch (exception: ActivityNotFoundException) {
             // There is no app to handle deep link
             Timber.d("$TAG sendResponseDeepLink meet ActivityNotFoundException")
