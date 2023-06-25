@@ -365,6 +365,7 @@ class ForwardFragment : BaseFragment(R.layout.fragment_forward) {
                 try {
                     chatViewModel.sendTranscriptMessage(conversationId, messageId, sender, transcripts, encryptCategory)
                 } catch (e: Exception) {
+                    toast(R.string.Data_error)
                     Timber.e(e)
                 }
             }
@@ -537,6 +538,7 @@ class ForwardFragment : BaseFragment(R.layout.fragment_forward) {
                             try {
                                 chatViewModel.sendTranscriptMessage(conversationId, id, sender, list, encryptCategory)
                             } catch (e: Exception) {
+                                toast(R.string.Data_error)
                                 Timber.e(e)
                             }
                         }
