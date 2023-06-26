@@ -67,7 +67,13 @@ abstract class WalletConnect {
     }
 
     var chain: Chain = Chain.Polygon
-        protected set
+        protected set(value) {
+            if (value == field) return
+
+            field = value
+            // TODO consider a web3j pool here?
+            web3j = Web3j.build(HttpService(value.rpcServers[0]))
+        }
     protected var web3j: Web3j = Web3j.build(HttpService(chain.rpcServers[0]))
 
     open var currentSignData: WCSignData<*>? = null
