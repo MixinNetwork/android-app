@@ -104,13 +104,13 @@ object WalletConnectV2 : WalletConnect() {
                 Timber.d("$TAG onSessionProposal $sessionProposal")
                 sessionProposal.requiredNamespaces.values.firstOrNull()?.chains?.firstOrNull()?.getChain()?.let { c -> chain = c }
                 this@WalletConnectV2.sessionProposal = sessionProposal
-                RxBus.publish(WCEvent.V2(Version.V2, RequestType.SessionProposal))
+                RxBus.publish(WCEvent.V2(Version.V2, RequestType.SessionProposal, sessionProposal.pairingTopic))
             }
 
             override fun onSessionRequest(sessionRequest: Wallet.Model.SessionRequest) {
                 Timber.d("$TAG onSessionRequest $sessionRequest")
                 parseSessionRequest(sessionRequest)
-                RxBus.publish(WCEvent.V2(Version.V2, RequestType.SessionRequest))
+                RxBus.publish(WCEvent.V2(Version.V2, RequestType.SessionRequest, sessionRequest.topic))
             }
 
             override fun onSessionSettleResponse(settleSessionResponse: Wallet.Model.SettledSessionResponse) {

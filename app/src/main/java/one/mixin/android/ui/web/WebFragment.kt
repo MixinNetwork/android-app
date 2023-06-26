@@ -853,6 +853,7 @@ class WebFragment : BaseFragment() {
                 requireActivity(),
                 WalletConnect.RequestType.SessionProposal,
                 WalletConnect.Version.TIP,
+                null,
                 onReject = {
                     lifecycleScope.launch {
                         webView.evaluateJavascript("$callbackFunction('')") {}
@@ -885,6 +886,7 @@ class WebFragment : BaseFragment() {
                 requireActivity(),
                 WalletConnect.RequestType.SessionRequest,
                 WalletConnect.Version.TIP,
+                null,
                 onReject = {
                     lifecycleScope.launch {
                         webView.evaluateJavascript("$callbackFunction('')") {}

@@ -21,6 +21,7 @@ sealed class WCEvent(
     data class V2(
         override val version: WalletConnect.Version,
         override val requestType: RequestType,
+        val topic: String,
     ) : WCEvent(version, requestType)
 
     @Parcelize
