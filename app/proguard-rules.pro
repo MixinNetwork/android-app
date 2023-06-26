@@ -85,3 +85,5 @@
 -keep interface com.fasterxml.jackson.annotation.** { *; }
 #-dontwarn java.lang.SafeVarargs
 -dontwarn org.slf4j.**
+
+-keep class com.trustwallet.walletconnect.** { *; }
