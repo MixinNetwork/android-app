@@ -13,6 +13,7 @@ import com.trustwallet.walletconnect.models.ethereum.WCEthereumTransaction
 import com.trustwallet.walletconnect.models.ethereum.ethTransactionSerializer
 import com.walletconnect.android.Core
 import com.walletconnect.android.CoreClient
+import com.walletconnect.android.internal.common.exception.GenericException
 import com.walletconnect.android.relay.ConnectionType
 import com.walletconnect.web3.wallet.client.Wallet
 import com.walletconnect.web3.wallet.client.Web3Wallet
@@ -62,6 +63,11 @@ object WalletConnectV2 : WalletConnect() {
             metaData = appMetaData,
             onError = { error ->
                 Timber.d("$TAG CoreClient init error: $error")
+                val err = error.throwable
+
+                // ignore publish timeout | Connection reset
+                if (err is GenericException && (err.message == "timeout" || err.message == "Connection reset")) return@initialize
+
                 RxBus.publish(WCErrorEvent(WCError(error.throwable)))
             },
         )
