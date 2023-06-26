@@ -19,12 +19,15 @@ class WalletConnectBottomSheetViewModel @Inject internal constructor(
 
     suspend fun refreshAsset(assetId: String) = assetRepo.refreshAsset(assetId)
 
-    fun isTransaction(version: WalletConnect.Version): Boolean {
+    fun isTransaction(version: WalletConnect.Version, topic: String?): Boolean {
         return when (version) {
-            WalletConnect.Version.V1 -> WalletConnectV1.currentSignData
-            WalletConnect.Version.V2 -> WalletConnectV2.currentSignData
-            WalletConnect.Version.TIP -> WalletConnectTIP.currentSignData
-        }?.signMessage is WCEthereumTransaction
+            WalletConnect.Version.V1 -> WalletConnectV1.currentSignData?.signMessage is WCEthereumTransaction
+            WalletConnect.Version.V2 -> {
+                val signData = WalletConnectV2.currentSignData as? WalletConnect.WCSignData.V2SignData<*> ?: return false
+                return signData.sessionRequest.topic == topic
+            }
+            WalletConnect.Version.TIP -> WalletConnectTIP.currentSignData?.signMessage is WCEthereumTransaction
+        }
     }
 
     fun sendTransaction(version: WalletConnect.Version, id: Long) {

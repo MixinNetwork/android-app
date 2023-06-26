@@ -74,10 +74,16 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
 
         const val ARGS_REQUEST_TYPE = "args_request_type"
         const val ARGS_VERSION = "args_version"
+        const val ARGS_TOPIC = "args_topic"
 
-        fun newInstance(requestType: RequestType, version: WalletConnect.Version) = WalletConnectBottomSheetDialogFragment().withArgs {
+        fun newInstance(
+            requestType: RequestType,
+            version: WalletConnect.Version,
+            topic: String? = null,
+        ) = WalletConnectBottomSheetDialogFragment().withArgs {
             putInt(ARGS_REQUEST_TYPE, requestType.ordinal)
             putInt(ARGS_VERSION, version.ordinal)
+            topic?.let { putString(ARGS_TOPIC, it) }
         }
     }
 
@@ -94,6 +100,7 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
 
     private val requestType by lazy { RequestType.values()[requireArguments().getInt(ARGS_REQUEST_TYPE)] }
     private val version by lazy { WalletConnect.Version.values()[requireArguments().getInt(ARGS_VERSION)] }
+    private val topic by lazy { requireArguments().getString(ARGS_TOPIC) }
     private val wc by lazy {
         when (version) {
             WalletConnect.Version.V1 -> WalletConnectV1
@@ -293,7 +300,7 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
             }
             if (error == null) {
                 pinCompleted = true
-                step = if (viewModel.isTransaction(version)) {
+                step = if (viewModel.isTransaction(version, topic)) {
                     Step.Send
                 } else {
                     Step.Done
@@ -401,10 +408,11 @@ fun showWalletConnectBottomSheetDialogFragment(
     fragmentActivity: FragmentActivity,
     requestType: RequestType,
     version: WalletConnect.Version,
+    topic: String?,
     onReject: () -> Unit,
     callback: suspend (ByteArray) -> Unit,
 ) {
-    val wcBottomSheet = WalletConnectBottomSheetDialogFragment.newInstance(requestType, version)
+    val wcBottomSheet = WalletConnectBottomSheetDialogFragment.newInstance(requestType, version, topic)
     wcBottomSheet.setOnPinComplete { pin ->
         val result = tip.getOrRecoverTipPriv(fragmentActivity, pin)
         if (result.isSuccess) {

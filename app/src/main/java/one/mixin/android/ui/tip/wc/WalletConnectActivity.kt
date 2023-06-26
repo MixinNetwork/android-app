@@ -81,6 +81,7 @@ class WalletConnectActivity : BaseActivity() {
                         showWalletConnectBottomSheet(
                             RequestType.SessionProposal,
                             WalletConnect.Version.V1,
+                            null,
                             { wc.rejectSession() },
                         ) { priv ->
                             wc.approveSession(priv)
@@ -90,6 +91,7 @@ class WalletConnectActivity : BaseActivity() {
                         showWalletConnectBottomSheet(
                             RequestType.SwitchNetwork,
                             WalletConnect.Version.V1,
+                            null,
                             { wc.rejectRequest(event.id) },
                         ) { priv ->
                             wc.walletChangeNetwork(priv, event.id)
@@ -99,6 +101,7 @@ class WalletConnectActivity : BaseActivity() {
                         showWalletConnectBottomSheet(
                             RequestType.SessionRequest,
                             WalletConnect.Version.V1,
+                            null,
                             { wc.rejectRequest(event.id) },
                         ) { priv ->
                             wc.approveRequest(priv, event.id)
@@ -107,11 +110,13 @@ class WalletConnectActivity : BaseActivity() {
                 }
             }
             WalletConnect.Version.V2 -> {
+                event as WCEvent.V2
                 when (event.requestType) {
                     RequestType.SessionProposal -> {
                         showWalletConnectBottomSheet(
                             RequestType.SessionProposal,
                             WalletConnect.Version.V2,
+                            event.topic,
                             { WalletConnectV2.rejectSession() },
                         ) { priv ->
                             WalletConnectV2.approveSession(priv)
@@ -123,6 +128,7 @@ class WalletConnectActivity : BaseActivity() {
                         showWalletConnectBottomSheet(
                             RequestType.SessionRequest,
                             WalletConnect.Version.V2,
+                            event.topic,
                             { WalletConnectV2.rejectRequest() },
                             { priv ->
                                 WalletConnectV2.approveRequest(priv)
@@ -138,6 +144,7 @@ class WalletConnectActivity : BaseActivity() {
     private fun showWalletConnectBottomSheet(
         requestType: RequestType,
         version: WalletConnect.Version,
+        topic: String?,
         onReject: () -> Unit,
         callback: suspend (ByteArray) -> Unit,
     ) {
@@ -146,6 +153,7 @@ class WalletConnectActivity : BaseActivity() {
             this,
             requestType,
             version,
+            topic,
             onReject,
             callback = {
                 callback(tipPrivToPrivateKey(it))
