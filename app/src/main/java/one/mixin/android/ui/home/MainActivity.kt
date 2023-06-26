@@ -15,8 +15,10 @@ import android.view.KeyEvent
 import androidx.core.content.getSystemService
 import androidx.core.view.isVisible
 import androidx.fragment.app.DialogFragment
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.Observer
+import androidx.lifecycle.ProcessLifecycleOwner
 import androidx.lifecycle.lifecycleScope
 import androidx.room.util.readVersion
 import com.google.android.gms.common.ConnectionResult
@@ -306,7 +308,10 @@ class MainActivity : BlazeBaseActivity() {
             .autoDispose(destroyScope)
             .subscribe {
                 dismissDialog()
-                WalletConnectActivity.show(this, it.error)
+
+                if (ProcessLifecycleOwner.get().lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED)) {
+                    WalletConnectActivity.show(this, it.error)
+                }
             }
 
         lifecycleScope.launch(Dispatchers.IO) {

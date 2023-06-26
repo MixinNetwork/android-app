@@ -65,8 +65,8 @@ object WalletConnectV2 : WalletConnect() {
                 Timber.d("$TAG CoreClient init error: $error")
                 val err = error.throwable
 
-                // ignore publish timeout | Connection reset
-                if (err is GenericException && (err.message == "timeout" || err.message == "Connection reset")) return@initialize
+                // ignore network exceptions
+                if (err is GenericException) return@initialize
 
                 RxBus.publish(WCErrorEvent(WCError(error.throwable)))
             },
