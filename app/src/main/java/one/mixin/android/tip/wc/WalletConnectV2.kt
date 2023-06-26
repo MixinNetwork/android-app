@@ -226,18 +226,16 @@ object WalletConnectV2 : WalletConnect() {
             sessionNamespaces,
         )
 
-        val latch = CountDownLatch(1)
-        Web3Wallet.approveSession(approveParams, onSuccess = {
-            latch.countDown()
-        }, onError = { error ->
-            Timber.d("$TAG approveSession error: $error")
-            RxBus.publish(WCErrorEvent(WCError(error.throwable)))
-            latch.countDown()
-        })
-        try {
-            latch.await(5, TimeUnit.SECONDS)
-        } catch (e: Exception) {
-            RxBus.publish(WCErrorEvent(WCError(e)))
+        waitActionCheckError { latch ->
+            var errMsg: String? = null
+            Web3Wallet.approveSession(approveParams, onSuccess = {
+                latch.countDown()
+            }, onError = { error ->
+                errMsg = "$TAG approveSession error: $error"
+                Timber.d(errMsg)
+                latch.countDown()
+            })
+            errMsg
         }
     }
 
@@ -387,9 +385,17 @@ object WalletConnectV2 : WalletConnect() {
                 result,
             ),
         )
-        Web3Wallet.respondSessionRequest(response) { error ->
-            Timber.d("$TAG approveSessionRequest error: $error")
-            RxBus.publish(WCErrorEvent(WCError(error.throwable)))
+
+        waitActionCheckError { latch ->
+            var errMsg: String? = null
+            Web3Wallet.respondSessionRequest(response, {
+                latch.countDown()
+            }) { error ->
+                errMsg = "$TAG approveSessionRequest error: $error"
+                Timber.d(errMsg)
+                latch.countDown()
+            }
+            errMsg
         }
 
         // TODO remove?
@@ -495,6 +501,17 @@ object WalletConnectV2 : WalletConnect() {
             // There is no app to handle deep link
             Timber.d("$TAG sendResponseDeepLink meet ActivityNotFoundException")
         }
+    }
+
+    private fun waitActionCheckError(action: (CountDownLatch) -> String?) {
+        val latch = CountDownLatch(1)
+        val errMsg = action.invoke(latch)
+        try {
+            latch.await(5, TimeUnit.SECONDS)
+        } catch (e: Exception) {
+            throw WalletConnectException(0, e.toString())
+        }
+        errMsg?.let { throw WalletConnectException(0, it) }
     }
 
     var onAuthRequest: (authRequest: Wallet.Model.AuthRequest) -> Unit = { _ -> }
