@@ -410,8 +410,16 @@ object WalletConnectV2 : WalletConnect() {
     }
 
     fun sendTransaction(id: Long) {
-        val signedTransactionData = this.signedTransactionData ?: return
-        val topic = (this.currentSignData as? WCSignData.V2SignData<*>)?.sessionRequest?.topic ?: return
+        val signedTransactionData = this.signedTransactionData
+        if (signedTransactionData == null) {
+            Timber.e("$TAG sendTransaction signedTransactionData is null")
+            return
+        }
+        val topic = (this.currentSignData as? WCSignData.V2SignData<*>)?.sessionRequest?.topic
+        if (topic == null) {
+            Timber.e("$TAG sendTransaction topic is null")
+            return
+        }
 
         val raw = web3j.ethSendRawTransaction(signedTransactionData).sendAsync().get(web3jTimeout, TimeUnit.SECONDS)
         val transactionHash = raw.transactionHash
@@ -444,8 +452,16 @@ object WalletConnectV2 : WalletConnect() {
         }
         val nonce = transactionCount.transactionCount
         val v = Numeric.toBigInt(value)
-        val signData = currentSignData as? WCSignData.V2SignData ?: return ""
-        val tipGas = signData.tipGas ?: return ""
+        val signData = currentSignData as? WCSignData.V2SignData
+        if (signData == null) {
+            Timber.e("$TAG ethSignTransaction signData is null")
+            return ""
+        }
+        val tipGas = signData.tipGas
+        if (tipGas == null) {
+            Timber.e("$TAG ethSignTransaction tipGas is null")
+            return ""
+        }
         val gasLimit = BigInteger(tipGas.gasLimit)
         Timber.d("$TAG nonce: $nonce, value $v wei, gasLimit: $gasLimit")
         val rawTransaction = if (maxFeePerGas == null && maxPriorityFeePerGas == null) {

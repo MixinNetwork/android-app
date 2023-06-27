@@ -154,13 +154,17 @@ object WalletConnectV1 : WalletConnect() {
         try {
             wcClient.rejectSession()
         } catch (e: IllegalStateException) {
-            Timber.d("$TAG rejectSession ${e.stackTraceToString()}")
+            Timber.e("$TAG rejectSession ${e.stackTraceToString()}")
         }
         wcClient.disconnect()
     }
 
     fun rejectRequest(id: Long, message: String = "Reject by the user") {
-        wcClient.rejectRequest(id, message)
+        try {
+            wcClient.rejectRequest(id, message)
+        } catch (e: IllegalStateException) {
+            Timber.e("$TAG rejectRequest ${e.stackTraceToString()}")
+        }
         currentSignData = null
         signedTransactionData = null
     }
@@ -183,7 +187,11 @@ object WalletConnectV1 : WalletConnect() {
             return
         }
         this.chain = chain
-        wcClient.approveSession(listOf(address), chain.chainReference)
+        try {
+            wcClient.approveSession(listOf(address), chain.chainReference)
+        } catch (e: IllegalStateException) {
+            Timber.e("$TAG approveSession ${e.stackTraceToString()}")
+        }
     }
 
     fun getStoredSessions() = sessionStore.load()
@@ -206,7 +214,6 @@ object WalletConnectV1 : WalletConnect() {
                 ethSignMessage(priv, id, data)
             }
             is WCEthereumTransaction -> {
-//                ethSendTransaction(priv, id, data)
                 signedTransactionData = ethSignTransaction(priv, id, data, false)
             }
         }
@@ -219,16 +226,24 @@ object WalletConnectV1 : WalletConnect() {
         val transactionHash = raw.transactionHash
         if (raw.hasError()) {
             throwError(raw.error) {
-                wcClient.rejectRequest(id, it)
+                rejectRequest(id, it)
             }
         } else {
             Timber.d("$TAG sendTransaction $transactionHash")
-            wcClient.approveRequest(id, transactionHash)
+            safeApproveRequest(id, transactionHash)
         }
     }
 
     fun ethSignMessage(priv: ByteArray, id: Long, message: WCEthereumSignMessage) {
-        wcClient.approveRequest(id, signMessage(priv, message))
+        safeApproveRequest(id, signMessage(priv, message))
+    }
+
+    private fun safeApproveRequest(id: Long, result: String) {
+        try {
+            wcClient.approveRequest(id, result)
+        } catch (e: IllegalStateException) {
+            Timber.e("$TAG approveRequest ${e.stackTraceToString()}")
+        }
     }
 
     fun ethSignTransaction(priv: ByteArray, id: Long, transaction: WCEthereumTransaction, approve: Boolean): String {
@@ -300,7 +315,7 @@ object WalletConnectV1 : WalletConnect() {
         val hexMessage = Numeric.toHexString(signedMessage)
         Timber.d("$TAG signTransaction hexMessage: $hexMessage")
         if (approve) {
-            wcClient.approveRequest(id, hexMessage)
+            safeApproveRequest(id, hexMessage)
         }
         return hexMessage
     }
@@ -311,11 +326,11 @@ object WalletConnectV1 : WalletConnect() {
         val transactionHash = raw.transactionHash
         if (raw.hasError()) {
             throwError(raw.error) {
-                wcClient.rejectRequest(id, it)
+                rejectRequest(id, it)
             }
         } else {
             Timber.d("$TAG sendTransaction $transactionHash")
-            wcClient.approveRequest(id, transactionHash)
+            safeApproveRequest(id, transactionHash)
         }
     }
 }
