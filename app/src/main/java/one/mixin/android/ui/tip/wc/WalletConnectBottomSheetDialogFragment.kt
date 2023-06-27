@@ -109,7 +109,8 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
         }
     }
 
-    private var step by mutableStateOf(Step.Input)
+    var step by mutableStateOf(Step.Input)
+        private set
     private var errorInfo: String? by mutableStateOf(null)
     private var tipGas: TipGas? by mutableStateOf(null)
     private var asset: Asset? by mutableStateOf(null)

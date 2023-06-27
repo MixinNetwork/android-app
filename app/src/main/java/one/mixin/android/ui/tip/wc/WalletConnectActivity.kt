@@ -51,7 +51,17 @@ class WalletConnectActivity : BaseActivity() {
     private fun handleIntent(intent: Intent) {
         val event = intent.getParcelableExtraCompat(ARGS_WC_EVENT, WCEvent::class.java)
         if (event != null) {
-            handleWCEvent(event)
+            val wcBottom = supportFragmentManager.findFragmentByTag(WalletConnectBottomSheetDialogFragment.TAG) as? WalletConnectBottomSheetDialogFragment
+            if (wcBottom == null) {
+                handleWCEvent(event)
+            } else {
+                if (wcBottom.step == WalletConnectBottomSheetDialogFragment.Step.Done) {
+                    wcBottom.dismiss()
+                    handleWCEvent(event)
+                } else {
+                    Timber.e("$TAG wcBottom step is ${wcBottom.step}, not done, skip this $event")
+                }
+            }
         } else {
             val wcBottom = supportFragmentManager.findFragmentByTag(WalletConnectBottomSheetDialogFragment.TAG)
             if (wcBottom != null) return
