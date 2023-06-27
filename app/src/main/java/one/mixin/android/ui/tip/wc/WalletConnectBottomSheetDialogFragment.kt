@@ -62,6 +62,7 @@ import one.mixin.android.ui.tip.wc.sessionrequest.SessionRequestPage
 import one.mixin.android.ui.url.UrlInterpreterActivity
 import one.mixin.android.util.BiometricUtil
 import one.mixin.android.util.SystemUIManager
+import one.mixin.android.util.reportException
 import one.mixin.android.vo.Asset
 import timber.log.Timber
 import kotlin.time.Duration
@@ -342,6 +343,7 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
         } else {
             e.stackTraceToString()
         }
+        reportException("$TAG handleException", e)
         step = Step.Error
     }
 
