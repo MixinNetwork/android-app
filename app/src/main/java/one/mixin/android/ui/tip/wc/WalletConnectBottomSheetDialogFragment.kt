@@ -89,7 +89,7 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
     }
 
     enum class Step {
-        Sign, Send, Input, Loading, Done, Error,
+        Sign, Send, Input, Loading, Sending, Done, Error,
     }
 
     private var behavior: BottomSheetBehavior<*>? = null
@@ -322,6 +322,7 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
         } else if (step == Step.Send) {
             if (requestId != null) {
                 lifecycleScope.launch {
+                    step = Step.Sending
                     try {
                         withContext(Dispatchers.IO) {
                             viewModel.sendTransaction(version, requestId)
