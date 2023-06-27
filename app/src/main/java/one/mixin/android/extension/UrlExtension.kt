@@ -8,7 +8,6 @@ import android.os.Build
 import android.provider.Settings
 import android.webkit.WebView
 import androidx.fragment.app.FragmentManager
-import com.trustwallet.walletconnect.models.session.WCSession
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import one.mixin.android.BuildConfig
@@ -21,8 +20,6 @@ import one.mixin.android.job.RefreshExternalSchemeJob.Companion.PREF_EXTERNAL_SC
 import one.mixin.android.pay.externalTransferAssetIdMap
 import one.mixin.android.session.Session
 import one.mixin.android.tip.wc.WalletConnect
-import one.mixin.android.tip.wc.WalletConnectV1
-import one.mixin.android.tip.wc.WalletConnectV2
 import one.mixin.android.ui.common.QrScanBottomSheetDialogFragment
 import one.mixin.android.ui.common.share.ShareMessageBottomSheetDialogFragment
 import one.mixin.android.ui.common.showUserBottom
@@ -151,11 +148,7 @@ User-agent: ${WebView(context).settings.userAgentString}
     } else if (isUserScheme() || isAppScheme()) {
         checkUserOrApp(context, supportFragmentManager, scope)
     } else if (startsWith(Constants.Scheme.WALLET_CONNECT_PREFIX) && WalletConnect.isEnabled(context)) {
-        if (WCSession.from(this) != null) {
-            WalletConnectV1.connect(this)
-        } else {
-            WalletConnectV2.pair(this)
-        }
+        WalletConnect.connect(this)
     } else {
         if (isMixinUrl() || isDonateUrl() || isExternalScheme(context) || isExternalTransferUrl()) {
             LinkBottomSheetDialogFragment.newInstance(this)

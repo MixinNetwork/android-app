@@ -33,7 +33,6 @@ import com.google.android.play.core.install.model.InstallStatus
 import com.google.android.play.core.install.model.UpdateAvailability
 import com.google.firebase.crashlytics.FirebaseCrashlytics
 import com.microsoft.appcenter.AppCenter
-import com.trustwallet.walletconnect.models.session.WCSession
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import io.reactivex.Maybe
@@ -764,14 +763,9 @@ class MainActivity : BlazeBaseActivity() {
                 )
         } else if (intent.hasExtra(WALLET_CONNECT)) {
             val wcUrl = requireNotNull(intent.getStringExtra(WALLET_CONNECT))
-            if (WCSession.from(wcUrl) != null) {
-                WalletConnectV1.connect(wcUrl)
+            WalletConnect.connect(wcUrl) {
                 showDialog()
-                return
             }
-
-            WalletConnectV2.pair(wcUrl)
-            showDialog()
         }
     }
 
