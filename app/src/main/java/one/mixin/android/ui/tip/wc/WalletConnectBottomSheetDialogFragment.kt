@@ -62,6 +62,7 @@ import one.mixin.android.ui.tip.wc.sessionrequest.SessionRequestPage
 import one.mixin.android.ui.url.UrlInterpreterActivity
 import one.mixin.android.util.BiometricUtil
 import one.mixin.android.util.SystemUIManager
+import one.mixin.android.util.reportException
 import one.mixin.android.vo.Asset
 import timber.log.Timber
 import kotlin.time.Duration
@@ -109,7 +110,8 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
         }
     }
 
-    private var step by mutableStateOf(Step.Input)
+    var step by mutableStateOf(Step.Input)
+        private set
     private var errorInfo: String? by mutableStateOf(null)
     private var tipGas: TipGas? by mutableStateOf(null)
     private var asset: Asset? by mutableStateOf(null)
@@ -341,6 +343,7 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
         } else {
             e.stackTraceToString()
         }
+        reportException("$TAG handleException", e)
         step = Step.Error
     }
 
