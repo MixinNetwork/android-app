@@ -523,25 +523,27 @@ private fun GasItem(
 
 @Composable
 fun DataError(errorInfo: String) {
-    Column(
-        modifier = Modifier
-            .height(150.dp)
-            .fillMaxWidth()
-            .padding(32.dp, 32.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-    ) {
-        Text(
-            text = "Data Error",
-            color = MixinAppTheme.colors.red,
-            fontSize = 18.sp,
-        )
-        Text(
-            modifier = Modifier.padding(0.dp, 12.dp),
-            text = errorInfo,
-            textAlign = TextAlign.Center,
-            color = MixinAppTheme.colors.textPrimary,
-            fontSize = 16.sp,
-        )
+    MixinAppTheme {
+        Column(
+            modifier = Modifier
+                .height(150.dp)
+                .fillMaxWidth()
+                .padding(32.dp, 32.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            Text(
+                text = "Data Error",
+                color = MixinAppTheme.colors.red,
+                fontSize = 18.sp,
+            )
+            Text(
+                modifier = Modifier.padding(0.dp, 12.dp),
+                text = errorInfo,
+                textAlign = TextAlign.Center,
+                color = MixinAppTheme.colors.textPrimary,
+                fontSize = 16.sp,
+            )
+        }
     }
 }
 
