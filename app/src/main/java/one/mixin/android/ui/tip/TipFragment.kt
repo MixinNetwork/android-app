@@ -308,7 +308,7 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
             nodeCounter > tipCounter && failedSigners.isNullOrEmpty() ->
                 tip.updateTipPriv(requireContext(), deviceId, pin, null, null)
             else ->
-                tip.updateTipPriv(requireContext(), deviceId, pin, requireNotNull(oldPin), failedSigners)
+                tip.updateTipPriv(requireContext(), deviceId, pin, requireNotNull(oldPin) { "process tip step update oldPin can not be null" }, failedSigners)
         }.onFailure { e ->
             tip.removeObserver(tipObserver)
             onTipProcessFailure(e, pin, tipCounter, nodeCounter)

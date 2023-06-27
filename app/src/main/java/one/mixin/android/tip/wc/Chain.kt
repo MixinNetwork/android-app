@@ -16,6 +16,8 @@ sealed class Chain(
     object AvalancheCChain : Chain("eip155", 43114, "Avalanche C-Chain", "AVAX", listOf("https://1rpc.io/avax/c"))
 }
 
+internal val supportChainList = listOf(Chain.Ethereum, Chain.BinanceSmartChain, Chain.Polygon) // three for now
+
 internal fun String.getChain(): Chain? {
     return when (this) {
         Chain.Ethereum.chainId -> Chain.Ethereum
@@ -63,5 +65,5 @@ internal fun String?.getChainSymbol(): String? {
 val walletConnectChainIdMap = mapOf(
     Chain.Ethereum.symbol to Constants.ChainId.ETHEREUM_CHAIN_ID,
     Chain.Polygon.symbol to Constants.ChainId.Polygon,
-    Chain.BinanceSmartChain to Constants.ChainId.BinanceSmartChain,
+    Chain.BinanceSmartChain.symbol to Constants.ChainId.BinanceSmartChain,
 )

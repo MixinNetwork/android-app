@@ -15,8 +15,10 @@ import android.view.KeyEvent
 import androidx.core.content.getSystemService
 import androidx.core.view.isVisible
 import androidx.fragment.app.DialogFragment
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.Observer
+import androidx.lifecycle.ProcessLifecycleOwner
 import androidx.lifecycle.lifecycleScope
 import androidx.room.util.readVersion
 import com.google.android.gms.common.ConnectionResult
@@ -31,7 +33,6 @@ import com.google.android.play.core.install.model.InstallStatus
 import com.google.android.play.core.install.model.UpdateAvailability
 import com.google.firebase.crashlytics.FirebaseCrashlytics
 import com.microsoft.appcenter.AppCenter
-import com.trustwallet.walletconnect.models.session.WCSession
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import io.reactivex.Maybe
@@ -306,6 +307,10 @@ class MainActivity : BlazeBaseActivity() {
             .autoDispose(destroyScope)
             .subscribe {
                 dismissDialog()
+
+                if (ProcessLifecycleOwner.get().lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED)) {
+                    WalletConnectActivity.show(this, it.error)
+                }
             }
 
         lifecycleScope.launch(Dispatchers.IO) {
@@ -758,14 +763,9 @@ class MainActivity : BlazeBaseActivity() {
                 )
         } else if (intent.hasExtra(WALLET_CONNECT)) {
             val wcUrl = requireNotNull(intent.getStringExtra(WALLET_CONNECT))
-            if (WCSession.from(wcUrl) != null) {
-                WalletConnectV1.connect(wcUrl)
+            WalletConnect.connect(wcUrl) {
                 showDialog()
-                return
             }
-
-            WalletConnectV2.pair(wcUrl)
-            showDialog()
         }
     }
 

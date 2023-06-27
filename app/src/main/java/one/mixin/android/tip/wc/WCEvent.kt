@@ -21,6 +21,7 @@ sealed class WCEvent(
     data class V2(
         override val version: WalletConnect.Version,
         override val requestType: RequestType,
+        val topic: String,
     ) : WCEvent(version, requestType)
 
     @Parcelize
@@ -30,4 +31,7 @@ sealed class WCEvent(
     ) : WCEvent(version, requestType)
 }
 
-class WCErrorEvent
+class WCErrorEvent(val error: WCError)
+
+@Parcelize
+data class WCError(val throwable: Throwable) : Parcelable

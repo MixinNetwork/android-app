@@ -53,9 +53,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.platform.ClipboardManager
+import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -69,6 +72,7 @@ import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.pxToDp
 import one.mixin.android.extension.tickVibrate
+import one.mixin.android.extension.toast
 import one.mixin.android.session.Session
 import one.mixin.android.ui.setting.ui.compose.booleanValueAsState
 import one.mixin.android.ui.setting.ui.theme.MixinAppTheme
@@ -88,6 +92,7 @@ fun WCPinBoard(
     onPinComplete: ((String) -> Unit)?,
 ) {
     val context = LocalContext.current
+    val clipboardManager: ClipboardManager = LocalClipboardManager.current
     val showBiometric = allowBiometric && BiometricUtil.shouldShowBiometric(context)
     val randomKeyboardEnabled by LocalContext.current.defaultSharedPreferences
         .booleanValueAsState(
@@ -127,7 +132,13 @@ fun WCPinBoard(
         when (s) {
             Step.Error -> Column(
                 modifier = Modifier
-                    .height(150.dp)
+                    .clickable(
+                        onClick = {
+                            clipboardManager.setText(AnnotatedString(errorInfo ?: ""))
+                            toast(R.string.copied_to_clipboard)
+                        },
+                    )
+                    .height(200.dp)
                     .fillMaxWidth(),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
@@ -137,10 +148,11 @@ fun WCPinBoard(
                     fontSize = 18.sp,
                 )
                 Text(
-                    modifier = Modifier.padding(32.dp, 32.dp),
+                    modifier = Modifier.padding(32.dp, 12.dp, 32.dp, 32.dp),
                     text = errorInfo ?: "",
                     textAlign = TextAlign.Center,
                     color = MixinAppTheme.colors.textPrimary,
+                    fontSize = 14.sp,
                 )
             }
             Step.Done -> Column(

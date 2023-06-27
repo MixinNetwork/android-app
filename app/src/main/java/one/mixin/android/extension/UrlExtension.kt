@@ -19,6 +19,7 @@ import one.mixin.android.db.MixinDatabase
 import one.mixin.android.job.RefreshExternalSchemeJob.Companion.PREF_EXTERNAL_SCHEMES
 import one.mixin.android.pay.externalTransferAssetIdMap
 import one.mixin.android.session.Session
+import one.mixin.android.tip.wc.WalletConnect
 import one.mixin.android.ui.common.QrScanBottomSheetDialogFragment
 import one.mixin.android.ui.common.share.ShareMessageBottomSheetDialogFragment
 import one.mixin.android.ui.common.showUserBottom
@@ -146,6 +147,8 @@ User-agent: ${WebView(context).settings.userAgentString}
         ConfirmBottomFragment.show(MixinApplication.appContext, supportFragmentManager, this)
     } else if (isUserScheme() || isAppScheme()) {
         checkUserOrApp(context, supportFragmentManager, scope)
+    } else if (startsWith(Constants.Scheme.WALLET_CONNECT_PREFIX) && WalletConnect.isEnabled(context)) {
+        WalletConnect.connect(this)
     } else {
         if (isMixinUrl() || isDonateUrl() || isExternalScheme(context) || isExternalTransferUrl()) {
             LinkBottomSheetDialogFragment.newInstance(this)

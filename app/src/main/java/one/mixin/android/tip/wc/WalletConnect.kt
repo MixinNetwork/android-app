@@ -3,11 +3,15 @@ package one.mixin.android.tip.wc
 import android.content.Context
 import com.trustwallet.walletconnect.models.ethereum.WCEthereumSignMessage
 import com.trustwallet.walletconnect.models.ethereum.WCEthereumTransaction
+import com.trustwallet.walletconnect.models.session.WCSession
 import com.walletconnect.web3.wallet.client.Wallet
 import one.mixin.android.Constants
+import one.mixin.android.Constants.Scheme.WALLET_CONNECT_PREFIX
+import one.mixin.android.RxBus
 import one.mixin.android.api.response.GasPriceType
 import one.mixin.android.api.response.TipGas
 import one.mixin.android.extension.defaultSharedPreferences
+import one.mixin.android.extension.toUri
 import one.mixin.android.session.Session
 import org.web3j.crypto.ECKeyPair
 import org.web3j.crypto.Sign
@@ -32,6 +36,23 @@ abstract class WalletConnect {
 
         fun isEnabled(context: Context): Boolean = Session.getAccount()?.hasPin == true && !Session.getTipPub().isNullOrBlank() &&
             (context.defaultSharedPreferences.getBoolean(Constants.Debug.WALLET_CONNECT_DEBUG, false) || Session.isTipFeatureEnabled())
+
+        fun connect(url: String, afterConnect: (() -> Unit)? = null) {
+            val uri = url.replaceFirst(WALLET_CONNECT_PREFIX, "wc://").toUri()
+            val version = uri.host?.toIntOrNull()
+            if (version == 2) {
+                WalletConnectV2.pair(url)
+                afterConnect?.invoke()
+                return
+            } else if (version == 1) {
+                if (WCSession.from(url) != null) {
+                    WalletConnectV1.connect(url)
+                    afterConnect?.invoke()
+                    return
+                }
+            }
+            RxBus.publish(WCErrorEvent(WCError(InvalidWalletConnectUrlException(url))))
+        }
     }
 
     enum class Version {
@@ -67,7 +88,13 @@ abstract class WalletConnect {
     }
 
     var chain: Chain = Chain.Polygon
-        protected set
+        protected set(value) {
+            if (value == field) return
+
+            field = value
+            // TODO consider a web3j pool here?
+            web3j = Web3j.build(HttpService(value.rpcServers[0]))
+        }
     protected var web3j: Web3j = Web3j.build(HttpService(chain.rpcServers[0]))
 
     open var currentSignData: WCSignData<*>? = null
@@ -93,7 +120,7 @@ abstract class WalletConnect {
             .toString()
     }
 
-    fun getEstimateGas(wct: WCEthereumTransaction): BigInteger {
+    private fun getEstimateGas(wct: WCEthereumTransaction): BigInteger {
         val gasPrice = if (wct.maxFeePerGas != null) {
             Numeric.toBigInt(wct.maxFeePerGas)
         } else {
