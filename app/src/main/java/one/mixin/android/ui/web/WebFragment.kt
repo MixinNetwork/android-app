@@ -61,7 +61,6 @@ import com.bumptech.glide.Glide
 import com.google.gson.Gson
 import com.google.gson.annotations.SerializedName
 import com.tbruyelle.rxpermissions2.RxPermissions
-import com.trustwallet.walletconnect.models.session.WCSession
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
@@ -110,7 +109,6 @@ import one.mixin.android.tip.tipPrivToAddress
 import one.mixin.android.tip.tipPrivToPrivateKey
 import one.mixin.android.tip.wc.WalletConnect
 import one.mixin.android.tip.wc.WalletConnectTIP
-import one.mixin.android.tip.wc.WalletConnectV1
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.BottomSheetViewModel
 import one.mixin.android.ui.common.info.createMenuLayout
@@ -484,9 +482,7 @@ class WebFragment : BaseFragment() {
             override fun onConsoleMessage(consoleMessage: ConsoleMessage?): Boolean {
                 if (wcEnable && consoleMessage?.messageLevel() == ConsoleMessage.MessageLevel.LOG) {
                     val wcUrl = consoleMessage.message()
-                    if (WCSession.from(wcUrl) != null) {
-                        WalletConnectV1.connect(wcUrl)
-                    }
+                    WalletConnect.connect(wcUrl)
                 }
                 return true
             }

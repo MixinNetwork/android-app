@@ -3,11 +3,14 @@ package one.mixin.android.tip.wc
 import android.content.Context
 import com.trustwallet.walletconnect.models.ethereum.WCEthereumSignMessage
 import com.trustwallet.walletconnect.models.ethereum.WCEthereumTransaction
+import com.trustwallet.walletconnect.models.session.WCSession
 import com.walletconnect.web3.wallet.client.Wallet
 import one.mixin.android.Constants
+import one.mixin.android.RxBus
 import one.mixin.android.api.response.GasPriceType
 import one.mixin.android.api.response.TipGas
 import one.mixin.android.extension.defaultSharedPreferences
+import one.mixin.android.extension.toUri
 import one.mixin.android.session.Session
 import org.web3j.crypto.ECKeyPair
 import org.web3j.crypto.Sign
@@ -32,6 +35,23 @@ abstract class WalletConnect {
 
         fun isEnabled(context: Context): Boolean = Session.getAccount()?.hasPin == true && !Session.getTipPub().isNullOrBlank() &&
             (context.defaultSharedPreferences.getBoolean(Constants.Debug.WALLET_CONNECT_DEBUG, false) || Session.isTipFeatureEnabled())
+
+        fun connect(url: String, afterConnect: (() -> Unit)? = null) {
+            val uri = url.replace("wc:", "wc://").toUri()
+            val version = uri.host?.toIntOrNull()
+            if (version == 2) {
+                WalletConnectV2.pair(url)
+                afterConnect?.invoke()
+                return
+            } else if (version == 1) {
+                if (WCSession.from(url) != null) {
+                    WalletConnectV1.connect(url)
+                    afterConnect?.invoke()
+                    return
+                }
+            }
+            RxBus.publish(WCErrorEvent(WCError(InvalidWalletConnectUrlException(url))))
+        }
     }
 
     enum class Version {
