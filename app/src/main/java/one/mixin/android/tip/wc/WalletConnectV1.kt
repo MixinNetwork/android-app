@@ -165,8 +165,6 @@ object WalletConnectV1 : WalletConnect() {
         } catch (e: IllegalStateException) {
             Timber.e("$TAG rejectRequest ${e.stackTraceToString()}")
         }
-        currentSignData = null
-        signedTransactionData = null
     }
 
     fun walletChangeNetwork(priv: ByteArray, id: Long) {
@@ -220,7 +218,11 @@ object WalletConnectV1 : WalletConnect() {
     }
 
     fun sendTransaction(id: Long) {
-        val signedTransactionData = this.signedTransactionData ?: return
+        val signedTransactionData = this.signedTransactionData
+        if (signedTransactionData == null) {
+            Timber.e("$TAG sendTransaction signedTransactionData is null")
+            return
+        }
 
         val raw = web3j.ethSendRawTransaction(signedTransactionData).sendAsync().get(web3jTimeout, TimeUnit.SECONDS)
         val transactionHash = raw.transactionHash

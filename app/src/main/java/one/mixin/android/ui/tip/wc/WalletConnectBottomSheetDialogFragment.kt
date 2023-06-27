@@ -97,7 +97,7 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
 
     private val viewModel by viewModels<WalletConnectBottomSheetViewModel>()
 
-    private var pinCompleted = false
+    private var processCompleted = false
 
     private val requestType by lazy { RequestType.values()[requireArguments().getInt(ARGS_REQUEST_TYPE)] }
     private val version by lazy { WalletConnect.Version.values()[requireArguments().getInt(ARGS_VERSION)] }
@@ -222,7 +222,7 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
     }
 
     override fun onDismiss(dialog: DialogInterface) {
-        if (!pinCompleted) {
+        if (!processCompleted) {
             Timber.d("$TAG dismiss onReject")
             onReject?.invoke()
         }
@@ -301,10 +301,10 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 onPinComplete?.invoke(pin)
             }
             if (error == null) {
-                pinCompleted = true
                 step = if (viewModel.isTransaction(version, topic)) {
                     Step.Send
                 } else {
+                    processCompleted = true
                     Step.Done
                 }
             } else {
@@ -324,10 +324,16 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 lifecycleScope.launch {
                     step = Step.Sending
                     try {
-                        withContext(Dispatchers.IO) {
+                        val error = withContext(Dispatchers.IO) {
                             viewModel.sendTransaction(version, requestId)
                         }
-                        step = Step.Done
+                        if (error == null) {
+                            processCompleted = true
+                            step = Step.Done
+                        } else {
+                            errorInfo = error
+                            step = Step.Error
+                        }
                     } catch (e: Exception) {
                         handleException(e)
                     }
