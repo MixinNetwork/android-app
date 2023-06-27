@@ -97,6 +97,7 @@ private fun Content(
         Box(modifier = Modifier.height(10.dp))
         Text(
             text = connectionUI.name,
+            modifier = Modifier.padding(horizontal = 30.dp),
             fontSize = 18.sp,
             color = MixinAppTheme.colors.textPrimary,
         )

@@ -120,7 +120,7 @@ abstract class WalletConnect {
             .toString()
     }
 
-    fun getEstimateGas(wct: WCEthereumTransaction): BigInteger {
+    private fun getEstimateGas(wct: WCEthereumTransaction): BigInteger {
         val gasPrice = if (wct.maxFeePerGas != null) {
             Numeric.toBigInt(wct.maxFeePerGas)
         } else {
