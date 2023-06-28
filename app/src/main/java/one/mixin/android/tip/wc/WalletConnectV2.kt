@@ -11,6 +11,8 @@ import com.walletconnect.android.Core
 import com.walletconnect.android.CoreClient
 import com.walletconnect.android.internal.common.exception.GenericException
 import com.walletconnect.android.relay.ConnectionType
+import com.walletconnect.push.common.Push
+import com.walletconnect.push.wallet.client.PushWalletClient
 import com.walletconnect.web3.wallet.client.Wallet
 import com.walletconnect.web3.wallet.client.Web3Wallet
 import one.mixin.android.BuildConfig
@@ -67,9 +69,15 @@ object WalletConnectV2 : WalletConnect() {
                 RxBus.publish(WCErrorEvent(WCError(error.throwable)))
             },
         )
-        val initParams = Wallet.Params.Init(core = CoreClient)
-        Web3Wallet.initialize(initParams) { error ->
+        val web3InitParams = Wallet.Params.Init(core = CoreClient)
+        Web3Wallet.initialize(web3InitParams) { error ->
             Timber.d("$TAG Web3Wallet init error: $error")
+            RxBus.publish(WCErrorEvent(WCError(error.throwable)))
+        }
+
+        val pushInitParams = Push.Wallet.Params.Init(core = CoreClient)
+        PushWalletClient.initialize(pushInitParams) { error ->
+            Timber.d("$TAG PushWalletClient init error: $error")
             RxBus.publish(WCErrorEvent(WCError(error.throwable)))
         }
 
@@ -79,6 +87,7 @@ object WalletConnectV2 : WalletConnect() {
                 this@WalletConnectV2.onPairingDelete(deletedPairing)
             }
         }
+        CoreClient.setDelegate(coreDelegate)
 
         val walletDelegate = object : Web3Wallet.WalletDelegate {
             override fun onAuthRequest(authRequest: Wallet.Model.AuthRequest) {
@@ -93,7 +102,7 @@ object WalletConnectV2 : WalletConnect() {
             }
 
             override fun onError(error: Wallet.Model.Error) {
-                Timber.d("$TAG onError $error")
+                Timber.d("$TAG walletDelegate onError $error")
                 RxBus.publish(WCErrorEvent(WCError(error.throwable)))
             }
 
@@ -126,9 +135,39 @@ object WalletConnectV2 : WalletConnect() {
                 this@WalletConnectV2.onSessionUpdateResponse(sessionUpdateResponse)
             }
         }
-
-        CoreClient.setDelegate(coreDelegate)
         Web3Wallet.setWalletDelegate(walletDelegate)
+
+        val pushDelegate = object : PushWalletClient.Delegate {
+            override fun onError(error: Push.Model.Error) {
+                Timber.d("$TAG pushDelegate onError $error")
+                RxBus.publish(WCErrorEvent(WCError(error.throwable)))
+            }
+
+            override fun onPushDelete(pushDelete: Push.Wallet.Event.Delete) {
+                Timber.d("$TAG onPushDelete $pushDelete")
+            }
+
+            override fun onPushMessage(pushMessage: Push.Wallet.Event.Message) {
+                Timber.d("$TAG onPushMessage $pushMessage")
+            }
+
+            override fun onPushProposal(pushProposal: Push.Wallet.Event.Proposal) {
+                Timber.d("$TAG onPushProposal $pushProposal")
+            }
+
+            override fun onPushRequest(pushRequest: Push.Wallet.Event.Request) {
+                Timber.d("$TAG onPushRequest $pushRequest")
+            }
+
+            override fun onPushSubscription(pushSubscribe: Push.Wallet.Event.Subscription) {
+                Timber.d("$TAG onPushSubscription $pushSubscribe")
+            }
+
+            override fun onPushUpdate(pushUpdate: Push.Wallet.Event.Update) {
+                Timber.d("$TAG onPushUpdate $pushUpdate")
+            }
+        }
+        PushWalletClient.setDelegate(pushDelegate)
     }
 
     fun pair(uri: String) {

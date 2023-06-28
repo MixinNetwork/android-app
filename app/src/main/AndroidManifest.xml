@@ -441,6 +441,13 @@
             </intent-filter>
         </service>
         <service
+            android:name=".tip.wc.WCFirebaseService"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.google.firebase.MESSAGING_EVENT" />
+            </intent-filter>
+        </service>
+        <service
             android:name=".job.MyJobService"
             android:exported="true"
             android:permission="android.permission.BIND_JOB_SERVICE" />
