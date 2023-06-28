@@ -115,8 +115,9 @@ object WalletConnectV2 : WalletConnect() {
 
             override fun onSessionRequest(sessionRequest: Wallet.Model.SessionRequest) {
                 Timber.d("$TAG onSessionRequest $sessionRequest")
-                parseSessionRequest(sessionRequest)
-                RxBus.publish(WCEvent.V2(Version.V2, RequestType.SessionRequest, sessionRequest.topic))
+                if (parseSessionRequest(sessionRequest)) {
+                    RxBus.publish(WCEvent.V2(Version.V2, RequestType.SessionRequest, sessionRequest.topic))
+                }
             }
 
             override fun onSessionSettleResponse(settleSessionResponse: Wallet.Model.SettledSessionResponse) {
@@ -258,15 +259,15 @@ object WalletConnectV2 : WalletConnect() {
         }
     }
 
-    private fun parseSessionRequest(request: Wallet.Model.SessionRequest) {
-        request.chainId?.getChain()?.let { chain = it }
-        when (request.request.method) {
+    private fun parseSessionRequest(request: Wallet.Model.SessionRequest): Boolean {
+        val success = when (request.request.method) {
             Method.ETHSign.name -> {
                 val array = JsonParser.parseString(request.request.params).asJsonArray
                 val address = array[0].toString().trim('"')
                 val data = array[1].toString().trim('"')
                 Timber.d("$TAG eth sign: $data")
                 currentSignData = WCSignData.V2SignData(request.request.id, WCEthereumSignMessage(listOf(address, data), WCEthereumSignMessage.WCSignType.MESSAGE), request)
+                true
             }
             Method.ETHPersonalSign.name -> {
                 val array = JsonParser.parseString(request.request.params).asJsonArray
@@ -274,6 +275,7 @@ object WalletConnectV2 : WalletConnect() {
                 val address = array[1].toString().trim('"')
                 Timber.d("$TAG personal sign: $data")
                 currentSignData = WCSignData.V2SignData(request.request.id, WCEthereumSignMessage(listOf(data, address), WCEthereumSignMessage.WCSignType.PERSONAL_MESSAGE), request)
+                true
             }
             Method.ETHSignTypedData.name, Method.ETHSignTypedDataV4.name -> {
                 val array = JsonParser.parseString(request.request.params).asJsonArray
@@ -281,16 +283,35 @@ object WalletConnectV2 : WalletConnect() {
                 val data = array[1].toString().trim('"')
                 Timber.d("$TAG sign typed data: $data")
                 currentSignData = WCSignData.V2SignData(request.request.id, WCEthereumSignMessage(listOf(address, data), WCEthereumSignMessage.WCSignType.TYPED_MESSAGE), request)
+                true
             }
             Method.ETHSignTransaction.name -> {
-                val transaction = gson.fromJson<List<WCEthereumTransaction>>(request.request.params).firstOrNull() ?: return
+                val transaction = gson.fromJson<List<WCEthereumTransaction>>(request.request.params).firstOrNull()
+                if (transaction == null) {
+                    Timber.e("$TAG parseSessionRequest ETHSignTransaction transaction is null")
+                    return false
+                }
                 currentSignData = WCSignData.V2SignData(request.request.id, transaction, request)
+                true
             }
             Method.ETHSendTransaction.name -> {
-                val transaction = gson.fromJson<List<WCEthereumTransaction>>(request.request.params).firstOrNull() ?: return
+                val transaction = gson.fromJson<List<WCEthereumTransaction>>(request.request.params).firstOrNull()
+                if (transaction == null) {
+                    Timber.e("$TAG parseSessionRequest ETHSendTransaction transaction is null")
+                    return false
+                }
                 currentSignData = WCSignData.V2SignData(request.request.id, transaction, request)
+                true
+            }
+            else -> {
+                Timber.e("$TAG parseSessionRequest not supported method ${request.request.method}")
+                false
             }
         }
+        if (success) {
+            request.chainId?.getChain()?.let { chain = it }
+        }
+        return success
     }
 
     fun approveRequest(priv: ByteArray) {
