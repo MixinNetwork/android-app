@@ -37,7 +37,7 @@ object WalletConnectV2 : WalletConnect() {
     const val TAG = "WalletConnectV2"
 
     var authRequest: Wallet.Model.AuthRequest? = null
-    var signedTransactionData: String? = null
+    private var signedTransactionData: String? = null
     private var sessionProposal: Wallet.Model.SessionProposal? = null
 
     private val gson = GsonBuilder()
@@ -141,12 +141,16 @@ object WalletConnectV2 : WalletConnect() {
             Timber.d("$TAG pair success")
         }) { error ->
             Timber.d("$TAG pair $uri, error: $error")
-            RxBus.publish(WCErrorEvent(WCError(error.throwable)))
+            RxBus.publish(WCErrorEvent(WCError(WalletConnectException(0, error.throwable.toString() + "\nurl: $uri"))))
         }
     }
 
     fun approveSession(priv: ByteArray) {
-        val sessionProposal = getSessionProposals().lastOrNull() ?: return
+        val sessionProposal = getSessionProposals().lastOrNull()
+        if (sessionProposal == null) {
+            Timber.e("$TAG approveSession sessionProposal is null")
+            return
+        }
 
         val pub = ECKeyPair.create(priv).publicKey
         val address = Keys.toChecksumAddress(Keys.getAddress(pub))
@@ -247,7 +251,11 @@ object WalletConnectV2 : WalletConnect() {
     }
 
     fun rejectSession() {
-        val sessionProposal = getSessionProposals().lastOrNull() ?: return
+        val sessionProposal = getSessionProposals().lastOrNull()
+        if (sessionProposal == null) {
+            Timber.e("$TAG rejectSession sessionProposal is null")
+            return
+        }
 
         val rejectParams: Wallet.Params.SessionReject = Wallet.Params.SessionReject(
             sessionProposal.proposerPublicKey,
@@ -315,9 +323,13 @@ object WalletConnectV2 : WalletConnect() {
     }
 
     fun approveRequest(priv: ByteArray) {
-        val signData = this.currentSignData ?: return
+        val signData = this.currentSignData
+        if (signData == null) {
+            Timber.e("$TAG approveRequest signData is null")
+            return
+        }
         if (signData !is WCSignData.V2SignData) {
-            Timber.d("TAG signData is not V2SignData")
+            Timber.d("$TAG approveRequest signData is not V2SignData")
             return
         }
         val signMessage = signData.signMessage ?: return
@@ -337,9 +349,13 @@ object WalletConnectV2 : WalletConnect() {
     }
 
     fun rejectRequest(message: String? = null) {
-        val signData = this.currentSignData ?: return
+        val signData = this.currentSignData
+        if (signData == null) {
+            Timber.e("$TAG rejectRequest signData is null")
+            return
+        }
         if (signData !is WCSignData.V2SignData) {
-            Timber.d("TAG signData is not V2SignData")
+            Timber.d("$TAG rejectRequest signData is not V2SignData")
             return
         }
         val request = signData.sessionRequest
@@ -455,7 +471,7 @@ object WalletConnectV2 : WalletConnect() {
         }
     }
 
-    fun ethSignMessage(priv: ByteArray, id: Long, topic: String, message: WCEthereumSignMessage) {
+    private fun ethSignMessage(priv: ByteArray, id: Long, topic: String, message: WCEthereumSignMessage) {
         approveRequestInternal(signMessage(priv, message), topic, id)
     }
 

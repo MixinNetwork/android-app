@@ -89,7 +89,7 @@ object WalletConnectV1 : WalletConnect() {
 
     var address: String? = null
     var targetNetwork: Chain? = null
-    var signedTransactionData: String? = null
+    private var signedTransactionData: String? = null
     var currentSession: WCV1Session? = null
     private val sessionStore = WCV1SessionStore(
         MixinApplication.appContext.getSharedPreferences("wallet_connect_v1_session_store", Context.MODE_PRIVATE),
@@ -111,7 +111,11 @@ object WalletConnectV1 : WalletConnect() {
     }
 
     fun connect(url: String): Boolean {
-        val wcSession = WCSession.from(url) ?: return false
+        val wcSession = WCSession.from(url)
+        if (wcSession == null) {
+            Timber.e("$TAG connect wcSession is null")
+            return false
+        }
 
         connectSession = wcSession
         wcClient.connect(wcSession, peerMeta)
@@ -133,7 +137,7 @@ object WalletConnectV1 : WalletConnect() {
     fun approveSession(priv: ByteArray) {
         val pub = ECKeyPair.create(priv).publicKey
         val address = Keys.toChecksumAddress(Keys.getAddress(pub))
-        Timber.d("$TAG address: $address")
+        Timber.d("$TAG approveSession address: $address")
         try {
             wcClient.approveSession(listOf(address), chain.chainReference)
         } catch (e: IllegalStateException) {
@@ -141,8 +145,16 @@ object WalletConnectV1 : WalletConnect() {
         }
         this.address = address
 
-        val session = currentSession ?: return
-        val peerId = wcClient.peerId ?: return
+        val session = currentSession
+        if (session == null) {
+            Timber.e("$TAG approveSession session is null")
+            return
+        }
+        val peerId = wcClient.peerId
+        if (peerId == null) {
+            Timber.e("$TAG approveSession peerId is null")
+            return
+        }
         WCV1Session(session.session, chain.chainReference, session.remotePeerMeta, peerId, wcClient.remotePeerId, address, session.date).apply {
             currentSession = this
             connectSession = null
@@ -170,6 +182,7 @@ object WalletConnectV1 : WalletConnect() {
     fun walletChangeNetwork(priv: ByteArray, id: Long) {
         val chain = targetNetwork
         if (chain == null) {
+            Timber.e("$TAG walletChangeNetwork chain is null")
             rejectRequest(id, "Network not supported")
             return
         }
@@ -181,7 +194,7 @@ object WalletConnectV1 : WalletConnect() {
     fun changeNetwork(chain: Chain) {
         val address = this.address
         if (address == null) {
-            Timber.d("$TAG changeNetwork address is null")
+            Timber.e("$TAG changeNetwork address is null")
             return
         }
         this.chain = chain
@@ -204,8 +217,15 @@ object WalletConnectV1 : WalletConnect() {
     }
 
     fun approveRequest(priv: ByteArray, id: Long) {
-        val signData = this.currentSignData ?: return
-        if (signData.requestId != id) return
+        val signData = this.currentSignData
+        if (signData == null) {
+            Timber.e("$TAG approveRequest signData is null")
+            return
+        }
+        if (signData.requestId != id) {
+            Timber.e("$TAG approveRequest signData.requestId != id")
+            return
+        }
 
         when (val data = signData.signMessage) {
             is WCEthereumSignMessage -> {
@@ -236,7 +256,7 @@ object WalletConnectV1 : WalletConnect() {
         }
     }
 
-    fun ethSignMessage(priv: ByteArray, id: Long, message: WCEthereumSignMessage) {
+    private fun ethSignMessage(priv: ByteArray, id: Long, message: WCEthereumSignMessage) {
         safeApproveRequest(id, signMessage(priv, message))
     }
 
@@ -248,23 +268,11 @@ object WalletConnectV1 : WalletConnect() {
         }
     }
 
-    fun ethSignTransaction(priv: ByteArray, id: Long, transaction: WCEthereumTransaction, approve: Boolean): String {
+    private fun ethSignTransaction(priv: ByteArray, id: Long, transaction: WCEthereumTransaction, approve: Boolean): String {
         val value = transaction.value ?: "0x0"
         val maxFeePerGas = transaction.maxFeePerGas?.let { Numeric.toBigInt(it) }
         val maxPriorityFeePerGas = transaction.maxPriorityFeePerGas?.let { Numeric.toBigInt(it) }
         Timber.d("$TAG ethSignTransaction value: $value, maxFeePerGas: $maxFeePerGas, maxPriorityFeePerGas: $maxPriorityFeePerGas")
-//        if (maxFeePerGas == null || maxPriorityFeePerGas == null) {
-//            val r = getMaxFeePerGasAndMaxPriorityFeePerGas()
-//            if (maxFeePerGas == null) {
-//                maxFeePerGas = r.first
-//                Timber.d("$TAG ethSignTransaction maxFeePerGas: $maxFeePerGas")
-//            }
-//            if (maxPriorityFeePerGas == null) {
-//                maxPriorityFeePerGas = r.second
-//                Timber.d("$TAG ethSignTransaction maxPriorityFeePerGas: $maxPriorityFeePerGas")
-//            }
-//        }
-
         val keyPair = ECKeyPair.create(priv)
         val credential = Credentials.create(keyPair)
         val transactionCount = web3j.ethGetTransactionCount(credential.address, DefaultBlockParameterName.LATEST)
@@ -275,22 +283,19 @@ object WalletConnectV1 : WalletConnect() {
         }
         val nonce = transactionCount.transactionCount
         val v = Numeric.toBigInt(value)
-//        val gasLimit = transaction.gasLimit?.let { Numeric.toBigInt(it) } ?: BigInteger(defaultGasLimit)
-        val signData = currentSignData as? WCSignData.V1SignData ?: return ""
-        val tipGas = signData.tipGas ?: return ""
+        val signData = currentSignData as? WCSignData.V1SignData
+        if (signData == null) {
+            Timber.e("$TAG ethSignTransaction signData is null")
+            return ""
+        }
+        val tipGas = signData.tipGas
+        if (tipGas == null) {
+            Timber.e("$TAG ethSignTransaction tipGas is null")
+            return ""
+        }
         val gasLimit = BigInteger(tipGas.gasLimit)
         Timber.d("$TAG nonce: $nonce, value $v wei, gasLimit: $gasLimit")
         val rawTransaction = if (maxFeePerGas == null && maxPriorityFeePerGas == null) {
-//            val gasPrice = if (transaction.gasPrice != null) {
-//                Numeric.toBigInt(transaction.gasPrice)
-//            } else {
-//                val ethGasPrice =
-//                    web3j.ethGasPrice().sendAsync().get(web3jTimeout, TimeUnit.SECONDS)
-//                if (ethGasPrice.hasError()) {
-//                    throwError(ethGasPrice.error)
-//                }
-//                ethGasPrice.gasPrice
-//            }
             val gasPrice = Convert.toWei(signData.gasPriceType.getGasPrice(tipGas), Convert.Unit.ETHER).toBigInteger()
             Timber.d("$TAG gasPrice $gasPrice")
             RawTransaction.createTransaction(
