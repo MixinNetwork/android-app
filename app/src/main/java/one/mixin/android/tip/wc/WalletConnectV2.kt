@@ -1,9 +1,5 @@
 package one.mixin.android.tip.wc
 
-import android.content.ActivityNotFoundException
-import android.content.Intent
-import android.net.Uri
-import androidx.core.net.toUri
 import com.github.salomonbrys.kotson.fromJson
 import com.github.salomonbrys.kotson.registerTypeAdapter
 import com.google.gson.GsonBuilder
@@ -372,9 +368,6 @@ object WalletConnectV2 : WalletConnect() {
             Timber.d("$TAG rejectSessionRequest error: $error")
             RxBus.publish(WCErrorEvent(WCError(error.throwable)))
         }
-
-        Web3Wallet.getActiveSessionByTopic(request.topic)?.redirect?.toUri()
-            ?.let { deepLinkUri -> sendResponseDeepLink(deepLinkUri) }
     }
 
     fun getListOfActiveSessions(): List<Wallet.Model.Session> {
@@ -440,10 +433,6 @@ object WalletConnectV2 : WalletConnect() {
             }
             errMsg
         }
-
-        // TODO remove?
-        Web3Wallet.getActiveSessionByTopic(topic)?.redirect?.toUri()
-            ?.let { deepLinkUri -> sendResponseDeepLink(deepLinkUri) }
     }
 
     fun sendTransaction(id: Long) {
@@ -546,19 +535,6 @@ object WalletConnectV2 : WalletConnect() {
         } else {
             Timber.d("$TAG sendTransaction $transactionHash")
             approveRequestInternal(transactionHash, topic, id)
-        }
-    }
-
-    private fun sendResponseDeepLink(sessionRequestDeeplinkUri: Uri) {
-        try {
-            MixinApplication.appContext.startActivity(
-                Intent(Intent.ACTION_VIEW, sessionRequestDeeplinkUri).apply {
-                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                },
-            )
-        } catch (exception: ActivityNotFoundException) {
-            // There is no app to handle deep link
-            Timber.d("$TAG sendResponseDeepLink meet ActivityNotFoundException")
         }
     }
 
