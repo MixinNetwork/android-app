@@ -9,6 +9,7 @@ import one.mixin.android.tip.wc.WalletConnect
 import one.mixin.android.tip.wc.WalletConnectTIP
 import one.mixin.android.tip.wc.WalletConnectV1
 import one.mixin.android.tip.wc.WalletConnectV2
+import timber.log.Timber
 import javax.inject.Inject
 
 @HiltViewModel
@@ -30,15 +31,26 @@ class WalletConnectBottomSheetViewModel @Inject internal constructor(
         }
     }
 
-    fun sendTransaction(version: WalletConnect.Version, id: Long) {
-        when (version) {
-            WalletConnect.Version.V1 -> {
-                WalletConnectV1.sendTransaction(id)
+    fun sendTransaction(version: WalletConnect.Version, id: Long): String? {
+        try {
+            when (version) {
+                WalletConnect.Version.V1 -> WalletConnectV1.sendTransaction(id)
+                WalletConnect.Version.V2 -> WalletConnectV2.sendTransaction(id)
+                WalletConnect.Version.TIP -> {}
             }
-            WalletConnect.Version.V2 -> {
-                WalletConnectV2.sendTransaction(id)
-            }
-            WalletConnect.Version.TIP -> {}
+            return null
+        } catch (e: Exception) {
+            val errorInfo = e.stackTraceToString()
+            Timber.d(
+                "${
+                    when (version) {
+                        WalletConnect.Version.V2 -> WalletConnectV2.TAG
+                        WalletConnect.Version.V1 -> WalletConnectV1.TAG
+                        else -> WalletConnectTIP.TAG
+                    }
+                } $errorInfo",
+            )
+            return errorInfo
         }
     }
 

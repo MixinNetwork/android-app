@@ -33,6 +33,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -48,7 +49,6 @@ import one.mixin.android.tip.wc.WalletConnect
 import one.mixin.android.ui.setting.ui.compose.MixinBottomSheetDialog
 import one.mixin.android.ui.setting.ui.theme.MixinAppTheme
 import one.mixin.android.ui.tip.wc.WalletConnectBottomSheetDialogFragment
-import one.mixin.android.ui.tip.wc.connections.Loading
 import one.mixin.android.ui.tip.wc.sessionproposal.DAppInfo
 import one.mixin.android.ui.tip.wc.sessionproposal.WCPinBoard
 import one.mixin.android.vo.Asset
@@ -76,9 +76,10 @@ fun SessionRequestPage(
     val viewModel = hiltViewModel<SessionRequestViewModel>()
     val sessionRequestUI = viewModel.getSessionRequestUI(version)
     if (sessionRequestUI == null) {
-        Loading()
+        DataError(errorInfo = "version $version, sessionRequestUI is null")
         return
     }
+
     val isEthSign = (sessionRequestUI.data as? WCEthereumSignMessage)?.type == WCEthereumSignMessage.WCSignType.MESSAGE
     var openBottomSheet by rememberSaveable { mutableStateOf(false) }
 
@@ -515,6 +516,32 @@ private fun GasItem(
                 text = "${gasPriceType.calcGas(tipGas).toPlainString()} ${asset.symbol}",
                 fontSize = 13.sp,
                 color = MixinAppTheme.colors.textMinor,
+            )
+        }
+    }
+}
+
+@Composable
+fun DataError(errorInfo: String) {
+    MixinAppTheme {
+        Column(
+            modifier = Modifier
+                .height(150.dp)
+                .fillMaxWidth()
+                .padding(32.dp, 32.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            Text(
+                text = "Data Error",
+                color = MixinAppTheme.colors.red,
+                fontSize = 18.sp,
+            )
+            Text(
+                modifier = Modifier.padding(0.dp, 12.dp),
+                text = errorInfo,
+                textAlign = TextAlign.Center,
+                color = MixinAppTheme.colors.textPrimary,
+                fontSize = 16.sp,
             )
         }
     }

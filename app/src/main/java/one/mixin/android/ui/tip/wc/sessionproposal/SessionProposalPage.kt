@@ -33,7 +33,7 @@ import one.mixin.android.R
 import one.mixin.android.tip.wc.WalletConnect
 import one.mixin.android.ui.setting.ui.theme.MixinAppTheme
 import one.mixin.android.ui.tip.wc.WalletConnectBottomSheetDialogFragment
-import one.mixin.android.ui.tip.wc.connections.Loading
+import one.mixin.android.ui.tip.wc.sessionrequest.DataError
 
 @Composable
 fun SessionProposalPage(
@@ -48,7 +48,7 @@ fun SessionProposalPage(
     val viewModel = hiltViewModel<SessionProposalViewModel>()
     val sessionProposalUI = viewModel.getSessionProposalUI(version)
     if (sessionProposalUI == null) {
-        Loading()
+        DataError(errorInfo = "version: $version, sessionProposalUI is null")
         return
     }
 
