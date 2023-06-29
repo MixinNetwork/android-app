@@ -247,10 +247,12 @@ class TransferActivity : BaseActivity() {
                     binding.startTv.setText(R.string.Waiting)
                     binding.startTv.isEnabled = false
                     binding.start.isClickable = false
+                    binding.selectLl.isVisible = false
                 }
 
                 TransferStatus.CONNECTING -> {
                     binding.qrFl.isVisible = false
+                    binding.selectLl.isVisible = false
                     binding.initLl.isVisible = false
                     binding.waitingLl.isVisible = true
                     binding.pbFl.isVisible = true
@@ -259,6 +261,7 @@ class TransferActivity : BaseActivity() {
 
                 TransferStatus.WAITING_FOR_VERIFICATION -> {
                     binding.qrFl.isVisible = false
+                    binding.selectLl.isVisible = false
                     binding.initLl.isVisible = false
                     binding.waitingLl.isVisible = true
                     binding.pbFl.isVisible = true
@@ -267,6 +270,7 @@ class TransferActivity : BaseActivity() {
 
                 TransferStatus.VERIFICATION_COMPLETED -> {
                     binding.qrFl.isVisible = false
+                    binding.selectLl.isVisible = false
                     binding.initLl.isVisible = false
                     binding.waitingLl.isVisible = true
                     binding.pbFl.isVisible = true
@@ -275,6 +279,7 @@ class TransferActivity : BaseActivity() {
 
                 TransferStatus.SYNCING -> {
                     binding.titleView.isInvisible = true
+                    binding.selectLl.isVisible = false
                     binding.qrFl.isVisible = false
                     binding.initLl.isVisible = false
                     binding.waitingLl.isVisible = true
@@ -283,14 +288,18 @@ class TransferActivity : BaseActivity() {
 
                 TransferStatus.PROCESSING -> {
                     binding.titleView.isInvisible = true
+                    binding.selectLl.isVisible = false
                     binding.qrFl.isVisible = false
                     binding.initLl.isVisible = false
                     binding.waitingLl.isVisible = true
                     binding.pbLl.isVisible = true
+                    binding.progressTv.setText(R.string.transfer_process_title)
+                    binding.progressDesc.setText(R.string.transfer_process_tip)
                 }
 
                 TransferStatus.ERROR -> {
                     binding.pbLl.isVisible = false
+                    binding.selectLl.isVisible = false
                     binding.progressTv.setText(R.string.Transfer_error)
                     if (argsStatus == ARGS_TRANSFER_TO_PHONE) {
                         dialog?.dismiss()
@@ -376,13 +385,45 @@ class TransferActivity : BaseActivity() {
         intent.getIntExtra(ARGS_STATUS, ARGS_TRANSFER_TO_PHONE)
     }
 
+    private var selectConversation: Set<String>? = null
+    private var selectDate: Int? = null
     private fun initView() {
         binding.titleView.isVisible = true
         binding.pbFl.isVisible = false
+        binding.selectLl.isVisible = true
+        binding.conversationRl.setOnClickListener {
+            val ft = supportFragmentManager.beginTransaction().add(
+                R.id.container,
+                SelectConversationFragment.newInstance().apply {
+                    this.callback = { result ->
+                        this@TransferActivity.selectConversation = result
+                        renderConversation()
+                    }
+                },
+                SelectConversationFragment.TAG,
+            ).setCustomAnimations(R.anim.slide_in_right, 0, 0, R.anim.slide_out_right)
+            ft.addToBackStack(null)
+            ft.commitAllowingStateLoss()
+        }
+        binding.dataRl.setOnClickListener {
+            val ft = supportFragmentManager.beginTransaction().add(
+                R.id.container,
+                SelectDateFragment.newInstance().apply {
+                    this.callback = { result ->
+                        this@TransferActivity.selectDate = result
+                        renderDate()
+                    }
+                },
+                SelectDateFragment.TAG,
+            ).setCustomAnimations(R.anim.slide_in_right, 0, 0, R.anim.slide_out_right)
+            ft.addToBackStack(null)
+            ft.commitAllowingStateLoss()
+        }
         binding.pbTips.isVisible = false
         binding.startTv.setText(R.string.transfer_now)
         binding.startTv.isEnabled = true
         binding.start.isClickable = true
+        binding.selectLl.isVisible = argsStatus == ARGS_TRANSFER_TO_PHONE || argsStatus == ARGS_TRANSFER_TO_PC
         binding.start.setOnClickListener {
             if (!this@TransferActivity.isConnectedToWiFi()) {
                 alertDialogBuilder()
@@ -396,7 +437,7 @@ class TransferActivity : BaseActivity() {
             when (argsStatus) {
                 ARGS_TRANSFER_TO_PHONE -> {
                     lifecycleScope.launch {
-                        transferServer.startServer { transferCommandData ->
+                        transferServer.startServer(selectConversation, selectDate) { transferCommandData ->
                             lifecycleScope.launch(Dispatchers.Main) {
                                 val qrCode = gson.toJson(transferCommandData)
                                     .base64Encode()
@@ -492,6 +533,32 @@ class TransferActivity : BaseActivity() {
         }
     }
 
+    private fun renderConversation() {
+        if (selectConversation.isNullOrEmpty()) {
+            binding.conversationTv.setText(R.string.All_Conversations)
+        } else {
+            binding.conversationTv.text = getString(R.string.Chats, selectConversation?.size ?: 0)
+        }
+    }
+
+    private fun renderDate() {
+        val dateOffset = selectDate
+        if (dateOffset == null || dateOffset == 0) {
+            binding.dateTv.setText(R.string.all_time)
+        } else {
+            // Maybe consider the local calendar for a year instead of 12 months.
+            if (dateOffset % 12 == 0) {
+                // year
+                binding.dateTv.text = resources.getQuantityString(R.plurals.last_year, if (dateOffset / 12 > 1) { 0 } else { 1 }, dateOffset / 12)
+                Timber.e(binding.dateTv.text.toString())
+            } else {
+                // month
+                binding.dateTv.text = resources.getQuantityString(R.plurals.last_month, if (dateOffset > 1) { 0 } else { 1 }, dateOffset)
+                Timber.e(binding.dateTv.text.toString())
+            }
+        }
+    }
+
     override fun onNewIntent(intent: Intent?) {
         super.onNewIntent(intent)
         intent?.let {
@@ -515,7 +582,6 @@ class TransferActivity : BaseActivity() {
                 .subscribe {
                     binding.progress.progress = it.progress.toInt()
                     if (status.value == TransferStatus.PROCESSING) {
-                        Timber.e(String.format("%.2f%%", it.progress))
                         binding.pbTv.text = getString(R.string.transfer_process_desc, String.format("%.2f%%", it.progress))
                     } else if (status.value == TransferStatus.SYNCING) {
                         binding.progressTv.text = getString(R.string.transferring_chat_progress, String.format("%.2f%%", it.progress))
@@ -565,8 +631,10 @@ class TransferActivity : BaseActivity() {
     }
 
     private suspend fun connect(transferCommandData: TransferCommand) {
+        val ip = requireNotNull(transferCommandData.ip)
+        val port = requireNotNull(transferCommandData.port)
         val key = requireNotNull(transferCommandData.secretKey).decodeBase64()
-        connect(transferCommandData.ip!!, transferCommandData.port!!, TransferCommand(TransferCommandAction.CONNECT.value, code = transferCommandData.code, userId = Session.getAccountId()), key = key)
+        connect(ip, port, TransferCommand(TransferCommandAction.CONNECT.value, code = transferCommandData.code, userId = Session.getAccountId()), key = key)
     }
 
     private suspend fun connect(ip: String, port: Int, transferCommand: TransferCommand, key: ByteArray) {
@@ -683,7 +751,7 @@ class TransferActivity : BaseActivity() {
 
     private fun pushRequest() {
         lifecycleScope.launch {
-            transferServer.startServer { transferData ->
+            transferServer.startServer(selectConversation, selectDate) { transferData ->
                 Timber.e("push ${gson.toJson(transferData)}")
                 val encodeText = gson.toJson(
                     transferData,

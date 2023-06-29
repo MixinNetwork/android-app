@@ -25,6 +25,7 @@ import one.mixin.android.db.TranscriptMessageDao
 import one.mixin.android.db.UserDao
 import one.mixin.android.event.DeviceTransferProgressEvent
 import one.mixin.android.extension.base64Encode
+import one.mixin.android.extension.getTimeMonthsAgo
 import one.mixin.android.extension.toUtcTime
 import one.mixin.android.session.Session
 import one.mixin.android.ui.transfer.TransferProtocol.Companion.TYPE_COMMAND
@@ -38,6 +39,7 @@ import one.mixin.android.ui.transfer.vo.TransferDataType
 import one.mixin.android.ui.transfer.vo.compatible.TransferMessage
 import one.mixin.android.ui.transfer.vo.compatible.TransferMessageMention
 import one.mixin.android.ui.transfer.vo.compatible.isAttachment
+import one.mixin.android.ui.transfer.vo.compatible.isTranscript
 import one.mixin.android.ui.transfer.vo.compatible.markAttachmentAsPending
 import one.mixin.android.ui.transfer.vo.compatible.toMessage
 import one.mixin.android.ui.transfer.vo.transferDataTypeFromValue
@@ -127,10 +129,24 @@ class TransferServer @Inject internal constructor(
             Timber.e(e)
         }
         quit = false
-        startServer(createdSuccessCallback)
+        startServer(conversationIds, monthsAgo, createdSuccessCallback)
     }
 
+    private var conversationIds: Collection<String>? = null
+    private var monthsAgo: Int? = null
+        private set(value) {
+            field = value
+            monthsAgoTimestamp = if (value == null) {
+                null
+            } else {
+                getTimeMonthsAgo(value).toString()
+            }
+        }
+    private var monthsAgoTimestamp: String? = null
+
     suspend fun startServer(
+        conversationIds: Collection<String>?,
+        monthsAgo: Int?,
         createdSuccessCallback: (TransferCommand) -> Unit,
     ) = withContext(SINGLE_SOCKET_THREAD) {
         try {
@@ -139,6 +155,8 @@ class TransferServer @Inject internal constructor(
             this@TransferServer.serverSocket = serverSocket
             status.value = TransferStatus.CREATED
             code = Random.nextInt(10000)
+            this@TransferServer.conversationIds = conversationIds
+            this@TransferServer.monthsAgo = monthsAgo
             createdSuccessCallback(
                 TransferCommand(
                     TransferCommandAction.PUSH.value,
@@ -254,7 +272,6 @@ class TransferServer @Inject internal constructor(
         syncSnapshot(outputStream, transferDataType, primaryId)
         syncSticker(outputStream, transferDataType, primaryId)
         syncPinMessage(outputStream, transferDataType, primaryId)
-        syncTranscriptMessage(outputStream, transferDataType, primaryId, assistanceId)
         syncMessage(outputStream, transferDataType, primaryId)
         syncMessageMention(outputStream, transferDataType, primaryId)
         syncExpiredMessage(outputStream, transferDataType, primaryId)
@@ -307,7 +324,11 @@ class TransferServer @Inject internal constructor(
         }
         currentType = TransferDataType.CONVERSATION.value
         while (!quit) {
-            val list = conversationDao.getConversationsByLimitAndRowId(LIMIT, rowId)
+            val list = if (conversationIds.isNullOrEmpty()) {
+                conversationDao.getConversationsByLimitAndRowId(LIMIT, rowId)
+            } else {
+                conversationDao.getConversationsByLimitAndRowId(LIMIT, rowId, conversationIds!!)
+            }
             if (list.isEmpty()) {
                 return
             }
@@ -335,6 +356,7 @@ class TransferServer @Inject internal constructor(
         primaryId: String?,
         assistanceId: String?,
     ) {
+        val collection = conversationIds
         var rowId = -1L
         if (transferDataType != null) {
             if (transferDataType.ordinal > TransferDataType.PARTICIPANT.ordinal) {
@@ -347,7 +369,11 @@ class TransferServer @Inject internal constructor(
         currentType = TransferDataType.PARTICIPANT.value
 
         while (!quit) {
-            val list = participantDao.getParticipantsByLimitAndRowId(LIMIT, rowId)
+            val list = if (collection.isNullOrEmpty()) {
+                participantDao.getParticipantsByLimitAndRowId(LIMIT, rowId)
+            } else {
+                participantDao.getParticipantsByLimitAndRowId(LIMIT, rowId, collection)
+            }
             if (list.isEmpty()) {
                 return
             }
@@ -550,46 +576,25 @@ class TransferServer @Inject internal constructor(
         }
     }
 
+    // Sync data by messageId
     private fun syncTranscriptMessage(
         outputStream: OutputStream,
-        transferDataType: TransferDataType?,
-        primaryId: String?,
-        assistanceId: String?,
+        transcriptId: String,
     ) {
-        var rowId = -1L
-        if (transferDataType != null) {
-            if (transferDataType.ordinal > TransferDataType.TRANSCRIPT_MESSAGE.ordinal) {
-                // skip
-                return
-            } else if (transferDataType == TransferDataType.TRANSCRIPT_MESSAGE && primaryId != null && assistanceId != null) {
-                rowId = transcriptMessageDao.getTranscriptMessageRowId(primaryId, assistanceId) ?: -1
-            }
+        val list = transcriptMessageDao.getTranscript(transcriptId)
+        if (list.isEmpty()) {
+            return
         }
-        currentType = TransferDataType.TRANSCRIPT_MESSAGE.value
-        while (!quit) {
-            val list = transcriptMessageDao.getTranscriptMessageByLimitAndRowId(LIMIT, rowId)
-            if (list.isEmpty()) {
-                return
-            }
-            list.map {
-                it.markAttachmentAsPending()
-            }.forEach { transcriptMessage ->
-                writeJson(
-                    outputStream,
-                    TransferData.serializer(TranscriptMessage.serializer()),
-                    TransferData(TransferDataType.TRANSCRIPT_MESSAGE.value, transcriptMessage),
-                )
-                syncTranscriptMediaFile(outputStream, transcriptMessage)
-                count++
-            }
-            if (list.size < LIMIT) {
-                return
-            }
-            currentId = list.last().transcriptId
-            rowId = transcriptMessageDao.getTranscriptMessageRowId(
-                list.last().transcriptId,
-                list.last().messageId,
-            ) ?: return
+        list.map {
+            it.markAttachmentAsPending()
+        }.forEach { transcriptMessage ->
+            writeJson(
+                outputStream,
+                TransferData.serializer(TranscriptMessage.serializer()),
+                TransferData(TransferDataType.TRANSCRIPT_MESSAGE.value, transcriptMessage),
+            )
+            syncTranscriptMediaFile(outputStream, transcriptMessage)
+            count++
         }
     }
 
@@ -599,6 +604,8 @@ class TransferServer @Inject internal constructor(
         primaryId: String?,
     ) {
         var rowId = -1L
+        val collection = conversationIds
+        val timestamp = monthsAgoTimestamp
         if (transferDataType != null) {
             if (transferDataType.ordinal > TransferDataType.PIN_MESSAGE.ordinal) {
                 // skip
@@ -607,9 +614,22 @@ class TransferServer @Inject internal constructor(
                 rowId = pinMessageDao.getPinMessageRowId(primaryId) ?: -1
             }
         }
+        if (timestamp != null) {
+            val startId = pinMessageDao.getMessageRowidByCreateAt(timestamp)
+            if (startId == null) {
+                // skip message
+                return
+            } else {
+                rowId = startId
+            }
+        }
         currentType = TransferDataType.PIN_MESSAGE.value
         while (!quit) {
-            val list = pinMessageDao.getPinMessageByLimitAndRowId(LIMIT, rowId)
+            val list = if (collection.isNullOrEmpty()) {
+                pinMessageDao.getPinMessageByLimitAndRowId(LIMIT, rowId)
+            } else {
+                pinMessageDao.getPinMessageByLimitAndRowId(LIMIT, rowId, collection)
+            }
             if (list.isEmpty()) {
                 return
             }
@@ -637,6 +657,9 @@ class TransferServer @Inject internal constructor(
         primaryId: String?,
     ) {
         var rowId = -1L
+        val collection = conversationIds
+        val timestamp = monthsAgoTimestamp
+        val tooMuchId = (collection?.size ?: 0) > STRIDE_FOR_TRANSFER
         if (transferDataType != null) {
             if (transferDataType.ordinal > TransferDataType.MESSAGE.ordinal) {
                 // skip
@@ -645,28 +668,55 @@ class TransferServer @Inject internal constructor(
                 rowId = messageDao.getMessageRowid(primaryId) ?: -1
             }
         }
+        if (timestamp != null) {
+            val startId = messageDao.getMessageRowidByCreateAt(timestamp)
+            if (startId == null) {
+                // skip message
+                return
+            } else {
+                rowId = startId
+            }
+        }
         currentType = TransferDataType.MESSAGE.value
         while (!quit) {
-            val list = messageDao.getMessageByLimitAndRowId(LIMIT, rowId)
+            val list = if (timestamp != null && !collection.isNullOrEmpty() && !tooMuchId) {
+                messageDao.getMessageByLimitAndRowId(LIMIT, rowId, collection, timestamp)
+            } else if (timestamp != null && !collection.isNullOrEmpty() && tooMuchId) {
+                messageDao.getMessageByLimitAndRowId(LIMIT, rowId, timestamp)
+            } else if (timestamp != null) {
+                messageDao.getMessageByLimitAndRowId(LIMIT, rowId, timestamp)
+            } else if (!collection.isNullOrEmpty() && !tooMuchId) {
+                messageDao.getMessageByLimitAndRowId(LIMIT, rowId, collection)
+            } else {
+                messageDao.getMessageByLimitAndRowId(LIMIT, rowId)
+            }
             if (list.isEmpty()) {
                 return
             }
-            list.map {
+            if (tooMuchId && !collection.isNullOrEmpty()) {
+                list.filter { collection.contains(it.conversationId) }
+            } else {
+                list
+            }.map {
                 it.markAttachmentAsPending()
-            }.forEach { transcriptMessage ->
+            }.forEach { transferMessage ->
+                if (transferMessage.isTranscript()) {
+                    syncTranscriptMessage(outputStream, transferMessage.messageId)
+                }
                 writeJson(
                     outputStream,
                     TransferData.serializer(TransferMessage.serializer()),
-                    TransferData(TransferDataType.MESSAGE.value, transcriptMessage),
+                    TransferData(TransferDataType.MESSAGE.value, transferMessage),
                 )
-                syncMessageMediaFile(outputStream, transcriptMessage)
+                syncMessageMediaFile(outputStream, transferMessage)
                 count++
             }
             if (list.size < LIMIT) {
                 return
             }
             currentId = list.last().messageId
-            rowId = messageDao.getMessageRowid(list.last().messageId) ?: return
+            val lastRowId = messageDao.getMessageRowid(currentId!!) ?: return
+            rowId = lastRowId + 1
         }
     }
 
@@ -676,6 +726,7 @@ class TransferServer @Inject internal constructor(
         primaryId: String?,
     ) {
         var rowId = -1L
+        val collection = conversationIds
         if (transferDataType != null) {
             if (transferDataType.ordinal > TransferDataType.MESSAGE_MENTION.ordinal) {
                 // skip
@@ -686,7 +737,11 @@ class TransferServer @Inject internal constructor(
         }
         currentType = TransferDataType.MESSAGE_MENTION.value
         while (!quit) {
-            val list = messageMentionDao.getMessageMentionByLimitAndRowId(LIMIT, rowId)
+            val list = if (collection.isNullOrEmpty()) {
+                messageMentionDao.getMessageMentionByLimitAndRowId(LIMIT, rowId)
+            } else {
+                messageMentionDao.getMessageMentionByLimitAndRowId(LIMIT, rowId, collection)
+            }
             if (list.isEmpty()) {
                 return
             }
@@ -806,11 +861,7 @@ class TransferServer @Inject internal constructor(
             totalSnapshotCount(transferDataType, primaryId) + totalStickerCount(
                 transferDataType,
                 primaryId,
-            ) + totalPinMessageCount(transferDataType, primaryId) + totalTranscriptMessageCount(
-                transferDataType,
-                primaryId,
-                assistanceId,
-            ) + totalMessageCount(transferDataType, primaryId) + totalMessageMentionCount(transferDataType, primaryId) + totalExpiredMessageCount(
+            ) + totalPinMessageCount(transferDataType, primaryId) + totalMessageCount(transferDataType, primaryId) + totalMessageMentionCount(transferDataType, primaryId) + totalExpiredMessageCount(
                 transferDataType,
                 primaryId,
             )
@@ -818,6 +869,8 @@ class TransferServer @Inject internal constructor(
     }
 
     private fun totalConversationCount(transferDataType: TransferDataType?, primaryId: String?): Long {
+        val collection = conversationIds
+        if (!collection.isNullOrEmpty()) return collection.size.toLong()
         return if (transferDataType == null || primaryId == null) {
             conversationDao.countConversations()
         } else if (transferDataType == TransferDataType.CONVERSATION) {
@@ -845,17 +898,6 @@ class TransferServer @Inject internal constructor(
         } else if (transferDataType == TransferDataType.STICKER) {
             val rowId = stickerDao.getStickerRowId(primaryId) ?: -1L
             stickerDao.countStickers(rowId)
-        } else {
-            0L
-        }
-    }
-
-    private fun totalTranscriptMessageCount(transferDataType: TransferDataType?, primaryId: String?, assistanceId: String?): Long {
-        return if (transferDataType == null || primaryId == null || assistanceId == null || transferDataType.ordinal < TransferDataType.TRANSCRIPT_MESSAGE.ordinal) {
-            transcriptMessageDao.countTranscriptMessages()
-        } else if (transferDataType == TransferDataType.TRANSCRIPT_MESSAGE) {
-            val rowId = transcriptMessageDao.getTranscriptMessageRowId(primaryId, assistanceId) ?: -1L
-            transcriptMessageDao.countTranscriptMessages(rowId)
         } else {
             0L
         }
@@ -893,24 +935,47 @@ class TransferServer @Inject internal constructor(
     }
 
     private fun totalMessageMentionCount(transferDataType: TransferDataType?, primaryId: String?): Long {
+        val collection = conversationIds
         return if (transferDataType == null || transferDataType.ordinal < TransferDataType.MESSAGE_MENTION.ordinal) {
-            messageMentionDao.countMessageMention()
+            if (collection.isNullOrEmpty()) {
+                messageMentionDao.countMessageMention()
+            } else {
+                messageMentionDao.countMessageMention(collection)
+            }
         } else if (transferDataType == TransferDataType.MESSAGE_MENTION && primaryId != null) {
             val rowId = messageMentionDao.getMessageMentionRowId(primaryId) ?: -1L
-            messageMentionDao.countMessageMention(rowId)
+            if (collection.isNullOrEmpty()) {
+                messageMentionDao.countMessageMention(rowId)
+            } else {
+                messageMentionDao.countMessageMention(rowId, collection)
+            }
         } else {
             0L
         }
     }
 
     private fun totalPinMessageCount(transferDataType: TransferDataType?, primaryId: String?): Long {
-        return if (transferDataType == null || primaryId == null || transferDataType.ordinal < TransferDataType.PIN_MESSAGE.ordinal) {
-            pinMessageDao.countPinMessages()
-        } else if (transferDataType == TransferDataType.PIN_MESSAGE) {
-            val rowId = pinMessageDao.getPinMessageRowId(primaryId) ?: -1L
-            pinMessageDao.countPinMessages(rowId)
+        val collection = conversationIds
+        val timestamp = monthsAgoTimestamp
+        var rowId = -1L
+        if (timestamp != null) {
+            val startId = pinMessageDao.getMessageRowidByCreateAt(timestamp) ?: return 0
+            rowId = startId
+        } else if (transferDataType == TransferDataType.PIN_MESSAGE && primaryId != null) {
+            rowId = pinMessageDao.getPinMessageRowId(primaryId) ?: -1L
+        }
+        return if (rowId == -1L) {
+            if (collection.isNullOrEmpty()) {
+                pinMessageDao.countPinMessages()
+            } else {
+                pinMessageDao.countPinMessages(collection)
+            }
         } else {
-            0L
+            if (collection.isNullOrEmpty()) {
+                pinMessageDao.countPinMessages(rowId)
+            } else {
+                pinMessageDao.countPinMessages(rowId, collection)
+            }
         }
     }
 
@@ -930,29 +995,61 @@ class TransferServer @Inject internal constructor(
         primaryId: String?,
         assistanceId: String?,
     ): Long {
+        val collection = conversationIds
         return if (transferDataType == null || primaryId == null || assistanceId == null || transferDataType.ordinal < TransferDataType.PARTICIPANT.ordinal) {
-            participantDao.countParticipants()
+            if (collection.isNullOrEmpty()) {
+                participantDao.countParticipants()
+            } else {
+                participantDao.countParticipants(collection)
+            }
         } else if (transferDataType == TransferDataType.PARTICIPANT) {
             val rowId = participantDao.getParticipantRowId(primaryId, assistanceId) ?: -1L
-            participantDao.countParticipants(rowId)
+            if (collection.isNullOrEmpty()) {
+                participantDao.countParticipants(rowId)
+            } else {
+                participantDao.countParticipants(rowId, collection)
+            }
         } else {
             0L
         }
     }
 
     private fun totalMessageCount(transferDataType: TransferDataType?, primaryId: String?): Long {
-        return if (transferDataType == null || primaryId == null || transferDataType.ordinal < TransferDataType.MESSAGE.ordinal) {
-            messageDao.countMediaMessages() + messageDao.countMessages()
-        } else if (transferDataType == TransferDataType.MESSAGE) {
-            val rowId = messageDao.getMessageRowid(primaryId) ?: -1L
-            messageDao.countMediaMessages(rowId) + messageDao.countMessages(rowId)
+        val collection = conversationIds
+        val timestamp = monthsAgoTimestamp
+        var rowId = -1L
+        if (timestamp != null) {
+            val startId = messageDao.getMessageRowidByCreateAt(timestamp) ?: return 0
+            rowId = startId
+        } else if (transferDataType == TransferDataType.MESSAGE && primaryId != null) {
+            rowId = messageDao.getMessageRowid(primaryId) ?: -1L
+        }
+        return if (rowId == -1L) {
+            if (collection.isNullOrEmpty()) {
+                messageDao.countMediaMessages() + messageDao.countMessages() + transcriptMessageDao.countTranscriptMessages()
+            } else {
+                messageDao.countMediaMessages(collection) + messageDao.countMessages(collection) + transcriptMessageDao.countTranscriptMessages(collection)
+            }
         } else {
-            0L
+            if (!collection.isNullOrEmpty() && timestamp != null) {
+                collection.chunked(STRIDE_FOR_TRANSFER).sumOf { ids ->
+                    messageDao.countMediaMessages(rowId, ids, timestamp) + messageDao.countMessages(rowId, ids, timestamp) + transcriptMessageDao.countTranscriptMessages(rowId, ids, timestamp)
+                }
+            } else if (!collection.isNullOrEmpty()) {
+                collection.chunked(STRIDE_FOR_TRANSFER).sumOf { ids ->
+                    messageDao.countMediaMessages(rowId, ids) + messageDao.countMessages(rowId, ids) + transcriptMessageDao.countTranscriptMessages(rowId, ids)
+                }
+            } else if (timestamp != null) {
+                messageDao.countMediaMessages(rowId, timestamp) + messageDao.countMessages(rowId, timestamp) + transcriptMessageDao.countTranscriptMessages(rowId, timestamp)
+            } else {
+                messageDao.countMediaMessages(rowId) + messageDao.countMessages(rowId) + transcriptMessageDao.countTranscriptMessages(rowId)
+            }
         }
     }
 
     companion object {
         private const val LIMIT = 100
+        private const val STRIDE_FOR_TRANSFER = 900
     }
 }
 

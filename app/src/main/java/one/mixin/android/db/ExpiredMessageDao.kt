@@ -42,6 +42,6 @@ interface ExpiredMessageDao : BaseDao<ExpiredMessage> {
     @Query("SELECT count(1) FROM expired_messages")
     fun countExpiredMessages(): Long
 
-    @Query("SELECT count(1) FROM expired_messages  WHERE rowid > :rowId")
+    @Query("SELECT count(1) FROM expired_messages WHERE rowid > :rowId")
     fun countExpiredMessages(rowId: Long): Long
 }

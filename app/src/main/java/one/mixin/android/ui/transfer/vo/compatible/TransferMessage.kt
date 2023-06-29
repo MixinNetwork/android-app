@@ -222,6 +222,9 @@ fun TransferMessage.markAttachmentAsPending(): TransferMessage {
 
 fun TransferMessage.isAttachment() = category in attachmentCategory
 
+fun TransferMessage.isTranscript() =
+    category == MessageCategory.PLAIN_TRANSCRIPT.name || category == MessageCategory.SIGNAL_TRANSCRIPT.name || category == MessageCategory.ENCRYPTED_TRANSCRIPT.name
+
 private val attachmentCategory by lazy {
     listOf(
         MessageCategory.PLAIN_DATA.name,

@@ -80,7 +80,7 @@ class TransferProtocol(private val serializationJson: Json, private val secretBy
 
             TYPE_JSON -> { // JSON
                 val ciphertext = readByteArray(inputStream, size) ?: return null
-                return decrypt(ciphertext)
+                return sizeData + ciphertext
             }
 
             TYPE_FILE -> { // FILE

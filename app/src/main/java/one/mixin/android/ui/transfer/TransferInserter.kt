@@ -22,9 +22,15 @@ class TransferInserter {
     var primaryId: String? = null // Save the currently inserted primary key id
         private set(value) {
             field = value
-            Timber.e("Insert primaryId $primaryId")
+            Timber.e("Insert primaryId $value")
         }
     private var assistanceId: String? = null
+        private set(value) {
+            if (field != value) {
+                Timber.e("Insert assistanceId $value")
+            }
+            field = value
+        }
 
     private val writableDatabase by lazy {
         requireNotNull(MixinDatabase.getWritableDatabase())

@@ -267,3 +267,9 @@ fun String.getRelativeTimeSpan(): String {
 fun currentTimeSeconds() = System.currentTimeMillis() / 1000
 
 fun String.toSeconds() = ZonedDateTime.parse(this).toOffsetDateTime().toEpochSecond()
+
+fun getTimeMonthsAgo(x: Int): Instant {
+    val startOfDay = ZonedDateTime.now(ZoneId.systemDefault())
+        .withHour(0).withMinute(0).withSecond(0).withNano(0)
+    return startOfDay.minusMonths(x.toLong()).toInstant()
+}
