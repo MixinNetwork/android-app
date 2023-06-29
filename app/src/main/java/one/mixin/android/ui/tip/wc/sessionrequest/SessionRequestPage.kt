@@ -39,13 +39,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.google.gson.Gson
-import com.trustwallet.walletconnect.models.ethereum.WCEthereumSignMessage
-import com.trustwallet.walletconnect.models.ethereum.WCEthereumTransaction
 import one.mixin.android.R
 import one.mixin.android.api.response.GasPriceType
 import one.mixin.android.api.response.TipGas
-import one.mixin.android.tip.wc.Chain
 import one.mixin.android.tip.wc.WalletConnect
+import one.mixin.android.tip.wc.internal.Chain
+import one.mixin.android.tip.wc.internal.WCEthereumSignMessage
+import one.mixin.android.tip.wc.internal.WCEthereumTransaction
 import one.mixin.android.ui.setting.ui.compose.MixinBottomSheetDialog
 import one.mixin.android.ui.setting.ui.theme.MixinAppTheme
 import one.mixin.android.ui.tip.wc.WalletConnectBottomSheetDialogFragment

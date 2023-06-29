@@ -112,7 +112,6 @@ import one.mixin.android.tip.Tip
 import one.mixin.android.tip.wc.WCErrorEvent
 import one.mixin.android.tip.wc.WCEvent
 import one.mixin.android.tip.wc.WalletConnect
-import one.mixin.android.tip.wc.WalletConnectV1
 import one.mixin.android.tip.wc.WalletConnectV2
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.BatteryOptimizationDialogActivity
@@ -600,7 +599,6 @@ class MainActivity : BlazeBaseActivity() {
     private fun initWalletConnect() {
         if (!WalletConnect.isEnabled(this)) return
 
-        WalletConnectV1
         WalletConnectV2
     }
 

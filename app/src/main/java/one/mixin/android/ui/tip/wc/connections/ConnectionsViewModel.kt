@@ -13,11 +13,8 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
-import one.mixin.android.tip.wc.Chain
 import one.mixin.android.tip.wc.WalletConnect
-import one.mixin.android.tip.wc.WalletConnectV1
 import one.mixin.android.tip.wc.WalletConnectV2
-import one.mixin.android.tip.wc.getChain
 import timber.log.Timber
 import javax.inject.Inject
 
@@ -45,9 +42,6 @@ class ConnectionsViewModel @Inject internal constructor() : ViewModel() {
 
     fun disconnect(version: WalletConnect.Version, topic: String) {
         when (version) {
-            WalletConnect.Version.V1 -> {
-                WalletConnectV1.removeFromStore(topic)
-            }
             WalletConnect.Version.V2 -> {
                 WalletConnectV2.disconnect(topic)
             }
@@ -58,14 +52,6 @@ class ConnectionsViewModel @Inject internal constructor() : ViewModel() {
     fun refreshConnections() {
         val res = _refreshFlow.tryEmit(Unit)
         Timber.d("Web3Wallet refreshConnections $res")
-    }
-
-    fun changeNetworkV1(chain: Chain) {
-        val connectionUI = getConnectionUI() ?: return
-        if (connectionUI.chain == chain) return
-
-        WalletConnectV1.changeNetwork(chain)
-        refreshConnections()
     }
 
     private fun refreshCurrentConnectionUI() {
@@ -84,21 +70,6 @@ class ConnectionsViewModel @Inject internal constructor() : ViewModel() {
                 data = wcSession.topic,
             )
         }
-
-        val v1List = WalletConnectV1.getStoredSessions()?.sortedByDescending { wcV1Session ->
-            wcV1Session.date
-        }?.mapIndexed { index, item ->
-            val peer = item.remotePeerMeta
-            val connectionUI = ConnectionUI(
-                index = index + v2List.size,
-                icon = peer.icons.firstOrNull(),
-                name = peer.name.takeIf { it.isNotBlank() } ?: "Dapp",
-                uri = peer.url.takeIf { it.isNotBlank() } ?: "Not provided",
-                data = item.session.topic,
-                chain = item.chainId.getChain(),
-            )
-            connectionUI
-        }
-        return v2List.plus(v1List ?: emptyList())
+        return v2List
     }
 }
