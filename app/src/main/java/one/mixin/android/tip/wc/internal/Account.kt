@@ -1,4 +1,4 @@
-package one.mixin.android.tip.wc
+package one.mixin.android.tip.wc.internal
 
 private const val ISS_DID_PREFIX = "did:pkh:"
 

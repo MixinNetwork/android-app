@@ -4,9 +4,6 @@ import com.github.salomonbrys.kotson.fromJson
 import com.github.salomonbrys.kotson.registerTypeAdapter
 import com.google.gson.GsonBuilder
 import com.google.gson.JsonParser
-import com.trustwallet.walletconnect.models.ethereum.WCEthereumSignMessage
-import com.trustwallet.walletconnect.models.ethereum.WCEthereumTransaction
-import com.trustwallet.walletconnect.models.ethereum.ethTransactionSerializer
 import com.walletconnect.android.Core
 import com.walletconnect.android.CoreClient
 import com.walletconnect.android.internal.common.exception.GenericException
@@ -16,6 +13,14 @@ import com.walletconnect.web3.wallet.client.Web3Wallet
 import one.mixin.android.BuildConfig
 import one.mixin.android.MixinApplication
 import one.mixin.android.RxBus
+import one.mixin.android.tip.wc.internal.Chain
+import one.mixin.android.tip.wc.internal.Method
+import one.mixin.android.tip.wc.internal.WCEthereumSignMessage
+import one.mixin.android.tip.wc.internal.WCEthereumTransaction
+import one.mixin.android.tip.wc.internal.WalletConnectException
+import one.mixin.android.tip.wc.internal.ethTransactionSerializer
+import one.mixin.android.tip.wc.internal.getChain
+import one.mixin.android.tip.wc.internal.supportChainList
 import org.web3j.crypto.Credentials
 import org.web3j.crypto.ECKeyPair
 import org.web3j.crypto.Keys

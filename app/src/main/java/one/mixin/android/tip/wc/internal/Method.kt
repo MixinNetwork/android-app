@@ -1,4 +1,4 @@
-package one.mixin.android.tip.wc
+package one.mixin.android.tip.wc.internal
 
 sealed class Method(val name: String) {
     object ETHSign : Method("eth_sign")

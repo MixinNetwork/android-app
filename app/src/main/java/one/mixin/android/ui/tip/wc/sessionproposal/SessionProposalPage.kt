@@ -39,7 +39,6 @@ import one.mixin.android.ui.tip.wc.sessionrequest.DataError
 fun SessionProposalPage(
     version: WalletConnect.Version,
     step: WalletConnectBottomSheetDialogFragment.Step,
-    requestType: WalletConnect.RequestType,
     errorInfo: String?,
     onDismissRequest: () -> Unit,
     onBiometricClick: (() -> Unit),
@@ -52,11 +51,7 @@ fun SessionProposalPage(
         return
     }
 
-    val chainName = if (requestType == WalletConnect.RequestType.SwitchNetwork) {
-        viewModel.getTargetSwitchNetworks() ?: sessionProposalUI.chain
-    } else {
-        sessionProposalUI.chain
-    }.name
+    val chainName = sessionProposalUI.chain.name
 
     MixinAppTheme {
         Column(

@@ -9,14 +9,6 @@ sealed class WCEvent(
     open val version: WalletConnect.Version,
     open val requestType: RequestType,
 ) : Parcelable {
-
-    @Parcelize
-    data class V1(
-        override val version: WalletConnect.Version,
-        override val requestType: RequestType,
-        val id: Long,
-    ) : WCEvent(version, requestType)
-
     @Parcelize
     data class V2(
         override val version: WalletConnect.Version,

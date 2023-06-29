@@ -13,7 +13,6 @@ import one.mixin.android.tip.wc.WCError
 import one.mixin.android.tip.wc.WCEvent
 import one.mixin.android.tip.wc.WalletConnect
 import one.mixin.android.tip.wc.WalletConnect.RequestType
-import one.mixin.android.tip.wc.WalletConnectV1
 import one.mixin.android.tip.wc.WalletConnectV2
 import one.mixin.android.ui.common.BaseActivity
 import one.mixin.android.ui.common.QrScanBottomSheetDialogFragment
@@ -83,42 +82,6 @@ class WalletConnectActivity : BaseActivity() {
 
     private fun handleWCEvent(event: WCEvent) {
         when (event.version) {
-            WalletConnect.Version.V1 -> {
-                val wc = WalletConnectV1
-                event as WCEvent.V1
-                when (event.requestType) {
-                    RequestType.SessionProposal -> {
-                        showWalletConnectBottomSheet(
-                            RequestType.SessionProposal,
-                            WalletConnect.Version.V1,
-                            null,
-                            { wc.rejectSession() },
-                        ) { priv ->
-                            wc.approveSession(priv)
-                        }
-                    }
-                    RequestType.SwitchNetwork -> {
-                        showWalletConnectBottomSheet(
-                            RequestType.SwitchNetwork,
-                            WalletConnect.Version.V1,
-                            null,
-                            { wc.rejectRequest(event.id) },
-                        ) { priv ->
-                            wc.walletChangeNetwork(priv, event.id)
-                        }
-                    }
-                    RequestType.SessionRequest -> {
-                        showWalletConnectBottomSheet(
-                            RequestType.SessionRequest,
-                            WalletConnect.Version.V1,
-                            null,
-                            { wc.rejectRequest(event.id) },
-                        ) { priv ->
-                            wc.approveRequest(priv, event.id)
-                        }
-                    }
-                }
-            }
             WalletConnect.Version.V2 -> {
                 event as WCEvent.V2
                 when (event.requestType) {
@@ -131,8 +94,6 @@ class WalletConnectActivity : BaseActivity() {
                         ) { priv ->
                             WalletConnectV2.approveSession(priv)
                         }
-                    }
-                    RequestType.SwitchNetwork -> {
                     }
                     RequestType.SessionRequest -> {
                         showWalletConnectBottomSheet(
@@ -153,7 +114,7 @@ class WalletConnectActivity : BaseActivity() {
 
     private fun showWalletConnectBottomSheet(
         requestType: RequestType,
-        version: WalletConnect.Version,
+        @Suppress("SameParameterValue") version: WalletConnect.Version,
         topic: String?,
         onReject: () -> Unit,
         callback: suspend (ByteArray) -> Unit,

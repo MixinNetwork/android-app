@@ -1,4 +1,4 @@
-package one.mixin.android.tip.wc
+package one.mixin.android.tip.wc.internal
 
 import one.mixin.android.Constants
 

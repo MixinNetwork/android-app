@@ -26,7 +26,6 @@ import com.bumptech.glide.manager.SupportRequestManagerFragment
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.google.gson.GsonBuilder
-import com.trustwallet.walletconnect.models.ethereum.WCEthereumTransaction
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -49,11 +48,11 @@ import one.mixin.android.tip.Tip
 import one.mixin.android.tip.exception.TipNetworkException
 import one.mixin.android.tip.wc.WalletConnect
 import one.mixin.android.tip.wc.WalletConnect.RequestType
-import one.mixin.android.tip.wc.WalletConnectException
 import one.mixin.android.tip.wc.WalletConnectTIP
-import one.mixin.android.tip.wc.WalletConnectV1
 import one.mixin.android.tip.wc.WalletConnectV2
-import one.mixin.android.tip.wc.walletConnectChainIdMap
+import one.mixin.android.tip.wc.internal.WCEthereumTransaction
+import one.mixin.android.tip.wc.internal.WalletConnectException
+import one.mixin.android.tip.wc.internal.walletConnectChainIdMap
 import one.mixin.android.ui.common.biometric.BiometricDialog
 import one.mixin.android.ui.common.biometric.BiometricInfo
 import one.mixin.android.ui.preview.TextPreviewActivity
@@ -104,7 +103,6 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
     private val topic by lazy { requireArguments().getString(ARGS_TOPIC) }
     private val wc by lazy {
         when (version) {
-            WalletConnect.Version.V1 -> WalletConnectV1
             WalletConnect.Version.V2 -> WalletConnectV2
             else -> WalletConnectTIP
         }
@@ -141,15 +139,13 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
         step = when (requestType) {
             RequestType.SessionProposal -> Step.Input
             RequestType.SessionRequest -> Step.Sign
-            RequestType.SwitchNetwork -> Step.Input
         }
         setContent {
             when (requestType) {
-                RequestType.SessionProposal, RequestType.SwitchNetwork -> {
+                RequestType.SessionProposal -> {
                     SessionProposalPage(
                         version,
                         step,
-                        requestType,
                         errorInfo,
                         onDismissRequest = { dismiss() },
                         onBiometricClick = { showBiometricPrompt() },
@@ -176,9 +172,7 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
                         onPinComplete = { pin -> doAfterPinComplete(pin) },
                         onGasItemClick = { type ->
                             gasPriceType = type
-                            if (version == WalletConnect.Version.V1) {
-                                (wc.currentSignData as? WalletConnect.WCSignData.V1SignData)?.gasPriceType = type
-                            } else if (version == WalletConnect.Version.V2) {
+                            if (version == WalletConnect.Version.V2) {
                                 (wc.currentSignData as? WalletConnect.WCSignData.V2SignData)?.gasPriceType = type
                             }
                         },
@@ -254,9 +248,6 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
         if (tx !is WCEthereumTransaction) return
         val assetId = walletConnectChainIdMap[
             when (version) {
-                WalletConnect.Version.V1 -> {
-                    WalletConnectV1.chain.symbol
-                }
                 WalletConnect.Version.V2 -> {
                     WalletConnectV2.chain.symbol
                 }
@@ -277,9 +268,7 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
                         it.data
                     },
                 )
-                if (version == WalletConnect.Version.V1) {
-                    (wc.currentSignData as? WalletConnect.WCSignData.V1SignData)?.tipGas = tipGas
-                } else if (version == WalletConnect.Version.V2) {
+                if (version == WalletConnect.Version.V2) {
                     (wc.currentSignData as? WalletConnect.WCSignData.V2SignData)?.tipGas = tipGas
                 }
             }
@@ -435,7 +424,6 @@ fun showWalletConnectBottomSheetDialogFragment(
                 "${
                     when (version) {
                         WalletConnect.Version.V2 -> WalletConnectV2.TAG
-                        WalletConnect.Version.V1 -> WalletConnectV1.TAG
                         else -> WalletConnectTIP.TAG
                     }
                 } $errorInfo",

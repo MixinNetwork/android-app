@@ -86,6 +86,5 @@
 #-dontwarn java.lang.SafeVarargs
 -dontwarn org.slf4j.**
 
--keep class com.trustwallet.walletconnect.** { *; }
 -keep public class com.walletconnect.android.** { *; }
 -keep public class com.walletconnect.web3.** { *; }
