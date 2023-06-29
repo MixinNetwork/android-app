@@ -54,11 +54,11 @@ class WalletConnectActivity : BaseActivity() {
             if (wcBottom == null) {
                 handleWCEvent(event)
             } else {
-                if (wcBottom.step == WalletConnectBottomSheetDialogFragment.Step.Done) {
+                if (wcBottom.step == WalletConnectBottomSheetDialogFragment.Step.Connecting || wcBottom.step == WalletConnectBottomSheetDialogFragment.Step.Done) {
                     wcBottom.dismiss()
                     handleWCEvent(event)
                 } else {
-                    Timber.e("$TAG wcBottom step is ${wcBottom.step}, not done, skip this $event")
+                    Timber.e("$TAG wcBottom step is ${wcBottom.step}, not done or connecting, skip this $event")
                 }
             }
         } else {
@@ -85,6 +85,15 @@ class WalletConnectActivity : BaseActivity() {
             WalletConnect.Version.V2 -> {
                 event as WCEvent.V2
                 when (event.requestType) {
+                    RequestType.Connect -> {
+                        showWalletConnectBottomSheet(
+                            RequestType.Connect,
+                            WalletConnect.Version.V2,
+                            event.topic,
+                            {},
+                            {},
+                        )
+                    }
                     RequestType.SessionProposal -> {
                         showWalletConnectBottomSheet(
                             RequestType.SessionProposal,
@@ -108,7 +117,9 @@ class WalletConnectActivity : BaseActivity() {
                     }
                 }
             }
-            WalletConnect.Version.TIP -> {}
+            WalletConnect.Version.TIP -> {
+                Timber.e("$TAG invalid event $event")
+            }
         }
     }
 

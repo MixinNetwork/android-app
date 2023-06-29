@@ -52,7 +52,6 @@ fun SessionProposalPage(
     }
 
     val chainName = sessionProposalUI.chain.name
-
     MixinAppTheme {
         Column(
             modifier = Modifier

@@ -56,6 +56,7 @@ import one.mixin.android.tip.wc.internal.walletConnectChainIdMap
 import one.mixin.android.ui.common.biometric.BiometricDialog
 import one.mixin.android.ui.common.biometric.BiometricInfo
 import one.mixin.android.ui.preview.TextPreviewActivity
+import one.mixin.android.ui.tip.wc.connections.Loading
 import one.mixin.android.ui.tip.wc.sessionproposal.SessionProposalPage
 import one.mixin.android.ui.tip.wc.sessionrequest.SessionRequestPage
 import one.mixin.android.ui.url.UrlInterpreterActivity
@@ -88,7 +89,7 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
     }
 
     enum class Step {
-        Sign, Send, Input, Loading, Sending, Done, Error,
+        Connecting, Sign, Send, Input, Loading, Sending, Done, Error,
     }
 
     private var behavior: BottomSheetBehavior<*>? = null
@@ -137,11 +138,15 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
     ): View = ComposeView(requireContext()).apply {
         setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
         step = when (requestType) {
+            RequestType.Connect -> Step.Connecting
             RequestType.SessionProposal -> Step.Input
             RequestType.SessionRequest -> Step.Sign
         }
         setContent {
             when (requestType) {
+                RequestType.Connect -> {
+                    Loading()
+                }
                 RequestType.SessionProposal -> {
                     SessionProposalPage(
                         version,

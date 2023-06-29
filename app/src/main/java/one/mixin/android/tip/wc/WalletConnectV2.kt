@@ -137,6 +137,8 @@ object WalletConnectV2 : WalletConnect() {
     }
 
     fun pair(uri: String) {
+        RxBus.publish(WCEvent.V2(Version.V2, RequestType.Connect, ""))
+
         val pairParams = Wallet.Params.Pair(uri)
         Web3Wallet.pair(pairParams, {
             Timber.d("$TAG pair success")
@@ -147,7 +149,7 @@ object WalletConnectV2 : WalletConnect() {
     }
 
     fun approveSession(priv: ByteArray) {
-        val sessionProposal = getSessionProposals().lastOrNull()
+        val sessionProposal = this.sessionProposal
         if (sessionProposal == null) {
             Timber.e("$TAG approveSession sessionProposal is null")
             return
@@ -241,6 +243,7 @@ object WalletConnectV2 : WalletConnect() {
         waitActionCheckError { latch ->
             var errMsg: String? = null
             Web3Wallet.approveSession(approveParams, onSuccess = {
+                this.sessionProposal = null
                 latch.countDown()
             }, onError = { error ->
                 errMsg = "$TAG approveSession error: $error"
@@ -252,7 +255,7 @@ object WalletConnectV2 : WalletConnect() {
     }
 
     fun rejectSession() {
-        val sessionProposal = getSessionProposals().lastOrNull()
+        val sessionProposal = this.sessionProposal
         if (sessionProposal == null) {
             Timber.e("$TAG rejectSession sessionProposal is null")
             return
@@ -262,10 +265,13 @@ object WalletConnectV2 : WalletConnect() {
             sessionProposal.proposerPublicKey,
             "Reject session",
         )
-        Web3Wallet.rejectSession(rejectParams) { error ->
+        Web3Wallet.rejectSession(rejectParams, {
+            this.sessionProposal = null
+        }, { error ->
+            this.sessionProposal = null
             Timber.d("$TAG rejectSession error: $error")
             RxBus.publish(WCErrorEvent(WCError(error.throwable)))
-        }
+        })
     }
 
     private fun parseSessionRequest(request: Wallet.Model.SessionRequest): Boolean {
@@ -393,15 +399,12 @@ object WalletConnectV2 : WalletConnect() {
         }
     }
 
-    fun getSessionProposals(): List<Wallet.Model.SessionProposal> {
+    fun getSessionProposal(): Wallet.Model.SessionProposal? {
         return try {
-            val sessionProposals = Web3Wallet.getSessionProposals()
-            sessionProposals.ifEmpty {
-                return sessionProposal?.let { listOf(it) } ?: emptyList()
-            }
+            this.sessionProposal ?: Web3Wallet.getSessionProposals().lastOrNull()
         } catch (e: IllegalStateException) {
-            Timber.d("$TAG getSessionProposals ${e.stackTraceToString()}")
-            emptyList()
+            Timber.d("$TAG getSessionProposal ${e.stackTraceToString()}")
+            null
         }
     }
 

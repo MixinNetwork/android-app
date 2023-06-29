@@ -21,7 +21,7 @@ class SessionProposalViewModel @Inject internal constructor() : ViewModel() {
     fun getSessionProposalUI(version: WalletConnect.Version): SessionProposalUI? {
         when (version) {
             WalletConnect.Version.V2 -> {
-                val sessionProposal = WalletConnectV2.getSessionProposals().lastOrNull()
+                val sessionProposal = WalletConnectV2.getSessionProposal()
                 return if (sessionProposal != null) {
                     SessionProposalUI(
                         peer = PeerUI(

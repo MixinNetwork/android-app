@@ -56,7 +56,7 @@ abstract class WalletConnect {
     }
 
     enum class RequestType {
-        SessionProposal, SessionRequest,
+        Connect, SessionProposal, SessionRequest,
     }
 
     sealed class WCSignData<T>(
