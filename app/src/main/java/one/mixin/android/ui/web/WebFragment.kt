@@ -28,7 +28,6 @@ import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
-import android.webkit.ConsoleMessage
 import android.webkit.JavascriptInterface
 import android.webkit.PermissionRequest
 import android.webkit.ValueCallback
@@ -477,16 +476,7 @@ class WebFragment : BaseFragment() {
                 },
             )
 
-        val wcEnable = WalletConnect.isEnabled(requireContext())
         webView.webChromeClient = object : WebChromeClient() {
-            override fun onConsoleMessage(consoleMessage: ConsoleMessage?): Boolean {
-                if (wcEnable && consoleMessage?.messageLevel() == ConsoleMessage.MessageLevel.LOG) {
-                    val wcUrl = consoleMessage.message()
-                    WalletConnect.connect(wcUrl)
-                }
-                return true
-            }
-
             override fun onShowCustomView(
                 view: View,
                 requestedOrientation: Int,

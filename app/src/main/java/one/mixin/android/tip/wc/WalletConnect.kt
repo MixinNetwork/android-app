@@ -45,16 +45,8 @@ abstract class WalletConnect {
                 WalletConnectV2.pair(url)
                 afterConnect?.invoke()
             } else if (version == 1) {
-                RxBus.publish(
-                    WCErrorEvent(
-                        WCError(
-                            WalletConnectException(
-                                0,
-                                "${MixinApplication.get().getString(R.string.not_supported_wc_version)}\n$url",
-                            ),
-                        ),
-                    ),
-                )
+                val tip = MixinApplication.get().getString(R.string.not_supported_wc_version)
+                RxBus.publish(WCErrorEvent(WCError(WalletConnectException(0, "${tip}\n\n$url"))))
             }
         }
     }
