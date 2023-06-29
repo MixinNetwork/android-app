@@ -3,6 +3,9 @@ package one.mixin.android.tip.wc
 import android.content.Context
 import com.walletconnect.web3.wallet.client.Wallet
 import one.mixin.android.Constants
+import one.mixin.android.MixinApplication
+import one.mixin.android.R
+import one.mixin.android.RxBus
 import one.mixin.android.api.response.GasPriceType
 import one.mixin.android.api.response.TipGas
 import one.mixin.android.extension.defaultSharedPreferences
@@ -41,6 +44,17 @@ abstract class WalletConnect {
             if (version == 2) {
                 WalletConnectV2.pair(url)
                 afterConnect?.invoke()
+            } else if (version == 1) {
+                RxBus.publish(
+                    WCErrorEvent(
+                        WCError(
+                            WalletConnectException(
+                                0,
+                                "${MixinApplication.get().getString(R.string.not_supported_wc_version)}\n$url",
+                            ),
+                        ),
+                    ),
+                )
             }
         }
     }
