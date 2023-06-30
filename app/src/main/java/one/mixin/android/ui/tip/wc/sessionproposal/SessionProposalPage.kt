@@ -29,25 +29,34 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.walletconnect.web3.wallet.client.Wallet
 import one.mixin.android.R
 import one.mixin.android.tip.wc.WalletConnect
+import one.mixin.android.tip.wc.internal.Chain
 import one.mixin.android.ui.setting.ui.theme.MixinAppTheme
 import one.mixin.android.ui.tip.wc.WalletConnectBottomSheetDialogFragment
-import one.mixin.android.ui.tip.wc.sessionrequest.DataError
+import one.mixin.android.ui.tip.wc.connections.Loading
 
 @Composable
 fun SessionProposalPage(
     version: WalletConnect.Version,
     step: WalletConnectBottomSheetDialogFragment.Step,
+    chain: Chain,
+    topic: String,
+    sessionProposal: Wallet.Model.SessionProposal?,
     errorInfo: String?,
     onDismissRequest: () -> Unit,
     onBiometricClick: (() -> Unit),
     onPinComplete: (String) -> Unit,
 ) {
     val viewModel = hiltViewModel<SessionProposalViewModel>()
-    val sessionProposalUI = viewModel.getSessionProposalUI(version)
+    if (version != WalletConnect.Version.TIP && sessionProposal == null) {
+        Loading()
+        return
+    }
+    val sessionProposalUI = viewModel.getSessionProposalUI(version, chain, sessionProposal)
     if (sessionProposalUI == null) {
-        DataError(errorInfo = "version: $version, sessionProposalUI is null")
+        Loading()
         return
     }
 
@@ -68,7 +77,7 @@ fun SessionProposalPage(
                     .padding(horizontal = 14.dp, vertical = 14.dp)
                     .clip(CircleShape)
                     .clickable(onClick = {
-                        viewModel.rejectSession(version)
+                        viewModel.rejectSession(version, topic)
                         onDismissRequest.invoke()
                     }),
                 contentDescription = null,

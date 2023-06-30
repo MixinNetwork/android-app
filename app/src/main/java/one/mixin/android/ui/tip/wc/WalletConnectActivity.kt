@@ -8,12 +8,10 @@ import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.R
 import one.mixin.android.extension.getParcelableExtraCompat
 import one.mixin.android.tip.Tip
-import one.mixin.android.tip.tipPrivToPrivateKey
 import one.mixin.android.tip.wc.WCError
 import one.mixin.android.tip.wc.WCEvent
 import one.mixin.android.tip.wc.WalletConnect
 import one.mixin.android.tip.wc.WalletConnect.RequestType
-import one.mixin.android.tip.wc.WalletConnectV2
 import one.mixin.android.ui.common.BaseActivity
 import one.mixin.android.ui.common.QrScanBottomSheetDialogFragment
 import timber.log.Timber
@@ -90,8 +88,6 @@ class WalletConnectActivity : BaseActivity() {
                             RequestType.Connect,
                             WalletConnect.Version.V2,
                             event.topic,
-                            {},
-                            {},
                         )
                     }
                     RequestType.SessionProposal -> {
@@ -99,20 +95,13 @@ class WalletConnectActivity : BaseActivity() {
                             RequestType.SessionProposal,
                             WalletConnect.Version.V2,
                             event.topic,
-                            { WalletConnectV2.rejectSession() },
-                        ) { priv ->
-                            WalletConnectV2.approveSession(priv)
-                        }
+                        )
                     }
                     RequestType.SessionRequest -> {
                         showWalletConnectBottomSheet(
                             RequestType.SessionRequest,
                             WalletConnect.Version.V2,
                             event.topic,
-                            { WalletConnectV2.rejectRequest() },
-                            { priv ->
-                                WalletConnectV2.approveRequest(priv)
-                            },
                         )
                     }
                 }
@@ -127,8 +116,6 @@ class WalletConnectActivity : BaseActivity() {
         requestType: RequestType,
         @Suppress("SameParameterValue") version: WalletConnect.Version,
         topic: String?,
-        onReject: () -> Unit,
-        callback: suspend (ByteArray) -> Unit,
     ) {
         showWalletConnectBottomSheetDialogFragment(
             tip,
@@ -136,10 +123,6 @@ class WalletConnectActivity : BaseActivity() {
             requestType,
             version,
             topic,
-            onReject,
-            callback = {
-                callback(tipPrivToPrivateKey(it))
-            },
         )
     }
 
