@@ -3334,8 +3334,6 @@ class ConversationFragment() :
                 forward()
                 forwardDialog?.dismiss()
             }
-            // disable combine transcript
-            forwardDialogLayoutBinding.combineForward.isVisible = !messageAdapter.selectSet.any { it.isTranscript() }
             forwardDialogLayoutBinding.combineForward.setOnClickListener {
                 combineForward()
                 forwardDialog?.dismiss()
