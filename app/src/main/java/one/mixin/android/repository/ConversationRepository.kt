@@ -175,6 +175,7 @@ internal constructor(
         messageDao.indexMediaMessages(conversationId, messageId)
     }
 
+    @SuppressLint("UnsafeOptInUsageError")
     fun getMediaMessages(
         conversationId: String,
         index: Int,
