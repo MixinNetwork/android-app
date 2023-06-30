@@ -43,8 +43,12 @@ abstract class WalletConnect {
             }.toUri()
             val version = uri.host?.toIntOrNull()
             if (version == 2) {
-                WalletConnectV2.pair(url)
-                afterConnect?.invoke()
+                val symKey = uri.getQueryParameter("symKey")
+                // only handle wc pair url
+                if (symKey != null) {
+                    WalletConnectV2.pair(url)
+                    afterConnect?.invoke()
+                }
             } else if (version == 1) {
                 val tip = MixinApplication.get().getString(R.string.not_supported_wc_version)
                 RxBus.publish(WCErrorEvent(WCError(WalletConnectException(0, "${tip}\n\n$url"))))
