@@ -8,12 +8,10 @@ import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.R
 import one.mixin.android.extension.getParcelableExtraCompat
 import one.mixin.android.tip.Tip
-import one.mixin.android.tip.tipPrivToPrivateKey
 import one.mixin.android.tip.wc.WCError
 import one.mixin.android.tip.wc.WCEvent
 import one.mixin.android.tip.wc.WalletConnect
 import one.mixin.android.tip.wc.WalletConnect.RequestType
-import one.mixin.android.tip.wc.WalletConnectV2
 import one.mixin.android.ui.common.BaseActivity
 import one.mixin.android.ui.common.QrScanBottomSheetDialogFragment
 import timber.log.Timber
@@ -54,11 +52,11 @@ class WalletConnectActivity : BaseActivity() {
             if (wcBottom == null) {
                 handleWCEvent(event)
             } else {
-                if (wcBottom.step == WalletConnectBottomSheetDialogFragment.Step.Done) {
+                if (wcBottom.step == WalletConnectBottomSheetDialogFragment.Step.Connecting || wcBottom.step == WalletConnectBottomSheetDialogFragment.Step.Done) {
                     wcBottom.dismiss()
                     handleWCEvent(event)
                 } else {
-                    Timber.e("$TAG wcBottom step is ${wcBottom.step}, not done, skip this $event")
+                    Timber.e("$TAG wcBottom step is ${wcBottom.step}, not done or connecting, skip this $event")
                 }
             }
         } else {
@@ -85,30 +83,32 @@ class WalletConnectActivity : BaseActivity() {
             WalletConnect.Version.V2 -> {
                 event as WCEvent.V2
                 when (event.requestType) {
+                    RequestType.Connect -> {
+                        showWalletConnectBottomSheet(
+                            RequestType.Connect,
+                            WalletConnect.Version.V2,
+                            event.topic,
+                        )
+                    }
                     RequestType.SessionProposal -> {
                         showWalletConnectBottomSheet(
                             RequestType.SessionProposal,
                             WalletConnect.Version.V2,
                             event.topic,
-                            { WalletConnectV2.rejectSession() },
-                        ) { priv ->
-                            WalletConnectV2.approveSession(priv)
-                        }
+                        )
                     }
                     RequestType.SessionRequest -> {
                         showWalletConnectBottomSheet(
                             RequestType.SessionRequest,
                             WalletConnect.Version.V2,
                             event.topic,
-                            { WalletConnectV2.rejectRequest() },
-                            { priv ->
-                                WalletConnectV2.approveRequest(priv)
-                            },
                         )
                     }
                 }
             }
-            WalletConnect.Version.TIP -> {}
+            WalletConnect.Version.TIP -> {
+                Timber.e("$TAG invalid event $event")
+            }
         }
     }
 
@@ -116,8 +116,6 @@ class WalletConnectActivity : BaseActivity() {
         requestType: RequestType,
         @Suppress("SameParameterValue") version: WalletConnect.Version,
         topic: String?,
-        onReject: () -> Unit,
-        callback: suspend (ByteArray) -> Unit,
     ) {
         showWalletConnectBottomSheetDialogFragment(
             tip,
@@ -125,10 +123,6 @@ class WalletConnectActivity : BaseActivity() {
             requestType,
             version,
             topic,
-            onReject,
-            callback = {
-                callback(tipPrivToPrivateKey(it))
-            },
         )
     }
 

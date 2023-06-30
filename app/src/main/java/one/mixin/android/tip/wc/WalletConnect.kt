@@ -1,6 +1,7 @@
 package one.mixin.android.tip.wc
 
 import android.content.Context
+import android.util.LruCache
 import com.walletconnect.web3.wallet.client.Wallet
 import one.mixin.android.Constants
 import one.mixin.android.MixinApplication
@@ -56,7 +57,7 @@ abstract class WalletConnect {
     }
 
     enum class RequestType {
-        SessionProposal, SessionRequest,
+        Connect, SessionProposal, SessionRequest,
     }
 
     sealed class WCSignData<T>(
@@ -76,17 +77,18 @@ abstract class WalletConnect {
         ) : WCSignData<String>(0L, signMessage)
     }
 
-    var chain: Chain = Chain.Polygon
-        protected set(value) {
-            if (value == field) return
+    private var web3jPool = LruCache<Chain, Web3j>(3)
 
-            field = value
-            // TODO consider a web3j pool here?
-            web3j = Web3j.build(HttpService(value.rpcServers[0]))
+    protected fun getWeb3j(chain: Chain): Web3j {
+        val exists = web3jPool[chain]
+        return if (exists == null) {
+            val web3j = Web3j.build(HttpService(chain.rpcServers[0]))
+            web3jPool.put(chain, web3j)
+            web3j
+        } else {
+            exists
         }
-    protected var web3j: Web3j = Web3j.build(HttpService(chain.rpcServers[0]))
-
-    open var currentSignData: WCSignData<*>? = null
+    }
 
     fun signMessage(priv: ByteArray, message: WCEthereumSignMessage): String {
         val keyPair = ECKeyPair.create(priv)

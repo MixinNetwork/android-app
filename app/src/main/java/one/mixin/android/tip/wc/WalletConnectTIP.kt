@@ -1,5 +1,6 @@
 package one.mixin.android.tip.wc
 
+import one.mixin.android.tip.wc.internal.Chain
 import one.mixin.android.ui.tip.wc.sessionproposal.PeerUI
 import one.mixin.android.ui.tip.wc.sessionproposal.SessionProposalUI
 import one.mixin.android.ui.tip.wc.sessionrequest.SessionRequestUI
@@ -9,11 +10,13 @@ object WalletConnectTIP : WalletConnect() {
 
     var peer: PeerUI? = null
 
+    var signData: WCSignData.TIPSignData? = null
+
     fun getSessionProposalUI(): SessionProposalUI? {
         val p = peer ?: return null
         return SessionProposalUI(
             peer = p,
-            chain = chain,
+            chain = Chain.Ethereum,
         )
     }
 
@@ -22,8 +25,8 @@ object WalletConnectTIP : WalletConnect() {
         return SessionRequestUI(
             peerUI = p,
             requestId = 0L,
-            data = currentSignData?.signMessage as? String,
-            chain = chain,
+            data = signData?.signMessage,
+            chain = Chain.Ethereum,
         )
     }
 }

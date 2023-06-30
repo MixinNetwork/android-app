@@ -33,12 +33,12 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.google.gson.Gson
+import com.walletconnect.web3.wallet.client.Wallet
 import one.mixin.android.R
 import one.mixin.android.api.response.GasPriceType
 import one.mixin.android.api.response.TipGas
@@ -49,6 +49,7 @@ import one.mixin.android.tip.wc.internal.WCEthereumTransaction
 import one.mixin.android.ui.setting.ui.compose.MixinBottomSheetDialog
 import one.mixin.android.ui.setting.ui.theme.MixinAppTheme
 import one.mixin.android.ui.tip.wc.WalletConnectBottomSheetDialogFragment
+import one.mixin.android.ui.tip.wc.connections.Loading
 import one.mixin.android.ui.tip.wc.sessionproposal.DAppInfo
 import one.mixin.android.ui.tip.wc.sessionproposal.WCPinBoard
 import one.mixin.android.vo.Asset
@@ -62,6 +63,10 @@ fun SessionRequestPage(
     gson: Gson,
     version: WalletConnect.Version,
     step: WalletConnectBottomSheetDialogFragment.Step,
+    chain: Chain,
+    topic: String,
+    sessionRequest: Wallet.Model.SessionRequest?,
+    signData: WalletConnect.WCSignData.V2SignData<*>?,
     asset: Asset?,
     tipGas: TipGas?,
     gasPriceType: GasPriceType,
@@ -74,12 +79,15 @@ fun SessionRequestPage(
     onGasItemClick: (GasPriceType) -> Unit,
 ) {
     val viewModel = hiltViewModel<SessionRequestViewModel>()
-    val sessionRequestUI = viewModel.getSessionRequestUI(version)
-    if (sessionRequestUI == null) {
-        DataError(errorInfo = "version $version, sessionRequestUI is null")
+    if (version != WalletConnect.Version.TIP && (signData == null || sessionRequest == null)) {
+        Loading()
         return
     }
-
+    val sessionRequestUI = viewModel.getSessionRequestUI(version, chain, signData, sessionRequest)
+    if (sessionRequestUI == null) {
+        Loading()
+        return
+    }
     val isEthSign = (sessionRequestUI.data as? WCEthereumSignMessage)?.type == WCEthereumSignMessage.WCSignType.MESSAGE
     var openBottomSheet by rememberSaveable { mutableStateOf(false) }
 
@@ -97,7 +105,7 @@ fun SessionRequestPage(
                     .size(52.dp, 52.dp)
                     .clip(CircleShape)
                     .clickable(onClick = {
-                        viewModel.rejectRequest(version, sessionRequestUI.requestId)
+                        viewModel.rejectRequest(version, topic)
                         onDismissRequest.invoke()
                     })
                     .align(alignment = Alignment.End)
@@ -516,32 +524,6 @@ private fun GasItem(
                 text = "${gasPriceType.calcGas(tipGas).toPlainString()} ${asset.symbol}",
                 fontSize = 13.sp,
                 color = MixinAppTheme.colors.textMinor,
-            )
-        }
-    }
-}
-
-@Composable
-fun DataError(errorInfo: String) {
-    MixinAppTheme {
-        Column(
-            modifier = Modifier
-                .height(150.dp)
-                .fillMaxWidth()
-                .padding(32.dp, 32.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-        ) {
-            Text(
-                text = "Data Error",
-                color = MixinAppTheme.colors.red,
-                fontSize = 18.sp,
-            )
-            Text(
-                modifier = Modifier.padding(0.dp, 12.dp),
-                text = errorInfo,
-                textAlign = TextAlign.Center,
-                color = MixinAppTheme.colors.textPrimary,
-                fontSize = 16.sp,
             )
         }
     }

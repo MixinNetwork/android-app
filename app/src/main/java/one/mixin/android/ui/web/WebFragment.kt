@@ -852,7 +852,7 @@ class WebFragment : BaseFragment() {
 
         lifecycleScope.launch {
             WalletConnectTIP.peer = getPeerUI()
-            WalletConnectTIP.currentSignData = WalletConnect.WCSignData.TIPSignData(message)
+            WalletConnectTIP.signData = WalletConnect.WCSignData.TIPSignData(message)
             showWalletConnectBottomSheetDialogFragment(
                 tip,
                 requireActivity(),

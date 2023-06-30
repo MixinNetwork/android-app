@@ -3,30 +3,31 @@ package one.mixin.android.ui.tip.wc.sessionrequest
 import androidx.core.net.toUri
 import androidx.lifecycle.ViewModel
 import com.google.gson.Gson
+import com.walletconnect.web3.wallet.client.Wallet
 import dagger.hilt.android.lifecycle.HiltViewModel
 import one.mixin.android.tip.wc.WalletConnect
 import one.mixin.android.tip.wc.WalletConnectTIP
 import one.mixin.android.tip.wc.WalletConnectV2
+import one.mixin.android.tip.wc.internal.Chain
 import one.mixin.android.ui.tip.wc.sessionproposal.PeerUI
 import javax.inject.Inject
 
 @HiltViewModel
 class SessionRequestViewModel @Inject internal constructor() : ViewModel() {
 
-    fun rejectRequest(version: WalletConnect.Version, id: Long, msg: String? = null) {
+    fun rejectRequest(version: WalletConnect.Version, topic: String, msg: String? = null) {
         when (version) {
             WalletConnect.Version.V2 -> {
-                WalletConnectV2.rejectRequest(msg)
+                WalletConnectV2.rejectRequest(msg, topic)
             }
             WalletConnect.Version.TIP -> {}
         }
     }
 
-    fun getSessionRequestUI(version: WalletConnect.Version): SessionRequestUI<*>? {
+    fun getSessionRequestUI(version: WalletConnect.Version, chain: Chain, signData: WalletConnect.WCSignData.V2SignData<*>?, sessionRequest: Wallet.Model.SessionRequest?): SessionRequestUI<*>? {
         when (version) {
             WalletConnect.Version.V2 -> {
-                val signData = (WalletConnectV2.currentSignData ?: return null) as? WalletConnect.WCSignData.V2SignData ?: return null
-                val sessionRequest = signData.sessionRequest
+                if (signData == null || sessionRequest == null) return null
                 val peer = sessionRequest.peerMetaData ?: return null
                 val peerUI = PeerUI(
                     name = peer.name,
@@ -38,7 +39,7 @@ class SessionRequestViewModel @Inject internal constructor() : ViewModel() {
                     peerUI = peerUI,
                     requestId = signData.requestId,
                     data = signData.signMessage,
-                    chain = WalletConnectV2.chain,
+                    chain = chain,
                 )
             }
             WalletConnect.Version.TIP -> {

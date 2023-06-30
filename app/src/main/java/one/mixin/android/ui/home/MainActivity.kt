@@ -297,16 +297,11 @@ class MainActivity : BlazeBaseActivity() {
         RxBus.listen(WCEvent::class.java)
             .autoDispose(destroyScope)
             .subscribe { e ->
-                if (e.requestType == WalletConnect.RequestType.SessionProposal) {
-                    dismissDialog()
-                }
                 WalletConnectActivity.show(this, e)
             }
         RxBus.listen(WCErrorEvent::class.java)
             .autoDispose(destroyScope)
             .subscribe {
-                dismissDialog()
-
                 if (ProcessLifecycleOwner.get().lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED)) {
                     WalletConnectActivity.show(this, it.error)
                 }
@@ -761,9 +756,7 @@ class MainActivity : BlazeBaseActivity() {
                 )
         } else if (intent.hasExtra(WALLET_CONNECT)) {
             val wcUrl = requireNotNull(intent.getStringExtra(WALLET_CONNECT))
-            WalletConnect.connect(wcUrl) {
-                showDialog()
-            }
+            WalletConnect.connect(wcUrl)
         }
     }
 
