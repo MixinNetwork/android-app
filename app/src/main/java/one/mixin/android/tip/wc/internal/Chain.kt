@@ -10,7 +10,7 @@ sealed class Chain(
     val rpcServers: List<String>,
     val chainId: String = "$chainNamespace:$chainReference",
 ) {
-    object Ethereum : Chain("eip155", 1, "Ethereum Mainnet", "ETH", listOf("https://eth.public-rpc.com"))
+    object Ethereum : Chain("eip155", 1, "Ethereum Mainnet", "ETH", listOf("https://cloudflare-eth.com"))
     object BinanceSmartChain : Chain("eip155", 56, "Binance Smart Chain Mainnet", "BSC", listOf("https://bsc-dataseed4.ninicoin.io"))
     object Polygon : Chain("eip155", 137, "Polygon Mainnet", "MATIC", listOf("https://polygon-rpc.com"))
     object AvalancheCChain : Chain("eip155", 43114, "Avalanche C-Chain", "AVAX", listOf("https://1rpc.io/avax/c"))

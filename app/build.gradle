@@ -179,11 +179,16 @@ android {
     }
 
     composeOptions {
-        kotlinCompilerExtensionVersion '1.4.7'
+        kotlinCompilerExtensionVersion '1.4.8'
     }
     lint {
         abortOnError false
         ignore 'Overdraw'
+    }
+    packagingOptions {
+        jniLibs {
+            useLegacyPackaging true
+        }
     }
 
     configurations.configureEach {
