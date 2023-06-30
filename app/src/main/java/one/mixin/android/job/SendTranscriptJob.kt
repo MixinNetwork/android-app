@@ -98,7 +98,7 @@ class SendTranscriptJob(
 
     override fun onRun() {
         val transcripts = mutableSetOf<TranscriptMessage>()
-        getTranscripts(message.messageId, transcripts)
+        getTranscripts(message.messageId, transcripts) // Get the complete data (if there is nesting）
 
         if (transcripts.any { t -> t.isAttachment() }) {
             val mediaSize = transcripts.sumOf { t -> t.mediaSize ?: 0 }
@@ -123,6 +123,7 @@ class SendTranscriptJob(
         }
     }
 
+    // get nested data
     private fun getTranscripts(transcriptId: String, list: MutableSet<TranscriptMessage>) {
         val transcripts = transcriptMessageDao.getTranscript(transcriptId)
         list.addAll(transcripts)

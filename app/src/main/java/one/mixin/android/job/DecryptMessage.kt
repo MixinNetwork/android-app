@@ -849,10 +849,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
     }
 
     private fun processTranscriptMessage(data: BlazeMessageData, plain: String): Message? {
-        val transcripts =
-            gson.fromJson(plain, Array<TranscriptMessage>::class.java).toList().filter { t ->
-                t.transcriptId == data.messageId
-            }
+        val transcripts = gson.fromJson(plain, Array<TranscriptMessage>::class.java).toList()
         if (transcripts.isEmpty()) {
             data.expireIn?.let { expireIn ->
                 if (expireIn > 0) {
