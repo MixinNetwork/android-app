@@ -12,7 +12,8 @@ import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
 import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
-import androidx.paging.PagedList
+import androidx.paging.ExperimentalPagingApi
+import androidx.paging.PagingData
 import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersDecoration
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
@@ -43,7 +44,7 @@ import one.mixin.android.ui.common.UserBottomSheetDialogFragment
 import one.mixin.android.ui.common.VerifyBottomSheetDialogFragment
 import one.mixin.android.ui.conversation.TransferFragment
 import one.mixin.android.ui.wallet.adapter.OnSnapshotListener
-import one.mixin.android.ui.wallet.adapter.TransactionsAdapter
+import one.mixin.android.ui.wallet.adapter.SnapshotAdapter
 import one.mixin.android.vo.Address
 import one.mixin.android.vo.AssetItem
 import one.mixin.android.vo.Fiats
@@ -53,10 +54,12 @@ import one.mixin.android.vo.notMessengerUser
 import one.mixin.android.vo.toAssetItem
 import one.mixin.android.vo.toSnapshot
 import one.mixin.android.widget.BottomSheet
+import timber.log.Timber
 import javax.inject.Inject
 
+@OptIn(ExperimentalPagingApi::class)
 @AndroidEntryPoint
-class TransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>>(), OnSnapshotListener {
+class TransactionsFragment : BaseTransactionsFragment<PagingData<SnapshotItem>>(), OnSnapshotListener {
 
     companion object {
         const val TAG = "TransactionsFragment"
@@ -64,11 +67,11 @@ class TransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>>()
     }
 
     private var _binding: FragmentTransactionsBinding? = null
-    private val binding get() = requireNotNull(_binding)
+    private val binding get() = requireNotNull(_binding) { "required _binding is null" }
     private var _headBinding: ViewTransactionsFragmentHeaderBinding? = null
-    private val headBinding get() = requireNotNull(_headBinding)
+    private val headBinding get() = requireNotNull(_headBinding) { "required _headBinding is null" }
     private var _bottomBinding: ViewWalletTransactionsBottomBinding? = null
-    private val bottomBinding get() = requireNotNull(_bottomBinding)
+    private val bottomBinding get() = requireNotNull(_bottomBinding) { "required _bottomBinding is null" }
     private val sendBottomSheet = SendBottomSheet(this, R.id.action_transactions_to_single_friend_select, R.id.action_transactions_to_address_management) {
         VerifyBottomSheetDialogFragment.newInstance().setOnPinSuccess { pin ->
             showTipWithdrawal(pin)
@@ -78,7 +81,8 @@ class TransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>>()
     @Inject
     lateinit var tip: Tip
 
-    private val adapter = TransactionsAdapter()
+    //     private val adapter = TransactionsAdapter()
+    private val adapter = SnapshotAdapter()
     lateinit var asset: AssetItem
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
@@ -124,6 +128,21 @@ class TransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>>()
             adapter.listener = this@TransactionsFragment
             adapter.headerView = headBinding.root
             adapter.setShowHeader(true, binding.transactionsRv)
+            adapter.addOnPagesUpdatedListener {
+                val list = adapter.snapshot().items
+                if (list.isNotEmpty()) {
+                    updateHeaderBottomLayout(false)
+                    list.filter {
+                        it.opponentId != null
+                    }.mapNotNull {
+                        it.opponentId
+                    }.let { ids ->
+                        walletViewModel.checkAndRefreshUsers(ids)
+                    }
+                } else {
+                    updateHeaderBottomLayout(true)
+                }
+            }
             binding.transactionsRv.itemAnimator = null
             binding.transactionsRv.addItemDecoration(StickyRecyclerHeadersDecoration(adapter))
             binding.transactionsRv.adapter = adapter
@@ -137,23 +156,16 @@ class TransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>>()
         }
 
         dataObserver = Observer { pagedList ->
-            if (pagedList.isNotEmpty()) {
-                updateHeaderBottomLayout(false)
-                val opponentIds = pagedList.filter {
-                    it?.opponentId != null
-                }.map {
-                    it.opponentId!!
-                }
-                walletViewModel.checkAndRefreshUsers(opponentIds)
-            } else {
-                updateHeaderBottomLayout(true)
+            lifecycleScope.launch {
+                Timber.d("@@@ before submit")
+                adapter.submitData(pagedList)
+                Timber.d("@@@ after submit")
             }
-            adapter.submitList(pagedList)
 
-            if (!refreshedSnapshots) {
-                walletViewModel.refreshSnapshots(asset.assetId)
-                refreshedSnapshots = true
-            }
+//            if (!refreshedSnapshots) {
+//                walletViewModel.refreshSnapshots(asset.assetId)
+//                refreshedSnapshots = true
+//            }
         }
         bindLiveData()
         walletViewModel.assetItem(asset.assetId).observe(
@@ -171,7 +183,6 @@ class TransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>>()
     override fun onDestroyView() {
         adapter.headerView = null
         adapter.listener = null
-        _binding?.transactionsRv?.adapter = null
         _binding = null
         _headBinding = null
         _bottomBinding = null
@@ -181,6 +192,8 @@ class TransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>>()
 
     @SuppressLint("SetTextI18n")
     private fun updateHeader(asset: AssetItem) {
+        if (viewDestroyed()) return
+
         headBinding.apply {
             val amountText = try {
                 if (asset.balance.toFloat() == 0f) {
@@ -210,6 +223,8 @@ class TransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>>()
     }
 
     private fun refreshPendingDeposits(asset: AssetItem) {
+        if (viewDestroyed()) return
+
         lifecycleScope.launch {
             if (asset.getDestination().isNotEmpty()) {
                 walletViewModel.refreshAsset(asset.assetId)
@@ -318,7 +333,7 @@ class TransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>>()
     }
 
     override fun refreshSnapshots() {
-        walletViewModel.refreshSnapshots(asset.assetId, offset = refreshOffset)
+//        walletViewModel.refreshSnapshots(asset.assetId, offset = refreshOffset)
     }
 
     override fun onApplyClick() {
@@ -326,18 +341,20 @@ class TransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>>()
         filtersSheet.dismiss()
     }
 
-    private fun bindLiveData() {
+    private fun bindLiveData() = lifecycleScope.launch {
+        if (viewDestroyed()) return@launch
+
         val orderByAmount = currentOrder == R.id.sort_amount
         headBinding.apply {
             when (currentType) {
                 R.id.filters_radio_all -> {
-                    bindLiveData(walletViewModel.snapshotsFromDb(asset.assetId, initialLoadKey = initialLoadKey, orderByAmount = orderByAmount))
+                    bindLiveData(walletViewModel.snapshots(asset.assetId, initialLoadKey = initialLoadKey, orderByAmount = orderByAmount))
                     groupInfoMemberTitle.setText(R.string.Transactions)
                     walletTransactionsEmpty.setText(R.string.No_transactions)
                 }
                 R.id.filters_radio_transfer -> {
                     bindLiveData(
-                        walletViewModel.snapshotsFromDb(
+                        walletViewModel.snapshots(
                             asset.assetId,
                             SnapshotType.transfer.name,
                             SnapshotType.pending.name,
@@ -350,7 +367,7 @@ class TransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>>()
                 }
                 R.id.filters_radio_deposit -> {
                     bindLiveData(
-                        walletViewModel.snapshotsFromDb(
+                        walletViewModel.snapshots(
                             asset.assetId,
                             SnapshotType.deposit.name,
                             initialLoadKey = initialLoadKey,
@@ -362,7 +379,7 @@ class TransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>>()
                 }
                 R.id.filters_radio_withdrawal -> {
                     bindLiveData(
-                        walletViewModel.snapshotsFromDb(
+                        walletViewModel.snapshots(
                             asset.assetId,
                             SnapshotType.withdrawal.name,
                             initialLoadKey = initialLoadKey,
@@ -373,23 +390,17 @@ class TransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>>()
                     walletTransactionsEmpty.setText(R.string.No_withdrawals)
                 }
                 R.id.filters_radio_fee -> {
-                    bindLiveData(
-                        walletViewModel.snapshotsFromDb(asset.assetId, SnapshotType.fee.name, initialLoadKey = initialLoadKey, orderByAmount = orderByAmount),
-                    )
+                    bindLiveData(walletViewModel.snapshots(asset.assetId, SnapshotType.fee.name, initialLoadKey = initialLoadKey, orderByAmount = orderByAmount))
                     groupInfoMemberTitle.setText(R.string.Fee)
                     walletTransactionsEmpty.setText(R.string.No_fees)
                 }
                 R.id.filters_radio_rebate -> {
-                    bindLiveData(
-                        walletViewModel.snapshotsFromDb(asset.assetId, SnapshotType.rebate.name, initialLoadKey = initialLoadKey, orderByAmount = orderByAmount),
-                    )
+                    bindLiveData(walletViewModel.snapshots(asset.assetId, SnapshotType.rebate.name, initialLoadKey = initialLoadKey, orderByAmount = orderByAmount))
                     groupInfoMemberTitle.setText(R.string.Rebate)
                     walletTransactionsEmpty.setText(R.string.No_rebates)
                 }
                 R.id.filters_radio_raw -> {
-                    bindLiveData(
-                        walletViewModel.snapshotsFromDb(asset.assetId, SnapshotType.raw.name, initialLoadKey = initialLoadKey, orderByAmount = orderByAmount),
-                    )
+                    bindLiveData(walletViewModel.snapshots(asset.assetId, SnapshotType.raw.name, initialLoadKey = initialLoadKey, orderByAmount = orderByAmount))
                     groupInfoMemberTitle.setText(R.string.Raw)
                     walletTransactionsEmpty.setText(R.string.No_raws)
                 }
@@ -398,6 +409,8 @@ class TransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>>()
     }
 
     private fun updateHeaderBottomLayout(show: Boolean) {
+        if (viewDestroyed()) return
+
         headBinding.bottomRl.isVisible = show
     }
 
