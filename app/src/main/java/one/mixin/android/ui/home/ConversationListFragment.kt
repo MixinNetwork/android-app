@@ -1047,7 +1047,8 @@ class ConversationListFragment : LinkFragment() {
                     binding.pb.visibility = GONE
                     conversationItem.unseenMessageCount.notEmptyWithElse(
                         {
-                            binding.unreadTv.text = "$it"; binding.unreadTv.visibility = VISIBLE
+                            binding.unreadTv.text = "$it"
+                            binding.unreadTv.visibility = VISIBLE
                         },
                         { binding.unreadTv.visibility = GONE },
                     )
@@ -1065,7 +1066,8 @@ class ConversationListFragment : LinkFragment() {
                     binding.pb.visibility = GONE
                     conversationItem.unseenMessageCount.notEmptyWithElse(
                         {
-                            binding.unreadTv.text = "$it"; binding.unreadTv.visibility =
+                            binding.unreadTv.text = "$it"
+                            binding.unreadTv.visibility =
                                 VISIBLE
                         },
                         { binding.unreadTv.visibility = GONE },

@@ -37,7 +37,11 @@ class SerializationTest {
     }
 
     private val json by lazy {
-        Json { ignoreUnknownKeys = true; explicitNulls = false; encodeDefaults = false }
+        Json {
+            ignoreUnknownKeys = true
+            explicitNulls = false
+            encodeDefaults = false
+        }
     }
 
     @Test

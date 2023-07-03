@@ -87,5 +87,5 @@ data class Snapshot(
     val closingBalance: String?,
 )
 
-@Suppress("ktlint:enum-entry-name-case", "EnumEntryName")
+@Suppress("ktlint:standard:enum-entry-name-case", "EnumEntryName")
 enum class SnapshotType { transfer, deposit, withdrawal, fee, rebate, raw, pending }
