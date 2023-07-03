@@ -1,6 +1,6 @@
 @file:OptIn(
-    ExperimentalPagerApi::class,
     ExperimentalAnimationApi::class,
+    ExperimentalFoundationApi::class,
 )
 
 package one.mixin.android.ui.auth.compose
@@ -17,6 +17,7 @@ import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.animation.with
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -34,6 +35,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Button
@@ -60,10 +63,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.google.accompanist.pager.ExperimentalPagerApi
-import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.HorizontalPagerIndicator
-import com.google.accompanist.pager.rememberPagerState
 import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.ui.setting.ui.theme.MixinAppTheme
@@ -145,6 +145,7 @@ fun AuthBottomSheetDialogCompose(
                         SizeTransform(clip = false)
                     }
                 },
+                label = "",
             ) { b ->
                 if (b) {
                     val state: LazyListState = rememberLazyListState()
@@ -187,7 +188,7 @@ fun AuthBottomSheetDialogCompose(
     }
 }
 
-@OptIn(ExperimentalPagerApi::class)
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun ScopesContent(
     scopeGroup: ArrayMap<Int, MutableList<Scope>>,
@@ -202,7 +203,7 @@ fun ScopesContent(
                 .weight(1f)
                 .padding(vertical = 16.dp, horizontal = 4.dp),
             state = pagerState,
-            count = scopeGroup.size,
+            pageCount = scopeGroup.size,
             verticalAlignment = Alignment.Top,
         ) { page ->
             val groupId = scopeGroup.keyAt(page)
@@ -246,6 +247,7 @@ fun ScopesContent(
         if (scopeGroup.size > 1) {
             HorizontalPagerIndicator(
                 pagerState = pagerState,
+                pageCount = scopeGroup.size,
                 modifier = Modifier
                     .align(CenterHorizontally),
                 activeColor = MixinAppTheme.colors.accent,
