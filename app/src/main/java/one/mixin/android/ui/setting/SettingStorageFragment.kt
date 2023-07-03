@@ -128,7 +128,10 @@ class SettingStorageFragment : BaseFragment(R.layout.fragment_storage) {
             .setPositiveButton(R.string.Clear) { dialog, _ ->
                 var sum = 0L
                 var size = 0L
-                selectSet.forEach { sum += it.count; size += it.mediaSize }
+                selectSet.forEach {
+                    sum += it.count
+                    size += it.mediaSize
+                }
                 confirmDialog.setMessage(requireContext().resources.getQuantityString(R.plurals.setting_storage_clear, sum.toInt(), sum, size.fileSize(FileSizeUnit.KB)))
                 confirmDialog.show()
                 dialog.dismiss()

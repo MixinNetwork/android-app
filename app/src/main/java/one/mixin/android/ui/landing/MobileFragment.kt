@@ -239,6 +239,8 @@ class MobileFragment : BaseFragment(R.layout.fragment_mobile) {
                 requireContext(),
                 object : CaptchaView.Callback {
                     override fun onStop() {
+                        if (viewDestroyed()) return
+
                         binding.mobileFab.hide()
                         binding.mobileCover.visibility = GONE
                     }
@@ -254,12 +256,16 @@ class MobileFragment : BaseFragment(R.layout.fragment_mobile) {
     }
 
     private fun hideLoading() {
+        if (viewDestroyed()) return
+
         binding.mobileFab.hide()
         binding.mobileCover.visibility = GONE
         captchaView?.hide()
     }
 
     private fun handleEditView() {
+        if (viewDestroyed()) return
+
         binding.apply {
             val country = mCountry
             if (country == null) {
@@ -276,6 +282,8 @@ class MobileFragment : BaseFragment(R.layout.fragment_mobile) {
     }
 
     private fun getUserCountryInfo() {
+        if (viewDestroyed()) return
+
         countryPicker.getUserCountryInfo(context).apply {
             mCountry = this
             binding.countryIconIv.setImageResource(flag)

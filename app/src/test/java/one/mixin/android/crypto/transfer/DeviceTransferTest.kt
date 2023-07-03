@@ -134,8 +134,12 @@ class DeviceTransferTest {
         val outputStream = PipedOutputStream()
         val inputStream = PipedInputStream(outputStream)
         val json = Json {
-            ignoreUnknownKeys = true; explicitNulls = false; encodeDefaults =
-                false; coerceInputValues = true; isLenient = true
+            ignoreUnknownKeys = true
+            explicitNulls = false
+            encodeDefaults =
+                false
+            coerceInputValues = true
+            isLenient = true
         }
         val server = TransferProtocol(json, secretBytes, true)
         val client = TransferProtocol(json, secretBytes)

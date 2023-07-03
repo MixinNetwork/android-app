@@ -37,7 +37,8 @@ class SelectAdapter(private val allListener: (Boolean) -> Unit, private val size
         if (check) {
             selectItem.add(conversationId)
         } else {
-            selectItem.remove(conversationId) }
+            selectItem.remove(conversationId)
+        }
         notifyDataSetChanged()
     }
 
