@@ -9,6 +9,7 @@ import androidx.room.util.query
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.converter.DepositEntryListConverter
 import one.mixin.android.vo.AssetItem
+import one.mixin.android.vo.ChatHistoryMessageItem
 import one.mixin.android.vo.ChatMinimal
 import one.mixin.android.vo.ConversationItem
 import one.mixin.android.vo.MessageItem
@@ -890,4 +891,277 @@ fun callableChatMinimal(
             statement.release()
         }
     }
+}
+
+@SuppressLint("RestrictedApi")
+fun convertChatHistoryMessageItem(
+  cursor: Cursor?
+): List<ChatHistoryMessageItem> {
+    cursor?:return emptyList()
+    val cursorIndexOfMessageId = 0
+    val cursorIndexOfConversationId = 1
+    val cursorIndexOfUserId = 2
+    val cursorIndexOfUserFullName = 3
+    val cursorIndexOfUserIdentityNumber = 4
+    val cursorIndexOfAppId = 5
+    val cursorIndexOfType = 6
+    val cursorIndexOfContent = 7
+    val cursorIndexOfCreatedAt = 8
+    val cursorIndexOfMediaStatus = 10
+    val cursorIndexOfMediaWaveform = 11
+    val cursorIndexOfMediaName = 12
+    val cursorIndexOfMediaMimeType = 13
+    val cursorIndexOfMediaSize = 14
+    val cursorIndexOfMediaWidth = 15
+    val cursorIndexOfMediaHeight = 16
+    val cursorIndexOfThumbImage = 17
+    val cursorIndexOfThumbUrl = 18
+    val cursorIndexOfMediaUrl = 19
+    val cursorIndexOfMediaDuration = 20
+    val cursorIndexOfQuoteId = 21
+    val cursorIndexOfQuoteContent = 22
+    val cursorIndexOfAssetUrl = 33
+    val cursorIndexOfAssetWidth = 34
+    val cursorIndexOfAssetHeight = 35
+    val cursorIndexOfAssetType = 38
+    val cursorIndexOfSharedUserId = 43
+    val cursorIndexOfSharedUserFullName = 44
+    val cursorIndexOfSharedUserIdentityNumber = 45
+    val cursorIndexOfSharedUserAvatarUrl = 46
+    val cursorIndexOfSharedUserIsVerified = 47
+    val cursorIndexOfSharedUserAppId = 48
+    val cursorIndexOfMentions = 49
+    val list: MutableList<ChatHistoryMessageItem> = ArrayList(
+        cursor.count,
+    )
+    while (cursor.moveToNext()) {
+        val _item: ChatHistoryMessageItem
+        val tmpMessageId: String? = if (cursor.isNull(cursorIndexOfMessageId)) {
+            null
+        } else {
+            cursor.getString(cursorIndexOfMessageId)
+        }
+        val tmpConversationId: String? =
+            if (cursor.isNull(cursorIndexOfConversationId)) {
+                null
+            } else {
+                cursor.getString(cursorIndexOfConversationId)
+            }
+        val tmpUserId: String? = if (cursor.isNull(cursorIndexOfUserId)) {
+            null
+        } else {
+            cursor.getString(cursorIndexOfUserId)
+        }
+        val tmpUserFullName: String? =
+            if (cursor.isNull(cursorIndexOfUserFullName)) {
+                null
+            } else {
+                cursor.getString(cursorIndexOfUserFullName)
+            }
+        val tmpUserIdentityNumber: String? =
+            if (cursor.isNull(cursorIndexOfUserIdentityNumber)) {
+                null
+            } else {
+                cursor.getString(cursorIndexOfUserIdentityNumber)
+            }
+        val tmpAppId: String? = if (cursor.isNull(cursorIndexOfAppId)) {
+            null
+        } else {
+            cursor.getString(cursorIndexOfAppId)
+        }
+        val tmpType: String? = if (cursor.isNull(cursorIndexOfType)) {
+            null
+        } else {
+            cursor.getString(cursorIndexOfType)
+        }
+        val tmpContent: String? = if (cursor.isNull(cursorIndexOfContent)) {
+            null
+        } else {
+            cursor.getString(cursorIndexOfContent)
+        }
+        val tmpCreatedAt: String? =
+            if (cursor.isNull(cursorIndexOfCreatedAt)) {
+                null
+            } else {
+                cursor.getString(cursorIndexOfCreatedAt)
+            }
+        val tmpMediaStatus: String? =
+            if (cursor.isNull(cursorIndexOfMediaStatus)) {
+                null
+            } else {
+                cursor.getString(cursorIndexOfMediaStatus)
+            }
+        val tmpMediaWaveform: ByteArray? =
+            if (cursor.isNull(cursorIndexOfMediaWaveform)) {
+                null
+            } else {
+                cursor.getBlob(cursorIndexOfMediaWaveform)
+            }
+        val tmpMediaName: String? =
+            if (cursor.isNull(cursorIndexOfMediaName)) {
+                null
+            } else {
+                cursor.getString(cursorIndexOfMediaName)
+            }
+        val tmpMediaMimeType: String? =
+            if (cursor.isNull(cursorIndexOfMediaMimeType)) {
+                null
+            } else {
+                cursor.getString(cursorIndexOfMediaMimeType)
+            }
+        val tmpMediaSize: Long? = if (cursor.isNull(cursorIndexOfMediaSize)) {
+            null
+        } else {
+            cursor.getLong(cursorIndexOfMediaSize)
+        }
+        val tmpMediaWidth: Int? =
+            if (cursor.isNull(cursorIndexOfMediaWidth)) {
+                null
+            } else {
+                cursor.getInt(cursorIndexOfMediaWidth)
+            }
+        val tmpMediaHeight: Int? =
+            if (cursor.isNull(cursorIndexOfMediaHeight)) {
+                null
+            } else {
+                cursor.getInt(cursorIndexOfMediaHeight)
+            }
+        val tmpThumbImage: String? =
+            if (cursor.isNull(cursorIndexOfThumbImage)) {
+                null
+            } else {
+                cursor.getString(cursorIndexOfThumbImage)
+            }
+        val tmpThumbUrl: String? = if (cursor.isNull(cursorIndexOfThumbUrl)) {
+            null
+        } else {
+            cursor.getString(cursorIndexOfThumbUrl)
+        }
+        val tmpMediaUrl: String? = if (cursor.isNull(cursorIndexOfMediaUrl)) {
+            null
+        } else {
+            cursor.getString(cursorIndexOfMediaUrl)
+        }
+        val tmpMediaDuration: String? =
+            if (cursor.isNull(cursorIndexOfMediaDuration)) {
+                null
+            } else {
+                cursor.getString(cursorIndexOfMediaDuration)
+            }
+        val tmpQuoteId: String? = if (cursor.isNull(cursorIndexOfQuoteId)) {
+            null
+        } else {
+            cursor.getString(cursorIndexOfQuoteId)
+        }
+        val tmpQuoteContent: String? =
+            if (cursor.isNull(cursorIndexOfQuoteContent)) {
+                null
+            } else {
+                cursor.getString(cursorIndexOfQuoteContent)
+            }
+        val tmpAssetUrl: String? = if (cursor.isNull(cursorIndexOfAssetUrl)) {
+            null
+        } else {
+            cursor.getString(cursorIndexOfAssetUrl)
+        }
+        val tmpAssetWidth: Int? =
+            if (cursor.isNull(cursorIndexOfAssetWidth)) {
+                null
+            } else {
+                cursor.getInt(cursorIndexOfAssetWidth)
+            }
+        val tmpAssetHeight: Int? =
+            if (cursor.isNull(cursorIndexOfAssetHeight)) {
+                null
+            } else {
+                cursor.getInt(cursorIndexOfAssetHeight)
+            }
+        val tmpAssetType: String? =
+            if (cursor.isNull(cursorIndexOfAssetType)) {
+                null
+            } else {
+                cursor.getString(cursorIndexOfAssetType)
+            }
+        val tmpSharedUserId: String? =
+            if (cursor.isNull(cursorIndexOfSharedUserId)) {
+                null
+            } else {
+                cursor.getString(cursorIndexOfSharedUserId)
+            }
+        val tmpSharedUserFullName: String? =
+            if (cursor.isNull(cursorIndexOfSharedUserFullName)) {
+                null
+            } else {
+                cursor.getString(cursorIndexOfSharedUserFullName)
+            }
+        val tmpSharedUserIdentityNumber: String? =
+            if (cursor.isNull(cursorIndexOfSharedUserIdentityNumber)) {
+                null
+            } else {
+                cursor.getString(cursorIndexOfSharedUserIdentityNumber)
+            }
+        val tmpSharedUserAvatarUrl: String? =
+            if (cursor.isNull(cursorIndexOfSharedUserAvatarUrl)) {
+                null
+            } else {
+                cursor.getString(cursorIndexOfSharedUserAvatarUrl)
+            }
+        val tmpSharedUserIsVerified: Boolean?
+        val tmp: Int? =
+            if (cursor.isNull(cursorIndexOfSharedUserIsVerified)) {
+                null
+            } else {
+                cursor.getInt(cursorIndexOfSharedUserIsVerified)
+            }
+        tmpSharedUserIsVerified = if (tmp == null) null else tmp != 0
+        val tmpSharedUserAppId: String? =
+            if (cursor.isNull(cursorIndexOfSharedUserAppId)) {
+                null
+            } else {
+                cursor.getString(cursorIndexOfSharedUserAppId)
+            }
+        val tmpMentions: String? = if (cursor.isNull(cursorIndexOfMentions)) {
+            null
+        } else {
+            cursor.getString(cursorIndexOfMentions)
+        }
+        _item = ChatHistoryMessageItem(
+            null,
+            tmpConversationId,
+            tmpMessageId!!,
+            tmpUserId,
+            tmpUserFullName,
+            tmpUserIdentityNumber,
+            tmpType!!,
+            tmpAppId,
+            tmpContent,
+            tmpCreatedAt!!,
+            tmpMediaStatus,
+            tmpMediaName,
+            tmpMediaMimeType,
+            tmpMediaSize,
+            tmpThumbUrl,
+            tmpMediaWidth,
+            tmpMediaHeight,
+            tmpThumbImage,
+            tmpMediaUrl,
+            tmpMediaDuration,
+            tmpMediaWaveform,
+            tmpAssetWidth,
+            tmpAssetHeight,
+            tmpAssetUrl,
+            tmpAssetType,
+            tmpSharedUserId,
+            tmpSharedUserFullName,
+            tmpSharedUserAvatarUrl,
+            tmpSharedUserIdentityNumber,
+            tmpSharedUserIsVerified,
+            tmpSharedUserAppId,
+            tmpQuoteId,
+            tmpQuoteContent,
+            tmpMentions,
+        )
+        list.add(_item)
+    }
+    return list
 }

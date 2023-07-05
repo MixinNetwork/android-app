@@ -7,7 +7,7 @@ import one.mixin.android.extension.copyFromInputStream
 import one.mixin.android.extension.createGifTemp
 import one.mixin.android.extension.encodeBlurHash
 import one.mixin.android.extension.getImagePath
-import one.mixin.android.util.chat.InvalidateFlow
+import one.mixin.android.db.invalidater.InvalidateFlow
 import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.MessageStatus
 import one.mixin.android.vo.createMediaMessage

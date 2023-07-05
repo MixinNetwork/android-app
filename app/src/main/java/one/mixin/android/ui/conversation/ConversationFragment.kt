@@ -197,7 +197,7 @@ import one.mixin.android.util.ErrorHandler.Companion.FORBIDDEN
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.MusicPlayer
 import one.mixin.android.util.SINGLE_DB_THREAD
-import one.mixin.android.util.chat.InvalidateFlow
+import one.mixin.android.db.invalidater.InvalidateFlow
 import one.mixin.android.util.debug.debugLongClick
 import one.mixin.android.util.mention.mentionDisplay
 import one.mixin.android.util.mention.mentionEnd

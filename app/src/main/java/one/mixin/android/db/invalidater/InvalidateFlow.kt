@@ -1,4 +1,4 @@
-package one.mixin.android.util.chat
+package one.mixin.android.db.invalidater
 
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.FlowCollector

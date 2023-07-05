@@ -12,7 +12,7 @@ import one.mixin.android.extension.getVideoModel
 import one.mixin.android.extension.getVideoPath
 import one.mixin.android.extension.nowInUtc
 import one.mixin.android.job.NotificationGenerator.database
-import one.mixin.android.util.chat.InvalidateFlow
+import one.mixin.android.db.invalidater.InvalidateFlow
 import one.mixin.android.util.video.MediaController
 import one.mixin.android.util.video.VideoEditedInfo
 import one.mixin.android.vo.EncryptCategory

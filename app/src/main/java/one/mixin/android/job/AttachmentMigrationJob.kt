@@ -25,7 +25,7 @@ import one.mixin.android.extension.getVideoPath
 import one.mixin.android.extension.hasWritePermission
 import one.mixin.android.extension.isImageSupport
 import one.mixin.android.extension.nowInUtc
-import one.mixin.android.util.chat.InvalidateFlow
+import one.mixin.android.db.invalidater.InvalidateFlow
 import one.mixin.android.util.reportException
 import one.mixin.android.vo.Property
 import one.mixin.android.vo.getFile

@@ -50,7 +50,7 @@ import one.mixin.android.job.RefreshUserJob
 import one.mixin.android.session.Session
 import one.mixin.android.ui.media.pager.MediaPagerActivity
 import one.mixin.android.util.SINGLE_DB_THREAD
-import one.mixin.android.util.chat.InvalidateFlow
+import one.mixin.android.db.invalidater.InvalidateFlow
 import one.mixin.android.vo.ChatMinimal
 import one.mixin.android.vo.CircleConversation
 import one.mixin.android.vo.Conversation

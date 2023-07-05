@@ -17,7 +17,7 @@ import one.mixin.android.job.AttachmentDeleteJob
 import one.mixin.android.job.MessageDeleteJob
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.TranscriptDeleteJob
-import one.mixin.android.util.chat.InvalidateFlow
+import one.mixin.android.db.invalidater.InvalidateFlow
 import one.mixin.android.vo.MediaMessageMinimal
 import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.MessageItem

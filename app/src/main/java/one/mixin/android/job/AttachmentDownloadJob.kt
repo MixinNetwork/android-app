@@ -30,7 +30,7 @@ import one.mixin.android.extension.isImageSupport
 import one.mixin.android.extension.isNullOrEmpty
 import one.mixin.android.job.MixinJobManager.Companion.attachmentProcess
 import one.mixin.android.util.GsonHelper
-import one.mixin.android.util.chat.InvalidateFlow
+import one.mixin.android.db.invalidater.InvalidateFlow
 import one.mixin.android.util.okhttp.ProgressResponseBody
 import one.mixin.android.vo.AttachmentExtra
 import one.mixin.android.vo.MediaStatus

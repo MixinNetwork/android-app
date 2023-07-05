@@ -9,7 +9,7 @@ import one.mixin.android.extension.createDocumentTemp
 import one.mixin.android.extension.getDocumentPath
 import one.mixin.android.extension.getExtensionName
 import one.mixin.android.extension.getFilePath
-import one.mixin.android.util.chat.InvalidateFlow
+import one.mixin.android.db.invalidater.InvalidateFlow
 import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.Message
 import one.mixin.android.vo.MessageStatus

@@ -4,7 +4,7 @@ import android.net.Uri
 import com.birbit.android.jobqueue.Params
 import one.mixin.android.db.deleteMessageById
 import one.mixin.android.fts.deleteByMessageId
-import one.mixin.android.util.chat.InvalidateFlow
+import one.mixin.android.db.invalidater.InvalidateFlow
 import one.mixin.android.vo.TranscriptMessage
 import one.mixin.android.vo.absolutePath
 import one.mixin.android.vo.isAttachment

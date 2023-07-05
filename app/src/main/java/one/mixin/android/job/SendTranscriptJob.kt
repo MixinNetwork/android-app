@@ -11,7 +11,7 @@ import one.mixin.android.extension.joinWhiteSpace
 import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.fts.insertFts4
 import one.mixin.android.util.GsonHelper
-import one.mixin.android.util.chat.InvalidateFlow
+import one.mixin.android.db.invalidater.InvalidateFlow
 import one.mixin.android.util.reportException
 import one.mixin.android.vo.EncryptCategory
 import one.mixin.android.vo.MediaStatus

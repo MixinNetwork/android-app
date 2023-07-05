@@ -20,7 +20,7 @@ import one.mixin.android.extension.getStackTraceString
 import one.mixin.android.extension.toast
 import one.mixin.android.job.MixinJobManager.Companion.attachmentProcess
 import one.mixin.android.util.GsonHelper
-import one.mixin.android.util.chat.InvalidateFlow
+import one.mixin.android.db.invalidater.InvalidateFlow
 import one.mixin.android.util.reportException
 import one.mixin.android.vo.AttachmentExtra
 import one.mixin.android.vo.ExpiredMessage

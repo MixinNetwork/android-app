@@ -5,7 +5,7 @@ import kotlinx.coroutines.runBlocking
 import one.mixin.android.Constants.DB_DELETE_LIMIT
 import one.mixin.android.db.deleteMessageByIds
 import one.mixin.android.fts.deleteByMessageIds
-import one.mixin.android.util.chat.InvalidateFlow
+import one.mixin.android.db.invalidater.InvalidateFlow
 
 class MessageDeleteJob(
     private val conversationId: String,

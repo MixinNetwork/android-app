@@ -66,7 +66,7 @@ import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.util.ChannelManager.Companion.createNodeChannel
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.RomUtil
-import one.mixin.android.util.chat.InvalidateFlow
+import one.mixin.android.db.invalidater.InvalidateFlow
 import one.mixin.android.util.reportException
 import one.mixin.android.vo.CallStateLiveData
 import one.mixin.android.vo.MessageStatus

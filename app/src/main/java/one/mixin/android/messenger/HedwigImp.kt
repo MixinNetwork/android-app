@@ -20,7 +20,7 @@ import one.mixin.android.session.Session
 import one.mixin.android.util.FLOOD_THREAD
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.PENDING_DB_THREAD
-import one.mixin.android.util.chat.InvalidateFlow
+import one.mixin.android.db.invalidater.InvalidateFlow
 import one.mixin.android.util.reportException
 import one.mixin.android.vo.CallStateLiveData
 import one.mixin.android.vo.Conversation

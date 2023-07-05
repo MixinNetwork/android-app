@@ -24,7 +24,7 @@ import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.openMedia
 import one.mixin.android.extension.toast
 import one.mixin.android.session.Session
-import one.mixin.android.util.chat.InvalidateFlow
+import one.mixin.android.db.invalidater.InvalidateFlow
 import one.mixin.android.util.video.MixinPlayer
 import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.Message
