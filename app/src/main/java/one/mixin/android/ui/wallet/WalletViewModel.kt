@@ -146,6 +146,8 @@ internal constructor(
         }
     }
 
+    suspend fun findAssetItemById(assetId: String) = assetRepository.findAssetItemById(assetId)
+
     suspend fun findOrSyncAsset(assetId: String): AssetItem? {
         return withContext(Dispatchers.IO) {
             assetRepository.findOrSyncAsset(assetId)

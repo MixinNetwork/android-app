@@ -180,13 +180,15 @@ class DepositFragment : BaseFragment() {
                         if (same) return@setOnClickListener
 
                         lifecycleScope.launch {
-                            alertDialog?.dismiss()
-                            alertDialog =
-                                indeterminateProgressDialog(message = R.string.Please_wait_a_bit).apply {
+                            var newAsset = walletViewModel.findAssetItemById(entry.key)
+                            if (newAsset == null) {
+                                alertDialog?.dismiss()
+                                alertDialog = indeterminateProgressDialog(message = R.string.Please_wait_a_bit).apply {
                                     show()
                                 }
-                            val newAsset = walletViewModel.findOrSyncAsset(entry.key)
-                            alertDialog?.dismiss()
+                                newAsset = walletViewModel.findOrSyncAsset(entry.key)
+                                alertDialog?.dismiss()
+                            }
                             if (newAsset == null) {
                                 toast(R.string.Not_found)
                             } else {
