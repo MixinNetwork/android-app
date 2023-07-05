@@ -12,7 +12,6 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.map
 import androidx.lifecycle.viewModelScope
-import androidx.paging.PagedList
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -58,8 +57,6 @@ import one.mixin.android.util.Attachment
 import one.mixin.android.util.ControlledRunner
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.SINGLE_DB_THREAD
-import one.mixin.android.util.chat.FastComputableLiveData
-import one.mixin.android.util.chat.FastLivePagedListBuilder
 import one.mixin.android.vo.AppCap
 import one.mixin.android.vo.AppItem
 import one.mixin.android.vo.AssetItem
@@ -123,17 +120,19 @@ internal constructor(
     private val cleanMessageHelper: CleanMessageHelper,
 ) : ViewModel() {
 
-    fun getMessages(conversationId: String, firstKeyToLoad: Int = 0): FastComputableLiveData<PagedList<MessageItem>> {
-        val pagedListConfig = PagedList.Config.Builder()
-            .setPrefetchDistance(PAGE_SIZE * 2)
-            .setPageSize(PAGE_SIZE)
-            .setEnablePlaceholders(true)
-            .build()
-
-        return FastLivePagedListBuilder(
-            conversationRepository.getMessages(conversationId),
-            pagedListConfig,
-        ).setInitialLoadKey(firstKeyToLoad).build()
+    fun getMessages(conversationId: String, firstKeyToLoad: Int = 0): LiveData<PagingData<MessageItem>> {
+        return Pager(
+            PagingConfig(
+                pageSize = PAGE_SIZE,
+                enablePlaceholders = false,
+                initialLoadSize = 20,
+            ),
+            initialKey = firstKeyToLoad,
+        ) {
+            val pageData = conversationRepository.getMessages(conversationId)
+            dataCallback(pageData)
+            pageData
+        }.liveData
     }
 
     suspend fun indexUnread(conversationId: String) =
