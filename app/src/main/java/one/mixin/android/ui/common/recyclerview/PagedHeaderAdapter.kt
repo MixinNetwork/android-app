@@ -7,7 +7,7 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 
-abstract class PagedHeaderAdapter<T: Any>(diffCallback: DiffUtil.ItemCallback<T>) :
+abstract class PagedHeaderAdapter<T : Any>(diffCallback: DiffUtil.ItemCallback<T>) :
     SafePagedListAdapter<T, RecyclerView.ViewHolder>(diffCallback) {
     companion object {
         const val TYPE_HEADER = 0

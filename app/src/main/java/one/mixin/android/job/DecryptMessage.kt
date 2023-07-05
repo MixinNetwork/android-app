@@ -20,6 +20,7 @@ import one.mixin.android.crypto.vo.RatchetStatus
 import one.mixin.android.db.insertMessage
 import one.mixin.android.db.insertNoReplace
 import one.mixin.android.db.insertUpdate
+import one.mixin.android.db.invalidater.InvalidateFlow
 import one.mixin.android.db.pending.PendingMessage
 import one.mixin.android.db.runInTransaction
 import one.mixin.android.event.CircleDeleteEvent
@@ -56,7 +57,6 @@ import one.mixin.android.ui.web.replaceApp
 import one.mixin.android.util.ColorUtil
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.PENDING_DB_THREAD
-import one.mixin.android.db.invalidater.InvalidateFlow
 import one.mixin.android.util.hyperlink.parseHyperlink
 import one.mixin.android.util.mention.parseMentionData
 import one.mixin.android.util.reportException

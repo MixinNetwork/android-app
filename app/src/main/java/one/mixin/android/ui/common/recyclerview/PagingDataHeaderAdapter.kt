@@ -8,7 +8,7 @@ import androidx.paging.PagingDataAdapter
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 
-abstract class PagingDataHeaderAdapter<T: Any>(diffCallback: DiffUtil.ItemCallback<T>) :
+abstract class PagingDataHeaderAdapter<T : Any>(diffCallback: DiffUtil.ItemCallback<T>) :
     PagingDataAdapter<T, RecyclerView.ViewHolder>(diffCallback) {
     companion object {
         const val TYPE_HEADER = 0

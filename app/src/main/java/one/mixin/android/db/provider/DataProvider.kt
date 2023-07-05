@@ -71,21 +71,21 @@ class DataProvider {
                         """
                     val offsetStatement = RoomSQLiteQuery.acquire(
                         "SELECT m.id FROM messages m INNER JOIN users u ON m.user_id = u.user_id WHERE conversation_id = ? ORDER BY m.created_at DESC LIMIT ? OFFSET ?",
-                        3
+                        3,
                     ).apply {
                         bindString(1, conversationId)
                     }
                     val querySqlGenerator = fun(ids: String): RoomSQLiteQuery {
                         return RoomSQLiteQuery.acquire(
                             "$sql WHERE m.id IN ($ids) ORDER BY m.created_at DESC",
-                            0
+                            0,
                         )
                     }
                     return object : FastLimitOffsetDataSource<MessageItem, String>(
                         database,
                         offsetStatement,
                         fastCountCallback,
-                        querySqlGenerator
+                        querySqlGenerator,
                     ) {
                         override fun convertRows(cursor: Cursor?): MutableList<MessageItem> {
                             return convertToMessageItems(cursor)
@@ -121,16 +121,16 @@ class DataProvider {
                     """
             val countStatement = RoomSQLiteQuery.acquire(
                 "SELECT count(1) FROM conversations c INNER JOIN users ou ON ou.user_id = c.owner_id WHERE c.category IS NOT NULL",
-                0
+                0,
             )
             val offsetStatement = RoomSQLiteQuery.acquire(
                 "SELECT c.rowid FROM conversations c INNER JOIN users ou ON ou.user_id = c.owner_id ORDER BY c.pin_time DESC, c.last_message_created_at DESC LIMIT ? OFFSET ?",
-                2
+                2,
             )
             val querySqlGenerator = fun(ids: String): RoomSQLiteQuery {
                 return RoomSQLiteQuery.acquire(
                     "$sql WHERE c.rowid IN ($ids) ORDER BY c.pin_time DESC, c.last_message_created_at DESC",
-                    0
+                    0,
                 )
             }
             return object :
@@ -149,7 +149,7 @@ class DataProvider {
 
         fun observeConversationsByCircleId(
             circleId: String,
-            database: MixinDatabase
+            database: MixinDatabase,
         ): PagingSource<Int, ConversationItem> {
             val sql =
                 """

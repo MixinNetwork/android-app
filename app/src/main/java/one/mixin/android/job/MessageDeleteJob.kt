@@ -4,8 +4,8 @@ import com.birbit.android.jobqueue.Params
 import kotlinx.coroutines.runBlocking
 import one.mixin.android.Constants.DB_DELETE_LIMIT
 import one.mixin.android.db.deleteMessageByIds
-import one.mixin.android.fts.deleteByMessageIds
 import one.mixin.android.db.invalidater.InvalidateFlow
+import one.mixin.android.fts.deleteByMessageIds
 
 class MessageDeleteJob(
     private val conversationId: String,

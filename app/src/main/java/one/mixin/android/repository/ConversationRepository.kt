@@ -37,6 +37,7 @@ import one.mixin.android.db.PinMessageDao
 import one.mixin.android.db.RemoteMessageStatusDao
 import one.mixin.android.db.TranscriptMessageDao
 import one.mixin.android.db.insertMessage
+import one.mixin.android.db.invalidater.InvalidateFlow
 import one.mixin.android.db.provider.DataProvider
 import one.mixin.android.event.GroupEvent
 import one.mixin.android.extension.joinStar
@@ -51,7 +52,6 @@ import one.mixin.android.job.RefreshUserJob
 import one.mixin.android.session.Session
 import one.mixin.android.ui.media.pager.MediaPagerActivity
 import one.mixin.android.util.SINGLE_DB_THREAD
-import one.mixin.android.db.invalidater.InvalidateFlow
 import one.mixin.android.vo.ChatMinimal
 import one.mixin.android.vo.CircleConversation
 import one.mixin.android.vo.Conversation

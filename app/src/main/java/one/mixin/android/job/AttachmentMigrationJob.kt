@@ -8,6 +8,7 @@ import one.mixin.android.Constants.Account.Migration.PREF_MIGRATION_ATTACHMENT_L
 import one.mixin.android.Constants.Account.Migration.PREF_MIGRATION_ATTACHMENT_OFFSET
 import one.mixin.android.Constants.Account.Migration.PREF_MIGRATION_TRANSCRIPT_ATTACHMENT
 import one.mixin.android.MixinApplication
+import one.mixin.android.db.invalidater.InvalidateFlow
 import one.mixin.android.extension.createAudioTemp
 import one.mixin.android.extension.createDocumentTemp
 import one.mixin.android.extension.createEmptyTemp
@@ -25,7 +26,6 @@ import one.mixin.android.extension.getVideoPath
 import one.mixin.android.extension.hasWritePermission
 import one.mixin.android.extension.isImageSupport
 import one.mixin.android.extension.nowInUtc
-import one.mixin.android.db.invalidater.InvalidateFlow
 import one.mixin.android.util.reportException
 import one.mixin.android.vo.Property
 import one.mixin.android.vo.getFile

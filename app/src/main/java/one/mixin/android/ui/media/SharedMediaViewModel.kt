@@ -25,7 +25,6 @@ import one.mixin.android.vo.isEncrypted
 import one.mixin.android.vo.isImage
 import one.mixin.android.vo.isSignal
 import one.mixin.android.vo.isVideo
-import org.threeten.bp.ZonedDateTime
 import javax.inject.Inject
 
 @HiltViewModel
@@ -47,33 +46,34 @@ class SharedMediaViewModel @Inject constructor(
 
     fun getAudioMessages(conversationId: String): LiveData<PagedList<MessageItem>> {
         val dataSource = conversationRepository.getAudioMessages(conversationId)
-        val sortedDataSource = dataSource.mapByPage { list ->
-            list.sortWith(
-                Comparator<MessageItem> { o1, o2 ->
-                    if (o1 == null || o2 == null) return@Comparator 0
-
-                    val time1 = ZonedDateTime.parse(o1.createdAt)
-                    val time2 = ZonedDateTime.parse(o2.createdAt)
-                    val year1 = time1.year
-                    val year2 = time2.year
-                    val day1 = time1.dayOfYear
-                    val day2 = time2.dayOfYear
-                    if (year1 == year2) {
-                        if (day1 == day2) {
-                            return@Comparator time1.toOffsetDateTime()
-                                .compareTo(time2.toOffsetDateTime())
-                        } else {
-                            return@Comparator day2 - day1
-                        }
-                    } else {
-                        return@Comparator year2 - year1
-                    }
-                },
-            )
-            return@mapByPage list
-        }
+        // Todo
+        // val sortedDataSource = dataSource.mapByPage { list ->
+        //     list.sortWith(
+        //         Comparator<MessageItem> { o1, o2 ->
+        //             if (o1 == null || o2 == null) return@Comparator 0
+        //
+        //             val time1 = ZonedDateTime.parse(o1.createdAt)
+        //             val time2 = ZonedDateTime.parse(o2.createdAt)
+        //             val year1 = time1.year
+        //             val year2 = time2.year
+        //             val day1 = time1.dayOfYear
+        //             val day2 = time2.dayOfYear
+        //             if (year1 == year2) {
+        //                 if (day1 == day2) {
+        //                     return@Comparator time1.toOffsetDateTime()
+        //                         .compareTo(time2.toOffsetDateTime())
+        //                 } else {
+        //                     return@Comparator day2 - day1
+        //                 }
+        //             } else {
+        //                 return@Comparator year2 - year1
+        //             }
+        //         },
+        //     )
+        //     return@mapByPage list
+        // }
         return LivePagedListBuilder(
-            sortedDataSource,
+            dataSource,
             PagedList.Config.Builder()
                 .setPrefetchDistance(PAGE_SIZE * 2)
                 .setPageSize(PAGE_SIZE)

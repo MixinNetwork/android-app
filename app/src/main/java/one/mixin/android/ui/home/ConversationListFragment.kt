@@ -26,7 +26,6 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
-import androidx.paging.PagedList
 import androidx.paging.PagingData
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -66,13 +65,11 @@ import one.mixin.android.extension.renderMessage
 import one.mixin.android.extension.timeAgo
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.viewDestroyed
-import one.mixin.android.job.GenerateAvatarJob
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.LinkFragment
 import one.mixin.android.ui.common.NavigationController
 import one.mixin.android.ui.common.recyclerview.NormalHolder
-import one.mixin.android.ui.common.recyclerview.PagedHeaderAdapter
 import one.mixin.android.ui.common.recyclerview.PagingDataHeaderAdapter
 import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.home.bot.BotManagerBottomSheetDialogFragment
@@ -123,7 +120,6 @@ import one.mixin.android.widget.BulletinView
 import one.mixin.android.widget.DraggableRecyclerView
 import one.mixin.android.widget.DraggableRecyclerView.Companion.FLING_DOWN
 import one.mixin.android.widget.picker.toTimeInterval
-import java.io.File
 import javax.inject.Inject
 import kotlin.math.min
 
@@ -394,7 +390,7 @@ class ConversationListFragment : LinkFragment() {
 
     private val observer by lazy {
         Observer<PagingData<ConversationItem>> { pagingData ->
-            conversationListAdapter.submitData(lifecycle,pagingData)
+            conversationListAdapter.submitData(lifecycle, pagingData)
             // conversationListAdapter.si
             // if (pagedList.isEmpty()) {
             //     if (circleId == null) {

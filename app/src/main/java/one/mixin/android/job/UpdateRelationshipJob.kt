@@ -11,8 +11,8 @@ import one.mixin.android.api.request.RelationshipAction.BLOCK
 import one.mixin.android.api.request.RelationshipAction.REMOVE
 import one.mixin.android.api.request.RelationshipAction.UNBLOCK
 import one.mixin.android.api.request.RelationshipRequest
-import one.mixin.android.session.Session
 import one.mixin.android.db.invalidater.InvalidateFlow
+import one.mixin.android.session.Session
 import one.mixin.android.vo.User
 import one.mixin.android.vo.UserRelationship
 import one.mixin.android.vo.generateConversationId

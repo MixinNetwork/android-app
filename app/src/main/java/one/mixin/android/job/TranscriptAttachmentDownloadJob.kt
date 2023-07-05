@@ -12,6 +12,7 @@ import one.mixin.android.RxBus
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.response.AttachmentResponse
 import one.mixin.android.crypto.attachment.AttachmentCipherInputStream
+import one.mixin.android.db.invalidater.InvalidateFlow
 import one.mixin.android.event.ProgressEvent
 import one.mixin.android.extension.copyFromInputStream
 import one.mixin.android.extension.getExtensionName
@@ -19,7 +20,6 @@ import one.mixin.android.extension.getTranscriptFile
 import one.mixin.android.extension.isImageSupport
 import one.mixin.android.extension.isNullOrEmpty
 import one.mixin.android.extension.notNullWithElse
-import one.mixin.android.db.invalidater.InvalidateFlow
 import one.mixin.android.util.okhttp.ProgressResponseBody
 import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.TranscriptMessage

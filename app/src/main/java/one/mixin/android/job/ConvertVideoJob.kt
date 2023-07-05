@@ -5,6 +5,7 @@ import com.birbit.android.jobqueue.Params
 import one.mixin.android.MixinApplication
 import one.mixin.android.RxBus
 import one.mixin.android.db.insertMessage
+import one.mixin.android.db.invalidater.InvalidateFlow
 import one.mixin.android.extension.createVideoTemp
 import one.mixin.android.extension.getFileNameNoEx
 import one.mixin.android.extension.getMimeType
@@ -12,7 +13,6 @@ import one.mixin.android.extension.getVideoModel
 import one.mixin.android.extension.getVideoPath
 import one.mixin.android.extension.nowInUtc
 import one.mixin.android.job.NotificationGenerator.database
-import one.mixin.android.db.invalidater.InvalidateFlow
 import one.mixin.android.util.video.MediaController
 import one.mixin.android.util.video.VideoEditedInfo
 import one.mixin.android.vo.EncryptCategory

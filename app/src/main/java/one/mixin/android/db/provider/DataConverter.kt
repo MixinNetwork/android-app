@@ -895,9 +895,9 @@ fun callableChatMinimal(
 
 @SuppressLint("RestrictedApi")
 fun convertChatHistoryMessageItem(
-  cursor: Cursor?
+    cursor: Cursor?,
 ): List<ChatHistoryMessageItem> {
-    cursor?:return emptyList()
+    cursor ?: return emptyList()
     val cursorIndexOfMessageId = 0
     val cursorIndexOfConversationId = 1
     val cursorIndexOfUserId = 2

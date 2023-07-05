@@ -5,6 +5,7 @@ import one.mixin.android.Constants.DEFAULT_THUMB_IMAGE
 import one.mixin.android.Constants.MAX_THUMB_IMAGE_LENGTH
 import one.mixin.android.RxBus
 import one.mixin.android.db.insertMessage
+import one.mixin.android.db.invalidater.InvalidateFlow
 import one.mixin.android.event.RecallEvent
 import one.mixin.android.extension.base64Encode
 import one.mixin.android.extension.base64RawURLDecode
@@ -17,7 +18,6 @@ import one.mixin.android.fts.deleteByMessageId
 import one.mixin.android.fts.insertOrReplaceMessageFts4
 import one.mixin.android.session.Session
 import one.mixin.android.util.GsonHelper
-import one.mixin.android.db.invalidater.InvalidateFlow
 import one.mixin.android.util.hyperlink.parseHyperlink
 import one.mixin.android.util.mention.parseMentionData
 import one.mixin.android.util.reportException

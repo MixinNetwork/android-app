@@ -13,7 +13,7 @@ import timber.log.Timber
 
 @SuppressLint("RestrictedApi")
 @RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
-abstract class FastLimitOffsetDataSource<T, S>(
+abstract class FastLimitOffsetDataSource<T : Any, S>(
     private val db: RoomDatabase,
     private val offsetStatement: RoomSQLiteQuery,
     private val fastCountCallback: () -> Int,
@@ -36,10 +36,11 @@ abstract class FastLimitOffsetDataSource<T, S>(
      */
     private fun countItems(): Int = fastCountCallback()
 
-    override fun isInvalid(): Boolean {
-        db.invalidationTracker.refreshVersionsSync()
-        return super.isInvalid()
-    }
+    // Todo
+    // override fun isInvalid(): Boolean {
+    //     db.invalidationTracker.refreshVersionsSync()
+    //     return super.isInvalid()
+    // }
 
     protected abstract fun convertRows(cursor: Cursor?): List<T>
     override fun loadInitial(

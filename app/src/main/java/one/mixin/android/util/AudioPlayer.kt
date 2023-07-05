@@ -15,6 +15,7 @@ import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.RxBus
 import one.mixin.android.db.MixinDatabase
+import one.mixin.android.db.invalidater.InvalidateFlow
 import one.mixin.android.event.ProgressEvent.Companion.errorEvent
 import one.mixin.android.event.ProgressEvent.Companion.pauseEvent
 import one.mixin.android.event.ProgressEvent.Companion.playEvent
@@ -24,7 +25,6 @@ import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.openMedia
 import one.mixin.android.extension.toast
 import one.mixin.android.session.Session
-import one.mixin.android.db.invalidater.InvalidateFlow
 import one.mixin.android.util.video.MixinPlayer
 import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.Message
