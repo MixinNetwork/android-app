@@ -63,6 +63,7 @@ class DepositFragment : BaseFragment() {
     private val scopeProvider by lazy { AndroidLifecycleScopeProvider.from(this) }
 
     private var alertDialog: Dialog? = null
+    private var selectedDestination: String? = null
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         _binding = FragmentDepositBinding.inflate(inflater, container, false).apply { this.root.setOnClickListener { } }
@@ -74,6 +75,24 @@ class DepositFragment : BaseFragment() {
         super.onViewCreated(view, savedInstanceState)
         val asset = requireArguments().getAsset()
         initView(asset)
+        if (!notSupportDepositAssets.any { it == asset.assetId }) {
+            DepositChooseNetworkBottomSheetDialogFragment.newInstance(asset = asset)
+                .apply {
+                    this.callback = {
+                        val noTag = asset.getTag().isNullOrBlank()
+                        if (noTag.not()) {
+                            alertDialogBuilder()
+                                .setTitle(R.string.Notice)
+                                .setCancelable(false)
+                                .setMessage(getString(R.string.deposit_notice, asset.symbol))
+                                .setPositiveButton(R.string.OK) { dialog, _ ->
+                                    dialog.dismiss()
+                                }.show()
+                        }
+                    }
+                }
+                .showNow(childFragmentManager, TAG)
+        }
     }
 
     override fun onDestroyView() {
@@ -101,7 +120,11 @@ class DepositFragment : BaseFragment() {
                 if (usdtAssets.contains(asset.assetId)) {
                     networkTitle.isVisible = true
                     networkChipGroup.isVisible = true
-                    initChips(asset)
+                    initUsdtChips(asset)
+                } else if ((asset.depositEntries?.size ?: 0) > 1 && asset.assetId == Constants.ChainId.BITCOIN_CHAIN_ID) {
+                    networkTitle.isVisible = true
+                    networkChipGroup.isVisible = true
+                    initBtcChips(asset)
                 } else {
                     networkTitle.isVisible = false
                     networkChipGroup.isVisible = false
@@ -133,26 +156,10 @@ class DepositFragment : BaseFragment() {
         if (!notSupport) {
             updateUI(asset)
             refreshAsset(asset)
-            DepositChooseNetworkBottomSheetDialogFragment.newInstance(asset = asset)
-                .apply {
-                    this.callback = {
-                        val noTag = asset.getTag().isNullOrBlank()
-                        if (noTag.not()) {
-                            alertDialogBuilder()
-                                .setTitle(R.string.Notice)
-                                .setCancelable(false)
-                                .setMessage(getString(R.string.deposit_notice, asset.symbol))
-                                .setPositiveButton(R.string.OK) { dialog, _ ->
-                                    dialog.dismiss()
-                                }.show()
-                        }
-                    }
-                }
-                .showNow(childFragmentManager, TAG)
         }
     }
 
-    private fun initChips(asset: AssetItem) {
+    private fun initUsdtChips(asset: AssetItem) {
         binding.apply {
             networkChipGroup.isSingleSelection = true
             networkChipGroup.removeAllViews()
@@ -186,6 +193,38 @@ class DepositFragment : BaseFragment() {
                                 initView(newAsset)
                             }
                         }
+                    }
+                }
+                networkChipGroup.addView(chip)
+            }
+        }
+    }
+
+    private fun initBtcChips(asset: AssetItem) {
+        binding.apply {
+            networkChipGroup.isSingleSelection = true
+            networkChipGroup.removeAllViews()
+            if (selectedDestination == null) {
+                selectedDestination = asset.getDestination()
+            }
+            asset.depositEntries?.reversed()?.forEach { entry ->
+                val chip = Chip(requireContext()).apply {
+                    text = getDestinationType(entry.properties)
+                    isClickable = true
+                    val same = selectedDestination == entry.destination
+                    if (same) {
+                        isChecked = true
+                        setTextColor(Color.WHITE)
+                        chipBackgroundColor = ColorStateList.valueOf(Color.BLACK)
+                    } else {
+                        setTextColor(requireContext().colorFromAttribute(R.attr.text_minor))
+                        chipBackgroundColor = ColorStateList.valueOf(requireContext().colorFromAttribute(R.attr.bg_gray_light))
+                    }
+                    setOnClickListener {
+                        if (same) return@setOnClickListener
+
+                        selectedDestination = entry.destination
+                        initView(asset)
                     }
                 }
                 networkChipGroup.addView(chip)
@@ -232,6 +271,7 @@ class DepositFragment : BaseFragment() {
                     parentFragmentManager,
                     scopeProvider,
                     asset,
+                    selectedDestination,
                     true,
                     getString(R.string.deposit_memo_notice),
                 )
@@ -240,9 +280,20 @@ class DepositFragment : BaseFragment() {
                 parentFragmentManager,
                 scopeProvider,
                 asset,
+                selectedDestination,
                 false,
                 if (noTag) null else getString(R.string.deposit_notice, asset.symbol),
             )
+        }
+    }
+
+    private fun getDestinationType(properties: List<String>?): String {
+        if (properties.isNullOrEmpty()) return ""
+
+        return if (properties.contains("SegWit")) {
+            "Bitcoin (Segwit)"
+        } else {
+            "Bitcoin"
         }
     }
 }
