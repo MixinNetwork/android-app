@@ -35,14 +35,20 @@ class DepositQrBottomFragment : MixinBottomSheetDialogFragment() {
     companion object {
         const val TAG = "DepositQrBottomFragment"
         const val ARGS_TYPE = "args_type"
+        const val ARGS_SELECTED_DESTINATION = "args_selected_destination"
 
         const val TYPE_TAG = 0
         const val TYPE_ADDRESS = 1
 
-        fun newInstance(asset: AssetItem, type: Int) = DepositQrBottomFragment().apply {
+        fun newInstance(
+            asset: AssetItem,
+            type: Int,
+            selectedDestination: String?,
+        ) = DepositQrBottomFragment().apply {
             arguments = bundleOf(
                 ARGS_ASSET to asset,
                 ARGS_TYPE to type,
+                ARGS_SELECTED_DESTINATION to selectedDestination,
             )
         }
     }
@@ -51,6 +57,7 @@ class DepositQrBottomFragment : MixinBottomSheetDialogFragment() {
 
     private val asset: AssetItem by lazy { requireArguments().getParcelableCompat(ARGS_ASSET, AssetItem::class.java)!! }
     private val type: Int by lazy { requireArguments().getInt(ARGS_TYPE) }
+    private val selectedDestination: String? by lazy { requireArguments().getString(ARGS_SELECTED_DESTINATION) }
 
     @SuppressLint("RestrictedApi")
     override fun setupDialog(dialog: Dialog, style: Int) {
@@ -67,7 +74,7 @@ class DepositQrBottomFragment : MixinBottomSheetDialogFragment() {
                 }
                 else -> {
                     title.titleTv.text = getString(R.string.Address)
-                    addrTv.text = asset.getDestination()
+                    addrTv.text = selectedDestination ?: asset.getDestination()
                 }
             }
             badgeView.apply {
@@ -111,7 +118,7 @@ class DepositQrBottomFragment : MixinBottomSheetDialogFragment() {
                 Observable.create<Pair<Bitmap, Int>?> { e ->
                     val code = when (type) {
                         TYPE_TAG -> asset.getTag()
-                        else -> asset.getDestination()
+                        else -> selectedDestination ?: asset.getDestination()
                     }
                     val r = code?.generateQRCode(qr.width)
                     r?.let { e.onNext(it) }

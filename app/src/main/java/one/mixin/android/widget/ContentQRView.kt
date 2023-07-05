@@ -31,7 +31,14 @@ class ContentQRView : ViewAnimator {
 
     private val binding: ViewContentQrBinding
 
-    fun setAsset(parentFragmentManager: FragmentManager, scopeProvider: ScopeProvider, asset: AssetItem, isTag: Boolean, warning: String? = null) {
+    fun setAsset(
+        parentFragmentManager: FragmentManager,
+        scopeProvider: ScopeProvider,
+        asset: AssetItem,
+        selectedDestination: String?,
+        isTag: Boolean,
+        warning: String? = null,
+    ) {
         binding.apply {
             val showPb = if (isTag) {
                 asset.getTag().isNullOrBlank()
@@ -48,7 +55,8 @@ class ContentQRView : ViewAnimator {
                 badge.loadImage(asset.chainIconUrl, R.drawable.ic_avatar_place_holder)
                 setBorder()
             }
-            val content = if (isTag) asset.getTag() else asset.getDestination()
+            val destination = selectedDestination ?: asset.getDestination()
+            val content = if (isTag) asset.getTag() else destination
             contentTv.text = content
             copyIv.setOnClickListener {
                 context.heavyClickVibrate()
@@ -62,7 +70,7 @@ class ContentQRView : ViewAnimator {
                 warningTv.isVisible = true
             }
             qrFl.setOnClickListener {
-                DepositQrBottomFragment.newInstance(asset, if (isTag) DepositQrBottomFragment.TYPE_TAG else DepositQrBottomFragment.TYPE_ADDRESS)
+                DepositQrBottomFragment.newInstance(asset, if (isTag) DepositQrBottomFragment.TYPE_TAG else DepositQrBottomFragment.TYPE_ADDRESS, selectedDestination)
                     .show(parentFragmentManager, DepositQrBottomFragment.TAG)
             }
             qr.post {
@@ -70,7 +78,7 @@ class ContentQRView : ViewAnimator {
                     val r = if (isTag) {
                         requireNotNull(asset.getTag())
                     } else {
-                        asset.getDestination()
+                        destination
                     }.generateQRCode(qr.width)
                     e.onNext(r)
                 }.subscribeOn(Schedulers.io())
