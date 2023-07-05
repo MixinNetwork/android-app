@@ -1842,7 +1842,7 @@ class ConversationFragment() :
         var oldCount: Int = -1
         var firstReturn = true
         chatViewModel.getMessages(conversationId, unreadCount) {
-                val computableLiveData = this
+                val computableLiveData = it
                 lifecycleScope.launch {
                     InvalidateFlow.collect(
                         { !viewDestroyed() && this@ConversationFragment.conversationId == conversationId },
@@ -1855,50 +1855,50 @@ class ConversationFragment() :
                 viewLifecycleOwner,
             ) { list ->
                 if (Session.getAccount() == null) return@observe
-
-                if (oldCount == -1) {
-                    oldCount = list.size
-                } else if (!isFirstLoad && !isBottom && list.size > oldCount) {
-                    if (firstReturn) {
-                        firstReturn = false
-                    } else { // The size returned the second time is the real data.
-                        unreadTipCount += (list.size - oldCount)
-                    }
-                    oldCount = list.size
-                } else if (isBottom) {
-                    unreadTipCount = 0
-                    oldCount = list.size
-                }
-                chatViewModel.viewModelScope.launch {
-                    conversationAdapter.hasBottomView =
-                        recipient?.relationship == UserRelationship.STRANGER.name && chatViewModel.isSilence(
-                            conversationId,
-                            sender.userId,
-                        )
-                }
-                if (isFirstLoad && messageId == null && unreadCount > 0) {
-                    conversationAdapter.unreadMsgId = unreadMessageId
-                } else if (lastReadMessage != null) {
-                    chatViewModel.viewModelScope.launch {
-                        lastReadMessage?.let { id ->
-                            val unreadMsgId = chatViewModel.findUnreadMessageByMessageId(
-                                conversationId,
-                                sender.userId,
-                                id,
-                            )
-                            if (unreadMsgId != null) {
-                                conversationAdapter.unreadMsgId = unreadMsgId
-                                lastReadMessage = null
-                            }
-                        }
-                    }
-                }
-                if (list.size > 0) {
-                    if (isFirstMessage) {
-                        isFirstMessage = false
-                    }
-                }
-                conversationAdapter.submitList(list)
+                //
+                // if (oldCount == -1) {
+                //     oldCount = list.size
+                // } else if (!isFirstLoad && !isBottom && list.size > oldCount) {
+                //     if (firstReturn) {
+                //         firstReturn = false
+                //     } else { // The size returned the second time is the real data.
+                //         unreadTipCount += (list.size - oldCount)
+                //     }
+                //     oldCount = list.size
+                // } else if (isBottom) {
+                //     unreadTipCount = 0
+                //     oldCount = list.size
+                // }
+                // chatViewModel.viewModelScope.launch {
+                //     conversationAdapter.hasBottomView =
+                //         recipient?.relationship == UserRelationship.STRANGER.name && chatViewModel.isSilence(
+                //             conversationId,
+                //             sender.userId,
+                //         )
+                // }
+                // if (isFirstLoad && messageId == null && unreadCount > 0) {
+                //     conversationAdapter.unreadMsgId = unreadMessageId
+                // } else if (lastReadMessage != null) {
+                //     chatViewModel.viewModelScope.launch {
+                //         lastReadMessage?.let { id ->
+                //             val unreadMsgId = chatViewModel.findUnreadMessageByMessageId(
+                //                 conversationId,
+                //                 sender.userId,
+                //                 id,
+                //             )
+                //             if (unreadMsgId != null) {
+                //                 conversationAdapter.unreadMsgId = unreadMsgId
+                //                 lastReadMessage = null
+                //             }
+                //         }
+                //     }
+                // }
+                // if (list.size > 0) {
+                //     if (isFirstMessage) {
+                //         isFirstMessage = false
+                //     }
+                // }
+                conversationAdapter.submitData(lifecycle, list)
                 chatViewModel.markMessageRead(conversationId, (activity as? BubbleActivity)?.isBubbled == true)
                 chatRoomHelper.markMessageRead(conversationId)
             }
