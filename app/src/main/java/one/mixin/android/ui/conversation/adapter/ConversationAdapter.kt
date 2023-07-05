@@ -7,6 +7,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.collection.ArraySet
 import androidx.paging.PagedList
+import androidx.paging.PagingDataAdapter
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.uber.autodispose.ScopeProvider
@@ -122,7 +123,7 @@ class ConversationAdapter(
     private val isGroup: Boolean,
     private val isSecret: Boolean = true,
     private val isBot: Boolean = false,
-) : SafePagedListAdapter<MessageItem, RecyclerView.ViewHolder>(diffCallback),
+) : PagingDataAdapter<MessageItem, RecyclerView.ViewHolder>(diffCallback),
     MixinStickyRecyclerHeadersAdapter<TimeHolder> {
     var selectSet: ArraySet<MessageItem> = ArraySet()
     var unreadMsgId: String? = null
@@ -147,7 +148,7 @@ class ConversationAdapter(
         }
 
     override fun hasAttachView(position: Int): Boolean = if (unreadMsgId != null) {
-        getItem(position)?.messageId == unreadMsgId
+        getMessageItem(position)?.messageId == unreadMsgId
     } else {
         false
     }
@@ -157,30 +158,6 @@ class ConversationAdapter(
 
     fun loadAround(index: Int) {
         pagingList?.loadAround(index)
-    }
-
-    override fun submitList(pagedList: PagedList<MessageItem>?) {
-        if (pagedList == null) {
-            super.submitList(null)
-        } else {
-            publisher.onNext(pagedList)
-        }
-        this.pagingList = pagedList
-    }
-
-    fun listen(scopeProvider: ScopeProvider) {
-        publisher.throttleLast(120, TimeUnit.MILLISECONDS)
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribeOn(AndroidSchedulers.mainThread())
-            .autoDispose(scopeProvider)
-            .subscribe(
-                {
-                    super.submitList(it)
-                },
-                {
-                    Timber.e(it)
-                },
-            )
     }
 
     override fun onCreateAttach(parent: ViewGroup): View =
@@ -198,7 +175,7 @@ class ConversationAdapter(
         }
     }
 
-    override fun getHeaderId(position: Int): Long = getItem(position).notNullWithElse(
+    override fun getHeaderId(position: Int): Long = getMessageItem(position).notNullWithElse(
         {
             abs(it.createdAt.hashForDate())
         },
@@ -209,13 +186,13 @@ class ConversationAdapter(
         TimeHolder(ItemChatTimeBinding.inflate(LayoutInflater.from(parent.context), parent, false))
 
     override fun onBindHeaderViewHolder(holder: TimeHolder, position: Int) {
-        getItem(position)?.let {
+        getMessageItem(position)?.let {
             holder.bind(it.createdAt)
         }
     }
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
-        getItem(position)?.let {
+        getMessageItem(position)?.let {
             when (getItemViewType(position)) {
                 TEXT_TYPE -> {
                     (holder as TextHolder).bind(
@@ -518,7 +495,7 @@ class ConversationAdapter(
         return if (selectSet.isEmpty()) {
             false
         } else {
-            selectSet.find { it.messageId == getItem(position)?.messageId } != null
+            selectSet.find { it.messageId == getMessageItem(position)?.messageId } != null
         }
     }
 
@@ -527,7 +504,7 @@ class ConversationAdapter(
     }
 
     override fun isLast(position: Int): Boolean {
-        val currentItem = getItem(position)
+        val currentItem = getMessageItem(position)
         val previousItem = previous(position)
         return when {
             currentItem == null ->
@@ -552,7 +529,7 @@ class ConversationAdapter(
 
     private fun isFirst(position: Int): Boolean {
         return if (isGroup || recipient != null) {
-            val currentItem = getItem(position)
+            val currentItem = getMessageItem(position)
             if (!isGroup && (recipient?.isBot() == false || recipient?.userId == currentItem?.userId)) {
                 return false
             }
@@ -593,26 +570,6 @@ class ConversationAdapter(
         }
     }
 
-    @SuppressLint("NotifyDataSetChanged")
-    override fun onCurrentListChanged(
-        previousList: PagedList<MessageItem>?,
-        currentList: PagedList<MessageItem>?,
-    ) {
-        super.onCurrentListChanged(previousList, currentList)
-        if (currentList != null && previousList != null && previousList.size != 0) {
-            val changeCount = currentList.size - previousList.size
-            when {
-                abs(changeCount) >= PAGE_SIZE -> notifyDataSetChanged()
-                changeCount > 0 ->
-                    for (i in 1 until changeCount + 1)
-                        getItem(i)?.let {
-                            RxBus.publish(BlinkEvent(it.messageId, isLast(i)))
-                        }
-                changeCount < 0 -> notifyDataSetChanged()
-            }
-        }
-    }
-
     override fun getItemCount(): Int {
         return super.getItemCount() + if (hasBottomView && isSecret) {
             2
@@ -627,7 +584,7 @@ class ConversationAdapter(
         return super.getItemCount()
     }
 
-    public override fun getItem(position: Int): MessageItem? {
+    fun getMessageItem(position: Int): MessageItem? {
         return if (position > itemCount - 1) {
             null
         } else if (isSecret && hasBottomView) {
@@ -875,7 +832,7 @@ class ConversationAdapter(
             NULL_TYPE,
         )
 
-    override fun getItemViewType(position: Int): Int = getItemType(getItem(position))
+    override fun getItemViewType(position: Int): Int = getItemType(getMessageItem(position))
 
     companion object {
         const val NULL_TYPE = 99

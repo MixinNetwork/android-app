@@ -12,6 +12,11 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.map
 import androidx.lifecycle.viewModelScope
+import androidx.paging.Pager
+import androidx.paging.PagingConfig
+import androidx.paging.PagingData
+import androidx.paging.PagingSource
+import androidx.paging.liveData
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -120,7 +125,7 @@ internal constructor(
     private val cleanMessageHelper: CleanMessageHelper,
 ) : ViewModel() {
 
-    fun getMessages(conversationId: String, firstKeyToLoad: Int = 0): LiveData<PagingData<MessageItem>> {
+    fun getMessages(conversationId: String, firstKeyToLoad: Int = 0, dataCallback: (PagingSource<Int, MessageItem>) -> Unit): LiveData<PagingData<MessageItem>> {
         return Pager(
             PagingConfig(
                 pageSize = PAGE_SIZE,

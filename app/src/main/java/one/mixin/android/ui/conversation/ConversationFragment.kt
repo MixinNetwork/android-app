@@ -53,6 +53,7 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewModelScope
 import androidx.media3.common.MimeTypes
+import androidx.media3.common.util.UnstableApi
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -271,8 +272,8 @@ import java.util.UUID
 import javax.inject.Inject
 import kotlin.math.abs
 
-@AndroidEntryPoint
-@SuppressLint("InvalidWakeLockTag")
+@UnstableApi @AndroidEntryPoint
+@SuppressLint("UnsafeOptInUsageError", "InvalidWakeLockTag")
 class ConversationFragment() :
     LinkFragment(),
     OnKeyboardShownListener,
@@ -356,25 +357,25 @@ class ConversationFragment() :
     fun updateConversationInfo(messageId: String?, keyword: String?, unreadCount: Int) {
         this.keyword = keyword
         conversationAdapter.keyword = keyword
-        val currentList = conversationAdapter.currentList
-        if (currentList != null) {
-            (binding.chatRv.layoutManager as LinearLayoutManager).scrollToPosition(unreadCount)
-            lifecycleScope.launch {
-                delay(160)
-                (binding.chatRv.layoutManager as LinearLayoutManager).scrollToPositionWithOffset(
-                    unreadCount,
-                    binding.chatRv.measuredHeight * 3 / 4,
-                )
-                messageId?.let { id ->
-                    RxBus.publish(BlinkEvent(id))
-                }
-            }
-        } else {
-            this.messageId = messageId
-            this.unreadCount = unreadCount
-            isFirstLoad = true
-            liveDataMessage(unreadCount, messageId)
-        }
+        // val currentList = conversationAdapter.currentList
+        // if (currentList != null) {
+        //     (binding.chatRv.layoutManager as LinearLayoutManager).scrollToPosition(unreadCount)
+        //     lifecycleScope.launch {
+        //         delay(160)
+        //         (binding.chatRv.layoutManager as LinearLayoutManager).scrollToPositionWithOffset(
+        //             unreadCount,
+        //             binding.chatRv.measuredHeight * 3 / 4,
+        //         )
+        //         messageId?.let { id ->
+        //             RxBus.publish(BlinkEvent(id))
+        //         }
+        //     }
+        // } else {
+        //     this.messageId = messageId
+        //     this.unreadCount = unreadCount
+        //     isFirstLoad = true
+        //     liveDataMessage(unreadCount, messageId)
+        // }
     }
 
     private val chatAdapterDataObserver =
@@ -382,9 +383,9 @@ class ConversationFragment() :
             var oldSize = 0
 
             override fun onItemRangeRemoved(positionStart: Int, itemCount: Int) {
-                conversationAdapter.currentList?.let {
-                    oldSize = it.size
-                }
+                // conversationAdapter.currentList?.let {
+                //     oldSize = it.size
+                // }
             }
 
             override fun onItemRangeInserted(positionStart: Int, itemCount: Int) {
@@ -430,9 +431,9 @@ class ConversationFragment() :
                         binding.chatRv.isVisible = true
                     }
                     isBottom -> {
-                        if (conversationAdapter.currentList != null && (conversationAdapter.currentList!!.size > oldSize) || lastSendMessageId == conversationAdapter.getItem(0)?.messageId) {
-                            scrollToDown()
-                        }
+                        // if (conversationAdapter.currentList != null && (conversationAdapter.currentList!!.size > oldSize) || lastSendMessageId == conversationAdapter.getMessageItem(0)?.messageId) {
+                        //     scrollToDown()
+                        // }
                     }
                     else -> {
                         if (unreadTipCount > 0) {
@@ -443,9 +444,9 @@ class ConversationFragment() :
                         }
                     }
                 }
-                conversationAdapter.currentList?.let {
-                    oldSize = it.size
-                }
+                // conversationAdapter.currentList?.let {
+                //     oldSize = it.size
+                // }
             }
         }
 
@@ -1395,7 +1396,7 @@ class ConversationFragment() :
         binding.chatRv.visibility = INVISIBLE
         if (binding.chatRv.adapter == null) {
             binding.chatRv.adapter = conversationAdapter
-            conversationAdapter.listen(destroyScope)
+            // conversationAdapter.listen(destroyScope)
         }
         binding.chatControl.callback = chatControlCallback
         binding.chatControl.activity = requireActivity()
@@ -1711,7 +1712,7 @@ class ConversationFragment() :
                             Timber.w(e)
                         }
                         if (position >= 0) {
-                            conversationAdapter.getItem(position)?.let {
+                            conversationAdapter.getMessageItem(position)?.let {
                                 binding.chatControl.replyView.bind(it)
                             }
 
@@ -1840,8 +1841,7 @@ class ConversationFragment() :
     private fun liveDataMessage(unreadCount: Int, unreadMessageId: String?) {
         var oldCount: Int = -1
         var firstReturn = true
-        chatViewModel.getMessages(conversationId, unreadCount)
-            .run {
+        chatViewModel.getMessages(conversationId, unreadCount) {
                 val computableLiveData = this
                 lifecycleScope.launch {
                     InvalidateFlow.collect(
@@ -1851,7 +1851,6 @@ class ConversationFragment() :
                         },
                     )
                 }
-                this.liveData
             }.observe(
                 viewLifecycleOwner,
             ) { list ->
