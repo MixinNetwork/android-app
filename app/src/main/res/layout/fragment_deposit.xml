@@ -55,6 +55,26 @@
             android:orientation="vertical">
 
             <TextView
+                android:id="@+id/network_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="20dp"
+                android:layout_marginTop="8dp"
+                android:visibility="gone"
+                android:text="@string/Network_Type"
+                android:textColor="?attr/text_assist" />
+
+            <com.google.android.material.chip.ChipGroup
+                android:id="@+id/network_chip_group"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:visibility="gone"
+                android:layout_marginTop="8dp"
+                android:layout_marginBottom="8dp"
+                android:layout_marginStart="20dp"
+                android:layout_marginEnd="20dp"/>
+
+            <TextView
                 android:id="@+id/memo_title"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
