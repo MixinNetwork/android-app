@@ -5,6 +5,11 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.LivePagedListBuilder
 import androidx.paging.PagedList
+import androidx.paging.Pager
+import androidx.paging.PagingConfig
+import androidx.paging.PagingData
+import androidx.paging.PagingSource
+import androidx.paging.liveData
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -43,29 +48,30 @@ import javax.inject.Inject
 class ConversationListViewModel
 @Inject
 internal constructor(
-    private val messageRepository: ConversationRepository,
-    private val userRepository: UserRepository,
     private val conversationRepository: ConversationRepository,
+    private val userRepository: UserRepository,
     private val assetRepository: AssetRepository,
     private val jobManager: MixinJobManager,
     private val cleanMessageHelper: CleanMessageHelper,
 ) : ViewModel() {
 
-    fun observeConversations(circleId: String?): LiveData<PagedList<ConversationItem>> {
-        return LivePagedListBuilder(
-            messageRepository.observeConversations(circleId),
-            PagedList.Config.Builder()
-                .setPrefetchDistance(CONVERSATION_PAGE_SIZE * 2)
-                .setPageSize(CONVERSATION_PAGE_SIZE)
-                .setEnablePlaceholders(true)
-                .build(),
-        ).build()
+    fun observeConversations(circleId: String?): LiveData<PagingData<ConversationItem>> {
+        return Pager(
+            PagingConfig(
+                pageSize = CONVERSATION_PAGE_SIZE,
+                enablePlaceholders = true,
+                initialLoadSize = CONVERSATION_PAGE_SIZE * 2,
+            ),
+            initialKey = 0,
+        ) {
+            conversationRepository.observeConversations(circleId)
+        }.liveData
     }
 
     fun createGroupConversation(conversationId: String) {
-        val c = messageRepository.getConversation(conversationId)
+        val c = conversationRepository.getConversation(conversationId)
         c?.let {
-            val participants = messageRepository.getGroupParticipants(conversationId)
+            val participants = conversationRepository.getGroupParticipants(conversationId)
             val mutableList = mutableListOf<Participant>()
             val createAt = nowInUtc()
             participants.mapTo(mutableList) { Participant(conversationId, it.userId, "", createAt) }
@@ -75,7 +81,7 @@ internal constructor(
                 null, 0, ConversationStatus.START.ordinal, null,
             )
             viewModelScope.launch {
-                messageRepository.insertConversation(conversation, mutableList)
+                conversationRepository.insertConversation(conversation, mutableList)
             }
 
             val participantRequestList = mutableListOf<ParticipantRequest>()
@@ -93,7 +99,7 @@ internal constructor(
     }
 
     fun deleteConversation(conversationId: String) = viewModelScope.launch(Dispatchers.IO) {
-        val ids = messageRepository.findTranscriptIdByConversationId(conversationId)
+        val ids = conversationRepository.findTranscriptIdByConversationId(conversationId)
         if (ids.isNotEmpty()) {
             jobManager.addJobInBackground(TranscriptDeleteJob(ids))
         }
@@ -101,7 +107,7 @@ internal constructor(
     }
 
     fun updateConversationPinTimeById(conversationId: String, circleId: String?, pinTime: String?) = viewModelScope.launch {
-        messageRepository.updateConversationPinTimeById(conversationId, circleId, pinTime)
+        conversationRepository.updateConversationPinTimeById(conversationId, circleId, pinTime)
     }
 
     suspend fun mute(
@@ -117,7 +123,7 @@ internal constructor(
             val request = ConversationRequest(conversationId, ConversationCategory.GROUP.name, duration = duration)
             return conversationRepository.muteSuspend(conversationId, request)
         } else {
-            var cid = messageRepository.getConversationIdIfExistsSync(recipientId!!)
+            var cid = conversationRepository.getConversationIdIfExistsSync(recipientId!!)
             if (cid == null) {
                 cid = generateConversationId(senderId!!, recipientId)
             }

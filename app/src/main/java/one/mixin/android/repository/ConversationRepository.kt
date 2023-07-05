@@ -7,6 +7,7 @@ import androidx.lifecycle.map
 import androidx.paging.DataSource
 import androidx.paging.LivePagedListBuilder
 import androidx.paging.PagedList
+import androidx.paging.PagingSource
 import io.reactivex.Observable
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -102,7 +103,7 @@ internal constructor(
 
     suspend fun getChatMessages(conversationId: String, offset: Int, limit: Int): List<MessageItem> = messageDao.getChatMessages(conversationId, offset, limit)
 
-    fun observeConversations(circleId: String?): DataSource.Factory<Int, ConversationItem> = if (circleId == null) {
+    fun observeConversations(circleId: String?): PagingSource<Int, ConversationItem> = if (circleId == null) {
         DataProvider.observeConversations(appDatabase)
     } else {
         DataProvider.observeConversationsByCircleId(circleId, appDatabase)

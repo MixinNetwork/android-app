@@ -4,17 +4,17 @@ import android.annotation.SuppressLint
 import android.database.Cursor
 import android.os.CancellationSignal
 import androidx.paging.DataSource
+import androidx.paging.PagingSource
 import androidx.room.CoroutinesRoom
 import androidx.room.RoomSQLiteQuery
 import androidx.room.getQueryDispatcher
 import kotlinx.coroutines.withContext
 import one.mixin.android.db.MixinDatabase
+import one.mixin.android.db.datasource.MixinLimitOffsetDataSource
 import one.mixin.android.fts.FtsDataSource
 import one.mixin.android.fts.FtsDatabase
 import one.mixin.android.fts.rawSearch
-import one.mixin.android.ui.search.CancellationLimitOffsetDataSource
 import one.mixin.android.util.chat.FastLimitOffsetDataSource
-import one.mixin.android.util.chat.MixinLimitOffsetDataSource
 import one.mixin.android.util.chat.NoCountLimitOffsetDataSource
 import one.mixin.android.vo.AssetItem
 import one.mixin.android.vo.ChatHistoryMessageItem
@@ -40,6 +40,7 @@ class DataProvider {
                     conversationExtDao.refreshCountByConversationId(conversationId)
                     return (conversationExtDao.getMessageCountByConversationId(conversationId) ?: 0)
                 }
+
                 override fun create(): DataSource<Int, MessageItem> {
                     val sql =
                         """
@@ -68,13 +69,24 @@ class DataProvider {
                         LEFT JOIN pin_messages pm ON m.id = pm.message_id
                         LEFT JOIN expired_messages em ON m.id = em.message_id
                         """
-                    val offsetStatement = RoomSQLiteQuery.acquire("SELECT m.id FROM messages m INNER JOIN users u ON m.user_id = u.user_id WHERE conversation_id = ? ORDER BY m.created_at DESC LIMIT ? OFFSET ?", 3).apply {
+                    val offsetStatement = RoomSQLiteQuery.acquire(
+                        "SELECT m.id FROM messages m INNER JOIN users u ON m.user_id = u.user_id WHERE conversation_id = ? ORDER BY m.created_at DESC LIMIT ? OFFSET ?",
+                        3
+                    ).apply {
                         bindString(1, conversationId)
                     }
                     val querySqlGenerator = fun(ids: String): RoomSQLiteQuery {
-                        return RoomSQLiteQuery.acquire("$sql WHERE m.id IN ($ids) ORDER BY m.created_at DESC", 0)
+                        return RoomSQLiteQuery.acquire(
+                            "$sql WHERE m.id IN ($ids) ORDER BY m.created_at DESC",
+                            0
+                        )
                     }
-                    return object : FastLimitOffsetDataSource<MessageItem, String>(database, offsetStatement, fastCountCallback, querySqlGenerator) {
+                    return object : FastLimitOffsetDataSource<MessageItem, String>(
+                        database,
+                        offsetStatement,
+                        fastCountCallback,
+                        querySqlGenerator
+                    ) {
                         override fun convertRows(cursor: Cursor?): MutableList<MessageItem> {
                             return convertToMessageItems(cursor)
                         }
@@ -86,11 +98,9 @@ class DataProvider {
                 }
             }
 
-        fun observeConversations(database: MixinDatabase) =
-            object : DataSource.Factory<Int, ConversationItem>() {
-                override fun create(): DataSource<Int, ConversationItem> {
-                    val sql =
-                        """
+        fun observeConversations(database: MixinDatabase): PagingSource<Int, ConversationItem> {
+            val sql =
+                """
                     SELECT c.conversation_id AS conversationId, c.icon_url AS groupIconUrl, c.category AS category,
                     c.name AS groupName, c.status AS status, c.last_read_message_id AS lastReadMessageId,
                     c.unseen_message_count AS unseenMessageCount, c.owner_id AS ownerId, c.pin_time AS pinTime, c.mute_until AS muteUntil,
@@ -109,24 +119,40 @@ class DataProvider {
                     LEFT JOIN users mu ON mu.user_id = m.user_id
                     LEFT JOIN users pu ON pu.user_id = m.participant_id 
                     """
-                    val countStatement = RoomSQLiteQuery.acquire("SELECT count(1) FROM conversations c INNER JOIN users ou ON ou.user_id = c.owner_id WHERE c.category IS NOT NULL", 0)
-                    val offsetStatement = RoomSQLiteQuery.acquire("SELECT c.rowid FROM conversations c INNER JOIN users ou ON ou.user_id = c.owner_id ORDER BY c.pin_time DESC, c.last_message_created_at DESC LIMIT ? OFFSET ?", 2)
-                    val querySqlGenerator = fun(ids: String): RoomSQLiteQuery {
-                        return RoomSQLiteQuery.acquire("$sql WHERE c.rowid IN ($ids) ORDER BY c.pin_time DESC, c.last_message_created_at DESC", 0)
-                    }
-                    return object : MixinLimitOffsetDataSource<ConversationItem>(database, countStatement, offsetStatement, querySqlGenerator, arrayOf("message_mentions", "conversations", "users")) {
-                        override fun convertRows(cursor: Cursor?): List<ConversationItem> {
-                            return convertToConversationItems(cursor)
-                        }
-                    }
+            val countStatement = RoomSQLiteQuery.acquire(
+                "SELECT count(1) FROM conversations c INNER JOIN users ou ON ou.user_id = c.owner_id WHERE c.category IS NOT NULL",
+                0
+            )
+            val offsetStatement = RoomSQLiteQuery.acquire(
+                "SELECT c.rowid FROM conversations c INNER JOIN users ou ON ou.user_id = c.owner_id ORDER BY c.pin_time DESC, c.last_message_created_at DESC LIMIT ? OFFSET ?",
+                2
+            )
+            val querySqlGenerator = fun(ids: String): RoomSQLiteQuery {
+                return RoomSQLiteQuery.acquire(
+                    "$sql WHERE c.rowid IN ($ids) ORDER BY c.pin_time DESC, c.last_message_created_at DESC",
+                    0
+                )
+            }
+            return object :
+                MixinLimitOffsetDataSource<ConversationItem>(
+                    offsetStatement,
+                    countStatement,
+                    querySqlGenerator,
+                    database,
+                    *arrayOf("message_mentions", "conversations", "users"),
+                ) {
+                override fun convertRows(cursor: Cursor): List<ConversationItem> {
+                    return convertToConversationItems(cursor)
                 }
             }
+        }
 
-        fun observeConversationsByCircleId(circleId: String, database: MixinDatabase) =
-            object : DataSource.Factory<Int, ConversationItem>() {
-                override fun create(): DataSource<Int, ConversationItem> {
-                    val sql =
-                        """
+        fun observeConversationsByCircleId(
+            circleId: String,
+            database: MixinDatabase
+        ): PagingSource<Int, ConversationItem> {
+            val sql =
+                """
                         SELECT c.conversation_id AS conversationId, c.icon_url AS groupIconUrl, c.category AS category,
                         c.name AS groupName, c.status AS status, c.last_read_message_id AS lastReadMessageId,
                         c.unseen_message_count AS unseenMessageCount, c.owner_id AS ownerId, cc.pin_time AS pinTime, c.mute_until AS muteUntil,
@@ -147,18 +173,18 @@ class DataProvider {
                         LEFT JOIN users mu ON mu.user_id = m.user_id
                         LEFT JOIN users pu ON pu.user_id = m.participant_id 
                         """
-                    val countStatement = RoomSQLiteQuery.acquire(
-                        """
+            val countStatement = RoomSQLiteQuery.acquire(
+                """
                      SELECT count(1) FROM circle_conversations cc
                      INNER JOIN circles ci ON ci.circle_id = cc.circle_id
                      INNER JOIN conversations c ON cc.conversation_id = c.conversation_id
                      INNER JOIN users ou ON ou.user_id = c.owner_id
                      WHERE c.category IS NOT NULL AND cc.circle_id = '$circleId'
                     """,
-                        0,
-                    )
-                    val offsetStatement = RoomSQLiteQuery.acquire(
-                        """
+                0,
+            )
+            val offsetStatement = RoomSQLiteQuery.acquire(
+                """
                         SELECT cc.rowid FROM circle_conversations cc
                         INNER JOIN conversations c ON cc.conversation_id = c.conversation_id
                         INNER JOIN circles ci ON ci.circle_id = cc.circle_id
@@ -173,11 +199,11 @@ class DataProvider {
                         DESC
                         LIMIT ? OFFSET ?
                     """,
-                        2,
-                    )
-                    val querySqlGenerator = fun(ids: String): RoomSQLiteQuery {
-                        return RoomSQLiteQuery.acquire(
-                            """
+                2,
+            )
+            val querySqlGenerator = fun(ids: String): RoomSQLiteQuery {
+                return RoomSQLiteQuery.acquire(
+                    """
                             $sql WHERE cc.rowid IN ($ids)
                             ORDER BY cc.pin_time DESC, 
                             CASE 
@@ -186,16 +212,28 @@ class DataProvider {
                             END 
                             DESC
                         """,
-                            0,
-                        )
-                    }
-                    return object : MixinLimitOffsetDataSource<ConversationItem>(database, countStatement, offsetStatement, querySqlGenerator, arrayOf("message_mentions", "circle_conversations", "conversations", "circles", "users")) {
-                        override fun convertRows(cursor: Cursor?): List<ConversationItem> {
-                            return convertToConversationItems(cursor)
-                        }
-                    }
+                    0,
+                )
+            }
+            return object :
+                MixinLimitOffsetDataSource<ConversationItem>(
+                    offsetStatement,
+                    countStatement,
+                    querySqlGenerator,
+                    database,
+                    *arrayOf(
+                        "message_mentions",
+                        "circle_conversations",
+                        "conversations",
+                        "circles",
+                        "users",
+                    ),
+                ) {
+                override fun convertRows(cursor: Cursor): List<ConversationItem> {
+                    return convertToConversationItems(cursor)
                 }
             }
+        }
 
         @Suppress("LocalVariableName", "JoinDeclarationAndAssignment")
         suspend fun fuzzySearchAsset(
