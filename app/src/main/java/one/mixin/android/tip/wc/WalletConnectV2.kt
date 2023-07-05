@@ -81,7 +81,7 @@ object WalletConnectV2 : WalletConnect() {
         }
 
         val walletDelegate = object : Web3Wallet.WalletDelegate {
-            override fun onAuthRequest(authRequest: Wallet.Model.AuthRequest) {
+            override fun onAuthRequest(authRequest: Wallet.Model.AuthRequest, verifyContext: Wallet.Model.VerifyContext) {
                 Timber.d("$TAG onAuthRequest $authRequest")
             }
 
@@ -98,12 +98,12 @@ object WalletConnectV2 : WalletConnect() {
                 Timber.d("$TAG onSessionDelete $sessionDelete")
             }
 
-            override fun onSessionProposal(sessionProposal: Wallet.Model.SessionProposal) {
+            override fun onSessionProposal(sessionProposal: Wallet.Model.SessionProposal, verifyContext: Wallet.Model.VerifyContext) {
                 Timber.d("$TAG onSessionProposal $sessionProposal")
                 RxBus.publish(WCEvent.V2(Version.V2, RequestType.SessionProposal, sessionProposal.pairingTopic))
             }
 
-            override fun onSessionRequest(sessionRequest: Wallet.Model.SessionRequest) {
+            override fun onSessionRequest(sessionRequest: Wallet.Model.SessionRequest, verifyContext: Wallet.Model.VerifyContext) {
                 Timber.d("$TAG onSessionRequest $sessionRequest")
                 RxBus.publish(WCEvent.V2(Version.V2, RequestType.SessionRequest, sessionRequest.topic))
             }
