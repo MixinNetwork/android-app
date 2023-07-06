@@ -2,7 +2,6 @@ package one.mixin.android.ui.wallet.adapter
 
 import androidx.paging.ExperimentalPagingApi
 import androidx.paging.LoadType
-import androidx.paging.PagingSource
 import androidx.paging.PagingState
 import androidx.paging.RemoteMediator
 import one.mixin.android.api.service.AssetService
@@ -23,7 +22,7 @@ class SnapshotsMediator(
 ) : RemoteMediator<Int, SnapshotItem>() {
     override suspend fun load(
         loadType: LoadType,
-        state: PagingState<Int, SnapshotItem>
+        state: PagingState<Int, SnapshotItem>,
     ): MediatorResult {
         return try {
             val offset = when (loadType) {

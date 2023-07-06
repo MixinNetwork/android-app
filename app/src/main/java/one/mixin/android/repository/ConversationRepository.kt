@@ -27,6 +27,7 @@ import one.mixin.android.api.service.UserService
 import one.mixin.android.db.AppDao
 import one.mixin.android.db.CircleConversationDao
 import one.mixin.android.db.ConversationDao
+import one.mixin.android.db.ConversationExtDao
 import one.mixin.android.db.JobDao
 import one.mixin.android.db.MessageDao
 import one.mixin.android.db.MessageMentionDao
@@ -83,6 +84,7 @@ internal constructor(
     private val appDatabase: MixinDatabase,
     private val messageDao: MessageDao,
     private val conversationDao: ConversationDao,
+    private val conversationExtDao: ConversationExtDao,
     private val circleConversationDao: CircleConversationDao,
     private val participantDao: ParticipantDao,
     private val messageMentionDao: MessageMentionDao,
@@ -452,6 +454,8 @@ internal constructor(
     suspend fun hasUploadedAttachmentSuspend(transcriptId: String) = transcriptMessageDao.hasUploadedAttachmentSuspend(transcriptId)
 
     fun refreshConversationById(conversationId: String) = remoteMessageStatusDao.updateConversationUnseen(conversationId)
+    fun refreshCountByConversationId(conversationId: String) =
+        conversationExtDao.refreshCountByConversationId(conversationId)
 
     suspend fun getAndSyncConversation(conversationId: String): Conversation? = withContext(Dispatchers.IO) {
         val conversation = conversationDao.getConversationByIdSuspend(conversationId)

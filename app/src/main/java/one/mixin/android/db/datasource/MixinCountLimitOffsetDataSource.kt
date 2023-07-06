@@ -13,7 +13,6 @@ import androidx.room.paging.util.INVALID
 import androidx.room.paging.util.getClippedRefreshKey
 import androidx.room.paging.util.getLimit
 import androidx.room.paging.util.getOffset
-import androidx.room.paging.util.queryDatabase
 import androidx.room.withTransaction
 import kotlinx.coroutines.withContext
 import timber.log.Timber

@@ -1842,66 +1842,66 @@ class ConversationFragment() :
         var oldCount: Int = -1
         var firstReturn = true
         chatViewModel.getMessages(conversationId, unreadCount) {
-                val computableLiveData = it
-                lifecycleScope.launch {
-                    InvalidateFlow.collect(
-                        { !viewDestroyed() && this@ConversationFragment.conversationId == conversationId },
-                        {
-                            computableLiveData.invalidate()
-                        },
+            val computableLiveData = it
+            lifecycleScope.launch {
+                InvalidateFlow.collect(
+                    { !viewDestroyed() && this@ConversationFragment.conversationId == conversationId },
+                    {
+                        computableLiveData.invalidate()
+                    },
+                )
+            }
+        }.observe(
+            viewLifecycleOwner,
+        ) { pagingData ->
+            if (Session.getAccount() == null) return@observe
+            val itemSize = conversationAdapter.getRealItemCount()
+            if (oldCount == -1) {
+                oldCount = itemSize
+            } else if (!isFirstLoad && !isBottom && itemSize > oldCount) {
+                if (firstReturn) {
+                    firstReturn = false
+                } else { // The size returned the second time is the real data.
+                    unreadTipCount += (itemSize - oldCount)
+                }
+                oldCount = itemSize
+            } else if (isBottom) {
+                unreadTipCount = 0
+                oldCount = itemSize
+            }
+            chatViewModel.viewModelScope.launch {
+                conversationAdapter.hasBottomView =
+                    recipient?.relationship == UserRelationship.STRANGER.name && chatViewModel.isSilence(
+                        conversationId,
+                        sender.userId,
                     )
-                }
-            }.observe(
-                viewLifecycleOwner,
-            ) { pagingData ->
-                if (Session.getAccount() == null) return@observe
-                val itemSize = conversationAdapter.getRealItemCount()
-                if (oldCount == -1) {
-                    oldCount = itemSize
-                } else if (!isFirstLoad && !isBottom && itemSize > oldCount) {
-                    if (firstReturn) {
-                        firstReturn = false
-                    } else { // The size returned the second time is the real data.
-                        unreadTipCount += (itemSize - oldCount)
-                    }
-                    oldCount = itemSize
-                } else if (isBottom) {
-                    unreadTipCount = 0
-                    oldCount = itemSize
-                }
+            }
+            if (isFirstLoad && messageId == null && unreadCount > 0) {
+                conversationAdapter.unreadMsgId = unreadMessageId
+            } else if (lastReadMessage != null) {
                 chatViewModel.viewModelScope.launch {
-                    conversationAdapter.hasBottomView =
-                        recipient?.relationship == UserRelationship.STRANGER.name && chatViewModel.isSilence(
+                    lastReadMessage?.let { id ->
+                        val unreadMsgId = chatViewModel.findUnreadMessageByMessageId(
                             conversationId,
                             sender.userId,
+                            id,
                         )
-                }
-                if (isFirstLoad && messageId == null && unreadCount > 0) {
-                    conversationAdapter.unreadMsgId = unreadMessageId
-                } else if (lastReadMessage != null) {
-                    chatViewModel.viewModelScope.launch {
-                        lastReadMessage?.let { id ->
-                            val unreadMsgId = chatViewModel.findUnreadMessageByMessageId(
-                                conversationId,
-                                sender.userId,
-                                id,
-                            )
-                            if (unreadMsgId != null) {
-                                conversationAdapter.unreadMsgId = unreadMsgId
-                                lastReadMessage = null
-                            }
+                        if (unreadMsgId != null) {
+                            conversationAdapter.unreadMsgId = unreadMsgId
+                            lastReadMessage = null
                         }
                     }
                 }
-                if (itemSize > 0) {
-                    if (isFirstMessage) {
-                        isFirstMessage = false
-                    }
-                }
-                conversationAdapter.submitData(lifecycle, pagingData)
-                chatViewModel.markMessageRead(conversationId, (activity as? BubbleActivity)?.isBubbled == true)
-                chatRoomHelper.markMessageRead(conversationId)
             }
+            if (itemSize > 0) {
+                if (isFirstMessage) {
+                    isFirstMessage = false
+                }
+            }
+            conversationAdapter.submitData(lifecycle, pagingData)
+            chatViewModel.markMessageRead(conversationId, (activity as? BubbleActivity)?.isBubbled == true)
+            chatRoomHelper.markMessageRead(conversationId)
+        }
     }
 
     private var unreadCount = 0
@@ -2649,8 +2649,13 @@ class ConversationFragment() :
         if (viewDestroyed()) return@launch
 
         val index = chatViewModel.findMessageIndex(conversationId, messageId)
-        if (index < 0 || index >= conversationAdapter.itemCount) {
+        if (index < 0) {
             toast(R.string.Data_loading)
+            return@launch
+        } else if (index >= conversationAdapter.itemCount) {
+            chatViewModel.refreshCountByConversationId(conversationId)
+            toast(R.string.Data_loading)
+            InvalidateFlow.emit(conversationId)
             return@launch
         }
         findMessageAction?.invoke(index)
@@ -2669,6 +2674,12 @@ class ConversationFragment() :
             )
         } else {
             conversationAdapter.loadAround(index)
+            if (conversationAdapter.getMessageItem(index).messageId != messageId) {
+                chatViewModel.refreshCountByConversationId(conversationId)
+                toast(R.string.Data_loading)
+                InvalidateFlow.emit(conversationId)
+                return@launch
+            }
             if (index == conversationAdapter.itemCount - 1) {
                 scrollTo(
                     index,

@@ -16,7 +16,6 @@ import androidx.room.paging.util.getLimit
 import androidx.room.paging.util.getOffset
 import androidx.room.withTransaction
 import kotlinx.coroutines.withContext
-import timber.log.Timber
 import java.util.concurrent.atomic.AtomicInteger
 
 @SuppressLint("RestrictedApi")

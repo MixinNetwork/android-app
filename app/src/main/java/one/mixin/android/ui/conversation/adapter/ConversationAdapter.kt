@@ -43,12 +43,10 @@ import one.mixin.android.databinding.ItemChatUnreadBinding
 import one.mixin.android.databinding.ItemChatVideoBinding
 import one.mixin.android.databinding.ItemChatVideoQuoteBinding
 import one.mixin.android.databinding.ItemChatWaitingBinding
-import one.mixin.android.event.BlinkEvent
 import one.mixin.android.extension.hashForDate
 import one.mixin.android.extension.isSameDay
 import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.session.Session
-import one.mixin.android.ui.common.recyclerview.SafePagedListAdapter
 import one.mixin.android.ui.conversation.holder.ActionCardHolder
 import one.mixin.android.ui.conversation.holder.ActionHolder
 import one.mixin.android.ui.conversation.holder.AudioHolder
@@ -107,8 +105,6 @@ import one.mixin.android.vo.isText
 import one.mixin.android.vo.isTranscript
 import one.mixin.android.vo.isVideo
 import one.mixin.android.widget.MixinStickyRecyclerHeadersAdapter
-import timber.log.Timber
-import java.util.concurrent.TimeUnit
 import kotlin.math.abs
 
 class ConversationAdapter(

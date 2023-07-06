@@ -110,7 +110,6 @@ import one.mixin.android.widget.gallery.MimeType
 import java.io.File
 import java.util.UUID
 import javax.inject.Inject
-import kotlin.math.min
 
 @Suppress("NULLABILITY_MISMATCH_BASED_ON_JAVA_ANNOTATIONS")
 @HiltViewModel
@@ -574,6 +573,8 @@ internal constructor(
             assetRepository.findOrSyncAsset(assetId)
         }
     }
+
+    fun refreshCountByConversationId(conversationId: String) = conversationRepository.refreshCountByConversationId(conversationId)
 
     fun updateRecentUsedBots(
         defaultSharedPreferences: SharedPreferences,
