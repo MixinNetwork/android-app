@@ -10,13 +10,8 @@ import androidx.paging.PagedList
 import androidx.paging.PagingDataAdapter
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
-import com.uber.autodispose.ScopeProvider
-import com.uber.autodispose.autoDispose
-import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.subjects.PublishSubject
-import one.mixin.android.Constants.PAGE_SIZE
 import one.mixin.android.R
-import one.mixin.android.RxBus
 import one.mixin.android.databinding.ItemChatActionBinding
 import one.mixin.android.databinding.ItemChatActionCardBinding
 import one.mixin.android.databinding.ItemChatAudioBinding
@@ -571,13 +566,15 @@ class ConversationAdapter(
     }
 
     override fun getItemCount(): Int {
-        return super.getItemCount() + if (hasBottomView && isSecret) {
-            2
-        } else if (hasBottomView || isSecret) {
-            1
-        } else {
-            0
-        }
+        return super.getItemCount()
+        //
+        // return super.getItemCount() + if (hasBottomView && isSecret) {
+        //     2
+        // } else if (hasBottomView || isSecret) {
+        //     1
+        // } else {
+        //     0
+        // }
     }
 
     fun getRealItemCount(): Int {
@@ -585,57 +582,58 @@ class ConversationAdapter(
     }
 
     fun getMessageItem(position: Int): MessageItem? {
-        return if (position > itemCount - 1) {
-            null
-        } else if (isSecret && hasBottomView) {
-            when (position) {
-                0 -> create(
-                    MessageCategory.STRANGER.name,
-                    if (super.getItemCount() > 0) {
-                        getItemInternal(0)?.createdAt
-                    } else {
-                        null
-                    },
-                )
-                itemCount - 1 -> create(
-                    MessageCategory.SECRET.name,
-                    if (super.getItemCount() > 0) {
-                        getItemInternal(super.getItemCount() - 1)?.createdAt
-                    } else {
-                        null
-                    },
-                )
-                else -> getItemInternal(position - 1)
-            }
-        } else if (isSecret) {
-            if (position == itemCount - 1) {
-                create(
-                    MessageCategory.SECRET.name,
-                    if (super.getItemCount() > 0) {
-                        getItemInternal(super.getItemCount() - 1)?.createdAt
-                    } else {
-                        null
-                    },
-                )
-            } else {
-                getItemInternal(position)
-            }
-        } else if (hasBottomView) {
-            if (position == 0) {
-                create(
-                    MessageCategory.STRANGER.name,
-                    if (super.getItemCount() > 0) {
-                        getItemInternal(0)?.createdAt
-                    } else {
-                        null
-                    },
-                )
-            } else {
-                getItemInternal(position - 1)
-            }
-        } else {
-            getItemInternal(position)
-        }
+        return getItemInternal(position)
+        // return if (position > itemCount - 1) {
+        //     null
+        // } else if (isSecret && hasBottomView) {
+        //     when (position) {
+        //         0 -> create(
+        //             MessageCategory.STRANGER.name,
+        //             if (super.getItemCount() > 0) {
+        //                 getItemInternal(0)?.createdAt
+        //             } else {
+        //                 null
+        //             },
+        //         )
+        //         itemCount - 1 -> create(
+        //             MessageCategory.SECRET.name,
+        //             if (super.getItemCount() > 0) {
+        //                 getItemInternal(super.getItemCount() - 1)?.createdAt
+        //             } else {
+        //                 null
+        //             },
+        //         )
+        //         else -> getItemInternal(position - 1)
+        //     }
+        // } else if (isSecret) {
+        //     if (position == itemCount - 1) {
+        //         create(
+        //             MessageCategory.SECRET.name,
+        //             if (super.getItemCount() > 0) {
+        //                 getItemInternal(super.getItemCount() - 1)?.createdAt
+        //             } else {
+        //                 null
+        //             },
+        //         )
+        //     } else {
+        //         getItemInternal(position)
+        //     }
+        // } else if (hasBottomView) {
+        //     if (position == 0) {
+        //         create(
+        //             MessageCategory.STRANGER.name,
+        //             if (super.getItemCount() > 0) {
+        //                 getItemInternal(0)?.createdAt
+        //             } else {
+        //                 null
+        //             },
+        //         )
+        //     } else {
+        //         getItemInternal(position - 1)
+        //     }
+        // } else {
+        //     getItemInternal(position)
+        // }
     }
 
     private fun getItemInternal(pos: Int): MessageItem? {

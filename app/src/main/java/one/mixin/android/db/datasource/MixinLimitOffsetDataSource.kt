@@ -112,7 +112,6 @@ abstract class MixinLimitOffsetDataSource<Value : Any>(
         offsetQuery.bindLong(argCount, offset.toLong())
         val cursor = db.query(offsetQuery)
         val ids: List<String> = convertRowsToIds(cursor)
-        Timber.e("size:${ids.size} ${itemCount.toLong()} $limit $offset")
         val data = convertRows(db.query(querySqlGenerator(ids.joinToString())))
         val nextPosToLoad = offset + data.size
         val nextKey =
@@ -134,7 +133,6 @@ abstract class MixinLimitOffsetDataSource<Value : Any>(
     private fun convertRowsToIds(cursor: Cursor): List<String> {
         val ids = mutableListOf<String>()
         cursor.use { c ->
-            Timber.e("count ${c.count}")
             while (cursor.moveToNext()) {
                 val rowid = c.getLong(0)
                 ids.add("'$rowid'")

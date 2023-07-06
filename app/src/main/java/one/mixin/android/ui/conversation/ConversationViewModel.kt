@@ -110,6 +110,7 @@ import one.mixin.android.widget.gallery.MimeType
 import java.io.File
 import java.util.UUID
 import javax.inject.Inject
+import kotlin.math.min
 
 @Suppress("NULLABILITY_MISMATCH_BASED_ON_JAVA_ANNOTATIONS")
 @HiltViewModel
@@ -130,7 +131,7 @@ internal constructor(
             PagingConfig(
                 pageSize = PAGE_SIZE,
                 enablePlaceholders = false,
-                initialLoadSize = 20,
+                initialLoadSize = min(firstKeyToLoad, PAGE_SIZE),
             ),
             initialKey = firstKeyToLoad,
         ) {
