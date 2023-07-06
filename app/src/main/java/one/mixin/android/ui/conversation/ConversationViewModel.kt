@@ -131,13 +131,24 @@ internal constructor(
             PagingConfig(
                 pageSize = PAGE_SIZE,
                 enablePlaceholders = false,
-                initialLoadSize = min(firstKeyToLoad, PAGE_SIZE),
             ),
-            initialKey = firstKeyToLoad,
+            initialKey = 0,
         ) {
             val pageData = conversationRepository.getMessages(conversationId)
             dataCallback(pageData)
             pageData
+        }.liveData
+    }
+
+    fun getMessageDemo(conversationId:String): LiveData<PagingData<String>> {
+        return Pager(
+            PagingConfig(
+                pageSize = PAGE_SIZE,
+                enablePlaceholders = false,
+            ),
+            initialKey = 0,
+        ) {
+            conversationRepository.getMessagesDemo(conversationId )
         }.liveData
     }
 

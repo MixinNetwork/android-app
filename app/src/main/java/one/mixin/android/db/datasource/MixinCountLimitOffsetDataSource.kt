@@ -13,6 +13,7 @@ import androidx.room.paging.util.INVALID
 import androidx.room.paging.util.getClippedRefreshKey
 import androidx.room.paging.util.getLimit
 import androidx.room.paging.util.getOffset
+import androidx.room.paging.util.queryDatabase
 import androidx.room.withTransaction
 import kotlinx.coroutines.withContext
 import timber.log.Timber
@@ -54,10 +55,7 @@ abstract class MixinCountLimitOffsetDataSource<Value : Any>(
         return db.withTransaction {
             val tempCount = getItemCount()
             itemCount.set(tempCount)
-            queryData(
-                params = params,
-                itemCount = tempCount,
-            )
+            queryData(params = params, itemCount = tempCount)
         }
     }
 
@@ -65,16 +63,11 @@ abstract class MixinCountLimitOffsetDataSource<Value : Any>(
         return fastCountCallback.invoke()
     }
 
-    override val keyReuseSupported: Boolean = true
-
     private suspend fun nonInitialLoad(
         params: LoadParams<Int>,
         tempCount: Int,
     ): LoadResult<Int, Value> {
-        val loadResult = queryData(
-            params = params,
-            itemCount = tempCount,
-        )
+        val loadResult = queryData(params, tempCount)
         // manually check if database has been updated. If so, the observer's
         // invalidation callback will invalidate this paging source
         db.invalidationTracker.refreshVersionsSync()

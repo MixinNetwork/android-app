@@ -101,6 +101,8 @@ internal constructor(
     @SuppressLint("RestrictedApi")
     fun getMessages(conversationId: String) = DataProvider.getMessages(appDatabase, conversationId)
 
+    fun getMessagesDemo(conversationId:String) = messageDao.getMessagesDemo(conversationId)
+
     suspend fun getChatMessages(conversationId: String, offset: Int, limit: Int): List<MessageItem> = messageDao.getChatMessages(conversationId, offset, limit)
 
     fun observeConversations(circleId: String?): PagingSource<Int, ConversationItem> = if (circleId == null) {
