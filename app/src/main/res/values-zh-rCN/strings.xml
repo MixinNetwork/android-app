@@ -1157,7 +1157,6 @@
     <string name="dapp_description">此 Dapp 已经与你的钱包连接，并被授权查看你的钱包余额及活动，也可向你发出转账请求。</string>
     <string name="disconnect">断开连接</string>
     <string name="connect_wallet">连接钱包</string>
-    <string name="switch_network">切换网络</string>
     <string name="read_your_public_address">读取你的地址</string>
     <string name="allow_dapp_access_public_address">允许 Dapp 访问你的钱包余额及活动。</string>
     <string name="request_approval">允许请求</string>
@@ -1172,6 +1171,9 @@
     <string name="send_signed_message_confirmation">此消息已被签名，点击下方按钮以发送或丢弃</string>
     <string name="network">网络</string>
     <string name="network_fee">网络费用</string>
+    <string name="fast">快速</string>
+    <string name="normal">普通</string>
+    <string name="slow">缓慢</string>
     <string name="Message">Message</string>
     <string name="Balance_Change">余额变化（估算）</string>
     <string name="Success">成功</string>

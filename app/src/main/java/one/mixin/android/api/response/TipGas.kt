@@ -1,6 +1,8 @@
 package one.mixin.android.api.response
 
+import androidx.annotation.StringRes
 import com.google.gson.annotations.SerializedName
+import one.mixin.android.R
 import java.math.BigDecimal
 
 data class TipGas(
@@ -31,5 +33,20 @@ enum class GasPriceType {
             Safe -> tipGas.safeGasPrice
             Propose -> tipGas.proposeGasPrice
             Fast -> tipGas.fastGasPrice
+        }
+
+    @StringRes
+    fun getGasPriceName(): Int =
+        when (this) {
+            Safe -> R.string.slow
+            Propose -> R.string.normal
+            Fast -> R.string.fast
+        }
+
+    fun getEstimateTime(): String =
+        when (this) {
+            Safe -> "~45 sec+"
+            Propose -> "~30 sec"
+            Fast -> "~15 sec"
         }
 }
