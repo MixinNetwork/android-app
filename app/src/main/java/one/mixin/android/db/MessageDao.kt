@@ -65,9 +65,6 @@ interface MessageDao : BaseDao<Message> {
     @Query("$PREFIX_MESSAGE_ITEM WHERE m.conversation_id = :conversationId ORDER BY m.created_at DESC")
     fun getMessages(conversationId: String): PagingSource<Int, MessageItem>
 
-    @Query("SELECT id FROM messages WHERE conversation_id = :conversationId ORDER BY created_at DESC")
-    fun getMessagesDemo(conversationId:String):PagingSource<Int, String>
-
     @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
     @Query("$PREFIX_MESSAGE_ITEM WHERE m.conversation_id = :conversationId AND m.category IN $CHAT_CATEGORY ORDER BY m.created_at ASC LIMIT :limit OFFSET :offset")
     suspend fun getChatMessages(conversationId: String, offset: Int, limit: Int): List<MessageItem>

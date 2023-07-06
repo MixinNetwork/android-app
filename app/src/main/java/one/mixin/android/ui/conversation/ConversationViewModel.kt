@@ -140,18 +140,6 @@ internal constructor(
         }.liveData
     }
 
-    fun getMessageDemo(conversationId:String): LiveData<PagingData<String>> {
-        return Pager(
-            PagingConfig(
-                pageSize = PAGE_SIZE,
-                enablePlaceholders = false,
-            ),
-            initialKey = 0,
-        ) {
-            conversationRepository.getMessagesDemo(conversationId )
-        }.liveData
-    }
-
     suspend fun indexUnread(conversationId: String) =
         conversationRepository.indexUnread(conversationId) ?: 0
 

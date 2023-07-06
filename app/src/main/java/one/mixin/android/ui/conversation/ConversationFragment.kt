@@ -54,8 +54,6 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewModelScope
 import androidx.media3.common.MimeTypes
 import androidx.media3.common.util.UnstableApi
-import androidx.paging.PagingDataAdapter
-import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -83,8 +81,6 @@ import one.mixin.android.databinding.DialogDeleteBinding
 import one.mixin.android.databinding.DialogForwardBinding
 import one.mixin.android.databinding.DialogImportMessageBinding
 import one.mixin.android.databinding.FragmentConversationBinding
-import one.mixin.android.databinding.ItemAppListBinding
-import one.mixin.android.databinding.ItemDemoBinding
 import one.mixin.android.databinding.ViewUrlBottomBinding
 import one.mixin.android.db.invalidater.InvalidateFlow
 import one.mixin.android.event.BlinkEvent
@@ -158,7 +154,6 @@ import one.mixin.android.session.Session
 import one.mixin.android.ui.call.CallActivity
 import one.mixin.android.ui.call.GroupUsersBottomSheetDialogFragment
 import one.mixin.android.ui.call.GroupUsersBottomSheetDialogFragment.Companion.GROUP_VOICE_MAX_COUNT
-import one.mixin.android.ui.common.AppHolder
 import one.mixin.android.ui.common.GroupBottomSheetDialogFragment
 import one.mixin.android.ui.common.LinkFragment
 import one.mixin.android.ui.common.UserBottomSheetDialogFragment
@@ -1396,28 +1391,7 @@ class ConversationFragment() :
 
     private var firstPosition = 0
 
-    private val demoAdapter = object : PagingDataAdapter<String, DemoHolder>(object : DiffUtil.ItemCallback<String>() {
-        override fun areItemsTheSame(oldItem: String, newItem: String) =
-            oldItem == newItem
-
-        override fun areContentsTheSame(oldItem: String, newItem: String) =
-            oldItem == newItem
-    }){
-        override fun onBindViewHolder(holder: DemoHolder, position: Int) {
-            (holder.itemView as TextView).text = getItem(position)
-        }
-
-        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): DemoHolder {
-            return DemoHolder(ItemDemoBinding.inflate(LayoutInflater.from(parent.context), parent, false))
-        }
-    }
-
-    class DemoHolder(itemView: ItemDemoBinding) : RecyclerView.ViewHolder(itemView.root)
     private fun initView() {
-        binding.demoRv.adapter = demoAdapter
-        chatViewModel.getMessageDemo(conversationId).observe(viewLifecycleOwner) {
-            demoAdapter.submitData(lifecycle, it)
-        }
         binding.inputLayout.backgroundImage = WallpaperManager.getWallpaper(requireContext())
         // binding.chatRv.visibility = INVISIBLE
         if (binding.chatRv.adapter == null) {
