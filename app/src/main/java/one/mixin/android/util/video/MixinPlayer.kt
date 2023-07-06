@@ -272,9 +272,6 @@ class MixinPlayer(val isAudio: Boolean = false) : Player.Listener {
         }
     }
 
-    override fun onSeekProcessed() {
-    }
-
     override fun onVideoSizeChanged(videoSize: VideoSize) {
         val width = videoSize.width
         val height = videoSize.height
