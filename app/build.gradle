@@ -389,7 +389,7 @@ dependencies {
     // wallet connect && web3j
     implementation "org.web3j:core:4.10.0"
     implementation "org.web3j:crypto:4.10.0"
-    implementation platform("com.walletconnect:android-bom:1.13.0")
+    implementation platform("com.walletconnect:android-bom:1.13.1")
     implementation "com.walletconnect:android-core"
     implementation "com.walletconnect:web3wallet"
 
