@@ -289,7 +289,11 @@
                 app:layout_constraintEnd_toEndOf="parent" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
-
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/demo_rv"
+            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+            android:layout_width="200dp"
+            android:layout_height="400dp"/>
         <include
             android:id="@+id/tap_join_view"
             android:visibility="gone"

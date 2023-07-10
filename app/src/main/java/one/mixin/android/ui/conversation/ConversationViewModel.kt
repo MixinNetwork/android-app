@@ -33,6 +33,8 @@ import one.mixin.android.api.request.DisappearRequest
 import one.mixin.android.api.request.ParticipantRequest
 import one.mixin.android.api.request.RelationshipRequest
 import one.mixin.android.api.request.StickerAddRequest
+import one.mixin.android.db.MixinDatabase
+import one.mixin.android.db.datasource.MessageDataSource
 import one.mixin.android.extension.copyFromInputStream
 import one.mixin.android.extension.createAudioTemp
 import one.mixin.android.extension.deserialize
@@ -116,6 +118,7 @@ import javax.inject.Inject
 class ConversationViewModel
 @Inject
 internal constructor(
+    private val appDatabase: MixinDatabase,
     private val conversationRepository: ConversationRepository,
     private val userRepository: UserRepository,
     private val jobManager: MixinJobManager,
@@ -136,6 +139,21 @@ internal constructor(
             val pageData = conversationRepository.getMessages(conversationId)
             dataCallback(pageData)
             pageData
+        }.liveData
+    }
+
+    fun getMessageDemo(conversationId:String): LiveData<PagingData<String>> {
+        Pager(
+            PagingConfig(
+                pageSize = PAGE_SIZE,
+                enablePlaceholders = false
+            ),
+            initialKey = 0
+        ) {
+            MessageDataSource(
+                appDatabase,
+                conversationId
+            )
         }.liveData
     }
 
