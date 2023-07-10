@@ -63,7 +63,6 @@ class DepositFragment : BaseFragment() {
     private val scopeProvider by lazy { AndroidLifecycleScopeProvider.from(this) }
 
     private var alertDialog: Dialog? = null
-    private var selectedDestination: String? = null
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         _binding = FragmentDepositBinding.inflate(inflater, container, false).apply { this.root.setOnClickListener { } }
@@ -121,10 +120,6 @@ class DepositFragment : BaseFragment() {
                     networkTitle.isVisible = true
                     networkChipGroup.isVisible = true
                     initUsdtChips(asset)
-                } else if ((asset.depositEntries?.size ?: 0) > 1 && asset.assetId == Constants.ChainId.BITCOIN_CHAIN_ID) {
-                    networkTitle.isVisible = true
-                    networkChipGroup.isVisible = true
-                    initBtcChips(asset)
                 } else {
                     networkTitle.isVisible = false
                     networkChipGroup.isVisible = false
@@ -202,38 +197,6 @@ class DepositFragment : BaseFragment() {
         }
     }
 
-    private fun initBtcChips(asset: AssetItem) {
-        binding.apply {
-            networkChipGroup.isSingleSelection = true
-            networkChipGroup.removeAllViews()
-            if (selectedDestination == null) {
-                selectedDestination = asset.getDestination()
-            }
-            asset.depositEntries?.reversed()?.forEach { entry ->
-                val chip = Chip(requireContext()).apply {
-                    text = getDestinationType(entry.properties)
-                    isClickable = true
-                    val same = selectedDestination == entry.destination
-                    if (same) {
-                        isChecked = true
-                        setTextColor(Color.WHITE)
-                        chipBackgroundColor = ColorStateList.valueOf(Color.BLACK)
-                    } else {
-                        setTextColor(requireContext().colorFromAttribute(R.attr.text_minor))
-                        chipBackgroundColor = ColorStateList.valueOf(requireContext().colorFromAttribute(R.attr.bg_gray_light))
-                    }
-                    setOnClickListener {
-                        if (same) return@setOnClickListener
-
-                        selectedDestination = entry.destination
-                        initView(asset)
-                    }
-                }
-                networkChipGroup.addView(chip)
-            }
-        }
-    }
-
     private fun refreshAsset(asset: AssetItem) {
         if (asset.getDestination().isNotBlank()) return
 
@@ -273,7 +236,7 @@ class DepositFragment : BaseFragment() {
                     parentFragmentManager,
                     scopeProvider,
                     asset,
-                    selectedDestination,
+                    null,
                     true,
                     getString(R.string.deposit_memo_notice),
                 )
@@ -282,20 +245,10 @@ class DepositFragment : BaseFragment() {
                 parentFragmentManager,
                 scopeProvider,
                 asset,
-                selectedDestination,
+                null,
                 false,
                 if (noTag) null else getString(R.string.deposit_notice, asset.symbol),
             )
-        }
-    }
-
-    private fun getDestinationType(properties: List<String>?): String {
-        if (properties.isNullOrEmpty()) return ""
-
-        return if (properties.contains("SegWit")) {
-            "Bitcoin (Segwit)"
-        } else {
-            "Bitcoin"
         }
     }
 }
