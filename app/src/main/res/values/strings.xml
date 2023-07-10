@@ -535,6 +535,7 @@
     <string name="landing_enter_mobile_tip">We will never display your mobile number publicly.</string>
     <string name="landing_introduction">Tap \"Agree &amp; Continue\" to accept  the %1$s and %2$s</string>
     <string name="landing_invitation_dialog_content">We will send a 4-digit code to your phone number %1$s, please enter the code in next screen.</string>
+    <string name="landing_anonymous_dialog_content">We will send a 4-digit code to your anonymous number %1$s, please enter the code in next screen.</string>
     <string name="landing_privacy_policy_url">https://mixin.one/pages/privacy</string>
     <string name="landing_terms_url">https://mixin.one/pages/terms</string>
     <string name="landing_validation_title">Enter the 4-digit code sent to you at %1$s</string>

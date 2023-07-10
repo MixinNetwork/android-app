@@ -39,8 +39,10 @@ import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.landing.LandingActivity.Companion.ARGS_PIN
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.ErrorHandler.Companion.NEED_CAPTCHA
+import one.mixin.android.util.isAnonymousNumber
 import one.mixin.android.util.isValidNumber
 import one.mixin.android.util.viewBinding
+import one.mixin.android.util.xinDialCode
 import one.mixin.android.widget.CaptchaView
 import one.mixin.android.widget.Keyboard
 import timber.log.Timber
@@ -75,6 +77,7 @@ class MobileFragment : BaseFragment(R.layout.fragment_mobile) {
     private var mCountry: Country? = null
     private val phoneUtil = PhoneNumberUtil.getInstance()
     private var phoneNumber: Phonenumber.PhoneNumber? = null
+    private var anonymousNumber: String? = null
 
     private var pin: String? = null
     private val from: Int by lazy {
@@ -82,6 +85,15 @@ class MobileFragment : BaseFragment(R.layout.fragment_mobile) {
     }
 
     private var captchaView: CaptchaView? = null
+
+    private val mixinCountry by lazy {
+        Country().apply {
+            name = getString(R.string.Mixin)
+            code = getString(R.string.Mixin)
+            flag = com.mukesh.countrypicker.R.drawable.flag_mixin
+            dialCode = xinDialCode
+        }
+    }
 
     @SuppressLint("JavascriptInterface", "SetJavaScriptEnabled")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -144,7 +156,7 @@ class MobileFragment : BaseFragment(R.layout.fragment_mobile) {
         alertDialogBuilder()
             .setMessage(
                 getString(
-                    R.string.landing_invitation_dialog_content,
+                    if (anonymousNumber != null) R.string.landing_anonymous_dialog_content else R.string.landing_invitation_dialog_content,
                     mCountry?.dialCode + " " + binding.mobileEt.text.toString(),
                 ),
             )
@@ -161,16 +173,18 @@ class MobileFragment : BaseFragment(R.layout.fragment_mobile) {
 
         binding.mobileFab.show()
         binding.mobileCover.visibility = VISIBLE
-        val phoneNum = phoneUtil.format(phoneNumber, PhoneNumberUtil.PhoneNumberFormat.E164)
+        val phoneNum = anonymousNumber ?: phoneUtil.format(phoneNumber, PhoneNumberUtil.PhoneNumberFormat.E164)
         val verificationRequest = VerificationRequest(
             phoneNum,
             when (from) {
                 FROM_DELETE_ACCOUNT -> {
                     VerificationPurpose.DEACTIVATED.name
                 }
+
                 FROM_CHANGE_PHONE_ACCOUNT -> {
                     VerificationPurpose.PHONE.name
                 }
+
                 else -> {
                     VerificationPurpose.SESSION.name
                 }
@@ -275,9 +289,18 @@ class MobileFragment : BaseFragment(R.layout.fragment_mobile) {
 
             val mobileText = mobileEt.text.toString()
             mobileEt.setSelection(mobileText.length)
-            val validResult = isValidNumber(phoneUtil, country.dialCode + mobileText, country.code, country.dialCode)
-            phoneNumber = validResult.second
-            mobileFab.isVisible = (countryCodeEt.text?.length ?: 0) > 1 && mobileText.isNotEmpty() && validResult.first
+            val dialCode = country.dialCode
+            val number = country.dialCode + mobileText
+            val valid = if (dialCode == xinDialCode) {
+                val r = isAnonymousNumber(number, dialCode)
+                anonymousNumber = if (r) number else null
+                r
+            } else {
+                val validResult = isValidNumber(phoneUtil, number, country.code, country.dialCode)
+                phoneNumber = validResult.second
+                validResult.first
+            }
+            mobileFab.isVisible = (countryCodeEt.text?.length ?: 0) > 1 && mobileText.isNotEmpty() && valid
         }
     }
 
@@ -431,7 +454,12 @@ class MobileFragment : BaseFragment(R.layout.fragment_mobile) {
                 et.setText("+")
                 Selection.setSelection(et.text, et.text?.length ?: 0)
             }
-            val country = countryPicker.getCountryByDialCode(et.text.toString())
+            val dialCode = et.text.toString()
+            val country = if (dialCode == xinDialCode) {
+                mixinCountry
+            } else {
+                countryPicker.getCountryByDialCode(dialCode)
+            }
             if (mCountry?.dialCode == country?.dialCode) {
                 handleEditView()
                 return
