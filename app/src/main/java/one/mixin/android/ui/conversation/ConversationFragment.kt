@@ -83,7 +83,6 @@ import one.mixin.android.databinding.DialogDeleteBinding
 import one.mixin.android.databinding.DialogForwardBinding
 import one.mixin.android.databinding.DialogImportMessageBinding
 import one.mixin.android.databinding.FragmentConversationBinding
-import one.mixin.android.databinding.ItemAppListBinding
 import one.mixin.android.databinding.ItemDemoBinding
 import one.mixin.android.databinding.ViewUrlBottomBinding
 import one.mixin.android.db.invalidater.InvalidateFlow
@@ -158,7 +157,6 @@ import one.mixin.android.session.Session
 import one.mixin.android.ui.call.CallActivity
 import one.mixin.android.ui.call.GroupUsersBottomSheetDialogFragment
 import one.mixin.android.ui.call.GroupUsersBottomSheetDialogFragment.Companion.GROUP_VOICE_MAX_COUNT
-import one.mixin.android.ui.common.AppHolder
 import one.mixin.android.ui.common.GroupBottomSheetDialogFragment
 import one.mixin.android.ui.common.LinkFragment
 import one.mixin.android.ui.common.UserBottomSheetDialogFragment
@@ -1402,7 +1400,7 @@ class ConversationFragment() :
 
         override fun areContentsTheSame(oldItem: String, newItem: String) =
             oldItem == newItem
-    }){
+    }) {
         override fun onBindViewHolder(holder: DemoHolder, position: Int) {
             (holder.itemView as TextView).text = getItem(position)
         }
@@ -2700,7 +2698,7 @@ class ConversationFragment() :
             )
         } else {
             conversationAdapter.loadAround(index)
-            if (conversationAdapter.getMessageItem(index).messageId != messageId) {
+            if (conversationAdapter.getMessageItem(index)?.messageId != messageId) {
                 chatViewModel.refreshCountByConversationId(conversationId)
                 toast(R.string.Data_loading)
                 InvalidateFlow.emit(conversationId)

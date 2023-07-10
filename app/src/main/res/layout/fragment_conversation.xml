@@ -292,6 +292,7 @@
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/demo_rv"
             app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+            android:background="#A3000000"
             android:layout_width="200dp"
             android:layout_height="400dp"/>
         <include

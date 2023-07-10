@@ -142,17 +142,17 @@ internal constructor(
         }.liveData
     }
 
-    fun getMessageDemo(conversationId:String): LiveData<PagingData<String>> {
-        Pager(
+    fun getMessageDemo(conversationId: String): LiveData<PagingData<String>> {
+        return Pager(
             PagingConfig(
                 pageSize = PAGE_SIZE,
-                enablePlaceholders = false
+                enablePlaceholders = false,
             ),
-            initialKey = 0
+            initialKey = 0,
         ) {
             MessageDataSource(
                 appDatabase,
-                conversationId
+                conversationId,
             )
         }.liveData
     }
