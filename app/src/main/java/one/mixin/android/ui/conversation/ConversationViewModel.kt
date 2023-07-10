@@ -145,10 +145,9 @@ internal constructor(
     fun getMessageDemo(conversationId: String): LiveData<PagingData<String>> {
         return Pager(
             PagingConfig(
-                pageSize = PAGE_SIZE,
+                pageSize = 5,
                 enablePlaceholders = false,
             ),
-            initialKey = 0,
         ) {
             MessageDataSource(
                 appDatabase,

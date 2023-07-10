@@ -15,7 +15,6 @@ import androidx.room.paging.util.getLimit
 import androidx.room.paging.util.getOffset
 import androidx.room.withTransaction
 import kotlinx.coroutines.withContext
-import timber.log.Timber
 import java.util.concurrent.atomic.AtomicInteger
 
 @SuppressLint("RestrictedApi")
@@ -80,7 +79,6 @@ abstract class MixinCountLimitOffsetDataSource<Value : Any>(
         cancellationSignal: CancellationSignal? = null,
     ): LoadResult.Page<Int, Value> {
         val key = params.key ?: 0
-        Timber.e("key:${params.key} load-size:${params.loadSize}")
         val limit: Int = getLimit(params, key)
         val offset: Int = getOffset(params, key, itemCount)
         val offsetQuery = RoomSQLiteQuery.copyFrom(offsetStatement)
@@ -89,7 +87,6 @@ abstract class MixinCountLimitOffsetDataSource<Value : Any>(
         offsetQuery.bindLong(argCount, offset.toLong())
         val cursor = db.query(offsetQuery)
         val ids: List<String> = convertRowsToIds(cursor)
-        Timber.e("size:${ids.size} limit:$limit offset:$offset total:${itemCount.toLong()} ")
         val data = convertRows(db.query(querySqlGenerator(ids.joinToString())))
         val nextPosToLoad = offset + data.size
         val nextKey =
