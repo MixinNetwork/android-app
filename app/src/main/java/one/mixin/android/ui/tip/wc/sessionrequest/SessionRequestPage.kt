@@ -390,14 +390,22 @@ private fun NetworkInfo(
                 color = MixinAppTheme.colors.textSubtitle,
                 fontSize = 14.sp,
             )
-            Text(
+            Row(
                 modifier = Modifier
-                    .clickable { onFeeClick() }
-                    .padding(horizontal = 12.dp, vertical = 4.dp),
-                text = "≈ $$fee",
-                color = MixinAppTheme.colors.textSubtitle,
-                fontSize = 14.sp,
-            )
+                    .clickable { onFeeClick() },
+            ) {
+                Text(
+                    text = "≈ $$fee",
+                    color = MixinAppTheme.colors.textSubtitle,
+                    fontSize = 14.sp,
+                )
+                Image(
+                    painter = painterResource(R.drawable.ic_keyboard_arrow_down),
+                    modifier = Modifier
+                        .size(20.dp, 20.dp),
+                    contentDescription = null,
+                )
+            }
         }
     }
 }
@@ -470,9 +478,9 @@ private fun ChooseGasBottomSheet(
                     contentDescription = null,
                 )
             }
-            GasItem(gasPriceType = GasPriceType.Safe, tipGas = tipGas, asset = asset, onItemClick)
-            GasItem(gasPriceType = GasPriceType.Propose, tipGas = tipGas, asset = asset, onItemClick)
             GasItem(gasPriceType = GasPriceType.Fast, tipGas = tipGas, asset = asset, onItemClick)
+            GasItem(gasPriceType = GasPriceType.Propose, tipGas = tipGas, asset = asset, onItemClick)
+            GasItem(gasPriceType = GasPriceType.Safe, tipGas = tipGas, asset = asset, onItemClick)
         }
     }
 }
@@ -500,7 +508,7 @@ private fun GasItem(
             horizontalArrangement = Arrangement.SpaceBetween,
         ) {
             Text(
-                text = gasPriceType.name,
+                text = stringResource(id = gasPriceType.getGasPriceName()),
                 fontSize = 16.sp,
                 color = MixinAppTheme.colors.textPrimary,
             )
@@ -516,7 +524,7 @@ private fun GasItem(
             horizontalArrangement = Arrangement.SpaceBetween,
         ) {
             Text(
-                text = "~15 sec",
+                text = gasPriceType.getEstimateTime(),
                 fontSize = 13.sp,
                 color = MixinAppTheme.colors.textMinor,
             )
