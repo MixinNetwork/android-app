@@ -130,6 +130,21 @@ class MobileFragment : BaseFragment(R.layout.fragment_mobile) {
 
                 mobileEt.requestFocus()
                 mobileEt.setSelection(mobileEt.text?.length ?: 0)
+                if (dialCode == xinDialCode) {
+                    mobileEt.hint = getString(R.string.Anonymous_Number)
+                    if (pin != null) {
+                        mobileTitleTv.setText(R.string.Enter_new_anonymous_number)
+                    } else {
+                        mobileTitleTv.setText(R.string.Enter_your_anonymous_number)
+                    }
+                } else {
+                    mobileEt.hint = getString(R.string.Phone_Number)
+                    if (pin != null) {
+                        mobileTitleTv.setText(R.string.Enter_new_phone_number)
+                    } else {
+                        mobileTitleTv.setText(R.string.Enter_your_phone_number)
+                    }
+                }
             }
             getUserCountryInfo()
 

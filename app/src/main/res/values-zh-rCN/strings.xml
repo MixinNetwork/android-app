@@ -88,6 +88,7 @@
     <string name="Allow_bot_send_messages">允许机器人代表你发消息。</string>
     <string name="Amount">金额</string>
     <string name="an_audio">一条语音</string>
+    <string name="Anonymous_Number">匿名号码</string>
     <string name="ANSWER">接听</string>
     <string name="app_card_shareable_false">该卡片已被设置为不允许转发</string>
     <string name="App_version">应用版本</string>
@@ -370,11 +371,13 @@
     <string name="Encrypted">端到端加密</string>
     <string name="End_to_End_Encryption">端到端加密</string>
     <string name="Enter_new_phone_number">输入你的新手机号码</string>
+    <string name="Enter_new_anonymous_number">输入你的新匿名号码</string>
     <string name="Enter_PIN_to_delete_account">输入你的 PIN 以注销你的账户</string>
     <string name="Enter_your_emergency_contact_Mixin_ID">请输入紧急联系人的 Mixin ID</string>
     <string name="Enter_your_new_PIN">输入你的新 PIN</string>
     <string name="Enter_your_old_PIN">输入你的旧 PIN</string>
     <string name="Enter_your_phone_number">输入你的手机号码</string>
+    <string name="Enter_your_anonymous_number">输入你的匿名号码</string>
     <string name="Enter_your_PIN">输入你的 PIN</string>
     <string name="Enter_your_PIN_to_continue">输入你的 PIN 以继续</string>
     <string name="EOS_contract_address">EOS 合约地址</string>
