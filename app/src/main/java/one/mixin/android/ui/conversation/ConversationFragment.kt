@@ -1413,7 +1413,8 @@ class ConversationFragment() :
     class DemoHolder(itemView: ItemDemoBinding) : RecyclerView.ViewHolder(itemView.root)
     private fun initView() {
         binding.demoRv.adapter = demoAdapter
-        chatViewModel.getMessageDemo(conversationId).observe(viewLifecycleOwner) {
+        binding.demoRv.itemAnimator = null
+        chatViewModel.getMessageDemo(conversationId, "4bc8d797-85c7-4c45-b73d-906bee191035").observe(viewLifecycleOwner) {
             demoAdapter.submitData(lifecycle, it)
         }
         binding.inputLayout.backgroundImage = WallpaperManager.getWallpaper(requireContext())

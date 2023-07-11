@@ -3,7 +3,6 @@ package one.mixin.android.db.datasource
 import androidx.paging.PagingSource
 import androidx.paging.PagingState
 import androidx.room.RoomDatabase
-import androidx.room.paging.util.getClippedRefreshKey
 import timber.log.Timber
 import java.lang.IllegalArgumentException
 
@@ -24,24 +23,28 @@ class MessageDataSource(private val db: RoomDatabase, val conversationId: String
             }
             val loadSize = params.loadSize
             val cursor = db.query(
-                "SELECT content, id FROM messages WHERE conversation_id = ? AND created_at >= (SELECT created_at FROM messages WHERE id = ?) AND id != ? ORDER BY created_at ASC, rowid ASC LIMIT ?",
-                arrayOf(conversationId, anchorKey, anchorKey, loadSize),
+                "SELECT content, id FROM messages WHERE conversation_id = ? AND created_at >= (SELECT created_at FROM messages WHERE id = ?) ORDER BY created_at ASC, rowid ASC LIMIT ?",
+                arrayOf(conversationId, anchorKey, loadSize),
             )
-            val ids = mutableListOf<String>()
-            var lastId: String? = null
+            val contents = mutableListOf<String>()
             cursor.use { c ->
                 while (cursor.moveToNext()) {
                     val messageId = c.getString(0)
-                    ids.add(messageId)
-                    lastId = c.getString(1)
+                    contents.add(messageId)
                 }
             }
+            val nextKey = if (contents.size == loadSize){
+                getNextKey(anchorKey)
+            } else {
+                // There is no more data
+                null
+            }
             val prevKey = getPrevKey(anchorKey, params.loadSize)
-            Timber.e("load key:$anchorKey conversationId:$conversationId load-size:${params.loadSize} total:${ids.size} lastKey:$lastId prevKey:$prevKey")
+            Timber.e("load key:$anchorKey conversationId:$conversationId load-size:${params.loadSize} total:${contents.size} nextKey:$nextKey prevKey:$prevKey")
             return LoadResult.Page(
-                data = ids,
+                data = contents,
                 prevKey = prevKey,
-                nextKey = lastId,
+                nextKey = nextKey,
             )
         } catch (e: Exception) {
             return LoadResult.Error(e)
@@ -62,20 +65,46 @@ class MessageDataSource(private val db: RoomDatabase, val conversationId: String
     }
 
     private fun getPrevKey(key: String, pageSize: Int): String? {
-        val cursor = db.query(
-            "SELECT id FROM messages WHERE conversation_id = ? AND created_at <= (SELECT created_at FROM messages WHERE id = ?) AND id != ? ORDER BY created_at ASC, rowid ASC LIMIT 1 OFFSET ?",
-            arrayOf(conversationId, key, key, pageSize),
-        )
-        while (cursor.moveToNext()) {
-            return cursor.getString(0)
+        db.query("SELECT rowid, created_at FROM messages WHERE id = ?", arrayOf(key)).use { c ->
+            if (c.moveToNext()) {
+                val rowId = c.getInt(0)
+                val createdAt = c.getString(1)
+                db.query(
+                    "SELECT id FROM messages WHERE rowid < ? AND created_at <= ? ORDER BY created_at DESC, rowid DESC LIMIT 1 OFFSET ?",
+                    arrayOf(rowId, createdAt, pageSize)
+                ).use {
+                    if (it.moveToNext()) {
+                        return it.getString(0)
+                    }
+                }
+            }
         }
         return null
     }
+
+    private fun getNextKey(key: String): String? {
+        db.query("SELECT rowid, created_at FROM messages WHERE id = ?", arrayOf(key)).use { c ->
+            if (c.moveToNext()) {
+                val rowId = c.getInt(0)
+                val createdAt = c.getString(1)
+                db.query(
+                    "SELECT id FROM messages WHERE rowid > ? AND created_at > ? ORDER BY created_at DESC, rowid DESC LIMIT 1",
+                    arrayOf(rowId, createdAt)
+                ).use {
+                    if (it.moveToNext()) {
+                        return it.getString(0)
+                    }
+                }
+            }
+        }
+        return null
+    }
+
     companion object {
         const val NONE = "NONE"
     }
 
-    override fun getRefreshKey(state: PagingState<String, String>): String? {
+    override fun getRefreshKey(state: PagingState<String, String>): String {
         return NONE
     }
 }
