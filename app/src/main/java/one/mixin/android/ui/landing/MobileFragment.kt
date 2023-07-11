@@ -101,7 +101,7 @@ class MobileFragment : BaseFragment(R.layout.fragment_mobile) {
         binding.apply {
             pin = requireArguments().getString(ARGS_PIN)
             if (pin != null) {
-                enterTv.setText(R.string.Enter_new)
+                titleSwitcher.setCurrentText(getString(R.string.Enter_new_phone_number))
             }
             backIv.setOnClickListener { activity?.onBackPressedDispatcher?.onBackPressed() }
             countryIconIv.setOnClickListener { showCountry() }
@@ -331,13 +331,21 @@ class MobileFragment : BaseFragment(R.layout.fragment_mobile) {
                 enterTip.isVisible = false
                 mobileEt.hint = getString(R.string.Anonymous_Number)
                 if (titleSwitcher.displayedChild != 1) {
-                    titleSwitcher.setText(getString(R.string.anonymous_number))
+                    if (pin != null) {
+                        titleSwitcher.setText(getString(R.string.Enter_new_anonymous_number))
+                    } else {
+                        titleSwitcher.setText(getString(R.string.Enter_your_anonymous_number))
+                    }
                 }
             } else {
                 enterTip.isVisible = true
                 mobileEt.hint = getString(R.string.Phone_Number)
                 if (titleSwitcher.displayedChild != 0) {
-                    titleSwitcher.setText(getString(R.string.phone_number))
+                    if (pin != null) {
+                        titleSwitcher.setText(getString(R.string.Enter_new_phone_number))
+                    } else {
+                        titleSwitcher.setText(getString(R.string.Enter_your_phone_number))
+                    }
                 }
             }
         }
