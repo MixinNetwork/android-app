@@ -22,6 +22,7 @@ import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.Constants
@@ -35,6 +36,7 @@ import one.mixin.android.api.request.RelationshipRequest
 import one.mixin.android.api.request.StickerAddRequest
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.datasource.MessageDataSource
+import one.mixin.android.db.invalidater.InvalidateFlow
 import one.mixin.android.extension.copyFromInputStream
 import one.mixin.android.extension.createAudioTemp
 import one.mixin.android.extension.deserialize
@@ -142,6 +144,7 @@ internal constructor(
         }.liveData
     }
 
+    private var invalidateJob: Job?=null
     fun getMessageDemo(conversationId: String, messageId: String? = MessageDataSource.NONE): LiveData<PagingData<String>> {
         return Pager(
             PagingConfig(
@@ -150,10 +153,18 @@ internal constructor(
             ),
             initialKey = messageId
         ) {
-            MessageDataSource(
+            val dataSource = MessageDataSource(
                 appDatabase,
                 conversationId,
             )
+            viewModelScope.launch{
+                InvalidateFlow.collect({ cid ->
+                    conversationId == cid
+                }) {
+                    dataSource.invalidate()
+                }
+            }
+            dataSource
         }.liveData
     }
 

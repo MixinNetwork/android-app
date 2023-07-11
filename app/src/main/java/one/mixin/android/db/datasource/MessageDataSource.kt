@@ -3,15 +3,11 @@ package one.mixin.android.db.datasource
 import androidx.paging.PagingSource
 import androidx.paging.PagingState
 import androidx.room.RoomDatabase
+import androidx.room.paging.util.getClippedRefreshKey
 import timber.log.Timber
 import java.lang.IllegalArgumentException
 
 class MessageDataSource(private val db: RoomDatabase, val conversationId: String) : PagingSource<String, String>() {
-    override fun getRefreshKey(state: PagingState<String, String>): String? {
-        return state.anchorPosition?.let { anchorPosition ->
-            state.closestPageToPosition(anchorPosition)?.prevKey
-        }
-    }
 
     override suspend fun load(params: LoadParams<String>): LoadResult<String, String> {
         return try {
@@ -77,5 +73,9 @@ class MessageDataSource(private val db: RoomDatabase, val conversationId: String
     }
     companion object {
         const val NONE = "NONE"
+    }
+
+    override fun getRefreshKey(state: PagingState<String, String>): String? {
+        return NONE
     }
 }
