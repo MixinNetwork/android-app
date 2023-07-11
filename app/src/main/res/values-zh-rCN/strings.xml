@@ -88,6 +88,7 @@
     <string name="Allow_bot_send_messages">允许机器人代表你发消息。</string>
     <string name="Amount">金额</string>
     <string name="an_audio">一条语音</string>
+    <string name="anonymous_number">匿名号码</string>
     <string name="Anonymous_Number">匿名号码</string>
     <string name="ANSWER">接听</string>
     <string name="app_card_shareable_false">该卡片已被设置为不允许转发</string>
@@ -370,14 +371,12 @@
     <string name="Web_debug">Web 调试</string>
     <string name="Encrypted">端到端加密</string>
     <string name="End_to_End_Encryption">端到端加密</string>
-    <string name="Enter_new_phone_number">输入你的新手机号码</string>
-    <string name="Enter_new_anonymous_number">输入你的新匿名号码</string>
+    <string name="Enter_new">输入你的新</string>
     <string name="Enter_PIN_to_delete_account">输入你的 PIN 以注销你的账户</string>
     <string name="Enter_your_emergency_contact_Mixin_ID">请输入紧急联系人的 Mixin ID</string>
     <string name="Enter_your_new_PIN">输入你的新 PIN</string>
     <string name="Enter_your_old_PIN">输入你的旧 PIN</string>
-    <string name="Enter_your_phone_number">输入你的手机号码</string>
-    <string name="Enter_your_anonymous_number">输入你的匿名号码</string>
+    <string name="Enter_your">输入你的</string>
     <string name="Enter_your_PIN">输入你的 PIN</string>
     <string name="Enter_your_PIN_to_continue">输入你的 PIN 以继续</string>
     <string name="EOS_contract_address">EOS 合约地址</string>
@@ -696,6 +695,7 @@
     <string name="Phone_Contact">手机联系人</string>
     <string name="Phone_Contacts">手机通讯录</string>
     <string name="Phone_Number">手机号码</string>
+    <string name="phone_number">手机号码</string>
     <string name="Phone_number_change">修改手机号</string>
     <string name="phone_number_privacy">谁可以通过手机号找到你</string>
     <string name="Photo">照片</string>

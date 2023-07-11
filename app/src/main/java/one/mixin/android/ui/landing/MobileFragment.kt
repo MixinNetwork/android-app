@@ -101,7 +101,7 @@ class MobileFragment : BaseFragment(R.layout.fragment_mobile) {
         binding.apply {
             pin = requireArguments().getString(ARGS_PIN)
             if (pin != null) {
-                mobileTitleTv.setText(R.string.Enter_new_phone_number)
+                enterTv.setText(R.string.Enter_new)
             }
             backIv.setOnClickListener { activity?.onBackPressedDispatcher?.onBackPressed() }
             countryIconIv.setOnClickListener { showCountry() }
@@ -130,21 +130,7 @@ class MobileFragment : BaseFragment(R.layout.fragment_mobile) {
 
                 mobileEt.requestFocus()
                 mobileEt.setSelection(mobileEt.text?.length ?: 0)
-                if (dialCode == xinDialCode) {
-                    mobileEt.hint = getString(R.string.Anonymous_Number)
-                    if (pin != null) {
-                        mobileTitleTv.setText(R.string.Enter_new_anonymous_number)
-                    } else {
-                        mobileTitleTv.setText(R.string.Enter_your_anonymous_number)
-                    }
-                } else {
-                    mobileEt.hint = getString(R.string.Phone_Number)
-                    if (pin != null) {
-                        mobileTitleTv.setText(R.string.Enter_new_phone_number)
-                    } else {
-                        mobileTitleTv.setText(R.string.Enter_your_phone_number)
-                    }
-                }
+                updateMobileOrAnonymous(dialCode)
             }
             getUserCountryInfo()
 
@@ -337,6 +323,26 @@ class MobileFragment : BaseFragment(R.layout.fragment_mobile) {
         }
     }
 
+    private fun updateMobileOrAnonymous(dialCode: String) {
+        if (viewDestroyed()) return
+
+        binding.apply {
+            if (dialCode == xinDialCode) {
+                enterTip.isVisible = false
+                mobileEt.hint = getString(R.string.Anonymous_Number)
+                if (titleSwitcher.displayedChild != 1) {
+                    titleSwitcher.setText(getString(R.string.anonymous_number))
+                }
+            } else {
+                enterTip.isVisible = true
+                mobileEt.hint = getString(R.string.Phone_Number)
+                if (titleSwitcher.displayedChild != 0) {
+                    titleSwitcher.setText(getString(R.string.phone_number))
+                }
+            }
+        }
+    }
+
     private val mKeyboardListener: Keyboard.OnClickKeyboardListener =
         object : Keyboard.OnClickKeyboardListener {
             override fun onKeyClick(position: Int, value: String) {
@@ -487,6 +493,7 @@ class MobileFragment : BaseFragment(R.layout.fragment_mobile) {
                     countryIconIv.setImageResource(country.flag)
                 }
             }
+            updateMobileOrAnonymous(dialCode)
             handleEditView()
         }
     }

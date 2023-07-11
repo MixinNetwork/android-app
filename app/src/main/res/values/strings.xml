@@ -88,6 +88,7 @@
     <string name="Allow_bot_send_messages">Allow bot to send messages represent of you.</string>
     <string name="Amount">Amount</string>
     <string name="an_audio">an audio</string>
+    <string name="anonymous_number">anonymous number</string>
     <string name="Anonymous_Number">Anonymous Number</string>
     <string name="ANSWER">ANSWER</string>
     <string name="app_card_shareable_false">The card has been set to not allow sharing</string>
@@ -380,14 +381,12 @@
     <string name="Web_debug">Web debug</string>
     <string name="Encrypted">Encrypted</string>
     <string name="End_to_End_Encryption">End-to-end Encrypted</string>
-    <string name="Enter_new_phone_number">Enter your new phone number</string>
-    <string name="Enter_new_anonymous_number">Enter your new anonymous number</string>
+    <string name="Enter_new">Enter your new\u0020</string>
     <string name="Enter_PIN_to_delete_account">Enter your PIN to delete your account</string>
     <string name="Enter_your_emergency_contact_Mixin_ID">Enter your emergency contact Mixin ID</string>
     <string name="Enter_your_new_PIN">Enter your new PIN</string>
     <string name="Enter_your_old_PIN">Enter your old PIN</string>
-    <string name="Enter_your_phone_number">Enter your phone number</string>
-    <string name="Enter_your_anonymous_number">Enter your anonymous number</string>
+    <string name="Enter_your">Enter your\u0020</string>
     <string name="Enter_your_PIN">Enter your PIN</string>
     <string name="Enter_your_PIN_to_continue">Enter your PIN to continue</string>
     <string name="EOS_contract_address">EOS contract address</string>
@@ -714,6 +713,7 @@
     <string name="Phone_Contact">Phone Contacts</string>
     <string name="Phone_Contacts">Phone Contacts</string>
     <string name="Phone_Number">Phone Number</string>
+    <string name="phone_number">phone number</string>
     <string name="Phone_number_change">Phone number change</string>
     <string name="phone_number_privacy">Who can find me by my number</string>
     <string name="Photo">Photo</string>
