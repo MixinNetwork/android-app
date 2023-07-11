@@ -4,6 +4,7 @@ import androidx.paging.PagingSource
 import androidx.paging.PagingState
 import androidx.room.RoomDatabase
 import timber.log.Timber
+import java.lang.IllegalArgumentException
 
 class MessageDataSource(private val db: RoomDatabase, val conversationId: String) : PagingSource<String, String>() {
     override fun getRefreshKey(state: PagingState<String, String>): String? {
@@ -14,12 +15,16 @@ class MessageDataSource(private val db: RoomDatabase, val conversationId: String
 
     override suspend fun load(params: LoadParams<String>): LoadResult<String, String> {
         return try {
+            // Use this message as an anchor to obtain the front and back data
             var anchorKey = params.key
-            if (anchorKey == null) {
+            Timber.e("anchorKey: $anchorKey")
+            if (anchorKey == NONE) {
                 anchorKey = getAnchorKey()
                 if (anchorKey == null) {
                     return LoadResult.Page(data = emptyList(), prevKey = null, nextKey = null)
                 }
+            } else if (anchorKey == null) {
+                throw IllegalArgumentException("Key must be passed in to get the data")
             }
             val loadSize = params.loadSize
             val cursor = db.query(
@@ -36,7 +41,7 @@ class MessageDataSource(private val db: RoomDatabase, val conversationId: String
                 }
             }
             val prevKey = getPrevKey(anchorKey, params.loadSize)
-            Timber.e("load key:$anchorKey conversationId:$conversationId load-size:${params.loadSize} total:${ids.size}")
+            Timber.e("load key:$anchorKey conversationId:$conversationId load-size:${params.loadSize} total:${ids.size} lastKey:$lastId prevKey:$prevKey")
             return LoadResult.Page(
                 data = ids,
                 prevKey = prevKey,
@@ -71,6 +76,6 @@ class MessageDataSource(private val db: RoomDatabase, val conversationId: String
         return null
     }
     companion object {
-        private const val NONE = "NONE"
+        const val NONE = "NONE"
     }
 }
