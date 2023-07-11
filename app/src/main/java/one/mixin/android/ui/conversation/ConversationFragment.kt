@@ -1414,7 +1414,7 @@ class ConversationFragment() :
     private fun initView() {
         binding.demoRv.adapter = demoAdapter
         binding.demoRv.itemAnimator = null
-        chatViewModel.getMessageDemo(conversationId, "4bc8d797-85c7-4c45-b73d-906bee191035").observe(viewLifecycleOwner) {
+        chatViewModel.getMessageDemo(conversationId).observe(viewLifecycleOwner) {
             demoAdapter.submitData(lifecycle, it)
         }
         binding.inputLayout.backgroundImage = WallpaperManager.getWallpaper(requireContext())

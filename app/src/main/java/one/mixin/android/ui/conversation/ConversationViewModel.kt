@@ -144,20 +144,20 @@ internal constructor(
         }.liveData
     }
 
-    private var invalidateJob: Job?=null
-    fun getMessageDemo(conversationId: String, messageId: String? = MessageDataSource.NONE): LiveData<PagingData<String>> {
+    private var invalidateJob: Job? = null
+    fun getMessageDemo(conversationId: String, messageId: Int? = MessageDataSource.NONE): LiveData<PagingData<String>> {
         return Pager(
             PagingConfig(
-                pageSize = 5,
+                pageSize = MessageDataSource.PAGE_SIZE,
                 enablePlaceholders = false,
             ),
-            initialKey = messageId
+            initialKey = messageId,
         ) {
             val dataSource = MessageDataSource(
                 appDatabase,
                 conversationId,
             )
-            viewModelScope.launch{
+            viewModelScope.launch {
                 InvalidateFlow.collect({ cid ->
                     conversationId == cid
                 }) {

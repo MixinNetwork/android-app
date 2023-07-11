@@ -3,108 +3,123 @@ package one.mixin.android.db.datasource
 import androidx.paging.PagingSource
 import androidx.paging.PagingState
 import androidx.room.RoomDatabase
-import timber.log.Timber
 import java.lang.IllegalArgumentException
 
-class MessageDataSource(private val db: RoomDatabase, val conversationId: String) : PagingSource<String, String>() {
+class MessageDataSource(private val db: RoomDatabase, val conversationId: String) :
+    PagingSource<Int, String>() {
 
-    override suspend fun load(params: LoadParams<String>): LoadResult<String, String> {
+    override suspend fun load(params: LoadParams<Int>): LoadResult<Int, String> {
         return try {
-            // Use this message as an anchor to obtain the front and back data
             var anchorKey = params.key
-            Timber.e("anchorKey: $anchorKey")
             if (anchorKey == NONE) {
-                anchorKey = getAnchorKey()
+                anchorKey = initialKey()
                 if (anchorKey == null) {
-                    return LoadResult.Page(data = emptyList(), prevKey = null, nextKey = null)
+                    return LoadResult.Page(emptyList(), null, null)
                 }
-            } else if (anchorKey == null) {
-                throw IllegalArgumentException("Key must be passed in to get the data")
+            } else if (anchorKey == null || anchorKey < 0) {
+                return LoadResult.Error(IllegalArgumentException("Key cannot be less than 0"))
             }
-            val loadSize = params.loadSize
-            val cursor = db.query(
-                "SELECT content, id FROM messages WHERE conversation_id = ? AND created_at >= (SELECT created_at FROM messages WHERE id = ?) ORDER BY created_at ASC, rowid ASC LIMIT ?",
-                arrayOf(conversationId, anchorKey, loadSize),
-            )
-            val contents = mutableListOf<String>()
-            cursor.use { c ->
-                while (cursor.moveToNext()) {
-                    val messageId = c.getString(0)
-                    contents.add(messageId)
-                }
-            }
-            val nextKey = if (contents.size == loadSize){
-                getNextKey(anchorKey)
-            } else {
-                // There is no more data
-                null
-            }
-            val prevKey = getPrevKey(anchorKey, params.loadSize)
-            Timber.e("load key:$anchorKey conversationId:$conversationId load-size:${params.loadSize} total:${contents.size} nextKey:$nextKey prevKey:$prevKey")
-            return LoadResult.Page(
-                data = contents,
-                prevKey = prevKey,
-                nextKey = nextKey,
-            )
+            return getData(rowId = anchorKey, params.loadSize)
         } catch (e: Exception) {
             return LoadResult.Error(e)
         }
     }
 
-    private fun getAnchorKey(): String? {
-        var cursor = db.query("SELECT message_id FROM remote_messages_status WHERE conversation_id = ? ORDER BY rowid ASC LIMIT 1", arrayOf(conversationId))
+    private fun initialKey(): Int? {
+        var cursor = db.query(
+            "SELECT rowid FROM messages WHERE id = (SELECT message_id FROM remote_messages_status WHERE conversation_id = ? ORDER BY rowid ASC LIMIT 1)",
+            arrayOf(conversationId),
+        )
         while (cursor.moveToNext()) {
-            return cursor.getString(0)
+            return cursor.getInt(0)
         }
         // Offset by 1 position, including an anchor message
-        cursor = db.query("SELECT id FROM messages WHERE conversation_id = ? ORDER BY created_at ASC, rowid ASC LIMIT 1", arrayOf(conversationId))
+        cursor = db.query(
+            "SELECT rowid FROM messages WHERE conversation_id = ? ORDER BY created_at ASC, rowid ASC LIMIT 1",
+            arrayOf(conversationId),
+        )
         while (cursor.moveToNext()) {
-            return cursor.getString(0)
+            return cursor.getInt(0)
         }
         return null
     }
 
-    private fun getPrevKey(key: String, pageSize: Int): String? {
-        db.query("SELECT rowid, created_at FROM messages WHERE id = ?", arrayOf(key)).use { c ->
-            if (c.moveToNext()) {
-                val rowId = c.getInt(0)
-                val createdAt = c.getString(1)
-                db.query(
-                    "SELECT id FROM messages WHERE rowid < ? AND created_at <= ? ORDER BY created_at DESC, rowid DESC LIMIT 1 OFFSET ?",
-                    arrayOf(rowId, createdAt, pageSize)
-                ).use {
-                    if (it.moveToNext()) {
-                        return it.getString(0)
-                    }
-                }
+    private fun getData(rowId: Int, limit: Int): LoadResult.Page<Int, String> {
+        val (prevKey, prevData) = prevKey(rowId)
+        val currentPageData = mutableListOf<String>()
+        db.query(
+            "SELECT content FROM messages WHERE rowid >= ? AND conversation_id = ? ORDER BY created_at ASC, rowid ASC LIMIT ?",
+            arrayOf(rowId, conversationId, limit),
+        ).use { cursor ->
+            while (cursor.moveToNext()) {
+                currentPageData.add(cursor.getString(0))
             }
         }
-        return null
+        val (nextKey, nextData) =
+            if (currentPageData.size == limit) {
+                nextKey(rowId, limit)
+            } else {
+                Pair(null, null)
+            }
+        val result = mutableListOf<String>()
+        if (!prevData.isNullOrEmpty()) {
+            result.addAll(prevData)
+        }
+        result.addAll(currentPageData)
+        if (!nextData.isNullOrEmpty()) {
+            result.addAll(nextData)
+        }
+        return LoadResult.Page(currentPageData, prevKey, nextKey)
     }
 
-    private fun getNextKey(key: String): String? {
-        db.query("SELECT rowid, created_at FROM messages WHERE id = ?", arrayOf(key)).use { c ->
-            if (c.moveToNext()) {
-                val rowId = c.getInt(0)
-                val createdAt = c.getString(1)
-                db.query(
-                    "SELECT id FROM messages WHERE rowid > ? AND created_at > ? ORDER BY created_at DESC, rowid DESC LIMIT 1",
-                    arrayOf(rowId, createdAt)
-                ).use {
-                    if (it.moveToNext()) {
-                        return it.getString(0)
-                    }
+    private fun prevKey(rowId: Int): Pair<Int?, List<String>?> {
+        val prevCursor = db.query(
+            "SELECT rowid FROM messages WHERE rowid < ? AND conversation_id = ? ORDER BY created_at DESC, rowid DESC  LIMIT 1 OFFSET ?",
+            arrayOf(rowId, conversationId, PAGE_SIZE - 1),
+        )
+        if (prevCursor.moveToNext()) {
+            return Pair(prevCursor.getInt(0), null)
+        } else {
+            db.query(
+                "SELECT content FROM messages WHERE rowid < ? AND conversation_id = ? ORDER BY created_at ASC, rowid ASC LIMIT ?",
+                arrayOf(rowId, conversationId, PAGE_SIZE),
+            ).use { cursor ->
+                val data = mutableListOf<String>()
+                while (cursor.moveToNext()) {
+                    data.add(cursor.getString(0))
                 }
+                return Pair(null, data)
             }
         }
-        return null
+    }
+
+    private fun nextKey(rowId: Int, limit: Int): Pair<Int?, List<String>?> {
+        val nextCursor = db.query(
+            "SELECT rowid FROM messages WHERE rowid > ? AND conversation_id = ? ORDER BY created_at ASC, rowid ASC LIMIT 1 OFFSET ?",
+            arrayOf(rowId, conversationId, limit - 1),
+        )
+        if (nextCursor.moveToNext()) {
+            return Pair(nextCursor.getInt(0), null)
+        } else {
+            db.query(
+                "SELECT content FROM messages WHERE rowid > ? AND conversation_id = ? ORDER BY created_at ASC, rowid ASC LIMIT ? OFFSET ?",
+                arrayOf(rowId, conversationId, PAGE_SIZE, limit - 1),
+            ).use { cursor ->
+                val data = mutableListOf<String>()
+                while (cursor.moveToNext()) {
+                    data.add(cursor.getString(0))
+                }
+                return Pair(null, data)
+            }
+        }
     }
 
     companion object {
-        const val NONE = "NONE"
+        const val NONE = -1
+        const val PAGE_SIZE = 5
     }
 
-    override fun getRefreshKey(state: PagingState<String, String>): String {
+    override fun getRefreshKey(state: PagingState<Int, String>): Int {
         return NONE
     }
 }
