@@ -262,7 +262,7 @@ class ConversationAdapter(
 
     // Todo
     private fun getMessageItem(position: Int): MessageItem? {
-        return if (position < itemCount) {
+        return if (position in 0 until itemCount) {
             getItem(position)
         } else {
             null
@@ -739,9 +739,10 @@ class ConversationAdapter(
     override fun onCreateAttach(parent: ViewGroup): View =
         LayoutInflater.from(parent.context).inflate(R.layout.item_chat_unread, parent, false)
 
-    override fun hasAttachView(position: Int): Boolean {
-        // Todo
-        return false
+    override fun hasAttachView(position: Int): Boolean = if (unreadMsgId != null) {
+        getMessageItem(position)?.messageId == unreadMsgId
+    } else {
+        false
     }
 
     override fun onBindAttachView(view: View) {
@@ -751,16 +752,6 @@ class ConversationAdapter(
     }
 
     override fun isLast(position: Int): Boolean {
-        // Todo
-        return false
-    }
-
-    override fun isListLast(position: Int): Boolean {
-        // todo
-        return false
-    }
-
-    private fun isFirst(position: Int): Boolean {
         val currentItem = getMessageItem(position)
         val nextItem = getMessageItem(position + 1)
         return when {
@@ -780,6 +771,37 @@ class ConversationAdapter(
                 true
 
             !isSameDay(nextItem.createdAt, currentItem.createdAt) ->
+                true
+
+            else -> false
+        }
+    }
+
+    override fun isListLast(position: Int): Boolean {
+        // todo
+        return false
+    }
+
+    private fun isFirst(position: Int): Boolean {
+        val currentItem = getMessageItem(position)
+        val previousItem = getMessageItem(position - 1)
+        return when {
+            currentItem == null ->
+                false
+
+            previousItem == null ->
+                true
+
+            currentItem.type == MessageCategory.SYSTEM_CONVERSATION.name ->
+                true
+
+            previousItem.type == MessageCategory.SYSTEM_CONVERSATION.name ->
+                true
+
+            previousItem.userId != currentItem.userId ->
+                true
+
+            !isSameDay(previousItem.createdAt, currentItem.createdAt) ->
                 true
 
             else -> false

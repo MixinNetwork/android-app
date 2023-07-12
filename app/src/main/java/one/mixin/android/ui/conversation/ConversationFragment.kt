@@ -1848,7 +1848,10 @@ class ConversationFragment() :
     }
 
     private var messageLiveData: LiveData<PagingData<MessageItem>>? = null
-    private val messageObserver: Observer<PagingData<MessageItem>> = Observer { value -> conversationAdapter.submitData(lifecycle, value) }
+    private val messageObserver: Observer<PagingData<MessageItem>> = Observer {
+        value -> conversationAdapter.submitData(lifecycle, value)
+        chatRoomHelper.markMessageRead(conversationId)
+    }
     private fun liveDataMessage(unreadCount: Int, rowId: Int = MessageDataSource.NONE) {
         messageLiveData?.removeObserver(messageObserver)
         messageLiveData = chatViewModel.getMessageDemo(conversationId, rowId)
@@ -2203,7 +2206,7 @@ class ConversationFragment() :
     }
 
     private fun renderUser(user: User) {
-        // conversationAdapter.recipient = user
+        conversationAdapter.recipient = user
         renderUserInfo(user)
         chatViewModel.findUserById(user.userId).observe(
             viewLifecycleOwner,
