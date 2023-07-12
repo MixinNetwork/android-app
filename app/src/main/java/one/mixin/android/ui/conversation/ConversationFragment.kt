@@ -2595,11 +2595,15 @@ class ConversationFragment() :
         }
         if (index != -1) {
             scrollTo(index)
+            chatViewModel.getMessageRowidSuspend(messageId)?.let {
+                findMessageAction?.invoke(it)
+            }
         } else {
             val rowId = chatViewModel.getMessageRowidSuspend(messageId)
             if (rowId != null) {
                 // Re-subscribe to the new key
                 liveDataMessage(0, rowId)
+                findMessageAction?.invoke(rowId)
             } else {
                 toast(R.string.Message_not_found)
             }
