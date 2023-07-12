@@ -2565,10 +2565,16 @@ class ConversationFragment() :
     ) = lifecycleScope.launch {
         if (viewDestroyed()) return@launch
         val rowId = chatViewModel.getMessageRowidSuspend(messageId)
-        // Todo optimization determines whether it already exists. If so, Scorll to is more reasonable.
         if (rowId != null) {
-            // Re-subscribe to the new key
-            liveDataMessage(0, rowId)
+            val index = conversationAdapter.snapshot().items.indexOfFirst { messageItem ->
+                messageItem.messageId == messageId
+            }
+            if (index == -1) {
+                // Re-subscribe to the new key
+                liveDataMessage(0, rowId)
+            } else {
+                scrollTo(index)
+            }
         }
     }
 
