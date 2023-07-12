@@ -447,6 +447,9 @@ interface MessageDao : BaseDao<Message> {
     @Query("SELECT rowid FROM messages WHERE id = :messageId")
     suspend fun getMessageRowidSuspend(messageId: String): Int?
 
+    @Query("SELECT rowid FROM messages WHERE conversation_id = :conversationId ORDER BY created_at DESC, rowid DESC LIMIT 1")
+    suspend fun getLastMessageRowId(conversationId: String): Int?
+
     @Query("SELECT rowid FROM messages WHERE created_at >= :createdAt ORDER BY rowid ASC LIMIT 1")
     fun getMessageRowidByCreateAt(createdAt: String): Long?
 

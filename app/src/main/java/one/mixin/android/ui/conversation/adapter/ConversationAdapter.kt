@@ -1,18 +1,13 @@
 package one.mixin.android.ui.conversation.adapter
 
-import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.TextView
 import androidx.collection.ArraySet
-import androidx.lifecycle.lifecycleScope
 import androidx.paging.PagingDataAdapter
 import androidx.recyclerview.widget.DiffUtil
-import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import io.noties.markwon.Markwon
-import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemChatActionBinding
 import one.mixin.android.databinding.ItemChatActionCardBinding
@@ -37,17 +32,15 @@ import one.mixin.android.databinding.ItemChatStrangerBinding
 import one.mixin.android.databinding.ItemChatSystemBinding
 import one.mixin.android.databinding.ItemChatTextBinding
 import one.mixin.android.databinding.ItemChatTextQuoteBinding
+import one.mixin.android.databinding.ItemChatTimeBinding
 import one.mixin.android.databinding.ItemChatTranscriptBinding
 import one.mixin.android.databinding.ItemChatTransparentBinding
 import one.mixin.android.databinding.ItemChatUnknownBinding
+import one.mixin.android.databinding.ItemChatUnreadBinding
 import one.mixin.android.databinding.ItemChatVideoBinding
 import one.mixin.android.databinding.ItemChatVideoQuoteBinding
 import one.mixin.android.databinding.ItemChatWaitingBinding
-import one.mixin.android.databinding.ItemChatTimeBinding
-import one.mixin.android.databinding.ItemChatUnreadBinding
-import one.mixin.android.databinding.ItemDemoBinding
 import one.mixin.android.extension.notNullWithElse
-import one.mixin.android.extension.toast
 import one.mixin.android.ui.conversation.holder.ActionCardHolder
 import one.mixin.android.ui.conversation.holder.ActionHolder
 import one.mixin.android.ui.conversation.holder.AudioHolder
@@ -80,9 +73,6 @@ import one.mixin.android.ui.conversation.holder.UnknownHolder
 import one.mixin.android.ui.conversation.holder.VideoHolder
 import one.mixin.android.ui.conversation.holder.VideoQuoteHolder
 import one.mixin.android.ui.conversation.holder.WaitingHolder
-import one.mixin.android.ui.conversation.holder.base.BaseMentionHolder
-import one.mixin.android.ui.conversation.holder.base.BaseViewHolder
-import one.mixin.android.util.markdown.MarkwonUtil
 import one.mixin.android.vo.AppCardData
 import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.MessageItem
@@ -95,8 +85,8 @@ import one.mixin.android.vo.isGroupCall
 import one.mixin.android.vo.isImage
 import one.mixin.android.vo.isLive
 import one.mixin.android.vo.isLocation
-import one.mixin.android.vo.isPost
 import one.mixin.android.vo.isPin
+import one.mixin.android.vo.isPost
 import one.mixin.android.vo.isRecall
 import one.mixin.android.vo.isSticker
 import one.mixin.android.vo.isText
@@ -109,7 +99,7 @@ class ConversationAdapter(
     private val miniMarkwon: Markwon,
     private val onItemListener: OnItemListener,
     private val isBot: Boolean = false,
-): PagingDataAdapter<MessageItem, RecyclerView.ViewHolder>(diffCallback = diffCallback), MixinStickyRecyclerHeadersAdapter<TimeHolder> {
+) : PagingDataAdapter<MessageItem, RecyclerView.ViewHolder>(diffCallback = diffCallback), MixinStickyRecyclerHeadersAdapter<TimeHolder> {
     companion object {
         const val NULL_TYPE = 99
         const val UNKNOWN_TYPE = 0
@@ -738,17 +728,17 @@ class ConversationAdapter(
         return false
     }
 
-    private fun isFirst(position: Int):Boolean {
+    private fun isFirst(position: Int): Boolean {
         // Todo
         return false
     }
 
-    private fun isSelect(position: Int):Boolean {
+    private fun isSelect(position: Int): Boolean {
         // Todo
         return false
     }
 
-    private  fun isRepresentative(messageItem: MessageItem): Boolean {
+    private fun isRepresentative(messageItem: MessageItem): Boolean {
         return false
     }
 
@@ -757,8 +747,9 @@ class ConversationAdapter(
         return 0
     }
 
-    override fun onCreateHeaderViewHolder(parent: ViewGroup): TimeHolder =  TimeHolder(
-        ItemChatTimeBinding.inflate(LayoutInflater.from(parent.context), parent, false))
+    override fun onCreateHeaderViewHolder(parent: ViewGroup): TimeHolder = TimeHolder(
+        ItemChatTimeBinding.inflate(LayoutInflater.from(parent.context), parent, false),
+    )
 
     override fun onBindHeaderViewHolder(holder: TimeHolder?, position: Int) {
         // Todo

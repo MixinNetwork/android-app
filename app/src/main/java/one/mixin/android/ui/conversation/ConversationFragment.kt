@@ -325,7 +325,7 @@ class ConversationFragment() :
         ConversationAdapter(
             null,
             MarkwonUtil.getMiniMarkwon(requireActivity()),
-            onItemListener
+            onItemListener,
         )
         // ConversationAdapter(requireActivity(), keyword, onItemListener, isGroup, encryptCategory() != EncryptCategory.PLAIN, isBot).apply {
         //     registerAdapterDataObserver(chatAdapterDataObserver)
@@ -1477,7 +1477,7 @@ class ConversationFragment() :
                     positionBeforeClickQuote = null
                 }
             } else {
-                scrollTo(0)
+                scrollToDown()
                 unreadTipCount = 0
                 binding.flagLayout.bottomCountFlag = false
             }
@@ -1823,8 +1823,8 @@ class ConversationFragment() :
         deleteDialog?.show()
     }
 
-    private var messageLiveData:LiveData<PagingData<MessageItem>>?= null
-    private val messageObserver:Observer<PagingData<MessageItem>> = Observer { value -> conversationAdapter.submitData(lifecycle, value) }
+    private var messageLiveData: LiveData<PagingData<MessageItem>>? = null
+    private val messageObserver: Observer<PagingData<MessageItem>> = Observer { value -> conversationAdapter.submitData(lifecycle, value) }
     private fun liveDataMessage(unreadCount: Int, rowId: Int = MessageDataSource.NONE) {
         messageLiveData?.removeObserver(messageObserver)
         messageLiveData = chatViewModel.getMessageDemo(conversationId, rowId)
@@ -2517,16 +2517,6 @@ class ConversationFragment() :
         }
     }
 
-    @SuppressLint("NotifyDataSetChanged")
-    private fun scrollToDown() {
-        if (viewDestroyed()) return
-
-        binding.chatRv.layoutManager?.scrollToPosition(0)
-        if (firstPosition > PAGE_SIZE * 6) {
-            conversationAdapter.notifyDataSetChanged()
-        }
-    }
-
     private fun scrollTo(
         position: Int,
         offset: Int = -1,
@@ -2579,6 +2569,16 @@ class ConversationFragment() :
         if (rowId != null) {
             // Re-subscribe to the new key
             liveDataMessage(0, rowId)
+        }
+    }
+
+    private fun scrollToDown() {
+        if (viewDestroyed()) return
+        lifecycleScope.launch {
+            val lastRowId = chatViewModel.getLastMessageRowId(conversationId)
+            if (lastRowId != null) {
+                liveDataMessage(0, lastRowId)
+            }
         }
     }
 
