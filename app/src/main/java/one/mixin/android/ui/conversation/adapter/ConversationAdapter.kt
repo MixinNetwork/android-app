@@ -1,16 +1,18 @@
 package one.mixin.android.ui.conversation.adapter
 
-import android.annotation.SuppressLint
-import android.app.Activity
+import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.TextView
 import androidx.collection.ArraySet
-import androidx.paging.PagedList
+import androidx.lifecycle.lifecycleScope
 import androidx.paging.PagingDataAdapter
 import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import io.reactivex.subjects.PublishSubject
+import io.noties.markwon.Markwon
+import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemChatActionBinding
 import one.mixin.android.databinding.ItemChatActionCardBinding
@@ -35,18 +37,17 @@ import one.mixin.android.databinding.ItemChatStrangerBinding
 import one.mixin.android.databinding.ItemChatSystemBinding
 import one.mixin.android.databinding.ItemChatTextBinding
 import one.mixin.android.databinding.ItemChatTextQuoteBinding
-import one.mixin.android.databinding.ItemChatTimeBinding
 import one.mixin.android.databinding.ItemChatTranscriptBinding
 import one.mixin.android.databinding.ItemChatTransparentBinding
 import one.mixin.android.databinding.ItemChatUnknownBinding
-import one.mixin.android.databinding.ItemChatUnreadBinding
 import one.mixin.android.databinding.ItemChatVideoBinding
 import one.mixin.android.databinding.ItemChatVideoQuoteBinding
 import one.mixin.android.databinding.ItemChatWaitingBinding
-import one.mixin.android.extension.hashForDate
-import one.mixin.android.extension.isSameDay
+import one.mixin.android.databinding.ItemChatTimeBinding
+import one.mixin.android.databinding.ItemChatUnreadBinding
+import one.mixin.android.databinding.ItemDemoBinding
 import one.mixin.android.extension.notNullWithElse
-import one.mixin.android.session.Session
+import one.mixin.android.extension.toast
 import one.mixin.android.ui.conversation.holder.ActionCardHolder
 import one.mixin.android.ui.conversation.holder.ActionHolder
 import one.mixin.android.ui.conversation.holder.AudioHolder
@@ -81,14 +82,11 @@ import one.mixin.android.ui.conversation.holder.VideoQuoteHolder
 import one.mixin.android.ui.conversation.holder.WaitingHolder
 import one.mixin.android.ui.conversation.holder.base.BaseMentionHolder
 import one.mixin.android.ui.conversation.holder.base.BaseViewHolder
-import one.mixin.android.ui.conversation.holder.base.Terminable
 import one.mixin.android.util.markdown.MarkwonUtil
 import one.mixin.android.vo.AppCardData
 import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.MessageStatus
-import one.mixin.android.vo.User
-import one.mixin.android.vo.create
 import one.mixin.android.vo.isAudio
 import one.mixin.android.vo.isCallMessage
 import one.mixin.android.vo.isContact
@@ -97,90 +95,157 @@ import one.mixin.android.vo.isGroupCall
 import one.mixin.android.vo.isImage
 import one.mixin.android.vo.isLive
 import one.mixin.android.vo.isLocation
-import one.mixin.android.vo.isPin
 import one.mixin.android.vo.isPost
+import one.mixin.android.vo.isPin
 import one.mixin.android.vo.isRecall
 import one.mixin.android.vo.isSticker
 import one.mixin.android.vo.isText
 import one.mixin.android.vo.isTranscript
 import one.mixin.android.vo.isVideo
 import one.mixin.android.widget.MixinStickyRecyclerHeadersAdapter
-import kotlin.math.abs
 
 class ConversationAdapter(
-    private val context: Activity,
     var keyword: String?,
+    private val miniMarkwon: Markwon,
     private val onItemListener: OnItemListener,
-    private val isGroup: Boolean,
-    private val isSecret: Boolean = true,
     private val isBot: Boolean = false,
-) : PagingDataAdapter<MessageItem, RecyclerView.ViewHolder>(diffCallback),
-    MixinStickyRecyclerHeadersAdapter<TimeHolder> {
+): PagingDataAdapter<MessageItem, RecyclerView.ViewHolder>(diffCallback = diffCallback), MixinStickyRecyclerHeadersAdapter<TimeHolder> {
+    companion object {
+        const val NULL_TYPE = 99
+        const val UNKNOWN_TYPE = 0
+        const val TEXT_TYPE = 1
+        const val TEXT_QUOTE_TYPE = -1
+        const val IMAGE_TYPE = 2
+        const val IMAGE_QUOTE_TYPE = -2
+        const val LINK_TYPE = 3
+        const val VIDEO_TYPE = 4
+        const val VIDEO_QUOTE_TYPE = -4
+        const val AUDIO_TYPE = 5
+        const val AUDIO_QUOTE_TYPE = -5
+        const val FILE_TYPE = 6
+        const val FILE_QUOTE_TYPE = -6
+        const val STICKER_TYPE = 7
+        const val CONTACT_CARD_TYPE = 8
+        const val CONTACT_CARD_QUOTE_TYPE = -8
+        const val CARD_TYPE = 9
+        const val SNAPSHOT_TYPE = 10
+        const val POST_TYPE = 11
+        const val ACTION_TYPE = 12
+        const val ACTION_CARD_TYPE = 13
+        const val SYSTEM_TYPE = 14
+        const val WAITING_TYPE = 15
+        const val STRANGER_TYPE = 16
+        const val SECRET_TYPE = 17
+        const val CALL_TYPE = 18
+        const val RECALL_TYPE = 19
+        const val LOCATION_TYPE = 20
+        const val GROUP_CALL_TYPE = 21
+        const val TRANSCRIPT_TYPE = 22
+        const val PIN_TYPE = 23
+
+        private val diffCallback = object : DiffUtil.ItemCallback<MessageItem>() {
+            override fun areItemsTheSame(oldItem: MessageItem, newItem: MessageItem): Boolean {
+                return oldItem.messageId == newItem.messageId
+            }
+
+            override fun areContentsTheSame(
+                oldItem: MessageItem,
+                newItem: MessageItem,
+            ): Boolean {
+                return oldItem.mediaStatus == newItem.mediaStatus &&
+                    oldItem.type == newItem.type &&
+                    oldItem.status == newItem.status &&
+                    oldItem.userFullName == newItem.userFullName &&
+                    oldItem.participantFullName == newItem.participantFullName &&
+                    oldItem.sharedUserFullName == newItem.sharedUserFullName &&
+                    oldItem.mediaSize == newItem.mediaSize &&
+                    oldItem.quoteContent == newItem.quoteContent &&
+                    oldItem.assetSymbol == newItem.assetSymbol &&
+                    oldItem.assetUrl == newItem.assetUrl &&
+                    oldItem.assetIcon == newItem.assetIcon &&
+                    oldItem.mentionRead == newItem.mentionRead &&
+                    oldItem.content == newItem.content &&
+                    oldItem.isPin == newItem.isPin
+            }
+        }
+    }
+
     var selectSet: ArraySet<MessageItem> = ArraySet()
-    var unreadMsgId: String? = null
-        @SuppressLint("NotifyDataSetChanged")
-        set(value) {
-            if (field != value) {
-                field = value
-                notifyDataSetChanged()
-            }
-        }
-    var recipient: User? = null
-    private val miniMarkwon by lazy {
-        MarkwonUtil.getMiniMarkwon(context)
-    }
-    var hasBottomView = false
-        @SuppressLint("NotifyDataSetChanged")
-        set(value) {
-            if (field != value) {
-                field = value
-                notifyDataSetChanged()
-            }
-        }
 
-    override fun hasAttachView(position: Int): Boolean = if (unreadMsgId != null) {
-        getMessageItem(position)?.messageId == unreadMsgId
-    } else {
-        false
-    }
+    private fun getItemType(messageItem: MessageItem?): Int =
+        messageItem.notNullWithElse(
+            { item ->
+                when {
+                    item.status == MessageStatus.UNKNOWN.name -> UNKNOWN_TYPE
+                    item.type == MessageCategory.STRANGER.name -> STRANGER_TYPE
+                    item.type == MessageCategory.SECRET.name -> SECRET_TYPE
+                    item.status == MessageStatus.FAILED.name -> WAITING_TYPE
+                    item.isText() -> {
+                        if (!item.quoteId.isNullOrEmpty()) {
+                            TEXT_QUOTE_TYPE
+                        } else if (!item.siteName.isNullOrBlank() || !item.siteDescription.isNullOrBlank()) {
+                            LINK_TYPE
+                        } else {
+                            TEXT_TYPE
+                        }
+                    }
+                    item.isImage() -> {
+                        if (!item.quoteId.isNullOrEmpty()) {
+                            IMAGE_QUOTE_TYPE
+                        } else {
+                            IMAGE_TYPE
+                        }
+                    }
+                    item.isSticker() -> STICKER_TYPE
+                    item.isData() -> {
+                        if (!item.quoteId.isNullOrEmpty()) {
+                            FILE_QUOTE_TYPE
+                        } else {
+                            FILE_TYPE
+                        }
+                    }
+                    item.type == MessageCategory.SYSTEM_CONVERSATION.name -> SYSTEM_TYPE
+                    item.type == MessageCategory.SYSTEM_ACCOUNT_SNAPSHOT.name -> SNAPSHOT_TYPE
+                    item.type == MessageCategory.APP_BUTTON_GROUP.name -> ACTION_TYPE
+                    item.type == MessageCategory.APP_CARD.name -> ACTION_CARD_TYPE
+                    item.isContact() -> {
+                        if (!item.quoteId.isNullOrEmpty()) {
+                            CONTACT_CARD_QUOTE_TYPE
+                        } else {
+                            CONTACT_CARD_TYPE
+                        }
+                    }
+                    item.isVideo() or item.isLive() -> {
+                        if (!item.quoteId.isNullOrEmpty()) {
+                            VIDEO_QUOTE_TYPE
+                        } else {
+                            VIDEO_TYPE
+                        }
+                    }
+                    item.isAudio() -> {
+                        if (!item.quoteId.isNullOrEmpty()) {
+                            AUDIO_QUOTE_TYPE
+                        } else {
+                            AUDIO_TYPE
+                        }
+                    }
+                    item.isPost() -> POST_TYPE
+                    item.isCallMessage() -> CALL_TYPE
+                    item.isRecall() -> RECALL_TYPE
+                    item.isLocation() -> LOCATION_TYPE
+                    item.isGroupCall() -> GROUP_CALL_TYPE
+                    item.isTranscript() -> TRANSCRIPT_TYPE
+                    item.isPin() -> PIN_TYPE
+                    else -> UNKNOWN_TYPE
+                }
+            },
+            NULL_TYPE,
+        )
 
-    private val publisher = PublishSubject.create<PagedList<MessageItem>>()
-    private var pagingList: PagedList<MessageItem>? = null
+    override fun getItemViewType(position: Int): Int = getItemType(getMessageItem(position))
 
-    fun loadAround(index: Int) {
-        pagingList?.loadAround(index)
-    }
-
-    override fun onCreateAttach(parent: ViewGroup): View =
-        LayoutInflater.from(parent.context).inflate(R.layout.item_chat_unread, parent, false)
-
-    override fun onBindAttachView(view: View) {
-        unreadMsgId?.let {
-            ItemChatUnreadBinding.bind(view).unreadTv.text = view.context.getString(R.string.Unread_messages)
-        }
-    }
-
-    fun markRead() {
-        unreadMsgId?.let {
-            unreadMsgId = null
-        }
-    }
-
-    override fun getHeaderId(position: Int): Long = getMessageItem(position).notNullWithElse(
-        {
-            abs(it.createdAt.hashForDate())
-        },
-        0,
-    )
-
-    override fun onCreateHeaderViewHolder(parent: ViewGroup): TimeHolder =
-        TimeHolder(ItemChatTimeBinding.inflate(LayoutInflater.from(parent.context), parent, false))
-
-    override fun onBindHeaderViewHolder(holder: TimeHolder, position: Int) {
-        getMessageItem(position)?.let {
-            holder.bind(it.createdAt)
-        }
-    }
+    // Todo
+    private fun getMessageItem(position: Int) = getItem(position)
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         getMessageItem(position)?.let {
@@ -482,164 +547,6 @@ class ConversationAdapter(
         }
     }
 
-    private fun isSelect(position: Int): Boolean {
-        return if (selectSet.isEmpty()) {
-            false
-        } else {
-            selectSet.find { it.messageId == getMessageItem(position)?.messageId } != null
-        }
-    }
-
-    override fun isListLast(position: Int): Boolean {
-        return position == 0
-    }
-
-    override fun isLast(position: Int): Boolean {
-        val currentItem = getMessageItem(position)
-        val previousItem = previous(position)
-        return when {
-            currentItem == null ->
-                false
-            previousItem == null ->
-                true
-            currentItem.type == MessageCategory.SYSTEM_CONVERSATION.name ->
-                true
-            previousItem.type == MessageCategory.SYSTEM_CONVERSATION.name ->
-                true
-            previousItem.userId != currentItem.userId ->
-                true
-            !isSameDay(previousItem.createdAt, currentItem.createdAt) ->
-                true
-            else -> false
-        }
-    }
-
-    private fun isRepresentative(messageItem: MessageItem): Boolean {
-        return isBot && recipient?.userId != messageItem.userId && messageItem.userId != Session.getAccountId()
-    }
-
-    private fun isFirst(position: Int): Boolean {
-        return if (isGroup || recipient != null) {
-            val currentItem = getMessageItem(position)
-            if (!isGroup && (recipient?.isBot() == false || recipient?.userId == currentItem?.userId)) {
-                return false
-            }
-            val nextItem = next(position)
-            when {
-                currentItem == null ->
-                    false
-                nextItem == null ->
-                    true
-                nextItem.type == MessageCategory.MESSAGE_PIN.name ->
-                    true
-                nextItem.type == MessageCategory.SYSTEM_CONVERSATION.name ->
-                    true
-                nextItem.userId != currentItem.userId ->
-                    true
-                !isSameDay(nextItem.createdAt, currentItem.createdAt) ->
-                    true
-                else -> false
-            }
-        } else {
-            false
-        }
-    }
-
-    private fun previous(position: Int): MessageItem? {
-        return if (position > 0) {
-            getItem(position - 1)
-        } else {
-            null
-        }
-    }
-
-    private fun next(position: Int): MessageItem? {
-        return if (position < itemCount - 1) {
-            getItem(position + 1)
-        } else {
-            null
-        }
-    }
-
-    override fun getItemCount(): Int {
-        return super.getItemCount()
-        //
-        // return super.getItemCount() + if (hasBottomView && isSecret) {
-        //     2
-        // } else if (hasBottomView || isSecret) {
-        //     1
-        // } else {
-        //     0
-        // }
-    }
-
-    fun getRealItemCount(): Int {
-        return super.getItemCount()
-    }
-
-    fun getMessageItem(position: Int): MessageItem? {
-        return getItemInternal(position)
-        // return if (position > itemCount - 1) {
-        //     null
-        // } else if (isSecret && hasBottomView) {
-        //     when (position) {
-        //         0 -> create(
-        //             MessageCategory.STRANGER.name,
-        //             if (super.getItemCount() > 0) {
-        //                 getItemInternal(0)?.createdAt
-        //             } else {
-        //                 null
-        //             },
-        //         )
-        //         itemCount - 1 -> create(
-        //             MessageCategory.SECRET.name,
-        //             if (super.getItemCount() > 0) {
-        //                 getItemInternal(super.getItemCount() - 1)?.createdAt
-        //             } else {
-        //                 null
-        //             },
-        //         )
-        //         else -> getItemInternal(position - 1)
-        //     }
-        // } else if (isSecret) {
-        //     if (position == itemCount - 1) {
-        //         create(
-        //             MessageCategory.SECRET.name,
-        //             if (super.getItemCount() > 0) {
-        //                 getItemInternal(super.getItemCount() - 1)?.createdAt
-        //             } else {
-        //                 null
-        //             },
-        //         )
-        //     } else {
-        //         getItemInternal(position)
-        //     }
-        // } else if (hasBottomView) {
-        //     if (position == 0) {
-        //         create(
-        //             MessageCategory.STRANGER.name,
-        //             if (super.getItemCount() > 0) {
-        //                 getItemInternal(0)?.createdAt
-        //             } else {
-        //                 null
-        //             },
-        //         )
-        //     } else {
-        //         getItemInternal(position - 1)
-        //     }
-        // } else {
-        //     getItemInternal(position)
-        // }
-    }
-
-    private fun getItemInternal(pos: Int): MessageItem? {
-        return try {
-            super.getItem(pos)
-        } catch (e: IndexOutOfBoundsException) {
-            null
-        }
-    }
-
     override fun onCreateViewHolder(
         parent: ViewGroup,
         viewType: Int,
@@ -740,154 +647,6 @@ class ConversationAdapter(
             }
         }
 
-    override fun onViewAttachedToWindow(holder: RecyclerView.ViewHolder) {
-        getItem(holder.layoutPosition)?.let { messageItem ->
-            (holder as BaseViewHolder).listen(holder.itemView, messageItem.messageId)
-            if (holder is BaseMentionHolder) {
-                holder.onViewAttachedToWindow()
-            }
-            if (holder is Terminable) {
-                holder.onRead(messageItem.messageId, messageItem.expireIn, messageItem.expireAt)
-            }
-        }
-    }
-
-    override fun onViewDetachedFromWindow(holder: RecyclerView.ViewHolder) {
-        (holder as BaseViewHolder).stopListen()
-    }
-
-    private fun getItemType(messageItem: MessageItem?): Int =
-        messageItem.notNullWithElse(
-            { item ->
-                when {
-                    item.status == MessageStatus.UNKNOWN.name -> UNKNOWN_TYPE
-                    item.type == MessageCategory.STRANGER.name -> STRANGER_TYPE
-                    item.type == MessageCategory.SECRET.name -> SECRET_TYPE
-                    item.status == MessageStatus.FAILED.name -> WAITING_TYPE
-                    item.isText() -> {
-                        if (!item.quoteId.isNullOrEmpty()) {
-                            TEXT_QUOTE_TYPE
-                        } else if (!item.siteName.isNullOrBlank() || !item.siteDescription.isNullOrBlank()) {
-                            LINK_TYPE
-                        } else {
-                            TEXT_TYPE
-                        }
-                    }
-                    item.isImage() -> {
-                        if (!item.quoteId.isNullOrEmpty()) {
-                            IMAGE_QUOTE_TYPE
-                        } else {
-                            IMAGE_TYPE
-                        }
-                    }
-                    item.isSticker() -> STICKER_TYPE
-                    item.isData() -> {
-                        if (!item.quoteId.isNullOrEmpty()) {
-                            FILE_QUOTE_TYPE
-                        } else {
-                            FILE_TYPE
-                        }
-                    }
-                    item.type == MessageCategory.SYSTEM_CONVERSATION.name -> SYSTEM_TYPE
-                    item.type == MessageCategory.SYSTEM_ACCOUNT_SNAPSHOT.name -> SNAPSHOT_TYPE
-                    item.type == MessageCategory.APP_BUTTON_GROUP.name -> ACTION_TYPE
-                    item.type == MessageCategory.APP_CARD.name -> ACTION_CARD_TYPE
-                    item.isContact() -> {
-                        if (!item.quoteId.isNullOrEmpty()) {
-                            CONTACT_CARD_QUOTE_TYPE
-                        } else {
-                            CONTACT_CARD_TYPE
-                        }
-                    }
-                    item.isVideo() or item.isLive() -> {
-                        if (!item.quoteId.isNullOrEmpty()) {
-                            VIDEO_QUOTE_TYPE
-                        } else {
-                            VIDEO_TYPE
-                        }
-                    }
-                    item.isAudio() -> {
-                        if (!item.quoteId.isNullOrEmpty()) {
-                            AUDIO_QUOTE_TYPE
-                        } else {
-                            AUDIO_TYPE
-                        }
-                    }
-                    item.isPost() -> POST_TYPE
-                    item.isCallMessage() -> CALL_TYPE
-                    item.isRecall() -> RECALL_TYPE
-                    item.isLocation() -> LOCATION_TYPE
-                    item.isGroupCall() -> GROUP_CALL_TYPE
-                    item.isTranscript() -> TRANSCRIPT_TYPE
-                    item.isPin() -> PIN_TYPE
-                    else -> UNKNOWN_TYPE
-                }
-            },
-            NULL_TYPE,
-        )
-
-    override fun getItemViewType(position: Int): Int = getItemType(getMessageItem(position))
-
-    companion object {
-        const val NULL_TYPE = 99
-        const val UNKNOWN_TYPE = 0
-        const val TEXT_TYPE = 1
-        const val TEXT_QUOTE_TYPE = -1
-        const val IMAGE_TYPE = 2
-        const val IMAGE_QUOTE_TYPE = -2
-        const val LINK_TYPE = 3
-        const val VIDEO_TYPE = 4
-        const val VIDEO_QUOTE_TYPE = -4
-        const val AUDIO_TYPE = 5
-        const val AUDIO_QUOTE_TYPE = -5
-        const val FILE_TYPE = 6
-        const val FILE_QUOTE_TYPE = -6
-        const val STICKER_TYPE = 7
-        const val CONTACT_CARD_TYPE = 8
-        const val CONTACT_CARD_QUOTE_TYPE = -8
-        const val CARD_TYPE = 9
-        const val SNAPSHOT_TYPE = 10
-        const val POST_TYPE = 11
-        const val ACTION_TYPE = 12
-        const val ACTION_CARD_TYPE = 13
-        const val SYSTEM_TYPE = 14
-        const val WAITING_TYPE = 15
-        const val STRANGER_TYPE = 16
-        const val SECRET_TYPE = 17
-        const val CALL_TYPE = 18
-        const val RECALL_TYPE = 19
-        const val LOCATION_TYPE = 20
-        const val GROUP_CALL_TYPE = 21
-        const val TRANSCRIPT_TYPE = 22
-        const val PIN_TYPE = 23
-
-        private val diffCallback = object : DiffUtil.ItemCallback<MessageItem>() {
-            override fun areItemsTheSame(oldItem: MessageItem, newItem: MessageItem): Boolean {
-                return oldItem.messageId == newItem.messageId
-            }
-
-            override fun areContentsTheSame(
-                oldItem: MessageItem,
-                newItem: MessageItem,
-            ): Boolean {
-                return oldItem.mediaStatus == newItem.mediaStatus &&
-                    oldItem.type == newItem.type &&
-                    oldItem.status == newItem.status &&
-                    oldItem.userFullName == newItem.userFullName &&
-                    oldItem.participantFullName == newItem.participantFullName &&
-                    oldItem.sharedUserFullName == newItem.sharedUserFullName &&
-                    oldItem.mediaSize == newItem.mediaSize &&
-                    oldItem.quoteContent == newItem.quoteContent &&
-                    oldItem.assetSymbol == newItem.assetSymbol &&
-                    oldItem.assetUrl == newItem.assetUrl &&
-                    oldItem.assetIcon == newItem.assetIcon &&
-                    oldItem.mentionRead == newItem.mentionRead &&
-                    oldItem.content == newItem.content &&
-                    oldItem.isPin == newItem.isPin
-            }
-        }
-    }
-
     open class OnItemListener {
 
         open fun onSelect(isSelect: Boolean, messageItem: MessageItem, position: Int) {}
@@ -953,11 +712,55 @@ class ConversationAdapter(
         open fun onTranscriptClick(messageItem: MessageItem) {}
     }
 
-    fun addSelect(messageItem: MessageItem): Boolean {
-        return selectSet.add(messageItem)
+    var unreadMsgId: String? = null
+
+    override fun onCreateAttach(parent: ViewGroup): View =
+        LayoutInflater.from(parent.context).inflate(R.layout.item_chat_unread, parent, false)
+
+    override fun hasAttachView(position: Int): Boolean {
+        // Todo
+        return false
     }
 
-    fun removeSelect(messageItem: MessageItem): Boolean {
-        return selectSet.remove(selectSet.find { it.messageId == messageItem.messageId })
+    override fun onBindAttachView(view: View) {
+        unreadMsgId?.let {
+            ItemChatUnreadBinding.bind(view).unreadTv.text = view.context.getString(R.string.Unread_messages)
+        }
+    }
+
+    override fun isLast(position: Int): Boolean {
+        // Todo
+        return false
+    }
+
+    override fun isListLast(position: Int): Boolean {
+        // todo
+        return false
+    }
+
+    private fun isFirst(position: Int):Boolean {
+        // Todo
+        return false
+    }
+
+    private fun isSelect(position: Int):Boolean {
+        // Todo
+        return false
+    }
+
+    private  fun isRepresentative(messageItem: MessageItem): Boolean {
+        return false
+    }
+
+    override fun getHeaderId(position: Int): Long {
+        // todo
+        return 0
+    }
+
+    override fun onCreateHeaderViewHolder(parent: ViewGroup): TimeHolder =  TimeHolder(
+        ItemChatTimeBinding.inflate(LayoutInflater.from(parent.context), parent, false))
+
+    override fun onBindHeaderViewHolder(holder: TimeHolder?, position: Int) {
+        // Todo
     }
 }

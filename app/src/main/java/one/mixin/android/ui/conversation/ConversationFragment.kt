@@ -83,9 +83,7 @@ import one.mixin.android.databinding.DialogDeleteBinding
 import one.mixin.android.databinding.DialogForwardBinding
 import one.mixin.android.databinding.DialogImportMessageBinding
 import one.mixin.android.databinding.FragmentConversationBinding
-import one.mixin.android.databinding.ItemDemoBinding
 import one.mixin.android.databinding.ViewUrlBottomBinding
-import one.mixin.android.db.invalidater.InvalidateFlow
 import one.mixin.android.event.BlinkEvent
 import one.mixin.android.event.CallEvent
 import one.mixin.android.event.ExitEvent
@@ -203,6 +201,7 @@ import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.MusicPlayer
 import one.mixin.android.util.SINGLE_DB_THREAD
 import one.mixin.android.util.debug.debugLongClick
+import one.mixin.android.util.markdown.MarkwonUtil
 import one.mixin.android.util.mention.mentionDisplay
 import one.mixin.android.util.mention.mentionEnd
 import one.mixin.android.util.mention.mentionReplace
@@ -347,9 +346,14 @@ class ConversationFragment() :
 
     private var unreadTipCount: Int = 0
     private val conversationAdapter: ConversationAdapter by lazy {
-        ConversationAdapter(requireActivity(), keyword, onItemListener, isGroup, encryptCategory() != EncryptCategory.PLAIN, isBot).apply {
-            registerAdapterDataObserver(chatAdapterDataObserver)
-        }
+        ConversationAdapter(
+            null,
+            MarkwonUtil.getMiniMarkwon(requireActivity()),
+            onItemListener
+        )
+        // ConversationAdapter(requireActivity(), keyword, onItemListener, isGroup, encryptCategory() != EncryptCategory.PLAIN, isBot).apply {
+        //     registerAdapterDataObserver(chatAdapterDataObserver)
+        // }
     }
 
     private fun showPreview(uri: Uri, okText: String? = null, isVideo: Boolean, action: (Uri) -> Unit) {
@@ -359,7 +363,7 @@ class ConversationFragment() :
 
     fun updateConversationInfo(messageId: String?, keyword: String?, unreadCount: Int) {
         this.keyword = keyword
-        conversationAdapter.keyword = keyword
+        // conversationAdapter.keyword = keyword
         // val currentList = conversationAdapter.currentList
         // if (currentList != null) {
         //     (binding.chatRv.layoutManager as LinearLayoutManager).scrollToPosition(unreadCount)
@@ -473,131 +477,132 @@ class ConversationFragment() :
     }
 
     private fun checkPinMessage() {
-        if (conversationAdapter.selectSet.valueAt(0)?.canNotPin() == true) {
-            binding.toolView.pinIv.visibility = GONE
-        } else {
-            conversationAdapter.selectSet.valueAt(0)?.messageId?.let { messageId ->
-                lifecycleScope.launch {
-                    if (isGroup) {
-                        val role = withContext(Dispatchers.IO) {
-                            chatViewModel.findParticipantById(
-                                conversationId,
-                                Session.getAccountId()!!,
-                            )?.role
-                        }
-                        if (role != ParticipantRole.OWNER.name && role != ParticipantRole.ADMIN.name) {
-                            binding.toolView.pinIv.visibility = GONE
-                            return@launch
-                        }
-                    }
-                    val pinMessage = chatViewModel.findPinMessageById(messageId)
-                    if (pinMessage == null) {
-                        binding.toolView.pinIv.tag = PinAction.PIN
-                        binding.toolView.pinIv.setImageResource(R.drawable.ic_message_pin)
-                        binding.toolView.pinIv.visibility = VISIBLE
-                    } else {
-                        binding.toolView.pinIv.tag = PinAction.UNPIN
-                        binding.toolView.pinIv.setImageResource(R.drawable.ic_message_unpin)
-                        binding.toolView.pinIv.visibility = VISIBLE
-                    }
-                }
-            }
-        }
+        // if (conversationAdapter.selectSet.valueAt(0)?.canNotPin() == true) {
+        //     binding.toolView.pinIv.visibility = GONE
+        // } else {
+        //     conversationAdapter.selectSet.valueAt(0)?.messageId?.let { messageId ->
+        //         lifecycleScope.launch {
+        //             if (isGroup) {
+        //                 val role = withContext(Dispatchers.IO) {
+        //                     chatViewModel.findParticipantById(
+        //                         conversationId,
+        //                         Session.getAccountId()!!,
+        //                     )?.role
+        //                 }
+        //                 if (role != ParticipantRole.OWNER.name && role != ParticipantRole.ADMIN.name) {
+        //                     binding.toolView.pinIv.visibility = GONE
+        //                     return@launch
+        //                 }
+        //             }
+        //             val pinMessage = chatViewModel.findPinMessageById(messageId)
+        //             if (pinMessage == null) {
+        //                 binding.toolView.pinIv.tag = PinAction.PIN
+        //                 binding.toolView.pinIv.setImageResource(R.drawable.ic_message_pin)
+        //                 binding.toolView.pinIv.visibility = VISIBLE
+        //             } else {
+        //                 binding.toolView.pinIv.tag = PinAction.UNPIN
+        //                 binding.toolView.pinIv.setImageResource(R.drawable.ic_message_unpin)
+        //                 binding.toolView.pinIv.visibility = VISIBLE
+        //             }
+        //         }
+        //     }
+        // }
     }
 
     private val onItemListener: ConversationAdapter.OnItemListener by lazy {
         object : ConversationAdapter.OnItemListener() {
             @SuppressLint("NotifyDataSetChanged")
             override fun onSelect(isSelect: Boolean, messageItem: MessageItem, position: Int) {
-                if (isSelect) {
-                    conversationAdapter.addSelect(messageItem)
-                } else {
-                    conversationAdapter.removeSelect(messageItem)
-                }
-                binding.toolView.countTv.text = conversationAdapter.selectSet.size.toString()
-                when {
-                    conversationAdapter.selectSet.isEmpty() -> binding.toolView.fadeOut()
-                    conversationAdapter.selectSet.size == 1 -> {
-                        try {
-                            if (conversationAdapter.selectSet.valueAt(0)?.isText() == true) {
-                                binding.toolView.copyIv.visibility = VISIBLE
-                            } else {
-                                binding.toolView.copyIv.visibility = GONE
-                            }
-                        } catch (e: ArrayIndexOutOfBoundsException) {
-                            binding.toolView.copyIv.visibility = GONE
-                        }
-                        if (conversationAdapter.selectSet.valueAt(0)?.isData() == true) {
-                            binding.toolView.shareIv.visibility = VISIBLE
-                        } else {
-                            binding.toolView.shareIv.visibility = GONE
-                        }
-                        if (conversationAdapter.selectSet.valueAt(0)?.supportSticker() == true) {
-                            binding.toolView.addStickerIv.visibility = VISIBLE
-                        } else {
-                            binding.toolView.addStickerIv.visibility = GONE
-                        }
-                        if (conversationAdapter.selectSet.valueAt(0)?.canNotReply() == true) {
-                            binding.toolView.replyIv.visibility = GONE
-                        } else {
-                            binding.toolView.replyIv.visibility = VISIBLE
-                        }
-                        checkPinMessage()
-                    }
-                    else -> {
-                        binding.toolView.forwardIv.visibility = VISIBLE
-                        binding.toolView.replyIv.visibility = GONE
-                        binding.toolView.copyIv.visibility = GONE
-                        binding.toolView.addStickerIv.visibility = GONE
-                        binding.toolView.shareIv.visibility = GONE
-                        binding.toolView.pinIv.visibility = GONE
-                    }
-                }
-                if (conversationAdapter.selectSet.size > 99 || conversationAdapter.selectSet.any { it.canNotForward() }) {
-                    binding.toolView.forwardIv.visibility = GONE
-                } else {
-                    binding.toolView.forwardIv.visibility = VISIBLE
-                }
-                conversationAdapter.notifyDataSetChanged()
+                // if (isSelect) {
+                //     conversationAdapter.addSelect(messageItem)
+                // } else {
+                //     conversationAdapter.removeSelect(messageItem)
+                // }
+                // binding.toolView.countTv.text = conversationAdapter.selectSet.size.toString()
+                // when {
+                //     conversationAdapter.selectSet.isEmpty() -> binding.toolView.fadeOut()
+                //     conversationAdapter.selectSet.size == 1 -> {
+                //         try {
+                //             if (conversationAdapter.selectSet.valueAt(0)?.isText() == true) {
+                //                 binding.toolView.copyIv.visibility = VISIBLE
+                //             } else {
+                //                 binding.toolView.copyIv.visibility = GONE
+                //             }
+                //         } catch (e: ArrayIndexOutOfBoundsException) {
+                //             binding.toolView.copyIv.visibility = GONE
+                //         }
+                //         if (conversationAdapter.selectSet.valueAt(0)?.isData() == true) {
+                //             binding.toolView.shareIv.visibility = VISIBLE
+                //         } else {
+                //             binding.toolView.shareIv.visibility = GONE
+                //         }
+                //         if (conversationAdapter.selectSet.valueAt(0)?.supportSticker() == true) {
+                //             binding.toolView.addStickerIv.visibility = VISIBLE
+                //         } else {
+                //             binding.toolView.addStickerIv.visibility = GONE
+                //         }
+                //         if (conversationAdapter.selectSet.valueAt(0)?.canNotReply() == true) {
+                //             binding.toolView.replyIv.visibility = GONE
+                //         } else {
+                //             binding.toolView.replyIv.visibility = VISIBLE
+                //         }
+                //         checkPinMessage()
+                //     }
+                //     else -> {
+                //         binding.toolView.forwardIv.visibility = VISIBLE
+                //         binding.toolView.replyIv.visibility = GONE
+                //         binding.toolView.copyIv.visibility = GONE
+                //         binding.toolView.addStickerIv.visibility = GONE
+                //         binding.toolView.shareIv.visibility = GONE
+                //         binding.toolView.pinIv.visibility = GONE
+                //     }
+                // }
+                // if (conversationAdapter.selectSet.size > 99 || conversationAdapter.selectSet.any { it.canNotForward() }) {
+                //     binding.toolView.forwardIv.visibility = GONE
+                // } else {
+                //     binding.toolView.forwardIv.visibility = VISIBLE
+                // }
+                // conversationAdapter.notifyDataSetChanged()
             }
 
             @SuppressLint("NotifyDataSetChanged")
             override fun onLongClick(messageItem: MessageItem, position: Int): Boolean {
-                val b = conversationAdapter.addSelect(messageItem)
-                binding.toolView.countTv.text = conversationAdapter.selectSet.size.toString()
-                if (b) {
-                    if (messageItem.isText()) {
-                        binding.toolView.copyIv.visibility = VISIBLE
-                    } else {
-                        binding.toolView.copyIv.visibility = GONE
-                    }
-                    if (messageItem.isData()) {
-                        binding.toolView.shareIv.visibility = VISIBLE
-                    } else {
-                        binding.toolView.shareIv.visibility = GONE
-                    }
-
-                    if (messageItem.supportSticker()) {
-                        binding.toolView.addStickerIv.visibility = VISIBLE
-                    } else {
-                        binding.toolView.addStickerIv.visibility = GONE
-                    }
-
-                    if (conversationAdapter.selectSet.any { it.canNotForward() }) {
-                        binding.toolView.forwardIv.visibility = GONE
-                    } else {
-                        binding.toolView.forwardIv.visibility = VISIBLE
-                    }
-                    if (conversationAdapter.selectSet.any { it.canNotReply() }) {
-                        binding.toolView.replyIv.visibility = GONE
-                    } else {
-                        binding.toolView.replyIv.visibility = VISIBLE
-                    }
-                    checkPinMessage()
-                    conversationAdapter.notifyDataSetChanged()
-                    binding.toolView.fadeIn()
-                }
-                return b
+                // val b = conversationAdapter.addSelect(messageItem)
+                // binding.toolView.countTv.text = conversationAdapter.selectSet.size.toString()
+                // if (b) {
+                //     if (messageItem.isText()) {
+                //         binding.toolView.copyIv.visibility = VISIBLE
+                //     } else {
+                //         binding.toolView.copyIv.visibility = GONE
+                //     }
+                //     if (messageItem.isData()) {
+                //         binding.toolView.shareIv.visibility = VISIBLE
+                //     } else {
+                //         binding.toolView.shareIv.visibility = GONE
+                //     }
+                //
+                //     if (messageItem.supportSticker()) {
+                //         binding.toolView.addStickerIv.visibility = VISIBLE
+                //     } else {
+                //         binding.toolView.addStickerIv.visibility = GONE
+                //     }
+                //
+                //     if (conversationAdapter.selectSet.any { it.canNotForward() }) {
+                //         binding.toolView.forwardIv.visibility = GONE
+                //     } else {
+                //         binding.toolView.forwardIv.visibility = VISIBLE
+                //     }
+                //     if (conversationAdapter.selectSet.any { it.canNotReply() }) {
+                //         binding.toolView.replyIv.visibility = GONE
+                //     } else {
+                //         binding.toolView.replyIv.visibility = VISIBLE
+                //     }
+                //     checkPinMessage()
+                //     conversationAdapter.notifyDataSetChanged()
+                //     binding.toolView.fadeIn()
+                // }
+                // return b
+                return true
             }
 
             @SuppressLint("MissingPermission")
@@ -1184,15 +1189,15 @@ class ConversationFragment() :
             .observeOn(AndroidSchedulers.mainThread())
             .autoDispose(pauseScope)
             .subscribe { event ->
-                if (conversationAdapter.selectSet.any { it.messageId == event.messageId }) {
-                    closeTool()
-                }
-                binding.chatControl.replyView.messageItem?.let {
-                    if (it.messageId == event.messageId) {
-                        binding.chatControl.replyView.animateHeight(53.dp, 0)
-                        binding.chatControl.replyView.messageItem = null
-                    }
-                }
+                // if (conversationAdapter.selectSet.any { it.messageId == event.messageId }) {
+                //     closeTool()
+                // }
+                // binding.chatControl.replyView.messageItem?.let {
+                //     if (it.messageId == event.messageId) {
+                //         binding.chatControl.replyView.animateHeight(53.dp, 0)
+                //         binding.chatControl.replyView.messageItem = null
+                //     }
+                // }
             }
     }
 
@@ -1302,7 +1307,8 @@ class ConversationFragment() :
         audioFile?.deleteOnExit()
         audioFile = null
         if (isAdded) {
-            conversationAdapter.unregisterAdapterDataObserver(chatAdapterDataObserver)
+            // Todo
+            // conversationAdapter.unregisterAdapterDataObserver(chatAdapterDataObserver)
         }
         super.onDestroyView()
     }
@@ -1381,76 +1387,20 @@ class ConversationFragment() :
 
     @SuppressLint("NotifyDataSetChanged")
     private fun closeTool() {
-        conversationAdapter.selectSet.clear()
-        if (!binding.chatRv.isComputingLayout) {
-            conversationAdapter.notifyDataSetChanged()
-        }
-        binding.toolView.fadeOut()
+        // conversationAdapter.selectSet.clear()
+        // if (!binding.chatRv.isComputingLayout) {
+        //     conversationAdapter.notifyDataSetChanged()
+        // }
+        // binding.toolView.fadeOut()
     }
 
     private fun markRead() {
-        conversationAdapter.markRead()
+        // conversationAdapter.markRead()
     }
 
     private var firstPosition = 0
 
-    private val demoAdapter = object : PagingDataAdapter<MessageItem, DemoHolder>(
-        object : DiffUtil.ItemCallback<MessageItem>() {
-            override fun areItemsTheSame(oldItem: MessageItem, newItem: MessageItem): Boolean {
-                return oldItem.messageId == newItem.messageId
-            }
-
-            override fun areContentsTheSame(
-                oldItem: MessageItem,
-                newItem: MessageItem,
-            ): Boolean {
-                return oldItem.mediaStatus == newItem.mediaStatus &&
-                    oldItem.type == newItem.type &&
-                    oldItem.status == newItem.status &&
-                    oldItem.userFullName == newItem.userFullName &&
-                    oldItem.participantFullName == newItem.participantFullName &&
-                    oldItem.sharedUserFullName == newItem.sharedUserFullName &&
-                    oldItem.mediaSize == newItem.mediaSize &&
-                    oldItem.quoteContent == newItem.quoteContent &&
-                    oldItem.assetSymbol == newItem.assetSymbol &&
-                    oldItem.assetUrl == newItem.assetUrl &&
-                    oldItem.assetIcon == newItem.assetIcon &&
-                    oldItem.mentionRead == newItem.mentionRead &&
-                    oldItem.content == newItem.content &&
-                    oldItem.isPin == newItem.isPin
-            }
-        },
-    ) {
-        override fun onBindViewHolder(holder: DemoHolder, position: Int) {
-            val item = getItem(position)
-            (holder.itemView as TextView).text = item?.content
-            holder.itemView.setOnClickListener {
-                toast("Click ${item?.messageId}")
-                val quoteMessageId = item?.quoteId ?: return@setOnClickListener
-                lifecycleScope.launch {
-                    val position = chatViewModel.getPositionFromMessageId(conversationId, quoteMessageId)
-                    if (position != null) {
-                        (binding.demoRv.layoutManager as LinearLayoutManager).scrollToPositionWithOffset(
-                            position,
-                            binding.demoRv.measuredHeight * 1 / 4,
-                        )
-                    }
-                }
-            }
-        }
-
-        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): DemoHolder {
-            return DemoHolder(ItemDemoBinding.inflate(LayoutInflater.from(parent.context), parent, false))
-        }
-    }
-
-    class DemoHolder(itemView: ItemDemoBinding) : RecyclerView.ViewHolder(itemView.root)
     private fun initView() {
-        binding.demoRv.adapter = demoAdapter
-        binding.demoRv.itemAnimator = null
-        chatViewModel.getMessageDemo(conversationId).observe(viewLifecycleOwner) {
-            demoAdapter.submitData(lifecycle, it)
-        }
         binding.inputLayout.backgroundImage = WallpaperManager.getWallpaper(requireContext())
         // binding.chatRv.visibility = INVISIBLE
         if (binding.chatRv.adapter == null) {
@@ -1572,12 +1522,12 @@ class ConversationFragment() :
             }
         }
         binding.toolView.deleteIv.setOnClickListener {
-            conversationAdapter.selectSet.filter { it.isAudio() }.forEach {
-                if (AudioPlayer.isPlay(it.messageId)) {
-                    AudioPlayer.pause()
-                }
-            }
-            deleteMessage(conversationAdapter.selectSet.toList())
+            // conversationAdapter.selectSet.filter { it.isAudio() }.forEach {
+            //     if (AudioPlayer.isPlay(it.messageId)) {
+            //         AudioPlayer.pause()
+            //     }
+            // }
+            // deleteMessage(conversationAdapter.selectSet.toList())
             closeTool()
         }
         binding.chatControl.replyView.replyCloseIv.setOnClickListener {
@@ -1586,9 +1536,9 @@ class ConversationFragment() :
         }
         binding.toolView.copyIv.setOnClickListener {
             try {
-                context?.getClipboardManager()?.setPrimaryClip(
-                    ClipData.newPlainText(null, conversationAdapter.selectSet.valueAt(0)?.content),
-                )
+                // context?.getClipboardManager()?.setPrimaryClip(
+                //     ClipData.newPlainText(null, conversationAdapter.selectSet.valueAt(0)?.content),
+                // )
                 toast(R.string.copied_to_clipboard)
             } catch (_: ArrayIndexOutOfBoundsException) {
             }
@@ -1598,98 +1548,98 @@ class ConversationFragment() :
             showForwardDialog()
         }
         binding.toolView.addStickerIv.setOnClickListener {
-            if (conversationAdapter.selectSet.isEmpty()) {
-                return@setOnClickListener
-            }
-            val messageItem = conversationAdapter.selectSet.valueAt(0)
-            messageItem?.let { m ->
-                if (messageItem.isSticker() && m.stickerId != null) {
-                    addSticker(m)
-                } else if (messageItem.isImage()) {
-                    val url = m.absolutePath(requireContext())
-                    url?.let {
-                        val uri = url.toUri()
-                        val mimeType = getMimeType(uri, true)
-                        if (mimeType?.isStickerSupport() == true) {
-                            StickerActivity.show(requireContext(), url = it, showAdd = true)
-                            closeTool()
-                        } else {
-                            toast(R.string.Invalid_sticker_format)
-                        }
-                    }
-                }
-            }
+            // if (conversationAdapter.selectSet.isEmpty()) {
+            //     return@setOnClickListener
+            // }
+            // val messageItem = conversationAdapter.selectSet.valueAt(0)
+            // messageItem?.let { m ->
+            //     if (messageItem.isSticker() && m.stickerId != null) {
+            //         addSticker(m)
+            //     } else if (messageItem.isImage()) {
+            //         val url = m.absolutePath(requireContext())
+            //         url?.let {
+            //             val uri = url.toUri()
+            //             val mimeType = getMimeType(uri, true)
+            //             if (mimeType?.isStickerSupport() == true) {
+            //                 StickerActivity.show(requireContext(), url = it, showAdd = true)
+            //                 closeTool()
+            //             } else {
+            //                 toast(R.string.Invalid_sticker_format)
+            //             }
+            //         }
+            //     }
+            // }
         }
 
         binding.toolView.replyIv.setOnClickListener {
-            if (conversationAdapter.selectSet.isEmpty()) {
-                return@setOnClickListener
-            }
-            conversationAdapter.selectSet.valueAt(0)?.let {
-                binding.chatControl.replyView.bind(it)
-            }
+            // if (conversationAdapter.selectSet.isEmpty()) {
+            //     return@setOnClickListener
+            // }
+            // conversationAdapter.selectSet.valueAt(0)?.let {
+            //     binding.chatControl.replyView.bind(it)
+            // }
             displayReplyView()
             closeTool()
         }
 
         binding.toolView.pinIv.setOnClickListener {
-            val pinMessages = conversationAdapter.selectSet.map {
-                PinMessageData(it.messageId, it.conversationId, requireNotNull(it.type), it.content, nowInUtc())
-            }
-            val action = (binding.toolView.pinIv.tag as PinAction?) ?: PinAction.PIN
-            if (pinMessages.isEmpty()) {
-                return@setOnClickListener
-            }
-            lifecycleScope.launch {
-                chatViewModel.sendPinMessage(
-                    conversationId,
-                    sender,
-                    (binding.toolView.pinIv.tag as PinAction?) ?: PinAction.PIN,
-                    pinMessages,
-                )
-                toast(
-                    if (action == PinAction.PIN) {
-                        R.string.Message_pinned
-                    } else {
-                        R.string.Message_unpinned
-                    },
-                )
-                closeTool()
-            }
+            // val pinMessages = conversationAdapter.selectSet.map {
+            //     PinMessageData(it.messageId, it.conversationId, requireNotNull(it.type), it.content, nowInUtc())
+            // }
+            // val action = (binding.toolView.pinIv.tag as PinAction?) ?: PinAction.PIN
+            // if (pinMessages.isEmpty()) {
+            //     return@setOnClickListener
+            // }
+            // lifecycleScope.launch {
+            //     chatViewModel.sendPinMessage(
+            //         conversationId,
+            //         sender,
+            //         (binding.toolView.pinIv.tag as PinAction?) ?: PinAction.PIN,
+            //         pinMessages,
+            //     )
+            //     toast(
+            //         if (action == PinAction.PIN) {
+            //             R.string.Message_pinned
+            //         } else {
+            //             R.string.Message_unpinned
+            //         },
+            //     )
+            //     closeTool()
+            // }
         }
         binding.toolView.shareIv.setOnClickListener {
-            val messageItem = conversationAdapter.selectSet.valueAt(0)
-            Intent().apply {
-                var uri: Uri? = try {
-                    messageItem?.absolutePath()?.toUri()
-                } catch (e: NullPointerException) {
-                    null
-                }
-                if (messageItem == null || uri == null || uri.path == null) {
-                    closeTool()
-                    return@setOnClickListener
-                }
-                if (ContentResolver.SCHEME_CONTENT != uri.scheme) {
-                    uri = requireContext().getUriForFile(File(uri.path!!))
-                }
-                action = Intent.ACTION_SEND
-                putExtra(Intent.EXTRA_STREAM, uri)
-                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-                val extraMimeTypes = arrayOf("text/plain", "audio/*", "image/*", "video/*")
-                putExtra(Intent.EXTRA_MIME_TYPES, extraMimeTypes)
-                type = "application/*"
-
-                val resInfoList = requireContext().packageManager.queryIntentActivities(this, PackageManager.MATCH_DEFAULT_ONLY)
-                for (resolveInfo in resInfoList) {
-                    val packageName = resolveInfo.activityInfo.packageName
-                    requireContext().grantUriPermission(packageName, uri, Intent.FLAG_GRANT_READ_URI_PERMISSION)
-                }
-                try {
-                    startActivity(Intent.createChooser(this, messageItem.mediaName))
-                } catch (ignored: ActivityNotFoundException) {
-                }
-            }
-            closeTool()
+            // val messageItem = conversationAdapter.selectSet.valueAt(0)
+            // Intent().apply {
+            //     var uri: Uri? = try {
+            //         messageItem?.absolutePath()?.toUri()
+            //     } catch (e: NullPointerException) {
+            //         null
+            //     }
+            //     if (messageItem == null || uri == null || uri.path == null) {
+            //         closeTool()
+            //         return@setOnClickListener
+            //     }
+            //     if (ContentResolver.SCHEME_CONTENT != uri.scheme) {
+            //         uri = requireContext().getUriForFile(File(uri.path!!))
+            //     }
+            //     action = Intent.ACTION_SEND
+            //     putExtra(Intent.EXTRA_STREAM, uri)
+            //     addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            //     val extraMimeTypes = arrayOf("text/plain", "audio/*", "image/*", "video/*")
+            //     putExtra(Intent.EXTRA_MIME_TYPES, extraMimeTypes)
+            //     type = "application/*"
+            //
+            //     val resInfoList = requireContext().packageManager.queryIntentActivities(this, PackageManager.MATCH_DEFAULT_ONLY)
+            //     for (resolveInfo in resInfoList) {
+            //         val packageName = resolveInfo.activityInfo.packageName
+            //         requireContext().grantUriPermission(packageName, uri, Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            //     }
+            //     try {
+            //         startActivity(Intent.createChooser(this, messageItem.mediaName))
+            //     } catch (ignored: ActivityNotFoundException) {
+            //     }
+            // }
+            // closeTool()
         }
 
         binding.groupDesc.movementMethod = LinkMovementMethod()
@@ -1771,9 +1721,9 @@ class ConversationFragment() :
                             Timber.w(e)
                         }
                         if (position >= 0) {
-                            conversationAdapter.getMessageItem(position)?.let {
-                                binding.chatControl.replyView.bind(it)
-                            }
+                            // conversationAdapter.getMessageItem(position)?.let {
+                            //     binding.chatControl.replyView.bind(it)
+                            // }
 
                             displayReplyView()
                             closeTool()
@@ -1898,69 +1848,72 @@ class ConversationFragment() :
     }
 
     private fun liveDataMessage(unreadCount: Int, unreadMessageId: String?) {
-        var oldCount: Int = -1
-        var firstReturn = true
-        chatViewModel.getMessages(conversationId, unreadCount) {
-            val computableLiveData = it
-            lifecycleScope.launch {
-                InvalidateFlow.collect(
-                    { !viewDestroyed() && this@ConversationFragment.conversationId == conversationId },
-                    {
-                        computableLiveData.invalidate()
-                    },
-                )
-            }
-        }.observe(
-            viewLifecycleOwner,
-        ) { pagingData ->
-            if (Session.getAccount() == null) return@observe
-            val itemSize = conversationAdapter.getRealItemCount()
-            if (oldCount == -1) {
-                oldCount = itemSize
-            } else if (!isFirstLoad && !isBottom && itemSize > oldCount) {
-                if (firstReturn) {
-                    firstReturn = false
-                } else { // The size returned the second time is the real data.
-                    unreadTipCount += (itemSize - oldCount)
-                }
-                oldCount = itemSize
-            } else if (isBottom) {
-                unreadTipCount = 0
-                oldCount = itemSize
-            }
-            chatViewModel.viewModelScope.launch {
-                conversationAdapter.hasBottomView =
-                    recipient?.relationship == UserRelationship.STRANGER.name && chatViewModel.isSilence(
-                        conversationId,
-                        sender.userId,
-                    )
-            }
-            if (isFirstLoad && messageId == null && unreadCount > 0) {
-                conversationAdapter.unreadMsgId = unreadMessageId
-            } else if (lastReadMessage != null) {
-                chatViewModel.viewModelScope.launch {
-                    lastReadMessage?.let { id ->
-                        val unreadMsgId = chatViewModel.findUnreadMessageByMessageId(
-                            conversationId,
-                            sender.userId,
-                            id,
-                        )
-                        if (unreadMsgId != null) {
-                            conversationAdapter.unreadMsgId = unreadMsgId
-                            lastReadMessage = null
-                        }
-                    }
-                }
-            }
-            if (itemSize > 0) {
-                if (isFirstMessage) {
-                    isFirstMessage = false
-                }
-            }
-            conversationAdapter.submitData(lifecycle, pagingData)
-            chatViewModel.markMessageRead(conversationId, (activity as? BubbleActivity)?.isBubbled == true)
-            chatRoomHelper.markMessageRead(conversationId)
+        chatViewModel.getMessageDemo(conversationId).observe(viewLifecycleOwner){
+            conversationAdapter.submitData(lifecycle, it)
         }
+        // var oldCount: Int = -1
+        // var firstReturn = true
+        // chatViewModel.getMessages(conversationId, unreadCount) {
+        //     val computableLiveData = it
+        //     lifecycleScope.launch {
+        //         InvalidateFlow.collect(
+        //             { !viewDestroyed() && this@ConversationFragment.conversationId == conversationId },
+        //             {
+        //                 computableLiveData.invalidate()
+        //             },
+        //         )
+        //     }
+        // }.observe(
+        //     viewLifecycleOwner,
+        // ) { pagingData ->
+            // if (Session.getAccount() == null) return@observe
+            // val itemSize = conversationAdapter.getRealItemCount()
+            // if (oldCount == -1) {
+            //     oldCount = itemSize
+            // } else if (!isFirstLoad && !isBottom && itemSize > oldCount) {
+            //     if (firstReturn) {
+            //         firstReturn = false
+            //     } else { // The size returned the second time is the real data.
+            //         unreadTipCount += (itemSize - oldCount)
+            //     }
+            //     oldCount = itemSize
+            // } else if (isBottom) {
+            //     unreadTipCount = 0
+            //     oldCount = itemSize
+            // }
+            // chatViewModel.viewModelScope.launch {
+            //     conversationAdapter.hasBottomView =
+            //         recipient?.relationship == UserRelationship.STRANGER.name && chatViewModel.isSilence(
+            //             conversationId,
+            //             sender.userId,
+            //         )
+            // }
+            // if (isFirstLoad && messageId == null && unreadCount > 0) {
+            //     conversationAdapter.unreadMsgId = unreadMessageId
+            // } else if (lastReadMessage != null) {
+            //     chatViewModel.viewModelScope.launch {
+            //         lastReadMessage?.let { id ->
+            //             val unreadMsgId = chatViewModel.findUnreadMessageByMessageId(
+            //                 conversationId,
+            //                 sender.userId,
+            //                 id,
+            //             )
+            //             if (unreadMsgId != null) {
+            //                 conversationAdapter.unreadMsgId = unreadMsgId
+            //                 lastReadMessage = null
+            //             }
+            //         }
+            //     }
+            // }
+            // if (itemSize > 0) {
+            //     if (isFirstMessage) {
+            //         isFirstMessage = false
+            //     }
+            // }
+            // conversationAdapter.submitData(lifecycle, pagingData)
+            // chatViewModel.markMessageRead(conversationId, (activity as? BubbleActivity)?.isBubbled == true)
+            // chatRoomHelper.markMessageRead(conversationId)
+        // }
     }
 
     private var unreadCount = 0
@@ -2311,7 +2264,7 @@ class ConversationFragment() :
     }
 
     private fun renderUser(user: User) {
-        conversationAdapter.recipient = user
+        // conversationAdapter.recipient = user
         renderUserInfo(user)
         chatViewModel.findUserById(user.userId).observe(
             viewLifecycleOwner,
@@ -2705,80 +2658,80 @@ class ConversationFragment() :
         messageId: String,
         findMessageAction: ((index: Int) -> Unit)? = null,
     ) = lifecycleScope.launch {
-        if (viewDestroyed()) return@launch
-
-        val index = chatViewModel.findMessageIndex(conversationId, messageId)
-        if (index < 0) {
-            toast(R.string.Data_loading)
-            return@launch
-        } else if (index >= conversationAdapter.itemCount) {
-            chatViewModel.refreshCountByConversationId(conversationId)
-            toast(R.string.Data_loading)
-            InvalidateFlow.emit(conversationId)
-            return@launch
-        }
-        findMessageAction?.invoke(index)
-        if (index == 0) {
-            scrollTo(
-                0,
-                binding.chatRv.measuredHeight * 3 / 4,
-                action = {
-                    mainThreadDelayed(
-                        {
-                            RxBus.publish(BlinkEvent(messageId))
-                        },
-                        60,
-                    )
-                },
-            )
-        } else {
-            conversationAdapter.loadAround(index)
-            if (conversationAdapter.getMessageItem(index)?.messageId != messageId) {
-                chatViewModel.refreshCountByConversationId(conversationId)
-                toast(R.string.Data_loading)
-                InvalidateFlow.emit(conversationId)
-                return@launch
-            }
-            if (index == conversationAdapter.itemCount - 1) {
-                scrollTo(
-                    index,
-                    0,
-                    action = {
-                        mainThreadDelayed(
-                            {
-                                RxBus.publish(BlinkEvent(messageId))
-                            },
-                            60,
-                        )
-                    },
-                )
-            } else {
-                val lm = (binding.chatRv.layoutManager as LinearLayoutManager)
-                val lastPosition = lm.findLastCompletelyVisibleItemPosition()
-                val firstPosition = lm.findFirstVisibleItemPosition()
-                if (index in firstPosition..lastPosition) {
-                    mainThreadDelayed(
-                        {
-                            RxBus.publish(BlinkEvent(messageId))
-                        },
-                        60,
-                    )
-                } else {
-                    scrollTo(
-                        index + 1,
-                        binding.chatRv.measuredHeight * 3 / 4,
-                        action = {
-                            mainThreadDelayed(
-                                {
-                                    RxBus.publish(BlinkEvent(messageId))
-                                },
-                                60,
-                            )
-                        },
-                    )
-                }
-            }
-        }
+        // if (viewDestroyed()) return@launch
+        //
+        // val index = chatViewModel.findMessageIndex(conversationId, messageId)
+        // if (index < 0) {
+        //     toast(R.string.Data_loading)
+        //     return@launch
+        // } else if (index >= conversationAdapter.itemCount) {
+        //     chatViewModel.refreshCountByConversationId(conversationId)
+        //     toast(R.string.Data_loading)
+        //     InvalidateFlow.emit(conversationId)
+        //     return@launch
+        // }
+        // findMessageAction?.invoke(index)
+        // if (index == 0) {
+        //     scrollTo(
+        //         0,
+        //         binding.chatRv.measuredHeight * 3 / 4,
+        //         action = {
+        //             mainThreadDelayed(
+        //                 {
+        //                     RxBus.publish(BlinkEvent(messageId))
+        //                 },
+        //                 60,
+        //             )
+        //         },
+        //     )
+        // } else {
+        //     conversationAdapter.loadAround(index)
+        //     if (conversationAdapter.getMessageItem(index)?.messageId != messageId) {
+        //         chatViewModel.refreshCountByConversationId(conversationId)
+        //         toast(R.string.Data_loading)
+        //         InvalidateFlow.emit(conversationId)
+        //         return@launch
+        //     }
+        //     if (index == conversationAdapter.itemCount - 1) {
+        //         scrollTo(
+        //             index,
+        //             0,
+        //             action = {
+        //                 mainThreadDelayed(
+        //                     {
+        //                         RxBus.publish(BlinkEvent(messageId))
+        //                     },
+        //                     60,
+        //                 )
+        //             },
+        //         )
+        //     } else {
+        //         val lm = (binding.chatRv.layoutManager as LinearLayoutManager)
+        //         val lastPosition = lm.findLastCompletelyVisibleItemPosition()
+        //         val firstPosition = lm.findFirstVisibleItemPosition()
+        //         if (index in firstPosition..lastPosition) {
+        //             mainThreadDelayed(
+        //                 {
+        //                     RxBus.publish(BlinkEvent(messageId))
+        //                 },
+        //                 60,
+        //             )
+        //         } else {
+        //             scrollTo(
+        //                 index + 1,
+        //                 binding.chatRv.measuredHeight * 3 / 4,
+        //                 action = {
+        //                     mainThreadDelayed(
+        //                         {
+        //                             RxBus.publish(BlinkEvent(messageId))
+        //                         },
+        //                         60,
+        //                     )
+        //                 },
+        //             )
+        //         }
+        //     }
+        // }
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -3207,19 +3160,19 @@ class ConversationFragment() :
     private fun checkTranscript() {
         transcriptData?.let { _ ->
             fun check() {
-                transcriptDialog?.dismiss()
-                val transcriptDialogLayoutBinding = generateTranscriptDialogLayout()
-                transcriptDialog = alertDialogBuilder()
-                    .setMessage(getString(R.string.chat_import_content, groupName ?: conversationAdapter.recipient?.fullName ?: ""))
-                    .setView(transcriptDialogLayoutBinding.root)
-                    .create()
-                transcriptDialogLayoutBinding.importChat.setOnClickListener {
-                    transcriptDialog?.dismiss()
-                }
-                transcriptDialogLayoutBinding.sendChat.setOnClickListener {
-                    transcriptDialog?.dismiss()
-                }
-                transcriptDialog?.show()
+                // transcriptDialog?.dismiss()
+                // val transcriptDialogLayoutBinding = generateTranscriptDialogLayout()
+                // transcriptDialog = alertDialogBuilder()
+                //     .setMessage(getString(R.string.chat_import_content, groupName ?: conversationAdapter.recipient?.fullName ?: ""))
+                //     .setView(transcriptDialogLayoutBinding.root)
+                //     .create()
+                // transcriptDialogLayoutBinding.importChat.setOnClickListener {
+                //     transcriptDialog?.dismiss()
+                // }
+                // transcriptDialogLayoutBinding.sendChat.setOnClickListener {
+                //     transcriptDialog?.dismiss()
+                // }
+                // transcriptDialog?.show()
             }
 
             if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
@@ -3250,65 +3203,65 @@ class ConversationFragment() :
     }
 
     private fun showForwardDialog() {
-        forwardDialog?.dismiss()
-        val unShareable = conversationAdapter.selectSet.find { it.isShareable() == false }
-        if (unShareable != null) {
-            toast(
-                when {
-                    unShareable.isLive() -> R.string.live_shareable_false
-                    unShareable.isAppCard() -> R.string.app_card_shareable_false
-                    else -> R.string.message_shareable_false
-                },
-            )
-            return
-        }
-        if (conversationAdapter.selectSet.size == 1) {
-            forward()
-        } else {
-            val forwardDialogLayoutBinding = generateForwardDialogLayout()
-            forwardDialog = alertDialogBuilder()
-                .setMessage(getString(R.string.Forward_message))
-                .setView(forwardDialogLayoutBinding.root)
-                .create()
-            forwardDialogLayoutBinding.forward.setOnClickListener {
-                forward()
-                forwardDialog?.dismiss()
-            }
-            // disable combine transcript
-            forwardDialogLayoutBinding.combineForward.isVisible = !conversationAdapter.selectSet.any { it.isTranscript() }
-            forwardDialogLayoutBinding.combineForward.setOnClickListener {
-                combineForward()
-                forwardDialog?.dismiss()
-            }
-            forwardDialog?.show()
-        }
+        // forwardDialog?.dismiss()
+        // val unShareable = conversationAdapter.selectSet.find { it.isShareable() == false }
+        // if (unShareable != null) {
+        //     toast(
+        //         when {
+        //             unShareable.isLive() -> R.string.live_shareable_false
+        //             unShareable.isAppCard() -> R.string.app_card_shareable_false
+        //             else -> R.string.message_shareable_false
+        //         },
+        //     )
+        //     return
+        // }
+        // if (conversationAdapter.selectSet.size == 1) {
+        //     forward()
+        // } else {
+        //     val forwardDialogLayoutBinding = generateForwardDialogLayout()
+        //     forwardDialog = alertDialogBuilder()
+        //         .setMessage(getString(R.string.Forward_message))
+        //         .setView(forwardDialogLayoutBinding.root)
+        //         .create()
+        //     forwardDialogLayoutBinding.forward.setOnClickListener {
+        //         forward()
+        //         forwardDialog?.dismiss()
+        //     }
+        //     // disable combine transcript
+        //     forwardDialogLayoutBinding.combineForward.isVisible = !conversationAdapter.selectSet.any { it.isTranscript() }
+        //     forwardDialogLayoutBinding.combineForward.setOnClickListener {
+        //         combineForward()
+        //         forwardDialog?.dismiss()
+        //     }
+        //     forwardDialog?.show()
+        // }
     }
 
     private fun forward() {
         lifecycleScope.launch {
-            val list = chatViewModel.getSortMessagesByIds(conversationAdapter.selectSet)
-            getForwardResult.launch(Pair(list, null))
+            // val list = chatViewModel.getSortMessagesByIds(conversationAdapter.selectSet)
+            // getForwardResult.launch(Pair(list, null))
             closeTool()
         }
     }
 
     private fun combineForward() {
         lifecycleScope.launch {
-            val transcriptId = UUID.randomUUID().toString()
-            val messages = conversationAdapter.selectSet.filter { m -> !m.canNotForward() }
-                .sortedWith(compareBy { it.createdAt })
-                .map { it.toTranscript(transcriptId) }
-            val nonExistent = withContext(Dispatchers.IO) {
-                messages.filter { m -> m.isAttachment() }
-                    .mapNotNull { m -> Uri.parse(m.absolutePath()).path }.any { path ->
-                        !File(path).exists()
-                    }
-            }
-            if (nonExistent) {
-                toast(R.string.File_does_not_exist)
-            } else if (messages.isNotEmpty()) {
-                getCombineForwardResult.launch(ArrayList(messages))
-            }
+            // val transcriptId = UUID.randomUUID().toString()
+            // val messages = conversationAdapter.selectSet.filter { m -> !m.canNotForward() }
+            //     .sortedWith(compareBy { it.createdAt })
+            //     .map { it.toTranscript(transcriptId) }
+            // val nonExistent = withContext(Dispatchers.IO) {
+            //     messages.filter { m -> m.isAttachment() }
+            //         .mapNotNull { m -> Uri.parse(m.absolutePath()).path }.any { path ->
+            //             !File(path).exists()
+            //         }
+            // }
+            // if (nonExistent) {
+            //     toast(R.string.File_does_not_exist)
+            // } else if (messages.isNotEmpty()) {
+            //     getCombineForwardResult.launch(ArrayList(messages))
+            // }
             closeTool()
         }
     }
