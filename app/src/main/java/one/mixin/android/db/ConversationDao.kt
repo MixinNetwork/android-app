@@ -268,8 +268,4 @@ interface ConversationDao : BaseDao<Conversation> {
 
     @Query("SELECT count(1) FROM conversations WHERE rowid > :rowId")
     fun countConversations(rowId: Long): Long
-
-    // Todo move file
-    @Query("SELECT count(1) FROM messages WHERE conversation_id = :conversationId AND created_at <= (SELECT created_at FROM messages WHERE id = :messageId) AND rowid< (SELECT rowid FROM messages WHERE id = :messageId)")
-    suspend fun getPositionFromMessageId(conversationId: String, messageId: String): Int?
 }

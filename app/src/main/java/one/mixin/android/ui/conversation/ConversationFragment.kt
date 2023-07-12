@@ -347,13 +347,14 @@ class ConversationFragment() :
     private var unreadTipCount: Int = 0
     private val conversationAdapter: ConversationAdapter by lazy {
         ConversationAdapter(
-            null,
+            keyword,
             MarkwonUtil.getMiniMarkwon(requireActivity()),
             onItemListener,
+            isGroup = isGroup,
+            isSecret = encryptCategory() != EncryptCategory.PLAIN,
+            isBot = isBot
         )
-        // ConversationAdapter(requireActivity(), keyword, onItemListener, isGroup, encryptCategory() != EncryptCategory.PLAIN, isBot).apply {
-        //     registerAdapterDataObserver(chatAdapterDataObserver)
-        // }
+
     }
 
     private fun showPreview(uri: Uri, okText: String? = null, isVideo: Boolean, action: (Uri) -> Unit) {
@@ -3060,19 +3061,19 @@ class ConversationFragment() :
     private fun checkTranscript() {
         transcriptData?.let { _ ->
             fun check() {
-                // transcriptDialog?.dismiss()
-                // val transcriptDialogLayoutBinding = generateTranscriptDialogLayout()
-                // transcriptDialog = alertDialogBuilder()
-                //     .setMessage(getString(R.string.chat_import_content, groupName ?: conversationAdapter.recipient?.fullName ?: ""))
-                //     .setView(transcriptDialogLayoutBinding.root)
-                //     .create()
-                // transcriptDialogLayoutBinding.importChat.setOnClickListener {
-                //     transcriptDialog?.dismiss()
-                // }
-                // transcriptDialogLayoutBinding.sendChat.setOnClickListener {
-                //     transcriptDialog?.dismiss()
-                // }
-                // transcriptDialog?.show()
+                transcriptDialog?.dismiss()
+                val transcriptDialogLayoutBinding = generateTranscriptDialogLayout()
+                transcriptDialog = alertDialogBuilder()
+                    .setMessage(getString(R.string.chat_import_content, groupName ?: conversationAdapter.recipient?.fullName ?: ""))
+                    .setView(transcriptDialogLayoutBinding.root)
+                    .create()
+                transcriptDialogLayoutBinding.importChat.setOnClickListener {
+                    transcriptDialog?.dismiss()
+                }
+                transcriptDialogLayoutBinding.sendChat.setOnClickListener {
+                    transcriptDialog?.dismiss()
+                }
+                transcriptDialog?.show()
             }
 
             if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {

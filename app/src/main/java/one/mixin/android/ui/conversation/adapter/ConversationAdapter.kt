@@ -43,6 +43,7 @@ import one.mixin.android.databinding.ItemChatWaitingBinding
 import one.mixin.android.extension.hashForDate
 import one.mixin.android.extension.isSameDay
 import one.mixin.android.extension.notNullWithElse
+import one.mixin.android.session.Session
 import one.mixin.android.ui.conversation.holder.ActionCardHolder
 import one.mixin.android.ui.conversation.holder.ActionHolder
 import one.mixin.android.ui.conversation.holder.AudioHolder
@@ -82,6 +83,7 @@ import one.mixin.android.vo.AppCardData
 import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.MessageStatus
+import one.mixin.android.vo.User
 import one.mixin.android.vo.isAudio
 import one.mixin.android.vo.isCallMessage
 import one.mixin.android.vo.isContact
@@ -104,6 +106,8 @@ class ConversationAdapter(
     var keyword: String?,
     private val miniMarkwon: Markwon,
     private val onItemListener: OnItemListener,
+    private val isGroup: Boolean,
+    private val isSecret: Boolean = true,
     private val isBot: Boolean = false,
 ) : PagingDataAdapter<MessageItem, RecyclerView.ViewHolder>(diffCallback = diffCallback), MixinStickyRecyclerHeadersAdapter<TimeHolder> {
     companion object {
@@ -165,6 +169,8 @@ class ConversationAdapter(
             }
         }
     }
+
+    var recipient: User? = null
 
     override fun onViewAttachedToWindow(holder: RecyclerView.ViewHolder) {
         getMessageItem(holder.layoutPosition)?.let { messageItem ->
@@ -780,9 +786,9 @@ class ConversationAdapter(
         }
     }
 
+
     private fun isRepresentative(messageItem: MessageItem): Boolean {
-        // Todo
-        return false
+        return isBot && recipient?.userId != messageItem.userId && messageItem.userId != Session.getAccountId()
     }
 
     // Floating time header
