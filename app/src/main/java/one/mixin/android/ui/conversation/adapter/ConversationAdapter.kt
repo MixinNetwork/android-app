@@ -75,6 +75,9 @@ import one.mixin.android.ui.conversation.holder.UnknownHolder
 import one.mixin.android.ui.conversation.holder.VideoHolder
 import one.mixin.android.ui.conversation.holder.VideoQuoteHolder
 import one.mixin.android.ui.conversation.holder.WaitingHolder
+import one.mixin.android.ui.conversation.holder.base.BaseMentionHolder
+import one.mixin.android.ui.conversation.holder.base.BaseViewHolder
+import one.mixin.android.ui.conversation.holder.base.Terminable
 import one.mixin.android.vo.AppCardData
 import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.MessageItem
@@ -163,7 +166,21 @@ class ConversationAdapter(
         }
     }
 
-    var selectSet: ArraySet<MessageItem> = ArraySet()
+    override fun onViewAttachedToWindow(holder: RecyclerView.ViewHolder) {
+        getMessageItem(holder.layoutPosition)?.let { messageItem ->
+            (holder as BaseViewHolder).listen(holder.itemView, messageItem.messageId)
+            if (holder is BaseMentionHolder) {
+                holder.onViewAttachedToWindow()
+            }
+            if (holder is Terminable) {
+                holder.onRead(messageItem.messageId, messageItem.expireIn, messageItem.expireAt)
+            }
+        }
+    }
+
+    override fun onViewDetachedFromWindow(holder: RecyclerView.ViewHolder) {
+        (holder as BaseViewHolder).stopListen()
+    }
 
     private fun getItemType(messageItem: MessageItem?): Int =
         messageItem.notNullWithElse(
@@ -763,19 +780,12 @@ class ConversationAdapter(
         }
     }
 
-    private fun isSelect(position: Int): Boolean {
-        return if (selectSet.isEmpty()) {
-            false
-        } else {
-            selectSet.find { it.messageId == getMessageItem(position)?.messageId } != null
-        }
-    }
-
     private fun isRepresentative(messageItem: MessageItem): Boolean {
         // Todo
         return false
     }
 
+    // Floating time header
     override fun getHeaderId(position: Int) = getMessageItem(position).notNullWithElse(
         {
             abs(it.createdAt.hashForDate())
@@ -793,6 +803,17 @@ class ConversationAdapter(
         }
     }
 
+
+    // Selected messages
+    var selectSet: ArraySet<MessageItem> = ArraySet()
+
+    private fun isSelect(position: Int): Boolean {
+        return if (selectSet.isEmpty()) {
+            false
+        } else {
+            selectSet.find { it.messageId == getMessageItem(position)?.messageId } != null
+        }
+    }
 
     fun addSelect(messageItem: MessageItem): Boolean {
         return selectSet.add(messageItem)

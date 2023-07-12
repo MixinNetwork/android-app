@@ -2597,6 +2597,8 @@ class ConversationFragment() :
             scrollTo(index)
             chatViewModel.getMessageRowidSuspend(messageId)?.let {
                 findMessageAction?.invoke(it)
+                delay(60)
+                RxBus.publish(BlinkEvent(messageId))
             }
         } else {
             val rowId = chatViewModel.getMessageRowidSuspend(messageId)
@@ -2604,6 +2606,8 @@ class ConversationFragment() :
                 // Re-subscribe to the new key
                 liveDataMessage(0, rowId)
                 findMessageAction?.invoke(rowId)
+                delay(60)
+                RxBus.publish(BlinkEvent(messageId))
             } else {
                 toast(R.string.Message_not_found)
             }
@@ -2612,7 +2616,6 @@ class ConversationFragment() :
 
     private fun scrollToDown() {
         if (viewDestroyed()) return
-        // Todo Sometimes don't need to refresh.
         lifecycleScope.launch {
             val lastReadMessageId = chatViewModel.getLastMessageId(conversationId)
             if (lastReadMessageId != null) {
