@@ -142,6 +142,8 @@ internal constructor(
     suspend fun getConversationDraftById(conversationId: String): String? =
         conversationDao.getConversationDraftById(conversationId)
 
+    suspend fun getPositionFromMessageId(conversationId: String, messageId: String) = conversationDao.getPositionFromMessageId(conversationId, messageId)
+
     fun findMessageById(messageId: String) = messageDao.findMessageById(messageId)
 
     suspend fun suspendFindMessageById(messageId: String) = messageDao.suspendFindMessageById(messageId)

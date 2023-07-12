@@ -168,6 +168,8 @@ internal constructor(
         }.liveData
     }
 
+    suspend fun getPositionFromMessageId(conversationId: String, messageId: String) = conversationRepository.getPositionFromMessageId(conversationId, messageId)
+
     suspend fun indexUnread(conversationId: String) =
         conversationRepository.indexUnread(conversationId) ?: 0
 

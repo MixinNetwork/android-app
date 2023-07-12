@@ -1426,6 +1426,12 @@ class ConversationFragment() :
             (holder.itemView as TextView).text = item?.content
             holder.itemView.setOnClickListener {
                 toast("Click ${item?.messageId}")
+                val quoteMessageId = item?.quoteId ?: return@setOnClickListener
+                lifecycleScope.launch {
+                    val position =
+                        chatViewModel.getPositionFromMessageId(conversationId, quoteMessageId)
+                    if (position != null) binding.demoRv.layoutManager?.scrollToPosition(position)
+                }
             }
         }
 
