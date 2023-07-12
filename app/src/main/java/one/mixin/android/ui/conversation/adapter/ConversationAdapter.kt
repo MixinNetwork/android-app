@@ -40,6 +40,8 @@ import one.mixin.android.databinding.ItemChatUnreadBinding
 import one.mixin.android.databinding.ItemChatVideoBinding
 import one.mixin.android.databinding.ItemChatVideoQuoteBinding
 import one.mixin.android.databinding.ItemChatWaitingBinding
+import one.mixin.android.extension.hashForDate
+import one.mixin.android.extension.isSameDay
 import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.ui.conversation.holder.ActionCardHolder
 import one.mixin.android.ui.conversation.holder.ActionHolder
@@ -93,6 +95,7 @@ import one.mixin.android.vo.isText
 import one.mixin.android.vo.isTranscript
 import one.mixin.android.vo.isVideo
 import one.mixin.android.widget.MixinStickyRecyclerHeadersAdapter
+import kotlin.math.abs
 
 class ConversationAdapter(
     var keyword: String?,
@@ -235,7 +238,13 @@ class ConversationAdapter(
     override fun getItemViewType(position: Int): Int = getItemType(getMessageItem(position))
 
     // Todo
-    private fun getMessageItem(position: Int) = getItem(position)
+    private fun getMessageItem(position: Int): MessageItem? {
+        return if (position < itemCount) {
+            getItem(position)
+        } else {
+            null
+        }
+    }
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         getMessageItem(position)?.let {
@@ -729,29 +738,58 @@ class ConversationAdapter(
     }
 
     private fun isFirst(position: Int): Boolean {
-        // Todo
-        return false
+        val currentItem = getMessageItem(position)
+        val nextItem = getMessageItem(position + 1)
+        return when {
+            currentItem == null ->
+                false
+
+            nextItem == null ->
+                true
+
+            nextItem.type == MessageCategory.MESSAGE_PIN.name ->
+                true
+
+            nextItem.type == MessageCategory.SYSTEM_CONVERSATION.name ->
+                true
+
+            nextItem.userId != currentItem.userId ->
+                true
+
+            !isSameDay(nextItem.createdAt, currentItem.createdAt) ->
+                true
+
+            else -> false
+        }
     }
 
     private fun isSelect(position: Int): Boolean {
+        return if (selectSet.isEmpty()) {
+            false
+        } else {
+            selectSet.find { it.messageId == getMessageItem(position)?.messageId } != null
+        }
+    }
+
+    private fun isRepresentative(messageItem: MessageItem): Boolean {
         // Todo
         return false
     }
 
-    private fun isRepresentative(messageItem: MessageItem): Boolean {
-        return false
-    }
-
-    override fun getHeaderId(position: Int): Long {
-        // todo
-        return 0
-    }
+    override fun getHeaderId(position: Int) = getMessageItem(position).notNullWithElse(
+        {
+            abs(it.createdAt.hashForDate())
+        },
+        0,
+    )
 
     override fun onCreateHeaderViewHolder(parent: ViewGroup): TimeHolder = TimeHolder(
         ItemChatTimeBinding.inflate(LayoutInflater.from(parent.context), parent, false),
     )
 
     override fun onBindHeaderViewHolder(holder: TimeHolder?, position: Int) {
-        // Todo
+        getMessageItem(position)?.let {
+            holder?.bind(it.createdAt)
+        }
     }
 }

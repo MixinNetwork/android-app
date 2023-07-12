@@ -1374,7 +1374,7 @@ class ConversationFragment() :
         // conversationAdapter.markRead()
     }
 
-    private var firstPosition = 0
+    private var lastVisiblePosition = 0
 
     private fun initView() {
         binding.inputLayout.backgroundImage = WallpaperManager.getWallpaper(requireContext())
@@ -1413,10 +1413,10 @@ class ConversationFragment() :
 
         binding.chatRv.addOnScrollListener(
             object : RecyclerView.OnScrollListener() {
-
                 override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
-                    firstPosition = (binding.chatRv.layoutManager as LinearLayoutManager).findFirstVisibleItemPosition()
-                    if (firstPosition > 0) {
+                    val lm = binding.chatRv.layoutManager as LinearLayoutManager
+                    lastVisiblePosition = lm.findLastVisibleItemPosition()
+                    if (lastVisiblePosition != lm.itemCount - 1) {
                         if (isBottom) {
                             isBottom = false
                         }
@@ -2539,7 +2539,7 @@ class ConversationFragment() :
                             offset,
                         )
                     }
-                    if (abs(firstPosition - position) > PAGE_SIZE * 3) {
+                    if (abs(lastVisiblePosition - position) > PAGE_SIZE * 3) {
                         binding.chatRv.postDelayed(
                             {
                                 (binding.chatRv.layoutManager as LinearLayoutManager).scrollToPositionWithOffset(
@@ -2574,6 +2574,7 @@ class ConversationFragment() :
 
     private fun scrollToDown() {
         if (viewDestroyed()) return
+        // Todo Sometimes don't need to refresh.
         lifecycleScope.launch {
             val lastRowId = chatViewModel.getLastMessageRowId(conversationId)
             if (lastRowId != null) {
