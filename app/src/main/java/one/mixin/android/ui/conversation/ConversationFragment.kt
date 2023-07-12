@@ -1394,15 +1394,39 @@ class ConversationFragment() :
 
     private var firstPosition = 0
 
-    private val demoAdapter = object : PagingDataAdapter<String, DemoHolder>(object : DiffUtil.ItemCallback<String>() {
-        override fun areItemsTheSame(oldItem: String, newItem: String) =
-            oldItem == newItem
+    private val demoAdapter = object : PagingDataAdapter<MessageItem, DemoHolder>(
+        object : DiffUtil.ItemCallback<MessageItem>() {
+            override fun areItemsTheSame(oldItem: MessageItem, newItem: MessageItem): Boolean {
+                return oldItem.messageId == newItem.messageId
+            }
 
-        override fun areContentsTheSame(oldItem: String, newItem: String) =
-            oldItem == newItem
-    }) {
+            override fun areContentsTheSame(
+                oldItem: MessageItem,
+                newItem: MessageItem,
+            ): Boolean {
+                return oldItem.mediaStatus == newItem.mediaStatus &&
+                    oldItem.type == newItem.type &&
+                    oldItem.status == newItem.status &&
+                    oldItem.userFullName == newItem.userFullName &&
+                    oldItem.participantFullName == newItem.participantFullName &&
+                    oldItem.sharedUserFullName == newItem.sharedUserFullName &&
+                    oldItem.mediaSize == newItem.mediaSize &&
+                    oldItem.quoteContent == newItem.quoteContent &&
+                    oldItem.assetSymbol == newItem.assetSymbol &&
+                    oldItem.assetUrl == newItem.assetUrl &&
+                    oldItem.assetIcon == newItem.assetIcon &&
+                    oldItem.mentionRead == newItem.mentionRead &&
+                    oldItem.content == newItem.content &&
+                    oldItem.isPin == newItem.isPin
+            }
+        },
+    ) {
         override fun onBindViewHolder(holder: DemoHolder, position: Int) {
-            (holder.itemView as TextView).text = getItem(position)
+            val item = getItem(position)
+            (holder.itemView as TextView).text = item?.content
+            holder.itemView.setOnClickListener {
+                toast("Click ${item?.messageId}")
+            }
         }
 
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): DemoHolder {

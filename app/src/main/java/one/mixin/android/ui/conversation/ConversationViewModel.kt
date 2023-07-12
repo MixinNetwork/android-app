@@ -145,7 +145,7 @@ internal constructor(
     }
 
     private var invalidateJob: Job? = null
-    fun getMessageDemo(conversationId: String, messageId: Int? = MessageDataSource.NONE): LiveData<PagingData<String>> {
+    fun getMessageDemo(conversationId: String, messageId: Int? = MessageDataSource.NONE): LiveData<PagingData<MessageItem>> {
         return Pager(
             PagingConfig(
                 pageSize = MessageDataSource.PAGE_SIZE,
