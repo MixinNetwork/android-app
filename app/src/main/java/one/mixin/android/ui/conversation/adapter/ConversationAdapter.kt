@@ -792,4 +792,13 @@ class ConversationAdapter(
             holder?.bind(it.createdAt)
         }
     }
+
+
+    fun addSelect(messageItem: MessageItem): Boolean {
+        return selectSet.add(messageItem)
+    }
+
+    fun removeSelect(messageItem: MessageItem): Boolean {
+        return selectSet.remove(selectSet.find { it.messageId == messageItem.messageId })
+    }
 }
