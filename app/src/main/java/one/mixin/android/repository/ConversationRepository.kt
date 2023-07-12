@@ -146,6 +146,8 @@ internal constructor(
 
     suspend fun getLastMessageRowId(conversationId: String) = messageDao.getLastMessageRowId(conversationId)
 
+    suspend fun getLastMessageId(conversationId: String) = messageDao.getLastMessageId(conversationId)
+
     fun findMessageById(messageId: String) = messageDao.findMessageById(messageId)
 
     suspend fun suspendFindMessageById(messageId: String) = messageDao.suspendFindMessageById(messageId)

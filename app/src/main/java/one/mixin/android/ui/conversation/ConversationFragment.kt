@@ -2590,16 +2590,18 @@ class ConversationFragment() :
         findMessageAction: ((index: Int) -> Unit)? = null,
     ) = lifecycleScope.launch {
         if (viewDestroyed()) return@launch
-        val rowId = chatViewModel.getMessageRowidSuspend(messageId)
-        if (rowId != null) {
-            val index = conversationAdapter.snapshot().items.indexOfFirst { messageItem ->
-                messageItem.messageId == messageId
-            }
-            if (index == -1) {
+        val index = conversationAdapter.snapshot().items.indexOfFirst { messageItem ->
+            messageItem.messageId == messageId
+        }
+        if (index != -1) {
+            scrollTo(index)
+        } else {
+            val rowId = chatViewModel.getMessageRowidSuspend(messageId)
+            if (rowId != null) {
                 // Re-subscribe to the new key
                 liveDataMessage(0, rowId)
             } else {
-                scrollTo(index)
+                toast(R.string.Message_not_found)
             }
         }
     }
@@ -2608,9 +2610,19 @@ class ConversationFragment() :
         if (viewDestroyed()) return
         // Todo Sometimes don't need to refresh.
         lifecycleScope.launch {
-            val lastRowId = chatViewModel.getLastMessageRowId(conversationId)
-            if (lastRowId != null) {
-                liveDataMessage(0, lastRowId)
+            val lastReadMessageId = chatViewModel.getLastMessageId(conversationId)
+            if (lastReadMessageId != null) {
+                val index = conversationAdapter.snapshot().items.indexOfFirst { messageItem ->
+                    messageItem.messageId == lastReadMessageId
+                }
+                if (index != -1) {
+                    scrollTo(index)
+                } else {
+                    val rowId = chatViewModel.getMessageRowidSuspend(conversationId)
+                    if (rowId != null) {
+                        liveDataMessage(0, rowId)
+                    }
+                }
             }
         }
     }

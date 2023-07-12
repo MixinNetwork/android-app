@@ -170,7 +170,10 @@ internal constructor(
     }
 
     suspend fun getMessageRowidSuspend(messageId: String) = conversationRepository.getMessageRowidSuspend(messageId)
+
     suspend fun getLastMessageRowId(conversationId: String) = conversationRepository.getLastMessageRowId(conversationId)
+
+    suspend fun getLastMessageId(conversationId: String) = conversationRepository.getLastMessageId(conversationId)
 
     suspend fun indexUnread(conversationId: String) =
         conversationRepository.indexUnread(conversationId) ?: 0
