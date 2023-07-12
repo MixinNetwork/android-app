@@ -7,7 +7,7 @@ import kotlinx.serialization.EncodeDefault
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import one.mixin.android.MixinApplication
-import one.mixin.android.extension.getDeviceId
+import one.mixin.android.extension.getStringDeviceId
 
 @Parcelize
 @Serializable
@@ -42,7 +42,7 @@ data class TransferCommand(
     @SerializedName("device_id")
     @SerialName("device_id")
     @EncodeDefault
-    val deviceId: String = MixinApplication.appContext.getDeviceId(),
+    val deviceId: String = MixinApplication.appContext.getStringDeviceId(),
     @SerialName("platform")
     @EncodeDefault
     val platform: String = "Android",

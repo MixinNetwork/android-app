@@ -17,7 +17,7 @@ import one.mixin.android.extension.clear
 import one.mixin.android.extension.clickVibrate
 import one.mixin.android.extension.decodeBase64
 import one.mixin.android.extension.defaultSharedPreferences
-import one.mixin.android.extension.getDeviceId
+import one.mixin.android.extension.getStringDeviceId
 import one.mixin.android.extension.putString
 import one.mixin.android.extension.tickVibrate
 import one.mixin.android.session.Session
@@ -104,7 +104,7 @@ abstract class PinCodeFragment(@LayoutRes contentLayoutId: Int) : FabLoadingFrag
         Session.storeEd25519Seed(privateKey.base64Encode())
         Session.storePinToken(pinToken.base64Encode())
         Session.storeAccount(account)
-        defaultSharedPreferences.putString(DEVICE_ID, requireContext().getDeviceId())
+        defaultSharedPreferences.putString(DEVICE_ID, requireContext().getStringDeviceId())
 
         verificationKeyboard.animate().translationY(300f).start()
         MixinApplication.get().isOnline.set(true)
