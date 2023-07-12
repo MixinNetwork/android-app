@@ -16,7 +16,7 @@ import one.mixin.android.repository.UserRepository
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BlazeBaseActivity
 import one.mixin.android.ui.conversation.ConversationFragment.Companion.CONVERSATION_ID
-import one.mixin.android.ui.conversation.ConversationFragment.Companion.INITIAL_POSITION_MESSAGE_ID
+import one.mixin.android.ui.conversation.ConversationFragment.Companion.INITIAL_ROW_ID
 import one.mixin.android.ui.conversation.ConversationFragment.Companion.MESSAGE_ID
 import one.mixin.android.ui.conversation.ConversationFragment.Companion.RECIPIENT
 import one.mixin.android.ui.conversation.ConversationFragment.Companion.RECIPIENT_ID
@@ -105,12 +105,9 @@ class ConversationActivity : BlazeBaseActivity() {
                 }
             }
             bundle.putInt(UNREAD_COUNT, unreadCount)
-            val msgId = messageId ?: if (unreadCount <= 0) {
-                null
-            } else {
-                conversationRepository.findFirstUnreadMessageId(cid, unreadCount - 1)
+            messageId?.let { conversationRepository.getMessageRowidSuspend(it) }?.let {
+                bundle.putInt(INITIAL_ROW_ID, it)
             }
-            bundle.putString(INITIAL_POSITION_MESSAGE_ID, msgId)
             replaceFragment(
                 ConversationFragment.newInstance(bundle),
                 R.id.container,
@@ -127,7 +124,7 @@ class ConversationActivity : BlazeBaseActivity() {
             context: Context,
             conversationId: String,
             recipient: User?,
-            initialPositionMessageId: String?,
+            initialRowId: Int?,
             unreadCount: Int,
         ) {
             Intent(context, ConversationActivity::class.java).apply {
@@ -135,7 +132,9 @@ class ConversationActivity : BlazeBaseActivity() {
                     Bundle().apply {
                         putString(CONVERSATION_ID, conversationId)
                         putParcelable(RECIPIENT, recipient)
-                        putString(INITIAL_POSITION_MESSAGE_ID, initialPositionMessageId)
+                        initialRowId?.let {
+                            putInt(INITIAL_ROW_ID, it)
+                        }
                         putInt(UNREAD_COUNT, unreadCount)
                         putBoolean(ARGS_FAST_SHOW, true)
                     },

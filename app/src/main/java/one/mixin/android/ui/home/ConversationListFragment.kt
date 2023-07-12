@@ -47,6 +47,7 @@ import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.databinding.FragmentConversationListBinding
 import one.mixin.android.databinding.ItemListConversationBinding
 import one.mixin.android.databinding.ViewConversationBottomBinding
+import one.mixin.android.db.datasource.MessageDataSource
 import one.mixin.android.event.BotEvent
 import one.mixin.android.event.CircleDeleteEvent
 import one.mixin.android.extension.alertDialogBuilder
@@ -329,20 +330,11 @@ class ConversationListFragment : LinkFragment() {
                             } else {
                                 null
                             }
-                            val messageId =
-                                if (item.unseenMessageCount != null && item.unseenMessageCount > 0) {
-                                    conversationListViewModel.findFirstUnreadMessageId(
-                                        item.conversationId,
-                                        item.unseenMessageCount - 1,
-                                    )
-                                } else {
-                                    null
-                                }
                             ConversationActivity.fastShow(
                                 requireContext(),
                                 conversationId = item.conversationId,
                                 recipient = user,
-                                initialPositionMessageId = messageId,
+                                initialRowId = MessageDataSource.NONE, // Todo use unread message id
                                 unreadCount = item.unseenMessageCount ?: 0,
                             )
                         }

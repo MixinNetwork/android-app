@@ -4,9 +4,7 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.annotation.TargetApi
 import android.app.Activity
-import android.content.ActivityNotFoundException
 import android.content.ClipData
-import android.content.ContentResolver
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -41,7 +39,6 @@ import androidx.annotation.VisibleForTesting
 import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat
 import androidx.core.content.getSystemService
-import androidx.core.net.toUri
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.children
@@ -53,12 +50,9 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.viewModelScope
 import androidx.media3.common.MimeTypes
 import androidx.media3.common.util.UnstableApi
 import androidx.paging.PagingData
-import androidx.paging.PagingDataAdapter
-import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -108,25 +102,18 @@ import one.mixin.android.extension.config
 import one.mixin.android.extension.createImageTemp
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.dp
-import one.mixin.android.extension.fadeIn
-import one.mixin.android.extension.fadeOut
 import one.mixin.android.extension.getAttachment
 import one.mixin.android.extension.getClipboardManager
-import one.mixin.android.extension.getMimeType
 import one.mixin.android.extension.getOtherPath
 import one.mixin.android.extension.getParcelableArrayListCompat
 import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.getParcelableExtraCompat
-import one.mixin.android.extension.getUriForFile
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.inTransaction
 import one.mixin.android.extension.isBluetoothHeadsetOrWiredHeadset
 import one.mixin.android.extension.isImageSupport
-import one.mixin.android.extension.isStickerSupport
 import one.mixin.android.extension.lateOneHours
-import one.mixin.android.extension.mainThreadDelayed
 import one.mixin.android.extension.networkConnected
-import one.mixin.android.extension.nowInUtc
 import one.mixin.android.extension.openAsUrlOrWeb
 import one.mixin.android.extension.openCamera
 import one.mixin.android.extension.openEmail
@@ -191,7 +178,6 @@ import one.mixin.android.ui.player.MusicService
 import one.mixin.android.ui.player.collapse
 import one.mixin.android.ui.preview.TextPreviewActivity
 import one.mixin.android.ui.setting.WallpaperManager
-import one.mixin.android.ui.sticker.StickerActivity
 import one.mixin.android.ui.sticker.StickerPreviewBottomSheetFragment
 import one.mixin.android.ui.tip.TipActivity
 import one.mixin.android.ui.tip.TipType
@@ -220,32 +206,19 @@ import one.mixin.android.vo.ForwardMessage
 import one.mixin.android.vo.LinkState
 import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.MessageStatus
-import one.mixin.android.vo.ParticipantRole
-import one.mixin.android.vo.PinMessageData
 import one.mixin.android.vo.Sticker
 import one.mixin.android.vo.TranscriptData
 import one.mixin.android.vo.TranscriptMessage
 import one.mixin.android.vo.User
 import one.mixin.android.vo.UserRelationship
-import one.mixin.android.vo.absolutePath
 import one.mixin.android.vo.canRecall
 import one.mixin.android.vo.generateConversationId
 import one.mixin.android.vo.getEncryptedCategory
 import one.mixin.android.vo.giphy.Image
-import one.mixin.android.vo.isAppCard
-import one.mixin.android.vo.isAttachment
-import one.mixin.android.vo.isAudio
-import one.mixin.android.vo.isData
-import one.mixin.android.vo.isImage
 import one.mixin.android.vo.isLive
-import one.mixin.android.vo.isSticker
-import one.mixin.android.vo.isText
-import one.mixin.android.vo.isTranscript
 import one.mixin.android.vo.mediaExists
 import one.mixin.android.vo.saveToLocal
-import one.mixin.android.vo.supportSticker
 import one.mixin.android.vo.toApp
-import one.mixin.android.vo.toTranscript
 import one.mixin.android.vo.toUser
 import one.mixin.android.webrtc.CallService
 import one.mixin.android.webrtc.ERROR_ROOM_FULL
@@ -257,7 +230,6 @@ import one.mixin.android.webrtc.outgoingCall
 import one.mixin.android.webrtc.receiveInvite
 import one.mixin.android.websocket.LIST_KRAKEN_PEERS
 import one.mixin.android.websocket.LocationPayload
-import one.mixin.android.websocket.PinAction
 import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.BottomSheetItem
 import one.mixin.android.widget.ChatControlView
@@ -295,7 +267,7 @@ class ConversationFragment() :
         const val RECIPIENT_ID = "recipient_id"
         const val RECIPIENT = "recipient"
         const val MESSAGE_ID = "message_id"
-        const val INITIAL_POSITION_MESSAGE_ID = "initial_position_message_id"
+        const val INITIAL_ROW_ID = "initial_row_id"
         const val UNREAD_COUNT = "unread_count"
         const val TRANSCRIPT_DATA = "transcript_data"
         private const val KEY_WORD = "key_word"
@@ -1012,8 +984,8 @@ class ConversationFragment() :
 
     private var messageId: String? = null
 
-    private val initialPositionMessageId: String? by lazy {
-        requireArguments().getString(INITIAL_POSITION_MESSAGE_ID, null)
+    private val initialRowId: Int by lazy {
+        requireArguments().getInt(INITIAL_ROW_ID, MessageDataSource.NONE)
     }
 
     private var keyword: String? = null
@@ -1853,79 +1825,16 @@ class ConversationFragment() :
 
     private var messageLiveData:LiveData<PagingData<MessageItem>>?= null
     private val messageObserver:Observer<PagingData<MessageItem>> = Observer { value -> conversationAdapter.submitData(lifecycle, value) }
-    private fun liveDataMessage(unreadCount: Int, unreadMessageId: String?, rowId: Int = MessageDataSource.NONE) {
+    private fun liveDataMessage(unreadCount: Int, rowId: Int = MessageDataSource.NONE) {
         messageLiveData?.removeObserver(messageObserver)
         messageLiveData = chatViewModel.getMessageDemo(conversationId, rowId)
         messageLiveData?.observe(viewLifecycleOwner, messageObserver)
-        // var oldCount: Int = -1
-        // var firstReturn = true
-        // chatViewModel.getMessages(conversationId, unreadCount) {
-        //     val computableLiveData = it
-        //     lifecycleScope.launch {
-        //         InvalidateFlow.collect(
-        //             { !viewDestroyed() && this@ConversationFragment.conversationId == conversationId },
-        //             {
-        //                 computableLiveData.invalidate()
-        //             },
-        //         )
-        //     }
-        // }.observe(
-        //     viewLifecycleOwner,
-        // ) { pagingData ->
-            // if (Session.getAccount() == null) return@observe
-            // val itemSize = conversationAdapter.getRealItemCount()
-            // if (oldCount == -1) {
-            //     oldCount = itemSize
-            // } else if (!isFirstLoad && !isBottom && itemSize > oldCount) {
-            //     if (firstReturn) {
-            //         firstReturn = false
-            //     } else { // The size returned the second time is the real data.
-            //         unreadTipCount += (itemSize - oldCount)
-            //     }
-            //     oldCount = itemSize
-            // } else if (isBottom) {
-            //     unreadTipCount = 0
-            //     oldCount = itemSize
-            // }
-            // chatViewModel.viewModelScope.launch {
-            //     conversationAdapter.hasBottomView =
-            //         recipient?.relationship == UserRelationship.STRANGER.name && chatViewModel.isSilence(
-            //             conversationId,
-            //             sender.userId,
-            //         )
-            // }
-            // if (isFirstLoad && messageId == null && unreadCount > 0) {
-            //     conversationAdapter.unreadMsgId = unreadMessageId
-            // } else if (lastReadMessage != null) {
-            //     chatViewModel.viewModelScope.launch {
-            //         lastReadMessage?.let { id ->
-            //             val unreadMsgId = chatViewModel.findUnreadMessageByMessageId(
-            //                 conversationId,
-            //                 sender.userId,
-            //                 id,
-            //             )
-            //             if (unreadMsgId != null) {
-            //                 conversationAdapter.unreadMsgId = unreadMsgId
-            //                 lastReadMessage = null
-            //             }
-            //         }
-            //     }
-            // }
-            // if (itemSize > 0) {
-            //     if (isFirstMessage) {
-            //         isFirstMessage = false
-            //     }
-            // }
-            // conversationAdapter.submitData(lifecycle, pagingData)
-            // chatViewModel.markMessageRead(conversationId, (activity as? BubbleActivity)?.isBubbled == true)
-            // chatRoomHelper.markMessageRead(conversationId)
-        // }
     }
 
     private var unreadCount = 0
     private fun bindData() {
         unreadCount = requireArguments().getInt(UNREAD_COUNT, 0)
-        liveDataMessage(unreadCount, initialPositionMessageId)
+        liveDataMessage(unreadCount, initialRowId.toInt())
 
         chatViewModel.getUnreadMentionMessageByConversationId(conversationId).observe(
             viewLifecycleOwner,
@@ -2669,7 +2578,7 @@ class ConversationFragment() :
         // Todo optimization determines whether it already exists. If so, Scorll to is more reasonable.
         if (rowId != null) {
             // Re-subscribe to the new key
-            liveDataMessage(0, null, rowId.toInt())
+            liveDataMessage(0, rowId)
         }
     }
 
