@@ -150,6 +150,7 @@ internal constructor(
             PagingConfig(
                 pageSize = MessageDataSource.PAGE_SIZE,
                 enablePlaceholders = false,
+                jumpThreshold = Int.MAX_VALUE
             ),
             initialKey = messageId,
         ) {
@@ -168,7 +169,7 @@ internal constructor(
         }.liveData
     }
 
-    suspend fun getPositionFromMessageId(conversationId: String, messageId: String) = conversationRepository.getPositionFromMessageId(conversationId, messageId)
+    suspend fun getMessageRowidSuspend(messageId: String) = conversationRepository.getMessageRowidSuspend(messageId)
 
     suspend fun indexUnread(conversationId: String) =
         conversationRepository.indexUnread(conversationId) ?: 0

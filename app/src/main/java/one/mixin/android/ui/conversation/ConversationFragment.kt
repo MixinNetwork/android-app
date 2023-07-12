@@ -50,10 +50,13 @@ import androidx.core.view.isGone
 import androidx.core.view.isVisible
 import androidx.core.widget.PopupWindowCompat
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewModelScope
 import androidx.media3.common.MimeTypes
 import androidx.media3.common.util.UnstableApi
+import androidx.paging.PagingData
 import androidx.paging.PagingDataAdapter
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ItemTouchHelper
@@ -84,6 +87,7 @@ import one.mixin.android.databinding.DialogForwardBinding
 import one.mixin.android.databinding.DialogImportMessageBinding
 import one.mixin.android.databinding.FragmentConversationBinding
 import one.mixin.android.databinding.ViewUrlBottomBinding
+import one.mixin.android.db.datasource.MessageDataSource
 import one.mixin.android.event.BlinkEvent
 import one.mixin.android.event.CallEvent
 import one.mixin.android.event.ExitEvent
@@ -1431,7 +1435,7 @@ class ConversationFragment() :
                 }
             },
         )
-        binding.chatRv.layoutManager = LinearLayoutManager(requireContext(), RecyclerView.VERTICAL, true)
+        binding.chatRv.layoutManager = LinearLayoutManager(requireContext(), RecyclerView.VERTICAL, false)
         binding.chatRv.addItemDecoration(decoration)
         binding.chatRv.itemAnimator = null
 
@@ -1847,10 +1851,12 @@ class ConversationFragment() :
         deleteDialog?.show()
     }
 
-    private fun liveDataMessage(unreadCount: Int, unreadMessageId: String?) {
-        chatViewModel.getMessageDemo(conversationId).observe(viewLifecycleOwner){
-            conversationAdapter.submitData(lifecycle, it)
-        }
+    private var messageLiveData:LiveData<PagingData<MessageItem>>?= null
+    private val messageObserver:Observer<PagingData<MessageItem>> = Observer { value -> conversationAdapter.submitData(lifecycle, value) }
+    private fun liveDataMessage(unreadCount: Int, unreadMessageId: String?, rowId: Int = MessageDataSource.NONE) {
+        messageLiveData?.removeObserver(messageObserver)
+        messageLiveData = chatViewModel.getMessageDemo(conversationId, rowId)
+        messageLiveData?.observe(viewLifecycleOwner, messageObserver)
         // var oldCount: Int = -1
         // var firstReturn = true
         // chatViewModel.getMessages(conversationId, unreadCount) {
@@ -2658,80 +2664,13 @@ class ConversationFragment() :
         messageId: String,
         findMessageAction: ((index: Int) -> Unit)? = null,
     ) = lifecycleScope.launch {
-        // if (viewDestroyed()) return@launch
-        //
-        // val index = chatViewModel.findMessageIndex(conversationId, messageId)
-        // if (index < 0) {
-        //     toast(R.string.Data_loading)
-        //     return@launch
-        // } else if (index >= conversationAdapter.itemCount) {
-        //     chatViewModel.refreshCountByConversationId(conversationId)
-        //     toast(R.string.Data_loading)
-        //     InvalidateFlow.emit(conversationId)
-        //     return@launch
-        // }
-        // findMessageAction?.invoke(index)
-        // if (index == 0) {
-        //     scrollTo(
-        //         0,
-        //         binding.chatRv.measuredHeight * 3 / 4,
-        //         action = {
-        //             mainThreadDelayed(
-        //                 {
-        //                     RxBus.publish(BlinkEvent(messageId))
-        //                 },
-        //                 60,
-        //             )
-        //         },
-        //     )
-        // } else {
-        //     conversationAdapter.loadAround(index)
-        //     if (conversationAdapter.getMessageItem(index)?.messageId != messageId) {
-        //         chatViewModel.refreshCountByConversationId(conversationId)
-        //         toast(R.string.Data_loading)
-        //         InvalidateFlow.emit(conversationId)
-        //         return@launch
-        //     }
-        //     if (index == conversationAdapter.itemCount - 1) {
-        //         scrollTo(
-        //             index,
-        //             0,
-        //             action = {
-        //                 mainThreadDelayed(
-        //                     {
-        //                         RxBus.publish(BlinkEvent(messageId))
-        //                     },
-        //                     60,
-        //                 )
-        //             },
-        //         )
-        //     } else {
-        //         val lm = (binding.chatRv.layoutManager as LinearLayoutManager)
-        //         val lastPosition = lm.findLastCompletelyVisibleItemPosition()
-        //         val firstPosition = lm.findFirstVisibleItemPosition()
-        //         if (index in firstPosition..lastPosition) {
-        //             mainThreadDelayed(
-        //                 {
-        //                     RxBus.publish(BlinkEvent(messageId))
-        //                 },
-        //                 60,
-        //             )
-        //         } else {
-        //             scrollTo(
-        //                 index + 1,
-        //                 binding.chatRv.measuredHeight * 3 / 4,
-        //                 action = {
-        //                     mainThreadDelayed(
-        //                         {
-        //                             RxBus.publish(BlinkEvent(messageId))
-        //                         },
-        //                         60,
-        //                     )
-        //                 },
-        //             )
-        //         }
-        //     }
-        // }
+        if (viewDestroyed()) return@launch
+        val rowId = chatViewModel.getMessageRowidSuspend(messageId)
+        // Todo optimization determines whether it already exists. If so, Scorll to is more reasonable.
+        if (rowId != null) {
+            // Re-subscribe to the new key
+            liveDataMessage(0, null, rowId.toInt())
+        }
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
