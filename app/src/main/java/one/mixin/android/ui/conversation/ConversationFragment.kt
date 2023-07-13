@@ -1852,6 +1852,7 @@ class ConversationFragment() :
     private var messageLiveData: LiveData<PagingData<MessageItem>>? = null
     private val messageObserver: Observer<PagingData<MessageItem>> = Observer {
         value -> conversationAdapter.submitData(lifecycle, value)
+        chatViewModel.markMessageRead(conversationId, (activity as? BubbleActivity)?.isBubbled == true)
         chatRoomHelper.markMessageRead(conversationId)
     }
     private fun liveDataMessage(rowId: Int = MessageDataSource.NONE) {

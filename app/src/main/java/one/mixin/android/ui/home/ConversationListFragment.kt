@@ -16,6 +16,7 @@ import android.widget.ImageView
 import androidx.appcompat.content.res.AppCompatResources
 import androidx.appcompat.view.ContextThemeWrapper
 import androidx.appcompat.widget.LinearLayoutCompat
+import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.view.children
 import androidx.core.view.isGone
 import androidx.core.view.isInvisible
@@ -66,6 +67,7 @@ import one.mixin.android.extension.renderMessage
 import one.mixin.android.extension.timeAgo
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.viewDestroyed
+import one.mixin.android.job.GenerateAvatarJob
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.LinkFragment
@@ -121,6 +123,8 @@ import one.mixin.android.widget.BulletinView
 import one.mixin.android.widget.DraggableRecyclerView
 import one.mixin.android.widget.DraggableRecyclerView.Companion.FLING_DOWN
 import one.mixin.android.widget.picker.toTimeInterval
+import timber.log.Timber
+import java.io.File
 import javax.inject.Inject
 import kotlin.math.min
 
@@ -382,37 +386,36 @@ class ConversationListFragment : LinkFragment() {
     private val observer by lazy {
         Observer<PagingData<ConversationItem>> { pagingData ->
             conversationListAdapter.submitData(lifecycle, pagingData)
-            // conversationListAdapter.si
-            // if (pagedList.isEmpty()) {
-            //     if (circleId == null) {
-            //         binding.emptyView.infoTv.setText(R.string.chat_list_empty_info)
-            //         binding.emptyView.startBn.setText(R.string.Start_Messaging)
-            //     } else {
-            //         binding.emptyView.infoTv.setText(R.string.circle_no_conversation_hint)
-            //         binding.emptyView.startBn.setText(R.string.Add_conversations)
-            //     }
-            //     binding.messageRv.updateLayoutParams<ConstraintLayout.LayoutParams> {
-            //         height = ViewGroup.LayoutParams.WRAP_CONTENT
-            //         bottomToBottom = ConstraintLayout.LayoutParams.UNSET
-            //     }
-            //     binding.emptyView.root.isVisible = true
-            // } else {
-            //     binding.messageRv.updateLayoutParams<ConstraintLayout.LayoutParams> {
-            //         height = 0
-            //         bottomToBottom = ConstraintLayout.LayoutParams.PARENT_ID
-            //     }
-            //     binding.emptyView.root.isVisible = false
-            //     pagedList
-            //         .filter { item: ConversationItem? ->
-            //             item?.isGroupConversation() == true && (
-            //                 item.iconUrl() == null || !File(
-            //                     item.iconUrl() ?: "",
-            //                 ).exists()
-            //                 )
-            //         }.forEach {
-            //             jobManager.addJobInBackground(GenerateAvatarJob(it.conversationId))
-            //         }
-            // }
+            if (conversationListAdapter.snapshot().isEmpty()) {
+                if (circleId == null) {
+                    binding.emptyView.infoTv.setText(R.string.chat_list_empty_info)
+                    binding.emptyView.startBn.setText(R.string.Start_Messaging)
+                } else {
+                    binding.emptyView.infoTv.setText(R.string.circle_no_conversation_hint)
+                    binding.emptyView.startBn.setText(R.string.Add_conversations)
+                }
+                binding.messageRv.updateLayoutParams<ConstraintLayout.LayoutParams> {
+                    height = ViewGroup.LayoutParams.WRAP_CONTENT
+                    bottomToBottom = ConstraintLayout.LayoutParams.UNSET
+                }
+                binding.emptyView.root.isVisible = true
+            } else {
+                binding.messageRv.updateLayoutParams<ConstraintLayout.LayoutParams> {
+                    height = 0
+                    bottomToBottom = ConstraintLayout.LayoutParams.PARENT_ID
+                }
+                binding.emptyView.root.isVisible = false
+                conversationListAdapter.snapshot()
+                    .filter { item: ConversationItem? ->
+                        item?.isGroupConversation() == true && (
+                            item.iconUrl() == null || !File(
+                                item.iconUrl() ?: "",
+                            ).exists()
+                            )
+                    }.filterNotNull().forEach {
+                        jobManager.addJobInBackground(GenerateAvatarJob(it.conversationId))
+                    }
+            }
         }
     }
 

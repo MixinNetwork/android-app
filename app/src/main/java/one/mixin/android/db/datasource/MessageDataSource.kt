@@ -29,9 +29,9 @@ class MessageDataSource(private val db: RoomDatabase, val conversationId: String
     }
 
     private fun initialKey(): Int? {
-        // Offset by 1 position, including an anchor message
+        // Find the last one by default
         val cursor = db.query(
-            "SELECT rowid FROM messages WHERE conversation_id = ? ORDER BY created_at ASC, rowid ASC LIMIT 1",
+            "SELECT rowid FROM messages WHERE conversation_id = ? ORDER BY created_at DESC, rowid DESC LIMIT 1",
             arrayOf(conversationId),
         )
         while (cursor.moveToNext()) {
