@@ -110,7 +110,6 @@ class ConversationActivity : BlazeBaseActivity() {
             context: Context,
             conversationId: String,
             recipient: User?,
-            initialRowId: Int?,
         ) {
             Intent(context, ConversationActivity::class.java).apply {
                 putExtras(

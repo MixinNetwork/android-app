@@ -337,8 +337,7 @@ class ConversationListFragment : LinkFragment() {
                             ConversationActivity.fastShow(
                                 requireContext(),
                                 conversationId = item.conversationId,
-                                recipient = user,
-                                initialRowId = MessageDataSource.NONE, // Todo use unread message id
+                                recipient = user
                             )
                         }
                     }

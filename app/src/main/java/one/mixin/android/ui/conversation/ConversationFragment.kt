@@ -404,64 +404,23 @@ class ConversationFragment() :
                             scrollToDown()
                         })
                     }
+                    if (context?.sharedPreferences(RefreshConversationJob.PREFERENCES_CONVERSATION)
+                            ?.getBoolean(conversationId, false) == true
+                    ) {
+                        lifecycleScope.launch {
+                            if (viewDestroyed()) return@launch
+
+                            binding.groupDesc.text = chatViewModel.getAnnouncementByConversationId(conversationId)
+                            binding.groupDesc.collapse()
+                            binding.groupDesc.requestFocus()
+                        }
+                        binding.groupFlag.isVisible = true
+                    }
+                    binding.chatRv.isVisible = true
+                } else if (isBottom) {
+                    scrollToDown()
                 }
-                //
-                // when {
-                //     isFirstLoad -> {
-                //         isFirstLoad = false
-                //         lifecycleScope.launch {
-                //             delay(100)
-                //             messageId?.let { id ->
-                //                 RxBus.publish(BlinkEvent(id))
-                //             }
-                //         }
-                //         if (context?.sharedPreferences(RefreshConversationJob.PREFERENCES_CONVERSATION)
-                //                 ?.getBoolean(conversationId, false) == true
-                //         ) {
-                //             lifecycleScope.launch {
-                //                 if (viewDestroyed()) return@launch
-                //
-                //                 binding.groupDesc.text = chatViewModel.getAnnouncementByConversationId(conversationId)
-                //                 binding.groupDesc.collapse()
-                //                 binding.groupDesc.requestFocus()
-                //             }
-                //             binding.groupFlag.isVisible = true
-                //         }
-                //         val position = if (messageId != null) {
-                //             unreadCount + 1
-                //         } else {
-                //             unreadCount
-                //         }
-                //         if (position >= itemCount - 1) {
-                //             (binding.chatRv.layoutManager as LinearLayoutManager).scrollToPositionWithOffset(
-                //                 itemCount - 1,
-                //                 0,
-                //             )
-                //         } else {
-                //             (binding.chatRv.layoutManager as LinearLayoutManager).scrollToPositionWithOffset(
-                //                 position,
-                //                 binding.chatRv.measuredHeight * 3 / 4,
-                //             )
-                //         }
-                //         binding.chatRv.isVisible = true
-                //     }
-                //     isBottom -> {
-                //         // if (conversationAdapter.currentList != null && (conversationAdapter.currentList!!.size > oldSize) || lastSendMessageId == conversationAdapter.getMessageItem(0)?.messageId) {
-                //         //     scrollToDown()
-                //         // }
-                //     }
-                //     else -> {
-                //         if (unreadTipCount > 0) {
-                //             binding.flagLayout.bottomCountFlag = true
-                //             binding.flagLayout.unreadCount = unreadTipCount
-                //         } else {
-                //             binding.flagLayout.bottomCountFlag = false
-                //         }
-                //     }
-                // }
-                // conversationAdapter.currentList?.let {
-                //     oldSize = it.size
-                // }
+                // todo unread count
             }
         }
 
@@ -1404,10 +1363,9 @@ class ConversationFragment() :
 
     private fun initView() {
         binding.inputLayout.backgroundImage = WallpaperManager.getWallpaper(requireContext())
-        // binding.chatRv.visibility = INVISIBLE
+        binding.chatRv.visibility = INVISIBLE
         if (binding.chatRv.adapter == null) {
             binding.chatRv.adapter = conversationAdapter
-            // conversationAdapter.listen(destroyScope)
         }
         binding.chatControl.callback = chatControlCallback
         binding.chatControl.activity = requireActivity()
@@ -1440,19 +1398,7 @@ class ConversationFragment() :
         binding.chatRv.addOnScrollListener(
             object : RecyclerView.OnScrollListener() {
                 override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
-                    val lm = binding.chatRv.layoutManager as LinearLayoutManager
-                    lastVisiblePosition = lm.findLastVisibleItemPosition()
-                    if (lastVisiblePosition != lm.itemCount - 1) {
-                        if (isBottom) {
-                            isBottom = false
-                        }
-                    } else {
-                        if (!isBottom) {
-                            isBottom = true
-                        }
-                        unreadTipCount = 0
-                        binding.flagLayout.bottomCountFlag = false
-                    }
+                   // todo set is bottom
                 }
             },
         )
@@ -2646,7 +2592,7 @@ class ConversationFragment() :
                 if (index != -1) {
                     scrollTo(index)
                 } else {
-                    val rowId = chatViewModel.getMessageRowidSuspend(conversationId)
+                    val rowId = chatViewModel.getMessageRowidSuspend(lastReadMessageId)
                     if (rowId != null) {
                         liveDataMessage(rowId)
                     }
