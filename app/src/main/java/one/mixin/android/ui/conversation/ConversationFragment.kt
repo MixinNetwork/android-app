@@ -121,6 +121,7 @@ import one.mixin.android.extension.isImageSupport
 import one.mixin.android.extension.isStickerSupport
 import one.mixin.android.extension.lateOneHours
 import one.mixin.android.extension.networkConnected
+import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.nowInUtc
 import one.mixin.android.extension.openAsUrlOrWeb
 import one.mixin.android.extension.openCamera
@@ -291,8 +292,6 @@ class ConversationFragment() :
         const val RECIPIENT_ID = "recipient_id"
         const val RECIPIENT = "recipient"
         const val MESSAGE_ID = "message_id"
-        const val INITIAL_ROW_ID = "initial_row_id"
-        const val UNREAD_COUNT = "unread_count"
         const val TRANSCRIPT_DATA = "transcript_data"
         private const val KEY_WORD = "key_word"
 
@@ -301,7 +300,6 @@ class ConversationFragment() :
             recipientId: String?,
             messageId: String?,
             keyword: String?,
-            unreadCount: Int? = null,
             transcriptData: TranscriptData? = null,
         ): Bundle =
             Bundle().apply {
@@ -314,9 +312,6 @@ class ConversationFragment() :
                 }
                 putString(CONVERSATION_ID, conversationId)
                 putString(RECIPIENT_ID, recipientId)
-                unreadCount?.let {
-                    putInt(UNREAD_COUNT, unreadCount)
-                }
                 putParcelable(TRANSCRIPT_DATA, transcriptData)
             }
 
@@ -353,8 +348,9 @@ class ConversationFragment() :
             isGroup = isGroup,
             isSecret = encryptCategory() != EncryptCategory.PLAIN,
             isBot = isBot
-        )
-
+        ).apply {
+            registerAdapterDataObserver(chatAdapterDataObserver)
+        }
     }
 
     private fun showPreview(uri: Uri, okText: String? = null, isVideo: Boolean, action: (Uri) -> Unit) {
@@ -399,59 +395,70 @@ class ConversationFragment() :
             override fun onItemRangeInserted(positionStart: Int, itemCount: Int) {
                 if (viewDestroyed()) return
 
-                when {
-                    isFirstLoad -> {
-                        isFirstLoad = false
-                        lifecycleScope.launch {
-                            delay(100)
-                            messageId?.let { id ->
-                                RxBus.publish(BlinkEvent(id))
-                            }
-                        }
-                        if (context?.sharedPreferences(RefreshConversationJob.PREFERENCES_CONVERSATION)
-                                ?.getBoolean(conversationId, false) == true
-                        ) {
-                            lifecycleScope.launch {
-                                if (viewDestroyed()) return@launch
-
-                                binding.groupDesc.text = chatViewModel.getAnnouncementByConversationId(conversationId)
-                                binding.groupDesc.collapse()
-                                binding.groupDesc.requestFocus()
-                            }
-                            binding.groupFlag.isVisible = true
-                        }
-                        val position = if (messageId != null) {
-                            unreadCount + 1
-                        } else {
-                            unreadCount
-                        }
-                        if (position >= itemCount - 1) {
-                            (binding.chatRv.layoutManager as LinearLayoutManager).scrollToPositionWithOffset(
-                                itemCount - 1,
-                                0,
-                            )
-                        } else {
-                            (binding.chatRv.layoutManager as LinearLayoutManager).scrollToPositionWithOffset(
-                                position,
-                                binding.chatRv.measuredHeight * 3 / 4,
-                            )
-                        }
-                        binding.chatRv.isVisible = true
-                    }
-                    isBottom -> {
-                        // if (conversationAdapter.currentList != null && (conversationAdapter.currentList!!.size > oldSize) || lastSendMessageId == conversationAdapter.getMessageItem(0)?.messageId) {
-                        //     scrollToDown()
-                        // }
-                    }
-                    else -> {
-                        if (unreadTipCount > 0) {
-                            binding.flagLayout.bottomCountFlag = true
-                            binding.flagLayout.unreadCount = unreadTipCount
-                        } else {
-                            binding.flagLayout.bottomCountFlag = false
-                        }
+                if (isFirstLoad) {
+                    isFirstLoad = false
+                    lifecycleScope.launch {
+                        specifyMessageId.notNullWithElse({
+                            scrollToMessage(it)
+                        }, {
+                            scrollToDown()
+                        })
                     }
                 }
+                //
+                // when {
+                //     isFirstLoad -> {
+                //         isFirstLoad = false
+                //         lifecycleScope.launch {
+                //             delay(100)
+                //             messageId?.let { id ->
+                //                 RxBus.publish(BlinkEvent(id))
+                //             }
+                //         }
+                //         if (context?.sharedPreferences(RefreshConversationJob.PREFERENCES_CONVERSATION)
+                //                 ?.getBoolean(conversationId, false) == true
+                //         ) {
+                //             lifecycleScope.launch {
+                //                 if (viewDestroyed()) return@launch
+                //
+                //                 binding.groupDesc.text = chatViewModel.getAnnouncementByConversationId(conversationId)
+                //                 binding.groupDesc.collapse()
+                //                 binding.groupDesc.requestFocus()
+                //             }
+                //             binding.groupFlag.isVisible = true
+                //         }
+                //         val position = if (messageId != null) {
+                //             unreadCount + 1
+                //         } else {
+                //             unreadCount
+                //         }
+                //         if (position >= itemCount - 1) {
+                //             (binding.chatRv.layoutManager as LinearLayoutManager).scrollToPositionWithOffset(
+                //                 itemCount - 1,
+                //                 0,
+                //             )
+                //         } else {
+                //             (binding.chatRv.layoutManager as LinearLayoutManager).scrollToPositionWithOffset(
+                //                 position,
+                //                 binding.chatRv.measuredHeight * 3 / 4,
+                //             )
+                //         }
+                //         binding.chatRv.isVisible = true
+                //     }
+                //     isBottom -> {
+                //         // if (conversationAdapter.currentList != null && (conversationAdapter.currentList!!.size > oldSize) || lastSendMessageId == conversationAdapter.getMessageItem(0)?.messageId) {
+                //         //     scrollToDown()
+                //         // }
+                //     }
+                //     else -> {
+                //         if (unreadTipCount > 0) {
+                //             binding.flagLayout.bottomCountFlag = true
+                //             binding.flagLayout.unreadCount = unreadTipCount
+                //         } else {
+                //             binding.flagLayout.bottomCountFlag = false
+                //         }
+                //     }
+                // }
                 // conversationAdapter.currentList?.let {
                 //     oldSize = it.size
                 // }
@@ -1008,10 +1015,6 @@ class ConversationFragment() :
 
     private var messageId: String? = null
 
-    private val initialRowId: Int by lazy {
-        requireArguments().getInt(INITIAL_ROW_ID, MessageDataSource.NONE)
-    }
-
     private var keyword: String? = null
 
     private val sender: User by lazy { Session.getAccount()!!.toUser() }
@@ -1307,8 +1310,7 @@ class ConversationFragment() :
         audioFile?.deleteOnExit()
         audioFile = null
         if (isAdded) {
-            // Todo
-            // conversationAdapter.unregisterAdapterDataObserver(chatAdapterDataObserver)
+            conversationAdapter.unregisterAdapterDataObserver(chatAdapterDataObserver)
         }
         super.onDestroyView()
     }
@@ -1852,16 +1854,24 @@ class ConversationFragment() :
         value -> conversationAdapter.submitData(lifecycle, value)
         chatRoomHelper.markMessageRead(conversationId)
     }
-    private fun liveDataMessage(unreadCount: Int, rowId: Int = MessageDataSource.NONE) {
+    private fun liveDataMessage(rowId: Int = MessageDataSource.NONE) {
         messageLiveData?.removeObserver(messageObserver)
         messageLiveData = chatViewModel.getMessageDemo(conversationId, rowId)
         messageLiveData?.observe(viewLifecycleOwner, messageObserver)
     }
 
-    private var unreadCount = 0
+    private var specifyMessageId:String? =null
     private fun bindData() {
-        unreadCount = requireArguments().getInt(UNREAD_COUNT, 0)
-        liveDataMessage(unreadCount, initialRowId.toInt())
+        lifecycleScope.launch {
+            val specifyMessageId = messageId?:chatViewModel.firstUnreadMessageId(conversationId)
+            this@ConversationFragment.specifyMessageId = specifyMessageId
+            val initialKey = if (specifyMessageId != null) {
+                chatViewModel.getMessageRowidSuspend(specifyMessageId) ?: MessageDataSource.NONE
+            } else {
+                MessageDataSource.NONE
+            }
+            liveDataMessage(initialKey)
+        }
 
         chatViewModel.getUnreadMentionMessageByConversationId(conversationId).observe(
             viewLifecycleOwner,
@@ -2608,7 +2618,7 @@ class ConversationFragment() :
             val rowId = chatViewModel.getMessageRowidSuspend(messageId)
             if (rowId != null) {
                 // Re-subscribe to the new key
-                liveDataMessage(0, rowId)
+                liveDataMessage(rowId)
                 findMessageAction?.invoke(rowId)
                 delay(60)
                 RxBus.publish(BlinkEvent(messageId))
@@ -2631,7 +2641,7 @@ class ConversationFragment() :
                 } else {
                     val rowId = chatViewModel.getMessageRowidSuspend(conversationId)
                     if (rowId != null) {
-                        liveDataMessage(0, rowId)
+                        liveDataMessage(rowId)
                     }
                 }
             }

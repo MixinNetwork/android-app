@@ -377,9 +377,6 @@ interface MessageDao : BaseDao<Message> {
     )
     suspend fun findNextAudioMessage(conversationId: String, createdAt: String, messageId: String): Message?
 
-    @Query("SELECT id FROM messages WHERE conversation_id =:conversationId ORDER BY created_at DESC, rowid DESC LIMIT 1 OFFSET :offset")
-    suspend fun findFirstUnreadMessageId(conversationId: String, offset: Int): String?
-
     @Query("SELECT id FROM messages WHERE conversation_id =:conversationId ORDER BY created_at DESC LIMIT 1")
     suspend fun findLastMessage(conversationId: String): String?
 

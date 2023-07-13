@@ -29,15 +29,8 @@ class MessageDataSource(private val db: RoomDatabase, val conversationId: String
     }
 
     private fun initialKey(): Int? {
-        var cursor = db.query(
-            "SELECT rowid FROM messages WHERE id = (SELECT message_id FROM remote_messages_status WHERE conversation_id = ? ORDER BY rowid ASC LIMIT 1)",
-            arrayOf(conversationId),
-        )
-        while (cursor.moveToNext()) {
-            return cursor.getInt(0)
-        }
         // Offset by 1 position, including an anchor message
-        cursor = db.query(
+        val cursor = db.query(
             "SELECT rowid FROM messages WHERE conversation_id = ? ORDER BY created_at ASC, rowid ASC LIMIT 1",
             arrayOf(conversationId),
         )
@@ -121,7 +114,7 @@ class MessageDataSource(private val db: RoomDatabase, val conversationId: String
 
     companion object {
         const val NONE = -1
-        const val PAGE_SIZE = 5
+        const val PAGE_SIZE = 20
 
         private const val QUERY_SQL = """
             SELECT m.id AS messageId, m.conversation_id AS conversationId, u.user_id AS userId,

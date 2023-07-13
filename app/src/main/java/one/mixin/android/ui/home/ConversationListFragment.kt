@@ -335,7 +335,6 @@ class ConversationListFragment : LinkFragment() {
                                 conversationId = item.conversationId,
                                 recipient = user,
                                 initialRowId = MessageDataSource.NONE, // Todo use unread message id
-                                unreadCount = item.unseenMessageCount ?: 0,
                             )
                         }
                     }

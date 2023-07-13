@@ -149,9 +149,6 @@ internal constructor(
 
     suspend fun suspendFindUserById(query: String) = userRepository.suspendFindUserById(query)
 
-    suspend fun findFirstUnreadMessageId(conversationId: String, offset: Int): String? =
-        conversationRepository.findFirstUnreadMessageId(conversationId, offset)
-
     fun observeAllCircleItem() = userRepository.observeAllCircleItem()
 
     suspend fun circleRename(circleId: String, name: String) = userRepository.circleRename(circleId, name)

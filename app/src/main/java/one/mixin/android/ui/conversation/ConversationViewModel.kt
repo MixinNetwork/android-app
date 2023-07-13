@@ -178,8 +178,7 @@ internal constructor(
     suspend fun indexUnread(conversationId: String) =
         conversationRepository.indexUnread(conversationId) ?: 0
 
-    suspend fun findFirstUnreadMessageId(conversationId: String, offset: Int): String? =
-        conversationRepository.findFirstUnreadMessageId(conversationId, offset)
+    suspend fun firstUnreadMessageId(conversationId: String): String? = conversationRepository.firstUnreadMessageId(conversationId)
 
     suspend fun getConversationDraftById(id: String): String? = conversationRepository.getConversationDraftById(id)
 
