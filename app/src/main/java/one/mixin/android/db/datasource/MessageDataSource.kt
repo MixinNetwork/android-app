@@ -10,7 +10,6 @@ import java.lang.IllegalArgumentException
 
 class MessageDataSource(private val db: RoomDatabase, val conversationId: String) :
     PagingSource<Int, MessageItem>() {
-
     override suspend fun load(params: LoadParams<Int>): LoadResult<Int, MessageItem> {
         return try {
             var anchorKey = params.key
@@ -151,7 +150,24 @@ class MessageDataSource(private val db: RoomDatabase, val conversationId: String
         Timber.e("anchorPosition ${state.anchorPosition}")
         return when (val anchorPosition = state.anchorPosition) {
             null -> null
-            else -> getKeyFromPosition(anchorPosition)
+            0 -> NONE
+            else -> {
+                var anchor = anchorPosition
+                for (page in state.pages){
+                    anchor -= page.data.size
+                    if (anchor <= 0) getKeyFromId(page.data[0].messageId)
+                }
+                return NONE
+            }
         }
+    }
+
+    private fun getKeyFromId(messageId:String): Int {
+        db.query("SELECT rowid FROM messages WHERE id = ?", arrayOf( messageId)).use {
+            if (it.moveToNext()){
+                return it.getInt(0)
+            }
+        }
+        return NONE
     }
 }

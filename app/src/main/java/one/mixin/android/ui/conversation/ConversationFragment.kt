@@ -400,6 +400,7 @@ class ConversationFragment() :
                     lifecycleScope.launch {
                         specifyMessageId.notNullWithElse({
                             scrollToMessage(it)
+                            specifyMessageId = null
                         }, {
                             scrollToDown()
                         })
