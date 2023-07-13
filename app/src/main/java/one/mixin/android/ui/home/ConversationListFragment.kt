@@ -27,7 +27,7 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
-import androidx.paging.PagingData
+import androidx.paging.PagedList
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.tbruyelle.rxpermissions2.RxPermissions
@@ -48,7 +48,6 @@ import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.databinding.FragmentConversationListBinding
 import one.mixin.android.databinding.ItemListConversationBinding
 import one.mixin.android.databinding.ViewConversationBottomBinding
-import one.mixin.android.db.datasource.MessageDataSource
 import one.mixin.android.event.BotEvent
 import one.mixin.android.event.CircleDeleteEvent
 import one.mixin.android.extension.alertDialogBuilder
@@ -73,7 +72,7 @@ import one.mixin.android.session.Session
 import one.mixin.android.ui.common.LinkFragment
 import one.mixin.android.ui.common.NavigationController
 import one.mixin.android.ui.common.recyclerview.NormalHolder
-import one.mixin.android.ui.common.recyclerview.PagingDataHeaderAdapter
+import one.mixin.android.ui.common.recyclerview.PagedHeaderAdapter
 import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.home.bot.BotManagerBottomSheetDialogFragment
 import one.mixin.android.ui.home.bot.DefaultTopBots
@@ -123,7 +122,6 @@ import one.mixin.android.widget.BulletinView
 import one.mixin.android.widget.DraggableRecyclerView
 import one.mixin.android.widget.DraggableRecyclerView.Companion.FLING_DOWN
 import one.mixin.android.widget.picker.toTimeInterval
-import timber.log.Timber
 import java.io.File
 import javax.inject.Inject
 import kotlin.math.min
@@ -141,9 +139,9 @@ class ConversationListFragment : LinkFragment() {
 
     private val conversationListViewModel by viewModels<ConversationListViewModel>()
 
-    private val conversationListAdapter by lazy {
-        ConversationListAdapter().apply {
-            registerAdapterDataObserver(conversationListAdapterDataObserver)
+    private val messageAdapter by lazy {
+        MessageAdapter().apply {
+            registerAdapterDataObserver(messageAdapterDataObserver)
         }
     }
 
@@ -151,7 +149,7 @@ class ConversationListFragment : LinkFragment() {
 
     private val bulletinBoard = BulletinBoard()
 
-    private val conversationListAdapterDataObserver =
+    private val messageAdapterDataObserver =
         object : RecyclerView.AdapterDataObserver() {
             override fun onItemRangeInserted(positionStart: Int, itemCount: Int) {
                 if (viewDestroyed()) return
@@ -214,8 +212,8 @@ class ConversationListFragment : LinkFragment() {
                 marginEnd = 16.dp
             }
         }
-        conversationListAdapter.headerView = bulletinView
-        binding.messageRv.adapter = conversationListAdapter
+        messageAdapter.headerView = bulletinView
+        binding.messageRv.adapter = messageAdapter
         binding.messageRv.itemAnimator = null
         binding.messageRv.setHasFixedSize(true)
         binding.messageRv.addOnScrollListener(
@@ -308,8 +306,8 @@ class ConversationListFragment : LinkFragment() {
                 .show(parentFragmentManager, BotManagerBottomSheetDialogFragment.TAG)
         }
 
-        conversationListAdapter.onItemListener =
-            object : PagingDataHeaderAdapter.OnItemListener<ConversationItem> {
+        messageAdapter.onItemListener =
+            object : PagedHeaderAdapter.OnItemListener<ConversationItem> {
                 override fun onNormalLongClick(item: ConversationItem): Boolean {
                     showBottomSheet(item)
                     return true
@@ -334,10 +332,21 @@ class ConversationListFragment : LinkFragment() {
                             } else {
                                 null
                             }
+                            val messageId =
+                                if (item.unseenMessageCount != null && item.unseenMessageCount > 0) {
+                                    conversationListViewModel.findFirstUnreadMessageId(
+                                        item.conversationId,
+                                        item.unseenMessageCount - 1,
+                                    )
+                                } else {
+                                    null
+                                }
                             ConversationActivity.fastShow(
                                 requireContext(),
                                 conversationId = item.conversationId,
-                                recipient = user
+                                recipient = user,
+                                initialPositionMessageId = messageId,
+                                unreadCount = item.unseenMessageCount ?: 0,
                             )
                         }
                     }
@@ -376,16 +385,16 @@ class ConversationListFragment : LinkFragment() {
 
     override fun onDestroyView() {
         if (isAdded) {
-            conversationListAdapter.unregisterAdapterDataObserver(conversationListAdapterDataObserver)
+            messageAdapter.unregisterAdapterDataObserver(messageAdapterDataObserver)
         }
         super.onDestroyView()
         _binding = null
     }
 
     private val observer by lazy {
-        Observer<PagingData<ConversationItem>> { pagingData ->
-            conversationListAdapter.submitData(lifecycle, pagingData)
-            if (conversationListAdapter.snapshot().isEmpty()) {
+        Observer<PagedList<ConversationItem>> { pagedList ->
+            messageAdapter.submitList(pagedList)
+            if (pagedList.isEmpty()) {
                 if (circleId == null) {
                     binding.emptyView.infoTv.setText(R.string.chat_list_empty_info)
                     binding.emptyView.startBn.setText(R.string.Start_Messaging)
@@ -404,21 +413,21 @@ class ConversationListFragment : LinkFragment() {
                     bottomToBottom = ConstraintLayout.LayoutParams.PARENT_ID
                 }
                 binding.emptyView.root.isVisible = false
-                conversationListAdapter.snapshot()
+                pagedList
                     .filter { item: ConversationItem? ->
                         item?.isGroupConversation() == true && (
                             item.iconUrl() == null || !File(
                                 item.iconUrl() ?: "",
                             ).exists()
                             )
-                    }.filterNotNull().forEach {
+                    }.forEach {
                         jobManager.addJobInBackground(GenerateAvatarJob(it.conversationId))
                     }
             }
         }
     }
 
-    private var conversationLiveData: LiveData<PagingData<ConversationItem>>? = null
+    private var conversationLiveData: LiveData<PagedList<ConversationItem>>? = null
     var circleId: String? = null
         set(value) {
             if (field != value) {
@@ -488,7 +497,7 @@ class ConversationListFragment : LinkFragment() {
                     val lm = binding.messageRv.layoutManager as LinearLayoutManager
                     val lastCompleteVisibleItem = lm.findLastCompletelyVisibleItemPosition()
                     val firstCompleteVisibleItem = lm.findFirstCompletelyVisibleItemPosition()
-                    if (lastCompleteVisibleItem - firstCompleteVisibleItem <= conversationListAdapter.itemCount &&
+                    if (lastCompleteVisibleItem - firstCompleteVisibleItem <= messageAdapter.itemCount &&
                         lm.findFirstVisibleItemPosition() == 0
                     ) {
                         binding.shadowFl.animate().translationY(0f).duration = 200
@@ -530,7 +539,7 @@ class ConversationListFragment : LinkFragment() {
                 .addBulletin(NotificationBulletin(bulletinView, ::onClose))
                 .addBulletin(EmergencyContactBulletin(bulletinView, totalUsd >= 100, ::onClose))
                 .post()
-            conversationListAdapter.setShowHeader(shown, binding.messageRv)
+            messageAdapter.setShowHeader(shown, binding.messageRv)
         }
     }
 
@@ -540,7 +549,7 @@ class ConversationListFragment : LinkFragment() {
         } else {
             false
         }
-        conversationListAdapter.setShowHeader(shown, binding.messageRv)
+        messageAdapter.setShowHeader(shown, binding.messageRv)
     }
 
     private fun refreshBot() {
@@ -639,7 +648,7 @@ class ConversationListFragment : LinkFragment() {
             }
     }
 
-    class ConversationListAdapter : PagingDataHeaderAdapter<ConversationItem>(ConversationItem.DIFF_CALLBACK) {
+    class MessageAdapter : PagedHeaderAdapter<ConversationItem>(ConversationItem.DIFF_CALLBACK) {
 
         override fun getNormalViewHolder(context: Context, parent: ViewGroup): NormalHolder =
             MessageHolder(
@@ -667,7 +676,7 @@ class ConversationListFragment : LinkFragment() {
 
         @SuppressLint("SetTextI18n")
         fun bind(
-            onItemClickListener: PagingDataHeaderAdapter.OnItemListener<ConversationItem>?,
+            onItemClickListener: PagedHeaderAdapter.OnItemListener<ConversationItem>?,
             conversationItem: ConversationItem,
         ) {
             val id = Session.getAccountId()

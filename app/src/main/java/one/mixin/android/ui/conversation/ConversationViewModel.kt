@@ -12,17 +12,12 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.map
 import androidx.lifecycle.viewModelScope
-import androidx.paging.Pager
-import androidx.paging.PagingConfig
-import androidx.paging.PagingData
-import androidx.paging.PagingSource
-import androidx.paging.liveData
+import androidx.paging.PagedList
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.Constants
@@ -34,9 +29,8 @@ import one.mixin.android.api.request.DisappearRequest
 import one.mixin.android.api.request.ParticipantRequest
 import one.mixin.android.api.request.RelationshipRequest
 import one.mixin.android.api.request.StickerAddRequest
-import one.mixin.android.db.MixinDatabase
-import one.mixin.android.db.datasource.MessageDataSource
-import one.mixin.android.db.invalidater.InvalidateFlow
+import one.mixin.android.db.datasource.FastComputableLiveData
+import one.mixin.android.db.datasource.FastLivePagedListBuilder
 import one.mixin.android.extension.copyFromInputStream
 import one.mixin.android.extension.createAudioTemp
 import one.mixin.android.extension.deserialize
@@ -120,7 +114,6 @@ import javax.inject.Inject
 class ConversationViewModel
 @Inject
 internal constructor(
-    private val appDatabase: MixinDatabase,
     private val conversationRepository: ConversationRepository,
     private val userRepository: UserRepository,
     private val jobManager: MixinJobManager,
@@ -130,55 +123,24 @@ internal constructor(
     private val cleanMessageHelper: CleanMessageHelper,
 ) : ViewModel() {
 
-    fun getMessages(conversationId: String, firstKeyToLoad: Int = 0, dataCallback: (PagingSource<Int, MessageItem>) -> Unit): LiveData<PagingData<MessageItem>> {
-        return Pager(
-            PagingConfig(
-                pageSize = PAGE_SIZE,
-                enablePlaceholders = false,
-            ),
-            initialKey = 0,
-        ) {
-            val pageData = conversationRepository.getMessages(conversationId)
-            dataCallback(pageData)
-            pageData
-        }.liveData
+    fun getMessages(conversationId: String, firstKeyToLoad: Int = 0): FastComputableLiveData<PagedList<MessageItem>> {
+        val pagedListConfig = PagedList.Config.Builder()
+            .setPrefetchDistance(PAGE_SIZE * 2)
+            .setPageSize(PAGE_SIZE)
+            .setEnablePlaceholders(true)
+            .build()
+
+        return FastLivePagedListBuilder(
+            conversationRepository.getMessages(conversationId),
+            pagedListConfig,
+        ).setInitialLoadKey(firstKeyToLoad).build()
     }
-
-    private var invalidateJob: Job? = null
-    fun getMessageDemo(conversationId: String, messageId: Int? = MessageDataSource.NONE): LiveData<PagingData<MessageItem>> {
-        return Pager(
-            PagingConfig(
-                pageSize = MessageDataSource.PAGE_SIZE,
-                enablePlaceholders = false,
-                jumpThreshold = Int.MAX_VALUE,
-            ),
-            initialKey = messageId,
-        ) {
-            val dataSource = MessageDataSource(
-                appDatabase,
-                conversationId,
-            )
-            viewModelScope.launch {
-                InvalidateFlow.collect({ cid ->
-                    conversationId == cid
-                }) {
-                    dataSource.invalidate()
-                }
-            }
-            dataSource
-        }.liveData
-    }
-
-    suspend fun getMessageRowidSuspend(messageId: String) = conversationRepository.getMessageRowidSuspend(messageId)
-
-    suspend fun getLastMessageRowId(conversationId: String) = conversationRepository.getLastMessageRowId(conversationId)
-
-    suspend fun getLastMessageId(conversationId: String) = conversationRepository.getLastMessageId(conversationId)
 
     suspend fun indexUnread(conversationId: String) =
         conversationRepository.indexUnread(conversationId) ?: 0
 
-    suspend fun firstUnreadMessageId(conversationId: String): String? = conversationRepository.firstUnreadMessageId(conversationId)
+    suspend fun findFirstUnreadMessageId(conversationId: String, offset: Int): String? =
+        conversationRepository.findFirstUnreadMessageId(conversationId, offset)
 
     suspend fun getConversationDraftById(id: String): String? = conversationRepository.getConversationDraftById(id)
 
@@ -608,8 +570,6 @@ internal constructor(
             assetRepository.findOrSyncAsset(assetId)
         }
     }
-
-    fun refreshCountByConversationId(conversationId: String) = conversationRepository.refreshCountByConversationId(conversationId)
 
     fun updateRecentUsedBots(
         defaultSharedPreferences: SharedPreferences,

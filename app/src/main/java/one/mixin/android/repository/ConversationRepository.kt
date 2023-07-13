@@ -7,7 +7,6 @@ import androidx.lifecycle.map
 import androidx.paging.DataSource
 import androidx.paging.LivePagedListBuilder
 import androidx.paging.PagedList
-import androidx.paging.PagingSource
 import io.reactivex.Observable
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -27,7 +26,6 @@ import one.mixin.android.api.service.UserService
 import one.mixin.android.db.AppDao
 import one.mixin.android.db.CircleConversationDao
 import one.mixin.android.db.ConversationDao
-import one.mixin.android.db.ConversationExtDao
 import one.mixin.android.db.JobDao
 import one.mixin.android.db.MessageDao
 import one.mixin.android.db.MessageMentionDao
@@ -84,7 +82,6 @@ internal constructor(
     private val appDatabase: MixinDatabase,
     private val messageDao: MessageDao,
     private val conversationDao: ConversationDao,
-    private val conversationExtDao: ConversationExtDao,
     private val circleConversationDao: CircleConversationDao,
     private val participantDao: ParticipantDao,
     private val messageMentionDao: MessageMentionDao,
@@ -105,7 +102,7 @@ internal constructor(
 
     suspend fun getChatMessages(conversationId: String, offset: Int, limit: Int): List<MessageItem> = messageDao.getChatMessages(conversationId, offset, limit)
 
-    fun observeConversations(circleId: String?): PagingSource<Int, ConversationItem> = if (circleId == null) {
+    fun observeConversations(circleId: String?): DataSource.Factory<Int, ConversationItem> = if (circleId == null) {
         DataProvider.observeConversations(appDatabase)
     } else {
         DataProvider.observeConversationsByCircleId(circleId, appDatabase)
@@ -141,12 +138,6 @@ internal constructor(
 
     suspend fun getConversationDraftById(conversationId: String): String? =
         conversationDao.getConversationDraftById(conversationId)
-
-    suspend fun getMessageRowidSuspend(messageId: String) = messageDao.getMessageRowidSuspend(messageId)
-
-    suspend fun getLastMessageRowId(conversationId: String) = messageDao.getLastMessageRowId(conversationId)
-
-    suspend fun getLastMessageId(conversationId: String) = messageDao.getLastMessageId(conversationId)
 
     fun findMessageById(messageId: String) = messageDao.findMessageById(messageId)
 
@@ -184,7 +175,6 @@ internal constructor(
         messageDao.indexMediaMessages(conversationId, messageId)
     }
 
-    @SuppressLint("UnsafeOptInUsageError")
     fun getMediaMessages(
         conversationId: String,
         index: Int,
@@ -353,7 +343,8 @@ internal constructor(
         }
     }
 
-    suspend fun firstUnreadMessageId(conversationId: String): String? = remoteMessageStatusDao.firstUnreadMessageId(conversationId)
+    suspend fun findFirstUnreadMessageId(conversationId: String, offset: Int): String? =
+        messageDao.findFirstUnreadMessageId(conversationId, offset)
 
     suspend fun findLastMessage(conversationId: String) = messageDao.findLastMessage(conversationId)
 
@@ -459,8 +450,6 @@ internal constructor(
     suspend fun hasUploadedAttachmentSuspend(transcriptId: String) = transcriptMessageDao.hasUploadedAttachmentSuspend(transcriptId)
 
     fun refreshConversationById(conversationId: String) = remoteMessageStatusDao.updateConversationUnseen(conversationId)
-    fun refreshCountByConversationId(conversationId: String) =
-        conversationExtDao.refreshCountByConversationId(conversationId)
 
     suspend fun getAndSyncConversation(conversationId: String): Conversation? = withContext(Dispatchers.IO) {
         val conversation = conversationDao.getConversationByIdSuspend(conversationId)

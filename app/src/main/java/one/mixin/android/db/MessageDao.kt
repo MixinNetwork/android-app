@@ -2,7 +2,6 @@ package one.mixin.android.db
 
 import androidx.lifecycle.LiveData
 import androidx.paging.DataSource
-import androidx.paging.PagingSource
 import androidx.room.Dao
 import androidx.room.Query
 import androidx.room.RawQuery
@@ -63,7 +62,7 @@ interface MessageDao : BaseDao<Message> {
     // Read SQL
     @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
     @Query("$PREFIX_MESSAGE_ITEM WHERE m.conversation_id = :conversationId ORDER BY m.created_at DESC")
-    fun getMessages(conversationId: String): PagingSource<Int, MessageItem>
+    fun getMessages(conversationId: String): DataSource.Factory<Int, MessageItem>
 
     @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
     @Query("$PREFIX_MESSAGE_ITEM WHERE m.conversation_id = :conversationId AND m.category IN $CHAT_CATEGORY ORDER BY m.created_at ASC LIMIT :limit OFFSET :offset")
@@ -377,6 +376,9 @@ interface MessageDao : BaseDao<Message> {
     )
     suspend fun findNextAudioMessage(conversationId: String, createdAt: String, messageId: String): Message?
 
+    @Query("SELECT id FROM messages WHERE conversation_id =:conversationId ORDER BY created_at DESC, rowid DESC LIMIT 1 OFFSET :offset")
+    suspend fun findFirstUnreadMessageId(conversationId: String, offset: Int): String?
+
     @Query("SELECT id FROM messages WHERE conversation_id =:conversationId ORDER BY created_at DESC LIMIT 1")
     suspend fun findLastMessage(conversationId: String): String?
 
@@ -440,15 +442,6 @@ interface MessageDao : BaseDao<Message> {
 
     @Query("SELECT rowid FROM messages WHERE id = :messageId")
     fun getMessageRowid(messageId: String): Long?
-
-    @Query("SELECT rowid FROM messages WHERE id = :messageId")
-    suspend fun getMessageRowidSuspend(messageId: String): Int?
-
-    @Query("SELECT id FROM messages WHERE conversation_id = :conversationId ORDER BY created_at DESC, rowid DESC LIMIT 1")
-    suspend fun getLastMessageId(conversationId: String): String?
-
-    @Query("SELECT rowid FROM messages WHERE conversation_id = :conversationId ORDER BY created_at DESC, rowid DESC LIMIT 1")
-    suspend fun getLastMessageRowId(conversationId: String): Int?
 
     @Query("SELECT rowid FROM messages WHERE created_at >= :createdAt ORDER BY rowid ASC LIMIT 1")
     fun getMessageRowidByCreateAt(createdAt: String): Long?

@@ -1,3 +1,5 @@
+@file:Suppress("DEPRECATION")
+
 package one.mixin.android.db.datasource
 
 import android.annotation.SuppressLint
@@ -11,32 +13,28 @@ import timber.log.Timber
 
 @SuppressLint("RestrictedApi")
 @RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
-abstract class MixinLimitOffsetDataSource<T:Any> protected constructor(
+abstract class FastLimitOffsetDataSource<T : Any, S>(
     private val db: RoomDatabase,
-    private val countQuery: RoomSQLiteQuery,
     private val offsetStatement: RoomSQLiteQuery,
+    private val fastCountCallback: () -> Int,
     private val querySqlGenerator: (String) -> RoomSQLiteQuery,
-    private val tables: Array<out String>,
+    private vararg val tables: String,
 ) : PositionalDataSource<T>() {
-    private val observer: InvalidationTracker.Observer
+
+    init {
+        if (tables.isNotEmpty()) {
+            db.invalidationTracker.addWeakObserver(object : InvalidationTracker.Observer(tables) {
+                override fun onInvalidated(tables: Set<String>) {
+                    invalidate()
+                }
+            })
+        }
+    }
 
     /**
      * Count number of rows query can return
      */
-    private fun countItems(): Int {
-        val cursor = db.query(countQuery)
-        return try {
-            if (cursor.moveToFirst()) {
-                cursor.getInt(0)
-            } else {
-                0
-            }
-        } finally {
-            cursor.close()
-            countQuery.release()
-        }
-    }
-
+    private fun countItems(): Int = fastCountCallback()
     protected abstract fun convertRows(cursor: Cursor?): List<T>
     override fun loadInitial(
         params: LoadInitialParams,
@@ -47,7 +45,6 @@ abstract class MixinLimitOffsetDataSource<T:Any> protected constructor(
             callback.onResult(emptyList(), 0, 0)
             return
         }
-
         // bound the size requested, based on known count
         val firstLoadPosition = computeInitialLoadPosition(params, totalCount)
         val firstLoadSize = computeInitialLoadSize(params, firstLoadPosition, totalCount)
@@ -74,6 +71,27 @@ abstract class MixinLimitOffsetDataSource<T:Any> protected constructor(
         callback.onResult(list)
     }
 
+    private fun itemIds(startPosition: Int, loadCount: Int): String {
+        val offsetQuery = RoomSQLiteQuery.copyFrom(offsetStatement)
+        val argCount = offsetStatement.argCount
+        offsetQuery.bindLong(argCount - 1, loadCount.toLong())
+        offsetQuery.bindLong(argCount, startPosition.toLong())
+        val cursor = db.query(offsetQuery)
+        val ids = mutableListOf<String>()
+        try {
+            while (cursor.moveToNext()) {
+                val id = getUniqueId(cursor)
+                ids.add("'$id'")
+            }
+            return ids.joinToString()
+        } finally {
+            cursor.close()
+            offsetQuery.release()
+        }
+    }
+
+    abstract fun getUniqueId(cursor: Cursor): S
+
     /**
      * Return the rows from startPos to startPos + loadCount
      */
@@ -87,33 +105,5 @@ abstract class MixinLimitOffsetDataSource<T:Any> protected constructor(
             cursor.close()
             sqLiteQuery.release()
         }
-    }
-
-    private fun itemIds(startPosition: Int, loadCount: Int): String {
-        val offsetQuery = RoomSQLiteQuery.copyFrom(offsetStatement)
-        val argCount = offsetStatement.argCount
-        offsetQuery.bindLong(argCount - 1, loadCount.toLong())
-        offsetQuery.bindLong(argCount, startPosition.toLong())
-        val cursor = db.query(offsetQuery)
-        val ids = mutableListOf<String>()
-        try {
-            while (cursor.moveToNext()) {
-                val rowid = cursor.getLong(0)
-                ids.add("'$rowid'")
-            }
-            return ids.joinToString()
-        } finally {
-            cursor.close()
-            offsetQuery.release()
-        }
-    }
-
-    init {
-        observer = object : InvalidationTracker.Observer(tables) {
-            override fun onInvalidated(tables: Set<String>) {
-                invalidate()
-            }
-        }
-        db.invalidationTracker.addWeakObserver(observer)
     }
 }
