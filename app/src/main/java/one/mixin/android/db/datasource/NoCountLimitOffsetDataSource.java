@@ -1,8 +1,7 @@
-package one.mixin.android.util.chat;
+package one.mixin.android.db.datasource;
 
 import android.annotation.SuppressLint;
 import android.database.Cursor;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RestrictTo;
@@ -10,11 +9,10 @@ import androidx.paging.PositionalDataSource;
 import androidx.room.InvalidationTracker;
 import androidx.room.RoomDatabase;
 import androidx.room.RoomSQLiteQuery;
+import timber.log.Timber;
 
 import java.util.List;
 import java.util.Set;
-
-import timber.log.Timber;
 
 @SuppressLint("RestrictedApi")
 @RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)

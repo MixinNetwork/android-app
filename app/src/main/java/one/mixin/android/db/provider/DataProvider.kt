@@ -12,10 +12,10 @@ import kotlinx.coroutines.withContext
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.datasource.MixinCountLimitOffsetDataSource
 import one.mixin.android.db.datasource.MixinLimitOffsetDataSource
+import one.mixin.android.db.datasource.NoCountLimitOffsetDataSource
 import one.mixin.android.fts.FtsDataSource
 import one.mixin.android.fts.FtsDatabase
 import one.mixin.android.fts.rawSearch
-import one.mixin.android.util.chat.NoCountLimitOffsetDataSource
 import one.mixin.android.vo.AssetItem
 import one.mixin.android.vo.ChatHistoryMessageItem
 import one.mixin.android.vo.ChatMinimal

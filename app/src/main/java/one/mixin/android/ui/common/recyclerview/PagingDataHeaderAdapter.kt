@@ -55,17 +55,6 @@ abstract class PagingDataHeaderAdapter<T : Any>(diffCallback: DiffUtil.ItemCallb
         }
     }
 
-    private var headerObserver: PagedHeaderAdapterDataObserver? = null
-
-    override fun registerAdapterDataObserver(observer: RecyclerView.AdapterDataObserver) {
-        headerObserver = PagedHeaderAdapterDataObserver(observer, if (isShowHeader()) 1 else 0)
-        super.registerAdapterDataObserver(headerObserver!!)
-    }
-
-    override fun unregisterAdapterDataObserver(observer: RecyclerView.AdapterDataObserver) {
-        super.unregisterAdapterDataObserver(headerObserver!!)
-    }
-
     @Suppress("UNCHECKED_CAST")
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
         return (

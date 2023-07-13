@@ -418,7 +418,8 @@ class ConversationFragment() :
                     }
                     binding.chatRv.isVisible = true
                 } else if (isBottom) {
-                    scrollToDown()
+                    // todo It can't be judged by insert.
+                    // scrollToDown()
                 }
                 // todo unread count
             }
