@@ -66,7 +66,7 @@ import one.mixin.android.db.ParticipantDao
 import one.mixin.android.db.ParticipantSessionDao
 import one.mixin.android.db.pending.PendingDatabase
 import one.mixin.android.extension.filterNonAscii
-import one.mixin.android.extension.getDeviceId
+import one.mixin.android.extension.getStringDeviceId
 import one.mixin.android.extension.isGooglePlayServicesAvailable
 import one.mixin.android.extension.networkConnected
 import one.mixin.android.extension.show
@@ -176,7 +176,7 @@ object AppModule {
             val request = sourceRequest.newBuilder()
                 .addHeader("User-Agent", API_UA)
                 .addHeader("Accept-Language", Locale.getDefault().language)
-                .addHeader("Mixin-Device-Id", getDeviceId(resolver))
+                .addHeader("Mixin-Device-Id", getStringDeviceId(resolver))
                 .addHeader(xRequestId, requestId)
                 .addHeader(authorization, "Bearer ${Session.signToken(Session.getAccount(), sourceRequest, requestId)}")
                 .build()

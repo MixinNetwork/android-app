@@ -16,8 +16,8 @@ def versionPatch = 3
 def versionBuild = 9
 
 android {
-    compileSdk 33
-    buildToolsVersion "33.0.2"
+    compileSdk 34
+    buildToolsVersion "34.0.0"
     ndkVersion "23.1.7779620"
     namespace "one.mixin.android"
     defaultConfig {
