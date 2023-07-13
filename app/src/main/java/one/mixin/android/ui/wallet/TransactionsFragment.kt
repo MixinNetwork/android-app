@@ -54,6 +54,7 @@ import one.mixin.android.vo.notMessengerUser
 import one.mixin.android.vo.toAssetItem
 import one.mixin.android.vo.toSnapshot
 import one.mixin.android.widget.BottomSheet
+import one.mixin.android.widget.ConcatHeadersDecoration
 import timber.log.Timber
 import javax.inject.Inject
 
@@ -119,7 +120,7 @@ class TransactionsFragment : BaseTransactionsFragment<PagingData<SnapshotItem>>(
             }
         }
         binding.transactionsRv.itemAnimator = null
-        binding.transactionsRv.addItemDecoration(StickyRecyclerHeadersDecoration(adapter))
+        binding.transactionsRv.addItemDecoration(ConcatHeadersDecoration(adapter).apply { headerCount = 1 })
         val concatAdapter = ConcatAdapter(headerAdapter, adapter)
         binding.transactionsRv.adapter = concatAdapter
 
