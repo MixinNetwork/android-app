@@ -134,7 +134,7 @@ class DataProvider {
                     countStatement,
                     querySqlGenerator,
                     database,
-                    *arrayOf("message_mentions", "conversations", "users", "messages"),
+                    arrayOf("message_mentions", "conversations", "users"),
                 ) {
                 override fun convertRows(cursor: Cursor): List<ConversationItem> {
                     return convertToConversationItems(cursor)
@@ -216,14 +216,7 @@ class DataProvider {
                     countStatement,
                     querySqlGenerator,
                     database,
-                    *arrayOf(
-                        "message_mentions",
-                        "circle_conversations",
-                        "conversations",
-                        "messages",
-                        "circles",
-                        "users",
-                    ),
+                    arrayOf("message_mentions", "circle_conversations", "conversations", "circles", "users"),
                 ) {
                 override fun convertRows(cursor: Cursor): List<ConversationItem> {
                     return convertToConversationItems(cursor)

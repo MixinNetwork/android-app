@@ -56,7 +56,6 @@ internal constructor(
         return Pager(
             PagingConfig(
                 pageSize = CONVERSATION_PAGE_SIZE,
-                enablePlaceholders = true,
                 initialLoadSize = CONVERSATION_PAGE_SIZE * 2,
             ),
             initialKey = 0,

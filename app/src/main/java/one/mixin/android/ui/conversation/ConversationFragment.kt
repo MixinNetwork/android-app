@@ -1863,7 +1863,13 @@ class ConversationFragment() :
     private var specifyMessageId:String? =null
     private fun bindData() {
         lifecycleScope.launch {
-            val specifyMessageId = messageId?:chatViewModel.firstUnreadMessageId(conversationId)
+            val specifyMessageId = if (messageId == null) {
+                chatViewModel.firstUnreadMessageId(conversationId)?.also {
+                    conversationAdapter.unreadMsgId = it
+                }
+            } else {
+                messageId
+            }
             this@ConversationFragment.specifyMessageId = specifyMessageId
             val initialKey = if (specifyMessageId != null) {
                 chatViewModel.getMessageRowidSuspend(specifyMessageId) ?: MessageDataSource.NONE
