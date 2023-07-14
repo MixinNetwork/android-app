@@ -62,7 +62,6 @@ class SearchMessageFragment : BaseFragment(R.layout.fragment_search_message) {
     private val adapter by lazy { SearchMessageAdapter() }
 
     private var observer: Observer<PagedList<SearchMessageDetailItem>>? = null
-    private var queryObserver: Observer<PagedList<SearchMessageDetailItem>>? = null
     private var curLiveData: LiveData<PagedList<SearchMessageDetailItem>>? = null
 
     private val binding by viewBinding(FragmentSearchMessageBinding::bind)
@@ -185,7 +184,9 @@ class SearchMessageFragment : BaseFragment(R.layout.fragment_search_message) {
         if (s.isEmpty()) {
             removeObserverAndCancel()
             cancellationSignal = null
-            queryObserver = null
+            observer?.let {
+                curLiveData?.removeObserver(it)
+            }
             observer = null
             curLiveData = null
             binding.progress.isVisible = false
@@ -209,13 +210,12 @@ class SearchMessageFragment : BaseFragment(R.layout.fragment_search_message) {
             adapter.submitList(it)
         }
         observer?.let {
-            queryObserver = curLiveData?.observeOnceAtMost(viewLifecycleOwner, it)
+            curLiveData?.observe(viewLifecycleOwner, it)
         }
     }
 
     private fun removeObserverAndCancel() {
         cancellationSignal?.cancel()
         observer?.let { curLiveData?.removeObserver(it) }
-        queryObserver?.let { curLiveData?.removeObserver(it) }
     }
 }
