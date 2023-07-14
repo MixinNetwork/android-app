@@ -11,7 +11,7 @@ import timber.log.Timber
 
 @SuppressLint("RestrictedApi")
 @RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
-abstract class MixinLimitOffsetDataSource<T:Any> protected constructor(
+abstract class MixinLimitOffsetDataSource<T : Any> protected constructor(
     private val db: RoomDatabase,
     private val countQuery: RoomSQLiteQuery,
     private val offsetStatement: RoomSQLiteQuery,

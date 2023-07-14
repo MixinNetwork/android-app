@@ -1,17 +1,13 @@
 package one.mixin.android.ui.wallet.snapshot
 
-import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemTransactionHeaderBinding
 import one.mixin.android.databinding.ItemWalletTransactionsBinding
-import one.mixin.android.extension.inflate
 import one.mixin.android.extension.numberFormat
 import one.mixin.android.extension.textColorResource
 import one.mixin.android.extension.timeAgoDay
-import one.mixin.android.ui.common.recyclerview.NormalHolder
 import one.mixin.android.vo.SnapshotItem
 import one.mixin.android.vo.SnapshotType
 

@@ -14,7 +14,6 @@ import androidx.paging.ExperimentalPagingApi
 import androidx.paging.PagingData
 import androidx.recyclerview.widget.ConcatAdapter
 import androidx.recyclerview.widget.RecyclerView
-import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersDecoration
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -55,7 +54,6 @@ import one.mixin.android.vo.toAssetItem
 import one.mixin.android.vo.toSnapshot
 import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.ConcatHeadersDecoration
-import timber.log.Timber
 import javax.inject.Inject
 
 @OptIn(ExperimentalPagingApi::class)
@@ -154,8 +152,6 @@ class TransactionsFragment : BaseTransactionsFragment<PagingData<SnapshotItem>>(
         sendBottomSheet.release()
         super.onDestroyView()
     }
-
-
 
     private fun refreshPendingDeposits(asset: AssetItem) {
         if (viewDestroyed()) return

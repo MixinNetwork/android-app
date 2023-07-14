@@ -24,7 +24,7 @@ interface RemoteMessageStatusDao : BaseDao<RemoteMessageStatus> {
     fun countUnread(conversationId: String): Int
 
     @Query("SELECT message_id FROM remote_messages_status WHERE conversation_id = :conversationId AND status == 'DELIVERED' ORDER BY rowid ASC LIMIT 1")
-    suspend fun firstUnreadMessageId(conversationId: String):String?
+    suspend fun firstUnreadMessageId(conversationId: String): String?
 
     @Query("DELETE FROM remote_messages_status WHERE message_id = :messageId")
     fun deleteByMessageId(messageId: String)
