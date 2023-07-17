@@ -123,10 +123,7 @@ internal constructor(
     private val cleanMessageHelper: CleanMessageHelper,
 ) : ViewModel() {
 
-    fun getMessages(
-        conversationId: String,
-        firstKeyToLoad: Int = 0
-    ): FastComputableLiveData<PagedList<MessageItem>> {
+    fun getMessages(conversationId: String, firstKeyToLoad: Int = 0): FastComputableLiveData<PagedList<MessageItem>> {
         val pagedListConfig = PagedList.Config.Builder()
             .setPrefetchDistance(PAGE_SIZE * 2)
             .setPageSize(PAGE_SIZE)
@@ -145,8 +142,7 @@ internal constructor(
     suspend fun findFirstUnreadMessageId(conversationId: String, offset: Int): String? =
         conversationRepository.findFirstUnreadMessageId(conversationId, offset)
 
-    suspend fun getConversationDraftById(id: String): String? =
-        conversationRepository.getConversationDraftById(id)
+    suspend fun getConversationDraftById(id: String): String? = conversationRepository.getConversationDraftById(id)
 
     fun getConversationInfoById(id: String, userId: String) =
         conversationRepository.getConversationInfoById(id, userId)
@@ -158,46 +154,16 @@ internal constructor(
     fun findUserById(conversationId: String): LiveData<User> =
         userRepository.findUserById(conversationId)
 
-    fun sendTextMessage(
-        conversationId: String,
-        sender: User,
-        content: String,
-        encryptCategory: EncryptCategory,
-        isSilent: Boolean? = null
-    ) {
-        messenger.sendTextMessage(
-            viewModelScope,
-            conversationId,
-            sender,
-            content,
-            encryptCategory,
-            isSilent
-        )
+    fun sendTextMessage(conversationId: String, sender: User, content: String, encryptCategory: EncryptCategory, isSilent: Boolean? = null) {
+        messenger.sendTextMessage(viewModelScope, conversationId, sender, content, encryptCategory, isSilent)
     }
 
     // todo
-    fun sendTranscriptMessage(
-        conversationId: String,
-        messageId: String?,
-        sender: User,
-        transcriptMessages: List<TranscriptMessage>,
-        encryptCategory: EncryptCategory
-    ) {
-        messenger.sendTranscriptMessage(
-            messageId ?: UUID.randomUUID().toString(),
-            conversationId,
-            sender,
-            transcriptMessages,
-            encryptCategory
-        )
+    fun sendTranscriptMessage(conversationId: String, messageId: String?, sender: User, transcriptMessages: List<TranscriptMessage>, encryptCategory: EncryptCategory) {
+        messenger.sendTranscriptMessage(messageId ?: UUID.randomUUID().toString(), conversationId, sender, transcriptMessages, encryptCategory)
     }
 
-    fun sendPostMessage(
-        conversationId: String,
-        sender: User,
-        content: String,
-        encryptCategory: EncryptCategory
-    ) {
+    fun sendPostMessage(conversationId: String, sender: User, content: String, encryptCategory: EncryptCategory) {
         messenger.sendPostMessage(conversationId, sender, content, encryptCategory)
     }
 
@@ -213,30 +179,11 @@ internal constructor(
         encryptCategory: EncryptCategory,
         isSilentMessage: Boolean? = null,
     ) {
-        messenger.sendReplyTextMessage(
-            conversationId,
-            sender,
-            content,
-            replyMessage,
-            encryptCategory,
-            isSilentMessage
-        )
+        messenger.sendReplyTextMessage(conversationId, sender, content, replyMessage, encryptCategory, isSilentMessage)
     }
 
-    fun sendAttachmentMessage(
-        conversationId: String,
-        sender: User,
-        attachment: Attachment,
-        encryptCategory: EncryptCategory,
-        replyMessage: MessageItem? = null
-    ) {
-        messenger.sendAttachmentMessage(
-            conversationId,
-            sender,
-            attachment,
-            encryptCategory,
-            replyMessage
-        )
+    fun sendAttachmentMessage(conversationId: String, sender: User, attachment: Attachment, encryptCategory: EncryptCategory, replyMessage: MessageItem? = null) {
+        messenger.sendAttachmentMessage(conversationId, sender, attachment, encryptCategory, replyMessage)
     }
 
     fun sendAudioMessage(
@@ -249,16 +196,7 @@ internal constructor(
         encryptCategory: EncryptCategory,
         replyMessage: MessageItem? = null,
     ) {
-        messenger.sendAudioMessage(
-            conversationId,
-            messageId,
-            sender,
-            file,
-            duration,
-            waveForm,
-            encryptCategory,
-            replyMessage
-        )
+        messenger.sendAudioMessage(conversationId, messageId, sender, file, duration, waveForm, encryptCategory, replyMessage)
     }
 
     suspend fun sendAudioMessage(
@@ -278,16 +216,7 @@ internal constructor(
             val audioFile = MixinApplication.get().getAudioPath()
                 .createAudioTemp(conversationId, audioMessagePayload.messageId, "ogg")
             audioFile.copyFromInputStream(inputStream)
-            messenger.sendAudioMessage(
-                conversationId,
-                messageId,
-                sender,
-                audioFile,
-                duration,
-                waveForm,
-                encryptCategory,
-                replyMessage
-            )
+            messenger.sendAudioMessage(conversationId, messageId, sender, audioFile, duration, waveForm, encryptCategory, replyMessage)
         }
     }
 
@@ -300,23 +229,10 @@ internal constructor(
         messenger.sendStickerMessage(conversationId, sender, stickerId, encryptCategory)
     }
 
-    fun sendContactMessage(
-        conversationId: String,
-        sender: User,
-        shareUserId: String,
-        encryptCategory: EncryptCategory,
-        replyMessage: MessageItem? = null
-    ) {
+    fun sendContactMessage(conversationId: String, sender: User, shareUserId: String, encryptCategory: EncryptCategory, replyMessage: MessageItem? = null) {
         viewModelScope.launch {
             val user = userRepository.suspendFindUserById(shareUserId)
-            messenger.sendContactMessage(
-                conversationId,
-                sender,
-                shareUserId,
-                user?.fullName,
-                encryptCategory,
-                replyMessage
-            )
+            messenger.sendContactMessage(conversationId, sender, shareUserId, user?.fullName, encryptCategory, replyMessage)
         }
     }
 
@@ -329,15 +245,7 @@ internal constructor(
         createdAt: String? = null,
         replyMessage: MessageItem? = null,
     ) {
-        messenger.sendVideoMessage(
-            conversationId,
-            senderId,
-            uri,
-            encryptCategory,
-            messageId,
-            createdAt,
-            replyMessage
-        )
+        messenger.sendVideoMessage(conversationId, senderId, uri, encryptCategory, messageId, createdAt, replyMessage)
     }
 
     fun sendVideoMessage(
@@ -350,15 +258,7 @@ internal constructor(
         val uri = videoMessagePayload.url.toUri()
         val messageId = videoMessagePayload.messageId
         val createdAt = videoMessagePayload.createdAt
-        messenger.sendVideoMessage(
-            conversationId,
-            senderId,
-            uri,
-            encryptCategory,
-            messageId,
-            createdAt,
-            replyMessage
-        )
+        messenger.sendVideoMessage(conversationId, senderId, uri, encryptCategory, messageId, createdAt, replyMessage)
     }
 
     fun sendRecallMessage(conversationId: String, sender: User, list: List<MessageItem>) {
@@ -416,12 +316,7 @@ internal constructor(
         messenger.sendGiphyMessage(conversationId, senderId, image, encryptCategory, previewUrl)
     }
 
-    fun sendLocationMessage(
-        conversationId: String,
-        senderId: String,
-        location: LocationPayload,
-        encryptCategory: EncryptCategory
-    ) {
+    fun sendLocationMessage(conversationId: String, senderId: String, location: LocationPayload, encryptCategory: EncryptCategory) {
         messenger.sendLocationMessage(conversationId, senderId, location, encryptCategory)
     }
 
@@ -436,17 +331,7 @@ internal constructor(
         fromInput: Boolean = false,
         messageId: String = UUID.randomUUID().toString(),
     ): Int {
-        return messenger.sendImageMessage(
-            conversationId,
-            messageId,
-            sender,
-            uri,
-            encryptCategory,
-            notCompress,
-            mime,
-            replyMessage,
-            fromInput
-        )
+        return messenger.sendImageMessage(conversationId, messageId, sender, uri, encryptCategory, notCompress, mime, replyMessage, fromInput)
     }
 
     fun updateRelationship(request: RelationshipRequest) {
@@ -481,11 +366,7 @@ internal constructor(
     fun cancel(id: String, conversationId: String) = viewModelScope.launch(Dispatchers.IO) {
         jobManager.cancelJobByMixinJobId(id) {
             viewModelScope.launch {
-                conversationRepository.updateMediaStatusSuspend(
-                    MediaStatus.CANCELED.name,
-                    id,
-                    conversationId
-                )
+                conversationRepository.updateMediaStatusSuspend(MediaStatus.CANCELED.name, id, conversationId)
             }
         }
     }
@@ -496,11 +377,7 @@ internal constructor(
             conversationRepository.findMessageById(id)?.let {
                 if (it.isVideo() && it.mediaSize != null && it.mediaSize == 0L) {
                     try {
-                        conversationRepository.updateMediaStatus(
-                            MediaStatus.PENDING.name,
-                            it.messageId,
-                            it.conversationId
-                        )
+                        conversationRepository.updateMediaStatus(MediaStatus.PENDING.name, it.messageId, it.conversationId)
                         jobManager.addJobInBackground(
                             ConvertVideoJob(
                                 it.conversationId,
@@ -518,10 +395,7 @@ internal constructor(
                     } catch (e: NullPointerException) {
                         onError.invoke()
                     }
-                } else if (it.isImage() && it.mediaMimeType == MimeType.GIF.toString() && it.mediaUrl?.startsWith(
-                        "http"
-                    ) == true
-                ) { // un-downloaded GIPHY
+                } else if (it.isImage() && it.mediaMimeType == MimeType.GIF.toString() && it.mediaUrl?.startsWith("http") == true) { // un-downloaded GIPHY
                     val category = when {
                         it.isSignal() -> MessageCategory.SIGNAL_IMAGE
                         it.isEncrypted() -> MessageCategory.ENCRYPTED_IMAGE
@@ -530,27 +404,15 @@ internal constructor(
                     try {
                         jobManager.addJobInBackground(
                             SendGiphyJob(
-                                it.conversationId,
-                                it.userId,
-                                it.mediaUrl,
-                                it.mediaWidth!!,
-                                it.mediaHeight!!,
-                                it.mediaSize ?: 0L,
-                                category,
-                                it.messageId,
-                                it.thumbImage ?: "",
-                                it.createdAt,
+                                it.conversationId, it.userId, it.mediaUrl, it.mediaWidth!!, it.mediaHeight!!,
+                                it.mediaSize ?: 0L, category, it.messageId, it.thumbImage ?: "", it.createdAt,
                             ),
                         )
                     } catch (e: NullPointerException) {
                         onError.invoke()
                     }
                 } else {
-                    conversationRepository.updateMediaStatus(
-                        MediaStatus.PENDING.name,
-                        it.messageId,
-                        it.conversationId
-                    )
+                    conversationRepository.updateMediaStatus(MediaStatus.PENDING.name, it.messageId, it.conversationId)
                     jobManager.addJobInBackground(SendAttachmentMessageJob(it))
                 }
             }
@@ -603,11 +465,9 @@ internal constructor(
 
     fun observeStickers(id: String) = accountRepository.observeStickers(id)
 
-    fun observeSystemStickersByAlbumId(id: String) =
-        accountRepository.observeSystemStickersByAlbumId(id)
+    fun observeSystemStickersByAlbumId(id: String) = accountRepository.observeSystemStickersByAlbumId(id)
 
-    suspend fun findStickersByAlbumId(albumId: String) =
-        accountRepository.findStickersByAlbumId(albumId)
+    suspend fun findStickersByAlbumId(albumId: String) = accountRepository.findStickersByAlbumId(albumId)
 
     suspend fun findStickerById(stickerId: String) = accountRepository.findStickerById(stickerId)
 
@@ -615,8 +475,7 @@ internal constructor(
 
     suspend fun findAlbumById(albumId: String) = accountRepository.findAlbumById(albumId)
 
-    suspend fun findStickerSystemAlbumId(stickerId: String) =
-        accountRepository.findStickerSystemAlbumId(stickerId)
+    suspend fun findStickerSystemAlbumId(stickerId: String) = accountRepository.findStickerSystemAlbumId(stickerId)
 
     fun observeAlbumById(albumId: String) = accountRepository.observeAlbumById(albumId)
 
@@ -630,8 +489,7 @@ internal constructor(
         accountRepository.updateAlbumOrders(orders)
     }
 
-    suspend fun updateAlbumAdded(stickerAlbumAdded: StickerAlbumAdded) =
-        accountRepository.updateAlbumAdded(stickerAlbumAdded)
+    suspend fun updateAlbumAdded(stickerAlbumAdded: StickerAlbumAdded) = accountRepository.updateAlbumAdded(stickerAlbumAdded)
 
     suspend fun findMaxOrder() = accountRepository.findMaxOrder()
 
@@ -784,8 +642,7 @@ internal constructor(
     suspend fun getSortMessagesByIds(messages: Set<MessageItem>): ArrayList<ForwardMessage> {
         return withContext(Dispatchers.IO) {
             val list = ArrayList<ForwardMessage>()
-            val sortMessages =
-                conversationRepository.getSortMessagesByIds(messages.map { it.messageId })
+            val sortMessages = conversationRepository.getSortMessagesByIds(messages.map { it.messageId })
             for (m in sortMessages) {
                 val forwardMessage = generateForwardMessage(m)
                 forwardMessage?.let { fm -> list.add(fm) }
@@ -794,8 +651,7 @@ internal constructor(
         }
     }
 
-    suspend fun getAnnouncementByConversationId(conversationId: String) =
-        conversationRepository.getAnnouncementByConversationId(conversationId)
+    suspend fun getAnnouncementByConversationId(conversationId: String) = conversationRepository.getAnnouncementByConversationId(conversationId)
 
     private val searchControlledRunner = ControlledRunner<List<User>>()
 
@@ -843,22 +699,12 @@ internal constructor(
         }
     }
 
-    fun getUnreadMentionMessageByConversationId(conversationId: String) =
-        conversationRepository.getUnreadMentionMessageByConversationId(conversationId)
+    fun getUnreadMentionMessageByConversationId(conversationId: String) = conversationRepository.getUnreadMentionMessageByConversationId(conversationId)
 
-    suspend fun findLatestTrace(
-        opponentId: String?,
-        destination: String?,
-        tag: String?,
-        amount: String,
-        assetId: String
-    ) =
+    suspend fun findLatestTrace(opponentId: String?, destination: String?, tag: String?, amount: String, assetId: String) =
         assetRepository.findLatestTrace(opponentId, destination, tag, amount, assetId)
 
-    suspend fun checkData(
-        selectItem: SelectItem,
-        callback: suspend (String, EncryptCategory) -> Unit
-    ) {
+    suspend fun checkData(selectItem: SelectItem, callback: suspend (String, EncryptCategory) -> Unit) {
         withContext(Dispatchers.IO) {
             if (selectItem.conversationId != null) {
                 val conversation = conversationRepository.getConversation(selectItem.conversationId)
@@ -868,22 +714,19 @@ internal constructor(
                             callback(conversation.conversationId, EncryptCategory.SIGNAL)
                         }
                     } else {
-                        userRepository.findContactByConversationId(selectItem.conversationId)
-                            ?.let { user ->
-                                withContext(Dispatchers.Main) {
-                                    callback(conversation.conversationId, user.encryptedCategory())
-                                }
+                        userRepository.findContactByConversationId(selectItem.conversationId)?.let { user ->
+                            withContext(Dispatchers.Main) {
+                                callback(conversation.conversationId, user.encryptedCategory())
                             }
+                        }
                     }
                 }
             } else if (selectItem.userId != null) {
                 userRepository.findForwardUserById(selectItem.userId)?.let { user ->
-                    val conversation =
-                        conversationRepository.findContactConversationByOwnerId(user.userId)
+                    val conversation = conversationRepository.findContactConversationByOwnerId(user.userId)
                     if (conversation == null) {
                         val createdAt = nowInUtc()
-                        val conversationId =
-                            generateConversationId(Session.getAccountId()!!, user.userId)
+                        val conversationId = generateConversationId(Session.getAccountId()!!, user.userId)
                         val participants = arrayListOf(
                             Participant(conversationId, Session.getAccountId()!!, "", createdAt),
                             Participant(conversationId, user.userId, "", createdAt),
@@ -910,8 +753,7 @@ internal constructor(
         }
     }
 
-    suspend fun findMessageById(messageId: String) =
-        conversationRepository.suspendFindMessageById(messageId)
+    suspend fun findMessageById(messageId: String) = conversationRepository.suspendFindMessageById(messageId)
 
     fun sendMessage(message: Message) {
         jobManager.addJobInBackground(SendMessageJob(message))
@@ -922,10 +764,7 @@ internal constructor(
             transcriptMessages.forEach { transcript ->
                 if (transcript.quoteContent != null) {
                     val quoteMessage = try {
-                        GsonHelper.customGson.fromJson(
-                            transcript.quoteContent,
-                            QuoteMessageItem::class.java
-                        )
+                        GsonHelper.customGson.fromJson(transcript.quoteContent, QuoteMessageItem::class.java)
                     } catch (e: Exception) {
                         null
                     }
@@ -936,10 +775,7 @@ internal constructor(
         return transcriptMessages
     }
 
-    suspend fun getTranscripts(
-        transcriptId: String,
-        messageId: String? = null
-    ): List<TranscriptMessage> =
+    suspend fun getTranscripts(transcriptId: String, messageId: String? = null): List<TranscriptMessage> =
         withContext(Dispatchers.IO) {
             val transcripts = conversationRepository.getTranscriptsById(transcriptId)
             if (messageId != null) {
@@ -958,26 +794,25 @@ internal constructor(
         conversationRepository.findPinMessageById(messageId)
     }
 
-    suspend fun createConversation(conversationId: String, userId: String) =
-        withContext(Dispatchers.IO) {
-            val conversation = conversationRepository.getConversation(conversationId)
-            if (conversation == null) {
-                val request = ConversationRequest(
-                    conversationId = conversationId,
-                    category = ConversationCategory.CONTACT.name,
-                    participants = listOf(ParticipantRequest(userId, "")),
-                )
-                val response = conversationRepository.createSuspend(request)
-                if (response.isSuccess) {
-                    val data = response.data
-                    if (data != null) {
-                        conversationRepository.insertOrUpdateConversation(data)
-                        return@withContext true
-                    }
+    suspend fun createConversation(conversationId: String, userId: String) = withContext(Dispatchers.IO) {
+        val conversation = conversationRepository.getConversation(conversationId)
+        if (conversation == null) {
+            val request = ConversationRequest(
+                conversationId = conversationId,
+                category = ConversationCategory.CONTACT.name,
+                participants = listOf(ParticipantRequest(userId, "")),
+            )
+            val response = conversationRepository.createSuspend(request)
+            if (response.isSuccess) {
+                val data = response.data
+                if (data != null) {
+                    conversationRepository.insertOrUpdateConversation(data)
+                    return@withContext true
                 }
             }
-            return@withContext false
         }
+        return@withContext false
+    }
 
     suspend fun disappear(conversationId: String, duration: Long) =
         conversationRepository.disappear(conversationId, DisappearRequest(duration))
