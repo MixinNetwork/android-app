@@ -165,6 +165,7 @@ class MusicBottomSheetDialogFragment : BottomSheetDialogFragment() {
                     }
                     viewModel.conversationLiveData(conversationId, index)
                         .observe(this@MusicBottomSheetDialogFragment) { list ->
+                            if (list.isEmpty()) return@observe
                             listAdapter.submitList(list)
                             pb.isVisible = false
 

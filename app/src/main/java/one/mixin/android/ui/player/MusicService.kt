@@ -173,6 +173,8 @@ class MusicService : MediaSessionService(), LifecycleOwner {
         private var playWhenReady = true
 
         override fun onChanged(value: PagedList<MediaMetadataCompat>) {
+            if (value.isEmpty()) return
+
             currentPagedList = value
             val downloadedList = mutableListOf<MediaMetadataCompat>()
             for (i in 0 until value.size) {
@@ -196,6 +198,8 @@ class MusicService : MediaSessionService(), LifecycleOwner {
 
         fun loadAround(index: Int, mediaId: String, playWhenReady: Boolean = true) {
             currentPagedList?.let { list ->
+                if (list.isEmpty()) return@let
+
                 list.loadAround(max(0, min(list.size - 1, index)))
                 this.mediaId = mediaId
                 this.playWhenReady = playWhenReady
