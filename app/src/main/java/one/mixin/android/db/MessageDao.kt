@@ -68,7 +68,7 @@ interface MessageDao : BaseDao<Message> {
     @Query("$PREFIX_MESSAGE_ITEM WHERE m.conversation_id = :conversationId AND m.category IN $CHAT_CATEGORY ORDER BY m.created_at ASC LIMIT :limit OFFSET :offset")
     suspend fun getChatMessages(conversationId: String, offset: Int, limit: Int): List<MessageItem>
 
-    @Query("SELECT count(1) FROM messages WHERE conversation_id = :conversationId AND rowid > (SELECT rowid FROM messages WHERE id = :messageId)")
+    @Query("SELECT count(1) FROM messages WHERE conversation_id = :conversationId AND rowid > (SELECT rowid FROM messages WHERE id = :messageId) AND created_at >= (SELECT created_at FROM messages WHERE id = :messageId)")
     suspend fun findMessageIndex(conversationId: String, messageId: String): Int
 
     @Query("SELECT content FROM messages WHERE conversation_id = :conversationId AND id = :messageId")
