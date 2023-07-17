@@ -35,7 +35,7 @@ class SnapshotsMediator(
                 return MediatorResult.Error(IllegalStateException(resp.error?.toString()))
             }
             val list = resp.data
-            val nextKey = if (list == null || list.size < LIMIT) {
+            val nextKey = if (list.isNullOrEmpty()) {
                 null
             } else {
                 snapshotDao.insertListSuspend(list)
@@ -44,7 +44,11 @@ class SnapshotsMediator(
                         jobManager.addJobInBackground(RefreshAssetsJob(item.assetId))
                     }
                 }
-                list.last().createdAt
+                if (list.size < LIMIT) {
+                    null
+                } else {
+                    list.last().createdAt
+                }
             }
             return MediatorResult.Success(endOfPaginationReached = nextKey == null)
         } catch (e: Exception) {
