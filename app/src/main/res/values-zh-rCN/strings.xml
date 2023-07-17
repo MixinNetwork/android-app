@@ -1210,4 +1210,5 @@
         <item quantity="one">已选择 %1$d 个</item>
         <item quantity="other">已选择 %1$d 个</item>
     </plurals>
+    <string name="user_deleted_hint">该用户已经删除了账号。</string>
 </resources>

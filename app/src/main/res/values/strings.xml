@@ -1235,4 +1235,5 @@
         <item quantity="one">%1$d Item Selected</item>
         <item quantity="other">%1$d Items Selected</item>
     </plurals>
+    <string name="user_deleted_hint">The user has deleted his own account.</string>
 </resources>

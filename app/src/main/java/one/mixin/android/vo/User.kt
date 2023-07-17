@@ -94,6 +94,11 @@ data class User(
     @SerialName("is_scam")
     @ColumnInfo(name = "is_scam")
     var isScam: Boolean? = null,
+
+    @SerializedName("is_deactivated")
+    @SerialName("is_deactivated")
+    @ColumnInfo("is_deactivated")
+    val isDeactivated: Boolean? = null
 ) : Parcelable {
     @SerializedName("app")
     @Ignore
