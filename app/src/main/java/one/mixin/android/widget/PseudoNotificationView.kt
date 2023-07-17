@@ -68,7 +68,7 @@ class PseudoNotificationView : RelativeLayout {
     private val gestureDetector = GestureDetector(
         context,
         object : GestureDetector.SimpleOnGestureListener() {
-            override fun onFling(e1: MotionEvent, e2: MotionEvent, velocityX: Float, velocityY: Float): Boolean {
+            override fun onFling(e1: MotionEvent?, e2: MotionEvent, velocityX: Float, velocityY: Float): Boolean {
                 hide()
                 return super.onFling(e1, e2, velocityX, velocityY)
             }

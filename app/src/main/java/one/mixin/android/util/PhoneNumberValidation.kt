@@ -1,8 +1,18 @@
 package one.mixin.android.util
 
+import androidx.core.text.isDigitsOnly
 import com.google.i18n.phonenumbers.NumberParseException
 import com.google.i18n.phonenumbers.PhoneNumberUtil
 import com.google.i18n.phonenumbers.Phonenumber
+
+const val xinDialCode = "+XIN"
+
+fun isAnonymousNumber(number: String, countryDialCode: String): Boolean {
+    if (countryDialCode != xinDialCode) return false
+
+    val numberWithoutDialCode = number.removePrefix(xinDialCode)
+    return numberWithoutDialCode.isDigitsOnly()
+}
 
 fun isValidNumber(phoneUtil: PhoneNumberUtil, number: String, countryCode: String, countryDialCode: String? = null): Pair<Boolean, Phonenumber.PhoneNumber?> {
     return try {

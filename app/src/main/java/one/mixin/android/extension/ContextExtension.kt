@@ -1031,7 +1031,7 @@ fun Activity.showPipPermissionNotification(targetActivity: Class<*>, title: Stri
 }
 
 @SuppressLint("HardwareIds")
-fun getDeviceId(resolver: ContentResolver): String {
+fun getStringDeviceId(resolver: ContentResolver): String {
     var deviceId = Settings.Secure.getString(resolver, Settings.Secure.ANDROID_ID)
     if (deviceId == null || deviceId == "9774d56d682e549c") {
         deviceId = FirebaseInstallations.getInstance().id.result
@@ -1039,8 +1039,8 @@ fun getDeviceId(resolver: ContentResolver): String {
     return UUID.nameUUIDFromBytes(deviceId.toByteArray()).toString()
 }
 
-fun Context.getDeviceId(): String {
-    return getDeviceId(contentResolver)
+fun Context.getStringDeviceId(): String {
+    return getStringDeviceId(contentResolver)
 }
 
 fun Context.handleIgnoreBatteryOptimization(newTask: Boolean = false) {

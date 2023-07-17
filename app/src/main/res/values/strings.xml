@@ -88,6 +88,7 @@
     <string name="Allow_bot_send_messages">Allow bot to send messages represent of you.</string>
     <string name="Amount">Amount</string>
     <string name="an_audio">an audio</string>
+    <string name="Anonymous_Number">Anonymous Number</string>
     <string name="ANSWER">ANSWER</string>
     <string name="app_card_shareable_false">The card has been set to not allow sharing</string>
     <string name="app_name">Mixin</string>
@@ -380,11 +381,13 @@
     <string name="Encrypted">Encrypted</string>
     <string name="End_to_End_Encryption">End-to-end Encrypted</string>
     <string name="Enter_new_phone_number">Enter your new phone number</string>
+    <string name="Enter_new_anonymous_number">Enter your new anonymous number</string>
     <string name="Enter_PIN_to_delete_account">Enter your PIN to delete your account</string>
+    <string name="Enter_your_phone_number">Enter your phone number</string>
+    <string name="Enter_your_anonymous_number">Enter your anonymous number</string>
     <string name="Enter_your_emergency_contact_Mixin_ID">Enter your emergency contact Mixin ID</string>
     <string name="Enter_your_new_PIN">Enter your new PIN</string>
     <string name="Enter_your_old_PIN">Enter your old PIN</string>
-    <string name="Enter_your_phone_number">Enter your phone number</string>
     <string name="Enter_your_PIN">Enter your PIN</string>
     <string name="Enter_your_PIN_to_continue">Enter your PIN to continue</string>
     <string name="EOS_contract_address">EOS contract address</string>
@@ -535,6 +538,7 @@
     <string name="landing_enter_mobile_tip">We will never display your mobile number publicly.</string>
     <string name="landing_introduction">Tap \"Agree &amp; Continue\" to accept  the %1$s and %2$s</string>
     <string name="landing_invitation_dialog_content">We will send a 4-digit code to your phone number %1$s, please enter the code in next screen.</string>
+    <string name="landing_anonymous_dialog_content">We will send a 4-digit code to your anonymous number %1$s, please enter the code in next screen.</string>
     <string name="landing_privacy_policy_url">https://mixin.one/pages/privacy</string>
     <string name="landing_terms_url">https://mixin.one/pages/terms</string>
     <string name="landing_validation_title">Enter the 4-digit code sent to you at %1$s</string>

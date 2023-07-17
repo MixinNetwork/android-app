@@ -78,7 +78,7 @@ import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.areBubblesAllowedCompat
 import one.mixin.android.extension.checkStorageNotLow
 import one.mixin.android.extension.defaultSharedPreferences
-import one.mixin.android.extension.getDeviceId
+import one.mixin.android.extension.getStringDeviceId
 import one.mixin.android.extension.inTransaction
 import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.putBoolean
@@ -214,9 +214,9 @@ class MainActivity : BlazeBaseActivity() {
 
         var deviceId = defaultSharedPreferences.getString(DEVICE_ID, null)
         if (deviceId == null) {
-            deviceId = this.getDeviceId()
+            deviceId = this.getStringDeviceId()
             defaultSharedPreferences.putString(DEVICE_ID, deviceId)
-        } else if (deviceId != this.getDeviceId()) {
+        } else if (deviceId != this.getStringDeviceId()) {
             defaultSharedPreferences.remove(DEVICE_ID)
             MixinApplication.get().closeAndClear(true)
             finish()

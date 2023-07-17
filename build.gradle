@@ -47,7 +47,7 @@ buildscript {
         ext.zxingVersion = '3.5.1'
         ext.rxpermissionsVersion = '0.10.3'
         ext.ucropVersion = '2.2.4'
-        ext.countryPickerVersion = '1.2.3'
+        ext.countryPickerVersion = '1.3.1'
         ext.fabprogresscircleVersion = '1.1'
         ext.rxContactsVersion = '1.1'
         ext.glideTransformationsVersion = '3.2.0'
@@ -119,7 +119,7 @@ buildscript {
         classpath 'com.android.tools.build.jetifier:jetifier-processor:1.0.0-beta10'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:${kotlinVersion}"
         classpath 'com.google.gms:google-services:4.3.15'
-        classpath 'com.google.firebase:firebase-crashlytics-gradle:2.9.6'
+        classpath 'com.google.firebase:firebase-crashlytics-gradle:2.9.7'
         classpath 'com.google.firebase:perf-plugin:1.4.2'
     }
 }
