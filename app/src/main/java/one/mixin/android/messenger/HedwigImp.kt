@@ -10,6 +10,7 @@ import one.mixin.android.api.service.ConversationService
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.insertNoReplace
 import one.mixin.android.db.insertUpdate
+import one.mixin.android.db.invalidater.InvalidateFlow
 import one.mixin.android.db.pending.PendingDatabase
 import one.mixin.android.job.DecryptCallMessage
 import one.mixin.android.job.DecryptMessage
@@ -20,7 +21,6 @@ import one.mixin.android.session.Session
 import one.mixin.android.util.FLOOD_THREAD
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.PENDING_DB_THREAD
-import one.mixin.android.util.chat.InvalidateFlow
 import one.mixin.android.util.reportException
 import one.mixin.android.vo.CallStateLiveData
 import one.mixin.android.vo.Conversation

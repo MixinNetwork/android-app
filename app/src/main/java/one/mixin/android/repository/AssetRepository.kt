@@ -1,9 +1,16 @@
 package one.mixin.android.repository
 
 import android.os.CancellationSignal
+import androidx.lifecycle.LiveData
 import androidx.paging.DataSource
+import androidx.paging.ExperimentalPagingApi
+import androidx.paging.Pager
+import androidx.paging.PagingConfig
+import androidx.paging.PagingData
+import androidx.paging.liveData
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import one.mixin.android.Constants
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.AddressRequest
 import one.mixin.android.api.request.Pin
@@ -21,6 +28,8 @@ import one.mixin.android.db.TopAssetDao
 import one.mixin.android.db.TraceDao
 import one.mixin.android.db.provider.DataProvider
 import one.mixin.android.extension.within6Hours
+import one.mixin.android.job.MixinJobManager
+import one.mixin.android.ui.wallet.adapter.SnapshotsMediator
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.ErrorHandler.Companion.FORBIDDEN
 import one.mixin.android.util.ErrorHandler.Companion.NOT_FOUND
@@ -51,6 +60,7 @@ constructor(
     private val hotAssetDao: TopAssetDao,
     private val traceDao: TraceDao,
     private val chainDao: ChainDao,
+    private val jobManager: MixinJobManager,
 ) {
 
     fun assets() = assetService.assets()
@@ -117,6 +127,36 @@ constructor(
     private suspend fun simpleAsset(id: String) = assetDao.simpleAsset(id)
 
     suspend fun insertPendingDeposit(snapshot: List<Snapshot>) = snapshotDao.insertListSuspend(snapshot)
+
+    @ExperimentalPagingApi
+    fun snapshots(
+        assetId: String,
+        type: String? = null,
+        otherType: String? = null,
+        orderByAmount: Boolean = false,
+    ): LiveData<PagingData<SnapshotItem>> =
+        Pager(
+            config = PagingConfig(
+                pageSize = Constants.PAGE_SIZE,
+                enablePlaceholders = true,
+            ),
+            pagingSourceFactory = {
+                if (type == null) {
+                    if (orderByAmount) {
+                        snapshotDao.snapshotsOrderByAmountPaging(assetId)
+                    } else {
+                        snapshotDao.snapshotsPaging(assetId)
+                    }
+                } else {
+                    if (orderByAmount) {
+                        snapshotDao.snapshotsByTypeOrderByAmountPaging(assetId, type, otherType)
+                    } else {
+                        snapshotDao.snapshotsByTypePaging(assetId, type, otherType)
+                    }
+                }
+            },
+            remoteMediator = SnapshotsMediator(assetService, snapshotDao, assetDao, jobManager, assetId),
+        ).liveData
 
     fun snapshotsFromDb(
         id: String,

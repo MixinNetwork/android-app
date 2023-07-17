@@ -4,11 +4,13 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.view.View
 import android.view.ViewGroup
+import androidx.paging.PagingDataAdapter
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
+import timber.log.Timber
 
-abstract class PagedHeaderAdapter<T : Any>(diffCallback: DiffUtil.ItemCallback<T>) :
-    SafePagedListAdapter<T, RecyclerView.ViewHolder>(diffCallback) {
+abstract class PagingHeaderAdapter<T : Any>(diffCallback: DiffUtil.ItemCallback<T>) :
+    PagingDataAdapter<T, RecyclerView.ViewHolder>(diffCallback) {
     companion object {
         const val TYPE_HEADER = 0
         const val TYPE_NORMAL = 1
@@ -58,11 +60,20 @@ abstract class PagedHeaderAdapter<T : Any>(diffCallback: DiffUtil.ItemCallback<T
 
     override fun registerAdapterDataObserver(observer: RecyclerView.AdapterDataObserver) {
         headerObserver = PagedHeaderAdapterDataObserver(observer, if (isShowHeader()) 1 else 0)
-        super.registerAdapterDataObserver(headerObserver!!)
+        try {
+            super.registerAdapterDataObserver(headerObserver!!)
+        } catch (e: Exception) {
+            Timber.w(e)
+        }
     }
 
     override fun unregisterAdapterDataObserver(observer: RecyclerView.AdapterDataObserver) {
-        super.unregisterAdapterDataObserver(headerObserver!!)
+        try {
+            super.unregisterAdapterDataObserver(headerObserver!!)
+        } catch (e: IllegalStateException) {
+            // PagingDataAdapter init unregisterAdapterDataObserver
+            Timber.w(e)
+        }
     }
 
     @Suppress("UNCHECKED_CAST")

@@ -4,8 +4,11 @@ import android.content.SharedPreferences
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.paging.ExperimentalPagingApi
 import androidx.paging.LivePagedListBuilder
 import androidx.paging.PagedList
+import androidx.paging.PagingData
+import androidx.paging.cachedIn
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -45,6 +48,17 @@ internal constructor(
     }
 
     fun assetItemsNotHidden(): LiveData<List<AssetItem>> = assetRepository.assetItemsNotHidden()
+
+    @ExperimentalPagingApi
+    fun snapshots(
+        assetId: String,
+        type: String? = null,
+        otherType: String? = null,
+        initialLoadKey: Int? = 0,
+        orderByAmount: Boolean = false,
+    ): LiveData<PagingData<SnapshotItem>> =
+        assetRepository.snapshots(assetId, type, otherType, orderByAmount)
+            .cachedIn(viewModelScope)
 
     fun snapshotsFromDb(
         id: String,

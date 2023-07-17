@@ -4,11 +4,12 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.view.View
 import android.view.ViewGroup
+import androidx.paging.PagingDataAdapter
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 
-abstract class PagedHeaderAdapter<T : Any>(diffCallback: DiffUtil.ItemCallback<T>) :
-    SafePagedListAdapter<T, RecyclerView.ViewHolder>(diffCallback) {
+abstract class PagingDataHeaderAdapter<T : Any>(diffCallback: DiffUtil.ItemCallback<T>) :
+    PagingDataAdapter<T, RecyclerView.ViewHolder>(diffCallback) {
     companion object {
         const val TYPE_HEADER = 0
         const val TYPE_NORMAL = 1
@@ -52,17 +53,6 @@ abstract class PagedHeaderAdapter<T : Any>(diffCallback: DiffUtil.ItemCallback<T
             rv.swapAdapter(this, false)
             notifyDataSetChanged()
         }
-    }
-
-    private var headerObserver: PagedHeaderAdapterDataObserver? = null
-
-    override fun registerAdapterDataObserver(observer: RecyclerView.AdapterDataObserver) {
-        headerObserver = PagedHeaderAdapterDataObserver(observer, if (isShowHeader()) 1 else 0)
-        super.registerAdapterDataObserver(headerObserver!!)
-    }
-
-    override fun unregisterAdapterDataObserver(observer: RecyclerView.AdapterDataObserver) {
-        super.unregisterAdapterDataObserver(headerObserver!!)
     }
 
     @Suppress("UNCHECKED_CAST")

@@ -1,4 +1,4 @@
-package one.mixin.android.util.chat
+package one.mixin.android.db.datasource
 
 import android.annotation.SuppressLint
 import androidx.annotation.VisibleForTesting

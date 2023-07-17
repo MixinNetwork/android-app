@@ -48,7 +48,7 @@ class SharedMediaViewModel @Inject constructor(
     fun getAudioMessages(conversationId: String): LiveData<PagedList<MessageItem>> {
         val dataSource = conversationRepository.getAudioMessages(conversationId)
         val sortedDataSource = dataSource.mapByPage { list ->
-            list.sortWith(
+            list.toMutableList().sortWith(
                 Comparator<MessageItem> { o1, o2 ->
                     if (o1 == null || o2 == null) return@Comparator 0
 

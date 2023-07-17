@@ -4,6 +4,7 @@ import android.net.Uri
 import com.birbit.android.jobqueue.Params
 import one.mixin.android.MixinApplication
 import one.mixin.android.db.insertMessage
+import one.mixin.android.db.invalidater.InvalidateFlow
 import one.mixin.android.extension.copy
 import one.mixin.android.extension.getExtensionName
 import one.mixin.android.extension.getTranscriptFile
@@ -11,7 +12,6 @@ import one.mixin.android.extension.joinWhiteSpace
 import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.fts.insertFts4
 import one.mixin.android.util.GsonHelper
-import one.mixin.android.util.chat.InvalidateFlow
 import one.mixin.android.util.reportException
 import one.mixin.android.vo.EncryptCategory
 import one.mixin.android.vo.MediaStatus
