@@ -297,6 +297,7 @@ class MobileFragment : BaseFragment(R.layout.fragment_mobile) {
                 anonymousNumber = if (r) number else null
                 r
             } else {
+                anonymousNumber = null
                 val validResult = isValidNumber(phoneUtil, number, country.code, country.dialCode)
                 phoneNumber = validResult.second
                 validResult.first
