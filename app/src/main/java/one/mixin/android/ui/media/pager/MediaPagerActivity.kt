@@ -300,6 +300,7 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
             .observe(
                 this@MediaPagerActivity,
             ) {
+                if (it.isEmpty()) return@observe
                 adapter.submitList(it) {
                     if (firstLoad) {
                         adapter.initialPos = initialIndex
