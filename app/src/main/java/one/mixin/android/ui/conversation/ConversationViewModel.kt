@@ -819,4 +819,8 @@ internal constructor(
 
     suspend fun updateConversationExpireIn(conversationId: String, expireIn: Long?) =
         conversationRepository.updateConversationExpireIn(conversationId, expireIn)
+
+    suspend fun refreshCountByConversationId(conversationId: String) = withContext(Dispatchers.IO) {
+        conversationRepository.refreshCountByConversationId(conversationId)
+    }
 }

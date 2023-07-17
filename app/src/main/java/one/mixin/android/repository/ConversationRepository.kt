@@ -26,6 +26,7 @@ import one.mixin.android.api.service.UserService
 import one.mixin.android.db.AppDao
 import one.mixin.android.db.CircleConversationDao
 import one.mixin.android.db.ConversationDao
+import one.mixin.android.db.ConversationExtDao
 import one.mixin.android.db.JobDao
 import one.mixin.android.db.MessageDao
 import one.mixin.android.db.MessageMentionDao
@@ -82,6 +83,7 @@ internal constructor(
     private val appDatabase: MixinDatabase,
     private val messageDao: MessageDao,
     private val conversationDao: ConversationDao,
+    private val conversationExtDao: ConversationExtDao,
     private val circleConversationDao: CircleConversationDao,
     private val participantDao: ParticipantDao,
     private val messageMentionDao: MessageMentionDao,
@@ -249,6 +251,8 @@ internal constructor(
 
     suspend fun updateConversationExpireIn(conversationId: String, expireIn: Long?) =
         conversationDao.updateConversationExpireIn(conversationId, expireIn)
+
+    fun refreshCountByConversationId(conversationId: String) = conversationExtDao.refreshCountByConversationId(conversationId)
 
     fun getLimitParticipants(conversationId: String, limit: Int) =
         participantDao.getLimitParticipants(conversationId, limit)

@@ -2650,8 +2650,13 @@ class ConversationFragment() :
         if (viewDestroyed()) return@launch
 
         val index = chatViewModel.findMessageIndex(conversationId, messageId)
-        if (index < 0 || index >= conversationAdapter.itemCount) {
+        if (index < 0) {
+            toast(R.string.Message_not_found)
+            return@launch
+        } else if (index >= conversationAdapter.itemCount) {
+            chatViewModel.refreshCountByConversationId(conversationId)
             toast(R.string.Data_loading)
+            InvalidateFlow.emit(conversationId)
             return@launch
         }
         findMessageAction?.invoke(index)
@@ -2670,6 +2675,12 @@ class ConversationFragment() :
             )
         } else {
             conversationAdapter.loadAround(index)
+            if (conversationAdapter.getItem(index)?.messageId != messageId) {
+                chatViewModel.refreshCountByConversationId(conversationId)
+                toast(R.string.Data_loading)
+                InvalidateFlow.emit(conversationId)
+                return@launch
+            }
             if (index == conversationAdapter.itemCount - 1) {
                 scrollTo(
                     index,
