@@ -43,7 +43,8 @@ import one.mixin.android.ui.common.NonMessengerUserBottomSheetDialogFragment
 import one.mixin.android.ui.common.UserBottomSheetDialogFragment
 import one.mixin.android.ui.common.VerifyBottomSheetDialogFragment
 import one.mixin.android.ui.conversation.TransferFragment
-import one.mixin.android.ui.wallet.snapshot.SnapshotAdapter
+import one.mixin.android.ui.wallet.adapter.OnSnapshotListener
+import one.mixin.android.ui.wallet.adapter.SnapshotAdapter
 import one.mixin.android.vo.Address
 import one.mixin.android.vo.AssetItem
 import one.mixin.android.vo.Fiats
@@ -58,7 +59,7 @@ import javax.inject.Inject
 
 @OptIn(ExperimentalPagingApi::class)
 @AndroidEntryPoint
-class TransactionsFragment : BaseTransactionsFragment<PagingData<SnapshotItem>>(), one.mixin.android.ui.wallet.snapshot.OnSnapshotListener {
+class TransactionsFragment : BaseTransactionsFragment<PagingData<SnapshotItem>>(), OnSnapshotListener {
 
     companion object {
         const val TAG = "TransactionsFragment"
@@ -126,11 +127,6 @@ class TransactionsFragment : BaseTransactionsFragment<PagingData<SnapshotItem>>(
             lifecycleScope.launch {
                 adapter.submitData(pagedList)
             }
-
-//            if (!refreshedSnapshots) {
-//                walletViewModel.refreshSnapshots(asset.assetId)
-//                refreshedSnapshots = true
-//            }
         }
         bindLiveData()
         walletViewModel.assetItem(asset.assetId).observe(
@@ -259,7 +255,7 @@ class TransactionsFragment : BaseTransactionsFragment<PagingData<SnapshotItem>>(
     }
 
     override fun refreshSnapshots() {
-//        walletViewModel.refreshSnapshots(asset.assetId, offset = refreshOffset)
+        // paging3 refresh by mediator
     }
 
     override fun onApplyClick() {

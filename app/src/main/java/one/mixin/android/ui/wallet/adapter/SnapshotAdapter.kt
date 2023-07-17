@@ -1,4 +1,4 @@
-package one.mixin.android.ui.wallet.snapshot
+package one.mixin.android.ui.wallet.adapter
 
 import android.content.ClipData
 import android.view.ViewGroup
