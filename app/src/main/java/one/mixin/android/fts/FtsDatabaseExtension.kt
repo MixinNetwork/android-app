@@ -9,7 +9,6 @@ import one.mixin.android.extension.createAtToLong
 import one.mixin.android.extension.joinWhiteSpace
 import one.mixin.android.util.FTS_THREAD
 import one.mixin.android.util.GsonHelper
-import one.mixin.android.util.TimingLogger
 import one.mixin.android.util.reportException
 import one.mixin.android.vo.AppCardData
 import one.mixin.android.vo.FtsSearchResult

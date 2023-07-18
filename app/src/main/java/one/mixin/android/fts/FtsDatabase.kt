@@ -7,16 +7,13 @@ import androidx.room.RoomDatabase
 import androidx.sqlite.db.SupportSQLiteDatabase
 import androidx.sqlite.db.framework.FrameworkSQLiteOpenHelperFactory
 import kotlinx.coroutines.launch
-import one.mixin.android.Constants
 import one.mixin.android.Constants.DataBase.FTS_DB_NAME
-import one.mixin.android.MixinApp
 import one.mixin.android.MixinApplication
 import one.mixin.android.db.MixinCorruptionCallback
 import one.mixin.android.db.MixinOpenHelperFactory
 import one.mixin.android.util.database.clearFts
 import one.mixin.android.util.reportException
 import timber.log.Timber
-import java.io.File
 
 @Database(
     entities = [

@@ -20,7 +20,6 @@ import one.mixin.android.db.MixinCorruptionCallback
 import one.mixin.android.db.MixinOpenHelperFactory
 import one.mixin.android.db.insertNoReplace
 import one.mixin.android.util.GsonHelper
-import one.mixin.android.util.database.clearFts
 import one.mixin.android.util.database.clearPending
 import one.mixin.android.util.debug.getContent
 import one.mixin.android.util.reportException
