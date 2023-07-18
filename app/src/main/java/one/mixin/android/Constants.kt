@@ -109,7 +109,9 @@ object Constants {
         const val CURRENT_VERSION = 49
 
         const val FTS_DB_NAME = "fts.db"
+        const val FTS_DB_VERSION = 1
         const val PENDING_DB_NAME = "pending.db"
+        const val PENDING_DB_VERSION = 1
     }
 
     object Storage {

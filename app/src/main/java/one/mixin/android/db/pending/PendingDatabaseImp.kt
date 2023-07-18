@@ -11,18 +11,23 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.sqlite.db.SupportSQLiteDatabase
 import androidx.sqlite.db.framework.FrameworkSQLiteOpenHelperFactory
+import one.mixin.android.Constants
 import one.mixin.android.Constants.DataBase.PENDING_DB_NAME
+import one.mixin.android.Constants.DataBase.PENDING_DB_VERSION
+import one.mixin.android.MixinApplication
 import one.mixin.android.db.FloodMessageDao
 import one.mixin.android.db.JobDao
 import one.mixin.android.db.MixinCorruptionCallback
 import one.mixin.android.db.MixinOpenHelperFactory
 import one.mixin.android.db.insertNoReplace
+import one.mixin.android.ui.repair.RepairActivity
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.debug.getContent
 import one.mixin.android.util.reportException
 import one.mixin.android.vo.FloodMessage
 import one.mixin.android.vo.Job
 import one.mixin.android.vo.MessageMedia
+import timber.log.Timber
 
 @Database(
     entities = [
@@ -30,7 +35,7 @@ import one.mixin.android.vo.MessageMedia
         (PendingMessage::class),
         (Job::class),
     ],
-    version = 1,
+    version = PENDING_DB_VERSION,
 )
 abstract class PendingDatabaseImp : RoomDatabase(), PendingDatabase {
     abstract override fun floodMessageDao(): FloodMessageDao
@@ -55,8 +60,10 @@ abstract class PendingDatabaseImp : RoomDatabase(), PendingDatabase {
                             FrameworkSQLiteOpenHelperFactory(),
                             listOf(object : MixinCorruptionCallback {
                                 override fun onCorruption(database: SupportSQLiteDatabase) {
-                                    val e = IllegalStateException("Pending database is corrupted, current DB version: 1")
+                                    val e = IllegalStateException("Pending database is corrupted, current DB version: $PENDING_DB_VERSION")
+                                    Timber.e(e.message)
                                     reportException(e)
+                                    MixinApplication.get().gotoRepair(RepairActivity.DbType.PENDING)
                                 }
                             }),
                         ),

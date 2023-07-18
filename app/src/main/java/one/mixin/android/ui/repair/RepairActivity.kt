@@ -22,6 +22,23 @@ class RepairActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityRepairBinding
 
+    companion object {
+        const val TYPE = "db_type"
+    }
+
+    enum class DbType(val dbName: String) {
+        MIXIN(Constants.DataBase.DB_NAME),
+        FTS(Constants.DataBase.FTS_DB_NAME),
+        PENDING(Constants.DataBase.PENDING_DB_NAME);
+        companion object {
+            fun from(type: String?): DbType = values().find { it.dbName == type } ?: MIXIN
+        }
+    }
+
+    private val type by lazy {
+        DbType.from(requireNotNull(intent.getStringExtra(TYPE)))
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityRepairBinding.inflate(layoutInflater)
@@ -32,7 +49,7 @@ class RepairActivity : AppCompatActivity() {
     }
 
     private fun corrupt() = lifecycleScope.launch(Dispatchers.IO) {
-        val dbFile = getDatabasePath(Constants.DataBase.DB_NAME)
+        val dbFile = getDatabasePath(type.dbName)
         var db = SQLiteDatabase.openDatabase(dbFile.absolutePath, null, SQLiteDatabase.OPEN_READONLY)
         db.rawQuery("PRAGMA wal_checkpoint(FULL)", null)?.close()
         db.closeQuietly()
@@ -56,7 +73,7 @@ class RepairActivity : AppCompatActivity() {
     }
 
     private fun dump() = lifecycleScope.launch(Dispatchers.IO) {
-        val dbFile = getDatabasePath(Constants.DataBase.DB_NAME)
+        val dbFile = getDatabasePath(type.dbName)
         val dbDir = dbFile.parentFile
         val db = SQLiteDatabase.openDatabase(dbFile.absolutePath, null, SQLiteDatabase.OPEN_READONLY)
         val dumpFile = File(dbDir, "mixin.dump")
@@ -72,7 +89,7 @@ class RepairActivity : AppCompatActivity() {
     }
 
     private fun repair() = lifecycleScope.launch(Dispatchers.IO) {
-        val dbFile = getDatabasePath(Constants.DataBase.DB_NAME)
+        val dbFile = getDatabasePath(type.dbName)
         val dbDir = dbFile.parentFile
         val dumpFile = File(dbDir, "mixin.dump")
         val newDBFile = File(dbDir, "mixin.new")

@@ -58,6 +58,7 @@ import one.mixin.android.ui.player.FloatingPlayer
 import one.mixin.android.ui.player.MusicActivity
 import one.mixin.android.ui.player.MusicService
 import one.mixin.android.ui.repair.RepairActivity
+import one.mixin.android.ui.repair.RepairActivity.Companion.TYPE
 import one.mixin.android.ui.transfer.TransferActivity
 import one.mixin.android.ui.web.FloatingWebClip
 import one.mixin.android.ui.web.WebActivity
@@ -204,7 +205,7 @@ open class MixinApplication :
 
     var isOnline = AtomicBoolean(false)
 
-    fun gotoRepair() {
+    fun gotoRepair(type: RepairActivity.DbType) {
         if (isOnline.compareAndSet(true, false)) {
             val jobManager = getJobManager()
             jobManager.cancelAllJob()
@@ -214,6 +215,7 @@ open class MixinApplication :
             notificationManager.cancelAll()
             startActivity(
                 Intent(this, RepairActivity::class.java).apply {
+                    putExtra(TYPE, type.dbName)
                     addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                 },
             )
