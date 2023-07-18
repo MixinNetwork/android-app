@@ -1198,6 +1198,7 @@
     <string name="Show_Selected">显示 (%1$d)</string>
     <string name="All_chat">所有聊天</string>
     <string name="Chats">%1$d 会话</string>
+    <string name="Buy">买</string>
     <plurals name="last_month" tools:ignore="UnusedQuantity">
         <item quantity="one">最近 %1$d 个月</item>
         <item quantity="other">最近 %1$d 个月</item>

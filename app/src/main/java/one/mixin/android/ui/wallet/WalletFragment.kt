@@ -97,6 +97,10 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
             searchIb.setOnClickListener { view.navigate(R.id.action_wallet_to_wallet_search) }
 
             _headBinding = ViewWalletFragmentHeaderBinding.bind(layoutInflater.inflate(R.layout.view_wallet_fragment_header, coinsRv, false)).apply {
+                sendReceiveView.enableBuy()
+                sendReceiveView.buy.setOnClickListener {
+                    BuyBottomSheetDialogFragment.newInstance().show(parentFragmentManager, BuyBottomSheetDialogFragment.TAG)
+                }
                 sendReceiveView.send.setOnClickListener {
                     AssetListBottomSheetDialogFragment.newInstance(true)
                         .setOnAssetClick {
