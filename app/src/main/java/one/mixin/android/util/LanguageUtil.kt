@@ -13,7 +13,7 @@ fun getCountry(): String? = AppCompatDelegate.getApplicationLocales().get(0)?.co
 
 fun getLocaleString(): String = AppCompatDelegate.getApplicationLocales().get(0).toString()
 
-fun isCurrChinese(): Boolean = getLanguage() == Locale.SIMPLIFIED_CHINESE.language
+fun isCurrChinese(): Boolean = (getLanguage() ?: Locale.getDefault().language) == Locale.SIMPLIFIED_CHINESE.language
 
 fun isFollowSystem(): Boolean = AppCompatDelegate.getApplicationLocales().isEmpty
 
