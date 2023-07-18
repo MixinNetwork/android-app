@@ -88,8 +88,8 @@ class RepairActivity : AppCompatActivity() {
 
         dbFile.delete()
         newDBFile.renameTo(dbFile)
-        File("${dbFile}-wal").delete()
-        File("${dbFile}-shm").delete()
+        File("$dbFile-wal").delete()
+        File("$dbFile-shm").delete()
 
         // TODO read data from corrupted db file
     }

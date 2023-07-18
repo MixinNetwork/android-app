@@ -55,7 +55,6 @@ import one.mixin.android.db.converter.MessageStatusConverter
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.SINGLE_DB_EXECUTOR
 import one.mixin.android.util.debug.getContent
-import one.mixin.android.util.reportException
 import one.mixin.android.vo.Address
 import one.mixin.android.vo.App
 import one.mixin.android.vo.Asset
@@ -91,10 +90,10 @@ import one.mixin.android.vo.TopAsset
 import one.mixin.android.vo.Trace
 import one.mixin.android.vo.TranscriptMessage
 import one.mixin.android.vo.User
+import timber.log.Timber
 import java.util.concurrent.Executors
 import kotlin.math.max
 import kotlin.math.min
-import timber.log.Timber
 
 @Database(
     entities = [

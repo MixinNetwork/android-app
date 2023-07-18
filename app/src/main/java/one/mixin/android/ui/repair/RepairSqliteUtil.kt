@@ -17,7 +17,7 @@ fun dumpSqliteMaster(db: SQLiteDatabase, dumpFile: File) {
             val tables = arrayListOf<String>()
             val cursor = db.rawQuery(
                 "SELECT name, type, sql FROM sqlite_master WHERE sql NOT NULL AND type='table'",
-                null
+                null,
             )
             cursor.use { c ->
                 if (!c.moveToFirst()) return
@@ -45,7 +45,7 @@ fun dumpSqliteMaster(db: SQLiteDatabase, dumpFile: File) {
         try {
             val cursor = db.rawQuery(
                 "SELECT sql FROM sqlite_master WHERE sql NOT NULL AND type IN ('index','trigger','view')",
-                null
+                null,
             )
             cursor.use { c ->
                 if (!c.moveToFirst()) return

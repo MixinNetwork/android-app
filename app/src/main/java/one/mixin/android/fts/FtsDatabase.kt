@@ -6,7 +6,6 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.sqlite.db.SupportSQLiteDatabase
 import androidx.sqlite.db.framework.FrameworkSQLiteOpenHelperFactory
-import one.mixin.android.Constants
 import one.mixin.android.Constants.DataBase.FTS_DB_NAME
 import one.mixin.android.db.MixinCorruptionCallback
 import one.mixin.android.db.MixinOpenHelperFactory
