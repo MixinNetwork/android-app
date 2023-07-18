@@ -2675,7 +2675,8 @@ class ConversationFragment() :
             )
         } else {
             conversationAdapter.loadAround(index)
-            if (conversationAdapter.getItem(index)?.messageId != messageId) {
+            val jumpToId = conversationAdapter.getItem(index)?.messageId
+            if (jumpToId != null && jumpToId != messageId) {
                 chatViewModel.refreshCountByConversationId(conversationId)
                 toast(R.string.Data_loading)
                 InvalidateFlow.emit(conversationId)
