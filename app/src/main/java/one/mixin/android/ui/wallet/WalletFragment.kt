@@ -32,6 +32,7 @@ import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.mainThread
+import one.mixin.android.extension.navTo
 import one.mixin.android.extension.navigate
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.numberFormat8
@@ -99,7 +100,19 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
             _headBinding = ViewWalletFragmentHeaderBinding.bind(layoutInflater.inflate(R.layout.view_wallet_fragment_header, coinsRv, false)).apply {
                 sendReceiveView.enableBuy()
                 sendReceiveView.buy.setOnClickListener {
-                    BuyBottomSheetDialogFragment.newInstance().show(parentFragmentManager, BuyBottomSheetDialogFragment.TAG)
+                    BuyBottomSheetDialogFragment.newInstance().apply {
+                        onVerifiedClick = {
+                            view.navigate(
+                                R.id.action_wallet_to_identity,
+                            )
+                        }
+                        onUnverifiedClick = {
+                            // todo replace
+                            view.navigate(
+                                R.id.action_wallet_to_identity
+                            )
+                        }
+                    }.show(parentFragmentManager, BuyBottomSheetDialogFragment.TAG)
                 }
                 sendReceiveView.send.setOnClickListener {
                     AssetListBottomSheetDialogFragment.newInstance(true)

@@ -36,6 +36,17 @@ class BuyBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             titleView.apply {
                 rightIv.setOnClickListener { dismiss() }
             }
+            verifiedRl.setOnClickListener {
+                dismiss()
+                onVerifiedClick?.invoke()
+            }
+            unverifiedRl.setOnClickListener {
+                dismiss()
+                onUnverifiedClick?.invoke()
+            }
         }
     }
+
+    var onUnverifiedClick: (()->Unit)? = null
+    var onVerifiedClick: (()->Unit)? = null
 }

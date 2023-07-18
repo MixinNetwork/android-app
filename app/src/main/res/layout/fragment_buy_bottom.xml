@@ -21,6 +21,7 @@
         android:orientation="vertical">
 
         <RelativeLayout
+            android:id="@+id/unverified_rl"
             android:padding="8dp"
             android:layout_marginTop="32dp"
             android:layout_marginBottom="32dp"
@@ -28,7 +29,7 @@
             android:layout_marginEnd="16dp"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="?attr/bg_window"
+            android:background="@drawable/bg_round_window_8dp"
             android:foreground="?android:attr/selectableItemBackground">
 
             <TextView
@@ -61,13 +62,14 @@
         </RelativeLayout>
 
         <RelativeLayout
+            android:id="@+id/verified_rl"
             android:padding="8dp"
             android:layout_marginBottom="32dp"
             android:layout_marginStart="16dp"
             android:layout_marginEnd="16dp"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:background="?attr/bg_window"
+            android:background="@drawable/bg_round_window_8dp"
             android:foreground="?android:attr/selectableItemBackground">
 
             <TextView

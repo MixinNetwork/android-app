@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="?attr/bg_white"
+    android:orientation="vertical">
+
+    <one.mixin.android.widget.TitleView
+        android:id="@+id/title_view"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:need_divider="false"
+        app:leftIcon="@drawable/ic_close" />
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="24dp"
+                android:background="@drawable/bg_round_white_10dp"
+                android:orientation="vertical">
+
+                <ImageView
+                    android:layout_width="92dp"
+                    android:layout_height="83dp"
+                    android:layout_gravity="center"
+                    android:layout_marginTop="36dp"
+                    android:layout_marginBottom="20dp"
+                    android:src="?attr/icon_emergency" />
+
+                <TextView
+                    android:layout_gravity="center_horizontal"
+                    android:textSize="16sp"
+                    android:textColor="?attr/text_primary"
+                    android:text="@string/Identity_Verification"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
+
+                <TextView
+                    android:id="@+id/tip_tv"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/activity_horizontal_margin"
+                    android:layout_marginTop="8dp"
+                    android:layout_marginEnd="@dimen/activity_horizontal_margin"
+                    android:layout_marginBottom="24dp"
+                    android:gravity="center"
+                    android:lineSpacingExtra="2dp"
+                    android:text="@string/setting_identity_content"
+                    android:textColor="?attr/text_primary"
+                    android:textSize="12sp" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_marginStart="16dp"
+                android:layout_marginEnd="16dp"
+                android:padding="16dp"
+                android:orientation="vertical"
+                android:background="@drawable/bg_round_window_8dp"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+                <TextView
+                    android:text="@string/identity_tip_1"
+                    android:textColor="?attr/text_minor"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
+
+                <TextView
+                    android:text="@string/identity_tip_2"
+                    android:textColor="?attr/text_minor"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
+
+                <TextView
+                    android:text="@string/identity_tip_3"
+                    android:textColor="?attr/text_minor"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
+            </LinearLayout>
+
+        </LinearLayout>
+    </ScrollView>
+</LinearLayout>
