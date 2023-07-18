@@ -43,11 +43,12 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginEnd="12dp"
-            android:layout_marginTop="-4dp"
             android:padding="8dp"
             android:foreground="@drawable/mixin_ripple"
             android:src="@drawable/ic_copy_gray"
+            android:scaleType="center"
             app:layout_constraintTop_toTopOf="@id/content_tv"
+            app:layout_constraintBottom_toBottomOf="@id/content_tv"
             app:layout_constraintEnd_toEndOf="parent"
             android:contentDescription="@string/copy"
             tools:ignore="PrivateResource" />
