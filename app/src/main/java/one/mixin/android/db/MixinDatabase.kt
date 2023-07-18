@@ -13,6 +13,7 @@ import androidx.room.withTransaction
 import androidx.sqlite.db.SupportSQLiteDatabase
 import androidx.sqlite.db.framework.FrameworkSQLiteOpenHelperFactory
 import one.mixin.android.BuildConfig
+import one.mixin.android.Constants
 import one.mixin.android.Constants.DataBase.CURRENT_VERSION
 import one.mixin.android.Constants.DataBase.DB_NAME
 import one.mixin.android.MixinApplication
@@ -52,6 +53,7 @@ import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_47_48
 import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_48_49
 import one.mixin.android.db.converter.DepositEntryListConverter
 import one.mixin.android.db.converter.MessageStatusConverter
+import one.mixin.android.ui.repair.RepairActivity
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.SINGLE_DB_EXECUTOR
 import one.mixin.android.util.debug.getContent
@@ -91,6 +93,7 @@ import one.mixin.android.vo.TopAsset
 import one.mixin.android.vo.Trace
 import one.mixin.android.vo.TranscriptMessage
 import one.mixin.android.vo.User
+import timber.log.Timber
 import java.util.concurrent.Executors
 import kotlin.math.max
 import kotlin.math.min
@@ -188,7 +191,9 @@ abstract class MixinDatabase : RoomDatabase() {
                                 listOf(object : MixinCorruptionCallback {
                                     override fun onCorruption(database: SupportSQLiteDatabase) {
                                         val e = IllegalStateException("Mixin database is corrupted, current DB version: $CURRENT_VERSION")
+                                        Timber.e(e.message)
                                         reportException(e)
+                                        MixinApplication.get().gotoRepair(RepairActivity.DbType.MIXIN)
                                     }
                                 }),
                             ),

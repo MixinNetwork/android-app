@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.Application
 import android.content.Context
+import android.content.Intent
 import android.content.MutableContextWrapper
 import android.os.Bundle
 import android.webkit.CookieManager
@@ -13,6 +14,7 @@ import androidx.camera.core.CameraXConfig
 import androidx.hilt.work.HiltWorkerFactory
 import androidx.startup.AppInitializer
 import androidx.work.Configuration
+import androidx.work.WorkManager
 import com.google.android.datatransport.runtime.scheduling.jobscheduling.JobInfoSchedulerService
 import com.google.android.gms.net.CronetProviderInstaller
 import com.mapbox.maps.loader.MapboxMapsInitializer
@@ -55,6 +57,8 @@ import one.mixin.android.ui.media.pager.MediaPagerActivity
 import one.mixin.android.ui.player.FloatingPlayer
 import one.mixin.android.ui.player.MusicActivity
 import one.mixin.android.ui.player.MusicService
+import one.mixin.android.ui.repair.RepairActivity
+import one.mixin.android.ui.repair.RepairActivity.Companion.TYPE
 import one.mixin.android.ui.transfer.TransferActivity
 import one.mixin.android.ui.web.FloatingWebClip
 import one.mixin.android.ui.web.WebActivity
@@ -200,6 +204,23 @@ open class MixinApplication :
     override fun getCameraXConfig() = Camera2Config.defaultConfig()
 
     var isOnline = AtomicBoolean(false)
+
+    fun gotoRepair(type: RepairActivity.DbType) {
+        if (isOnline.compareAndSet(true, false)) {
+            val jobManager = getJobManager()
+            jobManager.cancelAllJob()
+            jobManager.clear()
+            WorkManager.getInstance(this).cancelAllWork()
+            BlazeMessageService.stopService(this)
+            notificationManager.cancelAll()
+            startActivity(
+                Intent(this, RepairActivity::class.java).apply {
+                    putExtra(TYPE, type.dbName)
+                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                },
+            )
+        }
+    }
 
     fun gotoTimeWrong(serverTime: Long) {
         if (isOnline.compareAndSet(true, false)) {
