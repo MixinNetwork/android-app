@@ -10,15 +10,24 @@ import androidx.room.InvalidationTracker
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.sqlite.db.SupportSQLiteDatabase
+import androidx.sqlite.db.framework.FrameworkSQLiteOpenHelperFactory
+import kotlinx.coroutines.launch
 import one.mixin.android.Constants.DataBase.PENDING_DB_NAME
+import one.mixin.android.MixinApplication
 import one.mixin.android.db.FloodMessageDao
 import one.mixin.android.db.JobDao
+import one.mixin.android.db.MixinCorruptionCallback
+import one.mixin.android.db.MixinOpenHelperFactory
 import one.mixin.android.db.insertNoReplace
 import one.mixin.android.util.GsonHelper
+import one.mixin.android.util.database.clearFts
+import one.mixin.android.util.database.clearPending
 import one.mixin.android.util.debug.getContent
+import one.mixin.android.util.reportException
 import one.mixin.android.vo.FloodMessage
 import one.mixin.android.vo.Job
 import one.mixin.android.vo.MessageMedia
+import timber.log.Timber
 
 @Database(
     entities = [
@@ -46,6 +55,20 @@ abstract class PendingDatabaseImp : RoomDatabase(), PendingDatabase {
                         context,
                         PendingDatabaseImp::class.java,
                         PENDING_DB_NAME,
+                    ).openHelperFactory(
+                        MixinOpenHelperFactory(
+                            FrameworkSQLiteOpenHelperFactory(),
+                            listOf(object : MixinCorruptionCallback {
+                                override fun onCorruption(database: SupportSQLiteDatabase) {
+                                    MixinApplication.get().applicationScope.launch {
+                                        clearPending(MixinApplication.appContext)
+                                        Timber.e("Delete Pending")
+                                    }
+                                    val e = IllegalStateException("Pending database is corrupted, current DB version: 1")
+                                    reportException(e)
+                                }
+                            }),
+                        ),
                     ).enableMultiInstanceInvalidation().addCallback(
                         object : Callback() {
                             override fun onOpen(db: SupportSQLiteDatabase) {

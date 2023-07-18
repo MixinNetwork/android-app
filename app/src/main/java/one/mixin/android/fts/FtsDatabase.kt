@@ -49,7 +49,6 @@ abstract class FtsDatabase : RoomDatabase() {
                                         Timber.e("Delete fts")
                                     }
                                     val e = IllegalStateException("Fts database is corrupted, current DB version: 1")
-                                    Timber.e("onCorruption")
                                     reportException(e)
                                 }
                             }),
