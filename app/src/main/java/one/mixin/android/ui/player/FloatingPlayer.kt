@@ -31,8 +31,8 @@ import one.mixin.android.extension.putInt
 import one.mixin.android.extension.realSize
 import one.mixin.android.extension.safeAddView
 import one.mixin.android.util.MusicPlayer
-import one.mixin.android.widget.RLottieDrawable
-import one.mixin.android.widget.RLottieImageView
+import one.mixin.android.widget.lottie.RLottieDrawable
+import one.mixin.android.widget.lottie.RLottieImageView
 import kotlin.math.abs
 
 class FloatingPlayer(private var isNightMode: Boolean) {

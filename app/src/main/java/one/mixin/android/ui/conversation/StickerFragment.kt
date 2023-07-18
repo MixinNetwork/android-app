@@ -35,7 +35,7 @@ import one.mixin.android.vo.Sticker
 import one.mixin.android.widget.DraggableRecyclerView
 import one.mixin.android.widget.DraggableRecyclerView.Companion.DIRECTION_NONE
 import one.mixin.android.widget.DraggableRecyclerView.Companion.DIRECTION_TOP_2_BOTTOM
-import one.mixin.android.widget.RLottieImageView
+import one.mixin.android.widget.lottie.RLottieImageView
 
 @AndroidEntryPoint
 class StickerFragment : BaseFragment(R.layout.fragment_sticker) {
