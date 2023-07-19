@@ -7,6 +7,7 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.NotificationManager.BUBBLE_PREFERENCE_NONE
 import android.app.PendingIntent
+import android.app.UiModeManager
 import android.content.ActivityNotFoundException
 import android.content.ClipboardManager
 import android.content.ComponentName
@@ -1212,4 +1213,9 @@ fun Context.findFragmentActivityOrNull(): FragmentActivity? {
         ctx = ctx.baseContext
     }
     return null
+}
+
+fun Context.isAuto(): Boolean {
+    val uiModeManager = getSystemService(Context.UI_MODE_SERVICE) as UiModeManager
+    return uiModeManager.currentModeType == Configuration.UI_MODE_TYPE_CAR
 }

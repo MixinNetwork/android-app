@@ -44,7 +44,7 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="parent" />
 
-    <one.mixin.android.widget.RLottieImageView
+    <one.mixin.android.widget.lottie.RLottieImageView
         android:id="@+id/loading"
         android:layout_width="64dp"
         android:layout_height="64dp"

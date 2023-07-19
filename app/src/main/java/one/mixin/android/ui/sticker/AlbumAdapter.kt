@@ -20,8 +20,8 @@ import one.mixin.android.extension.loadSticker
 import one.mixin.android.extension.textColor
 import one.mixin.android.vo.Sticker
 import one.mixin.android.vo.StickerAlbum
-import one.mixin.android.widget.RLottieImageView
 import one.mixin.android.widget.SpacesItemDecoration
+import one.mixin.android.widget.lottie.RLottieImageView
 
 class AlbumAdapter(
     private val fragmentManager: FragmentManager,

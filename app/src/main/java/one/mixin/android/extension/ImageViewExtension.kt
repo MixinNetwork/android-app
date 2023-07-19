@@ -16,8 +16,8 @@ import jp.wasabeef.glide.transformations.CropTransformation
 import jp.wasabeef.glide.transformations.RoundedCornersTransformation
 import one.mixin.android.MixinApplication
 import one.mixin.android.util.StringSignature
-import one.mixin.android.widget.RLottieDrawable
-import one.mixin.android.widget.RLottieImageView
+import one.mixin.android.widget.lottie.RLottieDrawable
+import one.mixin.android.widget.lottie.RLottieImageView
 
 fun ImageView.loadImage(uri: String?) {
     if (!isActivityNotDestroyed()) return
