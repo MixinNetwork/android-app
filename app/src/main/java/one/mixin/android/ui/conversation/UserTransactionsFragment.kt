@@ -24,6 +24,7 @@ import one.mixin.android.ui.wallet.adapter.SnapshotPagedAdapter
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.SnapshotItem
 
+@Suppress("DEPRECATION")
 @AndroidEntryPoint
 class UserTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>>(), OnSnapshotListener {
 

@@ -15,6 +15,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import one.mixin.android.R
 import one.mixin.android.extension.findListener
+import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.showKeyboard
 import one.mixin.android.ui.common.KeyboardEntryDialogFragment
 import one.mixin.android.widget.imageeditor.HiddenEditText
@@ -46,7 +47,7 @@ class TextEntryDialogFragment : KeyboardEntryDialogFragment(R.layout.image_edito
         }
 
         activeColor = initColor
-        val element: EditorElement = requireNotNull(requireArguments().getParcelable("element"))
+        val element: EditorElement = requireNotNull(requireArguments().getParcelableCompat("element", EditorElement::class.java))
         val incognito = requireArguments().getBoolean("incognito")
         val selectAll = requireArguments().getBoolean("selectAll")
 

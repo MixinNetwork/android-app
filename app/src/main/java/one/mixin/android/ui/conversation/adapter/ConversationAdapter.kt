@@ -115,6 +115,7 @@ import timber.log.Timber
 import java.util.concurrent.TimeUnit
 import kotlin.math.abs
 
+@Suppress("DEPRECATION")
 class ConversationAdapter(
     private val context: Activity,
     var keyword: String?,

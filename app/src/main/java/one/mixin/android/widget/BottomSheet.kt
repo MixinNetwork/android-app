@@ -38,6 +38,9 @@ import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.displayMetrics
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.dpToPx
+import one.mixin.android.extension.getSystemWindowBottom
+import one.mixin.android.extension.getSystemWindowLeft
+import one.mixin.android.extension.getSystemWindowRight
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.isNotchScreen
 import one.mixin.android.extension.isTablet
@@ -108,9 +111,10 @@ class BottomSheet(
         override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
             var width = MeasureSpec.getSize(widthMeasureSpec)
             var height = MeasureSpec.getSize(heightMeasureSpec)
+            val lastInsets = this@BottomSheet.lastInsets
             if (lastInsets != null) {
-                height -= lastInsets!!.systemWindowInsetBottom
-                width -= lastInsets!!.systemWindowInsetLeft + lastInsets!!.systemWindowInsetRight
+                height -= lastInsets.getSystemWindowBottom()
+                width -= lastInsets.getSystemWindowLeft() + lastInsets.getSystemWindowRight()
             }
             setMeasuredDimension(width, height)
             val isPortrait = width < height
@@ -134,8 +138,9 @@ class BottomSheet(
         override fun onLayout(changed: Boolean, left: Int, top: Int, right: Int, bottom: Int) {
             val t = (bottom - top) - sheetContainer.measuredHeight
             var l = (right - left - sheetContainer.measuredWidth) / 2
+            val lastInsets = this@BottomSheet.lastInsets
             if (lastInsets != null) {
-                l += lastInsets!!.systemWindowInsetLeft
+                l += lastInsets.getSystemWindowLeft()
             }
             sheetContainer.layout(l, t, l + sheetContainer.measuredWidth, t + sheetContainer.measuredHeight)
         }
@@ -149,6 +154,7 @@ class BottomSheet(
         fun canDismiss(): Boolean
     }
 
+    @Suppress("unused")
     open class BottomSheetListenerAdapter : BottomSheetListener {
         override fun onOpenAnimationStart() {
         }
@@ -312,7 +318,7 @@ class BottomSheet(
                             if (!fake) {
                                 try {
                                     dismissInternal()
-                                } catch (e: Exception) {
+                                } catch (ignore: Exception) {
                                 }
                             }
                             doOnEnd?.invoke()
@@ -392,7 +398,7 @@ class BottomSheet(
     private fun dismissInternal() {
         try {
             super.dismiss()
-        } catch (e: Exception) {
+        } catch (ignore: Exception) {
         }
     }
 
@@ -429,7 +435,7 @@ class BottomSheet(
 fun BottomSheet.getMaxCustomViewHeight(): Int {
     val isNotchScreen = this.window?.isNotchScreen() ?: false
     val totalHeight = if (isNotchScreen) {
-        val bottom = this.lastInsets?.systemWindowInsetBottom ?: 0
+        val bottom = this.lastInsets?.getSystemWindowBottom() ?: 0
         context.realSize().y - bottom
     } else {
         val size = Point()
