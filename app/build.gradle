@@ -18,7 +18,7 @@ def versionBuild = 9
 android {
     compileSdk 34
     buildToolsVersion "34.0.0"
-    ndkVersion "23.1.7779620"
+    ndkVersion "25.2.9519653"
     namespace "one.mixin.android"
     defaultConfig {
         applicationId "one.mixin.messenger"
