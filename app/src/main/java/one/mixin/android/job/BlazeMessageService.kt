@@ -227,7 +227,7 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
         if (intent == null) return START_STICKY
 
         if (intent.action == ACTION_TO_BACKGROUND) {
-            stopForeground(true)
+            stopForeground(STOP_FOREGROUND_REMOVE)
             if (!isIgnoringBatteryOptimizations) {
                 BatteryOptimizationDialogActivity.show(this, true)
             }

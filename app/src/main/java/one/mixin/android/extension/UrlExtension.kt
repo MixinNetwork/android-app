@@ -2,9 +2,13 @@ package one.mixin.android.extension
 
 import android.annotation.SuppressLint
 import android.content.ClipData
+import android.content.ContentResolver
 import android.content.Context
+import android.graphics.Bitmap
+import android.graphics.ImageDecoder
 import android.net.Uri
 import android.os.Build
+import android.provider.MediaStore
 import android.provider.Settings
 import android.webkit.WebView
 import androidx.fragment.app.FragmentManager
@@ -293,5 +297,16 @@ fun Uri.handleSchemeSend(
         } else {
             onError?.invoke("Error data")
         }
+    }
+}
+
+fun Uri.getCapturedImage(contentResolver: ContentResolver): Bitmap = when {
+    Build.VERSION.SDK_INT < 28 -> {
+        @Suppress("DEPRECATION")
+        MediaStore.Images.Media.getBitmap(contentResolver, this)
+    }
+    else -> {
+        val source = ImageDecoder.createSource(contentResolver, this)
+        ImageDecoder.decodeBitmap(source)
     }
 }

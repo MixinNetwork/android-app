@@ -1,5 +1,6 @@
 package one.mixin.android.widget
 
+import android.annotation.SuppressLint
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
@@ -66,6 +67,7 @@ open class ContentEditText : AppCompatEditText {
         MimeType.HEIC.toString(),
     )
 
+    @SuppressLint("ObsoleteSdkInt")
     override fun onTextContextMenuItem(id: Int): Boolean {
         if (id == android.R.id.paste) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
@@ -85,11 +87,9 @@ open class ContentEditText : AppCompatEditText {
                 val paste: CharSequence
                 val text = clip.getItemAt(i).coerceToText(context)
                 paste = (text as? Spanned)?.toString() ?: text
-                if (paste != null) {
-                    clipboard.setPrimaryClip(
-                        ClipData.newPlainText(null, paste),
-                    )
-                }
+                clipboard.setPrimaryClip(
+                    ClipData.newPlainText(null, paste),
+                )
             }
         }
     }

@@ -54,7 +54,9 @@ import one.mixin.android.widget.MixinBottomSheetDialog
 import kotlin.math.max
 import kotlin.math.min
 
-@UnstableApi @AndroidEntryPoint
+@Suppress("DEPRECATION")
+@UnstableApi
+@AndroidEntryPoint
 class MusicBottomSheetDialogFragment : BottomSheetDialogFragment() {
     companion object {
         const val TAG = "MusicBottomSheetDialogFragment"

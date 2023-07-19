@@ -48,7 +48,7 @@ class GroupFriendAdapter :
             {
                 val u = it[position]
                 if (u.fullName != null) {
-                    if (u.fullName.isEmpty()) ' '.toLong() else u.fullName[0].toLong()
+                    if (u.fullName.isEmpty()) ' '.code.toLong() else u.fullName[0].code.toLong()
                 } else {
                     -1L
                 }

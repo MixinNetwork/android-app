@@ -35,6 +35,7 @@ import one.mixin.android.extension.addFragment
 import one.mixin.android.extension.alert
 import one.mixin.android.extension.createImageTemp
 import one.mixin.android.extension.dayTime
+import one.mixin.android.extension.getCapturedImage
 import one.mixin.android.extension.getOtherPath
 import one.mixin.android.extension.inTransaction
 import one.mixin.android.extension.openAsUrlOrWeb
@@ -289,10 +290,9 @@ class ProfileBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragmen
         if (resultCode == Activity.RESULT_OK && requestCode == UCrop.REQUEST_CROP) {
             if (data != null && context != null) {
                 val resultUri = UCrop.getOutput(data)
-                val bitmap =
-                    MediaStore.Images.Media.getBitmap(requireContext().contentResolver, resultUri)
+                val bitmap = resultUri?.getCapturedImage(requireContext().contentResolver)
                 update(
-                    Base64.encodeToString(bitmap.toBytes(), Base64.NO_WRAP),
+                    Base64.encodeToString(bitmap?.toBytes(), Base64.NO_WRAP),
                     TYPE_PHOTO,
                 )
             }
@@ -327,7 +327,7 @@ class ProfileBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragmen
 
     private fun changeNumber() {
         alert(getString(R.string.profile_modify_number))
-            .setNegativeButton(android.R.string.no) { dialog, _ -> dialog.dismiss() }
+            .setNegativeButton(android.R.string.cancel) { dialog, _ -> dialog.dismiss() }
             .setPositiveButton(R.string.Change_Phone_Number) { dialog, _ ->
                 dialog.dismiss()
                 if (Session.getAccount()?.hasPin == true) {

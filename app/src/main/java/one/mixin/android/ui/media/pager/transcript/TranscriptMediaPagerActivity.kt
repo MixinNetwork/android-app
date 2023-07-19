@@ -434,6 +434,7 @@ class TranscriptMediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismis
             action = Intent.ACTION_SEND
             uri = Uri.parse(url)
             if (ContentResolver.SCHEME_FILE == uri.scheme) {
+                @Suppress("DEPRECATION")
                 val path = uri.getFilePath(this@TranscriptMediaPagerActivity)
                 if (path == null) {
                     toast(R.string.File_does_not_exist)

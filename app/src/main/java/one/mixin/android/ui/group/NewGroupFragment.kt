@@ -3,7 +3,6 @@ package one.mixin.android.ui.group
 import android.app.Dialog
 import android.net.Uri
 import android.os.Bundle
-import android.provider.MediaStore
 import android.text.Editable
 import android.text.TextWatcher
 import android.util.Base64
@@ -19,6 +18,7 @@ import one.mixin.android.R
 import one.mixin.android.databinding.FragmentNewGroupBinding
 import one.mixin.android.databinding.ItemContactNormalBinding
 import one.mixin.android.extension.createImageTemp
+import one.mixin.android.extension.getCapturedImage
 import one.mixin.android.extension.getOtherPath
 import one.mixin.android.extension.getParcelableArrayListCompat
 import one.mixin.android.extension.hideKeyboard
@@ -105,10 +105,11 @@ class NewGroupFragment : BaseFragment() {
         }
         dialog?.show()
 
-        val groupIcon = if (resultUri == null) {
+        val uri = resultUri
+        val groupIcon = if (uri == null) {
             null
         } else {
-            val bitmap = MediaStore.Images.Media.getBitmap(requireContext().contentResolver, resultUri)
+            val bitmap = uri.getCapturedImage(requireContext().contentResolver)
             Base64.encodeToString(bitmap.toBytes(), Base64.NO_WRAP)
         }
         val conversation = groupViewModel.createGroupConversation(
